@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-06T06:34:41",
+  "generatedAt": "2026-04-06T07:39:51",
   "dataFreshness": {
     "planFactMonth": "Февраль 2026",
     "ordersSnapshot": "orders (40).csv",
@@ -59,42 +59,42 @@
   "cards": [
     {
       "label": "SKU в базе",
-      "value": 406,
-      "hint": "Объединены repricer, план/факт, товары, заказы, остатки, возвраты и контент"
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
     },
     {
-      "label": "Фокусных SKU",
-      "value": 123,
-      "hint": "Фокус для weekly/monthly: score ≥ 4"
+      "label": "SKU в работе",
+      "value": 7,
+      "hint": "Ниже плана + отрицательная маржа"
+    },
+    {
+      "label": "Отрицательная маржа",
+      "value": 16,
+      "hint": "Хотя бы на одном MP маржа < 0"
     },
     {
       "label": "Остатки MP, шт.",
-      "value": 685602,
+      "value": 220574,
       "hint": "WB + Ozon по текущему срезу"
     },
     {
       "label": "Снимок заказов, ₽",
-      "value": 244644980,
-      "hint": "Агрегация из файла orders (40).csv"
+      "value": 161631197,
+      "hint": "Агрегация по отфильтрованным SKU Алтея"
     },
     {
       "label": "План Feb 2026, шт.",
-      "value": 396516,
-      "hint": "Из файла \"План продаж (2)\""
+      "value": 127838,
+      "hint": "План только по Алтея"
     },
     {
       "label": "Факт Feb 2026, шт.",
-      "value": 146907,
-      "hint": "Из файла \"План продаж (2)\""
-    },
-    {
-      "label": "Ниже плана Feb 2026",
-      "value": 190,
-      "hint": "SKU с выполнением плана < 80% и планом от 100 шт."
+      "value": 48829,
+      "hint": "Факт только по Алтея"
     },
     {
       "label": "Высокие возвраты",
-      "value": 113,
+      "value": 43,
       "hint": "SKU с 50+ возвратами в доступном выгрузе"
     }
   ],
@@ -102,207 +102,176 @@
     {
       "brand": "Алтея",
       "sku_count": 89,
-      "total_stock": 220574.0,
-      "orders_value": 161631197.21,
-      "feb_plan_units": 127838.0,
-      "feb_fact_units": 48829.0,
+      "total_stock": 220574,
+      "orders_value": 161631197,
+      "feb_plan_units": 127838,
+      "feb_fact_units": 48829,
       "plan_completion_feb26_pct": 0.382,
-      "returns_units": 8580.0,
-      "avg_romi": 93.9518
-    },
-    {
-      "brand": "CPA",
-      "sku_count": 121,
-      "total_stock": 126862.0,
-      "orders_value": 83013782.99,
-      "feb_plan_units": 46962.0,
-      "feb_fact_units": 16221.0,
-      "plan_completion_feb26_pct": 0.3454,
-      "returns_units": 3608.0,
-      "avg_romi": null
-    },
-    {
-      "brand": "Harly",
-      "sku_count": 31,
-      "total_stock": 109155.0,
-      "orders_value": 0.0,
-      "feb_plan_units": 94728.0,
-      "feb_fact_units": 33884.0,
-      "plan_completion_feb26_pct": 0.3577,
-      "returns_units": 6491.0,
-      "avg_romi": 21.915
-    },
-    {
-      "brand": "qeep",
-      "sku_count": 159,
-      "total_stock": 229011.0,
-      "orders_value": 0.0,
-      "feb_plan_units": 126988.0,
-      "feb_fact_units": 47973.0,
-      "plan_completion_feb26_pct": 0.3778,
-      "returns_units": 8572.0,
-      "avg_romi": 48.183
+      "returns_units": 8580,
+      "avg_romi": 93.9518,
+      "negative_margin_sku": 16,
+      "to_work_sku": 7
     }
   ],
   "focusTop": [
     {
-      "article": "curly_method_300ml",
-      "brand": "Алтея",
-      "product_name_final": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
-      "focus_score": 7,
-      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI",
-      "plan_completion_feb26_pct": 0.3203,
-      "total_mp_stock": 6986.0,
-      "content_romi": 353.345
-    },
-    {
-      "article": "krovavii_piling_30ml",
-      "brand": "Алтея",
-      "product_name_final": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
-      "focus_score": 7,
-      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI",
-      "plan_completion_feb26_pct": 0.373,
-      "total_mp_stock": 3935.0,
-      "content_romi": 424.545
-    },
-    {
-      "article": "penka_kudryavii_metod_150ml",
-      "brand": "Алтея",
-      "product_name_final": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
-      "focus_score": 7,
-      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI",
-      "plan_completion_feb26_pct": 0.373,
-      "total_mp_stock": 2452.0,
-      "content_romi": 336.99
-    },
-    {
-      "article": "gel_antiakne_20ml_v2",
-      "brand": "Алтея",
-      "product_name_final": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
-      "focus_score": 7,
-      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI",
-      "plan_completion_feb26_pct": 0.355,
-      "total_mp_stock": 3440.0,
-      "content_romi": 405.86
-    },
-    {
-      "article": "enzim_pudra_80gr_v2",
-      "brand": "Алтея",
-      "product_name_final": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
-      "focus_score": 6,
-      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов",
-      "plan_completion_feb26_pct": 0.3127,
-      "total_mp_stock": 1.0,
-      "content_romi": null
-    },
-    {
-      "article": "krem-filler_15ml",
-      "brand": "Алтея",
-      "product_name_final": "Питательный крем для лица антивозрастной, Крем филлер вокруг глаз, с коллагеном с ниацинамидом, Алтея, 15 мл",
-      "focus_score": 6,
-      "focus_reasons": "Низкое выполнение плана; Низкий остаток; WB ниже min price",
-      "plan_completion_feb26_pct": 0.3333,
-      "total_mp_stock": 1.0,
-      "content_romi": null
-    },
-    {
-      "article": "qeep_berberine_60caps",
-      "brand": "qeep",
-      "product_name_final": null,
-      "focus_score": 6,
-      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов",
-      "plan_completion_feb26_pct": 0.3604,
-      "total_mp_stock": 1.0,
-      "content_romi": null
-    },
-    {
-      "article": "retiderm_50ml",
-      "brand": "Алтея",
-      "product_name_final": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
-      "focus_score": 5,
-      "focus_reasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI",
-      "plan_completion_feb26_pct": 0.3592,
-      "total_mp_stock": 40719.0,
-      "content_romi": 332.02
-    },
-    {
-      "article": "maska_dlya_lica_100ml",
-      "brand": "Алтея",
-      "product_name_final": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
-      "focus_score": 5,
-      "focus_reasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI",
-      "plan_completion_feb26_pct": 0.3672,
-      "total_mp_stock": 288.0,
-      "content_romi": 304.82
-    },
-    {
-      "article": "syvorotka_dlya_lica_30ml_v2",
-      "brand": "Алтея",
-      "product_name_final": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
-      "focus_score": 5,
-      "focus_reasons": "Низкое выполнение плана; WB ниже min price; Много возвратов",
-      "plan_completion_feb26_pct": 0.3928,
-      "total_mp_stock": 540.0,
-      "content_romi": null
-    },
-    {
-      "article": "retinait_syvorotka_1_30ml",
-      "brand": "Алтея",
-      "product_name_final": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
-      "focus_score": 5,
-      "focus_reasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI",
-      "plan_completion_feb26_pct": 0.3633,
-      "total_mp_stock": 2931.0,
-      "content_romi": 354.13
-    },
-    {
-      "article": "kavmaz",
-      "brand": "CPA",
-      "product_name_final": "Кавказская мазь Натуральное лечебное средство для суставов и связок обезболивающее, Алтея, 40мл",
-      "focus_score": 5,
-      "focus_reasons": "Низкое выполнение плана; Ozon ниже min price; Много возвратов",
-      "plan_completion_feb26_pct": 0.3608,
-      "total_mp_stock": 5240.0,
-      "content_romi": null
-    },
-    {
-      "article": "arterol",
-      "brand": "CPA",
-      "product_name_final": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Артерол, 10мл",
-      "focus_score": 5,
-      "focus_reasons": "Низкое выполнение плана; Ozon ниже min price; Много возвратов",
-      "plan_completion_feb26_pct": 0.3437,
-      "total_mp_stock": 6230.0,
-      "content_romi": null
-    },
-    {
-      "article": "okospas",
-      "brand": "CPA",
-      "product_name_final": "Витамины для глаз и восстановления зрения Окоспас, с лютеином и черникой, 10 мл",
-      "focus_score": 5,
-      "focus_reasons": "Низкое выполнение плана; Ozon ниже min price; Много возвратов",
-      "plan_completion_feb26_pct": 0.3003,
-      "total_mp_stock": 2791.0,
-      "content_romi": null
-    },
-    {
-      "article": "mycoplax",
-      "brand": "CPA",
-      "product_name_final": "Мазь от грибка ногтей на ногах, крем гель Алтея, Микоплакс Mycoplax, 15 мл",
-      "focus_score": 5,
-      "focus_reasons": "Низкое выполнение плана; Ozon ниже min price; Много возвратов",
-      "plan_completion_feb26_pct": 0.3603,
-      "total_mp_stock": 6157.0,
-      "content_romi": null
-    },
-    {
       "article": "nabor_remuver_40ml",
       "brand": "Алтея",
       "product_name_final": "Ремувер для удаления кутикулы, Алтея, 40 мл",
-      "focus_score": 5,
-      "focus_reasons": "Низкое выполнение плана; Ozon ниже min price; Много возвратов",
+      "focus_score": 10.0,
+      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Ozon ниже min price; Много возвратов",
       "plan_completion_feb26_pct": 0.2952,
       "total_mp_stock": 8741.0,
+      "content_romi": null
+    },
+    {
+      "article": "matte_wax_50ml",
+      "brand": "Алтея",
+      "product_name_final": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
+      "focus_score": 9.0,
+      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов",
+      "plan_completion_feb26_pct": 0.3218,
+      "total_mp_stock": 1008.0,
+      "content_romi": null
+    },
+    {
+      "article": "kremshelk_100ml",
+      "brand": "Алтея",
+      "product_name_final": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
+      "focus_score": 9.0,
+      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов",
+      "plan_completion_feb26_pct": 0.3244,
+      "total_mp_stock": 9203.0,
+      "content_romi": 91.145
+    },
+    {
+      "article": "ekdisteron_ultra_man_60caps",
+      "brand": "Алтея",
+      "product_name_final": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
+      "focus_score": 8.0,
+      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
+      "plan_completion_feb26_pct": 0.2284,
+      "total_mp_stock": 1537.0,
+      "content_romi": null
+    },
+    {
+      "article": "skrab_babl_gam_200ml",
+      "brand": "Алтея",
+      "product_name_final": "Скраб пилинг для кожи головы, Алтея, 200 мл",
+      "focus_score": 8.0,
+      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
+      "plan_completion_feb26_pct": 0.2549,
+      "total_mp_stock": 1899.0,
+      "content_romi": -100.0
+    },
+    {
+      "article": "syvorotka_guk_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
+      "focus_score": 8.0,
+      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon",
+      "plan_completion_feb26_pct": 0.3523,
+      "total_mp_stock": 763.0,
+      "content_romi": null
+    },
+    {
+      "article": "intimvita_300ml",
+      "brand": "Алтея",
+      "product_name_final": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 300 мл",
+      "focus_score": 8.0,
+      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
+      "plan_completion_feb26_pct": 0.3529,
+      "total_mp_stock": 1718.0,
+      "content_romi": null
+    },
+    {
+      "article": "maslo_dlya_volos_parf_110ml",
+      "brand": "Алтея",
+      "product_name_final": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "focus_score": 4.0,
+      "focus_reasons": "Отрицательная маржа WB; Низкий остаток; WB ниже min price",
+      "plan_completion_feb26_pct": null,
+      "total_mp_stock": 0,
+      "content_romi": null
+    },
+    {
+      "article": "gel_dlya_brovei_6ml",
+      "brand": "Алтея",
+      "product_name_final": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл",
+      "focus_score": 3.0,
+      "focus_reasons": "Отрицательная маржа Ozon; Много возвратов",
+      "plan_completion_feb26_pct": null,
+      "total_mp_stock": 2498.0,
+      "content_romi": -100.0
+    },
+    {
+      "article": "indolakt_BAD_60caps",
+      "brand": "Алтея",
+      "product_name_final": "Индол 3 карбинол брокколи витамины с зеленым чаем Алтея, Индолакт, 60 капсул",
+      "focus_score": 3.0,
+      "focus_reasons": "Отрицательная маржа Ozon; Много возвратов",
+      "plan_completion_feb26_pct": null,
+      "total_mp_stock": 2113.0,
+      "content_romi": -85.165
+    },
+    {
+      "article": "maslo_dlya_volos_parf_110ml_",
+      "brand": "Алтея",
+      "product_name_final": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
+      "focus_score": 3.0,
+      "focus_reasons": "Отрицательная маржа WB; Много возвратов",
+      "plan_completion_feb26_pct": null,
+      "total_mp_stock": 1768.0,
+      "content_romi": null
+    },
+    {
+      "article": "i_am_alpha_BAD_60caps",
+      "brand": "Алтея",
+      "product_name_final": "Тестостерон для мужчин I am alpha Алтея 60 капсул, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер",
+      "focus_score": 2.0,
+      "focus_reasons": "Отрицательная маржа WB",
+      "plan_completion_feb26_pct": null,
+      "total_mp_stock": 1550.0,
+      "content_romi": null
+    },
+    {
+      "article": "gel_parfum_tabacco_vanille_450ml",
+      "brand": "Алтея",
+      "product_name_final": "Гель для душа женский парфюмированный Tobacco Vanille, Алтея, 450 мл",
+      "focus_score": 2.0,
+      "focus_reasons": "Отрицательная маржа Ozon",
+      "plan_completion_feb26_pct": null,
+      "total_mp_stock": 1109.0,
+      "content_romi": null
+    },
+    {
+      "article": "retinait_syvorotka_025_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Сыворотка с ретинолом 0,25% для лица от морщин антивозрастная Алтея 30 мл",
+      "focus_score": 2.0,
+      "focus_reasons": "Отрицательная маржа Ozon",
+      "plan_completion_feb26_pct": null,
+      "total_mp_stock": 4888.0,
+      "content_romi": -45.5
+    },
+    {
+      "article": "termo_sprei_200ml",
+      "brand": "Алтея",
+      "product_name_final": "Термозащита Спрей для волос 17 в 1 восстанавливающий с кератином, Алтея, 200 мл",
+      "focus_score": 2.0,
+      "focus_reasons": "Отрицательная маржа WB",
+      "plan_completion_feb26_pct": null,
+      "total_mp_stock": 2054.0,
+      "content_romi": -100.0
+    },
+    {
+      "article": "intimvita_200ml",
+      "brand": "Алтея",
+      "product_name_final": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 200 мл",
+      "focus_score": 2.0,
+      "focus_reasons": "Отрицательная маржа WB",
+      "plan_completion_feb26_pct": null,
+      "total_mp_stock": 437.0,
       "content_romi": null
     }
   ],
@@ -328,16 +297,6 @@
       "content_clicks": 84141.0
     },
     {
-      "article": "qeep_chlorophyll_500ml",
-      "brand": "qeep",
-      "product_name_final": "Хлорофил",
-      "content_romi": 359.605,
-      "content_income": 9929665.31,
-      "content_revenue": 12687803.32,
-      "content_posts": 3045.0,
-      "content_clicks": 123338.0
-    },
-    {
       "article": "retinait_syvorotka_1_30ml",
       "brand": "Алтея",
       "product_name_final": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
@@ -356,16 +315,6 @@
       "content_revenue": 1595093.81,
       "content_posts": 475.0,
       "content_clicks": 24799.0
-    },
-    {
-      "article": "qeep_inositol1500mg_60caps",
-      "brand": "qeep",
-      "product_name_final": "Инозитол 1500 мг",
-      "content_romi": 346.84,
-      "content_income": 7057587.9,
-      "content_revenue": 9137850.35,
-      "content_posts": 2148.0,
-      "content_clicks": 106783.0
     },
     {
       "article": "penka_kudryavii_metod_150ml",
@@ -388,16 +337,6 @@
       "content_clicks": 26279.0
     },
     {
-      "article": "harly_paste_75ml_v2",
-      "brand": "Harly",
-      "product_name_final": "Паста для вывода шерсти",
-      "content_romi": 311.375,
-      "content_income": 1679739.09,
-      "content_revenue": 2241775.62,
-      "content_posts": 652.0,
-      "content_clicks": 33299.0
-    },
-    {
       "article": "maska_dlya_lica_100ml",
       "brand": "Алтея",
       "product_name_final": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
@@ -408,16 +347,6 @@
       "content_clicks": 21949.0
     },
     {
-      "article": "qeep_magnB6_120caps",
-      "brand": "qeep",
-      "product_name_final": "Магний В6",
-      "content_romi": 296.585,
-      "content_income": 11228787.39,
-      "content_revenue": 15038524.28,
-      "content_posts": 4283.0,
-      "content_clicks": 142873.0
-    },
-    {
       "article": "maska-batter_dlya_rosta_500ml",
       "brand": "Алтея",
       "product_name_final": "Маска для роста волос с перцем, средство для роста волос, для укрепления, Алтея 500мл",
@@ -426,18 +355,49 @@
       "content_revenue": 252024.28,
       "content_posts": 102.0,
       "content_clicks": 3892.0
+    },
+    {
+      "article": "retinol_boost_krem_dlya_vek_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
+      "content_romi": 245.935,
+      "content_income": 1350966.84,
+      "content_revenue": 1901458.64,
+      "content_posts": 1238.0,
+      "content_clicks": 41839.0
+    },
+    {
+      "article": "syvorotka_dlya_lica_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
+      "content_romi": 234.93,
+      "content_income": 1352019.78,
+      "content_revenue": 1926499.82,
+      "content_posts": 1197.0,
+      "content_clicks": 32080.0
+    },
+    {
+      "article": "retinait_krem_1_50ml",
+      "brand": "Алтея",
+      "product_name_final": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
+      "content_romi": 198.85,
+      "content_income": 44007.11,
+      "content_revenue": 65382.03,
+      "content_posts": 21.0,
+      "content_clicks": 724.0
+    },
+    {
+      "article": "syvorotka_niacin_05_30ml",
+      "brand": "Алтея",
+      "product_name_final": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
+      "content_romi": 196.555,
+      "content_income": 254731.3,
+      "content_revenue": 385621.71,
+      "content_posts": 477.0,
+      "content_clicks": 7865.0
     }
   ],
   "underPlan": [
-    {
-      "article": "qeep_tonic_200ml",
-      "brand": "qeep",
-      "product_name_final": null,
-      "plan_feb26_units": 873.0,
-      "fact_feb26_units": 99.0,
-      "plan_completion_feb26_pct": 0.1134,
-      "total_mp_stock": 2113.0
-    },
     {
       "article": "tonik_dlya_lica_200ml",
       "brand": "Алтея",
@@ -445,7 +405,8 @@
       "plan_feb26_units": 1983.0,
       "fact_feb26_units": 248.0,
       "plan_completion_feb26_pct": 0.1251,
-      "total_mp_stock": 1083.0
+      "total_mp_stock": 1083.0,
+      "negative_margin_flag": false
     },
     {
       "article": "syvorotka_dlya_rosta_6ml_v2",
@@ -454,7 +415,8 @@
       "plan_feb26_units": 252.0,
       "fact_feb26_units": 47.0,
       "plan_completion_feb26_pct": 0.1865,
-      "total_mp_stock": 1208.0
+      "total_mp_stock": 1208.0,
+      "negative_margin_flag": false
     },
     {
       "article": "ekdisteron_ultra_man_60caps",
@@ -463,7 +425,8 @@
       "plan_feb26_units": 359.0,
       "fact_feb26_units": 82.0,
       "plan_completion_feb26_pct": 0.2284,
-      "total_mp_stock": 1537.0
+      "total_mp_stock": 1537.0,
+      "negative_margin_flag": true
     },
     {
       "article": "sprei_buster_100ml",
@@ -472,7 +435,8 @@
       "plan_feb26_units": 2642.0,
       "fact_feb26_units": 623.0,
       "plan_completion_feb26_pct": 0.2358,
-      "total_mp_stock": 1922.0
+      "total_mp_stock": 1922.0,
+      "negative_margin_flag": false
     },
     {
       "article": "skrab_babl_gam_200ml",
@@ -481,52 +445,8 @@
       "plan_feb26_units": 710.0,
       "fact_feb26_units": 181.0,
       "plan_completion_feb26_pct": 0.2549,
-      "total_mp_stock": 1899.0
-    },
-    {
-      "article": "enteroshol",
-      "brand": "CPA",
-      "product_name_final": "Таблетки от изжоги, для желудка и печени, чистка печени и желудка, Энтеросхол, 20 капсул",
-      "plan_feb26_units": 137.0,
-      "fact_feb26_units": 35.0,
-      "plan_completion_feb26_pct": 0.2555,
-      "total_mp_stock": 688.0
-    },
-    {
-      "article": "urinofix",
-      "brand": "CPA",
-      "product_name_final": "От цистита для женщин, от недержания мочи, Уринофикс, Алтея 20 капсул",
-      "plan_feb26_units": 125.0,
-      "fact_feb26_units": 32.0,
-      "plan_completion_feb26_pct": 0.256,
-      "total_mp_stock": 684.0
-    },
-    {
-      "article": "qeep_penka_150ml",
-      "brand": "qeep",
-      "product_name_final": "Пенка для укладки QEEP",
-      "plan_feb26_units": 402.0,
-      "fact_feb26_units": 110.0,
-      "plan_completion_feb26_pct": 0.2736,
-      "total_mp_stock": 1999.0
-    },
-    {
-      "article": "erobrut",
-      "brand": "CPA",
-      "product_name_final": "Возбудитель для мужчин, таблетки для потенции, капсулы для секса, 18+, Эробрут,Алтея, 20 капсул",
-      "plan_feb26_units": 153.0,
-      "fact_feb26_units": 44.0,
-      "plan_completion_feb26_pct": 0.2876,
-      "total_mp_stock": 1294.0
-    },
-    {
-      "article": "qeep_nabor_remuver_40ml",
-      "brand": "qeep",
-      "product_name_final": null,
-      "plan_feb26_units": 361.0,
-      "fact_feb26_units": 105.0,
-      "plan_completion_feb26_pct": 0.2909,
-      "total_mp_stock": 7343.0
+      "total_mp_stock": 1899.0,
+      "negative_margin_flag": true
     },
     {
       "article": "nabor_remuver_40ml",
@@ -535,125 +455,258 @@
       "plan_feb26_units": 1084.0,
       "fact_feb26_units": 320.0,
       "plan_completion_feb26_pct": 0.2952,
-      "total_mp_stock": 8741.0
+      "total_mp_stock": 8741.0,
+      "negative_margin_flag": true
+    },
+    {
+      "article": "enzim_pudra_80gr_v2",
+      "brand": "Алтея",
+      "product_name_final": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
+      "plan_feb26_units": 275.0,
+      "fact_feb26_units": 86.0,
+      "plan_completion_feb26_pct": 0.3127,
+      "total_mp_stock": 1.0,
+      "negative_margin_flag": false
+    },
+    {
+      "article": "curly_method_300ml",
+      "brand": "Алтея",
+      "product_name_final": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
+      "plan_feb26_units": 2657.0,
+      "fact_feb26_units": 851.0,
+      "plan_completion_feb26_pct": 0.3203,
+      "total_mp_stock": 6986.0,
+      "negative_margin_flag": false
+    },
+    {
+      "article": "matte_wax_50ml",
+      "brand": "Алтея",
+      "product_name_final": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
+      "plan_feb26_units": 519.0,
+      "fact_feb26_units": 167.0,
+      "plan_completion_feb26_pct": 0.3218,
+      "total_mp_stock": 1008.0,
+      "negative_margin_flag": true
+    },
+    {
+      "article": "kremshelk_100ml",
+      "brand": "Алтея",
+      "product_name_final": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
+      "plan_feb26_units": 2907.0,
+      "fact_feb26_units": 943.0,
+      "plan_completion_feb26_pct": 0.3244,
+      "total_mp_stock": 9203.0,
+      "negative_margin_flag": true
+    },
+    {
+      "article": "solevoy_sprei_200ml",
+      "brand": "Алтея",
+      "product_name_final": "Солевой спрей для волос/ текстурайзер для объема и укладки волос с фиксацией Алтея 200 мл",
+      "plan_feb26_units": 1336.0,
+      "fact_feb26_units": 434.0,
+      "plan_completion_feb26_pct": 0.3249,
+      "total_mp_stock": 1083.0,
+      "negative_margin_flag": false
+    },
+    {
+      "article": "krem_ot_rastyazhek",
+      "brand": "Алтея",
+      "product_name_final": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
+      "plan_feb26_units": 2642.0,
+      "fact_feb26_units": 877.0,
+      "plan_completion_feb26_pct": 0.3319,
+      "total_mp_stock": 4254.0,
+      "negative_margin_flag": false
+    }
+  ],
+  "toWork": [
+    {
+      "article": "ekdisteron_ultra_man_60caps",
+      "brand": "Алтея",
+      "product_name_final": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
+      "plan_completion_feb26_pct": 0.2284,
+      "total_mp_stock": 1537.0,
+      "wb_margin_pct": -0.0379,
+      "ozon_margin_pct": 0.2267,
+      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB"
+    },
+    {
+      "article": "skrab_babl_gam_200ml",
+      "brand": "Алтея",
+      "product_name_final": "Скраб пилинг для кожи головы, Алтея, 200 мл",
+      "plan_completion_feb26_pct": 0.2549,
+      "total_mp_stock": 1899.0,
+      "wb_margin_pct": -0.0867,
+      "ozon_margin_pct": 0.2154,
+      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB"
+    },
+    {
+      "article": "nabor_remuver_40ml",
+      "brand": "Алтея",
+      "product_name_final": "Ремувер для удаления кутикулы, Алтея, 40 мл",
+      "plan_completion_feb26_pct": 0.2952,
+      "total_mp_stock": 8741.0,
+      "wb_margin_pct": -0.0359,
+      "ozon_margin_pct": null,
+      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Ozon ниже min price; Много возвратов"
+    },
+    {
+      "article": "matte_wax_50ml",
+      "brand": "Алтея",
+      "product_name_final": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
+      "plan_completion_feb26_pct": 0.3218,
+      "total_mp_stock": 1008.0,
+      "wb_margin_pct": 0.3137,
+      "ozon_margin_pct": -0.2824,
+      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов"
+    },
+    {
+      "article": "kremshelk_100ml",
+      "brand": "Алтея",
+      "product_name_final": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
+      "plan_completion_feb26_pct": 0.3244,
+      "total_mp_stock": 9203.0,
+      "wb_margin_pct": 0.5005,
+      "ozon_margin_pct": -0.1979,
+      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов"
+    },
+    {
+      "article": "syvorotka_guk_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
+      "plan_completion_feb26_pct": 0.3523,
+      "total_mp_stock": 763.0,
+      "wb_margin_pct": 0.3548,
+      "ozon_margin_pct": -0.336,
+      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon"
+    },
+    {
+      "article": "intimvita_300ml",
+      "brand": "Алтея",
+      "product_name_final": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 300 мл",
+      "plan_completion_feb26_pct": 0.3529,
+      "total_mp_stock": 1718.0,
+      "wb_margin_pct": -0.1019,
+      "ozon_margin_pct": 0.1267,
+      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB"
     }
   ],
   "lowStock": [
     {
-      "article": "adenofrin",
-      "brand": "CPA",
-      "product_name_final": "Возбудитель для мужчин, для эрекции, для потенции, для секса. 18+ / Аденофрин",
-      "total_mp_stock": 0.0,
-      "wb_stock": 0.0,
-      "ozon_stock_final": 0.0,
-      "ozon_in_transit": null,
-      "orders_value": 98990.16
-    },
-    {
-      "article": "adenofringreen",
-      "brand": "CPA",
-      "product_name_final": "Таблетки от простатита для мужчин для потенции Алтея, Аденофрин, 20 шт",
-      "total_mp_stock": 0.0,
-      "wb_stock": 0.0,
-      "ozon_stock_final": 0.0,
-      "ozon_in_transit": null,
-      "orders_value": 605.0
-    },
-    {
-      "article": "wbvaranga",
-      "brand": "CPA",
-      "product_name_final": "Мазь от грибка ногтей Варанга, Алтея, 10 мл",
-      "total_mp_stock": 0.0,
-      "wb_stock": 0.0,
-      "ozon_stock_final": 0.0,
-      "ozon_in_transit": null,
-      "orders_value": null
-    },
-    {
-      "article": "wbpantogor",
-      "brand": "CPA",
-      "product_name_final": null,
-      "total_mp_stock": 0.0,
-      "wb_stock": null,
-      "ozon_stock_final": 0.0,
-      "ozon_in_transit": null,
-      "orders_value": null
-    },
-    {
-      "article": "wbneomaxblue",
-      "brand": "CPA",
-      "product_name_final": "Таблетки для мужчин для секса, возбудитель, средство для потенции и эрекции,витамины для мужчины, Neomax blue, Неомаксблу, 10 штук",
-      "total_mp_stock": 0.0,
-      "wb_stock": 0.0,
-      "ozon_stock_final": 0.0,
-      "ozon_in_transit": null,
-      "orders_value": 1595.0
-    },
-    {
-      "article": "alteya_young_skin_box",
+      "article": "penka_160ml",
       "brand": "Алтея",
-      "product_name_final": "Подарочный набор для женщин. Набор для лица уходовый косметический бьюти Young Skin Box Алтея",
-      "total_mp_stock": 0.0,
+      "product_name_final": "Мицеллярная пенка для умывания лица, для снятия макияжа, средство для снятия макияжа, Алтея, 160",
+      "total_mp_stock": 0,
       "wb_stock": 0.0,
       "ozon_stock_final": 0.0,
-      "ozon_in_transit": null,
-      "orders_value": null
+      "ozon_in_transit": 0.0,
+      "orders_value": 425559.01
     },
     {
-      "article": "wbneomax",
-      "brand": "CPA",
-      "product_name_final": "Таблетки для мужчин для секса, возбудитель, средство для потенции и эрекции, витамины для мужчины, Neomax, Неомакс, 13 штук",
-      "total_mp_stock": 0.0,
+      "article": "chudofrukt_BAD_60caps",
+      "brand": "Алтея",
+      "product_name_final": "Таблетки для похудения, жиросжигатель детокс для снижения веса, Алтея, Чудофрукт, 60 капсул",
+      "total_mp_stock": 0,
       "wb_stock": 0.0,
       "ozon_stock_final": 0.0,
-      "ozon_in_transit": null,
-      "orders_value": 1197.0
+      "ozon_in_transit": 0.0,
+      "orders_value": 181867.54
     },
     {
-      "article": "getsize",
-      "brand": "CPA",
-      "product_name_final": null,
-      "total_mp_stock": 0.0,
+      "article": "b_kompleks_BAD_60tabl",
+      "brand": "Алтея",
+      "product_name_final": "Витамины группы В комплекс Алтея 60 жевательных таблеток",
+      "total_mp_stock": 0,
       "wb_stock": 0.0,
       "ozon_stock_final": 0.0,
-      "ozon_in_transit": null,
-      "orders_value": null
-    },
-    {
-      "article": "harly_dog_lamb_2kg",
-      "brand": "Harly",
-      "product_name_final": null,
-      "total_mp_stock": 0.0,
-      "wb_stock": 0.0,
-      "ozon_stock_final": 0.0,
-      "ozon_in_transit": null,
-      "orders_value": null
+      "ozon_in_transit": 0.0,
+      "orders_value": 114927.0
     },
     {
       "article": "gidrofilnoe_maslo_150ml",
       "brand": "Алтея",
       "product_name_final": "Гидрофильное масло для снятия макияжа с лавандой, Алтея , 150 мл",
-      "total_mp_stock": 0.0,
+      "total_mp_stock": 0,
       "wb_stock": 0.0,
       "ozon_stock_final": 0.0,
       "ozon_in_transit": 0.0,
       "orders_value": 63575.45
     },
     {
-      "article": "harly_cat_premiumturkey_2kg",
-      "brand": "Harly",
-      "product_name_final": "Корм для кошек индейка",
-      "total_mp_stock": 0.0,
+      "article": "piling_100ml",
+      "brand": "Алтея",
+      "product_name_final": "Пилинг для кожи головы профессиональный скраб от перхоти, Алтея, 100 мл",
+      "total_mp_stock": 0,
+      "wb_stock": 0.0,
+      "ozon_stock_final": 0.0,
+      "ozon_in_transit": 0.0,
+      "orders_value": 33476.53
+    },
+    {
+      "article": "enzim_pudra_80gr",
+      "brand": "Алтея",
+      "product_name_final": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
+      "total_mp_stock": 0,
+      "wb_stock": 0.0,
+      "ozon_stock_final": 0.0,
+      "ozon_in_transit": null,
+      "orders_value": 5474.0
+    },
+    {
+      "article": "maslo_dlya_volos_parf_110ml",
+      "brand": "Алтея",
+      "product_name_final": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "total_mp_stock": 0,
       "wb_stock": 0.0,
       "ozon_stock_final": 0.0,
       "ozon_in_transit": null,
       "orders_value": null
     },
     {
-      "article": "harly_cat_premiumveal_2kg",
-      "brand": "Harly",
+      "article": "remuver_40ml",
+      "brand": "Алтея",
       "product_name_final": null,
-      "total_mp_stock": 0.0,
+      "total_mp_stock": 0,
+      "wb_stock": 0.0,
+      "ozon_stock_final": 0.0,
+      "ozon_in_transit": null,
+      "orders_value": null
+    },
+    {
+      "article": "monarda_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Масло монарды и экстракт зеленого чая для ногтей, универсальное, Алтея, 30 мл",
+      "total_mp_stock": 0,
+      "wb_stock": 0.0,
+      "ozon_stock_final": 0.0,
+      "ozon_in_transit": null,
+      "orders_value": null
+    },
+    {
+      "article": "Retinol_Full_Journey",
+      "brand": "Алтея",
+      "product_name_final": "Набор уходовой косметики для лица антивозрастной",
+      "total_mp_stock": 0,
+      "wb_stock": 0.0,
+      "ozon_stock_final": 0.0,
+      "ozon_in_transit": null,
+      "orders_value": null
+    },
+    {
+      "article": "Retinol_Start_Kit",
+      "brand": "Алтея",
+      "product_name_final": "Набор уходовой косметики для лица с ретинолом",
+      "total_mp_stock": 0,
+      "wb_stock": 0.0,
+      "ozon_stock_final": 0.0,
+      "ozon_in_transit": 0.0,
+      "orders_value": null
+    },
+    {
+      "article": "Strong_Hair",
+      "brand": "Алтея",
+      "product_name_final": "Набор для волос шампунь + маска для роста волос",
+      "total_mp_stock": 0,
       "wb_stock": 0.0,
       "ozon_stock_final": 0.0,
       "ozon_in_transit": null,
@@ -661,30 +714,6 @@
     }
   ],
   "topReturns": [
-    {
-      "article": "harly_dog_pads_30pcs",
-      "brand": "Harly",
-      "product_name_final": "Пеленки для собак",
-      "returns_units": 2430.0,
-      "returns_count": 2430.0,
-      "top_return_reason": "Не удалось доставить заказ"
-    },
-    {
-      "article": "qeep_retinolcream_50ml",
-      "brand": "qeep",
-      "product_name_final": "Ретинол крем QEEP",
-      "returns_units": 1777.0,
-      "returns_count": 1777.0,
-      "top_return_reason": "Покупатель отказался при вручении: товар не подошел"
-    },
-    {
-      "article": "harly_toothpaste_50ml",
-      "brand": "Harly",
-      "product_name_final": "Зубная паста",
-      "returns_units": 852.0,
-      "returns_count": 852.0,
-      "top_return_reason": "Покупатель отказался при вручении: товар не подошел"
-    },
     {
       "article": "nabor_remuver_kremovii",
       "brand": "Алтея",
@@ -702,38 +731,6 @@
       "top_return_reason": "Покупатель отменил заказ"
     },
     {
-      "article": "qeep_acnegel_20ml",
-      "brand": "qeep",
-      "product_name_final": null,
-      "returns_units": 654.0,
-      "returns_count": 654.0,
-      "top_return_reason": "Покупатель не забрал заказ"
-    },
-    {
-      "article": "qeep_inositol1500mg_60caps",
-      "brand": "qeep",
-      "product_name_final": "Инозитол 1500 мг",
-      "returns_units": 645.0,
-      "returns_count": 645.0,
-      "top_return_reason": "Покупатель отменил заказ: нашел дешевле"
-    },
-    {
-      "article": "qeepinositol",
-      "brand": "qeep",
-      "product_name_final": "Инозитол",
-      "returns_units": 637.0,
-      "returns_count": 637.0,
-      "top_return_reason": "Покупатель не забрал заказ"
-    },
-    {
-      "article": "harly_ear_drops",
-      "brand": "Harly",
-      "product_name_final": "Ушные капли",
-      "returns_units": 575.0,
-      "returns_count": 575.0,
-      "top_return_reason": "Покупатель отменил заказ"
-    },
-    {
       "article": "krovavii_piling_30ml",
       "brand": "Алтея",
       "product_name_final": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
@@ -742,19 +739,75 @@
       "top_return_reason": "Покупатель отменил заказ: нашел дешевле"
     },
     {
-      "article": "qeep_ecdysterone_60caps",
-      "brand": "qeep",
-      "product_name_final": "Экдистерон",
-      "returns_units": 420.0,
-      "returns_count": 420.0,
+      "article": "maska_dlya_lica_100ml",
+      "brand": "Алтея",
+      "product_name_final": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
+      "returns_units": 355.0,
+      "returns_count": 355.0,
+      "top_return_reason": "Покупатель отказался при вручении: товар не подошел"
+    },
+    {
+      "article": "gel_dlya_brovei_6ml",
+      "brand": "Алтея",
+      "product_name_final": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл",
+      "returns_units": 348.0,
+      "returns_count": 348.0,
+      "top_return_reason": "Покупатель получил не те товары"
+    },
+    {
+      "article": "curly_method_300ml",
+      "brand": "Алтея",
+      "product_name_final": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
+      "returns_units": 330.0,
+      "returns_count": 330.0,
+      "top_return_reason": "Покупатель отказался при вручении: товар не подошел"
+    },
+    {
+      "article": "retinait_krem_1_5_50ml",
+      "brand": "Алтея",
+      "product_name_final": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
+      "returns_units": 298.0,
+      "returns_count": 298.0,
+      "top_return_reason": "Покупатель отменил заказ: нашел дешевле"
+    },
+    {
+      "article": "syvorotka_dlya_lica_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
+      "returns_units": 263.0,
+      "returns_count": 263.0,
+      "top_return_reason": "Покупатель отменил заказ: нашел дешевле"
+    },
+    {
+      "article": "krem_spf50_50ml",
+      "brand": "Алтея",
+      "product_name_final": "СПФ для лица База под макияж увлажняющая с SPF 50 для лица Крем солнцезащитный, крем-флюид, Алтея, 50 мл",
+      "returns_units": 262.0,
+      "returns_count": 262.0,
       "top_return_reason": "Покупатель отменил заказ"
     },
     {
-      "article": "harly_likvidator_v2",
-      "brand": "Harly",
-      "product_name_final": "Нейтрализатор запахов",
-      "returns_units": 375.0,
-      "returns_count": 375.0,
+      "article": "shampun_dlya_rosta_250ml",
+      "brand": "Алтея",
+      "product_name_final": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
+      "returns_units": 228.0,
+      "returns_count": 228.0,
+      "top_return_reason": "Покупатель отменил заказ"
+    },
+    {
+      "article": "sprei_buster_100ml",
+      "brand": "Алтея",
+      "product_name_final": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
+      "returns_units": 227.0,
+      "returns_count": 227.0,
+      "top_return_reason": "Покупатель отменил заказ"
+    },
+    {
+      "article": "syvorotka_dlya_lica_30ml_v2",
+      "brand": "Алтея",
+      "product_name_final": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
+      "returns_units": 181.0,
+      "returns_count": 181.0,
       "top_return_reason": "Покупатель отменил заказ"
     }
   ]

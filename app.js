@@ -4,7 +4,7 @@ const state = {
   launches: [],
   meetings: [],
   storage: { comments: [], tasks: [] },
-  filters: { search: '', brand: 'all', segment: 'all', focus: 'all' },
+  filters: { search: '', segment: 'all', focus: 'all' },
   activeView: 'dashboard',
   activeSku: null
 };
@@ -51,7 +51,7 @@ function escapeHtml(str) {
 }
 
 function linkToSku(articleKey, label) {
-  return `<button class="link-btn" data-open-sku="${escapeHtml(articleKey)}">${escapeHtml(label || articleKey)}</button>`;
+  return `<button class="link-btn sku-pill" data-open-sku="${escapeHtml(articleKey)}">${escapeHtml(label || articleKey)}</button>`;
 }
 
 async function loadJson(path) {
@@ -103,6 +103,19 @@ function badge(text, kind = '') {
   return `<span class="chip ${kind}">${escapeHtml(text)}</span>`;
 }
 
+function marginBadge(label, value) {
+  if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return badge(`${label} —`);
+  return badge(`${label} ${fmt.pct(value)}`, Number(value) < 0 ? 'danger' : 'ok');
+}
+
+function priorityBadges(sku) {
+  const parts = [];
+  if (sku?.flags?.toWork) parts.push(`<span class="chip danger">В работу</span>`);
+  if (sku?.flags?.negativeMargin) parts.push(`<span class="chip danger">Маржа < 0</span>`);
+  parts.push(scoreChip(sku?.focusScore || 0));
+  return `<div class="badge-stack">${parts.join('')}</div>`;
+}
+
 function getSku(articleKey) {
   return state.skus.find(x => x.articleKey === articleKey || x.article === articleKey) || null;
 }
@@ -126,6 +139,7 @@ function setView(view) {
   if (view === 'meetings') renderMeetings();
 }
 
+
 function renderDashboard() {
   const root = document.getElementById('view-dashboard');
   const cards = state.dashboard.cards.map(card => `
@@ -146,20 +160,42 @@ function renderDashboard() {
       <td>${fmt.int(row.feb_fact_units)}</td>
       <td>${fmt.pct(row.plan_completion_feb26_pct)}</td>
       <td>${fmt.int(row.returns_units)}</td>
-      <td>${row.avg_romi == null ? '—' : fmt.num(row.avg_romi, 1)}</td>
+      <td>${fmt.int(row.negative_margin_sku)}</td>
+      <td>${fmt.int(row.to_work_sku)}</td>
     </tr>
   `).join('');
 
-  const focusRows = state.dashboard.focusTop.map(row => `
-    <tr>
-      <td>${linkToSku(row.article, row.article)}</td>
-      <td>${escapeHtml(row.brand || '—')}</td>
-      <td><div><strong>${escapeHtml(row.product_name_final || 'Без названия')}</strong></div><div class="muted small">${escapeHtml(row.focus_reasons || '—')}</div></td>
-      <td>${scoreChip(row.focus_score || 0)}</td>
-      <td>${fmt.pct(row.plan_completion_feb26_pct)}</td>
-      <td>${fmt.int(row.total_mp_stock)}</td>
-      <td>${row.content_romi == null ? '—' : fmt.num(row.content_romi, 1)}</td>
-    </tr>
+  const focusRows = state.dashboard.focusTop.map(row => {
+    const work = String(row.focus_reasons || '').includes('В работе');
+    return `
+      <tr>
+        <td>${linkToSku(row.article, row.article)}</td>
+        <td><div><strong>${escapeHtml(row.product_name_final || 'Без названия')}</strong></div><div class="muted small">${escapeHtml(row.focus_reasons || '—')}</div></td>
+        <td><div class="badge-stack">${work ? '<span class="chip danger">В работу</span>' : ''}${scoreChip(row.focus_score || 0)}</div></td>
+        <td>${fmt.pct(row.plan_completion_feb26_pct)}</td>
+        <td>${fmt.int(row.total_mp_stock)}</td>
+        <td>${row.content_romi == null ? '—' : fmt.num(row.content_romi, 1)}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const toWork = (state.dashboard.toWork || []).map(row => `
+    <div class="list-item">
+      <div class="head">
+        <div>
+          <div><strong>${linkToSku(row.article, row.product_name_final || row.article)}</strong></div>
+          <div class="muted small">${escapeHtml(row.brand || 'Алтея')}</div>
+        </div>
+        ${badge(fmt.pct(row.plan_completion_feb26_pct), 'danger')}
+      </div>
+      <div class="badge-stack">
+        <span class="chip danger">В работу</span>
+        ${marginBadge('WB', row.wb_margin_pct)}
+        ${marginBadge('Ozon', row.ozon_margin_pct)}
+        ${badge(`Остаток ${fmt.int(row.total_mp_stock)} шт.`, row.total_mp_stock <= 50 ? 'warn' : '')}
+      </div>
+      <div class="muted small" style="margin-top:8px">${escapeHtml(row.focus_reasons || 'Ниже плана и отрицательная маржа')}</div>
+    </div>
   `).join('');
 
   const topContent = state.dashboard.topContent.map(row => `
@@ -207,7 +243,10 @@ function renderDashboard() {
             <div><strong>${linkToSku(row.article, row.product_name_final || row.article)}</strong></div>
             <div class="muted small">${escapeHtml(row.brand || '—')}</div>
           </div>
-          ${badge(fmt.pct(percent), percent < .4 ? 'danger' : 'warn')}
+          <div class="badge-stack">
+            ${row.negative_margin_flag ? '<span class="chip danger">Маржа < 0</span>' : ''}
+            ${badge(fmt.pct(percent), percent < .4 ? 'danger' : 'warn')}
+          </div>
         </div>
         <div class="metric">
           <strong>План / факт Feb 2026</strong>
@@ -235,19 +274,19 @@ function renderDashboard() {
     <div class="banner">
       <div>⚠️</div>
       <div>
-        <strong>GitHub Pages MVP</strong>
-        Общие комментарии на этой версии хранятся локально в браузере. Для общей командной работы поверх этого фронта нужен backend: Supabase / Firebase / Google Sheets + Apps Script.
+        <strong>Altea · GitHub Pages MVP</strong>
+        Эта версия уже отфильтрована только по бренду Алтея. Общие комментарии пока хранятся локально в браузере; для общей истории нужен backend.
       </div>
     </div>
 
     <div class="section-title">
       <div>
-        <h2>Обзор бренда и операционного контура</h2>
+        <h2>Обзор бренда Алтея</h2>
         <p>Собрано из repricer, план/факт, товаров Ozon, заказов, остатков, возвратов, лидерборда контента и календаря новинок.</p>
       </div>
       <div class="badge-stack">
-        <span class="chip info">План/факт SKU: Февраль 2026</span>
-        <span class="chip">Контент: 2 недели марта 2026</span>
+        <span class="chip info">Только бренд: Алтея</span>
+        <span class="chip">Артикулы в работе = ниже плана + отрицательная маржа</span>
       </div>
     </div>
 
@@ -255,59 +294,58 @@ function renderDashboard() {
 
     <div class="section-title">
       <div>
-        <h2>Сводка по брендам</h2>
-        <p>Быстрый срез, чтобы увидеть объём, остатки, возвраты и выполнение плана.</p>
+        <h2>Сводка по бренду</h2>
+        <p>Один бренд, один контур. Здесь видно объём, выполнение плана, отрицательную маржу и количество SKU в работе.</p>
       </div>
     </div>
+
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
             <th>Бренд</th>
             <th>SKU</th>
-            <th>Остатки, шт.</th>
-            <th>Заказы snapshot, ₽</th>
+            <th>Остатки</th>
+            <th>Заказы</th>
             <th>План Feb 26</th>
             <th>Факт Feb 26</th>
             <th>Выполнение</th>
-            <th>Возвраты, шт.</th>
-            <th>AVG ROMI</th>
+            <th>Возвраты</th>
+            <th>Маржа &lt; 0</th>
+            <th>В работе</th>
           </tr>
         </thead>
-        <tbody>${brandRows}</tbody>
+        <tbody>${brandRows || `<tr><td colspan="10" class="text-center muted">Нет данных</td></tr>`}</tbody>
       </table>
     </div>
 
-    <div class="section-title">
-      <div>
-        <h2>Фокусные SKU</h2>
-        <p>Топ карточек для weekly / monthly review.</p>
+    <div class="two-col" style="margin-top:14px">
+      <div class="card">
+        <h3>SKU в работе</h3>
+        <p class="small muted">Берём в работу артикулы, которые отстают от плана и при этом дают отрицательную маржу.</p>
+        <div class="list">${toWork || '<div class="empty">Сейчас нет SKU, которые одновременно ниже плана и в отрицательной марже</div>'}</div>
       </div>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Артикул</th>
-            <th>Бренд</th>
-            <th>SKU</th>
-            <th>Фокус</th>
-            <th>Выполнение Feb 26</th>
-            <th>Остатки</th>
-            <th>ROMI</th>
-          </tr>
-        </thead>
-        <tbody>${focusRows}</tbody>
-      </table>
+      <div class="card">
+        <h3>Фокусные SKU</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Артикул</th>
+                <th>SKU</th>
+                <th>Приоритет</th>
+                <th>Выполнение</th>
+                <th>Остатки</th>
+                <th>ROMI</th>
+              </tr>
+            </thead>
+            <tbody>${focusRows || `<tr><td colspan="6" class="text-center muted">Нет данных</td></tr>`}</tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <div class="section-title">
-      <div>
-        <h2>Что требует внимания</h2>
-        <p>Четыре быстрых списка: контент, остатки, недовыполнение плана и возвраты.</p>
-      </div>
-    </div>
-    <div class="two-col">
+    <div class="two-col" style="margin-top:14px">
       <div class="card">
         <h3>Сильный контент</h3>
         <div class="list">${topContent || '<div class="empty">Нет данных</div>'}</div>
@@ -330,30 +368,37 @@ function renderDashboard() {
     </div>
 
     <div class="footer-note">
-      Последняя генерация данных: ${escapeHtml(state.dashboard.generatedAt)}.
-      Источники перечислены в разделе README и в data/dashboard.json.
+      Последняя генерация данных: ${escapeHtml(state.dashboard.generatedAt)}. В этой версии бренд уже ограничен только Алтеей.
     </div>
   `;
 }
+
 
 function filteredSkus() {
   return state.skus.filter(sku => {
     const search = state.filters.search.trim().toLowerCase();
     const hay = [sku.article, sku.articleKey, sku.brand, sku.name, sku.category, sku.type].filter(Boolean).join(' ').toLowerCase();
     if (search && !hay.includes(search)) return false;
-    if (state.filters.brand !== 'all' && sku.brand !== state.filters.brand) return false;
     if (state.filters.segment !== 'all' && (sku.segment || '—') !== state.filters.segment) return false;
+    if (state.filters.focus === 'toWork' && !sku.flags?.toWork) return false;
     if (state.filters.focus === 'focus4' && (sku.focusScore || 0) < 4) return false;
     if (state.filters.focus === 'underPlan' && !sku.flags?.underPlan) return false;
+    if (state.filters.focus === 'negativeMargin' && !sku.flags?.negativeMargin) return false;
     if (state.filters.focus === 'lowStock' && !sku.flags?.lowStock) return false;
     if (state.filters.focus === 'highReturn' && !sku.flags?.highReturn) return false;
     return true;
-  }).sort((a,b) => (b.focusScore || 0) - (a.focusScore || 0) || (b.orders?.value || 0) - (a.orders?.value || 0));
+  }).sort((a,b) =>
+    Number(Boolean(b.flags?.toWork)) - Number(Boolean(a.flags?.toWork)) ||
+    Number(Boolean(b.flags?.negativeMargin)) - Number(Boolean(a.flags?.negativeMargin)) ||
+    (b.focusScore || 0) - (a.focusScore || 0) ||
+    (a.planFact?.completionFeb26Pct ?? 9) - (b.planFact?.completionFeb26Pct ?? 9) ||
+    (b.orders?.value || 0) - (a.orders?.value || 0)
+  );
 }
+
 
 function renderSkuRegistry() {
   const root = document.getElementById('view-skus');
-  const brands = [...new Set(state.skus.map(s => s.brand).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'ru'));
   const segments = [...new Set(state.skus.map(s => s.segment || '—'))].sort((a,b) => a.localeCompare(b, 'ru'));
   const rows = filteredSkus().map(sku => `
     <tr>
@@ -363,11 +408,13 @@ function renderSkuRegistry() {
         <div><strong>${escapeHtml(sku.name || 'Без названия')}</strong></div>
         <div class="muted small">${escapeHtml([sku.category, sku.type].filter(Boolean).join(' · ') || '—')}</div>
       </td>
-      <td>${scoreChip(sku.focusScore || 0)}</td>
-      <td>${fmt.int((sku.wb?.stock || 0) + (sku.ozon?.stock || 0))}</td>
-      <td>${fmt.money(sku.wb?.currentPrice)}</td>
-      <td>${fmt.money(sku.ozon?.currentPrice)}</td>
+      <td>${priorityBadges(sku)}</td>
       <td>${fmt.pct(sku.planFact?.completionFeb26Pct)}</td>
+      <td>
+        <div class="small">WB ${fmt.pct(sku.wb?.marginPct)}</div>
+        <div class="small muted">Ozon ${fmt.pct(sku.ozon?.marginPct)}</div>
+      </td>
+      <td>${fmt.int((sku.wb?.stock || 0) + (sku.ozon?.stock || 0))}</td>
       <td>${sku.content?.romi == null ? '—' : fmt.num(sku.content.romi, 1)}</td>
       <td>${escapeHtml(sku.focusReasons || '—')}</td>
     </tr>
@@ -376,29 +423,27 @@ function renderSkuRegistry() {
   root.innerHTML = `
     <div class="section-title">
       <div>
-        <h2>Реестр SKU</h2>
-        <p>Одна строка = один артикул. Клик по строке открывает карточку SKU с комментариями, задачами и аналитикой.</p>
+        <h2>Реестр SKU · Алтея</h2>
+        <p>Одна строка = один артикул Алтея. Приоритет в работе — те, кто ниже плана и одновременно уходит в отрицательную маржу.</p>
       </div>
       <div class="badge-stack">
         ${badge(`${fmt.int(filteredSkus().length)} SKU`)}
-        ${badge(`Всего ${fmt.int(state.skus.length)} SKU`, 'info')}
+        ${badge('Только Алтея', 'info')}
       </div>
     </div>
 
-    <div class="filters">
-      <input id="skuSearchInput" placeholder="Поиск по артикулу, бренду, названию, категории…" value="${escapeHtml(state.filters.search)}">
-      <select id="skuBrandFilter">
-        <option value="all">Все бренды</option>
-        ${brands.map(b => `<option value="${escapeHtml(b)}" ${state.filters.brand === b ? 'selected' : ''}>${escapeHtml(b)}</option>`).join('')}
-      </select>
+    <div class="filters filters-altea">
+      <input id="skuSearchInput" placeholder="Поиск по артикулу, названию, категории…" value="${escapeHtml(state.filters.search)}">
       <select id="skuSegmentFilter">
         <option value="all">Все сегменты</option>
         ${segments.map(s => `<option value="${escapeHtml(s)}" ${state.filters.segment === s ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}
       </select>
       <select id="skuFocusFilter">
         <option value="all" ${state.filters.focus === 'all' ? 'selected' : ''}>Все SKU</option>
-        <option value="focus4" ${state.filters.focus === 'focus4' ? 'selected' : ''}>Фокус score ≥ 4</option>
+        <option value="toWork" ${state.filters.focus === 'toWork' ? 'selected' : ''}>В работе: план &lt; 80% + маржа &lt; 0</option>
+        <option value="negativeMargin" ${state.filters.focus === 'negativeMargin' ? 'selected' : ''}>Отрицательная маржа</option>
         <option value="underPlan" ${state.filters.focus === 'underPlan' ? 'selected' : ''}>Ниже плана</option>
+        <option value="focus4" ${state.filters.focus === 'focus4' ? 'selected' : ''}>Фокус score ≥ 4</option>
         <option value="lowStock" ${state.filters.focus === 'lowStock' ? 'selected' : ''}>Низкий остаток</option>
         <option value="highReturn" ${state.filters.focus === 'highReturn' ? 'selected' : ''}>Высокие возвраты</option>
       </select>
@@ -411,24 +456,22 @@ function renderSkuRegistry() {
             <th>Артикул</th>
             <th>Бренд</th>
             <th>SKU</th>
-            <th>Фокус</th>
-            <th>Остатки MP</th>
-            <th>WB цена</th>
-            <th>Ozon цена</th>
-            <th>Вып. Feb 26</th>
+            <th>Приоритет</th>
+            <th>Выполнение Feb 26</th>
+            <th>Маржа WB / Ozon</th>
+            <th>Остатки</th>
             <th>ROMI</th>
             <th>Причины</th>
           </tr>
         </thead>
-        <tbody>${rows || `<tr><td colspan="10" class="text-center muted">Ничего не найдено</td></tr>`}</tbody>
+        <tbody>${rows || `<tr><td colspan="9" class="text-center muted">Ничего не найдено</td></tr>`}</tbody>
       </table>
     </div>
 
-    <div class="footer-note">Фильтры работают на клиенте. Этот список удобно использовать как точку входа на weekly / monthly review.</div>
+    <div class="footer-note">Белый бейдж слева оставил на артикуле. Основной операционный фильтр — «В работе», чтобы сразу отдавать команде проблемные SKU.</div>
   `;
 
   document.getElementById('skuSearchInput').addEventListener('input', e => { state.filters.search = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuBrandFilter').addEventListener('change', e => { state.filters.brand = e.target.value; renderSkuRegistry(); });
   document.getElementById('skuSegmentFilter').addEventListener('change', e => { state.filters.segment = e.target.value; renderSkuRegistry(); });
   document.getElementById('skuFocusFilter').addEventListener('change', e => { state.filters.focus = e.target.value; renderSkuRegistry(); });
 }
@@ -456,6 +499,8 @@ function renderSkuModal(articleKey) {
         <h2>${escapeHtml(sku.name || sku.article)}</h2>
         <div class="modal-sub">${escapeHtml([sku.brand, sku.article, sku.category].filter(Boolean).join(' · '))}</div>
         <div class="badge-stack" style="margin-top:12px">
+          ${sku.flags?.toWork ? badge('В работу', 'danger') : ''}
+          ${sku.flags?.negativeMargin ? badge('Маржа < 0', 'danger') : ''}
           ${scoreChip(sku.focusScore || 0)}
           ${sku.segment ? badge(sku.segment, 'info') : ''}
           ${sku.abc ? badge(`ABC ${sku.abc}`) : ''}
@@ -500,7 +545,7 @@ function renderSkuModal(articleKey) {
               <div class="v">${fmt.money(sku.wb?.currentPrice)} / ${fmt.money(sku.wb?.minPrice)} / ${fmt.money(sku.wb?.recPrice)}</div>
               <div class="badge-stack" style="margin-top:10px">
                 ${sku.wb?.belowMin ? badge('Ниже min price', 'danger') : badge('В коридоре', 'ok')}
-                ${badge(`Маржа ${fmt.pct(sku.wb?.marginPct)}`)}
+                ${marginBadge('Маржа', sku.wb?.marginPct)}
                 ${badge(`Оборач. ${fmt.num(sku.wb?.turnoverDays, 1)} дн.`)}
                 ${badge(`Цель ${fmt.num(sku.wb?.targetTurnoverDays, 1)} дн.`)}
               </div>
@@ -510,7 +555,7 @@ function renderSkuModal(articleKey) {
               <div class="v">${fmt.money(sku.ozon?.currentPrice)} / ${fmt.money(sku.ozon?.minPrice)} / ${fmt.money(sku.ozon?.recPrice)}</div>
               <div class="badge-stack" style="margin-top:10px">
                 ${sku.ozon?.belowMin ? badge('Ниже min price', 'danger') : badge('В коридоре', 'ok')}
-                ${badge(`Маржа ${fmt.pct(sku.ozon?.marginPct)}`)}
+                ${marginBadge('Маржа', sku.ozon?.marginPct)}
                 ${badge(`Оборач. ${fmt.num(sku.ozon?.turnoverDays, 1)} дн.`)}
                 ${badge(`Цель ${fmt.num(sku.ozon?.targetTurnoverDays, 1)} дн.`)}
               </div>
@@ -766,7 +811,7 @@ function renderLaunches() {
     <div class="section-title">
       <div>
         <h2>Календарь новинок</h2>
-        <p>Основа для пайплайна запуска: месяц запуска, статус, производство и плановая выручка.</p>
+        <p>Основа для пайплайна запуска Алтея: месяц запуска, статус, производство и плановая выручка.</p>
       </div>
       <div class="badge-stack">
         ${badge(`${fmt.int(state.launches.length)} позиций`)}

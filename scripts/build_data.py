@@ -55,6 +55,7 @@ def main():
     parser = argparse.ArgumentParser(description="Build JSON data for Brand Portal MVP")
     parser.add_argument("--source-dir", required=True, help="Folder with source xlsx/csv files")
     parser.add_argument("--output-dir", required=True, help="Folder to write JSON data into")
+    parser.add_argument("--brand-filter", default="Алтея", help="Brand name to keep in final JSON (default: Алтея)")
     args = parser.parse_args()
 
     src = Path(args.source_dir)
@@ -358,6 +359,12 @@ def main():
     sku["legal_entity_final"] = sku["legal_entity"].fillna(sku["legal_entity_plan"]).fillna(sku["legal_entity_fact"])
     sku["product_name_final"] = sku["product_name"].fillna(sku["leader_product"]).fillna(sku["top_title"]).fillna(sku["stock_title"])
 
+    brand_filter = str(args.brand_filter or "").strip()
+    if brand_filter:
+        brand_filter_norm = brand_filter.lower().replace("ё", "е")
+        brand_mask = sku["brand"].fillna("").astype(str).str.strip().str.lower().str.replace("ё", "е", regex=False).eq(brand_filter_norm)
+        sku = sku.loc[brand_mask].copy()
+
     numeric_columns = [
         "wb_current_price", "wb_min_price", "wb_rec_price", "wb_stock", "wb_turnover_days", "wb_target_turnover_days",
         "wb_margin_pct", "ozon_current_price", "ozon_min_price", "ozon_rec_price", "ozon_stock_repricer",
@@ -381,9 +388,16 @@ def main():
     sku["low_stock_flag"] = (sku["total_mp_stock"].fillna(0) < 50) | ((sku["ozon_in_transit"].fillna(0) > 0) & (sku["ozon_stock_final"].fillna(0) < 30))
     sku["under_plan_flag"] = (sku["plan_completion_feb26_pct"].fillna(1) < 0.8) & (sku["plan_feb26_units"].fillna(0) >= 100)
     sku["high_return_flag"] = (sku["returns_units"].fillna(0) >= 50)
+    sku["wb_negative_margin_flag"] = sku["wb_margin_pct"].fillna(0) < 0
+    sku["ozon_negative_margin_flag"] = sku["ozon_margin_pct"].fillna(0) < 0
+    sku["negative_margin_flag"] = sku["wb_negative_margin_flag"] | sku["ozon_negative_margin_flag"]
+    sku["to_work_flag"] = sku["under_plan_flag"] & sku["negative_margin_flag"]
+    sku["min_margin_pct"] = sku[["wb_margin_pct", "ozon_margin_pct"]].min(axis=1, skipna=True)
     sku["focus_score"] = (
-        sku["under_plan_flag"].fillna(False).astype(int) * 3
-        + sku["low_stock_flag"].fillna(False).astype(int) * 2
+        sku["to_work_flag"].fillna(False).astype(int) * 4
+        + sku["under_plan_flag"].fillna(False).astype(int) * 2
+        + sku["negative_margin_flag"].fillna(False).astype(int) * 2
+        + sku["low_stock_flag"].fillna(False).astype(int)
         + sku["price_below_min_wb"].fillna(False).astype(int)
         + sku["price_below_min_ozon"].fillna(False).astype(int)
         + sku["high_return_flag"].fillna(False).astype(int)
@@ -391,7 +405,10 @@ def main():
     )
     sku["focus_reasons"] = sku.apply(lambda r: "; ".join([
         x for x in [
+            "В работе: ниже плана и отрицательная маржа" if bool(r["to_work_flag"]) else "",
             "Низкое выполнение плана" if bool(r["under_plan_flag"]) else "",
+            "Отрицательная маржа WB" if bool(r["wb_negative_margin_flag"]) else "",
+            "Отрицательная маржа Ozon" if bool(r["ozon_negative_margin_flag"]) else "",
             "Низкий остаток" if bool(r["low_stock_flag"]) else "",
             "WB ниже min price" if bool(r["price_below_min_wb"]) else "",
             "Ozon ниже min price" if bool(r["price_below_min_ozon"]) else "",
@@ -409,10 +426,13 @@ def main():
         feb_fact_units=("fact_feb26_units", "sum"),
         returns_units=("returns_units", "sum"),
         avg_romi=("content_romi", "mean"),
+        negative_margin_sku=("negative_margin_flag", "sum"),
+        to_work_sku=("to_work_flag", "sum"),
     ).reset_index()
     brand_summary["plan_completion_feb26_pct"] = brand_summary["feb_fact_units"] / brand_summary["feb_plan_units"]
 
-    focus = sku.sort_values(["focus_score", "orders_value", "fact_total_revenue"], ascending=[False, False, False])
+    focus = sku.sort_values(["to_work_flag", "focus_score", "plan_completion_feb26_pct", "min_margin_pct", "orders_value", "fact_total_revenue"], ascending=[False, False, True, True, False, False])
+    work_queue = sku[sku["to_work_flag"]].sort_values(["plan_completion_feb26_pct", "min_margin_pct", "orders_value"], ascending=[True, True, False])
 
     summary = {
         "generatedAt": datetime.now().isoformat(timespec="seconds"),
@@ -423,18 +443,18 @@ def main():
             "launchPlanHorizon": "Апрель 2026 — Октябрь 2026",
         },
         "cards": [
-            {"label": "SKU в базе", "value": int(sku["article_key"].nunique()), "hint": "Объединены repricer, план/факт, товары, заказы, остатки, возвраты и контент"},
-            {"label": "Фокусных SKU", "value": int((sku["focus_score"] >= 4).sum()), "hint": "Фокус для weekly/monthly: score ≥ 4"},
+            {"label": "SKU в базе", "value": int(sku["article_key"].nunique()), "hint": f"В портал попал только бренд {brand_filter or 'Алтея'}"},
+            {"label": "SKU в работе", "value": int(sku["to_work_flag"].sum()), "hint": "Ниже плана + отрицательная маржа"},
+            {"label": "Отрицательная маржа", "value": int(sku["negative_margin_flag"].sum()), "hint": "Хотя бы на одном MP маржа < 0"},
             {"label": "Остатки MP, шт.", "value": int(sku["total_mp_stock"].fillna(0).sum()), "hint": "WB + Ozon по текущему срезу"},
             {"label": "Снимок заказов, ₽", "value": int(round(sku["orders_value"].fillna(0).sum())), "hint": f"Агрегация из файла {files['orders']}"},
             {"label": "План Feb 2026, шт.", "value": int(round(sku["plan_feb26_units"].fillna(0).sum())), "hint": f"Из файла {files['plan']}"},
             {"label": "Факт Feb 2026, шт.", "value": int(round(sku["fact_feb26_units"].fillna(0).sum())), "hint": f"Из файла {files['plan']}"},
-            {"label": "Ниже плана Feb 2026", "value": int(sku["under_plan_flag"].sum()), "hint": "SKU с выполнением плана < 80% и планом от 100 шт."},
             {"label": "Высокие возвраты", "value": int(sku["high_return_flag"].sum()), "hint": "SKU с 50+ возвратами в доступном выгрузе"},
         ],
         "brandSummary": rows_to_records(brand_summary.sort_values("orders_value", ascending=False), [
             "brand", "sku_count", "total_stock", "orders_value", "feb_plan_units", "feb_fact_units",
-            "plan_completion_feb26_pct", "returns_units", "avg_romi"
+            "plan_completion_feb26_pct", "returns_units", "avg_romi", "negative_margin_sku", "to_work_sku"
         ]),
         "focusTop": rows_to_records(focus[[
             "article", "brand", "product_name_final", "focus_score", "focus_reasons",
@@ -446,8 +466,12 @@ def main():
         ]].head(12)),
         "underPlan": rows_to_records(sku[sku["under_plan_flag"]].sort_values("plan_completion_feb26_pct")[[
             "article", "brand", "product_name_final", "plan_feb26_units", "fact_feb26_units",
-            "plan_completion_feb26_pct", "total_mp_stock"
+            "plan_completion_feb26_pct", "total_mp_stock", "negative_margin_flag"
         ]].head(12)),
+        "toWork": rows_to_records(work_queue[[
+            "article", "brand", "product_name_final", "plan_completion_feb26_pct", "total_mp_stock",
+            "wb_margin_pct", "ozon_margin_pct", "focus_reasons"
+        ]].head(16)),
         "lowStock": rows_to_records(sku.sort_values("total_mp_stock")[[
             "article", "brand", "product_name_final", "total_mp_stock",
             "wb_stock", "ozon_stock_final", "ozon_in_transit", "orders_value"
@@ -544,6 +568,10 @@ def main():
                 "lowStock": bool(r["low_stock_flag"]) if pd.notna(r["low_stock_flag"]) else False,
                 "underPlan": bool(r["under_plan_flag"]) if pd.notna(r["under_plan_flag"]) else False,
                 "highReturn": bool(r["high_return_flag"]) if pd.notna(r["high_return_flag"]) else False,
+                "negativeMargin": bool(r["negative_margin_flag"]) if pd.notna(r["negative_margin_flag"]) else False,
+                "wbNegativeMargin": bool(r["wb_negative_margin_flag"]) if pd.notna(r["wb_negative_margin_flag"]) else False,
+                "ozonNegativeMargin": bool(r["ozon_negative_margin_flag"]) if pd.notna(r["ozon_negative_margin_flag"]) else False,
+                "toWork": bool(r["to_work_flag"]) if pd.notna(r["to_work_flag"]) else False,
             },
         })
 
@@ -589,17 +617,40 @@ def main():
     ]
 
     seed_comments = {
-        "comments": [
-            {"articleKey": "gel_antiakne_20ml_v2", "author": "Система", "team": "Маркетинг", "createdAt": "2026-04-06T09:00:00", "text": "Сильный ROMI по контенту. Кандидат в фокус месяца: проверить масштабирование трафика и синхрон с календарём акций.", "type": "signal"},
-            {"articleKey": "harly_dog_pads_30pcs", "author": "Система", "team": "Операции", "createdAt": "2026-04-06T09:05:00", "text": "Высокий объём возвратов. Нужно разобрать причины и зафиксировать корректирующие действия по карточке / логистике / ожиданиям покупателя.", "type": "risk"},
-            {"articleKey": "enzim_pudra_80gr_v2", "author": "Система", "team": "Supply", "createdAt": "2026-04-06T09:10:00", "text": "Низкий суммарный остаток. Проверить поставки, риски OOS и приоритет отгрузки.", "type": "risk"}
-        ],
-        "tasks": [
-            {"articleKey": "gel_antiakne_20ml_v2", "owner": "Маркетинг", "due": "2026-04-10", "status": "open", "title": "Проверить масштабирование бюджета по сильному ROMI"},
-            {"articleKey": "harly_dog_pads_30pcs", "owner": "Команда MP", "due": "2026-04-09", "status": "open", "title": "Разобрать причины возвратов и предложить правки карточки"},
-            {"articleKey": "enzim_pudra_80gr_v2", "owner": "Операции", "due": "2026-04-08", "status": "open", "title": "Подтвердить поставку и риск OOS"}
-        ]
+        "comments": [],
+        "tasks": []
     }
+
+    for _, row in work_queue.head(3).iterrows():
+        article_key = clean_val(row["article_key"])
+        label = clean_val(row["product_name_final"] or row["article"])
+        seed_comments["comments"].append({
+            "articleKey": article_key,
+            "author": "Система",
+            "team": "Финансы / МП",
+            "createdAt": datetime.now().replace(microsecond=0).isoformat(),
+            "text": f"Проверить SKU '{label}': товар ниже плана и уходит в отрицательную маржу. Нужны решение по цене, промо и дальнейшему объёму.",
+            "type": "risk"
+        })
+        seed_comments["tasks"].append({
+            "articleKey": article_key,
+            "owner": "Бренд-лид",
+            "due": datetime.now().date().isoformat(),
+            "status": "open",
+            "title": "Разобрать маржу, цену и план действий по SKU в работе"
+        })
+
+    if not seed_comments["comments"]:
+        for _, row in sku.sort_values(["focus_score", "orders_value"], ascending=[False, False]).head(2).iterrows():
+            article_key = clean_val(row["article_key"])
+            seed_comments["comments"].append({
+                "articleKey": article_key,
+                "author": "Система",
+                "team": "Маркетинг",
+                "createdAt": datetime.now().replace(microsecond=0).isoformat(),
+                "text": "Проверьте SKU в фокусе: нужен комментарий по следующему шагу и owner.",
+                "type": "signal"
+            })
 
     # write json
     (out / "dashboard.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Brand Portal · GitHub Pages MVP</title>
+  <meta name="description" content="Портал бренда и сотрудников: SKU, план/факт, комментарии, новинки, IBP-ритм.">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-block">
+        <div class="logo-badge">BP</div>
+        <div>
+          <div class="brand-title">Brand Portal</div>
+          <div class="brand-sub">GitHub Pages MVP · SKU-first контур для бренда и команды</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-btn active" data-view="dashboard">
+          <span>Обзор</span>
+          <small>Dashboard</small>
+        </button>
+        <button class="nav-btn" data-view="skus">
+          <span>Реестр SKU</span>
+          <small>1 артикул = 1 карточка</small>
+        </button>
+        <button class="nav-btn" data-view="launches">
+          <span>Новинки</span>
+          <small>Pipeline</small>
+        </button>
+        <button class="nav-btn" data-view="meetings">
+          <span>Ритм работы</span>
+          <small>Weekly / Monthly / PMR</small>
+        </button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <h4>Что внутри сейчас</h4>
+        <p>План/факт по SKU, остатки, цены, returns, content ROMI, календарь новинок, карточка SKU, локальные комментарии и задачи.</p>
+      </div>
+
+      <div class="sidebar-foot">
+        <h4>Важно</h4>
+        <p>GitHub Pages — это статический хостинг. Общие комментарии между сотрудниками на этой версии не синхронизируются без backend.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h1>Портал бренда и сотрудников</h1>
+          <p>Стартовая версия под развёртывание на GitHub Pages, чтобы быстро включить команду в единый контур вокруг артикулов.</p>
+        </div>
+        <div class="top-actions">
+          <button class="btn" id="exportStorageBtn">Экспорт комментариев</button>
+          <label class="btn file-input">Импорт JSON
+            <input type="file" id="importStorageInput" accept="application/json">
+          </label>
+        </div>
+      </div>
+
+      <div class="banner hidden" id="appError"></div>
+
+      <section class="view active" id="view-dashboard"></section>
+      <section class="view" id="view-skus"></section>
+      <section class="view" id="view-launches"></section>
+      <section class="view" id="view-meetings"></section>
+    </main>
+  </div>
+
+  <div class="modal" id="skuModal">
+    <div class="modal-card" id="skuModalBody"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

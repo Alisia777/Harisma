@@ -4,7 +4,7 @@ const state = {
   launches: [],
   meetings: [],
   storage: { comments: [], tasks: [] },
-  filters: { search: '', segment: 'all', focus: 'all' },
+  filters: { search: '', segment: 'all', focus: 'all', market: 'all', owner: 'all', traffic: 'all', assignment: 'all' },
   activeView: 'dashboard',
   activeSku: null
 };
@@ -103,6 +103,30 @@ function badge(text, kind = '') {
   return `<span class="chip ${kind}">${escapeHtml(text)}</span>`;
 }
 
+function ownerName(sku) {
+  return sku?.owner?.name || '';
+}
+
+function ownerCell(sku) {
+  const name = ownerName(sku);
+  if (!name) return `<div class="owner-cell"><strong>Не закреплён</strong><div class="muted small">Нужно назначить owner</div></div>`;
+  return `<div class="owner-cell"><strong>${escapeHtml(name)}</strong><div class="muted small">${escapeHtml(sku?.owner?.registryStatus || sku?.status || '—')}</div></div>`;
+}
+
+function trafficBadges(sku, emptyLabel = 'нет') {
+  const parts = [];
+  if (sku?.traffic?.kz) parts.push('<span class="chip info">🚀 КЗ</span>');
+  if (sku?.traffic?.vk) parts.push('<span class="chip info">📣 VK</span>');
+  if (!parts.length) return `<span class="muted small">${escapeHtml(emptyLabel)}</span>`;
+  return `<div class="badge-stack traffic-inline">${parts.join('')}</div>`;
+}
+
+function currentWorkLabel() {
+  if (state.filters.market === 'wb') return 'В работе WB = план < 80% + маржа WB < 0';
+  if (state.filters.market === 'ozon') return 'В работе Ozon = план < 80% + маржа Ozon < 0';
+  return 'В работе = план < 80% + отрицательная маржа';
+}
+
 function marginBadge(label, value) {
   if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return badge(`${label} —`);
   return badge(`${label} ${fmt.pct(value)}`, Number(value) < 0 ? 'danger' : 'ok');
@@ -110,8 +134,15 @@ function marginBadge(label, value) {
 
 function priorityBadges(sku) {
   const parts = [];
-  if (sku?.flags?.toWork) parts.push(`<span class="chip danger">В работу</span>`);
-  if (sku?.flags?.negativeMargin) parts.push(`<span class="chip danger">Маржа < 0</span>`);
+  if (sku?.flags?.toWorkWB && sku?.flags?.toWorkOzon) parts.push('<span class="chip danger">В работу WB/Ozon</span>');
+  else if (sku?.flags?.toWorkWB) parts.push('<span class="chip danger">В работу WB</span>');
+  else if (sku?.flags?.toWorkOzon) parts.push('<span class="chip danger">В работу Ozon</span>');
+  else if (sku?.flags?.toWork) parts.push('<span class="chip danger">В работу</span>');
+  if (sku?.flags?.wbNegativeMargin) parts.push('<span class="chip danger">WB маржа < 0</span>');
+  if (sku?.flags?.ozonNegativeMargin) parts.push('<span class="chip danger">Ozon маржа < 0</span>');
+  if (!sku?.flags?.assigned) parts.push('<span class="chip warn">Без owner</span>');
+  if (sku?.flags?.hasKZ) parts.push('<span class="chip info">🚀 КЗ</span>');
+  if (sku?.flags?.hasVK) parts.push('<span class="chip info">📣 VK</span>');
   parts.push(scoreChip(sku?.focusScore || 0));
   return `<div class="badge-stack">${parts.join('')}</div>`;
 }
@@ -375,47 +406,95 @@ function renderDashboard() {
 
 
 function filteredSkus() {
+  const market = state.filters.market;
+  const focus = state.filters.focus;
+  const ownerFilter = state.filters.owner;
+  const trafficFilter = state.filters.traffic;
+  const assignmentFilter = state.filters.assignment;
+
   return state.skus.filter(sku => {
     const search = state.filters.search.trim().toLowerCase();
-    const hay = [sku.article, sku.articleKey, sku.brand, sku.name, sku.category, sku.type].filter(Boolean).join(' ').toLowerCase();
+    const hay = [
+      sku.article, sku.articleKey, sku.brand, sku.name, sku.category, sku.type,
+      ownerName(sku), sku.owner?.registryStatus, ...(sku.traffic?.channels || [])
+    ].filter(Boolean).join(' ').toLowerCase();
     if (search && !hay.includes(search)) return false;
-    if (state.filters.segment !== 'all' && (sku.segment || '—') !== state.filters.segment) return false;
-    if (state.filters.focus === 'toWork' && !sku.flags?.toWork) return false;
-    if (state.filters.focus === 'focus4' && (sku.focusScore || 0) < 4) return false;
-    if (state.filters.focus === 'underPlan' && !sku.flags?.underPlan) return false;
-    if (state.filters.focus === 'negativeMargin' && !sku.flags?.negativeMargin) return false;
-    if (state.filters.focus === 'lowStock' && !sku.flags?.lowStock) return false;
-    if (state.filters.focus === 'highReturn' && !sku.flags?.highReturn) return false;
-    return true;
-  }).sort((a,b) =>
-    Number(Boolean(b.flags?.toWork)) - Number(Boolean(a.flags?.toWork)) ||
-    Number(Boolean(b.flags?.negativeMargin)) - Number(Boolean(a.flags?.negativeMargin)) ||
-    (b.focusScore || 0) - (a.focusScore || 0) ||
-    (a.planFact?.completionFeb26Pct ?? 9) - (b.planFact?.completionFeb26Pct ?? 9) ||
-    (b.orders?.value || 0) - (a.orders?.value || 0)
-  );
-}
 
+    if (market === 'wb' && !sku.flags?.hasWB) return false;
+    if (market === 'ozon' && !sku.flags?.hasOzon) return false;
+    if (state.filters.segment !== 'all' && (sku.segment || '—') !== state.filters.segment) return false;
+    if (ownerFilter !== 'all' && ownerName(sku) !== ownerFilter) return false;
+
+    if (assignmentFilter === 'assigned' && !sku.flags?.assigned) return false;
+    if (assignmentFilter === 'unassigned' && sku.flags?.assigned) return false;
+
+    if (trafficFilter === 'kz' && !sku.flags?.hasKZ) return false;
+    if (trafficFilter === 'vk' && !sku.flags?.hasVK) return false;
+    if (trafficFilter === 'any' && !sku.flags?.hasExternalTraffic) return false;
+    if (trafficFilter === 'none' && sku.flags?.hasExternalTraffic) return false;
+
+    if (focus === 'toWork') {
+      if (market === 'wb' && !sku.flags?.toWorkWB) return false;
+      else if (market === 'ozon' && !sku.flags?.toWorkOzon) return false;
+      else if (market === 'all' && !sku.flags?.toWork) return false;
+    }
+    if (focus === 'focus4' && (sku.focusScore || 0) < 4) return false;
+    if (focus === 'underPlan' && !sku.flags?.underPlan) return false;
+    if (focus === 'negativeMargin') {
+      if (market === 'wb' && !sku.flags?.wbNegativeMargin) return false;
+      else if (market === 'ozon' && !sku.flags?.ozonNegativeMargin) return false;
+      else if (market === 'all' && !sku.flags?.negativeMargin) return false;
+    }
+    if (focus === 'lowStock' && !sku.flags?.lowStock) return false;
+    if (focus === 'highReturn' && !sku.flags?.highReturn) return false;
+    if (focus === 'assigned' && !sku.flags?.assigned) return false;
+    if (focus === 'unassigned' && sku.flags?.assigned) return false;
+    if (focus === 'extAny' && !sku.flags?.hasExternalTraffic) return false;
+    if (focus === 'extKZ' && !sku.flags?.hasKZ) return false;
+    if (focus === 'extVK' && !sku.flags?.hasVK) return false;
+    return true;
+  }).sort((a, b) => {
+    const workA = market === 'wb' ? Number(Boolean(a.flags?.toWorkWB)) : market === 'ozon' ? Number(Boolean(a.flags?.toWorkOzon)) : Number(Boolean(a.flags?.toWork));
+    const workB = market === 'wb' ? Number(Boolean(b.flags?.toWorkWB)) : market === 'ozon' ? Number(Boolean(b.flags?.toWorkOzon)) : Number(Boolean(b.flags?.toWork));
+    const negA = market === 'wb' ? Number(Boolean(a.flags?.wbNegativeMargin)) : market === 'ozon' ? Number(Boolean(a.flags?.ozonNegativeMargin)) : Number(Boolean(a.flags?.negativeMargin));
+    const negB = market === 'wb' ? Number(Boolean(b.flags?.wbNegativeMargin)) : market === 'ozon' ? Number(Boolean(b.flags?.ozonNegativeMargin)) : Number(Boolean(b.flags?.negativeMargin));
+    return workB - workA
+      || negB - negA
+      || Number(Boolean(b.flags?.hasExternalTraffic)) - Number(Boolean(a.flags?.hasExternalTraffic))
+      || Number(Boolean(b.flags?.assigned)) - Number(Boolean(a.flags?.assigned))
+      || (b.focusScore || 0) - (a.focusScore || 0)
+      || (a.planFact?.completionFeb26Pct ?? 9) - (b.planFact?.completionFeb26Pct ?? 9)
+      || (b.orders?.value || 0) - (a.orders?.value || 0);
+  });
+}
 
 function renderSkuRegistry() {
   const root = document.getElementById('view-skus');
   const segments = [...new Set(state.skus.map(s => s.segment || '—'))].sort((a,b) => a.localeCompare(b, 'ru'));
-  const rows = filteredSkus().map(sku => `
+  const owners = [...new Set(state.skus.map(ownerName).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'ru'));
+  const items = filteredSkus();
+  const assignedCount = items.filter(s => s.flags?.assigned).length;
+  const unassignedCount = items.length - assignedCount;
+  const kzCount = items.filter(s => s.flags?.hasKZ).length;
+  const vkCount = items.filter(s => s.flags?.hasVK).length;
+
+  const rows = items.map(sku => `
     <tr>
       <td>${linkToSku(sku.articleKey, sku.article)}</td>
-      <td>${escapeHtml(sku.brand || '—')}</td>
+      <td>${ownerCell(sku)}</td>
       <td>
         <div><strong>${escapeHtml(sku.name || 'Без названия')}</strong></div>
         <div class="muted small">${escapeHtml([sku.category, sku.type].filter(Boolean).join(' · ') || '—')}</div>
       </td>
+      <td>${trafficBadges(sku, 'нет')}</td>
       <td>${priorityBadges(sku)}</td>
       <td>${fmt.pct(sku.planFact?.completionFeb26Pct)}</td>
+      <td>${fmt.pct(sku.wb?.marginPct)}</td>
+      <td>${fmt.pct(sku.ozon?.marginPct)}</td>
       <td>
-        <div class="small">WB ${fmt.pct(sku.wb?.marginPct)}</div>
-        <div class="small muted">Ozon ${fmt.pct(sku.ozon?.marginPct)}</div>
+        <div class="small">WB ${fmt.int(sku.wb?.stock)}</div>
+        <div class="small muted">Ozon ${fmt.int(sku.ozon?.stock)}</div>
       </td>
-      <td>${fmt.int((sku.wb?.stock || 0) + (sku.ozon?.stock || 0))}</td>
-      <td>${sku.content?.romi == null ? '—' : fmt.num(sku.content.romi, 1)}</td>
       <td>${escapeHtml(sku.focusReasons || '—')}</td>
     </tr>
   `).join('');
@@ -424,28 +503,57 @@ function renderSkuRegistry() {
     <div class="section-title">
       <div>
         <h2>Реестр SKU · Алтея</h2>
-        <p>Одна строка = один артикул Алтея. Приоритет в работе — те, кто ниже плана и одновременно уходит в отрицательную маржу.</p>
+        <p>Добавила явное разделение WB / Ozon, фильтры поиска, owner, внешний трафик и отдельную логику «в работу» по выбранной площадке.</p>
       </div>
       <div class="badge-stack">
-        ${badge(`${fmt.int(filteredSkus().length)} SKU`)}
-        ${badge('Только Алтея', 'info')}
+        ${badge(`${fmt.int(items.length)} SKU`)}
+        ${badge(`${fmt.int(assignedCount)} с owner`, 'ok')}
+        ${badge(`${fmt.int(unassignedCount)} без owner`, unassignedCount ? 'warn' : 'ok')}
+        ${badge(`🚀 КЗ ${fmt.int(kzCount)}`, kzCount ? 'info' : '')}
+        ${badge(`📣 VK ${fmt.int(vkCount)}`, vkCount ? 'info' : '')}
       </div>
     </div>
 
-    <div class="filters filters-altea">
-      <input id="skuSearchInput" placeholder="Поиск по артикулу, названию, категории…" value="${escapeHtml(state.filters.search)}">
+    <div class="market-tabs">
+      <button class="market-tab ${state.filters.market === 'all' ? 'active' : ''}" data-market-filter="all">Все площадки</button>
+      <button class="market-tab ${state.filters.market === 'wb' ? 'active' : ''}" data-market-filter="wb">WB</button>
+      <button class="market-tab ${state.filters.market === 'ozon' ? 'active' : ''}" data-market-filter="ozon">Ozon</button>
+    </div>
+
+    <div class="filters filters-advanced">
+      <input id="skuSearchInput" placeholder="Поиск по артикулу, названию, категории, owner…" value="${escapeHtml(state.filters.search)}">
+      <select id="skuOwnerFilter">
+        <option value="all">Все owner</option>
+        ${owners.map(s => `<option value="${escapeHtml(s)}" ${state.filters.owner === s ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}
+      </select>
       <select id="skuSegmentFilter">
         <option value="all">Все сегменты</option>
         ${segments.map(s => `<option value="${escapeHtml(s)}" ${state.filters.segment === s ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}
       </select>
       <select id="skuFocusFilter">
         <option value="all" ${state.filters.focus === 'all' ? 'selected' : ''}>Все SKU</option>
-        <option value="toWork" ${state.filters.focus === 'toWork' ? 'selected' : ''}>В работе: план &lt; 80% + маржа &lt; 0</option>
+        <option value="toWork" ${state.filters.focus === 'toWork' ? 'selected' : ''}>${currentWorkLabel()}</option>
         <option value="negativeMargin" ${state.filters.focus === 'negativeMargin' ? 'selected' : ''}>Отрицательная маржа</option>
         <option value="underPlan" ${state.filters.focus === 'underPlan' ? 'selected' : ''}>Ниже плана</option>
         <option value="focus4" ${state.filters.focus === 'focus4' ? 'selected' : ''}>Фокус score ≥ 4</option>
         <option value="lowStock" ${state.filters.focus === 'lowStock' ? 'selected' : ''}>Низкий остаток</option>
         <option value="highReturn" ${state.filters.focus === 'highReturn' ? 'selected' : ''}>Высокие возвраты</option>
+        <option value="extAny" ${state.filters.focus === 'extAny' ? 'selected' : ''}>Есть внешний трафик</option>
+        <option value="extKZ" ${state.filters.focus === 'extKZ' ? 'selected' : ''}>🚀 Есть КЗ</option>
+        <option value="extVK" ${state.filters.focus === 'extVK' ? 'selected' : ''}>📣 Есть VK</option>
+        <option value="unassigned" ${state.filters.focus === 'unassigned' ? 'selected' : ''}>Без owner</option>
+      </select>
+      <select id="skuTrafficFilter">
+        <option value="all" ${state.filters.traffic === 'all' ? 'selected' : ''}>Весь трафик</option>
+        <option value="any" ${state.filters.traffic === 'any' ? 'selected' : ''}>Есть внешний трафик</option>
+        <option value="kz" ${state.filters.traffic === 'kz' ? 'selected' : ''}>🚀 Только КЗ</option>
+        <option value="vk" ${state.filters.traffic === 'vk' ? 'selected' : ''}>📣 Только VK</option>
+        <option value="none" ${state.filters.traffic === 'none' ? 'selected' : ''}>Без внешнего трафика</option>
+      </select>
+      <select id="skuAssignmentFilter">
+        <option value="all" ${state.filters.assignment === 'all' ? 'selected' : ''}>Все закрепления</option>
+        <option value="assigned" ${state.filters.assignment === 'assigned' ? 'selected' : ''}>Закреплённые</option>
+        <option value="unassigned" ${state.filters.assignment === 'unassigned' ? 'selected' : ''}>Незакреплённые</option>
       </select>
     </div>
 
@@ -454,26 +562,31 @@ function renderSkuRegistry() {
         <thead>
           <tr>
             <th>Артикул</th>
-            <th>Бренд</th>
+            <th>Owner</th>
             <th>SKU</th>
+            <th>Внешний трафик</th>
             <th>Приоритет</th>
             <th>Выполнение Feb 26</th>
-            <th>Маржа WB / Ozon</th>
+            <th>WB маржа</th>
+            <th>Ozon маржа</th>
             <th>Остатки</th>
-            <th>ROMI</th>
             <th>Причины</th>
           </tr>
         </thead>
-        <tbody>${rows || `<tr><td colspan="9" class="text-center muted">Ничего не найдено</td></tr>`}</tbody>
+        <tbody>${rows || `<tr><td colspan="10" class="text-center muted">Ничего не найдено</td></tr>`}</tbody>
       </table>
     </div>
 
-    <div class="footer-note">Белый бейдж слева оставил на артикуле. Основной операционный фильтр — «В работе», чтобы сразу отдавать команде проблемные SKU.</div>
+    <div class="footer-note">Белый бейдж артикулов оставила. Фильтр WB / Ozon теперь явный, а «В работу» считается по выбранной площадке.</div>
   `;
 
   document.getElementById('skuSearchInput').addEventListener('input', e => { state.filters.search = e.target.value; renderSkuRegistry(); });
+  document.getElementById('skuOwnerFilter').addEventListener('change', e => { state.filters.owner = e.target.value; renderSkuRegistry(); });
   document.getElementById('skuSegmentFilter').addEventListener('change', e => { state.filters.segment = e.target.value; renderSkuRegistry(); });
   document.getElementById('skuFocusFilter').addEventListener('change', e => { state.filters.focus = e.target.value; renderSkuRegistry(); });
+  document.getElementById('skuTrafficFilter').addEventListener('change', e => { state.filters.traffic = e.target.value; renderSkuRegistry(); });
+  document.getElementById('skuAssignmentFilter').addEventListener('change', e => { state.filters.assignment = e.target.value; renderSkuRegistry(); });
+  root.querySelectorAll('[data-market-filter]').forEach(btn => btn.addEventListener('click', e => { state.filters.market = e.currentTarget.dataset.marketFilter; renderSkuRegistry(); }));
 }
 
 function commentTypeChip(type) {
@@ -492,6 +605,7 @@ function renderSkuModal(articleKey) {
   state.activeSku = sku.articleKey;
   const comments = getSkuComments(sku.articleKey);
   const tasks = getSkuTasks(sku.articleKey);
+  const owner = ownerName(sku);
 
   document.getElementById('skuModalBody').innerHTML = `
     <div class="modal-head">
@@ -499,14 +613,15 @@ function renderSkuModal(articleKey) {
         <h2>${escapeHtml(sku.name || sku.article)}</h2>
         <div class="modal-sub">${escapeHtml([sku.brand, sku.article, sku.category].filter(Boolean).join(' · '))}</div>
         <div class="badge-stack" style="margin-top:12px">
-          ${sku.flags?.toWork ? badge('В работу', 'danger') : ''}
-          ${sku.flags?.negativeMargin ? badge('Маржа < 0', 'danger') : ''}
+          ${sku.flags?.toWorkWB ? badge('В работу WB', 'danger') : ''}
+          ${sku.flags?.toWorkOzon ? badge('В работу Ozon', 'danger') : ''}
+          ${!sku.flags?.toWorkWB && !sku.flags?.toWorkOzon && sku.flags?.toWork ? badge('В работу', 'danger') : ''}
           ${scoreChip(sku.focusScore || 0)}
           ${sku.segment ? badge(sku.segment, 'info') : ''}
           ${sku.abc ? badge(`ABC ${sku.abc}`) : ''}
-          ${sku.flags?.underPlan ? badge('Ниже плана', 'danger') : ''}
-          ${sku.flags?.lowStock ? badge('Низкий остаток', 'warn') : ''}
-          ${sku.flags?.highReturn ? badge('Высокие возвраты', 'danger') : ''}
+          ${owner ? badge(`Owner: ${owner}`, 'ok') : badge('Owner не закреплён', 'warn')}
+          ${sku.flags?.hasKZ ? badge('🚀 КЗ', 'info') : ''}
+          ${sku.flags?.hasVK ? badge('📣 VK', 'info') : ''}
         </div>
       </div>
       <button class="btn" id="closeModalBtn">Закрыть</button>
@@ -516,9 +631,14 @@ function renderSkuModal(articleKey) {
       <div>
         <div class="detail-grid">
           <div class="card">
-            <div class="label muted">Остатки MP</div>
-            <div class="value">${fmt.int((sku.wb?.stock || 0) + (sku.ozon?.stock || 0))}</div>
-            <div class="hint muted">WB ${fmt.int(sku.wb?.stock)} · Ozon ${fmt.int(sku.ozon?.stock)}</div>
+            <div class="label muted">Owner</div>
+            <div class="value">${owner ? escapeHtml(owner) : '—'}</div>
+            <div class="hint muted">${escapeHtml(sku.owner?.registryStatus || sku.status || 'Не найден в реестрах')}</div>
+          </div>
+          <div class="card">
+            <div class="label muted">Внешний трафик</div>
+            <div class="value">${(sku.traffic?.channels || []).join(' / ') || '—'}</div>
+            <div class="hint muted">${sku.flags?.hasExternalTraffic ? 'Есть внешний трафик по рабочим файлам' : 'Пока не отмечен'}</div>
           </div>
           <div class="card">
             <div class="label muted">План / факт Feb 2026</div>
@@ -526,19 +646,14 @@ function renderSkuModal(articleKey) {
             <div class="hint muted">${fmt.int(sku.planFact?.factFeb26Units)} / ${fmt.int(sku.planFact?.planFeb26Units)} шт.</div>
           </div>
           <div class="card">
-            <div class="label muted">ROMI контента</div>
-            <div class="value">${sku.content?.romi == null ? '—' : fmt.num(sku.content.romi, 1)}</div>
-            <div class="hint muted">Доход ${fmt.money(sku.content?.income)}</div>
-          </div>
-          <div class="card">
-            <div class="label muted">Возвраты</div>
-            <div class="value">${fmt.int(sku.returns?.units)}</div>
-            <div class="hint muted">${fmt.int(sku.returns?.count)} отправлений</div>
+            <div class="label muted">Остатки MP</div>
+            <div class="value">${fmt.int((sku.wb?.stock || 0) + (sku.ozon?.stock || 0))}</div>
+            <div class="hint muted">WB ${fmt.int(sku.wb?.stock)} · Ozon ${fmt.int(sku.ozon?.stock)}</div>
           </div>
         </div>
 
         <div class="card" style="margin-top:14px">
-          <h3>Платформы и цены</h3>
+          <h3>Площадки, цены и маржа</h3>
           <div class="kv">
             <div class="kv-item">
               <div class="k">WB текущая / min / реком.</div>
@@ -546,8 +661,8 @@ function renderSkuModal(articleKey) {
               <div class="badge-stack" style="margin-top:10px">
                 ${sku.wb?.belowMin ? badge('Ниже min price', 'danger') : badge('В коридоре', 'ok')}
                 ${marginBadge('Маржа', sku.wb?.marginPct)}
+                ${sku.flags?.toWorkWB ? badge('В работе WB', 'danger') : ''}
                 ${badge(`Оборач. ${fmt.num(sku.wb?.turnoverDays, 1)} дн.`)}
-                ${badge(`Цель ${fmt.num(sku.wb?.targetTurnoverDays, 1)} дн.`)}
               </div>
             </div>
             <div class="kv-item">
@@ -556,8 +671,8 @@ function renderSkuModal(articleKey) {
               <div class="badge-stack" style="margin-top:10px">
                 ${sku.ozon?.belowMin ? badge('Ниже min price', 'danger') : badge('В коридоре', 'ok')}
                 ${marginBadge('Маржа', sku.ozon?.marginPct)}
+                ${sku.flags?.toWorkOzon ? badge('В работе Ozon', 'danger') : ''}
                 ${badge(`Оборач. ${fmt.num(sku.ozon?.turnoverDays, 1)} дн.`)}
-                ${badge(`Цель ${fmt.num(sku.ozon?.targetTurnoverDays, 1)} дн.`)}
               </div>
             </div>
             <div class="kv-item">
@@ -581,7 +696,7 @@ function renderSkuModal(articleKey) {
         </div>
 
         <div class="card" style="margin-top:14px">
-          <h3>План / факт и аналитика</h3>
+          <h3>План / факт и сигналы</h3>
           <div class="kv">
             <div class="kv-item">
               <div class="k">План Feb 2026</div>
@@ -608,45 +723,31 @@ function renderSkuModal(articleKey) {
               <div class="v">${fmt.money(sku.planFact?.factFeb26NetRevenue)}</div>
             </div>
             <div class="kv-item">
-              <div class="k">Маржа Feb 2026</div>
-              <div class="v">${fmt.pct(sku.planFact?.factFeb26MarginPct)}</div>
+              <div class="k">Контент ROMI</div>
+              <div class="v">${sku.content?.romi == null ? '—' : fmt.num(sku.content.romi, 1)}</div>
             </div>
             <div class="kv-item">
-              <div class="k">Revenue total</div>
-              <div class="v">${fmt.money(sku.planFact?.factTotalRevenue)}</div>
+              <div class="k">Возвраты</div>
+              <div class="v">${fmt.int(sku.returns?.units)}</div>
             </div>
           </div>
-
-          <div class="note" style="margin-top:12px">
-            <strong>Причины фокуса:</strong> ${escapeHtml(sku.focusReasons || 'Нет явных триггеров')}
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:14px">
-          <h3>Стратегии repricer</h3>
-          <div class="list">
-            <div class="list-item">
-              <div class="head">
-                <strong>WB</strong>
-                ${badge(sku.wb?.strategy || '—')}
-              </div>
-              <div class="muted small">${escapeHtml(sku.wb?.reason || 'Причина не указана')}</div>
-            </div>
-            <div class="list-item">
-              <div class="head">
-                <strong>Ozon</strong>
-                ${badge(sku.ozon?.strategy || '—')}
-              </div>
-              <div class="muted small">${escapeHtml(sku.ozon?.reason || 'Причина не указана')}</div>
-            </div>
-          </div>
+          <div class="note" style="margin-top:12px"><strong>Причины фокуса:</strong> ${escapeHtml(sku.focusReasons || 'Нет явных триггеров')}</div>
         </div>
       </div>
 
       <div>
         <div class="card">
+          <h3>Командная работа по SKU</h3>
+          <div class="badge-stack" style="margin-bottom:10px">
+            ${owner ? badge(`Owner ${owner}`, 'ok') : badge('Нужно закрепить owner', 'warn')}
+            ${sku.flags?.hasKZ ? badge('🚀 КЗ активен', 'info') : ''}
+            ${sku.flags?.hasVK ? badge('📣 VK активен', 'info') : ''}
+          </div>
+          <p class="small">На GitHub Pages эта версия по-прежнему хранит комментарии и задачи локально в браузере. Для общей истории и работы всей команды нужен backend.</p>
+        </div>
+
+        <div class="card" style="margin-top:14px">
           <h3>Комментарии по SKU</h3>
-          <p class="small">На GitHub Pages эта версия хранит комментарии локально в браузере. Для общей истории комментариев нужен backend.</p>
           <div class="list" id="commentList">
             ${comments.length ? comments.map(c => `
               <div class="list-item">
@@ -684,7 +785,7 @@ function renderSkuModal(articleKey) {
         <div class="card" style="margin-top:14px">
           <h3>Задачи и owner</h3>
           <div class="list" id="taskList">
-            ${tasks.length ? tasks.map((t, idx) => `
+            ${tasks.length ? tasks.map((t) => `
               <div class="list-item">
                 <div class="head">
                   <div>
@@ -700,7 +801,7 @@ function renderSkuModal(articleKey) {
           <div style="margin-top:12px">
             <div class="form-grid">
               <input class="input" id="taskTitle" placeholder="Задача">
-              <input class="input" id="taskOwner" placeholder="Owner">
+              <input class="input" id="taskOwner" placeholder="Owner" value="${escapeHtml(owner || '')}">
             </div>
             <div class="form-grid" style="margin-top:10px">
               <input class="input" id="taskDue" type="date">
@@ -711,24 +812,6 @@ function renderSkuModal(articleKey) {
               </select>
             </div>
             <button class="btn" id="addTaskBtn" style="margin-top:10px">Добавить задачу</button>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:14px">
-          <h3>Контент и коммерция</h3>
-          <div class="badge-stack">
-            ${badge(`ROMI ${sku.content?.romi == null ? '—' : fmt.num(sku.content.romi, 1)}`)}
-            ${badge(`Доход ${fmt.money(sku.content?.income)}`)}
-            ${badge(`Выручка ${fmt.money(sku.content?.revenue)}`)}
-            ${badge(`Посты ${fmt.int(sku.content?.posts)}`)}
-            ${badge(`Клики ${fmt.int(sku.content?.clicks)}`)}
-            ${badge(`Заказы контент ${fmt.int(sku.content?.orders)}`)}
-          </div>
-          <div class="badge-stack" style="margin-top:10px">
-            ${badge(`Отзывы ${fmt.int(sku.reviews)}`)}
-            ${badge(`Рейтинг ${fmt.text(sku.rating)}`)}
-            ${badge(`Lead time ${fmt.int(sku.leadTimeDays)} дн.`)}
-            ${badge(`Юрлицо ${fmt.text(sku.legalEntity)}`)}
           </div>
         </div>
       </div>

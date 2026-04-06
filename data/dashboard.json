@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-06T07:39:51",
+  "generatedAt": "2026-04-06T10:37:47",
   "dataFreshness": {
     "planFactMonth": "Февраль 2026",
     "ordersSnapshot": "orders (40).csv",
@@ -7,55 +7,12 @@
       "09.03.2026 - 15.03.2026",
       "16.03.2026 - 22.03.2026"
     ],
-    "launchPlanHorizon": "Апрель 2026 — Октябрь 2026"
+    "launchPlanHorizon": "Апрель 2026 — Октябрь 2026",
+    "ownerFiles": [
+      "Для Анны (2).xlsx",
+      "Рабочий _ Спецификации v2.xlsx"
+    ]
   },
-  "sourceFiles": [
-    {
-      "file": "Репрайсер шаблон от 27.03.xlsx",
-      "modifiedAt": "2026-04-06T06:11:20",
-      "sizeBytes": 5760064
-    },
-    {
-      "file": "План продаж (2).xlsx",
-      "modifiedAt": "2026-04-06T06:11:21",
-      "sizeBytes": 8634287
-    },
-    {
-      "file": "products (8).csv",
-      "modifiedAt": "2026-04-06T06:11:20",
-      "sizeBytes": 90020
-    },
-    {
-      "file": "orders (40).csv",
-      "modifiedAt": "2026-04-06T06:11:24",
-      "sizeBytes": 161531641
-    },
-    {
-      "file": "stocks_report (6).xlsx",
-      "modifiedAt": "2026-04-06T06:11:20",
-      "sizeBytes": 175855
-    },
-    {
-      "file": "Возвраты FBS и FBO _ 01 01 - 18 03 _ Смарт.xlsx",
-      "modifiedAt": "2026-04-06T06:11:20",
-      "sizeBytes": 2281262
-    },
-    {
-      "file": "Возвраты FBS и FBO _ 01 01 - 18 03 _ Биг-Л.xlsx",
-      "modifiedAt": "2026-04-06T06:11:20",
-      "sizeBytes": 2517394
-    },
-    {
-      "file": "Продуктовый_лидерборд Март - Апрель 09.03.2026 - 05.04.2026.xlsx",
-      "modifiedAt": "2026-04-06T06:11:20",
-      "sizeBytes": 46821
-    },
-    {
-      "file": "Планирование новинок Алтея (1).xlsx",
-      "modifiedAt": "2026-04-06T06:11:20",
-      "sizeBytes": 259148
-    }
-  ],
   "cards": [
     {
       "label": "SKU в базе",
@@ -65,7 +22,17 @@
     {
       "label": "SKU в работе",
       "value": 7,
-      "hint": "Ниже плана + отрицательная маржа"
+      "hint": "Ниже плана + отрицательная маржа хотя бы на одном MP"
+    },
+    {
+      "label": "В работе WB",
+      "value": 4,
+      "hint": "Ниже плана + маржа < 0 на WB"
+    },
+    {
+      "label": "В работе Ozon",
+      "value": 3,
+      "hint": "Ниже плана + маржа < 0 на Ozon"
     },
     {
       "label": "Отрицательная маржа",
@@ -73,44 +40,56 @@
       "hint": "Хотя бы на одном MP маржа < 0"
     },
     {
+      "label": "Закреплено за owner",
+      "value": 79,
+      "hint": "Нашли закрепление в рабочих реестрах"
+    },
+    {
+      "label": "Без owner",
+      "value": 10,
+      "hint": "Нужно дозакрепить вручную"
+    },
+    {
+      "label": "Внешний трафик КЗ",
+      "value": 33,
+      "hint": "По факту/плану/реестрам"
+    },
+    {
+      "label": "Внешний трафик VK",
+      "value": 6,
+      "hint": "По факту/плану/реестрам"
+    },
+    {
       "label": "Остатки MP, шт.",
       "value": 220574,
       "hint": "WB + Ozon по текущему срезу"
     },
     {
-      "label": "Снимок заказов, ₽",
-      "value": 161631197,
-      "hint": "Агрегация по отфильтрованным SKU Алтея"
-    },
-    {
       "label": "План Feb 2026, шт.",
       "value": 127838,
-      "hint": "План только по Алтея"
+      "hint": "Из файла План продаж (2).xlsx"
     },
     {
       "label": "Факт Feb 2026, шт.",
       "value": 48829,
-      "hint": "Факт только по Алтея"
-    },
-    {
-      "label": "Высокие возвраты",
-      "value": 43,
-      "hint": "SKU с 50+ возвратами в доступном выгрузе"
+      "hint": "Из файла План продаж (2).xlsx"
     }
   ],
   "brandSummary": [
     {
       "brand": "Алтея",
       "sku_count": 89,
-      "total_stock": 220574,
-      "orders_value": 161631197,
-      "feb_plan_units": 127838,
-      "feb_fact_units": 48829,
+      "total_stock": 220574.0,
+      "orders_value": 161631197.21,
+      "feb_plan_units": 127838.0,
+      "feb_fact_units": 48829.0,
       "plan_completion_feb26_pct": 0.382,
-      "returns_units": 8580,
+      "returns_units": 8580.0,
       "avg_romi": 93.9518,
       "negative_margin_sku": 16,
-      "to_work_sku": 7
+      "to_work_sku": 7,
+      "assigned_sku": 79,
+      "external_any_sku": 36
     }
   ],
   "focusTop": [
@@ -118,161 +97,209 @@
       "article": "nabor_remuver_40ml",
       "brand": "Алтея",
       "product_name_final": "Ремувер для удаления кутикулы, Алтея, 40 мл",
-      "focus_score": 10.0,
-      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Ozon ниже min price; Много возвратов",
+      "focus_score": 10,
+      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Ozon ниже min price; Много возвратов",
       "plan_completion_feb26_pct": 0.2952,
       "total_mp_stock": 8741.0,
-      "content_romi": null
-    },
-    {
-      "article": "matte_wax_50ml",
-      "brand": "Алтея",
-      "product_name_final": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
-      "focus_score": 9.0,
-      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов",
-      "plan_completion_feb26_pct": 0.3218,
-      "total_mp_stock": 1008.0,
-      "content_romi": null
+      "content_romi": null,
+      "owner_name": "Мария",
+      "external_kz_flag": 0,
+      "external_vk_flag": 0
     },
     {
       "article": "kremshelk_100ml",
       "brand": "Алтея",
       "product_name_final": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
-      "focus_score": 9.0,
-      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов",
+      "focus_score": 10,
+      "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов; Есть внешний трафик КЗ",
       "plan_completion_feb26_pct": 0.3244,
       "total_mp_stock": 9203.0,
-      "content_romi": 91.145
-    },
-    {
-      "article": "ekdisteron_ultra_man_60caps",
-      "brand": "Алтея",
-      "product_name_final": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
-      "focus_score": 8.0,
-      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
-      "plan_completion_feb26_pct": 0.2284,
-      "total_mp_stock": 1537.0,
-      "content_romi": null
+      "content_romi": 91.145,
+      "owner_name": "Олеся",
+      "external_kz_flag": 1,
+      "external_vk_flag": 0
     },
     {
       "article": "skrab_babl_gam_200ml",
       "brand": "Алтея",
       "product_name_final": "Скраб пилинг для кожи головы, Алтея, 200 мл",
-      "focus_score": 8.0,
-      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
+      "focus_score": 9,
+      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Есть внешний трафик КЗ",
       "plan_completion_feb26_pct": 0.2549,
       "total_mp_stock": 1899.0,
-      "content_romi": -100.0
+      "content_romi": -100.0,
+      "owner_name": "Кирилл",
+      "external_kz_flag": 1,
+      "external_vk_flag": 0
+    },
+    {
+      "article": "matte_wax_50ml",
+      "brand": "Алтея",
+      "product_name_final": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
+      "focus_score": 9,
+      "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов",
+      "plan_completion_feb26_pct": 0.3218,
+      "total_mp_stock": 1008.0,
+      "content_romi": null,
+      "owner_name": "Кирилл",
+      "external_kz_flag": 0,
+      "external_vk_flag": 0
+    },
+    {
+      "article": "ekdisteron_ultra_man_60caps",
+      "brand": "Алтея",
+      "product_name_final": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
+      "focus_score": 8,
+      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
+      "plan_completion_feb26_pct": 0.2284,
+      "total_mp_stock": 1537.0,
+      "content_romi": null,
+      "owner_name": "Кирилл",
+      "external_kz_flag": 0,
+      "external_vk_flag": 0
     },
     {
       "article": "syvorotka_guk_30ml",
       "brand": "Алтея",
       "product_name_final": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
-      "focus_score": 8.0,
-      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon",
+      "focus_score": 8,
+      "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon",
       "plan_completion_feb26_pct": 0.3523,
       "total_mp_stock": 763.0,
-      "content_romi": null
+      "content_romi": null,
+      "owner_name": "Олеся",
+      "external_kz_flag": 0,
+      "external_vk_flag": 0
     },
     {
       "article": "intimvita_300ml",
       "brand": "Алтея",
       "product_name_final": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 300 мл",
-      "focus_score": 8.0,
-      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
+      "focus_score": 8,
+      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
       "plan_completion_feb26_pct": 0.3529,
       "total_mp_stock": 1718.0,
-      "content_romi": null
+      "content_romi": null,
+      "owner_name": "Кирилл",
+      "external_kz_flag": 0,
+      "external_vk_flag": 0
     },
     {
-      "article": "maslo_dlya_volos_parf_110ml",
+      "article": "enzim_pudra_80gr_v2",
       "brand": "Алтея",
-      "product_name_final": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
-      "focus_score": 4.0,
-      "focus_reasons": "Отрицательная маржа WB; Низкий остаток; WB ниже min price",
-      "plan_completion_feb26_pct": null,
-      "total_mp_stock": 0,
-      "content_romi": null
+      "product_name_final": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
+      "focus_score": 5,
+      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Есть внешний трафик КЗ",
+      "plan_completion_feb26_pct": 0.3127,
+      "total_mp_stock": 1.0,
+      "content_romi": null,
+      "owner_name": "Мария",
+      "external_kz_flag": 1,
+      "external_vk_flag": 0
     },
     {
-      "article": "gel_dlya_brovei_6ml",
+      "article": "curly_method_300ml",
       "brand": "Алтея",
-      "product_name_final": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл",
-      "focus_score": 3.0,
-      "focus_reasons": "Отрицательная маржа Ozon; Много возвратов",
-      "plan_completion_feb26_pct": null,
-      "total_mp_stock": 2498.0,
-      "content_romi": -100.0
+      "product_name_final": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
+      "focus_score": 5,
+      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "plan_completion_feb26_pct": 0.3203,
+      "total_mp_stock": 6986.0,
+      "content_romi": 353.345,
+      "owner_name": "Олеся",
+      "external_kz_flag": 1,
+      "external_vk_flag": 0
     },
     {
-      "article": "indolakt_BAD_60caps",
+      "article": "gel_antiakne_20ml_v2",
       "brand": "Алтея",
-      "product_name_final": "Индол 3 карбинол брокколи витамины с зеленым чаем Алтея, Индолакт, 60 капсул",
-      "focus_score": 3.0,
-      "focus_reasons": "Отрицательная маржа Ozon; Много возвратов",
-      "plan_completion_feb26_pct": null,
-      "total_mp_stock": 2113.0,
-      "content_romi": -85.165
+      "product_name_final": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
+      "focus_score": 5,
+      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "plan_completion_feb26_pct": 0.355,
+      "total_mp_stock": 3440.0,
+      "content_romi": 405.86,
+      "owner_name": "Кирилл",
+      "external_kz_flag": 1,
+      "external_vk_flag": 0
     },
     {
-      "article": "maslo_dlya_volos_parf_110ml_",
+      "article": "penka_kudryavii_metod_150ml",
       "brand": "Алтея",
-      "product_name_final": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
-      "focus_score": 3.0,
-      "focus_reasons": "Отрицательная маржа WB; Много возвратов",
-      "plan_completion_feb26_pct": null,
-      "total_mp_stock": 1768.0,
-      "content_romi": null
+      "product_name_final": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
+      "focus_score": 5,
+      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "plan_completion_feb26_pct": 0.373,
+      "total_mp_stock": 2452.0,
+      "content_romi": 336.99,
+      "owner_name": "Олеся",
+      "external_kz_flag": 1,
+      "external_vk_flag": 0
     },
     {
-      "article": "i_am_alpha_BAD_60caps",
+      "article": "krovavii_piling_30ml",
       "brand": "Алтея",
-      "product_name_final": "Тестостерон для мужчин I am alpha Алтея 60 капсул, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер",
-      "focus_score": 2.0,
-      "focus_reasons": "Отрицательная маржа WB",
-      "plan_completion_feb26_pct": null,
-      "total_mp_stock": 1550.0,
-      "content_romi": null
+      "product_name_final": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
+      "focus_score": 5,
+      "focus_reasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
+      "plan_completion_feb26_pct": 0.373,
+      "total_mp_stock": 3935.0,
+      "content_romi": 424.545,
+      "owner_name": "Олеся",
+      "external_kz_flag": 1,
+      "external_vk_flag": 0
     },
     {
-      "article": "gel_parfum_tabacco_vanille_450ml",
+      "article": "sprei_buster_100ml",
       "brand": "Алтея",
-      "product_name_final": "Гель для душа женский парфюмированный Tobacco Vanille, Алтея, 450 мл",
-      "focus_score": 2.0,
-      "focus_reasons": "Отрицательная маржа Ozon",
-      "plan_completion_feb26_pct": null,
-      "total_mp_stock": 1109.0,
-      "content_romi": null
+      "product_name_final": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
+      "plan_completion_feb26_pct": 0.2358,
+      "total_mp_stock": 1922.0,
+      "content_romi": 186.11,
+      "owner_name": "Мария",
+      "external_kz_flag": 1,
+      "external_vk_flag": 0
     },
     {
-      "article": "retinait_syvorotka_025_30ml",
+      "article": "solevoy_sprei_200ml",
       "brand": "Алтея",
-      "product_name_final": "Сыворотка с ретинолом 0,25% для лица от морщин антивозрастная Алтея 30 мл",
-      "focus_score": 2.0,
-      "focus_reasons": "Отрицательная маржа Ozon",
-      "plan_completion_feb26_pct": null,
-      "total_mp_stock": 4888.0,
-      "content_romi": -45.5
+      "product_name_final": "Солевой спрей для волос/ текстурайзер для объема и укладки волос с фиксацией Алтея 200 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
+      "plan_completion_feb26_pct": 0.3249,
+      "total_mp_stock": 1083.0,
+      "content_romi": -2.82,
+      "owner_name": "Мария",
+      "external_kz_flag": 1,
+      "external_vk_flag": 0
     },
     {
-      "article": "termo_sprei_200ml",
+      "article": "krem_ot_rastyazhek",
       "brand": "Алтея",
-      "product_name_final": "Термозащита Спрей для волос 17 в 1 восстанавливающий с кератином, Алтея, 200 мл",
-      "focus_score": 2.0,
-      "focus_reasons": "Отрицательная маржа WB",
-      "plan_completion_feb26_pct": null,
-      "total_mp_stock": 2054.0,
-      "content_romi": -100.0
+      "product_name_final": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
+      "plan_completion_feb26_pct": 0.3319,
+      "total_mp_stock": 4254.0,
+      "content_romi": null,
+      "owner_name": "Олеся",
+      "external_kz_flag": 1,
+      "external_vk_flag": 0
     },
     {
-      "article": "intimvita_200ml",
+      "article": "krem-filler_15ml",
       "brand": "Алтея",
-      "product_name_final": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 200 мл",
-      "focus_score": 2.0,
-      "focus_reasons": "Отрицательная маржа WB",
-      "plan_completion_feb26_pct": null,
-      "total_mp_stock": 437.0,
-      "content_romi": null
+      "product_name_final": "Питательный крем для лица антивозрастной, Крем филлер вокруг глаз, с коллагеном с ниацинамидом, Алтея, 15 мл",
+      "focus_score": 4,
+      "focus_reasons": "Низкое выполнение плана; Низкий остаток; WB ниже min price",
+      "plan_completion_feb26_pct": 0.3333,
+      "total_mp_stock": 1.0,
+      "content_romi": null,
+      "owner_name": "Олеся",
+      "external_kz_flag": 0,
+      "external_vk_flag": 0
     }
   ],
   "topContent": [
@@ -284,7 +311,8 @@
       "content_income": 4544357.51,
       "content_revenue": 5607137.34,
       "content_posts": 1599.0,
-      "content_clicks": 79455.0
+      "content_clicks": 79455.0,
+      "owner_name": "Олеся"
     },
     {
       "article": "gel_antiakne_20ml_v2",
@@ -294,7 +322,8 @@
       "content_income": 3559172.35,
       "content_revenue": 4417382.13,
       "content_posts": 999.0,
-      "content_clicks": 84141.0
+      "content_clicks": 84141.0,
+      "owner_name": "Кирилл"
     },
     {
       "article": "retinait_syvorotka_1_30ml",
@@ -304,7 +333,8 @@
       "content_income": 1487951.29,
       "content_revenue": 1884996.33,
       "content_posts": 479.0,
-      "content_clicks": 17112.0
+      "content_clicks": 17112.0,
+      "owner_name": "Олеся"
     },
     {
       "article": "curly_method_300ml",
@@ -314,7 +344,8 @@
       "content_income": 1246922.52,
       "content_revenue": 1595093.81,
       "content_posts": 475.0,
-      "content_clicks": 24799.0
+      "content_clicks": 24799.0,
+      "owner_name": "Олеся"
     },
     {
       "article": "penka_kudryavii_metod_150ml",
@@ -324,7 +355,8 @@
       "content_income": 871718.01,
       "content_revenue": 1117825.21,
       "content_posts": 298.0,
-      "content_clicks": 13100.0
+      "content_clicks": 13100.0,
+      "owner_name": "Олеся"
     },
     {
       "article": "retiderm_50ml",
@@ -334,7 +366,8 @@
       "content_income": 298926.15,
       "content_revenue": 389710.12,
       "content_posts": 126.0,
-      "content_clicks": 26279.0
+      "content_clicks": 26279.0,
+      "owner_name": "Олеся"
     },
     {
       "article": "maska_dlya_lica_100ml",
@@ -344,7 +377,8 @@
       "content_income": 246312.16,
       "content_revenue": 317327.45,
       "content_posts": 41.0,
-      "content_clicks": 21949.0
+      "content_clicks": 21949.0,
+      "owner_name": "Олеся"
     },
     {
       "article": "maska-batter_dlya_rosta_500ml",
@@ -354,7 +388,8 @@
       "content_income": 186863.91,
       "content_revenue": 252024.28,
       "content_posts": 102.0,
-      "content_clicks": 3892.0
+      "content_clicks": 3892.0,
+      "owner_name": "Олеся"
     },
     {
       "article": "retinol_boost_krem_dlya_vek_30ml",
@@ -364,7 +399,8 @@
       "content_income": 1350966.84,
       "content_revenue": 1901458.64,
       "content_posts": 1238.0,
-      "content_clicks": 41839.0
+      "content_clicks": 41839.0,
+      "owner_name": null
     },
     {
       "article": "syvorotka_dlya_lica_30ml",
@@ -374,7 +410,8 @@
       "content_income": 1352019.78,
       "content_revenue": 1926499.82,
       "content_posts": 1197.0,
-      "content_clicks": 32080.0
+      "content_clicks": 32080.0,
+      "owner_name": "Олеся"
     },
     {
       "article": "retinait_krem_1_50ml",
@@ -384,7 +421,8 @@
       "content_income": 44007.11,
       "content_revenue": 65382.03,
       "content_posts": 21.0,
-      "content_clicks": 724.0
+      "content_clicks": 724.0,
+      "owner_name": "Олеся"
     },
     {
       "article": "syvorotka_niacin_05_30ml",
@@ -394,7 +432,8 @@
       "content_income": 254731.3,
       "content_revenue": 385621.71,
       "content_posts": 477.0,
-      "content_clicks": 7865.0
+      "content_clicks": 7865.0,
+      "owner_name": null
     }
   ],
   "underPlan": [
@@ -406,7 +445,8 @@
       "fact_feb26_units": 248.0,
       "plan_completion_feb26_pct": 0.1251,
       "total_mp_stock": 1083.0,
-      "negative_margin_flag": false
+      "negative_margin_flag": 0,
+      "owner_name": "Кирилл"
     },
     {
       "article": "syvorotka_dlya_rosta_6ml_v2",
@@ -416,7 +456,8 @@
       "fact_feb26_units": 47.0,
       "plan_completion_feb26_pct": 0.1865,
       "total_mp_stock": 1208.0,
-      "negative_margin_flag": false
+      "negative_margin_flag": 0,
+      "owner_name": "Кирилл"
     },
     {
       "article": "ekdisteron_ultra_man_60caps",
@@ -426,7 +467,8 @@
       "fact_feb26_units": 82.0,
       "plan_completion_feb26_pct": 0.2284,
       "total_mp_stock": 1537.0,
-      "negative_margin_flag": true
+      "negative_margin_flag": 1,
+      "owner_name": "Кирилл"
     },
     {
       "article": "sprei_buster_100ml",
@@ -436,7 +478,8 @@
       "fact_feb26_units": 623.0,
       "plan_completion_feb26_pct": 0.2358,
       "total_mp_stock": 1922.0,
-      "negative_margin_flag": false
+      "negative_margin_flag": 0,
+      "owner_name": "Мария"
     },
     {
       "article": "skrab_babl_gam_200ml",
@@ -446,7 +489,8 @@
       "fact_feb26_units": 181.0,
       "plan_completion_feb26_pct": 0.2549,
       "total_mp_stock": 1899.0,
-      "negative_margin_flag": true
+      "negative_margin_flag": 1,
+      "owner_name": "Кирилл"
     },
     {
       "article": "nabor_remuver_40ml",
@@ -456,7 +500,8 @@
       "fact_feb26_units": 320.0,
       "plan_completion_feb26_pct": 0.2952,
       "total_mp_stock": 8741.0,
-      "negative_margin_flag": true
+      "negative_margin_flag": 1,
+      "owner_name": "Мария"
     },
     {
       "article": "enzim_pudra_80gr_v2",
@@ -466,7 +511,8 @@
       "fact_feb26_units": 86.0,
       "plan_completion_feb26_pct": 0.3127,
       "total_mp_stock": 1.0,
-      "negative_margin_flag": false
+      "negative_margin_flag": 0,
+      "owner_name": "Мария"
     },
     {
       "article": "curly_method_300ml",
@@ -476,7 +522,8 @@
       "fact_feb26_units": 851.0,
       "plan_completion_feb26_pct": 0.3203,
       "total_mp_stock": 6986.0,
-      "negative_margin_flag": false
+      "negative_margin_flag": 0,
+      "owner_name": "Олеся"
     },
     {
       "article": "matte_wax_50ml",
@@ -486,7 +533,8 @@
       "fact_feb26_units": 167.0,
       "plan_completion_feb26_pct": 0.3218,
       "total_mp_stock": 1008.0,
-      "negative_margin_flag": true
+      "negative_margin_flag": 1,
+      "owner_name": "Кирилл"
     },
     {
       "article": "kremshelk_100ml",
@@ -496,7 +544,8 @@
       "fact_feb26_units": 943.0,
       "plan_completion_feb26_pct": 0.3244,
       "total_mp_stock": 9203.0,
-      "negative_margin_flag": true
+      "negative_margin_flag": 1,
+      "owner_name": "Олеся"
     },
     {
       "article": "solevoy_sprei_200ml",
@@ -506,7 +555,8 @@
       "fact_feb26_units": 434.0,
       "plan_completion_feb26_pct": 0.3249,
       "total_mp_stock": 1083.0,
-      "negative_margin_flag": false
+      "negative_margin_flag": 0,
+      "owner_name": "Мария"
     },
     {
       "article": "krem_ot_rastyazhek",
@@ -516,7 +566,8 @@
       "fact_feb26_units": 877.0,
       "plan_completion_feb26_pct": 0.3319,
       "total_mp_stock": 4254.0,
-      "negative_margin_flag": false
+      "negative_margin_flag": 0,
+      "owner_name": "Олеся"
     }
   ],
   "toWork": [
@@ -528,7 +579,10 @@
       "total_mp_stock": 1537.0,
       "wb_margin_pct": -0.0379,
       "ozon_margin_pct": 0.2267,
-      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB"
+      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
+      "owner_name": "Кирилл",
+      "external_kz_flag": 0,
+      "external_vk_flag": 0
     },
     {
       "article": "skrab_babl_gam_200ml",
@@ -538,7 +592,10 @@
       "total_mp_stock": 1899.0,
       "wb_margin_pct": -0.0867,
       "ozon_margin_pct": 0.2154,
-      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB"
+      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Есть внешний трафик КЗ",
+      "owner_name": "Кирилл",
+      "external_kz_flag": 1,
+      "external_vk_flag": 0
     },
     {
       "article": "nabor_remuver_40ml",
@@ -548,7 +605,10 @@
       "total_mp_stock": 8741.0,
       "wb_margin_pct": -0.0359,
       "ozon_margin_pct": null,
-      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Ozon ниже min price; Много возвратов"
+      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Ozon ниже min price; Много возвратов",
+      "owner_name": "Мария",
+      "external_kz_flag": 0,
+      "external_vk_flag": 0
     },
     {
       "article": "matte_wax_50ml",
@@ -558,7 +618,10 @@
       "total_mp_stock": 1008.0,
       "wb_margin_pct": 0.3137,
       "ozon_margin_pct": -0.2824,
-      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов"
+      "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов",
+      "owner_name": "Кирилл",
+      "external_kz_flag": 0,
+      "external_vk_flag": 0
     },
     {
       "article": "kremshelk_100ml",
@@ -568,7 +631,10 @@
       "total_mp_stock": 9203.0,
       "wb_margin_pct": 0.5005,
       "ozon_margin_pct": -0.1979,
-      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов"
+      "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов; Есть внешний трафик КЗ",
+      "owner_name": "Олеся",
+      "external_kz_flag": 1,
+      "external_vk_flag": 0
     },
     {
       "article": "syvorotka_guk_30ml",
@@ -578,7 +644,10 @@
       "total_mp_stock": 763.0,
       "wb_margin_pct": 0.3548,
       "ozon_margin_pct": -0.336,
-      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon"
+      "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon",
+      "owner_name": "Олеся",
+      "external_kz_flag": 0,
+      "external_vk_flag": 0
     },
     {
       "article": "intimvita_300ml",
@@ -588,129 +657,144 @@
       "total_mp_stock": 1718.0,
       "wb_margin_pct": -0.1019,
       "ozon_margin_pct": 0.1267,
-      "focus_reasons": "В работе: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB"
+      "focus_reasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
+      "owner_name": "Кирилл",
+      "external_kz_flag": 0,
+      "external_vk_flag": 0
     }
   ],
   "lowStock": [
     {
-      "article": "penka_160ml",
+      "article": "alteya_young_skin_box",
       "brand": "Алтея",
-      "product_name_final": "Мицеллярная пенка для умывания лица, для снятия макияжа, средство для снятия макияжа, Алтея, 160",
-      "total_mp_stock": 0,
+      "product_name_final": "Подарочный набор для женщин. Набор для лица уходовый косметический бьюти Young Skin Box Алтея",
+      "total_mp_stock": 0.0,
       "wb_stock": 0.0,
       "ozon_stock_final": 0.0,
-      "ozon_in_transit": 0.0,
-      "orders_value": 425559.01
-    },
-    {
-      "article": "chudofrukt_BAD_60caps",
-      "brand": "Алтея",
-      "product_name_final": "Таблетки для похудения, жиросжигатель детокс для снижения веса, Алтея, Чудофрукт, 60 капсул",
-      "total_mp_stock": 0,
-      "wb_stock": 0.0,
-      "ozon_stock_final": 0.0,
-      "ozon_in_transit": 0.0,
-      "orders_value": 181867.54
+      "ozon_in_transit": null,
+      "orders_value": null,
+      "owner_name": "Олеся"
     },
     {
       "article": "b_kompleks_BAD_60tabl",
       "brand": "Алтея",
       "product_name_final": "Витамины группы В комплекс Алтея 60 жевательных таблеток",
-      "total_mp_stock": 0,
+      "total_mp_stock": 0.0,
       "wb_stock": 0.0,
       "ozon_stock_final": 0.0,
       "ozon_in_transit": 0.0,
-      "orders_value": 114927.0
-    },
-    {
-      "article": "gidrofilnoe_maslo_150ml",
-      "brand": "Алтея",
-      "product_name_final": "Гидрофильное масло для снятия макияжа с лавандой, Алтея , 150 мл",
-      "total_mp_stock": 0,
-      "wb_stock": 0.0,
-      "ozon_stock_final": 0.0,
-      "ozon_in_transit": 0.0,
-      "orders_value": 63575.45
-    },
-    {
-      "article": "piling_100ml",
-      "brand": "Алтея",
-      "product_name_final": "Пилинг для кожи головы профессиональный скраб от перхоти, Алтея, 100 мл",
-      "total_mp_stock": 0,
-      "wb_stock": 0.0,
-      "ozon_stock_final": 0.0,
-      "ozon_in_transit": 0.0,
-      "orders_value": 33476.53
+      "orders_value": 114927.0,
+      "owner_name": "Светлана"
     },
     {
       "article": "enzim_pudra_80gr",
       "brand": "Алтея",
       "product_name_final": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
-      "total_mp_stock": 0,
+      "total_mp_stock": 0.0,
       "wb_stock": 0.0,
       "ozon_stock_final": 0.0,
       "ozon_in_transit": null,
-      "orders_value": 5474.0
+      "orders_value": 5474.0,
+      "owner_name": "Мария"
     },
     {
-      "article": "maslo_dlya_volos_parf_110ml",
+      "article": "chudofrukt_BAD_60caps",
       "brand": "Алтея",
-      "product_name_final": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
-      "total_mp_stock": 0,
+      "product_name_final": "Таблетки для похудения, жиросжигатель детокс для снижения веса, Алтея, Чудофрукт, 60 капсул",
+      "total_mp_stock": 0.0,
       "wb_stock": 0.0,
       "ozon_stock_final": 0.0,
-      "ozon_in_transit": null,
-      "orders_value": null
+      "ozon_in_transit": 0.0,
+      "orders_value": 181867.54,
+      "owner_name": "Светлана"
     },
     {
-      "article": "remuver_40ml",
+      "article": "gidrofilnoe_maslo_150ml",
       "brand": "Алтея",
-      "product_name_final": null,
-      "total_mp_stock": 0,
+      "product_name_final": "Гидрофильное масло для снятия макияжа с лавандой, Алтея , 150 мл",
+      "total_mp_stock": 0.0,
       "wb_stock": 0.0,
       "ozon_stock_final": 0.0,
-      "ozon_in_transit": null,
-      "orders_value": null
+      "ozon_in_transit": 0.0,
+      "orders_value": 63575.45,
+      "owner_name": "Мария"
+    },
+    {
+      "article": "piling_100ml",
+      "brand": "Алтея",
+      "product_name_final": "Пилинг для кожи головы профессиональный скраб от перхоти, Алтея, 100 мл",
+      "total_mp_stock": 0.0,
+      "wb_stock": 0.0,
+      "ozon_stock_final": 0.0,
+      "ozon_in_transit": 0.0,
+      "orders_value": 33476.53,
+      "owner_name": "Олеся"
     },
     {
       "article": "monarda_30ml",
       "brand": "Алтея",
       "product_name_final": "Масло монарды и экстракт зеленого чая для ногтей, универсальное, Алтея, 30 мл",
-      "total_mp_stock": 0,
+      "total_mp_stock": 0.0,
       "wb_stock": 0.0,
       "ozon_stock_final": 0.0,
       "ozon_in_transit": null,
-      "orders_value": null
+      "orders_value": null,
+      "owner_name": "Мария"
     },
     {
-      "article": "Retinol_Full_Journey",
+      "article": "maslo_dlya_volos_parf_110ml",
       "brand": "Алтея",
-      "product_name_final": "Набор уходовой косметики для лица антивозрастной",
-      "total_mp_stock": 0,
+      "product_name_final": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "total_mp_stock": 0.0,
       "wb_stock": 0.0,
       "ozon_stock_final": 0.0,
       "ozon_in_transit": null,
-      "orders_value": null
+      "orders_value": null,
+      "owner_name": "Мария"
     },
     {
-      "article": "Retinol_Start_Kit",
+      "article": "penka_160ml",
       "brand": "Алтея",
-      "product_name_final": "Набор уходовой косметики для лица с ретинолом",
-      "total_mp_stock": 0,
+      "product_name_final": "Мицеллярная пенка для умывания лица, для снятия макияжа, средство для снятия макияжа, Алтея, 160",
+      "total_mp_stock": 0.0,
       "wb_stock": 0.0,
       "ozon_stock_final": 0.0,
       "ozon_in_transit": 0.0,
-      "orders_value": null
+      "orders_value": 425559.01,
+      "owner_name": "Кирилл"
+    },
+    {
+      "article": "pirantoks_BAD_60caps",
+      "brand": "Алтея",
+      "product_name_final": "Антипаразитарный комплекс от глистов, очищение организма от паразитов, черный орех детокс, Алтея, Пирантокс, 60 капсул",
+      "total_mp_stock": 0.0,
+      "wb_stock": 0.0,
+      "ozon_stock_final": 0.0,
+      "ozon_in_transit": null,
+      "orders_value": null,
+      "owner_name": "Светлана"
+    },
+    {
+      "article": "remuver_40ml",
+      "brand": "Алтея",
+      "product_name_final": null,
+      "total_mp_stock": 0.0,
+      "wb_stock": 0.0,
+      "ozon_stock_final": 0.0,
+      "ozon_in_transit": null,
+      "orders_value": null,
+      "owner_name": null
     },
     {
       "article": "Strong_Hair",
       "brand": "Алтея",
       "product_name_final": "Набор для волос шампунь + маска для роста волос",
-      "total_mp_stock": 0,
+      "total_mp_stock": 0.0,
       "wb_stock": 0.0,
       "ozon_stock_final": 0.0,
       "ozon_in_transit": null,
-      "orders_value": null
+      "orders_value": null,
+      "owner_name": null
     }
   ],
   "topReturns": [
@@ -720,7 +804,8 @@
       "product_name_final": "Ремувер для снятия ресниц, Алтея, 18г",
       "returns_units": 737.0,
       "returns_count": 737.0,
-      "top_return_reason": "Покупатель отказался при вручении: товар не подошел"
+      "top_return_reason": "Покупатель отказался при вручении: товар не подошел",
+      "owner_name": "Мария"
     },
     {
       "article": "retiderm_50ml",
@@ -728,7 +813,8 @@
       "product_name_final": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
       "returns_units": 732.0,
       "returns_count": 732.0,
-      "top_return_reason": "Покупатель отменил заказ"
+      "top_return_reason": "Покупатель отменил заказ",
+      "owner_name": "Олеся"
     },
     {
       "article": "krovavii_piling_30ml",
@@ -736,7 +822,8 @@
       "product_name_final": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
       "returns_units": 541.0,
       "returns_count": 541.0,
-      "top_return_reason": "Покупатель отменил заказ: нашел дешевле"
+      "top_return_reason": "Покупатель отменил заказ: нашел дешевле",
+      "owner_name": "Олеся"
     },
     {
       "article": "maska_dlya_lica_100ml",
@@ -744,7 +831,8 @@
       "product_name_final": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
       "returns_units": 355.0,
       "returns_count": 355.0,
-      "top_return_reason": "Покупатель отказался при вручении: товар не подошел"
+      "top_return_reason": "Покупатель отказался при вручении: товар не подошел",
+      "owner_name": "Олеся"
     },
     {
       "article": "gel_dlya_brovei_6ml",
@@ -752,7 +840,8 @@
       "product_name_final": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл",
       "returns_units": 348.0,
       "returns_count": 348.0,
-      "top_return_reason": "Покупатель получил не те товары"
+      "top_return_reason": "Покупатель получил не те товары",
+      "owner_name": "Кирилл"
     },
     {
       "article": "curly_method_300ml",
@@ -760,7 +849,8 @@
       "product_name_final": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
       "returns_units": 330.0,
       "returns_count": 330.0,
-      "top_return_reason": "Покупатель отказался при вручении: товар не подошел"
+      "top_return_reason": "Покупатель отказался при вручении: товар не подошел",
+      "owner_name": "Олеся"
     },
     {
       "article": "retinait_krem_1_5_50ml",
@@ -768,7 +858,8 @@
       "product_name_final": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
       "returns_units": 298.0,
       "returns_count": 298.0,
-      "top_return_reason": "Покупатель отменил заказ: нашел дешевле"
+      "top_return_reason": "Покупатель отменил заказ: нашел дешевле",
+      "owner_name": "Олеся"
     },
     {
       "article": "syvorotka_dlya_lica_30ml",
@@ -776,7 +867,8 @@
       "product_name_final": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
       "returns_units": 263.0,
       "returns_count": 263.0,
-      "top_return_reason": "Покупатель отменил заказ: нашел дешевле"
+      "top_return_reason": "Покупатель отменил заказ: нашел дешевле",
+      "owner_name": "Олеся"
     },
     {
       "article": "krem_spf50_50ml",
@@ -784,7 +876,8 @@
       "product_name_final": "СПФ для лица База под макияж увлажняющая с SPF 50 для лица Крем солнцезащитный, крем-флюид, Алтея, 50 мл",
       "returns_units": 262.0,
       "returns_count": 262.0,
-      "top_return_reason": "Покупатель отменил заказ"
+      "top_return_reason": "Покупатель отменил заказ",
+      "owner_name": "Даша"
     },
     {
       "article": "shampun_dlya_rosta_250ml",
@@ -792,7 +885,8 @@
       "product_name_final": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
       "returns_units": 228.0,
       "returns_count": 228.0,
-      "top_return_reason": "Покупатель отменил заказ"
+      "top_return_reason": "Покупатель отменил заказ",
+      "owner_name": "Олеся"
     },
     {
       "article": "sprei_buster_100ml",
@@ -800,7 +894,8 @@
       "product_name_final": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
       "returns_units": 227.0,
       "returns_count": 227.0,
-      "top_return_reason": "Покупатель отменил заказ"
+      "top_return_reason": "Покупатель отменил заказ",
+      "owner_name": "Мария"
     },
     {
       "article": "syvorotka_dlya_lica_30ml_v2",
@@ -808,7 +903,110 @@
       "product_name_final": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
       "returns_units": 181.0,
       "returns_count": 181.0,
-      "top_return_reason": "Покупатель отменил заказ"
+      "top_return_reason": "Покупатель отменил заказ",
+      "owner_name": "Олеся"
+    }
+  ],
+  "unassigned": [
+    {
+      "article": "maska-batter_500ml",
+      "brand": "Алтея",
+      "product_name_final": "Маска для волос с кератином увлажняющая 500мл Алтея",
+      "focus_score": 3,
+      "focus_reasons": "Низкое выполнение плана; Есть внешний трафик КЗ; Owner не закреплён",
+      "plan_completion_feb26_pct": 0.3927,
+      "wb_margin_pct": 0.5845,
+      "ozon_margin_pct": 0.19
+    },
+    {
+      "article": "remuver_40ml",
+      "brand": "Алтея",
+      "product_name_final": null,
+      "focus_score": 3,
+      "focus_reasons": "Низкий остаток; WB ниже min price; Ozon ниже min price; Owner не закреплён",
+      "plan_completion_feb26_pct": null,
+      "wb_margin_pct": null,
+      "ozon_margin_pct": null
+    },
+    {
+      "article": "retinait_syvorotka_025_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Сыворотка с ретинолом 0,25% для лица от морщин антивозрастная Алтея 30 мл",
+      "focus_score": 2,
+      "focus_reasons": "Отрицательная маржа Ozon; Owner не закреплён",
+      "plan_completion_feb26_pct": null,
+      "wb_margin_pct": 0.515,
+      "ozon_margin_pct": -0.1188
+    },
+    {
+      "article": "retinol_boost_krem_dlya_vek_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
+      "focus_score": 1,
+      "focus_reasons": "Много возвратов; Owner не закреплён",
+      "plan_completion_feb26_pct": null,
+      "wb_margin_pct": 0.5009,
+      "ozon_margin_pct": 0.4186
+    },
+    {
+      "article": "Retinol_Full_Journey",
+      "brand": "Алтея",
+      "product_name_final": "Набор уходовой косметики для лица антивозрастной",
+      "focus_score": 1,
+      "focus_reasons": "Низкий остаток; Owner не закреплён",
+      "plan_completion_feb26_pct": null,
+      "wb_margin_pct": null,
+      "ozon_margin_pct": null
+    },
+    {
+      "article": "spicul_gel_mask_75ml",
+      "brand": "Алтея",
+      "product_name_final": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+      "focus_score": 1,
+      "focus_reasons": "Низкий остаток; Owner не закреплён",
+      "plan_completion_feb26_pct": null,
+      "wb_margin_pct": null,
+      "ozon_margin_pct": null
+    },
+    {
+      "article": "spiculboost_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Сыворотка для лица с микроиглами и коллагеном",
+      "focus_score": 1,
+      "focus_reasons": "Низкий остаток; Owner не закреплён",
+      "plan_completion_feb26_pct": null,
+      "wb_margin_pct": null,
+      "ozon_margin_pct": null
+    },
+    {
+      "article": "Strong_Hair",
+      "brand": "Алтея",
+      "product_name_final": "Набор для волос шампунь + маска для роста волос",
+      "focus_score": 1,
+      "focus_reasons": "Низкий остаток; Owner не закреплён",
+      "plan_completion_feb26_pct": null,
+      "wb_margin_pct": null,
+      "ozon_margin_pct": null
+    },
+    {
+      "article": "syvorotka_niacin_05_30ml",
+      "brand": "Алтея",
+      "product_name_final": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
+      "focus_score": 0,
+      "focus_reasons": "Owner не закреплён",
+      "plan_completion_feb26_pct": null,
+      "wb_margin_pct": 0.2971,
+      "ozon_margin_pct": 0.2035
+    },
+    {
+      "article": "retinait_syvorotka_05_30ml",
+      "brand": "Алтея",
+      "product_name_final": "Сыворотка для лица с ретинолом омолаживающая",
+      "focus_score": 0,
+      "focus_reasons": "Owner не закреплён",
+      "plan_completion_feb26_pct": null,
+      "wb_margin_pct": 0.5036,
+      "ozon_margin_pct": 0.2158
     }
   ]
 }

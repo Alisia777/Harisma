@@ -136,3 +136,16 @@ td .badge-stack{align-items:flex-start}
   .grid.cards{grid-template-columns:1fr}
   .detail-grid,.kv,.form-grid{grid-template-columns:1fr}
 }
+.market-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.market-tab{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:999px;cursor:pointer;transition:.18s ease}
+.market-tab:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+.market-tab.active{background:rgba(109,94,252,.14);border-color:rgba(109,94,252,.4)}
+.filters-advanced{grid-template-columns:1.3fr repeat(5,minmax(0,180px));}
+.owner-cell{display:flex;flex-direction:column;gap:2px;min-width:110px}
+.traffic-inline{align-items:flex-start}
+@media (max-width:1200px){
+  .filters-advanced{grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+@media (max-width:800px){
+  .filters-advanced{grid-template-columns:1fr;}
+}

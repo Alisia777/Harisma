@@ -2,11 +2,11 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import math
 from datetime import datetime
 from pathlib import Path
+from typing import Iterable
 
 import numpy as np
 import pandas as pd
@@ -18,11 +18,30 @@ def norm_article(x):
     return str(x).strip().strip("'").strip('"').strip().lower()
 
 
-def first_nonnull(series):
+def first_nonnull(series: Iterable):
     for v in series:
         if pd.notna(v) and str(v).strip() != "":
             return v
     return None
+
+
+def truthy_flag(v):
+    if pd.isna(v):
+        return None
+    if isinstance(v, (bool, np.bool_)):
+        return bool(v)
+    if isinstance(v, (int, float, np.integer, np.floating)) and not isinstance(v, bool):
+        if math.isnan(float(v)):
+            return None
+        return float(v) != 0
+    s = str(v).strip().lower().replace("ё", "е")
+    if s in {"", "nan", "none", "null", "—", "-"}:
+        return None
+    if s in {"1", "true", "yes", "y", "да", "есть", "active", "активно"}:
+        return True
+    if s in {"0", "false", "no", "n", "нет"}:
+        return False
+    return True
 
 
 def clean_val(v):
@@ -51,6 +70,119 @@ def read_semicolon_csv(path: Path) -> pd.DataFrame:
     return pd.read_csv(path, sep=";", encoding="utf-8-sig", engine="python")
 
 
+def pick_first_existing(src: Path, names: list[str]) -> Path | None:
+    for name in names:
+        path = src / name
+        if path.exists():
+            return path
+    return None
+
+
+PREFERRED_OWNER_COLS = ["Ответственный", "Ответственный за товар", "Owner", "Сотрудник"]
+PREFERRED_STATUS_COLS = ["Статус товара", "Актуальность товара", "Статус"]
+PREFERRED_SKU_COLS = ["SKU", "Артикул", "Наш артикул"]
+
+
+def find_col(columns: list[str], candidates: list[str]) -> str | None:
+    normalized = {str(c).strip().lower().replace("ё", "е"): c for c in columns}
+    for cand in candidates:
+        key = cand.strip().lower().replace("ё", "е")
+        if key in normalized:
+            return normalized[key]
+    return None
+
+
+def load_assignment_source(path: Path, source_label: str, priority: int) -> pd.DataFrame:
+    frames = []
+    try:
+        xl = pd.ExcelFile(path)
+        preferred = []
+        for sheet_name in xl.sheet_names:
+            normalized = str(sheet_name).strip().lower().replace("ё", "е")
+            if "реестр" in normalized or normalized in {"реестр", "ответсвенные", "ответственные"}:
+                preferred.append(sheet_name)
+        if not preferred:
+            preferred = xl.sheet_names[:3]
+        sheets = pd.read_excel(path, sheet_name=preferred, header=2)
+    except Exception:
+        return pd.DataFrame(columns=[
+            "article_key", "owner", "owner_source", "owner_priority", "registry_status",
+            "registry_has_kz", "registry_has_vk"
+        ])
+    for sheet_name, df in sheets.items():
+        if df is None or df.empty:
+            continue
+        df = df.dropna(how="all").copy()
+        df.columns = [str(c).strip() for c in df.columns]
+        sku_col = find_col(list(df.columns), PREFERRED_SKU_COLS)
+        owner_col = find_col(list(df.columns), PREFERRED_OWNER_COLS)
+        if not sku_col:
+            continue
+        status_col = find_col(list(df.columns), PREFERRED_STATUS_COLS)
+        kz_col = find_col(list(df.columns), ["Есть в КЗ"])
+        vk_col = find_col(list(df.columns), ["Есть в ВК"])
+        tmp = pd.DataFrame({
+            "article_key": df[sku_col].map(norm_article),
+            "owner": df[owner_col] if owner_col else None,
+            "registry_status": df[status_col] if status_col else None,
+            "registry_has_kz": df[kz_col].map(truthy_flag) if kz_col else None,
+            "registry_has_vk": df[vk_col].map(truthy_flag) if vk_col else None,
+        })
+        tmp = tmp.dropna(subset=["article_key"]).copy()
+        if tmp.empty:
+            continue
+        tmp["owner"] = tmp["owner"].map(lambda x: None if pd.isna(x) or str(x).strip() == "" else str(x).strip())
+        tmp["registry_status"] = tmp["registry_status"].map(lambda x: None if pd.isna(x) or str(x).strip() == "" else str(x).strip())
+        tmp["owner_source"] = f"{source_label} · {sheet_name}"
+        tmp["owner_priority"] = priority
+        frames.append(tmp)
+    if not frames:
+        return pd.DataFrame(columns=[
+            "article_key", "owner", "owner_source", "owner_priority", "registry_status",
+            "registry_has_kz", "registry_has_vk"
+        ])
+    return pd.concat(frames, ignore_index=True)
+
+
+def choose_bool(row, cols: list[str]) -> bool:
+    for col in cols:
+        if col not in row.index:
+            continue
+        val = row[col]
+        if pd.isna(val):
+            continue
+        return bool(val)
+    return False
+
+
+MEETING_RHYTHM = [
+    {"id": "weekly-mp", "title": "Weekly: операционная планёрка МП", "cadence": "Еженедельно · понедельник", "duration": "60–90 мин",
+     "question": "Что делаем по конверсиям, продвижению, рейтингам и запасам на этой неделе?",
+     "participants": ["Команда МП WB/Ozon", "Маркетинг", "Внешний трафик"],
+     "outputs": ["Список задач на неделю с owner", "Решения по ставкам РК", "Карточки на правку", "Сигналы по запасам", "Решения по акциям и ценам"]},
+    {"id": "weekly-fin", "title": "Weekly: финансовая операционная", "cadence": "Еженедельно · четверг", "duration": "30–45 мин",
+     "question": "Где мы по ДРР, бюджету РК и недельному план/факту?",
+     "participants": ["Финансы/аналитика", "Команда МП", "Маркетинг/трафик"],
+     "outputs": ["Недельный отчёт план/факт", "Решения по перераспределению бюджета", "SKU с проблемным ДРР", "Подтверждённый план на следующую неделю"]},
+    {"id": "monthly-demand", "title": "Monthly: Demand + логистика + supply", "cadence": "Ежемесячно · 1-я неделя", "duration": "120–150 мин",
+     "question": "Каков единый план продаж, хватит ли товара, поставок и производства?",
+     "participants": ["Бренд-лид", "МП", "Маркетинг", "Контент-завод", "B2B/KAM", "Финансы", "Операции/закупка"],
+     "outputs": ["Единый план продаж", "Прогноз спроса 1–3 месяца", "SKU в зоне риска OOS", "Календарь поставок", "План закупок сырья и упаковки"]},
+    {"id": "monthly-fin", "title": "Monthly: финансовая стратегическая", "cadence": "Ежемесячно · 2-я неделя", "duration": "60–90 мин",
+     "question": "Где мы по марже, P&L, РРЦ/min price и бюджету следующего месяца?",
+     "participants": ["Финансы/аналитика", "Владельцы брендов", "CEO — по повестке"],
+     "outputs": ["Финотчёт по брендам", "Решения по min price и РРЦ", "Бюджет следующего месяца", "Список финансовых исключений"]},
+    {"id": "monthly-mktg", "title": "Monthly: Marketing Review", "cadence": "Ежемесячно · 2-я или 3-я неделя", "duration": "60–90 мин",
+     "question": "Какие товары в фокусе месяца и как распределяем КЗ / таргет / инфлюенсеров?",
+     "participants": ["Бренд-директора", "Маркетинг", "Команда МП", "Контент-завод"],
+     "outputs": ["Фокусные товары месяца", "Маркетинговый календарь", "Бюджет по инструментам и SKU", "Контент-план с owner"]},
+    {"id": "pmr", "title": "PMR: Product Management Review", "cadence": "Квартально + mini PMR ежемесячно", "duration": "120–150 мин / 45–60 мин",
+     "question": "Что запускаем, что выводим, какие правила по новинкам, матрице и unit-экономике?",
+     "participants": ["CEO", "Бренд-директора", "Продукт", "Маркетинг", "Операции", "Финансы"],
+     "outputs": ["Статусы матрицы core/growth/new/exit", "Калькуляторы и РРЦ/МРЦ", "Решения по запуску/выводу SKU", "Календарь новинок"]},
+]
+
+
 def main():
     parser = argparse.ArgumentParser(description="Build JSON data for Brand Portal MVP")
     parser.add_argument("--source-dir", required=True, help="Folder with source xlsx/csv files")
@@ -62,8 +194,7 @@ def main():
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
 
-    # expected filenames
-    files = {
+    required_files = {
         "products": "products (8).csv",
         "repricer": "Репрайсер шаблон от 27.03.xlsx",
         "plan": "План продаж (2).xlsx",
@@ -74,43 +205,47 @@ def main():
         "ret_big": "Возвраты FBS и FBO _ 01 01 - 18 03 _ Биг-Л.xlsx",
         "launches": "Планирование новинок Алтея (1).xlsx",
     }
+    optional_paths = {
+        "owner_anna": pick_first_existing(src, ["Для Анны (2).xlsx"]),
+        "owner_specs": pick_first_existing(src, ["Рабочий _ Спецификации v2.xlsx", "Рабочий _ Спецификации v2 (1).xlsx"]),
+    }
 
-    for key, filename in files.items():
+    for key, filename in required_files.items():
         path = src / filename
         if not path.exists():
             raise FileNotFoundError(f"Missing required file: {path}")
 
-    products = read_semicolon_csv(src / files["products"])
+    products = read_semicolon_csv(src / required_files["products"])
     products.columns = [c.strip() for c in products.columns]
     products["article_key"] = products["Артикул"].map(norm_article)
     products["Рейтинг"] = pd.to_numeric(products["Рейтинг"].astype(str).str.replace("'", "", regex=False), errors="coerce")
     products["Отзывы"] = pd.to_numeric(products["Отзывы"], errors="coerce")
 
-    repricer = pd.read_excel(src / files["repricer"], sheet_name="Репрайсер", header=3)
+    repricer = pd.read_excel(src / required_files["repricer"], sheet_name="Репрайсер", header=3)
     repricer = repricer.dropna(how="all")
     repricer.columns = [str(c).strip() for c in repricer.columns]
     repricer["article_key"] = repricer["Артикул"].map(norm_article)
 
-    plan = pd.read_excel(src / files["plan"], sheet_name="План", header=0)
+    plan = pd.read_excel(src / required_files["plan"], sheet_name="План", header=0)
     plan.columns = [str(c).strip() for c in plan.columns]
     plan["article_key"] = plan["Артикул"].map(norm_article)
 
-    fact_raw = pd.read_excel(src / files["plan"], sheet_name="Факт", header=[0, 1])
+    fact_raw = pd.read_excel(src / required_files["plan"], sheet_name="Факт", header=[0, 1])
     fact = fact_raw.copy()
     fact.columns = [f"{a}|{b}" for a, b in fact.columns]
     fact["article_key"] = fact["MonthYear|Нашартикул"].map(norm_article)
 
-    lb1 = pd.read_excel(src / files["leaderboard"], sheet_name="09.03.2026 - 15.03.2026")
-    lb2 = pd.read_excel(src / files["leaderboard"], sheet_name="16.03.2026 - 22.03.2026")
+    lb1 = pd.read_excel(src / required_files["leaderboard"], sheet_name="09.03.2026 - 15.03.2026")
+    lb2 = pd.read_excel(src / required_files["leaderboard"], sheet_name="16.03.2026 - 22.03.2026")
     leader = pd.concat([lb1.assign(period="09.03-15.03"), lb2.assign(period="16.03-22.03")], ignore_index=True)
     leader.columns = [str(c).strip() for c in leader.columns]
     leader["article_key"] = leader["Буквенный артикул"].map(norm_article)
 
-    orders = read_semicolon_csv(src / files["orders"])
+    orders = read_semicolon_csv(src / required_files["orders"])
     orders.columns = [c.strip() for c in orders.columns]
     orders["article_key"] = orders["Артикул"].map(norm_article)
 
-    stocks_raw = pd.read_excel(src / files["stocks"], sheet_name="Товар-склад", header=None)
+    stocks_raw = pd.read_excel(src / required_files["stocks"], sheet_name="Товар-склад", header=None)
     header1 = stocks_raw.iloc[0].tolist()
     header2 = stocks_raw.iloc[1].tolist()
     stock_cols = []
@@ -123,19 +258,27 @@ def main():
     stocks = stocks.dropna(how="all")
     stocks["article_key"] = stocks["Артикул"].map(norm_article)
 
-    ret_smart = pd.read_excel(src / files["ret_smart"], sheet_name="Возвраты", header=5)
-    ret_big = pd.read_excel(src / files["ret_big"], sheet_name="Возвраты", header=5)
+    ret_smart = pd.read_excel(src / required_files["ret_smart"], sheet_name="Возвраты", header=5)
+    ret_big = pd.read_excel(src / required_files["ret_big"], sheet_name="Возвраты", header=5)
     returns = pd.concat([ret_smart, ret_big], ignore_index=True)
     returns.columns = [str(c).strip() for c in returns.columns]
     returns["article_key"] = returns["Артикул товара"].map(norm_article)
     returns["Количество возвращаемых товаров"] = pd.to_numeric(returns["Количество возвращаемых товаров"], errors="coerce").fillna(0)
     returns["Стоимость товара"] = pd.to_numeric(returns["Стоимость товара"], errors="coerce").fillna(0)
 
-    launches = pd.read_excel(src / files["launches"], sheet_name="Календарь новинок Алтея", header=8)
+    launches = pd.read_excel(src / required_files["launches"], sheet_name="Календарь новинок Алтея", header=8)
     launches.columns = [str(c).strip() for c in launches.columns]
     launches = launches.dropna(subset=["Название"], how="all").copy()
 
-    # aggregates
+    assignment_frames = []
+    if optional_paths["owner_anna"]:
+        assignment_frames.append(load_assignment_source(optional_paths["owner_anna"], "Для Анны", 0))
+    if optional_paths["owner_specs"]:
+        assignment_frames.append(load_assignment_source(optional_paths["owner_specs"], "Рабочий спецификации", 1))
+    assignments = pd.concat(assignment_frames, ignore_index=True) if assignment_frames else pd.DataFrame(columns=[
+        "article_key", "owner", "owner_source", "owner_priority", "registry_status", "registry_has_kz", "registry_has_vk"
+    ])
+
     prod_agg = products.groupby("article_key").agg({
         "Название товара": first_nonnull,
         "Бренд": first_nonnull,
@@ -237,8 +380,8 @@ def main():
         "Юрлицо": "legal_entity_plan",
         "Бренд": "brand_plan",
         "Сегмент": "segment",
-        "КЗ": "has_kz",
-        "ВК": "has_vk",
+        "КЗ": "plan_has_kz_raw",
+        "ВК": "plan_has_vk_raw",
         "ABC": "abc",
         "Срок": "lead_time_days",
         "Фев-26*": "plan_feb26_units",
@@ -249,6 +392,8 @@ def main():
         "Факт14м": "fact_14m_units",
         "Прогноз6м": "forecast_6m_units",
     })
+    plan_agg["plan_has_kz"] = plan_agg["plan_has_kz_raw"].map(truthy_flag)
+    plan_agg["plan_has_vk"] = plan_agg["plan_has_vk_raw"].map(truthy_flag)
 
     fact_agg = fact.groupby("article_key").agg({
         "MonthYear|Нашартикул": first_nonnull,
@@ -272,8 +417,8 @@ def main():
         "MonthYear|Юрлицо": "legal_entity_fact",
         "MonthYear|Бренд": "brand_fact",
         "MonthYear|Актуальностьтовара": "actuality",
-        "MonthYear|ЕстьвКЗ": "fact_has_kz",
-        "MonthYear|ЕстьвВК": "fact_has_vk",
+        "MonthYear|ЕстьвКЗ": "fact_has_kz_raw",
+        "MonthYear|ЕстьвВК": "fact_has_vk_raw",
         "MonthYear|Теги": "tags",
         "MonthYear|Срокпроизводства": "fact_lead_time_days",
         "Февраль-2026|Заказы,шт.": "fact_feb26_units",
@@ -285,6 +430,8 @@ def main():
         "Total|Чистаявыручка,руб.": "fact_total_net_revenue",
         "Total|Вал.маржа,%": "fact_total_margin_pct",
     })
+    fact_agg["fact_has_kz"] = fact_agg["fact_has_kz_raw"].map(truthy_flag)
+    fact_agg["fact_has_vk"] = fact_agg["fact_has_vk_raw"].map(truthy_flag)
 
     leader_agg = leader.groupby("article_key").agg({
         "Бренд": "first",
@@ -344,14 +491,32 @@ def main():
         top_return_reason=("Причина возврата", first_nonnull),
     ).reset_index()
 
+    if not assignments.empty:
+        assignments = assignments.sort_values(["owner_priority", "article_key"]).copy()
+        owner_agg = assignments.groupby("article_key").agg({
+            "owner": first_nonnull,
+            "owner_source": first_nonnull,
+            "registry_status": first_nonnull,
+            "registry_has_kz": first_nonnull,
+            "registry_has_vk": first_nonnull,
+        }).reset_index().rename(columns={
+            "owner": "owner_name",
+            "owner_source": "owner_source",
+            "registry_status": "registry_status",
+            "registry_has_kz": "registry_has_kz",
+            "registry_has_vk": "registry_has_vk",
+        })
+    else:
+        owner_agg = pd.DataFrame(columns=["article_key", "owner_name", "owner_source", "registry_status", "registry_has_kz", "registry_has_vk"])
+
     all_keys = pd.Index(sorted(set(pd.concat([
         prod_agg["article_key"], repr_agg["article_key"], plan_agg["article_key"],
         fact_agg["article_key"], leader_agg["article_key"], orders_agg["article_key"],
-        stocks_agg["article_key"], returns_agg["article_key"]
+        stocks_agg["article_key"], returns_agg["article_key"], owner_agg["article_key"]
     ]).dropna().unique())))
 
     sku = pd.DataFrame({"article_key": all_keys})
-    for df in [repr_agg, prod_agg, plan_agg, fact_agg, leader_agg, orders_agg, stocks_agg, returns_agg]:
+    for df in [repr_agg, prod_agg, plan_agg, fact_agg, leader_agg, orders_agg, stocks_agg, returns_agg, owner_agg]:
         sku = sku.merge(df, on="article_key", how="left")
 
     sku["article"] = sku["article"].fillna(sku["article_plan"]).fillna(sku["article_fact"]).fillna(sku["article_key"])
@@ -374,7 +539,7 @@ def main():
         "pending_count", "delivering_count", "delivered_count", "ozon_available_stock_report",
         "ozon_in_supply_request", "ozon_in_transit", "returns_in_transit", "returns_count", "returns_units",
         "returns_value", "content_romi", "content_revenue", "content_income", "content_clicks", "content_posts",
-        "content_orders"
+        "content_orders", "lead_time_days", "fact_lead_time_days"
     ]
     for c in numeric_columns:
         if c in sku.columns:
@@ -391,8 +556,18 @@ def main():
     sku["wb_negative_margin_flag"] = sku["wb_margin_pct"].fillna(0) < 0
     sku["ozon_negative_margin_flag"] = sku["ozon_margin_pct"].fillna(0) < 0
     sku["negative_margin_flag"] = sku["wb_negative_margin_flag"] | sku["ozon_negative_margin_flag"]
+    sku["to_work_wb_flag"] = sku["under_plan_flag"] & sku["wb_negative_margin_flag"]
+    sku["to_work_ozon_flag"] = sku["under_plan_flag"] & sku["ozon_negative_margin_flag"]
     sku["to_work_flag"] = sku["under_plan_flag"] & sku["negative_margin_flag"]
     sku["min_margin_pct"] = sku[["wb_margin_pct", "ozon_margin_pct"]].min(axis=1, skipna=True)
+
+    sku["assigned_flag"] = sku["owner_name"].notna() & sku["owner_name"].astype(str).str.strip().ne("")
+    sku["external_kz_flag"] = sku.apply(lambda row: choose_bool(row, ["fact_has_kz", "plan_has_kz", "registry_has_kz"]), axis=1)
+    sku["external_vk_flag"] = sku.apply(lambda row: choose_bool(row, ["fact_has_vk", "plan_has_vk", "registry_has_vk"]), axis=1)
+    sku["external_any_flag"] = sku["external_kz_flag"] | sku["external_vk_flag"]
+    sku["has_wb_flag"] = sku[["wb_current_price", "wb_min_price", "wb_stock", "wb_margin_pct"]].notna().any(axis=1) | sku["wb_stock"].fillna(0).gt(0)
+    sku["has_ozon_flag"] = sku[["ozon_current_price", "ozon_min_price", "ozon_stock_final", "ozon_margin_pct"]].notna().any(axis=1) | sku["ozon_stock_final"].fillna(0).gt(0)
+
     sku["focus_score"] = (
         sku["to_work_flag"].fillna(False).astype(int) * 4
         + sku["under_plan_flag"].fillna(False).astype(int) * 2
@@ -401,23 +576,46 @@ def main():
         + sku["price_below_min_wb"].fillna(False).astype(int)
         + sku["price_below_min_ozon"].fillna(False).astype(int)
         + sku["high_return_flag"].fillna(False).astype(int)
-        + (sku["content_romi"].fillna(0) > 300).astype(int)
+        + sku["external_any_flag"].fillna(False).astype(int)
+        + sku["assigned_flag"].fillna(False).astype(int) * 0
     )
-    sku["focus_reasons"] = sku.apply(lambda r: "; ".join([
-        x for x in [
-            "В работе: ниже плана и отрицательная маржа" if bool(r["to_work_flag"]) else "",
-            "Низкое выполнение плана" if bool(r["under_plan_flag"]) else "",
-            "Отрицательная маржа WB" if bool(r["wb_negative_margin_flag"]) else "",
-            "Отрицательная маржа Ozon" if bool(r["ozon_negative_margin_flag"]) else "",
-            "Низкий остаток" if bool(r["low_stock_flag"]) else "",
-            "WB ниже min price" if bool(r["price_below_min_wb"]) else "",
-            "Ozon ниже min price" if bool(r["price_below_min_ozon"]) else "",
-            "Много возвратов" if bool(r["high_return_flag"]) else "",
-            "Сильный контент ROMI" if pd.notna(r["content_romi"]) and r["content_romi"] > 300 else "",
-        ] if x
-    ]), axis=1)
 
-    # dashboard
+    def build_focus_reasons(r):
+        parts = []
+        if bool(r["to_work_wb_flag"]) and bool(r["to_work_ozon_flag"]):
+            parts.append("В работе: ниже плана и отрицательная маржа на WB и Ozon")
+        elif bool(r["to_work_wb_flag"]):
+            parts.append("В работе WB: ниже плана и отрицательная маржа")
+        elif bool(r["to_work_ozon_flag"]):
+            parts.append("В работе Ozon: ниже плана и отрицательная маржа")
+        elif bool(r["to_work_flag"]):
+            parts.append("В работе: ниже плана и отрицательная маржа")
+        if bool(r["under_plan_flag"]):
+            parts.append("Низкое выполнение плана")
+        if bool(r["wb_negative_margin_flag"]):
+            parts.append("Отрицательная маржа WB")
+        if bool(r["ozon_negative_margin_flag"]):
+            parts.append("Отрицательная маржа Ozon")
+        if bool(r["low_stock_flag"]):
+            parts.append("Низкий остаток")
+        if bool(r["price_below_min_wb"]):
+            parts.append("WB ниже min price")
+        if bool(r["price_below_min_ozon"]):
+            parts.append("Ozon ниже min price")
+        if bool(r["high_return_flag"]):
+            parts.append("Много возвратов")
+        if pd.notna(r["content_romi"]) and r["content_romi"] > 300:
+            parts.append("Сильный контент ROMI")
+        if bool(r["external_kz_flag"]):
+            parts.append("Есть внешний трафик КЗ")
+        if bool(r["external_vk_flag"]):
+            parts.append("Есть внешний трафик VK")
+        if not bool(r["assigned_flag"]):
+            parts.append("Owner не закреплён")
+        return "; ".join(parts)
+
+    sku["focus_reasons"] = sku.apply(build_focus_reasons, axis=1)
+
     brand_summary = sku.groupby("brand").agg(
         sku_count=("article_key", "count"),
         total_stock=("total_mp_stock", "sum"),
@@ -428,6 +626,8 @@ def main():
         avg_romi=("content_romi", "mean"),
         negative_margin_sku=("negative_margin_flag", "sum"),
         to_work_sku=("to_work_flag", "sum"),
+        assigned_sku=("assigned_flag", "sum"),
+        external_any_sku=("external_any_flag", "sum"),
     ).reset_index()
     brand_summary["plan_completion_feb26_pct"] = brand_summary["feb_fact_units"] / brand_summary["feb_plan_units"]
 
@@ -438,52 +638,65 @@ def main():
         "generatedAt": datetime.now().isoformat(timespec="seconds"),
         "dataFreshness": {
             "planFactMonth": "Февраль 2026",
-            "ordersSnapshot": files["orders"],
+            "ordersSnapshot": required_files["orders"],
             "contentPeriods": ["09.03.2026 - 15.03.2026", "16.03.2026 - 22.03.2026"],
             "launchPlanHorizon": "Апрель 2026 — Октябрь 2026",
+            "ownerFiles": [str(p.name) for p in optional_paths.values() if p],
         },
         "cards": [
             {"label": "SKU в базе", "value": int(sku["article_key"].nunique()), "hint": f"В портал попал только бренд {brand_filter or 'Алтея'}"},
-            {"label": "SKU в работе", "value": int(sku["to_work_flag"].sum()), "hint": "Ниже плана + отрицательная маржа"},
+            {"label": "SKU в работе", "value": int(sku["to_work_flag"].sum()), "hint": "Ниже плана + отрицательная маржа хотя бы на одном MP"},
+            {"label": "В работе WB", "value": int(sku["to_work_wb_flag"].sum()), "hint": "Ниже плана + маржа < 0 на WB"},
+            {"label": "В работе Ozon", "value": int(sku["to_work_ozon_flag"].sum()), "hint": "Ниже плана + маржа < 0 на Ozon"},
             {"label": "Отрицательная маржа", "value": int(sku["negative_margin_flag"].sum()), "hint": "Хотя бы на одном MP маржа < 0"},
+            {"label": "Закреплено за owner", "value": int(sku["assigned_flag"].sum()), "hint": "Нашли закрепление в рабочих реестрах"},
+            {"label": "Без owner", "value": int((~sku["assigned_flag"]).sum()), "hint": "Нужно дозакрепить вручную"},
+            {"label": "Внешний трафик КЗ", "value": int(sku["external_kz_flag"].sum()), "hint": "По факту/плану/реестрам"},
+            {"label": "Внешний трафик VK", "value": int(sku["external_vk_flag"].sum()), "hint": "По факту/плану/реестрам"},
             {"label": "Остатки MP, шт.", "value": int(sku["total_mp_stock"].fillna(0).sum()), "hint": "WB + Ozon по текущему срезу"},
-            {"label": "Снимок заказов, ₽", "value": int(round(sku["orders_value"].fillna(0).sum())), "hint": f"Агрегация из файла {files['orders']}"},
-            {"label": "План Feb 2026, шт.", "value": int(round(sku["plan_feb26_units"].fillna(0).sum())), "hint": f"Из файла {files['plan']}"},
-            {"label": "Факт Feb 2026, шт.", "value": int(round(sku["fact_feb26_units"].fillna(0).sum())), "hint": f"Из файла {files['plan']}"},
-            {"label": "Высокие возвраты", "value": int(sku["high_return_flag"].sum()), "hint": "SKU с 50+ возвратами в доступном выгрузе"},
+            {"label": "План Feb 2026, шт.", "value": int(round(sku["plan_feb26_units"].fillna(0).sum())), "hint": f"Из файла {required_files['plan']}"},
+            {"label": "Факт Feb 2026, шт.", "value": int(round(sku["fact_feb26_units"].fillna(0).sum())), "hint": f"Из файла {required_files['plan']}"},
         ],
         "brandSummary": rows_to_records(brand_summary.sort_values("orders_value", ascending=False), [
             "brand", "sku_count", "total_stock", "orders_value", "feb_plan_units", "feb_fact_units",
-            "plan_completion_feb26_pct", "returns_units", "avg_romi", "negative_margin_sku", "to_work_sku"
+            "plan_completion_feb26_pct", "returns_units", "avg_romi", "negative_margin_sku", "to_work_sku", "assigned_sku", "external_any_sku"
         ]),
         "focusTop": rows_to_records(focus[[
             "article", "brand", "product_name_final", "focus_score", "focus_reasons",
-            "plan_completion_feb26_pct", "total_mp_stock", "content_romi"
+            "plan_completion_feb26_pct", "total_mp_stock", "content_romi", "owner_name",
+            "external_kz_flag", "external_vk_flag"
         ]].head(16)),
         "topContent": rows_to_records(sku[sku["content_romi"].notna()].sort_values("content_romi", ascending=False)[[
             "article", "brand", "product_name_final", "content_romi", "content_income",
-            "content_revenue", "content_posts", "content_clicks"
+            "content_revenue", "content_posts", "content_clicks", "owner_name"
         ]].head(12)),
         "underPlan": rows_to_records(sku[sku["under_plan_flag"]].sort_values("plan_completion_feb26_pct")[[
             "article", "brand", "product_name_final", "plan_feb26_units", "fact_feb26_units",
-            "plan_completion_feb26_pct", "total_mp_stock", "negative_margin_flag"
+            "plan_completion_feb26_pct", "total_mp_stock", "negative_margin_flag", "owner_name"
         ]].head(12)),
         "toWork": rows_to_records(work_queue[[
             "article", "brand", "product_name_final", "plan_completion_feb26_pct", "total_mp_stock",
-            "wb_margin_pct", "ozon_margin_pct", "focus_reasons"
+            "wb_margin_pct", "ozon_margin_pct", "focus_reasons", "owner_name", "external_kz_flag", "external_vk_flag"
         ]].head(16)),
         "lowStock": rows_to_records(sku.sort_values("total_mp_stock")[[
             "article", "brand", "product_name_final", "total_mp_stock",
-            "wb_stock", "ozon_stock_final", "ozon_in_transit", "orders_value"
+            "wb_stock", "ozon_stock_final", "ozon_in_transit", "orders_value", "owner_name"
         ]].head(12)),
         "topReturns": rows_to_records(sku.sort_values("returns_units", ascending=False)[[
-            "article", "brand", "product_name_final", "returns_units", "returns_count", "top_return_reason"
+            "article", "brand", "product_name_final", "returns_units", "returns_count", "top_return_reason", "owner_name"
         ]].head(12)),
+        "unassigned": rows_to_records(sku[~sku["assigned_flag"]].sort_values(["to_work_flag", "focus_score", "orders_value"], ascending=[False, False, False])[[
+            "article", "brand", "product_name_final", "focus_score", "focus_reasons", "plan_completion_feb26_pct", "wb_margin_pct", "ozon_margin_pct"
+        ]].head(20)),
     }
 
-    # skus json
     sku_records = []
     for _, r in sku.iterrows():
+        channels = []
+        if bool(r["external_kz_flag"]):
+            channels.append("КЗ")
+        if bool(r["external_vk_flag"]):
+            channels.append("VK")
         sku_records.append({
             "article": clean_val(r["article"]),
             "articleKey": clean_val(r["article_key"]),
@@ -496,10 +709,21 @@ def main():
             "abc": clean_val(r["abc"]),
             "leadTimeDays": clean_val(r["lead_time_days"] if pd.notna(r["lead_time_days"]) else r["fact_lead_time_days"]),
             "status": clean_val(r["status"] if pd.notna(r["status"]) else r["actuality"]),
+            "registryStatus": clean_val(r["registry_status"]),
             "rating": clean_val(r["rating"]),
             "reviews": clean_val(r["reviews"]),
             "focusScore": clean_val(r["focus_score"]),
             "focusReasons": clean_val(r["focus_reasons"]),
+            "owner": {
+                "name": clean_val(r["owner_name"]),
+                "source": clean_val(r["owner_source"]),
+                "registryStatus": clean_val(r["registry_status"]),
+            },
+            "traffic": {
+                "kz": bool(r["external_kz_flag"]),
+                "vk": bool(r["external_vk_flag"]),
+                "channels": channels,
+            },
             "wb": {
                 "currentPrice": clean_val(r["wb_current_price"]),
                 "minPrice": clean_val(r["wb_min_price"]),
@@ -565,6 +789,8 @@ def main():
                 "orders": clean_val(r["content_orders"]),
             },
             "flags": {
+                "hasWB": bool(r["has_wb_flag"]),
+                "hasOzon": bool(r["has_ozon_flag"]),
                 "lowStock": bool(r["low_stock_flag"]) if pd.notna(r["low_stock_flag"]) else False,
                 "underPlan": bool(r["under_plan_flag"]) if pd.notna(r["under_plan_flag"]) else False,
                 "highReturn": bool(r["high_return_flag"]) if pd.notna(r["high_return_flag"]) else False,
@@ -572,6 +798,12 @@ def main():
                 "wbNegativeMargin": bool(r["wb_negative_margin_flag"]) if pd.notna(r["wb_negative_margin_flag"]) else False,
                 "ozonNegativeMargin": bool(r["ozon_negative_margin_flag"]) if pd.notna(r["ozon_negative_margin_flag"]) else False,
                 "toWork": bool(r["to_work_flag"]) if pd.notna(r["to_work_flag"]) else False,
+                "toWorkWB": bool(r["to_work_wb_flag"]) if pd.notna(r["to_work_wb_flag"]) else False,
+                "toWorkOzon": bool(r["to_work_ozon_flag"]) if pd.notna(r["to_work_ozon_flag"]) else False,
+                "assigned": bool(r["assigned_flag"]),
+                "hasExternalTraffic": bool(r["external_any_flag"]),
+                "hasKZ": bool(r["external_kz_flag"]),
+                "hasVK": bool(r["external_vk_flag"]),
             },
         })
 
@@ -589,41 +821,11 @@ def main():
         "may", "june", "july", "august"
     ]
 
-    meetings = [
-        {"id": "weekly-mp", "title": "Weekly: операционная планёрка МП", "cadence": "Еженедельно · понедельник", "duration": "60–90 мин",
-         "question": "Что делаем по конверсиям, продвижению, рейтингам и запасам на этой неделе?",
-         "participants": ["Команда МП WB/Ozon", "Маркетинг", "Внешний трафик"],
-         "outputs": ["Список задач на неделю с owner", "Решения по ставкам РК", "Карточки на правку", "Сигналы по запасам", "Решения по акциям и ценам"]},
-        {"id": "weekly-fin", "title": "Weekly: финансовая операционная", "cadence": "Еженедельно · четверг", "duration": "30–45 мин",
-         "question": "Где мы по ДРР, бюджету РК и недельному план/факту?",
-         "participants": ["Финансы/аналитика", "Команда МП", "Маркетинг/трафик"],
-         "outputs": ["Недельный отчёт план/факт", "Решения по перераспределению бюджета", "SKU с проблемным ДРР", "Подтверждённый план на следующую неделю"]},
-        {"id": "monthly-demand", "title": "Monthly: Demand + логистика + supply", "cadence": "Ежемесячно · 1-я неделя", "duration": "120–150 мин",
-         "question": "Каков единый план продаж, хватит ли товара, поставок и производства?",
-         "participants": ["Бренд-лид", "МП", "Маркетинг", "Контент-завод", "B2B/KAM", "Финансы", "Операции/закупка"],
-         "outputs": ["Единый план продаж", "Прогноз спроса 1–3 месяца", "SKU в зоне риска OOS", "Календарь поставок", "План закупок сырья и упаковки"]},
-        {"id": "monthly-fin", "title": "Monthly: финансовая стратегическая", "cadence": "Ежемесячно · 2-я неделя", "duration": "60–90 мин",
-         "question": "Где мы по марже, P&L, РРЦ/min price и бюджету следующего месяца?",
-         "participants": ["Финансы/аналитика", "Владельцы брендов", "CEO — по повестке"],
-         "outputs": ["Финотчёт по брендам", "Решения по min price и РРЦ", "Бюджет следующего месяца", "Список финансовых исключений"]},
-        {"id": "monthly-mktg", "title": "Monthly: Marketing Review", "cadence": "Ежемесячно · 2-я или 3-я неделя", "duration": "60–90 мин",
-         "question": "Какие товары в фокусе месяца и как распределяем КЗ / таргет / инфлюенсеров?",
-         "participants": ["Бренд-директора", "Маркетинг", "Команда МП", "Контент-завод"],
-         "outputs": ["Фокусные товары месяца", "Маркетинговый календарь", "Бюджет по инструментам и SKU", "Контент-план с owner"]},
-        {"id": "pmr", "title": "PMR: Product Management Review", "cadence": "Квартально + mini PMR ежемесячно", "duration": "120–150 мин / 45–60 мин",
-         "question": "Что запускаем, что выводим, какие правила по новинкам, матрице и unit-экономике?",
-         "participants": ["CEO", "Бренд-директора", "Продукт", "Маркетинг", "Операции", "Финансы"],
-         "outputs": ["Статусы матрицы core/growth/new/exit", "Калькуляторы и РРЦ/МРЦ", "Решения по запуску/выводу SKU", "Календарь новинок"]},
-    ]
-
-    seed_comments = {
-        "comments": [],
-        "tasks": []
-    }
-
-    for _, row in work_queue.head(3).iterrows():
+    seed_comments = {"comments": [], "tasks": []}
+    for _, row in work_queue.head(5).iterrows():
         article_key = clean_val(row["article_key"])
         label = clean_val(row["product_name_final"] or row["article"])
+        task_owner = clean_val(row["owner_name"]) or "Бренд-лид"
         seed_comments["comments"].append({
             "articleKey": article_key,
             "author": "Система",
@@ -634,29 +836,25 @@ def main():
         })
         seed_comments["tasks"].append({
             "articleKey": article_key,
-            "owner": "Бренд-лид",
+            "owner": task_owner,
             "due": datetime.now().date().isoformat(),
             "status": "open",
             "title": "Разобрать маржу, цену и план действий по SKU в работе"
         })
+    for _, row in sku[~sku["assigned_flag"]].sort_values(["focus_score", "orders_value"], ascending=[False, False]).head(3).iterrows():
+        article_key = clean_val(row["article_key"])
+        seed_comments["tasks"].append({
+            "articleKey": article_key,
+            "owner": "Назначить owner",
+            "due": datetime.now().date().isoformat(),
+            "status": "open",
+            "title": "Закрепить ответственного за SKU"
+        })
 
-    if not seed_comments["comments"]:
-        for _, row in sku.sort_values(["focus_score", "orders_value"], ascending=[False, False]).head(2).iterrows():
-            article_key = clean_val(row["article_key"])
-            seed_comments["comments"].append({
-                "articleKey": article_key,
-                "author": "Система",
-                "team": "Маркетинг",
-                "createdAt": datetime.now().replace(microsecond=0).isoformat(),
-                "text": "Проверьте SKU в фокусе: нужен комментарий по следующему шагу и owner.",
-                "type": "signal"
-            })
-
-    # write json
     (out / "dashboard.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
     (out / "skus.json").write_text(json.dumps(sku_records, ensure_ascii=False, indent=2), encoding="utf-8")
     (out / "launches.json").write_text(json.dumps(rows_to_records(launch_out), ensure_ascii=False, indent=2), encoding="utf-8")
-    (out / "meetings.json").write_text(json.dumps(meetings, ensure_ascii=False, indent=2), encoding="utf-8")
+    (out / "meetings.json").write_text(json.dumps(MEETING_RHYTHM, ensure_ascii=False, indent=2), encoding="utf-8")
     (out / "seed_comments.json").write_text(json.dumps(seed_comments, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(f"Done. JSON written to {out}")

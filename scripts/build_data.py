@@ -821,6 +821,151 @@ def main():
         "may", "june", "july", "august"
     ]
 
+
+    repricer_columns = {
+        "Артикул": first_nonnull,
+        "Направление": first_nonnull,
+        "Бренд": first_nonnull,
+        "Статус": first_nonnull,
+        "Признак товара": first_nonnull,
+        "Себестоимость, ₽": "max",
+        "Базовая цена WB, ₽": "max",
+        "Мин. цена WB, ₽": "max",
+        "Текущая цена WB, ₽": "max",
+        "Цена покупателя WB, ₽": "max",
+        "Остаток WB, шт.": "max",
+        "Маржа Total WB, %": "max",
+        "Оборач. общая, дн.": "max",
+        "Целевая общая оборач., дн.": "max",
+        "Итоговая стратегия WB": first_nonnull,
+        "Причина WB": first_nonnull,
+        "Реком. цена WB, ₽": "max",
+        "Изм. WB к текущей, %": "max",
+        "Новая цена покупателя WB, ₽": "max",
+        "Новая маржа Total WB, %": "max",
+        "Мин. порог маржи без рекламы WB, %": "max",
+        "Базовый порог маржи без рекламы WB, %": "max",
+        "Текущая маржа без рекламы WB, %": "max",
+        "Новая маржа без рекламы WB, %": "max",
+        "Базовая цена Ozon, ₽": "max",
+        "Мин. цена Ozon, ₽": "max",
+        "Текущая цена Ozon, ₽": "max",
+        "Цена покупателя Ozon, ₽": "max",
+        "Остаток Ozon, шт.": "max",
+        "Маржа Total Ozon, %": "max",
+        "Оборач. общая, дн..1": "max",
+        "Целевая общая оборач., дн..1": "max",
+        "Итоговая стратегия Ozon": first_nonnull,
+        "Причина Ozon": first_nonnull,
+        "Реком. цена Ozon, ₽": "max",
+        "Изм. Ozon к текущей, %": "max",
+        "Новая цена покупателя Ozon, ₽": "max",
+        "Новая маржа Total Ozon, %": "max",
+        "Мин. порог маржи без рекламы Ozon, %": "max",
+        "Базовый порог маржи без рекламы Ozon, %": "max",
+        "Текущая маржа без рекламы Ozon, %": "max",
+        "Новая маржа без рекламы Ozon, %": "max",
+    }
+    repricer_existing = {col: agg for col, agg in repricer_columns.items() if col in repricer.columns}
+    repricer_brand = repricer[repricer["Бренд"].astype(str).str.strip() == args.brand_filter].copy()
+    repricer_records = []
+    repricer_summary = {
+        "skuCount": 0,
+        "wbChangeCount": 0,
+        "ozonChangeCount": 0,
+        "wbBelowMinCount": 0,
+        "ozonBelowMinCount": 0,
+        "wbMarginRiskCount": 0,
+        "ozonMarginRiskCount": 0,
+        "wbEqualizeCount": 0,
+        "ozonEqualizeCount": 0,
+        "wbTurnoverCount": 0,
+        "ozonTurnoverCount": 0,
+    }
+    if not repricer_brand.empty and repricer_existing:
+        repricer_brand_agg = repricer_brand.groupby("article_key").agg(repricer_existing).reset_index()
+        sku_name_map = sku.set_index("article_key")["product_name_final"].to_dict()
+        sku_article_map = sku.set_index("article_key")["article"].to_dict()
+        for _, row in repricer_brand_agg.iterrows():
+            wb_changed = pd.notna(row.get("Реком. цена WB, ₽")) and pd.notna(row.get("Текущая цена WB, ₽")) and abs(float(row.get("Реком. цена WB, ₽")) - float(row.get("Текущая цена WB, ₽"))) >= 1
+            ozon_changed = pd.notna(row.get("Реком. цена Ozon, ₽")) and pd.notna(row.get("Текущая цена Ozon, ₽")) and abs(float(row.get("Реком. цена Ozon, ₽")) - float(row.get("Текущая цена Ozon, ₽"))) >= 1
+            wb_below = pd.notna(row.get("Текущая цена WB, ₽")) and pd.notna(row.get("Мин. цена WB, ₽")) and float(row.get("Текущая цена WB, ₽")) < float(row.get("Мин. цена WB, ₽"))
+            ozon_below = pd.notna(row.get("Текущая цена Ozon, ₽")) and pd.notna(row.get("Мин. цена Ozon, ₽")) and float(row.get("Текущая цена Ozon, ₽")) < float(row.get("Мин. цена Ozon, ₽"))
+            wb_margin_risk = pd.notna(row.get("Текущая маржа без рекламы WB, %")) and pd.notna(row.get("Мин. порог маржи без рекламы WB, %")) and float(row.get("Текущая маржа без рекламы WB, %")) < float(row.get("Мин. порог маржи без рекламы WB, %"))
+            ozon_margin_risk = pd.notna(row.get("Текущая маржа без рекламы Ozon, %")) and pd.notna(row.get("Мин. порог маржи без рекламы Ozon, %")) and float(row.get("Текущая маржа без рекламы Ozon, %")) < float(row.get("Мин. порог маржи без рекламы Ozon, %"))
+            if wb_changed:
+                repricer_summary["wbChangeCount"] += 1
+            if ozon_changed:
+                repricer_summary["ozonChangeCount"] += 1
+            if wb_below:
+                repricer_summary["wbBelowMinCount"] += 1
+            if ozon_below:
+                repricer_summary["ozonBelowMinCount"] += 1
+            if wb_margin_risk:
+                repricer_summary["wbMarginRiskCount"] += 1
+            if ozon_margin_risk:
+                repricer_summary["ozonMarginRiskCount"] += 1
+            if row.get("Итоговая стратегия WB") == "Выравнивание цен MP":
+                repricer_summary["wbEqualizeCount"] += 1
+            if row.get("Итоговая стратегия Ozon") == "Выравнивание цен MP":
+                repricer_summary["ozonEqualizeCount"] += 1
+            if row.get("Итоговая стратегия WB") == "Оборачиваемость общая":
+                repricer_summary["wbTurnoverCount"] += 1
+            if row.get("Итоговая стратегия Ozon") == "Оборачиваемость общая":
+                repricer_summary["ozonTurnoverCount"] += 1
+            repricer_records.append({
+                "articleKey": clean_val(row.get("article_key")),
+                "article": clean_val(sku_article_map.get(row.get("article_key")) or row.get("Артикул")),
+                "name": clean_val(sku_name_map.get(row.get("article_key")) or row.get("Артикул")),
+                "brand": clean_val(row.get("Бренд")),
+                "legalEntity": clean_val(row.get("Направление")),
+                "status": clean_val(row.get("Статус")),
+                "tag": clean_val(row.get("Признак товара")),
+                "cost": clean_val(row.get("Себестоимость, ₽")),
+                "wb": {
+                    "basePrice": clean_val(row.get("Базовая цена WB, ₽")),
+                    "minPrice": clean_val(row.get("Мин. цена WB, ₽")),
+                    "currentPrice": clean_val(row.get("Текущая цена WB, ₽")),
+                    "buyerPrice": clean_val(row.get("Цена покупателя WB, ₽")),
+                    "stock": clean_val(row.get("Остаток WB, шт.")),
+                    "turnoverDays": clean_val(row.get("Оборач. общая, дн.")),
+                    "targetTurnoverDays": clean_val(row.get("Целевая общая оборач., дн.")),
+                    "marginPct": clean_val(row.get("Маржа Total WB, %")),
+                    "recPrice": clean_val(row.get("Реком. цена WB, ₽")),
+                    "changePct": clean_val(row.get("Изм. WB к текущей, %")),
+                    "newBuyerPrice": clean_val(row.get("Новая цена покупателя WB, ₽")),
+                    "newMarginPct": clean_val(row.get("Новая маржа Total WB, %")),
+                    "strategy": clean_val(row.get("Итоговая стратегия WB")),
+                    "reason": clean_val(row.get("Причина WB")),
+                    "marginNoAdsMinPct": clean_val(row.get("Мин. порог маржи без рекламы WB, %")),
+                    "marginNoAdsBasePct": clean_val(row.get("Базовый порог маржи без рекламы WB, %")),
+                    "marginNoAdsCurrentPct": clean_val(row.get("Текущая маржа без рекламы WB, %")),
+                    "marginNoAdsNewPct": clean_val(row.get("Новая маржа без рекламы WB, %")),
+                },
+                "ozon": {
+                    "basePrice": clean_val(row.get("Базовая цена Ozon, ₽")),
+                    "minPrice": clean_val(row.get("Мин. цена Ozon, ₽")),
+                    "currentPrice": clean_val(row.get("Текущая цена Ozon, ₽")),
+                    "buyerPrice": clean_val(row.get("Цена покупателя Ozon, ₽")),
+                    "stock": clean_val(row.get("Остаток Ozon, шт.")),
+                    "turnoverDays": clean_val(row.get("Оборач. общая, дн..1")),
+                    "targetTurnoverDays": clean_val(row.get("Целевая общая оборач., дн..1")),
+                    "marginPct": clean_val(row.get("Маржа Total Ozon, %")),
+                    "recPrice": clean_val(row.get("Реком. цена Ozon, ₽")),
+                    "changePct": clean_val(row.get("Изм. Ozon к текущей, %")),
+                    "newBuyerPrice": clean_val(row.get("Новая цена покупателя Ozon, ₽")),
+                    "newMarginPct": clean_val(row.get("Новая маржа Total Ozon, %")),
+                    "strategy": clean_val(row.get("Итоговая стратегия Ozon")),
+                    "reason": clean_val(row.get("Причина Ozon")),
+                    "marginNoAdsMinPct": clean_val(row.get("Мин. порог маржи без рекламы Ozon, %")),
+                    "marginNoAdsBasePct": clean_val(row.get("Базовый порог маржи без рекламы Ozon, %")),
+                    "marginNoAdsCurrentPct": clean_val(row.get("Текущая маржа без рекламы Ozon, %")),
+                    "marginNoAdsNewPct": clean_val(row.get("Новая маржа без рекламы Ozon, %")),
+                },
+            })
+        repricer_summary["skuCount"] = len(repricer_records)
+
+
     seed_comments = {"comments": [], "tasks": []}
     for _, row in work_queue.head(5).iterrows():
         article_key = clean_val(row["article_key"])
@@ -856,6 +1001,7 @@ def main():
     (out / "launches.json").write_text(json.dumps(rows_to_records(launch_out), ensure_ascii=False, indent=2), encoding="utf-8")
     (out / "meetings.json").write_text(json.dumps(MEETING_RHYTHM, ensure_ascii=False, indent=2), encoding="utf-8")
     (out / "seed_comments.json").write_text(json.dumps(seed_comments, ensure_ascii=False, indent=2), encoding="utf-8")
+    (out / "repricer.json").write_text(json.dumps({"generatedAt": datetime.now().replace(microsecond=0).isoformat(), "summary": repricer_summary, "rows": repricer_records}, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(f"Done. JSON written to {out}")
 

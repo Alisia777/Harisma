@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Altea Portal · GitHub Pages MVP</title>
-  <meta name="description" content="Портал бренда Алтея и сотрудников: SKU, план/факт, отрицательная маржа, новинки, IBP-ритм.">
+  <meta name="description" content="Портал бренда Алтея и сотрудников: SKU, план/факт, контроль задач, отрицательная маржа, новинки, IBP-ритм.">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -22,7 +22,11 @@
       <nav class="nav">
         <button class="nav-btn active" data-view="dashboard">
           <span>Обзор</span>
-          <small>Dashboard</small>
+          <small>Что требует внимания</small>
+        </button>
+        <button class="nav-btn" data-view="control">
+          <span>Контроль задач</span>
+          <small>Свод + чек-лист</small>
         </button>
         <button class="nav-btn" data-view="skus">
           <span>Реестр SKU</span>
@@ -40,7 +44,7 @@
 
       <div class="sidebar-foot">
         <h4>Что внутри сейчас</h4>
-        <p>План/факт по SKU, явный фильтр WB/Ozon, owner по артикулам, иконки внешнего трафика, календарь новинок, карточка SKU, локальные комментарии и задачи.</p>
+        <p>План/факт по SKU, явный фильтр WB/Ozon, owner по артикулам, иконки внешнего трафика, контроль задач, чек-лист недели, календарь новинок и карточка SKU.</p>
       </div>
 
       <div class="sidebar-foot">
@@ -53,10 +57,10 @@
       <div class="topbar">
         <div>
           <h1>Портал бренда Алтея</h1>
-          <p>Стартовая версия под развёртывание на GitHub Pages: только Алтея, белые бейджи артикулов, явный фильтр WB/Ozon, owner по SKU, иконки внешнего трафика и отдельная логика «в работу» по марже.</p>
+          <p>Стартовая версия под развёртывание на GitHub Pages: только Алтея, белые бейджи артикулов, явный фильтр WB/Ozon, owner по SKU, иконки внешнего трафика, отдельная логика «в работу» по марже и визуальный контроль задач.</p>
         </div>
         <div class="top-actions">
-          <button class="btn" id="exportStorageBtn">Экспорт комментариев</button>
+          <button class="btn" id="exportStorageBtn">Экспорт рабочего JSON</button>
           <label class="btn file-input">Импорт JSON
             <input type="file" id="importStorageInput" accept="application/json">
           </label>
@@ -66,6 +70,7 @@
       <div class="banner hidden" id="appError"></div>
 
       <section class="view active" id="view-dashboard"></section>
+      <section class="view" id="view-control"></section>
       <section class="view" id="view-skus"></section>
       <section class="view" id="view-launches"></section>
       <section class="view" id="view-meetings"></section>

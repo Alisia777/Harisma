@@ -4,12 +4,57 @@ const state = {
   launches: [],
   meetings: [],
   storage: { comments: [], tasks: [] },
-  filters: { search: '', segment: 'all', focus: 'all', market: 'all', owner: 'all', traffic: 'all', assignment: 'all' },
+  filters: {
+    search: '',
+    segment: 'all',
+    focus: 'all',
+    market: 'all',
+    owner: 'all',
+    traffic: 'all',
+    assignment: 'all'
+  },
+  controlFilters: {
+    search: '',
+    owner: 'all',
+    status: 'active',
+    type: 'all',
+    platform: 'all',
+    horizon: 'all',
+    source: 'all'
+  },
   activeView: 'dashboard',
   activeSku: null
 };
 
 const STORAGE_KEY = 'brand-portal-local-v1';
+const ACTIVE_TASK_STATUSES = new Set(['new', 'in_progress', 'waiting_team', 'waiting_decision']);
+
+const TASK_STATUS_META = {
+  new: { label: 'Новая', kind: 'warn' },
+  in_progress: { label: 'В работе', kind: 'info' },
+  waiting_team: { label: 'Ждёт другого отдела', kind: 'warn' },
+  waiting_decision: { label: 'Ждёт решения', kind: 'danger' },
+  done: { label: 'Сделано', kind: 'ok' },
+  cancelled: { label: 'Отменено', kind: '' }
+};
+
+const TASK_TYPE_META = {
+  price_margin: 'Цена / маржа',
+  content: 'Контент / карточка',
+  traffic: 'Трафик / продвижение',
+  supply: 'Остатки / поставка',
+  returns: 'Отзывы / возвраты',
+  assignment: 'Закрепление',
+  launch: 'Новинка',
+  general: 'Общее'
+};
+
+const PRIORITY_META = {
+  critical: { label: 'Критично', kind: 'danger', rank: 4 },
+  high: { label: 'Высокий', kind: 'warn', rank: 3 },
+  medium: { label: 'Средний', kind: 'info', rank: 2 },
+  low: { label: 'Низкий', kind: '', rank: 1 }
+};
 
 const fmt = {
   int(value) {
@@ -28,21 +73,18 @@ const fmt = {
     if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return '—';
     return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: digits }).format(Number(value));
   },
-  text(value) {
-    return value === null || value === undefined || value === '' ? '—' : String(value);
-  },
   date(value) {
     if (!value) return '—';
     try {
       return new Date(value).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' });
     } catch {
-      return value;
+      return String(value);
     }
   }
 };
 
-function escapeHtml(str) {
-  return String(str ?? '')
+function escapeHtml(value) {
+  return String(value ?? '')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
@@ -50,14 +92,40 @@ function escapeHtml(str) {
     .replaceAll("'", '&#39;');
 }
 
+function badge(text, kind = '') {
+  return `<span class="chip ${kind}">${escapeHtml(text)}</span>`;
+}
+
+function scoreChip(score) {
+  if (score >= 5) return badge(`Фокус ${score}`, 'danger');
+  if (score >= 4) return badge(`Фокус ${score}`, 'warn');
+  if (score >= 2) return badge(`Наблюдать ${score}`, 'info');
+  return badge(`База ${score || 0}`);
+}
+
 function linkToSku(articleKey, label) {
   return `<button class="link-btn sku-pill" data-open-sku="${escapeHtml(articleKey)}">${escapeHtml(label || articleKey)}</button>`;
 }
 
 async function loadJson(path) {
-  const res = await fetch(path);
-  if (!res.ok) throw new Error(`Не удалось загрузить ${path}`);
-  return res.json();
+  const response = await fetch(path);
+  if (!response.ok) throw new Error(`Не удалось загрузить ${path}`);
+  return response.json();
+}
+
+function uid(prefix = 'item') {
+  return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function plusDays(days) {
+  const d = new Date();
+  d.setHours(12, 0, 0, 0);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
 }
 
 function loadLocalStorage() {
@@ -78,29 +146,8 @@ function saveLocalStorage() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.storage));
 }
 
-function mergeSeedStorage(seed) {
-  const existingComments = new Set(state.storage.comments.map(c => `${c.articleKey}|${c.author}|${c.createdAt}|${c.text}`));
-  const existingTasks = new Set(state.storage.tasks.map(t => `${t.articleKey}|${t.owner}|${t.due}|${t.title}`));
-  for (const c of seed.comments || []) {
-    const key = `${c.articleKey}|${c.author}|${c.createdAt}|${c.text}`;
-    if (!existingComments.has(key)) state.storage.comments.push(c);
-  }
-  for (const t of seed.tasks || []) {
-    const key = `${t.articleKey}|${t.owner}|${t.due}|${t.title}`;
-    if (!existingTasks.has(key)) state.storage.tasks.push(t);
-  }
-  saveLocalStorage();
-}
-
-function scoreChip(score) {
-  if (score >= 5) return `<span class="chip danger">Фокус ${score}</span>`;
-  if (score >= 4) return `<span class="chip warn">Фокус ${score}</span>`;
-  if (score >= 2) return `<span class="chip info">Наблюдать ${score}</span>`;
-  return `<span class="chip">База ${score}</span>`;
-}
-
-function badge(text, kind = '') {
-  return `<span class="chip ${kind}">${escapeHtml(text)}</span>`;
+function getSku(articleKey) {
+  return state.skus.find((sku) => sku.articleKey === articleKey || sku.article === articleKey) || null;
 }
 
 function ownerName(sku) {
@@ -108,28 +155,27 @@ function ownerName(sku) {
 }
 
 function ownerCell(sku) {
-  const name = ownerName(sku);
-  if (!name) return `<div class="owner-cell"><strong>Не закреплён</strong><div class="muted small">Нужно назначить owner</div></div>`;
-  return `<div class="owner-cell"><strong>${escapeHtml(name)}</strong><div class="muted small">${escapeHtml(sku?.owner?.registryStatus || sku?.status || '—')}</div></div>`;
+  const owner = ownerName(sku);
+  if (!owner) return `<div class="owner-cell"><strong>Не закреплён</strong><div class="muted small">Нужно назначить owner</div></div>`;
+  return `<div class="owner-cell"><strong>${escapeHtml(owner)}</strong><div class="muted small">${escapeHtml(sku?.owner?.registryStatus || sku?.status || '—')}</div></div>`;
 }
 
 function trafficBadges(sku, emptyLabel = 'нет') {
-  const parts = [];
-  if (sku?.traffic?.kz) parts.push('<span class="chip info">🚀 КЗ</span>');
-  if (sku?.traffic?.vk) parts.push('<span class="chip info">📣 VK</span>');
-  if (!parts.length) return `<span class="muted small">${escapeHtml(emptyLabel)}</span>`;
-  return `<div class="badge-stack traffic-inline">${parts.join('')}</div>`;
-}
-
-function currentWorkLabel() {
-  if (state.filters.market === 'wb') return 'В работе WB = план < 80% + маржа WB < 0';
-  if (state.filters.market === 'ozon') return 'В работе Ozon = план < 80% + маржа Ozon < 0';
-  return 'В работе = план < 80% + отрицательная маржа';
+  const chips = [];
+  if (sku?.traffic?.kz) chips.push('<span class="chip info">🚀 КЗ</span>');
+  if (sku?.traffic?.vk) chips.push('<span class="chip info">📣 VK</span>');
+  return chips.length ? `<div class="badge-stack traffic-inline">${chips.join('')}</div>` : `<span class="muted small">${escapeHtml(emptyLabel)}</span>`;
 }
 
 function marginBadge(label, value) {
   if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return badge(`${label} —`);
   return badge(`${label} ${fmt.pct(value)}`, Number(value) < 0 ? 'danger' : 'ok');
+}
+
+function currentWorkLabel() {
+  if (state.filters.market === 'wb') return 'В работу WB = план < 80% + маржа WB < 0';
+  if (state.filters.market === 'ozon') return 'В работу Ozon = план < 80% + маржа Ozon < 0';
+  return 'В работу = план < 80% + отрицательная маржа';
 }
 
 function priorityBadges(sku) {
@@ -147,70 +193,466 @@ function priorityBadges(sku) {
   return `<div class="badge-stack">${parts.join('')}</div>`;
 }
 
-function getSku(articleKey) {
-  return state.skus.find(x => x.articleKey === articleKey || x.article === articleKey) || null;
+function commentTypeChip(type) {
+  const map = { signal: 'info', risk: 'danger', focus: 'warn', idea: 'ok' };
+  return badge(type || 'comment', map[type] || '');
+}
+
+function mapTaskStatus(status) {
+  const raw = String(status || '').trim().toLowerCase();
+  if (['open', 'new'].includes(raw)) return 'new';
+  if (['in_progress', 'in progress', 'progress', 'doing', 'work', 'в работе'].includes(raw)) return 'in_progress';
+  if (['waiting_team', 'waiting-team', 'wait_team'].includes(raw)) return 'waiting_team';
+  if (['blocked', 'waiting_decision', 'wait_decision', 'decision', 'waiting', 'ждёт', 'ждет'].includes(raw)) return 'waiting_decision';
+  if (['done', 'complete', 'completed', 'сделано'].includes(raw)) return 'done';
+  if (['cancelled', 'canceled', 'отменено'].includes(raw)) return 'cancelled';
+  return 'new';
+}
+
+function inferTaskType(text = '') {
+  const raw = String(text || '').toLowerCase();
+  if (/марж|цен|min price|unit|убыт|цена/.test(raw)) return 'price_margin';
+  if (/контент|карточ|фото|тз|креатив|описан/.test(raw)) return 'content';
+  if (/трафик|кз|vk|вк|инфлю|реклама|рк|smm/.test(raw)) return 'traffic';
+  if (/остат|постав|склад|supply|oos|логист/.test(raw)) return 'supply';
+  if (/возврат|отзыв|рейтинг/.test(raw)) return 'returns';
+  if (/owner|закреп|назнач/.test(raw)) return 'assignment';
+  if (/новин|launch|gate|бриф/.test(raw)) return 'launch';
+  return 'general';
+}
+
+function detectTaskPlatform(task, sku) {
+  if (task?.platform) return task.platform;
+  const text = `${task?.title || ''} ${task?.nextAction || ''}`.toLowerCase();
+  if (text.includes('wb') && text.includes('ozon')) return 'wb+ozon';
+  if (text.includes('wb')) return 'wb';
+  if (text.includes('ozon')) return 'ozon';
+  if (sku?.flags?.toWorkWB && sku?.flags?.toWorkOzon) return 'wb+ozon';
+  if (sku?.flags?.toWorkWB) return 'wb';
+  if (sku?.flags?.toWorkOzon) return 'ozon';
+  if (sku?.flags?.hasWB && sku?.flags?.hasOzon) return 'wb+ozon';
+  if (sku?.flags?.hasWB) return 'wb';
+  if (sku?.flags?.hasOzon) return 'ozon';
+  return 'all';
+}
+
+function normalizeTask(task, sourceHint = 'manual') {
+  const sku = task?.articleKey ? getSku(task.articleKey) : null;
+  const title = task?.title || 'Задача без названия';
+  const type = task?.type || inferTaskType(`${title} ${task?.nextAction || ''}`);
+  const priority = task?.priority || (type === 'price_margin' ? 'critical' : type === 'assignment' ? 'high' : 'medium');
+  return {
+    id: task?.id || uid(sourceHint === 'auto' ? 'auto' : 'task'),
+    source: task?.source || sourceHint,
+    articleKey: task?.articleKey || '',
+    title,
+    nextAction: task?.nextAction || '',
+    reason: task?.reason || '',
+    owner: task?.owner || ownerName(sku) || '',
+    due: task?.due || plusDays(type === 'assignment' ? 1 : 3),
+    status: mapTaskStatus(task?.status),
+    type,
+    priority,
+    platform: detectTaskPlatform(task, sku),
+    createdAt: task?.createdAt || new Date().toISOString(),
+    entityLabel: task?.entityLabel || sku?.name || title,
+    autoCode: task?.autoCode || ''
+  };
+}
+
+function normalizeStorageTasks(tasks, sourceHint = 'manual') {
+  return (tasks || []).map((task) => normalizeTask(task, task?.source || sourceHint));
+}
+
+function mergeSeedStorage(seed) {
+  const existingComments = new Set(state.storage.comments.map((item) => `${item.articleKey}|${item.author}|${item.createdAt}|${item.text}`));
+  const existingTasks = new Set(state.storage.tasks.map((item) => `${item.articleKey}|${item.owner}|${item.due}|${item.title}`));
+
+  for (const comment of seed.comments || []) {
+    const key = `${comment.articleKey}|${comment.author}|${comment.createdAt}|${comment.text}`;
+    if (!existingComments.has(key)) state.storage.comments.push(comment);
+  }
+  for (const task of seed.tasks || []) {
+    const normalized = normalizeTask(task, 'seed');
+    const key = `${normalized.articleKey}|${normalized.owner}|${normalized.due}|${normalized.title}`;
+    if (!existingTasks.has(key)) state.storage.tasks.push(normalized);
+  }
+  saveLocalStorage();
+}
+
+function mergeImportedStorage(imported) {
+  const seed = {
+    comments: Array.isArray(imported.comments) ? imported.comments : [],
+    tasks: Array.isArray(imported.tasks) ? imported.tasks : []
+  };
+  mergeSeedStorage(seed);
 }
 
 function getSkuComments(articleKey) {
-  return state.storage.comments.filter(c => c.articleKey === articleKey).sort((a,b) => (a.createdAt < b.createdAt ? 1 : -1));
+  return state.storage.comments
+    .filter((comment) => comment.articleKey === articleKey)
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 }
 
-function getSkuTasks(articleKey) {
-  return state.storage.tasks.filter(t => t.articleKey === articleKey).sort((a,b) => (a.due || '').localeCompare(b.due || ''));
+function isTaskActive(task) {
+  return ACTIVE_TASK_STATUSES.has(task?.status);
 }
 
-function setView(view) {
-  state.activeView = view;
-  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-  document.querySelector(`#view-${view}`)?.classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(el => el.classList.toggle('active', el.dataset.view === view));
-  if (view === 'dashboard') renderDashboard();
-  if (view === 'skus') renderSkuRegistry();
-  if (view === 'launches') renderLaunches();
-  if (view === 'meetings') renderMeetings();
+function isTaskOverdue(task) {
+  return Boolean(task?.due) && isTaskActive(task) && task.due < todayIso();
 }
 
+function taskStatusBadge(task) {
+  const meta = isTaskOverdue(task) ? { label: 'Просрочено', kind: 'danger' } : (TASK_STATUS_META[task?.status] || TASK_STATUS_META.new);
+  return badge(meta.label, meta.kind);
+}
+
+function taskPriorityBadge(task) {
+  const meta = PRIORITY_META[task?.priority] || PRIORITY_META.medium;
+  return badge(meta.label, meta.kind);
+}
+
+function taskTypeBadge(task) {
+  const kind = task?.type === 'price_margin' ? 'danger' : task?.type === 'assignment' ? 'warn' : 'info';
+  return badge(TASK_TYPE_META[task?.type] || TASK_TYPE_META.general, kind);
+}
+
+function taskSourceBadge(task) {
+  if (task?.source === 'auto') return badge('авто-сигнал', 'info');
+  if (task?.source === 'seed') return badge('seed');
+  return badge('ручная', 'ok');
+}
+
+function taskPlatformBadge(task) {
+  if (task?.platform === 'wb') return badge('WB');
+  if (task?.platform === 'ozon') return badge('Ozon');
+  if (task?.platform === 'wb+ozon') return badge('WB + Ozon');
+  return badge('Все площадки');
+}
+
+function taskSortKey(task) {
+  return [
+    Number(isTaskOverdue(task)),
+    Number(isTaskActive(task)),
+    PRIORITY_META[task?.priority]?.rank || 1,
+    task?.due || '9999-12-31',
+    task?.title || ''
+  ];
+}
+
+function sortTasks(tasks) {
+  return [...tasks].sort((a, b) => {
+    const ka = taskSortKey(a);
+    const kb = taskSortKey(b);
+    return kb[0] - ka[0]
+      || kb[1] - ka[1]
+      || kb[2] - ka[2]
+      || ka[3].localeCompare(kb[3])
+      || ka[4].localeCompare(kb[4], 'ru');
+  });
+}
+
+function storedTaskKeys() {
+  return new Set(state.storage.tasks.filter(isTaskActive).map((task) => `${task.articleKey}|${task.type}`));
+}
+
+function buildAutoTasks() {
+  const keys = storedTaskKeys();
+  const tasks = [];
+
+  for (const sku of state.skus) {
+    const articleKey = sku.articleKey;
+    const owner = ownerName(sku);
+    const platform = sku?.flags?.toWorkWB && sku?.flags?.toWorkOzon ? 'wb+ozon' : sku?.flags?.toWorkWB ? 'wb' : sku?.flags?.toWorkOzon ? 'ozon' : detectTaskPlatform({}, sku);
+    const exitSku = String(sku?.status || '').toLowerCase().includes('вывод');
+
+    if ((sku?.flags?.toWorkWB || sku?.flags?.toWorkOzon || sku?.flags?.toWork) && !keys.has(`${articleKey}|price_margin`)) {
+      tasks.push(normalizeTask({
+        id: `auto-price-${articleKey}`,
+        source: 'auto',
+        autoCode: 'price_margin',
+        articleKey,
+        title: 'Разобрать цену и маржу',
+        nextAction: 'Проверить цену, unit-экономику и дать план действий по SKU в работе.',
+        reason: sku.focusReasons || 'Ниже плана и отрицательная маржа.',
+        owner,
+        due: plusDays(2),
+        status: 'new',
+        type: 'price_margin',
+        priority: 'critical',
+        platform
+      }, 'auto'));
+    } else if (sku?.flags?.negativeMargin && !keys.has(`${articleKey}|price_margin`)) {
+      tasks.push(normalizeTask({
+        id: `auto-neg-${articleKey}`,
+        source: 'auto',
+        autoCode: 'negative_margin',
+        articleKey,
+        title: 'Проверить отрицательную маржу',
+        nextAction: 'Сверить комиссии, логистику, возвраты и min price.',
+        reason: 'Есть отрицательная маржа хотя бы по одной из площадок.',
+        owner,
+        due: plusDays(3),
+        status: 'new',
+        type: 'price_margin',
+        priority: 'high',
+        platform
+      }, 'auto'));
+    }
+
+    if (sku?.flags?.lowStock && !exitSku && !keys.has(`${articleKey}|supply`)) {
+      tasks.push(normalizeTask({
+        id: `auto-stock-${articleKey}`,
+        source: 'auto',
+        autoCode: 'low_stock',
+        articleKey,
+        title: 'Проверить остатки и поставку',
+        nextAction: 'Подтвердить риск OOS, поставить срок и план отгрузки.',
+        reason: 'Низкий остаток по SKU.',
+        owner,
+        due: plusDays(2),
+        status: 'new',
+        type: 'supply',
+        priority: 'high',
+        platform
+      }, 'auto'));
+    }
+
+    if (!sku?.flags?.assigned && !keys.has(`${articleKey}|assignment`)) {
+      tasks.push(normalizeTask({
+        id: `auto-owner-${articleKey}`,
+        source: 'auto',
+        autoCode: 'assignment',
+        articleKey,
+        title: 'Назначить owner по SKU',
+        nextAction: 'Закрепить ответственного и срок первого апдейта.',
+        reason: 'SKU без закрепления.',
+        owner: '',
+        due: plusDays(1),
+        status: 'new',
+        type: 'assignment',
+        priority: 'high',
+        platform
+      }, 'auto'));
+    }
+
+    if (sku?.flags?.highReturn && !keys.has(`${articleKey}|returns`)) {
+      tasks.push(normalizeTask({
+        id: `auto-returns-${articleKey}`,
+        source: 'auto',
+        autoCode: 'returns',
+        articleKey,
+        title: 'Разобрать возвраты и отзывы',
+        nextAction: 'Проверить причины возвратов, отзывы и нужные правки карточки.',
+        reason: sku?.returns?.topReason || 'Высокие возвраты по SKU.',
+        owner,
+        due: plusDays(3),
+        status: 'new',
+        type: 'returns',
+        priority: 'medium',
+        platform
+      }, 'auto'));
+    }
+
+    if ((sku?.focusScore || 0) >= 4 && !sku?.flags?.hasExternalTraffic && !exitSku && !keys.has(`${articleKey}|traffic`)) {
+      tasks.push(normalizeTask({
+        id: `auto-traffic-${articleKey}`,
+        source: 'auto',
+        autoCode: 'traffic',
+        articleKey,
+        title: 'Проверить внешний трафик по фокусному SKU',
+        nextAction: 'Решить, нужен ли КЗ / VK / инфлюенсеры и зафиксировать owner канала.',
+        reason: 'Фокусный SKU без внешнего трафика.',
+        owner,
+        due: plusDays(4),
+        status: 'new',
+        type: 'traffic',
+        priority: 'medium',
+        platform
+      }, 'auto'));
+    }
+  }
+
+  return tasks;
+}
+
+function getAllTasks() {
+  return sortTasks([...state.storage.tasks, ...buildAutoTasks()]);
+}
+
+function getSkuControlTasks(articleKey) {
+  return sortTasks(getAllTasks().filter((task) => task.articleKey === articleKey));
+}
+
+function nextTaskForSku(articleKey) {
+  const tasks = getSkuControlTasks(articleKey);
+  return tasks.find(isTaskActive) || tasks[0] || null;
+}
+
+function getControlSnapshot() {
+  const tasks = getAllTasks();
+  const active = tasks.filter(isTaskActive);
+  const overdue = active.filter(isTaskOverdue);
+  const waitingDecision = active.filter((task) => task.status === 'waiting_decision');
+  const noOwner = active.filter((task) => !task.owner);
+  const dueThisWeek = active.filter((task) => task.due && task.due <= plusDays(7));
+  const ownerMap = new Map();
+
+  for (const task of active) {
+    const key = task.owner || 'Без owner';
+    const row = ownerMap.get(key) || { owner: key, total: 0, overdue: 0, critical: 0, waiting: 0 };
+    row.total += 1;
+    if (isTaskOverdue(task)) row.overdue += 1;
+    if (task.priority === 'critical') row.critical += 1;
+    if (task.status === 'waiting_decision') row.waiting += 1;
+    ownerMap.set(key, row);
+  }
+
+  return {
+    tasks,
+    active,
+    overdue,
+    waitingDecision,
+    noOwner,
+    dueThisWeek,
+    byOwner: [...ownerMap.values()].sort((a, b) => b.total - a.total || a.owner.localeCompare(b.owner, 'ru')),
+    todayList: sortTasks(active).filter((task) => isTaskOverdue(task) || task.priority === 'critical' || (task.due && task.due <= plusDays(2))).slice(0, 12),
+    autoCount: tasks.filter((task) => task.source === 'auto' && isTaskActive(task)).length,
+    manualCount: tasks.filter((task) => task.source !== 'auto' && isTaskActive(task)).length
+  };
+}
+
+function filteredControlTasks() {
+  const f = state.controlFilters;
+  const search = String(f.search || '').trim().toLowerCase();
+
+  return getAllTasks().filter((task) => {
+    const sku = getSku(task.articleKey);
+    const hay = [task.title, task.nextAction, task.reason, task.owner, task.articleKey, sku?.article, sku?.name, sku?.category].filter(Boolean).join(' ').toLowerCase();
+    if (search && !hay.includes(search)) return false;
+    if (f.owner !== 'all' && (task.owner || 'Без owner') !== f.owner) return false;
+    if (f.status === 'active' && !isTaskActive(task)) return false;
+    if (f.status !== 'active' && f.status !== 'all' && task.status !== f.status) return false;
+    if (f.type !== 'all' && task.type !== f.type) return false;
+    if (f.platform !== 'all' && task.platform !== f.platform) return false;
+    if (f.source === 'manual' && task.source === 'auto') return false;
+    if (f.source === 'auto' && task.source !== 'auto') return false;
+    if (f.horizon === 'overdue' && !isTaskOverdue(task)) return false;
+    if (f.horizon === 'today' && task.due !== todayIso()) return false;
+    if (f.horizon === 'week' && (!task.due || task.due > plusDays(7))) return false;
+    if (f.horizon === 'no_owner' && task.owner) return false;
+    return true;
+  });
+}
+
+function renderTaskCard(task) {
+  const sku = getSku(task.articleKey);
+  const skuLabel = sku ? linkToSku(sku.articleKey, sku.article || sku.articleKey) : badge(task.articleKey || task.entityLabel || 'SKU');
+  const controls = task.source === 'auto'
+    ? `<button class="btn small-btn" data-take-task="${escapeHtml(task.id)}">Взять в работу</button>`
+    : `<select class="inline-select task-status-select" data-task-id="${escapeHtml(task.id)}">${Object.entries(TASK_STATUS_META).map(([value, meta]) => `<option value="${value}" ${task.status === value ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}</select>`;
+
+  return `
+    <div class="task-card ${isTaskOverdue(task) ? 'overdue' : ''}">
+      <div class="head">
+        <div>
+          <div class="title">${escapeHtml(task.title)}</div>
+          <div class="muted small" style="margin-top:4px">${skuLabel}</div>
+        </div>
+        ${taskStatusBadge(task)}
+      </div>
+      <div class="meta">${taskPriorityBadge(task)}${taskTypeBadge(task)}${taskPlatformBadge(task)}${taskSourceBadge(task)}</div>
+      ${task.reason ? `<div class="muted small">${escapeHtml(task.reason)}</div>` : ''}
+      ${task.nextAction ? `<div><strong class="small">Следующее действие</strong><div class="muted small" style="margin-top:4px">${escapeHtml(task.nextAction)}</div></div>` : ''}
+      <div class="foot">
+        <div class="muted small">${escapeHtml(task.owner || 'Без owner')} · срок ${escapeHtml(task.due || '—')}</div>
+        <div class="actions">${controls}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderMiniTask(task) {
+  const sku = getSku(task.articleKey);
+  return `
+    <div class="task-mini ${isTaskOverdue(task) ? 'overdue' : ''}">
+      <div class="left">
+        <strong>${escapeHtml(task.title)}</strong>
+        <div class="muted small">${escapeHtml(sku?.article || task.articleKey || task.entityLabel || '—')} · ${escapeHtml(task.owner || 'Без owner')} · ${escapeHtml(task.due || '—')}</div>
+      </div>
+      <div class="badge-stack">${taskPriorityBadge(task)}${taskStatusBadge(task)}</div>
+    </div>
+  `;
+}
+
+function renderOwnerRow(row, max) {
+  const width = Math.max(6, Math.round((row.total / Math.max(1, max)) * 100));
+  return `
+    <div class="owner-row">
+      <div class="head">
+        <strong>${escapeHtml(row.owner)}</strong>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(row.total)} задач`)}
+          ${row.overdue ? badge(`${fmt.int(row.overdue)} проср.`, 'danger') : ''}
+          ${row.critical ? badge(`${fmt.int(row.critical)} крит.`, 'warn') : ''}
+        </div>
+      </div>
+      <div class="owner-bar"><span style="width:${width}%"></span></div>
+    </div>
+  `;
+}
+
+function skuOperationalStatus(sku) {
+  if (String(sku?.status || '').toLowerCase().includes('вывод')) return badge('Вывод');
+  if (sku?.flags?.toWorkWB && sku?.flags?.toWorkOzon) return badge('В работу WB + Ozon', 'danger');
+  if (sku?.flags?.toWorkWB) return badge('В работу WB', 'danger');
+  if (sku?.flags?.toWorkOzon) return badge('В работу Ozon', 'danger');
+  if (sku?.flags?.toWork) return badge('В работу', 'danger');
+  if ((sku?.focusScore || 0) >= 4) return badge('Наблюдать', 'warn');
+  return badge('Ок', 'ok');
+}
+
+function renderSkuTaskSummary(sku) {
+  const task = nextTaskForSku(sku.articleKey);
+  if (!task) return `<div class="muted small">Нет активной задачи</div>`;
+  return `
+    <div><strong>${escapeHtml(task.title)}</strong></div>
+    <div class="muted small">${escapeHtml(task.nextAction || task.reason || 'Нужен апдейт')}</div>
+    <div class="badge-stack" style="margin-top:6px">${taskStatusBadge(task)}${taskPriorityBadge(task)}</div>
+  `;
+}
 
 function renderDashboard() {
   const root = document.getElementById('view-dashboard');
-  const cards = state.dashboard.cards.map(card => `
-    <div class="card kpi">
+  const control = getControlSnapshot();
+
+  const actionCards = [
+    { label: 'Активные задачи', value: control.active.length, hint: 'Открытые задачи по SKU и авто-сигналам.' },
+    { label: 'Просрочено', value: control.overdue.length, hint: 'Нужен апдейт или перенос срока.' },
+    { label: 'Ждёт решения', value: control.waitingDecision.length, hint: 'Зависло на согласовании или развилке.' },
+    { label: 'Без owner', value: control.noOwner.length, hint: 'Нужно закрепить ответственного.' },
+    { label: 'Авто-сигналы', value: control.autoCount, hint: 'Сформированы из маржи, плана, остатков и возвратов.' },
+    { label: 'Ручные задачи', value: control.manualCount, hint: 'Созданы командой и seed-пакетом.' }
+  ].map((card) => `
+    <div class="card kpi control-card">
       <div class="label">${escapeHtml(card.label)}</div>
-      <div class="value">${typeof card.value === 'number' && card.label.includes('₽') ? fmt.money(card.value) : fmt.int(card.value)}</div>
+      <div class="value">${fmt.int(card.value)}</div>
       <div class="hint">${escapeHtml(card.hint)}</div>
     </div>
   `).join('');
 
-  const brandRows = state.dashboard.brandSummary.map(row => `
-    <tr>
-      <td><strong>${escapeHtml(row.brand || '—')}</strong></td>
-      <td>${fmt.int(row.sku_count)}</td>
-      <td>${fmt.int(row.total_stock)}</td>
-      <td>${fmt.money(row.orders_value)}</td>
-      <td>${fmt.int(row.feb_plan_units)}</td>
-      <td>${fmt.int(row.feb_fact_units)}</td>
-      <td>${fmt.pct(row.plan_completion_feb26_pct)}</td>
-      <td>${fmt.int(row.returns_units)}</td>
-      <td>${fmt.int(row.negative_margin_sku)}</td>
-      <td>${fmt.int(row.to_work_sku)}</td>
-    </tr>
+  const ownerRows = control.byOwner.slice(0, 8);
+  const maxOwner = Math.max(1, ...ownerRows.map((row) => row.total));
+
+  const baseCards = (state.dashboard.cards || []).map((card) => `
+    <div class="card kpi">
+      <div class="label">${escapeHtml(card.label)}</div>
+      <div class="value">${fmt.int(card.value)}</div>
+      <div class="hint">${escapeHtml(card.hint)}</div>
+    </div>
   `).join('');
 
-  const focusRows = state.dashboard.focusTop.map(row => {
-    const work = String(row.focus_reasons || '').includes('В работе');
-    return `
-      <tr>
-        <td>${linkToSku(row.article, row.article)}</td>
-        <td><div><strong>${escapeHtml(row.product_name_final || 'Без названия')}</strong></div><div class="muted small">${escapeHtml(row.focus_reasons || '—')}</div></td>
-        <td><div class="badge-stack">${work ? '<span class="chip danger">В работу</span>' : ''}${scoreChip(row.focus_score || 0)}</div></td>
-        <td>${fmt.pct(row.plan_completion_feb26_pct)}</td>
-        <td>${fmt.int(row.total_mp_stock)}</td>
-        <td>${row.content_romi == null ? '—' : fmt.num(row.content_romi, 1)}</td>
-      </tr>
-    `;
-  }).join('');
-
-  const toWork = (state.dashboard.toWork || []).map(row => `
+  const toWork = (state.dashboard.toWork || []).map((row) => `
     <div class="list-item">
       <div class="head">
         <div>
@@ -229,273 +671,308 @@ function renderDashboard() {
     </div>
   `).join('');
 
-  const topContent = state.dashboard.topContent.map(row => `
+  const unassigned = (state.dashboard.unassigned || []).map((row) => `
     <div class="list-item">
       <div class="head">
         <div>
           <div><strong>${linkToSku(row.article, row.product_name_final || row.article)}</strong></div>
-          <div class="muted small">${escapeHtml(row.brand || '—')} · ${escapeHtml(row.article)}</div>
+          <div class="muted small">${escapeHtml(row.brand || 'Алтея')}</div>
         </div>
-        ${badge(`ROMI ${fmt.num(row.content_romi, 1)}`, row.content_romi >= 300 ? 'ok' : 'info')}
+        ${badge('Без owner', 'warn')}
       </div>
-      <div class="badge-stack">
-        ${badge(`Доход ${fmt.money(row.content_income)}`)}
-        ${badge(`Выручка ${fmt.money(row.content_revenue)}`)}
-        ${badge(`Публикации ${fmt.int(row.content_posts)}`)}
-        ${badge(`Клики ${fmt.int(row.content_clicks)}`)}
-      </div>
+      <div class="badge-stack">${scoreChip(row.focus_score || 0)}${marginBadge('WB', row.wb_margin_pct)}${marginBadge('Ozon', row.ozon_margin_pct)}</div>
+      <div class="muted small" style="margin-top:8px">${escapeHtml(row.focus_reasons || 'Нужен ответственный')}</div>
     </div>
   `).join('');
 
-  const lowStock = state.dashboard.lowStock.map(row => `
-    <div class="list-item">
-      <div class="head">
-        <div>
-          <div><strong>${linkToSku(row.article, row.product_name_final || row.article)}</strong></div>
-          <div class="muted small">${escapeHtml(row.brand || '—')}</div>
-        </div>
-        ${badge(`Всего ${fmt.int(row.total_mp_stock)} шт.`, row.total_mp_stock <= 10 ? 'danger' : 'warn')}
-      </div>
-      <div class="badge-stack">
-        ${badge(`WB ${fmt.int(row.wb_stock)}`)}
-        ${badge(`Ozon ${fmt.int(row.ozon_stock_final)}`)}
-        ${badge(`В пути ${fmt.int(row.ozon_in_transit)}`)}
-      </div>
-    </div>
-  `).join('');
-
-  const underPlan = state.dashboard.underPlan.map(row => {
-    const percent = row.plan_completion_feb26_pct;
-    const bar = Math.max(2, Math.min(100, Math.round((percent || 0) * 100)));
-    return `
-      <div class="list-item">
-        <div class="head">
-          <div>
-            <div><strong>${linkToSku(row.article, row.product_name_final || row.article)}</strong></div>
-            <div class="muted small">${escapeHtml(row.brand || '—')}</div>
-          </div>
-          <div class="badge-stack">
-            ${row.negative_margin_flag ? '<span class="chip danger">Маржа < 0</span>' : ''}
-            ${badge(fmt.pct(percent), percent < .4 ? 'danger' : 'warn')}
-          </div>
-        </div>
-        <div class="metric">
-          <strong>План / факт Feb 2026</strong>
-          <div class="bar"><span style="width:${bar}%"></span></div>
-          <span>${fmt.int(row.fact_feb26_units)} / ${fmt.int(row.plan_feb26_units)}</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  const topReturns = state.dashboard.topReturns.map(row => `
-    <div class="list-item">
-      <div class="head">
-        <div>
-          <div><strong>${linkToSku(row.article, row.product_name_final || row.article)}</strong></div>
-          <div class="muted small">${escapeHtml(row.brand || '—')}</div>
-        </div>
-        ${badge(`${fmt.int(row.returns_units)} шт.`, row.returns_units >= 100 ? 'danger' : 'warn')}
-      </div>
-      <div class="muted small">${escapeHtml(row.top_return_reason || 'Причина не указана')}</div>
-    </div>
+  const focusRows = (state.dashboard.focusTop || []).map((row) => `
+    <tr>
+      <td>${linkToSku(row.article, row.article)}</td>
+      <td><div><strong>${escapeHtml(row.product_name_final || 'Без названия')}</strong></div><div class="muted small">${escapeHtml(row.focus_reasons || '—')}</div></td>
+      <td>${scoreChip(row.focus_score || 0)}</td>
+      <td>${fmt.pct(row.plan_completion_feb26_pct)}</td>
+      <td>${fmt.int(row.total_mp_stock)}</td>
+      <td>${row.content_romi == null ? '—' : fmt.num(row.content_romi, 1)}</td>
+    </tr>
   `).join('');
 
   root.innerHTML = `
     <div class="banner">
-      <div>⚠️</div>
-      <div>
-        <strong>Altea · GitHub Pages MVP</strong>
-        Эта версия уже отфильтрована только по бренду Алтея. Общие комментарии пока хранятся локально в браузере; для общей истории нужен backend.
-      </div>
+      <div>✅</div>
+      <div><strong>Контроль вынесен в отдельный слой.</strong> Первый экран больше не шумит цифрами, а показывает, что реально надо проверить сегодня: просрочки, задачи без owner, критичные SKU и авто-сигналы.</div>
     </div>
 
     <div class="section-title">
       <div>
-        <h2>Обзор бренда Алтея</h2>
-        <p>Собрано из repricer, план/факт, товаров Ozon, заказов, остатков, возвратов, лидерборда контента и календаря новинок.</p>
+        <h2>Что требует внимания сегодня</h2>
+        <p>Сверху — оперативный inbox. Ниже — обзор бренда и фокусные SKU.</p>
       </div>
-      <div class="badge-stack">
-        <span class="chip info">Только бренд: Алтея</span>
-        <span class="chip">Артикулы в работе = ниже плана + отрицательная маржа</span>
-      </div>
-    </div>
-
-    <div class="grid cards">${cards}</div>
-
-    <div class="section-title">
-      <div>
-        <h2>Сводка по бренду</h2>
-        <p>Один бренд, один контур. Здесь видно объём, выполнение плана, отрицательную маржу и количество SKU в работе.</p>
+      <div class="quick-actions">
+        <button class="quick-chip" data-view-control>Открыть контроль</button>
+        <button class="quick-chip" data-control-preset="overdue">Просрочено</button>
+        <button class="quick-chip" data-control-preset="no_owner">Без owner</button>
       </div>
     </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Бренд</th>
-            <th>SKU</th>
-            <th>Остатки</th>
-            <th>Заказы</th>
-            <th>План Feb 26</th>
-            <th>Факт Feb 26</th>
-            <th>Выполнение</th>
-            <th>Возвраты</th>
-            <th>Маржа &lt; 0</th>
-            <th>В работе</th>
-          </tr>
-        </thead>
-        <tbody>${brandRows || `<tr><td colspan="10" class="text-center muted">Нет данных</td></tr>`}</tbody>
-      </table>
+    <div class="grid cards">${actionCards}</div>
+
+    <div class="summary-grid" style="margin-top:14px">
+      <div class="card">
+        <h3>Свод задач на чек</h3>
+        <p class="small muted">Берём то, что уже просрочено, критично по марже или без owner.</p>
+        <div class="list" style="margin-top:12px">${control.todayList.length ? control.todayList.map(renderMiniTask).join('') : '<div class="empty">Нет активных задач</div>'}</div>
+      </div>
+      <div class="card">
+        <h3>Нагрузка по owner</h3>
+        <p class="small muted">Легко видно, у кого реально висит работа и где нужен контроль.</p>
+        <div class="owner-summary" style="margin-top:12px">${ownerRows.length ? ownerRows.map((row) => renderOwnerRow(row, maxOwner)).join('') : '<div class="empty">Пока нет задач по owner</div>'}</div>
+      </div>
     </div>
 
     <div class="two-col" style="margin-top:14px">
       <div class="card">
         <h3>SKU в работе</h3>
-        <p class="small muted">Берём в работу артикулы, которые отстают от плана и при этом дают отрицательную маржу.</p>
+        <p class="small muted">Логика «в работу»: отстаёт от плана и одновременно даёт отрицательную маржу.</p>
         <div class="list">${toWork || '<div class="empty">Сейчас нет SKU, которые одновременно ниже плана и в отрицательной марже</div>'}</div>
       </div>
       <div class="card">
-        <h3>Фокусные SKU</h3>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Артикул</th>
-                <th>SKU</th>
-                <th>Приоритет</th>
-                <th>Выполнение</th>
-                <th>Остатки</th>
-                <th>ROMI</th>
-              </tr>
-            </thead>
-            <tbody>${focusRows || `<tr><td colspan="6" class="text-center muted">Нет данных</td></tr>`}</tbody>
-          </table>
+        <h3>Без owner</h3>
+        <p class="small muted">Это первый приоритет в настройке контроля — без закрепления не работает задачник.</p>
+        <div class="list">${unassigned || '<div class="empty">Все ключевые SKU закреплены</div>'}</div>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <div>
+        <h2>Обзор бренда</h2>
+        <p>Базовые KPI и фокусные SKU оставила, но сдвинула ниже, чтобы не мешали daily-check.</p>
+      </div>
+    </div>
+
+    <div class="grid cards">${baseCards}</div>
+
+    <div class="card" style="margin-top:14px">
+      <h3>Фокусные SKU</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Артикул</th>
+              <th>SKU</th>
+              <th>Фокус</th>
+              <th>Выполнение</th>
+              <th>Остатки</th>
+              <th>ROMI</th>
+            </tr>
+          </thead>
+          <tbody>${focusRows || `<tr><td colspan="6" class="text-center muted">Нет данных</td></tr>`}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer-note">Последняя генерация данных: ${escapeHtml(state.dashboard.generatedAt || '—')}. Следующий шаг для боевого режима — общий backend для задач и комментариев.</div>
+  `;
+}
+
+function renderControlCenter() {
+  const root = document.getElementById('view-control');
+  const tasks = filteredControlTasks();
+  const owners = [...new Set(getAllTasks().map((task) => task.owner || 'Без owner'))].sort((a, b) => a.localeCompare(b, 'ru'));
+  const columns = [
+    ['new', 'Новые'],
+    ['in_progress', 'В работе'],
+    ['waiting_team', 'Ждёт другого отдела'],
+    ['waiting_decision', 'Ждёт решения'],
+    ['done', 'Сделано']
+  ];
+
+  const counts = {
+    active: tasks.filter(isTaskActive).length,
+    overdue: tasks.filter(isTaskOverdue).length,
+    noOwner: tasks.filter((task) => isTaskActive(task) && !task.owner).length,
+    waiting: tasks.filter((task) => task.status === 'waiting_decision').length,
+    critical: tasks.filter((task) => isTaskActive(task) && task.priority === 'critical').length,
+    auto: tasks.filter((task) => task.source === 'auto' && isTaskActive(task)).length
+  };
+
+  const board = columns.map(([status, label]) => {
+    const columnTasks = tasks.filter((task) => task.status === status);
+    return `
+      <div class="board-col">
+        <h3>${escapeHtml(label)} <span class="muted">· ${fmt.int(columnTasks.length)}</span></h3>
+        <div class="stack">${columnTasks.length ? columnTasks.map(renderTaskCard).join('') : '<div class="empty">Пусто</div>'}</div>
+      </div>
+    `;
+  }).join('');
+
+  root.innerHTML = `
+    <div class="section-title">
+      <div>
+        <h2>Контроль задач и визуальный чек</h2>
+        <p>Один слой для weekly-задач, сигналов по марже и ручных задач команды.</p>
+      </div>
+      <div class="quick-actions">
+        <button class="quick-chip" data-control-preset="active">Активные</button>
+        <button class="quick-chip" data-control-preset="overdue">Просроченные</button>
+        <button class="quick-chip" data-control-preset="critical">Критичные</button>
+        <button class="quick-chip" data-control-preset="no_owner">Без owner</button>
+      </div>
+    </div>
+
+    <div class="kpi-strip">
+      <div class="mini-kpi"><span>Активно</span><strong>${fmt.int(counts.active)}</strong></div>
+      <div class="mini-kpi danger"><span>Просрочено</span><strong>${fmt.int(counts.overdue)}</strong></div>
+      <div class="mini-kpi warn"><span>Критично</span><strong>${fmt.int(counts.critical)}</strong></div>
+      <div class="mini-kpi warn"><span>Без owner</span><strong>${fmt.int(counts.noOwner)}</strong></div>
+      <div class="mini-kpi"><span>Ждёт решения</span><strong>${fmt.int(counts.waiting)}</strong></div>
+      <div class="mini-kpi"><span>Авто-сигналы</span><strong>${fmt.int(counts.auto)}</strong></div>
+    </div>
+
+    <div class="control-filters">
+      <input id="controlSearchInput" placeholder="Поиск по SKU, названию, owner, действию…" value="${escapeHtml(state.controlFilters.search)}">
+      <select id="controlOwnerFilter">
+        <option value="all">Все owner</option>
+        ${owners.map((owner) => `<option value="${escapeHtml(owner)}" ${state.controlFilters.owner === owner ? 'selected' : ''}>${escapeHtml(owner)}</option>`).join('')}
+      </select>
+      <select id="controlStatusFilter">
+        <option value="active" ${state.controlFilters.status === 'active' ? 'selected' : ''}>Только активные</option>
+        <option value="all" ${state.controlFilters.status === 'all' ? 'selected' : ''}>Все статусы</option>
+        ${Object.entries(TASK_STATUS_META).map(([value, meta]) => `<option value="${value}" ${state.controlFilters.status === value ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}
+      </select>
+      <select id="controlTypeFilter">
+        <option value="all">Все типы</option>
+        ${Object.entries(TASK_TYPE_META).map(([value, label]) => `<option value="${value}" ${state.controlFilters.type === value ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}
+      </select>
+      <select id="controlPlatformFilter">
+        <option value="all">Все площадки</option>
+        <option value="wb" ${state.controlFilters.platform === 'wb' ? 'selected' : ''}>WB</option>
+        <option value="ozon" ${state.controlFilters.platform === 'ozon' ? 'selected' : ''}>Ozon</option>
+        <option value="wb+ozon" ${state.controlFilters.platform === 'wb+ozon' ? 'selected' : ''}>WB + Ozon</option>
+      </select>
+      <select id="controlHorizonFilter">
+        <option value="all">Весь горизонт</option>
+        <option value="overdue" ${state.controlFilters.horizon === 'overdue' ? 'selected' : ''}>Просрочено</option>
+        <option value="today" ${state.controlFilters.horizon === 'today' ? 'selected' : ''}>Срок сегодня</option>
+        <option value="week" ${state.controlFilters.horizon === 'week' ? 'selected' : ''}>Срок на 7 дней</option>
+        <option value="no_owner" ${state.controlFilters.horizon === 'no_owner' ? 'selected' : ''}>Без owner</option>
+      </select>
+      <select id="controlSourceFilter">
+        <option value="all">Все источники</option>
+        <option value="manual" ${state.controlFilters.source === 'manual' ? 'selected' : ''}>Ручные + seed</option>
+        <option value="auto" ${state.controlFilters.source === 'auto' ? 'selected' : ''}>Только авто-сигналы</option>
+      </select>
+    </div>
+
+    <div class="check-grid" style="margin-bottom:14px">
+      <div class="card">
+        <h3>Чек-лист контроля</h3>
+        <div class="check-list">
+          <div class="check-item"><strong>1.</strong><span>Закрыть просрочки и перенести сроки, если реально ждём другой отдел.</span></div>
+          <div class="check-item"><strong>2.</strong><span>Проверить все задачи без owner и закрепить их.</span></div>
+          <div class="check-item"><strong>3.</strong><span>Отдельно посмотреть критичные задачи по марже и цене.</span></div>
+          <div class="check-item"><strong>4.</strong><span>Пробежать новинки без внешнего трафика и задачи по запуску.</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Что здесь уже контролируем</h3>
+        <div class="task-mini-grid">
+          ${getControlSnapshot().todayList.slice(0, 4).map(renderMiniTask).join('') || '<div class="empty">Нет задач для экспресс-чека</div>'}
         </div>
       </div>
     </div>
 
-    <div class="two-col" style="margin-top:14px">
-      <div class="card">
-        <h3>Сильный контент</h3>
-        <div class="list">${topContent || '<div class="empty">Нет данных</div>'}</div>
-      </div>
-      <div class="card">
-        <h3>Низкие остатки</h3>
-        <div class="list">${lowStock || '<div class="empty">Нет данных</div>'}</div>
-      </div>
-    </div>
-
-    <div class="two-col" style="margin-top:14px">
-      <div class="card">
-        <h3>Ниже плана</h3>
-        <div class="list">${underPlan || '<div class="empty">Нет данных</div>'}</div>
-      </div>
-      <div class="card">
-        <h3>Возвраты</h3>
-        <div class="list">${topReturns || '<div class="empty">Нет данных</div>'}</div>
-      </div>
-    </div>
-
-    <div class="footer-note">
-      Последняя генерация данных: ${escapeHtml(state.dashboard.generatedAt)}. В этой версии бренд уже ограничен только Алтеей.
-    </div>
+    <div class="board-columns">${board}</div>
   `;
+
+  document.getElementById('controlSearchInput').addEventListener('input', (e) => { state.controlFilters.search = e.target.value; renderControlCenter(); });
+  document.getElementById('controlOwnerFilter').addEventListener('change', (e) => { state.controlFilters.owner = e.target.value; renderControlCenter(); });
+  document.getElementById('controlStatusFilter').addEventListener('change', (e) => { state.controlFilters.status = e.target.value; renderControlCenter(); });
+  document.getElementById('controlTypeFilter').addEventListener('change', (e) => { state.controlFilters.type = e.target.value; renderControlCenter(); });
+  document.getElementById('controlPlatformFilter').addEventListener('change', (e) => { state.controlFilters.platform = e.target.value; renderControlCenter(); });
+  document.getElementById('controlHorizonFilter').addEventListener('change', (e) => { state.controlFilters.horizon = e.target.value; renderControlCenter(); });
+  document.getElementById('controlSourceFilter').addEventListener('change', (e) => { state.controlFilters.source = e.target.value; renderControlCenter(); });
 }
 
+function filterSkuByMarket(sku) {
+  if (state.filters.market === 'wb') return sku?.flags?.hasWB;
+  if (state.filters.market === 'ozon') return sku?.flags?.hasOzon;
+  return true;
+}
 
-function filteredSkus() {
-  const market = state.filters.market;
-  const focus = state.filters.focus;
-  const ownerFilter = state.filters.owner;
-  const trafficFilter = state.filters.traffic;
-  const assignmentFilter = state.filters.assignment;
+function filterSkuByWorkLogic(sku) {
+  if (state.filters.market === 'wb') return sku?.flags?.toWorkWB;
+  if (state.filters.market === 'ozon') return sku?.flags?.toWorkOzon;
+  return sku?.flags?.toWork;
+}
 
-  return state.skus.filter(sku => {
-    const search = state.filters.search.trim().toLowerCase();
-    const hay = [
-      sku.article, sku.articleKey, sku.brand, sku.name, sku.category, sku.type,
-      ownerName(sku), sku.owner?.registryStatus, ...(sku.traffic?.channels || [])
-    ].filter(Boolean).join(' ').toLowerCase();
-    if (search && !hay.includes(search)) return false;
+function getFilteredSkus() {
+  const q = String(state.filters.search || '').trim().toLowerCase();
+  return state.skus.filter((sku) => {
+    if (!filterSkuByMarket(sku)) return false;
+    const hay = [sku.article, sku.articleKey, sku.name, sku.brand, sku.category, sku.segment, ownerName(sku), sku.status, sku.focusReasons].filter(Boolean).join(' ').toLowerCase();
+    if (q && !hay.includes(q)) return false;
+    if (state.filters.owner !== 'all' && ownerName(sku) !== state.filters.owner) return false;
+    if (state.filters.segment !== 'all' && sku.segment !== state.filters.segment) return false;
+    if (state.filters.assignment === 'assigned' && !sku?.flags?.assigned) return false;
+    if (state.filters.assignment === 'unassigned' && sku?.flags?.assigned) return false;
+    if (state.filters.traffic === 'any' && !sku?.flags?.hasExternalTraffic) return false;
+    if (state.filters.traffic === 'kz' && !sku?.flags?.hasKZ) return false;
+    if (state.filters.traffic === 'vk' && !sku?.flags?.hasVK) return false;
+    if (state.filters.traffic === 'none' && sku?.flags?.hasExternalTraffic) return false;
 
-    if (market === 'wb' && !sku.flags?.hasWB) return false;
-    if (market === 'ozon' && !sku.flags?.hasOzon) return false;
-    if (state.filters.segment !== 'all' && (sku.segment || '—') !== state.filters.segment) return false;
-    if (ownerFilter !== 'all' && ownerName(sku) !== ownerFilter) return false;
-
-    if (assignmentFilter === 'assigned' && !sku.flags?.assigned) return false;
-    if (assignmentFilter === 'unassigned' && sku.flags?.assigned) return false;
-
-    if (trafficFilter === 'kz' && !sku.flags?.hasKZ) return false;
-    if (trafficFilter === 'vk' && !sku.flags?.hasVK) return false;
-    if (trafficFilter === 'any' && !sku.flags?.hasExternalTraffic) return false;
-    if (trafficFilter === 'none' && sku.flags?.hasExternalTraffic) return false;
-
-    if (focus === 'toWork') {
-      if (market === 'wb' && !sku.flags?.toWorkWB) return false;
-      else if (market === 'ozon' && !sku.flags?.toWorkOzon) return false;
-      else if (market === 'all' && !sku.flags?.toWork) return false;
+    switch (state.filters.focus) {
+      case 'toWork':
+        return filterSkuByWorkLogic(sku);
+      case 'negativeMargin':
+        return sku?.flags?.negativeMargin;
+      case 'underPlan':
+        return sku?.flags?.underPlan;
+      case 'focus4':
+        return (sku?.focusScore || 0) >= 4;
+      case 'lowStock':
+        return sku?.flags?.lowStock;
+      case 'highReturn':
+        return sku?.flags?.highReturn;
+      case 'extAny':
+        return sku?.flags?.hasExternalTraffic;
+      case 'extKZ':
+        return sku?.flags?.hasKZ;
+      case 'extVK':
+        return sku?.flags?.hasVK;
+      case 'unassigned':
+        return !sku?.flags?.assigned;
+      default:
+        return true;
     }
-    if (focus === 'focus4' && (sku.focusScore || 0) < 4) return false;
-    if (focus === 'underPlan' && !sku.flags?.underPlan) return false;
-    if (focus === 'negativeMargin') {
-      if (market === 'wb' && !sku.flags?.wbNegativeMargin) return false;
-      else if (market === 'ozon' && !sku.flags?.ozonNegativeMargin) return false;
-      else if (market === 'all' && !sku.flags?.negativeMargin) return false;
-    }
-    if (focus === 'lowStock' && !sku.flags?.lowStock) return false;
-    if (focus === 'highReturn' && !sku.flags?.highReturn) return false;
-    if (focus === 'assigned' && !sku.flags?.assigned) return false;
-    if (focus === 'unassigned' && sku.flags?.assigned) return false;
-    if (focus === 'extAny' && !sku.flags?.hasExternalTraffic) return false;
-    if (focus === 'extKZ' && !sku.flags?.hasKZ) return false;
-    if (focus === 'extVK' && !sku.flags?.hasVK) return false;
-    return true;
   }).sort((a, b) => {
-    const workA = market === 'wb' ? Number(Boolean(a.flags?.toWorkWB)) : market === 'ozon' ? Number(Boolean(a.flags?.toWorkOzon)) : Number(Boolean(a.flags?.toWork));
-    const workB = market === 'wb' ? Number(Boolean(b.flags?.toWorkWB)) : market === 'ozon' ? Number(Boolean(b.flags?.toWorkOzon)) : Number(Boolean(b.flags?.toWork));
-    const negA = market === 'wb' ? Number(Boolean(a.flags?.wbNegativeMargin)) : market === 'ozon' ? Number(Boolean(a.flags?.ozonNegativeMargin)) : Number(Boolean(a.flags?.negativeMargin));
-    const negB = market === 'wb' ? Number(Boolean(b.flags?.wbNegativeMargin)) : market === 'ozon' ? Number(Boolean(b.flags?.ozonNegativeMargin)) : Number(Boolean(b.flags?.negativeMargin));
-    return workB - workA
-      || negB - negA
-      || Number(Boolean(b.flags?.hasExternalTraffic)) - Number(Boolean(a.flags?.hasExternalTraffic))
-      || Number(Boolean(b.flags?.assigned)) - Number(Boolean(a.flags?.assigned))
-      || (b.focusScore || 0) - (a.focusScore || 0)
-      || (a.planFact?.completionFeb26Pct ?? 9) - (b.planFact?.completionFeb26Pct ?? 9)
-      || (b.orders?.value || 0) - (a.orders?.value || 0);
+    const aTask = nextTaskForSku(a.articleKey);
+    const bTask = nextTaskForSku(b.articleKey);
+    return Number(filterSkuByWorkLogic(b)) - Number(filterSkuByWorkLogic(a))
+      || Number((b.focusScore || 0)) - Number((a.focusScore || 0))
+      || Number(isTaskOverdue(bTask)) - Number(isTaskOverdue(aTask))
+      || String(a.article || '').localeCompare(String(b.article || ''), 'ru');
   });
 }
 
 function renderSkuRegistry() {
   const root = document.getElementById('view-skus');
-  const segments = [...new Set(state.skus.map(s => s.segment || '—'))].sort((a,b) => a.localeCompare(b, 'ru'));
-  const owners = [...new Set(state.skus.map(ownerName).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'ru'));
-  const items = filteredSkus();
-  const assignedCount = items.filter(s => s.flags?.assigned).length;
+  const items = getFilteredSkus();
+  const owners = [...new Set(state.skus.map((sku) => ownerName(sku)).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
+  const segments = [...new Set(state.skus.map((sku) => sku.segment).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
+  const assignedCount = items.filter((sku) => sku?.flags?.assigned).length;
   const unassignedCount = items.length - assignedCount;
-  const kzCount = items.filter(s => s.flags?.hasKZ).length;
-  const vkCount = items.filter(s => s.flags?.hasVK).length;
+  const kzCount = items.filter((sku) => sku?.flags?.hasKZ).length;
+  const vkCount = items.filter((sku) => sku?.flags?.hasVK).length;
 
-  const rows = items.map(sku => `
+  const rows = items.map((sku) => `
     <tr>
-      <td>${linkToSku(sku.articleKey, sku.article)}</td>
+      <td>${linkToSku(sku.articleKey, sku.article || sku.articleKey)}</td>
+      <td><div><strong>${escapeHtml(sku.name || 'Без названия')}</strong></div><div class="muted small">${escapeHtml(sku.category || sku.segment || '—')}</div></td>
+      <td>${skuOperationalStatus(sku)}</td>
       <td>${ownerCell(sku)}</td>
-      <td>
-        <div><strong>${escapeHtml(sku.name || 'Без названия')}</strong></div>
-        <div class="muted small">${escapeHtml([sku.category, sku.type].filter(Boolean).join(' · ') || '—')}</div>
-      </td>
       <td>${trafficBadges(sku, 'нет')}</td>
-      <td>${priorityBadges(sku)}</td>
-      <td>${fmt.pct(sku.planFact?.completionFeb26Pct)}</td>
-      <td>${fmt.pct(sku.wb?.marginPct)}</td>
-      <td>${fmt.pct(sku.ozon?.marginPct)}</td>
-      <td>
-        <div class="small">WB ${fmt.int(sku.wb?.stock)}</div>
-        <div class="small muted">Ozon ${fmt.int(sku.ozon?.stock)}</div>
-      </td>
-      <td>${escapeHtml(sku.focusReasons || '—')}</td>
+      <td>${renderSkuTaskSummary(sku)}</td>
+      <td>${nextTaskForSku(sku.articleKey)?.due ? escapeHtml(nextTaskForSku(sku.articleKey).due) : '—'}</td>
     </tr>
   `).join('');
 
@@ -503,7 +980,7 @@ function renderSkuRegistry() {
     <div class="section-title">
       <div>
         <h2>Реестр SKU · Алтея</h2>
-        <p>Добавила явное разделение WB / Ozon, фильтры поиска, owner, внешний трафик и отдельную логику «в работу» по выбранной площадке.</p>
+        <p>Сократила строку до операционного минимума: статус, owner, внешний трафик, следующее действие и срок.</p>
       </div>
       <div class="badge-stack">
         ${badge(`${fmt.int(items.length)} SKU`)}
@@ -524,11 +1001,11 @@ function renderSkuRegistry() {
       <input id="skuSearchInput" placeholder="Поиск по артикулу, названию, категории, owner…" value="${escapeHtml(state.filters.search)}">
       <select id="skuOwnerFilter">
         <option value="all">Все owner</option>
-        ${owners.map(s => `<option value="${escapeHtml(s)}" ${state.filters.owner === s ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}
+        ${owners.map((owner) => `<option value="${escapeHtml(owner)}" ${state.filters.owner === owner ? 'selected' : ''}>${escapeHtml(owner)}</option>`).join('')}
       </select>
       <select id="skuSegmentFilter">
         <option value="all">Все сегменты</option>
-        ${segments.map(s => `<option value="${escapeHtml(s)}" ${state.filters.segment === s ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}
+        ${segments.map((segment) => `<option value="${escapeHtml(segment)}" ${state.filters.segment === segment ? 'selected' : ''}>${escapeHtml(segment)}</option>`).join('')}
       </select>
       <select id="skuFocusFilter">
         <option value="all" ${state.filters.focus === 'all' ? 'selected' : ''}>Все SKU</option>
@@ -539,8 +1016,6 @@ function renderSkuRegistry() {
         <option value="lowStock" ${state.filters.focus === 'lowStock' ? 'selected' : ''}>Низкий остаток</option>
         <option value="highReturn" ${state.filters.focus === 'highReturn' ? 'selected' : ''}>Высокие возвраты</option>
         <option value="extAny" ${state.filters.focus === 'extAny' ? 'selected' : ''}>Есть внешний трафик</option>
-        <option value="extKZ" ${state.filters.focus === 'extKZ' ? 'selected' : ''}>🚀 Есть КЗ</option>
-        <option value="extVK" ${state.filters.focus === 'extVK' ? 'selected' : ''}>📣 Есть VK</option>
         <option value="unassigned" ${state.filters.focus === 'unassigned' ? 'selected' : ''}>Без owner</option>
       </select>
       <select id="skuTrafficFilter">
@@ -562,270 +1037,324 @@ function renderSkuRegistry() {
         <thead>
           <tr>
             <th>Артикул</th>
-            <th>Owner</th>
             <th>SKU</th>
+            <th>Статус</th>
+            <th>Owner</th>
             <th>Внешний трафик</th>
-            <th>Приоритет</th>
-            <th>Выполнение Feb 26</th>
-            <th>WB маржа</th>
-            <th>Ozon маржа</th>
-            <th>Остатки</th>
-            <th>Причины</th>
+            <th>Следующее действие</th>
+            <th>Дедлайн</th>
           </tr>
         </thead>
-        <tbody>${rows || `<tr><td colspan="10" class="text-center muted">Ничего не найдено</td></tr>`}</tbody>
+        <tbody>${rows || `<tr><td colspan="7" class="text-center muted">Ничего не найдено</td></tr>`}</tbody>
       </table>
     </div>
 
-    <div class="footer-note">Белый бейдж артикулов оставила. Фильтр WB / Ozon теперь явный, а «В работу» считается по выбранной площадке.</div>
+    <div class="footer-note">Белый бейдж артикулов оставила. Главная строка теперь читается как рабочий список, а не как длинный аналитический отчёт.</div>
   `;
 
-  document.getElementById('skuSearchInput').addEventListener('input', e => { state.filters.search = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuOwnerFilter').addEventListener('change', e => { state.filters.owner = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuSegmentFilter').addEventListener('change', e => { state.filters.segment = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuFocusFilter').addEventListener('change', e => { state.filters.focus = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuTrafficFilter').addEventListener('change', e => { state.filters.traffic = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuAssignmentFilter').addEventListener('change', e => { state.filters.assignment = e.target.value; renderSkuRegistry(); });
-  root.querySelectorAll('[data-market-filter]').forEach(btn => btn.addEventListener('click', e => { state.filters.market = e.currentTarget.dataset.marketFilter; renderSkuRegistry(); }));
+  document.getElementById('skuSearchInput').addEventListener('input', (e) => { state.filters.search = e.target.value; renderSkuRegistry(); });
+  document.getElementById('skuOwnerFilter').addEventListener('change', (e) => { state.filters.owner = e.target.value; renderSkuRegistry(); });
+  document.getElementById('skuSegmentFilter').addEventListener('change', (e) => { state.filters.segment = e.target.value; renderSkuRegistry(); });
+  document.getElementById('skuFocusFilter').addEventListener('change', (e) => { state.filters.focus = e.target.value; renderSkuRegistry(); });
+  document.getElementById('skuTrafficFilter').addEventListener('change', (e) => { state.filters.traffic = e.target.value; renderSkuRegistry(); });
+  document.getElementById('skuAssignmentFilter').addEventListener('change', (e) => { state.filters.assignment = e.target.value; renderSkuRegistry(); });
+  root.querySelectorAll('[data-market-filter]').forEach((btn) => btn.addEventListener('click', (e) => { state.filters.market = e.currentTarget.dataset.marketFilter; renderSkuRegistry(); }));
 }
 
-function commentTypeChip(type) {
-  const map = {
-    signal: 'info',
-    risk: 'danger',
-    focus: 'warn',
-    idea: 'ok'
-  };
-  return badge(type || 'comment', map[type] || '');
+function metricRow(label, value, kind = '') {
+  return `<div class="metric-row"><span>${escapeHtml(label)}</span><strong class="${kind}">${value}</strong></div>`;
 }
 
 function renderSkuModal(articleKey) {
   const sku = getSku(articleKey);
   if (!sku) return;
-  state.activeSku = sku.articleKey;
-  const comments = getSkuComments(sku.articleKey);
-  const tasks = getSkuTasks(sku.articleKey);
-  const owner = ownerName(sku);
+  state.activeSku = articleKey;
 
-  document.getElementById('skuModalBody').innerHTML = `
+  const body = document.getElementById('skuModalBody');
+  const modal = document.getElementById('skuModal');
+  const comments = getSkuComments(articleKey);
+  const tasks = getSkuControlTasks(articleKey);
+  const activeTask = nextTaskForSku(articleKey);
+
+  body.innerHTML = `
     <div class="modal-head">
       <div>
-        <h2>${escapeHtml(sku.name || sku.article)}</h2>
-        <div class="modal-sub">${escapeHtml([sku.brand, sku.article, sku.category].filter(Boolean).join(' · '))}</div>
-        <div class="badge-stack" style="margin-top:12px">
-          ${sku.flags?.toWorkWB ? badge('В работу WB', 'danger') : ''}
-          ${sku.flags?.toWorkOzon ? badge('В работу Ozon', 'danger') : ''}
-          ${!sku.flags?.toWorkWB && !sku.flags?.toWorkOzon && sku.flags?.toWork ? badge('В работу', 'danger') : ''}
-          ${scoreChip(sku.focusScore || 0)}
-          ${sku.segment ? badge(sku.segment, 'info') : ''}
-          ${sku.abc ? badge(`ABC ${sku.abc}`) : ''}
-          ${owner ? badge(`Owner: ${owner}`, 'ok') : badge('Owner не закреплён', 'warn')}
-          ${sku.flags?.hasKZ ? badge('🚀 КЗ', 'info') : ''}
-          ${sku.flags?.hasVK ? badge('📣 VK', 'info') : ''}
-        </div>
+        <div class="muted small">${escapeHtml(sku.brand || 'Алтея')} · ${escapeHtml(sku.segment || sku.category || '—')}</div>
+        <h2>${escapeHtml(sku.name || 'Без названия')}</h2>
+        <div class="badge-stack">${linkToSku(sku.articleKey, sku.article || sku.articleKey)}${skuOperationalStatus(sku)}${scoreChip(sku.focusScore || 0)}${trafficBadges(sku, 'нет')}</div>
       </div>
-      <button class="btn" id="closeModalBtn">Закрыть</button>
+      <button class="btn ghost" data-close-modal>Закрыть</button>
     </div>
 
-    <div class="modal-grid">
-      <div>
-        <div class="detail-grid">
-          <div class="card">
-            <div class="label muted">Owner</div>
-            <div class="value">${owner ? escapeHtml(owner) : '—'}</div>
-            <div class="hint muted">${escapeHtml(sku.owner?.registryStatus || sku.status || 'Не найден в реестрах')}</div>
-          </div>
-          <div class="card">
-            <div class="label muted">Внешний трафик</div>
-            <div class="value">${(sku.traffic?.channels || []).join(' / ') || '—'}</div>
-            <div class="hint muted">${sku.flags?.hasExternalTraffic ? 'Есть внешний трафик по рабочим файлам' : 'Пока не отмечен'}</div>
-          </div>
-          <div class="card">
-            <div class="label muted">План / факт Feb 2026</div>
-            <div class="value">${fmt.pct(sku.planFact?.completionFeb26Pct)}</div>
-            <div class="hint muted">${fmt.int(sku.planFact?.factFeb26Units)} / ${fmt.int(sku.planFact?.planFeb26Units)} шт.</div>
-          </div>
-          <div class="card">
-            <div class="label muted">Остатки MP</div>
-            <div class="value">${fmt.int((sku.wb?.stock || 0) + (sku.ozon?.stock || 0))}</div>
-            <div class="hint muted">WB ${fmt.int(sku.wb?.stock)} · Ozon ${fmt.int(sku.ozon?.stock)}</div>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:14px">
-          <h3>Площадки, цены и маржа</h3>
-          <div class="kv">
-            <div class="kv-item">
-              <div class="k">WB текущая / min / реком.</div>
-              <div class="v">${fmt.money(sku.wb?.currentPrice)} / ${fmt.money(sku.wb?.minPrice)} / ${fmt.money(sku.wb?.recPrice)}</div>
-              <div class="badge-stack" style="margin-top:10px">
-                ${sku.wb?.belowMin ? badge('Ниже min price', 'danger') : badge('В коридоре', 'ok')}
-                ${marginBadge('Маржа', sku.wb?.marginPct)}
-                ${sku.flags?.toWorkWB ? badge('В работе WB', 'danger') : ''}
-                ${badge(`Оборач. ${fmt.num(sku.wb?.turnoverDays, 1)} дн.`)}
-              </div>
-            </div>
-            <div class="kv-item">
-              <div class="k">Ozon текущая / min / реком.</div>
-              <div class="v">${fmt.money(sku.ozon?.currentPrice)} / ${fmt.money(sku.ozon?.minPrice)} / ${fmt.money(sku.ozon?.recPrice)}</div>
-              <div class="badge-stack" style="margin-top:10px">
-                ${sku.ozon?.belowMin ? badge('Ниже min price', 'danger') : badge('В коридоре', 'ok')}
-                ${marginBadge('Маржа', sku.ozon?.marginPct)}
-                ${sku.flags?.toWorkOzon ? badge('В работе Ozon', 'danger') : ''}
-                ${badge(`Оборач. ${fmt.num(sku.ozon?.turnoverDays, 1)} дн.`)}
-              </div>
-            </div>
-            <div class="kv-item">
-              <div class="k">Ozon supply</div>
-              <div class="v">${fmt.int(sku.ozon?.stockInTransit)} в пути</div>
-              <div class="badge-stack" style="margin-top:10px">
-                ${badge(`В заявках ${fmt.int(sku.ozon?.stockInSupplyRequest)}`)}
-                ${badge(`Возвраты в пути ${fmt.int(sku.returns?.inTransit)}`)}
-              </div>
-            </div>
-            <div class="kv-item">
-              <div class="k">Коммерческий контур</div>
-              <div class="v">${fmt.money(sku.orders?.value)}</div>
-              <div class="badge-stack" style="margin-top:10px">
-                ${badge(`Заказы ${fmt.int(sku.orders?.count)}`)}
-                ${badge(`Pending ${fmt.int(sku.orders?.pendingCount)}`)}
-                ${badge(`Доставляется ${fmt.int(sku.orders?.deliveringCount)}`)}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:14px">
-          <h3>План / факт и сигналы</h3>
-          <div class="kv">
-            <div class="kv-item">
-              <div class="k">План Feb 2026</div>
-              <div class="v">${fmt.int(sku.planFact?.planFeb26Units)} шт.</div>
-            </div>
-            <div class="kv-item">
-              <div class="k">Факт Feb 2026</div>
-              <div class="v">${fmt.int(sku.planFact?.factFeb26Units)} шт.</div>
-            </div>
-            <div class="kv-item">
-              <div class="k">План Mar 2026</div>
-              <div class="v">${fmt.int(sku.planFact?.planMar26Units)} шт.</div>
-            </div>
-            <div class="kv-item">
-              <div class="k">План Apr 2026</div>
-              <div class="v">${fmt.int(sku.planFact?.planApr26Units)} шт.</div>
-            </div>
-            <div class="kv-item">
-              <div class="k">Forecast 6m</div>
-              <div class="v">${fmt.int(sku.planFact?.forecast6mUnits)} шт.</div>
-            </div>
-            <div class="kv-item">
-              <div class="k">Net revenue Feb 2026</div>
-              <div class="v">${fmt.money(sku.planFact?.factFeb26NetRevenue)}</div>
-            </div>
-            <div class="kv-item">
-              <div class="k">Контент ROMI</div>
-              <div class="v">${sku.content?.romi == null ? '—' : fmt.num(sku.content.romi, 1)}</div>
-            </div>
-            <div class="kv-item">
-              <div class="k">Возвраты</div>
-              <div class="v">${fmt.int(sku.returns?.units)}</div>
-            </div>
-          </div>
-          <div class="note" style="margin-top:12px"><strong>Причины фокуса:</strong> ${escapeHtml(sku.focusReasons || 'Нет явных триггеров')}</div>
-        </div>
+    <div class="kv-3">
+      <div class="card subtle">
+        <h3>Результат</h3>
+        ${metricRow('План Feb 26', fmt.int(sku.planFact?.planFeb26Units))}
+        ${metricRow('Факт Feb 26', fmt.int(sku.planFact?.factFeb26Units))}
+        ${metricRow('Выполнение', fmt.pct(sku.planFact?.completionFeb26Pct), (sku.planFact?.completionFeb26Pct || 0) < 0.8 ? 'danger-text' : '')}
+        ${metricRow('WB маржа', fmt.pct(sku.wb?.marginPct), (sku.wb?.marginPct || 0) < 0 ? 'danger-text' : '')}
+        ${metricRow('Ozon маржа', fmt.pct(sku.ozon?.marginPct), (sku.ozon?.marginPct || 0) < 0 ? 'danger-text' : '')}
       </div>
+      <div class="card subtle">
+        <h3>Почему в фокусе</h3>
+        ${metricRow('Owner', escapeHtml(ownerName(sku) || 'Не закреплён'))}
+        ${metricRow('WB остаток', fmt.int(sku.wb?.stock), (sku.wb?.stock || 0) <= 50 ? 'warn-text' : '')}
+        ${metricRow('Ozon остаток', fmt.int(sku.ozon?.stock), (sku.ozon?.stock || 0) <= 50 ? 'warn-text' : '')}
+        ${metricRow('Возвраты WB', fmt.pct(sku.returns?.wbPct), (sku.returns?.wbPct || 0) >= 0.05 ? 'warn-text' : '')}
+        ${metricRow('Возвраты Ozon', fmt.pct(sku.returns?.ozonPct), (sku.returns?.ozonPct || 0) >= 0.05 ? 'warn-text' : '')}
+        <div class="note-box">${escapeHtml(sku.focusReasons || 'Нет явной причины в текущем срезе.')}</div>
+      </div>
+      <div class="card subtle">
+        <h3>Что делаем</h3>
+        <div class="badge-stack">${activeTask ? taskPriorityBadge(activeTask) : ''}${activeTask ? taskStatusBadge(activeTask) : ''}${activeTask ? taskTypeBadge(activeTask) : ''}</div>
+        <div class="note-box">${escapeHtml(activeTask?.nextAction || 'Активной задачи пока нет.')}</div>
+        <div class="metric-row"><span>Следующий срок</span><strong>${escapeHtml(activeTask?.due || '—')}</strong></div>
+        <div class="metric-row"><span>Внешний трафик</span><strong>${sku?.flags?.hasExternalTraffic ? 'Есть' : 'Нет'}</strong></div>
+      </div>
+    </div>
 
-      <div>
-        <div class="card">
-          <h3>Командная работа по SKU</h3>
-          <div class="badge-stack" style="margin-bottom:10px">
-            ${owner ? badge(`Owner ${owner}`, 'ok') : badge('Нужно закрепить owner', 'warn')}
-            ${sku.flags?.hasKZ ? badge('🚀 КЗ активен', 'info') : ''}
-            ${sku.flags?.hasVK ? badge('📣 VK активен', 'info') : ''}
-          </div>
-          <p class="small">На GitHub Pages эта версия по-прежнему хранит комментарии и задачи локально в браузере. Для общей истории и работы всей команды нужен backend.</p>
-        </div>
+    <div class="two-col" style="margin-top:14px">
+      <div class="card">
+        <h3>Задачи по SKU</h3>
+        <div class="list">${tasks.length ? tasks.map(renderTaskCard).join('') : '<div class="empty">По этому SKU задач ещё нет</div>'}</div>
+      </div>
+      <div class="card">
+        <h3>Добавить задачу</h3>
+        <form id="manualTaskForm" class="form-grid compact">
+          <input type="hidden" name="articleKey" value="${escapeHtml(articleKey)}">
+          <input name="title" placeholder="Что делаем" required>
+          <select name="type">${Object.entries(TASK_TYPE_META).map(([value, label]) => `<option value="${value}">${escapeHtml(label)}</option>`).join('')}</select>
+          <select name="priority">${Object.entries(PRIORITY_META).map(([value, meta]) => `<option value="${value}">${escapeHtml(meta.label)}</option>`).join('')}</select>
+          <select name="platform">
+            <option value="all">Все площадки</option>
+            <option value="wb">WB</option>
+            <option value="ozon">Ozon</option>
+            <option value="wb+ozon">WB + Ozon</option>
+          </select>
+          <input name="owner" placeholder="Owner" value="${escapeHtml(ownerName(sku) || '')}">
+          <input name="due" type="date" value="${plusDays(3)}">
+          <textarea name="nextAction" rows="3" placeholder="Следующее действие и что считаем результатом"></textarea>
+          <button class="btn primary" type="submit">Добавить задачу</button>
+        </form>
+      </div>
+    </div>
 
-        <div class="card" style="margin-top:14px">
-          <h3>Комментарии по SKU</h3>
-          <div class="list" id="commentList">
-            ${comments.length ? comments.map(c => `
-              <div class="list-item">
-                <div class="head">
-                  <div>
-                    <strong>${escapeHtml(c.author || 'Без автора')}</strong>
-                    <div class="muted small">${escapeHtml(c.team || '—')} · ${fmt.date(c.createdAt)}</div>
-                  </div>
-                  ${commentTypeChip(c.type)}
-                </div>
-                <div>${escapeHtml(c.text || '')}</div>
-              </div>
-            `).join('') : `<div class="empty">Пока нет комментариев по этому SKU</div>`}
+    <div class="two-col" style="margin-top:14px">
+      <div class="card">
+        <h3>Комментарии и апдейты</h3>
+        <div class="list">${comments.length ? comments.map((comment) => `
+          <div class="comment-item">
+            <div class="head"><strong>${escapeHtml(comment.author || 'Команда')}</strong><div class="badge-stack">${commentTypeChip(comment.type)}${badge(comment.team || 'Команда')}</div></div>
+            <div class="muted small">${fmt.date(comment.createdAt)}</div>
+            <p>${escapeHtml(comment.text)}</p>
           </div>
-
-          <div style="margin-top:12px">
-            <div class="form-grid">
-              <input class="input" id="commentAuthor" placeholder="Автор">
-              <input class="input" id="commentTeam" placeholder="Команда / отдел">
-            </div>
-            <div class="form-grid" style="margin-top:10px">
-              <select class="input" id="commentType">
-                <option value="signal">Signal</option>
-                <option value="risk">Risk</option>
-                <option value="focus">Focus</option>
-                <option value="idea">Idea</option>
-              </select>
-              <input class="input" id="commentCreatedAt" type="datetime-local">
-            </div>
-            <textarea class="textarea" id="commentText" placeholder="Что случилось, причина, что делаем, срок, нужна ли помощь?" style="margin-top:10px"></textarea>
-            <button class="btn btn-primary" id="addCommentBtn" style="margin-top:10px">Добавить комментарий</button>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:14px">
-          <h3>Задачи и owner</h3>
-          <div class="list" id="taskList">
-            ${tasks.length ? tasks.map((t) => `
-              <div class="list-item">
-                <div class="head">
-                  <div>
-                    <strong>${escapeHtml(t.title || 'Без названия')}</strong>
-                    <div class="muted small">${escapeHtml(t.owner || '—')} · срок ${escapeHtml(t.due || '—')}</div>
-                  </div>
-                  ${badge(t.status || 'open', t.status === 'done' ? 'ok' : t.status === 'blocked' ? 'danger' : 'warn')}
-                </div>
-              </div>
-            `).join('') : `<div class="empty">Пока нет задач по этому SKU</div>`}
-          </div>
-
-          <div style="margin-top:12px">
-            <div class="form-grid">
-              <input class="input" id="taskTitle" placeholder="Задача">
-              <input class="input" id="taskOwner" placeholder="Owner" value="${escapeHtml(owner || '')}">
-            </div>
-            <div class="form-grid" style="margin-top:10px">
-              <input class="input" id="taskDue" type="date">
-              <select class="input" id="taskStatus">
-                <option value="open">open</option>
-                <option value="done">done</option>
-                <option value="blocked">blocked</option>
-              </select>
-            </div>
-            <button class="btn" id="addTaskBtn" style="margin-top:10px">Добавить задачу</button>
-          </div>
-        </div>
+        `).join('') : '<div class="empty">Комментариев пока нет</div>'}</div>
+      </div>
+      <div class="card">
+        <h3>Добавить апдейт</h3>
+        <form id="commentForm" class="form-grid compact">
+          <input type="hidden" name="articleKey" value="${escapeHtml(articleKey)}">
+          <input name="author" placeholder="Кто пишет" value="${escapeHtml(ownerName(sku) || 'Команда')}" required>
+          <select name="type">
+            <option value="signal">Сигнал</option>
+            <option value="risk">Риск</option>
+            <option value="focus">Фокус</option>
+            <option value="idea">Идея</option>
+          </select>
+          <textarea name="text" rows="5" placeholder="Коротко: что случилось, что делаем, что нужно от других" required></textarea>
+          <button class="btn" type="submit">Сохранить апдейт</button>
+        </form>
       </div>
     </div>
   `;
 
-  document.getElementById('skuModal').classList.add('open');
-  document.getElementById('closeModalBtn').addEventListener('click', closeSkuModal);
-  document.getElementById('addCommentBtn').addEventListener('click', addComment);
-  document.getElementById('addTaskBtn').addEventListener('click', addTask);
+  modal.classList.add('open');
 
-  const dt = document.getElementById('commentCreatedAt');
-  const now = new Date();
-  dt.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}T${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  body.querySelector('#manualTaskForm').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    createManualTask({
+      articleKey,
+      title: form.get('title'),
+      type: form.get('type'),
+      priority: form.get('priority'),
+      platform: form.get('platform'),
+      owner: form.get('owner'),
+      due: form.get('due'),
+      nextAction: form.get('nextAction')
+    });
+    renderSkuModal(articleKey);
+    rerenderCurrentView();
+  });
+
+  body.querySelector('#commentForm').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    createComment({
+      articleKey,
+      author: form.get('author'),
+      team: ownerName(sku) ? `Owner · ${ownerName(sku)}` : 'Команда',
+      type: form.get('type'),
+      text: form.get('text')
+    });
+    renderSkuModal(articleKey);
+  });
+}
+
+function renderLaunches() {
+  const root = document.getElementById('view-launches');
+  const rows = (state.launches || []).map((item) => `
+    <div class="list-item">
+      <div class="head">
+        <div>
+          <strong>${escapeHtml(item.name || 'Новинка')}</strong>
+          <div class="muted small">${escapeHtml(item.reportGroup || '—')} · ${escapeHtml(item.subCategory || '—')}</div>
+        </div>
+        ${badge(item.launchMonth || '—', 'info')}
+      </div>
+      <div class="badge-stack">${badge(item.tag || 'новинка')}${item.production ? badge(item.production) : ''}</div>
+      <div class="muted small" style="margin-top:8px">${escapeHtml(item.status || 'Статус не указан')}</div>
+      <div class="muted small" style="margin-top:8px">План выручки: ${fmt.money(item.plannedRevenue)} · Целевая себестоимость: ${fmt.money(item.targetCost)}</div>
+    </div>
+  `).join('');
+
+  root.innerHTML = `
+    <div class="section-title">
+      <div>
+        <h2>Новинки и pipeline</h2>
+        <p>Отдельный слой под запуск, чтобы не терять связку карточка → контент → внешний трафик.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="pipeline-strip">
+        <span>Идея</span><span>PMR</span><span>Дизайн</span><span>Тест</span><span>Поставка</span><span>Карточка</span><span>Контент</span><span>Трафик</span>
+      </div>
+      <div class="list" style="margin-top:14px">${rows || '<div class="empty">Нет новинок в текущем срезе</div>'}</div>
+    </div>
+  `;
+}
+
+function renderMeetings() {
+  const root = document.getElementById('view-meetings');
+  const cards = (state.meetings || []).map((meeting) => {
+    const level = String(meeting.id || '').startsWith('weekly') ? 'Weekly' : String(meeting.id || '').startsWith('monthly') ? 'Monthly' : 'PMR';
+    const outputs = Array.isArray(meeting.outputs) ? meeting.outputs.join(' · ') : (meeting.outputs || '—');
+    const participants = Array.isArray(meeting.participants) ? meeting.participants.join(', ') : '—';
+    return `
+      <div class="card meeting-card">
+        <div class="head">
+          <div>
+            <h3>${escapeHtml(meeting.title || 'Встреча')}</h3>
+            <div class="muted small">${escapeHtml(meeting.cadence || '—')} · ${escapeHtml(meeting.duration || '—')}</div>
+          </div>
+          ${badge(level)}
+        </div>
+        <p>${escapeHtml(meeting.question || '—')}</p>
+        <div class="muted small"><strong>Участники:</strong> ${escapeHtml(participants)}</div>
+        <div class="muted small" style="margin-top:8px"><strong>Выход:</strong> ${escapeHtml(outputs)}</div>
+      </div>
+    `;
+  }).join('');
+
+  root.innerHTML = `
+    <div class="section-title">
+      <div>
+        <h2>Ритм работы</h2>
+        <p>Weekly / Monthly / PMR должны рождать задачи с owner и сроком — без этого портал не будет живым.</p>
+      </div>
+    </div>
+    <div class="grid cards-2">${cards || '<div class="empty">Нет карты встреч</div>'}</div>
+  `;
+}
+
+function createComment(payload) {
+  const comment = {
+    articleKey: payload.articleKey,
+    author: String(payload.author || 'Команда').trim() || 'Команда',
+    team: String(payload.team || 'Команда').trim() || 'Команда',
+    createdAt: new Date().toISOString(),
+    text: String(payload.text || '').trim(),
+    type: String(payload.type || 'signal')
+  };
+  if (!comment.text) return;
+  state.storage.comments.unshift(comment);
+  saveLocalStorage();
+}
+
+function createManualTask(payload) {
+  const task = normalizeTask({
+    id: uid('task'),
+    source: 'manual',
+    articleKey: payload.articleKey,
+    title: String(payload.title || '').trim() || 'Новая задача',
+    type: payload.type,
+    priority: payload.priority,
+    platform: payload.platform,
+    owner: String(payload.owner || '').trim(),
+    due: payload.due || plusDays(3),
+    status: 'new',
+    nextAction: String(payload.nextAction || '').trim()
+  }, 'manual');
+  state.storage.tasks.unshift(task);
+  saveLocalStorage();
+}
+
+function takeAutoTask(taskId) {
+  const task = getAllTasks().find((item) => item.id === taskId);
+  if (!task || task.source !== 'auto') return;
+  const manual = normalizeTask({
+    ...task,
+    id: uid('task'),
+    source: 'manual',
+    status: 'in_progress',
+    owner: task.owner || ownerName(getSku(task.articleKey)) || ''
+  }, 'manual');
+  state.storage.tasks.unshift(manual);
+  saveLocalStorage();
+  rerenderCurrentView();
+  if (state.activeSku === task.articleKey) renderSkuModal(task.articleKey);
+}
+
+function updateTaskStatus(taskId, status) {
+  const task = state.storage.tasks.find((item) => item.id === taskId);
+  if (!task) return;
+  task.status = mapTaskStatus(status);
+  saveLocalStorage();
+  rerenderCurrentView();
+  if (state.activeSku === task.articleKey) renderSkuModal(task.articleKey);
+}
+
+function exportStorage() {
+  const blob = new Blob([JSON.stringify(state.storage, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `altea-portal-storage-${todayIso()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function importStorage(file) {
+  if (!file) return;
+  const text = await file.text();
+  const data = JSON.parse(text);
+  mergeImportedStorage(data);
+  rerenderCurrentView();
+  if (state.activeSku) renderSkuModal(state.activeSku);
+}
+
+function applyControlPreset(preset) {
+  state.controlFilters.status = 'active';
+  state.controlFilters.horizon = 'all';
+  state.controlFilters.type = 'all';
+
+  if (preset === 'overdue') {
+    state.controlFilters.horizon = 'overdue';
+  } else if (preset === 'no_owner') {
+    state.controlFilters.horizon = 'no_owner';
+  } else if (preset === 'critical') {
+    state.controlFilters.type = 'price_margin';
+  }
 }
 
 function closeSkuModal() {
@@ -833,184 +1362,95 @@ function closeSkuModal() {
   state.activeSku = null;
 }
 
-function addComment() {
-  const articleKey = state.activeSku;
-  const author = document.getElementById('commentAuthor').value.trim();
-  const team = document.getElementById('commentTeam').value.trim();
-  const type = document.getElementById('commentType').value;
-  const createdAt = document.getElementById('commentCreatedAt').value || new Date().toISOString();
-  const text = document.getElementById('commentText').value.trim();
-  if (!text) return alert('Добавь текст комментария');
-  state.storage.comments.push({ articleKey, author, team, type, createdAt, text });
-  saveLocalStorage();
+function openSkuModal(articleKey) {
   renderSkuModal(articleKey);
 }
 
-function addTask() {
-  const articleKey = state.activeSku;
-  const title = document.getElementById('taskTitle').value.trim();
-  const owner = document.getElementById('taskOwner').value.trim();
-  const due = document.getElementById('taskDue').value;
-  const status = document.getElementById('taskStatus').value;
-  if (!title) return alert('Добавь название задачи');
-  state.storage.tasks.push({ articleKey, title, owner, due, status });
-  saveLocalStorage();
-  renderSkuModal(articleKey);
+function setView(view) {
+  state.activeView = view;
+  document.querySelectorAll('.nav-btn').forEach((btn) => btn.classList.toggle('active', btn.dataset.view === view));
+  document.querySelectorAll('.view').forEach((section) => section.classList.toggle('active', section.id === `view-${view}`));
+  rerenderCurrentView();
 }
 
-function renderLaunches() {
-  const root = document.getElementById('view-launches');
-  const grouped = {};
-  for (const item of state.launches) {
-    const month = item.launchMonth || 'Без месяца';
-    if (!grouped[month]) grouped[month] = [];
-    grouped[month].push(item);
+function rerenderCurrentView() {
+  renderDashboard();
+  renderControlCenter();
+  renderSkuRegistry();
+  renderLaunches();
+  renderMeetings();
+}
+
+function setAppError(message = '') {
+  const banner = document.getElementById('appError');
+  if (!message) {
+    banner.classList.add('hidden');
+    banner.textContent = '';
+    return;
   }
-  const monthOrder = Object.keys(grouped).sort((a,b) => a.localeCompare(b, 'ru'));
-  const html = monthOrder.map(month => `
-    <div class="month-col">
-      <h3>${escapeHtml(month)} <span class="muted">· ${grouped[month].length}</span></h3>
-      ${grouped[month].map(item => `
-        <div class="launch-card">
-          <div class="head">
-            <div>
-              <strong>${escapeHtml(item.name || 'Без названия')}</strong>
-              <div class="muted small">${escapeHtml([item.reportGroup, item.subCategory, item.tag].filter(Boolean).join(' · '))}</div>
-            </div>
-            ${item.status ? badge(item.status, 'info') : ''}
-          </div>
-          <div class="badge-stack" style="margin-top:10px">
-            ${item.production ? badge(item.production) : ''}
-            ${item.plannedRevenue != null ? badge(`План ${fmt.money(item.plannedRevenue)}`, 'warn') : ''}
-            ${item.targetCost != null ? badge(`Себест. ${fmt.money(item.targetCost)}`) : ''}
-          </div>
-          ${item.characteristic ? `<div class="muted small" style="margin-top:10px">${escapeHtml(item.characteristic)}</div>` : ''}
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
-
-  root.innerHTML = `
-    <div class="section-title">
-      <div>
-        <h2>Календарь новинок</h2>
-        <p>Основа для пайплайна запуска Алтея: месяц запуска, статус, производство и плановая выручка.</p>
-      </div>
-      <div class="badge-stack">
-        ${badge(`${fmt.int(state.launches.length)} позиций`)}
-        ${badge('Источник: календарь новинок', 'info')}
-      </div>
-    </div>
-    <div class="month-groups">${html || '<div class="empty">Нет данных по новинкам</div>'}</div>
-  `;
-}
-
-function renderMeetings() {
-  const root = document.getElementById('view-meetings');
-  root.innerHTML = `
-    <div class="section-title">
-      <div>
-        <h2>Рабочий ритм и IBP-контур</h2>
-        <p>Этот экран нужен, чтобы портал не был просто витриной цифр. Здесь зашит ритм weekly / monthly / PMR вокруг SKU.</p>
-      </div>
-    </div>
-
-    <div class="grid">
-      ${state.meetings.map(m => `
-        <div class="card">
-          <div class="head">
-            <div>
-              <h3>${escapeHtml(m.title)}</h3>
-              <div class="muted">${escapeHtml(m.cadence)} · ${escapeHtml(m.duration)}</div>
-            </div>
-            ${badge(m.id.toUpperCase(), 'info')}
-          </div>
-          <p style="margin-top:10px">${escapeHtml(m.question)}</p>
-          <div class="three-col" style="margin-top:12px">
-            <div>
-              <strong class="small">Участники</strong>
-              <div class="badge-stack" style="margin-top:8px">${m.participants.map(x => badge(x)).join('')}</div>
-            </div>
-            <div style="grid-column: span 2">
-              <strong class="small">Обязательные выходы</strong>
-              <div class="list" style="margin-top:8px">
-                ${m.outputs.map(x => `<div class="list-item small">${escapeHtml(x)}</div>`).join('')}
-              </div>
-            </div>
-          </div>
-        </div>
-      `).join('')}
-
-      <div class="card">
-        <h3>Что следующий шаг после этого MVP</h3>
-        <div class="list">
-          <div class="list-item">1. Поднять backend для общих комментариев, задач и прав доступа.</div>
-          <div class="list-item">2. Автоматизировать пересборку JSON из выгрузок (скрипт уже лежит в /scripts).</div>
-          <div class="list-item">3. Добавить авторизацию сотрудников и журнал решений.</div>
-          <div class="list-item">4. Подключить домен и HTTPS в Pages settings.</div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function exportStorage() {
-  const blob = new Blob([JSON.stringify(state.storage, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'portal-comments-and-tasks.json';
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-function importStorage(file) {
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const parsed = JSON.parse(reader.result);
-      state.storage = {
-        comments: Array.isArray(parsed.comments) ? parsed.comments : [],
-        tasks: Array.isArray(parsed.tasks) ? parsed.tasks : []
-      };
-      saveLocalStorage();
-      if (state.activeSku) renderSkuModal(state.activeSku);
-      alert('Импорт завершён');
-    } catch {
-      alert('Не удалось прочитать JSON');
-    }
-  };
-  reader.readAsText(file);
+  banner.textContent = message;
+  banner.classList.remove('hidden');
 }
 
 function attachGlobalListeners() {
-  document.body.addEventListener('click', (e) => {
-    const openBtn = e.target.closest('[data-open-sku]');
+  document.querySelectorAll('.nav-btn').forEach((btn) => btn.addEventListener('click', () => setView(btn.dataset.view)));
+
+  document.body.addEventListener('click', (event) => {
+    const openBtn = event.target.closest('[data-open-sku]');
     if (openBtn) {
-      renderSkuModal(openBtn.dataset.openSku);
+      openSkuModal(openBtn.dataset.openSku);
       return;
     }
-    const navBtn = e.target.closest('.nav-btn');
-    if (navBtn) {
-      setView(navBtn.dataset.view);
+
+    const closeBtn = event.target.closest('[data-close-modal]');
+    if (closeBtn) {
+      closeSkuModal();
       return;
     }
-    if (e.target.id === 'closeModalBackdrop') closeSkuModal();
+
+    const presetBtn = event.target.closest('[data-control-preset]');
+    if (presetBtn) {
+      applyControlPreset(presetBtn.dataset.controlPreset);
+      setView('control');
+      return;
+    }
+
+    if (event.target.closest('[data-view-control]')) {
+      setView('control');
+      return;
+    }
+
+    const takeBtn = event.target.closest('[data-take-task]');
+    if (takeBtn) {
+      takeAutoTask(takeBtn.dataset.takeTask);
+    }
   });
 
-  document.getElementById('skuModal').addEventListener('click', (e) => {
-    if (e.target.id === 'skuModal') closeSkuModal();
+  document.body.addEventListener('change', (event) => {
+    const statusSelect = event.target.closest('.task-status-select');
+    if (statusSelect) {
+      updateTaskStatus(statusSelect.dataset.taskId, statusSelect.value);
+    }
+  });
+
+  document.getElementById('skuModal').addEventListener('click', (event) => {
+    if (event.target.id === 'skuModal') closeSkuModal();
   });
 
   document.getElementById('exportStorageBtn').addEventListener('click', exportStorage);
-  document.getElementById('importStorageInput').addEventListener('change', (e) => {
-    const [file] = e.target.files || [];
-    if (file) importStorage(file);
+  document.getElementById('importStorageInput').addEventListener('change', async (event) => {
+    try {
+      await importStorage(event.target.files?.[0]);
+      event.target.value = '';
+    } catch (error) {
+      setAppError(`Не удалось импортировать JSON: ${error.message}`);
+    }
   });
 }
 
 async function init() {
   try {
-    state.storage = loadLocalStorage();
+    const local = loadLocalStorage();
     const [dashboard, skus, launches, meetings, seed] = await Promise.all([
       loadJson('data/dashboard.json'),
       loadJson('data/skus.json'),
@@ -1018,17 +1458,22 @@ async function init() {
       loadJson('data/meetings.json'),
       loadJson('data/seed_comments.json')
     ]);
+
     state.dashboard = dashboard;
     state.skus = skus;
     state.launches = launches;
     state.meetings = meetings;
+    state.storage.comments = Array.isArray(local.comments) ? local.comments : [];
+    state.storage.tasks = normalizeStorageTasks(local.tasks, 'manual');
     mergeSeedStorage(seed);
+
     attachGlobalListeners();
+    rerenderCurrentView();
     setView('dashboard');
+    setAppError('');
   } catch (error) {
-    document.getElementById('appError').classList.remove('hidden');
-    document.getElementById('appError').innerHTML = `Ошибка инициализации: ${escapeHtml(error.message)}`;
     console.error(error);
+    setAppError(`Портал не смог загрузить данные: ${error.message}`);
   }
 }
 

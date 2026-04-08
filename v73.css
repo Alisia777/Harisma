@@ -1,0 +1,124 @@
+.v73-sidebar-foot {
+  background: rgba(255,255,255,0.03);
+}
+
+.sync-status.sync-ready { background: rgba(52, 211, 153, 0.12); color: #d8ffe9; border-color: rgba(52, 211, 153, 0.28); }
+.sync-status.sync-pending { background: rgba(96, 165, 250, 0.12); color: #d8e9ff; border-color: rgba(96, 165, 250, 0.24); }
+.sync-status.sync-error { background: rgba(248, 113, 113, 0.12); color: #ffe2e2; border-color: rgba(248, 113, 113, 0.28); }
+.sync-status.sync-local { background: rgba(255, 255, 255, 0.06); color: #d8deff; border-color: rgba(255,255,255,0.08); }
+.disabled-btn { opacity: .45; cursor: not-allowed; }
+
+.v73-dashboard-shell { display: grid; gap: 16px; }
+.v73-pulse-stage { padding: 18px; }
+.v73-pulse-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+.v73-trend-card {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(14,26,66,0.92), rgba(9,17,44,0.94));
+  padding: 14px;
+  min-height: 210px;
+}
+.v73-trend-card.up { box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.08); }
+.v73-trend-card.down { box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.08); }
+.v73-trend-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+.v73-trend-svg { width:100%; height:120px; margin:10px 0 8px; display:block; }
+.v73-trend-line { fill:none; stroke-linecap:round; stroke-linejoin:round; stroke-width:3; }
+.v73-trend-line.margin-line { stroke:#7cc4ff; }
+.v73-trend-line.revenue-line { stroke:rgba(255,255,255,0.25); stroke-width:2; }
+.v73-trend-meta { display:grid; gap:4px; color:#cdd8ff; font-size:12px; }
+
+.v73-kpi-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.v73-kpi-card {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+  padding: 14px 16px;
+  display:grid;
+  gap:6px;
+}
+.v73-kpi-card.compact { min-height: unset; }
+.v73-kpi-card span { color:#bfc9ef; font-size:12px; }
+.v73-kpi-card strong { font-size:28px; line-height:1.05; color:#ffffff; }
+.v73-kpi-card small { color:#95a4d0; font-size:12px; }
+.v73-leaders-grid .leader-list { max-height: 560px; overflow:auto; padding-right:4px; }
+
+.v73-doc-group .doc-grid { margin-top: 14px; }
+
+.v73-logistics-panel { padding: 18px; }
+.v73-point-chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+.v73-point-summary {
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px,1fr));
+  gap:10px;
+  margin-top:14px;
+}
+.v73-logistics-layout {
+  display:grid;
+  grid-template-columns: minmax(320px, 0.92fr) minmax(420px, 1.3fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+.v73-article-pane, .v73-detail-pane { min-height: 560px; }
+.v73-article-list {
+  display:grid;
+  gap:10px;
+  max-height: 640px;
+  overflow:auto;
+  padding-right:4px;
+}
+.v73-article-item {
+  width:100%;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;
+  background: rgba(255,255,255,0.025);
+  color:inherit;
+  text-align:left;
+  padding:12px 14px;
+  display:grid;
+  gap:8px;
+}
+.v73-article-item.active {
+  border-color: rgba(124,196,255,0.52);
+  box-shadow: 0 0 0 1px rgba(124,196,255,0.18) inset;
+  background: rgba(124,196,255,0.08);
+}
+.v73-metric-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap:10px;
+  margin-top:14px;
+}
+.v73-metric-cell {
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px;
+  background: rgba(255,255,255,0.03);
+  padding:12px 14px;
+  display:grid;
+  gap:4px;
+}
+.v73-metric-cell span { color:#bfc9ef; font-size:12px; }
+.v73-metric-cell strong { color:#fff; font-size:24px; line-height:1.05; }
+.v73-metric-cell small { color:#93a2cc; font-size:11px; }
+.v73-detail-callout { margin-top:14px; }
+.logistics-top-grid { margin-bottom: 12px; }
+.logistics-backlog-strip { margin-bottom: 12px; }
+
+.task-status-select option,
+select option {
+  color: #0f172a;
+  background: #f8fafc;
+}
+
+@media (max-width: 1200px) {
+  .v73-logistics-layout { grid-template-columns: 1fr; }
+  .v73-article-pane, .v73-detail-pane { min-height: unset; }
+}

@@ -3,11 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Altea Portal · Imperial v7</title>
-  <meta name="description" content="Портал бренда Алтея и сотрудников: красивый дашборд, документы, репрайсер, расчёт заказа, контроль задач, новинки и свод руководителя.">
+  <title>Altea Portal · v7.3 Ops</title>
+  <meta name="description" content="Портал бренда Алтея: pulse-дашборд, задачник РОПа, логистика по кластерам и рабочая библиотека документов.">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="imperial.css">
+  <link rel="stylesheet" href="v71.css">
+  <link rel="stylesheet" href="v72.css">
+  <link rel="stylesheet" href="v73.css">
 </head>
 <body>
   <div class="app-shell">
@@ -16,7 +19,7 @@
         <div class="logo-badge">AL</div>
         <div>
           <div class="brand-title">Altea Portal</div>
-          <div class="brand-sub">Imperial v7 · только Алтея · SKU-first контур</div>
+          <div class="brand-sub">Imperial v7.3 · ops portal · задачи · логистика · контроль</div>
         </div>
       </div>
 
@@ -35,11 +38,11 @@
         </button>
         <button class="nav-btn" data-view="order">
           <span>Заказ товара</span>
-          <small>Форма расчёта поставки</small>
+          <small>Кластера · склады · отгрузка</small>
         </button>
         <button class="nav-btn" data-view="control">
           <span>Задачи</span>
-          <small>Контроль + чек-лист</small>
+          <small>РОП · приоритеты · сотрудники</small>
         </button>
         <button class="nav-btn" data-view="skus">
           <span>Реестр SKU</span>
@@ -55,18 +58,13 @@
         </button>
         <button class="nav-btn" data-view="executive">
           <span>Руководителю</span>
-          <small>Свод задач и алертов</small>
+          <small>Итоги · риски · эскалации</small>
         </button>
       </nav>
 
-      <div class="sidebar-foot">
-        <h4>Что внутри сейчас</h4>
-        <p>Красивый дашборд бренда, лидеры продаж и оборачиваемости, центр документов, витрина репрайсера, форма расчёта заказа, контроль задач, карточка SKU, новинки, свод руководителя и новый командный контур.</p>
-      </div>
-
-      <div class="sidebar-foot">
-        <h4>Важно</h4>
-        <p>GitHub Pages — это статический хостинг. Общие комментарии между сотрудниками на этой версии не синхронизируются без backend.</p>
+      <div class="sidebar-foot compact-sidebar-foot">
+        <h4>Рабочий контур</h4>
+        <p>Дашборд — смотреть состояние. Задачи — ставить и контролировать. Логистика — разбирать кластера, отгрузку и оборачиваемость.</p>
       </div>
     </aside>
 
@@ -74,12 +72,13 @@
       <div class="topbar">
         <div>
           <h1>Портал бренда Алтея</h1>
-          <p>Версия v6: командный режим с общей базой задач через Supabase-ready слой, закреплением owner по SKU, журналом решений и синхронизацией рабочего JSON.</p>
+          <p>v7.3: pulse сверху, задачник под РОПа, логистика по кластерам и очищенная библиотека документов.</p>
         </div>
         <div class="top-actions top-actions-wrap">
           <div class="sync-status" id="syncStatusBadge">Локальный режим</div>
-          <button class="btn ghost" id="pullRemoteBtn" type="button">Загрузить командные данные</button>
-          <button class="btn ghost" id="pushRemoteBtn" type="button">Отправить в командную базу</button>
+          <button class="btn ghost" id="pullRemoteBtn" type="button">Обновить командные данные</button>
+          <button class="btn ghost" id="pushRemoteBtn" type="button">Синхронизировать изменения</button>
+          <button class="btn ghost hidden" id="toggleAdminBarBtn" type="button">Админ</button>
           <button class="btn" id="exportStorageBtn">Экспорт рабочего JSON</button>
           <label class="btn file-input">Импорт JSON
             <input type="file" id="importStorageInput" accept="application/json">
@@ -109,5 +108,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
   <script src="app-imperial.js"></script>
+  <script src="app-v71.js"></script>
+  <script src="app-v72.js"></script>
+  <script src="app-v73.js"></script>
 </body>
 </html>

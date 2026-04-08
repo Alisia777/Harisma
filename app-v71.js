@@ -43,6 +43,10 @@
     return decodeTaskReason(task.reason).reasonText;
   }
 
+  function platformBadge(platform) {
+    return taskPlatformBadge({ platform });
+  }
+
   const baseCreateManualTask = createManualTask;
   createManualTask = async function (payload) {
     if (!payload?.requestSource && !payload?.reason) {

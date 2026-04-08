@@ -2,8 +2,9 @@
   state.v73 = Object.assign({
     logisticsPlatform: 'ozon',
     logisticsTarget: 14,
-    logisticsPoint: '',
+    logisticsPoint: '__all__',
     logisticsArticle: '',
+    logisticsSearch: '',
     dashboardMode: 'margin',
     adminVisible: false
   }, state.v73 || {});
@@ -31,14 +32,14 @@
   }
 
   function v73PatchChrome() {
-    document.title = 'Altea Portal · v7.3 Ops';
+    document.title = 'Altea Portal · v7.4 Ops';
     const topTitle = document.querySelector('.topbar h1');
     if (topTitle) topTitle.textContent = 'Портал бренда Алтея';
     const topDesc = document.querySelector('.topbar p');
-    if (topDesc) topDesc.textContent = 'v7.3: быстрый pulse сверху, задачник под РОПа, логистика по кластерам и рабочая библиотека без техшума.';
+    if (topDesc) topDesc.textContent = 'v7.4: починен sync-рендер, лидеры стали кликабельными, а логистика переведена в широкий рабочий формат.';
 
     const brandSub = document.querySelector('.brand-sub');
-    if (brandSub) brandSub.textContent = 'Imperial v7.3 · ops portal · синк · логистика · контроль';
+    if (brandSub) brandSub.textContent = 'Imperial v7.4 · ops portal · sync fix · логистика · контроль';
 
     const navMap = {
       dashboard: 'Pulse + KPI + лидеры',
@@ -384,52 +385,89 @@
     return numberOrZero(row?.[`targetNeed${target}`]);
   }
 
+  function v73AllLogisticsRows() {
+    const platformLabel = state.v73.logisticsPlatform === 'wb' ? 'WB' : 'Ozon';
+    const rows = (state.logistics?.allRows || state.logistics?.riskRows || [])
+      .filter((row) => row.platform === platformLabel)
+      .filter((row) => state.v73.logisticsPoint === '__all__' ? true : row.place === state.v73.logisticsPoint);
+    const search = String(state.v73.logisticsSearch || '').trim().toLowerCase();
+    const filtered = rows.filter((row) => {
+      if (!search) return true;
+      const hay = [row.article, row.name, row.owner, row.place].filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(search);
+    });
+    return filtered.sort((a, b) => v73RiskNeed(b, state.v73.logisticsTarget) - v73RiskNeed(a, state.v73.logisticsTarget)
+      || numberOrZero(a.turnoverDays) - numberOrZero(b.turnoverDays)
+      || numberOrZero(b.avgDaily) - numberOrZero(a.avgDaily)
+      || String(a.article || '').localeCompare(String(b.article || ''), 'ru'));
+  }
+
+  function v73AggregatePoint(rows, label, key='__all__') {
+    const totalAvg = rows.reduce((sum, row) => sum + numberOrZero(row.avgDaily), 0);
+    const totalStock = rows.reduce((sum, row) => sum + numberOrZero(row.inStock), 0);
+    const totalTransit = rows.reduce((sum, row) => sum + numberOrZero(row.inTransit) + numberOrZero(row.inRequest), 0);
+    const totalNeed = rows.reduce((sum, row) => sum + v73RiskNeed(row, state.v73.logisticsTarget), 0);
+    const unitWeight = rows.reduce((sum, row) => sum + Math.max(1, numberOrZero(row.sales28 || row.avgDaily)), 0);
+    const localShare = state.v73.logisticsPlatform === 'ozon' && rows.length
+      ? rows.reduce((sum, row) => sum + numberOrZero(row.localShare) * Math.max(1, numberOrZero(row.sales28 || row.avgDaily)), 0) / Math.max(1, unitWeight)
+      : null;
+    return {
+      key,
+      label,
+      coverageDays: totalAvg > 0 ? totalStock / totalAvg : 0,
+      avgDaily: totalAvg,
+      stock: totalStock,
+      inTransit: totalTransit,
+      localShare,
+      need: totalNeed,
+      skuCount: rows.length,
+      units: rows.reduce((sum, row) => sum + numberOrZero(row.sales28 || row.avgDaily * 28), 0),
+      kind: key === '__all__' ? 'all' : 'point'
+    };
+  }
+
   function v73PointOptions() {
     const log = state.logistics || {};
-    if (state.v73.logisticsPlatform === 'wb') {
-      return (log.wbWarehouses || []).map((row) => ({
-        key: row.name,
-        label: row.name,
-        coverageDays: numberOrZero(row.coverageDays),
-        avgDaily: numberOrZero(row.avgDailyUnits),
-        stock: numberOrZero(row.stock),
-        inTransit: 0,
-        localShare: null,
-        need: numberOrZero(row[`targetNeed${state.v73.logisticsTarget}`]),
-        skuCount: numberOrZero(row.skuCount),
-        units: numberOrZero(row.ordersUnits),
-        kind: 'warehouse'
-      }));
-    }
-    return (log.ozonClusters || []).map((row) => ({
-      key: row.name,
-      label: row.name,
-      coverageDays: numberOrZero(row.coverageDays),
-      avgDaily: numberOrZero(row.avgDailyUnits28),
-      stock: numberOrZero(row.available),
-      inTransit: numberOrZero(row.inTransit) + numberOrZero(row.inRequest),
-      localShare: row.localShare,
-      need: numberOrZero(row[`targetNeed${state.v73.logisticsTarget}`]),
-      skuCount: numberOrZero(row.skuCount),
-      units: numberOrZero(row.units),
-      kind: 'cluster'
-    }));
+    const options = state.v73.logisticsPlatform === 'wb'
+      ? (log.wbWarehouses || []).map((row) => ({
+          key: row.name,
+          label: row.name,
+          coverageDays: numberOrZero(row.coverageDays),
+          avgDaily: numberOrZero(row.avgDailyUnits),
+          stock: numberOrZero(row.stock),
+          inTransit: 0,
+          localShare: null,
+          need: numberOrZero(row[`targetNeed${state.v73.logisticsTarget}`]),
+          skuCount: numberOrZero(row.skuCount),
+          units: numberOrZero(row.ordersUnits),
+          kind: 'warehouse'
+        }))
+      : (log.ozonClusters || []).map((row) => ({
+          key: row.name,
+          label: row.name,
+          coverageDays: numberOrZero(row.coverageDays),
+          avgDaily: numberOrZero(row.avgDailyUnits28),
+          stock: numberOrZero(row.available),
+          inTransit: numberOrZero(row.inTransit) + numberOrZero(row.inRequest),
+          localShare: row.localShare,
+          need: numberOrZero(row[`targetNeed${state.v73.logisticsTarget}`]),
+          skuCount: numberOrZero(row.skuCount),
+          units: numberOrZero(row.units),
+          kind: 'cluster'
+        }));
+    const baseRows = (state.logistics?.allRows || state.logistics?.riskRows || []).filter((row) => row.platform === (state.v73.logisticsPlatform === 'wb' ? 'WB' : 'Ozon'));
+    const allOption = v73AggregatePoint(baseRows, state.v73.logisticsPlatform === 'wb' ? 'Все склады' : 'Все кластера', '__all__');
+    return [allOption, ...options.sort((a, b) => b.need - a.need || a.coverageDays - b.coverageDays || a.label.localeCompare(b.label, 'ru'))];
   }
 
   function v73EnsureLogisticsSelection() {
-    const options = v73PointOptions().sort((a, b) => b.need - a.need || a.coverageDays - b.coverageDays || a.label.localeCompare(b.label, 'ru'));
-    if (!options.length) return { options: [], selectedPoint: null, rows: [], selectedRow: null };
-    if (!options.some((item) => item.key === state.v73.logisticsPoint)) state.v73.logisticsPoint = options[0].key;
-    const rows = (state.logistics?.riskRows || [])
-      .filter((row) => row.platform === (state.v73.logisticsPlatform === 'wb' ? 'WB' : 'Ozon'))
-      .filter((row) => row.place === state.v73.logisticsPoint)
-      .sort((a, b) => v73RiskNeed(b, state.v73.logisticsTarget) - v73RiskNeed(a, state.v73.logisticsTarget)
-        || numberOrZero(a.turnoverDays) - numberOrZero(b.turnoverDays)
-        || String(a.article || '').localeCompare(String(b.article || ''), 'ru'));
+    const options = v73PointOptions();
+    if (!options.length) return { options: [], selectedPoint: null, rows: [], selectedRow: null, pointMap: new Map() };
+    if (!options.some((item) => item.key === state.v73.logisticsPoint)) state.v73.logisticsPoint = '__all__';
+    const rows = v73AllLogisticsRows();
     if (!rows.some((row) => row.article === state.v73.logisticsArticle)) state.v73.logisticsArticle = rows[0]?.article || '';
     const selectedRow = rows.find((row) => row.article === state.v73.logisticsArticle) || rows[0] || null;
-    const selectedPoint = options.find((item) => item.key === state.v73.logisticsPoint) || options[0];
-    return { options, selectedPoint, rows, selectedRow };
+    return { options, selectedPoint: options.find((item) => item.key === state.v73.logisticsPoint) || options[0], rows, selectedRow, pointMap: new Map(options.map((item) => [item.label, item])) };
   }
 
   function v73RootCauses(row, point) {
@@ -440,7 +478,7 @@
     if (row && need > 0 && inbound === 0) causes.push('нужна новая заявка / пополнение');
     if (row && row.localShare != null && numberOrZero(row.localShare) < 0.6) causes.push('низкая локальность');
     if (point && point.coverageDays < state.v73.logisticsTarget) causes.push('точка не держит целевую оборачиваемость');
-    const backlog = (state.logistics?.backlogByCluster || []).find((item) => item.cluster === point?.label);
+    const backlog = (state.logistics?.backlogByCluster || []).find((item) => item.cluster === point?.label || item.cluster === row?.place);
     if (backlog && numberOrZero(backlog.waitingShip) > 0) causes.push('часть объёма ждёт отгрузки');
     if (backlog && numberOrZero(backlog.waitingAssembly) > 0) causes.push('часть объёма ждёт сборки');
     return causes.slice(0, 4);
@@ -460,7 +498,7 @@
     const root = document.getElementById('view-order');
     if (!root) return;
     const log = state.logistics || {};
-    const { options, selectedPoint, rows, selectedRow } = v73EnsureLogisticsSelection();
+    const { options, selectedPoint, rows, selectedRow, pointMap } = v73EnsureLogisticsSelection();
     const backlog = (log.backlogByCluster || []).find((item) => item.cluster === selectedPoint?.label);
     const summaryCards = log.summaryCards || [];
     const statusCards = log.statusCards || [];
@@ -488,28 +526,54 @@
       </div>
     `).join('');
 
-    const pointChips = options.slice(0, 24).map((point) => `
+    const pointChips = options.slice(0, 30).map((point) => `
       <button class="quick-chip ${point.key === state.v73.logisticsPoint ? 'active' : ''}" type="button" data-v73-point="${v73Html(point.key)}">
         ${v73Html(point.label)}
       </button>
     `).join('');
 
-    const articleList = rows.length ? rows.map((row) => `
-      <button class="v73-article-item ${row.article === state.v73.logisticsArticle ? 'active' : ''}" type="button" data-v73-article="${v73Html(row.article)}">
-        <div>
-          <strong>${v73Html(row.article)}</strong>
-          <div class="muted small">${v73Html(row.name || 'Без названия')}</div>
-        </div>
-        <div class="badge-stack">
-          ${badge(`Need ${fmt.int(v73RiskNeed(row, target))}`, v73RiskNeed(row, target) > 0 ? 'danger' : 'ok')}
-          ${row.owner ? badge(row.owner, 'info') : badge('Без owner', 'warn')}
-        </div>
-      </button>
-    `).join('') : '<div class="empty">По выбранной точке нет SKU в риске.</div>';
+    const pointSummary = selectedPoint ? `
+      <div class="v73-point-summary">
+        ${v73MetricCell(state.v73.logisticsPlatform === 'wb' ? 'Склад' : 'Кластер', selectedPoint.label)}
+        ${v73MetricCell('SKU в точке', fmt.int(selectedPoint.skuCount))}
+        ${v73MetricCell('Ср./день', fmt.num(selectedPoint.avgDaily, 1))}
+        ${v73MetricCell('Дней покрытия', `${fmt.num(selectedPoint.coverageDays, 1)} дн.`)}
+        ${v73MetricCell('Need по цели', fmt.int(selectedPoint.need), `${target} дн.`)}
+        ${v73MetricCell('Локальность', selectedPoint.localShare == null ? '—' : fmt.pct(selectedPoint.localShare), state.v73.logisticsPlatform === 'ozon' ? 'по точке' : '—')}
+      </div>
+    ` : '';
 
-    let detailHtml = '<div class="empty">Выбери SKU слева.</div>';
+    const tableRows = rows.length ? rows.map((row) => {
+      const point = pointMap.get(row.place) || selectedPoint;
+      const causes = v73RootCauses(row, point);
+      const need = v73RiskNeed(row, target);
+      const isActive = row.article === state.v73.logisticsArticle;
+      return `
+        <tr class="${isActive ? 'active' : ''}" data-v73-select-row="${v73Html(row.article)}">
+          <td class="sticky-col">${linkToSku(row.article, row.article)}</td>
+          <td><div class="table-title">${v73Html(row.name || 'Без названия')}</div></td>
+          <td>${v73Html(row.place || '—')}</td>
+          <td>${row.owner ? badge(row.owner, 'ok') : badge('Без owner', 'warn')}</td>
+          <td>${fmt.num(row.avgDaily, 1)}</td>
+          <td>${fmt.int(row.sales7 != null ? row.sales7 : Math.round(numberOrZero(row.avgDaily) * 7))}</td>
+          <td>${fmt.int(row.sales14 != null ? row.sales14 : Math.round(numberOrZero(row.avgDaily) * 14))}</td>
+          <td>${fmt.int(row.planMonth != null ? row.planMonth : Math.round(numberOrZero(row.avgDaily) * 30))}</td>
+          <td>${fmt.int(row.inStock)}</td>
+          <td>${fmt.int(row.inRequest)}</td>
+          <td>${fmt.int(row.inTransit)}</td>
+          <td>${fmt.num(row.turnoverDays, 1)} дн.</td>
+          <td>${need > 0 ? `<span class="need-pill danger">${fmt.int(need)}</span>` : `<span class="need-pill ok">0</span>`}</td>
+          <td>${row.localShare == null ? '—' : fmt.pct(row.localShare)}</td>
+          <td>${fmt.money(row.sourceValue)}</td>
+          <td class="causes-cell">${causes.length ? causes.map((cause) => `<span class="cause-chip">${v73Html(cause)}</span>`).join('') : '<span class="cause-chip ok">ok</span>'}</td>
+        </tr>
+      `;
+    }).join('') : '<tr><td colspan="16"><div class="empty" style="padding:18px 0">По выбранной точке строк не найдено.</div></td></tr>';
+
+    let detailHtml = '<div class="empty">Выбери SKU в таблице выше.</div>';
     if (selectedRow) {
-      const causes = v73RootCauses(selectedRow, selectedPoint);
+      const point = pointMap.get(selectedRow.place) || selectedPoint;
+      const causes = v73RootCauses(selectedRow, point);
       const inbound = numberOrZero(selectedRow.inTransit) + numberOrZero(selectedRow.inRequest);
       detailHtml = `
         <div class="section-subhead">
@@ -520,17 +584,17 @@
           <div class="badge-stack">
             ${selectedRow.owner ? badge(selectedRow.owner, 'ok') : badge('Без owner', 'warn')}
             ${badge(state.v73.logisticsPlatform === 'wb' ? 'WB' : 'Ozon', 'info')}
-            ${badge(selectedPoint?.label || 'Точка', selectedPoint?.need > 0 ? 'warn' : '')}
+            ${badge(selectedRow.place || selectedPoint?.label || 'Точка', 'info')}
           </div>
         </div>
 
         <div class="v73-metric-grid">
-          ${v73MetricCell('Продажи 7д', fmt.int(Math.round(numberOrZero(selectedRow.avgDaily) * 7)), 'из текущего avg/day')}
-          ${v73MetricCell('Продажи 14д', fmt.int(Math.round(numberOrZero(selectedRow.avgDaily) * 14)), 'из текущего avg/day')}
+          ${v73MetricCell('Продажи 7д', fmt.int(selectedRow.sales7 != null ? selectedRow.sales7 : Math.round(numberOrZero(selectedRow.avgDaily) * 7)), 'операционно')}
+          ${v73MetricCell('Продажи 14д', fmt.int(selectedRow.sales14 != null ? selectedRow.sales14 : Math.round(numberOrZero(selectedRow.avgDaily) * 14)), 'операционно')}
           ${v73MetricCell('План/день', fmt.num(selectedRow.avgDaily, 1), 'расчётно')}
-          ${v73MetricCell('План/мес', fmt.int(Math.round(numberOrZero(selectedRow.avgDaily) * 30)), 'расчётно')}
+          ${v73MetricCell('План/мес', fmt.int(selectedRow.planMonth != null ? selectedRow.planMonth : Math.round(numberOrZero(selectedRow.avgDaily) * 30)), 'расчётно')}
           ${v73MetricCell('Запас', fmt.int(selectedRow.inStock), 'шт. в точке')}
-          ${v73MetricCell('В пути', fmt.int(inbound), 'request + transit')}
+          ${v73MetricCell('В потоке', fmt.int(inbound), 'request + transit')}
           ${v73MetricCell('Реком.', fmt.int(v73RiskNeed(selectedRow, target)), `цель ${target} дн.`)}
           ${v73MetricCell('Локальность', selectedRow.localShare == null ? '—' : fmt.pct(selectedRow.localShare), state.v73.logisticsPlatform === 'ozon' ? 'доля локальных заказов' : 'для WB не считаем')}
           ${v73MetricCell('Покрытие', `${fmt.num(selectedRow.turnoverDays, 1)} дн.`, 'по текущему остатку')}
@@ -541,7 +605,7 @@
           <div class="section-subhead">
             <div>
               <h3>Почему проседает</h3>
-              <p class="small muted">Root cause, чтобы понимать: проблема в локальности, отгрузке, запасе или новой заявке.</p>
+              <p class="small muted">Root cause по выбранному SKU — локальность, отгрузка, запас или новая заявка.</p>
             </div>
             ${badge(`${fmt.int(causes.length)} сигнала`, causes.length ? 'warn' : 'ok')}
           </div>
@@ -551,24 +615,13 @@
       `;
     }
 
-    const pointSummary = selectedPoint ? `
-      <div class="v73-point-summary">
-        ${v73MetricCell(state.v73.logisticsPlatform === 'wb' ? 'Склад' : 'Кластер', selectedPoint.label)}
-        ${v73MetricCell('SKU в точке', fmt.int(selectedPoint.skuCount))}
-        ${v73MetricCell('Ср./день', fmt.num(selectedPoint.avgDaily, 1))}
-        ${v73MetricCell('Дней покрытия', `${fmt.num(selectedPoint.coverageDays, 1)} дн.`)}
-        ${v73MetricCell('Need по цели', fmt.int(selectedPoint.need), `${target} дн.`)}
-        ${v73MetricCell('Локальность', selectedPoint.localShare == null ? '—' : fmt.pct(selectedPoint.localShare), state.v73.logisticsPlatform === 'ozon' ? 'по кластеру' : '—')}
-      </div>
-    ` : '';
-
     root.innerHTML = `
       <div class="section-title">
         <div>
           <h2>Логистика по кластерам и складам</h2>
-          <p>Сверху — локальность, backlog и центральный склад. Ниже — выбранная площадка, точки, SKU в риске и root cause по выбранному артикулу.</p>
+          <p>Теперь логистику можно смотреть общим пластом: сверху площадка и цель, ниже — точки и широкая таблица как в рабочем разборе.</p>
         </div>
-        <div class="badge-stack">${badge(`цель ${target} дн.`, 'info')}${badge(state.v73.logisticsPlatform === 'wb' ? 'WB' : 'Ozon', 'ok')}</div>
+        <div class="badge-stack">${badge(`цель ${target} дн.`, 'info')}${badge(state.v73.logisticsPlatform === 'wb' ? 'WB' : 'Ozon', 'ok')}${badge(`${fmt.int(rows.length)} строк`, 'info')}</div>
       </div>
 
       <div class="v73-kpi-grid logistics-top-grid">${topSummary}</div>
@@ -578,7 +631,7 @@
         <div class="section-subhead">
           <div>
             <h3>Рабочий разбор по точкам</h3>
-            <p class="small muted">Площадки, цели оборачиваемости, точки и конкретные SKU — как в разборе логистики, а не как абстрактная сводка.</p>
+            <p class="small muted">Площадка, цели оборачиваемости, точки и полная таблица по артикулам. По артикулу можно сразу открыть карточку.</p>
           </div>
           <div class="badge-stack">
             <button class="quick-chip ${state.v73.logisticsPlatform === 'ozon' ? 'active' : ''}" type="button" data-v73-platform="ozon">Ozon</button>
@@ -589,45 +642,69 @@
           </div>
         </div>
 
+        <div class="filters v74-logistics-filters">
+          <input id="v73LogisticsSearch" placeholder="Поиск по артикулу, названию, owner или точке…" value="${v73Html(state.v73.logisticsSearch)}">
+          <div class="badge-stack">${badge('Слева — точки', 'info')}${badge('Ниже — общая таблица', 'ok')}</div>
+        </div>
+
         <div class="v73-point-chips">${pointChips || '<div class="empty">Нет точек для выбранной площадки.</div>'}</div>
         ${pointSummary}
 
-        <div class="v73-logistics-layout">
-          <div class="card v73-article-pane">
-            <div class="section-subhead">
-              <div>
-                <h3>${state.v73.logisticsPlatform === 'wb' ? 'Артикулы склада' : 'Артикулы кластера'}</h3>
-                <p class="small muted">Слева кликаем артикул, справа смотрим причину, need и поток.</p>
-              </div>
-              ${badge(`${fmt.int(rows.length)} SKU`, rows.length ? 'info' : '')}
-            </div>
-            <div class="v73-article-list">${articleList}</div>
-          </div>
-
-          <div class="card v73-detail-pane">${detailHtml}</div>
+        <div class="v74-logistics-table-wrap">
+          <table class="v74-logistics-table">
+            <thead>
+              <tr>
+                <th class="sticky-col">Артикул</th>
+                <th>Товар</th>
+                <th>${state.v73.logisticsPlatform === 'wb' ? 'Склад' : 'Кластер'}</th>
+                <th>Owner</th>
+                <th>План/день</th>
+                <th>Продажи 7д</th>
+                <th>Продажи 14д</th>
+                <th>План/мес</th>
+                <th>Запас</th>
+                <th>В заявке</th>
+                <th>В пути</th>
+                <th>Покрытие</th>
+                <th>Реком.</th>
+                <th>Локальность</th>
+                <th>Выручка</th>
+                <th>Почему</th>
+              </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
         </div>
+
+        <div class="card v74-logistics-detail-pane">${detailHtml}</div>
       </div>
     `;
 
     root.querySelectorAll('[data-v73-platform]').forEach((btn) => btn.addEventListener('click', () => {
       state.v73.logisticsPlatform = btn.dataset.v73Platform || 'ozon';
-      state.v73.logisticsPoint = '';
+      state.v73.logisticsPoint = '__all__';
       state.v73.logisticsArticle = '';
       v73RenderLogistics();
     }));
     root.querySelectorAll('[data-v73-target]').forEach((btn) => btn.addEventListener('click', () => {
       state.v73.logisticsTarget = Number(btn.dataset.v73Target) || 14;
-      state.v73.logisticsPoint = '';
+      state.v73.logisticsPoint = '__all__';
       state.v73.logisticsArticle = '';
       v73RenderLogistics();
     }));
     root.querySelectorAll('[data-v73-point]').forEach((btn) => btn.addEventListener('click', () => {
-      state.v73.logisticsPoint = btn.dataset.v73Point || '';
+      state.v73.logisticsPoint = btn.dataset.v73Point || '__all__';
       state.v73.logisticsArticle = '';
       v73RenderLogistics();
     }));
-    root.querySelectorAll('[data-v73-article]').forEach((btn) => btn.addEventListener('click', () => {
-      state.v73.logisticsArticle = btn.dataset.v73Article || '';
+    root.querySelector('#v73LogisticsSearch')?.addEventListener('input', (event) => {
+      state.v73.logisticsSearch = event.target.value;
+      state.v73.logisticsArticle = '';
+      v73RenderLogistics();
+    });
+    root.querySelectorAll('[data-v73-select-row]').forEach((rowEl) => rowEl.addEventListener('click', (event) => {
+      if (event.target.closest('[data-open-sku]')) return;
+      state.v73.logisticsArticle = rowEl.dataset.v73SelectRow || '';
       v73RenderLogistics();
     }));
   }
@@ -637,7 +714,7 @@
       if (!state.platformTrends) state.platformTrends = await loadJson('data/platform_trends.json');
       if (!state.logistics) state.logistics = await loadJson('data/logistics.json');
     } catch (error) {
-      console.warn('v7.3 data layer not ready', error);
+      console.warn('v7.4 data layer not ready', error);
     }
   }
 

@@ -1150,7 +1150,7 @@ function externalTrafficLabel(sku) {
 function renderLeaderRow(item, index, maxValue, metricLabel, metaHtml = '') {
   const width = maxValue > 0 ? Math.max(6, Math.round((numberOrZero(item.metricValue) / maxValue) * 100)) : 12;
   return `
-    <div class="leader-row">
+    <div class="leader-row interactive-row" data-open-sku="${escapeHtml(item.articleKey)}">
       <div class="leader-rank">${index + 1}</div>
       <div class="leader-main">
         <div class="leader-headline">
@@ -1171,7 +1171,7 @@ function renderInverseLeaderRow(item, index, maxValue, metricLabel, metaHtml = '
   const rawValue = numberOrZero(item.metricValue);
   const width = maxValue > 0 ? Math.max(8, Math.round((1 - rawValue / maxValue) * 100)) : 12;
   return `
-    <div class="leader-row">
+    <div class="leader-row interactive-row" data-open-sku="${escapeHtml(item.articleKey)}">
       <div class="leader-rank">${index + 1}</div>
       <div class="leader-main">
         <div class="leader-headline">

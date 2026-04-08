@@ -415,6 +415,38 @@ def build(args: argparse.Namespace) -> None:
     wb_risk["riskScore"] = (28 - wb_risk["coverageDays"].fillna(0)).clip(lower=0) + wb_risk["avgDailyUnits"] * 2
     wb_risk = wb_risk.sort_values(["riskScore", "ordersUnits"], ascending=[False, False])
 
+    all_rows_df = pd.concat([
+        oz_cluster_article.assign(
+            platform="Ozon",
+            place=oz_cluster_article["cluster"],
+            article=oz_cluster_article["article_norm"],
+            inStock=oz_cluster_article["available"],
+            avgDaily=oz_cluster_article["avgDailyUnits28"],
+            turnoverDays=oz_cluster_article["coverageDays"],
+            sourceValue=oz_cluster_article["value"],
+            sales7=np.ceil(oz_cluster_article["avgDailyUnits28"] * 7),
+            sales14=np.ceil(oz_cluster_article["avgDailyUnits28"] * 14),
+            sales28=oz_cluster_article["units"],
+            planMonth=np.ceil(oz_cluster_article["avgDailyUnits28"] * 30),
+        )[["platform", "place", "article", "name", "owner", "inStock", "inTransit", "inRequest", "avgDaily", "turnoverDays", "targetNeed7", "targetNeed14", "targetNeed28", "localShare", "sourceValue", "sales7", "sales14", "sales28", "planMonth"]],
+        wb_article_wh.assign(
+            platform="WB",
+            place=wb_article_wh["warehouse"],
+            article=wb_article_wh["article_norm"],
+            inStock=wb_article_wh["stock"],
+            inTransit=0,
+            inRequest=0,
+            avgDaily=wb_article_wh["avgDailyUnits"],
+            turnoverDays=wb_article_wh["coverageDays"],
+            localShare=np.nan,
+            sourceValue=wb_article_wh["payout"],
+            sales7=np.ceil(wb_article_wh["avgDailyUnits"] * 7),
+            sales14=np.ceil(wb_article_wh["avgDailyUnits"] * 14),
+            sales28=wb_article_wh["ordersUnits"],
+            planMonth=np.ceil(wb_article_wh["avgDailyUnits"] * 30),
+        )[["platform", "place", "article", "name", "owner", "inStock", "inTransit", "inRequest", "avgDaily", "turnoverDays", "targetNeed7", "targetNeed14", "targetNeed28", "localShare", "sourceValue", "sales7", "sales14", "sales28", "planMonth"]],
+    ], ignore_index=True).sort_values(["platform", "place", "article"], ascending=[True, True, True])
+
     logistics = {
         "generatedAt": datetime.now().isoformat(timespec="seconds"),
         "window": {"from": window_start.date().isoformat(), "to": max_date.date().isoformat(), "days": args.window_days},
@@ -440,6 +472,7 @@ def build(args: argparse.Namespace) -> None:
         "ozonClusters": recs(oz_cluster_summary.sort_values(["units", "value"], ascending=False).head(40).rename(columns={"cluster": "name"}), ["name", "units", "value", "available", "inRequest", "inTransit", "checking", "avgDailyUnits28", "coverageDays", "localShare", "targetNeed7", "targetNeed14", "targetNeed28", "skuCount"]),
         "ozonWarehouses": recs(oz_wh.sort_values(["units", "available"], ascending=False).rename(columns={"Склад": "warehouse", "Кластер": "cluster"}).head(50), ["warehouse", "cluster", "units", "value", "available", "inRequest", "inTransit", "checking", "avgDailyUnits28", "coverageDays", "localShare", "targetNeed7", "targetNeed14", "targetNeed28", "skuCount"]),
         "wbWarehouses": recs(wb_wh.sort_values(["ordersUnits", "stock"], ascending=False).rename(columns={"warehouse": "name"}).head(50), ["name", "ordersUnits", "buyoutsUnits", "payout", "stock", "avgDailyUnits", "coverageDays", "targetNeed7", "targetNeed14", "targetNeed28", "skuCount"]),
+        "allRows": recs(all_rows_df, ["platform", "place", "article", "name", "owner", "inStock", "inTransit", "inRequest", "avgDaily", "turnoverDays", "targetNeed7", "targetNeed14", "targetNeed28", "localShare", "sourceValue", "sales7", "sales14", "sales28", "planMonth"]),
         "riskRows": recs(pd.concat([
             oz_risk.assign(
                 platform="Ozon",

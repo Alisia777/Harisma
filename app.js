@@ -2779,16 +2779,33 @@ function setView(view) {
 
 function rerenderCurrentView() {
   applyOwnerOverridesToSkus();
-  renderDashboard();
-  renderDocuments();
-  renderRepricer();
-  renderOrderCalculator();
-  renderControlCenter();
-  renderSkuRegistry();
-  renderLaunches();
-  renderMeetings();
-  renderExecutive();
-  updateSyncBadge();
+  const renderErrors = [];
+
+  const safeRender = (label, fn) => {
+    try {
+      fn();
+    } catch (error) {
+      console.error(`Render error in ${label}:`, error);
+      renderErrors.push(`${label}: ${error.message}`);
+    }
+  };
+
+  safeRender('Дашборд', renderDashboard);
+  safeRender('Документы', renderDocuments);
+  safeRender('Репрайсер', renderRepricer);
+  safeRender('Логистика и заказ', renderOrderCalculator);
+  safeRender('Задачи', renderControlCenter);
+  safeRender('Реестр SKU', renderSkuRegistry);
+  safeRender('Продукт / Ксения', renderLaunches);
+  safeRender('Ритм работы', renderMeetings);
+  safeRender('Руководителю', renderExecutive);
+  safeRender('Синк-статус', updateSyncBadge);
+
+  if (renderErrors.length) {
+    setAppError(`Ошибка интерфейса: ${renderErrors.join(' · ')}`);
+  } else {
+    setAppError('');
+  }
 }
 
 function setAppError(message = '') {

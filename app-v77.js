@@ -817,6 +817,20 @@
     `;
   }
 
+
+  function v76ManagerSummary(tasks) {
+    const active = (tasks || []).filter(isTaskActive);
+    const overdue = active.filter(isTaskOverdue);
+    const waiting = active.filter((task) => task.status === 'waiting_decision');
+    return `
+      <div class="badge-stack">
+        ${badge(`Активно ${fmt.int(active.length)}`, active.length ? 'info' : '')}
+        ${badge(`Просрочено ${fmt.int(overdue.length)}`, overdue.length ? 'danger' : 'ok')}
+        ${badge(`Ждут решения ${fmt.int(waiting.length)}`, waiting.length ? 'warn' : 'ok')}
+      </div>
+    `;
+  }
+
   function v77NoveltyDisplayCard(item) {
     return `
       <div class="v77-novelty-card">

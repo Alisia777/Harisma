@@ -1,0 +1,15 @@
+
+.v75-product-top{align-items:stretch}
+.v75-product-hero{min-height:100%}
+.v75-product-kpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.v75-product-layout{align-items:start}
+.v75-product-hero p{color:#c6d0eb}
+#view-launches .task-card .foot .muted strong{color:var(--text)}
+#view-launches .check-item{align-items:flex-start}
+#view-launches .table-wrap table{min-width:980px}
+@media (max-width:1280px){
+  .v75-product-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:820px){
+  .v75-product-kpi-grid{grid-template-columns:1fr}
+}

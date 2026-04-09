@@ -343,6 +343,20 @@
     return badge(NOTEBOOK_KIND_META[kind] || 'Заметка', kind === 'decision' ? 'warn' : kind === 'pricing' ? 'info' : '');
   }
 
+
+  function v76ManagerSummary(tasks) {
+    const active = tasks.filter(isTaskActive);
+    const overdue = active.filter(isTaskOverdue);
+    const waiting = active.filter((task) => task.status === 'waiting_decision');
+    return `
+      <div class="badge-stack">
+        ${badge(`Активно ${fmt.int(active.length)}`, active.length ? 'info' : '')}
+        ${badge(`Просрочено ${fmt.int(overdue.length)}`, overdue.length ? 'danger' : 'ok')}
+        ${badge(`Ждут решения ${fmt.int(waiting.length)}`, waiting.length ? 'warn' : 'ok')}
+      </div>
+    `;
+  }
+
   function v76EntityOptions() {
     const products = (state.v76.store.products || []).map((item) => ({ value: `product:${item.id}`, label: `${item.name} · ${item.productCode}` }));
     const novelties = (state.v76.store.novelties || []).map((item) => ({ value: `novelty:${item.id}`, label: `Новинка · ${item.name}` }));
@@ -351,9 +365,9 @@
 
   function v76PatchChrome() {
     const brandSub = document.querySelector('.brand-sub');
-    if (brandSub) brandSub.textContent = 'Imperial v7.7 · продукт · статусы · новинки · контроль';
+    if (brandSub) brandSub.textContent = 'Imperial v7.8 · продукт · статусы · новинки · контроль';
     const topDesc = document.querySelector('.topbar p');
-    if (topDesc) topDesc.textContent = 'v7.7: блок Ксении собран удобнее — статусы и товары редактируются прямо в списке, новинки заводятся внутри карточек, блоки можно сворачивать.';
+    if (topDesc) topDesc.textContent = 'v7.8: исправлен runtime-сбой рендера, блок Ксении и ритм работы снова открываются корректно; база онлайн и ошибки интерфейса теперь различаются.';
     const launchNavSmall = document.querySelector('.nav-btn[data-view="launches"] small');
     if (launchNavSmall) launchNavSmall.textContent = 'Статусы · новинки · тетрадь · сроки';
     const launchNavText = document.querySelector('.nav-btn[data-view="launches"] span');
@@ -814,20 +828,6 @@
           </div>
         </td>
       </tr>
-    `;
-  }
-
-
-  function v76ManagerSummary(tasks) {
-    const active = (tasks || []).filter(isTaskActive);
-    const overdue = active.filter(isTaskOverdue);
-    const waiting = active.filter((task) => task.status === 'waiting_decision');
-    return `
-      <div class="badge-stack">
-        ${badge(`Активно ${fmt.int(active.length)}`, active.length ? 'info' : '')}
-        ${badge(`Просрочено ${fmt.int(overdue.length)}`, overdue.length ? 'danger' : 'ok')}
-        ${badge(`Ждут решения ${fmt.int(waiting.length)}`, waiting.length ? 'warn' : 'ok')}
-      </div>
     `;
   }
 
@@ -1318,7 +1318,27 @@
   const v76BaseRenderLaunches = renderLaunches;
   renderLaunches = function () {
     v76PatchChrome();
-    v76RenderProductDirector();
+    try {
+      v76RenderProductDirector();
+    } catch (error) {
+      console.error(error);
+      const root = document.getElementById('view-launches');
+      if (root) {
+        root.innerHTML = `
+          <div class="card">
+            <div class="head">
+              <div>
+                <h3>Продукт / Ксения</h3>
+                <div class="muted small">Блок не удалось загрузить полностью</div>
+              </div>
+              ${badge('ошибка', 'danger')}
+            </div>
+            <div class="muted" style="margin-top:10px">${escapeHtml(error.message || 'Неизвестная ошибка')}</div>
+          </div>
+        `;
+      }
+      throw error;
+    }
   };
 
   const v76BaseRerender = rerenderCurrentView;

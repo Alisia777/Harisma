@@ -995,12 +995,15 @@ function updateSyncBadge() {
   if (!badgeEl) return;
   badgeEl.className = 'sync-status';
   const mode = state.team.mode || 'local';
-  if (mode === 'ready') badgeEl.classList.add('ready');
+  const hasUiError = Array.isArray(state.runtimeErrors) && state.runtimeErrors.length > 0;
+  if (hasUiError) badgeEl.classList.add('pending');
+  else if (mode === 'ready') badgeEl.classList.add('ready');
   else if (mode === 'pending') badgeEl.classList.add('pending');
   else if (mode === 'error') badgeEl.classList.add('error');
   else badgeEl.classList.add('local');
   const member = state.team.member?.name ? ` · ${state.team.member.name}` : '';
-  badgeEl.textContent = `${state.team.note || 'Локальный режим'}${member}`;
+  const uiNote = hasUiError ? ' · есть ошибка интерфейса' : '';
+  badgeEl.textContent = `${state.team.note || 'Локальный режим'}${member}${uiNote}`;
   if (pullBtn) pullBtn.disabled = !hasRemoteStore();
   if (pushBtn) pushBtn.disabled = !hasRemoteStore();
 }
@@ -2777,35 +2780,51 @@ function setView(view) {
   rerenderCurrentView();
 }
 
+function renderViewFailure(rootId, title, error) {
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  root.innerHTML = `
+    <div class="card">
+      <div class="head">
+        <div>
+          <h3>${escapeHtml(title)}</h3>
+          <div class="muted small">Экран не удалось отрисовать полностью</div>
+        </div>
+        ${badge('ошибка', 'danger')}
+      </div>
+      <div class="muted" style="margin-top:10px">${escapeHtml(error?.message || 'Неизвестная ошибка')}</div>
+      <div class="muted small" style="margin-top:8px">Обнови страницу после фикса или синка. Остальные разделы портала продолжают работать.</div>
+    </div>
+  `;
+}
+
 function rerenderCurrentView() {
   applyOwnerOverridesToSkus();
-  const renderErrors = [];
-
-  const safeRender = (label, fn) => {
+  const renderPlan = [
+    ['view-dashboard', 'Дашборд', renderDashboard],
+    ['view-documents', 'Документы', renderDocuments],
+    ['view-repricer', 'Репрайсер', renderRepricer],
+    ['view-order', 'Логистика и заказ', renderOrderCalculator],
+    ['view-control', 'Задачи', renderControlCenter],
+    ['view-skus', 'Реестр SKU', renderSkuRegistry],
+    ['view-launches', 'Продукт / Ксения', renderLaunches],
+    ['view-meetings', 'Ритм работы', renderMeetings],
+    ['view-executive', 'Руководителю', renderExecutive]
+  ];
+  const errors = [];
+  for (const [rootId, title, renderer] of renderPlan) {
     try {
-      fn();
+      renderer();
     } catch (error) {
-      console.error(`Render error in ${label}:`, error);
-      renderErrors.push(`${label}: ${error.message}`);
+      console.error(error);
+      errors.push(`${title}: ${error.message}`);
+      renderViewFailure(rootId, title, error);
     }
-  };
-
-  safeRender('Дашборд', renderDashboard);
-  safeRender('Документы', renderDocuments);
-  safeRender('Репрайсер', renderRepricer);
-  safeRender('Логистика и заказ', renderOrderCalculator);
-  safeRender('Задачи', renderControlCenter);
-  safeRender('Реестр SKU', renderSkuRegistry);
-  safeRender('Продукт / Ксения', renderLaunches);
-  safeRender('Ритм работы', renderMeetings);
-  safeRender('Руководителю', renderExecutive);
-  safeRender('Синк-статус', updateSyncBadge);
-
-  if (renderErrors.length) {
-    setAppError(`Ошибка интерфейса: ${renderErrors.join(' · ')}`);
-  } else {
-    setAppError('');
   }
+  state.runtimeErrors = errors;
+  updateSyncBadge();
+  if (errors.length) setAppError(`Портал загрузил не всё: ${errors[0]}`);
+  else setAppError('');
 }
 
 function setAppError(message = '') {

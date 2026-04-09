@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Altea Portal · v7.7 Product Ops</title>
+  <title>Altea Portal · v7.9 Price Matrix</title>
   <meta name="description" content="Портал бренда Алтея: маркетплейсы, логистика, задачи, финансы и отдельный продуктовый блок Ксении.">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="v73.css">
   <link rel="stylesheet" href="v76.css">
   <link rel="stylesheet" href="v77.css">
+  <link rel="stylesheet" href="v79.css">
 </head>
 <body>
   <div class="app-shell">
@@ -21,7 +22,7 @@
         <div class="logo-badge">AL</div>
         <div>
           <div class="brand-title">Altea Portal</div>
-          <div class="brand-sub">Imperial v7.7 · продукт · новинки · задачи · контроль</div>
+          <div class="brand-sub">Imperial v7.9 · продукт · цены · задачи · контроль</div>
         </div>
       </div>
 
@@ -37,6 +38,10 @@
         <button class="nav-btn" data-view="repricer">
           <span>Репрайсер</span>
           <small>Цена, стратегия, рекомендации</small>
+        </button>
+        <button class="nav-btn" data-view="prices">
+          <span>Цены</span>
+          <small>Маржа · оборачиваемость · СПП</small>
         </button>
         <button class="nav-btn" data-view="order">
           <span>Заказ товара</span>
@@ -74,7 +79,7 @@
       <div class="topbar">
         <div>
           <h1>Портал бренда Алтея</h1>
-          <p>v7.4: sync fix, широкая логистика, кликабельные лидеры и более рабочий разбор по точкам.</p>
+          <p>v7.9: ценовой контур — новая таблица по MP с допустимой маржой, средней маржой 7д, оборачиваемостью, ценой и СПП по датам месяца.</p>
         </div>
         <div class="top-actions top-actions-wrap">
           <div class="sync-status" id="syncStatusBadge">Локальный режим</div>
@@ -93,6 +98,7 @@
       <section class="view active" id="view-dashboard"></section>
       <section class="view" id="view-documents"></section>
       <section class="view" id="view-repricer"></section>
+      <section class="view" id="view-prices"></section>
       <section class="view" id="view-order"></section>
       <section class="view" id="view-control"></section>
       <section class="view" id="view-skus"></section>
@@ -114,5 +120,6 @@
   <script src="app-v72.js"></script>
   <script src="app-v73.js"></script>
   <script src="app-v77.js"></script>
+  <script src="app-v79.js"></script>
 </body>
 </html>

@@ -1,0 +1,145 @@
+.price-market-switch .quick-chip.active {
+  background: rgba(118, 164, 255, 0.22);
+  border-color: rgba(118, 164, 255, 0.55);
+}
+
+.price-month-pill {
+  min-width: 180px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.price-matrix-wrap {
+  margin-top: 16px;
+  overflow: auto;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+}
+
+.price-matrix-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 3400px;
+  width: max-content;
+}
+
+.price-matrix-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: rgba(7, 19, 45, 0.96);
+  color: rgba(255,255,255,0.84);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  white-space: nowrap;
+}
+
+.price-matrix-table thead .price-date-group {
+  text-align: center;
+  color: rgba(195, 211, 255, 0.92);
+  background: rgba(12, 31, 74, 0.98);
+}
+
+.price-matrix-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.88);
+  font-size: 13px;
+  white-space: nowrap;
+  background: rgba(255,255,255,0.02);
+}
+
+.price-matrix-table tbody tr:nth-child(even) td {
+  background: rgba(255,255,255,0.012);
+}
+
+.price-matrix-table tbody tr.margin-risk td {
+  box-shadow: inset 0 0 0 9999px rgba(152, 63, 84, 0.06);
+}
+
+.price-matrix-table td.bad {
+  background: rgba(168, 55, 78, 0.18) !important;
+  color: #ffd9df;
+}
+
+.price-matrix-table td.warn {
+  background: rgba(174, 138, 42, 0.18) !important;
+  color: #fff0c8;
+}
+
+.price-matrix-table td.ok {
+  background: rgba(54, 130, 95, 0.14) !important;
+  color: #d8ffe6;
+}
+
+.price-matrix-table td.empty {
+  color: rgba(255,255,255,0.30);
+}
+
+.price-sticky {
+  position: sticky;
+  z-index: 3;
+  background: linear-gradient(180deg, rgba(9, 26, 62, 0.98), rgba(9, 26, 62, 0.95)) !important;
+}
+
+.price-col-sku {
+  left: 0;
+  min-width: 280px;
+  max-width: 280px;
+}
+
+.price-col-allowed {
+  left: 280px;
+  min-width: 132px;
+  max-width: 132px;
+  text-align: center;
+}
+
+.price-col-margin {
+  left: 412px;
+  min-width: 140px;
+  max-width: 140px;
+  text-align: center;
+}
+
+.price-matrix-table thead .price-col-sku,
+.price-matrix-table thead .price-col-allowed,
+.price-matrix-table thead .price-col-margin {
+  z-index: 6;
+}
+
+.price-sku-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.price-sku-cell .sku-pill {
+  align-self: flex-start;
+}
+
+@media (max-width: 1200px) {
+  .price-month-pill {
+    min-width: 0;
+  }
+  .price-col-sku {
+    min-width: 240px;
+    max-width: 240px;
+  }
+  .price-col-allowed {
+    left: 240px;
+  }
+  .price-col-margin {
+    left: 372px;
+  }
+}

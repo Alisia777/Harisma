@@ -62,3 +62,8 @@ python -m http.server 8000
 - график маржи по дням остаётся **операционной оценкой**, не финальной finance-grade отчётностью;
 - логистический right panel строится по текущему snapshot-слою, не из live API;
 - разграничение ролей по рабочим почтам ещё не закрыто на UI и RLS-hardening уровне.
+
+
+## v8.1 · Статусы РОПа WB
+- источник `data/masha_status_updates.json` встроен в реестр SKU, карточку товара, задачник и executive;
+- для генерации portal-ready JSON из файла Маши используйте `scripts/build_masha_status_source.py`.

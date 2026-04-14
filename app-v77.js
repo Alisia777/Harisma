@@ -365,9 +365,9 @@
 
   function v76PatchChrome() {
     const brandSub = document.querySelector('.brand-sub');
-    if (brandSub) brandSub.textContent = 'Imperial v7.8.2 · продукт · статусы · новинки · контроль';
+    if (brandSub) brandSub.textContent = 'Imperial v7.8 · продукт · статусы · новинки · контроль';
     const topDesc = document.querySelector('.topbar p');
-    if (topDesc) topDesc.textContent = 'v7.8.2: защищён sync-merge блока Ксении — пустая remote-таблица больше не затирает товары и новинки.';
+    if (topDesc) topDesc.textContent = 'v7.8: исправлен runtime-сбой рендера, блок Ксении и ритм работы снова открываются корректно; база онлайн и ошибки интерфейса теперь различаются.';
     const launchNavSmall = document.querySelector('.nav-btn[data-view="launches"] small');
     if (launchNavSmall) launchNavSmall.textContent = 'Статусы · новинки · тетрадь · сроки';
     const launchNavText = document.querySelector('.nav-btn[data-view="launches"] span');
@@ -515,20 +515,6 @@
     });
   }
 
-  function v76ProductsSeedFallback() {
-    return v76SeedProductsFromLaunches().map(v76NormalizeProduct);
-  }
-
-  function v76NoveltiesSeedFallback(products) {
-    return v76SeedNoveltiesFromLaunches(products || v76ProductsSeedFallback()).map(v76NormalizeNovelty);
-  }
-
-  function v76RemoteOrKeep(remoteRows, mapFn, currentRows, fallbackRows = []) {
-    if (Array.isArray(remoteRows) && remoteRows.length) return remoteRows.map(mapFn);
-    if (Array.isArray(currentRows) && currentRows.length) return currentRows;
-    return Array.isArray(fallbackRows) ? fallbackRows : [];
-  }
-
   async function v76PullRemoteOnly() {
     if (!hasRemoteStore() || state.v76.remote.schemaReady === false) return;
     try {
@@ -538,36 +524,16 @@
         queryRemote(V76_TABLES.notebook)
       ]);
       state.v76.remote.schemaReady = true;
-      const currentProducts = Array.isArray(state.v76.store.products) ? state.v76.store.products : [];
-      const currentNovelties = Array.isArray(state.v76.store.novelties) ? state.v76.store.novelties : [];
-      const currentNotebook = Array.isArray(state.v76.store.notebook) ? state.v76.store.notebook : [];
-      const fallbackProducts = v76ProductsSeedFallback();
-      const fallbackNovelties = v76NoveltiesSeedFallback(currentProducts.length ? currentProducts : fallbackProducts);
-      const mergedProducts = v76RemoteOrKeep(products, v76FromRemoteProduct, currentProducts, fallbackProducts)
-        .map(v76NormalizeProduct)
-        .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'ru'));
-      const mergedNovelties = v76RemoteOrKeep(novelties, v76FromRemoteNovelty, currentNovelties, fallbackNovelties)
-        .map(v76NormalizeNovelty)
-        .sort((a, b) => v76MonthKey(a.launchMonth).localeCompare(v76MonthKey(b.launchMonth)) || String(a.name || '').localeCompare(String(b.name || ''), 'ru'));
-      const mergedNotebook = v76RemoteOrKeep(notebook, v76FromRemoteNotebook, currentNotebook, [])
-        .map(v76NormalizeNotebook)
-        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
-
-      state.v76.store.products = mergedProducts;
-      state.v76.store.novelties = mergedNovelties;
-      state.v76.store.notebook = mergedNotebook;
-      v76SaveLocalStore();
-
-      const remoteProductsCount = Array.isArray(products) ? products.length : 0;
-      const remoteNoveltiesCount = Array.isArray(novelties) ? novelties.length : 0;
-      const remoteNotebookCount = Array.isArray(notebook) ? notebook.length : 0;
-      const restoredLocally = (!remoteProductsCount && mergedProducts.length) || (!remoteNoveltiesCount && mergedNovelties.length);
+      if ((products || []).length || (novelties || []).length || (notebook || []).length) {
+        state.v76.store.products = (products || []).map(v76FromRemoteProduct);
+        state.v76.store.novelties = (novelties || []).map(v76FromRemoteNovelty);
+        state.v76.store.notebook = (notebook || []).map(v76FromRemoteNotebook).sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+        v76SaveLocalStore();
+      }
       state.v76.remote.lastSyncAt = v76Now();
-      state.v76.remote.note = restoredLocally
-        ? `Ксения: часть данных восстановлена локально · ${fmt.date(state.v76.remote.lastSyncAt)} · теперь можно нажать «Синхронизировать изменения»`
-        : (remoteProductsCount || remoteNoveltiesCount || remoteNotebookCount)
-          ? `Блок Ксении синхронизирован · ${fmt.date(state.v76.remote.lastSyncAt)}`
-          : 'Для блока Ксении пока нет удалённых записей';
+      state.v76.remote.note = (products || []).length || (novelties || []).length || (notebook || []).length
+        ? `Блок Ксении синхронизирован · ${fmt.date(state.v76.remote.lastSyncAt)}`
+        : 'Для блока Ксении пока нет удалённых записей';
       state.v76.remote.error = '';
     } catch (error) {
       if (v76IsSchemaMissing(error)) {

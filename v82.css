@@ -1,0 +1,145 @@
+.v82-inline .badge-stack,
+.v82-status-card .badge-stack,
+.v82-control-card .badge-stack,
+.v82-exec-status-card .badge-stack {
+  flex-wrap: wrap;
+}
+
+.v82-status-card,
+.v82-control-card,
+.v82-exec-status-card {
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.v82-status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.v82-form-toolbar,
+.v82-toolbar,
+.v82-form-actions,
+.v82-row-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.v82-form-toolbar,
+.v82-toolbar {
+  justify-content: space-between;
+  margin: 12px 0;
+}
+
+.v82-status-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.v82-status-form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.v82-status-form .field label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+}
+
+.v82-status-form .full-span {
+  grid-column: 1 / -1;
+}
+
+.v82-status-form input,
+.v82-status-form select,
+.v82-status-form textarea,
+.v82-toolbar input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(10, 12, 22, 0.85);
+  color: #f5f7fb;
+}
+
+.v82-status-form input::placeholder,
+.v82-status-form textarea::placeholder,
+.v82-toolbar input::placeholder {
+  color: rgba(255,255,255,0.45);
+}
+
+.v82-status-form option {
+  background: #101523;
+  color: #f5f7fb;
+}
+
+.v82-checkbox-field {
+  justify-content: flex-end;
+}
+
+.v82-checkbox-field label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.v82-status-table th,
+.v82-status-table td {
+  vertical-align: top;
+}
+
+.v82-history-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) minmax(180px, 260px) 1fr auto;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.v82-history-row:first-child {
+  border-top: 0;
+}
+
+.v82-inline-form-wrap,
+.v82-control-form-wrap {
+  margin: 12px 0;
+}
+
+.v82-source-flag {
+  margin-left: 4px;
+}
+
+@media (max-width: 1120px) {
+  .v82-status-grid,
+  .v82-status-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .v82-history-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .v82-status-grid,
+  .v82-status-form {
+    grid-template-columns: 1fr;
+  }
+
+  .v82-toolbar,
+  .v82-form-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

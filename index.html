@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Altea Portal · v8.3 Smart Price Workbench</title>
+  <title>Altea Portal · v8.5 Launch Control</title>
   <meta name="description" content="Портал бренда Алтея: маркетплейсы, логистика, задачи, финансы и отдельный продуктовый блок Ксении.">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="v81.css">
   <link rel="stylesheet" href="v82.css">
   <link rel="stylesheet" href="v83.css">
+  <link rel="stylesheet" href="v85.css">
 </head>
 <body>
   <div class="app-shell">
@@ -26,7 +27,7 @@
         <div class="logo-badge">AL</div>
         <div>
           <div class="brand-title">Altea Portal</div>
-          <div class="brand-sub">Imperial v8.3 · price workbench · WB статусы · продукт · цены · контроль</div>
+          <div class="brand-sub">Imperial v8.5 · price workbench · WB статусы · продукт · запуск новинок · контроль</div>
         </div>
       </div>
 
@@ -63,6 +64,10 @@
           <span>Продукт / Ксения</span>
           <small>Директор по товару · матрица · планы</small>
         </button>
+        <button class="nav-btn" data-view="launch-control">
+          <span>Запуск новинок</span>
+          <small>Маша · чек-листы · фазы · просрочки</small>
+        </button>
         <button class="nav-btn" data-view="meetings">
           <span>Ритм работы</span>
           <small>Weekly / Monthly / PMR</small>
@@ -83,7 +88,7 @@
       <div class="topbar">
         <div>
           <h1>Портал бренда Алтея</h1>
-          <p>v8.3: цены встроены как рабочий price workbench — команда фиксирует решение по цене, причине, owner, сроку и задачам прямо в портале.</p>
+          <p>v8.5: цены, WB-статусы и отдельный launch-control для новинок — в одном рабочем контуре.</p>
         </div>
         <div class="top-actions top-actions-wrap">
           <div class="sync-status" id="syncStatusBadge">Локальный режим</div>
@@ -107,6 +112,7 @@
       <section class="view" id="view-control"></section>
       <section class="view" id="view-skus"></section>
       <section class="view" id="view-launches"></section>
+      <section class="view" id="view-launch-control"></section>
       <section class="view" id="view-meetings"></section>
       <section class="view" id="view-executive"></section>
     </main>
@@ -129,5 +135,6 @@
   <script src="app-v81.js"></script>
   <script src="app-v82.js"></script>
   <script src="app-v83.js"></script>
+  <script src="app-v85.js"></script>
 </body>
 </html>

@@ -55,14 +55,15 @@
 
   function corporateBranding() {
     try {
-      document.title = 'Altea Portal · v8.6 Price UX';
+      document.title = 'Портал бренда Алтея · v8.7 Imperial';
       const sub = document.querySelector('.brand-sub');
       if (sub) sub.textContent = 'Corp v8.6 · цены · задачи · логистика · продукт · запуск';
       const h1 = document.querySelector('.topbar h1');
       if (h1) h1.textContent = 'Портал бренда Алтея';
       const p = document.querySelector('.topbar p');
-      if (p) p.textContent = 'v8.6: обновлённый ценовой контур — фильтр по дате, допустимая маржа, история решений и корпоративная шапка.';
+      if (p) p.textContent = 'Имперский контур управления: цена, ритм, логистика и решения команды работают как единая система.';
       document.body.classList.add('v86-corporate');
+      document.body.classList.add('v87-imperial');
     } catch (error) {
       console.error(error);
     }
@@ -504,6 +505,10 @@
     const owners = Array.from(new Set(rows.map((row) => row.owner).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'ru'));
     return `
       <div class="v86-sticky-bar">
+        <div class="v87-sticky-title">
+          <strong>Период и рабочие фильтры цены</strong>
+          <span>Фильтр по датам закреплён сверху и перестраивает историю, summary, таблицу и карточку SKU.</span>
+        </div>
         <div class="v86-market-switch">
           ${['wb', 'ozon', 'ym'].map((key) => `<button type="button" class="quick-chip ${state.v86.filters.market === key ? 'active' : ''}" data-v86-market="${key}">${marketLabel(key)}</button>`).join('')}
         </div>

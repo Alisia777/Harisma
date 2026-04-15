@@ -132,3 +132,7 @@ select option,
     grid-template-columns: 1fr;
   }
 }
+
+
+/* v8.7.1 chart refinement */
+.imperial-target.active, .quick-chip.active{background:rgba(203,164,91,.18)!important;border-color:rgba(203,164,91,.42)!important}

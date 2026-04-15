@@ -1,0 +1,107 @@
+.v85-link-card {
+  margin-top: 16px;
+}
+.v85-link-card-row {
+  margin-top: 12px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+}
+.v85-filter-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) repeat(4, minmax(140px, 1fr)) auto auto;
+  gap: 12px;
+  align-items: center;
+}
+.v85-launch-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+.v85-registry-card,
+.v85-detail-column {
+  min-width: 0;
+}
+.v85-launch-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.v85-launch-table th,
+.v85-launch-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  vertical-align: top;
+}
+.v85-launch-table tbody tr {
+  cursor: pointer;
+}
+.v85-launch-table tbody tr.selected {
+  background: rgba(255,255,255,0.06);
+}
+.v85-launch-table tbody tr:hover {
+  background: rgba(255,255,255,0.04);
+}
+.v85-detail-card .form-grid.compact textarea,
+.v85-detail-card .form-grid.compact input,
+.v85-detail-card .form-grid.compact select {
+  width: 100%;
+}
+.v85-actions-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.v85-phase-grid {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+.v85-phase-card {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 14px;
+  background: rgba(255,255,255,0.02);
+}
+.v85-task-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.v85-task-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.v85-task-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.v85-task-actions .inline-select {
+  min-width: 170px;
+}
+@media (max-width: 1280px) {
+  .v85-filter-row {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+  .v85-launch-layout {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 760px) {
+  .v85-filter-row {
+    grid-template-columns: 1fr;
+  }
+  .v85-link-card-row,
+  .v85-actions-row,
+  .v85-task-row {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+}

@@ -14,7 +14,7 @@
   const ESCALATION_META = {
     none: { label: 'Без эскалации', kind: '' },
     ksenia: { label: 'Ксении', kind: 'warn' },
-    viktor: { label: 'Виктору', kind: 'danger' },
+    final: { label: 'Финальное согласование', kind: 'danger' },
     rop: { label: 'РОПу', kind: 'info' },
     finance: { label: 'Финансам', kind: 'warn' }
   };
@@ -75,7 +75,7 @@
     const articleKey = String(item.articleKey || item.skuCode || '').trim();
     const sku = articleKey ? getSku(articleKey) : null;
     const decisionStatus = DECISION_STATUS_META[item.decisionStatus] ? item.decisionStatus : 'draft';
-    const escalation = ESCALATION_META[item.escalation] ? item.escalation : 'none';
+    const escalation = ESCALATION_META[item.escalation] ? item.escalation : (item.escalation === 'viktor' ? 'final' : 'none');
     return {
       id: String(item.id || stableId('price-decision', `${currentBrand()}|${marketplace}|${articleKey}`)).trim(),
       brand: currentBrand(),
@@ -465,7 +465,7 @@
             </label>
             <label class="v83-span-2">
               <span>Комментарий</span>
-              <textarea name="comment" rows="2" placeholder="Что важно для Ксении / РОПа / Виктора">${escapeHtml(row.comment || '')}</textarea>
+              <textarea name="comment" rows="2" placeholder="Что важно для Ксении / РОПа / финального согласования">${escapeHtml(row.comment || '')}</textarea>
             </label>
             <label class="v83-check"><input type="checkbox" name="needsTask" ${row.needsTask ? 'checked' : ''}><span>Создать / обновить задачу по цене</span></label>
           </div>
@@ -524,7 +524,7 @@
       <div class="section-title">
         <div>
           <h2>Цены / Price Workbench</h2>
-          <p>Это рабочий блок, а не витрина: здесь команда принимает решение по цене, фиксирует причину, срок, owner, эскалацию и связывает цену с маржой, оборачиваемостью и задачами.</p>
+          <p>Это рабочий блок для аналитиков и владельцев ценового решения, а не витрина: здесь меняют цену, фиксируют причину, срок, owner, создают задачу и связывают решение с маржой, оборачиваемостью и остатками.</p>
         </div>
         <div class="quick-actions price-market-switch">
           ${['wb', 'ozon', 'ym'].map((key) => `<button type="button" class="quick-chip ${state.v83.filters.market === key ? 'active' : ''}" data-v83-market="${key}">${marketLabel(key)}</button>`).join('')}
@@ -553,7 +553,7 @@
           <div class="head">
             <div>
               <h3>SKU в работе с ценами</h3>
-              <div class="muted small">Слева — выбор SKU и быстрый обзор, справа — решение по цене и история месяца.</div>
+              <div class="muted small">Это замена файла по ценам: слева список SKU в работе, справа — решение по цене, причина, срок, owner и история месяца.</div>
             </div>
             <div class="badge-stack">${badge(`Источник: ${escapeHtml(state.v83.seed.sourceFile || 'seed')}`)}</div>
           </div>
@@ -631,7 +631,7 @@
       due: decision.dueDate || plusDays(2),
       status: existing?.status || 'new',
       type: 'price_margin',
-      priority: decision.escalation === 'viktor' ? 'critical' : (decision.decisionStatus === 'review' ? 'high' : 'medium'),
+      priority: decision.escalation === 'final' ? 'critical' : (decision.decisionStatus === 'review' ? 'high' : 'medium'),
       platform: decision.marketplace,
       createdAt: existing?.createdAt || new Date().toISOString(),
       entityLabel: row.name || decision.articleKey,
@@ -793,11 +793,11 @@
     const rows = effectiveRowsForAllMarkets();
     if (!rows.length) return;
     const review = rows.filter((row) => row.decisionStatus === 'review');
-    const escalation = rows.filter((row) => row.escalation === 'viktor' || row.escalation === 'ksenia');
+    const escalation = rows.filter((row) => row.escalation === 'final' || row.escalation === 'ksenia');
     const risk = rows.filter((row) => row.allowedMarginPct != null && row.avgMargin7dPct != null && Number(row.avgMargin7dPct) < Number(row.allowedMarginPct));
     const body = [
       { label: 'Ждут согласования', value: review.length, hint: 'Решение по цене переведено в review.' },
-      { label: 'Эскалации', value: escalation.length, hint: 'Нужна Ксения / Виктор.' },
+      { label: 'Эскалации', value: escalation.length, hint: 'Нужно решение: Ксения / финальное согласование.' },
       { label: 'Риск по марже', value: risk.length, hint: 'Маржа 7д ниже допустимой.' }
     ].map((item) => `<div class="card kpi"><div class="label">${escapeHtml(item.label)}</div><div class="value">${fmt.int(item.value)}</div><div class="hint">${escapeHtml(item.hint)}</div></div>`).join('');
     const block = document.createElement('div');

@@ -878,6 +878,64 @@
       </div>`).join('');
   }
 
+  function launchChecklistGrouped() {
+    const tasks = rowsOrEmpty(state.storage?.tasks).filter((task) => task.source === 'launch_checklist');
+    const map = new Map();
+    tasks.forEach((task) => {
+      const key = String(task.articleKey || task.entityLabel || task.id || 'launch');
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(task);
+    });
+    return Array.from(map.entries()).map(([key, items]) => {
+      const novelty = rowsOrEmpty(state.v76?.store?.novelties).find((row) => String(row.productCode) === String(key)) || null;
+      const done = items.filter((task) => task.status === 'done').length;
+      const overdue = items.filter((task) => typeof isTaskOverdue === 'function' ? isTaskOverdue(task) : false).length;
+      const active = items.filter((task) => (typeof isTaskActive === 'function' ? isTaskActive(task) : task.status !== 'done')).length;
+      return {
+        key,
+        novelty,
+        items: items.sort((a, b) => String(a.due || '').localeCompare(String(b.due || ''))),
+        done,
+        overdue,
+        active,
+        total: items.length
+      };
+    }).sort((a, b) => monthKey(a.novelty?.launchMonth).localeCompare(monthKey(b.novelty?.launchMonth)) || String(a.novelty?.name || a.key).localeCompare(String(b.novelty?.name || b.key), 'ru'));
+  }
+
+  function launchChecklistSectionHtml() {
+    const groups = launchChecklistGrouped();
+    const novelties = rowsOrEmpty(state.v76?.store?.novelties);
+    const cards = groups.map((group) => {
+      const novelty = group.novelty;
+      const itemsHtml = group.items.slice(0, 6).map((task) => `
+        <div class="alert-row">
+          <div>
+            <strong>${escapeHtml(task.title || 'Задача')}</strong>
+            <div class="muted small">${escapeHtml(task.nextAction || task.reason || '—')}</div>
+          </div>
+          <div class="badge-stack">${badge(TASK_STATUS_META[task.status]?.label || task.status || 'Новая', task.status === 'done' ? 'ok' : task.status === 'waiting_decision' ? 'warn' : '')}${task.due ? badge(fmt.date(task.due), (typeof isTaskOverdue === 'function' && isTaskOverdue(task)) ? 'danger' : 'info') : ''}</div>
+        </div>`).join('');
+      return `
+        <div class="v80-launch-board-card">
+          <div class="head">
+            <div>
+              <strong>${escapeHtml(novelty?.name || group.key)}</strong>
+              <div class="muted small">${escapeHtml(novelty?.launchMonth || 'Без плана запуска')} · ${escapeHtml(novelty?.stage || 'launch')}</div>
+            </div>
+            <div class="badge-stack">${badge(`${group.done}/${group.total} done`, group.done === group.total ? 'ok' : 'info')}${badge(`Просрочено ${group.overdue}`, group.overdue ? 'danger' : 'ok')}</div>
+          </div>
+          <div class="muted small" style="margin-top:8px">Активных задач: ${fmt.int(group.active)}. Это явный реестр запуска новинок — замена отдельного файла чек-листа.</div>
+          <div class="alert-stack" style="margin-top:10px">${itemsHtml || '<div class="empty">Нет задач чек-листа</div>'}</div>
+          ${novelty ? `<div class="v80-actions" style="margin-top:12px"><button class="btn ghost small-btn" type="button" data-v80-checklist="${escapeHtml(novelty.id)}">Обновить чек-лист</button></div>` : ''}
+        </div>`;
+    }).join('');
+    const quickCreate = novelties.map((novelty) => `<button class="btn ghost small-btn" type="button" data-v80-checklist="${escapeHtml(novelty.id)}">${escapeHtml(novelty.name)}</button>`).join('');
+    const body = groups.length ? `<div class="v80-launch-board-grid">${cards}</div>` : `<div class="empty">Пока нет созданных launch checklist. Ниже можно создать их по нужным новинкам.</div>`;
+    const controls = `<div class="v80-actions wrap">${quickCreate || '<span class="muted small">Нет новинок для запуска</span>'}</div>`;
+    return sectionCard('launch_board', 'Запуски / Чек-листы новинок', 'Это явный рабочий блок для Маши: здесь видны все созданные чек-листы запуска, прогресс по ним, просрочка и конкретные задачи. Не нужно искать отдельный Excel.', controls, body);
+  }
+
   function renderLaunchesV80() {
     ensureStoreSeeded();
     const root = document.getElementById('view-launches');
@@ -918,6 +976,7 @@
       ${sectionCard('guide', 'Как работать в блоке Ксении', 'Матрица товаров, карточки новинок, launch checklist, продуктовые задачи и тетрадь действий.', '', `<div class="v80-guide-grid">${guideCard('Реестр товаров', 'Меняем статус, экономику, запуск план/факт и риск прямо в строке товара.')} ${guideCard('Карточки новинок', 'По каждой новинке видно этап, блокеры, инвестиции, break-even, ROI и можно создать чек-лист запуска.')} ${guideCard('Задачник Ксении', 'Личные продуктовые задачи со сроками, приоритетами и статусом.')} ${guideCard('Тетрадь действий', 'Решения, договорённости, изменения статусов и next step.')}</div>`)}
       ${sectionCard('registry', 'Реестр товаров директора по товару', 'Главный список товаров. Здесь Ксения меняет статус, запуск план/факт, ценовой коридор, инвестиции и риск.', `<div class="v80-controls-row"><input id="v80ProductSearch" placeholder="Поиск по товару / коду / категории" value="${escapeHtml(state.v80.filters.productSearch)}"><select id="v80ProductStatus"><option value="all">Все статусы</option>${Object.entries(PRODUCT_STATUS_META).map(([k,m]) => `<option value="${k}" ${state.v80.filters.productStatus===k?'selected':''}>${escapeHtml(m.label)}</option>`).join('')}</select><select id="v80ProductPlanMonth"><option value="all">План запуска: все</option>${productPlanOptions.map((m) => `<option value="${escapeHtml(m)}" ${state.v80.filters.productPlanMonth===m?'selected':''}>${escapeHtml(m)}</option>`).join('')}</select><select id="v80ProductFactMonth"><option value="all">Факт запуска: все</option>${productFactOptions.map((m) => `<option value="${escapeHtml(m)}" ${state.v80.filters.productFactMonth===m?'selected':''}>${escapeHtml(m)}</option>`).join('')}</select><label class="toggle"><input id="v80ProductRisk" type="checkbox" ${state.v80.filters.productRiskOnly?'checked':''}> Только риск</label><button class="btn" type="button" data-v80-add-product>Добавить товар</button></div>`, `<datalist id="v80SkuList">${(state.skus || []).map((sku) => `<option value="${escapeHtml(sku.articleKey || sku.article || '')}">${escapeHtml(sku.name || '')}</option>`).join('')}</datalist><div class="table-wrap v80-wide-table-wrap"><table class="v80-table"><thead><tr><th class="sticky-col">Код / SKU</th><th>Товар</th><th>Статус</th><th>Запуск план</th><th>Запуск факт</th><th>Delay</th><th>МРЦ</th><th>Макс. скидка</th><th>Target cost</th><th>Рабочая цена</th><th>План выручки / период</th><th>План, шт</th><th>Инвестиции</th><th>Break-even</th><th>ROI</th><th>Риск</th><th>Комментарий</th><th>Документы</th><th>Действия</th></tr></thead><tbody>${productRows.join('') || '<tr><td colspan="19" class="text-center muted">Нет товаров под текущий фильтр</td></tr>'}</tbody></table></div>`)}
       ${sectionCard('novelties', 'Карточки новинок', 'Launch cockpit по новинкам: план/факт запуска, инвестиции, break-even, риск, документы, checklist и next step.', `<div class="v80-controls-row"><input id="v80NoveltySearch" placeholder="Поиск по новинке / коду / шагу" value="${escapeHtml(state.v80.filters.noveltySearch)}"><select id="v80NoveltyStage"><option value="all">Все этапы</option>${Object.entries(NOVELTY_STAGE_META).map(([k,m]) => `<option value="${k}" ${state.v80.filters.noveltyStage===k?'selected':''}>${escapeHtml(m.label)}</option>`).join('')}</select><select id="v80NoveltyPlanMonth"><option value="all">План запуска: все</option>${noveltyPlanOptions.map((m) => `<option value="${escapeHtml(m)}" ${state.v80.filters.noveltyPlanMonth===m?'selected':''}>${escapeHtml(m)}</option>`).join('')}</select><select id="v80NoveltyFactMonth"><option value="all">Факт запуска: все</option>${noveltyFactOptions.map((m) => `<option value="${escapeHtml(m)}" ${state.v80.filters.noveltyFactMonth===m?'selected':''}>${escapeHtml(m)}</option>`).join('')}</select><label class="toggle"><input id="v80NoveltyRisk" type="checkbox" ${state.v80.filters.noveltyRiskOnly?'checked':''}> Только риск</label><button class="btn" type="button" data-v80-add-novelty>Добавить новинку</button></div><datalist id="v80ProductCodeList">${rowsOrEmpty(state.v76.store.products).map((row) => `<option value="${escapeHtml(row.productCode)}">${escapeHtml(row.name)}</option>`).join('')}</datalist>`, `<div class="v80-card-grid">${noveltyCards.join('') || '<div class="empty">Нет новинок под текущий фильтр</div>'}</div>`)}
+      ${launchChecklistSectionHtml()}
       ${sectionCard('tasks', 'Задачник Ксении со сроками', 'Задачи по товарам, новинкам, матрице и калькуляторам. Всё, что у Ксении в работе, видно здесь.', '', `<form id="v80TaskForm" class="form-grid compact"><label class="wide"><span>Товар / новинка</span><select name="entity">${productOptionsHtml}</select></label><label class="wide"><span>Задача</span><input name="title" placeholder="Например, согласовать калькулятор и цену"></label><label><span>Приоритет</span><select name="priority">${Object.entries(PRIORITY_META).map(([k,m]) => `<option value="${k}">${escapeHtml(m.label)}</option>`).join('')}</select></label><label><span>Статус</span><select name="status">${Object.entries(TASK_STATUS_META).map(([k,m]) => `<option value="${k}">${escapeHtml(m.label)}</option>`).join('')}</select></label><label><span>Срок</span><input name="due" type="date" value="${plusDays(3)}"></label><label><span>Owner</span><select name="owner">${ownerOptions().map((name) => `<option value="${escapeHtml(name)}" ${name==='Ксения'?'selected':''}>${escapeHtml(name)}</option>`).join('')}</select></label><label class="wide"><span>Следующее действие</span><textarea name="nextAction" rows="2" placeholder="Что именно делаем"></textarea></label><label class="wide"><span>Контекст / причина</span><textarea name="reason" rows="2" placeholder="Почему появилась задача"></textarea></label><div class="v80-actions wide"><button class="btn" type="submit">Поставить задачу</button>${badge(`Активно ${fmt.int(activeTasks.length)}`, activeTasks.length ? 'info' : '')}${badge(`Просрочено ${fmt.int(overdueTasks.length)}`, overdueTasks.length ? 'danger' : 'ok')}${badge(`Ждут решения ${fmt.int(waitingTasks.length)}`, waitingTasks.length ? 'warn' : 'ok')}</div></form><div class="stack">${tasks.length ? tasks.slice(0, 12).map((task) => typeof renderTaskCard === 'function' ? renderTaskCard(task) : `<div>${escapeHtml(task.title)}</div>`).join('') : '<div class="empty">У Ксении пока нет задач.</div>'}</div>`)}
       ${sectionCard('notebook', 'Тетрадь действий', 'Журнал решений и действий по товарам и новинкам: что сделали, что решили и что дальше.', `<div class="v80-controls-row"><select id="v80NotebookKind"><option value="all">Все типы</option>${Object.entries(NOTEBOOK_KIND_META).map(([k,label]) => `<option value="${k}" ${state.v80.filters.notebookKind===k?'selected':''}>${escapeHtml(label)}</option>`).join('')}</select></div>`, `<form id="v80NotebookForm" class="form-grid compact"><label class="wide"><span>Товар / новинка</span><select name="entity">${productOptionsHtml}</select></label><label><span>Тип записи</span><select name="kind">${Object.entries(NOTEBOOK_KIND_META).map(([k,label]) => `<option value="${k}">${escapeHtml(label)}</option>`).join('')}</select></label><label><span>Статус</span><select name="status">${Object.entries(TASK_STATUS_META).map(([k,m]) => `<option value="${k}">${escapeHtml(m.label)}</option>`).join('')}</select></label><label><span>Срок</span><input name="due" type="date"></label><label class="wide"><span>Заголовок</span><input name="title" placeholder="Например, согласовали цену"></label><label class="wide"><span>Что сделали / решили</span><textarea name="body" rows="2"></textarea></label><label class="wide"><span>Следующий шаг</span><textarea name="nextStep" rows="2"></textarea></label><div class="v80-actions wide"><button class="btn" type="submit">Добавить запись</button></div></form><div class="v80-notebook-list">${notebookCards(notebook)}</div>`)}
     `;

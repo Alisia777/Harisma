@@ -626,7 +626,7 @@
       <div class="card v82-control-card">
         <div class="section-subhead">
           <div>
-            <h3>Форма статусов WB · РОП</h3>
+            <h3>Форма статусов WB · РОП (замена файла Маши)</h3>
             <p class="small muted">Это уже не отдельный файл. РОП обновляет статус по SKU прямо в портале, а запись уходит в Supabase и при необходимости превращается в задачу.</p>
           </div>
           <div class="badge-stack">${badge('WB', 'info')}${badge(sourceCaption(), '')}</div>
@@ -666,7 +666,7 @@
         <div class="section-subhead">
           <div>
             <h3>WB статусы РОПа</h3>
-            <p class="small muted">Сводка по текущим статусам SKU из формы РОПа WB, без дубля второго задачника.</p>
+            <p class="small muted">Сводка по текущим статусам SKU из формы РОПа WB. Это замена отдельного Машиного файла внутри портала.</p>
           </div>
           <div class="badge-stack">${badge(`${fmt.int(rows.length)} SKU`, 'info')}${badge(`${fmt.int(top.length)} в фокусе`, top.length ? 'warn' : 'ok')}</div>
         </div>

@@ -1,0 +1,310 @@
+{
+  "generatedAt": "2026-04-08T07:00:02",
+  "note": "Операционная оценка по дням: берём дневные заказы из рабочего файла data (37).xlsx и умножаем на текущие цены/маржу SKU. Для Я.Маркета используем blended fallback из доступных цен и fact margin.",
+  "platforms": [
+    {
+      "key": "wb",
+      "label": "WB",
+      "series": [
+        {
+          "dayOffset": 10,
+          "label": "D-10",
+          "units": 4157.0,
+          "revenue": 4094114.18,
+          "estimatedMargin": 2093541.34
+        },
+        {
+          "dayOffset": 9,
+          "label": "D-9",
+          "units": 4013.0,
+          "revenue": 3927466.26,
+          "estimatedMargin": 2004929.12
+        },
+        {
+          "dayOffset": 8,
+          "label": "D-8",
+          "units": 3596.0,
+          "revenue": 3534488.99,
+          "estimatedMargin": 1791308.58
+        },
+        {
+          "dayOffset": 7,
+          "label": "D-7",
+          "units": 3382.0,
+          "revenue": 3414230.83,
+          "estimatedMargin": 1720390.02
+        },
+        {
+          "dayOffset": 6,
+          "label": "D-6",
+          "units": 4629.0,
+          "revenue": 4439546.44,
+          "estimatedMargin": 2229803.33
+        },
+        {
+          "dayOffset": 5,
+          "label": "D-5",
+          "units": 5860.0,
+          "revenue": 5477407.88,
+          "estimatedMargin": 2763340.93
+        },
+        {
+          "dayOffset": 4,
+          "label": "D-4",
+          "units": 3589.0,
+          "revenue": 3509092.77,
+          "estimatedMargin": 1719973.06
+        },
+        {
+          "dayOffset": 3,
+          "label": "D-3",
+          "units": 2698.0,
+          "revenue": 2748944.42,
+          "estimatedMargin": 1312309.94
+        },
+        {
+          "dayOffset": 2,
+          "label": "D-2",
+          "units": 2638.0,
+          "revenue": 2724917.85,
+          "estimatedMargin": 1334636.72
+        },
+        {
+          "dayOffset": 1,
+          "label": "D-1",
+          "units": 2459.0,
+          "revenue": 2464273.45,
+          "estimatedMargin": 1209891.01
+        }
+      ]
+    },
+    {
+      "key": "ozon",
+      "label": "Ozon",
+      "series": [
+        {
+          "dayOffset": 10,
+          "label": "D-10",
+          "units": 1022.0,
+          "revenue": 1196795.0,
+          "estimatedMargin": 301069.23
+        },
+        {
+          "dayOffset": 9,
+          "label": "D-9",
+          "units": 1766.0,
+          "revenue": 2067981.0,
+          "estimatedMargin": 529615.84
+        },
+        {
+          "dayOffset": 8,
+          "label": "D-8",
+          "units": 839.0,
+          "revenue": 1005289.0,
+          "estimatedMargin": 237686.0
+        },
+        {
+          "dayOffset": 7,
+          "label": "D-7",
+          "units": 857.0,
+          "revenue": 1010209.0,
+          "estimatedMargin": 244444.81
+        },
+        {
+          "dayOffset": 6,
+          "label": "D-6",
+          "units": 761.0,
+          "revenue": 877778.0,
+          "estimatedMargin": 199494.84
+        },
+        {
+          "dayOffset": 5,
+          "label": "D-5",
+          "units": 979.0,
+          "revenue": 1241089.0,
+          "estimatedMargin": 302055.92
+        },
+        {
+          "dayOffset": 4,
+          "label": "D-4",
+          "units": 830.0,
+          "revenue": 1005878.0,
+          "estimatedMargin": 234763.79
+        },
+        {
+          "dayOffset": 3,
+          "label": "D-3",
+          "units": 748.0,
+          "revenue": 889921.0,
+          "estimatedMargin": 209678.96
+        },
+        {
+          "dayOffset": 2,
+          "label": "D-2",
+          "units": 907.0,
+          "revenue": 1146076.0,
+          "estimatedMargin": 277339.32
+        },
+        {
+          "dayOffset": 1,
+          "label": "D-1",
+          "units": 687.0,
+          "revenue": 850608.0,
+          "estimatedMargin": 190781.68
+        }
+      ]
+    },
+    {
+      "key": "ya",
+      "label": "Я.Маркет",
+      "series": [
+        {
+          "dayOffset": 10,
+          "label": "D-10",
+          "units": 18.0,
+          "revenue": 16594.66,
+          "estimatedMargin": 14905.62
+        },
+        {
+          "dayOffset": 9,
+          "label": "D-9",
+          "units": 29.0,
+          "revenue": 31762.32,
+          "estimatedMargin": 28628.95
+        },
+        {
+          "dayOffset": 8,
+          "label": "D-8",
+          "units": 39.0,
+          "revenue": 40616.54,
+          "estimatedMargin": 36934.83
+        },
+        {
+          "dayOffset": 7,
+          "label": "D-7",
+          "units": 31.0,
+          "revenue": 33593.04,
+          "estimatedMargin": 30340.72
+        },
+        {
+          "dayOffset": 6,
+          "label": "D-6",
+          "units": 30.0,
+          "revenue": 41490.81,
+          "estimatedMargin": 37897.19
+        },
+        {
+          "dayOffset": 5,
+          "label": "D-5",
+          "units": 23.0,
+          "revenue": 22495.87,
+          "estimatedMargin": 20108.31
+        },
+        {
+          "dayOffset": 4,
+          "label": "D-4",
+          "units": 27.0,
+          "revenue": 25668.74,
+          "estimatedMargin": 22915.91
+        },
+        {
+          "dayOffset": 3,
+          "label": "D-3",
+          "units": 20.0,
+          "revenue": 15890.35,
+          "estimatedMargin": 14169.74
+        },
+        {
+          "dayOffset": 2,
+          "label": "D-2",
+          "units": 25.0,
+          "revenue": 24691.71,
+          "estimatedMargin": 22049.48
+        },
+        {
+          "dayOffset": 1,
+          "label": "D-1",
+          "units": 11.0,
+          "revenue": 8391.69,
+          "estimatedMargin": 7346.78
+        }
+      ]
+    },
+    {
+      "key": "all",
+      "label": "Все площадки",
+      "series": [
+        {
+          "dayOffset": 10,
+          "label": "D-10",
+          "units": 5197.0,
+          "revenue": 5755188.86,
+          "estimatedMargin": 5205104.41
+        },
+        {
+          "dayOffset": 9,
+          "label": "D-9",
+          "units": 5808.0,
+          "revenue": 6286342.75,
+          "estimatedMargin": 5678174.98
+        },
+        {
+          "dayOffset": 8,
+          "label": "D-8",
+          "units": 4474.0,
+          "revenue": 4978313.06,
+          "estimatedMargin": 4508001.51
+        },
+        {
+          "dayOffset": 7,
+          "label": "D-7",
+          "units": 4270.0,
+          "revenue": 4863166.57,
+          "estimatedMargin": 4410772.51
+        },
+        {
+          "dayOffset": 6,
+          "label": "D-6",
+          "units": 5420.0,
+          "revenue": 5898435.37,
+          "estimatedMargin": 5326286.63
+        },
+        {
+          "dayOffset": 5,
+          "label": "D-5",
+          "units": 6862.0,
+          "revenue": 7415555.97,
+          "estimatedMargin": 6703087.28
+        },
+        {
+          "dayOffset": 4,
+          "label": "D-4",
+          "units": 4446.0,
+          "revenue": 5018477.04,
+          "estimatedMargin": 4538251.38
+        },
+        {
+          "dayOffset": 3,
+          "label": "D-3",
+          "units": 3466.0,
+          "revenue": 4073303.29,
+          "estimatedMargin": 3688719.77
+        },
+        {
+          "dayOffset": 2,
+          "label": "D-2",
+          "units": 3570.0,
+          "revenue": 4259528.31,
+          "estimatedMargin": 3861098.83
+        },
+        {
+          "dayOffset": 1,
+          "label": "D-1",
+          "units": 3157.0,
+          "revenue": 3690911.18,
+          "estimatedMargin": 3348383.98
+        }
+      ]
+    }
+  ]
+}

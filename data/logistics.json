@@ -1,9 +1,8 @@
 {
-  "generatedAt": "2026-04-08T07:00:12",
+  "generatedAt": "2026-04-16T23:59:00",
   "window": {
-    "from": "2026-02-28",
-    "to": "2026-03-27",
-    "days": 28
+    "from": "2026-04-01",
+    "to": "2026-04-16"
   },
   "targetOptions": [
     7,
@@ -19,72 +18,62 @@
   "summaryCards": [
     {
       "label": "Локальные заказы Ozon",
-      "valuePct": 0.5481,
-      "value": 19079,
-      "hint": "Доля локальных отгрузок за окно"
+      "valuePct": 0.5962,
+      "value": 19557,
+      "hint": "Доля локальных отгрузок за 01–16.04"
     },
     {
       "label": "Нелокальные заказы Ozon",
-      "valuePct": 0.4519,
-      "value": 15729,
+      "valuePct": 0.4038,
+      "value": 13247,
       "hint": "Часть спроса идёт через не-локальный кластер"
     },
     {
       "label": "Ожидает сборки",
-      "value": 195,
+      "value": 329,
       "hint": "Нужно собрать на складе"
     },
     {
       "label": "Ожидает отгрузки",
-      "value": 321,
-      "hint": "Собрано, но ещё не отгружено"
+      "value": 466,
+      "hint": "Нужно отгрузить со склада"
     },
     {
-      "label": "Центральный склад, шт.",
-      "value": 225872,
-      "hint": "Остаток в Балашихе"
-    },
-    {
-      "label": "Кластеры Ozon < 14 дней",
-      "value": 14,
-      "hint": "Кластеры в зоне риска по оборачиваемости"
-    },
-    {
-      "label": "Склады WB < 14 дней",
-      "value": 49,
-      "hint": "Склады WB в зоне риска по покрытию"
+      "label": "Доставляется",
+      "value": 7942,
+      "hint": "Уже в пути"
     }
   ],
   "statusCards": [
     {
       "key": "waitingAssembly",
       "label": "Ожидает сборки",
-      "orders": 195,
-      "units": 195
+      "orders": 329,
+      "units": 329
     },
     {
       "key": "waitingShip",
       "label": "Ожидает отгрузки",
-      "orders": 321,
-      "units": 321
+      "orders": 466,
+      "units": 466
     },
     {
       "key": "delivering",
       "label": "Доставляется",
-      "orders": 4677,
-      "units": 4677
+      "orders": 7942,
+      "units": 7942
     },
     {
       "key": "delivered",
-      "label": "Доставлен/получен",
-      "orders": 26523,
-      "units": 26523
+      "label": "Доставлен",
+      "orders": 22110,
+      "units": 22111
     },
     {
       "key": "cancelled",
       "label": "Отменён",
-      "orders": 3092,
-      "units": 3092
+      "orders": 1957,
+      "units": 1957
     }
   ],
   "centralWarehouse": {

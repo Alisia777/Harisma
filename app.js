@@ -1131,16 +1131,47 @@ function totalSkuStock(sku) {
   return numberOrZero(sku?.wb?.stock) + numberOrZero(sku?.ozon?.stockProducts ?? sku?.ozon?.stock);
 }
 
+function currentCompletionPct(sku) {
+  return numberOrZero(
+    sku?.planFact?.completionAprToDatePct
+    ?? sku?.planFact?.completionAprMonthPct
+    ?? sku?.planFact?.completionFeb26Pct
+  );
+}
+
+function currentMarginPct(sku) {
+  const direct = sku?.planFact?.factApr16MarginPct ?? sku?.planFact?.factFeb26MarginPct;
+  if (direct !== undefined && direct !== null && direct !== '') return numberOrZero(direct);
+  const wb = sku?.wb?.marginPct;
+  const oz = sku?.ozon?.marginPct;
+  const values = [wb, oz].filter(v => v !== undefined && v !== null && v !== '' && !Number.isNaN(Number(v))).map(Number);
+  return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+}
+
 function monthRevenue(sku) {
-  return numberOrZero(sku?.planFact?.factFeb26Revenue || sku?.orders?.value || sku?.planFact?.factTotalRevenue);
+  return numberOrZero(
+    sku?.planFact?.factApr16Revenue
+    ?? sku?.planFact?.factFeb26Revenue
+    ?? sku?.orders?.value
+    ?? sku?.planFact?.factTotalRevenue
+  );
 }
 
 function monthNetRevenue(sku) {
-  return numberOrZero(sku?.planFact?.factFeb26NetRevenue || sku?.orders?.value);
+  return numberOrZero(
+    sku?.planFact?.factApr16NetRevenue
+    ?? sku?.planFact?.factFeb26NetRevenue
+    ?? sku?.orders?.value
+    ?? sku?.planFact?.factApr16Revenue
+  );
 }
 
 function monthUnits(sku) {
-  return numberOrZero(sku?.planFact?.factFeb26Units || sku?.orders?.units);
+  return numberOrZero(
+    sku?.planFact?.factApr16Units
+    ?? sku?.planFact?.factFeb26Units
+    ?? sku?.orders?.units
+  );
 }
 
 function externalTrafficLabel(sku) {
@@ -1197,8 +1228,8 @@ function buildVisualDashboardModel() {
   const revenueTotal = activeSkus.reduce((acc, sku) => acc + monthRevenue(sku), 0);
   const netRevenueTotal = activeSkus.reduce((acc, sku) => acc + monthNetRevenue(sku), 0);
   const unitsTotal = activeSkus.reduce((acc, sku) => acc + monthUnits(sku), 0);
-  const avgCompletion = avg(activeSkus.map((sku) => sku?.planFact?.completionFeb26Pct));
-  const avgMargin = avg(activeSkus.map((sku) => sku?.planFact?.factFeb26MarginPct));
+  const avgCompletion = avg(activeSkus.map((sku) => currentCompletionPct(sku)));
+  const avgMargin = avg(activeSkus.map((sku) => currentMarginPct(sku)));
   const trafficCount = activeSkus.filter((sku) => sku?.flags?.hasExternalTraffic).length;
   const leadersSales = [...activeSkus]
     .filter((sku) => monthRevenue(sku) > 0)
@@ -1210,7 +1241,7 @@ function buildVisualDashboardModel() {
       title: sku.name,
       metricValue: monthRevenue(sku),
       owner: ownerName(sku),
-      marginPct: sku?.planFact?.factFeb26MarginPct,
+      marginPct: currentMarginPct(sku),
       units: monthUnits(sku),
       traffic: externalTrafficLabel(sku)
     }));
@@ -1288,10 +1319,17 @@ function renderDashboard() {
     </div>
   `).join('');
 
+  const formatCardValue = (card) => {
+    if (typeof card?.value === 'string') return escapeHtml(card.value);
+    if (card?.format === 'money') return escapeHtml(fmt.money(card.value));
+    if (card?.format === 'pct') return escapeHtml(fmt.pct(card.value));
+    return escapeHtml(fmt.int(card?.value));
+  };
+
   const baseCards = (state.dashboard.cards || []).map((card) => `
     <div class="card kpi">
       <div class="label">${escapeHtml(card.label)}</div>
-      <div class="value">${fmt.int(card.value)}</div>
+      <div class="value">${formatCardValue(card)}</div>
       <div class="hint">${escapeHtml(card.hint)}</div>
     </div>
   `).join('');

@@ -51,7 +51,7 @@ const state = {
     mode: 'local',
     ready: false,
     error: '',
-    note: 'Локальный режим',
+    note: 'Подключаем командную базу…',
     member: { name: '', role: 'Команда' },
     lastSyncAt: '',
     userId: ''
@@ -95,6 +95,22 @@ const DEFAULT_APP_CONFIG = {
   supabase: { url: '', anonKey: '', auth: 'anonymous' }
 };
 
+
+const RUNTIME_SUPABASE_FALLBACK = {
+  brand: 'Алтея',
+  teamMode: 'supabase',
+  teamMember: { name: '', role: 'Команда' },
+  supabase: {
+    url: 'https://iyckwryrucqrxwlowxow.supabase.co',
+    anonKey: 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw',
+    auth: 'anonymous'
+  }
+};
+
+function isLocalHost() {
+  return ['localhost', '127.0.0.1'].includes(window.location.hostname);
+}
+
 const TEAM_TABLES = {
   tasks: 'portal_tasks',
   comments: 'portal_comments',
@@ -129,14 +145,26 @@ const fmt = {
   }
 };
 
+
 function currentConfig() {
-  return {
+  const raw = window.APP_CONFIG || {};
+  const merged = {
     ...DEFAULT_APP_CONFIG,
-    ...(window.APP_CONFIG || {}),
-    teamMember: { ...DEFAULT_APP_CONFIG.teamMember, ...((window.APP_CONFIG || {}).teamMember || {}) },
-    supabase: { ...DEFAULT_APP_CONFIG.supabase, ...((window.APP_CONFIG || {}).supabase || {}) }
+    ...raw,
+    teamMember: { ...DEFAULT_APP_CONFIG.teamMember, ...(raw.teamMember || {}) },
+    supabase: { ...DEFAULT_APP_CONFIG.supabase, ...(raw.supabase || {}) }
   };
+  const missingRemote = merged.teamMode !== 'supabase' || !merged.supabase?.url || !merged.supabase?.anonKey;
+  if (missingRemote && !isLocalHost()) {
+    return {
+      ...merged,
+      ...RUNTIME_SUPABASE_FALLBACK,
+      teamMember: { ...RUNTIME_SUPABASE_FALLBACK.teamMember, ...(merged.teamMember || {}) }
+    };
+  }
+  return merged;
 }
+
 
 function currentBrand() {
   return currentConfig().brand || 'Алтея';
@@ -222,7 +250,8 @@ function linkToSku(articleKey, label) {
 }
 
 async function loadJson(path) {
-  const response = await fetch(path);
+  const resolvedPath = path.includes("?") ? path : `${path}?v=20260416b`;
+  const response = await fetch(resolvedPath, { cache: "no-store" });
   if (!response.ok) throw new Error(`Не удалось загрузить ${path}`);
   return response.json();
 }
@@ -711,7 +740,27 @@ async function initTeamStore() {
   state.team.ready = false;
   updateSyncBadge();
 
+  if (cfg.teamMode === 'supabase' && cfg.supabase?.url && cfg.supabase?.anonKey && !window.supabase?.createClient) {
+    state.team.mode = 'pending';
+    state.team.note = 'Ждём модуль командной базы…';
+    updateSyncBadge();
+    for (let i = 0; i < 20; i += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      if (window.supabase?.createClient) break;
+    }
+  }
   if (cfg.teamMode !== 'supabase' || !cfg.supabase?.url || !cfg.supabase?.anonKey) {
+    applyOwnerOverridesToSkus();
+    updateSyncBadge();
+    return;
+  }
+
+  for (let i = 0; i < 20 && !window.supabase?.createClient; i += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+  if (!window.supabase?.createClient) {
+    state.team.error = 'Supabase client не загрузился';
+    state.team.note = 'Ошибка Supabase — работаем локально';
     applyOwnerOverridesToSkus();
     updateSyncBadge();
     return;
@@ -721,8 +770,6 @@ async function initTeamStore() {
     state.team.mode = 'pending';
     state.team.note = 'Подключаем командную базу…';
     updateSyncBadge();
-
-    await ensureSupabaseClientAvailable();
 
     const client = window.supabase.createClient(cfg.supabase.url, cfg.supabase.anonKey, {
       auth: { persistSession: true, autoRefreshToken: true }

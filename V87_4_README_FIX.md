@@ -1,0 +1,1 @@
+Replace root files and data folder with this package. It includes working config.js, updated data as of 2026-04-16, app.js hotfix, and header/theme fixes. Keep CNAME if your repo already has one.

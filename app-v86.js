@@ -57,11 +57,11 @@
     try {
       document.title = 'Портал бренда Алтея · v8.7 Imperial';
       const sub = document.querySelector('.brand-sub');
-      if (sub) sub.textContent = 'Corp v8.6 · цены · задачи · логистика · продукт · запуск';
+      if (sub) sub.textContent = 'Порядок рождается из воли.';
       const h1 = document.querySelector('.topbar h1');
       if (h1) h1.textContent = 'Портал бренда Алтея';
       const p = document.querySelector('.topbar p');
-      if (p) p.textContent = 'Имперский контур управления: цена, ритм, логистика и решения команды работают как единая система.';
+      if (p) p.textContent = 'Истина в том, что правых нет. Есть лишь те, кто выдержал цену решений и не потерял курс во тьме.';
       document.body.classList.add('v86-corporate');
       document.body.classList.add('v87-imperial');
     } catch (error) {

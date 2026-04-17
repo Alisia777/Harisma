@@ -17,6 +17,7 @@
       anonKey: 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw'
     }
   };
+  let snapshotRefreshInFlight = false;
 
   function cfg() {
     if (typeof currentConfig === 'function') return currentConfig();
@@ -61,20 +62,27 @@
 
   async function fetchSnapshots() {
     const activeCfg = cfg();
-    if (!activeCfg.supabase?.url || !activeCfg.supabase?.anonKey || !window.supabase?.createClient) return;
-    const client = window.supabase.createClient(activeCfg.supabase.url, activeCfg.supabase.anonKey, {
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    if (!activeCfg.supabase?.url || !activeCfg.supabase?.anonKey || typeof fetch !== 'function') return;
+    if (typeof state === 'object' && state?.team?.mode === 'pending') return [];
+    const baseUrl = String(activeCfg.supabase.url || '').replace(/\/+$/, '');
+    const url = new URL(`${baseUrl}/rest/v1/${SNAPSHOT_TABLE}`);
+    url.searchParams.set('select', 'snapshot_key,payload,updated_at');
+    url.searchParams.set('brand', `eq.${brand()}`);
+    url.searchParams.set('snapshot_key', `in.(${SNAPSHOT_KEYS.join(',')})`);
+    const request = fetch(url.toString(), {
+      headers: {
+        apikey: activeCfg.supabase.anonKey,
+        Authorization: `Bearer ${activeCfg.supabase.anonKey}`,
+        Accept: 'application/json'
+      }
     });
-    const query = client
-      .from(SNAPSHOT_TABLE)
-      .select('snapshot_key,payload,updated_at')
-      .eq('brand', brand())
-      .in('snapshot_key', SNAPSHOT_KEYS);
     const response = typeof withTimeout === 'function'
-      ? await withTimeout(query, 5000, 'Витрина Supabase')
-      : await query;
-    if (response?.error) throw response.error;
-    return response?.data || [];
+      ? await withTimeout(request, 5000, 'Витрина Supabase')
+      : await request;
+    if (!response?.ok) throw new Error(`Supabase snapshots ${response?.status || 'request failed'}`);
+    return typeof withTimeout === 'function'
+      ? await withTimeout(response.json(), 5000, 'Чтение витрины Supabase')
+      : await response.json();
   }
 
   function applySnapshots(rows) {
@@ -102,6 +110,8 @@
   }
 
   async function refreshSnapshots() {
+    if (snapshotRefreshInFlight) return;
+    snapshotRefreshInFlight = true;
     try {
       const rows = await fetchSnapshots();
       if (applySnapshots(rows)) {
@@ -114,6 +124,8 @@
         return;
       }
       console.warn('[portal-supabase-snapshot-hotfix]', error);
+    } finally {
+      snapshotRefreshInFlight = false;
     }
   }
 

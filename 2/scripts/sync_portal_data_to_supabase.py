@@ -8,6 +8,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from time import sleep
 from urllib import error, parse, request
 
 
@@ -45,6 +46,19 @@ def infer_generated_at(snapshot_key: str, payload: Any) -> str:
             if candidate:
                 return str(candidate)
     return utc_now_iso()
+
+
+def snapshot_payload(snapshot_key: str, payload: Any) -> Any:
+    if snapshot_key != "dashboard" or not isinstance(payload, dict):
+        return payload
+    # The portal only needs freshness and KPI cards from the dashboard snapshot.
+    # Keep the Supabase payload compact so the upsert stays reliable.
+    return {
+        "generatedAt": payload.get("generatedAt"),
+        "dataFreshness": payload.get("dataFreshness") or {},
+        "cards": payload.get("cards") or [],
+        "brandSummary": payload.get("brandSummary") or [],
+    }
 
 
 def parse_config_js(config_path: Path) -> dict[str, str]:
@@ -87,12 +101,27 @@ def rest_request(method: str, url: str, api_key: str, payload: Any | None = None
         raise RuntimeError(f"{method.upper()} {url} failed: {exc.reason}") from exc
 
 
+def rest_request_with_retry(method: str, url: str, api_key: str, payload: Any | None = None, extra_headers: dict[str, str] | None = None, attempts: int = 3) -> Any:
+    last_error: Exception | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return rest_request(method, url, api_key, payload=payload, extra_headers=extra_headers)
+        except Exception as exc:  # noqa: BLE001
+            last_error = exc
+            if attempt >= attempts:
+                raise
+            sleep(0.8 * attempt)
+    if last_error:
+        raise last_error
+    return None
+
+
 def fetch_remote_hashes(base_url: str, api_key: str, table: str, brand: str) -> dict[str, str]:
     params = parse.urlencode({
         "select": "snapshot_key,payload_hash",
         "brand": f"eq.{brand}",
     })
-    rows = rest_request("GET", f"{base_url}/rest/v1/{table}?{params}", api_key) or []
+    rows = rest_request_with_retry("GET", f"{base_url}/rest/v1/{table}?{params}", api_key) or []
     return {
         str(row.get("snapshot_key")): str(row.get("payload_hash") or "")
         for row in rows
@@ -103,7 +132,7 @@ def fetch_remote_hashes(base_url: str, api_key: str, table: str, brand: str) -> 
 def build_rows(data_dir: Path, brand: str, source: str) -> list[dict[str, Any]]:
     rows = []
     for snapshot_key, filename in SNAPSHOT_KEYS.items():
-        payload = load_json(data_dir / filename)
+        payload = snapshot_payload(snapshot_key, load_json(data_dir / filename))
         rows.append(
             {
                 "brand": brand,
@@ -144,6 +173,7 @@ def main() -> None:
         raise SystemExit("Supabase config is required: pass --supabase-url/--supabase-key or provide them in config.js")
 
     rows = build_rows(data_dir, brand=brand, source=args.source)
+    changed_keys = [row["snapshot_key"] for row in rows]
 
     if args.dry_run:
         print("Dry run: snapshots prepared for Supabase")
@@ -163,18 +193,20 @@ def main() -> None:
             ) from exc
         raise
     changed_rows = [row for row in rows if remote_hashes.get(row["snapshot_key"]) != row["payload_hash"]]
+    changed_keys = [row["snapshot_key"] for row in changed_rows]
 
     if not changed_rows:
         print("Supabase snapshots are already up to date.")
         return
 
-    rest_request(
-        "POST",
-        f"{supabase_url}/rest/v1/{args.table}?on_conflict=brand,snapshot_key",
-        supabase_key,
-        payload=changed_rows,
-        extra_headers={"Prefer": "resolution=merge-duplicates,return=representation"},
-    )
+    for row in changed_rows:
+        rest_request_with_retry(
+            "POST",
+            f"{supabase_url}/rest/v1/{args.table}?on_conflict=brand,snapshot_key",
+            supabase_key,
+            payload=[row],
+            extra_headers={"Prefer": "resolution=merge-duplicates,return=representation"},
+        )
 
     print("Supabase snapshot sync complete:")
     for row in changed_rows:

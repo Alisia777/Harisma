@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_TEAM_RECONNECT_HOTFIX_20260417O__) return;
-  window.__ALTEA_TEAM_RECONNECT_HOTFIX_20260417O__ = true;
+  if (window.__ALTEA_TEAM_RECONNECT_HOTFIX_20260417P__) return;
+  window.__ALTEA_TEAM_RECONNECT_HOTFIX_20260417P__ = true;
 
   const SNAPSHOT_PARTS = [
     'data/team_state.b64.part1.txt?v=20260417n',
@@ -44,6 +44,24 @@
     return true;
   }
 
+  function ensureSnapshotBadge(payload) {
+    const app = appState();
+    if (!app?.team || !payload) return false;
+    app.teamBridge = {
+      source: payload.source || 'portal-snapshot',
+      generatedAt: payload.generatedAt || '',
+      counts: payload.counts || {}
+    };
+    app.team.mode = 'local';
+    app.team.ready = false;
+    app.team.error = '';
+    app.team.note = payload.generatedAt
+      ? `\u041a\u043e\u043c\u0430\u043d\u0434\u043d\u0430\u044f \u0431\u0430\u0437\u0430 \u0447\u0435\u0440\u0435\u0437 \u043f\u043e\u0440\u0442\u0430\u043b \u00b7 ${fmtDate(payload.generatedAt)}`
+      : '\u041a\u043e\u043c\u0430\u043d\u0434\u043d\u0430\u044f \u0431\u0430\u0437\u0430 \u0447\u0435\u0440\u0435\u0437 \u043f\u043e\u0440\u0442\u0430\u043b';
+    window.__ALTEA_TEAM_JSON_BRIDGE_READY__ = true;
+    return true;
+  }
+
   async function fetchTextWithTimeout(url, timeoutMs) {
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), timeoutMs);
@@ -73,6 +91,8 @@
       .some((key) => Array.isArray(payload[key]) && payload[key].length >= 0);
     if (!hasArrays) return false;
 
+    ensureSnapshotBadge(payload);
+
     if (typeof mergeImportedStorage === 'function') {
       mergeImportedStorage(payload);
     } else {
@@ -84,23 +104,10 @@
       if (typeof saveLocalStorage === 'function') saveLocalStorage();
     }
 
-    app.teamBridge = {
-      source: payload.source || 'portal-snapshot',
-      generatedAt: payload.generatedAt || '',
-      counts: payload.counts || {}
-    };
-    app.team.mode = 'local';
-    app.team.ready = false;
-    app.team.error = '';
-    app.team.note = payload.generatedAt
-      ? `\u041a\u043e\u043c\u0430\u043d\u0434\u043d\u0430\u044f \u0431\u0430\u0437\u0430 \u0447\u0435\u0440\u0435\u0437 \u043f\u043e\u0440\u0442\u0430\u043b \u00b7 ${fmtDate(payload.generatedAt)}`
-      : '\u041a\u043e\u043c\u0430\u043d\u0434\u043d\u0430\u044f \u0431\u0430\u0437\u0430 \u0447\u0435\u0440\u0435\u0437 \u043f\u043e\u0440\u0442\u0430\u043b';
-
     if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
     if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
     if (app.activeSku && typeof renderSkuModal === 'function') renderSkuModal(app.activeSku);
     if (typeof updateSyncBadge === 'function') updateSyncBadge();
-    window.__ALTEA_TEAM_JSON_BRIDGE_READY__ = true;
     return true;
   }
 
@@ -108,7 +115,12 @@
     try {
       if (typeof hasRemoteStore === 'function' && hasRemoteStore()) return false;
       const payload = await loadPortalSnapshot();
-      return applyPortalSnapshot(payload);
+      const applied = applyPortalSnapshot(payload);
+      if (!applied) {
+        ensureSnapshotBadge(payload);
+        if (typeof updateSyncBadge === 'function') updateSyncBadge();
+      }
+      return applied;
     } catch (error) {
       console.warn('[portal-team-reconnect-hotfix:snapshot]', error);
       return false;
@@ -141,6 +153,20 @@
     }
   }
 
+  function patchSyncBadgeForSnapshot() {
+    if (typeof updateSyncBadge !== 'function') return;
+    const original = updateSyncBadge;
+    updateSyncBadge = function patchedUpdateSyncBadge() {
+      original.apply(this, arguments);
+      const app = appState();
+      const badge = document.getElementById('syncStatusBadge');
+      if (!badge || !app?.teamBridge) return;
+      badge.className = 'sync-status ready';
+      badge.textContent = app.team?.note || '\u041a\u043e\u043c\u0430\u043d\u0434\u043d\u0430\u044f \u0431\u0430\u0437\u0430 \u0447\u0435\u0440\u0435\u0437 \u043f\u043e\u0440\u0442\u0430\u043b';
+    };
+  }
+
+  patchSyncBadgeForSnapshot();
   window.__ALTEA_TEAM_JSON_BRIDGE_REFRESH__ = loadPortalSnapshotIntoState;
   [1200, 5200, 12000, 22000].forEach((delay) => {
     window.setTimeout(() => {

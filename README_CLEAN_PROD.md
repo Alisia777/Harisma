@@ -1,0 +1,1 @@
+Clean production build: only app.js + app-imperial + v80 + v82 + v85 + v86 + v87 are loaded. Legacy app-v71/v72/v73/v77/v79/v81/v83 removed from production load to stop header/sync conflicts. Keep CNAME. Replace repo contents with this archive and hard refresh.

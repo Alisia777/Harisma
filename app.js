@@ -1376,7 +1376,8 @@ function renderDashboard() {
     return escapeHtml(fmt.int(card?.value));
   };
 
-  const baseCards = (state.dashboard.cards || []).map((card) => `
+  const dashboardCards = Array.isArray(state.dashboard?.cards) ? state.dashboard.cards : [];
+  const baseCards = dashboardCards.map((card) => `
     <div class="card kpi">
       <div class="label">${escapeHtml(card.label)}</div>
       <div class="value">${formatCardValue(card)}</div>

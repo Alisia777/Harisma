@@ -15,7 +15,6 @@
     { type: 'json', url: 'data/team_state.json?v=20260417l' }
   ];
   let bridgeLoaded = false;
-  let bridgeRefreshInFlight = false;
 
   function appState() {
     return typeof state === 'object' && state ? state : null;
@@ -84,6 +83,30 @@
     return JSON.parse(new TextDecoder('utf-8').decode(bytes));
   }
 
+  async function fetchTextWithTimeout(url, timeoutMs) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+      if (!response.ok) throw new Error(`team bridge ${response.status || 'request failed'}`);
+      return response.text();
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }
+
+  async function fetchJsonWithTimeout(url, timeoutMs) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+      if (!response.ok) throw new Error(`team bridge ${response.status || 'request failed'}`);
+      return response.json();
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }
+
   async function loadBridge() {
     let lastError = null;
     for (const candidate of BRIDGE_URLS) {
@@ -91,16 +114,14 @@
         if (candidate.type === 'base64Parts') {
           const parts = [];
           for (const url of candidate.urls || []) {
-            const partResponse = await fetch(url, { cache: 'no-store' });
-            if (!partResponse.ok) throw new Error(`team bridge ${partResponse.status || 'request failed'}`);
-            parts.push(await partResponse.text());
+            parts.push(await fetchTextWithTimeout(url, 8000));
           }
           return decodeBase64Json(parts.join(''));
         }
-        const response = await fetch(candidate.url, { cache: 'no-store' });
-        if (!response.ok) throw new Error(`team bridge ${response.status || 'request failed'}`);
-        if (candidate.type === 'base64') return decodeBase64Json(await response.text());
-        return response.json();
+        if (candidate.type === 'base64') {
+          return decodeBase64Json(await fetchTextWithTimeout(candidate.url, 8000));
+        }
+        return await fetchJsonWithTimeout(candidate.url, 8000);
       } catch (error) {
         lastError = error;
       }
@@ -109,16 +130,12 @@
   }
 
   async function refreshBridge() {
-    if (bridgeRefreshInFlight) return false;
-    bridgeRefreshInFlight = true;
     try {
       const payload = await loadBridge();
       return mergeBridgePayload(payload);
     } catch (error) {
       console.warn('[portal-team-json-bridge-hotfix]', error);
       return false;
-    } finally {
-      bridgeRefreshInFlight = false;
     }
   }
 

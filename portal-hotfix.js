@@ -192,6 +192,102 @@
     }, 10000);
   }
 
+  function buildTaskComposerHtml() {
+    const taskTypes = typeof TASK_TYPE_META === 'object' && TASK_TYPE_META ? TASK_TYPE_META : {};
+    const priorities = typeof PRIORITY_META === 'object' && PRIORITY_META ? PRIORITY_META : {};
+    const skuOptions = (Array.isArray(state.skus) ? state.skus : [])
+      .slice()
+      .sort((a, b) => String(a.article || a.articleKey || '').localeCompare(String(b.article || b.articleKey || ''), 'ru'))
+      .map((sku) => {
+        const label = sku.article || sku.articleKey || 'SKU';
+        const name = sku.name ? ` · ${sku.name}` : '';
+        return `<option value="${escapeHtml(label)}">${escapeHtml(`${label}${name}`)}</option>`;
+      }).join('');
+
+    return `
+      <div class="card" data-hotfix-task-composer>
+        <div class="section-subhead">
+          <div>
+            <h3>Поставить задачу</h3>
+            <p class="small muted">Быстрая постановка задачи прямо из задачника, без перехода в карточку SKU.</p>
+          </div>
+          ${typeof badge === 'function' ? badge('hotfix', 'info') : ''}
+        </div>
+        <form id="hotfixTaskComposer" class="form-grid compact" style="margin-top:12px">
+          <input list="hotfixSkuList" name="articleKey" placeholder="Артикул / SKU" required>
+          <datalist id="hotfixSkuList">${skuOptions}</datalist>
+          <input name="title" placeholder="Что делаем" required>
+          <select name="type">${Object.entries(taskTypes).map(([value, label]) => `<option value="${value}">${escapeHtml(label)}</option>`).join('')}</select>
+          <select name="priority">${Object.entries(priorities).map(([value, meta]) => `<option value="${value}">${escapeHtml(meta.label)}</option>`).join('')}</select>
+          <input name="owner" list="ownerOptionsList" placeholder="Owner / кто делает">
+          <input name="due" type="date" value="${typeof plusDays === 'function' ? plusDays(3) : ''}">
+          <input name="nextAction" placeholder="Следующее действие / комментарий">
+          <button class="btn" type="submit">Создать задачу</button>
+        </form>
+        <div class="muted small" style="margin-top:8px">Если введённый артикул совпадает с SKU в портале, задача сразу привяжется к карточке.</div>
+      </div>
+    `;
+  }
+
+  function installControlComposer() {
+    if (typeof renderControlCenter !== 'function' || typeof createManualTask !== 'function') return;
+    const original = renderControlCenter;
+    renderControlCenter = function patchedRenderControlCenter() {
+      original.apply(this, arguments);
+      const root = document.getElementById('view-control');
+      if (!root || root.querySelector('[data-hotfix-task-composer]')) return;
+      const filters = root.querySelector('.control-filters');
+      if (filters) filters.insertAdjacentHTML('afterend', buildTaskComposerHtml());
+      else root.insertAdjacentHTML('afterbegin', buildTaskComposerHtml());
+
+      const form = root.querySelector('#hotfixTaskComposer');
+      if (!form) return;
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const data = new FormData(form);
+        const rawArticle = String(data.get('articleKey') || '').trim();
+        const matchedSku = (Array.isArray(state.skus) ? state.skus : []).find((sku) => {
+          const article = String(sku.article || '').trim();
+          const key = String(sku.articleKey || '').trim();
+          return rawArticle === article || rawArticle === key;
+        });
+        const articleKey = matchedSku?.articleKey || rawArticle;
+        if (!articleKey) return;
+        await createManualTask({
+          articleKey,
+          title: String(data.get('title') || '').trim(),
+          type: String(data.get('type') || 'general'),
+          priority: String(data.get('priority') || 'medium'),
+          platform: 'all',
+          owner: String(data.get('owner') || '').trim(),
+          due: String(data.get('due') || '').trim(),
+          nextAction: String(data.get('nextAction') || '').trim()
+        });
+        form.reset();
+        const dueInput = form.querySelector('input[name="due"]');
+        if (dueInput && typeof plusDays === 'function') dueInput.value = plusDays(3);
+        if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
+        if (typeof setAppError === 'function') setAppError('Задача добавлена в рабочий контур.');
+        window.setTimeout(() => {
+          if (typeof setAppError === 'function' && !(state.runtimeErrors || []).length) setAppError('');
+        }, 1800);
+      });
+    };
+  }
+
+  function scheduleExtraRerenders() {
+    const refresh = () => {
+      try {
+        if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
+        if (state.activeSku && typeof renderSkuModal === 'function') renderSkuModal(state.activeSku);
+      } catch (error) {
+        console.error('[portal-hotfix] rerender', error);
+      }
+    };
+    window.setTimeout(refresh, 2000);
+    window.setTimeout(refresh, 6000);
+  }
+
   async function recoverPortal() {
     if (!ensureBoot()) return;
     if (typeof loadJson === 'function') loadJson = safeLoadJson;
@@ -257,6 +353,8 @@
 
   patchListeners();
   patchSupabaseTimeouts();
+  installControlComposer();
+  scheduleExtraRerenders();
   recoverPortal().catch((error) => {
     console.error('[portal-hotfix]', error);
     if (typeof setAppError === 'function') {

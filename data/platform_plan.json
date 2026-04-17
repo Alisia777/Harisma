@@ -1,0 +1,149 @@
+{
+  "generatedAt": "2026-04-17T22:31:24",
+  "months": {
+    "2026-01": {
+      "days": 31,
+      "platforms": {
+        "wb": { "units": 91632 },
+        "ozon": { "units": 33369 },
+        "ya": { "units": 1349 },
+        "letu": { "units": 2889 },
+        "magnit": { "units": 72 },
+        "goldapple": { "units": 753 },
+        "all": { "units": 130064 }
+      }
+    },
+    "2026-02": {
+      "days": 28,
+      "platforms": {
+        "wb": { "units": 82655 },
+        "ozon": { "units": 40051 },
+        "ya": { "units": 1194 },
+        "letu": { "units": 3751 },
+        "magnit": { "units": 181 },
+        "goldapple": { "units": 1372 },
+        "all": { "units": 129204 }
+      }
+    },
+    "2026-03": {
+      "days": 31,
+      "platforms": {
+        "wb": { "units": 106723 },
+        "ozon": { "units": 39420 },
+        "ya": { "units": 940 },
+        "letu": { "units": 2931 },
+        "magnit": { "units": 198 },
+        "goldapple": { "units": 2169 },
+        "all": { "units": 152381 }
+      }
+    },
+    "2026-04": {
+      "days": 30,
+      "platforms": {
+        "wb": { "units": 145989 },
+        "ozon": { "units": 55280 },
+        "ya": { "units": 1886 },
+        "letu": { "units": 4792 },
+        "magnit": { "units": 292 },
+        "goldapple": { "units": 2467 },
+        "all": { "units": 210706 }
+      }
+    },
+    "2026-05": {
+      "days": 31,
+      "platforms": {
+        "wb": { "units": 150907 },
+        "ozon": { "units": 58385 },
+        "ya": { "units": 2823 },
+        "letu": { "units": 4994 },
+        "magnit": { "units": 293 },
+        "goldapple": { "units": 2911 },
+        "all": { "units": 220313 }
+      }
+    },
+    "2026-06": {
+      "days": 30,
+      "platforms": {
+        "wb": { "units": 154136 },
+        "ozon": { "units": 59968 },
+        "ya": { "units": 3942 },
+        "letu": { "units": 5083 },
+        "magnit": { "units": 293 },
+        "goldapple": { "units": 3932 },
+        "all": { "units": 227354 }
+      }
+    },
+    "2026-07": {
+      "days": 31,
+      "platforms": {
+        "wb": { "units": 160652 },
+        "ozon": { "units": 62748 },
+        "ya": { "units": 6071 },
+        "letu": { "units": 6199 },
+        "magnit": { "units": 354 },
+        "goldapple": { "units": 5428 },
+        "all": { "units": 241452 }
+      }
+    },
+    "2026-08": {
+      "days": 31,
+      "platforms": {
+        "wb": { "units": 169672 },
+        "ozon": { "units": 67356 },
+        "ya": { "units": 7435 },
+        "letu": { "units": 6323 },
+        "magnit": { "units": 355 },
+        "goldapple": { "units": 6241 },
+        "all": { "units": 257382 }
+      }
+    },
+    "2026-09": {
+      "days": 30,
+      "platforms": {
+        "wb": { "units": 185738 },
+        "ozon": { "units": 74597 },
+        "ya": { "units": 8793 },
+        "letu": { "units": 6541 },
+        "magnit": { "units": 356 },
+        "goldapple": { "units": 7175 },
+        "all": { "units": 283200 }
+      }
+    },
+    "2026-10": {
+      "days": 31,
+      "platforms": {
+        "wb": { "units": 204179 },
+        "ozon": { "units": 83430 },
+        "ya": { "units": 10116 },
+        "letu": { "units": 6753 },
+        "magnit": { "units": 359 },
+        "goldapple": { "units": 8254 },
+        "all": { "units": 313091 }
+      }
+    },
+    "2026-11": {
+      "days": 30,
+      "platforms": {
+        "wb": { "units": 226251 },
+        "ozon": { "units": 94154 },
+        "ya": { "units": 11490 },
+        "letu": { "units": 7029 },
+        "magnit": { "units": 364 },
+        "goldapple": { "units": 9488 },
+        "all": { "units": 348776 }
+      }
+    },
+    "2026-12": {
+      "days": 31,
+      "platforms": {
+        "wb": { "units": 254049 },
+        "ozon": { "units": 107919 },
+        "ya": { "units": 12848 },
+        "letu": { "units": 7354 },
+        "magnit": { "units": 362 },
+        "goldapple": { "units": 10913 },
+        "all": { "units": 393445 }
+      }
+    }
+  }
+}

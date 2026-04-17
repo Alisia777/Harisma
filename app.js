@@ -1,5 +1,5 @@
 const state = {
-  dashboard: { cards: [], generatedAt: '', dataFreshness: {} },
+  dashboard: { cards: [], generatedAt: '' },
   skus: [],
   launches: [],
   meetings: [],
@@ -47,9 +47,12 @@ const state = {
   },
   activeView: 'dashboard',
   activeSku: null,
-  dataLoaded: false,
+
+  boot: {
+    dataReady: false
+  },
   team: {
-    mode: 'pending',
+    mode: 'local',
     ready: false,
     error: '',
     note: 'Подключаем командную базу…',
@@ -1054,8 +1057,7 @@ function updateSyncBadge() {
   else badgeEl.classList.add('local');
   const member = state.team.member?.name ? ` · ${state.team.member.name}` : '';
   const uiNote = hasUiError ? ' · есть ошибка интерфейса' : '';
-  const fallbackNote = state.team.mode === 'pending' ? 'Подключаем командную базу…' : 'Локальный режим';
-  badgeEl.textContent = `${state.team.note || fallbackNote}${member}${uiNote}`;
+  badgeEl.textContent = `${state.team.note || 'Локальный режим'}${member}${uiNote}`;
   if (pullBtn) pullBtn.disabled = !hasRemoteStore();
   if (pushBtn) pushBtn.disabled = !hasRemoteStore();
 }
@@ -1514,7 +1516,7 @@ function renderDashboard() {
       </div>
     </div>
 
-    <div class="footer-note">Последняя генерация данных: ${escapeHtml(state.dashboard?.generatedAt || '—')}. Этот экран теперь отвечает за визуальный pulse бренда, а не за канбан задач.</div>
+    <div class="footer-note">Последняя генерация данных: ${escapeHtml(state.dashboard.generatedAt || '—')}. Этот экран теперь отвечает за визуальный pulse бренда, а не за канбан задач.</div>
   `;
 }
 
@@ -2997,7 +2999,7 @@ async function init() {
   // Иначе любой сбой данных/экрана создает ложное ощущение, что портал даже не пытался подключиться.
   const teamInitPromise = initTeamStore()
     .then(() => {
-      if (!state.dataLoaded) return;
+      if (!state.boot.dataReady) return;
       try {
         rerenderCurrentView();
         if (state.activeSku) renderSkuModal(state.activeSku);
@@ -3041,13 +3043,12 @@ async function init() {
     mergeSeedStorage(seed || {});
 
     attachGlobalListeners();
-    state.dataLoaded = true;
+    state.boot.dataReady = true;
     rerenderCurrentView();
     setView('dashboard');
     setAppError('');
   } catch (error) {
     console.error(error);
-    state.dataLoaded = false;
     setAppError(`Портал не смог загрузить данные: ${error.message}`);
   }
 

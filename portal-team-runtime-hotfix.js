@@ -278,14 +278,23 @@
     }
   }
 
-  window.teamRestConfig = restConfig;
-  window.signInTeamViaRest = signInViaRestHotfix;
-  window.signInTeamAnonymously = signInAnonymouslyHotfix;
-  window.hasRemoteStore = hasRemoteStoreHotfix;
-  window.queryRemote = queryRemoteHotfix;
-  window.upsertRemote = upsertRemoteHotfix;
-  window.pullRemoteState = pullRemoteStateHotfix;
-  window.initTeamStore = initTeamStoreHotfix;
+  function assignGlobal(name, value) {
+    window[name] = value;
+    try {
+      eval(`${name} = window.${name}`);
+    } catch (error) {
+      console.warn('[portal-team-runtime-hotfix] global bind', name, error);
+    }
+  }
+
+  assignGlobal('teamRestConfig', restConfig);
+  assignGlobal('signInTeamViaRest', signInViaRestHotfix);
+  assignGlobal('signInTeamAnonymously', signInAnonymouslyHotfix);
+  assignGlobal('hasRemoteStore', hasRemoteStoreHotfix);
+  assignGlobal('queryRemote', queryRemoteHotfix);
+  assignGlobal('upsertRemote', upsertRemoteHotfix);
+  assignGlobal('pullRemoteState', pullRemoteStateHotfix);
+  assignGlobal('initTeamStore', initTeamStoreHotfix);
 
   window.setTimeout(() => {
     const app = appState();

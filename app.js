@@ -1,10 +1,10 @@
 const state = {
-  dashboard: null,
+  dashboard: { cards: [], generatedAt: '', dataFreshness: {} },
   skus: [],
   launches: [],
   meetings: [],
-  documents: null,
-  repricer: null,
+  documents: { groups: [] },
+  repricer: { items: [] },
   storage: { comments: [], tasks: [], decisions: [], ownerOverrides: [] },
   filters: {
     search: '',
@@ -47,8 +47,9 @@ const state = {
   },
   activeView: 'dashboard',
   activeSku: null,
+  dataLoaded: false,
   team: {
-    mode: 'local',
+    mode: 'pending',
     ready: false,
     error: '',
     note: 'Подключаем командную базу…',
@@ -1053,7 +1054,8 @@ function updateSyncBadge() {
   else badgeEl.classList.add('local');
   const member = state.team.member?.name ? ` · ${state.team.member.name}` : '';
   const uiNote = hasUiError ? ' · есть ошибка интерфейса' : '';
-  badgeEl.textContent = `${state.team.note || 'Локальный режим'}${member}${uiNote}`;
+  const fallbackNote = state.team.mode === 'pending' ? 'Подключаем командную базу…' : 'Локальный режим';
+  badgeEl.textContent = `${state.team.note || fallbackNote}${member}${uiNote}`;
   if (pullBtn) pullBtn.disabled = !hasRemoteStore();
   if (pushBtn) pushBtn.disabled = !hasRemoteStore();
 }
@@ -1512,7 +1514,7 @@ function renderDashboard() {
       </div>
     </div>
 
-    <div class="footer-note">Последняя генерация данных: ${escapeHtml(state.dashboard.generatedAt || '—')}. Этот экран теперь отвечает за визуальный pulse бренда, а не за канбан задач.</div>
+    <div class="footer-note">Последняя генерация данных: ${escapeHtml(state.dashboard?.generatedAt || '—')}. Этот экран теперь отвечает за визуальный pulse бренда, а не за канбан задач.</div>
   `;
 }
 
@@ -2995,6 +2997,7 @@ async function init() {
   // Иначе любой сбой данных/экрана создает ложное ощущение, что портал даже не пытался подключиться.
   const teamInitPromise = initTeamStore()
     .then(() => {
+      if (!state.dataLoaded) return;
       try {
         rerenderCurrentView();
         if (state.activeSku) renderSkuModal(state.activeSku);
@@ -3038,11 +3041,13 @@ async function init() {
     mergeSeedStorage(seed || {});
 
     attachGlobalListeners();
+    state.dataLoaded = true;
     rerenderCurrentView();
     setView('dashboard');
     setAppError('');
   } catch (error) {
     console.error(error);
+    state.dataLoaded = false;
     setAppError(`Портал не смог загрузить данные: ${error.message}`);
   }
 

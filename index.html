@@ -87,7 +87,7 @@
           <p>Истина в том, что правых нет. Есть лишь те, кто выдержал цену решений и не потерял курс во тьме.</p>
         </div>
         <div class="top-actions top-actions-wrap">
-          <div class="sync-status pending" id="syncStatusBadge">Инициализация…</div>
+          <div class="sync-status pending" id="syncStatusBadge">Подключаем командную базу…</div>
           <button class="btn ghost" id="pullRemoteBtn" type="button">Обновить командные данные</button>
           <button class="btn ghost" id="pushRemoteBtn" type="button">Синхронизировать изменения</button>
           <button class="btn ghost hidden" id="toggleAdminBarBtn" type="button">Админ</button>
@@ -123,15 +123,7 @@
     (function(){
       const setBadge=(txt, cls)=>{ const el=document.getElementById('syncStatusBadge'); if(!el) return; el.className='sync-status'; if(cls) el.classList.add(cls); el.textContent=txt; };
       window.__alteaSetBootBadge=setBadge;
-      setBadge('Инициализация…','pending');
-    })();
-  </script>
-  <script>
-    window.__ALTEA_BOOT = { configLoaded: false, supabaseLoaded: false };
-    (function(){
-      const setBadge=(txt, cls)=>{ const el=document.getElementById('syncStatusBadge'); if(!el) return; el.className='sync-status'; if(cls) el.classList.add(cls); el.textContent=txt; };
-      window.__alteaSetBootBadge=setBadge;
-      setBadge('Инициализация…','pending');
+      setBadge('Подключаем командную базу…','pending');
     })();
   </script>
   <script src="config.js?v=20260417a" onload="window.__ALTEA_BOOT.configLoaded=true; window.__alteaSetBootBadge && window.__alteaSetBootBadge('Подключаем конфиг…','pending');"></script>

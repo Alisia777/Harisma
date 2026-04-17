@@ -1,11 +1,11 @@
 (function(){
-  if(window.__ALTEA_PORTAL_DASHBOARD_NAMING_20260417B__) return;
-  window.__ALTEA_PORTAL_DASHBOARD_NAMING_20260417B__ = true;
+  if(window.__ALTEA_PORTAL_DASHBOARD_NAMING_20260417C__) return;
+  window.__ALTEA_PORTAL_DASHBOARD_NAMING_20260417C__ = true;
 
   const ensureStyles = () => {
-    if (document.getElementById('altea-dashboard-surface-hotfix-20260417b')) return;
+    if (document.getElementById('altea-dashboard-surface-hotfix-20260417c')) return;
     const style = document.createElement('style');
-    style.id = 'altea-dashboard-surface-hotfix-20260417b';
+    style.id = 'altea-dashboard-surface-hotfix-20260417c';
     style.textContent = `
       #view-dashboard .section-title {
         margin-top: 18px;
@@ -21,20 +21,28 @@
       #view-dashboard .section-title p {
         color: rgba(245,232,207,.72);
       }
-      #view-dashboard .section-subhead {
+      #view-dashboard .section-subhead,
+      #view-dashboard .portal-ui-hotfix-insights .section-subhead,
+      #view-dashboard [data-portal-dashboard-insights] .section-subhead {
         padding: 12px 14px;
         margin: -2px -2px 12px;
         border-radius: 16px;
         border: 1px solid rgba(212,164,74,.12);
         background: linear-gradient(90deg, rgba(42,30,19,.82), rgba(19,15,12,.18));
       }
-      #view-dashboard .section-subhead h3 {
+      #view-dashboard .section-subhead h3,
+      #view-dashboard .portal-ui-hotfix-insights .section-subhead h3,
+      #view-dashboard [data-portal-dashboard-insights] .section-subhead h3 {
         color: #f5e8cf;
       }
-      #view-dashboard .section-subhead p {
+      #view-dashboard .section-subhead p,
+      #view-dashboard .portal-ui-hotfix-insights .section-subhead p,
+      #view-dashboard [data-portal-dashboard-insights] .section-subhead p {
         color: rgba(245,232,207,.64);
       }
-      #view-dashboard .chip.info {
+      #view-dashboard .chip.info,
+      #view-dashboard .portal-ui-hotfix-insights .chip.info,
+      #view-dashboard [data-portal-dashboard-insights] .chip.info {
         background: rgba(212,164,74,.12);
         border-color: rgba(212,164,74,.32);
         color: #f6ead4;
@@ -80,6 +88,16 @@
       intro.textContent = 'Главный экран бренда: сверху темп и выполнение по датам, ниже ключевые показатели, маржа и сигналы.';
     }
 
+    root.querySelectorAll('.section-subhead h3').forEach((el) => {
+      const text = String(el.textContent || '').toLowerCase();
+      if (text.includes('имперский pulse')) {
+        el.textContent = 'Маржа и площадки по датам';
+      }
+      if (text.includes('pulse по марже') || text.includes('pulse по площадкам')) {
+        el.textContent = 'Маржа и площадки по датам';
+      }
+    });
+
     root.querySelectorAll('.footer-note,.small.muted,p').forEach((el) => {
       const text = String(el.textContent || '');
       if (
@@ -87,6 +105,12 @@
         text.includes('визуальный pulse бренда')
       ) {
         el.textContent = 'Этот экран — Дом бренда Алтея: ключевые показатели, динамика и сигналы по бренду.';
+      }
+      if (text.includes('имперский pulse')) {
+        el.textContent = 'Бывший нижний блок перенесли выше и привязали к выбранному периоду, чтобы видеть конкретную динамику по датам и площадкам.';
+      }
+      if (text.includes('рабочий pulse')) {
+        el.textContent = 'Показываем текущий факт, короткую динамику и темп к плану без лишней декоративности.';
       }
     });
   };

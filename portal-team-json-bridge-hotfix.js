@@ -122,6 +122,12 @@
     }
   }
 
+  function queueRefresh(delay) {
+    window.setTimeout(() => {
+      refreshBridge().catch((error) => console.warn('[portal-team-json-bridge-hotfix]', error));
+    }, delay);
+  }
+
   function patchSyncBadge() {
     if (typeof updateSyncBadge !== 'function') return;
     const original = updateSyncBadge;
@@ -142,19 +148,15 @@
       pullBtn.dataset.teamBridgeBound = '1';
       pullBtn.addEventListener('click', () => {
         if (typeof hasRemoteStore === 'function' && hasRemoteStore()) return;
-        window.setTimeout(() => {
-          refreshBridge().catch((error) => console.warn('[portal-team-json-bridge-hotfix]', error));
-        }, 0);
+        queueRefresh(0);
       });
     };
     [80, 600, 1800, 3600].forEach((delay) => window.setTimeout(attach, delay));
   }
 
+  window.__ALTEA_TEAM_JSON_BRIDGE_REFRESH__ = refreshBridge;
   patchSyncBadge();
   bindPullButton();
-  [200, 1400, 4200].forEach((delay) => {
-    window.setTimeout(() => {
-      refreshBridge().catch((error) => console.warn('[portal-team-json-bridge-hotfix]', error));
-    }, delay);
-  });
+  [200, 1400, 4200, 9000, 16000, 26000].forEach(queueRefresh);
+  window.addEventListener('load', () => queueRefresh(250));
 })();

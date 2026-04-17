@@ -6,16 +6,16 @@
   <title>Портал бренда Алтея · v8.7.1 Imperial</title>
   <meta name="description" content="Портал бренда Алтея: порядок, воля и решения, собранные в один контур.">
   <link rel="icon" href="assets/altea-imperial-mark.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=20260416c">
-  <link rel="stylesheet" href="imperial.css?v=20260416c">
-  <link rel="stylesheet" href="v71.css?v=20260416c">
-  <link rel="stylesheet" href="v72.css?v=20260416c">
-  <link rel="stylesheet" href="v73.css?v=20260416c">
-  <link rel="stylesheet" href="v76.css?v=20260416c">
-  <link rel="stylesheet" href="v77.css?v=20260416c">
-  <link rel="stylesheet" href="v79.css?v=20260416c">
-  <link rel="stylesheet" href="v80.css?v=20260416c">
-  <link rel="stylesheet" href="v81.css?v=20260416c">
+  <link rel="stylesheet" href="styles.css?v=20260416e">
+  <link rel="stylesheet" href="imperial.css?v=20260416e">
+  <link rel="stylesheet" href="v71.css?v=20260416e">
+  <link rel="stylesheet" href="v72.css?v=20260416e">
+  <link rel="stylesheet" href="v73.css?v=20260416e">
+  <link rel="stylesheet" href="v76.css?v=20260416e">
+  <link rel="stylesheet" href="v77.css?v=20260416e">
+  <link rel="stylesheet" href="v79.css?v=20260416e">
+  <link rel="stylesheet" href="v80.css?v=20260416e">
+  <link rel="stylesheet" href="v81.css?v=20260416e">
   <link rel="stylesheet" href="v82.css">
   <link rel="stylesheet" href="v83.css">
   <link rel="stylesheet" href="v85.css">
@@ -95,7 +95,7 @@
           <p>Истина в том, что правых нет. Есть лишь те, кто выдержал цену решений и не потерял курс во тьме.</p>
         </div>
         <div class="top-actions top-actions-wrap">
-          <div class="sync-status" id="syncStatusBadge">Локальный режим</div>
+          <div class="sync-status pending" id="syncStatusBadge">Инициализация…</div>
           <button class="btn ghost" id="pullRemoteBtn" type="button">Обновить командные данные</button>
           <button class="btn ghost" id="pushRemoteBtn" type="button">Синхронизировать изменения</button>
           <button class="btn ghost hidden" id="toggleAdminBarBtn" type="button">Админ</button>
@@ -126,21 +126,29 @@
     <div class="modal-card" id="skuModalBody"></div>
   </div>
 
-  <script src="config.js?v=20260416c"></script>
-  <script src="assets/vendor/supabase.js?v=20260416c"></script>
-  <script src="app.js?v=20260416c"></script>
-  <script src="app-imperial.js?v=20260416c"></script>
-  <script src="app-v71.js?v=20260416c"></script>
-  <script src="app-v72.js?v=20260416c"></script>
-  <script src="app-v73.js?v=20260416c"></script>
-  <script src="app-v77.js?v=20260416c"></script>
-  <script src="app-v79.js?v=20260416c"></script>
-  <script src="app-v80.js?v=20260416c"></script>
-  <script src="app-v81.js?v=20260416c"></script>
-  <script src="app-v82.js?v=20260416c"></script>
-  <script src="app-v83.js?v=20260416c"></script>
-  <script src="app-v85.js?v=20260416c"></script>
-  <script src="app-v86.js?v=20260416c"></script>
-  <script src="app-v87.js?v=20260416c"></script>
+  <script>
+    window.__ALTEA_BOOT = { configLoaded: false, supabaseLoaded: false };
+    (function(){
+      const setBadge=(txt, cls)=>{ const el=document.getElementById('syncStatusBadge'); if(!el) return; el.className='sync-status'; if(cls) el.classList.add(cls); el.textContent=txt; };
+      window.__alteaSetBootBadge=setBadge;
+      setBadge('Инициализация…','pending');
+    })();
+  </script>
+  <script src="config.js?v=20260416e" onload="window.__ALTEA_BOOT.configLoaded=true; window.__alteaSetBootBadge && window.__alteaSetBootBadge('Подключаем конфиг…','pending');"></script>
+  <script src="assets/vendor/supabase.js?v=20260416e" onload="window.__ALTEA_BOOT.supabaseLoaded=true; window.__alteaSetBootBadge && window.__alteaSetBootBadge('Подключаем командную базу…','pending');"></script>
+  <script src="app.js?v=20260416e"></script>
+  <script src="app-imperial.js?v=20260416e"></script>
+  <script src="app-v71.js?v=20260416e"></script>
+  <script src="app-v72.js?v=20260416e"></script>
+  <script src="app-v73.js?v=20260416e"></script>
+  <script src="app-v77.js?v=20260416e"></script>
+  <script src="app-v79.js?v=20260416e"></script>
+  <script src="app-v80.js?v=20260416e"></script>
+  <script src="app-v81.js?v=20260416e"></script>
+  <script src="app-v82.js?v=20260416e"></script>
+  <script src="app-v83.js?v=20260416e"></script>
+  <script src="app-v85.js?v=20260416e"></script>
+  <script src="app-v86.js?v=20260416e"></script>
+  <script src="app-v87.js?v=20260416e"></script>
 </body>
 </html>

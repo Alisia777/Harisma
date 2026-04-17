@@ -735,8 +735,9 @@ async function initTeamStore() {
   const cfg = currentConfig();
   state.team.member = { ...DEFAULT_APP_CONFIG.teamMember, ...(cfg.teamMember || {}) };
   state.team.error = '';
-  state.team.note = 'Локальный режим';
-  state.team.mode = 'local';
+  const wantsRemote = cfg.teamMode === 'supabase' && cfg.supabase?.url && cfg.supabase?.anonKey;
+  state.team.note = wantsRemote ? 'Подключаем командную базу…' : 'Локальный режим';
+  state.team.mode = wantsRemote ? 'pending' : 'local';
   state.team.ready = false;
   updateSyncBadge();
 
@@ -2989,6 +2990,23 @@ function attachGlobalListeners() {
 }
 
 async function init() {
+  // Критично: попытка подключения к Supabase не должна зависеть от первого рендера.
+  // Иначе любой сбой данных/экрана создает ложное ощущение, что портал даже не пытался подключиться.
+  const teamInitPromise = initTeamStore()
+    .then(() => {
+      try {
+        rerenderCurrentView();
+        if (state.activeSku) renderSkuModal(state.activeSku);
+      } catch (error) {
+        console.error(error);
+        setAppError(`Командная база подключена, но экран не удалось перерисовать: ${error.message}`);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+      setAppError(`Портал открылся локально: ${error.message || 'ошибка подключения к командной базе'}`);
+    });
+
   try {
     const local = loadLocalStorage();
     const [dashboard, skus, launches, meetings, documents, repricer, seed] = await Promise.all([
@@ -3001,14 +3019,14 @@ async function init() {
       loadJson('data/seed_comments.json')
     ]);
 
-    state.dashboard = dashboard;
-    state.skus = skus;
-    state.launches = launches;
-    state.meetings = meetings;
-    state.documents = documents;
-    state.repricer = repricer;
-    if (!state.orderCalc.articleKey) state.orderCalc.articleKey = skus[0]?.articleKey || '';
-    if (!state.orderCalc.daysToNextReceipt) state.orderCalc.daysToNextReceipt = String(Math.round(numberOrZero(skus[0]?.leadTimeDays) || 30));
+    state.dashboard = dashboard || { cards: [] };
+    state.skus = Array.isArray(skus) ? skus : [];
+    state.launches = Array.isArray(launches) ? launches : [];
+    state.meetings = Array.isArray(meetings) ? meetings : [];
+    state.documents = documents || { groups: [] };
+    state.repricer = repricer || { items: [] };
+    if (!state.orderCalc.articleKey) state.orderCalc.articleKey = state.skus[0]?.articleKey || '';
+    if (!state.orderCalc.daysToNextReceipt) state.orderCalc.daysToNextReceipt = String(Math.round(numberOrZero(state.skus[0]?.leadTimeDays) || 30));
     state.storage = {
       comments: Array.isArray(local.comments) ? local.comments : [],
       tasks: Array.isArray(local.tasks) ? local.tasks : [],
@@ -3016,33 +3034,18 @@ async function init() {
       ownerOverrides: Array.isArray(local.ownerOverrides) ? local.ownerOverrides : []
     };
     applyOwnerOverridesToSkus();
-    mergeSeedStorage(seed);
+    mergeSeedStorage(seed || {});
 
     attachGlobalListeners();
     rerenderCurrentView();
     setView('dashboard');
     setAppError('');
-
-    // Не блокируем первый рендер ожиданием Supabase / sync.
-    // Если команда/сеть отвечает медленно, портал всё равно должен открыться и переключаться.
-    initTeamStore()
-      .then(() => {
-        try {
-          rerenderCurrentView();
-        } catch (error) {
-          console.error(error);
-          setAppError(`Портал подключил командную базу, но не смог перерисовать экран: ${error.message}`);
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-        // initTeamStore сам уже переводит портал в локальный режим, здесь только страхуем UI.
-        setAppError(`Портал открылся локально: ${error.message || 'ошибка подключения к командной базе'}`);
-      });
   } catch (error) {
     console.error(error);
     setAppError(`Портал не смог загрузить данные: ${error.message}`);
   }
+
+  return teamInitPromise;
 }
 
 init();

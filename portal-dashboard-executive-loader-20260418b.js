@@ -3,6 +3,7 @@
   window.__ALTEA_DASHBOARD_EXECUTIVE_LOADER_20260418A__ = true;
 
   const VERSION = '20260418a';
+  const RAW_BASE = 'https://raw.githubusercontent.com/Alisia777/Harisma/main/';
   const PARTS = [
     'portal-dashboard-executive.b64.part01.txt',
     'portal-dashboard-executive.b64.part02.txt',
@@ -27,7 +28,7 @@
     'portal-dashboard-executive.b64.part21.txt',
     'portal-dashboard-executive.b64.part22.txt'
   ];
-  const START_DELAY_MS = 6000;
+  const START_DELAY_MS = 1500;
   let started = false;
   window.__ALTEA_DASHBOARD_EXECUTIVE_STAGE__ = 'loader:init';
 
@@ -59,45 +60,14 @@
     observer.observe(dashboard, { childList: true, subtree: true });
   }
 
-  function wait(ms) {
-    return new Promise((resolve) => window.setTimeout(resolve, ms));
-  }
-
-  async function fetchPart(part, attempt = 0) {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open('GET', `${part}?v=${VERSION}`, true);
-      xhr.responseType = 'text';
-      xhr.onload = async () => {
-        if (xhr.status === 429 && attempt < 4) {
-          trace(`parts:retry:${attempt + 1}:${part}`);
-          await wait(500 * (attempt + 1));
-          try {
-            resolve(await fetchPart(part, attempt + 1));
-          } catch (error) {
-            reject(error);
-          }
-          return;
-        }
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(xhr.responseText || xhr.response || '');
-          return;
-        }
-        reject(new Error(`Failed to load ${part}: ${xhr.status}`));
-      };
-      xhr.onerror = () => reject(new Error(`Network error while loading ${part}`));
-      xhr.send();
-    });
-  }
-
   async function loadParts() {
     trace('parts:fetch');
-    const chunks = [];
-    for (let index = 0; index < PARTS.length; index += 1) {
-      const part = PARTS[index];
+    const chunks = await Promise.all(PARTS.map(async (part, index) => {
       trace(`parts:${index + 1}/${PARTS.length}`);
-      chunks.push(await fetchPart(part));
-    }
+      const response = await fetch(`${RAW_BASE}${part}?raw=1&v=${VERSION}`, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`Failed to load ${part}: ${response.status}`);
+      return await response.text();
+    }));
     trace('parts:text');
     const encoded = chunks.join('').replace(/\s+/g, '');
     const binary = atob(encoded);

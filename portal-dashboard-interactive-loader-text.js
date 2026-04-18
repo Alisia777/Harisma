@@ -10,20 +10,31 @@
     }
   };
 
+  const scheduleBootRetries = () => {
+    [300, 1600, 4200].forEach((delay) => {
+      window.setTimeout(() => triggerBoot(false), delay);
+    });
+  };
+
   const inject = () => {
     if (window.__ALTEA_PRICE_INTEL_20260418Z__) {
       triggerBoot(false);
+      scheduleBootRetries();
       return;
     }
     if (document.querySelector('script[data-portal-price-intel-loader="' + SRC + '"]')) {
       triggerBoot(false);
+      scheduleBootRetries();
       return;
     }
     const script = document.createElement('script');
     script.src = SRC;
     script.async = true;
     script.dataset.portalPriceIntelLoader = SRC;
-    script.onload = () => triggerBoot(false);
+    script.onload = () => {
+      triggerBoot(false);
+      scheduleBootRetries();
+    };
     script.onerror = () => console.warn('[portal-dashboard-interactive-loader]', 'Failed to load ' + SRC);
     document.body.appendChild(script);
   };

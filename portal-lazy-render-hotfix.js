@@ -24,13 +24,26 @@
     return VIEW_RENDERERS[domView] ? domView : 'dashboard';
   }
 
+  function triggerPriceIntelBoot(force) {
+    if (typeof window.__ALTEA_PRICE_INTEL_BOOT__ === 'function') {
+      window.__ALTEA_PRICE_INTEL_BOOT__(!!force);
+    }
+  }
+
   function ensureDashboardPriceIntel() {
-    if (window[PRICE_INTEL_FLAG]) return;
-    if (document.querySelector('script[data-portal-price-intel-lazy="' + PRICE_INTEL_SRC + '"]')) return;
+    if (window[PRICE_INTEL_FLAG]) {
+      triggerPriceIntelBoot(false);
+      return;
+    }
+    if (document.querySelector('script[data-portal-price-intel-lazy="' + PRICE_INTEL_SRC + '"]')) {
+      triggerPriceIntelBoot(false);
+      return;
+    }
     const script = document.createElement('script');
     script.src = PRICE_INTEL_SRC;
     script.async = true;
     script.dataset.portalPriceIntelLazy = PRICE_INTEL_SRC;
+    script.onload = () => triggerPriceIntelBoot(false);
     script.onerror = () => console.warn('[portal-lazy-render-hotfix] Failed to load ' + PRICE_INTEL_SRC);
     document.body.appendChild(script);
   }

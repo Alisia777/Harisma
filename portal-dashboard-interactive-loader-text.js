@@ -1,47 +1,46 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260418Z1__) return;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260418Z1__ = true;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260418ZA__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260418ZA__ = true;
 
-  const SRC = 'portal-dashboard-interactive-hotfix.js?v=20260418zb';
+  const SCRIPT_ID = 'portalDashboardInteractiveHotfixRuntime';
+  const SCRIPT_SRC = 'portal-dashboard-interactive-hotfix.js?v=20260418z';
 
-  const triggerBoot = (force) => {
+  function kick() {
     if (typeof window.__ALTEA_PRICE_INTEL_BOOT__ === 'function') {
-      window.__ALTEA_PRICE_INTEL_BOOT__(!!force);
+      window.__ALTEA_PRICE_INTEL_BOOT__(false);
     }
-  };
+  }
 
-  const scheduleBootRetries = () => {
-    [300, 1600, 4200].forEach((delay) => {
-      window.setTimeout(() => triggerBoot(false), delay);
-    });
-  };
-
-  const inject = () => {
-    if (window.__ALTEA_PRICE_INTEL_20260418Z__) {
-      triggerBoot(false);
-      scheduleBootRetries();
+  function ensureScript() {
+    if (typeof window.__ALTEA_PRICE_INTEL_BOOT__ === 'function') {
+      kick();
       return;
     }
-    if (document.querySelector('script[data-portal-price-intel-loader="' + SRC + '"]')) {
-      triggerBoot(false);
-      scheduleBootRetries();
+
+    const existing = document.getElementById(SCRIPT_ID);
+    if (existing) {
+      existing.addEventListener('load', kick, { once: true });
       return;
     }
+
     const script = document.createElement('script');
-    script.src = SRC;
+    script.id = SCRIPT_ID;
+    script.src = SCRIPT_SRC;
     script.async = true;
-    script.dataset.portalPriceIntelLoader = SRC;
-    script.onload = () => {
-      triggerBoot(false);
-      scheduleBootRetries();
-    };
-    script.onerror = () => console.warn('[portal-dashboard-interactive-loader]', 'Failed to load ' + SRC);
+    script.onload = kick;
+    script.onerror = () => console.warn('[portal-dashboard-interactive-loader]', 'Failed to load ' + SCRIPT_SRC);
     document.body.appendChild(script);
-  };
+  }
 
-  const start = () => {
-    window.setTimeout(inject, 1800);
-  };
+  function start() {
+    ensureScript();
+    [600, 1800, 4200, 7600].forEach((delay) => {
+      window.setTimeout(() => {
+        ensureScript();
+        kick();
+      }, delay);
+    });
+  }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', start, { once: true });

@@ -38,6 +38,6 @@ function render(){if(!(typeof state==='object'&&state&&state.activeView==='dashb
 function boot(force){return Promise.all([load('dashboard','data/dashboard.json',force),load('platformTrends','data/platform_trends.json',force),load('prices','data/prices.json',force)]).then(render).catch(e=>console.warn('[portal-price-intel]',e&&e.message?e.message:e));}
 function plan(force,delay=0){clearTimeout(T);T=setTimeout(()=>boot(force),delay);}
 function wrap(name){if(typeof window[name]!=='function'||window[name].__ppi)return;const o=window[name];window[name]=function(){const r=o.apply(this,arguments);setTimeout(()=>plan(false,80),0);return r;};window[name].__ppi=1;}
-window.__ALTEA_PRICE_INTEL_BOOT__=(force=false)=>{plan(!!force,0);[1200,3200,6200].forEach(d=>plan(false,d));};
+window.__ALTEA_PRICE_INTEL_BOOT__=(force=false)=>{plan(!!force,0);[1200,3200,6200].forEach(d=>window.setTimeout(()=>boot(false),d));};
 wrap('renderDashboard');wrap('rerenderCurrentView');qa('.nav-btn[data-view="dashboard"]').forEach(b=>{if(b.dataset.ppi)return;b.dataset.ppi='1';b.addEventListener('click',()=>window.__ALTEA_PRICE_INTEL_BOOT__(false));});q('#pullRemoteBtn')?.addEventListener('click',()=>window.__ALTEA_PRICE_INTEL_BOOT__(true));window.__ALTEA_PRICE_INTEL_BOOT__(false);
 })();

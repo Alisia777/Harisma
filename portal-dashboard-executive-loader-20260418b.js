@@ -1,0 +1,126 @@
+(function () {
+  if (window.__ALTEA_DASHBOARD_EXECUTIVE_LOADER_20260418A__) return;
+  window.__ALTEA_DASHBOARD_EXECUTIVE_LOADER_20260418A__ = true;
+
+  const VERSION = '20260418a';
+  const PARTS = [
+    'portal-dashboard-executive.b64.part01.txt',
+    'portal-dashboard-executive.b64.part02.txt',
+    'portal-dashboard-executive.b64.part03.txt',
+    'portal-dashboard-executive.b64.part04.txt',
+    'portal-dashboard-executive.b64.part05.txt',
+    'portal-dashboard-executive.b64.part06.txt',
+    'portal-dashboard-executive.b64.part07.txt',
+    'portal-dashboard-executive.b64.part08.txt',
+    'portal-dashboard-executive.b64.part09.txt',
+    'portal-dashboard-executive.b64.part10.txt',
+    'portal-dashboard-executive.b64.part11.txt',
+    'portal-dashboard-executive.b64.part12.txt',
+    'portal-dashboard-executive.b64.part13.txt',
+    'portal-dashboard-executive.b64.part14.txt',
+    'portal-dashboard-executive.b64.part15.txt',
+    'portal-dashboard-executive.b64.part16.txt',
+    'portal-dashboard-executive.b64.part17.txt',
+    'portal-dashboard-executive.b64.part18.txt',
+    'portal-dashboard-executive.b64.part19.txt',
+    'portal-dashboard-executive.b64.part20.txt',
+    'portal-dashboard-executive.b64.part21.txt',
+    'portal-dashboard-executive.b64.part22.txt'
+  ];
+  let started = false;
+  window.__ALTEA_DASHBOARD_EXECUTIVE_STAGE__ = 'loader:init';
+
+  function trace(stage, error) {
+    window.__ALTEA_DASHBOARD_EXECUTIVE_STAGE__ = stage;
+    if (error) window.__ALTEA_DASHBOARD_EXECUTIVE_ERROR__ = String(error && (error.stack || error.message || error));
+  }
+
+  function renameChrome() {
+    const brandTitle = document.querySelector('.sidebar .brand-title');
+    if (brandTitle) brandTitle.textContent = 'Дом бренда Алтея';
+    const brandSub = document.querySelector('.sidebar .brand-sub');
+    if (brandSub) brandSub.textContent = 'Рабочий контур бренда и решений.';
+    const h1 = document.querySelector('.topbar h1');
+    if (h1) h1.textContent = 'Дом бренда Алтея';
+    const footer = document.querySelector('.sidebar-foot.compact-sidebar-foot');
+    if (footer) footer.style.display = 'none';
+  }
+
+  function guardLayout() {
+    const dashboard = document.getElementById('view-dashboard');
+    if (!dashboard || typeof MutationObserver !== 'function') return;
+    const sweep = () => {
+      if (!dashboard.querySelector('[data-portal-dashboard-executive-root]')) return;
+      dashboard.querySelector('[data-dashboard-layout-root]')?.remove();
+    };
+    sweep();
+    const observer = new MutationObserver(sweep);
+    observer.observe(dashboard, { childList: true, subtree: true });
+  }
+
+  async function loadParts() {
+    trace('parts:fetch');
+    const chunks = await Promise.all(PARTS.map(async (part) => {
+      const response = await fetch(`${part}?v=${VERSION}`, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`Failed to load ${part}: ${response.status}`);
+      return await response.text();
+    }));
+    trace('parts:text');
+    const encoded = chunks.join('').replace(/\s+/g, '');
+    const binary = atob(encoded);
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    trace('parts:decoded');
+    return new TextDecoder('utf-8').decode(bytes);
+  }
+
+  function executeSource(source) {
+    trace('execute:prepare');
+    window.__ALTEA_DASHBOARD_EXECUTIVE_SOURCE_LENGTH__ = source.length;
+    window.__ALTEA_DASHBOARD_EXECUTIVE_INJECTED__ = true;
+    const runner = new Function(`${source}\n//# sourceURL=portal-dashboard-executive-inline.js`);
+    trace('execute:runner');
+    runner.call(window);
+    window.__ALTEA_DASHBOARD_EXECUTIVE_EXECUTED__ = true;
+    trace('execute:done');
+  }
+
+  async function boot() {
+    if (started) return;
+    started = true;
+    trace('boot:start');
+    try {
+      const source = await loadParts();
+      trace('boot:loaded');
+      executeSource(source);
+      guardLayout();
+      renameChrome();
+      [80, 260, 720, 1600, 3200].forEach((delay) => {
+        window.setTimeout(() => {
+          renameChrome();
+          guardLayout();
+          try {
+            if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
+          } catch (error) {
+            trace('rerender:error', error);
+            console.warn('[portal-dashboard-executive-loader][rerender]', error);
+          }
+        }, delay);
+      });
+    } catch (error) {
+      started = false;
+      trace('boot:error', error);
+      console.warn('[portal-dashboard-executive-loader]', error);
+    }
+  }
+
+  renameChrome();
+  [120, 1200, 3600, 9000, 18000, 32000].forEach((delay) => window.setTimeout(renameChrome, delay));
+
+  if (document.readyState === 'complete') {
+    trace('boot:scheduled-complete');
+    window.setTimeout(boot, 1200);
+  } else {
+    trace(`boot:scheduled-${document.readyState}`);
+    window.addEventListener('load', () => window.setTimeout(boot, 1200), { once: true });
+  }
+})();

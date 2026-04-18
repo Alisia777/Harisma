@@ -3,6 +3,8 @@
   window.__ALTEA_PORTAL_LAZY_RENDER_HOTFIX_20260418L__ = true;
 
   const LAZY_MODE_DELAY_MS = 9000;
+  const PRICE_INTEL_SRC = 'portal-dashboard-interactive-hotfix.js?v=20260418z';
+  const PRICE_INTEL_FLAG = '__ALTEA_PRICE_INTEL_20260418Z__';
   const VIEW_RENDERERS = {
     dashboard: ['view-dashboard', 'Дашборд', () => typeof renderDashboard === 'function' && renderDashboard()],
     documents: ['view-documents', 'Документы', () => typeof renderDocuments === 'function' && renderDocuments()],
@@ -20,6 +22,17 @@
     if (explicit && VIEW_RENDERERS[explicit]) return explicit;
     const domView = document.querySelector('.view.active')?.id?.replace(/^view-/, '') || 'dashboard';
     return VIEW_RENDERERS[domView] ? domView : 'dashboard';
+  }
+
+  function ensureDashboardPriceIntel() {
+    if (window[PRICE_INTEL_FLAG]) return;
+    if (document.querySelector('script[data-portal-price-intel-lazy="' + PRICE_INTEL_SRC + '"]')) return;
+    const script = document.createElement('script');
+    script.src = PRICE_INTEL_SRC;
+    script.async = true;
+    script.dataset.portalPriceIntelLazy = PRICE_INTEL_SRC;
+    script.onerror = () => console.warn('[portal-lazy-render-hotfix] Failed to load ' + PRICE_INTEL_SRC);
+    document.body.appendChild(script);
   }
 
   function clearInactiveViews(activeKey) {
@@ -64,6 +77,7 @@
         errors.push(`${title}: ${error.message}`);
         if (typeof renderViewFailure === 'function') renderViewFailure(rootId, title, error);
       }
+      if (activeKey === 'dashboard') ensureDashboardPriceIntel();
       clearInactiveViews(activeKey);
       applyUiState(errors);
     };
@@ -75,6 +89,7 @@
   function activateLazyMode() {
     if (!installLazyRenderer()) return;
     const activeKey = getActiveViewKey();
+    if (activeKey === 'dashboard') ensureDashboardPriceIntel();
     if (VIEW_RENDERERS[activeKey]) {
       clearInactiveViews(activeKey);
       applyUiState([]);
@@ -82,7 +97,12 @@
   }
 
   function scheduleActivation() {
-    window.setTimeout(activateLazyMode, LAZY_MODE_DELAY_MS);
+    [1200, 4200, LAZY_MODE_DELAY_MS, 16000].forEach((delay) => {
+      window.setTimeout(() => {
+        if (getActiveViewKey() === 'dashboard') ensureDashboardPriceIntel();
+        if (delay === LAZY_MODE_DELAY_MS) activateLazyMode();
+      }, delay);
+    });
   }
 
   if (document.readyState === 'loading') {

@@ -60,15 +60,11 @@
 
   async function loadParts() {
     trace('parts:fetch');
-    const responses = await Promise.all(PARTS.map((part) => fetch(`${part}?v=${VERSION}`, { cache: 'no-store' })));
-    trace('parts:fetched');
-    const chunks = [];
-    for (let index = 0; index < PARTS.length; index += 1) {
-      const response = responses[index];
-      const part = PARTS[index];
+    const chunks = await Promise.all(PARTS.map(async (part) => {
+      const response = await fetch(`${part}?v=${VERSION}`, { cache: 'no-store' });
       if (!response.ok) throw new Error(`Failed to load ${part}: ${response.status}`);
-      chunks.push(await response.text());
-    }
+      return await response.text();
+    }));
     trace('parts:text');
     const encoded = chunks.join('').replace(/\s+/g, '');
     const binary = atob(encoded);

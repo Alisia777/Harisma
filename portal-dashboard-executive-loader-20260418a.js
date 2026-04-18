@@ -66,25 +66,33 @@
     return new TextDecoder('utf-8').decode(bytes);
   }
 
+  function executeSource(source) {
+    window.__ALTEA_DASHBOARD_EXECUTIVE_SOURCE_LENGTH__ = source.length;
+    window.__ALTEA_DASHBOARD_EXECUTIVE_INJECTED__ = true;
+    const runner = new Function(`${source}\n//# sourceURL=portal-dashboard-executive-inline.js`);
+    runner.call(window);
+    window.__ALTEA_DASHBOARD_EXECUTIVE_EXECUTED__ = true;
+  }
+
   renameChrome();
   [120, 1200, 3600, 9000, 18000, 32000].forEach((delay) => window.setTimeout(renameChrome, delay));
 
   loadParts()
     .then((source) => {
-      const blobUrl = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = blobUrl;
-      script.onload = () => {
-        URL.revokeObjectURL(blobUrl);
-        guardLayout();
-        renameChrome();
-      };
-      script.onerror = (error) => {
-        URL.revokeObjectURL(blobUrl);
-        console.warn('[portal-dashboard-executive-loader]', error);
-      };
-      document.head.appendChild(script);
+      executeSource(source);
+      guardLayout();
+      renameChrome();
+      [80, 260, 720, 1600].forEach((delay) => {
+        window.setTimeout(() => {
+          renameChrome();
+          guardLayout();
+          try {
+            if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
+          } catch (error) {
+            console.warn('[portal-dashboard-executive-loader][rerender]', error);
+          }
+        }, delay);
+      });
     })
     .catch((error) => console.warn('[portal-dashboard-executive-loader]', error));
 })();

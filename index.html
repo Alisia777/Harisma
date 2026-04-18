@@ -141,8 +141,18 @@
   <script src="portal-dashboard-interactive-loader-text.js?v=20260418y"></script>
   <script>
     (function(){
-      const kick=()=>{ if(typeof window.__ALTEA_PRICE_INTEL_BOOT__==='function') window.__ALTEA_PRICE_INTEL_BOOT__(false); };
-      [4000,9000,14000].forEach((delay)=>window.setTimeout(kick,delay));
+      let attempts = 0;
+      const kickWhenReady = () => {
+        const root = document.getElementById('view-dashboard');
+        if (typeof window.__ALTEA_PRICE_INTEL_BOOT__ === 'function' && root && root.children && root.children.length) {
+          window.__ALTEA_PRICE_INTEL_BOOT__(false);
+          return;
+        }
+        if (attempts++ < 80) {
+          window.setTimeout(kickWhenReady, 250);
+        }
+      };
+      kickWhenReady();
     })();
   </script>
 </body>

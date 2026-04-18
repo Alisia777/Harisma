@@ -58,13 +58,29 @@
     observer.observe(dashboard, { childList: true, subtree: true });
   }
 
+  function wait(ms) {
+    return new Promise((resolve) => window.setTimeout(resolve, ms));
+  }
+
+  async function fetchPart(part, attempt = 0) {
+    const response = await fetch(`${part}?v=${VERSION}`, { cache: 'no-store' });
+    if (response.status === 429 && attempt < 4) {
+      trace(`parts:retry:${attempt + 1}:${part}`);
+      await wait(500 * (attempt + 1));
+      return fetchPart(part, attempt + 1);
+    }
+    if (!response.ok) throw new Error(`Failed to load ${part}: ${response.status}`);
+    return await response.text();
+  }
+
   async function loadParts() {
     trace('parts:fetch');
-    const chunks = await Promise.all(PARTS.map(async (part) => {
-      const response = await fetch(`${part}?v=${VERSION}`, { cache: 'no-store' });
-      if (!response.ok) throw new Error(`Failed to load ${part}: ${response.status}`);
-      return await response.text();
-    }));
+    const chunks = [];
+    for (let index = 0; index < PARTS.length; index += 1) {
+      const part = PARTS[index];
+      trace(`parts:${index + 1}/${PARTS.length}`);
+      chunks.push(await fetchPart(part));
+    }
     trace('parts:text');
     const encoded = chunks.join('').replace(/\s+/g, '');
     const binary = atob(encoded);

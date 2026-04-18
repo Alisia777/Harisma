@@ -62,8 +62,7 @@
 
   async function loadParts() {
     trace('parts:fetch');
-    const chunks = await Promise.all(PARTS.map(async (part, index) => {
-      trace(`parts:${index + 1}/${PARTS.length}`);
+    const chunks = await Promise.all(PARTS.map(async (part) => {
       const response = await fetch(`${RAW_BASE}${part}?raw=1&v=${VERSION}`, { cache: 'no-store' });
       if (!response.ok) throw new Error(`Failed to load ${part}: ${response.status}`);
       return await response.text();

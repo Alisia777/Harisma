@@ -2,6 +2,7 @@
   if (window.__ALTEA_PORTAL_LAZY_RENDER_HOTFIX_20260418L__) return;
   window.__ALTEA_PORTAL_LAZY_RENDER_HOTFIX_20260418L__ = true;
 
+  const LAZY_MODE_DELAY_MS = 9000;
   const VIEW_RENDERERS = {
     dashboard: ['view-dashboard', 'Дашборд', () => typeof renderDashboard === 'function' && renderDashboard()],
     documents: ['view-documents', 'Документы', () => typeof renderDocuments === 'function' && renderDocuments()],
@@ -36,6 +37,15 @@
     });
   }
 
+  function applyUiState(errors) {
+    if (typeof state === 'object' && state) state.runtimeErrors = errors;
+    if (typeof updateSyncBadge === 'function') updateSyncBadge();
+    if (typeof setAppError === 'function') {
+      if (errors.length) setAppError(`Портал загрузил не всё: ${errors[0]}`);
+      else setAppError('');
+    }
+  }
+
   function installLazyRenderer() {
     if (typeof rerenderCurrentView !== 'function' || rerenderCurrentView.__portalLazyRenderWrapped) return false;
     const original = rerenderCurrentView;
@@ -55,31 +65,29 @@
         if (typeof renderViewFailure === 'function') renderViewFailure(rootId, title, error);
       }
       clearInactiveViews(activeKey);
-      if (typeof state === 'object' && state) state.runtimeErrors = errors;
-      if (typeof updateSyncBadge === 'function') updateSyncBadge();
-      if (typeof setAppError === 'function') {
-        if (errors.length) setAppError(`Портал загрузил не всё: ${errors[0]}`);
-        else setAppError('');
-      }
+      applyUiState(errors);
     };
     wrapped.__portalLazyRenderWrapped = true;
     rerenderCurrentView = wrapped;
     return true;
   }
 
-  function refresh() {
+  function activateLazyMode() {
     if (!installLazyRenderer()) return;
-    try {
-      rerenderCurrentView();
-    } catch (error) {
-      console.warn('[portal-lazy-render-hotfix]', error);
+    const activeKey = getActiveViewKey();
+    if (VIEW_RENDERERS[activeKey]) {
+      clearInactiveViews(activeKey);
+      applyUiState([]);
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', refresh, { once: true });
-  } else {
-    refresh();
+  function scheduleActivation() {
+    window.setTimeout(activateLazyMode, LAZY_MODE_DELAY_MS);
   }
-  [120, 1200, 3200].forEach((delay) => window.setTimeout(refresh, delay));
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', scheduleActivation, { once: true });
+  } else {
+    scheduleActivation();
+  }
 })();

@@ -30,20 +30,31 @@
     }
   }
 
+  function scheduleBootRetries() {
+    [500, 1800, 4800].forEach((delay) => {
+      window.setTimeout(() => triggerPriceIntelBoot(false), delay);
+    });
+  }
+
   function ensureDashboardPriceIntel() {
     if (window[PRICE_INTEL_FLAG]) {
       triggerPriceIntelBoot(false);
+      scheduleBootRetries();
       return;
     }
     if (document.querySelector('script[data-portal-price-intel-lazy="' + PRICE_INTEL_SRC + '"]')) {
       triggerPriceIntelBoot(false);
+      scheduleBootRetries();
       return;
     }
     const script = document.createElement('script');
     script.src = PRICE_INTEL_SRC;
     script.async = true;
     script.dataset.portalPriceIntelLazy = PRICE_INTEL_SRC;
-    script.onload = () => triggerPriceIntelBoot(false);
+    script.onload = () => {
+      triggerPriceIntelBoot(false);
+      scheduleBootRetries();
+    };
     script.onerror = () => console.warn('[portal-lazy-render-hotfix] Failed to load ' + PRICE_INTEL_SRC);
     document.body.appendChild(script);
   }

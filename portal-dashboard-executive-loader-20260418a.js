@@ -28,6 +28,12 @@
     'portal-dashboard-executive.b64.part22.txt'
   ];
   let started = false;
+  window.__ALTEA_DASHBOARD_EXECUTIVE_STAGE__ = 'loader:init';
+
+  function trace(stage, error) {
+    window.__ALTEA_DASHBOARD_EXECUTIVE_STAGE__ = stage;
+    if (error) window.__ALTEA_DASHBOARD_EXECUTIVE_ERROR__ = String(error && (error.stack || error.message || error));
+  }
 
   function renameChrome() {
     const brandTitle = document.querySelector('.sidebar .brand-title');
@@ -53,7 +59,9 @@
   }
 
   async function loadParts() {
+    trace('parts:fetch');
     const responses = await Promise.all(PARTS.map((part) => fetch(`${part}?v=${VERSION}`, { cache: 'no-store' })));
+    trace('parts:fetched');
     const chunks = [];
     for (let index = 0; index < PARTS.length; index += 1) {
       const response = responses[index];
@@ -61,25 +69,32 @@
       if (!response.ok) throw new Error(`Failed to load ${part}: ${response.status}`);
       chunks.push(await response.text());
     }
+    trace('parts:text');
     const encoded = chunks.join('').replace(/\s+/g, '');
     const binary = atob(encoded);
     const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    trace('parts:decoded');
     return new TextDecoder('utf-8').decode(bytes);
   }
 
   function executeSource(source) {
+    trace('execute:prepare');
     window.__ALTEA_DASHBOARD_EXECUTIVE_SOURCE_LENGTH__ = source.length;
     window.__ALTEA_DASHBOARD_EXECUTIVE_INJECTED__ = true;
     const runner = new Function(`${source}\n//# sourceURL=portal-dashboard-executive-inline.js`);
+    trace('execute:runner');
     runner.call(window);
     window.__ALTEA_DASHBOARD_EXECUTIVE_EXECUTED__ = true;
+    trace('execute:done');
   }
 
   async function boot() {
     if (started) return;
     started = true;
+    trace('boot:start');
     try {
       const source = await loadParts();
+      trace('boot:loaded');
       executeSource(source);
       guardLayout();
       renameChrome();
@@ -90,12 +105,14 @@
           try {
             if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
           } catch (error) {
+            trace('rerender:error', error);
             console.warn('[portal-dashboard-executive-loader][rerender]', error);
           }
         }, delay);
       });
     } catch (error) {
       started = false;
+      trace('boot:error', error);
       console.warn('[portal-dashboard-executive-loader]', error);
     }
   }
@@ -104,8 +121,10 @@
   [120, 1200, 3600, 9000, 18000, 32000].forEach((delay) => window.setTimeout(renameChrome, delay));
 
   if (document.readyState === 'complete') {
+    trace('boot:scheduled-complete');
     window.setTimeout(boot, 1200);
   } else {
+    trace(`boot:scheduled-${document.readyState}`);
     window.addEventListener('load', () => window.setTimeout(boot, 1200), { once: true });
   }
 })();

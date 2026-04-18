@@ -60,7 +60,10 @@
       if (!response.ok) throw new Error(`Failed to load ${part}: ${response.status}`);
       chunks.push(await response.text());
     }
-    return atob(chunks.join('').replace(/\s+/g, ''));
+    const encoded = chunks.join('').replace(/\s+/g, '');
+    const binary = atob(encoded);
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    return new TextDecoder('utf-8').decode(bytes);
   }
 
   renameChrome();
@@ -68,12 +71,20 @@
 
   loadParts()
     .then((source) => {
+      const blobUrl = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
       const script = document.createElement('script');
       script.type = 'text/javascript';
-      script.text = source;
+      script.src = blobUrl;
+      script.onload = () => {
+        URL.revokeObjectURL(blobUrl);
+        guardLayout();
+        renameChrome();
+      };
+      script.onerror = (error) => {
+        URL.revokeObjectURL(blobUrl);
+        console.warn('[portal-dashboard-executive-loader]', error);
+      };
       document.head.appendChild(script);
-      guardLayout();
-      renameChrome();
     })
     .catch((error) => console.warn('[portal-dashboard-executive-loader]', error));
 })();

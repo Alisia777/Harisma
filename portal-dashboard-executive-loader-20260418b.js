@@ -27,6 +27,7 @@
     'portal-dashboard-executive.b64.part21.txt',
     'portal-dashboard-executive.b64.part22.txt'
   ];
+  const START_DELAY_MS = 6000;
   let started = false;
   window.__ALTEA_DASHBOARD_EXECUTIVE_STAGE__ = 'loader:init';
 
@@ -134,9 +135,9 @@
 
   if (document.readyState === 'complete') {
     trace('boot:scheduled-complete');
-    window.setTimeout(boot, 1200);
+    window.setTimeout(boot, START_DELAY_MS);
   } else {
     trace(`boot:scheduled-${document.readyState}`);
-    window.addEventListener('load', () => window.setTimeout(boot, 1200), { once: true });
+    window.addEventListener('load', () => window.setTimeout(boot, START_DELAY_MS), { once: true });
   }
 })();

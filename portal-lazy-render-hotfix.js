@@ -3,7 +3,7 @@
   window.__ALTEA_PORTAL_LAZY_RENDER_HOTFIX_20260418L__ = true;
 
   const LAZY_MODE_DELAY_MS = 9000;
-  const PRICE_INTEL_SRC = 'portal-dashboard-interactive-hotfix.js?v=20260418z';
+  const PRICE_INTEL_SRC = 'portal-dashboard-interactive-hotfix.js?v=20260418za';
   const PRICE_INTEL_FLAG = '__ALTEA_PRICE_INTEL_20260418Z__';
   const VIEW_RENDERERS = {
     dashboard: ['view-dashboard', 'Дашборд', () => typeof renderDashboard === 'function' && renderDashboard()],

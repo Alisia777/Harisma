@@ -39,5 +39,6 @@ function boot(force){return Promise.all([load('dashboard','data/dashboard.json',
 function plan(force,delay=0){clearTimeout(T);T=setTimeout(()=>boot(force),delay);}
 function wrap(name){if(typeof window[name]!=='function'||window[name].__ppi)return;const o=window[name];window[name]=function(){const r=o.apply(this,arguments);setTimeout(()=>plan(false,80),0);return r;};window[name].__ppi=1;}
 window.__ALTEA_PRICE_INTEL_BOOT__=(force=false)=>{plan(!!force,0);[1200,3200,6200].forEach(d=>window.setTimeout(()=>boot(false),d));};
-wrap('renderDashboard');wrap('rerenderCurrentView');qa('.nav-btn[data-view="dashboard"]').forEach(b=>{if(b.dataset.ppi)return;b.dataset.ppi='1';b.addEventListener('click',()=>window.__ALTEA_PRICE_INTEL_BOOT__(false));});q('#pullRemoteBtn')?.addEventListener('click',()=>window.__ALTEA_PRICE_INTEL_BOOT__(true));window.__ALTEA_PRICE_INTEL_BOOT__(false);
+const selfBoot=()=>window.__ALTEA_PRICE_INTEL_BOOT__&&window.__ALTEA_PRICE_INTEL_BOOT__(false);
+wrap('renderDashboard');wrap('rerenderCurrentView');qa('.nav-btn[data-view="dashboard"]').forEach(b=>{if(b.dataset.ppi)return;b.dataset.ppi='1';b.addEventListener('click',()=>window.__ALTEA_PRICE_INTEL_BOOT__(false));});q('#pullRemoteBtn')?.addEventListener('click',()=>window.__ALTEA_PRICE_INTEL_BOOT__(true));selfBoot();[900,2600,5200].forEach(d=>window.setTimeout(selfBoot,d));if(document.readyState==='complete')window.setTimeout(selfBoot,120);else window.addEventListener('load',()=>window.setTimeout(selfBoot,120),{once:true});
 })();

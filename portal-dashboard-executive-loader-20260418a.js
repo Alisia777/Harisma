@@ -27,6 +27,7 @@
     'portal-dashboard-executive.b64.part21.txt',
     'portal-dashboard-executive.b64.part22.txt'
   ];
+  let started = false;
 
   function renameChrome() {
     const brandTitle = document.querySelector('.sidebar .brand-title');
@@ -74,15 +75,15 @@
     window.__ALTEA_DASHBOARD_EXECUTIVE_EXECUTED__ = true;
   }
 
-  renameChrome();
-  [120, 1200, 3600, 9000, 18000, 32000].forEach((delay) => window.setTimeout(renameChrome, delay));
-
-  loadParts()
-    .then((source) => {
+  async function boot() {
+    if (started) return;
+    started = true;
+    try {
+      const source = await loadParts();
       executeSource(source);
       guardLayout();
       renameChrome();
-      [80, 260, 720, 1600].forEach((delay) => {
+      [80, 260, 720, 1600, 3200].forEach((delay) => {
         window.setTimeout(() => {
           renameChrome();
           guardLayout();
@@ -93,6 +94,18 @@
           }
         }, delay);
       });
-    })
-    .catch((error) => console.warn('[portal-dashboard-executive-loader]', error));
+    } catch (error) {
+      started = false;
+      console.warn('[portal-dashboard-executive-loader]', error);
+    }
+  }
+
+  renameChrome();
+  [120, 1200, 3600, 9000, 18000, 32000].forEach((delay) => window.setTimeout(renameChrome, delay));
+
+  if (document.readyState === 'complete') {
+    window.setTimeout(boot, 1200);
+  } else {
+    window.addEventListener('load', () => window.setTimeout(boot, 1200), { once: true });
+  }
 })();

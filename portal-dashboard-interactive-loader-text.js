@@ -2,7 +2,7 @@
   if (window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260418Z1__) return;
   window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260418Z1__ = true;
 
-  const SRC = 'portal-dashboard-interactive-hotfix.js?v=20260418z';
+  const SRC = 'portal-dashboard-interactive-hotfix.js?v=20260418za';
 
   const triggerBoot = (force) => {
     if (typeof window.__ALTEA_PRICE_INTEL_BOOT__ === 'function') {

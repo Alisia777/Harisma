@@ -64,14 +64,30 @@
   }
 
   async function fetchPart(part, attempt = 0) {
-    const response = await fetch(`${part}?v=${VERSION}`, { cache: 'no-store' });
-    if (response.status === 429 && attempt < 4) {
-      trace(`parts:retry:${attempt + 1}:${part}`);
-      await wait(500 * (attempt + 1));
-      return fetchPart(part, attempt + 1);
-    }
-    if (!response.ok) throw new Error(`Failed to load ${part}: ${response.status}`);
-    return await response.text();
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', `${part}?v=${VERSION}`, true);
+      xhr.responseType = 'text';
+      xhr.onload = async () => {
+        if (xhr.status === 429 && attempt < 4) {
+          trace(`parts:retry:${attempt + 1}:${part}`);
+          await wait(500 * (attempt + 1));
+          try {
+            resolve(await fetchPart(part, attempt + 1));
+          } catch (error) {
+            reject(error);
+          }
+          return;
+        }
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve(xhr.responseText || xhr.response || '');
+          return;
+        }
+        reject(new Error(`Failed to load ${part}: ${xhr.status}`));
+      };
+      xhr.onerror = () => reject(new Error(`Network error while loading ${part}`));
+      xhr.send();
+    });
   }
 
   async function loadParts() {

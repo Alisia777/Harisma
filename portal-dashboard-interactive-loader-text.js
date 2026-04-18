@@ -7,7 +7,7 @@
 
   function kick() {
     if (typeof window.__ALTEA_PRICE_INTEL_BOOT__ === 'function') {
-      window.__ALTEA_PRICE_INTEL_BOOT__(false);
+      window.__ALTEA_PRICE_INTEL_BOOT__(true);
     }
   }
 

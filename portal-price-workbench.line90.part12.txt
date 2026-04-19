@@ -1,0 +1,90 @@
+  async function handleSubmit(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const key = form.dataset.priceForm;
+    const row = getCurrentRowByKey(key);
+    if (!row) return;
+    const previous = mergeEntryLayers().get(key);
+    const entry = upsertLocalEntry({
+      id: row.decisionId,
+      marketplace: row.marketplace,
+      articleKey: row.articleKey,
+      decisionStatus: form.elements.decisionStatus.value,
+      targetFillPrice: form.elements.targetFillPrice.value,
+      targetClientPrice: form.elements.targetClientPrice.value,
+      allowedMarginManualPct: parseNum(form.elements.allowedMarginManualPct.value) == null ? null : parseNum(form.elements.allowedMarginManualPct.value) / 100,
+      reason: form.elements.reason.value,
+      owner: form.elements.owner.value,
+      dueDate: form.elements.dueDate.value,
+      needsTask: form.elements.needsTask.checked,
+      escalation: form.elements.escalation.value,
+      comment: form.elements.comment.value,
+      updatedBy: state.team.member?.name || "Команда",
+      updatedAt: new Date().toISOString(),
+      createdAt: previous?.createdAt || row.createdAt || new Date().toISOString(),
+    });
+    const history = addHistoryRow(entry, previous);
+    if (entry.needsTask || entry.decisionStatus === "review" || entry.escalation !== "none") ensurePriceTask(row, entry);
+    if (state.team.client && !state.priceWorkbench.remoteDisabled) {
+      try {
+        await upsertRemoteEntries([entry]);
+        try {
+          await insertRemoteHistory([history]);
+          history.synced = true;
+          saveLocalState();
+        } catch (historyError) {
+          console.error(historyError);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    state.team.note = "Решение по цене сохранено";
+    updateSyncBadge();
+    renderPriceWorkbench();
+    const fresh = getCurrentRowByKey(key);
+    if (fresh) renderPriceModal(fresh);
+  }
+
+  function handleCreateTask(event) {
+    const key = event.currentTarget.dataset.priceTask;
+    const row = getCurrentRowByKey(key);
+    if (!row) return;
+    const entry = normalizeEntry({
+      id: row.decisionId,
+      marketplace: row.marketplace,
+      articleKey: row.articleKey,
+      decisionStatus: row.decisionStatus,
+      targetFillPrice: row.targetFillPrice,
+      targetClientPrice: row.targetClientPrice,
+      allowedMarginManualPct: row.allowedMarginManualPct,
+      reason: row.reason,
+      owner: row.owner,
+      dueDate: row.dueDate,
+      needsTask: true,
+      escalation: row.escalation,
+      comment: row.comment,
+      createdAt: row.createdAt,
+      updatedAt: new Date().toISOString(),
+    });
+    upsertLocalEntry(entry);
+    ensurePriceTask(row, entry);
+    state.team.note = "Задача по цене создана / обновлена";
+    saveLocalState();
+    saveLocalStorage();
+    updateSyncBadge();
+    renderPriceWorkbench();
+    const fresh = getCurrentRowByKey(key);
+    if (fresh) renderPriceModal(fresh);
+  }
+
+  function renderPriceWorkbench() {
+    const root = document.getElementById("view-prices");
+    if (!root) return;
+    ensureStyles();
+    ensureBranding();
+    if (state.priceWorkbench.loading && !state.priceWorkbench.seed) {
+      root.innerHTML = `<div class="card"><div class="price-empty">Загружаю контур цен…</div></div>`;
+      return;
+    }
+    if (state.priceWorkbench.issue && !state.priceWorkbench.seed) {

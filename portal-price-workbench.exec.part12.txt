@@ -1,0 +1,57 @@
+riceOpen;
+      const row = getCurrentRowByKey(rowNode.dataset.priceOpen);
+      renderPriceWorkbench();
+      if (row) renderPriceModal(row);
+    }));
+  }
+
+  window.renderPriceWorkbench = renderPriceWorkbench;
+  window.ensurePriceWorkbenchSeedLoaded = ensureSeedLoaded;
+
+  const prevPullRemoteState = pullRemoteState;
+  pullRemoteState = async function (rerender = true) {
+    await prevPullRemoteState(false);
+    state.priceWorkbench.remoteReady = false;
+    state.priceWorkbench.remoteDisabled = false;
+    await ensureRemoteLoaded();
+    if (rerender) rerenderCurrentView();
+  };
+
+  const prevPushStateToRemote = pushStateToRemote;
+  pushStateToRemote = async function () {
+    await prevPushStateToRemote();
+    if (state.team.client && !state.priceWorkbench.remoteDisabled && state.priceWorkbench.localEntries?.length) {
+      try {
+        await upsertRemoteEntries(state.priceWorkbench.localEntries);
+        const unsynced = (state.priceWorkbench.localHistory || []).filter((item) => !item.synced);
+        if (unsynced.length) {
+          try {
+            await insertRemoteHistory(unsynced);
+            unsynced.forEach((item) => { item.synced = true; });
+            saveLocalState();
+          } catch (historyError) {
+            console.error(historyError);
+          }
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    rerenderCurrentView();
+  };
+
+  const prevRerenderCurrentView = rerenderCurrentView;
+  rerenderCurrentView = function () {
+    prevRerenderCurrentView();
+    ensureBranding();
+    if ((state.activeView || "dashboard") === "prices") {
+      renderPriceWorkbench();
+      ensureSeedLoaded();
+      ensureRemoteLoaded();
+    }
+  };
+
+  loadLocalState();
+  ensureStyles();
+  ensureBranding();
+})();

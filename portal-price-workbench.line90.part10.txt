@@ -1,0 +1,90 @@
+    if (!(row.monthlyFiltered || []).length) return `<div class="price-empty">За выбранный период нет истории.</div>`;
+    return `
+      <div class="price-history-wrap">
+        <table class="price-history-table">
+          <thead><tr><th>Дата</th><th>Заказы</th><th>Доставлено</th><th>Обор.</th><th>Цена MP</th><th>Цена клиента</th><th>СПП</th><th>% плана / день</th></tr></thead>
+          <tbody>${row.monthlyFiltered.map((item) => {
+            const actual = parseNum(item.deliveredUnits) ?? parseNum(item.ordersUnits);
+            const dayCompletion = actual != null && dailyPlan ? actual / dailyPlan : null;
+            return `<tr><td>${escapeHtml(String(item.date).slice(0, 10))}</td><td>${item.ordersUnits == null ? "—" : fmt.int(item.ordersUnits)}</td><td>${item.deliveredUnits == null ? "—" : fmt.int(item.deliveredUnits)}</td><td>${item.turnoverDays == null ? "—" : `${fmt.num(item.turnoverDays, 1)} дн.`}</td><td>${moneyShort(item.price)}</td><td>${moneyShort(item.clientPrice)}</td><td>${pctShort(item.sppPct)}</td><td>${dayCompletion == null ? "—" : pctShort(dayCompletion)}</td></tr>`;
+          }).join("")}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function ensurePriceTask(row, entry) {
+    const autoCode = `price|${entry.marketplace}|${entry.articleKey}`;
+    const existing = (state.storage.tasks || []).find((task) => task.autoCode === autoCode);
+    const task = normalizeTask({
+      id: existing?.id || stableId("task", autoCode),
+      source: "manual",
+      articleKey: entry.articleKey,
+      title: `Цена ${marketLabel(entry.marketplace)} · ${entry.articleKey}`,
+      nextAction: entry.reason || row.seedReason || "Проверить ценовое решение и внедрить на площадке",
+      reason: entry.comment || entry.reason || "",
+      owner: entry.owner || row.owner || ownerName(getSku(entry.articleKey)) || "",
+      due: entry.dueDate || plusDaysLocal(2),
+      status: existing?.status || "new",
+      type: "price_margin",
+      priority: entry.escalation === "me_ksenia" ? "critical" : (entry.decisionStatus === "review" ? "high" : "medium"),
+      platform: entry.marketplace,
+      createdAt: existing?.createdAt || new Date().toISOString(),
+      entityLabel: row.name || entry.articleKey,
+      autoCode,
+    }, "manual");
+    state.storage.tasks = [...(state.storage.tasks || []).filter((item) => item.autoCode !== autoCode), task];
+    saveLocalStorage();
+  }
+
+  function addHistoryRow(entry, previous) {
+    const historyRow = normalizeHistory({
+      marketplace: entry.marketplace,
+      articleKey: entry.articleKey,
+      eventType: previous ? "update" : "save",
+      oldTargetFillPrice: previous?.targetFillPrice,
+      newTargetFillPrice: entry.targetFillPrice,
+      oldTargetClientPrice: previous?.targetClientPrice,
+      newTargetClientPrice: entry.targetClientPrice,
+      oldAllowedMarginPct: previous?.allowedMarginManualPct,
+      newAllowedMarginPct: entry.allowedMarginManualPct,
+      oldDecisionStatus: previous?.decisionStatus,
+      newDecisionStatus: entry.decisionStatus,
+      reason: entry.reason,
+      comment: entry.comment,
+      changedBy: state.team.member?.name || "Команда",
+      changedAt: new Date().toISOString(),
+      synced: false,
+    });
+    state.priceWorkbench.localHistory = [historyRow, ...(state.priceWorkbench.localHistory || [])];
+    saveLocalState();
+    return historyRow;
+  }
+
+  function upsertLocalEntry(entry) {
+    const normalized = normalizeEntry(entry);
+    const key = workbenchKey(normalized.marketplace, normalized.articleKey);
+    state.priceWorkbench.localEntries = [
+      ...(state.priceWorkbench.localEntries || []).filter((item) => workbenchKey(item.marketplace, item.articleKey) !== key),
+      normalized,
+    ];
+    saveLocalState();
+    return normalized;
+  }
+
+  function getCurrentRowByKey(key) {
+    return filteredRows().find((row) => workbenchKey(row.marketplace, row.articleKey) === key) || effectiveRows().find((row) => workbenchKey(row.marketplace, row.articleKey) === key) || null;
+  }
+
+  function renderPriceModal(row) {
+    const modal = document.getElementById("skuModal");
+    const body = document.getElementById("skuModalBody");
+    if (!modal || !body || !row) return;
+    const tasks = relatedTasks(row);
+    const periodRevenue = (row.monthlyFiltered || [])
+      .map((item) => parseNum(item.revenue))
+      .filter((value) => value != null)
+      .reduce((sum, value) => sum + value, 0);
+    const totalSupply = [row.stock, row.stockRepricer, row.stockInSupplyRequest, row.stockInTransit]
+      .map((value) => parseNum(value))
+      .filter((value) => value != null)

@@ -1,0 +1,120 @@
+tatus)
+      : "draft";
+    const escalation = ESCALATION_META[item.escalation || item.escalation_code]
+      ? (item.escalation || item.escalation_code)
+      : "none";
+    return {
+      id: String(item.id || stableId("price-decision", `${currentBrand()}|${marketplace}|${articleKey}`)).trim(),
+      brand: currentBrand(),
+      marketplace,
+      articleKey,
+      decisionStatus,
+      targetFillPrice: parseNum(item.targetFillPrice ?? item.target_fill_price),
+      targetClientPrice: parseNum(item.targetClientPrice ?? item.target_client_price),
+      allowedMarginManualPct: parseNum(item.allowedMarginManualPct ?? item.allowed_margin_manual_pct),
+      reason: String(item.reason || "").trim(),
+      owner: String(item.owner || item.owner_name || ownerName(sku) || "").trim(),
+      dueDate: isoDate(item.dueDate || item.due_date),
+      needsTask: Boolean(item.needsTask ?? item.needs_task),
+      escalation,
+      comment: String(item.comment || "").trim(),
+      updatedBy: String(item.updatedBy || item.updated_by || state.team.member?.name || "Команда").trim() || "Команда",
+      updatedAt: String(item.updatedAt || item.updated_at || new Date().toISOString()).trim() || new Date().toISOString(),
+      createdAt: String(item.createdAt || item.created_at || item.updatedAt || new Date().toISOString()).trim() || new Date().toISOString(),
+    };
+  }
+
+  function normalizeHistory(item = {}) {
+    return {
+      id: String(item.id || stableId("price-history", JSON.stringify(item))).trim(),
+      brand: currentBrand(),
+      marketplace: String(item.marketplace || item.marketplace_key || "").trim() || "wb",
+      articleKey: String(item.articleKey || item.article_key || "").trim(),
+      eventType: String(item.eventType || item.event_type || "save").trim() || "save",
+      oldTargetFillPrice: parseNum(item.oldTargetFillPrice ?? item.old_target_fill_price),
+      newTargetFillPrice: parseNum(item.newTargetFillPrice ?? item.new_target_fill_price),
+      oldTargetClientPrice: parseNum(item.oldTargetClientPrice ?? item.old_target_client_price),
+      newTargetClientPrice: parseNum(item.newTargetClientPrice ?? item.new_target_client_price),
+      oldAllowedMarginPct: parseNum(item.oldAllowedMarginPct ?? item.old_allowed_margin_pct),
+      newAllowedMarginPct: parseNum(item.newAllowedMarginPct ?? item.new_allowed_margin_pct),
+      oldDecisionStatus: String(item.oldDecisionStatus || item.old_decision_status || "").trim(),
+      newDecisionStatus: String(item.newDecisionStatus || item.new_decision_status || "").trim(),
+      reason: String(item.reason || "").trim(),
+      comment: String(item.comment || "").trim(),
+      changedBy: String(item.changedBy || item.changed_by || state.team.member?.name || "Команда").trim() || "Команда",
+      changedAt: String(item.changedAt || item.changed_at || new Date().toISOString()).trim() || new Date().toISOString(),
+      synced: item.synced !== false,
+    };
+  }
+
+  function loadLocalState() {
+    try {
+      const entries = JSON.parse(localStorage.getItem(LOCAL_ENTRIES_KEY) || "[]");
+      state.priceWorkbench.localEntries = Array.isArray(entries) ? entries.map(normalizeEntry) : [];
+    } catch {
+      state.priceWorkbench.localEntries = [];
+    }
+    try {
+      const history = JSON.parse(localStorage.getItem(LOCAL_HISTORY_KEY) || "[]");
+      state.priceWorkbench.localHistory = Array.isArray(history) ? history.map(normalizeHistory) : [];
+    } catch {
+      state.priceWorkbench.localHistory = [];
+    }
+  }
+
+  function saveLocalState() {
+    localStorage.setItem(LOCAL_ENTRIES_KEY, JSON.stringify(state.priceWorkbench.localEntries || []));
+    localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(state.priceWorkbench.localHistory || []));
+  }
+
+  async function queryRemoteEntries() {
+    if (!state.team.client) return [];
+    const response = await state.team.client.from(ENTRIES_TABLE).select("*").eq("brand", currentBrand()).limit(2000);
+    if (response.error) throw response.error;
+    return response.data || [];
+  }
+
+  async function queryRemoteHistory() {
+    if (!state.team.client) return [];
+    const response = await state.team.client.from(HISTORY_TABLE).select("*").eq("brand", currentBrand()).order("changed_at", { ascending: false }).limit(4000);
+    if (response.error) throw response.error;
+    return response.data || [];
+  }
+
+  async function upsertRemoteEntries(rows) {
+    if (!state.team.client || !rows.length) return;
+    const payload = rows.map((entry) => ({
+      id: entry.id,
+      brand: currentBrand(),
+      marketplace: entry.marketplace,
+      article_key: entry.articleKey,
+      decision_status: entry.decisionStatus,
+      target_fill_price: entry.targetFillPrice,
+      target_client_price: entry.targetClientPrice,
+      allowed_margin_manual_pct: entry.allowedMarginManualPct,
+      reason: entry.reason,
+      owner_name: entry.owner,
+      due_date: entry.dueDate || null,
+      needs_task: entry.needsTask,
+      escalation: entry.escalation,
+      comment: entry.comment,
+      updated_by: entry.updatedBy,
+      updated_at: entry.updatedAt,
+      created_at: entry.createdAt,
+    }));
+    const response = await state.team.client.from(ENTRIES_TABLE).upsert(payload, { onConflict: "id" });
+    if (response.error) throw response.error;
+  }
+
+  async function insertRemoteHistory(rows) {
+    if (!state.team.client || !rows.length) return;
+    const payload = rows.map((item) => ({
+      id: item.id,
+      brand: currentBrand(),
+      marketplace: item.marketplace,
+      article_key: item.articleKey,
+      event_type: item.eventType,
+      old_target_fill_price: item.oldTargetFillPrice,
+      new_target_fill_price: item.newTargetFillPrice,
+      old_target_client_price: item.oldTargetClientPrice,
+      new_target_client_price: item.newDecision

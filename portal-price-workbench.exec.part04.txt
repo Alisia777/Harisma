@@ -1,0 +1,152 @@
+Status,
+      reason: item.reason,
+      comment: item.comment,
+      changed_by: item.changedBy,
+      changed_at: item.changedAt,
+    }));
+    const response = await state.team.client.from(HISTORY_TABLE).insert(payload);
+    if (response.error) throw response.error;
+  }
+
+  function ensureSeedLoaded() {
+    if (state.priceWorkbench.seed || state.priceWorkbench.loading) return Promise.resolve(state.priceWorkbench.seed);
+    state.priceWorkbench.loading = true;
+    const snapshotLoader = typeof window.__alteaLoadPortalSnapshot === "function"
+      ? window.__alteaLoadPortalSnapshot("data/smart_price_workbench.json").catch((error) => {
+        console.warn("[price-workbench] snapshot fallback failed", error);
+        return null;
+      })
+      : Promise.resolve(null);
+    return snapshotLoader
+      .then((snapshotPayload) => {
+        if (snapshotPayload?.platforms) {
+          state.priceWorkbench.seed = snapshotPayload;
+          state.priceWorkbench.seedSource = "snapshot";
+          state.priceWorkbench.issue = "";
+          ensureDateRange();
+          return snapshotPayload;
+        }
+        return loadJson("data/smart_price_workbench.json").then((payload) => {
+          state.priceWorkbench.seed = payload;
+          state.priceWorkbench.seedSource = "local";
+          state.priceWorkbench.issue = "";
+          ensureDateRange();
+          return payload;
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        state.priceWorkbench.issue = error.message;
+        return null;
+      })
+      .finally(() => {
+        state.priceWorkbench.loading = false;
+        if (typeof rerenderCurrentView === "function") rerenderCurrentView();
+      });
+  }
+
+  function ensureRemoteLoaded() {
+    if (state.priceWorkbench.remoteReady || state.priceWorkbench.remoteLoading || state.priceWorkbench.remoteDisabled || !hasRemoteStore() || !state.team.client) {
+      return Promise.resolve();
+    }
+    state.priceWorkbench.remoteLoading = true;
+    return Promise.all([queryRemoteEntries(), queryRemoteHistory()])
+      .then(([entries, history]) => {
+        state.priceWorkbench.remoteEntries = entries.map(normalizeEntry);
+        state.priceWorkbench.remoteHistory = history.map(normalizeHistory);
+        state.priceWorkbench.remoteReady = true;
+      })
+      .catch((error) => {
+        console.error(error);
+        state.priceWorkbench.remoteDisabled = true;
+      })
+      .finally(() => {
+        state.priceWorkbench.remoteLoading = false;
+        if (typeof rerenderCurrentView === "function") rerenderCurrentView();
+      });
+  }
+
+  function baseRowsForMarket(market) {
+    const seed = state.priceWorkbench.seed;
+    if (!seed) return [];
+    return (((seed.platforms || {})[market] || {}).rows || []).map((row) => ({ ...row }));
+  }
+
+  function allDatesForMarket(market) {
+    const seen = new Set();
+    const dates = [];
+    baseRowsForMarket(market).forEach((row) => {
+      (row.monthly || []).forEach((item) => {
+        const value = isoDate(item.date);
+        if (value && !seen.has(value)) {
+          seen.add(value);
+          dates.push(value);
+        }
+      });
+    });
+    dates.sort();
+    return dates;
+  }
+
+  function presetRange(preset, market) {
+    const dates = allDatesForMarket(market);
+    if (!dates.length) return { dateFrom: "", dateTo: "" };
+    const min = dates[0];
+    const max = dates[dates.length - 1];
+    if (preset === "all") return { dateFrom: min, dateTo: max };
+    const maxDate = new Date(max);
+    if (preset === "prev_month") {
+      const start = new Date(Date.UTC(maxDate.getUTCFullYear(), maxDate.getUTCMonth() - 1, 1));
+      const end = new Date(Date.UTC(maxDate.getUTCFullYear(), maxDate.getUTCMonth(), 0));
+      return { dateFrom: start.toISOString().slice(0, 10), dateTo: end.toISOString().slice(0, 10) };
+    }
+    if (preset === "month") {
+      const start = new Date(Date.UTC(maxDate.getUTCFullYear(), maxDate.getUTCMonth(), 1));
+      return { dateFrom: start.toISOString().slice(0, 10), dateTo: max };
+    }
+    const days = PRESETS[preset]?.days || 30;
+    const start = new Date(maxDate);
+    start.setUTCDate(start.getUTCDate() - (days - 1));
+    const startIso = start.toISOString().slice(0, 10);
+    return { dateFrom: startIso < min ? min : startIso, dateTo: max };
+  }
+
+  function ensureDateRange() {
+    if (state.priceWorkbench.filters.dateFrom && state.priceWorkbench.filters.dateTo) return;
+    const range = presetRange(state.priceWorkbench.filters.preset || "month", state.priceWorkbench.filters.market || "wb");
+    state.priceWorkbench.filters.dateFrom = range.dateFrom;
+    state.priceWorkbench.filters.dateTo = range.dateTo;
+  }
+
+  function applyPreset(preset) {
+    state.priceWorkbench.filters.preset = preset;
+    const range = presetRange(preset, state.priceWorkbench.filters.market || "wb");
+    state.priceWorkbench.filters.dateFrom = range.dateFrom;
+    state.priceWorkbench.filters.dateTo = range.dateTo;
+    renderPriceWorkbench();
+  }
+
+  function withinRange(value) {
+    const dateValue = isoDate(value);
+    if (!dateValue) return false;
+    const from = state.priceWorkbench.filters.dateFrom || "";
+    const to = state.priceWorkbench.filters.dateTo || "";
+    if (from && dateValue < from) return false;
+    if (to && dateValue > to) return false;
+    return true;
+  }
+
+  function mergeEntryLayers() {
+    const map = new Map();
+    (state.priceWorkbench.remoteEntries || []).forEach((item) => map.set(workbenchKey(item.marketplace, item.articleKey), item));
+    (state.priceWorkbench.localEntries || []).forEach((item) => map.set(workbenchKey(item.marketplace, item.articleKey), item));
+    return map;
+  }
+
+  function computePlanMetrics(row, series) {
+    const planUnits = parseNum(row.planMonthUnits);
+    const planDays = parseNum(row.planMonthDays) || 30;
+    if (!planUnits || !planDays) {
+      return { planUnitsSelected: null, actualUnitsSelected: null, completionPct: null, selectedDays: 0 };
+    }
+    const planMonthKey = String(row.pl

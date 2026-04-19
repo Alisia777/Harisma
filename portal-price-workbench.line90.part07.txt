@@ -1,0 +1,90 @@
+      updatedAt: merged.updatedAt,
+      createdAt: merged.createdAt,
+      planUnitsSelected: plan.planUnitsSelected,
+      actualUnitsSelected: plan.actualUnitsSelected,
+      completionPctSelected: plan.completionPct,
+      selectedDays: plan.selectedDays,
+    };
+  }
+
+  function signalsForRow(row) {
+    const items = [];
+    if (row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && Number(row.marginTotalPct) < Number(row.effectiveAllowedMarginPct)) items.push({ label: "Маржа ниже допустимой", kind: "danger" });
+    if (row.turnoverDisplay != null && Number(row.turnoverDisplay) >= 60) items.push({ label: "Высокая оборачиваемость", kind: "danger" });
+    else if (row.turnoverDisplay != null && Number(row.turnoverDisplay) >= 40) items.push({ label: "Оборачиваемость требует внимания", kind: "warn" });
+    if (row.completionPctSelected != null && Number(row.completionPctSelected) < 0.8) items.push({ label: "Отстаёт от плана", kind: "warn" });
+    if (row.targetFillPrice != null && row.hardMinPrice != null && Number(row.targetFillPrice) < Number(row.hardMinPrice)) items.push({ label: "Новая цена ниже жёсткого минимума", kind: "danger" });
+    if (row.needsTask) items.push({ label: "Есть задача", kind: "info" });
+    if (row.historyNote) items.push({ label: "Проверь свежесть факта", kind: "info" });
+    return items;
+  }
+
+  function riskScore(row) {
+    return signalsForRow(row).reduce((sum, item) => sum + (item.kind === "danger" ? 3 : item.kind === "warn" ? 2 : 1), 0);
+  }
+
+  function effectiveRows() {
+    const market = state.priceWorkbench.filters.market || "wb";
+    const decisions = mergeEntryLayers();
+    return baseRowsForMarket(market).map((row) => applyEntry(row, decisions.get(workbenchKey(market, row.articleKey))));
+  }
+
+  function filteredRows() {
+    const search = String(state.priceWorkbench.filters.search || "").trim().toLowerCase();
+    const ownerFilter = state.priceWorkbench.filters.owner || "all";
+    const statusFilter = state.priceWorkbench.filters.status || "all";
+    const sortMode = state.priceWorkbench.filters.sort || "risk";
+    const riskOnly = Boolean(state.priceWorkbench.filters.riskOnly);
+    const rows = effectiveRows().filter((row) => {
+      if (search) {
+        const haystack = [row.articleKey, row.name, row.owner, row.reason, row.seedReason, row.segment, row.abc].filter(Boolean).join(" ").toLowerCase();
+        if (!haystack.includes(search)) return false;
+      }
+      if (ownerFilter !== "all" && (row.owner || "Без owner") !== ownerFilter) return false;
+      if (statusFilter !== "all" && row.decisionStatus !== statusFilter) return false;
+      if (riskOnly && riskScore(row) < 3) return false;
+      return true;
+    });
+    rows.sort((a, b) => {
+      if (sortMode === "turnover") return (Number(b.turnoverDisplay) || 0) - (Number(a.turnoverDisplay) || 0);
+      if (sortMode === "margin") return (Number(a.marginTotalPct) || 0) - (Number(b.marginTotalPct) || 0);
+      if (sortMode === "plan") return (Number(a.completionPctSelected) || 0) - (Number(b.completionPctSelected) || 0);
+      return riskScore(b) - riskScore(a) || (Number(b.turnoverDisplay) || 0) - (Number(a.turnoverDisplay) || 0);
+    });
+    return rows;
+  }
+
+  function selectedRow(rows) {
+    if (!rows.length) return null;
+    const found = rows.find((row) => workbenchKey(row.marketplace, row.articleKey) === state.priceWorkbench.selectedKey);
+    if (found) return found;
+    state.priceWorkbench.selectedKey = workbenchKey(rows[0].marketplace, rows[0].articleKey);
+    return rows[0];
+  }
+
+  function ownerList(rows) {
+    return Array.from(new Set(rows.map((row) => row.owner).filter(Boolean))).sort((a, b) => a.localeCompare(b, "ru"));
+  }
+
+  function dataFreshnessLabel(rows) {
+    const dates = Array.from(new Set(rows.map((row) => isoDate(row.historyFreshnessDate)).filter(Boolean))).sort();
+    if (!dates.length) return "Свежесть факта не отмечена";
+    if (dates.length === 1) return `Факт в пакете до ${dates[0]}`;
+    return `Факт в пакете: ${dates[0]} – ${dates[dates.length - 1]}`;
+  }
+
+  function seedSourceLabel() {
+    if (state.priceWorkbench.seedSource === "snapshot") return "Источник: Supabase snapshot";
+    if (state.priceWorkbench.seedSource === "local") return "Источник: локальный JSON";
+    return "Источник данных уточняется";
+  }
+
+  function marketWarnings(rows) {
+    const notes = Array.from(new Set(rows.map((row) => String(row.historyNote || "").trim()).filter(Boolean)));
+    if ((state.priceWorkbench.filters.market || "wb") === "wb") {
+      notes.push("WB: перед внедрением решения перепроверьте, не является ли цена клиента ценой со СПП из файла.");
+    }
+    return Array.from(new Set(notes)).slice(0, 3);
+  }
+
+  function aggregateMetrics(rows) {

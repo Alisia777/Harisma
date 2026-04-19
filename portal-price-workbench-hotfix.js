@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_WORKBENCH_LOADER_20260419E__) return;
-  window.__ALTEA_PRICE_WORKBENCH_LOADER_20260419E__ = true;
+  if (window.__ALTEA_PRICE_WORKBENCH_LOADER_20260419F__) return;
+  window.__ALTEA_PRICE_WORKBENCH_LOADER_20260419F__ = true;
 
   const SCRIPT_ID = 'portalPriceWorkbenchHotfixRuntime';
   const PARTS = [
@@ -47,6 +47,11 @@
         return response.text();
       })
     );
+    // Preserve the exact original source around the three chunk boundaries
+    // that lost tail characters during the first upload.
+    fragments[1] += '\n';
+    fragments[3] += '";';
+    fragments[10] += '\n';
     const script = document.createElement('script');
     script.id = SCRIPT_ID;
     script.textContent = fragments.join('\n') + '\n';

@@ -1,0 +1,71 @@
+ta.label)}</button>`).join("")}
+          </div>
+        </div>
+        <div class="price-filters-grid">
+          <label><span>Поиск</span><input id="priceSearch" value="${escapeHtml(state.priceWorkbench.filters.search)}" placeholder="Поиск по SKU, названию, owner или логике решения"></label>
+          <label><span>Owner</span><select id="priceOwnerFilter"><option value="all">Все owner</option>${owners.map((owner) => `<option value="${escapeHtml(owner)}" ${state.priceWorkbench.filters.owner === owner ? "selected" : ""}>${escapeHtml(owner)}</option>`).join("")}</select></label>
+          <label><span>Статус</span><select id="priceStatusFilter"><option value="all">Все статусы</option>${Object.entries(DECISION_STATUS_META).map(([key, meta]) => `<option value="${key}" ${state.priceWorkbench.filters.status === key ? "selected" : ""}>${escapeHtml(meta.label)}</option>`).join("")}</select></label>
+          <label><span>Сортировка</span><select id="priceSortMode"><option value="risk" ${state.priceWorkbench.filters.sort === "risk" ? "selected" : ""}>Сначала рисковые</option><option value="turnover" ${state.priceWorkbench.filters.sort === "turnover" ? "selected" : ""}>По оборачиваемости</option><option value="margin" ${state.priceWorkbench.filters.sort === "margin" ? "selected" : ""}>По марже</option><option value="plan" ${state.priceWorkbench.filters.sort === "plan" ? "selected" : ""}>По план-факту</option></select></label>
+        </div>
+        <label class="price-toggle"><input type="checkbox" id="priceRiskOnly" ${state.priceWorkbench.filters.riskOnly ? "checked" : ""}> Только проблемные позиции</label>
+      </div>
+    `;
+  }
+
+  function renderSummary(rows) {
+    const totals = aggregateMetrics(rows);
+    const belowMargin = rows.filter((row) => row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && row.marginTotalPct < row.effectiveAllowedMarginPct).length;
+    const underPlan = rows.filter((row) => row.completionPctSelected != null && row.completionPctSelected < 0.8).length;
+    const tasks = rows.filter((row) => row.needsTask).length;
+    const avgPrice = meanOrNull(rows.map((row) => row.currentFillPriceDisplay));
+    return `
+      <div class="price-summary-grid">
+        <div class="price-summary-card"><span class="label">В работе</span><strong>${fmt.int(rows.length)}</strong><small>SKU в текущем срезе по выбранной площадке.</small></div>
+        <div class="price-summary-card"><span class="label">Продажи за период</span><strong>${totals.actualUnits == null ? "—" : fmt.int(totals.actualUnits)}</strong><small>${totals.periodOrders == null ? "Факт по дням есть не для всех SKU." : `Заказы ${fmt.int(totals.periodOrders)} шт. за выбранный диапазон.`}</small></div>
+        <div class="price-summary-card"><span class="label">Выручка за период</span><strong>${moneyShort(totals.periodRevenue)}</strong><small>${totals.avgCheck == null ? "Средний чек посчитается, когда есть daily-факт." : `Средний чек ${moneyShort(totals.avgCheck)}.`}</small></div>
+        <div class="price-summary-card"><span class="label">Ниже допустимой маржи</span><strong>${fmt.int(belowMargin)}</strong><small>Позиции, где текущая маржа ниже средней допустимой за 3 месяца.</small></div>
+        <div class="price-summary-card"><span class="label">Под риском по плану</span><strong>${fmt.int(underPlan)}</strong><small>${totals.planUnits == null ? "План по артикулу ещё не приехал." : `План в диапазоне ${fmt.int(totals.planUnits)} шт.`}</small></div>
+        <div class="price-summary-card"><span class="label">Средняя цена MP</span><strong>${moneyShort(avgPrice)}</strong><small>Пересчитывается от площадки и диапазона дат.</small></div>
+        <div class="price-summary-card"><span class="label">Остатки в срезе</span><strong>${totals.stock == null ? "—" : fmt.int(totals.stock)}</strong><small>Сумма текущих остатков по выбранной площадке.</small></div>
+        <div class="price-summary-card"><span class="label">Нужны действия</span><strong>${fmt.int(tasks)}</strong><small>Артикулы, где уже зафиксировано решение или нужна задача.</small></div>
+      </div>
+    `;
+  }
+
+  function renderTable(rows) {
+    if (!rows.length) return `<div class="price-empty">По текущим фильтрам ничего не найдено.</div>`;
+    return `
+      <div class="card price-table-card">
+        <div class="price-table-wrap">
+          <table class="price-table">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Owner</th>
+                <th>Маржа</th>
+                <th>Допустимая 3м</th>
+                <th>Обор.</th>
+                <th>Продажи</th>
+                <th>Выручка</th>
+                <th>% плана</th>
+                <th>Цена MP</th>
+                <th>Цена клиента</th>
+                <th>СПП</th>
+                <th>Целевая Smart</th>
+                <th>Статус</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map((row) => {
+                const key = workbenchKey(row.marketplace, row.articleKey);
+                const selected = key === state.priceWorkbench.selectedKey;
+                const periodRevenue = (row.monthlyFiltered || [])
+                  .map((item) => parseNum(item.revenue))
+                  .filter((value) => value != null)
+                  .reduce((sum, value) => sum + value, 0);
+                return `
+                  <tr data-price-open="${escapeHtml(key)}" class="${selected ? "is-selected" : ""} ${riskScore(row) >= 3 ? "is-risk" : ""}">
+                    <td><div class="price-sku-title">${escapeHtml(row.articleKey)}</div><div class="price-sku-note">${escapeHtml((row.name || "").slice(0, 120))}</div></td>
+                    <td>${escapeHtml(row.owner || "—")}</td>
+                    <td class="${row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && row.marginTotalPct < row.effectiveAllowedMarginPct ? "price-danger-text" : ""}">${pctShort(row.marginTotalPct)}</td>
+                    <td>${pctShort(row.effectiveAl

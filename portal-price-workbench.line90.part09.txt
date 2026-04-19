@@ -1,0 +1,90 @@
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Owner</th>
+                <th>Маржа</th>
+                <th>Допустимая 3м</th>
+                <th>Обор.</th>
+                <th>Продажи</th>
+                <th>Выручка</th>
+                <th>% плана</th>
+                <th>Цена MP</th>
+                <th>Цена клиента</th>
+                <th>СПП</th>
+                <th>Целевая Smart</th>
+                <th>Статус</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map((row) => {
+                const key = workbenchKey(row.marketplace, row.articleKey);
+                const selected = key === state.priceWorkbench.selectedKey;
+                const periodRevenue = (row.monthlyFiltered || [])
+                  .map((item) => parseNum(item.revenue))
+                  .filter((value) => value != null)
+                  .reduce((sum, value) => sum + value, 0);
+                return `
+                  <tr data-price-open="${escapeHtml(key)}" class="${selected ? "is-selected" : ""} ${riskScore(row) >= 3 ? "is-risk" : ""}">
+                    <td><div class="price-sku-title">${escapeHtml(row.articleKey)}</div><div class="price-sku-note">${escapeHtml((row.name || "").slice(0, 120))}</div></td>
+                    <td>${escapeHtml(row.owner || "—")}</td>
+                    <td class="${row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && row.marginTotalPct < row.effectiveAllowedMarginPct ? "price-danger-text" : ""}">${pctShort(row.marginTotalPct)}</td>
+                    <td>${pctShort(row.effectiveAllowedMarginPct)}</td>
+                    <td>${row.turnoverDisplay == null ? "—" : `${fmt.num(row.turnoverDisplay, 1)} дн.`}</td>
+                    <td>${row.actualUnitsSelected == null ? "—" : fmt.int(row.actualUnitsSelected)}</td>
+                    <td>${periodRevenue > 0 ? moneyShort(periodRevenue) : "—"}</td>
+                    <td>${row.completionPctSelected == null ? "—" : pctShort(row.completionPctSelected)}</td>
+                    <td>${moneyShort(row.currentFillPriceDisplay)}</td>
+                    <td>${moneyShort(row.currentClientPriceDisplay)}</td>
+                    <td>${pctShort(row.currentSppDisplay)}</td>
+                    <td>${moneyShort(row.targetFillPrice)}</td>
+                    <td>${decisionBadge(row)}</td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function relatedTasks(row) {
+    return (state.storage.tasks || []).filter((task) => task.articleKey === row.articleKey && (task.type === "price_margin" || String(task.autoCode || "").startsWith("price|")));
+  }
+
+  function renderTaskList(tasks) {
+    if (!tasks.length) return `<div class="price-empty">По этому артикулу задач по цене пока нет.</div>`;
+    if (typeof renderTaskCard === "function") {
+      return `<div class="price-task-list">${tasks.map(renderTaskCard).join("")}</div>`;
+    }
+    return `<div class="price-task-list">${tasks.map((task) => `<div class="price-task-item"><strong>${escapeHtml(task.title || "Задача")}</strong><div class="price-inline-meta">${escapeHtml(task.nextAction || "—")}</div><div class="price-inline-meta">${escapeHtml(task.owner || "Без owner")} · ${escapeHtml(task.due || "без срока")}</div></div>`).join("")}</div>`;
+  }
+
+  function filteredDecisionHistory(row) {
+    const all = [...(state.priceWorkbench.remoteHistory || []), ...(state.priceWorkbench.localHistory || [])]
+      .filter((item) => item.articleKey === row.articleKey && item.marketplace === row.marketplace)
+      .sort((a, b) => String(b.changedAt).localeCompare(String(a.changedAt)));
+    const seen = new Set();
+    return all.filter((item) => {
+      const key = `${item.id}|${item.changedAt}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return withinRange(item.changedAt);
+    });
+  }
+
+  function renderDecisionHistory(row) {
+    const items = filteredDecisionHistory(row);
+    if (!items.length) return `<div class="price-empty">История решений по выбранному диапазону пока пуста.</div>`;
+    return `
+      <div class="price-history-wrap">
+        <table class="price-history-table">
+          <thead><tr><th>Дата</th><th>Кто</th><th>Допустимая маржа</th><th>Цена MP</th><th>Цена клиента</th><th>Статус</th></tr></thead>
+          <tbody>${items.map((item) => `<tr><td>${escapeHtml(String(item.changedAt).slice(0, 10))}</td><td>${escapeHtml(item.changedBy || "—")}</td><td>${pctShort(item.newAllowedMarginPct)}</td><td>${moneyShort(item.newTargetFillPrice)}</td><td>${moneyShort(item.newTargetClientPrice)}</td><td>${escapeHtml((DECISION_STATUS_META[item.newDecisionStatus] || DECISION_STATUS_META.draft).label)}</td></tr>`).join("")}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function renderPeriodHistory(row) {
+    const dailyPlan = row.planMonthUnits && row.planMonthDays ? row.planMonthUnits / row.planMonthDays : null;

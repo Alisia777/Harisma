@@ -1,0 +1,90 @@
+    const actualUnits = rows.map((row) => row.actualUnitsSelected).filter((value) => value != null);
+    const planUnits = rows.map((row) => row.planUnitsSelected).filter((value) => value != null);
+    const stock = rows.map((row) => parseNum(row.stock)).filter((value) => value != null);
+    const periodRows = rows.flatMap((row) => row.monthlyFiltered || []);
+    const periodRevenueValues = periodRows.map((item) => parseNum(item.revenue)).filter((value) => value != null);
+    const periodOrderValues = periodRows.map((item) => parseNum(item.ordersUnits)).filter((value) => value != null);
+    const actualSum = actualUnits.length ? actualUnits.reduce((sum, value) => sum + value, 0) : null;
+    const periodRevenue = periodRevenueValues.length ? periodRevenueValues.reduce((sum, value) => sum + value, 0) : null;
+    return {
+      actualUnits: actualSum,
+      planUnits: planUnits.length ? planUnits.reduce((sum, value) => sum + value, 0) : null,
+      periodRevenue,
+      periodOrders: periodOrderValues.length ? periodOrderValues.reduce((sum, value) => sum + value, 0) : null,
+      avgCheck: actualSum && periodRevenue ? periodRevenue / actualSum : null,
+      stock: stock.length ? stock.reduce((sum, value) => sum + value, 0) : null,
+    };
+  }
+
+  function decisionBadge(row) {
+    const meta = DECISION_STATUS_META[row.decisionStatus] || DECISION_STATUS_META.draft;
+    return badge(meta.label, meta.kind);
+  }
+
+  function renderToolbar() {
+    const market = state.priceWorkbench.filters.market || "wb";
+    const baseRows = baseRowsForMarket(market);
+    const owners = ownerList(baseRows);
+    const notes = marketWarnings(baseRows);
+    return `
+      <div class="price-toolbar">
+        <div class="price-toolbar-head">
+          <div>
+            <h2>Цены и маржа по артикулам</h2>
+            <p>РОП выбирает площадку и период, видит цену, маржу, оборачиваемость, план-факт и открывает карточку артикула с историей, задачами и решением.</p>
+            <div class="price-data-note">
+              ${badge(dataFreshnessLabel(baseRows), "info")}
+              ${badge(seedSourceLabel(), "")}
+              ${badge(`Площадка ${marketLabel(market)}`, "warn")}
+              ${badge(`Диапазон ${state.priceWorkbench.filters.dateFrom || "—"} – ${state.priceWorkbench.filters.dateTo || "—"}`, "")}
+            </div>
+            ${notes.length ? `<div class="price-helper-copy">${escapeHtml(notes.join(" "))}</div>` : ""}
+          </div>
+          <div class="price-market-switch">
+            ${["wb", "ozon", "ym"].map((market) => `<button type="button" class="quick-chip ${state.priceWorkbench.filters.market === market ? "active" : ""}" data-price-market="${market}">${marketLabel(market)}</button>`).join("")}
+          </div>
+        </div>
+        <div class="price-range-row">
+          <label><span>С даты</span><input type="date" id="priceDateFrom" value="${escapeHtml(state.priceWorkbench.filters.dateFrom)}"></label>
+          <label><span>По дату</span><input type="date" id="priceDateTo" value="${escapeHtml(state.priceWorkbench.filters.dateTo)}"></label>
+          <div class="price-preset-row">
+            ${Object.entries(PRESETS).map(([key, meta]) => `<button type="button" class="quick-chip ${state.priceWorkbench.filters.preset === key ? "active" : ""}" data-price-preset="${key}">${escapeHtml(meta.label)}</button>`).join("")}
+          </div>
+        </div>
+        <div class="price-filters-grid">
+          <label><span>Поиск</span><input id="priceSearch" value="${escapeHtml(state.priceWorkbench.filters.search)}" placeholder="Поиск по SKU, названию, owner или логике решения"></label>
+          <label><span>Owner</span><select id="priceOwnerFilter"><option value="all">Все owner</option>${owners.map((owner) => `<option value="${escapeHtml(owner)}" ${state.priceWorkbench.filters.owner === owner ? "selected" : ""}>${escapeHtml(owner)}</option>`).join("")}</select></label>
+          <label><span>Статус</span><select id="priceStatusFilter"><option value="all">Все статусы</option>${Object.entries(DECISION_STATUS_META).map(([key, meta]) => `<option value="${key}" ${state.priceWorkbench.filters.status === key ? "selected" : ""}>${escapeHtml(meta.label)}</option>`).join("")}</select></label>
+          <label><span>Сортировка</span><select id="priceSortMode"><option value="risk" ${state.priceWorkbench.filters.sort === "risk" ? "selected" : ""}>Сначала рисковые</option><option value="turnover" ${state.priceWorkbench.filters.sort === "turnover" ? "selected" : ""}>По оборачиваемости</option><option value="margin" ${state.priceWorkbench.filters.sort === "margin" ? "selected" : ""}>По марже</option><option value="plan" ${state.priceWorkbench.filters.sort === "plan" ? "selected" : ""}>По план-факту</option></select></label>
+        </div>
+        <label class="price-toggle"><input type="checkbox" id="priceRiskOnly" ${state.priceWorkbench.filters.riskOnly ? "checked" : ""}> Только проблемные позиции</label>
+      </div>
+    `;
+  }
+
+  function renderSummary(rows) {
+    const totals = aggregateMetrics(rows);
+    const belowMargin = rows.filter((row) => row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && row.marginTotalPct < row.effectiveAllowedMarginPct).length;
+    const underPlan = rows.filter((row) => row.completionPctSelected != null && row.completionPctSelected < 0.8).length;
+    const tasks = rows.filter((row) => row.needsTask).length;
+    const avgPrice = meanOrNull(rows.map((row) => row.currentFillPriceDisplay));
+    return `
+      <div class="price-summary-grid">
+        <div class="price-summary-card"><span class="label">В работе</span><strong>${fmt.int(rows.length)}</strong><small>SKU в текущем срезе по выбранной площадке.</small></div>
+        <div class="price-summary-card"><span class="label">Продажи за период</span><strong>${totals.actualUnits == null ? "—" : fmt.int(totals.actualUnits)}</strong><small>${totals.periodOrders == null ? "Факт по дням есть не для всех SKU." : `Заказы ${fmt.int(totals.periodOrders)} шт. за выбранный диапазон.`}</small></div>
+        <div class="price-summary-card"><span class="label">Выручка за период</span><strong>${moneyShort(totals.periodRevenue)}</strong><small>${totals.avgCheck == null ? "Средний чек посчитается, когда есть daily-факт." : `Средний чек ${moneyShort(totals.avgCheck)}.`}</small></div>
+        <div class="price-summary-card"><span class="label">Ниже допустимой маржи</span><strong>${fmt.int(belowMargin)}</strong><small>Позиции, где текущая маржа ниже средней допустимой за 3 месяца.</small></div>
+        <div class="price-summary-card"><span class="label">Под риском по плану</span><strong>${fmt.int(underPlan)}</strong><small>${totals.planUnits == null ? "План по артикулу ещё не приехал." : `План в диапазоне ${fmt.int(totals.planUnits)} шт.`}</small></div>
+        <div class="price-summary-card"><span class="label">Средняя цена MP</span><strong>${moneyShort(avgPrice)}</strong><small>Пересчитывается от площадки и диапазона дат.</small></div>
+        <div class="price-summary-card"><span class="label">Остатки в срезе</span><strong>${totals.stock == null ? "—" : fmt.int(totals.stock)}</strong><small>Сумма текущих остатков по выбранной площадке.</small></div>
+        <div class="price-summary-card"><span class="label">Нужны действия</span><strong>${fmt.int(tasks)}</strong><small>Артикулы, где уже зафиксировано решение или нужна задача.</small></div>
+      </div>
+    `;
+  }
+
+  function renderTable(rows) {
+    if (!rows.length) return `<div class="price-empty">По текущим фильтрам ничего не найдено.</div>`;
+    return `
+      <div class="card price-table-card">
+        <div class="price-table-wrap">
+          <table class="price-table">

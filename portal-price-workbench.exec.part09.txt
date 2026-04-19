@@ -1,0 +1,79 @@
+  oldTargetFillPrice: previous?.targetFillPrice,
+      newTargetFillPrice: entry.targetFillPrice,
+      oldTargetClientPrice: previous?.targetClientPrice,
+      newTargetClientPrice: entry.targetClientPrice,
+      oldAllowedMarginPct: previous?.allowedMarginManualPct,
+      newAllowedMarginPct: entry.allowedMarginManualPct,
+      oldDecisionStatus: previous?.decisionStatus,
+      newDecisionStatus: entry.decisionStatus,
+      reason: entry.reason,
+      comment: entry.comment,
+      changedBy: state.team.member?.name || "Команда",
+      changedAt: new Date().toISOString(),
+      synced: false,
+    });
+    state.priceWorkbench.localHistory = [historyRow, ...(state.priceWorkbench.localHistory || [])];
+    saveLocalState();
+    return historyRow;
+  }
+
+  function upsertLocalEntry(entry) {
+    const normalized = normalizeEntry(entry);
+    const key = workbenchKey(normalized.marketplace, normalized.articleKey);
+    state.priceWorkbench.localEntries = [
+      ...(state.priceWorkbench.localEntries || []).filter((item) => workbenchKey(item.marketplace, item.articleKey) !== key),
+      normalized,
+    ];
+    saveLocalState();
+    return normalized;
+  }
+
+  function getCurrentRowByKey(key) {
+    return filteredRows().find((row) => workbenchKey(row.marketplace, row.articleKey) === key) || effectiveRows().find((row) => workbenchKey(row.marketplace, row.articleKey) === key) || null;
+  }
+
+  function renderPriceModal(row) {
+    const modal = document.getElementById("skuModal");
+    const body = document.getElementById("skuModalBody");
+    if (!modal || !body || !row) return;
+    const tasks = relatedTasks(row);
+    const periodRevenue = (row.monthlyFiltered || [])
+      .map((item) => parseNum(item.revenue))
+      .filter((value) => value != null)
+      .reduce((sum, value) => sum + value, 0);
+    const totalSupply = [row.stock, row.stockRepricer, row.stockInSupplyRequest, row.stockInTransit]
+      .map((value) => parseNum(value))
+      .filter((value) => value != null)
+      .reduce((sum, value) => sum + value, 0);
+    const badges = [
+      badge(marketLabel(row.marketplace), "info"),
+      decisionBadge(row),
+      row.escalation !== "none" ? badge((ESCALATION_META[row.escalation] || ESCALATION_META.none).label, (ESCALATION_META[row.escalation] || ESCALATION_META.none).kind) : "",
+      ...signalsForRow(row).map((item) => badge(item.label, item.kind)),
+    ].filter(Boolean).join("");
+    body.innerHTML = `
+      <div class="price-modal-card">
+        <div class="price-modal-head">
+          <div class="price-modal-title">
+            <div class="price-inline-meta">${escapeHtml(row.segment || "—")} · ${escapeHtml(row.abc || "—")} · ${escapeHtml(row.owner || "Без owner")}</div>
+            <h2>${escapeHtml(row.articleKey)}</h2>
+            <p>${escapeHtml(row.name || "")}</p>
+            <div class="price-modal-badges">${badges}</div>
+          </div>
+          <button class="btn ghost" data-close-modal>Закрыть</button>
+        </div>
+        <div class="price-modal-grid">
+          <div class="price-modal-kpi"><span class="label">Цена MP сейчас</span><strong>${moneyShort(row.currentFillPriceDisplay)}</strong><small>Под выбранный диапазон и площадку.</small></div>
+          <div class="price-modal-kpi"><span class="label">Цена клиента</span><strong>${moneyShort(row.currentClientPriceDisplay)}</strong><small>Отдельно, чтобы не путать MP и клиентскую цену.</small></div>
+          <div class="price-modal-kpi"><span class="label">СПП сейчас</span><strong>${pctShort(row.currentSppDisplay)}</strong><small>${row.marketplace === "wb" ? "Проверьте, не пришла ли цена клиента уже со СПП из файла WB." : "Отдельно показываем скидку клиента, чтобы не путать с MP."}</small></div>
+          <div class="price-modal-kpi"><span class="label">Целевая цена Smart</span><strong>${moneyShort(row.targetFillPrice)}</strong><small>Целевая цена из рабочих файлов и решения.</small></div>
+          <div class="price-modal-kpi"><span class="label">Допустимая маржа 3м</span><strong>${pctShort(row.effectiveAllowedMarginPct)}</strong><small>Средняя допустимая маржа за последние 3 месяца.</small></div>
+          <div class="price-modal-kpi"><span class="label">Текущая маржа</span><strong>${pctShort(row.marginTotalPct)}</strong><small>Текущий операционный уровень по площадке.</small></div>
+          <div class="price-modal-kpi"><span class="label">Оборачиваемость</span><strong>${row.turnoverDisplay == null ? "—" : `${fmt.num(row.turnoverDisplay, 1)} дн.`}</strong><small>Под выбранный период.</small></div>
+          <div class="price-modal-kpi"><span class="label">Факт за период</span><strong>${row.actualUnitsSelected == null ? "—" : `${fmt.int(row.actualUnitsSelected)} шт.`}</strong><small>${row.actualUnitsSelected == null ? "По части SKU daily-факт не приехал." : `План на диапазон ${fmt.int(row.planUnitsSelected)} шт.`}</small></div>
+          <div class="price-modal-kpi"><span class="label">Выручка за период</span><strong>${periodRevenue > 0 ? moneyShort(periodRevenue) : "—"}</strong><small>Сумма выручки из дневной истории по выбранному диапазону.</small></div>
+          <div class="price-modal-kpi"><span class="label">% выполнения плана</span><strong>${row.completionPctSelected == null ? "—" : pctShort(row.completionPctSelected)}</strong><small>${row.actualUnitsSelected == null ? "Факт по дням в текущем пакете данных не пришёл." : `Факт ${fmt.int(row.actualUnitsSelected)} шт. против плана ${fmt.int(row.planUnitsSelected)} шт.`}</small></div>
+          <div class="price-modal-kpi"><span class="label">Остаток</span><strong>${row.stock == null ? "—" : fmt.int(row.stock)}</strong><small>${escapeHtml(row.historyNote || "Смотри историю и задачи ниже.")}</small></div>
+        </div>
+        <div class="price-modal-projections">
+          <div class="price-modal-kpi"><span class="label">Из файла Smart</span><strong>${moneyShort(row.seedTargetFillPrice)}</strong><small>${escapeHtml(row.seedReason || "Целевая цена из рабочего пакета данных.")}</

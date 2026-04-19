@@ -1,0 +1,90 @@
+    const range = presetRange(preset, state.priceWorkbench.filters.market || "wb");
+    state.priceWorkbench.filters.dateFrom = range.dateFrom;
+    state.priceWorkbench.filters.dateTo = range.dateTo;
+    renderPriceWorkbench();
+  }
+
+  function withinRange(value) {
+    const dateValue = isoDate(value);
+    if (!dateValue) return false;
+    const from = state.priceWorkbench.filters.dateFrom || "";
+    const to = state.priceWorkbench.filters.dateTo || "";
+    if (from && dateValue < from) return false;
+    if (to && dateValue > to) return false;
+    return true;
+  }
+
+  function mergeEntryLayers() {
+    const map = new Map();
+    (state.priceWorkbench.remoteEntries || []).forEach((item) => map.set(workbenchKey(item.marketplace, item.articleKey), item));
+    (state.priceWorkbench.localEntries || []).forEach((item) => map.set(workbenchKey(item.marketplace, item.articleKey), item));
+    return map;
+  }
+
+  function computePlanMetrics(row, series) {
+    const planUnits = parseNum(row.planMonthUnits);
+    const planDays = parseNum(row.planMonthDays) || 30;
+    if (!planUnits || !planDays) {
+      return { planUnitsSelected: null, actualUnitsSelected: null, completionPct: null, selectedDays: 0 };
+    }
+    const planMonthKey = String(row.planMonthKey || "");
+    const planMonthStart = planMonthKey ? `${planMonthKey}-01` : "";
+    const planMonthEnd = planMonthKey ? `${planMonthKey}-${String(planDays).padStart(2, "0")}` : "";
+    const rangeFrom = state.priceWorkbench.filters.dateFrom || planMonthStart;
+    const dataFreshTo = row.historyFreshnessDate ? [state.priceWorkbench.filters.dateTo || row.historyFreshnessDate, row.historyFreshnessDate].sort()[0] : (state.priceWorkbench.filters.dateTo || "");
+    const effectiveFrom = [rangeFrom, planMonthStart].filter(Boolean).sort().slice(-1)[0] || "";
+    const effectiveTo = [dataFreshTo || planMonthEnd, planMonthEnd].filter(Boolean).sort()[0] || "";
+    if (!effectiveFrom || !effectiveTo || effectiveFrom > effectiveTo) {
+      return { planUnitsSelected: null, actualUnitsSelected: null, completionPct: null, selectedDays: 0 };
+    }
+    const selectedDays = Math.floor((new Date(effectiveTo) - new Date(effectiveFrom)) / 86400000) + 1;
+    const actualPool = series.filter((item) => {
+      const itemDate = isoDate(item.date);
+      return itemDate && itemDate >= effectiveFrom && itemDate <= effectiveTo;
+    });
+    const actualValues = actualPool
+      .map((item) => parseNum(item.deliveredUnits) ?? parseNum(item.ordersUnits))
+      .filter((value) => value != null);
+    const actualUnitsSelected = actualValues.length ? actualValues.reduce((sum, value) => sum + value, 0) : null;
+    const planUnitsSelected = (planUnits / planDays) * selectedDays;
+    const completionPct = actualUnitsSelected != null && planUnitsSelected > 0 ? actualUnitsSelected / planUnitsSelected : null;
+    return { planUnitsSelected, actualUnitsSelected, completionPct, selectedDays };
+  }
+
+  function sourceLabel(row) {
+    if (row.allowedMarginManualPct != null) return "manual";
+    if (row.allowedMarginPct != null) return "source";
+    return "default";
+  }
+
+  function applyEntry(row, entry) {
+    const merged = entry ? normalizeEntry(entry) : normalizeEntry({ marketplace: row.marketplace, articleKey: row.articleKey, owner: row.owner });
+    const effectiveAllowed = merged.allowedMarginManualPct != null ? merged.allowedMarginManualPct : defaultAllowedMargin(row);
+    const series = (Array.isArray(row.monthly) ? row.monthly : []).filter((item) => withinRange(item.date));
+    const latest = series.length ? series[series.length - 1] : null;
+    const avgTurnover = series.length ? meanOrNull(series.map((item) => parseNum(item.turnoverDays))) : parseNum(row.turnoverCurrentDays);
+    const latestPrice = latest ? parseNum(latest.price) : parseNum(row.currentFillPrice);
+    const latestClient = latest ? (parseNum(latest.clientPrice) ?? (latestPrice != null && parseNum(latest.sppPct) != null ? latestPrice * (1 - parseNum(latest.sppPct)) : null)) : parseNum(row.currentClientPrice);
+    const latestSpp = latest ? parseNum(latest.sppPct) : parseNum(row.currentSppPct);
+    const plan = computePlanMetrics(row, series);
+    return {
+      ...row,
+      decisionId: merged.id,
+      decisionStatus: merged.decisionStatus,
+      targetFillPrice: merged.targetFillPrice ?? row.seedTargetFillPrice ?? latestPrice,
+      targetClientPrice: merged.targetClientPrice ?? row.seedTargetClientPrice ?? latestClient,
+      allowedMarginManualPct: merged.allowedMarginManualPct,
+      effectiveAllowedMarginPct: effectiveAllowed,
+      allowedMarginSource: sourceLabel({ ...row, allowedMarginManualPct: merged.allowedMarginManualPct }),
+      currentFillPriceDisplay: latestPrice,
+      currentClientPriceDisplay: latestClient,
+      currentSppDisplay: latestSpp,
+      turnoverDisplay: avgTurnover,
+      monthlyFiltered: series,
+      owner: merged.owner || row.owner || "",
+      dueDate: merged.dueDate || "",
+      needsTask: merged.needsTask,
+      escalation: merged.escalation,
+      reason: merged.reason || row.seedReason || "",
+      comment: merged.comment || "",
+      updatedBy: merged.updatedBy,

@@ -1,0 +1,90 @@
+(function () {
+  if (window.__ALTEA_PRICE_WORKBENCH_HOTFIX_20260419B__) return;
+  window.__ALTEA_PRICE_WORKBENCH_HOTFIX_20260419B__ = true;
+
+  const ENTRIES_TABLE = "portal_price_workbench_entries";
+  const HISTORY_TABLE = "portal_price_workbench_history";
+  const LOCAL_ENTRIES_KEY = "brand-portal-price-workbench-v20260419-entries";
+  const LOCAL_HISTORY_KEY = "brand-portal-price-workbench-v20260419-history";
+
+  const DECISION_STATUS_META = {
+    draft: { label: "Черновик", kind: "" },
+    review: { label: "На согласовании", kind: "warn" },
+    approved: { label: "Согласовано", kind: "ok" },
+    applied: { label: "Внедрено", kind: "info" },
+    on_hold: { label: "Стоп", kind: "danger" },
+  };
+
+  const ESCALATION_META = {
+    none: { label: "Без эскалации", kind: "" },
+    rop: { label: "РОПу", kind: "warn" },
+    ksenia: { label: "Ксении", kind: "warn" },
+    finance: { label: "Финансы", kind: "info" },
+    me_ksenia: { label: "Я + Ксения", kind: "danger" },
+  };
+
+  const PRESETS = {
+    "7d": { label: "7 дней", days: 7 },
+    "14d": { label: "14 дней", days: 14 },
+    "30d": { label: "30 дней", days: 30 },
+    month: { label: "Текущий месяц", month: true },
+    prev_month: { label: "Прошлый месяц", prevMonth: true },
+    all: { label: "Весь период", all: true },
+  };
+
+  state.priceWorkbench = Object.assign(
+    {
+      seed: null,
+      seedSource: "",
+      loading: false,
+      issue: "",
+      localEntries: [],
+      remoteEntries: [],
+      localHistory: [],
+      remoteHistory: [],
+      remoteReady: false,
+      remoteLoading: false,
+      remoteDisabled: false,
+      selectedKey: "",
+      filters: {
+        market: "wb",
+        search: "",
+        owner: "all",
+        status: "all",
+        sort: "risk",
+        riskOnly: false,
+        dateFrom: "",
+        dateTo: "",
+        preset: "month",
+      },
+    },
+    state.priceWorkbench || {}
+  );
+
+  function ensureStyles() {
+    if (document.getElementById("priceWorkbenchHotfixStyles")) return;
+    const style = document.createElement("style");
+    style.id = "priceWorkbenchHotfixStyles";
+    style.textContent = `
+      #view-prices .price-workbench-shell { display:grid; gap:16px; }
+      #view-prices .price-toolbar { display:grid; gap:14px; padding:18px; border:1px solid rgba(212,164,74,.18); border-radius:20px; background:linear-gradient(180deg, rgba(31,25,17,.88), rgba(18,14,10,.92)); box-shadow:0 16px 32px rgba(0,0,0,.22); }
+      #view-prices .price-toolbar-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; flex-wrap:wrap; }
+      #view-prices .price-toolbar-head h2 { margin:0 0 6px; }
+      #view-prices .price-toolbar-head p { margin:0; max-width:920px; color:rgba(255,244,222,.72); }
+      #view-prices .price-market-switch, #view-prices .price-preset-row { display:flex; gap:8px; flex-wrap:wrap; }
+      #view-prices .price-range-row { display:grid; gap:12px; grid-template-columns:repeat(2,minmax(160px,220px)) 1fr; align-items:end; }
+      #view-prices .price-range-row label, #view-prices .price-filters-grid label, .price-modal-form label { display:grid; gap:6px; font-size:12px; color:rgba(255,244,222,.72); }
+      #view-prices .price-range-row input, #view-prices .price-filters-grid input, #view-prices .price-filters-grid select, .price-modal-form input, .price-modal-form select, .price-modal-form textarea { width:100%; border-radius:12px; border:1px solid rgba(212,164,74,.18); background:rgba(12,10,8,.75); color:#fff2d9; padding:11px 12px; }
+      #view-prices .price-range-row input:focus, #view-prices .price-filters-grid input:focus, #view-prices .price-filters-grid select:focus, .price-modal-form input:focus, .price-modal-form select:focus, .price-modal-form textarea:focus { outline:none; border-color:rgba(212,164,74,.5); box-shadow:0 0 0 2px rgba(212,164,74,.12); }
+      #view-prices .price-filters-grid { display:grid; gap:10px; grid-template-columns:2fr repeat(3,minmax(160px,1fr)); }
+      #view-prices .price-toggle { display:inline-flex; align-items:center; gap:8px; font-size:12px; color:rgba(255,244,222,.82); }
+      #view-prices .price-summary-grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); }
+      #view-prices .price-summary-card { padding:16px; border:1px solid rgba(212,164,74,.16); border-radius:18px; background:rgba(17,13,10,.84); }
+      #view-prices .price-summary-card .label { display:block; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:rgba(212,164,74,.82); margin-bottom:8px; }
+      #view-prices .price-summary-card strong { display:block; font-size:28px; line-height:1; color:#fff5dc; margin-bottom:6px; }
+      #view-prices .price-summary-card small { color:rgba(255,244,222,.64); }
+      #view-prices .price-data-note { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+      #view-prices .price-helper-copy { color:rgba(255,244,222,.7); font-size:12px; line-height:1.45; margin-top:8px; }
+      #view-prices .price-table-card { padding:0; overflow:hidden; }
+      #view-prices .price-table-wrap { overflow:auto; }
+      #view-prices .price-table { width:100%; min-width:1320px; border-collapse:collapse; }

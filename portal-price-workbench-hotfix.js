@@ -1,21 +1,23 @@
 (function () {
-  if (window.__ALTEA_PRICE_WORKBENCH_LOADER_20260419D__) return;
-  window.__ALTEA_PRICE_WORKBENCH_LOADER_20260419D__ = true;
+  if (window.__ALTEA_PRICE_WORKBENCH_LOADER_20260419E__) return;
+  window.__ALTEA_PRICE_WORKBENCH_LOADER_20260419E__ = true;
 
   const SCRIPT_ID = 'portalPriceWorkbenchHotfixRuntime';
   const PARTS = [
-    'portal-price-workbench.exec.part01.txt?v=20260419d',
-    'portal-price-workbench.exec.part02.txt?v=20260419d',
-    'portal-price-workbench.exec.part03.txt?v=20260419d',
-    'portal-price-workbench.exec.part04.txt?v=20260419d',
-    'portal-price-workbench.exec.part05.txt?v=20260419d',
-    'portal-price-workbench.exec.part06.txt?v=20260419d',
-    'portal-price-workbench.exec.part07.txt?v=20260419d',
-    'portal-price-workbench.exec.part08.txt?v=20260419d',
-    'portal-price-workbench.exec.part09.txt?v=20260419d',
-    'portal-price-workbench.exec.part10.txt?v=20260419d',
-    'portal-price-workbench.exec.part11.txt?v=20260419d',
-    'portal-price-workbench.exec.part12.txt?v=20260419d'
+    'portal-price-workbench.line90.part01.txt?v=20260419e',
+    'portal-price-workbench.line90.part02.txt?v=20260419e',
+    'portal-price-workbench.line90.part03.txt?v=20260419e',
+    'portal-price-workbench.line90.part04.txt?v=20260419e',
+    'portal-price-workbench.line90.part05.txt?v=20260419e',
+    'portal-price-workbench.line90.part06.txt?v=20260419e',
+    'portal-price-workbench.line90.part07.txt?v=20260419e',
+    'portal-price-workbench.line90.part08.txt?v=20260419e',
+    'portal-price-workbench.line90.part09.txt?v=20260419e',
+    'portal-price-workbench.line90.part10.txt?v=20260419e',
+    'portal-price-workbench.line90.part11.txt?v=20260419e',
+    'portal-price-workbench.line90.part12.txt?v=20260419e',
+    'portal-price-workbench.line90.part13.txt?v=20260419e',
+    'portal-price-workbench.line90.part14.txt?v=20260419e'
   ];
   let loadingPromise = null;
 
@@ -38,16 +40,16 @@
       kick();
       return true;
     }
-    const source = (await Promise.all(
+    const fragments = await Promise.all(
       PARTS.map(async (src) => {
         const response = await fetch(src, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed to load ' + src);
         return response.text();
       })
-    )).join('');
+    );
     const script = document.createElement('script');
     script.id = SCRIPT_ID;
-    script.textContent = source;
+    script.textContent = fragments.join('\n') + '\n';
     (document.body || document.documentElement).appendChild(script);
     kick();
     return true;

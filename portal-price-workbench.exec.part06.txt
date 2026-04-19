@@ -1,0 +1,106 @@
+t || "risk";
+    const riskOnly = Boolean(state.priceWorkbench.filters.riskOnly);
+    const rows = effectiveRows().filter((row) => {
+      if (search) {
+        const haystack = [row.articleKey, row.name, row.owner, row.reason, row.seedReason, row.segment, row.abc].filter(Boolean).join(" ").toLowerCase();
+        if (!haystack.includes(search)) return false;
+      }
+      if (ownerFilter !== "all" && (row.owner || "Без owner") !== ownerFilter) return false;
+      if (statusFilter !== "all" && row.decisionStatus !== statusFilter) return false;
+      if (riskOnly && riskScore(row) < 3) return false;
+      return true;
+    });
+    rows.sort((a, b) => {
+      if (sortMode === "turnover") return (Number(b.turnoverDisplay) || 0) - (Number(a.turnoverDisplay) || 0);
+      if (sortMode === "margin") return (Number(a.marginTotalPct) || 0) - (Number(b.marginTotalPct) || 0);
+      if (sortMode === "plan") return (Number(a.completionPctSelected) || 0) - (Number(b.completionPctSelected) || 0);
+      return riskScore(b) - riskScore(a) || (Number(b.turnoverDisplay) || 0) - (Number(a.turnoverDisplay) || 0);
+    });
+    return rows;
+  }
+
+  function selectedRow(rows) {
+    if (!rows.length) return null;
+    const found = rows.find((row) => workbenchKey(row.marketplace, row.articleKey) === state.priceWorkbench.selectedKey);
+    if (found) return found;
+    state.priceWorkbench.selectedKey = workbenchKey(rows[0].marketplace, rows[0].articleKey);
+    return rows[0];
+  }
+
+  function ownerList(rows) {
+    return Array.from(new Set(rows.map((row) => row.owner).filter(Boolean))).sort((a, b) => a.localeCompare(b, "ru"));
+  }
+
+  function dataFreshnessLabel(rows) {
+    const dates = Array.from(new Set(rows.map((row) => isoDate(row.historyFreshnessDate)).filter(Boolean))).sort();
+    if (!dates.length) return "Свежесть факта не отмечена";
+    if (dates.length === 1) return `Факт в пакете до ${dates[0]}`;
+    return `Факт в пакете: ${dates[0]} – ${dates[dates.length - 1]}`;
+  }
+
+  function seedSourceLabel() {
+    if (state.priceWorkbench.seedSource === "snapshot") return "Источник: Supabase snapshot";
+    if (state.priceWorkbench.seedSource === "local") return "Источник: локальный JSON";
+    return "Источник данных уточняется";
+  }
+
+  function marketWarnings(rows) {
+    const notes = Array.from(new Set(rows.map((row) => String(row.historyNote || "").trim()).filter(Boolean)));
+    if ((state.priceWorkbench.filters.market || "wb") === "wb") {
+      notes.push("WB: перед внедрением решения перепроверьте, не является ли цена клиента ценой со СПП из файла.");
+    }
+    return Array.from(new Set(notes)).slice(0, 3);
+  }
+
+  function aggregateMetrics(rows) {
+    const actualUnits = rows.map((row) => row.actualUnitsSelected).filter((value) => value != null);
+    const planUnits = rows.map((row) => row.planUnitsSelected).filter((value) => value != null);
+    const stock = rows.map((row) => parseNum(row.stock)).filter((value) => value != null);
+    const periodRows = rows.flatMap((row) => row.monthlyFiltered || []);
+    const periodRevenueValues = periodRows.map((item) => parseNum(item.revenue)).filter((value) => value != null);
+    const periodOrderValues = periodRows.map((item) => parseNum(item.ordersUnits)).filter((value) => value != null);
+    const actualSum = actualUnits.length ? actualUnits.reduce((sum, value) => sum + value, 0) : null;
+    const periodRevenue = periodRevenueValues.length ? periodRevenueValues.reduce((sum, value) => sum + value, 0) : null;
+    return {
+      actualUnits: actualSum,
+      planUnits: planUnits.length ? planUnits.reduce((sum, value) => sum + value, 0) : null,
+      periodRevenue,
+      periodOrders: periodOrderValues.length ? periodOrderValues.reduce((sum, value) => sum + value, 0) : null,
+      avgCheck: actualSum && periodRevenue ? periodRevenue / actualSum : null,
+      stock: stock.length ? stock.reduce((sum, value) => sum + value, 0) : null,
+    };
+  }
+
+  function decisionBadge(row) {
+    const meta = DECISION_STATUS_META[row.decisionStatus] || DECISION_STATUS_META.draft;
+    return badge(meta.label, meta.kind);
+  }
+
+  function renderToolbar() {
+    const market = state.priceWorkbench.filters.market || "wb";
+    const baseRows = baseRowsForMarket(market);
+    const owners = ownerList(baseRows);
+    const notes = marketWarnings(baseRows);
+    return `
+      <div class="price-toolbar">
+        <div class="price-toolbar-head">
+          <div>
+            <h2>Цены и маржа по артикулам</h2>
+            <p>РОП выбирает площадку и период, видит цену, маржу, оборачиваемость, план-факт и открывает карточку артикула с историей, задачами и решением.</p>
+            <div class="price-data-note">
+              ${badge(dataFreshnessLabel(baseRows), "info")}
+              ${badge(seedSourceLabel(), "")}
+              ${badge(`Площадка ${marketLabel(market)}`, "warn")}
+              ${badge(`Диапазон ${state.priceWorkbench.filters.dateFrom || "—"} – ${state.priceWorkbench.filters.dateTo || "—"}`, "")}
+            </div>
+            ${notes.length ? `<div class="price-helper-copy">${escapeHtml(notes.join(" "))}</div>` : ""}
+          </div>
+          <div class="price-market-switch">
+            ${["wb", "ozon", "ym"].map((market) => `<button type="button" class="quick-chip ${state.priceWorkbench.filters.market === market ? "active" : ""}" data-price-market="${market}">${marketLabel(market)}</button>`).join("")}
+          </div>
+        </div>
+        <div class="price-range-row">
+          <label><span>С даты</span><input type="date" id="priceDateFrom" value="${escapeHtml(state.priceWorkbench.filters.dateFrom)}"></label>
+          <label><span>По дату</span><input type="date" id="priceDateTo" value="${escapeHtml(state.priceWorkbench.filters.dateTo)}"></label>
+          <div class="price-preset-row">
+            ${Object.entries(PRESETS).map(([key, meta]) => `<button type="button" class="quick-chip ${state.priceWorkbench.filters.preset === key ? "active" : ""}" data-price-preset="${key}">${escapeHtml(me

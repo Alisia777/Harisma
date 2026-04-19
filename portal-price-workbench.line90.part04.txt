@@ -1,0 +1,90 @@
+    localStorage.setItem(LOCAL_ENTRIES_KEY, JSON.stringify(state.priceWorkbench.localEntries || []));
+    localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(state.priceWorkbench.localHistory || []));
+  }
+
+  async function queryRemoteEntries() {
+    if (!state.team.client) return [];
+    const response = await state.team.client.from(ENTRIES_TABLE).select("*").eq("brand", currentBrand()).limit(2000);
+    if (response.error) throw response.error;
+    return response.data || [];
+  }
+
+  async function queryRemoteHistory() {
+    if (!state.team.client) return [];
+    const response = await state.team.client.from(HISTORY_TABLE).select("*").eq("brand", currentBrand()).order("changed_at", { ascending: false }).limit(4000);
+    if (response.error) throw response.error;
+    return response.data || [];
+  }
+
+  async function upsertRemoteEntries(rows) {
+    if (!state.team.client || !rows.length) return;
+    const payload = rows.map((entry) => ({
+      id: entry.id,
+      brand: currentBrand(),
+      marketplace: entry.marketplace,
+      article_key: entry.articleKey,
+      decision_status: entry.decisionStatus,
+      target_fill_price: entry.targetFillPrice,
+      target_client_price: entry.targetClientPrice,
+      allowed_margin_manual_pct: entry.allowedMarginManualPct,
+      reason: entry.reason,
+      owner_name: entry.owner,
+      due_date: entry.dueDate || null,
+      needs_task: entry.needsTask,
+      escalation: entry.escalation,
+      comment: entry.comment,
+      updated_by: entry.updatedBy,
+      updated_at: entry.updatedAt,
+      created_at: entry.createdAt,
+    }));
+    const response = await state.team.client.from(ENTRIES_TABLE).upsert(payload, { onConflict: "id" });
+    if (response.error) throw response.error;
+  }
+
+  async function insertRemoteHistory(rows) {
+    if (!state.team.client || !rows.length) return;
+    const payload = rows.map((item) => ({
+      id: item.id,
+      brand: currentBrand(),
+      marketplace: item.marketplace,
+      article_key: item.articleKey,
+      event_type: item.eventType,
+      old_target_fill_price: item.oldTargetFillPrice,
+      new_target_fill_price: item.newTargetFillPrice,
+      old_target_client_price: item.oldTargetClientPrice,
+      new_target_client_price: item.newTargetClientPrice,
+      old_allowed_margin_pct: item.oldAllowedMarginPct,
+      new_allowed_margin_pct: item.newAllowedMarginPct,
+      old_decision_status: item.oldDecisionStatus,
+      new_decision_status: item.newDecisionStatus,
+      reason: item.reason,
+      comment: item.comment,
+      changed_by: item.changedBy,
+      changed_at: item.changedAt,
+    }));
+    const response = await state.team.client.from(HISTORY_TABLE).insert(payload);
+    if (response.error) throw response.error;
+  }
+
+  function ensureSeedLoaded() {
+    if (state.priceWorkbench.seed || state.priceWorkbench.loading) return Promise.resolve(state.priceWorkbench.seed);
+    state.priceWorkbench.loading = true;
+    const snapshotLoader = typeof window.__alteaLoadPortalSnapshot === "function"
+      ? window.__alteaLoadPortalSnapshot("data/smart_price_workbench.json").catch((error) => {
+        console.warn("[price-workbench] snapshot fallback failed", error);
+        return null;
+      })
+      : Promise.resolve(null);
+    return snapshotLoader
+      .then((snapshotPayload) => {
+        if (snapshotPayload?.platforms) {
+          state.priceWorkbench.seed = snapshotPayload;
+          state.priceWorkbench.seedSource = "snapshot";
+          state.priceWorkbench.issue = "";
+          ensureDateRange();
+          return snapshotPayload;
+        }
+        return loadJson("data/smart_price_workbench.json").then((payload) => {
+          state.priceWorkbench.seed = payload;
+          state.priceWorkbench.seedSource = "local";
+          state.priceWorkbench.issue = "

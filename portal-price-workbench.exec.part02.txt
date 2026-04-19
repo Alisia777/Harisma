@@ -1,0 +1,110 @@
+   #view-prices .price-sku-title { font-weight:700; margin-bottom:4px; }
+      #view-prices .price-sku-note { color:rgba(255,244,222,.62); font-size:12px; line-height:1.35; max-width:480px; }
+      #view-prices .price-note { padding:14px 16px; border-radius:16px; border:1px solid rgba(212,164,74,.16); background:rgba(17,13,10,.84); color:rgba(255,244,222,.72); font-size:13px; }
+      #view-prices .price-empty { padding:36px 20px; text-align:center; color:rgba(255,244,222,.7); }
+      .price-modal-card { display:grid; gap:16px; width:min(1280px, 94vw); max-height:88vh; overflow:auto; padding:22px; border-radius:24px; background:linear-gradient(180deg, rgba(28,22,16,.98), rgba(14,10,8,.98)); color:#fff1d4; box-shadow:0 24px 64px rgba(0,0,0,.38); }
+      .price-modal-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+      .price-modal-title h2 { margin:0 0 8px; }
+      .price-modal-title p { margin:0; color:rgba(255,244,222,.7); max-width:840px; }
+      .price-modal-badges { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+      .price-modal-grid, .price-modal-projections { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); }
+      .price-modal-kpi { padding:16px; border:1px solid rgba(212,164,74,.16); border-radius:18px; background:rgba(16,13,10,.82); }
+      .price-modal-kpi .label { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:rgba(212,164,74,.82); margin-bottom:7px; }
+      .price-modal-kpi strong { display:block; font-size:26px; color:#fff6de; line-height:1.05; margin-bottom:6px; }
+      .price-modal-kpi small { color:rgba(255,244,222,.64); }
+      .price-modal-form { display:grid; gap:14px; }
+      .price-modal-form-grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); }
+      .price-modal-form-grid .wide { grid-column:1 / -1; }
+      .price-modal-actions { display:flex; flex-wrap:wrap; gap:10px; }
+      .price-modal-section { display:grid; gap:10px; padding:18px; border:1px solid rgba(212,164,74,.14); border-radius:20px; background:rgba(16,13,10,.76); }
+      .price-section-title { margin:0; font-size:16px; color:#fff3d6; }
+      .price-section-subtitle { color:rgba(255,244,222,.66); font-size:12px; line-height:1.45; }
+      .price-history-wrap { overflow:auto; border-radius:16px; border:1px solid rgba(212,164,74,.12); }
+      .price-history-table { width:100%; min-width:880px; border-collapse:collapse; }
+      .price-history-table th, .price-history-table td { padding:11px 12px; text-align:left; border-top:1px solid rgba(255,255,255,.05); }
+      .price-history-table thead th { background:rgba(21,16,12,.96); color:rgba(212,164,74,.82); font-size:11px; text-transform:uppercase; letter-spacing:.08em; border-top:none; }
+      .price-task-list { display:grid; gap:10px; }
+      .price-task-item { padding:14px 16px; border-radius:16px; border:1px solid rgba(212,164,74,.14); background:rgba(12,10,8,.78); }
+      .price-inline-meta { color:rgba(255,244,222,.62); font-size:12px; }
+      .price-danger-text { color:#ff8f8f; }
+      @media (max-width: 980px) {
+        #view-prices .price-range-row, #view-prices .price-filters-grid { grid-template-columns:1fr; }
+        .price-modal-card { width:min(96vw, 96vw); padding:16px; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function ensureBranding() {
+    try {
+      document.title = "Дом бренда Алтея · v8.7.1 Imperial";
+      const h1 = document.querySelector(".topbar h1");
+      if (h1) h1.textContent = "Дом бренда Алтея";
+      const brandTitle = document.querySelector(".brand-title");
+      if (brandTitle) brandTitle.textContent = "Дом бренда Алтея";
+      const brandSub = document.querySelector(".brand-sub");
+      if (brandSub) brandSub.textContent = "Рабочий контур бренда и решений.";
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function parseNum(value) {
+    if (value === null || value === undefined || value === "") return null;
+    const parsed = Number(String(value).replace(",", ".").replace("%", ""));
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+
+  function moneyShort(value) {
+    if (value === null || value === undefined || value === "" || Number.isNaN(Number(value))) return "—";
+    return `${fmt.num(Number(value), 0)} ₽`;
+  }
+
+  function pctShort(value) {
+    if (value === null || value === undefined || value === "" || Number.isNaN(Number(value))) return "—";
+    return `${(Number(value) * 100).toFixed(1)}%`;
+  }
+
+  function isoDate(value) {
+    if (!value) return "";
+    try {
+      return String(value).slice(0, 10);
+    } catch {
+      return "";
+    }
+  }
+
+  function marketLabel(key) {
+    return ({ wb: "WB", ozon: "OZ", ym: "ЯМ" })[key] || key.toUpperCase();
+  }
+
+  function workbenchKey(marketplace, articleKey) {
+    return `${marketplace}|${articleKey}`;
+  }
+
+  function plusDaysLocal(days) {
+    const base = new Date();
+    base.setHours(12, 0, 0, 0);
+    base.setDate(base.getDate() + days);
+    return base.toISOString().slice(0, 10);
+  }
+
+  function meanOrNull(values) {
+    const cleaned = values.filter((value) => value != null && !Number.isNaN(Number(value))).map(Number);
+    if (!cleaned.length) return null;
+    return cleaned.reduce((sum, value) => sum + value, 0) / cleaned.length;
+  }
+
+  function defaultAllowedMargin(row) {
+    const raw = parseNum(row.allowedMarginPct);
+    return raw == null ? 0.15 : raw;
+  }
+
+  function normalizeEntry(item = {}) {
+    const marketplace = ["wb", "ozon", "ym"].includes(String(item.marketplace || item.marketplace_key || "").toLowerCase())
+      ? String(item.marketplace || item.marketplace_key || "").toLowerCase()
+      : "wb";
+    const articleKey = String(item.articleKey || item.article_key || "").trim();
+    const sku = articleKey ? getSku(articleKey) : null;
+    const decisionStatus = DECISION_STATUS_META[item.decisionStatus || item.decision_status]
+      ? (item.decisionStatus || item.decision_s

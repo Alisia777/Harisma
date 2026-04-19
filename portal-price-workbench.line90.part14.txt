@@ -1,0 +1,6 @@
+  };
+
+  loadLocalState();
+  ensureStyles();
+  ensureBranding();
+})();

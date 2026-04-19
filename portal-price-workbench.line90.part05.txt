@@ -1,0 +1,90 @@
+          ensureDateRange();
+          return payload;
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        state.priceWorkbench.issue = error.message;
+        return null;
+      })
+      .finally(() => {
+        state.priceWorkbench.loading = false;
+        if (typeof rerenderCurrentView === "function") rerenderCurrentView();
+      });
+  }
+
+  function ensureRemoteLoaded() {
+    if (state.priceWorkbench.remoteReady || state.priceWorkbench.remoteLoading || state.priceWorkbench.remoteDisabled || !hasRemoteStore() || !state.team.client) {
+      return Promise.resolve();
+    }
+    state.priceWorkbench.remoteLoading = true;
+    return Promise.all([queryRemoteEntries(), queryRemoteHistory()])
+      .then(([entries, history]) => {
+        state.priceWorkbench.remoteEntries = entries.map(normalizeEntry);
+        state.priceWorkbench.remoteHistory = history.map(normalizeHistory);
+        state.priceWorkbench.remoteReady = true;
+      })
+      .catch((error) => {
+        console.error(error);
+        state.priceWorkbench.remoteDisabled = true;
+      })
+      .finally(() => {
+        state.priceWorkbench.remoteLoading = false;
+        if (typeof rerenderCurrentView === "function") rerenderCurrentView();
+      });
+  }
+
+  function baseRowsForMarket(market) {
+    const seed = state.priceWorkbench.seed;
+    if (!seed) return [];
+    return (((seed.platforms || {})[market] || {}).rows || []).map((row) => ({ ...row }));
+  }
+
+  function allDatesForMarket(market) {
+    const seen = new Set();
+    const dates = [];
+    baseRowsForMarket(market).forEach((row) => {
+      (row.monthly || []).forEach((item) => {
+        const value = isoDate(item.date);
+        if (value && !seen.has(value)) {
+          seen.add(value);
+          dates.push(value);
+        }
+      });
+    });
+    dates.sort();
+    return dates;
+  }
+
+  function presetRange(preset, market) {
+    const dates = allDatesForMarket(market);
+    if (!dates.length) return { dateFrom: "", dateTo: "" };
+    const min = dates[0];
+    const max = dates[dates.length - 1];
+    if (preset === "all") return { dateFrom: min, dateTo: max };
+    const maxDate = new Date(max);
+    if (preset === "prev_month") {
+      const start = new Date(Date.UTC(maxDate.getUTCFullYear(), maxDate.getUTCMonth() - 1, 1));
+      const end = new Date(Date.UTC(maxDate.getUTCFullYear(), maxDate.getUTCMonth(), 0));
+      return { dateFrom: start.toISOString().slice(0, 10), dateTo: end.toISOString().slice(0, 10) };
+    }
+    if (preset === "month") {
+      const start = new Date(Date.UTC(maxDate.getUTCFullYear(), maxDate.getUTCMonth(), 1));
+      return { dateFrom: start.toISOString().slice(0, 10), dateTo: max };
+    }
+    const days = PRESETS[preset]?.days || 30;
+    const start = new Date(maxDate);
+    start.setUTCDate(start.getUTCDate() - (days - 1));
+    const startIso = start.toISOString().slice(0, 10);
+    return { dateFrom: startIso < min ? min : startIso, dateTo: max };
+  }
+
+  function ensureDateRange() {
+    if (state.priceWorkbench.filters.dateFrom && state.priceWorkbench.filters.dateTo) return;
+    const range = presetRange(state.priceWorkbench.filters.preset || "month", state.priceWorkbench.filters.market || "wb");
+    state.priceWorkbench.filters.dateFrom = range.dateFrom;
+    state.priceWorkbench.filters.dateTo = range.dateTo;
+  }
+
+  function applyPreset(preset) {
+    state.priceWorkbench.filters.preset = preset;

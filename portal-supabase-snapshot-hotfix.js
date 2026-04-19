@@ -1,14 +1,17 @@
 (function () {
-  if (window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260417H__) return;
-  window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260417H__ = true;
+  if (window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260419J__) return;
+  window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260419J__ = true;
 
   const SNAPSHOT_TABLE = 'portal_data_snapshots';
-  const SNAPSHOT_KEYS = ['dashboard', 'skus', 'platform_trends', 'logistics'];
+  const SNAPSHOT_KEYS = ['dashboard', 'skus', 'platform_trends', 'logistics', 'ads_summary', 'platform_plan', 'prices'];
   const SNAPSHOT_TO_STATE = {
     dashboard: 'dashboard',
     skus: 'skus',
     platform_trends: 'platformTrends',
-    logistics: 'logistics'
+    logistics: 'logistics',
+    ads_summary: 'adsSummary',
+    platform_plan: 'platformPlan',
+    prices: 'prices'
   };
   const FALLBACK_CONFIG = {
     brand: 'Алтея',
@@ -49,7 +52,18 @@
         || Array.isArray(payload.ozonClusters) && payload.ozonClusters.length > 0
         || Array.isArray(payload.wbWarehouses) && payload.wbWarehouses.length > 0;
     }
-    return false;
+    if (snapshotKey === 'ads_summary') {
+      return Array.isArray(payload.platforms) && payload.platforms.length > 0;
+    }
+    if (snapshotKey === 'platform_plan') {
+      return typeof payload?.months === 'object' && payload.months !== null && Object.keys(payload.months).length > 0;
+    }
+    if (snapshotKey === 'prices') {
+      return Array.isArray(payload?.dates) && payload.dates.length > 0
+        && typeof payload?.platforms === 'object' && payload.platforms !== null
+        && Object.keys(payload.platforms).length > 0;
+    }
+    return typeof payload === 'object' && payload !== null && Object.keys(payload).length > 0;
   }
 
   function normalizeBadge(noteText) {

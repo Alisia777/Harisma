@@ -1,0 +1,89 @@
+      .reduce((sum, value) => sum + value, 0);
+    const badges = [
+      badge(marketLabel(row.marketplace), "info"),
+      decisionBadge(row),
+      row.escalation !== "none" ? badge((ESCALATION_META[row.escalation] || ESCALATION_META.none).label, (ESCALATION_META[row.escalation] || ESCALATION_META.none).kind) : "",
+      ...signalsForRow(row).map((item) => badge(item.label, item.kind)),
+    ].filter(Boolean).join("");
+    body.innerHTML = `
+      <div class="price-modal-card">
+        <div class="price-modal-head">
+          <div class="price-modal-title">
+            <div class="price-inline-meta">${escapeHtml(row.segment || "—")} · ${escapeHtml(row.abc || "—")} · ${escapeHtml(row.owner || "Без owner")}</div>
+            <h2>${escapeHtml(row.articleKey)}</h2>
+            <p>${escapeHtml(row.name || "")}</p>
+            <div class="price-modal-badges">${badges}</div>
+          </div>
+          <button class="btn ghost" data-close-modal>Закрыть</button>
+        </div>
+        <div class="price-modal-grid">
+          <div class="price-modal-kpi"><span class="label">Цена MP сейчас</span><strong>${moneyShort(row.currentFillPriceDisplay)}</strong><small>Под выбранный диапазон и площадку.</small></div>
+          <div class="price-modal-kpi"><span class="label">Цена клиента</span><strong>${moneyShort(row.currentClientPriceDisplay)}</strong><small>Отдельно, чтобы не путать MP и клиентскую цену.</small></div>
+          <div class="price-modal-kpi"><span class="label">СПП сейчас</span><strong>${pctShort(row.currentSppDisplay)}</strong><small>${row.marketplace === "wb" ? "Проверьте, не пришла ли цена клиента уже со СПП из файла WB." : "Отдельно показываем скидку клиента, чтобы не путать с MP."}</small></div>
+          <div class="price-modal-kpi"><span class="label">Целевая цена Smart</span><strong>${moneyShort(row.targetFillPrice)}</strong><small>Целевая цена из рабочих файлов и решения.</small></div>
+          <div class="price-modal-kpi"><span class="label">Допустимая маржа 3м</span><strong>${pctShort(row.effectiveAllowedMarginPct)}</strong><small>Средняя допустимая маржа за последние 3 месяца.</small></div>
+          <div class="price-modal-kpi"><span class="label">Текущая маржа</span><strong>${pctShort(row.marginTotalPct)}</strong><small>Текущий операционный уровень по площадке.</small></div>
+          <div class="price-modal-kpi"><span class="label">Оборачиваемость</span><strong>${row.turnoverDisplay == null ? "—" : `${fmt.num(row.turnoverDisplay, 1)} дн.`}</strong><small>Под выбранный период.</small></div>
+          <div class="price-modal-kpi"><span class="label">Факт за период</span><strong>${row.actualUnitsSelected == null ? "—" : `${fmt.int(row.actualUnitsSelected)} шт.`}</strong><small>${row.actualUnitsSelected == null ? "По части SKU daily-факт не приехал." : `План на диапазон ${fmt.int(row.planUnitsSelected)} шт.`}</small></div>
+          <div class="price-modal-kpi"><span class="label">Выручка за период</span><strong>${periodRevenue > 0 ? moneyShort(periodRevenue) : "—"}</strong><small>Сумма выручки из дневной истории по выбранному диапазону.</small></div>
+          <div class="price-modal-kpi"><span class="label">% выполнения плана</span><strong>${row.completionPctSelected == null ? "—" : pctShort(row.completionPctSelected)}</strong><small>${row.actualUnitsSelected == null ? "Факт по дням в текущем пакете данных не пришёл." : `Факт ${fmt.int(row.actualUnitsSelected)} шт. против плана ${fmt.int(row.planUnitsSelected)} шт.`}</small></div>
+          <div class="price-modal-kpi"><span class="label">Остаток</span><strong>${row.stock == null ? "—" : fmt.int(row.stock)}</strong><small>${escapeHtml(row.historyNote || "Смотри историю и задачи ниже.")}</small></div>
+        </div>
+        <div class="price-modal-projections">
+          <div class="price-modal-kpi"><span class="label">Из файла Smart</span><strong>${moneyShort(row.seedTargetFillPrice)}</strong><small>${escapeHtml(row.seedReason || "Целевая цена из рабочего пакета данных.")}</small></div>
+          <div class="price-modal-kpi"><span class="label">Жёсткий минимум</span><strong>${moneyShort(row.hardMinPrice || row.minPrice)}</strong><small>Ниже этой цены опускаться нельзя.</small></div>
+          <div class="price-modal-kpi"><span class="label">Рабочая зона</span><strong>${row.workingZoneFrom == null && row.workingZoneTo == null ? "—" : `${moneyShort(row.workingZoneFrom)} – ${moneyShort(row.workingZoneTo)}`}</strong><small>Коридор, в котором товар можно держать безопасно.</small></div>
+          <div class="price-modal-kpi"><span class="label">Нужно для рентаб.</span><strong>${moneyShort(row.requiredPriceForProfitability)}</strong><small>Минимум для безубыточности.</small></div>
+          <div class="price-modal-kpi"><span class="label">Нужно для маржи</span><strong>${moneyShort(row.requiredPriceForMargin)}</strong><small>Цена для выхода на допустимую маржу.</small></div>
+          <div class="price-modal-kpi"><span class="label">План месяца</span><strong>${row.planMonthUnits == null ? "—" : `${fmt.int(row.planMonthUnits)} шт.`}</strong><small>${row.planMonthRevenue == null ? "—" : `Выручка ${moneyShort(row.planMonthRevenue)} · чек ${moneyShort(row.planMonthCheck)}`}</small></div>
+          <div class="price-modal-kpi"><span class="label">Запасы в контуре</span><strong>${totalSupply > 0 ? fmt.int(totalSupply) : "—"}</strong><small>${escapeHtml([
+            row.stock != null ? `на остатке ${fmt.int(row.stock)}` : "",
+            row.stockRepricer != null ? `repricer ${fmt.int(row.stockRepricer)}` : "",
+            row.stockInSupplyRequest != null ? `в заявке ${fmt.int(row.stockInSupplyRequest)}` : "",
+            row.stockInTransit != null ? `в пути ${fmt.int(row.stockInTransit)}` : ""
+          ].filter(Boolean).join(" · ") || "Разбивки по запасам в файле нет.")}</small></div>
+        </div>
+        <div class="price-modal-section">
+          <div class="price-inline-meta">Из этой карточки можно сохранить решение по цене, задать owner, срок и сразу поставить задачу.</div>
+          <form class="price-modal-form" data-price-form="${escapeHtml(workbenchKey(row.marketplace, row.articleKey))}">
+            <div class="price-modal-form-grid">
+              <label><span>Статус</span><select name="decisionStatus">${Object.entries(DECISION_STATUS_META).map(([key, meta]) => `<option value="${key}" ${row.decisionStatus === key ? "selected" : ""}>${escapeHtml(meta.label)}</option>`).join("")}</select></label>
+              <label><span>Owner</span><input name="owner" value="${escapeHtml(row.owner || "")}" list="priceWorkbenchOwners"></label>
+              <label><span>Срок</span><input type="date" name="dueDate" value="${escapeHtml(row.dueDate || "")}"></label>
+              <label><span>Эскалация</span><select name="escalation">${Object.entries(ESCALATION_META).map(([key, meta]) => `<option value="${key}" ${row.escalation === key ? "selected" : ""}>${escapeHtml(meta.label)}</option>`).join("")}</select></label>
+              <label><span>Новая цена MP</span><input type="number" step="0.01" name="targetFillPrice" value="${row.targetFillPrice ?? ""}"></label>
+              <label><span>Новая цена клиента</span><input type="number" step="0.01" name="targetClientPrice" value="${row.targetClientPrice ?? ""}"></label>
+              <label><span>Допустимая маржа, %</span><input type="number" step="0.1" name="allowedMarginManualPct" value="${row.allowedMarginManualPct != null ? (row.allowedMarginManualPct * 100).toFixed(1) : ""}" placeholder="Например 18.0"></label>
+              <label class="price-toggle" style="align-self:end;"><input type="checkbox" name="needsTask" ${row.needsTask ? "checked" : ""}> Нужна задача</label>
+              <label class="wide"><span>Логика решения</span><textarea name="reason" rows="3">${escapeHtml(row.reason || "")}</textarea></label>
+              <label class="wide"><span>Комментарий</span><textarea name="comment" rows="3">${escapeHtml(row.comment || "")}</textarea></label>
+            </div>
+            <div class="price-modal-actions">
+              <button type="submit" class="btn">Сохранить решение</button>
+              <button type="button" class="btn ghost" data-price-task="${escapeHtml(workbenchKey(row.marketplace, row.articleKey))}">Создать / обновить задачу</button>
+            </div>
+          </form>
+          <datalist id="priceWorkbenchOwners">${ownerOptions().map((name) => `<option value="${escapeHtml(name)}"></option>`).join("")}</datalist>
+        </div>
+        <div class="price-modal-section">
+          <h3 class="price-section-title">История периода</h3>
+          <div class="price-section-subtitle">Цена MP, цена клиента, СПП, оборачиваемость и дневной % к плану по выбранному диапазону.</div>
+          ${renderPeriodHistory(row)}
+        </div>
+        <div class="price-modal-section">
+          <h3 class="price-section-title">История решений и допустимой маржи</h3>
+          <div class="price-section-subtitle">Кто и когда менял допустимую маржу, целевую цену и статус решения по артикулу.</div>
+          ${renderDecisionHistory(row)}
+        </div>
+        <div class="price-modal-section">
+          <h3 class="price-section-title">Задачи по артикулу</h3>
+          <div class="price-section-subtitle">Ниже видны текущие задачи по цене, owner, срок и следующий шаг по выбранной позиции.</div>
+          ${renderTaskList(tasks)}
+        </div>
+      </div>
+    `;
+    modal.classList.add("open");
+    const form = body.querySelector("[data-price-form]");
+    if (form) form.addEventListener("submit", handleSubmit);
+    body.querySelectorAll("[data-price-task]").forEach((button) => button.addEventListener("click", handleCreateTask));
+  }

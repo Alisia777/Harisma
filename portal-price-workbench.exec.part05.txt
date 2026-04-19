@@ -1,0 +1,97 @@
+anMonthKey || "");
+    const planMonthStart = planMonthKey ? `${planMonthKey}-01` : "";
+    const planMonthEnd = planMonthKey ? `${planMonthKey}-${String(planDays).padStart(2, "0")}` : "";
+    const rangeFrom = state.priceWorkbench.filters.dateFrom || planMonthStart;
+    const dataFreshTo = row.historyFreshnessDate ? [state.priceWorkbench.filters.dateTo || row.historyFreshnessDate, row.historyFreshnessDate].sort()[0] : (state.priceWorkbench.filters.dateTo || "");
+    const effectiveFrom = [rangeFrom, planMonthStart].filter(Boolean).sort().slice(-1)[0] || "";
+    const effectiveTo = [dataFreshTo || planMonthEnd, planMonthEnd].filter(Boolean).sort()[0] || "";
+    if (!effectiveFrom || !effectiveTo || effectiveFrom > effectiveTo) {
+      return { planUnitsSelected: null, actualUnitsSelected: null, completionPct: null, selectedDays: 0 };
+    }
+    const selectedDays = Math.floor((new Date(effectiveTo) - new Date(effectiveFrom)) / 86400000) + 1;
+    const actualPool = series.filter((item) => {
+      const itemDate = isoDate(item.date);
+      return itemDate && itemDate >= effectiveFrom && itemDate <= effectiveTo;
+    });
+    const actualValues = actualPool
+      .map((item) => parseNum(item.deliveredUnits) ?? parseNum(item.ordersUnits))
+      .filter((value) => value != null);
+    const actualUnitsSelected = actualValues.length ? actualValues.reduce((sum, value) => sum + value, 0) : null;
+    const planUnitsSelected = (planUnits / planDays) * selectedDays;
+    const completionPct = actualUnitsSelected != null && planUnitsSelected > 0 ? actualUnitsSelected / planUnitsSelected : null;
+    return { planUnitsSelected, actualUnitsSelected, completionPct, selectedDays };
+  }
+
+  function sourceLabel(row) {
+    if (row.allowedMarginManualPct != null) return "manual";
+    if (row.allowedMarginPct != null) return "source";
+    return "default";
+  }
+
+  function applyEntry(row, entry) {
+    const merged = entry ? normalizeEntry(entry) : normalizeEntry({ marketplace: row.marketplace, articleKey: row.articleKey, owner: row.owner });
+    const effectiveAllowed = merged.allowedMarginManualPct != null ? merged.allowedMarginManualPct : defaultAllowedMargin(row);
+    const series = (Array.isArray(row.monthly) ? row.monthly : []).filter((item) => withinRange(item.date));
+    const latest = series.length ? series[series.length - 1] : null;
+    const avgTurnover = series.length ? meanOrNull(series.map((item) => parseNum(item.turnoverDays))) : parseNum(row.turnoverCurrentDays);
+    const latestPrice = latest ? parseNum(latest.price) : parseNum(row.currentFillPrice);
+    const latestClient = latest ? (parseNum(latest.clientPrice) ?? (latestPrice != null && parseNum(latest.sppPct) != null ? latestPrice * (1 - parseNum(latest.sppPct)) : null)) : parseNum(row.currentClientPrice);
+    const latestSpp = latest ? parseNum(latest.sppPct) : parseNum(row.currentSppPct);
+    const plan = computePlanMetrics(row, series);
+    return {
+      ...row,
+      decisionId: merged.id,
+      decisionStatus: merged.decisionStatus,
+      targetFillPrice: merged.targetFillPrice ?? row.seedTargetFillPrice ?? latestPrice,
+      targetClientPrice: merged.targetClientPrice ?? row.seedTargetClientPrice ?? latestClient,
+      allowedMarginManualPct: merged.allowedMarginManualPct,
+      effectiveAllowedMarginPct: effectiveAllowed,
+      allowedMarginSource: sourceLabel({ ...row, allowedMarginManualPct: merged.allowedMarginManualPct }),
+      currentFillPriceDisplay: latestPrice,
+      currentClientPriceDisplay: latestClient,
+      currentSppDisplay: latestSpp,
+      turnoverDisplay: avgTurnover,
+      monthlyFiltered: series,
+      owner: merged.owner || row.owner || "",
+      dueDate: merged.dueDate || "",
+      needsTask: merged.needsTask,
+      escalation: merged.escalation,
+      reason: merged.reason || row.seedReason || "",
+      comment: merged.comment || "",
+      updatedBy: merged.updatedBy,
+      updatedAt: merged.updatedAt,
+      createdAt: merged.createdAt,
+      planUnitsSelected: plan.planUnitsSelected,
+      actualUnitsSelected: plan.actualUnitsSelected,
+      completionPctSelected: plan.completionPct,
+      selectedDays: plan.selectedDays,
+    };
+  }
+
+  function signalsForRow(row) {
+    const items = [];
+    if (row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && Number(row.marginTotalPct) < Number(row.effectiveAllowedMarginPct)) items.push({ label: "Маржа ниже допустимой", kind: "danger" });
+    if (row.turnoverDisplay != null && Number(row.turnoverDisplay) >= 60) items.push({ label: "Высокая оборачиваемость", kind: "danger" });
+    else if (row.turnoverDisplay != null && Number(row.turnoverDisplay) >= 40) items.push({ label: "Оборачиваемость требует внимания", kind: "warn" });
+    if (row.completionPctSelected != null && Number(row.completionPctSelected) < 0.8) items.push({ label: "Отстаёт от плана", kind: "warn" });
+    if (row.targetFillPrice != null && row.hardMinPrice != null && Number(row.targetFillPrice) < Number(row.hardMinPrice)) items.push({ label: "Новая цена ниже жёсткого минимума", kind: "danger" });
+    if (row.needsTask) items.push({ label: "Есть задача", kind: "info" });
+    if (row.historyNote) items.push({ label: "Проверь свежесть факта", kind: "info" });
+    return items;
+  }
+
+  function riskScore(row) {
+    return signalsForRow(row).reduce((sum, item) => sum + (item.kind === "danger" ? 3 : item.kind === "warn" ? 2 : 1), 0);
+  }
+
+  function effectiveRows() {
+    const market = state.priceWorkbench.filters.market || "wb";
+    const decisions = mergeEntryLayers();
+    return baseRowsForMarket(market).map((row) => applyEntry(row, decisions.get(workbenchKey(market, row.articleKey))));
+  }
+
+  function filteredRows() {
+    const search = String(state.priceWorkbench.filters.search || "").trim().toLowerCase();
+    const ownerFilter = state.priceWorkbench.filters.owner || "all";
+    const statusFilter = state.priceWorkbench.filters.status || "all";
+    const sortMode = state.priceWorkbench.filters.sor

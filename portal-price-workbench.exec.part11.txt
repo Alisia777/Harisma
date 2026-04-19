@@ -1,0 +1,122 @@
+ id: row.decisionId,
+      marketplace: row.marketplace,
+      articleKey: row.articleKey,
+      decisionStatus: form.elements.decisionStatus.value,
+      targetFillPrice: form.elements.targetFillPrice.value,
+      targetClientPrice: form.elements.targetClientPrice.value,
+      allowedMarginManualPct: parseNum(form.elements.allowedMarginManualPct.value) == null ? null : parseNum(form.elements.allowedMarginManualPct.value) / 100,
+      reason: form.elements.reason.value,
+      owner: form.elements.owner.value,
+      dueDate: form.elements.dueDate.value,
+      needsTask: form.elements.needsTask.checked,
+      escalation: form.elements.escalation.value,
+      comment: form.elements.comment.value,
+      updatedBy: state.team.member?.name || "Команда",
+      updatedAt: new Date().toISOString(),
+      createdAt: previous?.createdAt || row.createdAt || new Date().toISOString(),
+    });
+    const history = addHistoryRow(entry, previous);
+    if (entry.needsTask || entry.decisionStatus === "review" || entry.escalation !== "none") ensurePriceTask(row, entry);
+    if (state.team.client && !state.priceWorkbench.remoteDisabled) {
+      try {
+        await upsertRemoteEntries([entry]);
+        try {
+          await insertRemoteHistory([history]);
+          history.synced = true;
+          saveLocalState();
+        } catch (historyError) {
+          console.error(historyError);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    state.team.note = "Решение по цене сохранено";
+    updateSyncBadge();
+    renderPriceWorkbench();
+    const fresh = getCurrentRowByKey(key);
+    if (fresh) renderPriceModal(fresh);
+  }
+
+  function handleCreateTask(event) {
+    const key = event.currentTarget.dataset.priceTask;
+    const row = getCurrentRowByKey(key);
+    if (!row) return;
+    const entry = normalizeEntry({
+      id: row.decisionId,
+      marketplace: row.marketplace,
+      articleKey: row.articleKey,
+      decisionStatus: row.decisionStatus,
+      targetFillPrice: row.targetFillPrice,
+      targetClientPrice: row.targetClientPrice,
+      allowedMarginManualPct: row.allowedMarginManualPct,
+      reason: row.reason,
+      owner: row.owner,
+      dueDate: row.dueDate,
+      needsTask: true,
+      escalation: row.escalation,
+      comment: row.comment,
+      createdAt: row.createdAt,
+      updatedAt: new Date().toISOString(),
+    });
+    upsertLocalEntry(entry);
+    ensurePriceTask(row, entry);
+    state.team.note = "Задача по цене создана / обновлена";
+    saveLocalState();
+    saveLocalStorage();
+    updateSyncBadge();
+    renderPriceWorkbench();
+    const fresh = getCurrentRowByKey(key);
+    if (fresh) renderPriceModal(fresh);
+  }
+
+  function renderPriceWorkbench() {
+    const root = document.getElementById("view-prices");
+    if (!root) return;
+    ensureStyles();
+    ensureBranding();
+    if (state.priceWorkbench.loading && !state.priceWorkbench.seed) {
+      root.innerHTML = `<div class="card"><div class="price-empty">Загружаю контур цен…</div></div>`;
+      return;
+    }
+    if (state.priceWorkbench.issue && !state.priceWorkbench.seed) {
+      root.innerHTML = `<div class="card"><div class="price-empty">Не удалось загрузить блок цен: ${escapeHtml(state.priceWorkbench.issue)}</div></div>`;
+      return;
+    }
+    if (!state.priceWorkbench.seed) {
+      root.innerHTML = `<div class="card"><div class="price-empty">Ценовой контур ещё не загружен.</div></div>`;
+      return;
+    }
+    ensureDateRange();
+    const rows = filteredRows();
+    selectedRow(rows);
+    root.innerHTML = `
+      <div class="price-workbench-shell">
+        ${renderToolbar()}
+        ${renderSummary(rows)}
+        <div class="price-note">Календарь, площадка и период влияют на таблицу, план-факт, историю по дням и карточку артикула. Для Ozon факт по дням есть до 16 апреля 2026, по WB после 31 марта 2026 сейчас используется текущий срез без daily-продаж.</div>
+        ${renderTable(rows)}
+      </div>
+    `;
+    const bind = (selector, eventName, handler) => {
+      const node = root.querySelector(selector);
+      if (node) node.addEventListener(eventName, handler);
+    };
+    bind("#priceSearch", "input", (event) => { state.priceWorkbench.filters.search = event.target.value; renderPriceWorkbench(); });
+    bind("#priceOwnerFilter", "change", (event) => { state.priceWorkbench.filters.owner = event.target.value; renderPriceWorkbench(); });
+    bind("#priceStatusFilter", "change", (event) => { state.priceWorkbench.filters.status = event.target.value; renderPriceWorkbench(); });
+    bind("#priceSortMode", "change", (event) => { state.priceWorkbench.filters.sort = event.target.value; renderPriceWorkbench(); });
+    bind("#priceRiskOnly", "change", (event) => { state.priceWorkbench.filters.riskOnly = event.target.checked; renderPriceWorkbench(); });
+    bind("#priceDateFrom", "change", (event) => { state.priceWorkbench.filters.dateFrom = event.target.value; state.priceWorkbench.filters.preset = "custom"; renderPriceWorkbench(); });
+    bind("#priceDateTo", "change", (event) => { state.priceWorkbench.filters.dateTo = event.target.value; state.priceWorkbench.filters.preset = "custom"; renderPriceWorkbench(); });
+    root.querySelectorAll("[data-price-preset]").forEach((button) => button.addEventListener("click", () => applyPreset(button.dataset.pricePreset)));
+    root.querySelectorAll("[data-price-market]").forEach((button) => button.addEventListener("click", () => {
+      state.priceWorkbench.filters.market = button.dataset.priceMarket;
+      state.priceWorkbench.selectedKey = "";
+      const range = presetRange(state.priceWorkbench.filters.preset || "month", state.priceWorkbench.filters.market);
+      state.priceWorkbench.filters.dateFrom = range.dateFrom;
+      state.priceWorkbench.filters.dateTo = range.dateTo;
+      renderPriceWorkbench();
+    }));
+    root.querySelectorAll("[data-price-open]").forEach((rowNode) => rowNode.addEventListener("click", () => {
+      state.priceWorkbench.selectedKey = rowNode.dataset.p

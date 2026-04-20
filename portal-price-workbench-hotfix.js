@@ -1,14 +1,9 @@
 (function () {
-  if (window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420K__) return;
-  window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420K__ = true;
+  if (window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420M__) return;
+  window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420M__ = true;
 
   const SCRIPT_ID = "portalPriceWorkbenchHotfixRuntime";
-  const BUNDLE_PARTS = [
-    "portal-price-workbench.runtime.gz.part01.txt?v=20260420k",
-    "portal-price-workbench.runtime.gz.part02.txt?v=20260420k",
-    "portal-price-workbench.runtime.gz.part03.txt?v=20260420k",
-    "portal-price-workbench.runtime.gz.part04.txt?v=20260420k",
-  ];
+  const BUNDLE_URL = "portal-price-workbench-hotfix.js.gz.b64.txt?v=20260420m";
   let loadingPromise = null;
 
   function decodeBase64ToBytes(base64) {
@@ -37,7 +32,7 @@
       try {
         window.renderPriceWorkbench();
       } catch (error) {
-        console.warn("[portal-price-workbench-loader] render", error);
+        console.warn("[portal-price-workbench-loader]", error);
       }
     }
   }
@@ -51,14 +46,10 @@
       kick();
       return true;
     }
-    const base64Parts = await Promise.all(
-      BUNDLE_PARTS.map(async (src) => {
-        const response = await fetch(src, { cache: "no-store" });
-        if (!response.ok) throw new Error("Failed to load " + src);
-        return response.text();
-      })
-    );
-    const code = await inflateBase64Gzip(base64Parts.join(""));
+    const response = await fetch(BUNDLE_URL, { cache: "no-store" });
+    if (!response.ok) throw new Error("Failed to load " + BUNDLE_URL);
+    const base64 = await response.text();
+    const code = await inflateBase64Gzip(base64);
     const script = document.createElement("script");
     script.id = SCRIPT_ID;
     script.textContent = code + "\n";
@@ -90,11 +81,6 @@
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", start, { once: true });
-  } else {
-    start();
   }
-  window.addEventListener("load", start, { once: true });
-  window.setTimeout(start, 0);
-  window.setTimeout(start, 1200);
-  window.setTimeout(start, 4200);
+  start();
 })();

@@ -1,15 +1,15 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260420J__) return;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260420J__ = true;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260420K__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260420K__ = true;
 
-  const VERSION = '20260420j';
+  const VERSION = '20260420k';
   const PARTS = [
     'bundles/dashboard-runtime-20260420d.part01.txt',
     'bundles/dashboard-runtime-20260420d.part02.txt',
     'bundles/dashboard-runtime-20260420d.part03.txt'
   ];
-  const FIX_STYLE_ID = 'altea-dashboard-modal-layout-fix-20260420j';
-  const TASK_OBSERVER_KEY = '__ALTEA_DASHBOARD_TASK_OBSERVER_20260420J__';
+  const FIX_STYLE_ID = 'altea-dashboard-modal-layout-fix-20260420k';
+  const TASK_OBSERVER_KEY = '__ALTEA_DASHBOARD_TASK_OBSERVER_20260420K__';
 
   function stateRef() {
     return typeof window.state === 'object' && window.state ? window.state : null;
@@ -213,6 +213,7 @@
     const overdueCount = rows.filter(dashboardTaskIsOverdue).length;
     const ownerCount = new Set(rows.map(function (task) { return task.owner || 'Без owner'; })).size;
     const controlPlatformKey = dashboardControlPlatformKey(platformKey);
+    const selectedPlatformLabel = platformKey === 'all' ? 'Все площадки' : String(platformKey || '').toUpperCase();
     const cards = rows.map(function (task) {
       const sku = typeof window.getSku === 'function' ? window.getSku(task.articleKey) : null;
       const tone = dashboardTaskTone(task);
@@ -234,6 +235,27 @@
         + '  </div>'
         + '</article>';
     }).join('');
+    const emptyCards = ''
+      + '<article class="portal-exec-card portal-exec-focus-card is-ok is-clickable" data-portal-open-control="1" data-portal-control-platform="' + esc(controlPlatformKey) + '">'
+      + '  <div class="portal-exec-card-head">'
+      + '    <span class="portal-exec-card-label">Переход в задачник</span>'
+      +       chip('Сейчас пусто', 'ok')
+      + '  </div>'
+      + '  <strong>На выбранной площадке пока нет активных ручных задач РОПов.</strong>'
+      + '  <p>Блок не сломан: в текущем срезе в контуре просто нет опубликованных ручных задач. Откройте задачник, чтобы посмотреть весь реестр и историю статусов.</p>'
+      + '  <div class="portal-exec-chip-stack">'
+      + '    <button type="button" class="quick-chip" data-portal-open-control="1" data-portal-control-platform="' + esc(controlPlatformKey) + '">Открыть задачник</button>'
+      + '  </div>'
+      + '</article>'
+      + '<article class="portal-exec-card portal-exec-focus-card is-warn">'
+      + '  <div class="portal-exec-card-head">'
+      + '    <span class="portal-exec-card-label">Что сейчас видит блок</span>'
+      +       chip(selectedPlatformLabel, 'info')
+      + '  </div>'
+      + '  <strong>Фильтр по активной площадке и текущему периоду уже применён.</strong>'
+      + '  <p>После появления ручных задач они попадут сюда автоматически и будут открываться в задачник с теми же фильтрами.</p>'
+      + '  <div class="muted small" style="margin-top:8px">Источник: ручные задачи task-center</div>'
+      + '</article>';
 
     return ''
       + '<div class="portal-exec-head">'
@@ -248,7 +270,7 @@
       + '  </div>'
       + '</div>'
       + '<div class="portal-exec-focus-grid">'
-      +   (cards || '<div class="portal-exec-empty">По выбранной площадке сейчас нет ручных задач РОПов. Откройте задачник, чтобы посмотреть весь контур.</div>')
+      +   (cards || emptyCards)
       + '</div>';
   }
 
@@ -257,14 +279,22 @@
     const container = root && root.querySelector('[data-portal-dashboard-executive-root]');
     if (!container) return;
     const sections = Array.from(container.querySelectorAll('.portal-exec-section'));
-    const target = sections.find(function (section) {
+    let target = sections.find(function (section) {
       return section.dataset.portalRopTaskBlock === '1'
-        || /Что разобрать первым/i.test(section.querySelector('.portal-exec-copy h3')?.textContent || '');
-    }) || sections[3];
-    if (!target) return;
+        || /Что разобрать первым/i.test(section.querySelector('.portal-exec-copy h3')?.textContent || '')
+        || /Задачи РОПов/i.test(section.querySelector('.portal-exec-copy h3')?.textContent || '');
+    }) || null;
+    if (!target) {
+      target = document.createElement('section');
+      container.appendChild(target);
+    }
     target.dataset.portalRopTaskBlock = '1';
     target.className = 'portal-exec-section is-highlight';
     target.innerHTML = buildTaskSectionHtml(dashboardSelectedPlatform());
+    const metricSection = sections[0] || null;
+    if (metricSection && metricSection.nextElementSibling !== target) {
+      metricSection.insertAdjacentElement('afterend', target);
+    }
   }
 
   function bindTaskOpeners() {

@@ -10,6 +10,47 @@
   ];
   let reconnectInFlight = false;
 
+  function fallbackSetView(view) {
+    if (!view) return;
+    document.querySelectorAll('.nav-btn').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.view === view);
+    });
+    document.querySelectorAll('.view').forEach((section) => {
+      section.classList.toggle('active', section.id === `view-${view}`);
+    });
+    if (typeof rerenderCurrentView === 'function') {
+      try {
+        rerenderCurrentView();
+      } catch (error) {
+        console.warn('[portal-team-reconnect-hotfix] nav rerender', error);
+      }
+    }
+  }
+
+  function openViewFromSidebar(view) {
+    if (!view) return;
+    if (typeof setView === 'function') {
+      try {
+        setView(view);
+        return;
+      } catch (error) {
+        console.warn('[portal-team-reconnect-hotfix] setView', error);
+      }
+    }
+    fallbackSetView(view);
+  }
+
+  function bindSidebarNavRescue() {
+    if (document.body?.dataset.portalNavRescueBound === '1') return;
+    if (!document.querySelector('.nav-btn[data-view]')) return;
+    document.body.dataset.portalNavRescueBound = '1';
+    document.addEventListener('click', (event) => {
+      const button = event.target.closest('.nav-btn[data-view]');
+      if (!button) return;
+      openViewFromSidebar(button.dataset.view);
+    }, true);
+  }
+
   function appState() {
     return typeof state === 'object' && state ? state : null;
   }
@@ -56,8 +97,8 @@
     app.team.ready = false;
     app.team.error = '';
     app.team.note = payload.generatedAt
-      ? `\u041a\u043e\u043c\u0430\u043d\u0434\u043d\u0430\u044f \u0431\u0430\u0437\u0430 \u0447\u0435\u0440\u0435\u0437 \u043f\u043e\u0440\u0442\u0430\u043b \u00b7 ${fmtDate(payload.generatedAt)}`
-      : '\u041a\u043e\u043c\u0430\u043d\u0434\u043d\u0430\u044f \u0431\u0430\u0437\u0430 \u0447\u0435\u0440\u0435\u0437 \u043f\u043e\u0440\u0442\u0430\u043b';
+      ? `Командная база через портал · ${fmtDate(payload.generatedAt)}`
+      : 'Командная база через портал';
     window.__ALTEA_TEAM_JSON_BRIDGE_READY__ = true;
     return true;
   }
@@ -134,7 +175,7 @@
     try {
       app.team.error = '';
       app.team.mode = 'pending';
-      app.team.note = reason || '\u041f\u043e\u0432\u0442\u043e\u0440\u043d\u043e \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0430\u0435\u043c \u043a\u043e\u043c\u0430\u043d\u0434\u043d\u0443\u044e \u0431\u0430\u0437\u0443\u2026';
+      app.team.note = reason || 'Повторно подключаем командную базу…';
       if (typeof updateSyncBadge === 'function') updateSyncBadge();
 
       if (app.team.accessToken && typeof pullRemoteState === 'function') {
@@ -162,7 +203,7 @@
       const badge = document.getElementById('syncStatusBadge');
       if (!badge || !app?.teamBridge) return;
       badge.className = 'sync-status ready';
-      badge.textContent = app.team?.note || '\u041a\u043e\u043c\u0430\u043d\u0434\u043d\u0430\u044f \u0431\u0430\u0437\u0430 \u0447\u0435\u0440\u0435\u0437 \u043f\u043e\u0440\u0442\u0430\u043b';
+      badge.textContent = app.team?.note || 'Командная база через портал';
     };
   }
 
@@ -174,9 +215,14 @@
     }, delay);
   });
 
+  bindSidebarNavRescue();
+  [600, 2200, 6000].forEach((delay) => {
+    window.setTimeout(bindSidebarNavRescue, delay);
+  });
+
   [4000, 12000, 22000, 35000].forEach((delay, index) => {
     window.setTimeout(() => {
-      retryTeam(index === 0 ? '\u041f\u0435\u0440\u0435\u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0430\u0435\u043c \u043a\u043e\u043c\u0430\u043d\u0434\u043d\u0443\u044e \u0431\u0430\u0437\u0443\u2026' : '\u041f\u043e\u0432\u0442\u043e\u0440\u043d\u043e \u0437\u0430\u0433\u0440\u0443\u0436\u0430\u0435\u043c \u043a\u043e\u043c\u0430\u043d\u0434\u043d\u044b\u0435 \u0434\u0430\u043d\u043d\u044b\u0435\u2026');
+      retryTeam(index === 0 ? 'Переподключаем командную базу…' : 'Повторно загружаем командные данные…');
     }, delay);
   });
 })();

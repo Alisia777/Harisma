@@ -1,14 +1,9 @@
 (function () {
-  if (window.__ALTEA_TEAM_RECONNECT_HOTFIX_20260417P__) return;
-  window.__ALTEA_TEAM_RECONNECT_HOTFIX_20260417P__ = true;
+  if (window.__ALTEA_TEAM_RECONNECT_HOTFIX_20260420B__) return;
+  window.__ALTEA_TEAM_RECONNECT_HOTFIX_20260420B__ = true;
 
-  const SNAPSHOT_PARTS = [
-    'data/team_state.b64.part1.txt?v=20260417n',
-    'data/team_state.b64.part2.txt?v=20260417n',
-    'data/team_state.b64.part3.txt?v=20260417n',
-    'data/team_state.b64.part4.txt?v=20260417n'
-  ];
   let reconnectInFlight = false;
+  let bootRecoveryInFlight = false;
 
   function fallbackSetView(view) {
     if (!view) return;
@@ -55,17 +50,6 @@
     return typeof state === 'object' && state ? state : null;
   }
 
-  function fmtDate(value) {
-    try {
-      if (typeof fmt?.date === 'function') return fmt.date(value);
-    } catch {}
-    try {
-      return new Date(value).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' });
-    } catch {
-      return String(value || '');
-    }
-  }
-
   function canUseRemote() {
     try {
       const cfg = typeof currentConfig === 'function' ? currentConfig() : (window.APP_CONFIG || {});
@@ -81,91 +65,8 @@
     if (!canUseRemote()) return false;
     if (!app.boot.dataReady) return false;
     if (app.team.mode === 'ready') return false;
-    if (app.team.mode === 'pending' && !app.team.error && app.team.accessToken) return false;
+    if (app.team.mode === 'pending' && !app.team.error && (app.team.accessToken || app.team.client)) return false;
     return true;
-  }
-
-  function ensureSnapshotBadge(payload) {
-    const app = appState();
-    if (!app?.team || !payload) return false;
-    app.teamBridge = {
-      source: payload.source || 'portal-snapshot',
-      generatedAt: payload.generatedAt || '',
-      counts: payload.counts || {}
-    };
-    app.team.mode = 'local';
-    app.team.ready = false;
-    app.team.error = '';
-    app.team.note = payload.generatedAt
-      ? `Командная база через портал · ${fmtDate(payload.generatedAt)}`
-      : 'Командная база через портал';
-    window.__ALTEA_TEAM_JSON_BRIDGE_READY__ = true;
-    return true;
-  }
-
-  async function fetchTextWithTimeout(url, timeoutMs) {
-    const controller = new AbortController();
-    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
-      if (!response.ok) throw new Error(`snapshot ${response.status || 'request failed'}`);
-      return response.text();
-    } finally {
-      window.clearTimeout(timer);
-    }
-  }
-
-  async function loadPortalSnapshot() {
-    const parts = [];
-    for (const url of SNAPSHOT_PARTS) {
-      parts.push(await fetchTextWithTimeout(url, 8000));
-    }
-    const binary = window.atob(parts.join('').trim());
-    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-    return JSON.parse(new TextDecoder('utf-8').decode(bytes));
-  }
-
-  function applyPortalSnapshot(payload) {
-    const app = appState();
-    if (!app?.team || !payload) return false;
-    const hasArrays = ['tasks', 'comments', 'decisions', 'ownerOverrides']
-      .some((key) => Array.isArray(payload[key]) && payload[key].length >= 0);
-    if (!hasArrays) return false;
-
-    ensureSnapshotBadge(payload);
-
-    if (typeof mergeImportedStorage === 'function') {
-      mergeImportedStorage(payload);
-    } else {
-      app.storage = app.storage || {};
-      app.storage.tasks = Array.isArray(payload.tasks) ? payload.tasks.slice() : [];
-      app.storage.comments = Array.isArray(payload.comments) ? payload.comments.slice() : [];
-      app.storage.decisions = Array.isArray(payload.decisions) ? payload.decisions.slice() : [];
-      app.storage.ownerOverrides = Array.isArray(payload.ownerOverrides) ? payload.ownerOverrides.slice() : [];
-      if (typeof saveLocalStorage === 'function') saveLocalStorage();
-    }
-
-    if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
-    if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
-    if (app.activeSku && typeof renderSkuModal === 'function') renderSkuModal(app.activeSku);
-    if (typeof updateSyncBadge === 'function') updateSyncBadge();
-    return true;
-  }
-
-  async function loadPortalSnapshotIntoState() {
-    try {
-      if (typeof hasRemoteStore === 'function' && hasRemoteStore()) return false;
-      const payload = await loadPortalSnapshot();
-      const applied = applyPortalSnapshot(payload);
-      if (!applied) {
-        ensureSnapshotBadge(payload);
-        if (typeof updateSyncBadge === 'function') updateSyncBadge();
-      }
-      return applied;
-    } catch (error) {
-      console.warn('[portal-team-reconnect-hotfix:snapshot]', error);
-      return false;
-    }
   }
 
   async function retryTeam(reason = '') {
@@ -178,7 +79,7 @@
       app.team.note = reason || 'Повторно подключаем командную базу…';
       if (typeof updateSyncBadge === 'function') updateSyncBadge();
 
-      if (app.team.accessToken && typeof pullRemoteState === 'function') {
+      if ((app.team.accessToken || app.team.client) && typeof pullRemoteState === 'function') {
         await pullRemoteState(true);
       } else if (typeof initTeamStore === 'function') {
         await initTeamStore();
@@ -188,41 +89,182 @@
         }
       }
     } catch (error) {
-      console.warn('[portal-team-reconnect-hotfix]', error);
+      console.warn('[portal-team-reconnect-hotfix] reconnect', error);
     } finally {
       reconnectInFlight = false;
     }
   }
 
-  function patchSyncBadgeForSnapshot() {
-    if (typeof updateSyncBadge !== 'function') return;
-    const original = updateSyncBadge;
-    updateSyncBadge = function patchedUpdateSyncBadge() {
-      original.apply(this, arguments);
-      const app = appState();
-      const badge = document.getElementById('syncStatusBadge');
-      if (!badge || !app?.teamBridge) return;
-      badge.className = 'sync-status ready';
-      badge.textContent = app.team?.note || 'Командная база через портал';
-    };
+  function cloneFallback(value) {
+    if (value === null || value === undefined) return value;
+    return JSON.parse(JSON.stringify(value));
   }
 
-  patchSyncBadgeForSnapshot();
-  window.__ALTEA_TEAM_JSON_BRIDGE_REFRESH__ = loadPortalSnapshotIntoState;
-  [1200, 5200, 12000, 22000].forEach((delay) => {
+  function isLooseJsonTokenBoundary(char) {
+    return char === undefined || /[\s,\]\[}{:]/.test(char);
+  }
+
+  function sanitizeLooseJsonHotfix(text) {
+    if (!text || typeof text !== 'string') return text;
+    const replacements = [
+      ['-Infinity', 'null'],
+      ['Infinity', 'null'],
+      ['NaN', 'null'],
+      ['undefined', 'null']
+    ];
+    let result = '';
+    let inString = false;
+    let escaped = false;
+
+    for (let i = 0; i < text.length; i += 1) {
+      const char = text[i];
+      if (inString) {
+        result += char;
+        if (escaped) escaped = false;
+        else if (char === '\\') escaped = true;
+        else if (char === '"') inString = false;
+        continue;
+      }
+      if (char === '"') {
+        inString = true;
+        result += char;
+        continue;
+      }
+      let matched = false;
+      for (const [token, replacement] of replacements) {
+        if (
+          text.startsWith(token, i) &&
+          isLooseJsonTokenBoundary(text[i - 1]) &&
+          isLooseJsonTokenBoundary(text[i + token.length])
+        ) {
+          result += replacement;
+          i += token.length - 1;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) result += char;
+    }
+
+    return result;
+  }
+
+  async function safeLoadJson(path, fallback) {
+    try {
+      const resolved = path.includes('?') ? path : `${path}?v=20260420b`;
+      const response = await fetch(resolved, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`Не удалось загрузить ${path}`);
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch (error) {
+        const sanitized = sanitizeLooseJsonHotfix(text);
+        if (sanitized === text) throw error;
+        return JSON.parse(sanitized);
+      }
+    } catch (error) {
+      console.warn('[portal-team-reconnect-hotfix] loadJson', path, error);
+      return cloneFallback(fallback);
+    }
+  }
+
+  async function rescueBootData(reason = '') {
+    const app = appState();
+    if (!app?.boot || bootRecoveryInFlight || app.boot.dataReady) return false;
+    bootRecoveryInFlight = true;
+    try {
+      const local = typeof loadLocalStorage === 'function'
+        ? loadLocalStorage()
+        : { comments: [], tasks: [], decisions: [], ownerOverrides: [] };
+      const [
+        dashboard,
+        skus,
+        launches,
+        meetings,
+        documents,
+        repricer,
+        seed
+      ] = await Promise.all([
+        safeLoadJson('data/dashboard.json', { cards: [], generatedAt: '' }),
+        safeLoadJson('data/skus.json', []),
+        safeLoadJson('data/launches.json', []),
+        safeLoadJson('data/meetings.json', []),
+        safeLoadJson('data/documents.json', { groups: [] }),
+        safeLoadJson('data/repricer.json', { generatedAt: '', summary: {}, rows: [] }),
+        safeLoadJson('data/seed_comments.json', { comments: [], tasks: [] })
+      ]);
+
+      app.dashboard = dashboard || { cards: [] };
+      app.skus = Array.isArray(skus) ? skus : [];
+      app.launches = Array.isArray(launches) ? launches : [];
+      app.meetings = Array.isArray(meetings) ? meetings : [];
+      app.documents = documents || { groups: [] };
+      app.repricer = repricer || { generatedAt: '', summary: {}, rows: [] };
+      app.storage = {
+        comments: Array.isArray(local.comments) ? local.comments : [],
+        tasks: Array.isArray(local.tasks) ? local.tasks : [],
+        decisions: Array.isArray(local.decisions) ? local.decisions : [],
+        ownerOverrides: Array.isArray(local.ownerOverrides) ? local.ownerOverrides : []
+      };
+
+      if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
+      if (typeof mergeSeedStorage === 'function') mergeSeedStorage(seed || {});
+      if (!app.orderCalc.articleKey) app.orderCalc.articleKey = app.skus[0]?.articleKey || '';
+      if (!app.orderCalc.daysToNextReceipt && typeof numberOrZero === 'function') {
+        app.orderCalc.daysToNextReceipt = String(Math.round(numberOrZero(app.skus[0]?.leadTimeDays) || 30));
+      }
+
+      if (!Array.isArray(app.boot.dataWarnings)) app.boot.dataWarnings = [];
+      if (reason && !app.boot.dataWarnings.includes(reason)) app.boot.dataWarnings.push(reason);
+      app.boot.dataReady = true;
+
+      if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
+      if (app.activeView === 'dashboard' && typeof renderDashboard === 'function') {
+        try {
+          renderDashboard();
+        } catch (error) {
+          console.warn('[portal-team-reconnect-hotfix] dashboard render', error);
+        }
+      }
+      if (app.activeSku && typeof renderSkuModal === 'function') renderSkuModal(app.activeSku);
+      window.dispatchEvent(new Event('resize'));
+      window.setTimeout(() => {
+        if (typeof rerenderCurrentView === 'function') {
+          try {
+            rerenderCurrentView();
+          } catch (error) {
+            console.warn('[portal-team-reconnect-hotfix] rerender after recovery', error);
+          }
+        }
+      }, 160);
+      if (typeof updateSyncBadge === 'function') updateSyncBadge();
+      return true;
+    } catch (error) {
+      console.warn('[portal-team-reconnect-hotfix] boot recovery', error);
+      return false;
+    } finally {
+      bootRecoveryInFlight = false;
+    }
+  }
+
+  async function ensureBootAndReconnect(reason = '') {
+    const app = appState();
+    if (!app?.boot) return;
+    if (!app.boot.dataReady) {
+      const recovered = await rescueBootData(reason || 'recovery');
+      if (!recovered) return;
+    }
+    await retryTeam(reason || 'Повторно загружаем командные данные…');
+  }
+
+  [2500, 7000, 14000, 24000, 36000].forEach((delay, index) => {
     window.setTimeout(() => {
-      loadPortalSnapshotIntoState().catch((error) => console.warn('[portal-team-reconnect-hotfix:snapshot]', error));
+      ensureBootAndReconnect(index === 0 ? 'Восстанавливаем экран и командные данные…' : 'Повторно загружаем командные данные…');
     }, delay);
   });
 
   bindSidebarNavRescue();
   [600, 2200, 6000].forEach((delay) => {
     window.setTimeout(bindSidebarNavRescue, delay);
-  });
-
-  [4000, 12000, 22000, 35000].forEach((delay, index) => {
-    window.setTimeout(() => {
-      retryTeam(index === 0 ? 'Переподключаем командную базу…' : 'Повторно загружаем командные данные…');
-    }, delay);
   });
 })();

@@ -5,6 +5,16 @@
   let reconnectInFlight = false;
   let bootRecoveryInFlight = false;
 
+  function ensureDashboardModalTaskHotfix() {
+    if (document.querySelector('script[data-portal-dashboard-modal-task-hotfix="1"]')) return;
+    if (Array.from(document.scripts || []).some((script) => String(script.src || '').includes('portal-dashboard-modal-task-hotfix.js'))) return;
+    const script = document.createElement('script');
+    script.src = 'portal-dashboard-modal-task-hotfix.js?v=20260420a';
+    script.async = false;
+    script.dataset.portalDashboardModalTaskHotfix = '1';
+    (document.head || document.body || document.documentElement).appendChild(script);
+  }
+
   function fallbackSetView(view) {
     if (!view) return;
     document.querySelectorAll('.nav-btn').forEach((btn) => {
@@ -263,6 +273,10 @@
     }, delay);
   });
 
+  ensureDashboardModalTaskHotfix();
+  [120, 1200, 4000].forEach((delay) => {
+    window.setTimeout(ensureDashboardModalTaskHotfix, delay);
+  });
   bindSidebarNavRescue();
   [600, 2200, 6000].forEach((delay) => {
     window.setTimeout(bindSidebarNavRescue, delay);

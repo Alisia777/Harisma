@@ -1,13 +1,13 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260420F__) return;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260420F__ = true;
-  const VERSION = '20260420f';
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260420G__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260420G__ = true;
+  const VERSION = '20260420g';
   const PARTS = [
     'bundles/dashboard-runtime-20260420d.part01.txt',
     'bundles/dashboard-runtime-20260420d.part02.txt',
     'bundles/dashboard-runtime-20260420d.part03.txt'
   ];
-  const FIX_STYLE_ID = 'altea-dashboard-modal-layout-fix-20260420f';
+  const FIX_STYLE_ID = 'altea-dashboard-modal-layout-fix-20260420g';
 
   function ensureModalLayoutFix() {
     if (document.getElementById(FIX_STYLE_ID)) return;
@@ -17,16 +17,16 @@
       body > .portal-exec-modal > .portal-exec-modal-card {
         display: grid;
         gap: 14px;
-        width: min(1680px, 96vw) !important;
-        max-height: min(90vh, 980px) !important;
+        width: min(1860px, 98vw) !important;
+        max-height: 94vh !important;
         overflow: auto !important;
-        padding: 22px !important;
+        padding: 20px 22px !important;
       }
       body > .portal-exec-modal .portal-exec-modal-metrics {
         grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)) !important;
       }
       body > .portal-exec-modal .portal-exec-modal-grid {
-        grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr) !important;
+        grid-template-columns: minmax(420px, 1.02fr) minmax(620px, .98fr) !important;
         gap: 16px !important;
         align-items: start !important;
       }
@@ -35,11 +35,23 @@
       }
       body > .portal-exec-modal .portal-exec-side-stack {
         display: grid;
-        gap: 10px;
+        gap: 14px;
         min-width: 0;
         align-content: start;
       }
       body > .portal-exec-modal .portal-exec-modal-card {
+        min-width: 0;
+      }
+      body > .portal-exec-modal .portal-exec-modal-grid .portal-exec-modal-card,
+      body > .portal-exec-modal .portal-exec-side-stack .portal-exec-modal-card,
+      body > .portal-exec-modal .portal-exec-modal-actions .portal-exec-modal-card {
+        width: auto !important;
+        max-height: none !important;
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+      }
+      body > .portal-exec-modal .portal-exec-modal-actions {
+        margin-top: 14px;
         min-width: 0;
       }
       body > .portal-exec-modal .portal-exec-modal-table {
@@ -62,7 +74,7 @@
       }
       @media (max-width: 720px) {
         body > .portal-exec-modal > .portal-exec-modal-card {
-          width: min(98vw, 98vw) !important;
+          width: min(99vw, 99vw) !important;
           padding: 16px !important;
         }
       }
@@ -72,6 +84,10 @@
 
   function patchSource(source) {
     return source
+      .replace(
+        /(<div class="portal-exec-side-stack">\s*<div class="portal-exec-modal-card">[\s\S]*?<\/table>\s*<\/div>)\s*(\$\{renderActionBullets\([\s\S]*?\)\})\s*<\/div>\s*<\/div>/g,
+        '$1</div></div><div class="portal-exec-modal-actions">$2</div>'
+      )
       .split("executive.metrics.some((metric) => metric.adsReady) ? adsSection(executive) : '',")
       .join("adsSection(executive),")
       .split("Источник факта: ${esc(executive.range.availableLabel)} · актуально на ${esc(longDate(executive.range.max))}.")

@@ -1,13 +1,11 @@
 (function () {
-  if (window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420K__) return;
-  window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420K__ = true;
+  if (window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420M__) return;
+  window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420M__ = true;
 
   const SCRIPT_ID = "portalPriceWorkbenchHotfixRuntime";
   const BUNDLE_PARTS = [
-    "portal-price-workbench.runtime.gz.part01.txt?v=20260420k",
-    "portal-price-workbench.runtime.gz.part02.txt?v=20260420k",
-    "portal-price-workbench.runtime.gz.part03.txt?v=20260420k",
-    "portal-price-workbench.runtime.gz.part04.txt?v=20260420k",
+    "portal-price-workbench.runtime.gz.part01.txt?v=20260420m",
+    "portal-price-workbench.runtime.gz.part02.txt?v=20260420m"
   ];
   let loadingPromise = null;
 

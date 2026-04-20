@@ -1,25 +1,36 @@
 (function () {
-  if (window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420I__) return;
-  window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420I__ = true;
+  if (window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420K__) return;
+  window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420K__ = true;
 
   const SCRIPT_ID = "portalPriceWorkbenchHotfixRuntime";
-  const PARTS = [
-    "portal-price-workbench.line90.part01.txt?v=20260420i",
-    "portal-price-workbench.line90.part02.txt?v=20260420i",
-    "portal-price-workbench.line90.part03.txt?v=20260420i",
-    "portal-price-workbench.line90.part04.txt?v=20260420i",
-    "portal-price-workbench.line90.part05.txt?v=20260420i",
-    "portal-price-workbench.line90.part06.txt?v=20260420i",
-    "portal-price-workbench.line90.part07.txt?v=20260420i",
-    "portal-price-workbench.line90.part08.txt?v=20260420i",
-    "portal-price-workbench.line90.part09.txt?v=20260420i",
-    "portal-price-workbench.line90.part10.txt?v=20260420i",
-    "portal-price-workbench.line90.part11.txt?v=20260420i",
-    "portal-price-workbench.line90.part12.txt?v=20260420i",
-    "portal-price-workbench.line90.part13.txt?v=20260420i",
-    "portal-price-workbench.line90.part14.txt?v=20260420i"
+  const BUNDLE_PARTS = [
+    "portal-price-workbench.runtime.gz.part01.txt?v=20260420k",
+    "portal-price-workbench.runtime.gz.part02.txt?v=20260420k",
+    "portal-price-workbench.runtime.gz.part03.txt?v=20260420k",
+    "portal-price-workbench.runtime.gz.part04.txt?v=20260420k",
   ];
   let loadingPromise = null;
+
+  function decodeBase64ToBytes(base64) {
+    const normalized = String(base64 || "").replace(/\s+/g, "");
+    if (!normalized) return new Uint8Array();
+    const binary = atob(normalized);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+    return bytes;
+  }
+
+  async function inflateBase64Gzip(base64) {
+    const bytes = decodeBase64ToBytes(base64);
+    if (!bytes.length) return "";
+    if (typeof DecompressionStream !== "function") {
+      throw new Error("DecompressionStream unavailable");
+    }
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+    return new Response(stream).text();
+  }
 
   function kick() {
     if (typeof window.renderPriceWorkbench === "function") {
@@ -40,16 +51,17 @@
       kick();
       return true;
     }
-    const fragments = await Promise.all(
-      PARTS.map(async (src) => {
+    const base64Parts = await Promise.all(
+      BUNDLE_PARTS.map(async (src) => {
         const response = await fetch(src, { cache: "no-store" });
         if (!response.ok) throw new Error("Failed to load " + src);
         return response.text();
       })
     );
+    const code = await inflateBase64Gzip(base64Parts.join(""));
     const script = document.createElement("script");
     script.id = SCRIPT_ID;
-    script.textContent = fragments.join("") + "\n";
+    script.textContent = code + "\n";
     (document.body || document.documentElement).appendChild(script);
     kick();
     return true;

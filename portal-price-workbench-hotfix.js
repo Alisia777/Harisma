@@ -1,12 +1,14 @@
 (function () {
-  if (window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420M__) return;
-  window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420M__ = true;
+  if (window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420N__) return;
+  window.__ALTEA_PRICE_WORKBENCH_LOADER_20260420N__ = true;
 
   const SCRIPT_ID = "portalPriceWorkbenchHotfixRuntime";
+  const LIVEFIX_ID = "portalPriceWorkbenchLivefix";
   const BUNDLE_PARTS = [
     "portal-price-workbench.runtime.gz.part01.txt?v=20260420m",
     "portal-price-workbench.runtime.gz.part02.txt?v=20260420m"
   ];
+  const LIVEFIX_SRC = "portal-price-workbench-livefix.js?v=20260420a";
   let loadingPromise = null;
 
   function decodeBase64ToBytes(base64) {
@@ -40,12 +42,39 @@
     }
   }
 
+  function loadExternalScript(id, src) {
+    return new Promise((resolve, reject) => {
+      const existing = document.getElementById(id);
+      if (existing) {
+        resolve(existing);
+        return;
+      }
+      const script = document.createElement("script");
+      script.id = id;
+      script.src = src;
+      script.async = false;
+      script.onload = () => resolve(script);
+      script.onerror = () => reject(new Error("Failed to load " + src));
+      (document.body || document.documentElement).appendChild(script);
+    });
+  }
+
+  async function ensureLivefix() {
+    try {
+      await loadExternalScript(LIVEFIX_ID, LIVEFIX_SRC);
+    } catch (error) {
+      console.warn("[portal-price-workbench-livefix]", error);
+    }
+  }
+
   async function injectBundle() {
     if (window.__ALTEA_PRICE_WORKBENCH_HOTFIX_20260419D__) {
+      await ensureLivefix();
       kick();
       return true;
     }
     if (document.getElementById(SCRIPT_ID)) {
+      await ensureLivefix();
       kick();
       return true;
     }
@@ -61,13 +90,14 @@
     script.id = SCRIPT_ID;
     script.textContent = code + "\n";
     (document.body || document.documentElement).appendChild(script);
+    await ensureLivefix();
     kick();
     return true;
   }
 
   function start() {
     if (window.__ALTEA_PRICE_WORKBENCH_HOTFIX_20260419D__ || document.getElementById(SCRIPT_ID)) {
-      kick();
+      ensureLivefix().finally(kick);
       return;
     }
     if (!document.body) {

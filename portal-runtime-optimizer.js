@@ -5,7 +5,7 @@
   const BUNDLE_MAP = {
     dashboard: [
       'portal-dashboard-interactive-hotfix.js?v=20260420n',
-      'portal-dashboard-rop-task-hotfix.js?v=20260420d'
+      'portal-dashboard-prime-hotfix.js?v=20260421a'
     ],
     order: ['portal-order-logistics-hotfix.js?v=20260421g'],
     launches: ['portal-launch-control-hotfix.js?v=20260421e'],
@@ -265,6 +265,19 @@
     });
   }
 
+  function warmInitialDashboard() {
+    const start = () => {
+      if (getActiveView() !== 'dashboard') return;
+      loadBundleForView('dashboard');
+    };
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(start, { timeout: 1800 });
+      return;
+    }
+    window.setTimeout(start, 900);
+  }
+
   installDeferredFetch();
   bindNavigation();
+  warmInitialDashboard();
 })();

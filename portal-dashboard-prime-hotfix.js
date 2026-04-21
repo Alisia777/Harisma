@@ -1,25 +1,30 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260421E__) return;
-  window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260421E__ = true;
+  if (window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260421F__) return;
+  window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260421F__ = true;
 
   function installPriceWorkbenchSupportRedirect() {
-    if (window.__ALTEA_PRICE_SUPPORT_REDIRECT_20260421E__) return;
-    window.__ALTEA_PRICE_SUPPORT_REDIRECT_20260421E__ = true;
+    if (window.__ALTEA_PRICE_SUPPORT_REDIRECT_20260421F__) return;
+    window.__ALTEA_PRICE_SUPPORT_REDIRECT_20260421F__ = true;
     const nativeFetch = window.fetch?.bind(window);
     if (typeof nativeFetch !== 'function') return;
+    const fallbackPayload = JSON.stringify({
+      generatedAt: new Date().toISOString(),
+      platforms: {
+        wb: { rows: {} },
+        ozon: { rows: {} },
+        ym: { rows: {} }
+      }
+    });
     window.fetch = function redirectedFetch(input, init) {
       try {
         const rawUrl = typeof input === 'string'
           ? input
           : (input && typeof input.url === 'string' ? input.url : '');
         if (rawUrl && rawUrl.includes('data/price_workbench_support.json')) {
-          const redirectedUrl = rawUrl.replace(
-            'data/price_workbench_support.json',
-            'data/price_workbench_support.compact.json'
-          );
-          if (typeof input === 'string') return nativeFetch(redirectedUrl, init);
-          if (input instanceof Request) return nativeFetch(new Request(redirectedUrl, input), init);
-          return nativeFetch(redirectedUrl, init);
+          return Promise.resolve(new Response(fallbackPayload, {
+            status: 200,
+            headers: { 'Content-Type': 'application/json; charset=utf-8' }
+          }));
         }
       } catch {}
       return nativeFetch(input, init);
@@ -33,15 +38,15 @@
   }
 
   function rearmInteractiveBundle() {
-    if (window.__ALTEA_DASHBOARD_INTERACTIVE_REARMED_20260421E__) return;
-    window.__ALTEA_DASHBOARD_INTERACTIVE_REARMED_20260421E__ = true;
+    if (window.__ALTEA_DASHBOARD_INTERACTIVE_REARMED_20260421F__) return;
+    window.__ALTEA_DASHBOARD_INTERACTIVE_REARMED_20260421F__ = true;
     try {
       delete window.__ALTEA_DASHBOARD_INTERACTIVE_20260420M__;
     } catch {
       window.__ALTEA_DASHBOARD_INTERACTIVE_20260420M__ = false;
     }
     const script = document.createElement('script');
-    script.src = 'portal-dashboard-interactive-hotfix.js?v=20260420n&rearm=20260421e';
+    script.src = 'portal-dashboard-interactive-hotfix.js?v=20260420n&rearm=20260421f';
     script.async = false;
     script.onload = () => {
       window.setTimeout(() => {
@@ -82,8 +87,8 @@
   }
 
   function startPrimeLoop() {
-    if (window.__ALTEA_DASHBOARD_PRIME_LOOP_20260421E__) return;
-    window.__ALTEA_DASHBOARD_PRIME_LOOP_20260421E__ = true;
+    if (window.__ALTEA_DASHBOARD_PRIME_LOOP_20260421F__) return;
+    window.__ALTEA_DASHBOARD_PRIME_LOOP_20260421F__ = true;
     let attempts = 0;
     const tick = () => {
       attempts += 1;

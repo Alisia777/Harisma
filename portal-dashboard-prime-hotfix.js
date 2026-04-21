@@ -61,10 +61,14 @@
       window.setTimeout(primeDashboard, 60);
       window.setTimeout(primeDashboard, 320);
       window.setTimeout(primeDashboard, 900);
+      window.setTimeout(primeDashboard, 2200);
+      window.setTimeout(primeDashboard, 5200);
     });
   } else {
     window.setTimeout(primeDashboard, 120);
     window.setTimeout(primeDashboard, 360);
     window.setTimeout(primeDashboard, 960);
+    window.setTimeout(primeDashboard, 2400);
+    window.setTimeout(primeDashboard, 5400);
   }
 })();

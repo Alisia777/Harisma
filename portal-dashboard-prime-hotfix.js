@@ -56,6 +56,20 @@
     if (!interactiveBundleReady()) rearmInteractiveBundle();
   }
 
+  function startPrimeLoop() {
+    if (window.__ALTEA_DASHBOARD_PRIME_LOOP_20260421D__) return;
+    window.__ALTEA_DASHBOARD_PRIME_LOOP_20260421D__ = true;
+    let attempts = 0;
+    const tick = () => {
+      attempts += 1;
+      primeDashboard();
+      if (document.getElementById('portalDashboardExecutiveRoot')) return;
+      if (attempts >= 24) return;
+      window.setTimeout(tick, 1200);
+    };
+    window.setTimeout(tick, 1400);
+  }
+
   if (typeof window.requestAnimationFrame === 'function') {
     window.requestAnimationFrame(() => {
       window.setTimeout(primeDashboard, 60);
@@ -65,6 +79,7 @@
       window.setTimeout(primeDashboard, 5200);
       window.setTimeout(primeDashboard, 12000);
       window.setTimeout(primeDashboard, 18000);
+      startPrimeLoop();
     });
   } else {
     window.setTimeout(primeDashboard, 120);
@@ -74,5 +89,6 @@
     window.setTimeout(primeDashboard, 5400);
     window.setTimeout(primeDashboard, 12200);
     window.setTimeout(primeDashboard, 18200);
+    startPrimeLoop();
   }
 })();

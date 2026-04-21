@@ -1,6 +1,30 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260421D__) return;
-  window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260421D__ = true;
+  if (window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260421E__) return;
+  window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260421E__ = true;
+
+  function installPriceWorkbenchSupportRedirect() {
+    if (window.__ALTEA_PRICE_SUPPORT_REDIRECT_20260421E__) return;
+    window.__ALTEA_PRICE_SUPPORT_REDIRECT_20260421E__ = true;
+    const nativeFetch = window.fetch?.bind(window);
+    if (typeof nativeFetch !== 'function') return;
+    window.fetch = function redirectedFetch(input, init) {
+      try {
+        const rawUrl = typeof input === 'string'
+          ? input
+          : (input && typeof input.url === 'string' ? input.url : '');
+        if (rawUrl && rawUrl.includes('data/price_workbench_support.json')) {
+          const redirectedUrl = rawUrl.replace(
+            'data/price_workbench_support.json',
+            'data/price_workbench_support.compact.json'
+          );
+          if (typeof input === 'string') return nativeFetch(redirectedUrl, init);
+          if (input instanceof Request) return nativeFetch(new Request(redirectedUrl, input), init);
+          return nativeFetch(redirectedUrl, init);
+        }
+      } catch {}
+      return nativeFetch(input, init);
+    };
+  }
 
   function interactiveBundleReady() {
     return !!window.renderDashboard?.__dashboardInteractiveWrapped
@@ -9,15 +33,15 @@
   }
 
   function rearmInteractiveBundle() {
-    if (window.__ALTEA_DASHBOARD_INTERACTIVE_REARMED_20260421D__) return;
-    window.__ALTEA_DASHBOARD_INTERACTIVE_REARMED_20260421D__ = true;
+    if (window.__ALTEA_DASHBOARD_INTERACTIVE_REARMED_20260421E__) return;
+    window.__ALTEA_DASHBOARD_INTERACTIVE_REARMED_20260421E__ = true;
     try {
       delete window.__ALTEA_DASHBOARD_INTERACTIVE_20260420M__;
     } catch {
       window.__ALTEA_DASHBOARD_INTERACTIVE_20260420M__ = false;
     }
     const script = document.createElement('script');
-    script.src = 'portal-dashboard-interactive-hotfix.js?v=20260420n&rearm=20260421d';
+    script.src = 'portal-dashboard-interactive-hotfix.js?v=20260420n&rearm=20260421e';
     script.async = false;
     script.onload = () => {
       window.setTimeout(() => {
@@ -43,6 +67,7 @@
   }
 
   function primeDashboard() {
+    installPriceWorkbenchSupportRedirect();
     const onDashboard = (typeof state === 'object' && state && state.activeView === 'dashboard')
       || document.getElementById('view-dashboard')?.classList.contains('active');
     if (!onDashboard) return;
@@ -57,8 +82,8 @@
   }
 
   function startPrimeLoop() {
-    if (window.__ALTEA_DASHBOARD_PRIME_LOOP_20260421D__) return;
-    window.__ALTEA_DASHBOARD_PRIME_LOOP_20260421D__ = true;
+    if (window.__ALTEA_DASHBOARD_PRIME_LOOP_20260421E__) return;
+    window.__ALTEA_DASHBOARD_PRIME_LOOP_20260421E__ = true;
     let attempts = 0;
     const tick = () => {
       attempts += 1;

@@ -63,6 +63,8 @@
       window.setTimeout(primeDashboard, 900);
       window.setTimeout(primeDashboard, 2200);
       window.setTimeout(primeDashboard, 5200);
+      window.setTimeout(primeDashboard, 12000);
+      window.setTimeout(primeDashboard, 18000);
     });
   } else {
     window.setTimeout(primeDashboard, 120);
@@ -70,5 +72,7 @@
     window.setTimeout(primeDashboard, 960);
     window.setTimeout(primeDashboard, 2400);
     window.setTimeout(primeDashboard, 5400);
+    window.setTimeout(primeDashboard, 12200);
+    window.setTimeout(primeDashboard, 18200);
   }
 })();

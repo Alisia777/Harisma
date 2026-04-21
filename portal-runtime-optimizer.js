@@ -1,11 +1,11 @@
 (function () {
-  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260421K__) return;
-  window.__ALTEA_RUNTIME_OPTIMIZER_20260421K__ = true;
+  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260421N__) return;
+  window.__ALTEA_RUNTIME_OPTIMIZER_20260421N__ = true;
 
   const BUNDLE_MAP = {
     dashboard: [
       'portal-dashboard-interactive-hotfix.js?v=20260420n',
-      'portal-dashboard-prime-hotfix.js?v=20260421a'
+      'portal-dashboard-prime-hotfix.js?v=20260421b'
     ],
     order: ['portal-order-logistics-hotfix.js?v=20260421g'],
     launches: ['portal-launch-control-hotfix.js?v=20260421e'],
@@ -270,11 +270,13 @@
       if (getActiveView() !== 'dashboard') return;
       loadBundleForView('dashboard');
     };
-    if (typeof window.requestIdleCallback === 'function') {
-      window.requestIdleCallback(start, { timeout: 1800 });
+    const delayedStart = () => window.setTimeout(start, 120);
+    if (document.readyState === 'complete') {
+      delayedStart();
       return;
     }
-    window.setTimeout(start, 900);
+    window.addEventListener('load', delayedStart, { once: true });
+    window.setTimeout(start, 2200);
   }
 
   installDeferredFetch();

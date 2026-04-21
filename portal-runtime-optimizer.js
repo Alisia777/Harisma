@@ -53,7 +53,7 @@
       script.src = src;
       script.async = false;
       script.onload = () => resolve(script);
-      script.onerror = () => reject(new Error(`РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ ${src}`));
+      script.onerror = () => reject(new Error(`Не удалось загрузить ${src}`));
       (document.head || document.body || document.documentElement).appendChild(script);
     });
 
@@ -95,15 +95,6 @@
     return promise;
   }
 
-  function scheduleIdleBundle(view, timeoutMs) {
-    const run = () => loadBundleForView(view);
-    if (typeof window.requestIdleCallback === 'function') {
-      window.requestIdleCallback(run, { timeout: timeoutMs || 1500 });
-      return;
-    }
-    window.setTimeout(run, timeoutMs || 1200);
-  }
-
   function bindNavigation() {
     document.addEventListener('click', (event) => {
       const button = event.target.closest('.nav-btn[data-view]');
@@ -111,16 +102,6 @@
       hasUserNavigation = true;
       loadBundleForView(button.dataset.view);
     }, true);
-
-    document.querySelectorAll('.nav-btn[data-view]').forEach((button) => {
-      if (button.dataset.portalRuntimeOptimizerBound === '1') return;
-      button.dataset.portalRuntimeOptimizerBound = '1';
-      button.addEventListener('mouseenter', () => {
-        const bundleKey = bundleKeyForView(button.dataset.view);
-        if (!bundleKey || readyBundles.has(bundleKey)) return;
-        scheduleIdleBundle(button.dataset.view, 1000);
-      });
-    });
 
     window.addEventListener('altea:viewchange', (event) => {
       const view = event.detail?.view;
@@ -130,15 +111,5 @@
     });
   }
 
-  function bindRemoteButtons() {
-    ['pullRemoteBtn', 'pushRemoteBtn'].forEach((id) => {
-      const button = document.getElementById(id);
-      if (!button || button.dataset.portalRuntimeRemoteBound === '1') return;
-      button.dataset.portalRuntimeRemoteBound = '1';
-      button.addEventListener('click', () => scheduleIdleBundle('prices', 400));
-    });
-  }
-
   bindNavigation();
-  bindRemoteButtons();
 })();

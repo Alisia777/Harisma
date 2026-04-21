@@ -2,8 +2,8 @@
   if (window.__ALTEA_ORDER_LOGISTICS_HOTFIX_20260421F__) return;
   window.__ALTEA_ORDER_LOGISTICS_HOTFIX_20260421F__ = true;
 
-  const VERSION = '20260421f';
-  const STYLE_ID = 'altea-order-logistics-hotfix-20260421f';
+  const VERSION = '20260421g';
+  const STYLE_ID = 'altea-order-logistics-hotfix-20260421g';
   const cache = {
     logistics: null,
     warehouse: null
@@ -417,6 +417,9 @@
       .altea-order-logistics__table-wrap {
         margin-top: 14px;
         overflow: auto;
+        height: 64vh;
+        min-height: 520px;
+        max-height: calc(100vh - 248px);
       }
       .altea-order-logistics__table {
         width: 100%;
@@ -478,6 +481,9 @@
         color: rgba(255, 244, 229, 0.58);
         font-size: 12px;
       }
+      .altea-order-logistics .card {
+        border-radius: 18px;
+      }
       @media (max-width: 1320px) {
         .altea-order-logistics__controls,
         .altea-order-logistics__summary {
@@ -486,11 +492,20 @@
         .altea-order-logistics__actions {
           justify-content: flex-start;
         }
+        .altea-order-logistics__table-wrap {
+          height: 60vh;
+          min-height: 460px;
+          max-height: calc(100vh - 220px);
+        }
       }
       @media (max-width: 900px) {
         .altea-order-logistics__controls,
         .altea-order-logistics__summary {
           grid-template-columns: 1fr;
+        }
+        .altea-order-logistics__table-wrap {
+          height: 56vh;
+          min-height: 380px;
         }
       }
     `;

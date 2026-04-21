@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Р”РѕРј Р±СЂРµРЅРґР° РђР»С‚РµСЏ В· v8.7.1 Imperial</title>
-  <meta name="description" content="Р”РѕРј Р±СЂРµРЅРґР° РђР»С‚РµСЏ: РѕРїРµСЂР°С‚РёРІРЅС‹Р№ РєРѕРЅС‚СѓСЂ Р±СЂРµРЅРґР°, РїР»РѕС‰Р°РґРѕРє, РїРµРєР»Р°РјС‹ Рё СЂРµС€РµРЅРёР№ РІ РѕРґРЅРѕРј СЌРєСЂР°РЅРµ.">
+  <meta name="description" content="Р”РѕРј Р±СЂРµРЅРґР° РђР»С‚РµСЏ: РѕРїРµСЂР°С‚РёРІРЅС‹Р№ РєРѕРЅС‚СѓСЂ Р±РµРЅРґР°, РїР»РѕС‰Р°РґРѕРє, РїРµРєР»Р°РјС‹ Рё СЂРµС€РµРЅРёР№ РІ РѕРґРЅРѕРј СЌРєСЂР°РЅРµ.">
   <link rel="icon" href="assets/altea-imperial-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css?v=20260419q1">
   <link rel="stylesheet" href="imperial.css?v=20260419q1">
@@ -19,7 +19,7 @@
         </div>
         <div>
           <div class="brand-title">Р”РѕРј Р±СЂРµРЅРґР° РђР»С‚РµСЏ</div>
-          <div class="brand-sub">Р Р°Р±РѕС‡РёР№ РєРѕРЅС‚СѓСЂ Р±СЂРµРЅРґР° Рё СЂРµС€РµРЅРёР№.</div>
+          <div class="brand-sub">Р Р°Р±РѕС‡РёР№ РєРѕРЅС‚СѓСЂ Р±РµРЅРґР° Рё СЂРµС€РµРЅРёР№.</div>
         </div>
       </div>
 
@@ -116,6 +116,71 @@
       const setBadge=(txt, cls)=>{ const el=document.getElementById('syncStatusBadge'); if(!el) return; el.className='sync-status'; if(cls) el.classList.add(cls); el.textContent=txt; };
       window.__alteaSetBootBadge=setBadge;
       setBadge('РџРѕРґРєР»СЋС‡Р°РµРј РєРѕРјР°РЅРґРЅСѓСЋ Р±Р°Р·СѓвЂ¦','pending');
+    })();
+  </script>
+  <script>
+    (function () {
+      if (window.__ALTEA_RESPONSE_JSON_GUARD__) return;
+      window.__ALTEA_RESPONSE_JSON_GUARD__ = true;
+
+      const originalJson = Response.prototype.json;
+      const replacements = [
+        ['-Infinity', 'null'],
+        ['Infinity', 'null'],
+        ['NaN', 'null'],
+        ['undefined', 'null']
+      ];
+
+      function isBoundary(char) {
+        return char === undefined || /[\s,\]\[}{:]/.test(char);
+      }
+
+      function sanitizeLooseJson(text) {
+        if (!text || typeof text !== 'string') return text;
+        let result = '';
+        let inString = false;
+        let escaped = false;
+
+        for (let i = 0; i < text.length; i += 1) {
+          const char = text[i];
+          if (inString) {
+            result += char;
+            if (escaped) escaped = false;
+            else if (char === '\\') escaped = true;
+            else if (char === '"') inString = false;
+            continue;
+          }
+          if (char === '"') {
+            inString = true;
+            result += char;
+            continue;
+          }
+          let matched = false;
+          for (const [token, replacement] of replacements) {
+            if (text.startsWith(token, i) && isBoundary(text[i - 1]) && isBoundary(text[i + token.length])) {
+              result += replacement;
+              i += token.length - 1;
+              matched = true;
+              break;
+            }
+          }
+          if (!matched) result += char;
+        }
+
+        return result;
+      }
+
+      Response.prototype.json = async function patchedResponseJson() {
+        const backup = this.clone();
+        try {
+          return await originalJson.call(this);
+        } catch (error) {
+          const text = await backup.text();
+          const sanitized = sanitizeLooseJson(text);
+          if (sanitized === text) throw error;
+          return JSON.parse(sanitized);
+        }
+      };
     })();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onload="window.__ALTEA_BOOT.supabaseLoaded=true; window.__alteaSetBootBadge && window.__alteaSetBootBadge('РџРѕРґРєР»СЋС‡Р°РµРј РєРѕРјР°РЅРґРЅСѓСЋ Р±Р°Р·СѓвЂ¦','pending');"></script>

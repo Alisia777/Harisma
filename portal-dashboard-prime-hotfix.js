@@ -1,6 +1,20 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260421B__) return;
-  window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260421B__ = true;
+  if (window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260421C__) return;
+  window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260421C__ = true;
+
+  function wakeDashboardBundle() {
+    try {
+      window.dispatchEvent(new CustomEvent('altea:viewchange', {
+        detail: { view: 'dashboard', source: 'dashboard-prime-hotfix' }
+      }));
+    } catch {}
+
+    const button = document.querySelector('.nav-btn[data-view="dashboard"]');
+    if (!button) return;
+    try {
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+    } catch {}
+  }
 
   function primeDashboard() {
     const onDashboard = (typeof state === 'object' && state && state.activeView === 'dashboard')
@@ -8,9 +22,11 @@
     if (!onDashboard) return;
     if (typeof window.rerenderCurrentView === 'function') {
       window.rerenderCurrentView();
-      return;
     }
-    if (typeof window.renderDashboard === 'function') window.renderDashboard();
+    if (!document.getElementById('portalDashboardExecutiveRoot') && typeof window.renderDashboard === 'function') {
+      window.renderDashboard();
+    }
+    wakeDashboardBundle();
   }
 
   if (typeof window.requestAnimationFrame === 'function') {

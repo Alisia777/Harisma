@@ -10,7 +10,7 @@
     order: ['portal-order-logistics-hotfix.js?v=20260421g'],
     launches: [
       'portal-launch-month-filter-hotfix.js?v=20260422c',
-      'portal-launch-manager-hotfix.js?v=20260422a'
+      'portal-launch-manager-hotfix.js?v=20260422b'
     ],
     prices: [
       'portal-price-workbench-simple-live.js?v=20260420p',

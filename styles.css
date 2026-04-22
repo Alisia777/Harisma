@@ -164,6 +164,22 @@ textarea{resize:vertical;min-height:84px}
 .form-grid{display:grid;gap:10px}
 .form-grid.compact{grid-template-columns:1fr 1fr}
 .form-grid.compact textarea,.form-grid.compact button,.form-grid.compact input[type="hidden"]{grid-column:1 / -1}
+.form-stack{display:flex;flex-direction:column;gap:10px}
+.compact-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.compact-details{border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.02);padding:0 12px}
+.compact-details summary{cursor:pointer;padding:12px 0;color:var(--muted);font-weight:700;list-style:none}
+.compact-details summary::-webkit-details-marker{display:none}
+.compact-details[open]{padding-bottom:12px}
+.quick-note{padding:12px 13px;border-radius:16px;border:1px solid rgba(59,130,246,.24);background:rgba(59,130,246,.1);color:#dbe7ff}
+.quick-note.warn{border-color:rgba(217,151,21,.3);background:rgba(217,151,21,.11);color:#f3dfad}
+.quick-note.ok{border-color:rgba(31,157,99,.3);background:rgba(31,157,99,.11);color:#d7f6e7}
+.inline-hint{font-size:12px;color:var(--muted);line-height:1.45}
+.compact-history{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow:auto;padding-right:4px}
+.task-flow{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.task-flow-step{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);font-size:12px}
+.task-flow-step b{font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.task-flow-step.active{border-color:rgba(59,130,246,.34);background:rgba(59,130,246,.14);color:var(--text)}
+.task-flow-step.done{border-color:rgba(31,157,99,.34);background:rgba(31,157,99,.12);color:#d7f6e7}
 
 .pipeline-strip{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
 .pipeline-strip span{padding:10px 8px;border-radius:12px;text-align:center;background:rgba(255,255,255,.02);border:1px solid var(--line);font-size:12px;color:var(--muted)}
@@ -194,6 +210,7 @@ textarea{resize:vertical;min-height:84px}
   .main{padding:18px}
   .topbar,.section-title{flex-direction:column}
   .cards,.kpi-strip,.board-columns,.task-mini-grid,.filters,.control-filters,.pipeline-strip{grid-template-columns:1fr}
+  .compact-row{grid-template-columns:1fr}
   .modal{padding:10px}
   .modal-card{padding:14px}
   .form-grid.compact{grid-template-columns:1fr}

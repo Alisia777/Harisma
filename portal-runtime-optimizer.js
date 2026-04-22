@@ -8,7 +8,7 @@
       'portal-dashboard-prime-hotfix-20260422e.js?v=20260422e'
     ],
     order: ['portal-order-logistics-hotfix.js?v=20260421g'],
-    launches: ['portal-launch-control-hotfix.js?v=20260421e'],
+    launches: ['portal-launch-month-filter-hotfix.js?v=20260422b'],
     prices: [
       'portal-price-workbench-simple-live.js?v=20260420p',
       'portal-team-reconnect-hotfix.js?v=20260420a'

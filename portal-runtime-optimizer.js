@@ -5,7 +5,7 @@
   const BUNDLE_MAP = {
     dashboard: [
       'portal-dashboard-interactive-hotfix.js?v=20260422d',
-      'portal-dashboard-prime-hotfix.js?v=20260422e'
+      'portal-dashboard-prime-hotfix-20260422e.js?v=20260422e'
     ],
     order: ['portal-order-logistics-hotfix.js?v=20260421g'],
     launches: ['portal-launch-control-hotfix.js?v=20260421e'],

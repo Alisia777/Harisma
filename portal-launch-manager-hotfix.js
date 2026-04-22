@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_LAUNCH_MANAGER_HOTFIX_20260422A__) return;
-  window.__ALTEA_LAUNCH_MANAGER_HOTFIX_20260422A__ = true;
+  if (window.__ALTEA_LAUNCH_MANAGER_HOTFIX_20260422B__) return;
+  window.__ALTEA_LAUNCH_MANAGER_HOTFIX_20260422B__ = true;
 
   if (window.__ALTEA_LAUNCH_MONTH_FILTER_HOTFIX_20260422C__) return;
 
@@ -13,6 +13,8 @@
     { value: 'scale', label: 'Масштаб' }
   ];
   const VIEW_IDS = ['view-launches', 'view-launch-control'];
+  const PRODUCT_VIEW_ID = 'view-launches';
+  const CONTROL_VIEW_ID = 'view-launch-control';
   const EMPTY_TEXT = '—';
 
   function canBoot() {
@@ -108,6 +110,7 @@
       phase: 'content',
       owner: '',
       production: '',
+      launchBudget: '',
       plannedRevenue: '',
       externalTraffic: '',
       blockersText: '',
@@ -132,6 +135,7 @@
       phase,
       owner: String(record.owner || '').trim(),
       production: String(record.production || '').trim(),
+      launchBudget: record.launchBudget === '' ? '' : parseNumber(record.launchBudget),
       plannedRevenue: record.plannedRevenue === '' ? '' : parseNumber(record.plannedRevenue),
       externalTraffic: String(record.externalTraffic || '').trim(),
       blockersText: Array.isArray(record.blockers)
@@ -142,7 +146,7 @@
   }
 
   function buildItemFromRecord(record, fallback = {}) {
-    return normalizeLaunchItem({
+    const normalized = normalizeLaunchItem({
       id: record.mode === 'manual' ? (record.id || record.baseId) : (fallback.id || record.baseId),
       articleKey: record.articleKey || fallback.articleKey || '',
       name: record.name || fallback.name || 'Новинка',
@@ -158,6 +162,9 @@
       activeTasks: fallback.activeTasks || 0,
       blockers: normalizeBlockers(record.blockersText || fallback.blockers || [])
     });
+    normalized.launchBudget = record.launchBudget === '' ? parseNumber(fallback.launchBudget || 0) : parseNumber(record.launchBudget);
+    normalized.preSaleStatus = record.status || fallback.status || 'Статус не указан';
+    return normalized;
   }
 
   const originalGetLaunchItems = getLaunchItems.bind(window);
@@ -218,6 +225,7 @@
       phase: item.phase || 'content',
       owner: item.owner || '',
       production: item.production || '',
+      launchBudget: item.launchBudget || '',
       plannedRevenue: item.plannedRevenue || '',
       externalTraffic: item.externalTraffic === 'без внешнего трафика' ? '' : (item.externalTraffic || ''),
       blockersText: Array.isArray(item.blockers) ? item.blockers.join('\n') : '',
@@ -298,6 +306,15 @@
     return getManagerState().records.filter((item) => item.hidden);
   }
 
+  function launchMetrics(items) {
+    return {
+      totalBudget: items.reduce((sum, item) => sum + parseNumber(item.launchBudget), 0),
+      totalPlan: items.reduce((sum, item) => sum + parseNumber(item.plannedRevenue), 0),
+      preSales: items.filter((item) => String(item.status || '').trim()).length,
+      noOwner: items.filter((item) => !String(item.owner || '').trim()).length
+    };
+  }
+
   function renderManagerListItem(item) {
     const itemId = getBaseId(item);
     return `
@@ -312,7 +329,8 @@
             ${item.owner ? badge(item.owner, 'info') : badge('Без owner', 'warn')}
           </div>
         </div>
-        <div class="muted small">${escapeHtml(item.status || 'Статус не указан')}</div>
+        <div class="muted small">${escapeHtml(item.status || 'Статус до продаж не указан')}</div>
+        <div class="muted small" style="margin-top:8px">Бюджет запуска: ${fmt.money(item.launchBudget || 0)} · План выручки: ${fmt.money(item.plannedRevenue || 0)}</div>
         <div class="badge-stack" style="margin-top:8px">
           <button class="btn ghost" type="button" data-launch-edit="${escapeHtml(itemId)}">Изменить</button>
           <button class="btn ghost" type="button" data-launch-hide="${escapeHtml(itemId)}">Убрать</button>
@@ -340,22 +358,45 @@
     `;
   }
 
-  function renderManagerCard() {
+  function renderProductWorkspaceCard() {
     const manager = getManagerState();
     const items = getAllVisibleItems();
     const hidden = getHiddenRecords();
     const draft = manager.editor?.draft || emptyDraft();
+    const metrics = launchMetrics(items);
 
     return `
       <div class="card" data-launch-manager-card style="margin-top:14px">
         <div class="section-subhead">
           <div>
-            <h3>Управление новинками</h3>
-            <p class="small muted">Здесь можно добавить новинку вручную, поправить месяц, owner, статус или убрать строку из запуска без потери остальных карточек.</p>
+            <h3>Блок Ксении по новинкам</h3>
+            <p class="small muted">Здесь Ксюша ведёт запуск до продаж: бюджет, статус до выхода, owner, месяц, трафик и блокеры по каждой новинке.</p>
           </div>
           <div class="badge-stack">
             ${badge(`${fmt.int(items.length)} в работе`, items.length ? 'info' : 'warn')}
             ${badge(`${fmt.int(hidden.length)} скрыто`, hidden.length ? 'warn' : 'ok')}
+          </div>
+        </div>
+        <div class="grid cards" style="margin-top:14px">
+          <div class="card kpi">
+            <div class="label">Бюджет запуска</div>
+            <div class="value">${fmt.money(metrics.totalBudget)}</div>
+            <div class="hint">Суммарный бюджет по новинкам в продуктовой проработке</div>
+          </div>
+          <div class="card kpi">
+            <div class="label">План выручки</div>
+            <div class="value">${fmt.money(metrics.totalPlan)}</div>
+            <div class="hint">Какой план Ксюша ведёт до старта продаж</div>
+          </div>
+          <div class="card kpi">
+            <div class="label">Статусы до продаж</div>
+            <div class="value">${fmt.int(metrics.preSales)}</div>
+            <div class="hint">Сколько новинок уже имеют понятный предзапусковый статус</div>
+          </div>
+          <div class="card kpi">
+            <div class="label">Без owner</div>
+            <div class="value">${fmt.int(metrics.noOwner)}</div>
+            <div class="hint">Что ещё не закреплено и тормозит запуск</div>
           </div>
         </div>
         <div class="badge-stack" style="margin-top:10px">
@@ -371,11 +412,12 @@
             <input name="articleKey" placeholder="Артикул / articleKey" value="${escapeHtml(draft.articleKey || '')}">
             <input name="launchMonth" placeholder="Месяц запуска" value="${escapeHtml(draft.launchMonth || '')}">
             <select name="phase">${PHASE_OPTIONS.map((item) => `<option value="${item.value}" ${draft.phase === item.value ? 'selected' : ''}>${escapeHtml(item.label)}</option>`).join('')}</select>
-            <input name="status" placeholder="Статус" value="${escapeHtml(draft.status || '')}">
+            <input name="status" placeholder="Статус до продаж" value="${escapeHtml(draft.status || '')}">
             <input name="owner" placeholder="Owner" value="${escapeHtml(draft.owner || '')}">
             <input name="reportGroup" placeholder="Группа" value="${escapeHtml(draft.reportGroup || '')}">
             <input name="subCategory" placeholder="Подкатегория" value="${escapeHtml(draft.subCategory || '')}">
             <input name="production" placeholder="Поставка / производство" value="${escapeHtml(draft.production || '')}">
+            <input name="launchBudget" type="number" step="1" placeholder="Бюджет запуска" value="${escapeHtml(draft.launchBudget || '')}">
             <input name="plannedRevenue" type="number" step="1" placeholder="План выручки" value="${escapeHtml(draft.plannedRevenue || '')}">
             <input name="externalTraffic" placeholder="Трафик" value="${escapeHtml(draft.externalTraffic || '')}">
             <textarea name="blockersText" rows="3" placeholder="Блокеры через Enter или запятую">${escapeHtml(draft.blockersText || '')}</textarea>
@@ -403,9 +445,9 @@
     if (!root || root.querySelector('[data-launch-manager-card]')) return;
     const title = root.querySelector('.section-title');
     if (title) {
-      title.insertAdjacentHTML('afterend', renderManagerCard());
+      title.insertAdjacentHTML('afterend', renderProductWorkspaceCard());
     } else {
-      root.insertAdjacentHTML('afterbegin', renderManagerCard());
+      root.insertAdjacentHTML('afterbegin', renderProductWorkspaceCard());
     }
     bindManager(root);
   }
@@ -474,6 +516,7 @@
           phase: data.get('phase') || 'content',
           owner: data.get('owner') || '',
           production: data.get('production') || '',
+          launchBudget: data.get('launchBudget') || '',
           plannedRevenue: data.get('plannedRevenue') || '',
           externalTraffic: data.get('externalTraffic') || '',
           blockersText: data.get('blockersText') || ''
@@ -485,12 +528,36 @@
 
   function renderLaunchesWithManager() {
     if (typeof originalRenderLaunches === 'function') originalRenderLaunches();
-    attachManager(document.getElementById('view-launches'));
+    const root = document.getElementById(PRODUCT_VIEW_ID);
+    if (!root) return;
+    const titleNode = root.querySelector('.section-title');
+    if (titleNode) {
+      const title = titleNode.querySelector('h2');
+      const desc = titleNode.querySelector('p');
+      if (title) title.textContent = 'Продукт / Ксения';
+      if (desc) desc.textContent = 'Продуктовая зона Ксюши: бюджет запуска, статус до продаж, owner, трафик и блокеры по каждой новинке.';
+    }
+    attachManager(root);
   }
 
   function renderLaunchControlWithManager() {
     if (typeof originalRenderLaunchControl === 'function') originalRenderLaunchControl();
-    attachManager(document.getElementById('view-launch-control'));
+    const root = document.getElementById(CONTROL_VIEW_ID);
+    if (!root) return;
+    const titleNode = root.querySelector('.section-title');
+    if (titleNode && !root.querySelector('[data-launch-control-note]')) {
+      titleNode.insertAdjacentHTML('afterend', `
+        <div class="card" data-launch-control-note style="margin-top:14px">
+          <div class="section-subhead">
+            <div>
+              <h3>Контур запуска</h3>
+              <p class="small muted">Здесь только контроль прохождения фаз и блокеров. Бюджеты, предзапусковые статусы и состав новинок ведутся во вкладке «Продукт / Ксения».</p>
+            </div>
+            ${badge('Без редактирования состава', 'info')}
+          </div>
+        </div>
+      `);
+    }
   }
 
   function install() {
@@ -523,7 +590,7 @@
     const view = event?.detail?.view;
     if (!view || (view !== 'launches' && view !== 'launch-control')) return;
     window.setTimeout(() => {
-      attachManager(document.getElementById(`view-${view}`));
+      if (view === 'launches') attachManager(document.getElementById(PRODUCT_VIEW_ID));
     }, 120);
   });
 })();

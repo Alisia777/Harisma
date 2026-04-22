@@ -1,12 +1,14 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260422B__) return;
-  window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260422B__ = true;
+  if (window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260422C__) return;
+  window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260422C__ = true;
 
   function installPriceWorkbenchSupportRedirect() {
-    if (window.__ALTEA_PRICE_SUPPORT_REDIRECT_20260422B__) return;
-    window.__ALTEA_PRICE_SUPPORT_REDIRECT_20260422B__ = true;
+    if (window.__ALTEA_PRICE_SUPPORT_REDIRECT_20260422C__) return;
+    window.__ALTEA_PRICE_SUPPORT_REDIRECT_20260422C__ = true;
+
     const nativeFetch = window.fetch?.bind(window);
     if (typeof nativeFetch !== 'function') return;
+
     const fallbackPayload = JSON.stringify({
       generatedAt: new Date().toISOString(),
       platforms: {
@@ -37,10 +39,10 @@
 
     async function loadSupportLiteParts() {
       const partUrls = [
-        'portal-dashboard-support-lite.gz.part01.txt?v=20260422b',
-        'portal-dashboard-support-lite.gz.part02.txt?v=20260422b',
-        'portal-dashboard-support-lite.gz.part03.txt?v=20260422b',
-        'portal-dashboard-support-lite.gz.part04.txt?v=20260422b'
+        'portal-dashboard-support-lite.gz.part01.txt?v=20260422i',
+        'portal-dashboard-support-lite.gz.part02.txt?v=20260422i',
+        'portal-dashboard-support-lite.gz.part03.txt?v=20260422i',
+        'portal-dashboard-support-lite.gz.part04.txt?v=20260422i'
       ];
       try {
         const parts = await Promise.all(partUrls.map(async (url) => {
@@ -86,94 +88,46 @@
     };
   }
 
-  function interactiveBundleReady() {
-    return !!window.renderDashboard?.__dashboardInteractiveWrapped
-      || !!window.rerenderCurrentView?.__dashboardInteractiveWrapped
-      || !!document.getElementById('portalDashboardExecutiveRoot');
+  function isDashboardActive() {
+    return (typeof state === 'object' && state && state.activeView === 'dashboard')
+      || !!document.getElementById('view-dashboard')?.classList.contains('active');
   }
 
-  function rearmInteractiveBundle() {
-    if (window.__ALTEA_DASHBOARD_INTERACTIVE_REARMED_20260422B__) return;
-    window.__ALTEA_DASHBOARD_INTERACTIVE_REARMED_20260422B__ = true;
-    try {
-      delete window.__ALTEA_DASHBOARD_INTERACTIVE_20260420M__;
-    } catch {
-      window.__ALTEA_DASHBOARD_INTERACTIVE_20260420M__ = false;
-    }
-    const script = document.createElement('script');
-    script.src = 'portal-dashboard-interactive-hotfix.js?v=20260420n&rearm=20260422b';
-    script.async = false;
-    script.onload = () => {
-      window.setTimeout(() => {
-        wakeDashboardBundle();
-        if (typeof window.renderDashboard === 'function') window.renderDashboard();
-      }, 120);
-    };
-    (document.head || document.body || document.documentElement).appendChild(script);
-  }
+  let softPrimeTimer = 0;
 
-  function wakeDashboardBundle() {
-    try {
-      window.dispatchEvent(new CustomEvent('altea:viewchange', {
-        detail: { view: 'dashboard', source: 'dashboard-prime-hotfix' }
-      }));
-    } catch {}
-
-    const button = document.querySelector('.nav-btn[data-view="dashboard"]');
-    if (!button) return;
-    try {
-      button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-    } catch {}
-  }
-
-  function primeDashboard() {
+  function safePrimeDashboard() {
     installPriceWorkbenchSupportRedirect();
-    const onDashboard = (typeof state === 'object' && state && state.activeView === 'dashboard')
-      || document.getElementById('view-dashboard')?.classList.contains('active');
-    if (!onDashboard) return;
-    if (typeof window.rerenderCurrentView === 'function') {
-      window.rerenderCurrentView();
+    if (!isDashboardActive()) return;
+    if (document.getElementById('portalDashboardExecutiveRoot')) return;
+
+    try {
+      if (typeof window.renderDashboard === 'function') {
+        window.renderDashboard();
+        return;
+      }
+      if (typeof window.rerenderCurrentView === 'function') {
+        window.rerenderCurrentView();
+      }
+    } catch (error) {
+      console.warn('[portal-dashboard-prime-hotfix] soft prime', error);
     }
-    if (!document.getElementById('portalDashboardExecutiveRoot') && typeof window.renderDashboard === 'function') {
-      window.renderDashboard();
-    }
-    wakeDashboardBundle();
-    if (!interactiveBundleReady()) rearmInteractiveBundle();
   }
 
-  function startPrimeLoop() {
-    if (window.__ALTEA_DASHBOARD_PRIME_LOOP_20260422B__) return;
-    window.__ALTEA_DASHBOARD_PRIME_LOOP_20260422B__ = true;
-    let attempts = 0;
-    const tick = () => {
-      attempts += 1;
-      primeDashboard();
-      if (document.getElementById('portalDashboardExecutiveRoot')) return;
-      if (attempts >= 24) return;
-      window.setTimeout(tick, 1200);
-    };
-    window.setTimeout(tick, 1400);
+  function scheduleSoftPrime(delay = 120) {
+    window.clearTimeout(softPrimeTimer);
+    softPrimeTimer = window.setTimeout(safePrimeDashboard, delay);
   }
 
-  if (typeof window.requestAnimationFrame === 'function') {
-    window.requestAnimationFrame(() => {
-      window.setTimeout(primeDashboard, 60);
-      window.setTimeout(primeDashboard, 320);
-      window.setTimeout(primeDashboard, 900);
-      window.setTimeout(primeDashboard, 2200);
-      window.setTimeout(primeDashboard, 5200);
-      window.setTimeout(primeDashboard, 12000);
-      window.setTimeout(primeDashboard, 18000);
-      startPrimeLoop();
-    });
+  installPriceWorkbenchSupportRedirect();
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => scheduleSoftPrime(120), { once: true });
   } else {
-    window.setTimeout(primeDashboard, 120);
-    window.setTimeout(primeDashboard, 360);
-    window.setTimeout(primeDashboard, 960);
-    window.setTimeout(primeDashboard, 2400);
-    window.setTimeout(primeDashboard, 5400);
-    window.setTimeout(primeDashboard, 12200);
-    window.setTimeout(primeDashboard, 18200);
-    startPrimeLoop();
+    scheduleSoftPrime(120);
   }
+
+  window.addEventListener('load', () => scheduleSoftPrime(240), { once: true });
+  window.addEventListener('altea:viewchange', (event) => {
+    if (event?.detail?.view === 'dashboard') scheduleSoftPrime(120);
+  });
 })();

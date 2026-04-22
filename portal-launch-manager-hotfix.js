@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_LAUNCH_MANAGER_HOTFIX_20260422B__) return;
-  window.__ALTEA_LAUNCH_MANAGER_HOTFIX_20260422B__ = true;
+  if (window.__ALTEA_LAUNCH_MANAGER_HOTFIX_20260422C__) return;
+  window.__ALTEA_LAUNCH_MANAGER_HOTFIX_20260422C__ = true;
 
   if (window.__ALTEA_LAUNCH_MONTH_FILTER_HOTFIX_20260422C__) return;
 
@@ -526,6 +526,23 @@
     });
   }
 
+  function bindLaunchControlHelpers(root) {
+    if (!root) return;
+    root.querySelectorAll('[data-launch-open-view]').forEach((button) => {
+      if (button.dataset.launchOpenBound === '1') return;
+      button.dataset.launchOpenBound = '1';
+      button.addEventListener('click', () => {
+        const view = button.dataset.launchOpenView || '';
+        if (!view) return;
+        if (typeof window.setView === 'function') {
+          window.setView(view);
+          return;
+        }
+        document.querySelector(`.nav-btn[data-view="${view}"]`)?.click();
+      });
+    });
+  }
+
   function renderLaunchesWithManager() {
     if (typeof originalRenderLaunches === 'function') originalRenderLaunches();
     const root = document.getElementById(PRODUCT_VIEW_ID);
@@ -555,9 +572,28 @@
             </div>
             ${badge('Без редактирования состава', 'info')}
           </div>
+          <div class="grid cards" style="margin-top:14px">
+            <div class="card subtle">
+              <div class="label">1. Выбери месяц</div>
+              <div class="hint">Сверху отфильтруй нужный месяц запуска, чтобы не смотреть всю ленту сразу.</div>
+            </div>
+            <div class="card subtle">
+              <div class="label">2. Найди стоп-фазу</div>
+              <div class="hint">Здесь видно, что именно тормозит запуск: owner, поставка, контент, экономика или масштаб.</div>
+            </div>
+            <div class="card subtle">
+              <div class="label">3. Дальше по роли</div>
+              <div class="hint">Клик по SKU открывает карточку, а изменение состава, бюджета и статуса до продаж идёт через «Продукт / Ксения».</div>
+            </div>
+          </div>
+          <div class="badge-stack" style="margin-top:12px">
+            <button class="btn" type="button" data-launch-open-view="launches">Открыть Продукт / Ксения</button>
+            <button class="btn ghost" type="button" data-launch-open-view="control">Открыть задачи</button>
+          </div>
         </div>
       `);
     }
+    bindLaunchControlHelpers(root);
   }
 
   function install() {

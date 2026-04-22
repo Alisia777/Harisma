@@ -1,1 +1,572 @@
-function buildExecutiveModel(){const e=getControlSnapshot(),t=e.active,a=e.overdue,n=e.waitingDecision,r=t.filter(e=>"critical"===e.priority),s=t.filter(e=>!e.owner),i=getLaunchItems().slice(0,6),o=state.skus.filter(e=>!e?.flags?.assigned).slice(0,8),c=[{title:"Цена / маржа",items:sortTasks(t.filter(e=>"price_margin"===e.type)).slice(0,5),tone:"danger"},{title:"Supply / остатки",items:sortTasks(t.filter(e=>"supply"===e.type)).slice(0,5),tone:"warn"},{title:"Внешний трафик",items:sortTasks(t.filter(e=>"traffic"===e.type)).slice(0,5),tone:"info"},{title:"Закрепление / owner",items:sortTasks(t.filter(e=>"assignment"===e.type)).slice(0,5),tone:"warn"}];return{control:e,active:t,overdue:a,waiting:n,critical:r,noOwnerTasks:s,launchFocus:i,unassignedSkus:o,categories:c,ceoList:sortTasks(t).filter(e=>isTaskOverdue(e)||"waiting_decision"===e.status||"critical"===e.priority).slice(0,12)}}function renderExecutive(){const e=document.getElementById("view-executive"),t=buildExecutiveModel();e.innerHTML=`\n    <div class="section-title">\n      <div>\n        <h2>Свод для руководителя</h2>\n        <p>Финальный слой: сюда вынесены только задачи и алерты, которые реально требуют контроля, эскалации или решения по ресурсу.</p>\n      </div>\n      <div class="badge-stack">${badge(`${fmt.int(t.critical.length)} критично`,t.critical.length?"danger":"ok")}${badge(`${fmt.int(t.waiting.length)} ждут решения`,t.waiting.length?"warn":"ok")}</div>\n    </div>\n\n    <div class="kpi-strip">\n      <div class="mini-kpi danger"><span>Активные задачи</span><strong>${fmt.int(t.active.length)}</strong><span>всего в контуре</span></div>\n      <div class="mini-kpi danger"><span>Просрочено</span><strong>${fmt.int(t.overdue.length)}</strong><span>нужен апдейт / перенос</span></div>\n      <div class="mini-kpi warn"><span>Критично по марже</span><strong>${fmt.int(t.critical.length)}</strong><span>цена и экономика</span></div>\n      <div class="mini-kpi warn"><span>Ждут решения</span><strong>${fmt.int(t.waiting.length)}</strong><span>зависло на развилке</span></div>\n      <div class="mini-kpi warn"><span>Без owner</span><strong>${fmt.int(t.noOwnerTasks.length)}</strong><span>в задачах</span></div>\n      <div class="mini-kpi"><span>SKU без owner</span><strong>${fmt.int(t.unassignedSkus.length)}</strong><span>в бренде Алтея</span></div>\n    </div>\n\n    <div class="dashboard-grid-4" style="margin-top:14px">\n      ${t.categories.map(e=>`\n        <div class="card tone-${escapeHtml(e.tone)}">\n          <div class="section-subhead">\n            <div>\n              <h3>${escapeHtml(e.title)}</h3>\n              <p class="small muted">То, что нельзя терять из вида на уровне руководителя.</p>\n            </div>\n            ${badge(`${fmt.int(e.items.length)} шт.`,e.tone)}\n          </div>\n          <div class="list compact-list">\n            ${e.items.length?e.items.map(e=>renderMiniTask(e)).join(""):'<div class="empty">Нет активных алертов</div>'}\n          </div>\n        </div>\n      `).join("")}\n    </div>\n\n    <div class="two-col" style="margin-top:14px">\n      <div class="card">\n        <div class="section-subhead">\n          <div>\n            <h3>На личном контроле · 7 дней</h3>\n            <p class="small muted">Просрочки, критичные задачи и вопросы, которые уже ждут решения.</p>\n          </div>\n          ${badge(`${fmt.int(t.ceoList.length)} в short-list`,"danger")}\n        </div>\n        <div class="task-mini-grid">${t.ceoList.map(renderMiniTask).join("")||'<div class="empty">Нет эскалаций</div>'}</div>\n      </div>\n\n      <div class="card">\n        <div class="section-subhead">\n          <div>\n            <h3>Новинки и незакреплённые SKU</h3>\n            <p class="small muted">Два частых провала: запуск без сопровождения и товар без явного owner.</p>\n          </div>\n          ${badge(`${fmt.int(t.launchFocus.length)} новинок`,"info")}\n        </div>\n        <div class="alert-stack">\n          ${t.launchFocus.map(e=>`\n            <div class="alert-row">\n              <div>\n                <strong>${escapeHtml(e.name||"Новинка")}</strong>\n                <div class="muted small">${escapeHtml(e.launchMonth||"—")} · ${escapeHtml(e.reportGroup||"—")}</div>\n              </div>\n              <div class="badge-stack">${badge(e.tag||"новинка","info")}${e.production?badge(e.production):""}</div>\n              <div class="muted small">${escapeHtml(e.status||"Статус не указан")}</div>\n            </div>\n          `).join("")}\n          ${t.unassignedSkus.slice(0,4).map(e=>`\n            <div class="alert-row">\n              <div>\n                <strong>${linkToSku(e.articleKey,e.article||e.articleKey)}</strong>\n                <div class="muted small">${escapeHtml(e.name||"Без названия")}</div>\n              </div>\n              <div class="badge-stack">${badge("Без owner","warn")}${skuOperationalStatus(e)}</div>\n              <div class="muted small">${escapeHtml(e.focusReasons||"Нужно закрепить ответственного и сценарий работы")}</div>\n            </div>\n          `).join("")}\n        </div>\n      </div>\n    </div>\n  `}async function createComment(e){const t=normalizeComment({id:uid("comment"),articleKey:e.articleKey,author:String(e.author||state.team.member.name||"Команда").trim()||"Команда",team:String(e.team||teamMemberLabel()).trim()||"Команда",createdAt:(new Date).toISOString(),text:String(e.text||"").trim(),type:String(e.type||"signal")});if(t.text){state.storage.comments.unshift(t),saveLocalStorage();try{await persistComment(t)}catch(e){console.error(e)}}}async function createTaskHistoryEntry(e,t,a,n={}){const r=getTask(e);r&&String(a||"").trim()&&await createComment({articleKey:r.articleKey||"",author:n.author||state.team.member.name||r.owner||"Команда",team:n.team||teamMemberLabel(),type:"task_log",text:`[[task:${e}]] [[kind:${t}]] ${String(a||"").trim()}`})}function buildTaskUpdateMessage(e,t){const a=[];return e.title!==t.title&&a.push(`заголовок → ${t.title}`),(e.owner||"")!==(t.owner||"")&&a.push(`owner → ${t.owner||"Без owner"}`),(e.due||"")!==(t.due||"")&&a.push(`срок → ${t.due||"—"}`),e.status!==t.status&&a.push(`статус → ${(TASK_STATUS_META[t.status]||TASK_STATUS_META.new).label}`),e.priority!==t.priority&&a.push(`приоритет → ${(PRIORITY_META[t.priority]||PRIORITY_META.medium).label}`),e.type!==t.type&&a.push(`тип → ${TASK_TYPE_META[t.type]||TASK_TYPE_META.general}`),e.platform!==t.platform&&a.push(`контур → ${controlWorkstreamMeta(controlWorkstreamKey(t,getSku(t.articleKey))).label}`),(e.nextAction||"")!==(t.nextAction||"")&&a.push("обновлён следующий шаг"),(e.reason||"")!==(t.reason||"")&&a.push("обновлён контекст"),(e.entityLabel||"")!==(t.entityLabel||"")&&a.push(`тема → ${t.entityLabel||"—"}`),a.length?`Изменения по задаче: ${a.join("; ")}.`:""}async function upsertOwnerAssignment(e){const t=normalizeOwnerOverride({articleKey:e.articleKey,ownerName:e.ownerName,ownerRole:e.ownerRole,note:e.note,updatedAt:(new Date).toISOString(),assignedBy:state.team.member.name||"Команда"});state.storage.ownerOverrides=(state.storage.ownerOverrides||[]).filter(e=>e.articleKey!==t.articleKey),state.storage.ownerOverrides.unshift(t),applyOwnerOverridesToSkus(),saveLocalStorage();try{await persistOwnerOverride(t)}catch(e){console.error(e)}}async function createDecision(e){const t=normalizeDecision({id:uid("decision"),articleKey:e.articleKey,title:e.title,decision:e.decision,owner:e.owner,status:e.status,due:e.due,createdAt:(new Date).toISOString(),createdBy:state.team.member.name||"Команда"});if(t.decision){state.storage.decisions.unshift(t),saveLocalStorage();try{await persistDecision(t)}catch(e){console.error(e)}}}async function createManualTask(e){const t=normalizeTask({id:uid("task"),source:"manual",articleKey:e.articleKey,entityLabel:e.entityLabel,title:String(e.title||"").trim()||"Новая задача",type:e.type,priority:e.priority,platform:e.platform,owner:String(e.owner||"").trim(),due:e.due||plusDays(3),status:"new",nextAction:String(e.nextAction||"").trim(),reason:String(e.reason||"").trim()},"manual");state.storage.tasks.unshift(t),saveLocalStorage();try{await persistTask(t)}catch(e){console.error(e)}return await createTaskHistoryEntry(t.id,"created",`Задача создана${t.owner?` · owner ${t.owner}`:""}${t.due?` · срок ${t.due}`:""}.`),rerenderCurrentView(),state.activeSku===t.articleKey&&renderSkuModal(t.articleKey),t}async function takeAutoTask(e){const t=getAllTasks().find(t=>t.id===e);if(!t||"auto"!==t.source)return;const a=normalizeTask({...t,id:uid("task"),source:"manual",status:"in_progress",owner:t.owner||ownerName(getSku(t.articleKey))||""},"manual");state.storage.tasks.unshift(a),saveLocalStorage();try{await persistTask(a)}catch(e){console.error(e)}await createTaskHistoryEntry(a.id,"created","Авто-сигнал взят в ручную работу и переведён в контур команды."),rerenderCurrentView(),state.activeSku===t.articleKey&&renderSkuModal(t.articleKey),openTaskModal(a.id)}async function updateTaskRecord(e,t={}){const a=state.storage.tasks.find(t=>t.id===e);if(!a)return null;const n={...a},r=normalizeTask({...a,...t,id:a.id,source:a.source,createdAt:a.createdAt,articleKey:void 0!==t.articleKey?t.articleKey:a.articleKey},a.source||"manual");Object.assign(a,r),saveLocalStorage();try{await persistTask(a)}catch(e){console.error(e)}const s=buildTaskUpdateMessage(n,a);return s&&await createTaskHistoryEntry(e,a.status!==n.status?"status":"updated",s),rerenderCurrentView(),state.activeSku===a.articleKey&&renderSkuModal(a.articleKey),a}async function updateTaskStatus(e,t){return updateTaskRecord(e,{status:t})}async function closeTaskWithReport(e,t){const a=await updateTaskRecord(e,{status:"done"});return a?(await createTaskHistoryEntry(e,"report",`Задача закрыта с отчётом: ${t}`),a):null}function exportStorage(){const e=new Blob([JSON.stringify(state.storage,null,2)],{type:"application/json"}),t=URL.createObjectURL(e),a=document.createElement("a");a.href=t,a.download=`altea-portal-storage-${todayIso()}.json`,a.click(),URL.revokeObjectURL(t)}async function importStorage(e){if(!e)return;const t=await e.text(),a=JSON.parse(t);mergeImportedStorage(a),rerenderCurrentView(),state.activeSku&&renderSkuModal(state.activeSku)}function applyControlPreset(e){state.controlFilters.status="active",state.controlFilters.horizon="all",state.controlFilters.type="all","overdue"===e?state.controlFilters.horizon="overdue":"no_owner"===e?state.controlFilters.horizon="no_owner":"critical"===e&&(state.controlFilters.type="price_margin")}function closeSkuModal(){document.getElementById("skuModal").classList.remove("open"),state.activeSku=null}function openSkuModal(e){renderSkuModal(e)}function setView(e){state.activeView=e,document.querySelectorAll(".nav-btn").forEach(t=>t.classList.toggle("active",t.dataset.view===e)),document.querySelectorAll(".view").forEach(t=>t.classList.toggle("active",t.id===`view-${e}`)),window.dispatchEvent(new CustomEvent("altea:viewchange",{detail:{view:e}})),prepareView(e)}async function prepareView(e){if(!state.boot.dataReady)return void rerenderCurrentView();const t=VIEW_DATA_REQUIREMENTS[e];t&&!state.boot.lazyReady?.[t]&&renderViewLoading(`view-${e}`,VIEW_TITLES[e]||"Экран");try{await ensureViewData(e)}catch(t){return console.error(t),renderViewFailure(`view-${e}`,VIEW_TITLES[e]||"Экран",t),void setAppError(`Портал не смог подгрузить ${VIEW_TITLES[e]||"экран"}: ${t.message}`)}state.activeView===e&&rerenderCurrentView()}function renderViewFailure(e,t,a){const n=document.getElementById(e);n&&(n.innerHTML=`\n    <div class="card">\n      <div class="head">\n        <div>\n          <h3>${escapeHtml(t)}</h3>\n          <div class="muted small">Экран не удалось отрисовать полностью</div>\n        </div>\n        ${badge("ошибка","danger")}\n      </div>\n      <div class="muted" style="margin-top:10px">${escapeHtml(a?.message||"Неизвестная ошибка")}</div>\n      <div class="muted small" style="margin-top:8px">Обнови страницу после фикса или синка. Остальные разделы портала продолжают работать.</div>\n    </div>\n  `)}function rerenderCurrentView(){applyOwnerOverridesToSkus();const e=[["view-dashboard","Дашборд",renderDashboard],["view-documents","Документы",renderDocuments],["view-repricer","Репрайсер",renderRepricer],["view-prices","Цены",()=>{"function"==typeof window.renderPriceWorkbench&&window.renderPriceWorkbench()}],["view-order","Логистика и заказ",renderOrderCalculator],["view-control","Задачи",renderControlCenter],["view-skus","Реестр SKU",renderSkuRegistry],["view-launches","Продукт / Ксения",renderLaunches],["view-launch-control","Запуск новинок",renderLaunchControl],["view-meetings","Ритм работы",renderMeetings],["view-executive","Руководителю",renderExecutive]],t=[],a=`view-${state.activeView||"dashboard"}`,n=e.find(([e])=>e===a)||e[0];if(n){const[e,a,r]=n;try{r()}catch(n){console.error(n),t.push(`${a}: ${n.message}`),renderViewFailure(e,a,n)}}state.runtimeErrors=t,updateSyncBadge(),t.length?setAppError(`Портал загрузил не всё: ${t[0]}`):setAppError("")}function setAppError(e=""){const t=document.getElementById("appError");if(!e)return t.classList.add("hidden"),void(t.textContent="");t.textContent=e,t.classList.remove("hidden")}function attachGlobalListeners(){state.boot.listenersAttached||(state.boot.listenersAttached=!0,ensureTaskModal(),document.querySelectorAll(".nav-btn").forEach(e=>e.addEventListener("click",()=>setView(e.dataset.view))),document.body.addEventListener("click",e=>{const t=e.target.closest("[data-open-sku]");if(t)return document.getElementById("taskModal")?.classList.contains("open")&&closeTaskModal(),void openSkuModal(t.dataset.openSku);const a=e.target.closest("[data-open-task]");if(a)return void openTaskModal(a.dataset.openTask);if(e.target.closest("[data-close-modal]"))return void closeSkuModal();const n=e.target.closest("[data-control-preset]");if(n)return applyControlPreset(n.dataset.controlPreset),void setView("control");if(e.target.closest("[data-view-control]"))return void setView("control");if(e.target.closest("[data-view-executive]"))return void setView("executive");const r=e.target.closest("[data-take-task]");r&&takeAutoTask(r.dataset.takeTask)}),document.getElementById("skuModal").addEventListener("click",e=>{"skuModal"===e.target.id&&closeSkuModal()}),document.getElementById("exportStorageBtn").addEventListener("click",exportStorage),document.getElementById("pullRemoteBtn").addEventListener("click",async()=>{await pullRemoteState(!0)}),document.getElementById("pushRemoteBtn").addEventListener("click",async()=>{await pushStateToRemote()}),document.getElementById("importStorageInput").addEventListener("change",async e=>{try{await importStorage(e.target.files?.[0]),e.target.value=""}catch(e){setAppError(`Не удалось импортировать JSON: ${e.message}`)}}))}async function init(){attachGlobalListeners(),state.boot.dataWarnings=[],window.__ALTEA_PRIMARY_INIT_PENDING__=!0;const e=initTeamStore().then(()=>{if(state.boot.dataReady)try{rerenderCurrentView(),state.activeSku&&renderSkuModal(state.activeSku)}catch(e){console.error(e),setAppError(`Командная база подключена, но экран не удалось перерисовать: ${e.message}`)}}).catch(e=>{console.error(e),setAppError(`Портал открылся локально: ${e.message||"ошибка подключения к командной базе"}`)});try{const e=loadLocalStorage(),[t,a,n]=await Promise.all([loadJsonOrFallback("data/dashboard.json",{cards:[],generatedAt:""},"Дашборд"),loadJsonOrFallback("data/skus.json",[],"SKU"),loadJsonOrFallback("data/seed_comments.json",{comments:[],tasks:[]},"Seed comments")]);state.dashboard=t||{cards:[]},state.skus=Array.isArray(a)?a:[],state.launches=[],state.meetings=[],state.documents={groups:[]},state.repricer={generatedAt:"",summary:{},rows:[]},state.orderCalc.articleKey||(state.orderCalc.articleKey=state.skus[0]?.articleKey||""),state.orderCalc.daysToNextReceipt||(state.orderCalc.daysToNextReceipt=String(Math.round(numberOrZero(state.skus[0]?.leadTimeDays)||30))),state.storage={comments:Array.isArray(e.comments)?e.comments:[],tasks:Array.isArray(e.tasks)?e.tasks:[],decisions:Array.isArray(e.decisions)?e.decisions:[],ownerOverrides:Array.isArray(e.ownerOverrides)?e.ownerOverrides:[]},applyOwnerOverridesToSkus(),mergeSeedStorage(n||{}),state.boot.dataReady=!0,rerenderCurrentView(),setView("dashboard"),state.boot.dataWarnings.length?setAppError(`Часть данных загружена с исправлениями: ${state.boot.dataWarnings[0]}`):setAppError("")}catch(e){console.error(e),setAppError(`Портал не смог загрузить данные: ${e.message}`)}finally{window.__ALTEA_PRIMARY_INIT_PENDING__=!1,window.__ALTEA_PRIMARY_INIT_FINISHED__=!0}return e}init();
+function buildExecutiveModel() {
+  const control = getControlSnapshot();
+  const active = sortTasks(control.active.filter((task) => task.status !== 'waiting_rop'));
+  const overdue = active.filter(isTaskOverdue);
+  const waiting = sortTasks(active.filter((task) => task.status === 'waiting_decision'));
+  const critical = sortTasks(active.filter((task) => task.priority === 'critical'));
+  const noOwnerTasks = sortTasks(active.filter((task) => !task.owner));
+  const launchFocus = getLaunchItems().slice(0, 4);
+  const unassignedSkus = state.skus.filter((sku) => !sku?.flags?.assigned).slice(0, 6);
+  const escalations = sortTasks(active.filter((task) => (
+    task.status === 'waiting_decision'
+    || isTaskOverdue(task)
+    || task.priority === 'critical'
+    || !task.owner
+  )));
+  return {
+    control,
+    active,
+    overdue,
+    waiting,
+    waitingCount: waiting.length,
+    critical,
+    criticalCount: critical.length,
+    noOwnerTasks: noOwnerTasks.slice(0, 8),
+    noOwnerCount: noOwnerTasks.length,
+    launchFocus,
+    unassignedSkus,
+    escalations: escalations.slice(0, 12)
+  };
+}
+
+function renderExecutive() {
+  const root = document.getElementById('view-executive');
+  const model = buildExecutiveModel();
+  root.innerHTML = `
+    <div class="section-title">
+      <div>
+        <h2>Руководителю</h2>
+        <p>Оставили только то, что требует финального согласования или быстрого решения по сроку, ресурсу и приоритету.</p>
+      </div>
+      <div class="badge-stack">${badge(`${fmt.int(model.waitingCount)} ждут финала`, model.waitingCount ? 'warn' : 'ok')}${badge(`${fmt.int(model.criticalCount)} критично`, model.criticalCount ? 'danger' : 'ok')}</div>
+    </div>
+
+    <div class="kpi-strip">
+      <div class="mini-kpi warn"><span>На финальном согласовании</span><strong>${fmt.int(model.waitingCount)}</strong><span>РОП уже согласовал</span></div>
+      <div class="mini-kpi danger"><span>Критично</span><strong>${fmt.int(model.criticalCount)}</strong><span>экономика и блокеры</span></div>
+      <div class="mini-kpi danger"><span>Просрочено</span><strong>${fmt.int(model.overdue.length)}</strong><span>нужен апдейт срока</span></div>
+      <div class="mini-kpi warn"><span>Без owner</span><strong>${fmt.int(model.noOwnerCount)}</strong><span>нужно закрепить</span></div>
+      <div class="mini-kpi"><span>Активно в контуре</span><strong>${fmt.int(model.active.length)}</strong><span>всего задач</span></div>
+      <div class="mini-kpi"><span>SKU без owner</span><strong>${fmt.int(model.unassignedSkus.length)}</strong><span>в бренде Алтея</span></div>
+    </div>
+
+    <div class="two-col" style="margin-top:14px">
+      <div class="card">
+        <div class="section-subhead">
+          <div>
+            <h3>На финальном согласовании</h3>
+            <p class="small muted">Очередь на закрытие: откройте задачу, дайте финальный комментарий и переведите её в архив выполненных.</p>
+          </div>
+          ${badge(`${fmt.int(model.waitingCount)} шт.`, model.waitingCount ? 'warn' : 'ok')}
+        </div>
+        <div class="task-mini-grid">${model.waiting.map(renderMiniTask).join('') || '<div class="empty">Нет задач на финальном согласовании</div>'}</div>
+      </div>
+
+      <div class="card">
+        <div class="section-subhead">
+          <div>
+            <h3>Что требует решения сегодня</h3>
+            <p class="small muted">Короткий short-list: просрочки, критичные задачи и всё, что зависло без owner.</p>
+          </div>
+          ${badge(`${fmt.int(model.escalations.length)} в short-list`, model.escalations.length ? 'danger' : 'ok')}
+        </div>
+        <div class="task-mini-grid">${model.escalations.map(renderMiniTask).join('') || '<div class="empty">Нет срочных эскалаций</div>'}</div>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-top:14px">
+      <div class="card">
+        <div class="section-subhead">
+          <div>
+            <h3>Где не хватает owner</h3>
+            <p class="small muted">Здесь видно задачи, которые зависнут первыми, если не закрепить ответственного.</p>
+          </div>
+          ${badge(`${fmt.int(model.noOwnerCount)} без owner`, model.noOwnerCount ? 'warn' : 'ok')}
+        </div>
+        <div class="task-mini-grid">${model.noOwnerTasks.map(renderMiniTask).join('') || '<div class="empty">Все задачи уже закреплены</div>'}</div>
+      </div>
+
+      <div class="card">
+        <div class="section-subhead">
+          <div>
+            <h3>Новинки и SKU без owner</h3>
+            <p class="small muted">Два частых риска: запуск без сопровождения и товар без явного владельца.</p>
+          </div>
+          ${badge(`${fmt.int(model.launchFocus.length)} новинок`, model.launchFocus.length ? 'info' : 'ok')}
+        </div>
+        <div class="alert-stack">
+          ${model.launchFocus.map((item) => `
+            <div class="alert-row">
+              <div>
+                <strong>${escapeHtml(item.name || 'Новинка')}</strong>
+                <div class="muted small">${escapeHtml(item.launchMonth || '—')} · ${escapeHtml(item.reportGroup || '—')}</div>
+              </div>
+              <div class="badge-stack">${badge(item.tag || 'новинка', 'info')}${item.production ? badge(item.production) : ''}</div>
+              <div class="muted small">${escapeHtml(item.status || 'Статус не указан')}</div>
+            </div>
+          `).join('')}
+          ${model.unassignedSkus.map((sku) => `
+            <div class="alert-row">
+              <div>
+                <strong>${linkToSku(sku.articleKey, sku.article || sku.articleKey)}</strong>
+                <div class="muted small">${escapeHtml(sku.name || 'Без названия')}</div>
+              </div>
+              <div class="badge-stack">${badge('Без owner', 'warn')}${skuOperationalStatus(sku)}</div>
+              <div class="muted small">${escapeHtml(sku.focusReasons || 'Нужно закрепить ответственного и сценарий работы')}</div>
+            </div>
+          `).join('') || '<div class="empty">Все SKU закреплены</div>'}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function createComment(payload) {
+  const comment = normalizeComment({
+    id: uid('comment'),
+    articleKey: payload.articleKey,
+    author: String(payload.author || state.team.member.name || 'Команда').trim() || 'Команда',
+    team: String(payload.team || teamMemberLabel()).trim() || 'Команда',
+    createdAt: new Date().toISOString(),
+    text: String(payload.text || '').trim(),
+    type: String(payload.type || 'signal')
+  });
+  if (!comment.text) return;
+  state.storage.comments.unshift(comment);
+  saveLocalStorage();
+  try {
+    await persistComment(comment);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function createTaskHistoryEntry(taskId, kind, text, payload = {}) {
+  const task = getTask(taskId);
+  if (!task || !String(text || '').trim()) return;
+  await createComment({
+    articleKey: task.articleKey || '',
+    author: payload.author || state.team.member.name || task.owner || 'Команда',
+    team: payload.team || teamMemberLabel(),
+    type: 'task_log',
+    text: `[[task:${taskId}]] [[kind:${kind}]] ${String(text || '').trim()}`
+  });
+}
+
+function buildTaskUpdateMessage(before, after) {
+  const changes = [];
+  if (before.title !== after.title) changes.push(`заголовок → ${after.title}`);
+  if ((before.owner || '') !== (after.owner || '')) changes.push(`owner → ${after.owner || 'Без owner'}`);
+  if ((before.due || '') !== (after.due || '')) changes.push(`срок → ${after.due || '—'}`);
+  if (before.status !== after.status) changes.push(`статус → ${(TASK_STATUS_META[after.status] || TASK_STATUS_META.new).label}`);
+  if (before.priority !== after.priority) changes.push(`приоритет → ${(PRIORITY_META[after.priority] || PRIORITY_META.medium).label}`);
+  if (before.type !== after.type) changes.push(`тип → ${TASK_TYPE_META[after.type] || TASK_TYPE_META.general}`);
+  if (before.platform !== after.platform) changes.push(`контур → ${controlWorkstreamMeta(controlWorkstreamKey(after, getSku(after.articleKey))).label}`);
+  if ((before.nextAction || '') !== (after.nextAction || '')) changes.push('обновлён следующий шаг');
+  if ((before.reason || '') !== (after.reason || '')) changes.push('обновлён контекст');
+  if ((before.entityLabel || '') !== (after.entityLabel || '')) changes.push(`тема → ${after.entityLabel || '—'}`);
+  return changes.length ? `Изменения по задаче: ${changes.join('; ')}.` : '';
+}
+
+async function upsertOwnerAssignment(payload) {
+  const override = normalizeOwnerOverride({
+    articleKey: payload.articleKey,
+    ownerName: payload.ownerName,
+    ownerRole: payload.ownerRole,
+    note: payload.note,
+    updatedAt: new Date().toISOString(),
+    assignedBy: state.team.member.name || 'Команда'
+  });
+  state.storage.ownerOverrides = (state.storage.ownerOverrides || []).filter((item) => item.articleKey !== override.articleKey);
+  state.storage.ownerOverrides.unshift(override);
+  applyOwnerOverridesToSkus();
+  saveLocalStorage();
+  try {
+    await persistOwnerOverride(override);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function createDecision(payload) {
+  const decision = normalizeDecision({
+    id: uid('decision'),
+    articleKey: payload.articleKey,
+    title: payload.title,
+    decision: payload.decision,
+    owner: payload.owner,
+    status: payload.status,
+    due: payload.due,
+    createdAt: new Date().toISOString(),
+    createdBy: state.team.member.name || 'Команда'
+  });
+  if (!decision.decision) return;
+  state.storage.decisions.unshift(decision);
+  saveLocalStorage();
+  try {
+    await persistDecision(decision);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function createManualTask(payload) {
+  const task = normalizeTask({
+    id: uid('task'),
+    source: 'manual',
+    articleKey: payload.articleKey,
+    entityLabel: payload.entityLabel,
+    title: String(payload.title || '').trim() || 'Новая задача',
+    type: payload.type,
+    priority: payload.priority,
+    platform: payload.platform,
+    owner: String(payload.owner || '').trim(),
+    due: payload.due || plusDays(3),
+    status: 'new',
+    nextAction: String(payload.nextAction || '').trim(),
+    reason: String(payload.reason || '').trim()
+  }, 'manual');
+  state.storage.tasks.unshift(task);
+  saveLocalStorage();
+  try {
+    await persistTask(task);
+  } catch (error) {
+    console.error(error);
+  }
+  await createTaskHistoryEntry(task.id, 'created', `Задача создана${task.owner ? ` · owner ${task.owner}` : ''}${task.due ? ` · срок ${task.due}` : ''}.`);
+  rerenderCurrentView();
+  if (state.activeSku === task.articleKey) renderSkuModal(task.articleKey);
+  return task;
+}
+
+async function takeAutoTask(taskId) {
+  const task = getAllTasks().find((item) => item.id === taskId);
+  if (!task || task.source !== 'auto') return;
+  const manual = normalizeTask({
+    ...task,
+    id: uid('task'),
+    source: 'manual',
+    status: 'in_progress',
+    owner: task.owner || ownerName(getSku(task.articleKey)) || ''
+  }, 'manual');
+  state.storage.tasks.unshift(manual);
+  saveLocalStorage();
+  try {
+    await persistTask(manual);
+  } catch (error) {
+    console.error(error);
+  }
+  await createTaskHistoryEntry(manual.id, 'created', 'Авто-сигнал взят в ручную работу и переведён в контур команды.');
+  rerenderCurrentView();
+  if (state.activeSku === task.articleKey) renderSkuModal(task.articleKey);
+  openTaskModal(manual.id);
+}
+
+async function updateTaskRecord(taskId, patch = {}) {
+  const current = state.storage.tasks.find((item) => item.id === taskId);
+  if (!current) return null;
+
+  const before = { ...current };
+  const updated = normalizeTask({
+    ...current,
+    ...patch,
+    id: current.id,
+    source: current.source,
+    createdAt: current.createdAt,
+    articleKey: patch.articleKey !== undefined ? patch.articleKey : current.articleKey
+  }, current.source || 'manual');
+
+  Object.assign(current, updated);
+  saveLocalStorage();
+  try {
+    await persistTask(current);
+  } catch (error) {
+    console.error(error);
+  }
+
+  const historyMessage = buildTaskUpdateMessage(before, current);
+  if (historyMessage) await createTaskHistoryEntry(taskId, current.status !== before.status ? 'status' : 'updated', historyMessage);
+
+  rerenderCurrentView();
+  if (state.activeSku === current.articleKey) renderSkuModal(current.articleKey);
+  return current;
+}
+
+async function updateTaskStatus(taskId, status) {
+  return updateTaskRecord(taskId, { status });
+}
+
+async function closeTaskWithReport(taskId, report) {
+  const task = await updateTaskRecord(taskId, { status: 'done' });
+  if (!task) return null;
+  await createTaskHistoryEntry(taskId, 'report', `Задача закрыта с отчётом: ${report}`);
+  return task;
+}
+
+function exportStorage() {
+  const blob = new Blob([JSON.stringify(state.storage, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `altea-portal-storage-${todayIso()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function importStorage(file) {
+  if (!file) return;
+  const text = await file.text();
+  const data = JSON.parse(text);
+  mergeImportedStorage(data);
+  rerenderCurrentView();
+  if (state.activeSku) renderSkuModal(state.activeSku);
+}
+
+function applyControlPreset(preset) {
+  state.controlFilters.status = 'active';
+  state.controlFilters.horizon = 'all';
+  state.controlFilters.type = 'all';
+
+  if (preset === 'overdue') {
+    state.controlFilters.horizon = 'overdue';
+  } else if (preset === 'no_owner') {
+    state.controlFilters.horizon = 'no_owner';
+  } else if (preset === 'critical') {
+    state.controlFilters.type = 'price_margin';
+  }
+}
+
+function closeSkuModal() {
+  document.getElementById('skuModal').classList.remove('open');
+  state.activeSku = null;
+}
+
+function openSkuModal(articleKey) {
+  renderSkuModal(articleKey);
+}
+
+function setView(view) {
+  state.activeView = view;
+  document.querySelectorAll('.nav-btn').forEach((btn) => btn.classList.toggle('active', btn.dataset.view === view));
+  document.querySelectorAll('.view').forEach((section) => section.classList.toggle('active', section.id === `view-${view}`));
+  window.dispatchEvent(new CustomEvent('altea:viewchange', { detail: { view } }));
+  void prepareView(view);
+}
+
+async function prepareView(view) {
+  if (!state.boot.dataReady) {
+    rerenderCurrentView();
+    return;
+  }
+
+  const lazyKey = VIEW_DATA_REQUIREMENTS[view];
+  if (lazyKey && !state.boot.lazyReady?.[lazyKey]) {
+    renderViewLoading(`view-${view}`, VIEW_TITLES[view] || 'Экран');
+  }
+
+  try {
+    await ensureViewData(view);
+  } catch (error) {
+    console.error(error);
+    renderViewFailure(`view-${view}`, VIEW_TITLES[view] || 'Экран', error);
+    setAppError(`Портал не смог подгрузить ${VIEW_TITLES[view] || 'экран'}: ${error.message}`);
+    return;
+  }
+
+  if (state.activeView !== view) return;
+  rerenderCurrentView();
+}
+
+function renderViewFailure(rootId, title, error) {
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  root.innerHTML = `
+    <div class="card">
+      <div class="head">
+        <div>
+          <h3>${escapeHtml(title)}</h3>
+          <div class="muted small">Экран не удалось отрисовать полностью</div>
+        </div>
+        ${badge('ошибка', 'danger')}
+      </div>
+      <div class="muted" style="margin-top:10px">${escapeHtml(error?.message || 'Неизвестная ошибка')}</div>
+      <div class="muted small" style="margin-top:8px">Обнови страницу после фикса или синка. Остальные разделы портала продолжают работать.</div>
+    </div>
+  `;
+}
+
+function rerenderCurrentView() {
+  applyOwnerOverridesToSkus();
+  const renderPlan = [
+    ['view-dashboard', 'Дашборд', renderDashboard],
+    ['view-documents', 'Документы', renderDocuments],
+    ['view-repricer', 'Репрайсер', renderRepricer],
+    ['view-prices', 'Цены', () => { if (typeof window.renderPriceWorkbench === 'function') window.renderPriceWorkbench(); }],
+    ['view-order', 'Логистика и заказ', renderOrderCalculator],
+    ['view-control', 'Задачи', renderControlCenter],
+    ['view-skus', 'Реестр SKU', renderSkuRegistry],
+    ['view-launches', 'Продукт / Ксения', renderLaunches],
+    ['view-launch-control', 'Запуск новинок', renderLaunchControl],
+    ['view-meetings', 'Ритм работы', renderMeetings],
+    ['view-executive', 'Руководителю', renderExecutive]
+  ];
+  const errors = [];
+  const activeRootId = `view-${state.activeView || 'dashboard'}`;
+  const activeEntry = renderPlan.find(([rootId]) => rootId === activeRootId) || renderPlan[0];
+  if (activeEntry) {
+    const [rootId, title, renderer] = activeEntry;
+    try {
+      renderer();
+    } catch (error) {
+      console.error(error);
+      errors.push(`${title}: ${error.message}`);
+      renderViewFailure(rootId, title, error);
+    }
+  }
+  state.runtimeErrors = errors;
+  updateSyncBadge();
+  if (errors.length) setAppError(`Портал загрузил не всё: ${errors[0]}`);
+  else setAppError('');
+}
+
+function setAppError(message = '') {
+  const banner = document.getElementById('appError');
+  if (!message) {
+    banner.classList.add('hidden');
+    banner.textContent = '';
+    return;
+  }
+  banner.textContent = message;
+  banner.classList.remove('hidden');
+}
+
+function attachGlobalListeners() {
+  if (state.boot.listenersAttached) return;
+  state.boot.listenersAttached = true;
+  ensureTaskModal();
+  document.querySelectorAll('.nav-btn').forEach((btn) => btn.addEventListener('click', () => setView(btn.dataset.view)));
+
+  document.body.addEventListener('click', (event) => {
+    const openBtn = event.target.closest('[data-open-sku]');
+    if (openBtn) {
+      if (document.getElementById('taskModal')?.classList.contains('open')) closeTaskModal();
+      openSkuModal(openBtn.dataset.openSku);
+      return;
+    }
+
+    const openTaskBtn = event.target.closest('[data-open-task]');
+    if (openTaskBtn) {
+      openTaskModal(openTaskBtn.dataset.openTask);
+      return;
+    }
+
+    const closeBtn = event.target.closest('[data-close-modal]');
+    if (closeBtn) {
+      closeSkuModal();
+      return;
+    }
+
+    const presetBtn = event.target.closest('[data-control-preset]');
+    if (presetBtn) {
+      applyControlPreset(presetBtn.dataset.controlPreset);
+      setView('control');
+      return;
+    }
+
+    if (event.target.closest('[data-view-control]')) {
+      setView('control');
+      return;
+    }
+
+    if (event.target.closest('[data-view-executive]')) {
+      setView('executive');
+      return;
+    }
+
+    const takeBtn = event.target.closest('[data-take-task]');
+    if (takeBtn) {
+      takeAutoTask(takeBtn.dataset.takeTask);
+      return;
+    }
+  });
+
+  document.getElementById('skuModal').addEventListener('click', (event) => {
+    if (event.target.id === 'skuModal') closeSkuModal();
+  });
+
+  document.getElementById('exportStorageBtn').addEventListener('click', exportStorage);
+  document.getElementById('pullRemoteBtn').addEventListener('click', async () => { await pullRemoteState(true); });
+  document.getElementById('pushRemoteBtn').addEventListener('click', async () => { await pushStateToRemote(); });
+  document.getElementById('importStorageInput').addEventListener('change', async (event) => {
+    try {
+      await importStorage(event.target.files?.[0]);
+      event.target.value = '';
+    } catch (error) {
+      setAppError(`Не удалось импортировать JSON: ${error.message}`);
+    }
+  });
+}
+
+async function init() {
+  attachGlobalListeners();
+  state.boot.dataWarnings = [];
+  window.__ALTEA_PRIMARY_INIT_PENDING__ = true;
+  // Критично: попытка подключения к Supabase не должна зависеть от первого рендера.
+  // Иначе любой сбой данных/экрана создает ложное ощущение, что портал даже не пытался подключиться.
+  const teamInitPromise = initTeamStore()
+    .then(() => {
+      if (!state.boot.dataReady) return;
+      try {
+        rerenderCurrentView();
+        if (state.activeSku) renderSkuModal(state.activeSku);
+      } catch (error) {
+        console.error(error);
+        setAppError(`Командная база подключена, но экран не удалось перерисовать: ${error.message}`);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+      setAppError(`Портал открылся локально: ${error.message || 'ошибка подключения к командной базе'}`);
+    });
+
+  try {
+    const local = loadLocalStorage();
+    const [dashboard, skus, seed] = await Promise.all([
+      loadJsonOrFallback('data/dashboard.json', { cards: [], generatedAt: '' }, 'Дашборд'),
+      loadJsonOrFallback('data/skus.json', [], 'SKU'),
+      loadJsonOrFallback('data/seed_comments.json', { comments: [], tasks: [] }, 'Seed comments')
+    ]);
+
+    state.dashboard = dashboard || { cards: [] };
+    state.skus = Array.isArray(skus) ? skus : [];
+    state.launches = [];
+    state.meetings = [];
+    state.documents = { groups: [] };
+    state.repricer = { generatedAt: '', summary: {}, rows: [] };
+    if (!state.orderCalc.articleKey) state.orderCalc.articleKey = state.skus[0]?.articleKey || '';
+    if (!state.orderCalc.daysToNextReceipt) state.orderCalc.daysToNextReceipt = String(Math.round(numberOrZero(state.skus[0]?.leadTimeDays) || 30));
+    state.storage = {
+      comments: Array.isArray(local.comments) ? local.comments : [],
+      tasks: Array.isArray(local.tasks) ? local.tasks : [],
+      decisions: Array.isArray(local.decisions) ? local.decisions : [],
+      ownerOverrides: Array.isArray(local.ownerOverrides) ? local.ownerOverrides : []
+    };
+    applyOwnerOverridesToSkus();
+    mergeSeedStorage(seed || {});
+    state.boot.dataReady = true;
+    rerenderCurrentView();
+    setView('dashboard');
+    if (state.boot.dataWarnings.length) setAppError(`Часть данных загружена с исправлениями: ${state.boot.dataWarnings[0]}`);
+    else setAppError('');
+  } catch (error) {
+    console.error(error);
+    setAppError(`Портал не смог загрузить данные: ${error.message}`);
+  } finally {
+    window.__ALTEA_PRIMARY_INIT_PENDING__ = false;
+    window.__ALTEA_PRIMARY_INIT_FINISHED__ = true;
+  }
+
+  return teamInitPromise;
+}
+
+init();

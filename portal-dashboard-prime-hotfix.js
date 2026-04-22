@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260422D__) return;
-  window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260422D__ = true;
+  if (window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260422E__) return;
+  window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260422E__ = true;
 
   const hotfixCache = {
     orderProcurementPromise: null,
@@ -11,6 +11,13 @@
     const normalized = String(value ?? '').replace(/\s+/g, '').replace(',', '.');
     const parsed = Number(normalized);
     return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function maybeNum(value) {
+    const normalized = String(value ?? '').replace(/\s+/g, '').replace(',', '.');
+    if (!normalized) return null;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
   }
 
   function normalizeKey(value) {
@@ -137,6 +144,61 @@
     return (num(row?.planMonth) / monthDays) * rangeDays;
   }
 
+  function workbenchPlanForRange(row, start, end) {
+    if (!row || !(start instanceof Date) || !(end instanceof Date)) return null;
+    if (monthKey(start) !== monthKey(end)) return null;
+    const planMonthUnits = maybeNum(row.planMonthUnits);
+    if (planMonthUnits === null || planMonthUnits <= 0) return null;
+    const bounds = monthRange(monthKey(start));
+    if (!bounds) return null;
+    const rangeDays = dayCount(start, end);
+    const monthDays = dayCount(bounds.start, bounds.end);
+    if (rangeDays <= 0 || monthDays <= 0) return null;
+    return (planMonthUnits / monthDays) * rangeDays;
+  }
+
+  function workbenchFactsForRange(workbench, platformKey, article, start, end) {
+    const row = workbenchRowForArticle(workbench, platformKey, article);
+    if (!row) return null;
+
+    const history = Array.isArray(row.monthly) ? row.monthly : [];
+    let actualUnits = 0;
+    let revenue = 0;
+    let hasActual = false;
+    let hasRevenue = false;
+
+    history.forEach((entry) => {
+      const entryDate = parseIsoDate(entry?.date);
+      if (!(entryDate instanceof Date) || entryDate < start || entryDate > end) return;
+      const deliveredUnits = maybeNum(entry?.deliveredUnits);
+      const orderedUnits = maybeNum(entry?.ordersUnits);
+      const entryUnits = deliveredUnits !== null ? deliveredUnits : orderedUnits;
+      const entryRevenue = maybeNum(entry?.revenue);
+      if (entryUnits !== null) {
+        actualUnits += entryUnits;
+        hasActual = true;
+      }
+      if (entryRevenue !== null) {
+        revenue += entryRevenue;
+        hasRevenue = true;
+      }
+    });
+
+    const unitPrice = resolveWorkbenchUnitPrice(workbench, platformKey, article);
+    if (!hasRevenue && hasActual && unitPrice) {
+      revenue = actualUnits * unitPrice;
+      hasRevenue = revenue > 0;
+    }
+
+    return {
+      source: 'workbench',
+      unitPrice,
+      actualUnits: hasActual ? actualUnits : null,
+      planUnits: workbenchPlanForRange(row, start, end),
+      revenue: hasRevenue ? revenue : null
+    };
+  }
+
   async function resolveProcurementFacts(platformKey, article, startIso, endIso) {
     const start = parseIsoDate(startIso);
     const end = parseIsoDate(endIso);
@@ -157,10 +219,57 @@
     const revenue = unitPrice && actualUnits > 0 ? actualUnits * unitPrice : 0;
 
     return {
+      source: 'procurement',
       actualUnits,
       planUnits: planUnits > 0 ? planUnits : null,
       revenue,
       completionPct: planUnits > 0 ? actualUnits / planUnits : null
+    };
+  }
+
+  async function resolveSkuFacts(platformKey, article, startIso, endIso, displayed = {}) {
+    const start = parseIsoDate(startIso);
+    const end = parseIsoDate(endIso);
+    if (!article || !(start instanceof Date) || !(end instanceof Date)) return null;
+
+    const procurementFacts = await resolveProcurementFacts(platformKey, article, startIso, endIso);
+    if (procurementFacts && procurementFacts.actualUnits > 0) return procurementFacts;
+
+    const workbench = await loadJsonCached('smartPriceWorkbenchPromise', 'data/smart_price_workbench.json', { platforms: {} });
+    const workbenchFacts = workbenchFactsForRange(workbench, platformKey, article, start, end) || {
+      source: 'workbench',
+      unitPrice: resolveWorkbenchUnitPrice(workbench, platformKey, article),
+      actualUnits: null,
+      planUnits: null,
+      revenue: null
+    };
+
+    const planUnits = displayed.planUnits > 0
+      ? displayed.planUnits
+      : (workbenchFacts.planUnits && workbenchFacts.planUnits > 0 ? workbenchFacts.planUnits : null);
+
+    let actualUnits = displayed.actualUnits > 0 ? displayed.actualUnits : workbenchFacts.actualUnits;
+    if ((!actualUnits || actualUnits <= 0) && planUnits && displayed.completionPct !== null) {
+      actualUnits = Math.round(planUnits * displayed.completionPct);
+    }
+
+    let revenue = displayed.revenue > 0 ? displayed.revenue : workbenchFacts.revenue;
+    if ((!revenue || revenue <= 0) && actualUnits > 0 && workbenchFacts.unitPrice) {
+      revenue = actualUnits * workbenchFacts.unitPrice;
+    }
+
+    const completionPct = displayed.completionPct !== null
+      ? displayed.completionPct
+      : (planUnits && actualUnits > 0 ? actualUnits / planUnits : null);
+
+    if (!(actualUnits > 0) && !(planUnits > 0) && !(revenue > 0) && completionPct === null) return null;
+
+    return {
+      source: actualUnits > 0 && workbenchFacts.actualUnits > 0 ? 'workbench' : 'derived',
+      actualUnits: actualUnits > 0 ? actualUnits : 0,
+      planUnits: planUnits && planUnits > 0 ? planUnits : null,
+      revenue: revenue && revenue > 0 ? revenue : 0,
+      completionPct
     };
   }
 
@@ -204,11 +313,18 @@
     for (const row of rows) {
       if (row.dataset.procurementPatched === '1') continue;
       const cells = Array.from(row.children);
-      const facts = await resolveProcurementFacts(
+      const displayedPct = pctIndex >= 0 ? parseDisplayedNumber(cells[pctIndex]?.textContent) : null;
+      const facts = await resolveSkuFacts(
         row.dataset.openPriceMarket || 'wb',
         row.dataset.openPriceArticle || '',
         row.dataset.openPriceFrom || '',
-        row.dataset.openPriceTo || ''
+        row.dataset.openPriceTo || '',
+        {
+          actualUnits: actualIndex >= 0 ? parseDisplayedNumber(cells[actualIndex]?.textContent) : null,
+          planUnits: planIndex >= 0 ? parseDisplayedNumber(cells[planIndex]?.textContent) : null,
+          revenue: revenueIndex >= 0 ? parseDisplayedNumber(cells[revenueIndex]?.textContent) : null,
+          completionPct: displayedPct !== null ? displayedPct / 100 : null
+        }
       );
       if (!facts) continue;
 
@@ -238,7 +354,7 @@
         const sourceCell = cells[sourceIndex];
         const sourceText = normalizeKey(sourceCell?.textContent || '');
         if (!sourceText || sourceText === '\u043d\u0435\u0442') {
-          sourceCell.textContent = 'procurement';
+          sourceCell.textContent = facts.source || 'derived';
           changed = true;
         }
       }
@@ -268,8 +384,8 @@
   }
 
   function installDashboardModalPatchObserver() {
-    if (window.__ALTEA_DASHBOARD_MODAL_PROCUREMENT_PATCH_20260422D__) return;
-    window.__ALTEA_DASHBOARD_MODAL_PROCUREMENT_PATCH_20260422D__ = true;
+    if (window.__ALTEA_DASHBOARD_MODAL_PROCUREMENT_PATCH_20260422E__) return;
+    window.__ALTEA_DASHBOARD_MODAL_PROCUREMENT_PATCH_20260422E__ = true;
 
     const attach = () => {
       const modal = document.getElementById('portalDashboardExecutiveModal');
@@ -291,8 +407,8 @@
   }
 
   function installPriceWorkbenchSupportRedirect() {
-    if (window.__ALTEA_PRICE_SUPPORT_REDIRECT_20260422D__) return;
-    window.__ALTEA_PRICE_SUPPORT_REDIRECT_20260422D__ = true;
+    if (window.__ALTEA_PRICE_SUPPORT_REDIRECT_20260422E__) return;
+    window.__ALTEA_PRICE_SUPPORT_REDIRECT_20260422E__ = true;
 
     const nativeFetch = window.fetch?.bind(window);
     if (typeof nativeFetch === 'function') window.__ALTEA_DASHBOARD_PRIME_NATIVE_FETCH__ = nativeFetch;

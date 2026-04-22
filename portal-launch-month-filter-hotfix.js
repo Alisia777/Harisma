@@ -124,7 +124,7 @@
       return false;
     }
 
-    window.renderLaunches = function renderLaunchesWithMonthFilters() {
+    const renderLaunchesWithMonthFilters = function renderLaunchesWithMonthFilters() {
       const root = document.getElementById('view-launches');
       if (!root) return;
       const model = getLaunchViewModel();
@@ -159,7 +159,7 @@
       bindLaunchMonthFilters(root);
     };
 
-    window.renderLaunchControl = function renderLaunchControlWithMonthFilters() {
+    const renderLaunchControlWithMonthFilters = function renderLaunchControlWithMonthFilters() {
       const root = document.getElementById('view-launch-control');
       if (!root) return;
       const model = getLaunchViewModel();
@@ -229,6 +229,13 @@
 
       bindLaunchMonthFilters(root);
     };
+
+    // The app rerender pipeline calls the global bindings directly,
+    // not always through window.renderLaunches/window.renderLaunchControl.
+    renderLaunches = renderLaunchesWithMonthFilters;
+    renderLaunchControl = renderLaunchControlWithMonthFilters;
+    window.renderLaunches = renderLaunchesWithMonthFilters;
+    window.renderLaunchControl = renderLaunchControlWithMonthFilters;
 
     return true;
   }

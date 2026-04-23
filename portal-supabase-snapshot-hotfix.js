@@ -14,7 +14,7 @@
     prices: 'prices'
   };
   const FALLBACK_CONFIG = {
-    brand: 'Алтея',
+    brand: '\u0410\u043b\u0442\u0435\u044f',
     supabase: {
       url: 'https://iyckwryrucqrxwlowxow.supabase.co',
       anonKey: 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw'
@@ -40,6 +40,72 @@
   function clone(value) {
     if (value === null || value === undefined) return value;
     return JSON.parse(JSON.stringify(value));
+  }
+
+  function parseFreshStamp(value) {
+    if (!value) return 0;
+    if (value instanceof Date) return Number.isNaN(value.getTime()) ? 0 : value.getTime();
+    const raw = String(value || '').trim();
+    if (!raw) return 0;
+    const normalized = /^\d{4}-\d{2}$/.test(raw)
+      ? `${raw}-01T00:00:00Z`
+      : /^\d{4}-\d{2}-\d{2}$/.test(raw)
+        ? `${raw}T00:00:00Z`
+        : raw;
+    const stamp = Date.parse(normalized);
+    return Number.isFinite(stamp) ? stamp : 0;
+  }
+
+  function bumpFreshness(score, value) {
+    return Math.max(score, parseFreshStamp(value));
+  }
+
+  function payloadFreshnessScore(snapshotKey, payload, rowUpdatedAt = '') {
+    if (payload === null || payload === undefined) return 0;
+    let score = bumpFreshness(0, rowUpdatedAt);
+    score = bumpFreshness(score, payload.generatedAt);
+    score = bumpFreshness(score, payload.updatedAt);
+    score = bumpFreshness(score, payload.updated_at);
+    score = bumpFreshness(score, payload.asOfDate);
+    score = bumpFreshness(score, payload.dataFreshness?.asOfDate);
+
+    if (snapshotKey === 'dashboard') {
+      score = bumpFreshness(score, payload.dataFreshness?.asOfDate);
+      return score;
+    }
+
+    if (snapshotKey === 'platform_trends' || snapshotKey === 'ads_summary') {
+      (payload.platforms || []).forEach((platform) => {
+        (platform?.series || []).forEach((item) => {
+          score = bumpFreshness(score, item?.date || item?.label);
+        });
+      });
+      return score;
+    }
+
+    if (snapshotKey === 'platform_plan') {
+      Object.keys(payload.months || {}).forEach((monthKey) => {
+        score = bumpFreshness(score, `${monthKey}-01`);
+      });
+      return score;
+    }
+
+    if (snapshotKey === 'prices') {
+      score = bumpFreshness(score, payload.month?.key ? `${payload.month.key}-01` : '');
+      (payload.dates || []).forEach((item) => {
+        score = bumpFreshness(score, item?.date || item?.label);
+      });
+      return score;
+    }
+
+    if (snapshotKey === 'skus' && Array.isArray(payload)) {
+      payload.forEach((item) => {
+        score = bumpFreshness(score, item?.updatedAt || item?.updated_at || item?.createdAt);
+      });
+      return score;
+    }
+
+    return score;
   }
 
   function payloadLooksUsable(snapshotKey, payload) {
@@ -70,14 +136,13 @@
     if (typeof state !== 'object' || !state || !state.team) return;
     state.team.mode = 'local';
     state.team.ready = false;
-    state.team.note = noteText || 'Локальный режим · витрина из Supabase';
+    state.team.note = noteText || '\u041b\u043e\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0440\u0435\u0436\u0438\u043c \u00b7 \u0432\u0438\u0442\u0440\u0438\u043d\u0430 \u0438\u0437 Supabase';
     if (typeof updateSyncBadge === 'function') updateSyncBadge();
   }
 
   async function fetchSnapshots() {
     const activeCfg = cfg();
     if (!activeCfg.supabase?.url || !activeCfg.supabase?.anonKey || typeof fetch !== 'function') return;
-    if (typeof state === 'object' && state?.team?.mode === 'pending') return [];
     const baseUrl = String(activeCfg.supabase.url || '').replace(/\/+$/, '');
     const url = new URL(`${baseUrl}/rest/v1/${SNAPSHOT_TABLE}`);
     url.searchParams.set('select', 'snapshot_key,payload,updated_at');
@@ -91,11 +156,11 @@
       }
     });
     const response = typeof withTimeout === 'function'
-      ? await withTimeout(request, 5000, 'Витрина Supabase')
+      ? await withTimeout(request, 5000, '\u0412\u0438\u0442\u0440\u0438\u043d\u0430 Supabase')
       : await request;
     if (!response?.ok) throw new Error(`Supabase snapshots ${response?.status || 'request failed'}`);
     return typeof withTimeout === 'function'
-      ? await withTimeout(response.json(), 5000, 'Чтение витрины Supabase')
+      ? await withTimeout(response.json(), 5000, '\u0427\u0442\u0435\u043d\u0438\u0435 \u0432\u0438\u0442\u0440\u0438\u043d\u044b Supabase')
       : await response.json();
   }
 
@@ -105,14 +170,23 @@
     for (const row of rows) {
       const target = SNAPSHOT_TO_STATE[row?.snapshot_key];
       if (!target || !payloadLooksUsable(row.snapshot_key, row.payload)) continue;
+      const currentPayload = state[target];
+      const currentUsable = payloadLooksUsable(row.snapshot_key, currentPayload);
+      const incomingFreshness = payloadFreshnessScore(row.snapshot_key, row.payload, row?.updated_at);
+      const currentFreshness = payloadFreshnessScore(row.snapshot_key, currentPayload);
+      if (currentUsable && currentFreshness >= incomingFreshness) continue;
       state[target] = clone(row.payload);
       applied = true;
     }
     if (!applied) return false;
     if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
     const note = String(state.team?.note || '');
-    if (/Ошибка|Supabase|база пока без решений|ценовой контур/i.test(note)) {
-      normalizeBadge('Локальный режим · витрина из Supabase');
+    const shouldNormalizeBadge = state.team?.mode === 'pending';
+    if (shouldNormalizeBadge) {
+      normalizeBadge('\u041b\u043e\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0440\u0435\u0436\u0438\u043c \u00b7 \u0432\u0438\u0442\u0440\u0438\u043d\u0430 \u0438\u0437 Supabase');
+    }
+    if (/\u041e\u0448\u0438\u0431\u043a\u0430|Supabase|\u0431\u0430\u0437\u0430 \u043f\u043e\u043a\u0430 \u0431\u0435\u0437 \u0440\u0435\u0448\u0435\u043d\u0438\u0439|\u0446\u0435\u043d\u043e\u0432\u043e\u0439 \u043a\u043e\u043d\u0442\u0443\u0440/i.test(note)) {
+      normalizeBadge('\u041b\u043e\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0440\u0435\u0436\u0438\u043c \u00b7 \u0432\u0438\u0442\u0440\u0438\u043d\u0430 \u0438\u0437 Supabase');
     }
     try {
       if (typeof rerenderCurrentView === 'function') rerenderCurrentView();

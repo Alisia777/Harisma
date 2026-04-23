@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_PLAN_ALIGNMENT_HOTFIX_20260423B__) return;
-  window.__ALTEA_PLAN_ALIGNMENT_HOTFIX_20260423B__ = true;
+  if (window.__ALTEA_PLAN_ALIGNMENT_HOTFIX_20260423A__) return;
+  window.__ALTEA_PLAN_ALIGNMENT_HOTFIX_20260423A__ = true;
 
   const WORKBOOK_PLAN_SNAPSHOT = Object.freeze({
     generatedAt: '2026-04-23T12:00:00',
@@ -136,6 +136,63 @@
     }
   }
 
+  function workbookMoney(value) {
+    return new Intl.NumberFormat('ru-RU', {
+      style: 'currency',
+      currency: 'RUB',
+      maximumFractionDigits: 0
+    }).format(Number(value) || 0);
+  }
+
+  function workbookPct(value) {
+    return `${((Number(value) || 0) * 100).toFixed(1)}%`;
+  }
+
+  function workbookPlanCardHtml() {
+    const progressWidth = Math.max(6, Math.min(100, Math.round((WORKBOOK_PLAN_SNAPSHOT.planCompletionMonthPct || 0) * 100)));
+    return `
+      <article class="portal-exec-card is-${WORKBOOK_PLAN_SNAPSHOT.planCompletionMonthPct < 0.8 ? 'warn' : 'ok'}" data-workbook-plan-card="1">
+        <div class="portal-exec-card-head">
+          <span class="portal-exec-card-label">План месяца по файлу</span>
+          <span class="chip info">файл 21.04</span>
+        </div>
+        <div class="portal-exec-card-value compact">${workbookPct(WORKBOOK_PLAN_SNAPSHOT.planCompletionMonthPct)}</div>
+        <div class="portal-exec-sub">План ${workbookMoney(WORKBOOK_PLAN_SNAPSHOT.planRevenueMonth)} · факт ${workbookMoney(WORKBOOK_PLAN_SNAPSHOT.factRevenueToDate)} · к дате ${workbookPct(WORKBOOK_PLAN_SNAPSHOT.planCompletionToDatePct)}</div>
+        <div class="portal-exec-progress is-${WORKBOOK_PLAN_SNAPSHOT.planCompletionMonthPct < 0.8 ? 'warn' : 'ok'}"><span style="width:${progressWidth}%"></span></div>
+        <div class="portal-exec-axis"><span>Апрель 2026</span><span>Факт на ${WORKBOOK_PLAN_SNAPSHOT.asOfLabel}</span></div>
+      </article>
+    `;
+  }
+
+  function patchInteractiveDashboardPlanView() {
+    const strip = document.querySelector('#view-dashboard .portal-exec-metric-strip');
+    if (!strip) return false;
+
+    const periodCard = strip.querySelector('[data-portal-exec-open="completion"]:not([data-workbook-plan-card])');
+    if (periodCard) {
+      const labelNode = periodCard.querySelector('.portal-exec-card-label');
+      if (labelNode) labelNode.textContent = 'План периода';
+      const subNode = periodCard.querySelector('.portal-exec-sub');
+      if (subNode) {
+        subNode.textContent = 'Выбранный диапазон считает план линейно по дням. Месячный план из файла показан отдельной карточкой рядом.';
+      }
+    }
+
+    const workbookCard = strip.querySelector('[data-workbook-plan-card]');
+    if (workbookCard) {
+      workbookCard.outerHTML = workbookPlanCardHtml();
+      return true;
+    }
+
+    if (periodCard) {
+      periodCard.insertAdjacentHTML('afterend', workbookPlanCardHtml());
+      return true;
+    }
+
+    strip.insertAdjacentHTML('beforeend', workbookPlanCardHtml());
+    return true;
+  }
+
   function currentCompletionSnapshotHotfix(sku) {
     const monthPct = finiteNumberOrNull(
       sku?.planFact?.completionAprMonthPct,
@@ -197,28 +254,28 @@
     );
     const rows = [
       currentPlanUnits !== null
-        ? metricRow('План Apr 26', fmt.int(currentPlanUnits))
-        : metricRow('План Feb 26', fmt.int(sku?.planFact?.planFeb26Units)),
+        ? metricRow('\u041f\u043b\u0430\u043d Apr 26', fmt.int(currentPlanUnits))
+        : metricRow('\u041f\u043b\u0430\u043d Feb 26', fmt.int(sku?.planFact?.planFeb26Units)),
       currentFactUnits !== null
-        ? metricRow('Факт Apr to date', fmt.int(currentFactUnits))
-        : metricRow('Факт Feb 26', fmt.int(sku?.planFact?.factFeb26Units))
+        ? metricRow('\u0424\u0430\u043a\u0442 Apr to date', fmt.int(currentFactUnits))
+        : metricRow('\u0424\u0430\u043a\u0442 Feb 26', fmt.int(sku?.planFact?.factFeb26Units))
     ];
 
     if (completion.monthPct !== null) {
-      rows.push(metricRow('Выполнение месяца', fmt.pct(completion.monthPct), completion.monthPct < 0.8 ? 'danger-text' : ''));
+      rows.push(metricRow('\u0412\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u0435 \u043c\u0435\u0441\u044f\u0446\u0430', fmt.pct(completion.monthPct), completion.monthPct < 0.8 ? 'danger-text' : ''));
     } else if (completion.legacyPct !== null) {
-      rows.push(metricRow('Выполнение Feb 26', fmt.pct(completion.legacyPct), completion.legacyPct < 0.8 ? 'danger-text' : ''));
+      rows.push(metricRow('\u0412\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u0435 Feb 26', fmt.pct(completion.legacyPct), completion.legacyPct < 0.8 ? 'danger-text' : ''));
     }
 
     if (completion.toDatePct !== null) {
-      rows.push(metricRow('К плану на дату', fmt.pct(completion.toDatePct), completion.toDatePct < 0.85 ? 'warn-text' : ''));
+      rows.push(metricRow('\u041a \u043f\u043b\u0430\u043d\u0443 \u043d\u0430 \u0434\u0430\u0442\u0443', fmt.pct(completion.toDatePct), completion.toDatePct < 0.85 ? 'warn-text' : ''));
     }
 
     resultCard.innerHTML = [
-      '<h3>Результат</h3>',
+      '<h3>\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442</h3>',
       rows.join(''),
-      metricRow('WB маржа', fmt.pct(sku?.wb?.marginPct), (sku?.wb?.marginPct || 0) < 0 ? 'danger-text' : ''),
-      metricRow('Ozon маржа', fmt.pct(sku?.ozon?.marginPct), (sku?.ozon?.marginPct || 0) < 0 ? 'danger-text' : '')
+      metricRow('WB \u043c\u0430\u0440\u0436\u0430', fmt.pct(sku?.wb?.marginPct), (sku?.wb?.marginPct || 0) < 0 ? 'danger-text' : ''),
+      metricRow('Ozon \u043c\u0430\u0440\u0436\u0430', fmt.pct(sku?.ozon?.marginPct), (sku?.ozon?.marginPct || 0) < 0 ? 'danger-text' : '')
     ].join('');
   }
 
@@ -271,15 +328,19 @@
         finalQty,
         coverageNowDays,
         stockoutRisk,
-        summaryText: `${skuLabel}: при скорости ${fmt.num(dailySales, 1)} шт./день, горизонте ${fmt.int(totalHorizon)} дн., наличии ${fmt.int(base.availableNow)} шт. и входящем запасе ${fmt.int(base.inbound)} шт. рекомендованный заказ = ${fmt.int(finalQty)} шт.`
+        summaryText: `${skuLabel}: \u043f\u0440\u0438 \u0441\u043a\u043e\u0440\u043e\u0441\u0442\u0438 ${fmt.num(dailySales, 1)} \u0448\u0442./\u0434\u0435\u043d\u044c, \u0433\u043e\u0440\u0438\u0437\u043e\u043d\u0442\u0435 ${fmt.int(totalHorizon)} \u0434\u043d., \u043d\u0430\u043b\u0438\u0447\u0438\u0438 ${fmt.int(base.availableNow)} \u0448\u0442. \u0438 \u0432\u0445\u043e\u0434\u044f\u0449\u0435\u043c \u0437\u0430\u043f\u0430\u0441\u0435 ${fmt.int(base.inbound)} \u0448\u0442. \u0440\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u0437\u0430\u043a\u0430\u0437 = ${fmt.int(finalQty)} \u0448\u0442.`
       };
     };
   }
 
   [0, 250, 1200, 3600, 9000, 18000].forEach((delay) => {
-    window.setTimeout(applyDashboardPlanAlignment, delay);
+    window.setTimeout(() => {
+      applyDashboardPlanAlignment();
+      patchInteractiveDashboardPlanView();
+    }, delay);
   });
   applyDashboardPlanAlignment();
+  patchInteractiveDashboardPlanView();
 
   if (state?.activeSku) rebuildSkuResultCard(state.activeSku);
 })();

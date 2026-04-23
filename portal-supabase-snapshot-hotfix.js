@@ -3,7 +3,7 @@
   window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260419J__ = true;
 
   const SNAPSHOT_TABLE = 'portal_data_snapshots';
-  const SNAPSHOT_KEYS = ['dashboard', 'skus', 'platform_trends', 'logistics', 'ads_summary', 'platform_plan', 'prices'];
+  const SNAPSHOT_KEYS = ['dashboard'];
   const SNAPSHOT_TO_STATE = {
     dashboard: 'dashboard',
     skus: 'skus',
@@ -148,6 +148,7 @@
     url.searchParams.set('select', 'snapshot_key,payload,updated_at');
     url.searchParams.set('brand', `eq.${brand()}`);
     url.searchParams.set('snapshot_key', `in.(${SNAPSHOT_KEYS.join(',')})`);
+    url.searchParams.set('order', 'updated_at.desc');
     const request = fetch(url.toString(), {
       headers: {
         apikey: activeCfg.supabase.anonKey,

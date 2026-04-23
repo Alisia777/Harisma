@@ -3,7 +3,18 @@
   window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260419J__ = true;
 
   const SNAPSHOT_TABLE = 'portal_data_snapshots';
-  const SNAPSHOT_KEYS = ['dashboard'];
+  const SNAPSHOT_KEYS = [
+    'dashboard',
+    'skus',
+    'platform_trends',
+    'logistics',
+    'ads_summary',
+    'platform_plan',
+    'prices',
+    'smart_price_workbench',
+    'price_workbench_support'
+  ];
+  const SNAPSHOT_TIMEOUT_MS = 20000;
   const SNAPSHOT_TO_STATE = {
     dashboard: 'dashboard',
     skus: 'skus',
@@ -11,10 +22,12 @@
     logistics: 'logistics',
     ads_summary: 'adsSummary',
     platform_plan: 'platformPlan',
-    prices: 'prices'
+    prices: 'prices',
+    smart_price_workbench: 'smartPriceWorkbench',
+    price_workbench_support: 'priceWorkbenchSupport'
   };
   const FALLBACK_CONFIG = {
-    brand: '\u0410\u043b\u0442\u0435\u044f',
+    brand: 'РђР»С‚РµСЏ',
     supabase: {
       url: 'https://iyckwryrucqrxwlowxow.supabase.co',
       anonKey: 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw'
@@ -129,6 +142,10 @@
         && typeof payload?.platforms === 'object' && payload.platforms !== null
         && Object.keys(payload.platforms).length > 0;
     }
+    if (snapshotKey === 'smart_price_workbench' || snapshotKey === 'price_workbench_support') {
+      return typeof payload?.platforms === 'object' && payload.platforms !== null
+        && Object.keys(payload.platforms).length > 0;
+    }
     return typeof payload === 'object' && payload !== null && Object.keys(payload).length > 0;
   }
 
@@ -136,7 +153,7 @@
     if (typeof state !== 'object' || !state || !state.team) return;
     state.team.mode = 'local';
     state.team.ready = false;
-    state.team.note = noteText || '\u041b\u043e\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0440\u0435\u0436\u0438\u043c \u00b7 \u0432\u0438\u0442\u0440\u0438\u043d\u0430 \u0438\u0437 Supabase';
+    state.team.note = noteText || 'Р›РѕРєР°Р»СЊРЅС‹Р№ СЂРµР¶РёРј В· РІРёС‚СЂРёРЅР° РёР· Supabase';
     if (typeof updateSyncBadge === 'function') updateSyncBadge();
   }
 
@@ -150,6 +167,7 @@
     url.searchParams.set('snapshot_key', `in.(${SNAPSHOT_KEYS.join(',')})`);
     url.searchParams.set('order', 'updated_at.desc');
     const request = fetch(url.toString(), {
+      cache: 'no-store',
       headers: {
         apikey: activeCfg.supabase.anonKey,
         Authorization: `Bearer ${activeCfg.supabase.anonKey}`,
@@ -157,11 +175,11 @@
       }
     });
     const response = typeof withTimeout === 'function'
-      ? await withTimeout(request, 5000, '\u0412\u0438\u0442\u0440\u0438\u043d\u0430 Supabase')
+      ? await withTimeout(request, SNAPSHOT_TIMEOUT_MS, 'Р’РёС‚СЂРёРЅР° Supabase')
       : await request;
     if (!response?.ok) throw new Error(`Supabase snapshots ${response?.status || 'request failed'}`);
     return typeof withTimeout === 'function'
-      ? await withTimeout(response.json(), 5000, '\u0427\u0442\u0435\u043d\u0438\u0435 \u0432\u0438\u0442\u0440\u0438\u043d\u044b Supabase')
+      ? await withTimeout(response.json(), SNAPSHOT_TIMEOUT_MS, 'Р§С‚РµРЅРёРµ РІРёС‚СЂРёРЅС‹ Supabase')
       : await response.json();
   }
 
@@ -184,10 +202,10 @@
     const note = String(state.team?.note || '');
     const shouldNormalizeBadge = state.team?.mode === 'pending';
     if (shouldNormalizeBadge) {
-      normalizeBadge('\u041b\u043e\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0440\u0435\u0436\u0438\u043c \u00b7 \u0432\u0438\u0442\u0440\u0438\u043d\u0430 \u0438\u0437 Supabase');
+      normalizeBadge('Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…РЎвЂ№Р в„– РЎР‚Р ВµР В¶Р С‘Р С Р’В· Р Р†Р С‘РЎвЂљРЎР‚Р С‘Р Р…Р В° Р С‘Р В· Supabase');
     }
-    if (/\u041e\u0448\u0438\u0431\u043a\u0430|Supabase|\u0431\u0430\u0437\u0430 \u043f\u043e\u043a\u0430 \u0431\u0435\u0437 \u0440\u0435\u0448\u0435\u043d\u0438\u0439|\u0446\u0435\u043d\u043e\u0432\u043e\u0439 \u043a\u043e\u043d\u0442\u0443\u0440/i.test(note)) {
-      normalizeBadge('\u041b\u043e\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0440\u0435\u0436\u0438\u043c \u00b7 \u0432\u0438\u0442\u0440\u0438\u043d\u0430 \u0438\u0437 Supabase');
+    if (/РћС€РёР±РєР°|Supabase|Р±Р°Р·Р° РїРѕРєР° Р±РµР· СЂРµС€РµРЅРёР№|С†РµРЅРѕРІРѕР№ РєРѕРЅС‚СѓСЂ/i.test(note)) {
+      normalizeBadge('Р›РѕРєР°Р»СЊРЅС‹Р№ СЂРµР¶РёРј В· РІРёС‚СЂРёРЅР° РёР· Supabase');
     }
     try {
       if (typeof rerenderCurrentView === 'function') rerenderCurrentView();

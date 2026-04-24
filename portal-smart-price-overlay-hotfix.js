@@ -20,6 +20,7 @@
   let supportPromise = null;
   let lastAppliedAt = '';
   const SMART_PRICE_WORKBENCH_PATH = 'data/smart_price_workbench.json';
+  const WORKBENCH_OVERLAY_TIMEOUT_MS = 1800;
   let fetchPatched = false;
 
   function cfg() {
@@ -359,8 +360,10 @@
           const response = await originalFetch(input, init);
           if (!response?.ok) return response;
           const payload = await response.clone().json();
-          const overlay = await fetchOverlaySnapshot();
-          if (!overlay?.platforms) return response;
+          const overlay = await Promise.race([
+            fetchOverlaySnapshot(),
+            new Promise((resolve) => window.setTimeout(() => resolve(null), WORKBENCH_OVERLAY_TIMEOUT_MS))
+          ]);
           return jsonResponse(mergeOverlayPayload(payload, overlay));
         } catch (error) {
           console.warn('[portal-smart-price-overlay-hotfix] fetch merge', error);

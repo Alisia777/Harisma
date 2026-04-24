@@ -1,10 +1,13 @@
 (function () {
-  if (window.__ALTEA_SMART_PRICE_OVERLAY_HOTFIX_20260424A__) return;
-  window.__ALTEA_SMART_PRICE_OVERLAY_HOTFIX_20260424A__ = true;
+  if (window.__ALTEA_SMART_PRICE_OVERLAY_HOTFIX_20260424B__) return;
+  window.__ALTEA_SMART_PRICE_OVERLAY_HOTFIX_20260424B__ = true;
 
   const SNAPSHOT_TABLE = 'portal_data_snapshots';
   const SNAPSHOT_KEY = 'smart_price_overlay';
   const OVERLAY_PATH = 'data/smart_price_overlay.json';
+  const SUPPORT_FULL_PATH = 'data/price_workbench_support.json';
+  const SUPPORT_COMPACT_PATH = 'data/price_workbench_support.compact.json';
+  const SUPPORT_DASHBOARD_PATH = 'data/price_workbench_support.dashboard-compact.json';
   const FALLBACK_CONFIG = {
     brand: '\u0410\u043b\u0442\u0435\u044f',
     supabase: {
@@ -14,6 +17,7 @@
   };
 
   let overlayPromise = null;
+  let supportPromise = null;
   let lastAppliedAt = '';
   const SMART_PRICE_WORKBENCH_PATH = 'data/smart_price_workbench.json';
   let fetchPatched = false;
@@ -183,7 +187,7 @@
     const overlay = overlayPayload && typeof overlayPayload === 'object'
       ? clone(overlayPayload)
       : null;
-    if (!overlay?.platforms) return primary;
+    if (!primary?.platforms && !overlay?.platforms) return primary;
 
     const merged = primary || { generatedAt: '', platforms: {} };
     merged.platforms = merged.platforms && typeof merged.platforms === 'object' ? merged.platforms : {};
@@ -196,7 +200,7 @@
     platforms.forEach((platform) => {
       const primaryBucket = primary?.platforms?.[platform] || {};
       const overlayBucket = overlay?.platforms?.[platform] || {};
-      const primaryRows = Array.isArray(primaryBucket.rows) ? primaryBucket.rows : [];
+      const primaryRows = overlayRows(primaryBucket.rows);
       const extraRows = overlayRows(overlayBucket.rows);
       const overlayMap = new Map();
       extraRows.forEach((row) => {
@@ -285,6 +289,47 @@
     return overlayPromise;
   }
 
+  async function fetchSupportPayload(originalFetch) {
+    if (supportPromise) return supportPromise;
+    supportPromise = (async () => {
+      try {
+        if (typeof state !== 'undefined' && state?.priceWorkbenchSupport?.platforms) {
+          return clone(state.priceWorkbenchSupport);
+        }
+      } catch (error) {
+        console.warn('[portal-smart-price-overlay-hotfix] support state', error);
+      }
+
+      try {
+        if (typeof window.__alteaLoadPortalSnapshot === 'function') {
+          const snapshot = await window.__alteaLoadPortalSnapshot(SUPPORT_FULL_PATH);
+          if (snapshot?.platforms) return clone(snapshot);
+        }
+      } catch (error) {
+        console.warn('[portal-smart-price-overlay-hotfix] support snapshot', error);
+      }
+
+      if (typeof originalFetch === 'function') {
+        try {
+          const response = await originalFetch(SUPPORT_FULL_PATH, { cache: 'no-store' });
+          if (response?.ok) {
+            const payload = await response.clone().json();
+            if (payload?.platforms) return payload;
+          }
+        } catch (error) {
+          console.warn('[portal-smart-price-overlay-hotfix] support local', error);
+        }
+      }
+
+      return { generatedAt: '', platforms: {} };
+    })().catch((error) => {
+      console.warn('[portal-smart-price-overlay-hotfix] support', error);
+      supportPromise = null;
+      return { generatedAt: '', platforms: {} };
+    });
+    return supportPromise;
+  }
+
   function patchSnapshotLoader() {
     const original = typeof window.__alteaLoadPortalSnapshot === 'function'
       ? window.__alteaLoadPortalSnapshot.bind(window)
@@ -305,6 +350,10 @@
     const originalFetch = window.fetch.bind(window);
     window.fetch = async function patchedFetch(input, init) {
       const normalized = normalizePath(typeof input === 'string' ? input : input?.url || '');
+      if (normalized === SUPPORT_COMPACT_PATH || normalized === SUPPORT_DASHBOARD_PATH) {
+        const supportPayload = await fetchSupportPayload(originalFetch);
+        return jsonResponse(supportPayload);
+      }
       if (normalized === SMART_PRICE_WORKBENCH_PATH) {
         try {
           const response = await originalFetch(input, init);

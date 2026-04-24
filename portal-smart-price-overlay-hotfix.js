@@ -363,6 +363,13 @@
           const response = await originalFetch(input, init);
           if (!response?.ok) return response;
           const payload = await response.clone().json();
+          try {
+            if (typeof state !== 'undefined' && payload?.platforms) {
+              state.smartPriceWorkbenchBase = clone(payload);
+            }
+          } catch (error) {
+            console.warn('[portal-smart-price-overlay-hotfix] base state', error);
+          }
           const overlay = await Promise.race([
             fetchOverlaySnapshot(),
             new Promise((resolve) => window.setTimeout(() => resolve(null), WORKBENCH_OVERLAY_TIMEOUT_MS))
@@ -389,8 +396,11 @@
     const overlay = await fetchOverlaySnapshot();
     if (!overlay?.platforms) return;
     if (lastAppliedAt && lastAppliedAt === String(overlay.generatedAt || '')) return;
+    const baseWorkbench = state.smartPriceWorkbenchBase?.platforms
+      ? clone(state.smartPriceWorkbenchBase)
+      : clone(state.smartPriceWorkbench);
     state.smartPriceOverlay = clone(overlay);
-    state.smartPriceWorkbench = mergeOverlayPayload(state.smartPriceWorkbench, overlay);
+    state.smartPriceWorkbench = mergeOverlayPayload(baseWorkbench, overlay);
     lastAppliedAt = String(overlay.generatedAt || '');
     if (typeof rerenderCurrentView === 'function' && ['prices', 'repricer'].includes(state.activeView)) {
       rerenderCurrentView();

@@ -1,7 +1,7 @@
 (function () {
-  if (window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260424F__) return;
-  window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260424F__ = true;
-  const VERSION = '20260424f';
+  if (window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260424G__) return;
+  window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260424G__ = true;
+  const VERSION = '20260424g';
   const SNAPSHOT_TABLE = 'portal_data_snapshots';
   const SNAPSHOT_KEY = 'repricer_runtime_hotfix_20260424b';
   const FALLBACK_CONFIG = {
@@ -84,8 +84,26 @@
     if (bootPromise) return bootPromise;
     bootPromise = (async () => {
       const source = await inflateSource();
-      const runner = new Function(source + '\n//# sourceURL=portal-repricer-managed-hotfix-' + VERSION + '.js');
-      runner.call(window);
+      const blob = new Blob([source + '\n//# sourceURL=portal-repricer-managed-hotfix-' + VERSION + '.js'], { type: 'text/javascript' });
+      const scriptUrl = URL.createObjectURL(blob);
+      try {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = scriptUrl;
+          script.async = false;
+          script.onload = () => {
+            script.remove();
+            resolve();
+          };
+          script.onerror = (error) => {
+            script.remove();
+            reject(error || new Error('Failed to execute repricer hotfix runtime'));
+          };
+          document.head.appendChild(script);
+        });
+      } finally {
+        URL.revokeObjectURL(scriptUrl);
+      }
       if (typeof rerenderCurrentView === 'function' && state?.activeView === 'repricer') rerenderCurrentView();
     })().catch((error) => {
       console.warn('[portal-repricer-managed-hotfix-loader]', error);

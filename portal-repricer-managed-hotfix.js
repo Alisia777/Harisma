@@ -2,51 +2,77 @@
   if (window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260424B__) return;
   window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260424B__ = true;
   const VERSION = '20260424b';
-  const PARTS = [
-    'portal-repricer-managed-hotfix.part01.txt',
-    'portal-repricer-managed-hotfix.part02.txt',
-    'portal-repricer-managed-hotfix.part03.txt',
-    'portal-repricer-managed-hotfix.part04.txt',
-    'portal-repricer-managed-hotfix.part05.txt',
-    'portal-repricer-managed-hotfix.part06.txt',
-    'portal-repricer-managed-hotfix.part07.txt',
-    'portal-repricer-managed-hotfix.part08.txt',
-    'portal-repricer-managed-hotfix.part09.txt',
-    'portal-repricer-managed-hotfix.part10.txt',
-    'portal-repricer-managed-hotfix.part11.txt',
-    'portal-repricer-managed-hotfix.part12.txt',
-    'portal-repricer-managed-hotfix.part13.txt',
-    'portal-repricer-managed-hotfix.part14.txt',
-    'portal-repricer-managed-hotfix.part15.txt',
-    'portal-repricer-managed-hotfix.part16.txt',
-    'portal-repricer-managed-hotfix.part17.txt',
-    'portal-repricer-managed-hotfix.part18.txt',
-    'portal-repricer-managed-hotfix.part19.txt',
-    'portal-repricer-managed-hotfix.part20.txt',
-    'portal-repricer-managed-hotfix.part21.txt',
-    'portal-repricer-managed-hotfix.part22.txt',
-    'portal-repricer-managed-hotfix.part23.txt',
-    'portal-repricer-managed-hotfix.part24.txt',
-    'portal-repricer-managed-hotfix.part25.txt',
-    'portal-repricer-managed-hotfix.part26.txt',
-    'portal-repricer-managed-hotfix.part27.txt',
-    'portal-repricer-managed-hotfix.part28.txt',
-    'portal-repricer-managed-hotfix.part29.txt'
-  ];
-
-  async function fetchParts() {
-    const chunks = [];
-    for (const part of PARTS) {
-      const response = await fetch(`${part}?v=${VERSION}`, { cache: 'no-store' });
-      if (!response.ok) throw new Error(`?? ??????? ????????? ${part}`);
-      chunks.push(await response.text());
+  const SNAPSHOT_TABLE = 'portal_data_snapshots';
+  const SNAPSHOT_KEY = 'repricer_runtime_hotfix_20260424b';
+  const FALLBACK_CONFIG = {
+    brand: '\u0410\u043b\u0442\u0435\u044f',
+    supabase: {
+      url: 'https://iyckwryrucqrxwlowxow.supabase.co',
+      anonKey: 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw'
     }
-    return chunks.join('');
+  };
+
+  function cfg() {
+    const raw = typeof currentConfig === 'function'
+      ? (currentConfig() || {})
+      : (window.APP_CONFIG || {});
+    const rawSupabase = raw.supabase || {};
+    return {
+      ...FALLBACK_CONFIG,
+      ...raw,
+      supabase: {
+        ...FALLBACK_CONFIG.supabase,
+        ...rawSupabase,
+        url: rawSupabase.url || FALLBACK_CONFIG.supabase.url,
+        anonKey: rawSupabase.anonKey || FALLBACK_CONFIG.supabase.anonKey
+      }
+    };
+  }
+
+  function brand() {
+    if (typeof currentBrand === 'function') return currentBrand();
+    return cfg().brand || FALLBACK_CONFIG.brand;
+  }
+
+  async function fetchPayload() {
+    const activeCfg = cfg();
+    if (!activeCfg.supabase?.url || !activeCfg.supabase?.anonKey) {
+      throw new Error('Supabase runtime is not configured');
+    }
+    const baseUrl = String(activeCfg.supabase.url || '').replace(/\/+$/, '');
+    const url = new URL(`${baseUrl}/rest/v1/${SNAPSHOT_TABLE}`);
+    url.searchParams.set('select', 'snapshot_key,payload,updated_at');
+    url.searchParams.set('brand', `eq.${brand()}`);
+    url.searchParams.set('snapshot_key', `like.${SNAPSHOT_KEY}*`);
+    url.searchParams.set('order', 'snapshot_key.asc');
+    const response = await fetch(url.toString(), {
+      cache: 'no-store',
+      headers: {
+        apikey: activeCfg.supabase.anonKey,
+        Authorization: `Bearer ${activeCfg.supabase.anonKey}`,
+        Accept: 'application/json'
+      }
+    });
+    if (!response.ok) throw new Error(`Supabase runtime ${response.status}`);
+    const rows = await response.json();
+    const main = rows.find((row) => row?.snapshot_key === SNAPSHOT_KEY);
+    if (!main) throw new Error(`Runtime snapshot ${SNAPSHOT_KEY} is missing`);
+    if (main.payload?.chunked) {
+      const parts = rows
+        .filter((row) => String(row?.snapshot_key || '').startsWith(`${SNAPSHOT_KEY}__part__`))
+        .sort((left, right) => String(left.snapshot_key).localeCompare(String(right.snapshot_key)));
+      const expectedParts = Number(main.payload.chunk_count || 0);
+      if (expectedParts && parts.length < expectedParts) {
+        throw new Error(`Runtime snapshot is incomplete: ${parts.length}/${expectedParts}`);
+      }
+      return JSON.parse(parts.map((row) => String(row?.payload?.data || '')).join(''));
+    }
+    return main.payload;
   }
 
   async function inflateSource() {
     if (typeof DecompressionStream !== 'function') throw new Error('DecompressionStream is not available in this browser');
-    const binary = atob(await fetchParts());
+    const binary = atob(await fetchPayload());
     const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
     const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
     return await new Response(stream).text();

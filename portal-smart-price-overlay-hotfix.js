@@ -15,6 +15,8 @@
 
   let overlayPromise = null;
   let lastAppliedAt = '';
+  const SMART_PRICE_WORKBENCH_PATH = 'data/smart_price_workbench.json';
+  let fetchPatched = false;
 
   function cfg() {
     if (typeof currentConfig === 'function') {
@@ -40,6 +42,13 @@
   function clone(value) {
     if (value === null || value === undefined) return value;
     return JSON.parse(JSON.stringify(value));
+  }
+
+  function jsonResponse(payload) {
+    return new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json; charset=utf-8' }
+    });
   }
 
   function normalizePath(path) {
@@ -290,6 +299,36 @@
     };
   }
 
+  function patchFetchForWorkbench() {
+    if (fetchPatched || typeof window.fetch !== 'function') return;
+    fetchPatched = true;
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = async function patchedFetch(input, init) {
+      const normalized = normalizePath(typeof input === 'string' ? input : input?.url || '');
+      if (normalized === SMART_PRICE_WORKBENCH_PATH) {
+        try {
+          const response = await originalFetch(input, init);
+          if (!response?.ok) return response;
+          const payload = await response.clone().json();
+          const overlay = await fetchOverlaySnapshot();
+          if (!overlay?.platforms) return response;
+          return jsonResponse(mergeOverlayPayload(payload, overlay));
+        } catch (error) {
+          console.warn('[portal-smart-price-overlay-hotfix] fetch merge', error);
+        }
+      }
+      if (normalized === OVERLAY_PATH) {
+        try {
+          const overlay = await fetchOverlaySnapshot();
+          if (overlay?.platforms) return jsonResponse(overlay);
+        } catch (error) {
+          console.warn('[portal-smart-price-overlay-hotfix] overlay fetch', error);
+        }
+      }
+      return originalFetch(input, init);
+    };
+  }
+
   async function applyOverlayToState() {
     if (typeof state === 'undefined' || !state?.smartPriceWorkbench?.platforms) return;
     const overlay = await fetchOverlaySnapshot();
@@ -310,6 +349,7 @@
   }
 
   patchSnapshotLoader();
+  patchFetchForWorkbench();
   [120, 900, 2400, 6000].forEach(scheduleApply);
   window.addEventListener('altea:viewchange', (event) => {
     const view = event?.detail?.view;

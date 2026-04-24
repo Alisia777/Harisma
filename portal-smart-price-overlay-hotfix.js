@@ -192,6 +192,9 @@
 
     const merged = primary || { generatedAt: '', platforms: {} };
     merged.platforms = merged.platforms && typeof merged.platforms === 'object' ? merged.platforms : {};
+    if (!overlay?.platforms) {
+      return merged;
+    }
 
     const platforms = new Set([
       ...Object.keys(primary?.platforms || {}),

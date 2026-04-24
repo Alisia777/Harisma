@@ -9,7 +9,29 @@
     'portal-repricer-managed-hotfix.part04.txt',
     'portal-repricer-managed-hotfix.part05.txt',
     'portal-repricer-managed-hotfix.part06.txt',
-    'portal-repricer-managed-hotfix.part07.txt'
+    'portal-repricer-managed-hotfix.part07.txt',
+    'portal-repricer-managed-hotfix.part08.txt',
+    'portal-repricer-managed-hotfix.part09.txt',
+    'portal-repricer-managed-hotfix.part10.txt',
+    'portal-repricer-managed-hotfix.part11.txt',
+    'portal-repricer-managed-hotfix.part12.txt',
+    'portal-repricer-managed-hotfix.part13.txt',
+    'portal-repricer-managed-hotfix.part14.txt',
+    'portal-repricer-managed-hotfix.part15.txt',
+    'portal-repricer-managed-hotfix.part16.txt',
+    'portal-repricer-managed-hotfix.part17.txt',
+    'portal-repricer-managed-hotfix.part18.txt',
+    'portal-repricer-managed-hotfix.part19.txt',
+    'portal-repricer-managed-hotfix.part20.txt',
+    'portal-repricer-managed-hotfix.part21.txt',
+    'portal-repricer-managed-hotfix.part22.txt',
+    'portal-repricer-managed-hotfix.part23.txt',
+    'portal-repricer-managed-hotfix.part24.txt',
+    'portal-repricer-managed-hotfix.part25.txt',
+    'portal-repricer-managed-hotfix.part26.txt',
+    'portal-repricer-managed-hotfix.part27.txt',
+    'portal-repricer-managed-hotfix.part28.txt',
+    'portal-repricer-managed-hotfix.part29.txt'
   ];
 
   async function fetchParts() {

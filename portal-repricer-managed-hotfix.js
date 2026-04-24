@@ -5,6 +5,11 @@
   const SNAPSHOT_TABLE = 'portal_data_snapshots';
   const SNAPSHOT_KEY = 'repricer_runtime_hotfix_20260424b';
   const STATIC_PAYLOAD_PATH = 'repricer_runtime_hotfix_20260424b.json';
+  const STATIC_PART_PATHS = [
+    'repricer_runtime_hotfix_20260424b.part1.txt',
+    'repricer_runtime_hotfix_20260424b.part2.txt',
+    'repricer_runtime_hotfix_20260424b.part3.txt'
+  ];
   const FALLBACK_CONFIG = {
     brand: '\u0410\u043b\u0442\u0435\u044f',
     supabase: {
@@ -39,12 +44,27 @@
     if (typeof fetch !== 'function') return null;
     try {
       const response = await fetch(STATIC_PAYLOAD_PATH, { cache: 'no-store' });
-      if (!response?.ok) return null;
-      return await response.json();
+      if (response?.ok) {
+        const payload = await response.json();
+        if (typeof payload === 'string' && payload.length > 30000) return payload;
+      }
     } catch (error) {
       console.warn('[portal-repricer-managed-hotfix-loader] static payload', error);
-      return null;
     }
+    try {
+      const parts = await Promise.all(
+        STATIC_PART_PATHS.map(async (path) => {
+          const response = await fetch(path, { cache: 'no-store' });
+          if (!response?.ok) throw new Error(`Static runtime part missing: ${path}`);
+          return await response.text();
+        })
+      );
+      const payload = parts.join('');
+      return payload || null;
+    } catch (error) {
+      console.warn('[portal-repricer-managed-hotfix-loader] static parts', error);
+    }
+    return null;
   }
 
   async function fetchPayload() {

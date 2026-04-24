@@ -5,11 +5,10 @@
   const SNAPSHOT_TABLE = 'portal_data_snapshots';
   const SNAPSHOT_KEY = 'repricer_runtime_hotfix_20260424b';
   const STATIC_PAYLOAD_PATH = 'repricer_runtime_hotfix_20260424b.json';
-  const STATIC_PART_PATHS = [
-    'repricer_runtime_hotfix_20260424b.part1.txt',
-    'repricer_runtime_hotfix_20260424b.part2.txt',
-    'repricer_runtime_hotfix_20260424b.part3.txt'
-  ];
+  const STATIC_PART_PATHS = Array.from(
+    { length: 8 },
+    (_, index) => `repricer_runtime_hotfix_20260424b.part${index + 1}.txt`
+  );
   const FALLBACK_CONFIG = {
     brand: '\u0410\u043b\u0442\u0435\u044f',
     supabase: {

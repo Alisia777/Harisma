@@ -1,21 +1,21 @@
 (function () {
-  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260425F__) return;
-  window.__ALTEA_RUNTIME_OPTIMIZER_20260425F__ = true;
+  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260425M__) return;
+  window.__ALTEA_RUNTIME_OPTIMIZER_20260425M__ = true;
 
   const BUNDLE_MAP = {
     dashboard: [
       'portal-dashboard-interactive-hotfix.js?v=20260423a',
       'portal-dashboard-prime-hotfix-20260422e.js?v=20260422e'
     ],
-    order: ['portal-order-logistics-hotfix.js?v=20260421g'],
+    order: ['portal-order-logistics-hotfix.js?v=20260425a'],
     launches: [
       'portal-launch-month-filter-hotfix.js?v=20260422c',
       'portal-launch-manager-hotfix.js?v=20260422c'
     ],
     prices: [
       'portal-price-snapshot-fastpath-hotfix.js?v=20260425b',
-      'portal-price-workbench-simple-live.js?v=20260425f',
-      'portal-price-calendar-ux-hotfix.js?v=20260425a',
+      'portal-price-workbench-runtime-loader.js?v=20260425d',
+      'portal-price-overlay-bridge-hotfix.js?v=20260425f',
       'portal-price-turnover-order-fallback-hotfix.js?v=20260425a',
       'portal-team-reconnect-hotfix.js?v=20260420a'
     ]

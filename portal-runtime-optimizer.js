@@ -183,6 +183,19 @@
     }
   }
 
+  function forceActivateView(view) {
+    if (!view) return;
+    if (typeof setView === 'function') {
+      setView(view);
+      return;
+    }
+    if (typeof state === 'object' && state) state.activeView = view;
+    document.querySelectorAll('.nav-btn').forEach((btn) => btn.classList.toggle('active', btn.dataset.view === view));
+    document.querySelectorAll('.view').forEach((section) => section.classList.toggle('active', section.id === `view-${view}`));
+    window.dispatchEvent(new CustomEvent('altea:viewchange', { detail: { view } }));
+    safeRerender();
+  }
+
   function markBundleReady(bundleKey) {
     readyBundles.add(bundleKey);
     if (bundleKey === 'launches') readyBundles.add('launch-control');
@@ -275,8 +288,15 @@
     document.addEventListener('click', (event) => {
       const button = event.target.closest('.nav-btn[data-view]');
       if (!button) return;
+      const requestedView = button.dataset.view;
       hasUserNavigation = true;
-      loadBundleForView(button.dataset.view);
+      loadBundleForView(requestedView);
+      window.setTimeout(() => {
+        const activeViewId = document.querySelector('.view.active')?.id || '';
+        const activeNav = document.querySelector('.nav-btn.active')?.dataset?.view || '';
+        if (activeViewId === `view-${requestedView}` && activeNav === requestedView) return;
+        forceActivateView(requestedView);
+      }, 60);
     }, true);
 
     window.addEventListener('altea:viewchange', (event) => {

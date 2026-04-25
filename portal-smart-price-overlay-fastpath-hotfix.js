@@ -5,7 +5,7 @@
   var SNAPSHOT_TABLE = "portal_data_snapshots";
   var SNAPSHOT_KEY = "smart_price_overlay";
   var OVERLAY_PATH = "data/smart_price_overlay.json";
-  var FETCH_TIMEOUT_MS = 2600;
+  var FETCH_TIMEOUT_MS = 8000;
   var stateApplyTimer = 0;
   var overlayPromise = null;
 
@@ -76,6 +76,15 @@
     return url.toString();
   }
 
+  async function fetchPartData(key, headers) {
+    var rows = await fetchJsonWithTimeout(
+      buildQueryUrl("snapshot_key,payload", "eq." + key),
+      headers
+    );
+    var row = Array.isArray(rows) ? rows[0] : null;
+    return String(row && row.payload && row.payload.data || "");
+  }
+
   async function fetchOverlayFast() {
     if (overlayPromise) return overlayPromise;
 
@@ -100,19 +109,9 @@
       if (!expected) return null;
 
       var keys = partKeys(expected);
-      var partsRows = await fetchJsonWithTimeout(
-        buildQueryUrl("snapshot_key,payload", "in.(" + keys.join(",") + ")"),
-        headers
-      );
-
-      var partsMap = new Map();
-      (Array.isArray(partsRows) ? partsRows : []).forEach(function (row) {
-        partsMap.set(String(row && row.snapshot_key || ""), String(row && row.payload && row.payload.data || ""));
-      });
-
-      var payloadJson = keys.map(function (key) {
-        return partsMap.get(key) || "";
-      }).join("");
+      var payloadJson = (await Promise.all(keys.map(function (key) {
+        return fetchPartData(key, headers);
+      }))).join("");
       if (!payloadJson) return null;
 
       var payload = JSON.parse(payloadJson);

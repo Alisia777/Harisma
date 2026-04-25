@@ -144,6 +144,11 @@
     }, 120);
   }
 
+  function normalizePricesNavLabel() {
+    var label = document.querySelector('.nav-btn[data-view="prices"] span');
+    if (label) label.textContent = "\u0426\u0435\u043d\u044b";
+  }
+
   var originalSnapshotLoader = typeof window.__alteaLoadPortalSnapshot === "function"
     ? window.__alteaLoadPortalSnapshot.bind(window)
     : null;
@@ -175,4 +180,7 @@
     if (!/^(prices|repricer)$/.test(String(view || ""))) return;
     requestStateRefresh();
   });
+  document.addEventListener("DOMContentLoaded", normalizePricesNavLabel, { once: true });
+  window.addEventListener("load", normalizePricesNavLabel, { once: true });
+  normalizePricesNavLabel();
 })();

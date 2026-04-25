@@ -117,6 +117,269 @@
     return true;
   }
 
+  function installRepricerSettingsFallbacks() {
+    const installed = [];
+
+    if (typeof window.defaultRepricerSettings !== 'function') {
+      window.defaultRepricerSettings = function defaultRepricerSettingsFallback() {
+        return {
+          global: {
+            minMarginPct: 15,
+            defaultTargetDays: 30,
+            launchTargetDays: 45,
+            oosDays: 5,
+            alignmentEnabled: true,
+            deadbandPct: 3,
+            deadbandRub: 50
+          },
+          brandRules: {
+            '\u0410\u043b\u0442\u0435\u044f': { defaultTargetDays: 30, launchTargetDays: 45, oosDays: 5, minMarginPct: 15, alignmentEnabled: true },
+            Altea: { defaultTargetDays: 30, launchTargetDays: 45, oosDays: 5, minMarginPct: 15, alignmentEnabled: true },
+            Harly: { defaultTargetDays: 30, launchTargetDays: 45, oosDays: 5, minMarginPct: 15, alignmentEnabled: true },
+            CPA: { defaultTargetDays: 30, launchTargetDays: 45, oosDays: 5, minMarginPct: 15, alignmentEnabled: true }
+          },
+          statusRules: {
+            '\u0410\u043a\u0442\u0443\u0430\u043b\u044c\u043d\u043e': { mode: 'auto', allowAutoprice: true, allowLaunch: false, allowAlignment: true },
+            '\u0410\u043a\u0442\u0443\u0430\u043b\u044c\u043d\u044b\u0439': { mode: 'auto', allowAutoprice: true, allowLaunch: false, allowAlignment: true },
+            '\u041d\u043e\u0432\u0438\u043d\u043a\u0430': { mode: 'launch', allowAutoprice: true, allowLaunch: true, allowAlignment: false },
+            '\u041f\u0435\u0440\u0435\u0437\u0430\u043f\u0443\u0441\u043a': { mode: 'launch', allowAutoprice: true, allowLaunch: true, allowAlignment: false },
+            '\u041f\u043e\u0434 \u0432\u043e\u043f\u0440\u043e\u0441\u043e\u043c': { mode: 'freeze', allowAutoprice: false, allowLaunch: false, allowAlignment: false },
+            '\u041f\u0435\u0440\u0435\u0440\u0430\u0431\u0430\u0442\u044b\u0432\u0430\u0435\u043c': { mode: 'freeze', allowAutoprice: false, allowLaunch: false, allowAlignment: false },
+            '\u0412\u044b\u0432\u043e\u0434': { mode: 'off', allowAutoprice: false, allowLaunch: false, allowAlignment: false }
+          },
+          roleRules: {
+            Hero: { targetDays: 28, minLiftPct: 2, stretchMultiplier: 1.2, allowVolumePush: true, elasticityDefault: -1.3 },
+            Traffic: { targetDays: 29, minLiftPct: 2, stretchMultiplier: 1.15, allowVolumePush: true, elasticityDefault: -1.15 },
+            Margin: { targetDays: 30, minLiftPct: 3, stretchMultiplier: 1.1, allowVolumePush: false, elasticityDefault: -0.9 },
+            Launch: { targetDays: 45, minLiftPct: 0, stretchMultiplier: 1.15, allowVolumePush: false, elasticityDefault: -0.5 },
+            Exit: { targetDays: 30, minLiftPct: 0, stretchMultiplier: 1, allowVolumePush: false, elasticityDefault: -1 },
+            Freeze: { targetDays: 30, minLiftPct: 0, stretchMultiplier: 1, allowVolumePush: false, elasticityDefault: -0.8 }
+          },
+          feeRules: {
+            wb: { commissionPct: 19, logisticsRub: 72, storageRub: 6, adRub: 35, returnsRub: 12, otherRub: 0 },
+            ozon: { commissionPct: 18, logisticsRub: 68, storageRub: 5, adRub: 30, returnsRub: 10, otherRub: 0 },
+            yandex: { commissionPct: 17, logisticsRub: 75, storageRub: 6, adRub: 28, returnsRub: 11, otherRub: 0 }
+          }
+        };
+      };
+      installed.push('defaultRepricerSettings');
+    }
+
+    if (typeof window.normalizeRepricerMode !== 'function') {
+      window.normalizeRepricerMode = function normalizeRepricerModeFallback(mode) {
+        const raw = String(mode || '').trim().toLowerCase();
+        if (['freeze', 'hold', 'force'].includes(raw)) return raw;
+        return 'auto';
+      };
+      installed.push('normalizeRepricerMode');
+    }
+
+    if (typeof window.normalizeRepricerEngineMode !== 'function') {
+      window.normalizeRepricerEngineMode = function normalizeRepricerEngineModeFallback(mode) {
+        const raw = String(mode || '').trim().toLowerCase();
+        if (raw === 'hold') return 'launch';
+        if (raw === 'force') return 'freeze';
+        if (['launch', 'freeze', 'off'].includes(raw)) return raw;
+        return 'auto';
+      };
+      installed.push('normalizeRepricerEngineMode');
+    }
+
+    if (typeof window.repricerNumberOrBlank !== 'function') {
+      window.repricerNumberOrBlank = function repricerNumberOrBlankFallback(value) {
+        if (value === null || value === undefined || value === '') return '';
+        const parsed = Number(String(value).replace(/\s+/g, '').replace(',', '.'));
+        return Number.isFinite(parsed) && parsed >= 0 ? parsed : '';
+      };
+      installed.push('repricerNumberOrBlank');
+    }
+
+    if (typeof window.repricerSignedNumberOrBlank !== 'function') {
+      window.repricerSignedNumberOrBlank = function repricerSignedNumberOrBlankFallback(value) {
+        if (value === null || value === undefined || value === '') return '';
+        const parsed = Number(String(value).replace(/\s+/g, '').replace(',', '.'));
+        return Number.isFinite(parsed) ? parsed : '';
+      };
+      installed.push('repricerSignedNumberOrBlank');
+    }
+
+    if (typeof window.repricerBool !== 'function') {
+      window.repricerBool = function repricerBoolFallback(value, fallback = false) {
+        if (value === null || value === undefined || value === '') return fallback;
+        const raw = String(value).trim().toLowerCase();
+        if (['y', 'yes', 'true', '1', '\u0434\u0430'].includes(raw)) return true;
+        if (['n', 'no', 'false', '0', '\u043d\u0435\u0442'].includes(raw)) return false;
+        return Boolean(value);
+      };
+      installed.push('repricerBool');
+    }
+
+    if (typeof window.repricerDateKey !== 'function') {
+      window.repricerDateKey = function repricerDateKeyFallback(value) {
+        if (!value) return '';
+        const raw = String(value).trim();
+        if (!raw) return '';
+        const directMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (directMatch) return `${directMatch[1]}-${directMatch[2]}-${directMatch[3]}`;
+        const parsed = new Date(raw);
+        if (Number.isNaN(parsed.getTime())) return '';
+        const year = parsed.getFullYear();
+        const month = String(parsed.getMonth() + 1).padStart(2, '0');
+        const day = String(parsed.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+      installed.push('repricerDateKey');
+    }
+
+    if (typeof window.normalizeRepricerStatusRule !== 'function') {
+      window.normalizeRepricerStatusRule = function normalizeRepricerStatusRuleFallback(item = {}, fallback = {}) {
+        const source = typeof item === 'string' ? { mode: item } : (item || {});
+        const base = typeof fallback === 'string' ? { mode: fallback } : (fallback || {});
+        return {
+          mode: window.normalizeRepricerEngineMode(source.mode ?? base.mode),
+          allowAutoprice: window.repricerBool(source.allowAutoprice, window.repricerBool(base.allowAutoprice, true)),
+          allowLaunch: window.repricerBool(source.allowLaunch, window.repricerBool(base.allowLaunch, false)),
+          allowAlignment: window.repricerBool(source.allowAlignment, window.repricerBool(base.allowAlignment, true))
+        };
+      };
+      installed.push('normalizeRepricerStatusRule');
+    }
+
+    if (typeof window.normalizeRepricerRoleRule !== 'function') {
+      window.normalizeRepricerRoleRule = function normalizeRepricerRoleRuleFallback(item = {}, fallback = {}) {
+        const source = item || {};
+        const base = fallback || {};
+        const next = {
+          targetDays: Number(source.targetDays ?? base.targetDays),
+          minLiftPct: Number(source.minLiftPct ?? base.minLiftPct),
+          stretchMultiplier: Number(source.stretchMultiplier ?? base.stretchMultiplier),
+          allowVolumePush: window.repricerBool(source.allowVolumePush, window.repricerBool(base.allowVolumePush, true)),
+          elasticityDefault: Number(source.elasticityDefault ?? base.elasticityDefault)
+        };
+        if (!Number.isFinite(next.targetDays)) next.targetDays = Number(base.targetDays) || 30;
+        if (!Number.isFinite(next.minLiftPct)) next.minLiftPct = Number(base.minLiftPct) || 0;
+        if (!Number.isFinite(next.stretchMultiplier)) next.stretchMultiplier = Number(base.stretchMultiplier) || 1;
+        if (!Number.isFinite(next.elasticityDefault)) next.elasticityDefault = Number(base.elasticityDefault) || -1;
+        return next;
+      };
+      installed.push('normalizeRepricerRoleRule');
+    }
+
+    if (typeof window.normalizeRepricerBrandRule !== 'function') {
+      window.normalizeRepricerBrandRule = function normalizeRepricerBrandRuleFallback(item = {}, fallback = {}) {
+        const source = item || {};
+        const base = fallback || {};
+        const next = {
+          defaultTargetDays: Number(source.defaultTargetDays ?? base.defaultTargetDays),
+          launchTargetDays: Number(source.launchTargetDays ?? base.launchTargetDays),
+          oosDays: Number(source.oosDays ?? base.oosDays),
+          minMarginPct: Number(source.minMarginPct ?? base.minMarginPct),
+          alignmentEnabled: window.repricerBool(source.alignmentEnabled, window.repricerBool(base.alignmentEnabled, true))
+        };
+        if (!Number.isFinite(next.defaultTargetDays)) next.defaultTargetDays = Number(base.defaultTargetDays) || 30;
+        if (!Number.isFinite(next.launchTargetDays)) next.launchTargetDays = Number(base.launchTargetDays) || 45;
+        if (!Number.isFinite(next.oosDays)) next.oosDays = Number(base.oosDays) || 5;
+        if (!Number.isFinite(next.minMarginPct)) next.minMarginPct = Number(base.minMarginPct) || 15;
+        return next;
+      };
+      installed.push('normalizeRepricerBrandRule');
+    }
+
+    if (typeof window.normalizeRepricerFeeRule !== 'function') {
+      window.normalizeRepricerFeeRule = function normalizeRepricerFeeRuleFallback(item = {}, fallback = {}) {
+        const source = item || {};
+        const base = fallback || {};
+        const next = {
+          commissionPct: Number(source.commissionPct ?? base.commissionPct),
+          logisticsRub: Number(source.logisticsRub ?? base.logisticsRub),
+          storageRub: Number(source.storageRub ?? base.storageRub),
+          adRub: Number(source.adRub ?? base.adRub),
+          returnsRub: Number(source.returnsRub ?? base.returnsRub),
+          otherRub: Number(source.otherRub ?? base.otherRub)
+        };
+        Object.keys(next).forEach((key) => {
+          if (!Number.isFinite(next[key])) next[key] = Number(base[key]) || 0;
+        });
+        return next;
+      };
+      installed.push('normalizeRepricerFeeRule');
+    }
+
+    if (typeof window.normalizeRepricerSettings !== 'function') {
+      window.normalizeRepricerSettings = function normalizeRepricerSettingsFallback(item = {}) {
+        const defaults = window.defaultRepricerSettings();
+        const rawGlobal = typeof item?.global === 'object' && item.global !== null ? item.global : {};
+        const rawBrandRules = typeof item?.brandRules === 'object' && item.brandRules !== null ? item.brandRules : {};
+        const rawStatusRules = typeof item?.statusRules === 'object' && item.statusRules !== null ? item.statusRules : {};
+        const rawRoleRules = typeof item?.roleRules === 'object' && item.roleRules !== null ? item.roleRules : {};
+        const rawFeeRules = typeof item?.feeRules === 'object' && item.feeRules !== null ? item.feeRules : {};
+        const next = {
+          global: {
+            minMarginPct: Number(rawGlobal.minMarginPct),
+            defaultTargetDays: Number(rawGlobal.defaultTargetDays),
+            launchTargetDays: Number(rawGlobal.launchTargetDays),
+            oosDays: Number(rawGlobal.oosDays),
+            alignmentEnabled: rawGlobal.alignmentEnabled === undefined ? defaults.global.alignmentEnabled : Boolean(rawGlobal.alignmentEnabled),
+            deadbandPct: Number(rawGlobal.deadbandPct),
+            deadbandRub: Number(rawGlobal.deadbandRub)
+          },
+          brandRules: {},
+          statusRules: {},
+          roleRules: {},
+          feeRules: {}
+        };
+
+        Object.keys(next.global).forEach((key) => {
+          if (typeof defaults.global[key] === 'number' && !Number.isFinite(next.global[key])) next.global[key] = defaults.global[key];
+        });
+
+        const brandKeys = new Set([...Object.keys(defaults.brandRules || {}), ...Object.keys(rawBrandRules)]);
+        brandKeys.forEach((brand) => {
+          const normalizedBrand = String(brand || '').trim();
+          if (!normalizedBrand) return;
+          next.brandRules[normalizedBrand] = window.normalizeRepricerBrandRule(rawBrandRules[normalizedBrand], defaults.brandRules?.[normalizedBrand] || defaults.global);
+        });
+
+        const statusKeys = new Set([...Object.keys(defaults.statusRules), ...Object.keys(rawStatusRules)]);
+        statusKeys.forEach((status) => {
+          const normalizedStatus = String(status || '').trim();
+          if (!normalizedStatus) return;
+          next.statusRules[normalizedStatus] = window.normalizeRepricerStatusRule(rawStatusRules[normalizedStatus], defaults.statusRules[normalizedStatus] || {});
+        });
+
+        const roleKeys = new Set([...Object.keys(defaults.roleRules), ...Object.keys(rawRoleRules)]);
+        roleKeys.forEach((role) => {
+          const normalizedRole = String(role || '').trim();
+          if (!normalizedRole) return;
+          next.roleRules[normalizedRole] = window.normalizeRepricerRoleRule(rawRoleRules[normalizedRole], defaults.roleRules[normalizedRole] || {});
+        });
+
+        const feeKeys = new Set([...Object.keys(defaults.feeRules), ...Object.keys(rawFeeRules)]);
+        feeKeys.forEach((platform) => {
+          const normalizedPlatform = String(platform || '').trim().toLowerCase();
+          if (!normalizedPlatform) return;
+          next.feeRules[normalizedPlatform] = window.normalizeRepricerFeeRule(rawFeeRules[normalizedPlatform], defaults.feeRules[normalizedPlatform] || {});
+        });
+
+        return next;
+      };
+      installed.push('normalizeRepricerSettings');
+    }
+
+    if (typeof window.normalizeRepricerLaunchReady !== 'function') {
+      window.normalizeRepricerLaunchReady = function normalizeRepricerLaunchReadyFallback(value) {
+        const raw = String(value || '').trim().toUpperCase();
+        if (!raw) return '';
+        if (['READY', 'GO', 'LIVE'].includes(raw)) return 'READY';
+        if (['HOLD', 'WAIT', 'BLOCK', 'NOT_READY', 'NOT READY', 'DRAFT'].includes(raw)) return 'HOLD';
+        return raw;
+      };
+      installed.push('normalizeRepricerLaunchReady');
+    }
+
+    return installed;
+  }
+
   function installRerenderFallback() {
     if (typeof window.rerenderCurrentView === 'function') return false;
 
@@ -166,6 +429,7 @@
   function installEmergencyAppCoreFallbacks() {
     const installed = [];
 
+    installed.push(...installRepricerSettingsFallbacks());
     if (installAppErrorFallback()) installed.push('setAppError');
     if (installSyncBadgeFallback()) installed.push('updateSyncBadge');
     if (installViewFailureFallback()) installed.push('renderViewFailure');

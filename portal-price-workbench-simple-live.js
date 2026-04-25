@@ -1,8 +1,9 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260420B__) return;
-  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260420B__ = true;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260425A__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260425A__ = true;
 
   var DATA_URL = "data/smart_price_workbench.json";
+  var OVERLAY_URL = "data/smart_price_overlay.json";
   var VIEW_ID = "view-prices";
   var STYLE_ID = "altea-price-simple-style";
   var STORAGE_KEYS = [
@@ -15,6 +16,8 @@
     loaded: false,
     error: "",
     rows: [],
+    overlayGeneratedAt: "",
+    sourceNote: "",
     market: "wb",
     search: "",
     selectedKey: "",
@@ -64,6 +67,86 @@
       .replace(/[^a-z\u0430-\u044f0-9_-]+/gi, "");
   }
 
+  function isoDate(value) {
+    if (!value) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(String(value))) return String(value);
+    var parsed = new Date(String(value));
+    if (Number.isNaN(parsed.getTime())) return "";
+    return parsed.toISOString().slice(0, 10);
+  }
+
+  function cloneSeries(series) {
+    return Array.isArray(series) ? series.map(function (item) { return Object.assign({}, item || {}); }) : [];
+  }
+
+  function normalizeRows(rows) {
+    if (Array.isArray(rows)) return rows;
+    if (rows && typeof rows === "object") return Object.values(rows);
+    return [];
+  }
+
+  function buildOverlayMaps(payload) {
+    var maps = { wb: Object.create(null), ozon: Object.create(null), ym: Object.create(null), all: Object.create(null) };
+    Object.keys((payload && payload.platforms) || {}).forEach(function (platform) {
+      var target = platform === "ya" ? "ym" : platform;
+      var rows = normalizeRows(((((payload || {}).platforms || {})[platform] || {}).rows));
+      rows.forEach(function (row) {
+        var key = norm(row && (row.articleKey || row.article || row.sku));
+        if (!key || maps[target][key]) return;
+        maps[target][key] = row;
+      });
+    });
+    return maps;
+  }
+
+  function overlayFlagEnabled(value) {
+    return value === true || value === "true" || value === 1 || value === "1";
+  }
+
+  function clearOverlayPoint(point, overlayRow) {
+    if (!point || !overlayRow) return;
+    if (overlayFlagEnabled(overlayRow.clearCurrentFillPrice) || overlayFlagEnabled(overlayRow.clearCurrentPrice)) {
+      point.price = null;
+    }
+    if (overlayFlagEnabled(overlayRow.clearCurrentClientPrice)) {
+      point.clientPrice = null;
+    }
+    if (overlayFlagEnabled(overlayRow.clearCurrentSppPct)) {
+      point.sppPct = null;
+    }
+    if (overlayFlagEnabled(overlayRow.clearCurrentTurnoverDays)) {
+      point.turnoverDays = null;
+    }
+  }
+
+  function mergeTimelineWithOverlay(timeline, overlayRow, maxDate) {
+    var cutoff = isoDate((overlayRow && (overlayRow.valueDate || overlayRow.historyFreshnessDate)) || maxDate);
+    var next = cloneSeries(timeline);
+    if (cutoff) {
+      next = next.filter(function (item) {
+        var date = isoDate(item && item.date);
+        return !date || date <= cutoff;
+      });
+      var point = next.find(function (item) { return isoDate(item && item.date) === cutoff; });
+      if (!point) {
+        point = { date: cutoff };
+        next.push(point);
+      }
+      if (overlayRow) {
+        clearOverlayPoint(point, overlayRow);
+        if (overlayRow.currentFillPrice != null) point.price = overlayRow.currentFillPrice;
+        else if (overlayRow.currentPrice != null) point.price = overlayRow.currentPrice;
+        if (overlayRow.currentClientPrice != null) point.clientPrice = overlayRow.currentClientPrice;
+        if (overlayRow.currentSppPct != null) point.sppPct = overlayRow.currentSppPct;
+        if (overlayRow.currentTurnoverDays != null) point.turnoverDays = overlayRow.currentTurnoverDays;
+      }
+      next.sort(function (left, right) {
+        return String((left && left.date) || "").localeCompare(String((right && right.date) || ""));
+      });
+    }
+    return next;
+  }
+
   function latestDate(rows) {
     var dates = [];
     rows.forEach(function (row) {
@@ -80,6 +163,71 @@
     var date = new Date(value + "T00:00:00");
     date.setDate(date.getDate() + daysDelta);
     return date.toISOString().slice(0, 10);
+  }
+
+  function parseFreshStamp(value) {
+    if (!value) return 0;
+    var raw = String(value || "").trim();
+    if (!raw) return 0;
+    var normalized = /^\d{4}-\d{2}$/.test(raw)
+      ? raw + "-01T00:00:00Z"
+      : /^\d{4}-\d{2}-\d{2}$/.test(raw)
+        ? raw + "T00:00:00Z"
+        : raw;
+    var stamp = Date.parse(normalized);
+    return Number.isFinite(stamp) ? stamp : 0;
+  }
+
+  function freshnessOfPayload(payload) {
+    if (!payload || typeof payload !== "object") return 0;
+    return Math.max(
+      parseFreshStamp(payload.generatedAt),
+      parseFreshStamp(payload.updatedAt),
+      parseFreshStamp(payload.updated_at),
+      parseFreshStamp(payload.asOfDate)
+    );
+  }
+
+  function chooseFreshestPayload(snapshotPayload, localPayload) {
+    if (snapshotPayload && localPayload) {
+      return freshnessOfPayload(localPayload) >= freshnessOfPayload(snapshotPayload)
+        ? { payload: localPayload, source: "local" }
+        : { payload: snapshotPayload, source: "snapshot" };
+    }
+    if (snapshotPayload) return { payload: snapshotPayload, source: "snapshot" };
+    if (localPayload) return { payload: localPayload, source: "local" };
+    return null;
+  }
+
+  async function fetchJsonNoStore(url) {
+    var response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) throw new Error("Failed to load " + url);
+    return await response.json();
+  }
+
+  async function loadSnapshotAwareJson(url) {
+    var snapshotPayload = null;
+    var localPayload = null;
+    var localError = null;
+
+    if (typeof window.__alteaLoadPortalSnapshot === "function") {
+      try {
+        snapshotPayload = await window.__alteaLoadPortalSnapshot(url);
+      } catch (error) {
+        console.warn("[price-simple] snapshot", url, error);
+      }
+    }
+
+    try {
+      localPayload = await fetchJsonNoStore(url);
+    } catch (error) {
+      localError = error;
+    }
+
+    var chosen = chooseFreshestPayload(snapshotPayload, localPayload);
+    if (chosen) return chosen;
+    if (localError) throw localError;
+    throw new Error("Failed to load " + url);
   }
 
   function ensureStyles() {
@@ -154,22 +302,76 @@
     return map;
   }
 
-  function buildRow(source, market, manualMap) {
+  function buildSkuMetaMap() {
+    var map = Object.create(null);
+    var skuRows = Array.isArray(window.state && window.state.skus) ? window.state.skus : [];
+    skuRows.forEach(function (row) {
+      var key = norm(row && (row.articleKey || row.article || row.sku));
+      if (!key || map[key]) return;
+      map[key] = {
+        owner: row && row.owner && typeof row.owner === "object" ? row.owner.name : (row && row.owner),
+        status: row && (row.statusSku || row.status),
+        role: row && (row.roleSku || row.role),
+        launchReady: row && row.launchReady
+      };
+    });
+    var profiles = Array.isArray(window.state && window.state.storage && window.state.storage.repricerSkuProfiles)
+      ? window.state.storage.repricerSkuProfiles
+      : [];
+    profiles.forEach(function (row) {
+      var key = norm(row && (row.articleKey || row.article || row.sku));
+      if (!key) return;
+      map[key] = Object.assign({}, map[key] || {}, {
+        owner: (map[key] && map[key].owner) || "",
+        status: row && row.status ? row.status : (map[key] && map[key].status),
+        role: row && row.role ? row.role : (map[key] && map[key].role),
+        launchReady: row && row.launchReady ? row.launchReady : (map[key] && map[key].launchReady)
+      });
+    });
+    return map;
+  }
+
+  function buildRow(source, market, manualMap, overlayRow, maxDate, skuMeta) {
     var timeline = Array.isArray(source.monthly) ? source.monthly : Array.isArray(source.daily) ? source.daily : [];
+    timeline = mergeTimelineWithOverlay(timeline, overlayRow, maxDate);
+    var overlayClearsFill = overlayFlagEnabled(overlayRow && (overlayRow.clearCurrentFillPrice || overlayRow.clearCurrentPrice));
+    var overlayClearsClient = overlayFlagEnabled(overlayRow && overlayRow.clearCurrentClientPrice);
+    var overlayClearsSpp = overlayFlagEnabled(overlayRow && overlayRow.clearCurrentSppPct);
+    var overlayClearsTurnover = overlayFlagEnabled(overlayRow && overlayRow.clearCurrentTurnoverDays);
+    var overlayFillPrice = num(overlayRow && (overlayRow.currentFillPrice != null ? overlayRow.currentFillPrice : overlayRow.currentPrice));
+    var overlayClientPrice = num(overlayRow && overlayRow.currentClientPrice);
+    var overlaySppPct = num(overlayRow && overlayRow.currentSppPct);
+    var overlayTurnoverDays = num(overlayRow && overlayRow.currentTurnoverDays);
+    var overlayStatus = overlayRow && overlayRow.status;
+    var overlayOwner = overlayRow && overlayRow.owner;
+    var overlayValueDate = isoDate(overlayRow && (overlayRow.valueDate || overlayRow.historyFreshnessDate));
+    var sourceKey = norm(source && (source.articleKey || source.article || source.sku));
+    var skuRow = (skuMeta && skuMeta[sourceKey]) || null;
     var row = {
       market: market,
       articleKey: source.articleKey || source.article || source.sku || "",
       name: source.name || source.title || source.articleKey || "\u0411\u0435\u0437 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f",
-      owner: source.owner || "\u2014",
-      status: source.status || "\u2014",
+      owner: overlayOwner || source.owner || (skuRow && skuRow.owner) || "\u2014",
+      status: overlayStatus || source.status || (skuRow && skuRow.status) || "\u2014",
+      role: source.role || (skuRow && skuRow.role) || "\u2014",
+      launchReady: source.launchReady || (skuRow && skuRow.launchReady) || "\u2014",
       allowedMarginPct: num(source.allowedMarginPct),
       marginTotalPct: num(source.marginTotalPct != null ? source.marginTotalPct : source.avgMargin7dPct),
-      turnoverDays: num(source.turnoverCurrentDays != null ? source.turnoverCurrentDays : source.currentTurnoverDays),
-      currentFillPrice: num(source.currentFillPrice != null ? source.currentFillPrice : source.currentPrice),
-      currentClientPrice: num(source.currentClientPrice),
-      currentSppPct: num(source.currentSppPct),
+      turnoverDays: overlayClearsTurnover
+        ? null
+        : (overlayTurnoverDays != null ? overlayTurnoverDays : num(source.turnoverCurrentDays != null ? source.turnoverCurrentDays : source.currentTurnoverDays)),
+      currentFillPrice: overlayClearsFill
+        ? null
+        : (overlayFillPrice != null ? overlayFillPrice : num(source.currentFillPrice != null ? source.currentFillPrice : source.currentPrice)),
+      currentClientPrice: overlayClearsClient
+        ? null
+        : (overlayClientPrice != null ? overlayClientPrice : num(source.currentClientPrice)),
+      currentSppPct: overlayClearsSpp
+        ? null
+        : (overlaySppPct != null ? overlaySppPct : num(source.currentSppPct)),
       requiredPriceForMargin: num(source.requiredPriceForMargin),
       historyNote: source.historyNote || "",
+      valueDate: overlayValueDate || isoDate(maxDate),
       timeline: timeline
     };
     var manual = manualMap[norm(row.articleKey)];
@@ -190,17 +392,33 @@
     state.loading = true;
     renderPriceWorkbench();
     try {
-      var response = await fetch(DATA_URL, { cache: "no-store" });
-      if (!response.ok) throw new Error("Failed to load " + DATA_URL);
-      var payload = await response.json();
+      var dataResult = await loadSnapshotAwareJson(DATA_URL);
+      var payload = dataResult.payload || {};
+      var overlayPayload = null;
+      var overlaySource = "none";
+      try {
+        var overlayResult = await loadSnapshotAwareJson(OVERLAY_URL);
+        overlayPayload = overlayResult.payload || null;
+        overlaySource = overlayResult.source || "local";
+      } catch (error) {
+        console.warn("[price-simple] overlay", error);
+      }
       var manualMap = readManualMap();
+      var skuMetaMap = buildSkuMetaMap();
+      var overlayMaps = buildOverlayMaps(overlayPayload || {});
+      var maxDate = isoDate((overlayPayload && (overlayPayload.asOfDate || overlayPayload.generatedAt)) || payload.generatedAt);
       var rows = [];
       Object.keys(payload.platforms || {}).forEach(function (market) {
-        ((payload.platforms[market] || {}).rows || []).forEach(function (item) {
-          rows.push(buildRow(item, market, manualMap));
+        normalizeRows((payload.platforms[market] || {}).rows).forEach(function (item) {
+          var overlayRow = overlayMaps[market] && overlayMaps[market][norm(item.articleKey || item.article || item.sku)];
+          rows.push(buildRow(item, market, manualMap, overlayRow || null, maxDate, skuMetaMap));
         });
       });
       state.rows = rows;
+      state.overlayGeneratedAt = overlayPayload && overlayPayload.generatedAt ? overlayPayload.generatedAt : "";
+      state.sourceNote = overlayPayload && overlayPayload.generatedAt
+        ? DATA_URL + " (" + dataResult.source + ") + " + OVERLAY_URL + " (" + overlaySource + ") \u00b7 \u0446\u0435\u043d\u044b \u0434\u043e " + isoDate(overlayPayload.asOfDate || overlayPayload.generatedAt)
+        : DATA_URL + " (" + dataResult.source + ") \u00b7 \u0431\u0435\u0437 \u0441\u0432\u0435\u0436\u0435\u0433\u043e overlay";
       state.loaded = true;
       var last = latestDate(rows);
       if (last) {
@@ -381,7 +599,7 @@
       '<div class="pw-card">',
       '<div class="pw-label">\u041f\u043e\u0438\u0441\u043a</div>',
       '<input class="pw-search" id="pwSearch" placeholder="\u0410\u0440\u0442\u0438\u043a\u0443\u043b, owner, \u0441\u0442\u0430\u0442\u0443\u0441" value="', esc(state.search), '">',
-      '<div class="pw-note">\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a: ', esc(DATA_URL), '</div>',
+      '<div class="pw-note">\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a: ', esc(state.sourceNote || DATA_URL), '</div>',
       '</div></div>',
       '</section>',
       '<section class="pw-stats">',

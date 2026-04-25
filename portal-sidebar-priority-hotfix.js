@@ -68,6 +68,28 @@
     el.textContent = value;
   }
 
+  function setFileInputLabel(label, value) {
+    if (!label || !value) return;
+    var input = label.querySelector("input");
+    label.textContent = value;
+    if (input) label.appendChild(input);
+  }
+
+  function syncStaticCopy() {
+    setText(document.querySelector(".brand-title"), "\u0414\u043e\u043c \u0431\u0440\u0435\u043d\u0434\u0430 \u0410\u043b\u0442\u0435\u044f");
+    setText(document.querySelector(".brand-sub"), "\u0420\u0430\u0431\u043e\u0447\u0438\u0439 \u043a\u043e\u043d\u0442\u0443\u0440 \u0431\u0440\u0435\u043d\u0434\u0430 \u0438 \u0440\u0435\u0448\u0435\u043d\u0438\u0439.");
+    setText(document.querySelector(".topbar h1"), "\u0414\u043e\u043c \u0431\u0440\u0435\u043d\u0434\u0430 \u0410\u043b\u0442\u0435\u044f");
+    setText(
+      document.querySelector(".topbar p"),
+      "\u0418\u0441\u0442\u0438\u043d\u0430 \u0432 \u0442\u043e\u043c, \u0447\u0442\u043e \u043f\u0440\u0430\u0432\u044b\u0445 \u043d\u0435\u0442. \u0415\u0441\u0442\u044c \u043b\u0438\u0448\u044c \u0442\u0435, \u043a\u0442\u043e \u0432\u044b\u0434\u0435\u0440\u0436\u0430\u043b \u0446\u0435\u043d\u0443 \u0440\u0435\u0448\u0435\u043d\u0438\u0439 \u0438 \u043d\u0435 \u043f\u043e\u0442\u0435\u0440\u044f\u043b \u043a\u0443\u0440\u0441 \u0432\u043e \u0442\u044c\u043c\u0435."
+    );
+    setText(document.getElementById("pullRemoteBtn"), "\u041e\u0431\u043d\u043e\u0432\u0438\u0442\u044c \u043a\u043e\u043c\u0430\u043d\u0434\u043d\u044b\u0435 \u0434\u0430\u043d\u043d\u044b\u0435");
+    setText(document.getElementById("pushRemoteBtn"), "\u0421\u0438\u043d\u0445\u0440\u043e\u043d\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f");
+    setText(document.getElementById("toggleAdminBarBtn"), "\u0410\u0434\u043c\u0438\u043d");
+    setText(document.getElementById("exportStorageBtn"), "\u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0440\u0430\u0431\u043e\u0447\u0435\u0433\u043e JSON");
+    setFileInputLabel(document.querySelector(".file-input"), "\u0418\u043c\u043f\u043e\u0440\u0442 JSON");
+  }
+
   function patchViewFunctions() {
     if (typeof window.setView === "function" && !window.setView.__alteaSidebarPatched) {
       var originalSetView = window.setView;
@@ -130,6 +152,7 @@
 
   function run() {
     patchViewFunctions();
+    syncStaticCopy();
     syncSidebar();
     enforceActiveView();
   }

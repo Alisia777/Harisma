@@ -1,8 +1,8 @@
 (function () {
-  if (window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260425B__) return;
-  window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260425B__ = true;
+  if (window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260425C__) return;
+  window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260425C__ = true;
 
-  const VERSION = '20260425b';
+  const VERSION = '20260425c';
   const SNAPSHOT_TABLE = 'portal_data_snapshots';
   const SNAPSHOT_KEY = 'repricer_runtime_hotfix_20260424b';
   const LOCAL_RUNTIME_MANIFEST = `${SNAPSHOT_KEY}.json`;

@@ -1,9 +1,9 @@
 (function () {
-  if (window.__ALTEA_ORDER_LOGISTICS_HOTFIX_20260421F__) return;
-  window.__ALTEA_ORDER_LOGISTICS_HOTFIX_20260421F__ = true;
+  if (window.__ALTEA_ORDER_LOGISTICS_HOTFIX_20260425A__) return;
+  window.__ALTEA_ORDER_LOGISTICS_HOTFIX_20260425A__ = true;
 
-  const VERSION = '20260421g';
-  const STYLE_ID = 'altea-order-logistics-hotfix-20260421g';
+  const VERSION = '20260425a';
+  const STYLE_ID = 'altea-order-logistics-hotfix-20260425a';
   const cache = {
     logistics: null,
     warehouse: null
@@ -60,9 +60,9 @@
   function turnoverBadge(days) {
     if (days === null || days === undefined || !Number.isFinite(Number(days))) return badgeHtml('n/a', 'info');
     const value = Number(days);
-    if (value < 7) return badgeHtml(`${fmtNum(value, 1)} дн.`, 'danger');
-    if (value < 14) return badgeHtml(`${fmtNum(value, 1)} дн.`, 'warn');
-    return badgeHtml(`${fmtNum(value, 1)} дн.`, 'ok');
+    if (value < 7) return badgeHtml(`${fmtNum(value, 1)} РґРЅ.`, 'danger');
+    if (value < 14) return badgeHtml(`${fmtNum(value, 1)} РґРЅ.`, 'warn');
+    return badgeHtml(`${fmtNum(value, 1)} РґРЅ.`, 'ok');
   }
 
   function uniq(values) {
@@ -79,21 +79,82 @@
       .replace(/^_+|_+$/g, '');
   }
 
-  async function loadJson(path, key) {
-    if (cache[key]) return cache[key];
+  function parseFreshStamp(value) {
+    if (!value) return 0;
+    const raw = String(value || '').trim();
+    if (!raw) return 0;
+    const normalized = /^\d{4}-\d{2}$/.test(raw)
+      ? `${raw}-01T00:00:00Z`
+      : /^\d{4}-\d{2}-\d{2}$/.test(raw)
+        ? `${raw}T00:00:00Z`
+        : raw;
+    const stamp = Date.parse(normalized);
+    return Number.isFinite(stamp) ? stamp : 0;
+  }
+
+  function freshnessOfPayload(payload) {
+    if (!payload || typeof payload !== 'object') return 0;
+    return Math.max(
+      parseFreshStamp(payload.generatedAt),
+      parseFreshStamp(payload.updatedAt),
+      parseFreshStamp(payload.updated_at),
+      parseFreshStamp(payload.asOfDate)
+    );
+  }
+
+  function chooseFreshestPayload(snapshotPayload, localPayload) {
+    if (snapshotPayload && localPayload) {
+      return freshnessOfPayload(localPayload) >= freshnessOfPayload(snapshotPayload)
+        ? localPayload
+        : snapshotPayload;
+    }
+    return localPayload || snapshotPayload || null;
+  }
+
+  function resetCache() {
+    cache.logistics = null;
+    cache.warehouse = null;
+  }
+
+  async function fetchLocalJson(path) {
     const resolved = path.includes('?') ? path : `${path}?v=${VERSION}`;
     const response = await fetch(resolved, { cache: 'no-store' });
     if (!response.ok) throw new Error(`Failed to load ${path}`);
     const raw = await response.text();
-    const parsed = typeof sanitizeLooseJson === 'function' ? JSON.parse(sanitizeLooseJson(raw)) : JSON.parse(raw);
-    cache[key] = parsed;
-    return parsed;
+    return typeof sanitizeLooseJson === 'function' ? JSON.parse(sanitizeLooseJson(raw)) : JSON.parse(raw);
   }
 
-  async function ensureSources() {
+  async function loadJson(path, key, force) {
+    if (!force && cache[key]) return cache[key];
+
+    let snapshotPayload = null;
+    if (typeof window.__alteaLoadPortalSnapshot === 'function') {
+      try {
+        snapshotPayload = await window.__alteaLoadPortalSnapshot(path, { force: Boolean(force) });
+      } catch (error) {
+        console.warn('[order-logistics-hotfix] snapshot', path, error);
+      }
+    }
+
+    let localPayload = null;
+    try {
+      localPayload = await fetchLocalJson(path);
+    } catch (error) {
+      if (!snapshotPayload) throw error;
+      console.warn('[order-logistics-hotfix] local', path, error);
+    }
+
+    const chosen = chooseFreshestPayload(snapshotPayload, localPayload);
+    if (!chosen) throw new Error(`Failed to load ${path}`);
+
+    cache[key] = chosen;
+    return chosen;
+  }
+
+  async function ensureSources(force) {
     await Promise.all([
-      loadJson('data/logistics.json', 'logistics'),
-      loadJson('data/warehouse_stock_overlay.json', 'warehouse').catch(() => ({ rows: [] }))
+      loadJson('data/logistics.json', 'logistics', force),
+      loadJson('data/warehouse_stock_overlay.json', 'warehouse', force).catch(() => ({ rows: [] }))
     ]);
   }
 
@@ -225,9 +286,9 @@
   }
 
   function downloadExport(model) {
-    const headers = ['SKU / номенклатура', 'Артикул', 'Остаток мой склад', 'В пути на склад', 'Итого к заказу'];
+    const headers = ['SKU / РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°', 'РђСЂС‚РёРєСѓР»', 'РћСЃС‚Р°С‚РѕРє РјРѕР№ СЃРєР»Р°Рґ', 'Р’ РїСѓС‚Рё РЅР° СЃРєР»Р°Рґ', 'РС‚РѕРіРѕ Рє Р·Р°РєР°Р·Сѓ'];
     model.placeNames.forEach((name) => {
-      headers.push(`${name} · Остаток MP`, `${name} · Заказы`, `${name} · Оборачиваемость`, `${name} · Рек. к заказу`);
+      headers.push(`${name} В· РћСЃС‚Р°С‚РѕРє MP`, `${name} В· Р—Р°РєР°Р·С‹`, `${name} В· РћР±РѕСЂР°С‡РёРІР°РµРјРѕСЃС‚СЊ`, `${name} В· Р РµРє. Рє Р·Р°РєР°Р·Сѓ`);
     });
 
     const lines = [headers.map(exportCell).join(';')];
@@ -253,7 +314,7 @@
 
   function renderTable(model) {
     const headerGroups = model.placeNames.map((place) => `<th class="altea-order-logistics__group" colspan="4">${escape(place)}</th>`).join('');
-    const headerMetrics = model.placeNames.map(() => '<th>Остаток MP</th><th>Заказы</th><th>Оборачиваемость</th><th>Рек. к заказу</th>').join('');
+    const headerMetrics = model.placeNames.map(() => '<th>РћСЃС‚Р°С‚РѕРє MP</th><th>Р—Р°РєР°Р·С‹</th><th>РћР±РѕСЂР°С‡РёРІР°РµРјРѕСЃС‚СЊ</th><th>Р РµРє. Рє Р·Р°РєР°Р·Сѓ</th>').join('');
 
     const body = model.rows.length
       ? model.rows.map((row) => {
@@ -271,7 +332,7 @@
             <tr>
               <td class="altea-order-logistics__sku">
                 <strong>${escape(row.name || row.article)}</strong>
-                <div class="altea-order-logistics__meta">${escape(row.articleKey || row.article)} · ${escape(row.owner || 'Без owner')}</div>
+                <div class="altea-order-logistics__meta">${escape(row.articleKey || row.article)} В· ${escape(row.owner || 'Р‘РµР· owner')}</div>
               </td>
               <td>${typeof linkToSku === 'function' ? linkToSku(row.article, row.article) : escape(row.article)}</td>
               <td class="altea-order-logistics__num">${fmtInt(row.warehouseStock)}</td>
@@ -281,7 +342,7 @@
             </tr>
           `;
         }).join('')
-      : `<tr><td colspan="${5 + model.placeNames.length * 4}" class="altea-order-logistics__empty">Нет SKU по выбранной площадке и доступным кластерным данным.</td></tr>`;
+      : `<tr><td colspan="${5 + model.placeNames.length * 4}" class="altea-order-logistics__empty">РќРµС‚ SKU РїРѕ РІС‹Р±СЂР°РЅРЅРѕР№ РїР»РѕС‰Р°РґРєРµ Рё РґРѕСЃС‚СѓРїРЅС‹Рј РєР»Р°СЃС‚РµСЂРЅС‹Рј РґР°РЅРЅС‹Рј.</td></tr>`;
 
     return `
       <div class="altea-order-logistics__table-wrap imperial-table-wrap">
@@ -289,10 +350,10 @@
           <thead>
             <tr>
               <th rowspan="2">SKU</th>
-              <th rowspan="2">Артикул</th>
-              <th rowspan="2">Остаток мой склад</th>
-              <th rowspan="2">В пути на склад</th>
-              <th rowspan="2">Итого к заказу</th>
+              <th rowspan="2">РђСЂС‚РёРєСѓР»</th>
+              <th rowspan="2">РћСЃС‚Р°С‚РѕРє РјРѕР№ СЃРєР»Р°Рґ</th>
+              <th rowspan="2">Р’ РїСѓС‚Рё РЅР° СЃРєР»Р°Рґ</th>
+              <th rowspan="2">РС‚РѕРіРѕ Рє Р·Р°РєР°Р·Сѓ</th>
               ${headerGroups}
             </tr>
             <tr>${headerMetrics}</tr>
@@ -304,61 +365,61 @@
   }
 
   function render(model) {
-    const periodNote = model.generatedAt && typeof fmt?.date === 'function' ? fmt.date(model.generatedAt) : 'последний доступный срез';
+    const periodNote = model.generatedAt && typeof fmt?.date === 'function' ? fmt.date(model.generatedAt) : 'РїРѕСЃР»РµРґРЅРёР№ РґРѕСЃС‚СѓРїРЅС‹Р№ СЃСЂРµР·';
     const warehouseCaption = model.warehouseOverlayReady
-      ? 'Колонка "Остаток мой склад" уже подхвачена из файла реальных остатков. Колонка "В пути на склад" пока оставлена отдельным будущим слоем, потому что источника ещё нет.'
-      : 'Колонки "Остаток мой склад" и "В пути на склад" уже заложены в форму. Пока внешний Excel или 1С не подключён, они заполняются только там, где источник уже отдал поля.';
+      ? 'РљРѕР»РѕРЅРєР° "РћСЃС‚Р°С‚РѕРє РјРѕР№ СЃРєР»Р°Рґ" СѓР¶Рµ РїРѕРґС…РІР°С‡РµРЅР° РёР· С„Р°Р№Р»Р° СЂРµР°Р»СЊРЅС‹С… РѕСЃС‚Р°С‚РєРѕРІ. РљРѕР»РѕРЅРєР° "Р’ РїСѓС‚Рё РЅР° СЃРєР»Р°Рґ" РїРѕРєР° РѕСЃС‚Р°РІР»РµРЅР° РѕС‚РґРµР»СЊРЅС‹Рј Р±СѓРґСѓС‰РёРј СЃР»РѕРµРј, РїРѕС‚РѕРјСѓ С‡С‚Рѕ РёСЃС‚РѕС‡РЅРёРєР° РµС‰С‘ РЅРµС‚.'
+      : 'РљРѕР»РѕРЅРєРё "РћСЃС‚Р°С‚РѕРє РјРѕР№ СЃРєР»Р°Рґ" Рё "Р’ РїСѓС‚Рё РЅР° СЃРєР»Р°Рґ" СѓР¶Рµ Р·Р°Р»РѕР¶РµРЅС‹ РІ С„РѕСЂРјСѓ. РџРѕРєР° РІРЅРµС€РЅРёР№ Excel РёР»Рё 1РЎ РЅРµ РїРѕРґРєР»СЋС‡С‘РЅ, РѕРЅРё Р·Р°РїРѕР»РЅСЏСЋС‚СЃСЏ С‚РѕР»СЊРєРѕ С‚Р°Рј, РіРґРµ РёСЃС‚РѕС‡РЅРёРє СѓР¶Рµ РѕС‚РґР°Р» РїРѕР»СЏ.';
 
     return `
       <section class="imperial-section altea-order-logistics" data-altea-order-logistics>
         <div class="section-title">
           <div>
-            <h2>Заказ товара по кластерам</h2>
-            <p>Экран закупщика: выбираем площадку и целевую оборачиваемость, дальше видим, сколько нужно отправить в каждый кластер и сколько получается в сумме по SKU.</p>
+            <h2>Р—Р°РєР°Р· С‚РѕРІР°СЂР° РїРѕ РєР»Р°СЃС‚РµСЂР°Рј</h2>
+            <p>Р­РєСЂР°РЅ Р·Р°РєСѓРїС‰РёРєР°: РІС‹Р±РёСЂР°РµРј РїР»РѕС‰Р°РґРєСѓ Рё С†РµР»РµРІСѓСЋ РѕР±РѕСЂР°С‡РёРІР°РµРјРѕСЃС‚СЊ, РґР°Р»СЊС€Рµ РІРёРґРёРј, СЃРєРѕР»СЊРєРѕ РЅСѓР¶РЅРѕ РѕС‚РїСЂР°РІРёС‚СЊ РІ РєР°Р¶РґС‹Р№ РєР»Р°СЃС‚РµСЂ Рё СЃРєРѕР»СЊРєРѕ РїРѕР»СѓС‡Р°РµС‚СЃСЏ РІ СЃСѓРјРјРµ РїРѕ SKU.</p>
           </div>
           <div class="badge-stack">
-            ${badgeHtml(`Площадка: ${model.platformLabel}`, model.platform === 'wb' ? 'ok' : 'info')}
-            ${badgeHtml(`Цель: ${model.targetDays} дн.`, 'info')}
+            ${badgeHtml(`РџР»РѕС‰Р°РґРєР°: ${model.platformLabel}`, model.platform === 'wb' ? 'ok' : 'info')}
+            ${badgeHtml(`Р¦РµР»СЊ: ${model.targetDays} РґРЅ.`, 'info')}
             ${badgeHtml(`SKU: ${fmtInt(model.rows.length)}`, model.rows.length ? 'ok' : 'warn')}
           </div>
         </div>
         <div class="card">
           <div class="altea-order-logistics__controls">
             <label class="altea-order-logistics__field">
-              <span>Целевая оборачиваемость, дней</span>
+              <span>Р¦РµР»РµРІР°СЏ РѕР±РѕСЂР°С‡РёРІР°РµРјРѕСЃС‚СЊ, РґРЅРµР№</span>
               <input id="alteaOrderLogisticsDays" type="number" min="1" max="180" step="1" value="${escape(model.targetDays)}">
             </label>
             <div class="altea-order-logistics__field">
-              <span>Площадка</span>
+              <span>РџР»РѕС‰Р°РґРєР°</span>
               <div class="altea-order-logistics__platforms">
                 <button class="quick-chip ${model.platform === 'wb' ? 'active' : ''}" type="button" data-altea-order-platform="wb">WB</button>
                 <button class="quick-chip ${model.platform === 'ozon' ? 'active' : ''}" type="button" data-altea-order-platform="ozon">OZ</button>
               </div>
             </div>
             <div class="badge-stack">
-              ${badgeHtml(`Кластеры: ${fmtInt(model.placeNames.length)}`, model.placeNames.length ? 'ok' : 'warn')}
-              ${badgeHtml(`Срез: ${periodNote}`, 'info')}
+              ${badgeHtml(`РљР»Р°СЃС‚РµСЂС‹: ${fmtInt(model.placeNames.length)}`, model.placeNames.length ? 'ok' : 'warn')}
+              ${badgeHtml(`РЎСЂРµР·: ${periodNote}`, 'info')}
             </div>
             <div class="altea-order-logistics__actions">
-              <button class="btn" type="button" data-altea-order-export>Выгрузить в Excel</button>
+              <button class="btn" type="button" data-altea-order-export>Р’С‹РіСЂСѓР·РёС‚СЊ РІ Excel</button>
             </div>
           </div>
           <div class="altea-order-logistics__summary">
-            <div class="mini-kpi"><span>SKU в расчёте</span><strong>${fmtInt(model.rows.length)}</strong><span>по площадке ${escape(model.platformLabel)}</span></div>
-            <div class="mini-kpi"><span>Мой склад</span><strong>${fmtInt(model.totals.warehouseStock)}</strong><span>сумма по файлу реальных остатков</span></div>
-            <div class="mini-kpi"><span>В пути на склад</span><strong>${fmtInt(model.totals.inboundWarehouse)}</strong><span>будет точнее после Excel / 1С</span></div>
-            <div class="mini-kpi warn"><span>Итого к заказу</span><strong>${fmtInt(model.totals.totalNeed)}</strong><span>сумма рекомендованного заказа по всем кластерам</span></div>
+            <div class="mini-kpi"><span>SKU РІ СЂР°СЃС‡С‘С‚Рµ</span><strong>${fmtInt(model.rows.length)}</strong><span>РїРѕ РїР»РѕС‰Р°РґРєРµ ${escape(model.platformLabel)}</span></div>
+            <div class="mini-kpi"><span>РњРѕР№ СЃРєР»Р°Рґ</span><strong>${fmtInt(model.totals.warehouseStock)}</strong><span>СЃСѓРјРјР° РїРѕ С„Р°Р№Р»Сѓ СЂРµР°Р»СЊРЅС‹С… РѕСЃС‚Р°С‚РєРѕРІ</span></div>
+            <div class="mini-kpi"><span>Р’ РїСѓС‚Рё РЅР° СЃРєР»Р°Рґ</span><strong>${fmtInt(model.totals.inboundWarehouse)}</strong><span>Р±СѓРґРµС‚ С‚РѕС‡РЅРµРµ РїРѕСЃР»Рµ Excel / 1РЎ</span></div>
+            <div class="mini-kpi warn"><span>РС‚РѕРіРѕ Рє Р·Р°РєР°Р·Сѓ</span><strong>${fmtInt(model.totals.totalNeed)}</strong><span>СЃСѓРјРјР° СЂРµРєРѕРјРµРЅРґРѕРІР°РЅРЅРѕРіРѕ Р·Р°РєР°Р·Р° РїРѕ РІСЃРµРј РєР»Р°СЃС‚РµСЂР°Рј</span></div>
           </div>
         </div>
         <div class="card" style="margin-top:14px">
           <div class="section-subhead">
             <div>
-              <h3>Таблица заказа</h3>
-              <p class="small muted">Слева SKU и центральный склад, справа по каждому кластеру остаток MP, заказы, оборачиваемость и рекомендация к заказу.</p>
+              <h3>РўР°Р±Р»РёС†Р° Р·Р°РєР°Р·Р°</h3>
+              <p class="small muted">РЎР»РµРІР° SKU Рё С†РµРЅС‚СЂР°Р»СЊРЅС‹Р№ СЃРєР»Р°Рґ, СЃРїСЂР°РІР° РїРѕ РєР°Р¶РґРѕРјСѓ РєР»Р°СЃС‚РµСЂСѓ РѕСЃС‚Р°С‚РѕРє MP, Р·Р°РєР°Р·С‹, РѕР±РѕСЂР°С‡РёРІР°РµРјРѕСЃС‚СЊ Рё СЂРµРєРѕРјРµРЅРґР°С†РёСЏ Рє Р·Р°РєР°Р·Сѓ.</p>
             </div>
             <div class="badge-stack">
-              ${badgeHtml(`Период: ${model.targetDays} дн.`, 'info')}
-              ${badgeHtml('В пути на склад пока 0', 'warn')}
+              ${badgeHtml(`РџРµСЂРёРѕРґ: ${model.targetDays} РґРЅ.`, 'info')}
+              ${badgeHtml('Р’ РїСѓС‚Рё РЅР° СЃРєР»Р°Рґ РїРѕРєР° 0', 'warn')}
             </div>
           </div>
           ${renderTable(model)}
@@ -534,12 +595,19 @@
     });
   }
 
-  async function renderCurrent() {
+  async function renderCurrent(force = false) {
     const root = document.getElementById('view-order');
     if (!root) return;
+    if (!force && !root.classList.contains('active')) return;
+    if (force) {
+      resetCache();
+      if (typeof window.__alteaResetPortalSnapshotState === 'function') {
+        window.__alteaResetPortalSnapshotState();
+      }
+    }
     injectStyles();
     try {
-      await ensureSources();
+      await ensureSources(force);
       root.innerHTML = render(buildModel());
       bind(root);
     } catch (error) {
@@ -547,20 +615,24 @@
       root.innerHTML = `
         <section class="imperial-section altea-order-logistics">
           <div class="card">
-            <h3>Заказ товара пока не загрузился</h3>
-            <p class="small muted">Не удалось прочитать <code>data/logistics.json</code> или <code>data/warehouse_stock_overlay.json</code>.</p>
+            <h3>Р—Р°РєР°Р· С‚РѕРІР°СЂР° РїРѕРєР° РЅРµ Р·Р°РіСЂСѓР·РёР»СЃСЏ</h3>
+            <p class="small muted">РќРµ СѓРґР°Р»РѕСЃСЊ РїСЂРѕС‡РёС‚Р°С‚СЊ <code>data/logistics.json</code> РёР»Рё <code>data/warehouse_stock_overlay.json</code>.</p>
           </div>
         </section>
       `;
     }
   }
 
+  window.__alteaRefreshOrderLogistics = function refreshOrderLogistics(force) {
+    return renderCurrent(force !== false);
+  };
+
   function wrapRenderOrderCalculator() {
     if (typeof renderOrderCalculator !== 'function' || renderOrderCalculator.__alteaOrderLogisticsWrapped) return false;
     const original = renderOrderCalculator;
     const wrapped = function alteaOrderLogisticsWrapper() {
       const result = original.apply(this, arguments);
-      renderCurrent();
+      if (document.getElementById('view-order')?.classList.contains('active')) renderCurrent(true);
       return result;
     };
     wrapped.__alteaOrderLogisticsWrapped = true;
@@ -589,13 +661,14 @@
       setTimeout(boot, 250);
       return;
     }
-    setTimeout(() => {
-      if (document.getElementById('view-order')?.classList.contains('active')) renderCurrent();
-    }, 120);
-    setTimeout(() => {
-      if (document.getElementById('view-order')?.classList.contains('active')) renderCurrent();
-    }, 1500);
+    if (document.getElementById('view-order')?.classList.contains('active')) renderCurrent(true);
   }
+
+  document.getElementById('pullRemoteBtn')?.addEventListener('click', () => {
+    setTimeout(() => {
+      if (document.getElementById('view-order')?.classList.contains('active')) renderCurrent(true);
+    }, 180);
+  });
 
   boot();
 })();

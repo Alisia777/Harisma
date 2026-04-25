@@ -1,14 +1,12 @@
 (function () {
-  if (window.__ALTEA_PRICE_SNAPSHOT_FASTPATH_20260425B__) return;
-  window.__ALTEA_PRICE_SNAPSHOT_FASTPATH_20260425B__ = true;
+  if (window.__ALTEA_PRICE_SNAPSHOT_FASTPATH_20260425C__) return;
+  window.__ALTEA_PRICE_SNAPSHOT_FASTPATH_20260425C__ = true;
 
   var PRICE_SNAPSHOT_TIMEOUT_MS = 9000;
   var PRICE_URL_RE = /smart_price_(workbench|overlay)\.json/i;
   var PRICE_SUPPORT_URL_RE = /(smart_price_overlay|order_procurement(?:_wb|_ozon)?)\.json/i;
   var PRICE_SUPPORT_FETCH_TIMEOUT_MS = 1800;
-  var EXTRA_PRICE_SCRIPTS = [
-    "portal-price-live-clarity-hotfix.js?v=20260425a"
-  ];
+  var EXTRA_PRICE_SCRIPTS = [];
   var loadedScripts = Object.create(null);
 
   function loadExtraScript(src) {
@@ -90,10 +88,10 @@
 
   function install() {
     if (typeof window.__alteaLoadPortalSnapshot !== "function") return false;
-    if (window.__ALTEA_PRICE_SNAPSHOT_FASTPATH_PATCHED__) return true;
+    if (window.__ALTEA_PRICE_SNAPSHOT_FASTPATH_PATCHED_C__) return true;
 
     var original = window.__alteaLoadPortalSnapshot.bind(window);
-    window.__ALTEA_PRICE_SNAPSHOT_FASTPATH_PATCHED__ = true;
+    window.__ALTEA_PRICE_SNAPSHOT_FASTPATH_PATCHED_C__ = true;
     window.__alteaLoadPortalSnapshot = function patchedAlteaLoadPortalSnapshot(url) {
       if (!PRICE_URL_RE.test(String(url || ""))) {
         return original(url);

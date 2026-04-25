@@ -1,11 +1,35 @@
 (function () {
-  if (window.__ALTEA_PRICE_SNAPSHOT_FASTPATH_20260425A__) return;
-  window.__ALTEA_PRICE_SNAPSHOT_FASTPATH_20260425A__ = true;
+  if (window.__ALTEA_PRICE_SNAPSHOT_FASTPATH_20260425B__) return;
+  window.__ALTEA_PRICE_SNAPSHOT_FASTPATH_20260425B__ = true;
 
   var PRICE_SNAPSHOT_TIMEOUT_MS = 9000;
   var PRICE_URL_RE = /smart_price_(workbench|overlay)\.json/i;
   var PRICE_SUPPORT_URL_RE = /(smart_price_overlay|order_procurement(?:_wb|_ozon)?)\.json/i;
   var PRICE_SUPPORT_FETCH_TIMEOUT_MS = 1800;
+  var EXTRA_PRICE_SCRIPTS = [
+    "portal-price-live-clarity-hotfix.js?v=20260425a"
+  ];
+  var loadedScripts = Object.create(null);
+
+  function loadExtraScript(src) {
+    if (!src || loadedScripts[src]) return;
+    loadedScripts[src] = true;
+    var existing = Array.from(document.scripts || []).find(function (script) {
+      return String(script.src || "").indexOf(src.split("?")[0]) !== -1;
+    });
+    if (existing) return;
+    var script = document.createElement("script");
+    script.src = src;
+    script.async = false;
+    script.onerror = function () {
+      console.warn("[price-snapshot-fastpath] failed to load", src);
+    };
+    (document.head || document.body || document.documentElement).appendChild(script);
+  }
+
+  function loadExtraPriceScripts() {
+    EXTRA_PRICE_SCRIPTS.forEach(loadExtraScript);
+  }
 
   function withTimeout(task, timeoutMs) {
     return new Promise(function (resolve) {
@@ -79,12 +103,14 @@
     return true;
   }
 
+  loadExtraPriceScripts();
   installFetchGuard();
   if (install()) return;
 
   var attempts = 0;
   var timer = window.setInterval(function () {
     attempts += 1;
+    loadExtraPriceScripts();
     installFetchGuard();
     if (install() || attempts >= 20) {
       window.clearInterval(timer);

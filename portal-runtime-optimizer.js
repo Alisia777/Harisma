@@ -1,10 +1,10 @@
 (function () {
-  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260425A__) return;
-  window.__ALTEA_RUNTIME_OPTIMIZER_20260425A__ = true;
+  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260425C__) return;
+  window.__ALTEA_RUNTIME_OPTIMIZER_20260425C__ = true;
 
   const BUNDLE_MAP = {
     dashboard: [
-      'portal-dashboard-interactive-hotfix.js?v=20260422e',
+      'portal-dashboard-interactive-hotfix.js?v=20260423a',
       'portal-dashboard-prime-hotfix-20260422e.js?v=20260422e'
     ],
     order: ['portal-order-logistics-hotfix.js?v=20260421g'],
@@ -13,7 +13,8 @@
       'portal-launch-manager-hotfix.js?v=20260422c'
     ],
     prices: [
-      'portal-price-workbench-simple-live.js?v=20260425a',
+      'portal-price-workbench-simple-live.js?v=20260425b',
+      'portal-price-turnover-order-fallback-hotfix.js?v=20260425a',
       'portal-team-reconnect-hotfix.js?v=20260420a'
     ]
   };
@@ -25,17 +26,17 @@
     prices: 'prices'
   };
   const VIEW_TITLES = {
-    dashboard: '\u0414\u0430\u0448\u0431\u043e\u0440\u0434',
-    documents: '\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b',
-    repricer: '\u0420\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440',
-    prices: '\u0426\u0435\u043d\u044b',
-    order: '\u041b\u043e\u0433\u0438\u0441\u0442\u0438\u043a\u0430 \u0438 \u0437\u0430\u043a\u0430\u0437',
-    control: '\u0417\u0430\u0434\u0430\u0447\u0438',
-    skus: '\u0420\u0435\u0435\u0441\u0442\u0440 SKU',
-    launches: '\u041f\u0440\u043e\u0434\u0443\u043a\u0442 / \u041a\u0441\u0435\u043d\u0438\u044f',
-    'launch-control': '\u0417\u0430\u043f\u0443\u0441\u043a \u043d\u043e\u0432\u0438\u043d\u043e\u043a',
-    meetings: '\u0420\u0438\u0442\u043c \u0440\u0430\u0431\u043e\u0442\u044b',
-    executive: '\u0420\u0443\u043a\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044e'
+    dashboard: 'Р”Р°С€Р±РѕСЂРґ',
+    documents: 'Р”РѕРєСѓРјРµРЅС‚С‹',
+    repricer: 'Р РµРїСЂР°Р№СЃРµСЂ',
+    prices: 'Р¦РµРЅС‹',
+    order: 'Р›РѕРіРёСЃС‚РёРєР° Рё Р·Р°РєР°Р·',
+    control: 'Р—Р°РґР°С‡Рё',
+    skus: 'Р РµРµСЃС‚СЂ SKU',
+    launches: 'РџСЂРѕРґСѓРєС‚ / РљСЃРµРЅРёСЏ',
+    'launch-control': 'Р—Р°РїСѓСЃРє РЅРѕРІРёРЅРѕРє',
+    meetings: 'Р РёС‚Рј СЂР°Р±РѕС‚С‹',
+    executive: 'Р СѓРєРѕРІРѕРґРёС‚РµР»СЋ'
   };
   const VIEW_TO_DATA_KEY = {
     launches: 'launches',
@@ -48,7 +49,7 @@
     launches: {
       path: 'data/launches.json',
       fallback: [],
-      label: '\u041f\u0440\u043e\u0434\u0443\u043a\u0442 / \u041a\u0441\u0435\u043d\u0438\u044f',
+      label: 'РџСЂРѕРґСѓРєС‚ / РљСЃРµРЅРёСЏ',
       assign(value) {
         state.launches = Array.isArray(value) ? value : [];
       }
@@ -56,7 +57,7 @@
     meetings: {
       path: 'data/meetings.json',
       fallback: [],
-      label: '\u0420\u0438\u0442\u043c \u0440\u0430\u0431\u043e\u0442\u044b',
+      label: 'Р РёС‚Рј СЂР°Р±РѕС‚С‹',
       assign(value) {
         state.meetings = Array.isArray(value) ? value : [];
       }
@@ -64,7 +65,7 @@
     documents: {
       path: 'data/documents.json',
       fallback: { groups: [] },
-      label: '\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b',
+      label: 'Р”РѕРєСѓРјРµРЅС‚С‹',
       assign(value) {
         state.documents = value || { groups: [] };
       }
@@ -72,7 +73,7 @@
     repricer: {
       path: 'data/repricer.json',
       fallback: { generatedAt: '', summary: {}, rows: [] },
-      label: '\u0420\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440',
+      label: 'Р РµРїСЂР°Р№СЃРµСЂ',
       assign(value) {
         state.repricer = value || { generatedAt: '', summary: {}, rows: [] };
       }
@@ -82,6 +83,9 @@
   const deferredPathMap = Object.fromEntries(
     Object.entries(DEFERRED_DATA).map(([key, config]) => [config.path, { key, fallback: config.fallback }])
   );
+  const FORCED_JSON_VERSION = {
+    'data/dashboard.json': '20260423a'
+  };
   const deferredReady = Object.fromEntries(Object.keys(DEFERRED_DATA).map((key) => [key, false]));
   const deferredLoads = new Map();
   const scriptPromises = new Map();
@@ -117,16 +121,30 @@
     });
   }
 
+  function rewriteStaticJsonVersion(input, path) {
+    const forcedVersion = FORCED_JSON_VERSION[path];
+    if (!forcedVersion) return input;
+    try {
+      const raw = typeof input === 'string' ? input : input?.url || '';
+      const url = new URL(raw, window.location.href);
+      url.searchParams.set('v', forcedVersion);
+      return url.toString();
+    } catch {
+      return input;
+    }
+  }
+
   function installDeferredFetch() {
     if (!originalFetch || window.__ALTEA_DEFERRED_FETCH_INSTALLED__) return;
     window.__ALTEA_DEFERRED_FETCH_INSTALLED__ = true;
     window.fetch = function optimizedFetch(input, init) {
       const path = normalizeFetchPath(input);
+      const rewrittenInput = rewriteStaticJsonVersion(input, path);
       const deferred = deferredPathMap[path];
       if (deferred && !window.__ALTEA_ALLOW_REAL_DEFERRED_FETCH__) {
         return Promise.resolve(buildJsonResponse(deferred.fallback));
       }
-      return originalFetch(input, init);
+      return originalFetch(rewrittenInput, init);
     };
   }
 
@@ -147,7 +165,7 @@
       script.src = src;
       script.async = false;
       script.onload = () => resolve(script);
-      script.onerror = () => reject(new Error(`\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c ${src}`));
+      script.onerror = () => reject(new Error(`РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ ${src}`));
       (document.head || document.body || document.documentElement).appendChild(script);
     });
 
@@ -192,14 +210,14 @@
   function renderDeferredLoading(view) {
     const root = document.getElementById(`view-${view}`);
     if (!root) return;
-    const title = VIEW_TITLES[view] || '\u042d\u043a\u0440\u0430\u043d';
-    const statusChip = typeof badge === 'function' ? badge('\u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0430', 'info') : '';
+    const title = VIEW_TITLES[view] || 'Р­РєСЂР°РЅ';
+    const statusChip = typeof badge === 'function' ? badge('Р·Р°РіСЂСѓР·РєР°', 'info') : '';
     root.innerHTML = `
       <div class="card">
         <div class="head">
           <div>
             <h3>${title}</h3>
-            <div class="muted small">\u041f\u043e\u0434\u0433\u0440\u0443\u0436\u0430\u0435\u043c \u0434\u0430\u043d\u043d\u044b\u0435 \u0442\u043e\u043b\u044c\u043a\u043e \u0434\u043b\u044f \u044d\u0442\u043e\u0433\u043e \u0440\u0430\u0437\u0434\u0435\u043b\u0430, \u0447\u0442\u043e\u0431\u044b \u0441\u0442\u0430\u0440\u0442 \u043f\u043e\u0440\u0442\u0430\u043b\u0430 \u043d\u0435 \u0432\u0438\u0441\u0435\u043b.</div>
+            <div class="muted small">РџРѕРґРіСЂСѓР¶Р°РµРј РґР°РЅРЅС‹Рµ С‚РѕР»СЊРєРѕ РґР»СЏ СЌС‚РѕРіРѕ СЂР°Р·РґРµР»Р°, С‡С‚РѕР±С‹ СЃС‚Р°СЂС‚ РїРѕСЂС‚Р°Р»Р° РЅРµ РІРёСЃРµР».</div>
           </div>
           ${statusChip}
         </div>
@@ -233,7 +251,7 @@
           renderViewFailure(`view-${requestedView}`, VIEW_TITLES[requestedView] || config.label, error);
         }
         if (typeof setAppError === 'function') {
-          setAppError(`\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u043e\u0434\u0433\u0440\u0443\u0437\u0438\u0442\u044c ${config.label}: ${error.message}`);
+          setAppError(`РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕРґРіСЂСѓР·РёС‚СЊ ${config.label}: ${error.message}`);
         }
       })
       .finally(() => {

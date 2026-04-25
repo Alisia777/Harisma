@@ -2,7 +2,7 @@
   if (window.__ALTEA_PRICE_SNAPSHOT_FASTPATH_20260425A__) return;
   window.__ALTEA_PRICE_SNAPSHOT_FASTPATH_20260425A__ = true;
 
-  var PRICE_SNAPSHOT_TIMEOUT_MS = 1800;
+  var PRICE_SNAPSHOT_TIMEOUT_MS = 9000;
   var PRICE_URL_RE = /smart_price_(workbench|overlay)\.json/i;
   var PRICE_SUPPORT_URL_RE = /(smart_price_overlay|order_procurement(?:_wb|_ozon)?)\.json/i;
   var PRICE_SUPPORT_FETCH_TIMEOUT_MS = 1800;
@@ -44,6 +44,10 @@
       }
 
       if (!PRICE_SUPPORT_URL_RE.test(String(raw || ""))) {
+        return originalFetch(input, init);
+      }
+
+      if (/smart_price_overlay\.json/i.test(String(raw || ""))) {
         return originalFetch(input, init);
       }
 

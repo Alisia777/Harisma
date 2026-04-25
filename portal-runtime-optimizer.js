@@ -1,21 +1,21 @@
 (function () {
-  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260425N__) return;
-  window.__ALTEA_RUNTIME_OPTIMIZER_20260425N__ = true;
+  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260425O__) return;
+  window.__ALTEA_RUNTIME_OPTIMIZER_20260425O__ = true;
 
   const BUNDLE_MAP = {
     dashboard: [
       'portal-dashboard-interactive-hotfix.js?v=20260423a',
       'portal-dashboard-prime-hotfix-20260422e.js?v=20260422e'
     ],
-    order: ['portal-order-logistics-hotfix.js?v=20260421g'],
+    order: ['portal-order-logistics-hotfix.js?v=20260425a'],
     launches: [
       'portal-launch-month-filter-hotfix.js?v=20260422c',
       'portal-launch-manager-hotfix.js?v=20260422c'
     ],
     prices: [
       'portal-price-snapshot-fastpath-hotfix.js?v=20260425c',
-      'portal-price-workbench-simple-live.js?v=20260425f',
-      'portal-price-calendar-ux-hotfix.js?v=20260425a',
+      'portal-price-workbench-runtime-loader.js?v=20260425e',
+      'portal-price-overlay-bridge-hotfix.js?v=20260425f',
       'portal-price-turnover-order-fallback-hotfix.js?v=20260425a',
       'portal-team-reconnect-hotfix.js?v=20260420a'
     ]
@@ -28,17 +28,17 @@
     prices: 'prices'
   };
   const VIEW_TITLES = {
-    dashboard: 'Р”Р°С€Р±РѕСЂРґ',
-    documents: 'Р”РѕРєСѓРјРµРЅС‚С‹',
-    repricer: 'Р РµРїСЂР°Р№СЃРµСЂ',
-    prices: 'Р¦РµРЅС‹',
-    order: 'Р›РѕРіРёСЃС‚РёРєР° Рё Р·Р°РєР°Р·',
-    control: 'Р—Р°РґР°С‡Рё',
-    skus: 'Р РµРµСЃС‚СЂ SKU',
-    launches: 'РџСЂРѕРґСѓРєС‚ / РљСЃРµРЅРёСЏ',
-    'launch-control': 'Р—Р°РїСѓСЃРє РЅРѕРІРёРЅРѕРє',
-    meetings: 'Р РёС‚Рј СЂР°Р±РѕС‚С‹',
-    executive: 'Р СѓРєРѕРІРѕРґРёС‚РµР»СЋ'
+    dashboard: 'Дашборд',
+    documents: 'Документы',
+    repricer: 'Репрайсер',
+    prices: 'Цены',
+    order: 'Логистика и заказ',
+    control: 'Задачи',
+    skus: 'Реестр SKU',
+    launches: 'Продукт / Ксения',
+    'launch-control': 'Запуск новинок',
+    meetings: 'Ритм работы',
+    executive: 'Руководителю'
   };
   const VIEW_TO_DATA_KEY = {
     launches: 'launches',
@@ -51,7 +51,7 @@
     launches: {
       path: 'data/launches.json',
       fallback: [],
-      label: 'РџСЂРѕРґСѓРєС‚ / РљСЃРµРЅРёСЏ',
+      label: 'Продукт / Ксения',
       assign(value) {
         state.launches = Array.isArray(value) ? value : [];
       }
@@ -59,7 +59,7 @@
     meetings: {
       path: 'data/meetings.json',
       fallback: [],
-      label: 'Р РёС‚Рј СЂР°Р±РѕС‚С‹',
+      label: 'Ритм работы',
       assign(value) {
         state.meetings = Array.isArray(value) ? value : [];
       }
@@ -67,7 +67,7 @@
     documents: {
       path: 'data/documents.json',
       fallback: { groups: [] },
-      label: 'Р”РѕРєСѓРјРµРЅС‚С‹',
+      label: 'Документы',
       assign(value) {
         state.documents = value || { groups: [] };
       }
@@ -75,7 +75,7 @@
     repricer: {
       path: 'data/repricer.json',
       fallback: { generatedAt: '', summary: {}, rows: [] },
-      label: 'Р РµРїСЂР°Р№СЃРµСЂ',
+      label: 'Репрайсер',
       assign(value) {
         state.repricer = value || { generatedAt: '', summary: {}, rows: [] };
       }
@@ -167,7 +167,7 @@
       script.src = src;
       script.async = false;
       script.onload = () => resolve(script);
-      script.onerror = () => reject(new Error(`РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ ${src}`));
+      script.onerror = () => reject(new Error(`Не удалось загрузить ${src}`));
       (document.head || document.body || document.documentElement).appendChild(script);
     });
 
@@ -225,14 +225,14 @@
   function renderDeferredLoading(view) {
     const root = document.getElementById(`view-${view}`);
     if (!root) return;
-    const title = VIEW_TITLES[view] || 'Р­РєСЂР°РЅ';
-    const statusChip = typeof badge === 'function' ? badge('Р·Р°РіСЂСѓР·РєР°', 'info') : '';
+    const title = VIEW_TITLES[view] || 'Экран';
+    const statusChip = typeof badge === 'function' ? badge('загрузка', 'info') : '';
     root.innerHTML = `
       <div class="card">
         <div class="head">
           <div>
             <h3>${title}</h3>
-            <div class="muted small">РџРѕРґРіСЂСѓР¶Р°РµРј РґР°РЅРЅС‹Рµ С‚РѕР»СЊРєРѕ РґР»СЏ СЌС‚РѕРіРѕ СЂР°Р·РґРµР»Р°, С‡С‚РѕР±С‹ СЃС‚Р°СЂС‚ РїРѕСЂС‚Р°Р»Р° РЅРµ РІРёСЃРµР».</div>
+            <div class="muted small">Подгружаем данные только для этого раздела, чтобы старт портала не висел.</div>
           </div>
           ${statusChip}
         </div>
@@ -266,7 +266,7 @@
           renderViewFailure(`view-${requestedView}`, VIEW_TITLES[requestedView] || config.label, error);
         }
         if (typeof setAppError === 'function') {
-          setAppError(`РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕРґРіСЂСѓР·РёС‚СЊ ${config.label}: ${error.message}`);
+          setAppError(`Не удалось подгрузить ${config.label}: ${error.message}`);
         }
       })
       .finally(() => {

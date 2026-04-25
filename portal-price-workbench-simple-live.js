@@ -1,11 +1,16 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260425A__) return;
-  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260425A__ = true;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260425H__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260425H__ = true;
 
   var DATA_URL = "data/smart_price_workbench.json";
   var OVERLAY_URL = "data/smart_price_overlay.json";
+  var ORDER_PROCUREMENT_URL = "data/order_procurement.json";
+  var ORDER_PROCUREMENT_WB_URL = "data/order_procurement_wb.json";
+  var ORDER_PROCUREMENT_OZON_URL = "data/order_procurement_ozon.json";
   var VIEW_ID = "view-prices";
   var STYLE_ID = "altea-price-simple-style";
+  var SNAPSHOT_WAIT_MS = 1800;
+  var SNAPSHOT_HARD_WAIT_MS = 4500;
   var STORAGE_KEYS = [
     "brand-portal-price-workbench-v20260419-entries",
     "portal_price_workbench_entries"
@@ -17,12 +22,18 @@
     error: "",
     rows: [],
     overlayGeneratedAt: "",
+    orderProcurementGeneratedAt: "",
+    orderProcurementFallbackCount: 0,
     sourceNote: "",
     market: "wb",
     search: "",
     selectedKey: "",
     dateFrom: "",
-    dateTo: ""
+    dateTo: "",
+    latestFactDate: "",
+    latestTimelineDate: "",
+    earliestTimelineDate: "",
+    dataLagDays: 0
   };
 
   function esc(value) {
@@ -67,12 +78,41 @@
       .replace(/[^a-z\u0430-\u044f0-9_-]+/gi, "");
   }
 
+  function pad2(value) {
+    return String(value).padStart(2, "0");
+  }
+
+  function localDateKey(date) {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+    return [
+      date.getFullYear(),
+      pad2(date.getMonth() + 1),
+      pad2(date.getDate())
+    ].join("-");
+  }
+
+  function parseDateValue(value) {
+    if (!value) return null;
+    var raw = String(value).trim();
+    if (!raw) return null;
+    var direct = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (direct) {
+      return new Date(Number(direct[1]), Number(direct[2]) - 1, Number(direct[3]), 12, 0, 0, 0);
+    }
+    var parsed = new Date(raw);
+    if (Number.isNaN(parsed.getTime())) return null;
+    return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 12, 0, 0, 0);
+  }
+
   function isoDate(value) {
     if (!value) return "";
     if (/^\d{4}-\d{2}-\d{2}$/.test(String(value))) return String(value);
-    var parsed = new Date(String(value));
-    if (Number.isNaN(parsed.getTime())) return "";
-    return parsed.toISOString().slice(0, 10);
+    var parsed = parseDateValue(value);
+    return parsed ? localDateKey(parsed) : "";
+  }
+
+  function todayKey() {
+    return localDateKey(new Date());
   }
 
   function cloneSeries(series) {
@@ -158,11 +198,37 @@
     return dates[dates.length - 1] || "";
   }
 
+  function earliestDate(rows) {
+    var dates = [];
+    rows.forEach(function (row) {
+      (row.timeline || []).forEach(function (item) {
+        if (item && item.date) dates.push(item.date);
+      });
+    });
+    dates.sort();
+    return dates[0] || "";
+  }
+
   function shiftDate(value, daysDelta) {
     if (!value) return "";
-    var date = new Date(value + "T00:00:00");
+    var date = parseDateValue(value);
+    if (!date) return "";
     date.setDate(date.getDate() + daysDelta);
-    return date.toISOString().slice(0, 10);
+    return localDateKey(date);
+  }
+
+  function diffDays(fromValue, toValue) {
+    var from = parseDateValue(fromValue);
+    var to = parseDateValue(toValue);
+    if (!from || !to) return 0;
+    return Math.round((to.getTime() - from.getTime()) / 86400000);
+  }
+
+  function dataFreshnessLabel() {
+    if (!state.latestFactDate) return "\u0414\u0430\u0442\u0430 \u0441\u0440\u0435\u0437\u0430 \u043d\u0435 \u043e\u043f\u0440\u0435\u0434\u0435\u043b\u0435\u043d\u0430.";
+    if (state.dataLagDays <= 0) return "\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u0441\u0440\u0435\u0437 \u043d\u0430 \u0441\u0435\u0433\u043e\u0434\u043d\u044f.";
+    if (state.dataLagDays === 1) return "\u0421\u0440\u0435\u0437 \u043e\u0442\u0441\u0442\u0430\u0435\u0442 \u043e\u0442 \u0441\u0435\u0433\u043e\u0434\u043d\u044f \u043d\u0430 1 \u0434\u0435\u043d\u044c.";
+    return "\u0421\u0440\u0435\u0437 \u043e\u0442\u0441\u0442\u0430\u0435\u0442 \u043e\u0442 \u0441\u0435\u0433\u043e\u0434\u043d\u044f \u043d\u0430 " + state.dataLagDays + " \u0434\u043d.";
   }
 
   function parseFreshStamp(value) {
@@ -190,13 +256,48 @@
 
   function chooseFreshestPayload(snapshotPayload, localPayload) {
     if (snapshotPayload && localPayload) {
-      return freshnessOfPayload(localPayload) >= freshnessOfPayload(snapshotPayload)
-        ? { payload: localPayload, source: "local" }
-        : { payload: snapshotPayload, source: "snapshot" };
+      return freshnessOfPayload(snapshotPayload) >= freshnessOfPayload(localPayload)
+        ? { payload: snapshotPayload, source: "snapshot" }
+        : { payload: localPayload, source: "local" };
     }
     if (snapshotPayload) return { payload: snapshotPayload, source: "snapshot" };
     if (localPayload) return { payload: localPayload, source: "local" };
     return null;
+  }
+
+  function resetStateForReload() {
+    state.loading = false;
+    state.loaded = false;
+    state.error = "";
+    state.rows = [];
+    state.overlayGeneratedAt = "";
+    state.orderProcurementGeneratedAt = "";
+    state.orderProcurementFallbackCount = 0;
+    state.sourceNote = "";
+    state.latestFactDate = "";
+    state.latestTimelineDate = "";
+    state.earliestTimelineDate = "";
+    state.dataLagDays = 0;
+    state.selectedKey = "";
+  }
+
+  function normalizeDateRange() {
+    var today = todayKey();
+    var earliest = state.earliestTimelineDate || "";
+    var fallbackTo = state.latestTimelineDate || state.latestFactDate || today;
+    var toValue = isoDate(state.dateTo) || fallbackTo;
+    var fromValue = isoDate(state.dateFrom) || shiftDate(toValue, -6);
+
+    if (toValue > today) toValue = today;
+    if (earliest && toValue < earliest) toValue = earliest;
+    if (earliest && fromValue < earliest) fromValue = earliest;
+    if (fromValue && toValue && fromValue > toValue) {
+      fromValue = shiftDate(toValue, -6);
+      if (earliest && fromValue < earliest) fromValue = earliest;
+    }
+
+    state.dateTo = toValue;
+    state.dateFrom = fromValue;
   }
 
   async function fetchJsonNoStore(url) {
@@ -205,23 +306,56 @@
     return await response.json();
   }
 
+  async function tryFetchJsonNoStore(url) {
+    try {
+      return await fetchJsonNoStore(url);
+    } catch (error) {
+      console.warn("[price-simple]", url, error);
+      return null;
+    }
+  }
+
+  async function tryLoadSnapshotAwareJson(url) {
+    try {
+      return await loadSnapshotAwareJson(url);
+    } catch (error) {
+      console.warn("[price-simple] snapshot-aware", url, error);
+      return null;
+    }
+  }
+
+  function waitResult(ms, value) {
+    return new Promise(function (resolve) {
+      window.setTimeout(function () { resolve(value); }, ms);
+    });
+  }
+
   async function loadSnapshotAwareJson(url) {
-    var snapshotPayload = null;
     var localPayload = null;
     var localError = null;
+    var snapshotTask = null;
 
     if (typeof window.__alteaLoadPortalSnapshot === "function") {
-      try {
-        snapshotPayload = await window.__alteaLoadPortalSnapshot(url);
-      } catch (error) {
-        console.warn("[price-simple] snapshot", url, error);
-      }
+      snapshotTask = Promise.resolve()
+        .then(function () { return window.__alteaLoadPortalSnapshot(url); })
+        .catch(function (error) {
+          console.warn("[price-simple] snapshot", url, error);
+          return null;
+        });
     }
 
     try {
       localPayload = await fetchJsonNoStore(url);
     } catch (error) {
       localError = error;
+    }
+
+    var snapshotPayload = null;
+    if (snapshotTask) {
+      snapshotPayload = await Promise.race([
+        snapshotTask,
+        waitResult(localPayload != null ? SNAPSHOT_WAIT_MS : SNAPSHOT_HARD_WAIT_MS, null)
+      ]);
     }
 
     var chosen = chooseFreshestPayload(snapshotPayload, localPayload);
@@ -248,6 +382,17 @@
       ".pw-chip.active{background:linear-gradient(135deg,#c49a37,#f2d48d);color:#23180b;border-color:transparent;}",
       ".pw-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px;}",
       ".pw-grid2 input,.pw-search{width:100%;box-sizing:border-box;border-radius:14px;border:1px solid rgba(214,175,85,.18);background:rgba(9,7,5,.78);color:#f7ead1;padding:12px 14px;}",
+      ".pw-help{display:grid;gap:10px;margin-top:12px;padding:14px 16px;border-radius:18px;border:1px solid rgba(214,175,85,.14);background:rgba(214,175,85,.05);}",
+      ".pw-help details{border-top:1px solid rgba(214,175,85,.12);padding-top:10px;}",
+      ".pw-help details:first-child{border-top:0;padding-top:0;}",
+      ".pw-help summary{cursor:pointer;color:#f5e6c2;font-weight:700;}",
+      ".pw-help ul{margin:8px 0 0;padding-left:18px;color:#d7c39f;display:grid;gap:6px;}",
+      ".pw-alert{margin-top:14px;padding:14px 16px;border-radius:18px;border:1px solid rgba(214,175,85,.18);background:rgba(214,175,85,.07);color:#f4ead6;}",
+      ".pw-alert.warn{border-color:rgba(255,171,92,.28);background:rgba(115,63,17,.22);}",
+      ".pw-alert strong{display:block;margin-bottom:6px;color:#fff0cf;}",
+      ".pw-detail{margin-top:10px;}",
+      ".pw-detail summary{cursor:pointer;color:#f5e6c2;font-weight:700;}",
+      ".pw-detail-note{margin-top:8px;color:#cdb892;line-height:1.45;}",
       ".pw-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;}",
       ".pw-stat strong{display:block;margin-top:8px;font-size:28px;color:#fff0cf;}",
       ".pw-stat small{display:block;margin-top:6px;color:#cdb892;line-height:1.45;}",
@@ -331,7 +476,75 @@
     return map;
   }
 
-  function buildRow(source, market, manualMap, overlayRow, maxDate, skuMeta) {
+  function procurementPlatform(value) {
+    var normalized = norm(value);
+    if (normalized === "wb" || normalized === "wildberries") return "wb";
+    if (normalized === "ozon") return "ozon";
+    return "";
+  }
+
+  function buildOrderProcurementLookup(combinedPayload, wbPayload, ozonPayload) {
+    var maps = { wb: Object.create(null), ozon: Object.create(null) };
+    var generatedAt = "";
+
+    function ingestPayload(payload, fallbackPlatform) {
+      if (!payload || !Array.isArray(payload.rows)) return;
+      generatedAt = parseFreshStamp(payload.generatedAt) > parseFreshStamp(generatedAt) ? payload.generatedAt : generatedAt;
+      var payloadPlatform = procurementPlatform((payload && payload.platform) || fallbackPlatform);
+      payload.rows.forEach(function (row) {
+        var key = norm(row && (row.articleKey || row.article || row.sku));
+        var platform = procurementPlatform(row && row.platform) || payloadPlatform;
+        if (!key || !platform || !maps[platform]) return;
+        var item = maps[platform][key] || {
+          articleKey: row && (row.articleKey || row.article || row.sku) || "",
+          stock: 0,
+          inTransit: 0,
+          inRequest: 0,
+          avgDaily: 0,
+          rowCount: 0,
+          turnoverDays: null
+        };
+        item.stock += num(row && row.inStock) || 0;
+        item.inTransit += num(row && row.inTransit) || 0;
+        item.inRequest += num(row && row.inRequest) || 0;
+        item.avgDaily += num(row && row.avgDaily) || 0;
+        item.rowCount += 1;
+        maps[platform][key] = item;
+      });
+    }
+
+    ingestPayload(combinedPayload, "");
+    ingestPayload(wbPayload, "wb");
+    ingestPayload(ozonPayload, "ozon");
+
+    ["wb", "ozon"].forEach(function (platform) {
+      Object.keys(maps[platform]).forEach(function (key) {
+        var item = maps[platform][key];
+        item.turnoverDays = item.avgDaily > 0 ? item.stock / item.avgDaily : null;
+      });
+    });
+
+    return {
+      generatedAt: generatedAt,
+      maps: maps
+    };
+  }
+
+  async function loadOrderProcurementLookup() {
+    var combinedResult = await tryLoadSnapshotAwareJson(ORDER_PROCUREMENT_URL);
+    var combinedPayload = combinedResult ? combinedResult.payload : null;
+    var wbPayload = null;
+    var ozonPayload = null;
+    if (!combinedPayload || !Array.isArray(combinedPayload.rows) || !combinedPayload.rows.length) {
+      var wbResult = await tryLoadSnapshotAwareJson(ORDER_PROCUREMENT_WB_URL);
+      var ozonResult = await tryLoadSnapshotAwareJson(ORDER_PROCUREMENT_OZON_URL);
+      wbPayload = wbResult ? wbResult.payload : null;
+      ozonPayload = ozonResult ? ozonResult.payload : null;
+    }
+    return buildOrderProcurementLookup(combinedPayload, wbPayload, ozonPayload);
+  }
+
+  function buildRow(source, market, manualMap, overlayRow, maxDate, skuMeta, orderProcurementRow) {
     var timeline = Array.isArray(source.monthly) ? source.monthly : Array.isArray(source.daily) ? source.daily : [];
     timeline = mergeTimelineWithOverlay(timeline, overlayRow, maxDate);
     var overlayClearsFill = overlayFlagEnabled(overlayRow && (overlayRow.clearCurrentFillPrice || overlayRow.clearCurrentPrice));
@@ -345,6 +558,25 @@
     var overlayStatus = overlayRow && overlayRow.status;
     var overlayOwner = overlayRow && overlayRow.owner;
     var overlayValueDate = isoDate(overlayRow && (overlayRow.valueDate || overlayRow.historyFreshnessDate));
+    var sourceValueDate = isoDate(source && source.historyFreshnessDate) || isoDate(maxDate);
+    var useOverlayFacts = Boolean(overlayRow) && (!overlayValueDate || !sourceValueDate || overlayValueDate >= sourceValueDate);
+    var sourceFillPrice = num(source.currentFillPrice != null ? source.currentFillPrice : source.currentPrice);
+    var sourceClientPrice = num(source.currentClientPrice);
+    var sourceSppPct = num(source.currentSppPct);
+    var sourceTurnoverDays = num(source.turnoverCurrentDays != null ? source.turnoverCurrentDays : source.currentTurnoverDays);
+    var procurementTurnoverDays = num(orderProcurementRow && orderProcurementRow.turnoverDays);
+    var turnoverDays = null;
+    var turnoverSource = "";
+    if (overlayTurnoverDays != null && (useOverlayFacts || sourceTurnoverDays == null)) {
+      turnoverDays = overlayTurnoverDays;
+      turnoverSource = "overlay";
+    } else if (!overlayClearsTurnover && sourceTurnoverDays != null) {
+      turnoverDays = sourceTurnoverDays;
+      turnoverSource = "workbench";
+    } else if (procurementTurnoverDays != null) {
+      turnoverDays = procurementTurnoverDays;
+      turnoverSource = "order_procurement";
+    }
     var sourceKey = norm(source && (source.articleKey || source.article || source.sku));
     var skuRow = (skuMeta && skuMeta[sourceKey]) || null;
     var row = {
@@ -357,21 +589,20 @@
       launchReady: source.launchReady || (skuRow && skuRow.launchReady) || "\u2014",
       allowedMarginPct: num(source.allowedMarginPct),
       marginTotalPct: num(source.marginTotalPct != null ? source.marginTotalPct : source.avgMargin7dPct),
-      turnoverDays: overlayClearsTurnover
-        ? null
-        : (overlayTurnoverDays != null ? overlayTurnoverDays : num(source.turnoverCurrentDays != null ? source.turnoverCurrentDays : source.currentTurnoverDays)),
+      turnoverDays: turnoverDays,
+      turnoverSource: turnoverSource,
       currentFillPrice: overlayClearsFill
         ? null
-        : (overlayFillPrice != null ? overlayFillPrice : num(source.currentFillPrice != null ? source.currentFillPrice : source.currentPrice)),
+        : ((overlayFillPrice != null && (useOverlayFacts || sourceFillPrice == null)) ? overlayFillPrice : sourceFillPrice),
       currentClientPrice: overlayClearsClient
         ? null
-        : (overlayClientPrice != null ? overlayClientPrice : num(source.currentClientPrice)),
+        : ((overlayClientPrice != null && (useOverlayFacts || sourceClientPrice == null)) ? overlayClientPrice : sourceClientPrice),
       currentSppPct: overlayClearsSpp
         ? null
-        : (overlaySppPct != null ? overlaySppPct : num(source.currentSppPct)),
+        : ((overlaySppPct != null && (useOverlayFacts || sourceSppPct == null)) ? overlaySppPct : sourceSppPct),
       requiredPriceForMargin: num(source.requiredPriceForMargin),
       historyNote: source.historyNote || "",
-      valueDate: overlayValueDate || isoDate(maxDate),
+      valueDate: (useOverlayFacts && overlayValueDate) ? overlayValueDate : (sourceValueDate || isoDate(maxDate)),
       timeline: timeline
     };
     var manual = manualMap[norm(row.articleKey)];
@@ -387,8 +618,13 @@
     return row;
   }
 
-  async function loadData() {
-    if (state.loading || state.loaded) return;
+  async function loadData(forceRefresh) {
+    if (forceRefresh && typeof window.__alteaResetPortalSnapshotState === "function") {
+      window.__alteaResetPortalSnapshotState();
+    }
+    if (state.loading) return;
+    if (state.loaded && !forceRefresh) return;
+    if (forceRefresh) resetStateForReload();
     state.loading = true;
     renderPriceWorkbench();
     try {
@@ -396,12 +632,18 @@
       var payload = dataResult.payload || {};
       var overlayPayload = null;
       var overlaySource = "none";
+      var orderProcurementLookup = { generatedAt: "", maps: { wb: Object.create(null), ozon: Object.create(null) } };
       try {
         var overlayResult = await loadSnapshotAwareJson(OVERLAY_URL);
         overlayPayload = overlayResult.payload || null;
         overlaySource = overlayResult.source || "local";
       } catch (error) {
         console.warn("[price-simple] overlay", error);
+      }
+      try {
+        orderProcurementLookup = await loadOrderProcurementLookup();
+      } catch (error) {
+        console.warn("[price-simple] order procurement", error);
       }
       var manualMap = readManualMap();
       var skuMetaMap = buildSkuMetaMap();
@@ -411,38 +653,41 @@
       Object.keys(payload.platforms || {}).forEach(function (market) {
         normalizeRows((payload.platforms[market] || {}).rows).forEach(function (item) {
           var overlayRow = overlayMaps[market] && overlayMaps[market][norm(item.articleKey || item.article || item.sku)];
-          rows.push(buildRow(item, market, manualMap, overlayRow || null, maxDate, skuMetaMap));
+          var orderProcurementRow = orderProcurementLookup.maps[market] && orderProcurementLookup.maps[market][norm(item.articleKey || item.article || item.sku)];
+          rows.push(buildRow(item, market, manualMap, overlayRow || null, maxDate, skuMetaMap, orderProcurementRow || null));
         });
       });
       state.rows = rows;
       state.overlayGeneratedAt = overlayPayload && overlayPayload.generatedAt ? overlayPayload.generatedAt : "";
+      state.orderProcurementGeneratedAt = orderProcurementLookup.generatedAt || "";
+      state.orderProcurementFallbackCount = rows.filter(function (row) { return row.turnoverSource === "order_procurement"; }).length;
       state.sourceNote = overlayPayload && overlayPayload.generatedAt
         ? DATA_URL + " (" + dataResult.source + ") + " + OVERLAY_URL + " (" + overlaySource + ") \u00b7 \u0446\u0435\u043d\u044b \u0434\u043e " + isoDate(overlayPayload.asOfDate || overlayPayload.generatedAt)
         : DATA_URL + " (" + dataResult.source + ") \u00b7 \u0431\u0435\u0437 \u0441\u0432\u0435\u0436\u0435\u0433\u043e overlay";
+      if (state.orderProcurementFallbackCount > 0) {
+        state.sourceNote += " \u00b7 \u043e\u0431\u043e\u0440\u043e\u0442 fallback: order_procurement";
+        if (state.orderProcurementGeneratedAt) {
+          state.sourceNote += " \u0434\u043e " + isoDate(state.orderProcurementGeneratedAt);
+        }
+        state.sourceNote += " (" + state.orderProcurementFallbackCount + " SKU)";
+      }
       state.loaded = true;
       var last = latestDate(rows);
+      state.latestTimelineDate = last;
+      state.earliestTimelineDate = earliestDate(rows);
+      state.latestFactDate = isoDate((overlayPayload && (overlayPayload.asOfDate || overlayPayload.generatedAt)) || payload.generatedAt || last);
+      state.dataLagDays = state.latestFactDate ? Math.max(0, diffDays(state.latestFactDate, todayKey())) : 0;
       if (last) {
         state.dateTo = last;
         state.dateFrom = shiftDate(last, -6);
       }
+      normalizeDateRange();
     } catch (error) {
       state.error = error && error.message ? error.message : "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0432\u043a\u043b\u0430\u0434\u043a\u0443 \u0426\u0435\u043d\u044b.";
     } finally {
       state.loading = false;
       renderPriceWorkbench();
     }
-  }
-
-  function visibleRows() {
-    var search = String(state.search || "").trim().toLowerCase();
-    return state.rows.filter(function (row) {
-      if (state.market !== "all" && row.market !== state.market) return false;
-      if (search) {
-        var hay = [row.articleKey, row.name, row.owner, row.status, row.comment, row.reason].join(" ").toLowerCase();
-        if (hay.indexOf(search) === -1) return false;
-      }
-      return true;
-    });
   }
 
   function rangeSlice(row) {
@@ -452,6 +697,47 @@
       if (state.dateTo && item.date > state.dateTo) return false;
       return true;
     });
+  }
+
+  function latestRangePoint(row) {
+    var items = rangeSlice(row);
+    return items.length ? items[items.length - 1] : null;
+  }
+
+  function buildDisplayRow(row) {
+    if (!row) return null;
+    var next = Object.assign({}, row);
+    var point = latestRangePoint(row);
+    next.rangeHasPoint = Boolean(point);
+    if (!point) return next;
+
+    var pricePoint = num(point.price);
+    var clientPoint = num(point.clientPrice);
+    var sppPoint = num(point.sppPct);
+    var turnoverPoint = num(point.turnoverDays);
+
+    next.currentFillPrice = pricePoint != null ? pricePoint : row.currentFillPrice;
+    next.currentClientPrice = clientPoint != null ? clientPoint : row.currentClientPrice;
+    next.currentSppPct = sppPoint != null ? sppPoint : row.currentSppPct;
+    next.turnoverDays = turnoverPoint != null ? turnoverPoint : row.turnoverDays;
+    next.valueDate = isoDate(point.date) || row.valueDate;
+    return next;
+  }
+
+  function visibleRows() {
+    var search = String(state.search || "").trim().toLowerCase();
+    var next = [];
+    state.rows.forEach(function (row) {
+      if (state.market !== "all" && row.market !== state.market) return;
+      if (search) {
+        var hay = [row.articleKey, row.name, row.owner, row.status, row.comment, row.reason].join(" ").toLowerCase();
+        if (hay.indexOf(search) === -1) return;
+      }
+      var displayRow = buildDisplayRow(row);
+      if ((state.dateFrom || state.dateTo) && !displayRow.rangeHasPoint) return;
+      next.push(displayRow);
+    });
+    return next;
   }
 
   function stats(rows) {
@@ -497,7 +783,7 @@
       sorted.map(function (row) {
         var danger = row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct;
         return [
-          '<tr class="pw-row" data-open-price="', esc(row.articleKey), '">',
+          '<tr class="pw-row" data-open-price="', esc(row.articleKey), '" data-price-market="', esc(row.market), '">',
           '<td><div class="pw-sku">', esc(row.articleKey), '</div><div class="pw-note">', esc(row.name), '</div></td>',
           '<td>', esc(row.owner || "\u2014"), '</td>',
           '<td><span class="pw-badge">', esc(row.status || "\u2014"), '</span></td>',
@@ -520,6 +806,8 @@
       return '<div class="pw-empty">\u0412\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u043f\u0435\u0440\u0438\u043e\u0434\u0430 \u043d\u0435\u0442 \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u044b\u0445 \u0434\u043d\u0435\u0432\u043d\u044b\u0445 \u0442\u043e\u0447\u0435\u043a.</div>';
     }
     return [
+      '<details class="pw-detail"><summary>\u0418\u0441\u0442\u043e\u0440\u0438\u044f \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0439 \u043f\u043e \u0434\u043d\u044f\u043c</summary>',
+      '<div class="pw-detail-note">\u0417\u0434\u0435\u0441\u044c \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0442\u043e\u0447\u043a\u0438 \u0432\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u043f\u0435\u0440\u0438\u043e\u0434\u0430. \u0415\u0441\u043b\u0438 \u0441\u0435\u0433\u043e\u0434\u043d\u044f\u0448\u043d\u0435\u0439 \u0442\u043e\u0447\u043a\u0438 \u0435\u0449\u0451 \u043d\u0435\u0442, \u0438\u0441\u0442\u043e\u0440\u0438\u044f \u0437\u0430\u043a\u0430\u043d\u0447\u0438\u0432\u0430\u0435\u0442\u0441\u044f \u043d\u0430 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u043c \u0441\u0440\u0435\u0437\u0435.</div>',
       '<div class="pw-history-wrap"><table class="pw-history"><thead><tr>',
       '<th>\u0414\u0430\u0442\u0430</th><th>\u0426\u0435\u043d\u0430 MP</th><th>\u0421\u041f\u041f</th><th>\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</th><th>\u0417\u0430\u043a\u0430\u0437\u044b</th><th>\u0412\u044b\u0440\u0443\u0447\u043a\u0430</th>',
       '</tr></thead><tbody>',
@@ -533,12 +821,15 @@
           '<td>', money(num(item.revenue)), '</td></tr>'
         ].join("");
       }).join(""),
-      '</tbody></table></div>'
+      '</tbody></table></div></details>'
     ].join("");
   }
 
   function renderModal(row) {
     if (!row) return "";
+    var turnoverHelp = row.turnoverSource === "order_procurement"
+      ? "\u0424\u043e\u043b\u0431\u044d\u043a \u0438\u0437 \u0417\u0430\u043a\u0430\u0437\u0430: inStock / avgDaily \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0435."
+      : "\u0422\u0435\u043a\u0443\u0449\u0435\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043f\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u0438.";
     return [
       '<div class="pw-modal ', state.selectedKey ? 'open' : '', '" id="priceSimpleModal">',
       '<div class="pw-modal-box">',
@@ -551,33 +842,60 @@
       '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430</span><strong>', money(row.currentClientPrice), '</strong><small>\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u043a\u043b\u0438\u0435\u043d\u0442\u0441\u043a\u0438\u0439 \u043a\u043e\u043d\u0442\u0443\u0440.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0414\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u0430\u044f \u043c\u0430\u0440\u0436\u0430 3\u043c</span><strong>', pct(row.allowedMarginPct), '</strong><small>\u0411\u0435\u0440\u0435\u043c \u0438\u0437 smart/workbench \u0441\u043b\u043e\u044f \u0431\u0435\u0437 \u043f\u0440\u0438\u0432\u044f\u0437\u043a\u0438 \u043a \u043d\u043e\u043c\u0435\u0440\u0443 \u0441\u0442\u0440\u043e\u043a\u0438.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0422\u0435\u043a\u0443\u0449\u0430\u044f \u043c\u0430\u0440\u0436\u0430</span><strong>', pct(row.marginTotalPct), '</strong><small>\u041e\u043f\u0435\u0440\u0430\u0446\u0438\u043e\u043d\u043d\u044b\u0439 \u0443\u0440\u043e\u0432\u0435\u043d\u044c \u043f\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u0438.</small></div>',
-      '<div class="pw-mini"><span class="pw-label">\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</span><strong>', days(row.turnoverDays), '</strong><small>\u0422\u0435\u043a\u0443\u0449\u0435\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043f\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u0438.</small></div>',
+      '<div class="pw-mini"><span class="pw-label">\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</span><strong>', days(row.turnoverDays), '</strong><small>', turnoverHelp, '</small></div>',
       '<div class="pw-mini"><span class="pw-label">Owner</span><strong>', esc(row.owner || "\u2014"), '</strong><small>\u0420\u0443\u0447\u043d\u043e\u0435 \u043f\u043e\u043b\u0435 \u043d\u0435 \u043f\u0435\u0440\u0435\u0442\u0438\u0440\u0430\u0435\u043c.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0421\u0442\u0430\u0442\u0443\u0441 \u0442\u043e\u0432\u0430\u0440\u0430</span><strong>', esc(row.status || "\u2014"), '</strong><small>\u0421\u0442\u0430\u0442\u0443\u0441 \u0441\u0442\u0440\u043e\u043a\u0438 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u043c\u0443 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0443.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 \u043f\u043e \u043c\u0430\u0440\u0436\u0435</span><strong>', money(row.requiredPriceForMargin), '</strong><small>\u0415\u0441\u043b\u0438 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u0438\u0435\u0445\u0430\u043b\u043e \u0432 smart-\u0441\u043b\u043e\u0435.</small></div>',
+      '<div class="pw-mini"><span class="pw-label">\u0421\u0440\u0435\u0437 \u0446\u0435\u043d</span><strong>', esc(row.valueDate || state.latestFactDate || "\u2014"), '</strong><small>\u042d\u0442\u043e \u0434\u0430\u0442\u0430, \u043d\u0430 \u043a\u043e\u0442\u043e\u0440\u0443\u044e \u0432\u0437\u044f\u0442\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435.</small></div>',
       '</div>',
       '<div class="pw-card">',
-      '<div class="pw-label">\u0418\u0441\u0442\u043e\u0440\u0438\u044f \u043f\u0435\u0440\u0438\u043e\u0434\u0430</div>',
-      '<div class="pw-note">', esc(row.historyNote || "\u041f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0435 14 \u0442\u043e\u0447\u0435\u043a \u0432\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0430."), '</div>',
+      '<div class="pw-label">\u041a\u043e\u043d\u0442\u0435\u043a\u0441\u0442 \u043f\u043e\u0437\u0438\u0446\u0438\u0438</div>',
+      '<div class="pw-note">', esc(row.historyNote || "\u0412 \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0435 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c, \u043e\u0442\u043a\u0443\u0434\u0430 \u0432\u0437\u044f\u043b\u0438 \u0442\u0435\u043a\u0443\u0449\u0443\u044e \u0446\u0435\u043d\u0443, \u043c\u0430\u0440\u0436\u0443 \u0438 \u043e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c."), '</div>',
       renderHistory(row),
       '</div>',
       '</div></div>'
     ].join("");
   }
 
+  function renderControlGuide() {
+    return [
+      '<div class="pw-help">',
+      '<details><summary>\u0427\u0442\u043e \u0434\u0435\u043b\u0430\u044e\u0442 \u043a\u043d\u043e\u043f\u043a\u0438 \u0438 \u0444\u0438\u043b\u044c\u0442\u0440\u044b</summary>',
+      '<ul>',
+      '<li><strong>\u0412\u0441\u0435 / WB / Ozon / \u042f.\u041c\u0430\u0440\u043a\u0435\u0442</strong> \u2014 \u043f\u0440\u043e\u0441\u0442\u043e \u0441\u0443\u0436\u0430\u044e\u0442 \u0442\u0430\u0431\u043b\u0438\u0446\u0443 \u043f\u043e \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0435. \u041d\u043e\u0432\u044b\u0439 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u043e\u043d\u0438 \u043d\u0435 \u043f\u043e\u0434\u0433\u0440\u0443\u0436\u0430\u044e\u0442.</li>',
+      '<li><strong>7 / 14 / 30 \u0434\u043d\u0435\u0439</strong> \u2014 \u0431\u044b\u0441\u0442\u0440\u043e \u043f\u0435\u0440\u0435\u0441\u0442\u0440\u0430\u0438\u0432\u0430\u044e\u0442 \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d \u043e\u0442 \u043f\u043e\u043b\u044f "\u043f\u043e".</li>',
+      '<li><strong>\u0421\u0435\u0433\u043e\u0434\u043d\u044f</strong> \u2014 \u0441\u0442\u0430\u0432\u0438\u0442 \u043f\u0440\u0430\u0432\u0443\u044e \u0433\u0440\u0430\u043d\u0438\u0446\u0443 \u043d\u0430 \u0442\u0435\u043a\u0443\u0449\u0443\u044e \u0434\u0430\u0442\u0443. \u0415\u0441\u043b\u0438 \u0441\u0435\u0433\u043e\u0434\u043d\u044f \u0435\u0449\u0451 \u043d\u0435\u0442 \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u044b\u0445 \u0442\u043e\u0447\u0435\u043a, \u0442\u0430\u0431\u043b\u0438\u0446\u0430 \u043f\u043e\u043a\u0430\u0436\u0435\u0442 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0439 \u0441\u0440\u0435\u0437 \u0432\u043d\u0443\u0442\u0440\u0438 \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0430.</li>',
+      '<li><strong>\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0441\u0440\u0435\u0437</strong> \u2014 \u0431\u044b\u0441\u0442\u0440\u043e \u0432\u043e\u0437\u0432\u0440\u0430\u0449\u0430\u0435\u0442 \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d \u043a \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u043c\u0443 \u0434\u043d\u044e, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0435\u0441\u0442\u044c \u0432 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0435.</li>',
+      '<li><strong>\u041a\u043b\u0438\u043a \u043f\u043e \u0441\u0442\u0440\u043e\u043a\u0435</strong> \u2014 \u043e\u0442\u043a\u0440\u044b\u0432\u0430\u0435\u0442 \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0443 SKU \u0441 \u0442\u0435\u043a\u0443\u0449\u0438\u043c\u0438 KPI \u0438 \u0438\u0441\u0442\u043e\u0440\u0438\u0435\u0439.</li>',
+      '</ul>',
+      '</details>',
+      '<details><summary>\u041a\u0430\u043a \u0447\u0438\u0442\u0430\u0442\u044c \u0442\u0435\u043a\u0443\u0449\u0438\u0435 \u0446\u0435\u043d\u044b</summary>',
+      '<ul>',
+      '<li><strong>\u0426\u0435\u043d\u0430 MP</strong> \u2014 \u0442\u0435\u043a\u0443\u0449\u0430\u044f \u0446\u0435\u043d\u0430 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430 \u0438\u0437 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u0433\u043e \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u043e\u0433\u043e \u0441\u0440\u0435\u0437\u0430.</li>',
+      '<li><strong>\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430</strong> \u2014 \u0432\u0438\u0442\u0440\u0438\u043d\u043d\u0430\u044f \u0446\u0435\u043d\u0430 \u043f\u043e\u0441\u043b\u0435 \u0441\u043a\u0438\u0434\u043e\u043a/\u0421\u041f\u041f, \u0435\u0441\u043b\u0438 \u043e\u043d\u0430 \u043f\u0440\u0438\u0435\u0445\u0430\u043b\u0430 \u0432 \u0441\u043b\u043e\u0439.</li>',
+      '<li><strong>\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</strong> \u2014 \u0431\u0435\u0440\u0451\u043c \u0438\u0437 smart/overlay, \u0430 \u0435\u0441\u043b\u0438 \u0442\u0430\u043c \u043d\u0435\u0442 \u0442\u0435\u043a\u0443\u0449\u0435\u0433\u043e \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u044f, \u043c\u043e\u0436\u0435\u043c \u0443\u043f\u0430\u0441\u0442\u044c \u0432 `order_procurement` fallback.</li>',
+      '<li><strong>\u0421\u0440\u0435\u0437 \u0446\u0435\u043d</strong> \u2014 \u043a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u043f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0430: \u0438\u043c\u0435\u043d\u043d\u043e \u043d\u0430 \u044d\u0442\u0443 \u0434\u0430\u0442\u0443 \u0431\u044b\u043b\u0438 \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u044b \u0442\u0435\u043a\u0443\u0449\u0438\u0435 \u0446\u0438\u0444\u0440\u044b \u0432 \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0435.</li>',
+      '</ul>',
+      '</details>',
+      '</div>'
+    ].join("");
+  }
+
   function renderRoot() {
     var root = document.getElementById(VIEW_ID);
     if (!root) return;
+    if (state.loaded) normalizeDateRange();
     ensureStyles();
     var rows = visibleRows();
     var summary = stats(rows);
-    var selected = state.selectedKey ? findRow(state.selectedKey) : null;
+    var selected = state.selectedKey ? buildDisplayRow(findRow(state.selectedKey)) : null;
     root.innerHTML = [
       '<div class="pw-shell">',
       '<section class="pw-card">',
       '<div class="pw-title">\u0426\u0435\u043d\u044b</div>',
-      '<div class="pw-sub">\u0410\u0432\u0430\u0440\u0438\u0439\u043d\u044b\u0439 \u043f\u0440\u044f\u043c\u043e\u0439 \u0440\u0435\u043d\u0434\u0435\u0440 \u0432\u043a\u043b\u0430\u0434\u043a\u0438. \u041f\u043e\u0434\u043d\u044f\u043b\u0430 \u0435\u0433\u043e, \u0447\u0442\u043e\u0431\u044b \u044d\u043a\u0440\u0430\u043d \u043f\u0435\u0440\u0435\u0441\u0442\u0430\u043b \u0431\u044b\u0442\u044c \u043f\u0443\u0441\u0442\u044b\u043c \u0438 \u043c\u043e\u0436\u043d\u043e \u0431\u044b\u043b\u043e \u0440\u0430\u0431\u043e\u0442\u0430\u0442\u044c \u0441 \u0446\u0435\u043d\u043e\u0439, \u043c\u0430\u0440\u0436\u043e\u0439, \u0441\u0442\u0430\u0442\u0443\u0441\u043e\u043c \u0442\u043e\u0432\u0430\u0440\u0430 \u0438 \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u043e\u0439 \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430, \u043f\u043e\u043a\u0430 \u043e\u0441\u043d\u043e\u0432\u043d\u043e\u0439 bundle \u043d\u0435 \u0432\u043e\u0441\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d.</div>',
+      '<div class="pw-sub">\u0412\u043a\u043b\u0430\u0434\u043a\u0430 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u0442 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0439 \u0441\u043b\u043e\u0439 `smart_price_workbench` + `smart_price_overlay`, \u0430 \u0434\u043b\u044f \u043e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u0438 \u043f\u0440\u0438 \u043d\u0443\u0436\u0434\u0435 \u0434\u043e\u0431\u0438\u0440\u0430\u0435\u0442 `order_procurement`. \u0415\u0441\u043b\u0438 \u0441\u0440\u0435\u0437 \u043d\u0435 \u043d\u0430 \u0441\u0435\u0433\u043e\u0434\u043d\u044f, \u044d\u0442\u043e \u044f\u0432\u043d\u043e \u043f\u043e\u043a\u0430\u0436\u0435\u043c \u0432\u044b\u0448\u0435.</div>',
       state.error ? '<div class="pw-error">' + esc(state.error) + '</div>' : '',
+      state.loaded ? '<div class="pw-alert ' + (state.dataLagDays > 1 ? 'warn' : '') + '"><strong>\u0414\u0430\u0442\u0430 \u0441\u0440\u0435\u0437\u0430: ' + esc(state.latestFactDate || "\u2014") + '</strong><div>' + esc(dataFreshnessLabel()) + '</div><div style="margin-top:6px">\u0412 \u0442\u0430\u0431\u043b\u0438\u0446\u0435 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u044e\u044e \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u0443\u044e \u0442\u043e\u0447\u043a\u0443 \u0432\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0430, \u0430 \u043d\u0435 \u043f\u0440\u043e\u0441\u0442\u043e \u0437\u0430\u0441\u0442\u044b\u0432\u0448\u0438\u0439 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 row.</div></div>' : '',
       '<div class="pw-grid" style="margin-top:14px;">',
       '<div class="pw-card">',
       '<div class="pw-label">\u041f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u0438 \u043f\u0435\u0440\u0438\u043e\u0434</div>',
@@ -591,22 +909,27 @@
       '<button type="button" class="pw-chip" data-price-preset="7">7 \u0434\u043d\u0435\u0439</button>',
       '<button type="button" class="pw-chip" data-price-preset="14">14 \u0434\u043d\u0435\u0439</button>',
       '<button type="button" class="pw-chip" data-price-preset="30">30 \u0434\u043d\u0435\u0439</button>',
+      '<button type="button" class="pw-chip" data-price-anchor="today">\u0421\u0435\u0433\u043e\u0434\u043d\u044f</button>',
+      '<button type="button" class="pw-chip" data-price-anchor="latest">\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0441\u0440\u0435\u0437</button>',
       '</div>',
+      '<div class="pw-note">\u0411\u044b\u0441\u0442\u0440\u044b\u0435 \u043a\u043d\u043e\u043f\u043a\u0438 \u043c\u0435\u043d\u044f\u044e\u0442 \u0442\u043e\u043b\u044c\u043a\u043e \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d. \u0421\u0430\u043c \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a \u0434\u0430\u043d\u043d\u044b\u0445 \u043e\u043d\u0438 \u043d\u0435 \u043f\u0435\u0440\u0435\u0447\u0438\u0442\u044b\u0432\u0430\u044e\u0442.</div>',
       '<div class="pw-grid2">',
-      '<input type="date" id="pwFrom" value="', esc(state.dateFrom), '">',
-      '<input type="date" id="pwTo" value="', esc(state.dateTo), '">',
+      '<input type="date" id="pwFrom" value="', esc(state.dateFrom), '" min="', esc(state.earliestTimelineDate || ""), '" max="', esc(todayKey()), '">',
+      '<input type="date" id="pwTo" value="', esc(state.dateTo), '" min="', esc(state.earliestTimelineDate || ""), '" max="', esc(todayKey()), '">',
       '</div></div>',
       '<div class="pw-card">',
       '<div class="pw-label">\u041f\u043e\u0438\u0441\u043a</div>',
       '<input class="pw-search" id="pwSearch" placeholder="\u0410\u0440\u0442\u0438\u043a\u0443\u043b, owner, \u0441\u0442\u0430\u0442\u0443\u0441" value="', esc(state.search), '">',
       '<div class="pw-note">\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a: ', esc(state.sourceNote || DATA_URL), '</div>',
+      '<div class="pw-note">\u0415\u0441\u043b\u0438 \u043d\u0430 \u043f\u0440\u043e\u0434\u0435 \u043d\u0435\u0442 fresh overlay \u0438\u043b\u0438 order-procurement \u0444\u0430\u0439\u043b\u043e\u0432, \u0432\u043a\u043b\u0430\u0434\u043a\u0430 \u0447\u0435\u0441\u0442\u043d\u043e \u043f\u0430\u0434\u0430\u0435\u0442 \u043d\u0430 \u043f\u043e\u0441\u0442\u0430\u0440\u0435\u0432\u0448\u0438\u0439 \u0441\u0440\u0435\u0437.</div>',
       '</div></div>',
+      renderControlGuide(),
       '</section>',
       '<section class="pw-stats">',
       '<div class="pw-card pw-stat"><span class="pw-label">SKU \u0432 \u0440\u0430\u0431\u043e\u0442\u0435</span><strong>', intf(summary.count), '</strong><small>\u041f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0435 \u0438 \u0444\u0438\u043b\u044c\u0442\u0440\u0430\u043c.</small></div>',
-      '<div class="pw-card pw-stat"><span class="pw-label">\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u0446\u0435\u043d\u0430 MP</span><strong>', money(summary.avgPrice), '</strong><small>\u0422\u0435\u043a\u0443\u0449\u0430\u044f \u0441\u0440\u0435\u0434\u043d\u044f\u044f \u0446\u0435\u043d\u0430 \u043f\u043e \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u044b\u043c \u0441\u0442\u0440\u043e\u043a\u0430\u043c.</small></div>',
-      '<div class="pw-card pw-stat"><span class="pw-label">\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u043c\u0430\u0440\u0436\u0430</span><strong>', pct(summary.avgMargin), '</strong><small>\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u0441\u0440\u0435\u0434\u043d\u0438\u0439 \u0443\u0440\u043e\u0432\u0435\u043d\u044c \u043f\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u0438.</small></div>',
-      '<div class="pw-card pw-stat"><span class="pw-label">\u041d\u0438\u0436\u0435 \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e\u0439</span><strong>', intf(summary.belowAllowed), '</strong><small>\u0421\u0440\u0430\u0432\u043d\u0435\u043d\u0438\u0435 \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u043c\u0430\u0440\u0436\u0438 \u0441 \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e\u0439 3\u043c.</small></div>',
+      '<div class="pw-card pw-stat"><span class="pw-label">\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u0446\u0435\u043d\u0430 MP</span><strong>', money(summary.avgPrice), '</strong><small>\u041f\u043e \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u0439 \u0442\u043e\u0447\u043a\u0435 \u0432\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u043f\u0435\u0440\u0438\u043e\u0434\u0430.</small></div>',
+      '<div class="pw-card pw-stat"><span class="pw-label">\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u043c\u0430\u0440\u0436\u0430</span><strong>', pct(summary.avgMargin), '</strong><small>\u041f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u0432\u044b\u0431\u043e\u0440\u043a\u0435 SKU.</small></div>',
+      '<div class="pw-card pw-stat"><span class="pw-label">\u041d\u0438\u0436\u0435 \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e\u0439</span><strong>', intf(summary.belowAllowed), '</strong><small>\u0421\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u0435\u043c \u043c\u0430\u0440\u0436\u0443 \u0441\u0440\u0435\u0437\u0430 \u0441 \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e\u0439 3\u043c.</small></div>',
       '</section>',
       '<section class="pw-card">',
       '<div class="pw-label">\u0422\u0430\u0431\u043b\u0438\u0446\u0430</div>',
@@ -627,14 +950,33 @@
         var daysCount = Number(button.getAttribute("data-price-preset"));
         if (!state.dateTo) return;
         state.dateFrom = shiftDate(state.dateTo, -(daysCount - 1));
+        normalizeDateRange();
+        renderPriceWorkbench();
+      });
+    });
+    root.querySelectorAll("[data-price-anchor]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var mode = button.getAttribute("data-price-anchor");
+        var target = mode === "today" ? todayKey() : (state.latestTimelineDate || state.latestFactDate || todayKey());
+        state.dateTo = target;
+        state.dateFrom = shiftDate(target, -6);
+        normalizeDateRange();
         renderPriceWorkbench();
       });
     });
     var fromInput = document.getElementById("pwFrom");
     var toInput = document.getElementById("pwTo");
     var searchInput = document.getElementById("pwSearch");
-    if (fromInput) fromInput.addEventListener("change", function () { state.dateFrom = fromInput.value; renderPriceWorkbench(); });
-    if (toInput) toInput.addEventListener("change", function () { state.dateTo = toInput.value; renderPriceWorkbench(); });
+    if (fromInput) fromInput.addEventListener("change", function () {
+      state.dateFrom = fromInput.value;
+      normalizeDateRange();
+      renderPriceWorkbench();
+    });
+    if (toInput) toInput.addEventListener("change", function () {
+      state.dateTo = toInput.value;
+      normalizeDateRange();
+      renderPriceWorkbench();
+    });
     if (searchInput) searchInput.addEventListener("input", function () { state.search = searchInput.value; renderPriceWorkbench(); });
     root.querySelectorAll("[data-open-price]").forEach(function (rowNode) {
       rowNode.addEventListener("click", function () {
@@ -658,6 +1000,9 @@
   }
 
   window.renderPriceWorkbench = renderPriceWorkbench;
+  window.__alteaRefreshPriceWorkbench = function refreshPriceWorkbench(forceRefresh) {
+    return loadData(forceRefresh !== false);
+  };
 
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape" && state.selectedKey) {
@@ -675,4 +1020,10 @@
     renderPriceWorkbench();
     loadData();
   }
+
+  document.getElementById("pullRemoteBtn")?.addEventListener("click", function () {
+    window.setTimeout(function () {
+      loadData(true);
+    }, 180);
+  });
 })();

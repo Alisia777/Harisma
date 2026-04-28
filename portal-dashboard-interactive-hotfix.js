@@ -1,12 +1,13 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260428D__) return;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260428E__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260428E__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428D__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428C__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260428d';
-  const STYLE_ID = 'altea-dashboard-interactive-20260428d';
+  const VERSION = '20260428e';
+  const STYLE_ID = 'altea-dashboard-interactive-20260428e';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
@@ -54,9 +55,68 @@
       return value;
     }
   };
+  const CP1251_EXTENDED_CHARS =
+    '\u0402\u0403\u201a\u0453\u201e\u2026\u2020\u2021\u20ac\u2030\u0409\u2039\u040a\u040c\u040b\u040f'
+    + '\u0452\u2018\u2019\u201c\u201d\u2022\u2013\u2014\ufffd\u2122\u0459\u203a\u045a\u045c\u045b\u045f'
+    + '\u00a0\u040e\u045e\u0408\u00a4\u0490\u00a6\u00a7\u0401\u00a9\u0404\u00ab\u00ac\u00ad\u00ae\u0407'
+    + '\u00b0\u00b1\u0406\u0456\u0491\u00b5\u00b6\u00b7\u0451\u2116\u0454\u00bb\u0458\u0405\u0455\u0457'
+    + '\u0410\u0411\u0412\u0413\u0414\u0415\u0416\u0417\u0418\u0419\u041a\u041b\u041c\u041d\u041e\u041f'
+    + '\u0420\u0421\u0422\u0423\u0424\u0425\u0426\u0427\u0428\u0429\u042a\u042b\u042c\u042d\u042e\u042f'
+    + '\u0430\u0431\u0432\u0433\u0434\u0435\u0436\u0437\u0438\u0439\u043a\u043b\u043c\u043d\u043e\u043f'
+    + '\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044a\u044b\u044c\u044d\u044e\u044f';
+  const countMojibakeMarkers = (value) => {
+    let count = 0;
+    for (const char of String(value || '')) {
+      const code = char.charCodeAt(0);
+      if ((code >= 0x402 && code <= 0x40F) || (code >= 0x452 && code <= 0x45F)) count += 1;
+    }
+    return count;
+  };
+  const countRussianLetters = (value) => {
+    let count = 0;
+    for (const char of String(value || '')) {
+      const code = char.charCodeAt(0);
+      if (code === 0x401 || code === 0x451 || (code >= 0x410 && code <= 0x44F)) count += 1;
+    }
+    return count;
+  };
+  const encodeCp1251Bytes = (value) => {
+    const bytes = [];
+    for (const char of String(value || '')) {
+      const code = char.charCodeAt(0);
+      if (code <= 0x7F) {
+        bytes.push(code);
+        continue;
+      }
+      const index = CP1251_EXTENDED_CHARS.indexOf(char);
+      if (index === -1) return null;
+      bytes.push(index + 0x80);
+    }
+    return bytes;
+  };
+  const repairBrokenUtf8Cp1251String = (value) => {
+    if (typeof value !== 'string' || !value) return value;
+    try {
+      const bytes = encodeCp1251Bytes(value);
+      if (!bytes) return value;
+      const repaired = new TextDecoder('utf-8').decode(new Uint8Array(bytes));
+      if (!repaired || repaired === value) return value;
+      const markerBefore = countMojibakeMarkers(value);
+      const markerAfter = countMojibakeMarkers(repaired);
+      const russianBefore = countRussianLetters(value);
+      const russianAfter = countRussianLetters(repaired);
+      if (markerAfter < markerBefore || (markerBefore > 0 && russianAfter >= russianBefore - markerBefore)) {
+        return repaired;
+      }
+    } catch {
+      return value;
+    }
+    return value;
+  };
   const esc = (value) => {
-    if (typeof escapeHtml === 'function') return escapeHtml(value);
-    return String(value ?? '')
+    const safeValue = repairBrokenUtf8Cp1251String(String(value ?? ''));
+    if (typeof escapeHtml === 'function') return escapeHtml(safeValue);
+    return safeValue
       .replaceAll('&', '&amp;')
       .replaceAll('<', '&lt;')
       .replaceAll('>', '&gt;')
@@ -769,7 +829,7 @@
     const rows = [];
     const seen = new Set();
     const matchesPlatform = (text) => {
-      const lowered = String(text || '').toLowerCase();
+      const lowered = repairBrokenUtf8Cp1251String(String(text || '')).toLowerCase();
       if (platformKey === 'all') return true;
       if (platformKey === 'wb') return lowered.includes('wb');
       if (platformKey === 'ozon') return lowered.includes('ozon');

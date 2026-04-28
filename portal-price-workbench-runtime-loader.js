@@ -3,7 +3,7 @@
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260428B__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260428A__ = true;
 
-  const SCRIPT_ID = 'portalPriceWorkbenchSimpleLive20260428c';
+  const SCRIPT_ID = 'portalPriceWorkbenchSimpleLive20260428d';
   const SRC = 'portal-price-workbench-simple-live.js?v=20260428c';
 
   function rerender() {

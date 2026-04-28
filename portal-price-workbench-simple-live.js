@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428A__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428B__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428B__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428A__ = true;
 
   var DATA_URL = "data/smart_price_workbench.json";
@@ -11,6 +12,8 @@
   var STYLE_ID = "altea-price-simple-style";
   var SNAPSHOT_WAIT_MS = 1800;
   var SNAPSHOT_HARD_WAIT_MS = 4500;
+  var LOCAL_FETCH_TIMEOUT_MS = 3200;
+  var LOAD_GUARD_MS = 12000;
   var STORAGE_KEYS = [
     "brand-portal-price-workbench-v20260419-entries",
     "portal_price_workbench_entries"
@@ -33,8 +36,10 @@
     latestFactDate: "",
     latestTimelineDate: "",
     earliestTimelineDate: "",
-    dataLagDays: 0
+    dataLagDays: 0,
+    loadNonce: 0
   };
+  window.__alteaPriceWorkbenchState = state;
 
   function esc(value) {
     return String(value == null ? "" : value)
@@ -502,15 +507,39 @@
     state.dateFrom = fromValue;
   }
 
-  async function fetchJsonNoStore(url) {
-    var response = await fetch(url, { cache: "no-store" });
-    if (!response.ok) throw new Error("Failed to load " + url);
-    var payload = await response.json();
-    var source = "local";
+  async function fetchJsonNoStore(url, timeoutMs) {
+    var controller = typeof AbortController === "function" ? new AbortController() : null;
+    var timerId = null;
     try {
-      source = String(response.headers.get("X-Altea-Source") || response.headers.get("x-altea-source") || "local").trim() || "local";
-    } catch {}
-    return { payload: payload, source: source };
+      if (controller && Number.isFinite(timeoutMs) && timeoutMs > 0) {
+        timerId = window.setTimeout(function () {
+          try {
+            controller.abort(new Error("Timeout"));
+          } catch {
+            controller.abort();
+          }
+        }, timeoutMs);
+      }
+      var response = await fetch(url, {
+        cache: "no-store",
+        signal: controller ? controller.signal : undefined
+      });
+      if (!response.ok) throw new Error("Failed to load " + url);
+      var payload = await response.json();
+      var source = "local";
+      try {
+        source = String(response.headers.get("X-Altea-Source") || response.headers.get("x-altea-source") || "local").trim() || "local";
+      } catch {}
+      return { payload: payload, source: source };
+    } catch (error) {
+      var isAbort = controller && controller.signal && controller.signal.aborted;
+      if (isAbort) {
+        throw new Error("Timeout while loading " + url);
+      }
+      throw error;
+    } finally {
+      if (timerId) window.clearTimeout(timerId);
+    }
   }
 
   async function tryFetchJsonNoStore(url) {
@@ -553,7 +582,7 @@
     }
 
     try {
-      var localResult = await fetchJsonNoStore(url);
+      var localResult = await fetchJsonNoStore(url, LOCAL_FETCH_TIMEOUT_MS);
       localPayload = localResult && localResult.payload;
       localSource = localResult && localResult.source || "local";
     } catch (error) {
@@ -852,6 +881,15 @@
     if (state.loaded && !forceRefresh) return;
     if (forceRefresh) resetStateForReload();
     state.loading = true;
+    state.error = "";
+    state.loadNonce += 1;
+    var loadNonce = state.loadNonce;
+    var loadGuard = window.setTimeout(function () {
+      if (!state.loading || state.loadNonce !== loadNonce) return;
+      state.loading = false;
+      state.error = "Загрузка вкладки Цены заняла слишком много времени. Остановили вечный спиннер и ждём повторного чтения данных.";
+      renderPriceWorkbench();
+    }, LOAD_GUARD_MS);
     renderPriceWorkbench();
     try {
       var dataResult = await loadSnapshotAwareJson(DATA_URL);
@@ -898,6 +936,7 @@
         state.sourceNote += " (" + state.orderProcurementFallbackCount + " SKU)";
       }
       state.loaded = true;
+      state.error = "";
       var last = latestDate(rows);
       state.latestTimelineDate = last;
       state.earliestTimelineDate = earliestDate(rows);
@@ -911,6 +950,7 @@
     } catch (error) {
       state.error = error && error.message ? error.message : "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0432\u043a\u043b\u0430\u0434\u043a\u0443 \u0426\u0435\u043d\u044b.";
     } finally {
+      window.clearTimeout(loadGuard);
       state.loading = false;
       renderPriceWorkbench();
     }

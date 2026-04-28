@@ -20,7 +20,8 @@
       'portal-launch-manager-hotfix.js?v=20260422c'
     ],
     prices: [
-      'portal-price-workbench-runtime-loader.js?v=20260428c',
+      'portal-price-local-fetch-bypass-hotfix.js?v=20260428a',
+      'portal-price-workbench-runtime-loader.js?v=20260428d',
       'portal-team-reconnect-hotfix.js?v=20260420a'
     ]
   };
@@ -98,6 +99,9 @@
   const bundlePromises = new Map();
   const readyBundles = new Set();
   const originalFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
+  if (originalFetch && typeof window.__ALTEA_BASE_FETCH__ !== 'function') {
+    window.__ALTEA_BASE_FETCH__ = originalFetch;
+  }
   let hasUserNavigation = false;
 
   function getActiveView() {

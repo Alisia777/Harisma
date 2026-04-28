@@ -178,6 +178,70 @@ function buildPlatformMetricCoverage(rows = [], platform = '') {
   return stats;
 }
 
+function buildPriceAnomalies(rows = [], platform = '') {
+  const stats = {
+    platform,
+    label: PLATFORM_LABELS[platform] || platform,
+    totalSku: rows.length,
+    currentNonPositivePrice: 0,
+    dailyNonPositivePrice: 0,
+    currentInvalidSpp: 0,
+    dailyInvalidSpp: 0,
+    currentClientAboveFill: 0,
+    dailyClientAboveFill: 0,
+    examples: {
+      currentNonPositivePrice: [],
+      dailyNonPositivePrice: [],
+      currentInvalidSpp: [],
+      dailyInvalidSpp: [],
+      currentClientAboveFill: [],
+      dailyClientAboveFill: []
+    }
+  };
+
+  rows.forEach((row) => {
+    const article = row?.articleKey || row?.article || '';
+    const name = row?.name || '';
+    const currentFillPrice = firstNumber(row?.currentFillPrice, row?.currentPrice);
+    const currentClientPrice = firstNumber(row?.currentClientPrice);
+    const currentSppPct = firstNumber(row?.currentSppPct);
+
+    if (currentFillPrice !== null && currentFillPrice <= 0) {
+      stats.currentNonPositivePrice += 1;
+      stats.examples.currentNonPositivePrice.push({ article, name, currentFillPrice });
+    }
+    if (currentSppPct !== null && (currentSppPct < 0 || currentSppPct > 1)) {
+      stats.currentInvalidSpp += 1;
+      stats.examples.currentInvalidSpp.push({ article, name, currentSppPct });
+    }
+    if (currentFillPrice !== null && currentFillPrice > 0 && currentClientPrice !== null && currentClientPrice > currentFillPrice) {
+      stats.currentClientAboveFill += 1;
+      stats.examples.currentClientAboveFill.push({ article, name, currentFillPrice, currentClientPrice, currentSppPct });
+    }
+
+    selectSeries(row).forEach((point) => {
+      const date = asIsoDate(point?.date);
+      const price = firstNumber(point?.price, point?.currentFillPrice, point?.currentPrice);
+      const clientPrice = firstNumber(point?.clientPrice, point?.currentClientPrice);
+      const sppPct = firstNumber(point?.sppPct, point?.currentSppPct);
+      if (price !== null && price <= 0) {
+        stats.dailyNonPositivePrice += 1;
+        stats.examples.dailyNonPositivePrice.push({ article, name, date, price });
+      }
+      if (sppPct !== null && (sppPct < 0 || sppPct > 1)) {
+        stats.dailyInvalidSpp += 1;
+        stats.examples.dailyInvalidSpp.push({ article, name, date, sppPct });
+      }
+      if (price !== null && price > 0 && clientPrice !== null && clientPrice > price) {
+        stats.dailyClientAboveFill += 1;
+        stats.examples.dailyClientAboveFill.push({ article, name, date, price, clientPrice, sppPct });
+      }
+    });
+  });
+
+  return stats;
+}
+
 function buildAudit() {
   const workbench = safeReadJson(FILES.workbench, { generatedAt: '', platforms: {} });
   const overlay = safeReadJson(FILES.overlay, { generatedAt: '', platforms: {} });
@@ -192,6 +256,9 @@ function buildAudit() {
   const merged = mergeSmartPriceContour(workbench || {}, overlay || {}, live || {});
   const metricCoverage = PLATFORM_ORDER.map((platform) =>
     buildPlatformMetricCoverage(merged?.platforms?.[platform]?.rows || [], platform)
+  );
+  const priceAnomalies = PLATFORM_ORDER.map((platform) =>
+    buildPriceAnomalies(merged?.platforms?.[platform]?.rows || [], platform)
   );
 
   const files = {
@@ -235,6 +302,17 @@ function buildAudit() {
         noCurrentTurnover: shortExamples(item.gaps.noCurrentTurnover),
         noOrders7d: shortExamples(item.gaps.noOrders7d),
         noRevenue7d: shortExamples(item.gaps.noRevenue7d)
+      }
+    })),
+    priceAnomalies: priceAnomalies.map((item) => ({
+      ...item,
+      examples: {
+        currentNonPositivePrice: item.examples.currentNonPositivePrice.slice(0, 6),
+        dailyNonPositivePrice: item.examples.dailyNonPositivePrice.slice(0, 6),
+        currentInvalidSpp: item.examples.currentInvalidSpp.slice(0, 6),
+        dailyInvalidSpp: item.examples.dailyInvalidSpp.slice(0, 6),
+        currentClientAboveFill: item.examples.currentClientAboveFill.slice(0, 6),
+        dailyClientAboveFill: item.examples.dailyClientAboveFill.slice(0, 6)
       }
     })),
     crossTabRisks

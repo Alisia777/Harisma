@@ -69,9 +69,11 @@ function upsertRow(bucket, nextRow, replaceExisting = true) {
 }
 
 function computeClientDiscount(currentFillPrice, currentClientPrice, currentSppPct) {
-  if (Number.isFinite(currentSppPct)) return currentSppPct;
+  if (Number.isFinite(currentSppPct)) {
+    return Math.min(1, Math.max(0, currentSppPct));
+  }
   if (Number.isFinite(currentFillPrice) && currentFillPrice > 0 && Number.isFinite(currentClientPrice)) {
-    return 1 - (currentClientPrice / currentFillPrice);
+    return Math.min(1, Math.max(0, 1 - (currentClientPrice / currentFillPrice)));
   }
   return null;
 }
@@ -79,6 +81,10 @@ function computeClientDiscount(currentFillPrice, currentClientPrice, currentSppP
 function finiteDivide(total, quantity) {
   if (!Number.isFinite(total) || !Number.isFinite(quantity) || quantity <= 0) return null;
   return total / quantity;
+}
+
+function positiveValue(value) {
+  return Number.isFinite(value) && value > 0 ? value : null;
 }
 
 function buildRowBase(articleKey, brand, status, valueDate) {
@@ -156,25 +162,28 @@ function buildFactTimelinePoint(platform, row) {
   if (platform === 'wb') {
     const wbQty = parseSmartNumber(row?.wb_quantity_sold);
     const finishedTotal = parseSmartNumber(row?.wb_finished_price);
-    const clientPrice = finiteDivide(finishedTotal, wbQty);
-    const sppPct = computeClientDiscount(revenuePerUnit, clientPrice, null);
-    if (!Number.isFinite(revenuePerUnit) && !Number.isFinite(clientPrice)) return null;
-    if (Number.isFinite(revenuePerUnit)) point.price = revenuePerUnit;
+    const sellerTotal = parseSmartNumber(row?.wb_price_with_disc);
+    const clientPrice = positiveValue(finiteDivide(finishedTotal, wbQty));
+    const sellerPrice = positiveValue(finiteDivide(sellerTotal, wbQty)) || positiveValue(revenuePerUnit);
+    const sppPct = computeClientDiscount(sellerPrice, clientPrice, null);
+    if (!Number.isFinite(sellerPrice) && !Number.isFinite(clientPrice)) return null;
+    if (Number.isFinite(sellerPrice)) point.price = sellerPrice;
     if (Number.isFinite(clientPrice)) point.clientPrice = clientPrice;
     if (Number.isFinite(sppPct)) point.sppPct = sppPct;
   } else if (platform === 'ozon') {
     const ozQty = parseSmartNumber(row?.oz_quantity_sold);
     const ozSellerPrice = parseSmartNumber(row?.oz_seller_price);
-    const fillPrice = finiteDivide(ozSellerPrice, ozQty) || revenuePerUnit;
-    const sppPct = computeClientDiscount(fillPrice, revenuePerUnit, null);
-    if (!Number.isFinite(fillPrice) && !Number.isFinite(revenuePerUnit)) return null;
+    const fillPrice = positiveValue(finiteDivide(ozSellerPrice, ozQty)) || positiveValue(revenuePerUnit);
+    const clientPrice = positiveValue(revenuePerUnit);
+    const sppPct = computeClientDiscount(fillPrice, clientPrice, null);
+    if (!Number.isFinite(fillPrice) && !Number.isFinite(clientPrice)) return null;
     if (Number.isFinite(fillPrice)) point.price = fillPrice;
-    if (Number.isFinite(revenuePerUnit)) point.clientPrice = revenuePerUnit;
+    if (Number.isFinite(clientPrice)) point.clientPrice = clientPrice;
     if (Number.isFinite(sppPct)) point.sppPct = sppPct;
   } else {
-    if (!Number.isFinite(revenuePerUnit)) return null;
-    point.price = revenuePerUnit;
-    point.clientPrice = revenuePerUnit;
+    if (!Number.isFinite(positiveValue(revenuePerUnit))) return null;
+    point.price = positiveValue(revenuePerUnit);
+    point.clientPrice = positiveValue(revenuePerUnit);
     point.sppPct = 0;
   }
 
@@ -236,8 +245,9 @@ function parseMainPortalFacts(workbook, payload) {
     if (platform === 'wb') {
       const wbQty = parseSmartNumber(row.wb_quantity_sold);
       const finishedTotal = parseSmartNumber(row.wb_finished_price);
-      const currentClientPrice = finiteDivide(finishedTotal, wbQty);
-      const currentFillPrice = revenuePerUnit;
+      const sellerTotal = parseSmartNumber(row.wb_price_with_disc);
+      const currentClientPrice = positiveValue(finiteDivide(finishedTotal, wbQty));
+      const currentFillPrice = positiveValue(finiteDivide(sellerTotal, wbQty)) || positiveValue(revenuePerUnit);
       const currentSppPct = computeClientDiscount(currentFillPrice, currentClientPrice, null);
       if (!Number.isFinite(currentFillPrice) && !Number.isFinite(currentClientPrice)) return;
       upsertRow(bucket, {
@@ -255,8 +265,8 @@ function parseMainPortalFacts(workbook, payload) {
     if (platform === 'ozon') {
       const ozQty = parseSmartNumber(row.oz_quantity_sold);
       const ozSellerPrice = parseSmartNumber(row.oz_seller_price);
-      const currentFillPrice = finiteDivide(ozSellerPrice, ozQty) || revenuePerUnit;
-      const currentClientPrice = revenuePerUnit;
+      const currentFillPrice = positiveValue(finiteDivide(ozSellerPrice, ozQty)) || positiveValue(revenuePerUnit);
+      const currentClientPrice = positiveValue(revenuePerUnit);
       if (!Number.isFinite(currentFillPrice) && !Number.isFinite(currentClientPrice)) return;
       upsertRow(bucket, {
         ...baseRow,
@@ -270,12 +280,12 @@ function parseMainPortalFacts(workbook, payload) {
       return;
     }
 
-    if (!Number.isFinite(revenuePerUnit)) return;
+    if (!Number.isFinite(positiveValue(revenuePerUnit))) return;
     upsertRow(bucket, {
       ...baseRow,
-      currentFillPrice: revenuePerUnit,
-      currentPrice: revenuePerUnit,
-      currentClientPrice: revenuePerUnit,
+      currentFillPrice: positiveValue(revenuePerUnit),
+      currentPrice: positiveValue(revenuePerUnit),
+      currentClientPrice: positiveValue(revenuePerUnit),
       currentSppPct: 0,
       sourceMode: 'market-facts',
       daily: factSeries

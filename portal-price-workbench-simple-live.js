@@ -53,7 +53,7 @@
 
   function pct(value) {
     if (value === null || value === undefined || !Number.isFinite(Number(value))) return "\u2014";
-    return (Number(value) * 100).toFixed(1) + "%";
+    return (sanitizeDiscountPct(Number(value)) * 100).toFixed(1) + "%";
   }
 
   function money(value) {
@@ -69,6 +69,11 @@
   function intf(value) {
     if (value === null || value === undefined || !Number.isFinite(Number(value))) return "\u2014";
     return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(Number(value));
+  }
+
+  function sanitizeDiscountPct(value) {
+    if (!Number.isFinite(Number(value))) return null;
+    return Math.min(1, Math.max(0, Number(value)));
   }
 
   function norm(value) {
@@ -810,7 +815,7 @@
         : ((overlayClientPrice != null && (useOverlayFacts || sourceClientPrice == null)) ? overlayClientPrice : sourceClientPrice),
       currentSppPct: overlayClearsSpp
         ? null
-        : ((overlaySppPct != null && (useOverlayFacts || sourceSppPct == null)) ? overlaySppPct : sourceSppPct),
+        : sanitizeDiscountPct((overlaySppPct != null && (useOverlayFacts || sourceSppPct == null)) ? overlaySppPct : sourceSppPct),
       requiredPriceForMargin: num(source.requiredPriceForMargin),
       historyNote: source.historyNote || "",
       valueDate: (useOverlayFacts && overlayValueDate) ? overlayValueDate : (sourceValueDate || isoDate(maxDate)),
@@ -952,7 +957,7 @@
 
     next.currentFillPrice = priceMetric.value != null ? priceMetric.value : row.currentFillPrice;
     next.currentClientPrice = clientMetric.value != null ? clientMetric.value : row.currentClientPrice;
-    next.currentSppPct = sppMetric.value != null ? sppMetric.value : row.currentSppPct;
+    next.currentSppPct = sanitizeDiscountPct(sppMetric.value != null ? sppMetric.value : row.currentSppPct);
     next.turnoverDays = turnoverMetric.value != null ? turnoverMetric.value : row.turnoverDays;
     next.valueDate = isoDate(point.date) || row.valueDate;
     next.priceFactDate = priceMetric.value != null ? priceMetric.date : isoDate(row.valueDate);

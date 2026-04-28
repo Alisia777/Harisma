@@ -38,6 +38,12 @@ const PLATFORM_LABELS = {
   ym: 'Я.Маркет'
 };
 
+function sanitizeDiscountPct(...values) {
+  const parsed = firstNumber(...values);
+  if (parsed === null) return null;
+  return Math.min(1, Math.max(0, parsed));
+}
+
 function parseArgs(argv) {
   const args = {};
   for (let index = 2; index < argv.length; index += 1) {
@@ -81,7 +87,7 @@ function pointFromSource(point = {}) {
     turnoverDays: firstNumber(point?.turnoverDays),
     price: firstPositive(point?.price, point?.currentFillPrice, point?.currentPrice),
     clientPrice: firstPositive(point?.clientPrice, point?.currentClientPrice),
-    sppPct: firstNumber(point?.sppPct, point?.currentSppPct),
+    sppPct: sanitizeDiscountPct(point?.sppPct, point?.currentSppPct),
     ordersUnits: firstNumber(point?.ordersUnits),
     deliveredUnits: firstNumber(point?.deliveredUnits),
     revenue: firstNumber(point?.revenue)
@@ -147,7 +153,7 @@ function buildLegacyRow(row = {}, platform = '') {
   const currentPrice = firstPositive(row?.currentFillPrice, row?.currentPrice, lastPrice.value);
   const currentClientPrice = firstPositive(row?.currentClientPrice, lastClientPrice.value);
   const currentTurnoverDays = firstNumber(row?.currentTurnoverDays, row?.turnoverCurrentDays, lastTurnover.value);
-  const currentSppPct = firstNumber(row?.currentSppPct, lastSpp.value);
+  const currentSppPct = sanitizeDiscountPct(row?.currentSppPct, lastSpp.value);
   const currentPriceDate = lastPrice.date || latestFactDate;
   const basePrice = firstPositive(row?.basePrice, lastPrice.value, currentPrice);
   const minPrice = firstPositive(row?.minPrice, row?.workingZoneFrom, row?.hardMinPrice);

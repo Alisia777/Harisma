@@ -1,9 +1,15 @@
 (function () {
-  if (window.__ALTEA_ORDER_LOGISTICS_HOTFIX_20260421F__) return;
-  window.__ALTEA_ORDER_LOGISTICS_HOTFIX_20260421F__ = true;
+  if (window.__ALTEA_ORDER_LOGISTICS_HOTFIX_20260428B__) return;
+  window.__ALTEA_ORDER_LOGISTICS_HOTFIX_20260428B__ = true;
+  window.__ALTEA_ORDER_LOGISTICS_HOTFIX_20260425A__ = true;
 
-  const VERSION = '20260421g';
-  const STYLE_ID = 'altea-order-logistics-hotfix-20260421g';
+  const VERSION = '20260428b';
+  const STYLE_ID = 'altea-order-logistics-hotfix-20260428b';
+  const SNAPSHOT_TABLE = 'portal_data_snapshots';
+  const SNAPSHOT_CFG = {
+    url: 'https://iyckwryrucqrxwlowxow.supabase.co',
+    anonKey: 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw'
+  };
   const cache = {
     logistics: null,
     warehouse: null
@@ -79,21 +85,212 @@
       .replace(/^_+|_+$/g, '');
   }
 
-  async function loadJson(path, key) {
-    if (cache[key]) return cache[key];
+  function parseFreshStamp(value) {
+    if (!value) return 0;
+    const raw = String(value || '').trim();
+    if (!raw) return 0;
+    const normalized = /^\d{4}-\d{2}$/.test(raw)
+      ? `${raw}-01T00:00:00Z`
+      : /^\d{4}-\d{2}-\d{2}$/.test(raw)
+        ? `${raw}T00:00:00Z`
+        : raw;
+    const stamp = Date.parse(normalized);
+    return Number.isFinite(stamp) ? stamp : 0;
+  }
+
+  function freshnessOfPayload(payload) {
+    if (!payload || typeof payload !== 'object') return 0;
+    return Math.max(
+      parseFreshStamp(payload.generatedAt),
+      parseFreshStamp(payload.updatedAt),
+      parseFreshStamp(payload.updated_at),
+      parseFreshStamp(payload.asOfDate)
+    );
+  }
+
+  function logisticsPayloadUsable(payload) {
+    return Array.isArray(payload?.allRows) && payload.allRows.length > 0
+      || Array.isArray(payload?.ozonClusters) && payload.ozonClusters.length > 0
+      || Array.isArray(payload?.wbWarehouses) && payload.wbWarehouses.length > 0;
+  }
+
+  function expandCompactLogisticsPayload(payload) {
+    if (!payload || typeof payload !== 'object') return payload;
+    if (Array.isArray(payload.allRows) && payload.allRows.length) return payload;
+    if (!Array.isArray(payload.allRowsCompact) || !payload.allRowsCompact.length) return payload;
+
+    payload.allRows = payload.allRowsCompact.map((row) => ({
+      platform: row?.[0] === 'w' ? 'wb' : 'ozon',
+      place: row?.[1] || '',
+      article: row?.[2] || '',
+      inStock: toNumber(row?.[3]),
+      inTransit: toNumber(row?.[4]),
+      inRequest: toNumber(row?.[5]),
+      avgDaily: toNumber(row?.[6]),
+      turnoverDays: row?.[7] == null || row?.[7] === '' ? null : toNumber(row?.[7]),
+      sales7: toNumber(row?.[8]),
+      sales14: toNumber(row?.[9]),
+      sales28: toNumber(row?.[10]),
+      targetNeed7: toNumber(row?.[11]),
+      targetNeed14: toNumber(row?.[12]),
+      targetNeed28: toNumber(row?.[13])
+    }));
+    return payload;
+  }
+
+  function chooseFreshestPayload(snapshotPayload, localPayload) {
+    const snapshotUsable = logisticsPayloadUsable(snapshotPayload);
+    const localUsable = logisticsPayloadUsable(localPayload);
+    if (snapshotUsable !== localUsable) {
+      return snapshotUsable ? snapshotPayload : localPayload;
+    }
+    if (snapshotPayload && localPayload) {
+      return freshnessOfPayload(localPayload) >= freshnessOfPayload(snapshotPayload)
+        ? localPayload
+        : snapshotPayload;
+    }
+    return localPayload || snapshotPayload || null;
+  }
+
+  function resetCache() {
+    cache.logistics = null;
+    cache.warehouse = null;
+  }
+
+  function activeFetch() {
+    if (typeof window.__ALTEA_BASE_FETCH__ === 'function') return window.__ALTEA_BASE_FETCH__.bind(window);
+    if (typeof window.fetch === 'function') return window.fetch.bind(window);
+    return null;
+  }
+
+  function snapshotBrand() {
+    try {
+      if (typeof currentBrand === 'function') return currentBrand() || 'Алтея';
+    } catch (error) {
+      console.warn('[order-logistics-hotfix] brand', error);
+    }
+    return 'Алтея';
+  }
+
+  function decodeChunkedSnapshotPayload(snapshotKey, rows) {
+    if (!Array.isArray(rows) || !rows.length) return null;
+    const main = rows.find((row) => String(row?.snapshot_key || '').trim() === snapshotKey);
+    const payload = main?.payload || null;
+    if (!payload) return null;
+    if (!payload.chunked) return payload;
+
+    const chunkCount = Number(payload.chunk_count || payload.chunkCount || 0);
+    if (!chunkCount) return null;
+
+    const prefix = `${snapshotKey}__part__`;
+    const chunkRows = rows
+      .filter((row) => String(row?.snapshot_key || '').startsWith(prefix))
+      .sort((left, right) => String(left?.snapshot_key || '').localeCompare(String(right?.snapshot_key || '')));
+
+    if (chunkRows.length < chunkCount) return null;
+
+    const text = chunkRows
+      .slice(0, chunkCount)
+      .map((row) => String(row?.payload?.data || ''))
+      .join('');
+
+    if (!text) return null;
+    return JSON.parse(text);
+  }
+
+  async function fetchDirectSnapshotPayload(snapshotKey) {
+    const fetchImpl = activeFetch();
+    if (!fetchImpl || !snapshotKey) return null;
+
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    const timer = controller ? window.setTimeout(() => controller.abort(), 12000) : null;
+    try {
+      const url = new URL(`${SNAPSHOT_CFG.url}/rest/v1/${SNAPSHOT_TABLE}`);
+      url.searchParams.set('select', 'snapshot_key,payload,generated_at,updated_at');
+      url.searchParams.set('brand', `eq.${snapshotBrand()}`);
+      url.searchParams.set('snapshot_key', `like.${snapshotKey}*`);
+      url.searchParams.set('order', 'snapshot_key.asc');
+
+      const response = await fetchImpl(url.toString(), {
+        headers: {
+          apikey: SNAPSHOT_CFG.anonKey,
+          Authorization: `Bearer ${SNAPSHOT_CFG.anonKey}`,
+          Accept: 'application/json'
+        },
+        cache: 'no-store',
+        signal: controller?.signal
+      });
+
+      if (!response.ok) throw new Error(`Snapshot ${snapshotKey} HTTP ${response.status}`);
+      const rows = await response.json();
+      return decodeChunkedSnapshotPayload(snapshotKey, rows);
+    } finally {
+      if (timer) window.clearTimeout(timer);
+    }
+  }
+
+  async function fetchLocalJson(path) {
     const resolved = path.includes('?') ? path : `${path}?v=${VERSION}`;
-    const response = await fetch(resolved, { cache: 'no-store' });
+    const fetchImpl = activeFetch();
+    if (!fetchImpl) throw new Error(`Fetch is not available for ${path}`);
+    const response = await fetchImpl(resolved, { cache: 'no-store' });
     if (!response.ok) throw new Error(`Failed to load ${path}`);
     const raw = await response.text();
     const parsed = typeof sanitizeLooseJson === 'function' ? JSON.parse(sanitizeLooseJson(raw)) : JSON.parse(raw);
-    cache[key] = parsed;
-    return parsed;
+    return path === 'data/logistics.json' ? expandCompactLogisticsPayload(parsed) : parsed;
   }
 
-  async function ensureSources() {
+  async function loadJson(path, key, force) {
+    if (!force && cache[key]) return cache[key];
+
+    let localPayload = null;
+    try {
+      localPayload = await fetchLocalJson(path);
+    } catch (error) {
+      console.warn('[order-logistics-hotfix] local', path, error);
+    }
+
+    if (path !== 'data/logistics.json') {
+      if (!localPayload) throw new Error(`Failed to load ${path}`);
+      cache[key] = localPayload;
+      return localPayload;
+    }
+
+    if (logisticsPayloadUsable(localPayload)) {
+      cache[key] = localPayload;
+      return localPayload;
+    }
+
+    let snapshotPayload = null;
+    const snapshotKey = path === 'data/logistics.json' ? 'logistics' : null;
+    if (snapshotKey) {
+      try {
+        snapshotPayload = expandCompactLogisticsPayload(await fetchDirectSnapshotPayload(snapshotKey));
+      } catch (error) {
+        console.warn('[order-logistics-hotfix] direct-snapshot', path, error);
+      }
+    }
+    if (!snapshotPayload && typeof window.__alteaLoadPortalSnapshot === 'function') {
+      try {
+        snapshotPayload = expandCompactLogisticsPayload(await window.__alteaLoadPortalSnapshot(path, { force: Boolean(force) }));
+      } catch (error) {
+        console.warn('[order-logistics-hotfix] snapshot', path, error);
+      }
+    }
+
+    if (!localPayload && !snapshotPayload) throw new Error(`Failed to load ${path}`);
+
+    const chosen = chooseFreshestPayload(snapshotPayload, localPayload);
+    if (!chosen) throw new Error(`Failed to load ${path}`);
+
+    cache[key] = chosen;
+    return chosen;
+  }
+
+  async function ensureSources(force) {
     await Promise.all([
-      loadJson('data/logistics.json', 'logistics'),
-      loadJson('data/warehouse_stock_overlay.json', 'warehouse').catch(() => ({ rows: [] }))
+      loadJson('data/logistics.json', 'logistics', force),
+      loadJson('data/warehouse_stock_overlay.json', 'warehouse', force).catch(() => ({ rows: [] }))
     ]);
   }
 
@@ -534,12 +731,19 @@
     });
   }
 
-  async function renderCurrent() {
+  async function renderCurrent(force = false) {
     const root = document.getElementById('view-order');
     if (!root) return;
+    if (!force && !root.classList.contains('active')) return;
+    if (force) {
+      resetCache();
+      if (typeof window.__alteaResetPortalSnapshotState === 'function') {
+        window.__alteaResetPortalSnapshotState();
+      }
+    }
     injectStyles();
     try {
-      await ensureSources();
+      await ensureSources(force);
       root.innerHTML = render(buildModel());
       bind(root);
     } catch (error) {
@@ -555,12 +759,16 @@
     }
   }
 
+  window.__alteaRefreshOrderLogistics = function refreshOrderLogistics(force) {
+    return renderCurrent(force !== false);
+  };
+
   function wrapRenderOrderCalculator() {
     if (typeof renderOrderCalculator !== 'function' || renderOrderCalculator.__alteaOrderLogisticsWrapped) return false;
     const original = renderOrderCalculator;
     const wrapped = function alteaOrderLogisticsWrapper() {
       const result = original.apply(this, arguments);
-      renderCurrent();
+      if (document.getElementById('view-order')?.classList.contains('active')) renderCurrent(true);
       return result;
     };
     wrapped.__alteaOrderLogisticsWrapped = true;
@@ -589,13 +797,14 @@
       setTimeout(boot, 250);
       return;
     }
-    setTimeout(() => {
-      if (document.getElementById('view-order')?.classList.contains('active')) renderCurrent();
-    }, 120);
-    setTimeout(() => {
-      if (document.getElementById('view-order')?.classList.contains('active')) renderCurrent();
-    }, 1500);
+    if (document.getElementById('view-order')?.classList.contains('active')) renderCurrent(true);
   }
+
+  document.getElementById('pullRemoteBtn')?.addEventListener('click', () => {
+    setTimeout(() => {
+      if (document.getElementById('view-order')?.classList.contains('active')) renderCurrent(true);
+    }, 180);
+  });
 
   boot();
 })();

@@ -346,6 +346,7 @@ function openSkuModal(articleKey) {
 }
 
 function setView(view) {
+  view = typeof normalizePortalView === 'function' ? normalizePortalView(view) : view;
   state.activeView = view;
   document.querySelectorAll('.nav-btn').forEach((btn) => btn.classList.toggle('active', btn.dataset.view === view));
   document.querySelectorAll('.view').forEach((section) => section.classList.toggle('active', section.id === `view-${view}`));
@@ -354,6 +355,7 @@ function setView(view) {
 }
 
 async function prepareView(view) {
+  view = typeof normalizePortalView === 'function' ? normalizePortalView(view) : view;
   if (!state.boot.dataReady) {
     rerenderCurrentView();
     return;
@@ -406,12 +408,17 @@ function rerenderCurrentView() {
     ['view-control', 'Задачи', renderControlCenter],
     ['view-skus', 'Реестр SKU', renderSkuRegistry],
     ['view-launches', 'Продукт / Ксения', renderLaunches],
+    ['view-product-leaderboard', 'Продуктовый лидерборд', renderProductLeaderboard],
     ['view-launch-control', 'Запуск новинок', renderLaunchControl],
     ['view-meetings', 'Ритм работы', renderMeetings],
     ['view-executive', 'Руководителю', renderExecutive]
   ];
   const errors = [];
-  const activeRootId = `view-${state.activeView || 'dashboard'}`;
+  const activeView = typeof normalizePortalView === 'function'
+    ? normalizePortalView(state.activeView || 'dashboard')
+    : (state.activeView || 'dashboard');
+  if (state.activeView !== activeView) state.activeView = activeView;
+  const activeRootId = `view-${activeView}`;
   const activeEntry = renderPlan.find(([rootId]) => rootId === activeRootId) || renderPlan[0];
   if (activeEntry) {
     const [rootId, title, renderer] = activeEntry;
@@ -426,6 +433,7 @@ function rerenderCurrentView() {
   state.runtimeErrors = errors;
   updateSyncBadge();
   if (errors.length) setAppError(`Портал загрузил не всё: ${errors[0]}`);
+  else if (Array.isArray(state.boot?.dataWarnings) && state.boot.dataWarnings.length) setAppError(`Предупреждение по данным: ${state.boot.dataWarnings[0]}`);
   else setAppError('');
 }
 
@@ -549,7 +557,15 @@ async function init() {
       comments: Array.isArray(local.comments) ? local.comments : [],
       tasks: Array.isArray(local.tasks) ? local.tasks : [],
       decisions: Array.isArray(local.decisions) ? local.decisions : [],
-      ownerOverrides: Array.isArray(local.ownerOverrides) ? local.ownerOverrides : []
+      ownerOverrides: Array.isArray(local.ownerOverrides) ? local.ownerOverrides : [],
+      repricerSettings: normalizeRepricerSettings(local.repricerSettings || {}),
+      repricerSettingsUpdatedAt: String(local.repricerSettingsUpdatedAt || '').trim(),
+      repricerOverrides: Array.isArray(local.repricerOverrides) ? local.repricerOverrides.map(normalizeRepricerOverride).filter((item) => item.articleKey) : [],
+      repricerSkuProfiles: Array.isArray(local.repricerSkuProfiles) ? local.repricerSkuProfiles.map(normalizeRepricerSkuProfile).filter((item) => item.articleKey) : [],
+      repricerCorridors: Array.isArray(local.repricerCorridors) ? local.repricerCorridors.map(normalizeRepricerCorridor).filter((item) => item.articleKey) : [],
+      repricerOverrideDeletes: Array.isArray(local.repricerOverrideDeletes) ? local.repricerOverrideDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
+      repricerSkuProfileDeletes: Array.isArray(local.repricerSkuProfileDeletes) ? local.repricerSkuProfileDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
+      repricerCorridorDeletes: Array.isArray(local.repricerCorridorDeletes) ? local.repricerCorridorDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : []
     };
     applyOwnerOverridesToSkus();
     mergeSeedStorage(seed || {});

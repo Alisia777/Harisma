@@ -7,6 +7,7 @@
   smartPriceWorkbenchLive: { generatedAt: '', platforms: {} },
   smartPriceOverlay: { generatedAt: '', platforms: {} },
   priceWorkbenchSupport: { generatedAt: '', platforms: {} },
+  productLeaderboard: { generatedAt: '', items: [], summary: {} },
   launches: [],
   meetings: [],
   documents: { groups: [] },
@@ -51,6 +52,12 @@
   launchFilters: {
     month: 'all'
   },
+  productLeaderboardFilters: {
+    search: '',
+    owner: 'all',
+    signal: 'all',
+    sort: 'buys'
+  },
   repricerFilters: {
     search: '',
     platform: 'all',
@@ -83,6 +90,7 @@
     dataWarnings: [],
     lazyReady: {
       launches: false,
+      productLeaderboard: false,
       meetings: false,
       documents: false,
       repricer: false
@@ -104,6 +112,7 @@
 window.__ALTEA_CONTROL_CENTER_V2__ = true;
 window.__ALTEA_ORDER_PROCUREMENT_ENABLED__ = true;
 window.__ALTEA_OPTIMIZED_RENDER__ = true;
+window.__alteaAppState = state;
 
 const STORAGE_KEY = 'brand-portal-local-v1';
 const ACTIVE_TASK_STATUSES = new Set(['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision']);
@@ -116,12 +125,14 @@ const VIEW_TITLES = {
   control: 'Задачи',
   skus: 'Реестр СКЮ',
   launches: 'Продукт / Ксения',
+  'product-leaderboard': 'Продуктовый лидерборд',
   'launch-control': 'Запуск новинок',
   meetings: 'Ритм работы',
   executive: 'Руководителю'
 };
 const VIEW_DATA_REQUIREMENTS = {
   launches: 'launches',
+  'product-leaderboard': 'productLeaderboard',
   'launch-control': 'launches',
   meetings: 'meetings',
   documents: 'documents',
@@ -250,7 +261,8 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/platform_plan.json': 'platform_plan',
   'data/prices.json': 'prices',
   'data/smart_price_workbench.json': 'smart_price_workbench',
-  'data/smart_price_overlay.json': 'smart_price_overlay'
+  'data/smart_price_overlay.json': 'smart_price_overlay',
+  'data/product_leaderboard.json': 'product_leaderboard'
 };
 const portalSnapshotState = {
   client: null,
@@ -400,6 +412,13 @@ function payloadFreshnessScore(snapshotKey, payload) {
   if (snapshotKey === 'skus' && Array.isArray(payload)) {
     payload.forEach((item) => {
       score = bumpFreshness(score, item?.updatedAt || item?.updated_at || item?.createdAt);
+    });
+    return score;
+  }
+
+  if (snapshotKey === 'product_leaderboard') {
+    (payload.items || []).forEach((item) => {
+      score = bumpFreshness(score, item?.generatedAt || item?.updatedAt || payload.generatedAt);
     });
     return score;
   }
@@ -860,6 +879,9 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
     return Array.isArray(payload?.dates) && payload.dates.length > 0
       && typeof payload?.platforms === 'object' && payload.platforms !== null
       && Object.keys(payload.platforms).length > 0;
+  }
+  if (snapshotKey === 'product_leaderboard') {
+    return Array.isArray(payload?.items) && payload.items.length > 0;
   }
   if (snapshotKey === 'logistics') {
     return Array.isArray(payload?.allRows) && payload.allRows.length > 0
@@ -1341,13 +1363,72 @@ function normalizeComment(item = {}) {
   };
 }
 
+const EMPTY_OWNER_NAMES = new Set([
+  '',
+  '-',
+  '—',
+  'без owner',
+  'без владельца',
+  'не назначен',
+  'не назначена',
+  'нет owner',
+  'no owner',
+  'none'
+]);
+
+const OWNER_CANONICAL_NAMES = new Map([
+  ['алексей', 'Алексей'],
+  ['анна', 'Анна'],
+  ['артем', 'Артем'],
+  ['артём', 'Артем'],
+  ['дарья', 'Даша'],
+  ['даша', 'Даша'],
+  ['екатерина', 'Екатерина'],
+  ['кирилл', 'Кирилл'],
+  ['ксения', 'Ксения'],
+  ['мария', 'Мария'],
+  ['олеся', 'Олеся'],
+  ['светлана', 'Светлана']
+]);
+
+const OWNER_NAME_ALIASES = new Map([
+  ['анна пирогова', 'Анна'],
+  ['екатерина доброжирова', 'Екатерина'],
+  ['екатерина доможирова', 'Екатерина'],
+  ['мария васильева', 'Мария'],
+  ['мария васильевна', 'Мария'],
+  ['олеся савинова', 'Олеся']
+]);
+
+function normalizeOwnerToken(value = '') {
+  return String(value ?? '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function canonicalOwnerName(value = '') {
+  const normalized = normalizeOwnerToken(value);
+  if (!normalized) return '';
+
+  const lowered = normalized.toLowerCase();
+  if (EMPTY_OWNER_NAMES.has(lowered)) return '';
+  if (OWNER_NAME_ALIASES.has(lowered)) return OWNER_NAME_ALIASES.get(lowered);
+  if (OWNER_CANONICAL_NAMES.has(lowered)) return OWNER_CANONICAL_NAMES.get(lowered);
+
+  const [firstToken = ''] = normalized.split(' ');
+  const firstTokenLowered = firstToken.toLowerCase();
+  if (OWNER_CANONICAL_NAMES.has(firstTokenLowered)) return OWNER_CANONICAL_NAMES.get(firstTokenLowered);
+
+  return normalized;
+}
+
 function normalizeDecision(item = {}) {
   return {
     id: item.id || stableId('decision', `${item.articleKey || ''}|${item.title || ''}|${item.createdAt || ''}|${item.decision || ''}`),
     articleKey: item.articleKey || '',
     title: String(item.title || 'Решение').trim() || 'Решение',
     decision: String(item.decision || '').trim(),
-    owner: String(item.owner || '').trim(),
+    owner: canonicalOwnerName(item.owner || ''),
     status: mapTaskStatus(item.status || 'waiting_decision'),
     due: item.due || '',
     createdAt: item.createdAt || new Date().toISOString(),
@@ -1358,7 +1439,7 @@ function normalizeDecision(item = {}) {
 function normalizeOwnerOverride(item = {}) {
   return {
     articleKey: item.articleKey || '',
-    ownerName: String(item.ownerName || item.owner || '').trim(),
+    ownerName: canonicalOwnerName(item.ownerName || item.owner || ''),
     ownerRole: String(item.ownerRole || '').trim(),
     note: String(item.note || '').trim(),
     updatedAt: item.updatedAt || new Date().toISOString(),
@@ -1539,6 +1620,12 @@ const LAZY_DATA_LOADERS = {
   launches: async () => {
     const launches = await loadJsonOrFallback('data/launches.json', [], 'Продукт / Ксения');
     state.launches = Array.isArray(launches) ? launches : [];
+  },
+  productLeaderboard: async () => {
+    const payload = await loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд');
+    state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
+      ? normalizeProductLeaderboardPayload(payload)
+      : (payload || { generatedAt: '', items: [], summary: {} });
   },
   meetings: async () => {
     const meetings = await loadJsonOrFallback('data/meetings.json', [], 'Ритм работы');

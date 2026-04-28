@@ -2,6 +2,7 @@
   "scripts": {
     "portal:sheet-sync": "node scripts/portal-google-sheet-sync.js sync",
     "portal:sheet-auth": "node scripts/portal-google-sheet-sync.js --init-auth",
+    "portal:kz-leaderboard-sync": "node scripts/portal-kz-product-leaderboard-sync.js sync",
     "portal:smart-price-sync": "node scripts/portal-smart-price-overlay-sync.js sync",
     "portal:prices-rebuild": "node scripts/build-legacy-prices-layer.js",
     "portal:repricer-rebuild": "node scripts/build-legacy-repricer-layer.js",

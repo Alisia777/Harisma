@@ -76,6 +76,273 @@ function averageRate(numerator, denominator) {
   return top / bottom;
 }
 
+function median(values) {
+  const list = (Array.isArray(values) ? values : [])
+    .map((value) => numberOrNull(value))
+    .filter((value) => value !== null)
+    .sort((left, right) => left - right);
+  if (!list.length) return null;
+  const middle = Math.floor(list.length / 2);
+  if (list.length % 2) return list[middle];
+  return (list[middle - 1] + list[middle]) / 2;
+}
+
+function clamp(value, minValue, maxValue) {
+  return Math.min(maxValue, Math.max(minValue, value));
+}
+
+function ratioDelta(actual, baseline) {
+  const actualValue = numberOrNull(actual);
+  const baselineValue = numberOrNull(baseline);
+  if (actualValue === null || baselineValue === null || !baselineValue) return null;
+  return actualValue / baselineValue - 1;
+}
+
+function alertSeverityRank(severity) {
+  if (severity === 'critical') return 4;
+  if (severity === 'high') return 3;
+  if (severity === 'medium') return 2;
+  return 1;
+}
+
+function buildMetricSnapshot(actual, baseline, lowerIsBetter = false) {
+  return {
+    value: numberOrNull(actual),
+    baseline: numberOrNull(baseline),
+    lowerIsBetter: Boolean(lowerIsBetter),
+    deltaPct: ratioDelta(actual, baseline)
+  };
+}
+
+function buildBaselines(items) {
+  const rows = Array.isArray(items) ? items : [];
+  return {
+    erviewPct: median(rows.map((item) => item.erviewPct).filter((value) => value !== null && value > 0)),
+    ctrPct: median(rows.map((item) => item.ctrPct).filter((value) => value !== null && value > 0)),
+    cartRatePct: median(rows.map((item) => item.cartRatePct).filter((value) => value !== null && value > 0)),
+    conversionPct: median(rows.map((item) => item.conversionPct).filter((value) => value !== null && value > 0)),
+    buyRatePct: median(rows.map((item) => item.buyRatePct).filter((value) => value !== null && value > 0)),
+    buyoutPct: median(rows.map((item) => item.buyoutPct).filter((value) => value !== null && value > 0)),
+    romiPct: median(rows.map((item) => item.romiPct).filter((value) => value !== null && value > 0)),
+    drrPct: median(rows.map((item) => item.drrPct).filter((value) => value !== null && value > 0)),
+    ecpm: median(rows.map((item) => item.ecpm).filter((value) => value !== null && value > 0)),
+    grossEcpm: median(rows.map((item) => item.grossEcpm).filter((value) => value !== null && value > 0))
+  };
+}
+
+function pushDiagnosticsAlert(alerts, config) {
+  alerts.push({
+    code: config.code,
+    family: config.family,
+    severity: config.severity,
+    title: config.title,
+    label: config.label || config.title,
+    metricKey: config.metricKey || '',
+    value: numberOrNull(config.value),
+    baseline: numberOrNull(config.baseline),
+    deltaPct: ratioDelta(config.value, config.baseline),
+    hint: config.hint || ''
+  });
+}
+
+function buildDiagnostics(item, baselines) {
+  const metrics = {
+    erviewPct: buildMetricSnapshot(item.erviewPct, baselines.erviewPct),
+    ctrPct: buildMetricSnapshot(item.ctrPct, baselines.ctrPct),
+    cartRatePct: buildMetricSnapshot(item.cartRatePct, baselines.cartRatePct),
+    conversionPct: buildMetricSnapshot(item.conversionPct, baselines.conversionPct),
+    buyRatePct: buildMetricSnapshot(item.buyRatePct, baselines.buyRatePct),
+    buyoutPct: buildMetricSnapshot(item.buyoutPct, baselines.buyoutPct),
+    romiPct: buildMetricSnapshot(item.romiPct, baselines.romiPct),
+    drrPct: buildMetricSnapshot(item.drrPct, baselines.drrPct, true),
+    ecpm: buildMetricSnapshot(item.ecpm, baselines.ecpm),
+    grossEcpm: buildMetricSnapshot(item.grossEcpm, baselines.grossEcpm)
+  };
+  const alerts = [];
+
+  if (!item.owner) {
+    pushDiagnosticsAlert(alerts, {
+      code: 'no_owner',
+      family: 'ownership',
+      severity: 'critical',
+      title: 'Нет owner по SKU',
+      label: 'Нет owner',
+      hint: 'КЗ уже льётся, а ответственный по карточке не назначен.'
+    });
+  }
+
+  if (item.buys <= 0 || item.revenue <= 0) {
+    pushDiagnosticsAlert(alerts, {
+      code: 'no_sales',
+      family: 'sales',
+      severity: 'critical',
+      title: 'Трафик не дошёл до выкупов',
+      label: 'Нет выкупов',
+      metricKey: 'buys',
+      value: item.buys,
+      baseline: null,
+      hint: 'По КЗ есть активность, но нет выручки или выкупов.'
+    });
+  }
+
+  if (item.income <= 0 && item.contentCost > 0) {
+    pushDiagnosticsAlert(alerts, {
+      code: 'negative_income',
+      family: 'economics',
+      severity: 'critical',
+      title: 'КЗ уводит доход в минус',
+      label: 'Доход <= 0',
+      metricKey: 'income',
+      value: item.income,
+      baseline: 0,
+      hint: 'Нужно разбирать связку контент / оффер / карточка.'
+    });
+  }
+
+  if (item.reach >= 100000 && metrics.erviewPct.baseline && item.erviewPct !== null && item.erviewPct < Math.max(metrics.erviewPct.baseline * 0.65, 0.0035)) {
+    pushDiagnosticsAlert(alerts, {
+      code: 'low_erview',
+      family: 'traffic',
+      severity: 'medium',
+      title: 'Отклик ниже медианы КЗ',
+      label: 'Отклик просел',
+      metricKey: 'erviewPct',
+      value: item.erviewPct,
+      baseline: metrics.erviewPct.baseline,
+      hint: 'Креатив / подача не добирают верх воронки.'
+    });
+  }
+
+  if (item.reach >= 100000 && metrics.ctrPct.baseline && item.ctrPct !== null && item.ctrPct < Math.max(metrics.ctrPct.baseline * 0.65, 0.004)) {
+    pushDiagnosticsAlert(alerts, {
+      code: 'low_ctr',
+      family: 'traffic',
+      severity: 'high',
+      title: 'CTR ниже портальной медианы',
+      label: 'CTR просел',
+      metricKey: 'ctrPct',
+      value: item.ctrPct,
+      baseline: metrics.ctrPct.baseline,
+      hint: 'Охват есть, но клик по карточке слабый.'
+    });
+  }
+
+  if (item.clicks >= 500 && metrics.cartRatePct.baseline && item.cartRatePct !== null && item.cartRatePct < Math.max(metrics.cartRatePct.baseline * 0.65, 0.12)) {
+    pushDiagnosticsAlert(alerts, {
+      code: 'low_cart_rate',
+      family: 'card',
+      severity: 'high',
+      title: 'Корзина отстаёт от кликов',
+      label: 'Корзина просела',
+      metricKey: 'cartRatePct',
+      value: item.cartRatePct,
+      baseline: metrics.cartRatePct.baseline,
+      hint: 'Нужно смотреть оффер, цену и первый экран карточки.'
+    });
+  }
+
+  if (item.clicks >= 500 && metrics.conversionPct.baseline && item.conversionPct !== null && item.conversionPct < Math.max(metrics.conversionPct.baseline * 0.65, 0.02)) {
+    pushDiagnosticsAlert(alerts, {
+      code: 'low_conversion',
+      family: 'card',
+      severity: 'high',
+      title: 'Конверсия в заказ ниже нормы',
+      label: 'Конверсия просела',
+      metricKey: 'conversionPct',
+      value: item.conversionPct,
+      baseline: metrics.conversionPct.baseline,
+      hint: 'Трафик приходит, но карточка не дожимает до заказа.'
+    });
+  }
+
+  if (item.orders >= 50 && metrics.buyoutPct.baseline && item.buyoutPct !== null && item.buyoutPct < Math.max(metrics.buyoutPct.baseline * 0.85, 0.75)) {
+    pushDiagnosticsAlert(alerts, {
+      code: 'low_buyout',
+      family: 'card',
+      severity: 'medium',
+      title: 'Выкуп ниже рабочей нормы',
+      label: 'Выкуп просел',
+      metricKey: 'buyoutPct',
+      value: item.buyoutPct,
+      baseline: metrics.buyoutPct.baseline,
+      hint: 'Есть риск по ожиданиям клиента, упаковке или качеству заявки.'
+    });
+  }
+
+  if (item.contentCost > 0 && item.romiPct !== null && item.romiPct < 1) {
+    pushDiagnosticsAlert(alerts, {
+      code: 'romi_below_payback',
+      family: 'economics',
+      severity: 'critical',
+      title: 'ROMI ниже окупаемости',
+      label: 'ROMI < 100%',
+      metricKey: 'romiPct',
+      value: item.romiPct,
+      baseline: metrics.romiPct.baseline,
+      hint: 'Расход на контент пока не отбивается доходом.'
+    });
+  } else if (item.contentCost > 0 && metrics.romiPct.baseline && item.romiPct !== null && item.romiPct < Math.max(metrics.romiPct.baseline * 0.6, 1.2)) {
+    pushDiagnosticsAlert(alerts, {
+      code: 'weak_romi',
+      family: 'economics',
+      severity: 'high',
+      title: 'ROMI заметно ниже медианы',
+      label: 'ROMI просел',
+      metricKey: 'romiPct',
+      value: item.romiPct,
+      baseline: metrics.romiPct.baseline,
+      hint: 'КЗ работает хуже портального медианного уровня.'
+    });
+  }
+
+  if (item.revenue > 0 && item.drrPct !== null && item.drrPct > 0.45) {
+    pushDiagnosticsAlert(alerts, {
+      code: 'high_drr_absolute',
+      family: 'economics',
+      severity: 'high',
+      title: 'ДРР выше рабочего порога',
+      label: 'ДРР высок',
+      metricKey: 'drrPct',
+      value: item.drrPct,
+      baseline: metrics.drrPct.baseline,
+      hint: 'На этот SKU уходит слишком большая доля выручки.'
+    });
+  } else if (item.revenue > 0 && metrics.drrPct.baseline && item.drrPct !== null && item.drrPct > Math.max(metrics.drrPct.baseline * 1.35, 0.32)) {
+    pushDiagnosticsAlert(alerts, {
+      code: 'high_drr',
+      family: 'economics',
+      severity: 'medium',
+      title: 'ДРР выше медианы КЗ',
+      label: 'ДРР растёт',
+      metricKey: 'drrPct',
+      value: item.drrPct,
+      baseline: metrics.drrPct.baseline,
+      hint: 'Нужно перепроверить цену, оффер и качество входящего трафика.'
+    });
+  }
+
+  alerts.sort((left, right) =>
+    alertSeverityRank(right.severity) - alertSeverityRank(left.severity)
+    || String(left.title || '').localeCompare(String(right.title || ''), 'ru')
+  );
+
+  const penalty = alerts.reduce((total, alert) => total + (alertSeverityRank(alert.severity) * 10), 0);
+  const healthScore = clamp(100 - penalty, 0, 100);
+  const highestSeverity = alerts.length ? alerts[0].severity : 'info';
+  const summary = alerts.length
+    ? alerts.slice(0, 2).map((alert) => alert.label || alert.title).join(' · ')
+    : 'Без критичных отклонений по КЗ';
+
+  return {
+    healthScore,
+    highestSeverity,
+    alertCount: alerts.length,
+    alerts,
+    summary,
+    metrics
+  };
+}
+
 function safePctValue(value) {
   const parsed = numberOrNull(value);
   return parsed === null ? null : parsed / 100;
@@ -139,12 +406,11 @@ async function fetchWorkbookBuffer(options) {
   }
 }
 
-function resolveLeaderboardSignal(item) {
+function resolveLeaderboardSignal(item, diagnostics) {
   if (!item.owner) return 'no_owner';
   if (item.buys <= 0 || item.revenue <= 0) return 'no_sales';
-  if (item.drrPct !== null && item.drrPct >= 0.4) return 'risk';
-  if (item.romiPct !== null && item.romiPct < 1.5) return 'risk';
-  if (item.romiPct !== null && item.romiPct >= 2.5 && item.drrPct !== null && item.drrPct <= 0.3) return 'leader';
+  if ((diagnostics?.alerts || []).some((alert) => alertSeverityRank(alert.severity) >= 3)) return 'risk';
+  if ((diagnostics?.healthScore || 0) >= 92 && (item.romiPct || 0) >= 2 && (item.drrPct || 1) <= 0.3) return 'leader';
   return 'steady';
 }
 
@@ -260,12 +526,28 @@ function buildPayload(rows, skus, options) {
       drrPct: safePctValue(row[drrKey])
     };
 
+    item.cartRatePct = averageRate(item.carts, item.clicks);
     item.buyRatePct = averageRate(item.buys, item.clicks);
     item.buyoutPct = averageRate(item.buys, item.orders);
-    item.signal = resolveLeaderboardSignal(item);
 
     if (sku) matchedItems.push(item);
     else unmatchedItems.push(item);
+  });
+
+  const baselines = buildBaselines(matchedItems);
+  const alertCounts = {
+    critical: 0,
+    high: 0,
+    medium: 0,
+    info: 0
+  };
+
+  matchedItems.forEach((item) => {
+    item.diagnostics = buildDiagnostics(item, baselines);
+    item.signal = resolveLeaderboardSignal(item, item.diagnostics);
+    (item.diagnostics.alerts || []).forEach((alert) => {
+      alertCounts[alert.severity] = numberOrZero(alertCounts[alert.severity]) + 1;
+    });
   });
 
   matchedItems.sort((left, right) =>
@@ -296,6 +578,8 @@ function buildPayload(rows, skus, options) {
       unmatchedRows: unmatchedItems.length
     },
     summary,
+    baselines,
+    alertCounts,
     owners: [...new Set(matchedItems.map((item) => item.owner).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru')),
     categories: [...new Set(matchedItems.map((item) => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru')),
     items: matchedItems,

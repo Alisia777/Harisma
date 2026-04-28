@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-28T16:58:10.954Z",
+  "generatedAt": "2026-04-28T19:09:56.770Z",
   "sourceFile": "https://docs.google.com/spreadsheets/d/1_WNHliH2-7E17H8J6BvYTSBWVD7cuDDBpn0GJ5Crxdg/edit?gid=349075746#gid=349075746",
   "sourceGid": "349075746",
   "sourceSheetName": "30.03.2026 - 05.04.2026",
@@ -37,6 +37,24 @@
     "buyoutPct": 0.9366164649357849,
     "romiPct": 1.1302237680164287,
     "drrPct": 0.4694342514688757
+  },
+  "baselines": {
+    "erviewPct": 0.0148,
+    "ctrPct": 0.008199999999999999,
+    "cartRatePct": 0.32142857142857145,
+    "conversionPct": 0.04150000000000001,
+    "buyRatePct": 0.0414822200603093,
+    "buyoutPct": 0.9622668174109666,
+    "romiPct": 1.8009,
+    "drrPct": 1.2243,
+    "ecpm": 201.61,
+    "grossEcpm": 26.29
+  },
+  "alertCounts": {
+    "critical": 79,
+    "high": 37,
+    "medium": 7,
+    "info": 0
   },
   "owners": [
     "Артем",
@@ -83,9 +101,92 @@
       "grossEcpm": 29.04,
       "romiPct": 2.5281000000000002,
       "drrPct": 0.2834,
+      "cartRatePct": 0.30411328388401887,
       "buyRatePct": 0.0547875927174646,
       "buyoutPct": 0.923820352472996,
-      "signal": "leader"
+      "diagnostics": {
+        "healthScore": 80,
+        "highestSeverity": "medium",
+        "alertCount": 1,
+        "alerts": [
+          {
+            "code": "low_erview",
+            "family": "traffic",
+            "severity": "medium",
+            "title": "Отклик ниже медианы КЗ",
+            "label": "Отклик просел",
+            "metricKey": "erviewPct",
+            "value": 0.0072,
+            "baseline": 0.0148,
+            "deltaPct": -0.5135135135135136,
+            "hint": "Креатив / подача не добирают верх воронки."
+          }
+        ],
+        "summary": "Отклик просел",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0072,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.5135135135135136
+          },
+          "ctrPct": {
+            "value": 0.0111,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 0.35365853658536617
+          },
+          "cartRatePct": {
+            "value": 0.30411328388401887,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.05386978347194138
+          },
+          "conversionPct": {
+            "value": 0.0548,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 0.32048192771084305
+          },
+          "buyRatePct": {
+            "value": 0.0547875927174646,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 0.3207488084729111
+          },
+          "buyoutPct": {
+            "value": 0.923820352472996,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.03995405873124991
+          },
+          "romiPct": {
+            "value": 2.5281000000000002,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": 0.4037981009495255
+          },
+          "drrPct": {
+            "value": 0.2834,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.7685207873887119
+          },
+          "ecpm": {
+            "value": 278.03,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": 0.37904865830067935
+          },
+          "grossEcpm": {
+            "value": 29.04,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": 0.10460251046025104
+          }
+        }
+      },
+      "signal": "steady"
     },
     {
       "id": "product-leaderboard-d4678211a7ca",
@@ -116,8 +217,78 @@
       "grossEcpm": 53.12,
       "romiPct": 2.9912,
       "drrPct": 0.2505,
+      "cartRatePct": 0.4026467962898281,
       "buyRatePct": 0.046571195715449994,
       "buyoutPct": 0.9411764705882353,
+      "diagnostics": {
+        "healthScore": 100,
+        "highestSeverity": "info",
+        "alertCount": 0,
+        "alerts": [],
+        "summary": "Без критичных отклонений по КЗ",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0098,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.33783783783783794
+          },
+          "ctrPct": {
+            "value": 0.0098,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 0.19512195121951237
+          },
+          "cartRatePct": {
+            "value": 0.4026467962898281,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.25267892179057605
+          },
+          "conversionPct": {
+            "value": 0.0466,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 0.12289156626506004
+          },
+          "buyRatePct": {
+            "value": 0.046571195715449994,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 0.12267847882157801
+          },
+          "buyoutPct": {
+            "value": 0.9411764705882353,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.021917358513386276
+          },
+          "romiPct": {
+            "value": 2.9912,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": 0.660947304125715
+          },
+          "drrPct": {
+            "value": 0.2505,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.7953932859593237
+          },
+          "ecpm": {
+            "value": 320.59,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": 0.590149298149893
+          },
+          "grossEcpm": {
+            "value": 53.12,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": 1.02054012932674
+          }
+        }
+      },
       "signal": "leader"
     },
     {
@@ -149,8 +320,78 @@
       "grossEcpm": -3,
       "romiPct": 1.9315,
       "drrPct": 0.3411,
+      "cartRatePct": 0.3177226176011109,
       "buyRatePct": 0.04110397500433952,
       "buyoutPct": 0.9502407704654896,
+      "diagnostics": {
+        "healthScore": 100,
+        "highestSeverity": "info",
+        "alertCount": 0,
+        "alerts": [],
+        "summary": "Без критичных отклонений по КЗ",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0184,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 0.2432432432432432
+          },
+          "ctrPct": {
+            "value": 0.0064,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.21951219512195108
+          },
+          "cartRatePct": {
+            "value": 0.3177226176011109,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.011529634129877175
+          },
+          "conversionPct": {
+            "value": 0.041100000000000005,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.009638554216867545
+          },
+          "buyRatePct": {
+            "value": 0.04110397500433952,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.009118245248683987
+          },
+          "buyoutPct": {
+            "value": 0.9502407704654896,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.012497621998266317
+          },
+          "romiPct": {
+            "value": 1.9315,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": 0.07251929590760176
+          },
+          "drrPct": {
+            "value": 0.3411,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.7213918157314383
+          },
+          "ecpm": {
+            "value": 168.93,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -0.16209513416993204
+          },
+          "grossEcpm": {
+            "value": -3,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -1.1141118295930013
+          }
+        }
+      },
       "signal": "steady"
     },
     {
@@ -182,9 +423,92 @@
       "grossEcpm": 1.24,
       "romiPct": 2.0341,
       "drrPct": 0.3296,
+      "cartRatePct": 0.31960830580462485,
       "buyRatePct": 0.061762623879188294,
       "buyoutPct": 0.935656836461126,
-      "signal": "steady"
+      "diagnostics": {
+        "healthScore": 70,
+        "highestSeverity": "high",
+        "alertCount": 1,
+        "alerts": [
+          {
+            "code": "low_ctr",
+            "family": "traffic",
+            "severity": "high",
+            "title": "CTR ниже портальной медианы",
+            "label": "CTR просел",
+            "metricKey": "ctrPct",
+            "value": 0.0044,
+            "baseline": 0.008199999999999999,
+            "deltaPct": -0.4634146341463413,
+            "hint": "Охват есть, но клик по карточке слабый."
+          }
+        ],
+        "summary": "CTR просел",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.019299999999999998,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 0.30405405405405395
+          },
+          "ctrPct": {
+            "value": 0.0044,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.4634146341463413
+          },
+          "cartRatePct": {
+            "value": 0.31960830580462485,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.005663048607833843
+          },
+          "conversionPct": {
+            "value": 0.061799999999999994,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 0.48915662650602365
+          },
+          "buyRatePct": {
+            "value": 0.061762623879188294,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 0.48889388729422256
+          },
+          "buyoutPct": {
+            "value": 0.935656836461126,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.02765343298591172
+          },
+          "romiPct": {
+            "value": 2.0341,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": 0.12949081015048036
+          },
+          "drrPct": {
+            "value": 0.3296,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.7307849383321081
+          },
+          "ecpm": {
+            "value": 147.87,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -0.26655423838103276
+          },
+          "grossEcpm": {
+            "value": 1.24,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -0.9528337771015595
+          }
+        }
+      },
+      "signal": "risk"
     },
     {
       "id": "product-leaderboard-23b40079b939",
@@ -215,8 +539,78 @@
       "grossEcpm": 92.47,
       "romiPct": 2.2747,
       "drrPct": 0.3054,
+      "cartRatePct": 0.35310302659737086,
       "buyRatePct": 0.05331702843167227,
       "buyoutPct": 0.9478260869565217,
+      "diagnostics": {
+        "healthScore": 100,
+        "highestSeverity": "info",
+        "alertCount": 0,
+        "alerts": [],
+        "summary": "Без критичных отклонений по КЗ",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0197,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 0.3310810810810809
+          },
+          "ctrPct": {
+            "value": 0.091,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 10.097560975609758
+          },
+          "cartRatePct": {
+            "value": 0.35310302659737086,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.09854274941404251
+          },
+          "conversionPct": {
+            "value": 0.0533,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 0.28433734939759003
+          },
+          "buyRatePct": {
+            "value": 0.05331702843167227,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 0.2852983363512567
+          },
+          "buyoutPct": {
+            "value": 0.9478260869565217,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.01500699202462219
+          },
+          "romiPct": {
+            "value": 2.2747,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": 0.2630906768837804
+          },
+          "drrPct": {
+            "value": 0.3054,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.7505513354569958
+          },
+          "ecpm": {
+            "value": 1531.55,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": 6.59659739100243
+          },
+          "grossEcpm": {
+            "value": 92.47,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": 2.5173069608216054
+          }
+        }
+      },
       "signal": "steady"
     },
     {
@@ -248,9 +642,79 @@
       "grossEcpm": -21.92,
       "romiPct": 1.4096000000000002,
       "drrPct": 0.415,
+      "cartRatePct": 0.33020470911886074,
       "buyRatePct": 0.029371308358281414,
       "buyoutPct": 0.9075,
-      "signal": "risk"
+      "diagnostics": {
+        "healthScore": 100,
+        "highestSeverity": "info",
+        "alertCount": 0,
+        "alerts": [],
+        "summary": "Без критичных отклонений по КЗ",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.011699999999999999,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.20945945945945954
+          },
+          "ctrPct": {
+            "value": 0.005699999999999999,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.30487804878048774
+          },
+          "cartRatePct": {
+            "value": 0.33020470911886074,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.02730353948090003
+          },
+          "conversionPct": {
+            "value": 0.0294,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.2915662650602412
+          },
+          "buyRatePct": {
+            "value": 0.029371308358281414,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.29195428027767867
+          },
+          "buyoutPct": {
+            "value": 0.9075,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.05691437802907917
+          },
+          "romiPct": {
+            "value": 1.4096000000000002,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -0.21728024876450647
+          },
+          "drrPct": {
+            "value": 0.415,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.6610307931062648
+          },
+          "ecpm": {
+            "value": 104.65,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -0.48092852537076536
+          },
+          "grossEcpm": {
+            "value": -21.92,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -1.8337771015595283
+          }
+        }
+      },
+      "signal": "steady"
     },
     {
       "id": "product-leaderboard-2362168883e3",
@@ -281,9 +745,92 @@
       "grossEcpm": -13.19,
       "romiPct": 1.5829,
       "drrPct": 0.3872,
+      "cartRatePct": 0.40401732965734544,
       "buyRatePct": 0.053012997243009057,
       "buyoutPct": 0.9193989071038251,
-      "signal": "steady"
+      "diagnostics": {
+        "healthScore": 70,
+        "highestSeverity": "high",
+        "alertCount": 1,
+        "alerts": [
+          {
+            "code": "low_ctr",
+            "family": "traffic",
+            "severity": "high",
+            "title": "CTR ниже портальной медианы",
+            "label": "CTR просел",
+            "metricKey": "ctrPct",
+            "value": 0.0033,
+            "baseline": 0.008199999999999999,
+            "deltaPct": -0.5975609756097561,
+            "hint": "Охват есть, но клик по карточке слабый."
+          }
+        ],
+        "summary": "CTR просел",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0097,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.3445945945945946
+          },
+          "ctrPct": {
+            "value": 0.0033,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.5975609756097561
+          },
+          "cartRatePct": {
+            "value": 0.40401732965734544,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.256942803378408
+          },
+          "conversionPct": {
+            "value": 0.053,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 0.27710843373493943
+          },
+          "buyRatePct": {
+            "value": 0.053012997243009057,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 0.277969143549589
+          },
+          "buyoutPct": {
+            "value": 0.9193989071038251,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.04454888138248403
+          },
+          "romiPct": {
+            "value": 1.5829,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -0.12105058581820205
+          },
+          "drrPct": {
+            "value": 0.3872,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.683737646001797
+          },
+          "ecpm": {
+            "value": 100.13,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -0.5033480482118944
+          },
+          "grossEcpm": {
+            "value": -13.19,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -1.501711677443895
+          }
+        }
+      },
+      "signal": "risk"
     },
     {
       "id": "product-leaderboard-9e56a5b061b3",
@@ -314,8 +861,91 @@
       "grossEcpm": -44.74,
       "romiPct": 1.5768,
       "drrPct": 0.3881,
+      "cartRatePct": 0.36177428106348347,
       "buyRatePct": 0.07013022246337493,
       "buyoutPct": 0.9349005424954792,
+      "diagnostics": {
+        "healthScore": 80,
+        "highestSeverity": "medium",
+        "alertCount": 1,
+        "alerts": [
+          {
+            "code": "low_erview",
+            "family": "traffic",
+            "severity": "medium",
+            "title": "Отклик ниже медианы КЗ",
+            "label": "Отклик просел",
+            "metricKey": "erviewPct",
+            "value": 0.009000000000000001,
+            "baseline": 0.0148,
+            "deltaPct": -0.3918918918918919,
+            "hint": "Креатив / подача не добирают верх воронки."
+          }
+        ],
+        "summary": "Отклик просел",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.009000000000000001,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.3918918918918919
+          },
+          "ctrPct": {
+            "value": 0.0126,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 0.5365853658536588
+          },
+          "cartRatePct": {
+            "value": 0.36177428106348347,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.12551998553083732
+          },
+          "conversionPct": {
+            "value": 0.0701,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 0.6891566265060236
+          },
+          "buyRatePct": {
+            "value": 0.07013022246337493,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 0.690609190188362
+          },
+          "buyoutPct": {
+            "value": 0.9349005424954792,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.02843938336055063
+          },
+          "romiPct": {
+            "value": 1.5768,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -0.12443778110944526
+          },
+          "drrPct": {
+            "value": 0.3881,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.6830025320591357
+          },
+          "ecpm": {
+            "value": 333.37,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": 0.6535390109617578
+          },
+          "grossEcpm": {
+            "value": -44.74,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -2.701787751996957
+          }
+        }
+      },
       "signal": "steady"
     },
     {
@@ -347,8 +977,91 @@
       "grossEcpm": 20.96,
       "romiPct": 2.2695,
       "drrPct": 0.3059,
+      "cartRatePct": 0.37352742552712537,
       "buyRatePct": 0.03766789224881819,
       "buyoutPct": 0.9561904761904761,
+      "diagnostics": {
+        "healthScore": 80,
+        "highestSeverity": "medium",
+        "alertCount": 1,
+        "alerts": [
+          {
+            "code": "low_erview",
+            "family": "traffic",
+            "severity": "medium",
+            "title": "Отклик ниже медианы КЗ",
+            "label": "Отклик просел",
+            "metricKey": "erviewPct",
+            "value": 0.0073,
+            "baseline": 0.0148,
+            "deltaPct": -0.5067567567567568,
+            "hint": "Креатив / подача не добирают верх воронки."
+          }
+        ],
+        "summary": "Отклик просел",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0073,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.5067567567567568
+          },
+          "ctrPct": {
+            "value": 0.0175,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 1.1341463414634152
+          },
+          "cartRatePct": {
+            "value": 0.37352742552712537,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.16208532386216778
+          },
+          "conversionPct": {
+            "value": 0.0377,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.09156626506024124
+          },
+          "buyRatePct": {
+            "value": 0.03766789224881819,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.09195090826733998
+          },
+          "buyoutPct": {
+            "value": 0.9561904761904761,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.006314611613480792
+          },
+          "romiPct": {
+            "value": 2.2695,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": 0.2602032317174745
+          },
+          "drrPct": {
+            "value": 0.3059,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.7501429388221841
+          },
+          "ecpm": {
+            "value": 352.99,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": 0.7508556123208174
+          },
+          "grossEcpm": {
+            "value": 20.96,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -0.20273868391023198
+          }
+        }
+      },
       "signal": "steady"
     },
     {
@@ -380,9 +1093,92 @@
       "grossEcpm": 23.54,
       "romiPct": 2.718,
       "drrPct": 0.26899999999999996,
+      "cartRatePct": 0.2461014148507694,
       "buyRatePct": 0.03955385727563772,
       "buyoutPct": 0.9364303178484108,
-      "signal": "leader"
+      "diagnostics": {
+        "healthScore": 80,
+        "highestSeverity": "medium",
+        "alertCount": 1,
+        "alerts": [
+          {
+            "code": "low_erview",
+            "family": "traffic",
+            "severity": "medium",
+            "title": "Отклик ниже медианы КЗ",
+            "label": "Отклик просел",
+            "metricKey": "erviewPct",
+            "value": 0.0063,
+            "baseline": 0.0148,
+            "deltaPct": -0.5743243243243243,
+            "hint": "Креатив / подача не добирают верх воронки."
+          }
+        ],
+        "summary": "Отклик просел",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0063,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.5743243243243243
+          },
+          "ctrPct": {
+            "value": 0.0143,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 0.7439024390243905
+          },
+          "cartRatePct": {
+            "value": 0.2461014148507694,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.2343511537976064
+          },
+          "conversionPct": {
+            "value": 0.039599999999999996,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.045783132530120785
+          },
+          "buyRatePct": {
+            "value": 0.03955385727563772,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.04648648943735445
+          },
+          "buyoutPct": {
+            "value": 0.9364303178484108,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.026849621222594378
+          },
+          "romiPct": {
+            "value": 2.718,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": 0.5092453773113443
+          },
+          "drrPct": {
+            "value": 0.26899999999999996,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.7802826104712898
+          },
+          "ecpm": {
+            "value": 178.18,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -0.11621447348841829
+          },
+          "grossEcpm": {
+            "value": 23.54,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -0.10460251046025104
+          }
+        }
+      },
+      "signal": "steady"
     },
     {
       "id": "product-leaderboard-a676f63f4605",
@@ -413,8 +1209,91 @@
       "grossEcpm": -13.26,
       "romiPct": 1.8009,
       "drrPct": 0.35700000000000004,
+      "cartRatePct": 0.35110464347135867,
       "buyRatePct": 0.04656700621775367,
       "buyoutPct": 0.9287598944591029,
+      "diagnostics": {
+        "healthScore": 60,
+        "highestSeverity": "critical",
+        "alertCount": 1,
+        "alerts": [
+          {
+            "code": "no_owner",
+            "family": "ownership",
+            "severity": "critical",
+            "title": "Нет owner по SKU",
+            "label": "Нет owner",
+            "metricKey": "",
+            "value": null,
+            "baseline": null,
+            "deltaPct": null,
+            "hint": "КЗ уже льётся, а ответственный по карточке не назначен."
+          }
+        ],
+        "summary": "Нет owner",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0178,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 0.20270270270270263
+          },
+          "ctrPct": {
+            "value": 0.0104,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 0.2682926829268293
+          },
+          "cartRatePct": {
+            "value": 0.35110464347135867,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.09232555746644922
+          },
+          "conversionPct": {
+            "value": 0.0466,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 0.12289156626506004
+          },
+          "buyRatePct": {
+            "value": 0.04656700621775367,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 0.12257748380033195
+          },
+          "buyoutPct": {
+            "value": 0.9287598944591029,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.034820823440650295
+          },
+          "romiPct": {
+            "value": 1.8009,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": 0
+          },
+          "drrPct": {
+            "value": 0.35700000000000004,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.7084048027444254
+          },
+          "ecpm": {
+            "value": 239.98,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": 0.19031794057834417
+          },
+          "grossEcpm": {
+            "value": -13.26,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -1.504374286801065
+          }
+        }
+      },
       "signal": "no_owner"
     },
     {
@@ -446,8 +1325,78 @@
       "grossEcpm": -27.55,
       "romiPct": 1.5708000000000002,
       "drrPct": 0.389,
+      "cartRatePct": 0.2702338680053875,
       "buyRatePct": 0.029141667687033183,
       "buyoutPct": 0.952,
+      "diagnostics": {
+        "healthScore": 100,
+        "highestSeverity": "info",
+        "alertCount": 0,
+        "alerts": [],
+        "summary": "Без критичных отклонений по КЗ",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0406,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 1.743243243243243
+          },
+          "ctrPct": {
+            "value": 0.006999999999999999,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.14634146341463417
+          },
+          "cartRatePct": {
+            "value": 0.2702338680053875,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.1592724106499056
+          },
+          "conversionPct": {
+            "value": 0.0291,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.2987951807228917
+          },
+          "buyRatePct": {
+            "value": 0.029141667687033183,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.29749016217875257
+          },
+          "buyoutPct": {
+            "value": 0.952,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.010669408136290248
+          },
+          "romiPct": {
+            "value": 1.5708000000000002,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -0.12776944860902872
+          },
+          "drrPct": {
+            "value": 0.389,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.6822674181164747
+          },
+          "ecpm": {
+            "value": 201.61,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": 0
+          },
+          "grossEcpm": {
+            "value": -27.55,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -2.047926968429061
+          }
+        }
+      },
       "signal": "steady"
     },
     {
@@ -479,8 +1428,115 @@
       "grossEcpm": -93.75,
       "romiPct": 0.746,
       "drrPct": 0.5727,
+      "cartRatePct": 0.31519324744557975,
       "buyRatePct": 0.03798311861394935,
       "buyoutPct": 0.9243243243243243,
+      "diagnostics": {
+        "healthScore": 10,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": 0.746,
+            "baseline": 1.8009,
+            "deltaPct": -0.5857626742184463,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 0.5727,
+            "baseline": 1.2243,
+            "deltaPct": -0.5322224944866454,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          },
+          {
+            "code": "low_erview",
+            "family": "traffic",
+            "severity": "medium",
+            "title": "Отклик ниже медианы КЗ",
+            "label": "Отклик просел",
+            "metricKey": "erviewPct",
+            "value": 0.0048,
+            "baseline": 0.0148,
+            "deltaPct": -0.6756756756756757,
+            "hint": "Креатив / подача не добирают верх воронки."
+          }
+        ],
+        "summary": "ROMI < 100% · ДРР высок",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0048,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.6756756756756757
+          },
+          "ctrPct": {
+            "value": 0.009300000000000001,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 0.13414634146341498
+          },
+          "cartRatePct": {
+            "value": 0.31519324744557975,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.019398785724863088
+          },
+          "conversionPct": {
+            "value": 0.038,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.08433734939759063
+          },
+          "buyRatePct": {
+            "value": 0.03798311861394935,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.08435183655244938
+          },
+          "buyoutPct": {
+            "value": 0.9243243243243243,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.03943032472919383
+          },
+          "romiPct": {
+            "value": 0.746,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -0.5857626742184463
+          },
+          "drrPct": {
+            "value": 0.5727,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.5322224944866454
+          },
+          "ecpm": {
+            "value": 111.54,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -0.44675363325231887
+          },
+          "grossEcpm": {
+            "value": -93.75,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -4.565994674781286
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -512,8 +1568,139 @@
       "grossEcpm": -69.93,
       "romiPct": 0.9481999999999999,
       "drrPct": 0.5133,
+      "cartRatePct": 0.20099231442747348,
       "buyRatePct": 0.013328144761163537,
       "buyoutPct": 0.9716312056737588,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 5,
+        "alerts": [
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": 0.9481999999999999,
+            "baseline": 1.8009,
+            "deltaPct": -0.473485479482481,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 0.5133,
+            "baseline": 1.2243,
+            "deltaPct": -0.5807400147022789,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          },
+          {
+            "code": "low_conversion",
+            "family": "card",
+            "severity": "high",
+            "title": "Конверсия в заказ ниже нормы",
+            "label": "Конверсия просела",
+            "metricKey": "conversionPct",
+            "value": 0.013300000000000001,
+            "baseline": 0.04150000000000001,
+            "deltaPct": -0.6795180722891567,
+            "hint": "Трафик приходит, но карточка не дожимает до заказа."
+          },
+          {
+            "code": "low_cart_rate",
+            "family": "card",
+            "severity": "high",
+            "title": "Корзина отстаёт от кликов",
+            "label": "Корзина просела",
+            "metricKey": "cartRatePct",
+            "value": 0.20099231442747348,
+            "baseline": 0.32142857142857145,
+            "deltaPct": -0.37469057733674926,
+            "hint": "Нужно смотреть оффер, цену и первый экран карточки."
+          },
+          {
+            "code": "low_erview",
+            "family": "traffic",
+            "severity": "medium",
+            "title": "Отклик ниже медианы КЗ",
+            "label": "Отклик просел",
+            "metricKey": "erviewPct",
+            "value": 0.0068000000000000005,
+            "baseline": 0.0148,
+            "deltaPct": -0.5405405405405406,
+            "hint": "Креатив / подача не добирают верх воронки."
+          }
+        ],
+        "summary": "ROMI < 100% · ДРР высок",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0068000000000000005,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.5405405405405406
+          },
+          "ctrPct": {
+            "value": 0.020099999999999996,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 1.451219512195122
+          },
+          "cartRatePct": {
+            "value": 0.20099231442747348,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.37469057733674926
+          },
+          "conversionPct": {
+            "value": 0.013300000000000001,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.6795180722891567
+          },
+          "buyRatePct": {
+            "value": 0.013328144761163537,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.6787022309368618
+          },
+          "buyoutPct": {
+            "value": 0.9716312056737588,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.009731592208476636
+          },
+          "romiPct": {
+            "value": 0.9481999999999999,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -0.473485479482481
+          },
+          "drrPct": {
+            "value": 0.5133,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.5807400147022789
+          },
+          "ecpm": {
+            "value": 126.08,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -0.3746341947324042
+          },
+          "grossEcpm": {
+            "value": -69.93,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -3.659946747812857
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -545,8 +1732,115 @@
       "grossEcpm": -556.41,
       "romiPct": -0.3958,
       "drrPct": 1.655,
+      "cartRatePct": 0.2720144752714113,
       "buyRatePct": 0.03528347406513872,
       "buyoutPct": 0.9590163934426229,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -47015.11,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.3958,
+            "baseline": 1.8009,
+            "deltaPct": -1.2197789993891943,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 1.655,
+            "baseline": 1.2243,
+            "deltaPct": 0.3517928612268235,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0202,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 0.3648648648648647
+          },
+          "ctrPct": {
+            "value": 0.013000000000000001,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 0.5853658536585369
+          },
+          "cartRatePct": {
+            "value": 0.2720144752714113,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.15373274360005373
+          },
+          "conversionPct": {
+            "value": 0.0353,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.14939759036144606
+          },
+          "buyRatePct": {
+            "value": 0.03528347406513872,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.14943139461095556
+          },
+          "buyoutPct": {
+            "value": 0.9590163934426229,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.0033778822147159104
+          },
+          "romiPct": {
+            "value": -0.3958,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.2197789993891943
+          },
+          "drrPct": {
+            "value": 1.655,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 0.3517928612268235
+          },
+          "ecpm": {
+            "value": -183.83,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -1.911809930062993
+          },
+          "grossEcpm": {
+            "value": -556.41,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -22.16432103461392
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -578,8 +1872,115 @@
       "grossEcpm": -493.19,
       "romiPct": -0.1819,
       "drrPct": 1.2224,
+      "cartRatePct": 0.41814159292035397,
       "buyRatePct": 0.06858407079646017,
       "buyoutPct": 0.9393939393939394,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -8841.97,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.1819,
+            "baseline": 1.8009,
+            "deltaPct": -1.101005053029041,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 1.2224,
+            "baseline": 1.2243,
+            "deltaPct": -0.0015519072122845978,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.025,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 0.6891891891891893
+          },
+          "ctrPct": {
+            "value": 0.0084,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 0.024390243902439046
+          },
+          "cartRatePct": {
+            "value": 0.41814159292035397,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.3008849557522122
+          },
+          "conversionPct": {
+            "value": 0.06860000000000001,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 0.6530120481927708
+          },
+          "buyRatePct": {
+            "value": 0.06858407079646017,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 0.6533365547154564
+          },
+          "buyoutPct": {
+            "value": 0.9393939393939394,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.023769787758626038
+          },
+          "romiPct": {
+            "value": -0.1819,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.101005053029041
+          },
+          "drrPct": {
+            "value": 1.2224,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.0015519072122845978
+          },
+          "ecpm": {
+            "value": -82.25,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -1.4079658747085957
+          },
+          "grossEcpm": {
+            "value": -493.19,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -19.759604412324077
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -611,8 +2012,127 @@
       "grossEcpm": -921.08,
       "romiPct": -0.172,
       "drrPct": 1.2078,
+      "cartRatePct": 0.31317902692489374,
       "buyRatePct": 0.026452527161076995,
       "buyoutPct": 0.9655172413793104,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 4,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -9069.66,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.172,
+            "baseline": 1.8009,
+            "deltaPct": -1.0955078016547282,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 1.2078,
+            "baseline": 1.2243,
+            "deltaPct": -0.013477088948787075,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          },
+          {
+            "code": "low_conversion",
+            "family": "card",
+            "severity": "high",
+            "title": "Конверсия в заказ ниже нормы",
+            "label": "Конверсия просела",
+            "metricKey": "conversionPct",
+            "value": 0.0265,
+            "baseline": 0.04150000000000001,
+            "deltaPct": -0.3614457831325303,
+            "hint": "Трафик приходит, но карточка не дожимает до заказа."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0086,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.41891891891891897
+          },
+          "ctrPct": {
+            "value": 0.0341,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 3.1585365853658542
+          },
+          "cartRatePct": {
+            "value": 0.31317902692489374,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.02566524956699734
+          },
+          "conversionPct": {
+            "value": 0.0265,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.3614457831325303
+          },
+          "buyRatePct": {
+            "value": 0.026452527161076995,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.3623165027662755
+          },
+          "buyoutPct": {
+            "value": 0.9655172413793104,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.0033778822147159104
+          },
+          "romiPct": {
+            "value": -0.172,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.0955078016547282
+          },
+          "drrPct": {
+            "value": 1.2078,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.013477088948787075
+          },
+          "ecpm": {
+            "value": -145.91,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -1.7237240216259113
+          },
+          "grossEcpm": {
+            "value": -921.08,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -36.03537466717383
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -644,8 +2164,127 @@
       "grossEcpm": -280.69,
       "romiPct": -0.8056,
       "drrPct": 5.1433,
+      "cartRatePct": 0.4048582995951417,
       "buyRatePct": 0.07152496626180836,
       "buyoutPct": 1,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 4,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -110323.72,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.8056,
+            "baseline": 1.8009,
+            "deltaPct": -1.44733188961075,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 5.1433,
+            "baseline": 1.2243,
+            "deltaPct": 3.2010128236543336,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          },
+          {
+            "code": "low_ctr",
+            "family": "traffic",
+            "severity": "high",
+            "title": "CTR ниже портальной медианы",
+            "label": "CTR просел",
+            "metricKey": "ctrPct",
+            "value": 0.0011,
+            "baseline": 0.008199999999999999,
+            "deltaPct": -0.8658536585365854,
+            "hint": "Охват есть, но клик по карточке слабый."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0148,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 0
+          },
+          "ctrPct": {
+            "value": 0.0011,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.8658536585365854
+          },
+          "cartRatePct": {
+            "value": 0.4048582995951417,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.2595591542959963
+          },
+          "conversionPct": {
+            "value": 0.07150000000000001,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 0.7228915662650601
+          },
+          "buyRatePct": {
+            "value": 0.07152496626180836,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 0.7242318795334759
+          },
+          "buyoutPct": {
+            "value": 1,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03921280657952719
+          },
+          "romiPct": {
+            "value": -0.8056,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.44733188961075
+          },
+          "drrPct": {
+            "value": 5.1433,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 3.2010128236543336
+          },
+          "ecpm": {
+            "value": -161.19,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -1.799513913000347
+          },
+          "grossEcpm": {
+            "value": -280.69,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -11.676683149486497
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -677,8 +2316,127 @@
       "grossEcpm": -216.15,
       "romiPct": -0.7392,
       "drrPct": 3.8349,
+      "cartRatePct": 0.3423913043478261,
       "buyRatePct": 0.059782608695652176,
       "buyoutPct": 1,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 4,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -69818.77,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.7392,
+            "baseline": 1.8009,
+            "deltaPct": -1.4104614359486924,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 3.8349,
+            "baseline": 1.2243,
+            "deltaPct": 2.1323205096790003,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          },
+          {
+            "code": "low_ctr",
+            "family": "traffic",
+            "severity": "high",
+            "title": "CTR ниже портальной медианы",
+            "label": "CTR просел",
+            "metricKey": "ctrPct",
+            "value": 0.0012,
+            "baseline": 0.008199999999999999,
+            "deltaPct": -0.8536585365853658,
+            "hint": "Охват есть, но клик по карточке слабый."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.076,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 4.135135135135135
+          },
+          "ctrPct": {
+            "value": 0.0012,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.8536585365853658
+          },
+          "cartRatePct": {
+            "value": 0.3423913043478261,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.0652173913043479
+          },
+          "conversionPct": {
+            "value": 0.059800000000000006,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 0.4409638554216866
+          },
+          "buyRatePct": {
+            "value": 0.059782608695652176,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 0.4411622282688026
+          },
+          "buyoutPct": {
+            "value": 1,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03921280657952719
+          },
+          "romiPct": {
+            "value": -0.7392,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.4104614359486924
+          },
+          "drrPct": {
+            "value": 3.8349,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 2.1323205096790003
+          },
+          "ecpm": {
+            "value": -116.67,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -1.5786915331580773
+          },
+          "grossEcpm": {
+            "value": -216.15,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -9.221757322175733
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -710,8 +2468,151 @@
       "grossEcpm": -70.37,
       "romiPct": -0.8162,
       "drrPct": 5.4402,
+      "cartRatePct": 0.042916824914546146,
       "buyRatePct": 0.012533232054690467,
       "buyoutPct": 0.8048780487804879,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 6,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -58784.86,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.8162,
+            "baseline": 1.8009,
+            "deltaPct": -1.4532178355266812,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 5.4402,
+            "baseline": 1.2243,
+            "deltaPct": 3.4435187454055383,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          },
+          {
+            "code": "low_conversion",
+            "family": "card",
+            "severity": "high",
+            "title": "Конверсия в заказ ниже нормы",
+            "label": "Конверсия просела",
+            "metricKey": "conversionPct",
+            "value": 0.0125,
+            "baseline": 0.04150000000000001,
+            "deltaPct": -0.6987951807228916,
+            "hint": "Трафик приходит, но карточка не дожимает до заказа."
+          },
+          {
+            "code": "low_cart_rate",
+            "family": "card",
+            "severity": "high",
+            "title": "Корзина отстаёт от кликов",
+            "label": "Корзина просела",
+            "metricKey": "cartRatePct",
+            "value": 0.042916824914546146,
+            "baseline": 0.32142857142857145,
+            "deltaPct": -0.8664809891547454,
+            "hint": "Нужно смотреть оффер, цену и первый экран карточки."
+          },
+          {
+            "code": "low_ctr",
+            "family": "traffic",
+            "severity": "high",
+            "title": "CTR ниже портальной медианы",
+            "label": "CTR просел",
+            "metricKey": "ctrPct",
+            "value": 0.0018,
+            "baseline": 0.008199999999999999,
+            "deltaPct": -0.7804878048780488,
+            "hint": "Охват есть, но клик по карточке слабый."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.045599999999999995,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 2.0810810810810807
+          },
+          "ctrPct": {
+            "value": 0.0018,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.7804878048780488
+          },
+          "cartRatePct": {
+            "value": 0.042916824914546146,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.8664809891547454
+          },
+          "conversionPct": {
+            "value": 0.0125,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.6987951807228916
+          },
+          "buyRatePct": {
+            "value": 0.012533232054690467,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.6978649639178203
+          },
+          "buyoutPct": {
+            "value": 0.8048780487804879,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.16356042397257575
+          },
+          "romiPct": {
+            "value": -0.8162,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.4532178355266812
+          },
+          "drrPct": {
+            "value": 5.4402,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 3.4435187454055383
+          },
+          "ecpm": {
+            "value": -40.79,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -1.2023213134269133
+          },
+          "grossEcpm": {
+            "value": -70.37,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -3.676683149486497
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -743,8 +2644,139 @@
       "grossEcpm": -192.34,
       "romiPct": -0.3029,
       "drrPct": 1.4346,
+      "cartRatePct": 0.3474576271186441,
       "buyRatePct": 0.0614406779661017,
       "buyoutPct": 1,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 5,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -8657.9,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.3029,
+            "baseline": 1.8009,
+            "deltaPct": -1.1681936809373092,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 1.4346,
+            "baseline": 1.2243,
+            "deltaPct": 0.1717716246018135,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          },
+          {
+            "code": "low_ctr",
+            "family": "traffic",
+            "severity": "high",
+            "title": "CTR ниже портальной медианы",
+            "label": "CTR просел",
+            "metricKey": "ctrPct",
+            "value": 0.0028000000000000004,
+            "baseline": 0.008199999999999999,
+            "deltaPct": -0.6585365853658536,
+            "hint": "Охват есть, но клик по карточке слабый."
+          },
+          {
+            "code": "low_erview",
+            "family": "traffic",
+            "severity": "medium",
+            "title": "Отклик ниже медианы КЗ",
+            "label": "Отклик просел",
+            "metricKey": "erviewPct",
+            "value": 0.008,
+            "baseline": 0.0148,
+            "deltaPct": -0.45945945945945943,
+            "hint": "Креатив / подача не добирают верх воронки."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.008,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.45945945945945943
+          },
+          "ctrPct": {
+            "value": 0.0028000000000000004,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.6585365853658536
+          },
+          "cartRatePct": {
+            "value": 0.3474576271186441,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.08097928436911483
+          },
+          "conversionPct": {
+            "value": 0.061399999999999996,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 0.4795180722891561
+          },
+          "buyRatePct": {
+            "value": 0.0614406779661017,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 0.48113282936100377
+          },
+          "buyoutPct": {
+            "value": 1,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03921280657952719
+          },
+          "romiPct": {
+            "value": -0.3029,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.1681936809373092
+          },
+          "drrPct": {
+            "value": 1.4346,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 0.1717716246018135
+          },
+          "ecpm": {
+            "value": -50.6,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -1.250979614106443
+          },
+          "grossEcpm": {
+            "value": -192.34,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -8.316089767972613
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -776,8 +2808,127 @@
       "grossEcpm": -539.65,
       "romiPct": -0.5143,
       "drrPct": 2.059,
+      "cartRatePct": 0.2544689800210305,
       "buyRatePct": 0.025236593059936908,
       "buyoutPct": 1,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 4,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -26310.68,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.5143,
+            "baseline": 1.8009,
+            "deltaPct": -1.2855794325059693,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 2.059,
+            "baseline": 1.2243,
+            "deltaPct": 0.6817773421547009,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          },
+          {
+            "code": "low_conversion",
+            "family": "card",
+            "severity": "high",
+            "title": "Конверсия в заказ ниже нормы",
+            "label": "Конверсия просела",
+            "metricKey": "conversionPct",
+            "value": 0.0252,
+            "baseline": 0.04150000000000001,
+            "deltaPct": -0.39277108433734953,
+            "hint": "Трафик приходит, но карточка не дожимает до заказа."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.011000000000000001,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.2567567567567567
+          },
+          "ctrPct": {
+            "value": 0.008,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.024390243902438935
+          },
+          "cartRatePct": {
+            "value": 0.2544689800210305,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.2083187288234607
+          },
+          "conversionPct": {
+            "value": 0.0252,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.39277108433734953
+          },
+          "buyRatePct": {
+            "value": 0.025236593059936908,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.39162867794331013
+          },
+          "buyoutPct": {
+            "value": 1,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03921280657952719
+          },
+          "romiPct": {
+            "value": -0.5143,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.2855794325059693
+          },
+          "drrPct": {
+            "value": 2.059,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 0.6817773421547009
+          },
+          "ecpm": {
+            "value": -220.78,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -2.0950845692177964
+          },
+          "grossEcpm": {
+            "value": -539.65,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -21.526816279954357
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -809,8 +2960,115 @@
       "grossEcpm": -1291.6,
       "romiPct": -0.6684,
       "drrPct": 3.0156,
+      "cartRatePct": 0.5278592375366569,
       "buyRatePct": 0.06744868035190615,
       "buyoutPct": 1,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -23583.27,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.6684,
+            "baseline": 1.8009,
+            "deltaPct": -1.3711477594536066,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 3.0156,
+            "baseline": 1.2243,
+            "deltaPct": 1.4631217838765012,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0075,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.4932432432432433
+          },
+          "ctrPct": {
+            "value": 0.009399999999999999,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 0.14634146341463405
+          },
+          "cartRatePct": {
+            "value": 0.5278592375366569,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.6422287390029324
+          },
+          "conversionPct": {
+            "value": 0.0674,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 0.6240963855421684
+          },
+          "buyRatePct": {
+            "value": 0.06744868035190615,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 0.6259660224029784
+          },
+          "buyoutPct": {
+            "value": 1,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03921280657952719
+          },
+          "romiPct": {
+            "value": -0.6684,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.3711477594536066
+          },
+          "drrPct": {
+            "value": 3.0156,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 1.4631217838765012
+          },
+          "ecpm": {
+            "value": -647.06,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -4.209463816278953
+          },
+          "grossEcpm": {
+            "value": -1291.6,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -50.128946367440086
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -842,8 +3100,139 @@
       "grossEcpm": -274.45,
       "romiPct": -0.1845,
       "drrPct": 1.2262,
+      "cartRatePct": 0.1544732662784542,
       "buyRatePct": 0.002011646373742721,
       "buyoutPct": 0.95,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 5,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -19918.26,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.1845,
+            "baseline": 1.8009,
+            "deltaPct": -1.102448775612194,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 1.2262,
+            "baseline": 1.2243,
+            "deltaPct": 0.0015519072122844868,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          },
+          {
+            "code": "low_conversion",
+            "family": "card",
+            "severity": "high",
+            "title": "Конверсия в заказ ниже нормы",
+            "label": "Конверсия просела",
+            "metricKey": "conversionPct",
+            "value": 0.002,
+            "baseline": 0.04150000000000001,
+            "deltaPct": -0.9518072289156627,
+            "hint": "Трафик приходит, но карточка не дожимает до заказа."
+          },
+          {
+            "code": "low_cart_rate",
+            "family": "card",
+            "severity": "high",
+            "title": "Корзина отстаёт от кликов",
+            "label": "Корзина просела",
+            "metricKey": "cartRatePct",
+            "value": 0.1544732662784542,
+            "baseline": 0.32142857142857145,
+            "deltaPct": -0.5194165049114758,
+            "hint": "Нужно смотреть оффер, цену и первый экран карточки."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0388,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 1.6216216216216215
+          },
+          "ctrPct": {
+            "value": 0.022000000000000002,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 1.6829268292682933
+          },
+          "cartRatePct": {
+            "value": 0.1544732662784542,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.5194165049114758
+          },
+          "conversionPct": {
+            "value": 0.002,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.9518072289156627
+          },
+          "buyRatePct": {
+            "value": 0.002011646373742721,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.9515058169302879
+          },
+          "buyoutPct": {
+            "value": 0.95,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -0.012747833749449322
+          },
+          "romiPct": {
+            "value": -0.1845,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.102448775612194
+          },
+          "drrPct": {
+            "value": 1.2262,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 0.0015519072122844868
+          },
+          "ecpm": {
+            "value": -46.35,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -1.229899310550072
+          },
+          "grossEcpm": {
+            "value": -274.45,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -11.439330543933055
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -875,8 +3264,115 @@
       "grossEcpm": -495.02,
       "romiPct": -0.5006,
       "drrPct": 2.0025999999999997,
+      "cartRatePct": 0.3386243386243386,
       "buyRatePct": 0.03968253968253968,
       "buyoutPct": 1,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -8150.87,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.5006,
+            "baseline": 1.8009,
+            "deltaPct": -1.277972125048587,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 2.0025999999999997,
+            "baseline": 1.2243,
+            "deltaPct": 0.6357102017479375,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0123,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.16891891891891897
+          },
+          "ctrPct": {
+            "value": 0.0092,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 0.12195121951219523
+          },
+          "cartRatePct": {
+            "value": 0.3386243386243386,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.05349794238683114
+          },
+          "conversionPct": {
+            "value": 0.0397,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.04337349397590384
+          },
+          "buyRatePct": {
+            "value": 0.03968253968253968,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.04338437950411378
+          },
+          "buyoutPct": {
+            "value": 1,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03921280657952719
+          },
+          "romiPct": {
+            "value": -0.5006,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.277972125048587
+          },
+          "drrPct": {
+            "value": 2.0025999999999997,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 0.6357102017479375
+          },
+          "ecpm": {
+            "value": -198.21,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -1.983135757154903
+          },
+          "grossEcpm": {
+            "value": -495.02,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -19.829212628375807
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -908,8 +3404,115 @@
       "grossEcpm": -951.97,
       "romiPct": -0.8199,
       "drrPct": 5.5536,
+      "cartRatePct": 0.4232558139534884,
       "buyRatePct": 0.04186046511627907,
       "buyoutPct": 1,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -46327.47,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.8199,
+            "baseline": 1.8009,
+            "deltaPct": -1.4552723638180909,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 5.5536,
+            "baseline": 1.2243,
+            "deltaPct": 3.536143102180839,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.015300000000000001,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03378378378378377
+          },
+          "ctrPct": {
+            "value": 0.0026,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.6829268292682926
+          },
+          "cartRatePct": {
+            "value": 0.4232558139534884,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.31679586563307494
+          },
+          "conversionPct": {
+            "value": 0.04190000000000001,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 0.009638554216867323
+          },
+          "buyRatePct": {
+            "value": 0.04186046511627907,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 0.009118245248683765
+          },
+          "buyoutPct": {
+            "value": 1,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03921280657952719
+          },
+          "romiPct": {
+            "value": -0.8199,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.4552723638180909
+          },
+          "drrPct": {
+            "value": 5.5536,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 3.536143102180839
+          },
+          "ecpm": {
+            "value": -553.6,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -3.745895540895789
+          },
+          "grossEcpm": {
+            "value": -951.97,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -37.21034613921643
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -941,8 +3544,103 @@
       "grossEcpm": -3047.67,
       "romiPct": 0.2187,
       "drrPct": 0.8205,
+      "cartRatePct": 0.5454545454545454,
       "buyRatePct": 0.2727272727272727,
       "buyoutPct": 1,
+      "diagnostics": {
+        "healthScore": 30,
+        "highestSeverity": "critical",
+        "alertCount": 2,
+        "alerts": [
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": 0.2187,
+            "baseline": 1.8009,
+            "deltaPct": -0.8785607196401799,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 0.8205,
+            "baseline": 1.2243,
+            "deltaPct": -0.32982112227395244,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          }
+        ],
+        "summary": "ROMI < 100% · ДРР высок",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.028300000000000002,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 0.9121621621621623
+          },
+          "ctrPct": {
+            "value": 0.0259,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 2.158536585365854
+          },
+          "cartRatePct": {
+            "value": 0.5454545454545454,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.6969696969696968
+          },
+          "conversionPct": {
+            "value": 0.2727,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 5.571084337349396
+          },
+          "buyRatePct": {
+            "value": 0.2727272727272727,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 5.574558264499
+          },
+          "buyoutPct": {
+            "value": 1,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03921280657952719
+          },
+          "romiPct": {
+            "value": 0.2187,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -0.8785607196401799
+          },
+          "drrPct": {
+            "value": 0.8205,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -0.32982112227395244
+          },
+          "ecpm": {
+            "value": 748.55,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": 2.7128614652050986
+          },
+          "grossEcpm": {
+            "value": -3047.67,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -116.92506656523393
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -974,8 +3672,127 @@
       "grossEcpm": -278.38,
       "romiPct": -0.9542,
       "drrPct": 21.8225,
+      "cartRatePct": 0.38,
       "buyRatePct": 0.04,
       "buyoutPct": 1,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 4,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -71069.73,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.9542,
+            "baseline": 1.8009,
+            "deltaPct": -1.5298461880171026,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 21.8225,
+            "baseline": 1.2243,
+            "deltaPct": 16.82447112635792,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          },
+          {
+            "code": "low_ctr",
+            "family": "traffic",
+            "severity": "high",
+            "title": "CTR ниже портальной медианы",
+            "label": "CTR просел",
+            "metricKey": "ctrPct",
+            "value": 0.0004,
+            "baseline": 0.008199999999999999,
+            "deltaPct": -0.9512195121951219,
+            "hint": "Охват есть, но клик по карточке слабый."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0917,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 5.195945945945946
+          },
+          "ctrPct": {
+            "value": 0.0004,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.9512195121951219
+          },
+          "cartRatePct": {
+            "value": 0.38,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.18222222222222206
+          },
+          "conversionPct": {
+            "value": 0.04,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.03614457831325324
+          },
+          "buyRatePct": {
+            "value": 0.04,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.03573145454014659
+          },
+          "buyoutPct": {
+            "value": 1,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03921280657952719
+          },
+          "romiPct": {
+            "value": -0.9542,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.5298461880171026
+          },
+          "drrPct": {
+            "value": 21.8225,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 16.82447112635792
+          },
+          "ecpm": {
+            "value": -179.83,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -1.8919696443628788
+          },
+          "grossEcpm": {
+            "value": -278.38,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -11.588817040699887
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -1007,8 +3824,115 @@
       "grossEcpm": -5275.33,
       "romiPct": -0.9189,
       "drrPct": 12.329500000000001,
+      "cartRatePct": 0.1945945945945946,
       "buyRatePct": 0.032432432432432434,
       "buyoutPct": 1,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -36217.03,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.9189,
+            "baseline": 1.8009,
+            "deltaPct": -1.5102448775612194,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 12.329500000000001,
+            "baseline": 1.2243,
+            "deltaPct": 9.07065261782243,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0315,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 1.1283783783783785
+          },
+          "ctrPct": {
+            "value": 0.017,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 1.0731707317073176
+          },
+          "cartRatePct": {
+            "value": 0.1945945945945946,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.39459459459459456
+          },
+          "conversionPct": {
+            "value": 0.032400000000000005,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.21927710843373494
+          },
+          "buyRatePct": {
+            "value": 0.032432432432432434,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.21816063881633507
+          },
+          "buyoutPct": {
+            "value": 1,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03921280657952719
+          },
+          "romiPct": {
+            "value": -0.9189,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.5102448775612194
+          },
+          "drrPct": {
+            "value": 12.329500000000001,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 9.07065261782243
+          },
+          "ecpm": {
+            "value": -3321.44,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -17.47457963394673
+          },
+          "grossEcpm": {
+            "value": -5275.33,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -201.65918600228224
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -1040,8 +3964,115 @@
       "grossEcpm": -883.67,
       "romiPct": -0.7373999999999999,
       "drrPct": 3.8076,
+      "cartRatePct": 0.3694581280788177,
       "buyRatePct": 0.014778325123152709,
       "buyoutPct": 1,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -12285.51,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.7373999999999999,
+            "baseline": 1.8009,
+            "deltaPct": -1.4094619356988172,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 3.8076,
+            "baseline": 1.2243,
+            "deltaPct": 2.11002205341828,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.013000000000000001,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.1216216216216216
+          },
+          "ctrPct": {
+            "value": 0.0079,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.03658536585365835
+          },
+          "cartRatePct": {
+            "value": 0.3694581280788177,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.14942528735632177
+          },
+          "conversionPct": {
+            "value": 0.0148,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.6433734939759037
+          },
+          "buyRatePct": {
+            "value": 0.014778325123152709,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.6437431482291183
+          },
+          "buyoutPct": {
+            "value": 1,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03921280657952719
+          },
+          "romiPct": {
+            "value": -0.7373999999999999,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.4094619356988172
+          },
+          "drrPct": {
+            "value": 3.8076,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 2.11002205341828
+          },
+          "ecpm": {
+            "value": -476.07,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -3.3613412033133274
+          },
+          "grossEcpm": {
+            "value": -883.67,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -34.61240015214911
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -1073,8 +4104,115 @@
       "grossEcpm": -332.08,
       "romiPct": -0.741,
       "drrPct": 3.8608999999999996,
+      "cartRatePct": 0.32142857142857145,
       "buyRatePct": 0.07142857142857142,
       "buyoutPct": 1,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -4321.87,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.741,
+            "baseline": 1.8009,
+            "deltaPct": -1.4114609361985675,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 3.8608999999999996,
+            "baseline": 1.2243,
+            "deltaPct": 2.1535571346892097,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0029,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.8040540540540541
+          },
+          "ctrPct": {
+            "value": 0.0012,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.8536585365853658
+          },
+          "cartRatePct": {
+            "value": 0.32142857142857145,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0
+          },
+          "conversionPct": {
+            "value": 0.07139999999999999,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 0.7204819277108427
+          },
+          "buyRatePct": {
+            "value": 0.07142857142857142,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 0.7219081168925952
+          },
+          "buyoutPct": {
+            "value": 1,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03921280657952719
+          },
+          "romiPct": {
+            "value": -0.741,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.4114609361985675
+          },
+          "drrPct": {
+            "value": 3.8608999999999996,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 2.1535571346892097
+          },
+          "ecpm": {
+            "value": -179.55,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -1.8905808243638709
+          },
+          "grossEcpm": {
+            "value": -332.08,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -13.631418790414607
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -1106,8 +4244,127 @@
       "grossEcpm": -638.68,
       "romiPct": -0.8136,
       "drrPct": 5.3635,
+      "cartRatePct": 0.16666666666666666,
       "buyRatePct": 0.16666666666666666,
       "buyoutPct": 1,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 4,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -4997.03,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_owner",
+            "family": "ownership",
+            "severity": "critical",
+            "title": "Нет owner по SKU",
+            "label": "Нет owner",
+            "metricKey": "",
+            "value": null,
+            "baseline": null,
+            "deltaPct": null,
+            "hint": "КЗ уже льётся, а ответственный по карточке не назначен."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.8136,
+            "baseline": 1.8009,
+            "deltaPct": -1.4517741129435282,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 5.3635,
+            "baseline": 1.2243,
+            "deltaPct": 3.380870701625419,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет owner",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0058,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.6081081081081081
+          },
+          "ctrPct": {
+            "value": 0.0004,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.9512195121951219
+          },
+          "cartRatePct": {
+            "value": 0.16666666666666666,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.4814814814814815
+          },
+          "conversionPct": {
+            "value": 0.16670000000000001,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 3.016867469879518
+          },
+          "buyRatePct": {
+            "value": 0.16666666666666666,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 3.0177856060827226
+          },
+          "buyoutPct": {
+            "value": 1,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03921280657952719
+          },
+          "romiPct": {
+            "value": -0.8136,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.4517741129435282
+          },
+          "drrPct": {
+            "value": 5.3635,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 3.380870701625419
+          },
+          "ecpm": {
+            "value": -369.36,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -2.8320519815485343
+          },
+          "grossEcpm": {
+            "value": -638.68,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -25.293647774819323
+          }
+        }
+      },
       "signal": "no_owner"
     },
     {
@@ -1139,8 +4396,115 @@
       "grossEcpm": -1580.45,
       "romiPct": -0.9617,
       "drrPct": 26.1169,
+      "cartRatePct": 0.2329192546583851,
       "buyRatePct": 0.003105590062111801,
       "buyoutPct": 1,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -26174.98,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.9617,
+            "baseline": 1.8009,
+            "deltaPct": -1.5340107723915821,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 26.1169,
+            "baseline": 1.2243,
+            "deltaPct": 20.3321081434289,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0398,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 1.689189189189189
+          },
+          "ctrPct": {
+            "value": 0.0126,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 0.5365853658536588
+          },
+          "cartRatePct": {
+            "value": 0.2329192546583851,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.2753623188405798
+          },
+          "conversionPct": {
+            "value": 0.0031,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -0.9253012048192771
+          },
+          "buyRatePct": {
+            "value": 0.003105590062111801,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -0.9251344297003219
+          },
+          "buyoutPct": {
+            "value": 1,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03921280657952719
+          },
+          "romiPct": {
+            "value": -0.9617,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.5340107723915821
+          },
+          "drrPct": {
+            "value": 26.1169,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 20.3321081434289
+          },
+          "ecpm": {
+            "value": -1026.39,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -6.090967709935023
+          },
+          "grossEcpm": {
+            "value": -1580.45,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -61.11601369341955
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -1172,8 +4536,115 @@
       "grossEcpm": -36253.48,
       "romiPct": -0.9851000000000001,
       "drrPct": 67.2268,
+      "cartRatePct": 0.2857142857142857,
       "buyRatePct": 0.07142857142857142,
       "buyoutPct": 1,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -19094.64,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -0.9851000000000001,
+            "baseline": 1.8009,
+            "deltaPct": -1.5470042756399578,
+            "hint": "Расход на контент пока не отбивается доходом."
+          },
+          {
+            "code": "high_drr_absolute",
+            "family": "economics",
+            "severity": "high",
+            "title": "ДРР выше рабочего порога",
+            "label": "ДРР высок",
+            "metricKey": "drrPct",
+            "value": 67.2268,
+            "baseline": 1.2243,
+            "deltaPct": 53.910397778322306,
+            "hint": "На этот SKU уходит слишком большая доля выручки."
+          }
+        ],
+        "summary": "Доход <= 0 · ROMI < 100%",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0088,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.4054054054054054
+          },
+          "ctrPct": {
+            "value": 0.0175,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 1.1341463414634152
+          },
+          "cartRatePct": {
+            "value": 0.2857142857142857,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.11111111111111127
+          },
+          "conversionPct": {
+            "value": 0.07139999999999999,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": 0.7204819277108427
+          },
+          "buyRatePct": {
+            "value": 0.07142857142857142,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": 0.7219081168925952
+          },
+          "buyoutPct": {
+            "value": 1,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03921280657952719
+          },
+          "romiPct": {
+            "value": -0.9851000000000001,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.5470042756399578
+          },
+          "drrPct": {
+            "value": 67.2268,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": 53.910397778322306
+          },
+          "ecpm": {
+            "value": -23928.12,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -119.68518426665342
+          },
+          "grossEcpm": {
+            "value": -36253.48,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -1379.9836439710919
+          }
+        }
+      },
       "signal": "risk"
     },
     {
@@ -1205,8 +4676,115 @@
       "grossEcpm": -4593765,
       "romiPct": -1,
       "drrPct": 0,
+      "cartRatePct": 0,
       "buyRatePct": 0,
       "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -3062.51,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но нет выручки или выкупов."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 1.8009,
+            "deltaPct": -1.555277916597257,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "ctrPct": {
+            "value": 0,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "cartRatePct": {
+            "value": 0,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.555277916597257
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -3062510,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -15191.268339864093
+          },
+          "grossEcpm": {
+            "value": -4593765,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -174735.30962343098
+          }
+        }
+      },
       "signal": "no_sales"
     },
     {
@@ -1238,8 +4816,115 @@
       "grossEcpm": -28313.07,
       "romiPct": -1,
       "drrPct": 0,
+      "cartRatePct": 0,
       "buyRatePct": 0,
       "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -5681.49,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но нет выручки или выкупов."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 1.8009,
+            "deltaPct": -1.555277916597257,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "ctrPct": {
+            "value": 0.0066,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.19512195121951215
+          },
+          "cartRatePct": {
+            "value": 0,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.555277916597257
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -18875.38,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -94.62323297455484
+          },
+          "grossEcpm": {
+            "value": -28313.07,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -1077.952073031571
+          }
+        }
+      },
       "signal": "no_sales"
     },
     {
@@ -1271,8 +4956,115 @@
       "grossEcpm": -19807.12,
       "romiPct": -1,
       "drrPct": 0,
+      "cartRatePct": 1,
       "buyRatePct": 0,
       "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -5704.45,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но нет выручки или выкупов."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 1.8009,
+            "deltaPct": -1.555277916597257,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 1.0764,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 71.72972972972973
+          },
+          "ctrPct": {
+            "value": 0.0023,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.7195121951219512
+          },
+          "cartRatePct": {
+            "value": 1,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 2.1111111111111107
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.555277916597257
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -13204.75,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -66.49650314964535
+          },
+          "grossEcpm": {
+            "value": -19807.12,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -754.4089007227083
+          }
+        }
+      },
       "signal": "no_sales"
     },
     {
@@ -1304,8 +5096,115 @@
       "grossEcpm": -4389.37,
       "romiPct": -1,
       "drrPct": 0,
+      "cartRatePct": 0,
       "buyRatePct": 0,
       "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -6507.98,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но нет выручки или выкупов."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 1.8009,
+            "deltaPct": -1.555277916597257,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0121,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.18243243243243246
+          },
+          "ctrPct": {
+            "value": 0.0004,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.9512195121951219
+          },
+          "cartRatePct": {
+            "value": 0,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.555277916597257
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -2926.25,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -15.514409007489707
+          },
+          "grossEcpm": {
+            "value": -4389.37,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -167.95968048687715
+          }
+        }
+      },
       "signal": "no_sales"
     },
     {
@@ -1337,8 +5236,115 @@
       "grossEcpm": -198340.68,
       "romiPct": -1,
       "drrPct": 0,
+      "cartRatePct": 0,
       "buyRatePct": 0,
       "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -7801.4,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но нет выручки или выкупов."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 1.8009,
+            "deltaPct": -1.555277916597257,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "ctrPct": {
+            "value": 0.08470000000000001,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 9.32926829268293
+          },
+          "cartRatePct": {
+            "value": 0,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.555277916597257
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -132227.12,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -656.8559595258171
+          },
+          "grossEcpm": {
+            "value": -198340.68,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -7545.339292506656
+          }
+        }
+      },
       "signal": "no_sales"
     },
     {
@@ -1370,8 +5376,115 @@
       "grossEcpm": -351039.58,
       "romiPct": -1,
       "drrPct": 0,
+      "cartRatePct": 0,
       "buyRatePct": 0,
       "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -8424.95,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но нет выручки или выкупов."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 1.8009,
+            "deltaPct": -1.555277916597257,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 23.833299999999998,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 1609.358108108108
+          },
+          "ctrPct": {
+            "value": 0,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "cartRatePct": {
+            "value": 0,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.555277916597257
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -234026.39,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -1161.7876097415804
+          },
+          "grossEcpm": {
+            "value": -351039.58,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -13353.589577786232
+          }
+        }
+      },
       "signal": "no_sales"
     },
     {
@@ -1403,8 +5516,115 @@
       "grossEcpm": -6582.05,
       "romiPct": -1,
       "drrPct": 0,
+      "cartRatePct": 0.3333333333333333,
       "buyRatePct": 0,
       "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -8657.59,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но нет выручки или выкупов."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 1.8009,
+            "deltaPct": -1.555277916597257,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.011699999999999999,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.20945945945945954
+          },
+          "ctrPct": {
+            "value": 0.0015,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.8170731707317073
+          },
+          "cartRatePct": {
+            "value": 0.3333333333333333,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": 0.03703703703703698
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.555277916597257
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -4388.03,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -22.764942215167896
+          },
+          "grossEcpm": {
+            "value": -6582.05,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -251.36325599087107
+          }
+        }
+      },
       "signal": "no_sales"
     },
     {
@@ -1436,8 +5656,115 @@
       "grossEcpm": -120672.61,
       "romiPct": -1,
       "drrPct": 0,
+      "cartRatePct": 0.1746031746031746,
       "buyRatePct": 0,
       "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -12630.4,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но нет выручки или выкупов."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 1.8009,
+            "deltaPct": -1.555277916597257,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.21660000000000001,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 13.635135135135135
+          },
+          "ctrPct": {
+            "value": 0.40130000000000005,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 47.939024390243915
+          },
+          "cartRatePct": {
+            "value": 0.1746031746031746,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.45679012345679015
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.555277916597257
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -80448.41,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -400.02985962997866
+          },
+          "grossEcpm": {
+            "value": -120672.61,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -4591.057436287562
+          }
+        }
+      },
       "signal": "no_sales"
     },
     {
@@ -1469,8 +5796,115 @@
       "grossEcpm": -6546.27,
       "romiPct": -1,
       "drrPct": 0,
+      "cartRatePct": 0,
       "buyRatePct": 0,
       "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -16815.18,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но нет выручки или выкупов."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 1.8009,
+            "deltaPct": -1.555277916597257,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.043899999999999995,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 1.9662162162162158
+          },
+          "ctrPct": {
+            "value": 0.0031,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.621951219512195
+          },
+          "cartRatePct": {
+            "value": 0,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.555277916597257
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -4364.18,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -22.646644511680968
+          },
+          "grossEcpm": {
+            "value": -6546.27,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -250.0022822365919
+          }
+        }
+      },
       "signal": "no_sales"
     },
     {
@@ -1502,8 +5936,115 @@
       "grossEcpm": -1645.96,
       "romiPct": -1,
       "drrPct": 0,
+      "cartRatePct": 0.010526315789473684,
       "buyRatePct": 0,
       "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -33144.14,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но нет выручки или выкупов."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 1.8009,
+            "deltaPct": -1.555277916597257,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0718,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 3.8513513513513518
+          },
+          "ctrPct": {
+            "value": 0.0031,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.621951219512195
+          },
+          "cartRatePct": {
+            "value": 0.010526315789473684,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.9672514619883041
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.555277916597257
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -1097.31,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -6.442735975398045
+          },
+          "grossEcpm": {
+            "value": -1645.96,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -63.60783567896539
+          }
+        }
+      },
       "signal": "no_sales"
     },
     {
@@ -1535,8 +6076,115 @@
       "grossEcpm": -8943.14,
       "romiPct": -1,
       "drrPct": 0,
+      "cartRatePct": 0,
       "buyRatePct": 0,
       "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -34144.91,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но нет выручки или выкупов."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 1.8009,
+            "deltaPct": -1.555277916597257,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.0115,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": -0.22297297297297303
+          },
+          "ctrPct": {
+            "value": 0.0084,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": 0.024390243902439046
+          },
+          "cartRatePct": {
+            "value": 0,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.555277916597257
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -5962.09,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -30.57239224244829
+          },
+          "grossEcpm": {
+            "value": -8943.14,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -341.1726892354507
+          }
+        }
+      },
       "signal": "no_sales"
     },
     {
@@ -1568,8 +6216,115 @@
       "grossEcpm": -2355.8,
       "romiPct": -1,
       "drrPct": 0,
+      "cartRatePct": 0.009708737864077669,
       "buyRatePct": 0,
       "buyoutPct": 0,
+      "diagnostics": {
+        "healthScore": 0,
+        "highestSeverity": "critical",
+        "alertCount": 3,
+        "alerts": [
+          {
+            "code": "negative_income",
+            "family": "economics",
+            "severity": "critical",
+            "title": "КЗ уводит доход в минус",
+            "label": "Доход <= 0",
+            "metricKey": "income",
+            "value": -64007.1,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "Нужно разбирать связку контент / оффер / карточка."
+          },
+          {
+            "code": "no_sales",
+            "family": "sales",
+            "severity": "critical",
+            "title": "Трафик не дошёл до выкупов",
+            "label": "Нет выкупов",
+            "metricKey": "buys",
+            "value": 0,
+            "baseline": 0,
+            "deltaPct": null,
+            "hint": "По КЗ есть активность, но нет выручки или выкупов."
+          },
+          {
+            "code": "romi_below_payback",
+            "family": "economics",
+            "severity": "critical",
+            "title": "ROMI ниже окупаемости",
+            "label": "ROMI < 100%",
+            "metricKey": "romiPct",
+            "value": -1,
+            "baseline": 1.8009,
+            "deltaPct": -1.555277916597257,
+            "hint": "Расход на контент пока не отбивается доходом."
+          }
+        ],
+        "summary": "Доход <= 0 · Нет выкупов",
+        "metrics": {
+          "erviewPct": {
+            "value": 0.2828,
+            "baseline": 0.0148,
+            "lowerIsBetter": false,
+            "deltaPct": 18.108108108108105
+          },
+          "ctrPct": {
+            "value": 0.0051,
+            "baseline": 0.008199999999999999,
+            "lowerIsBetter": false,
+            "deltaPct": -0.37804878048780477
+          },
+          "cartRatePct": {
+            "value": 0.009708737864077669,
+            "baseline": 0.32142857142857145,
+            "lowerIsBetter": false,
+            "deltaPct": -0.9697950377562028
+          },
+          "conversionPct": {
+            "value": 0,
+            "baseline": 0.04150000000000001,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyRatePct": {
+            "value": 0,
+            "baseline": 0.0414822200603093,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "buyoutPct": {
+            "value": 0,
+            "baseline": 0.9622668174109666,
+            "lowerIsBetter": false,
+            "deltaPct": -1
+          },
+          "romiPct": {
+            "value": -1,
+            "baseline": 1.8009,
+            "lowerIsBetter": false,
+            "deltaPct": -1.555277916597257
+          },
+          "drrPct": {
+            "value": 0,
+            "baseline": 1.2243,
+            "lowerIsBetter": true,
+            "deltaPct": -1
+          },
+          "ecpm": {
+            "value": -1570.53,
+            "baseline": 201.61,
+            "lowerIsBetter": false,
+            "deltaPct": -8.789940975150042
+          },
+          "grossEcpm": {
+            "value": -2355.8,
+            "baseline": 26.29,
+            "lowerIsBetter": false,
+            "deltaPct": -90.60821605173071
+          }
+        }
+      },
       "signal": "no_sales"
     }
   ],
@@ -1603,9 +6358,9 @@
       "grossEcpm": 0,
       "romiPct": -1,
       "drrPct": 0,
+      "cartRatePct": 0,
       "buyRatePct": 0,
-      "buyoutPct": 0,
-      "signal": "no_owner"
+      "buyoutPct": 0
     }
   ]
 }

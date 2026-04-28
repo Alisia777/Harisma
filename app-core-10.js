@@ -539,10 +539,11 @@ async function init() {
 
   try {
     const local = loadLocalStorage();
-    const [dashboard, skus, seed] = await Promise.all([
+    const [dashboard, skus, seed, productLeaderboard] = await Promise.all([
       loadJsonOrFallback('data/dashboard.json', { cards: [], generatedAt: '' }, 'Дашборд'),
       loadJsonOrFallback('data/skus.json', [], 'SKU'),
-      loadJsonOrFallback('data/seed_comments.json', { comments: [], tasks: [] }, 'Seed comments')
+      loadJsonOrFallback('data/seed_comments.json', { comments: [], tasks: [] }, 'Seed comments'),
+      loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд')
     ]);
 
     state.dashboard = dashboard || { cards: [] };
@@ -550,6 +551,10 @@ async function init() {
     state.launches = [];
     state.meetings = [];
     state.documents = { groups: [] };
+    state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
+      ? normalizeProductLeaderboardPayload(productLeaderboard)
+      : (productLeaderboard || { generatedAt: '', items: [], summary: {} });
+    state.boot.lazyReady.productLeaderboard = true;
     state.repricer = { generatedAt: '', summary: {}, rows: [] };
     if (!state.orderCalc.articleKey) state.orderCalc.articleKey = state.skus[0]?.articleKey || '';
     if (!state.orderCalc.daysToNextReceipt) state.orderCalc.daysToNextReceipt = String(Math.round(numberOrZero(state.skus[0]?.leadTimeDays) || 30));

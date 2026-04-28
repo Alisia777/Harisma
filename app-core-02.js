@@ -59,7 +59,15 @@ function loadLocalStorage() {
       comments: Array.isArray(parsed.comments) ? parsed.comments.map(normalizeComment) : [],
       tasks: Array.isArray(parsed.tasks) ? normalizeStorageTasks(parsed.tasks, 'manual') : [],
       decisions: Array.isArray(parsed.decisions) ? parsed.decisions.map(normalizeDecision) : [],
-      ownerOverrides: Array.isArray(parsed.ownerOverrides) ? parsed.ownerOverrides.map(normalizeOwnerOverride) : []
+      ownerOverrides: Array.isArray(parsed.ownerOverrides) ? parsed.ownerOverrides.map(normalizeOwnerOverride) : [],
+      repricerSettings: normalizeRepricerSettings(parsed.repricerSettings || {}),
+      repricerSettingsUpdatedAt: String(parsed.repricerSettingsUpdatedAt || '').trim(),
+      repricerOverrides: Array.isArray(parsed.repricerOverrides) ? parsed.repricerOverrides.map(normalizeRepricerOverride).filter((item) => item.articleKey) : [],
+      repricerSkuProfiles: Array.isArray(parsed.repricerSkuProfiles) ? parsed.repricerSkuProfiles.map(normalizeRepricerSkuProfile).filter((item) => item.articleKey) : [],
+      repricerCorridors: Array.isArray(parsed.repricerCorridors) ? parsed.repricerCorridors.map(normalizeRepricerCorridor).filter((item) => item.articleKey) : [],
+      repricerOverrideDeletes: Array.isArray(parsed.repricerOverrideDeletes) ? parsed.repricerOverrideDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
+      repricerSkuProfileDeletes: Array.isArray(parsed.repricerSkuProfileDeletes) ? parsed.repricerSkuProfileDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
+      repricerCorridorDeletes: Array.isArray(parsed.repricerCorridorDeletes) ? parsed.repricerCorridorDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : []
     };
   } catch {
     return defaultStorage();
@@ -76,8 +84,29 @@ function teamMemberLabel() {
   return `${member.name}${member.role ? ` · ${member.role}` : ''}`;
 }
 
+function normalizeSkuOwnerState(sku) {
+  if (!sku || typeof sku !== 'object') return sku;
+
+  if (sku.owner && typeof sku.owner === 'object') {
+    sku.owner.name = canonicalOwnerName(sku.owner.name || '');
+  }
+  if (sku.__baseOwner && typeof sku.__baseOwner === 'object') {
+    sku.__baseOwner.name = canonicalOwnerName(sku.__baseOwner.name || '');
+  }
+  if (sku.ownersByPlatform && typeof sku.ownersByPlatform === 'object') {
+    for (const key of Object.keys(sku.ownersByPlatform)) {
+      sku.ownersByPlatform[key] = canonicalOwnerName(sku.ownersByPlatform[key] || '');
+    }
+  }
+
+  sku.flags = sku.flags || {};
+  sku.flags.assigned = Boolean(sku.owner?.name);
+  return sku;
+}
+
 function prepareSkuBaseState() {
   for (const sku of state.skus) {
+    normalizeSkuOwnerState(sku);
     if (!sku.__baseOwner) sku.__baseOwner = JSON.parse(JSON.stringify(sku.owner || {}));
   }
 }
@@ -87,16 +116,17 @@ function applyOwnerOverridesToSkus() {
   const overrideMap = new Map((state.storage.ownerOverrides || []).map((item) => [item.articleKey, item]));
   for (const sku of state.skus) {
     const baseOwner = JSON.parse(JSON.stringify(sku.__baseOwner || {}));
+    baseOwner.name = canonicalOwnerName(baseOwner.name || '');
     const override = overrideMap.get(sku.articleKey);
     if (override) {
       sku.owner = {
         ...baseOwner,
-        name: override.ownerName || '',
+        name: canonicalOwnerName(override.ownerName || ''),
         source: override.ownerName ? 'Командное закрепление' : (baseOwner.source || ''),
         registryStatus: override.ownerRole || baseOwner.registryStatus || ''
       };
       sku.flags = sku.flags || {};
-      sku.flags.assigned = Boolean(override.ownerName);
+      sku.flags.assigned = Boolean(canonicalOwnerName(override.ownerName || ''));
     } else {
       sku.owner = baseOwner;
       sku.flags = sku.flags || {};
@@ -110,15 +140,19 @@ function getSku(articleKey) {
 }
 
 function ownerName(sku) {
-  return sku?.owner?.name || '';
+  return canonicalOwnerName(sku?.owner?.name || '');
 }
 
 function ownerOptions() {
   const pool = new Set();
-  for (const sku of state.skus) if (ownerName(sku)) pool.add(ownerName(sku));
-  for (const item of state.storage.ownerOverrides || []) if (item.ownerName) pool.add(item.ownerName);
-  for (const task of state.storage.tasks || []) if (task.owner) pool.add(task.owner);
-  if (state.team.member?.name) pool.add(state.team.member.name);
+  const addOwner = (value) => {
+    const normalized = canonicalOwnerName(value || '');
+    if (normalized) pool.add(normalized);
+  };
+  for (const sku of state.skus) addOwner(ownerName(sku));
+  for (const item of state.storage.ownerOverrides || []) addOwner(item.ownerName);
+  for (const task of state.storage.tasks || []) addOwner(task.owner);
+  addOwner(state.team.member?.name);
   return [...pool].sort((a, b) => a.localeCompare(b, 'ru'));
 }
 
@@ -190,6 +224,7 @@ function mergeSeedStorage(seed) {
   }
   for (const task of seed.tasks || []) {
     const normalized = normalizeTask(task, 'seed');
+    if (normalized.source === 'auto') continue;
     const key = `${normalized.articleKey}|${normalized.owner}|${normalized.due}|${normalized.title}`;
     if (!existingTasks.has(key)) state.storage.tasks.push(normalized);
   }
@@ -201,7 +236,15 @@ function mergeImportedStorage(imported) {
     comments: Array.isArray(imported.comments) ? imported.comments : [],
     tasks: Array.isArray(imported.tasks) ? imported.tasks : [],
     decisions: Array.isArray(imported.decisions) ? imported.decisions : [],
-    ownerOverrides: Array.isArray(imported.ownerOverrides) ? imported.ownerOverrides : []
+    ownerOverrides: Array.isArray(imported.ownerOverrides) ? imported.ownerOverrides : [],
+    repricerSettings: imported.repricerSettings || {},
+    repricerSettingsUpdatedAt: String(imported.repricerSettingsUpdatedAt || '').trim(),
+    repricerOverrides: Array.isArray(imported.repricerOverrides) ? imported.repricerOverrides : [],
+    repricerSkuProfiles: Array.isArray(imported.repricerSkuProfiles) ? imported.repricerSkuProfiles : [],
+    repricerCorridors: Array.isArray(imported.repricerCorridors) ? imported.repricerCorridors : [],
+    repricerOverrideDeletes: Array.isArray(imported.repricerOverrideDeletes) ? imported.repricerOverrideDeletes : [],
+    repricerSkuProfileDeletes: Array.isArray(imported.repricerSkuProfileDeletes) ? imported.repricerSkuProfileDeletes : [],
+    repricerCorridorDeletes: Array.isArray(imported.repricerCorridorDeletes) ? imported.repricerCorridorDeletes : []
   };
   mergeSeedStorage(seed);
   for (const raw of seed.decisions) {
@@ -212,6 +255,49 @@ function mergeImportedStorage(imported) {
     const override = normalizeOwnerOverride(raw);
     state.storage.ownerOverrides = (state.storage.ownerOverrides || []).filter((item) => item.articleKey !== override.articleKey);
     state.storage.ownerOverrides.unshift(override);
+  }
+  state.storage.repricerSettings = normalizeRepricerSettings(seed.repricerSettings || state.storage.repricerSettings || {});
+  if (seed.repricerSettingsUpdatedAt) {
+    state.storage.repricerSettingsUpdatedAt = seed.repricerSettingsUpdatedAt;
+  }
+  for (const raw of seed.repricerOverrides) {
+    const override = normalizeRepricerOverride(raw);
+    if (!override.articleKey) continue;
+    state.storage.repricerOverrides = (state.storage.repricerOverrides || []).filter((item) => !(item.articleKey === override.articleKey && item.platform === override.platform));
+    state.storage.repricerOverrides.unshift(override);
+  }
+  for (const raw of seed.repricerSkuProfiles) {
+    const profile = normalizeRepricerSkuProfile(raw);
+    if (!profile.articleKey) continue;
+    state.storage.repricerSkuProfiles = (state.storage.repricerSkuProfiles || []).filter((item) => item.articleKey !== profile.articleKey);
+    state.storage.repricerSkuProfiles.unshift(profile);
+  }
+  for (const raw of seed.repricerCorridors) {
+    const corridor = normalizeRepricerCorridor(raw);
+    if (!corridor.articleKey) continue;
+    state.storage.repricerCorridors = (state.storage.repricerCorridors || []).filter((item) => !(item.articleKey === corridor.articleKey && item.platform === corridor.platform));
+    state.storage.repricerCorridors.unshift(corridor);
+  }
+  for (const raw of seed.repricerOverrideDeletes) {
+    const marker = normalizeRepricerDeleteTombstone(raw);
+    if (!marker.articleKey) continue;
+    state.storage.repricerOverrides = (state.storage.repricerOverrides || []).filter((item) => !(item.articleKey === marker.articleKey && item.platform === marker.platform));
+    state.storage.repricerOverrideDeletes = (state.storage.repricerOverrideDeletes || []).filter((item) => !(item.articleKey === marker.articleKey && item.platform === marker.platform));
+    state.storage.repricerOverrideDeletes.unshift(marker);
+  }
+  for (const raw of seed.repricerSkuProfileDeletes) {
+    const marker = normalizeRepricerDeleteTombstone(raw);
+    if (!marker.articleKey) continue;
+    state.storage.repricerSkuProfiles = (state.storage.repricerSkuProfiles || []).filter((item) => item.articleKey !== marker.articleKey);
+    state.storage.repricerSkuProfileDeletes = (state.storage.repricerSkuProfileDeletes || []).filter((item) => item.articleKey !== marker.articleKey);
+    state.storage.repricerSkuProfileDeletes.unshift(marker);
+  }
+  for (const raw of seed.repricerCorridorDeletes) {
+    const marker = normalizeRepricerDeleteTombstone(raw);
+    if (!marker.articleKey) continue;
+    state.storage.repricerCorridors = (state.storage.repricerCorridors || []).filter((item) => !(item.articleKey === marker.articleKey && item.platform === marker.platform));
+    state.storage.repricerCorridorDeletes = (state.storage.repricerCorridorDeletes || []).filter((item) => !(item.articleKey === marker.articleKey && item.platform === marker.platform));
+    state.storage.repricerCorridorDeletes.unshift(marker);
   }
   applyOwnerOverridesToSkus();
   saveLocalStorage();
@@ -252,7 +338,8 @@ function mapTaskStatus(status) {
   if (['open', 'new'].includes(raw)) return 'new';
   if (['in_progress', 'in progress', 'progress', 'doing', 'work', 'в работе'].includes(raw)) return 'in_progress';
   if (['waiting_team', 'waiting-team', 'wait_team'].includes(raw)) return 'waiting_team';
-  if (['blocked', 'waiting_decision', 'wait_decision', 'decision', 'waiting', 'ждёт', 'ждет'].includes(raw)) return 'waiting_decision';
+  if (['waiting_rop', 'rop_approval', 'waiting_approval', 'approval_rop', 'on_rop_approval'].includes(raw)) return 'waiting_rop';
+  if (['blocked', 'waiting_decision', 'wait_decision', 'decision', 'waiting', 'waiting_executive', 'executive_approval', 'manager_approval', 'leader_approval', 'ждёт', 'ждет'].includes(raw)) return 'waiting_decision';
   if (['done', 'complete', 'completed', 'сделано'].includes(raw)) return 'done';
   if (['cancelled', 'canceled', 'отменено'].includes(raw)) return 'cancelled';
   return 'new';
@@ -342,7 +429,7 @@ function normalizeTask(task, sourceHint = 'manual') {
     title,
     nextAction: task?.nextAction || '',
     reason: task?.reason || '',
-    owner: task?.owner || ownerName(sku) || '',
+    owner: canonicalOwnerName(task?.owner || ownerName(sku) || ''),
     due: task?.due || plusDays(type === 'assignment' ? 1 : 3),
     status: mapTaskStatus(task?.status),
     type,
@@ -355,7 +442,9 @@ function normalizeTask(task, sourceHint = 'manual') {
 }
 
 function normalizeStorageTasks(tasks, sourceHint = 'manual') {
-  return (tasks || []).map((task) => normalizeTask(task, task?.source || sourceHint));
+  return (tasks || [])
+    .map((task) => normalizeTask(task, task?.source || sourceHint))
+    .filter((task) => task?.source !== 'auto');
 }
 
 function isTaskActive(task) {
@@ -463,17 +552,185 @@ function storedTaskKeys() {
   return new Set(state.storage.tasks.filter(isTaskActive).map((task) => `${task.articleKey}|${task.type}`));
 }
 
+function canRegisterAutoTask(keys, articleKey, type) {
+  const key = `${articleKey}|${type}`;
+  if (!articleKey || keys.has(key)) return false;
+  keys.add(key);
+  return true;
+}
+
+function leaderboardSeverityRank(severity) {
+  if (severity === 'critical') return 4;
+  if (severity === 'high') return 3;
+  if (severity === 'medium') return 2;
+  return 1;
+}
+
+function leaderboardPriorityForSeverity(severity) {
+  if (severity === 'critical') return 'critical';
+  if (severity === 'high') return 'high';
+  if (severity === 'medium') return 'medium';
+  return 'low';
+}
+
+function leaderboardDueForSeverity(severity) {
+  if (severity === 'critical') return plusDays(1);
+  if (severity === 'high') return plusDays(2);
+  if (severity === 'medium') return plusDays(3);
+  return plusDays(5);
+}
+
+function leaderboardTaskSeverity(alerts) {
+  let top = 'info';
+  let rank = 1;
+  for (const alert of alerts || []) {
+    const nextRank = leaderboardSeverityRank(alert?.severity);
+    if (nextRank > rank) {
+      rank = nextRank;
+      top = alert?.severity || 'info';
+    }
+  }
+  return top;
+}
+
+function leaderboardTopAlertsText(alerts, limit = 2) {
+  return (alerts || [])
+    .map((alert) => String(alert?.label || alert?.title || '').trim())
+    .filter(Boolean)
+    .slice(0, limit)
+    .join(' · ');
+}
+
+function leaderboardAlertsForFamilies(item, families) {
+  const familySet = new Set(Array.isArray(families) ? families : [families]);
+  return (item?.diagnostics?.alerts || [])
+    .filter((alert) => familySet.has(alert?.family))
+    .sort((left, right) =>
+      leaderboardSeverityRank(right?.severity) - leaderboardSeverityRank(left?.severity)
+      || String(left?.title || '').localeCompare(String(right?.title || ''), 'ru')
+    );
+}
+
+function leaderboardHasEscalation(alerts) {
+  return (alerts || []).some((alert) => leaderboardSeverityRank(alert?.severity) >= 3);
+}
+
+function buildLeaderboardAutoTask({
+  articleKey,
+  owner,
+  platform,
+  item,
+  alerts,
+  autoCode,
+  title,
+  nextAction,
+  type
+}) {
+  const severity = leaderboardTaskSeverity(alerts);
+  const summary = leaderboardTopAlertsText(alerts) || item?.diagnostics?.summary || 'Есть отклонения по KZ-воронке.';
+  const weekLabel = String(item?.weekLabel || '').trim();
+  const reason = weekLabel ? `${weekLabel}: ${summary}` : summary;
+
+  return normalizeTask({
+    id: `auto-${autoCode}-${articleKey}`,
+    source: 'auto',
+    autoCode,
+    articleKey,
+    title,
+    nextAction,
+    reason,
+    owner,
+    due: leaderboardDueForSeverity(severity),
+    status: 'new',
+    type,
+    priority: leaderboardPriorityForSeverity(severity),
+    platform,
+    entityLabel: item?.name || title
+  }, 'auto');
+}
+
 function buildAutoTasks() {
   const keys = storedTaskKeys();
   const tasks = [];
+  const leaderboardPayload = typeof normalizeProductLeaderboardPayload === 'function'
+    ? normalizeProductLeaderboardPayload(state.productLeaderboard || {})
+    : (state.productLeaderboard || { items: [] });
+  const leaderboardMap = new Map(
+    (Array.isArray(leaderboardPayload.items) ? leaderboardPayload.items : [])
+      .filter((item) => item?.articleKey)
+      .map((item) => [String(item.articleKey).trim().toLowerCase(), item])
+  );
 
   for (const sku of state.skus) {
     const articleKey = sku.articleKey;
     const owner = ownerName(sku);
     const platform = sku?.flags?.toWorkWB && sku?.flags?.toWorkOzon ? 'wb+ozon' : sku?.flags?.toWorkWB ? 'wb' : sku?.flags?.toWorkOzon ? 'ozon' : detectTaskPlatform({}, sku);
     const exitSku = String(sku?.status || '').toLowerCase().includes('вывод');
+    const leaderboardItem = leaderboardMap.get(String(articleKey || '').trim().toLowerCase()) || null;
 
-    if ((sku?.flags?.toWorkWB || sku?.flags?.toWorkOzon || sku?.flags?.toWork) && !keys.has(`${articleKey}|price_margin`)) {
+    if (leaderboardItem?.inPortal !== false) {
+      const assignmentAlerts = leaderboardAlertsForFamilies(leaderboardItem, 'ownership');
+      if (assignmentAlerts.length && canRegisterAutoTask(keys, articleKey, 'assignment')) {
+        tasks.push(buildLeaderboardAutoTask({
+          articleKey,
+          owner: '',
+          platform,
+          item: leaderboardItem,
+          alerts: assignmentAlerts,
+          autoCode: 'kz_owner',
+          title: 'КЗ: назначить owner по SKU',
+          nextAction: 'Закрепить владельца карточки и weekly KZ-разбора, чтобы сигналы по воронке не висели без ответа.',
+          type: 'assignment'
+        }));
+      }
+
+      const economicsAlerts = leaderboardAlertsForFamilies(leaderboardItem, 'economics');
+      if (leaderboardHasEscalation(economicsAlerts) && canRegisterAutoTask(keys, articleKey, 'price_margin')) {
+        tasks.push(buildLeaderboardAutoTask({
+          articleKey,
+          owner,
+          platform,
+          item: leaderboardItem,
+          alerts: economicsAlerts,
+          autoCode: 'kz_economics',
+          title: 'КЗ: разобрать цену и экономику',
+          nextAction: 'Проверить ROMI, ДРР, цену, оффер и unit-экономику. Зафиксировать, что меняем в карточке или промо.',
+          type: 'price_margin'
+        }));
+      }
+
+      const contentAlerts = leaderboardAlertsForFamilies(leaderboardItem, 'card');
+      if (leaderboardHasEscalation(contentAlerts) && canRegisterAutoTask(keys, articleKey, 'content')) {
+        tasks.push(buildLeaderboardAutoTask({
+          articleKey,
+          owner,
+          platform,
+          item: leaderboardItem,
+          alerts: contentAlerts,
+          autoCode: 'kz_card',
+          title: 'КЗ: разобрать карточку и оффер',
+          nextAction: 'Проверить первый экран, цену, оффер и путь в корзину. Зафиксировать правки по карточке и срок перепроверки.',
+          type: 'content'
+        }));
+      }
+
+      const trafficAlerts = leaderboardAlertsForFamilies(leaderboardItem, ['traffic', 'sales']);
+      if (!exitSku && leaderboardHasEscalation(trafficAlerts) && canRegisterAutoTask(keys, articleKey, 'traffic')) {
+        tasks.push(buildLeaderboardAutoTask({
+          articleKey,
+          owner,
+          platform,
+          item: leaderboardItem,
+          alerts: trafficAlerts,
+          autoCode: 'kz_traffic',
+          title: 'КЗ: разобрать трафик и воронку',
+          nextAction: 'Проверить охват, CTR, связку креативов и источник трафика. Зафиксировать гипотезу и следующий запуск.',
+          type: 'traffic'
+        }));
+      }
+    }
+
+    if ((sku?.flags?.toWorkWB || sku?.flags?.toWorkOzon || sku?.flags?.toWork) && canRegisterAutoTask(keys, articleKey, 'price_margin')) {
       tasks.push(normalizeTask({
         id: `auto-price-${articleKey}`,
         source: 'auto',
@@ -489,7 +746,7 @@ function buildAutoTasks() {
         priority: 'critical',
         platform
       }, 'auto'));
-    } else if (sku?.flags?.negativeMargin && !keys.has(`${articleKey}|price_margin`)) {
+    } else if (sku?.flags?.negativeMargin && canRegisterAutoTask(keys, articleKey, 'price_margin')) {
       tasks.push(normalizeTask({
         id: `auto-neg-${articleKey}`,
         source: 'auto',
@@ -507,7 +764,7 @@ function buildAutoTasks() {
       }, 'auto'));
     }
 
-    if (sku?.flags?.lowStock && !exitSku && !keys.has(`${articleKey}|supply`)) {
+    if (sku?.flags?.lowStock && !exitSku && canRegisterAutoTask(keys, articleKey, 'supply')) {
       tasks.push(normalizeTask({
         id: `auto-stock-${articleKey}`,
         source: 'auto',
@@ -525,7 +782,7 @@ function buildAutoTasks() {
       }, 'auto'));
     }
 
-    if (!sku?.flags?.assigned && !keys.has(`${articleKey}|assignment`)) {
+    if (!sku?.flags?.assigned && canRegisterAutoTask(keys, articleKey, 'assignment')) {
       tasks.push(normalizeTask({
         id: `auto-owner-${articleKey}`,
         source: 'auto',
@@ -543,7 +800,7 @@ function buildAutoTasks() {
       }, 'auto'));
     }
 
-    if (sku?.flags?.highReturn && !keys.has(`${articleKey}|returns`)) {
+    if (sku?.flags?.highReturn && canRegisterAutoTask(keys, articleKey, 'returns')) {
       tasks.push(normalizeTask({
         id: `auto-returns-${articleKey}`,
         source: 'auto',
@@ -556,24 +813,6 @@ function buildAutoTasks() {
         due: plusDays(3),
         status: 'new',
         type: 'returns',
-        priority: 'medium',
-        platform
-      }, 'auto'));
-    }
-
-    if ((sku?.focusScore || 0) >= 4 && !sku?.flags?.hasExternalTraffic && !exitSku && !keys.has(`${articleKey}|traffic`)) {
-      tasks.push(normalizeTask({
-        id: `auto-traffic-${articleKey}`,
-        source: 'auto',
-        autoCode: 'traffic',
-        articleKey,
-        title: 'Проверить внешний трафик по фокусному SKU',
-        nextAction: 'Решить, нужен ли КЗ / VK / инфлюенсеры и зафиксировать owner канала.',
-        reason: 'Фокусный SKU без внешнего трафика.',
-        owner,
-        due: plusDays(4),
-        status: 'new',
-        type: 'traffic',
         priority: 'medium',
         platform
       }, 'auto'));
@@ -600,6 +839,7 @@ function getControlSnapshot() {
   const tasks = getAllTasks();
   const active = tasks.filter(isTaskActive);
   const overdue = active.filter(isTaskOverdue);
+  const waitingRop = active.filter((task) => task.status === 'waiting_rop');
   const waitingDecision = active.filter((task) => task.status === 'waiting_decision');
   const noOwner = active.filter((task) => !task.owner);
   const dueThisWeek = active.filter((task) => task.due && task.due <= plusDays(7));
@@ -607,11 +847,13 @@ function getControlSnapshot() {
 
   for (const task of active) {
     const key = task.owner || 'Без owner';
-    const row = ownerMap.get(key) || { owner: key, total: 0, overdue: 0, critical: 0, waiting: 0 };
+    const row = ownerMap.get(key) || { owner: key, total: 0, overdue: 0, critical: 0, waiting: 0, waitingRop: 0, waitingDecision: 0 };
     row.total += 1;
     if (isTaskOverdue(task)) row.overdue += 1;
     if (task.priority === 'critical') row.critical += 1;
-    if (task.status === 'waiting_decision') row.waiting += 1;
+    if (task.status === 'waiting_rop') row.waitingRop += 1;
+    if (task.status === 'waiting_decision') row.waitingDecision += 1;
+    row.waiting = row.waitingRop + row.waitingDecision;
     ownerMap.set(key, row);
   }
 
@@ -619,11 +861,12 @@ function getControlSnapshot() {
     tasks,
     active,
     overdue,
+    waitingRop,
     waitingDecision,
     noOwner,
     dueThisWeek,
     byOwner: [...ownerMap.values()].sort((a, b) => b.total - a.total || a.owner.localeCompare(b.owner, 'ru')),
-    todayList: sortTasks(active).filter((task) => isTaskOverdue(task) || task.priority === 'critical' || (task.due && task.due <= plusDays(2))).slice(0, 12),
+    todayList: sortTasks(active).filter((task) => isTaskOverdue(task) || task.status === 'waiting_rop' || task.status === 'waiting_decision' || task.priority === 'critical' || (task.due && task.due <= plusDays(2))).slice(0, 12),
     autoCount: tasks.filter((task) => task.source === 'auto' && isTaskActive(task)).length,
     manualCount: tasks.filter((task) => task.source !== 'auto' && isTaskActive(task)).length
   };

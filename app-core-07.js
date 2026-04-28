@@ -424,13 +424,60 @@ function bindLaunchMonthFilters(root) {
 
 function productLeaderboardSignalMeta(signal) {
   const map = {
-    leader: { label: 'Сильный сигнал', tone: 'ok' },
+    leader: { label: 'КЗ работает', tone: 'ok' },
     steady: { label: 'Наблюдать', tone: 'info' },
-    risk: { label: 'Риск по эффективности', tone: 'warn' },
+    risk: { label: 'КЗ в риске', tone: 'warn' },
     no_owner: { label: 'Без owner', tone: 'danger' },
-    no_sales: { label: 'Без продаж', tone: 'danger' }
+    no_sales: { label: 'КЗ без выкупов', tone: 'danger' }
   };
   return map[signal] || map.steady;
+}
+
+function productLeaderboardAlertTone(severity) {
+  if (severity === 'critical') return 'danger';
+  if (severity === 'high') return 'warn';
+  if (severity === 'medium') return 'info';
+  return '';
+}
+
+function productLeaderboardAlertRank(severity) {
+  if (severity === 'critical') return 4;
+  if (severity === 'high') return 3;
+  if (severity === 'medium') return 2;
+  return 1;
+}
+
+function normalizeProductLeaderboardAlert(alert = {}) {
+  return {
+    code: alert.code || '',
+    family: alert.family || '',
+    severity: alert.severity || 'info',
+    title: alert.title || alert.label || 'Отклонение',
+    label: alert.label || alert.title || 'Отклонение',
+    metricKey: alert.metricKey || '',
+    value: productLeaderboardRate(alert.value),
+    baseline: productLeaderboardRate(alert.baseline),
+    deltaPct: productLeaderboardRate(alert.deltaPct),
+    hint: alert.hint || ''
+  };
+}
+
+function normalizeProductLeaderboardDiagnostics(diagnostics = {}) {
+  const alerts = Array.isArray(diagnostics.alerts)
+    ? diagnostics.alerts.map(normalizeProductLeaderboardAlert)
+    : [];
+  alerts.sort((left, right) =>
+    productLeaderboardAlertRank(right.severity) - productLeaderboardAlertRank(left.severity)
+    || String(left.title || '').localeCompare(String(right.title || ''), 'ru')
+  );
+  return {
+    healthScore: numberOrZero(diagnostics.healthScore),
+    highestSeverity: diagnostics.highestSeverity || (alerts[0]?.severity || 'info'),
+    alertCount: numberOrZero(diagnostics.alertCount || alerts.length),
+    summary: diagnostics.summary || (alerts.length ? alerts.slice(0, 2).map((alert) => alert.label).join(' · ') : 'Без критичных отклонений'),
+    alerts,
+    metrics: diagnostics.metrics && typeof diagnostics.metrics === 'object' ? diagnostics.metrics : {}
+  };
 }
 
 function productLeaderboardRate(value) {
@@ -501,8 +548,13 @@ function normalizeProductLeaderboardItem(item = {}) {
     romiPct: productLeaderboardRate(item.romiPct),
     drrPct: productLeaderboardRate(item.drrPct),
     buyRatePct: productLeaderboardRate(item.buyRatePct),
-    buyoutPct: productLeaderboardRate(item.buyoutPct)
+    buyoutPct: productLeaderboardRate(item.buyoutPct),
+    cartRatePct: productLeaderboardRate(item.cartRatePct),
+    diagnostics: normalizeProductLeaderboardDiagnostics(item.diagnostics || {})
   };
+  normalized.cartRatePct = normalized.cartRatePct === null
+    ? (normalized.clicks > 0 ? normalized.carts / normalized.clicks : 0)
+    : normalized.cartRatePct;
   if (normalized.buyRatePct === null) normalized.buyRatePct = normalized.clicks > 0 ? normalized.buys / normalized.clicks : 0;
   if (normalized.buyoutPct === null) normalized.buyoutPct = normalized.orders > 0 ? normalized.buys / normalized.orders : 0;
   return normalized;
@@ -519,6 +571,15 @@ function normalizeProductLeaderboardPayload(payload = {}) {
     sourceSheetName: payload.sourceSheetName || payload.weekLabel || '',
     weekLabel: payload.weekLabel || payload.sourceSheetName || '',
     brandFilter: payload.brandFilter || 'АЛТЕЯ',
+    baselines: payload.baselines && typeof payload.baselines === 'object' ? payload.baselines : {},
+    alertCounts: payload.alertCounts && typeof payload.alertCounts === 'object'
+      ? {
+          critical: numberOrZero(payload.alertCounts.critical),
+          high: numberOrZero(payload.alertCounts.high),
+          medium: numberOrZero(payload.alertCounts.medium),
+          info: numberOrZero(payload.alertCounts.info)
+        }
+      : { critical: 0, high: 0, medium: 0, info: 0 },
     totals: payload.totals || {
       sourceRows: items.length,
       brandRows: items.length,
@@ -535,6 +596,24 @@ function normalizeProductLeaderboardPayload(payload = {}) {
     unmatchedItems: Array.isArray(payload.unmatchedItems) ? payload.unmatchedItems.map(normalizeProductLeaderboardItem) : []
   };
 }
+
+function getProductLeaderboardEntry(articleKey, payload = state.productLeaderboard || {}) {
+  const normalizedKey = String(articleKey || '').trim().toLowerCase();
+  if (!normalizedKey) return null;
+  const items = Array.isArray(payload.items) ? payload.items : [];
+  return items.find((item) => String(item.articleKey || '').trim().toLowerCase() === normalizedKey) || null;
+}
+
+function openProductLeaderboardForSku(articleKey = '') {
+  const filters = getProductLeaderboardFilters();
+  filters.search = articleKey || '';
+  filters.owner = 'all';
+  filters.signal = 'all';
+  if (!filters.sort) filters.sort = 'buys';
+  setView('product-leaderboard');
+}
+
+window.openProductLeaderboardForSku = openProductLeaderboardForSku;
 
 function getProductLeaderboardFilters() {
   state.productLeaderboardFilters = state.productLeaderboardFilters || {};
@@ -600,6 +679,7 @@ function renderProductLeaderboard() {
         ${badge(payload.weekLabel || 'недельный срез', 'info')}
         ${badge(`${fmt.int(filteredSummary.skuCount)} SKU`, filteredSummary.skuCount ? 'info' : 'warn')}
         ${badge(`${fmt.int(payload.totals.unmatchedRows || 0)} вне портала`, payload.totals.unmatchedRows ? 'warn' : 'ok')}
+        ${badge(`${fmt.int(payload.alertCounts.critical || 0)} крит. откл.`, payload.alertCounts.critical ? 'danger' : 'ok')}
       </div>
     </div>
 
@@ -622,6 +702,7 @@ function renderProductLeaderboard() {
           ${badge(`ROMI ${fmt.pct(filteredSummary.romiPct)}`, filteredSummary.romiPct >= 2 ? 'ok' : filteredSummary.romiPct >= 1 ? 'info' : 'warn')}
           ${badge(`ДРР ${fmt.pct(filteredSummary.drrPct)}`, filteredSummary.drrPct <= 0.3 ? 'ok' : filteredSummary.drrPct <= 0.4 ? 'info' : 'warn')}
           ${badge(`Owner coverage ${fmt.pct(ownerCoverage)}`, ownerCoverage >= 0.95 ? 'ok' : 'warn')}
+          ${badge(`Критичных ${fmt.int(payload.alertCounts.critical || 0)}`, payload.alertCounts.critical ? 'danger' : 'ok')}
         </div>
       </div>
       <div class="quick-actions" style="margin-top:12px">
@@ -630,6 +711,7 @@ function renderProductLeaderboard() {
         ${badge(`Контент ${fmt.money(filteredSummary.contentCost)}`, filteredSummary.contentCost ? 'warn' : '')}
         ${badge(`Доход ${fmt.money(filteredSummary.income)}`, filteredSummary.income > 0 ? 'ok' : 'warn')}
         ${badge(`Buy rate ${fmt.pct(filteredSummary.buyRatePct)}`, 'info')}
+        ${badge(`High alerts ${fmt.int(payload.alertCounts.high || 0)}`, payload.alertCounts.high ? 'warn' : '')}
       </div>
     </div>
 
@@ -670,7 +752,7 @@ function renderProductLeaderboard() {
           <p class="small muted">В одной строке видно товар, owner, краткую воронку и экономику.</p>
         </div>
         <div class="badge-stack">
-          ${badge(`${fmt.int(filteredItems.filter((item) => item.signal === 'leader').length)} сильных`, filteredItems.some((item) => item.signal === 'leader') ? 'ok' : '')}
+          ${badge(`${fmt.int(filteredItems.filter((item) => item.signal === 'leader').length)} КЗ работает`, filteredItems.some((item) => item.signal === 'leader') ? 'ok' : '')}
           ${badge(`${fmt.int(filteredItems.filter((item) => item.signal === 'risk').length)} в риске`, filteredItems.some((item) => item.signal === 'risk') ? 'warn' : 'ok')}
         </div>
       </div>
@@ -692,6 +774,7 @@ function renderProductLeaderboard() {
           <tbody>
             ${filteredItems.map((item) => {
               const signalMeta = productLeaderboardSignalMeta(item.signal);
+              const topAlerts = (item.diagnostics?.alerts || []).slice(0, 2);
               return `
                 <tr>
                   <td>
@@ -701,7 +784,9 @@ function renderProductLeaderboard() {
                       ${badge(signalMeta.label, signalMeta.tone)}
                       ${item.category ? badge(item.category, '') : ''}
                       ${item.traffic ? badge(item.traffic, 'info') : ''}
+                      ${topAlerts.map((alert) => badge(alert.label, productLeaderboardAlertTone(alert.severity))).join('')}
                     </div>
+                    <div class="muted small" style="margin-top:8px">${escapeHtml(item.diagnostics?.summary || 'Без критичных отклонений')}</div>
                   </td>
                   <td>
                     <div>${item.owner ? badge(item.owner, 'info') : badge('Без owner', 'warn')}</div>
@@ -710,6 +795,7 @@ function renderProductLeaderboard() {
                   <td>
                     <div class="muted small">Охват ${fmt.int(item.reach)} · Клики ${fmt.int(item.clicks)}</div>
                     <div class="muted small">Корзина ${fmt.int(item.carts)} · Заказы ${fmt.int(item.orders)} · Выкупы ${fmt.int(item.buys)}</div>
+                    <div class="muted small">ERview ${fmt.pct(item.erviewPct)} · Buyout ${fmt.pct(item.buyoutPct)}</div>
                   </td>
                   <td>${fmt.pct(item.ctrPct)}</td>
                   <td>${fmt.pct(item.conversionPct)}</td>

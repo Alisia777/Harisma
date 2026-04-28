@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428B__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428C__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428C__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428B__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428A__ = true;
 
@@ -40,6 +41,19 @@
     loadNonce: 0
   };
   window.__alteaPriceWorkbenchState = state;
+  var derived = {
+    portalStorageRaw: null,
+    portalStorageParsed: null,
+    explicitRepricerMapRaw: null,
+    explicitRepricerMap: null,
+    repricerRowsRef: null,
+    repricerRowLookup: null,
+    visibleRows: { rowsRef: null, market: "", search: "", dateFrom: "", dateTo: "", leaderboardRef: null, value: null },
+    stats: { rowsRef: null, value: null },
+    table: { rowsRef: null, value: null },
+    productLeaderboardRef: null,
+    productLeaderboardLookup: null
+  };
 
   function esc(value) {
     return String(value == null ? "" : value)
@@ -163,9 +177,40 @@
 
   function rootState() {
     try {
+      if (window.__alteaAppState && window.__alteaAppState !== state) return window.__alteaAppState;
+    } catch {}
+    try {
       if (window.state && window.state !== state) return window.state;
     } catch {}
     return null;
+  }
+
+  function readPortalStorageState() {
+    var raw = "";
+    try {
+      raw = localStorage.getItem("brand-portal-local-v1") || "";
+    } catch (error) {
+      console.warn("[price-simple] local-json", "brand-portal-local-v1", error);
+      return {};
+    }
+    if (derived.portalStorageRaw === raw && derived.portalStorageParsed) return derived.portalStorageParsed;
+    derived.portalStorageRaw = raw;
+    try {
+      var parsed = raw ? JSON.parse(raw) : {};
+      derived.portalStorageParsed = parsed && typeof parsed === "object" ? parsed : {};
+    } catch (error) {
+      console.warn("[price-simple] local-json", "brand-portal-local-v1", error);
+      derived.portalStorageParsed = {};
+    }
+    derived.explicitRepricerMapRaw = null;
+    derived.explicitRepricerMap = null;
+    return derived.portalStorageParsed;
+  }
+
+  function pickFreshestDisplay(current, candidate) {
+    if (!candidate) return current || null;
+    if (!current) return candidate;
+    return parseFreshStamp(candidate.updatedAt) >= parseFreshStamp(current.updatedAt) ? candidate : current;
   }
 
   function moneyRound(value) {
@@ -242,30 +287,60 @@
   function findRepricerRow(articleKey) {
     var wanted = norm(articleKey);
     if (!wanted) return null;
-    return chooseRepricerRows().find(function (row) {
-      return wanted === norm(row && (row.articleKey || row.article || row.sku));
-    }) || null;
+    var rows = chooseRepricerRows();
+    if (derived.repricerRowsRef !== rows || !derived.repricerRowLookup) {
+      var lookup = Object.create(null);
+      rows.forEach(function (row) {
+        var key = norm(row && (row.articleKey || row.article || row.sku));
+        if (!key || lookup[key]) return;
+        lookup[key] = row;
+      });
+      derived.repricerRowsRef = rows;
+      derived.repricerRowLookup = lookup;
+    }
+    return derived.repricerRowLookup[wanted] || null;
+  }
+
+  function explicitRepricerMaps() {
+    if (derived.explicitRepricerMapRaw === derived.portalStorageRaw && derived.explicitRepricerMap) {
+      return derived.explicitRepricerMap;
+    }
+    var portal = readPortalStorageState();
+    var overrides = Array.isArray(portal && portal.repricerOverrides) ? portal.repricerOverrides : [];
+    var maps = {
+      all: Object.create(null),
+      wb: Object.create(null),
+      ozon: Object.create(null),
+      ym: Object.create(null)
+    };
+    overrides.forEach(function (entry) {
+      var normalized = normalizeRepricerOverride(entry);
+      var key = norm(normalized.articleKey);
+      if (!key) return;
+      var display = repricerExplicitTarget(normalized);
+      if (!display) return;
+      var platform = normalized.platform || "all";
+      if (!maps[platform]) maps[platform] = Object.create(null);
+      maps[platform][key] = pickFreshestDisplay(maps[platform][key], display);
+    });
+    derived.explicitRepricerMapRaw = derived.portalStorageRaw;
+    derived.explicitRepricerMap = maps;
+    return maps;
+  }
+
+  function findExplicitRepricerDisplay(targetMarket, articleKey) {
+    var wanted = norm(articleKey);
+    if (!wanted) return null;
+    var maps = explicitRepricerMaps();
+    var fromAll = maps.all && maps.all[wanted] ? maps.all[wanted] : null;
+    var fromMarket = maps[targetMarket] && maps[targetMarket][wanted] ? maps[targetMarket][wanted] : null;
+    return pickFreshestDisplay(fromAll, fromMarket);
   }
 
   function buildRepricerDisplay(market, articleKey) {
     var targetMarket = repricerMarket(market);
     if (targetMarket !== "wb" && targetMarket !== "ozon") return null;
-    var wanted = norm(articleKey);
-    if (!wanted) return null;
-
-    var portal = readJsonSafe("brand-portal-local-v1", {});
-    var overrides = Array.isArray(portal && portal.repricerOverrides) ? portal.repricerOverrides : [];
-    var explicit = null;
-    overrides.forEach(function (entry) {
-      var normalized = normalizeRepricerOverride(entry);
-      if (norm(normalized.articleKey) !== wanted) return;
-      if (normalized.platform !== "all" && normalized.platform !== targetMarket) return;
-      var display = repricerExplicitTarget(normalized);
-      if (!display) return;
-      if (!explicit || parseFreshStamp(display.updatedAt) >= parseFreshStamp(explicit.updatedAt)) {
-        explicit = display;
-      }
-    });
+    var explicit = findExplicitRepricerDisplay(targetMarket, articleKey);
     if (explicit) return explicit;
 
     var row = findRepricerRow(articleKey);
@@ -520,7 +595,10 @@
           }
         }, timeoutMs);
       }
-      var response = await fetch(url, {
+      var activeFetch = typeof window.__ALTEA_BASE_FETCH__ === "function"
+        ? window.__ALTEA_BASE_FETCH__
+        : fetch;
+      var response = await activeFetch(url, {
         cache: "no-store",
         signal: controller ? controller.signal : undefined
       });
@@ -663,6 +741,17 @@
       ".pw-mini{background:rgba(9,7,5,.74);border:1px solid rgba(214,175,85,.12);border-radius:18px;padding:14px 16px;}",
       ".pw-mini strong{display:block;margin-top:8px;font-size:24px;color:#fff0cf;}",
       ".pw-mini small{display:block;margin-top:6px;color:#cdb892;line-height:1.4;}",
+      ".pw-kz-stack{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center;}",
+      ".pw-kz-summary{max-width:none;}",
+      ".pw-kz-badge{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(214,175,85,.26);background:rgba(214,175,85,.08);color:#f3dfb6;border-radius:999px;padding:6px 10px;font-size:12px;line-height:1.2;cursor:pointer;}",
+      ".pw-kz-badge.ok{background:rgba(52,120,76,.18);border-color:rgba(115,205,144,.28);color:#dff6dd;}",
+      ".pw-kz-badge.info{background:rgba(56,99,135,.18);border-color:rgba(114,176,231,.28);color:#d7eaff;}",
+      ".pw-kz-badge.warn{background:rgba(138,98,29,.22);border-color:rgba(240,188,82,.32);color:#ffe7b1;}",
+      ".pw-kz-badge.danger{background:rgba(132,43,43,.24);border-color:rgba(255,136,136,.28);color:#ffd5d5;}",
+      ".pw-badge.pw-badge-ok{background:rgba(52,120,76,.18);border-color:rgba(115,205,144,.28);color:#dff6dd;}",
+      ".pw-badge.pw-badge-info{background:rgba(56,99,135,.18);border-color:rgba(114,176,231,.28);color:#d7eaff;}",
+      ".pw-badge.pw-badge-warn{background:rgba(138,98,29,.22);border-color:rgba(240,188,82,.32);color:#ffe7b1;}",
+      ".pw-badge.pw-badge-danger{background:rgba(132,43,43,.24);border-color:rgba(255,136,136,.28);color:#ffd5d5;}",
       ".pw-history-wrap{overflow:auto;}",
       ".pw-history{width:100%;border-collapse:collapse;min-width:760px;}",
       ".pw-history th,.pw-history td{padding:10px 12px;border-top:1px solid rgba(214,175,85,.1);text-align:left;}",
@@ -694,7 +783,8 @@
 
   function buildSkuMetaMap() {
     var map = Object.create(null);
-    var skuRows = Array.isArray(window.state && window.state.skus) ? window.state.skus : [];
+    var root = rootState() || {};
+    var skuRows = Array.isArray(root.skus) ? root.skus : [];
     skuRows.forEach(function (row) {
       var key = norm(row && (row.articleKey || row.article || row.sku));
       if (!key || map[key]) return;
@@ -705,9 +795,10 @@
         launchReady: row && row.launchReady
       };
     });
-    var profiles = Array.isArray(window.state && window.state.storage && window.state.storage.repricerSkuProfiles)
-      ? window.state.storage.repricerSkuProfiles
-      : [];
+    var portal = readPortalStorageState();
+    var profiles = Array.isArray(root.storage && root.storage.repricerSkuProfiles) && root.storage.repricerSkuProfiles.length
+      ? root.storage.repricerSkuProfiles
+      : (Array.isArray(portal && portal.repricerSkuProfiles) ? portal.repricerSkuProfiles : []);
     profiles.forEach(function (row) {
       var key = norm(row && (row.articleKey || row.article || row.sku));
       if (!key) return;
@@ -719,6 +810,123 @@
       });
     });
     return map;
+  }
+
+  function leaderboardSignalMeta(signal) {
+    var map = {
+      leader: { label: "KZ работает", tone: "ok" },
+      steady: { label: "KZ: наблюдать", tone: "info" },
+      risk: { label: "KZ в риске", tone: "warn" },
+      no_owner: { label: "KZ без owner", tone: "danger" },
+      no_sales: { label: "KZ без выкупов", tone: "danger" }
+    };
+    return map[signal] || map.steady;
+  }
+
+  function leaderboardAlertTone(severity) {
+    if (severity === "critical") return "danger";
+    if (severity === "high") return "warn";
+    if (severity === "medium") return "info";
+    return "";
+  }
+
+  function buildProductLeaderboardLookup() {
+    var root = rootState() || {};
+    var payload = root.productLeaderboard || {};
+    if (derived.productLeaderboardRef === payload && derived.productLeaderboardLookup) return derived.productLeaderboardLookup;
+    var map = Object.create(null);
+    var items = Array.isArray(payload && payload.items) ? payload.items : [];
+    items.forEach(function (item) {
+      var key = norm(item && item.articleKey);
+      if (!key || map[key]) return;
+      map[key] = item;
+    });
+    derived.productLeaderboardRef = payload;
+    derived.productLeaderboardLookup = map;
+    return map;
+  }
+
+  function findProductLeaderboardEntry(articleKey) {
+    var key = norm(articleKey);
+    if (!key) return null;
+    return buildProductLeaderboardLookup()[key] || null;
+  }
+
+  function renderLeaderboardSummary(entry) {
+    return String(entry && entry.diagnostics && entry.diagnostics.summary || "").trim() || "Weekly KZ-срез без критичных отклонений.";
+  }
+
+  function renderProductLeaderboardBadge(entry, articleKey) {
+    if (!entry) return "";
+    var meta = leaderboardSignalMeta(entry.signal);
+    return [
+      '<button type="button" class="pw-kz-badge ', esc(meta.tone), '" data-open-product-leaderboard="', esc(articleKey || entry.articleKey || ""), '" title="', esc(renderLeaderboardSummary(entry)), '">',
+      esc(meta.label),
+      '</button>'
+    ].join("");
+  }
+
+  function renderProductLeaderboardAlerts(entry, limit) {
+    var alerts = Array.isArray(entry && entry.diagnostics && entry.diagnostics.alerts) ? entry.diagnostics.alerts.slice(0, limit || 3) : [];
+    if (!alerts.length) return "";
+    return alerts.map(function (alert) {
+      var tone = leaderboardAlertTone(alert && alert.severity);
+      return '<span class="pw-badge pw-badge-' + esc(tone) + '" title="' + esc(alert && alert.hint || alert && alert.title || "") + '">' + esc(alert && (alert.label || alert.title) || "Сигнал") + '</span>';
+    }).join("");
+  }
+
+  function renderProductLeaderboardContext(entry, articleKey) {
+    if (!entry) return "";
+    return [
+      '<div class="pw-card">',
+      '<div class="pw-label">КЗ / продуктовый лидерборд</div>',
+      '<div class="pw-kz-stack" style="margin-top:10px;">',
+      renderProductLeaderboardBadge(entry, articleKey),
+      entry.weekLabel ? '<span class="pw-badge">' + esc(entry.weekLabel) + '</span>' : "",
+      entry.owner ? '<span class="pw-badge">' + esc(entry.owner) + '</span>' : "",
+      renderProductLeaderboardAlerts(entry),
+      '</div>',
+      '<div class="pw-note pw-kz-summary">', esc(renderLeaderboardSummary(entry)), '</div>',
+      '<div class="pw-kz-stack">',
+      '<span class="pw-badge">Выкупы ' + esc(intf(entry.buys)) + '</span>',
+      '<span class="pw-badge">ROMI ' + esc(pct(entry.romiPct)) + '</span>',
+      '<span class="pw-badge">ДРР ' + esc(pct(entry.drrPct)) + '</span>',
+      '<span class="pw-badge">CTR ' + esc(pct(entry.ctrPct)) + '</span>',
+      '</div>',
+      '</div>'
+    ].join("");
+  }
+
+  function openProductLeaderboard(articleKey) {
+    var key = String(articleKey || "").trim();
+    if (!key) return;
+    state.selectedKey = "";
+    try {
+      if (typeof window.openProductLeaderboardForSku === "function") {
+        window.openProductLeaderboardForSku(key);
+        return;
+      }
+    } catch (error) {
+      console.warn("[price-simple] leaderboard-open", error);
+    }
+    var root = rootState();
+    if (root) {
+      root.productLeaderboardFilters = root.productLeaderboardFilters || {};
+      root.productLeaderboardFilters.search = key;
+      root.productLeaderboardFilters.owner = "all";
+      root.productLeaderboardFilters.signal = "all";
+      if (!root.productLeaderboardFilters.sort) root.productLeaderboardFilters.sort = "buys";
+    }
+    var nav = document.querySelector('.nav-btn[data-view="product-leaderboard"]');
+    if (nav && typeof nav.click === "function") {
+      nav.click();
+      return;
+    }
+    try {
+      if (typeof window.setView === "function") window.setView("product-leaderboard");
+    } catch (error) {
+      console.warn("[price-simple] leaderboard-fallback", error);
+    }
   }
 
   function procurementPlatform(value) {
@@ -995,6 +1203,7 @@
   function buildDisplayRow(row) {
     if (!row) return null;
     var next = Object.assign({}, row);
+    next.productLeaderboard = findProductLeaderboardEntry(next.articleKey);
     var point = latestRangePoint(row);
     next.rangeHasPoint = Boolean(point);
     next.repricerDisplay = buildRepricerDisplay(next.market, next.articleKey);
@@ -1019,6 +1228,18 @@
 
   function visibleRows() {
     var search = String(state.search || "").trim().toLowerCase();
+    var leaderboardRef = (rootState() || {}).productLeaderboard || null;
+    if (
+      derived.visibleRows.rowsRef === state.rows &&
+      derived.visibleRows.market === state.market &&
+      derived.visibleRows.search === search &&
+      derived.visibleRows.dateFrom === state.dateFrom &&
+      derived.visibleRows.dateTo === state.dateTo &&
+      derived.visibleRows.leaderboardRef === leaderboardRef &&
+      derived.visibleRows.value
+    ) {
+      return derived.visibleRows.value;
+    }
     var next = [];
     state.rows.forEach(function (row) {
       if (state.market !== "all" && row.market !== state.market) return;
@@ -1030,10 +1251,18 @@
       if ((state.dateFrom || state.dateTo) && !displayRow.rangeHasPoint) return;
       next.push(displayRow);
     });
+    derived.visibleRows.rowsRef = state.rows;
+    derived.visibleRows.market = state.market;
+    derived.visibleRows.search = search;
+    derived.visibleRows.dateFrom = state.dateFrom;
+    derived.visibleRows.dateTo = state.dateTo;
+    derived.visibleRows.leaderboardRef = leaderboardRef;
+    derived.visibleRows.value = next;
     return next;
   }
 
   function stats(rows) {
+    if (derived.stats.rowsRef === rows && derived.stats.value) return derived.stats.value;
     function mean(list) {
       return list.length ? list.reduce(function (acc, value) { return acc + value; }, 0) / list.length : null;
     }
@@ -1047,13 +1276,16 @@
       if (row.turnoverDays != null) turnover.push(row.turnoverDays);
       if (row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct) below += 1;
     });
-    return {
+    var summary = {
       count: rows.length,
       avgPrice: mean(price),
       avgMargin: mean(margin),
       avgTurnover: mean(turnover),
       belowAllowed: below
     };
+    derived.stats.rowsRef = rows;
+    derived.stats.value = summary;
+    return summary;
   }
 
   function findRow(key) {
@@ -1071,14 +1303,20 @@
   }
 
   function renderTable(rows) {
-    if (!rows.length) return '<div class="pw-empty">\u041f\u043e \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u044b\u043c \u0444\u0438\u043b\u044c\u0442\u0440\u0430\u043c \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0441\u0442\u0440\u043e\u043a.</div>';
+    if (derived.table.rowsRef === rows && typeof derived.table.value === "string") return derived.table.value;
+    if (!rows.length) {
+      var emptyHtml = '<div class="pw-empty">\u041f\u043e \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u044b\u043c \u0444\u0438\u043b\u044c\u0442\u0440\u0430\u043c \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0441\u0442\u0440\u043e\u043a.</div>';
+      derived.table.rowsRef = rows;
+      derived.table.value = emptyHtml;
+      return emptyHtml;
+    }
     var sorted = rows.slice().sort(function (a, b) {
       var dangerA = a.allowedMarginPct != null && a.marginTotalPct != null && a.marginTotalPct < a.allowedMarginPct ? 1 : 0;
       var dangerB = b.allowedMarginPct != null && b.marginTotalPct != null && b.marginTotalPct < b.allowedMarginPct ? 1 : 0;
       if (dangerA !== dangerB) return dangerB - dangerA;
       return (b.currentFillPrice || 0) - (a.currentFillPrice || 0);
     });
-    return [
+    var html = [
       '<div class="pw-table-wrap"><table class="pw-table"><thead><tr>',
       '<th>\u0410\u0440\u0442\u0438\u043a\u0443\u043b</th><th>Owner</th><th>\u0421\u0442\u0430\u0442\u0443\u0441</th><th>\u0426\u0435\u043d\u0430 MP</th><th>\u0426\u0435\u043d\u0430 \u0440\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440\u0430</th><th>\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430</th><th>\u0421\u041f\u041f</th><th>\u0414\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u0430\u044f 3\u043c</th><th>\u041c\u0430\u0440\u0436\u0430</th><th>\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</th>',
       '</tr></thead><tbody>',
@@ -1086,7 +1324,9 @@
         var danger = row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct;
         return [
           '<tr class="pw-row" data-open-price="', esc(row.articleKey), '" data-price-market="', esc(row.market), '">',
-          '<td><div class="pw-sku">', esc(row.articleKey), '</div><div class="pw-note">', esc(row.name), '</div></td>',
+          '<td><div class="pw-sku">', esc(row.articleKey), '</div><div class="pw-note">', esc(row.name), '</div>',
+          row.productLeaderboard ? '<div class="pw-kz-stack">' + renderProductLeaderboardBadge(row.productLeaderboard, row.articleKey) + renderProductLeaderboardAlerts(row.productLeaderboard, 1) + '</div>' : '',
+          '</td>',
           '<td>', esc(row.owner || "\u2014"), '</td>',
           '<td><span class="pw-badge">', esc(row.status || "\u2014"), '</span></td>',
           '<td>', money(row.currentFillPrice), '</td>',
@@ -1101,6 +1341,9 @@
       }).join(""),
       '</tbody></table></div>'
     ].join("");
+    derived.table.rowsRef = rows;
+    derived.table.value = html;
+    return html;
   }
 
   function renderHistory(row) {
@@ -1141,6 +1384,7 @@
 
   function renderModal(row) {
     if (!row) return "";
+    var leaderboardEntry = row.productLeaderboard || findProductLeaderboardEntry(row.articleKey);
     var turnoverHelp = row.turnoverSource === "order_procurement"
       ? "\u0424\u043e\u043b\u0431\u044d\u043a \u0438\u0437 \u0417\u0430\u043a\u0430\u0437\u0430: inStock / avgDaily \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0435."
       : "\u0422\u0435\u043a\u0443\u0449\u0435\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043f\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u0438.";
@@ -1162,6 +1406,7 @@
       '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 \u043f\u043e \u043c\u0430\u0440\u0436\u0435</span><strong>', money(row.requiredPriceForMargin), '</strong><small>\u0415\u0441\u043b\u0438 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u0438\u0435\u0445\u0430\u043b\u043e \u0432 smart-\u0441\u043b\u043e\u0435.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0421\u0440\u0435\u0437 \u0446\u0435\u043d</span><strong>', esc(row.valueDate || state.latestFactDate || "\u2014"), '</strong><small>\u042d\u0442\u043e \u0434\u0430\u0442\u0430 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u0439 \u0442\u043e\u0447\u043a\u0438 \u0432 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u043c \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0435.</small></div>',
       '</div>',
+      renderProductLeaderboardContext(leaderboardEntry, row.articleKey),
       '<div class="pw-card">',
       '<div class="pw-label">\u041a\u043e\u043d\u0442\u0435\u043a\u0441\u0442 \u043f\u043e\u0437\u0438\u0446\u0438\u0438</div>',
       '<div class="pw-note">', esc(row.historyNote || "\u0412 \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0435 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c, \u043e\u0442\u043a\u0443\u0434\u0430 \u0432\u0437\u044f\u043b\u0438 \u0442\u0435\u043a\u0443\u0449\u0443\u044e \u0446\u0435\u043d\u0443, \u043c\u0430\u0440\u0436\u0443 \u0438 \u043e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c."), '</div>',
@@ -1169,6 +1414,35 @@
       '</div>',
       '</div></div>'
     ].join("");
+  }
+
+  function selectedDisplayRow() {
+    return state.selectedKey ? buildDisplayRow(findRow(state.selectedKey)) : null;
+  }
+
+  function attachModalHandlers() {
+    var modal = document.getElementById("priceSimpleModal");
+    if (!modal) return;
+    modal.addEventListener("click", function (event) {
+      var leaderboardButton = event.target.closest("[data-open-product-leaderboard]");
+      if (leaderboardButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        openProductLeaderboard(leaderboardButton.getAttribute("data-open-product-leaderboard"));
+        return;
+      }
+      if (event.target === modal || event.target.closest("[data-close-price-modal]")) {
+        state.selectedKey = "";
+        renderSelectedModal();
+      }
+    });
+  }
+
+  function renderSelectedModal() {
+    var host = document.getElementById("priceSimpleModalHost");
+    if (!host) return;
+    host.innerHTML = renderModal(selectedDisplayRow());
+    attachModalHandlers();
   }
 
   function renderControlGuide() {
@@ -1249,7 +1523,7 @@
       '<div class="pw-label">\u0422\u0430\u0431\u043b\u0438\u0446\u0430</div>',
       state.loading && !state.loaded ? '<div class="pw-empty">\u0417\u0430\u0433\u0440\u0443\u0436\u0430\u044e \u0434\u0430\u043d\u043d\u044b\u0435 \u0432\u043a\u043b\u0430\u0434\u043a\u0438 \u0426\u0435\u043d\u044b...</div>' : renderTable(rows),
       '</section>',
-      renderModal(selected),
+      '<div id="priceSimpleModalHost">', renderModal(selected), '</div>',
       '</div>'
     ].join("");
 
@@ -1305,18 +1579,17 @@
     root.querySelectorAll("[data-open-price]").forEach(function (rowNode) {
       rowNode.addEventListener("click", function () {
         state.selectedKey = rowNode.getAttribute("data-open-price");
-        renderPriceWorkbench();
+        renderSelectedModal();
       });
     });
-    var modal = document.getElementById("priceSimpleModal");
-    if (modal) {
-      modal.addEventListener("click", function (event) {
-        if (event.target === modal || event.target.closest("[data-close-price-modal]")) {
-          state.selectedKey = "";
-          renderPriceWorkbench();
-        }
+    root.querySelectorAll("[data-open-product-leaderboard]").forEach(function (button) {
+      button.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        openProductLeaderboard(button.getAttribute("data-open-product-leaderboard"));
       });
-    }
+    });
+    attachModalHandlers();
   }
 
   function renderPriceWorkbench() {
@@ -1331,7 +1604,7 @@
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape" && state.selectedKey) {
       state.selectedKey = "";
-      renderPriceWorkbench();
+      renderSelectedModal();
     }
   });
 

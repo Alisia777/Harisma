@@ -1,4 +1,5 @@
 (function () {
+  if (window.__ALTEA_PRICE_SIMPLE_RUNTIME_MODE__) return;
   if (window.__ALTEA_SMART_PRICE_OVERLAY_FASTPATH_20260425A__) return;
   window.__ALTEA_SMART_PRICE_OVERLAY_FASTPATH_20260425A__ = true;
 

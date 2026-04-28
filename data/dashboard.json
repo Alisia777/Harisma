@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-28T07:00:36.346Z",
+  "generatedAt": "2026-04-28T07:40:42.433Z",
   "dataFreshness": {
     "planFactMonth": "Апрель 2026 · Smart = Altea",
     "ordersSnapshot": "orders (40).csv",
@@ -119,7 +119,7 @@
     },
     {
       "label": "Остатки MP, шт.",
-      "value": 342341,
+      "value": 0,
       "hint": "WB + Ozon по срезу Google Sheets на 2026-04-27"
     },
     {
@@ -143,7 +143,7 @@
     {
       "brand": "Алтея",
       "sku_count": 89,
-      "total_stock": 342341,
+      "total_stock": 0,
       "orders_value": 161631197.21,
       "feb_plan_units": 127838,
       "feb_fact_units": 48829,

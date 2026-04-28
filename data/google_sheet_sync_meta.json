@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-04-28T07:40:42.438Z",
+  "sheetSource": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\smart-price-workbook.xlsx",
+  "updatedSkus": 89,
+  "dashboard": {
+    "latest_marketplace_date": "2026-04-27",
+    "month_plan_units": 173171,
+    "month_fact_units": 145336,
+    "month_fact_revenue": 186957291,
+    "completion_to_date_pct": 0.9325
+  },
+  "platformTrends": {
+    "latest_marketplace_date": "2026-04-27",
+    "points": 14
+  },
+  "logistics": {
+    "latest_logistics_date": "2026-04-16",
+    "ozon_cluster_count": 0,
+    "ozon_warehouse_count": 0,
+    "wb_warehouse_count": 0
+  }
+}

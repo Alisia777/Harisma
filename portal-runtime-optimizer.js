@@ -7,6 +7,7 @@
   window.__ALTEA_RUNTIME_OPTIMIZER_20260428D__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260428C__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260428B__ = true;
+  window.__ALTEA_PRICE_SIMPLE_RUNTIME_MODE__ = true;
 
   const BUNDLE_MAP = {
     dashboard: [
@@ -20,9 +21,7 @@
     ],
     prices: [
       'portal-price-snapshot-fastpath-hotfix.js?v=20260425e',
-      'portal-price-workbench-runtime-loader.js?v=20260428b',
-      'portal-price-overlay-bridge-hotfix.js?v=20260425f',
-      'portal-price-turnover-order-fallback-hotfix.js?v=20260425a',
+      'portal-price-workbench-runtime-loader.js?v=20260428c',
       'portal-team-reconnect-hotfix.js?v=20260420a'
     ]
   };

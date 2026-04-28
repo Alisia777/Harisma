@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_REPRICER_COLDSTART_HOTFIX_20260425A__) return;
-  window.__ALTEA_REPRICER_COLDSTART_HOTFIX_20260425A__ = true;
+  if (window.__ALTEA_REPRICER_COLDSTART_HOTFIX_20260428A__) return;
+  window.__ALTEA_REPRICER_COLDSTART_HOTFIX_20260428A__ = true;
 
   let hydratePromise = null;
   let repricerIntentUntil = 0;
@@ -102,7 +102,56 @@
   }
 
   function normalizeArticleKey(value) {
-    return String(value || '').toLowerCase().replace(/[^a-zР°-СЏ0-9]+/gi, '');
+    return String(value || '').toLowerCase().replace(/[^a-zа-я0-9]+/gi, '');
+  }
+
+  function parseFreshStamp(value) {
+    if (!value) return 0;
+    if (value instanceof Date) return Number.isNaN(value.getTime()) ? 0 : value.getTime();
+    const raw = String(value || '').trim();
+    if (!raw) return 0;
+    const normalized = /^\d{4}-\d{2}$/.test(raw)
+      ? `${raw}-01T00:00:00Z`
+      : /^\d{4}-\d{2}-\d{2}$/.test(raw)
+        ? `${raw}T00:00:00Z`
+        : raw;
+    const stamp = Date.parse(normalized);
+    return Number.isFinite(stamp) ? stamp : 0;
+  }
+
+  function workbenchPayloadFreshness(payload) {
+    let score = 0;
+    const bump = (value) => {
+      score = Math.max(score, parseFreshStamp(value));
+    };
+    bump(payload?.generatedAt);
+    bump(payload?.updatedAt);
+    bump(payload?.updated_at);
+    Object.values(payload?.platforms || {}).forEach((bucket) => {
+      const rows = Array.isArray(bucket?.rows) ? bucket.rows : Object.values(bucket?.rows || {});
+      rows.forEach((row) => {
+        (Array.isArray(row?.daily) ? row.daily : []).forEach((point) => bump(point?.date));
+        (Array.isArray(row?.monthly) ? row.monthly : []).forEach((point) => bump(point?.date));
+      });
+    });
+    return score;
+  }
+
+  function workbenchPayloadGeneratedStamp(payload) {
+    return parseFreshStamp(payload?.generatedAt || payload?.updatedAt || payload?.updated_at || '');
+  }
+
+  function shouldUseLiveWorkbench(primaryPayload, livePayload) {
+    if (!livePayload?.platforms || typeof livePayload.platforms !== 'object') return false;
+    const primaryGeneratedStamp = workbenchPayloadGeneratedStamp(primaryPayload);
+    const liveGeneratedStamp = workbenchPayloadGeneratedStamp(livePayload);
+    if (primaryGeneratedStamp && liveGeneratedStamp) return liveGeneratedStamp >= primaryGeneratedStamp;
+    if (primaryGeneratedStamp) return false;
+    if (liveGeneratedStamp) return true;
+    const primaryFreshness = workbenchPayloadFreshness(primaryPayload);
+    const liveFreshness = workbenchPayloadFreshness(livePayload);
+    if (!primaryFreshness) return liveFreshness > 0;
+    return liveFreshness >= primaryFreshness;
   }
 
   function mergeWorkbenchPayloadCompat(primaryPayload, livePayload) {
@@ -113,7 +162,7 @@
 
     const merged = cloneJson(primaryPayload) || { generatedAt: '', platforms: {} };
     merged.platforms = merged.platforms && typeof merged.platforms === 'object' ? merged.platforms : {};
-    if (!livePayload?.platforms || typeof livePayload.platforms !== 'object') return merged;
+    if (!shouldUseLiveWorkbench(merged, livePayload)) return merged;
 
     Object.entries(livePayload.platforms).forEach(([platform, bucket]) => {
       const nextBucket = cloneJson(merged.platforms[platform]) || {};
@@ -562,7 +611,7 @@
     installLoaderPatch();
     bindNavigationHydration();
 
-    if (getActiveView() === 'repricer' || repricerRootNeedsHydration()) {
+    if (getActiveView() === 'repricer') {
       primeRepricerIntent('startup');
       primeRenderEnforcer('startup');
       scheduleHydrate('startup', 80);

@@ -1,11 +1,31 @@
-const state = {
+﻿const state = {
   dashboard: { cards: [], generatedAt: '' },
   skus: [],
+  prices: { generatedAt: '', platforms: {} },
+  smartPriceWorkbench: { generatedAt: '', platforms: {} },
+  smartPriceWorkbenchBase: { generatedAt: '', platforms: {} },
+  smartPriceWorkbenchLive: { generatedAt: '', platforms: {} },
+  smartPriceOverlay: { generatedAt: '', platforms: {} },
+  priceWorkbenchSupport: { generatedAt: '', platforms: {} },
   launches: [],
   meetings: [],
   documents: { groups: [] },
   repricer: { generatedAt: '', summary: {}, rows: [] },
-  storage: { comments: [], tasks: [], decisions: [], ownerOverrides: [] },
+  repricerLive: { generatedAt: '', rows: [] },
+  storage: {
+    comments: [],
+    tasks: [],
+    decisions: [],
+    ownerOverrides: [],
+    repricerSettings: {},
+    repricerSettingsUpdatedAt: '',
+    repricerOverrides: [],
+    repricerSkuProfiles: [],
+    repricerCorridors: [],
+    repricerOverrideDeletes: [],
+    repricerSkuProfileDeletes: [],
+    repricerCorridorDeletes: []
+  },
   filters: {
     search: '',
     segment: 'all',
@@ -28,10 +48,14 @@ const state = {
     search: '',
     group: 'all'
   },
+  launchFilters: {
+    month: 'all'
+  },
   repricerFilters: {
     search: '',
     platform: 'all',
-    mode: 'changes'
+    mode: 'changes',
+    economicSource: 'all'
   },
   orderCalc: {
     articleKey: '',
@@ -82,15 +106,15 @@ window.__ALTEA_ORDER_PROCUREMENT_ENABLED__ = true;
 window.__ALTEA_OPTIMIZED_RENDER__ = true;
 
 const STORAGE_KEY = 'brand-portal-local-v1';
-const ACTIVE_TASK_STATUSES = new Set(['new', 'in_progress', 'waiting_team', 'waiting_decision']);
+const ACTIVE_TASK_STATUSES = new Set(['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision']);
 const VIEW_TITLES = {
   dashboard: 'Дашборд',
   documents: 'Документы',
   repricer: 'Репрайсер',
   prices: 'Цены',
-  order: 'Логистика и заказ',
+  order: 'Заказ товара',
   control: 'Задачи',
-  skus: 'Реестр SKU',
+  skus: 'Реестр СКЮ',
   launches: 'Продукт / Ксения',
   'launch-control': 'Запуск новинок',
   meetings: 'Ритм работы',
@@ -103,12 +127,23 @@ const VIEW_DATA_REQUIREMENTS = {
   documents: 'documents',
   repricer: 'repricer'
 };
+const DISABLED_VIEWS = new Set(['documents', 'meetings']);
+const VIEW_REDIRECTS = {
+  documents: 'dashboard',
+  meetings: 'dashboard'
+};
+
+function normalizePortalView(view = 'dashboard') {
+  const raw = String(view || 'dashboard').trim() || 'dashboard';
+  return DISABLED_VIEWS.has(raw) ? (VIEW_REDIRECTS[raw] || 'dashboard') : raw;
+}
 
 const TASK_STATUS_META = {
   new: { label: 'Новая', kind: 'warn' },
   in_progress: { label: 'В работе', kind: 'info' },
   waiting_team: { label: 'Ждёт другого отдела', kind: 'warn' },
-  waiting_decision: { label: 'Ждёт решения', kind: 'danger' },
+  waiting_rop: { label: 'На согласовании у РОПа', kind: 'warn' },
+  waiting_decision: { label: 'На согласовании у руководителя', kind: 'danger' },
   done: { label: 'Сделано', kind: 'ok' },
   cancelled: { label: 'Отменено', kind: '' }
 };
@@ -214,7 +249,8 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/ads_summary.json': 'ads_summary',
   'data/platform_plan.json': 'platform_plan',
   'data/prices.json': 'prices',
-  'data/smart_price_workbench.json': 'smart_price_workbench'
+  'data/smart_price_workbench.json': 'smart_price_workbench',
+  'data/smart_price_overlay.json': 'smart_price_overlay'
 };
 const portalSnapshotState = {
   client: null,
@@ -389,6 +425,428 @@ function cloneJsonValue(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function optionalLoadJson(path) {
+  return loadJson(path).catch(() => null);
+}
+
+function normalizeWorkbenchArticleKey(value = '') {
+  return String(value || '').toLowerCase().replace(/[^a-zа-я0-9]+/gi, '');
+}
+
+function workbenchValueMissing(value) {
+  return value === null || value === undefined || value === ''
+    || (Array.isArray(value) && value.length === 0);
+}
+
+function mergeWorkbenchField(target, key, value, force = false) {
+  if (value === undefined || value === null || value === '') return;
+  if (Array.isArray(value) && value.length === 0) return;
+  if (!force && !workbenchValueMissing(target[key])) return;
+  target[key] = cloneJsonValue(value);
+}
+
+function cloneWorkbenchSeries(series) {
+  return Array.isArray(series)
+    ? series.map((item) => cloneJsonValue(item) || {})
+    : [];
+}
+
+function workbenchPlatformStock(row = {}, platform = '') {
+  const rawPlatform = String(platform || '').trim().toLowerCase();
+  if (rawPlatform === 'ozon') return row.stockOzon ?? row.stock ?? row.stockRepricer ?? row.stockTotal;
+  if (rawPlatform === 'wb') return row.stockWb ?? row.stock ?? row.stockRepricer ?? row.stockTotal;
+  return row.stock ?? row.stockRepricer ?? row.stockTotal ?? row.stockWb ?? row.stockOzon;
+}
+
+function workbenchPlatformTurnover(row = {}, platform = '') {
+  const rawPlatform = String(platform || '').trim().toLowerCase();
+  if (rawPlatform === 'ozon') return row.turnoverOzonDays ?? row.turnoverCurrentDays ?? row.turnoverTotalDays;
+  if (rawPlatform === 'wb') return row.turnoverWbDays ?? row.turnoverCurrentDays ?? row.turnoverTotalDays;
+  return row.turnoverCurrentDays ?? row.turnoverTotalDays ?? row.turnoverWbDays ?? row.turnoverOzonDays;
+}
+
+function workbenchOverlayTimelineSeries(overlayRow = {}, cutoff = '') {
+  const sourceSeries = Array.isArray(overlayRow?.daily)
+    ? overlayRow.daily
+    : Array.isArray(overlayRow?.monthly)
+      ? overlayRow.monthly
+      : Array.isArray(overlayRow?.timeline)
+        ? overlayRow.timeline
+        : [];
+  return cloneWorkbenchSeries(sourceSeries)
+    .filter((item) => {
+      const date = String(item?.date || '').trim();
+      if (!date) return false;
+      return !cutoff || date <= cutoff;
+    })
+    .sort((left, right) => String(left?.date || '').localeCompare(String(right?.date || '')));
+}
+
+function applyWorkbenchOverlayPoint(point = {}, source = {}) {
+  if (!point || !source) return;
+  if (!workbenchValueMissing(source?.currentFillPrice)) point.price = source.currentFillPrice;
+  else if (!workbenchValueMissing(source?.currentPrice)) point.price = source.currentPrice;
+  else if (!workbenchValueMissing(source?.price)) point.price = source.price;
+  if (!workbenchValueMissing(source?.currentClientPrice)) point.clientPrice = source.currentClientPrice;
+  else if (!workbenchValueMissing(source?.clientPrice)) point.clientPrice = source.clientPrice;
+  if (!workbenchValueMissing(source?.currentSppPct)) point.sppPct = source.currentSppPct;
+  else if (!workbenchValueMissing(source?.sppPct)) point.sppPct = source.sppPct;
+  if (!workbenchValueMissing(source?.currentTurnoverDays)) point.turnoverDays = source.currentTurnoverDays;
+  else if (!workbenchValueMissing(source?.turnoverDays)) point.turnoverDays = source.turnoverDays;
+  if (!workbenchValueMissing(source?.ordersUnits)) point.ordersUnits = source.ordersUnits;
+  if (!workbenchValueMissing(source?.deliveredUnits)) point.deliveredUnits = source.deliveredUnits;
+  if (!workbenchValueMissing(source?.revenue)) point.revenue = source.revenue;
+}
+
+function workbenchPayloadFreshness(payload = {}) {
+  return payloadFreshnessScore('smart_price_workbench', payload || {});
+}
+
+function workbenchPayloadGeneratedStamp(payload = {}) {
+  return parseFreshStamp(payload?.generatedAt || payload?.updatedAt || payload?.updated_at || '');
+}
+
+function shouldUseWorkbenchLivePayload(primaryPayload = {}, livePayload = {}) {
+  if (!snapshotPayloadLooksUsable('smart_price_workbench', livePayload)) return false;
+  const primaryGeneratedStamp = workbenchPayloadGeneratedStamp(primaryPayload);
+  const liveGeneratedStamp = workbenchPayloadGeneratedStamp(livePayload);
+  if (primaryGeneratedStamp && liveGeneratedStamp) return liveGeneratedStamp >= primaryGeneratedStamp;
+  if (primaryGeneratedStamp) return false;
+  if (liveGeneratedStamp) return true;
+  const primaryFreshness = workbenchPayloadFreshness(primaryPayload);
+  const liveFreshness = workbenchPayloadFreshness(livePayload);
+  if (!primaryFreshness) return liveFreshness > 0;
+  return liveFreshness >= primaryFreshness;
+}
+
+function mergeSmartWorkbenchRow(primaryRow = {}, liveRow = {}, platform = '') {
+  const next = cloneJsonValue(primaryRow) || {};
+  const live = liveRow && typeof liveRow === 'object' ? liveRow : null;
+  if (!live) return next;
+
+  [
+    'articleKey',
+    'article',
+    'name',
+    'owner',
+    'marketplace',
+    'currentFillPrice',
+    'currentClientPrice',
+    'currentSppPct',
+    'seedTargetFillPrice',
+    'seedTargetClientPrice',
+    'seedReason',
+    'requiredPriceForProfitability',
+    'requiredPriceForMargin',
+    'allowedMarginPct',
+    'marginTotalPct',
+    'avgMargin7dPct',
+    'minPrice',
+    'basePrice',
+    'monthly'
+  ].forEach((key) => mergeWorkbenchField(next, key, live[key]));
+
+  [
+    'brand',
+    'strategy',
+    'strategyNote',
+    'direction',
+    'cost',
+    'costRub',
+    'productStatus',
+    'wbBlock',
+    'trafficSignal',
+    'stockWarehouse',
+    'stockWb',
+    'stockOzon',
+    'stockTotal',
+    'sales7Wb',
+    'sales7Ozon',
+    'sales7Total',
+    'turnoverWbDays',
+    'turnoverOzonDays',
+    'turnoverTotalDays',
+    'arrivalDate',
+    'firstPrice',
+    'discountFromPricePct',
+    'recommendedFirstPrice',
+    'id',
+    'profitabilityPct',
+    'marginNoAdsPct',
+    'seedPriceRaise',
+    'seedNewProfitabilityPct',
+    'seedProfitabilityDeltaPct',
+    'neededRaiseForProfitability',
+    'neededClientPriceForProfitability',
+    'neededRaiseForMargin',
+    'neededClientPriceForMargin',
+    'monthlyCurrentTurnoverDays',
+    'monthlyCurrentPrice'
+  ].forEach((key) => mergeWorkbenchField(next, key, live[key], true));
+
+  mergeWorkbenchField(next, 'status', live.productStatus || live.status);
+  mergeWorkbenchField(next, 'stock', workbenchPlatformStock(live, platform));
+  mergeWorkbenchField(next, 'stockRepricer', workbenchPlatformStock(live, platform));
+  mergeWorkbenchField(next, 'turnoverCurrentDays', workbenchPlatformTurnover(live, platform));
+
+  if (workbenchValueMissing(next.marketplace) && platform) next.marketplace = platform;
+  if (workbenchValueMissing(next.costRub) && !workbenchValueMissing(next.cost)) next.costRub = next.cost;
+
+  return next;
+}
+
+function mergeSmartWorkbenchPayload(primaryPayload = {}, livePayload = {}) {
+  const primary = primaryPayload && typeof primaryPayload === 'object'
+    ? cloneJsonValue(primaryPayload)
+    : { generatedAt: '', platforms: {} };
+  const liveCandidate = livePayload && typeof livePayload === 'object' ? cloneJsonValue(livePayload) : null;
+  const live = shouldUseWorkbenchLivePayload(primary, liveCandidate) ? liveCandidate : null;
+  const merged = primary && typeof primary === 'object' ? primary : { generatedAt: '', platforms: {} };
+  merged.platforms = merged.platforms && typeof merged.platforms === 'object' ? merged.platforms : {};
+
+  const platformKeys = new Set([
+    ...Object.keys(primary?.platforms || {}),
+    ...Object.keys(live?.platforms || {})
+  ]);
+
+  let liveEnrichedRows = 0;
+
+  platformKeys.forEach((platform) => {
+    const primaryBucket = primary?.platforms?.[platform] || {};
+    const liveBucket = live?.platforms?.[platform] || {};
+    const primaryRows = Array.isArray(primaryBucket.rows) ? primaryBucket.rows : [];
+    const liveRows = Array.isArray(liveBucket.rows) ? liveBucket.rows : [];
+    const liveMap = new Map();
+
+    liveRows.forEach((row) => {
+      const key = normalizeWorkbenchArticleKey(row?.articleKey || row?.article);
+      if (!key || liveMap.has(key)) return;
+      liveMap.set(key, row);
+    });
+
+    const mergedRows = [];
+    const usedKeys = new Set();
+
+    primaryRows.forEach((row) => {
+      const key = normalizeWorkbenchArticleKey(row?.articleKey || row?.article);
+      const liveRow = key ? liveMap.get(key) : null;
+      if (liveRow) {
+        usedKeys.add(key);
+        liveEnrichedRows += 1;
+      }
+      mergedRows.push(mergeSmartWorkbenchRow(row, liveRow, platform));
+    });
+
+    liveRows.forEach((row) => {
+      const key = normalizeWorkbenchArticleKey(row?.articleKey || row?.article);
+      if (!key || usedKeys.has(key)) return;
+      liveEnrichedRows += 1;
+      mergedRows.push(mergeSmartWorkbenchRow({}, row, platform));
+    });
+
+    const nextBucket = cloneJsonValue(primaryBucket) || {};
+    if (!nextBucket.label && liveBucket.label) nextBucket.label = liveBucket.label;
+    if (!nextBucket.emptyNote && liveBucket.emptyNote) nextBucket.emptyNote = liveBucket.emptyNote;
+    nextBucket.rows = mergedRows;
+    merged.platforms[platform] = nextBucket;
+  });
+
+  if (!merged.generatedAt || parseFreshStamp(live?.generatedAt) > parseFreshStamp(merged.generatedAt)) {
+    merged.generatedAt = live?.generatedAt || merged.generatedAt || '';
+  }
+  merged.liveEnrichmentAt = live?.generatedAt || '';
+  merged.liveEnrichmentUsed = liveEnrichedRows > 0;
+  if (live?.sourceFile) merged.liveSourceFile = live.sourceFile;
+
+  return merged;
+}
+
+function workbenchOverlayRows(rows) {
+  if (Array.isArray(rows)) return rows;
+  if (rows && typeof rows === 'object') return Object.values(rows);
+  return [];
+}
+
+function overlayFlagEnabled(value) {
+  return value === true || value === 'true' || value === 1 || value === '1';
+}
+
+function clearWorkbenchOverlayPoint(point = {}, overlayRow = {}) {
+  if (overlayFlagEnabled(overlayRow?.clearCurrentFillPrice) || overlayFlagEnabled(overlayRow?.clearCurrentPrice)) {
+    point.price = null;
+  }
+  if (overlayFlagEnabled(overlayRow?.clearCurrentClientPrice)) {
+    point.clientPrice = null;
+  }
+  if (overlayFlagEnabled(overlayRow?.clearCurrentSppPct)) {
+    point.sppPct = null;
+  }
+  if (overlayFlagEnabled(overlayRow?.clearCurrentTurnoverDays)) {
+    point.turnoverDays = null;
+  }
+}
+
+function clearWorkbenchOverlayRowFields(row = {}, overlayRow = {}) {
+  if (overlayFlagEnabled(overlayRow?.clearCurrentFillPrice) || overlayFlagEnabled(overlayRow?.clearCurrentPrice)) {
+    row.currentFillPrice = null;
+    row.currentPrice = null;
+  }
+  if (overlayFlagEnabled(overlayRow?.clearCurrentClientPrice)) {
+    row.currentClientPrice = null;
+  }
+  if (overlayFlagEnabled(overlayRow?.clearCurrentSppPct)) {
+    row.currentSppPct = null;
+  }
+  if (overlayFlagEnabled(overlayRow?.clearCurrentTurnoverDays)) {
+    row.currentTurnoverDays = null;
+    row.turnoverCurrentDays = null;
+  }
+}
+
+function mergeWorkbenchTimelineWithOverlay(series, overlayRow = {}) {
+  const nextSeries = cloneWorkbenchSeries(series);
+  const valueDate = String(overlayRow?.valueDate || overlayRow?.historyFreshnessDate || '').trim();
+  if (!valueDate) return nextSeries;
+
+  for (let index = nextSeries.length - 1; index >= 0; index -= 1) {
+    const currentDate = String(nextSeries[index]?.date || '').trim();
+    if (currentDate && currentDate > valueDate) nextSeries.splice(index, 1);
+  }
+
+  const pointsByDate = new Map();
+  nextSeries.forEach((item) => {
+    const date = String(item?.date || '').trim();
+    if (!date || pointsByDate.has(date)) return;
+    pointsByDate.set(date, item);
+  });
+
+  workbenchOverlayTimelineSeries(overlayRow, valueDate).forEach((item) => {
+    const date = String(item?.date || '').trim();
+    if (!date) return;
+    let point = pointsByDate.get(date);
+    if (!point) {
+      point = { date };
+      nextSeries.push(point);
+      pointsByDate.set(date, point);
+    }
+    applyWorkbenchOverlayPoint(point, item);
+  });
+
+  let point = pointsByDate.get(valueDate);
+  if (!point) {
+    point = { date: valueDate };
+    nextSeries.push(point);
+  }
+  clearWorkbenchOverlayPoint(point, overlayRow);
+  applyWorkbenchOverlayPoint(point, overlayRow);
+
+  nextSeries.sort((left, right) => String(left?.date || '').localeCompare(String(right?.date || '')));
+  return nextSeries;
+}
+
+function mergeSmartWorkbenchPriceOverlayRow(primaryRow = {}, overlayRow = {}, platform = '') {
+  const next = cloneJsonValue(primaryRow) || {};
+  const overlay = overlayRow && typeof overlayRow === 'object' ? overlayRow : null;
+  if (!overlay) return next;
+
+  clearWorkbenchOverlayRowFields(next, overlay);
+  [
+    'articleKey',
+    'article',
+    'name',
+    'brand',
+    'owner',
+    'status',
+    'valueDate',
+    'historyFreshnessDate',
+    'sourceSheet'
+  ].forEach((key) => mergeWorkbenchField(next, key, overlay[key], true));
+
+  [
+    'currentFillPrice',
+    'currentPrice',
+    'currentClientPrice',
+    'currentSppPct',
+    'currentTurnoverDays',
+    'stock',
+    'stockWb',
+    'stockOzon',
+    'stockSeller',
+    'stockTotal'
+  ].forEach((key) => mergeWorkbenchField(next, key, overlay[key], true));
+
+  if (platform && workbenchValueMissing(next.marketplace)) next.marketplace = platform;
+  if (!workbenchValueMissing(overlay?.status)) next.productStatus = overlay.status;
+  next.monthly = mergeWorkbenchTimelineWithOverlay(next.monthly, overlay);
+  next.daily = mergeWorkbenchTimelineWithOverlay(next.daily, overlay);
+  return next;
+}
+
+function mergeSmartWorkbenchPriceOverlay(primaryPayload = {}, overlayPayload = {}) {
+  const primary = primaryPayload && typeof primaryPayload === 'object'
+    ? cloneJsonValue(primaryPayload)
+    : { generatedAt: '', platforms: {} };
+  const overlay = overlayPayload && typeof overlayPayload === 'object' ? cloneJsonValue(overlayPayload) : null;
+  if (!overlay?.platforms) return primary;
+
+  const merged = primary && typeof primary === 'object' ? primary : { generatedAt: '', platforms: {} };
+  merged.platforms = merged.platforms && typeof merged.platforms === 'object' ? merged.platforms : {};
+  const platformKeys = new Set([
+    ...Object.keys(primary?.platforms || {}),
+    ...Object.keys(overlay?.platforms || {})
+  ]);
+
+  let overlayRowsUsed = 0;
+
+  platformKeys.forEach((platform) => {
+    const primaryBucket = primary?.platforms?.[platform] || {};
+    const overlayBucket = overlay?.platforms?.[platform] || {};
+    const primaryRows = Array.isArray(primaryBucket.rows) ? primaryBucket.rows : [];
+    const overlayRows = workbenchOverlayRows(overlayBucket.rows);
+    const overlayMap = new Map();
+
+    overlayRows.forEach((row) => {
+      const key = normalizeWorkbenchArticleKey(row?.articleKey || row?.article);
+      if (!key || overlayMap.has(key)) return;
+      overlayMap.set(key, row);
+    });
+
+    const mergedRows = [];
+    const usedKeys = new Set();
+
+    primaryRows.forEach((row) => {
+      const key = normalizeWorkbenchArticleKey(row?.articleKey || row?.article);
+      const overlayRow = key ? overlayMap.get(key) : null;
+      if (overlayRow) {
+        usedKeys.add(key);
+        overlayRowsUsed += 1;
+      }
+      mergedRows.push(mergeSmartWorkbenchPriceOverlayRow(row, overlayRow, platform));
+    });
+
+    overlayRows.forEach((row) => {
+      const key = normalizeWorkbenchArticleKey(row?.articleKey || row?.article);
+      if (!key || usedKeys.has(key)) return;
+      overlayRowsUsed += 1;
+      mergedRows.push(mergeSmartWorkbenchPriceOverlayRow({}, row, platform));
+    });
+
+    const nextBucket = cloneJsonValue(primaryBucket) || {};
+    if (!nextBucket.label && overlayBucket.label) nextBucket.label = overlayBucket.label;
+    if (!nextBucket.emptyNote && overlayBucket.emptyNote) nextBucket.emptyNote = overlayBucket.emptyNote;
+    nextBucket.rows = mergedRows;
+    merged.platforms[platform] = nextBucket;
+  });
+
+  if (!merged.generatedAt || parseFreshStamp(overlay?.generatedAt) > parseFreshStamp(merged.generatedAt)) {
+    merged.generatedAt = overlay?.generatedAt || merged.generatedAt || '';
+  }
+  merged.priceOverlayAt = overlay?.generatedAt || '';
+  merged.priceOverlaySource = overlay?.sourceFile || '';
+  merged.priceOverlayUsed = overlayRowsUsed > 0;
+  return merged;
+}
+
 function snapshotPayloadLooksUsable(snapshotKey, payload) {
   if (payload === null || payload === undefined) return false;
   if (snapshotKey === 'skus') return Array.isArray(payload) && payload.length > 0;
@@ -539,7 +997,20 @@ async function loadPortalSnapshotPayload(path) {
 window.__alteaLoadPortalSnapshot = loadPortalSnapshotPayload;
 
 function defaultStorage() {
-  return { comments: [], tasks: [], decisions: [], ownerOverrides: [] };
+  return {
+    comments: [],
+    tasks: [],
+    decisions: [],
+    ownerOverrides: [],
+    repricerSettings: defaultRepricerSettings(),
+    repricerSettingsUpdatedAt: '',
+    repricerOverrides: [],
+    repricerSkuProfiles: [],
+    repricerCorridors: [],
+    repricerOverrideDeletes: [],
+    repricerSkuProfileDeletes: [],
+    repricerCorridorDeletes: []
+  };
 }
 
 function hashString(value) {
@@ -554,6 +1025,308 @@ function hashString(value) {
 
 function stableId(prefix, raw) {
   return `${prefix}-${hashString(raw)}`;
+}
+
+const REPRICER_BRAND_ALIAS_MAP = {
+  'алтея': 'Алтея',
+  altea: 'Алтея',
+  cpa: 'CPA',
+  harly: '',
+  harley: ''
+};
+
+function repricerCanonicalBrandName(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const alias = REPRICER_BRAND_ALIAS_MAP[raw.toLowerCase()];
+  if (alias !== undefined) return alias;
+  return raw;
+}
+
+function defaultRepricerSettings() {
+  return {
+    global: {
+      minMarginPct: 15,
+      defaultTargetDays: 30,
+      launchTargetDays: 45,
+      oosDays: 5,
+      alignmentEnabled: true,
+      deadbandPct: 3,
+      deadbandRub: 50
+    },
+    brandRules: {
+      'Алтея': { defaultTargetDays: 30, launchTargetDays: 45, oosDays: 5, minMarginPct: 15, alignmentEnabled: true },
+      CPA: { defaultTargetDays: 30, launchTargetDays: 45, oosDays: 5, minMarginPct: 15, alignmentEnabled: true }
+    },
+    statusRules: {
+      'Актуально': { mode: 'auto', allowAutoprice: true, allowLaunch: false, allowAlignment: true },
+      'Актуальный': { mode: 'auto', allowAutoprice: true, allowLaunch: false, allowAlignment: true },
+      'Новинка': { mode: 'launch', allowAutoprice: true, allowLaunch: true, allowAlignment: false },
+      'Перезапуск': { mode: 'launch', allowAutoprice: true, allowLaunch: true, allowAlignment: false },
+      'Под вопросом': { mode: 'freeze', allowAutoprice: false, allowLaunch: false, allowAlignment: false },
+      'Перерабатываем': { mode: 'freeze', allowAutoprice: false, allowLaunch: false, allowAlignment: false },
+      'Вывод': { mode: 'off', allowAutoprice: false, allowLaunch: false, allowAlignment: false }
+    },
+    roleRules: {
+      Hero: { targetDays: 28, minLiftPct: 2, stretchMultiplier: 1.2, allowVolumePush: true, elasticityDefault: -1.3 },
+      Traffic: { targetDays: 29, minLiftPct: 2, stretchMultiplier: 1.15, allowVolumePush: true, elasticityDefault: -1.15 },
+      Margin: { targetDays: 30, minLiftPct: 3, stretchMultiplier: 1.1, allowVolumePush: false, elasticityDefault: -0.9 },
+      Launch: { targetDays: 45, minLiftPct: 0, stretchMultiplier: 1.15, allowVolumePush: false, elasticityDefault: -0.5 },
+      Exit: { targetDays: 30, minLiftPct: 0, stretchMultiplier: 1, allowVolumePush: false, elasticityDefault: -1 },
+      Freeze: { targetDays: 30, minLiftPct: 0, stretchMultiplier: 1, allowVolumePush: false, elasticityDefault: -0.8 }
+    },
+    feeRules: {
+      wb: { commissionPct: 19, logisticsRub: 72, storageRub: 6, adRub: 35, returnsRub: 12, otherRub: 0 },
+      ozon: { commissionPct: 18, logisticsRub: 68, storageRub: 5, adRub: 30, returnsRub: 10, otherRub: 0 },
+      yandex: { commissionPct: 17, logisticsRub: 75, storageRub: 6, adRub: 28, returnsRub: 11, otherRub: 0 }
+    }
+  };
+}
+
+function normalizeRepricerMode(mode) {
+  const raw = String(mode || '').trim().toLowerCase();
+  if (['freeze', 'hold', 'force'].includes(raw)) return raw;
+  return 'auto';
+}
+
+function normalizeRepricerEngineMode(mode) {
+  const raw = String(mode || '').trim().toLowerCase();
+  if (raw === 'hold') return 'launch';
+  if (raw === 'force') return 'freeze';
+  if (['launch', 'freeze', 'off'].includes(raw)) return raw;
+  return 'auto';
+}
+
+function repricerNumberOrBlank(value) {
+  if (value === null || value === undefined || value === '') return '';
+  const parsed = Number(String(value).replace(/\s+/g, '').replace(',', '.'));
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : '';
+}
+
+function repricerSignedNumberOrBlank(value) {
+  if (value === null || value === undefined || value === '') return '';
+  const parsed = Number(String(value).replace(/\s+/g, '').replace(',', '.'));
+  return Number.isFinite(parsed) ? parsed : '';
+}
+
+function repricerBool(value, fallback = false) {
+  if (value === null || value === undefined || value === '') return fallback;
+  const raw = String(value).trim().toLowerCase();
+  if (['y', 'yes', 'true', '1', 'да'].includes(raw)) return true;
+  if (['n', 'no', 'false', '0', 'нет'].includes(raw)) return false;
+  return Boolean(value);
+}
+
+function repricerDateKey(value) {
+  if (!value) return '';
+  const raw = String(value).trim();
+  if (!raw) return '';
+  const directMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (directMatch) return `${directMatch[1]}-${directMatch[2]}-${directMatch[3]}`;
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return '';
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function normalizeRepricerStatusRule(item = {}, fallback = {}) {
+  const source = typeof item === 'string' ? { mode: item } : (item || {});
+  const base = typeof fallback === 'string' ? { mode: fallback } : (fallback || {});
+  return {
+    mode: normalizeRepricerEngineMode(source.mode ?? base.mode),
+    allowAutoprice: repricerBool(source.allowAutoprice, repricerBool(base.allowAutoprice, true)),
+    allowLaunch: repricerBool(source.allowLaunch, repricerBool(base.allowLaunch, false)),
+    allowAlignment: repricerBool(source.allowAlignment, repricerBool(base.allowAlignment, true))
+  };
+}
+
+function normalizeRepricerRoleRule(item = {}, fallback = {}) {
+  const source = item || {};
+  const base = fallback || {};
+  const next = {
+    targetDays: Number(source.targetDays ?? base.targetDays),
+    minLiftPct: Number(source.minLiftPct ?? base.minLiftPct),
+    stretchMultiplier: Number(source.stretchMultiplier ?? base.stretchMultiplier),
+    allowVolumePush: repricerBool(source.allowVolumePush, repricerBool(base.allowVolumePush, true)),
+    elasticityDefault: Number(source.elasticityDefault ?? base.elasticityDefault)
+  };
+  if (!Number.isFinite(next.targetDays)) next.targetDays = Number(base.targetDays) || 30;
+  if (!Number.isFinite(next.minLiftPct)) next.minLiftPct = Number(base.minLiftPct) || 0;
+  if (!Number.isFinite(next.stretchMultiplier)) next.stretchMultiplier = Number(base.stretchMultiplier) || 1;
+  if (!Number.isFinite(next.elasticityDefault)) next.elasticityDefault = Number(base.elasticityDefault) || -1;
+  return next;
+}
+
+function normalizeRepricerBrandRule(item = {}, fallback = {}) {
+  const source = item || {};
+  const base = fallback || {};
+  const next = {
+    defaultTargetDays: Number(source.defaultTargetDays ?? base.defaultTargetDays),
+    launchTargetDays: Number(source.launchTargetDays ?? base.launchTargetDays),
+    oosDays: Number(source.oosDays ?? base.oosDays),
+    minMarginPct: Number(source.minMarginPct ?? base.minMarginPct),
+    alignmentEnabled: repricerBool(source.alignmentEnabled, repricerBool(base.alignmentEnabled, true))
+  };
+  if (!Number.isFinite(next.defaultTargetDays)) next.defaultTargetDays = Number(base.defaultTargetDays) || 30;
+  if (!Number.isFinite(next.launchTargetDays)) next.launchTargetDays = Number(base.launchTargetDays) || 45;
+  if (!Number.isFinite(next.oosDays)) next.oosDays = Number(base.oosDays) || 5;
+  if (!Number.isFinite(next.minMarginPct)) next.minMarginPct = Number(base.minMarginPct) || 15;
+  return next;
+}
+
+function normalizeRepricerFeeRule(item = {}, fallback = {}) {
+  const source = item || {};
+  const base = fallback || {};
+  const next = {
+    commissionPct: Number(source.commissionPct ?? base.commissionPct),
+    logisticsRub: Number(source.logisticsRub ?? base.logisticsRub),
+    storageRub: Number(source.storageRub ?? base.storageRub),
+    adRub: Number(source.adRub ?? base.adRub),
+    returnsRub: Number(source.returnsRub ?? base.returnsRub),
+    otherRub: Number(source.otherRub ?? base.otherRub)
+  };
+  Object.keys(next).forEach((key) => {
+    if (!Number.isFinite(next[key])) next[key] = Number(base[key]) || 0;
+  });
+  return next;
+}
+
+function normalizeRepricerSettings(item = {}) {
+  const defaults = defaultRepricerSettings();
+  const rawGlobal = typeof item?.global === 'object' && item.global !== null ? item.global : {};
+  const rawBrandRules = typeof item?.brandRules === 'object' && item.brandRules !== null ? item.brandRules : {};
+  const rawStatusRules = typeof item?.statusRules === 'object' && item.statusRules !== null ? item.statusRules : {};
+  const rawRoleRules = typeof item?.roleRules === 'object' && item.roleRules !== null ? item.roleRules : {};
+  const rawFeeRules = typeof item?.feeRules === 'object' && item.feeRules !== null ? item.feeRules : {};
+  const next = {
+    global: {
+      minMarginPct: Number(rawGlobal.minMarginPct),
+      defaultTargetDays: Number(rawGlobal.defaultTargetDays),
+      launchTargetDays: Number(rawGlobal.launchTargetDays),
+      oosDays: Number(rawGlobal.oosDays),
+      alignmentEnabled: rawGlobal.alignmentEnabled === undefined ? defaults.global.alignmentEnabled : Boolean(rawGlobal.alignmentEnabled),
+      deadbandPct: Number(rawGlobal.deadbandPct),
+      deadbandRub: Number(rawGlobal.deadbandRub)
+    },
+    brandRules: {},
+    statusRules: {},
+    roleRules: {},
+    feeRules: {}
+  };
+  Object.keys(next.global).forEach((key) => {
+    if (typeof defaults.global[key] === 'number' && !Number.isFinite(next.global[key])) next.global[key] = defaults.global[key];
+  });
+  const normalizedRawBrandRules = {};
+  Object.keys(rawBrandRules).forEach((brand) => {
+    const normalizedBrand = repricerCanonicalBrandName(brand);
+    if (!normalizedBrand) return;
+    normalizedRawBrandRules[normalizedBrand] = rawBrandRules[brand];
+  });
+  const brandKeys = new Set([...Object.keys(defaults.brandRules || {}), ...Object.keys(normalizedRawBrandRules)]);
+  brandKeys.forEach((brand) => {
+    const normalizedBrand = repricerCanonicalBrandName(brand);
+    if (!normalizedBrand) return;
+    next.brandRules[normalizedBrand] = normalizeRepricerBrandRule(normalizedRawBrandRules[normalizedBrand], defaults.brandRules?.[normalizedBrand] || defaults.global);
+  });
+  const statusKeys = new Set([...Object.keys(defaults.statusRules), ...Object.keys(rawStatusRules)]);
+  statusKeys.forEach((status) => {
+    const normalizedStatus = String(status || '').trim();
+    if (!normalizedStatus) return;
+    next.statusRules[normalizedStatus] = normalizeRepricerStatusRule(rawStatusRules[normalizedStatus], defaults.statusRules[normalizedStatus] || {});
+  });
+  const roleKeys = new Set([...Object.keys(defaults.roleRules), ...Object.keys(rawRoleRules)]);
+  roleKeys.forEach((role) => {
+    const normalizedRole = String(role || '').trim();
+    if (!normalizedRole) return;
+    next.roleRules[normalizedRole] = normalizeRepricerRoleRule(rawRoleRules[normalizedRole], defaults.roleRules[normalizedRole] || {});
+  });
+  const feeKeys = new Set([...Object.keys(defaults.feeRules), ...Object.keys(rawFeeRules)]);
+  feeKeys.forEach((platform) => {
+    const normalizedPlatform = String(platform || '').trim().toLowerCase();
+    if (!normalizedPlatform) return;
+    next.feeRules[normalizedPlatform] = normalizeRepricerFeeRule(rawFeeRules[normalizedPlatform], defaults.feeRules[normalizedPlatform] || {});
+  });
+  return next;
+}
+
+function normalizeRepricerLaunchReady(value) {
+  const raw = String(value || '').trim().toUpperCase();
+  if (!raw) return '';
+  if (['READY', 'GO', 'LIVE'].includes(raw)) return 'READY';
+  if (['HOLD', 'WAIT', 'BLOCK', 'NOT_READY', 'NOT READY', 'DRAFT'].includes(raw)) return 'HOLD';
+  return raw;
+}
+
+function normalizeRepricerOverride(item = {}) {
+  const articleKey = String(item.articleKey || item.article || '').trim();
+  const rawPlatform = String(item.platform || '').trim().toLowerCase();
+  const platform = ['wb', 'ozon', 'all'].includes(rawPlatform) ? rawPlatform : 'all';
+  const promoPrice = repricerNumberOrBlank(item.promoPrice ?? item.promoFixedPrice);
+  return {
+    id: item.id || stableId('repricer', `${articleKey}|${platform}`),
+    articleKey,
+    platform,
+    mode: normalizeRepricerMode(item.mode),
+    floorPrice: repricerNumberOrBlank(item.floorPrice ?? item.floorOverride ?? item.minPrice),
+    capPrice: repricerNumberOrBlank(item.capPrice ?? item.capOverride ?? item.maxPrice),
+    forcePrice: repricerNumberOrBlank(item.forcePrice),
+    promoActive: repricerBool(item.promoActive ?? item.isPromo ?? item.promoEnabled, promoPrice !== ''),
+    promoPrice,
+    promoLabel: String(item.promoLabel || item.promoTag || item.promoReason || '').trim(),
+    promoFrom: repricerDateKey(item.promoFrom ?? item.promoStart ?? item.promoDateFrom),
+    promoTo: repricerDateKey(item.promoTo ?? item.promoEnd ?? item.promoDateTo),
+    disableAlignment: Boolean(item.disableAlignment || item.noAlignment),
+    note: String(item.note || '').trim(),
+    updatedAt: item.updatedAt || new Date().toISOString(),
+    updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда'
+  };
+}
+
+function normalizeRepricerSkuProfile(item = {}) {
+  const articleKey = String(item.articleKey || item.article || '').trim();
+  return {
+    id: item.id || stableId('repricer-sku', articleKey),
+    articleKey,
+    status: String(item.status || item.statusSku || '').trim(),
+    role: String(item.role || item.roleSku || '').trim(),
+    launchReady: normalizeRepricerLaunchReady(item.launchReady || item.launch_status || item.launchState),
+    updatedAt: item.updatedAt || new Date().toISOString(),
+    updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда'
+  };
+}
+
+function normalizeRepricerCorridor(item = {}) {
+  const articleKey = String(item.articleKey || item.article || '').trim();
+  const rawPlatform = String(item.platform || '').trim().toLowerCase();
+  const platform = ['wb', 'ozon', 'all'].includes(rawPlatform) ? rawPlatform : 'all';
+  return {
+    id: item.id || stableId('repricer-corridor', `${articleKey}|${platform}`),
+    articleKey,
+    platform,
+    hardFloor: repricerNumberOrBlank(item.hardFloor),
+    b2bFloor: repricerNumberOrBlank(item.b2bFloor),
+    basePrice: repricerNumberOrBlank(item.basePrice),
+    stretchCap: repricerNumberOrBlank(item.stretchCap ?? item.capPrice),
+    promoFloor: repricerNumberOrBlank(item.promoFloor),
+    elasticity: repricerSignedNumberOrBlank(item.elasticity),
+    updatedAt: item.updatedAt || new Date().toISOString(),
+    updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда'
+  };
+}
+
+function normalizeRepricerDeleteTombstone(item = {}) {
+  const articleKey = String(item.articleKey || item.article || '').trim();
+  const rawPlatform = String(item.platform || '').trim().toLowerCase();
+  const platform = ['wb', 'ozon', 'all'].includes(rawPlatform) ? rawPlatform : 'all';
+  return {
+    id: item.id || stableId('repricer-delete', `${articleKey}|${platform}`),
+    articleKey,
+    platform,
+    deletedAt: item.deletedAt || item.updatedAt || new Date().toISOString(),
+    updatedBy: String(item.updatedBy || item.updatedByName || state.team.member.name || 'Команда').trim() || 'Команда'
+  };
 }
 
 function normalizeComment(item = {}) {
@@ -618,7 +1391,7 @@ function linkToSku(articleKey, label) {
 }
 
 async function loadJson(path) {
-  const resolvedPath = path.includes("?") ? path : `${path}?v=20260416b`;
+  const resolvedPath = path.includes("?") ? path : `${path}?v=20260423a`;
   const response = await fetch(resolvedPath, { cache: "no-store" });
   if (!response.ok) throw new Error(`Не удалось загрузить ${path}`);
   const text = await response.text();
@@ -695,6 +1468,42 @@ function registerDataWarning(message) {
   if (!state.boot.dataWarnings.includes(message)) state.boot.dataWarnings.push(message);
 }
 
+function parsePriceFreshStamp(value) {
+  if (!value) return 0;
+  const stamp = Date.parse(String(value));
+  return Number.isFinite(stamp) ? stamp : 0;
+}
+
+function latestPriceLayerSnapshot(layers = []) {
+  return layers.reduce((best, layer) => {
+    const stamp = parsePriceFreshStamp(layer?.generatedAt || layer?.updatedAt || layer?.updated_at || '');
+    if (!stamp || stamp <= best.stamp) return best;
+    return {
+      stamp,
+      source: layer?.source || '',
+      generatedAt: layer?.generatedAt || layer?.updatedAt || layer?.updated_at || ''
+    };
+  }, { stamp: 0, source: '', generatedAt: '' });
+}
+
+function registerPriceFreshnessWarning(payloads = {}) {
+  const freshest = latestPriceLayerSnapshot([
+    { source: 'smart_price_workbench', generatedAt: payloads.smartPriceWorkbench?.generatedAt },
+    { source: 'smart_price_overlay', generatedAt: payloads.smartPriceOverlay?.generatedAt },
+    { source: 'tmp-smart_price_workbench-live', generatedAt: payloads.smartPriceWorkbenchLive?.generatedAt },
+    { source: 'tmp-live-repricer', generatedAt: payloads.repricerLive?.generatedAt },
+    { source: 'prices', generatedAt: payloads.prices?.generatedAt }
+  ]);
+  if (!freshest.stamp) {
+    registerDataWarning('Ценовой контур не отдал дату обновления. Источник цен нужно проверить отдельно.');
+    return;
+  }
+  const staleHours = (Date.now() - freshest.stamp) / 36e5;
+  if (staleHours < 48) return;
+  const asOf = new Date(freshest.stamp).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' });
+  registerDataWarning(`Ценовой контур устарел: последний срез ${asOf} из ${freshest.source}. Утренний price-sync нужно проверить.`);
+}
+
 async function loadJsonOrFallback(path, fallback, label = path) {
   const snapshotKey = snapshotKeyFromPath(path);
   if (snapshotKey) {
@@ -740,8 +1549,37 @@ const LAZY_DATA_LOADERS = {
     state.documents = documents || { groups: [] };
   },
   repricer: async () => {
-    const repricer = await loadJsonOrFallback('data/repricer.json', { generatedAt: '', summary: {}, rows: [] }, 'Репрайсер');
+    const [repricer, smartPriceWorkbench, smartPriceWorkbenchLive, smartPriceOverlay, repricerLive, prices, priceWorkbenchSupport] = await Promise.all([
+      loadJsonOrFallback('data/repricer.json', { generatedAt: '', summary: {}, rows: [] }, 'Репрайсер'),
+      loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
+      optionalLoadJson('tmp-smart_price_workbench-live.json'),
+      loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Overlay цен'),
+      optionalLoadJson('tmp-live-repricer.json'),
+      loadJsonOrFallback('data/prices.json', { generatedAt: '', platforms: {} }, 'Цены'),
+      loadJsonOrFallback('data/price_workbench_support.json', { generatedAt: '', platforms: {} }, 'Поддержка ценового контура')
+    ]);
     state.repricer = repricer || { generatedAt: '', summary: {}, rows: [] };
+    state.repricerLive = repricerLive || { generatedAt: '', rows: [] };
+    state.prices = prices || { generatedAt: '', platforms: {} };
+    state.priceWorkbenchSupport = priceWorkbenchSupport || { generatedAt: '', platforms: {} };
+    state.smartPriceWorkbenchLive = smartPriceWorkbenchLive || { generatedAt: '', platforms: {} };
+    state.smartPriceOverlay = smartPriceOverlay || { generatedAt: '', platforms: {} };
+    state.smartPriceWorkbenchBase = mergeSmartWorkbenchPayload(
+      smartPriceWorkbench || { generatedAt: '', platforms: {} },
+      smartPriceWorkbenchLive || null
+    );
+    state.smartPriceWorkbench = mergeSmartWorkbenchPriceOverlay(
+      state.smartPriceWorkbenchBase,
+      smartPriceOverlay || null
+    );
+    registerPriceFreshnessWarning({
+      smartPriceWorkbench: state.smartPriceWorkbench,
+      smartPriceOverlay: state.smartPriceOverlay,
+      smartPriceWorkbenchLive: state.smartPriceWorkbenchLive,
+      repricerLive: state.repricerLive,
+      prices: state.prices,
+      priceWorkbenchSupport: state.priceWorkbenchSupport
+    });
   }
 };
 

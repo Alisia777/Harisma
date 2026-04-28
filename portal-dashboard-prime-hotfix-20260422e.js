@@ -1,10 +1,14 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260422E__) return;
-  window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260422E__ = true;
+  if (window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260428A__) return;
+  window.__ALTEA_DASHBOARD_PRIME_HOTFIX_20260428A__ = true;
 
+  const HOTFIX_VERSION = '20260428a';
   const hotfixCache = {
     orderProcurementPromise: null,
-    smartPriceWorkbenchPromise: null
+    smartPriceWorkbenchPromise: null,
+    smartPriceWorkbenchLivePromise: null,
+    smartPriceOverlayPromise: null,
+    mergedWorkbenchPromise: null
   };
 
   function num(value) {
@@ -79,15 +83,42 @@
     hotfixCache[key] = (async () => {
       if (typeof nativeFetch !== 'function') return fallback;
       try {
-        const response = await nativeFetch(url, { cache: 'no-store' });
+        const resolvedUrl = url.includes('?') ? url : `${url}?v=${HOTFIX_VERSION}`;
+        const response = await nativeFetch(resolvedUrl, { cache: 'no-store' });
         if (!response || !response.ok) throw new Error(url);
-        return await response.json();
+        const rawText = await response.text();
+        const sanitized = typeof sanitizeLooseJson === 'function' ? sanitizeLooseJson(rawText) : rawText;
+        return JSON.parse(sanitized);
       } catch (error) {
         console.warn('[portal-dashboard-prime-hotfix] load', url, error);
         return fallback;
       }
     })();
     return hotfixCache[key];
+  }
+
+  async function loadMergedWorkbench() {
+    if (hotfixCache.mergedWorkbenchPromise) return hotfixCache.mergedWorkbenchPromise;
+    hotfixCache.mergedWorkbenchPromise = (async () => {
+      const [primary, live, overlay] = await Promise.all([
+        loadJsonCached('smartPriceWorkbenchPromise', 'data/smart_price_workbench.json', { generatedAt: '', platforms: {} }),
+        loadJsonCached('smartPriceWorkbenchLivePromise', 'tmp-smart_price_workbench-live.json', null),
+        loadJsonCached('smartPriceOverlayPromise', 'data/smart_price_overlay.json', { generatedAt: '', platforms: {} })
+      ]);
+      const mergeWorkbenchPayload = typeof window.mergeSmartWorkbenchPayload === 'function'
+        ? window.mergeSmartWorkbenchPayload
+        : null;
+      const mergeWorkbenchOverlay = typeof window.mergeSmartWorkbenchPriceOverlay === 'function'
+        ? window.mergeSmartWorkbenchPriceOverlay
+        : null;
+      const baseWorkbench = mergeWorkbenchPayload
+        ? mergeWorkbenchPayload(primary || { generatedAt: '', platforms: {} }, live || null)
+        : (primary || { generatedAt: '', platforms: {} });
+      return mergeWorkbenchOverlay
+        ? mergeWorkbenchOverlay(baseWorkbench, overlay || null)
+        : baseWorkbench;
+    })();
+    return hotfixCache.mergedWorkbenchPromise;
   }
 
   function procurementPlatformKey(platformKey) {
@@ -206,7 +237,7 @@
 
     const [procurement, workbench] = await Promise.all([
       loadJsonCached('orderProcurementPromise', 'data/order_procurement.json', { rows: [] }),
-      loadJsonCached('smartPriceWorkbenchPromise', 'data/smart_price_workbench.json', { platforms: {} })
+      loadMergedWorkbench()
     ]);
 
     const rows = procurementRowsForArticle(procurement, platformKey, article);
@@ -235,7 +266,7 @@
     const procurementFacts = await resolveProcurementFacts(platformKey, article, startIso, endIso);
     if (procurementFacts && procurementFacts.actualUnits > 0) return procurementFacts;
 
-    const workbench = await loadJsonCached('smartPriceWorkbenchPromise', 'data/smart_price_workbench.json', { platforms: {} });
+    const workbench = await loadMergedWorkbench();
     const workbenchFacts = workbenchFactsForRange(workbench, platformKey, article, start, end) || {
       source: 'workbench',
       unitPrice: resolveWorkbenchUnitPrice(workbench, platformKey, article),

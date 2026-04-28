@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "portal:sheet-sync": "node scripts/portal-google-sheet-sync.js sync",
+    "portal:sheet-auth": "node scripts/portal-google-sheet-sync.js --init-auth",
+    "portal:smart-price-sync": "node scripts/portal-smart-price-overlay-sync.js sync",
+    "portal:prices-rebuild": "node scripts/build-legacy-prices-layer.js",
+    "portal:price-audit": "node scripts/audit-price-contour.js",
+    "portal:metric-audit": "node scripts/audit-portal-metrics.js"
+  },
+  "dependencies": {
+    "playwright": "^1.59.1",
+    "xlsx": "^0.18.5"
+  }
+}

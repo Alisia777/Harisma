@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260425H__) return;
-  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260425H__ = true;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428A__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428A__ = true;
 
   var DATA_URL = "data/smart_price_workbench.json";
   var OVERLAY_URL = "data/smart_price_overlay.json";
@@ -139,6 +139,137 @@
     return maps;
   }
 
+  function readJsonSafe(key, fallback) {
+    try {
+      var raw = localStorage.getItem(key);
+      if (!raw) return clone(fallback);
+      var parsed = JSON.parse(raw);
+      return parsed == null ? clone(fallback) : parsed;
+    } catch (error) {
+      console.warn("[price-simple] local-json", key, error);
+      return clone(fallback);
+    }
+  }
+
+  function rootState() {
+    try {
+      if (window.state && window.state !== state) return window.state;
+    } catch {}
+    return null;
+  }
+
+  function moneyRound(value) {
+    var parsed = num(value);
+    return parsed == null ? null : Math.round(parsed * 100) / 100;
+  }
+
+  function repricerMarket(value) {
+    var raw = String(value || "").trim().toLowerCase();
+    if (raw === "ya") return "ym";
+    if (raw === "wb" || raw === "ozon" || raw === "ym" || raw === "all") return raw;
+    return "";
+  }
+
+  function normalizeRepricerOverride(entry) {
+    return {
+      articleKey: String(entry && (entry.articleKey || entry.article) || "").trim(),
+      platform: repricerMarket(entry && entry.platform) || "all",
+      mode: String(entry && entry.mode || "auto").trim().toLowerCase() || "auto",
+      forcePrice: moneyRound(entry && entry.forcePrice),
+      promoActive: entry ? (entry.promoActive === true || entry.promoActive === "true" || entry.promoActive === 1 || entry.promoActive === "1") : false,
+      promoPrice: moneyRound(entry && entry.promoPrice),
+      promoLabel: String(entry && entry.promoLabel || "").trim(),
+      promoFrom: isoDate(entry && entry.promoFrom),
+      promoTo: isoDate(entry && entry.promoTo),
+      note: String(entry && entry.note || "").trim(),
+      updatedAt: String(entry && entry.updatedAt || "").trim()
+    };
+  }
+
+  function promoWindowActive(override) {
+    var today = todayKey();
+    var from = isoDate(override && override.promoFrom);
+    var to = isoDate(override && override.promoTo);
+    if (from && today < from) return false;
+    if (to && today > to) return false;
+    if (from && to && from > to) return false;
+    return true;
+  }
+
+  function repricerExplicitTarget(override) {
+    var normalized = normalizeRepricerOverride(override);
+    var promoPrice = moneyRound(normalized.promoPrice);
+    if (normalized.promoActive && promoPrice != null && promoPrice > 0 && promoWindowActive(normalized)) {
+      return {
+        price: promoPrice,
+        label: normalized.promoLabel || "Промо",
+        hint: normalized.note || "",
+        updatedAt: normalized.updatedAt || ""
+      };
+    }
+    var forcePrice = moneyRound(normalized.forcePrice);
+    if (normalized.mode === "force" && forcePrice != null && forcePrice > 0) {
+      return {
+        price: forcePrice,
+        label: "Фикс",
+        hint: normalized.note || "",
+        updatedAt: normalized.updatedAt || ""
+      };
+    }
+    return null;
+  }
+
+  function chooseRepricerRows() {
+    var root = rootState() || {};
+    var baseRows = Array.isArray(root.repricer && root.repricer.rows) ? root.repricer.rows : [];
+    var liveRows = Array.isArray(root.repricerLive && root.repricerLive.rows) ? root.repricerLive.rows : [];
+    var baseStamp = parseFreshStamp(root.repricer && root.repricer.generatedAt);
+    var liveStamp = parseFreshStamp(root.repricerLive && root.repricerLive.generatedAt);
+    if (liveRows.length && liveStamp >= baseStamp) return liveRows;
+    return baseRows.length ? baseRows : liveRows;
+  }
+
+  function findRepricerRow(articleKey) {
+    var wanted = norm(articleKey);
+    if (!wanted) return null;
+    return chooseRepricerRows().find(function (row) {
+      return wanted === norm(row && (row.articleKey || row.article || row.sku));
+    }) || null;
+  }
+
+  function buildRepricerDisplay(market, articleKey) {
+    var targetMarket = repricerMarket(market);
+    if (targetMarket !== "wb" && targetMarket !== "ozon") return null;
+    var wanted = norm(articleKey);
+    if (!wanted) return null;
+
+    var portal = readJsonSafe("brand-portal-local-v1", {});
+    var overrides = Array.isArray(portal && portal.repricerOverrides) ? portal.repricerOverrides : [];
+    var explicit = null;
+    overrides.forEach(function (entry) {
+      var normalized = normalizeRepricerOverride(entry);
+      if (norm(normalized.articleKey) !== wanted) return;
+      if (normalized.platform !== "all" && normalized.platform !== targetMarket) return;
+      var display = repricerExplicitTarget(normalized);
+      if (!display) return;
+      if (!explicit || parseFreshStamp(display.updatedAt) >= parseFreshStamp(explicit.updatedAt)) {
+        explicit = display;
+      }
+    });
+    if (explicit) return explicit;
+
+    var row = findRepricerRow(articleKey);
+    if (!row) return null;
+    var side = targetMarket === "wb" ? row.wb : row.ozon;
+    var recPrice = moneyRound(side && side.recPrice);
+    if (recPrice == null || recPrice <= 0) return null;
+    return {
+      price: recPrice,
+      label: String(side && side.strategy || "Рекомендация").trim() || "Рекомендация",
+      hint: String(side && side.reason || "").trim()
+    };
+  }
+
   function overlayFlagEnabled(value) {
     return value === true || value === "true" || value === 1 || value === "1";
   }
@@ -159,6 +290,38 @@
     }
   }
 
+  function applyPointMetrics(point, source) {
+    if (!point || !source) return;
+    if (source.currentFillPrice != null) point.price = source.currentFillPrice;
+    else if (source.currentPrice != null) point.price = source.currentPrice;
+    else if (source.price != null) point.price = source.price;
+    if (source.currentClientPrice != null) point.clientPrice = source.currentClientPrice;
+    else if (source.clientPrice != null) point.clientPrice = source.clientPrice;
+    if (source.currentSppPct != null) point.sppPct = source.currentSppPct;
+    else if (source.sppPct != null) point.sppPct = source.sppPct;
+    if (source.currentTurnoverDays != null) point.turnoverDays = source.currentTurnoverDays;
+    else if (source.turnoverDays != null) point.turnoverDays = source.turnoverDays;
+    if (source.ordersUnits != null) point.ordersUnits = source.ordersUnits;
+    if (source.deliveredUnits != null) point.deliveredUnits = source.deliveredUnits;
+    if (source.revenue != null) point.revenue = source.revenue;
+  }
+
+  function overlayTimelineSeries(overlayRow, cutoff) {
+    var series = [];
+    if (Array.isArray(overlayRow && overlayRow.daily)) series = overlayRow.daily;
+    else if (Array.isArray(overlayRow && overlayRow.monthly)) series = overlayRow.monthly;
+    else if (Array.isArray(overlayRow && overlayRow.timeline)) series = overlayRow.timeline;
+    return cloneSeries(series)
+      .filter(function (item) {
+        var date = isoDate(item && item.date);
+        if (!date) return false;
+        return !cutoff || date <= cutoff;
+      })
+      .sort(function (left, right) {
+        return String((left && left.date) || "").localeCompare(String((right && right.date) || ""));
+      });
+  }
+
   function mergeTimelineWithOverlay(timeline, overlayRow, maxDate) {
     var cutoff = isoDate((overlayRow && (overlayRow.valueDate || overlayRow.historyFreshnessDate)) || maxDate);
     var next = cloneSeries(timeline);
@@ -167,6 +330,23 @@
         var date = isoDate(item && item.date);
         return !date || date <= cutoff;
       });
+      var pointsByDate = Object.create(null);
+      next.forEach(function (item) {
+        var date = isoDate(item && item.date);
+        if (!date) return;
+        pointsByDate[date] = item;
+      });
+      overlayTimelineSeries(overlayRow, cutoff).forEach(function (item) {
+        var date = isoDate(item && item.date);
+        if (!date) return;
+        var point = pointsByDate[date];
+        if (!point) {
+          point = { date: date };
+          next.push(point);
+          pointsByDate[date] = point;
+        }
+        applyPointMetrics(point, item);
+      });
       var point = next.find(function (item) { return isoDate(item && item.date) === cutoff; });
       if (!point) {
         point = { date: cutoff };
@@ -174,11 +354,7 @@
       }
       if (overlayRow) {
         clearOverlayPoint(point, overlayRow);
-        if (overlayRow.currentFillPrice != null) point.price = overlayRow.currentFillPrice;
-        else if (overlayRow.currentPrice != null) point.price = overlayRow.currentPrice;
-        if (overlayRow.currentClientPrice != null) point.clientPrice = overlayRow.currentClientPrice;
-        if (overlayRow.currentSppPct != null) point.sppPct = overlayRow.currentSppPct;
-        if (overlayRow.currentTurnoverDays != null) point.turnoverDays = overlayRow.currentTurnoverDays;
+        applyPointMetrics(point, overlayRow);
       }
       next.sort(function (left, right) {
         return String((left && left.date) || "").localeCompare(String((right && right.date) || ""));
@@ -229,6 +405,27 @@
     if (state.dataLagDays <= 0) return "\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u0441\u0440\u0435\u0437 \u043d\u0430 \u0441\u0435\u0433\u043e\u0434\u043d\u044f.";
     if (state.dataLagDays === 1) return "\u0421\u0440\u0435\u0437 \u043e\u0442\u0441\u0442\u0430\u0435\u0442 \u043e\u0442 \u0441\u0435\u0433\u043e\u0434\u043d\u044f \u043d\u0430 1 \u0434\u0435\u043d\u044c.";
     return "\u0421\u0440\u0435\u0437 \u043e\u0442\u0441\u0442\u0430\u0435\u0442 \u043e\u0442 \u0441\u0435\u0433\u043e\u0434\u043d\u044f \u043d\u0430 " + state.dataLagDays + " \u0434\u043d.";
+  }
+
+  function stampLabel(value) {
+    var parsed = value ? new Date(value) : null;
+    if (!parsed || !Number.isFinite(parsed.getTime())) return isoDate(value);
+    var year = parsed.getFullYear();
+    var month = String(parsed.getMonth() + 1).padStart(2, "0");
+    var day = String(parsed.getDate()).padStart(2, "0");
+    var hours = String(parsed.getHours()).padStart(2, "0");
+    var minutes = String(parsed.getMinutes()).padStart(2, "0");
+    return year + "-" + month + "-" + day + " " + hours + ":" + minutes;
+  }
+
+  function overlayFreshnessLabel() {
+    if (!state.overlayGeneratedAt) return "";
+    var generated = stampLabel(state.overlayGeneratedAt);
+    var generatedDate = isoDate(state.overlayGeneratedAt);
+    if (state.latestFactDate && generatedDate && generatedDate !== state.latestFactDate) {
+      return "\u0421\u043b\u043e\u0439 \u043e\u0431\u043d\u043e\u0432\u043b\u0451\u043d " + generated + ", \u043d\u043e \u0444\u0430\u043a\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0441\u0440\u0435\u0437 \u0446\u0435\u043d \u0432\u043d\u0443\u0442\u0440\u0438 \u043d\u0435\u0433\u043e \u0434\u043e " + state.latestFactDate + ".";
+    }
+    return "\u0421\u043b\u043e\u0439 \u043e\u0431\u043d\u043e\u0432\u043b\u0451\u043d " + generated + ".";
   }
 
   function parseFreshStamp(value) {
@@ -303,7 +500,12 @@
   async function fetchJsonNoStore(url) {
     var response = await fetch(url, { cache: "no-store" });
     if (!response.ok) throw new Error("Failed to load " + url);
-    return await response.json();
+    var payload = await response.json();
+    var source = "local";
+    try {
+      source = String(response.headers.get("X-Altea-Source") || response.headers.get("x-altea-source") || "local").trim() || "local";
+    } catch {}
+    return { payload: payload, source: source };
   }
 
   async function tryFetchJsonNoStore(url) {
@@ -333,6 +535,7 @@
   async function loadSnapshotAwareJson(url) {
     var localPayload = null;
     var localError = null;
+    var localSource = "local";
     var snapshotTask = null;
 
     if (typeof window.__alteaLoadPortalSnapshot === "function") {
@@ -345,7 +548,9 @@
     }
 
     try {
-      localPayload = await fetchJsonNoStore(url);
+      var localResult = await fetchJsonNoStore(url);
+      localPayload = localResult && localResult.payload;
+      localSource = localResult && localResult.source || "local";
     } catch (error) {
       localError = error;
     }
@@ -359,6 +564,9 @@
     }
 
     var chosen = chooseFreshestPayload(snapshotPayload, localPayload);
+    if (chosen && chosen.source === "local" && localSource !== "local") {
+      chosen = { payload: chosen.payload, source: localSource };
+    }
     if (chosen) return chosen;
     if (localError) throw localError;
     throw new Error("Failed to load " + url);
@@ -405,6 +613,9 @@
       ".pw-sku{font-weight:700;color:#fff0cf;}",
       ".pw-note{margin-top:4px;color:#bda57a;font-size:12px;line-height:1.35;max-width:460px;}",
       ".pw-badge{display:inline-flex;padding:4px 8px;border-radius:999px;border:1px solid rgba(214,175,85,.26);background:rgba(214,175,85,.08);color:#f3dfb6;font-size:12px;line-height:1.2;}",
+      ".pw-repricer-cell{display:grid;gap:4px;min-width:110px;}",
+      ".pw-repricer-cell strong{color:#fff0cf;font-weight:700;}",
+      ".pw-repricer-cell small{color:#cdb892;line-height:1.3;}",
       ".pw-danger{color:#ffb7b7;}",
       ".pw-empty{padding:32px 10px;color:#cdb892;text-align:center;}",
       ".pw-error{padding:22px;color:#ffb7b7;background:rgba(120,28,28,.18);border:1px solid rgba(255,120,120,.22);border-radius:18px;}",
@@ -704,23 +915,50 @@
     return items.length ? items[items.length - 1] : null;
   }
 
+  function latestNonNullRangeMetric(row, key) {
+    var items = rangeSlice(row);
+    for (var index = items.length - 1; index >= 0; index -= 1) {
+      var item = items[index];
+      var value = num(item && item[key]);
+      if (value != null) {
+        return {
+          value: value,
+          date: isoDate(item && item.date)
+        };
+      }
+    }
+    return { value: null, date: "" };
+  }
+
+  function metricHelp(baseText, factDate, sliceDate) {
+    if (factDate && sliceDate && factDate !== sliceDate) {
+      return baseText + " Последний непустой факт в диапазоне: " + factDate + ".";
+    }
+    return baseText;
+  }
+
   function buildDisplayRow(row) {
     if (!row) return null;
     var next = Object.assign({}, row);
     var point = latestRangePoint(row);
     next.rangeHasPoint = Boolean(point);
+    next.repricerDisplay = buildRepricerDisplay(next.market, next.articleKey);
     if (!point) return next;
 
-    var pricePoint = num(point.price);
-    var clientPoint = num(point.clientPrice);
-    var sppPoint = num(point.sppPct);
-    var turnoverPoint = num(point.turnoverDays);
+    var priceMetric = latestNonNullRangeMetric(row, "price");
+    var clientMetric = latestNonNullRangeMetric(row, "clientPrice");
+    var sppMetric = latestNonNullRangeMetric(row, "sppPct");
+    var turnoverMetric = latestNonNullRangeMetric(row, "turnoverDays");
 
-    next.currentFillPrice = pricePoint != null ? pricePoint : row.currentFillPrice;
-    next.currentClientPrice = clientPoint != null ? clientPoint : row.currentClientPrice;
-    next.currentSppPct = sppPoint != null ? sppPoint : row.currentSppPct;
-    next.turnoverDays = turnoverPoint != null ? turnoverPoint : row.turnoverDays;
+    next.currentFillPrice = priceMetric.value != null ? priceMetric.value : row.currentFillPrice;
+    next.currentClientPrice = clientMetric.value != null ? clientMetric.value : row.currentClientPrice;
+    next.currentSppPct = sppMetric.value != null ? sppMetric.value : row.currentSppPct;
+    next.turnoverDays = turnoverMetric.value != null ? turnoverMetric.value : row.turnoverDays;
     next.valueDate = isoDate(point.date) || row.valueDate;
+    next.priceFactDate = priceMetric.value != null ? priceMetric.date : isoDate(row.valueDate);
+    next.clientPriceFactDate = clientMetric.value != null ? clientMetric.date : isoDate(row.valueDate);
+    next.sppFactDate = sppMetric.value != null ? sppMetric.date : isoDate(row.valueDate);
+    next.turnoverFactDate = turnoverMetric.value != null ? turnoverMetric.date : isoDate(row.valueDate);
     return next;
   }
 
@@ -768,6 +1006,15 @@
     return state.rows.find(function (row) { return norm(row.articleKey) === wanted; }) || null;
   }
 
+  function renderRepricerCell(display) {
+    if (!display || moneyRound(display.price) == null) return "\u2014";
+    return [
+      '<div class="pw-repricer-cell"',
+      display.hint ? ' title="' + esc(display.hint) + '"' : "",
+      '><strong>', money(display.price), '</strong><small>', esc(display.label || "Репрайсер"), '</small></div>'
+    ].join("");
+  }
+
   function renderTable(rows) {
     if (!rows.length) return '<div class="pw-empty">\u041f\u043e \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u044b\u043c \u0444\u0438\u043b\u044c\u0442\u0440\u0430\u043c \u043f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0441\u0442\u0440\u043e\u043a.</div>';
     var sorted = rows.slice().sort(function (a, b) {
@@ -778,7 +1025,7 @@
     });
     return [
       '<div class="pw-table-wrap"><table class="pw-table"><thead><tr>',
-      '<th>\u0410\u0440\u0442\u0438\u043a\u0443\u043b</th><th>Owner</th><th>\u0421\u0442\u0430\u0442\u0443\u0441</th><th>\u0426\u0435\u043d\u0430 MP</th><th>\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430</th><th>\u0421\u041f\u041f</th><th>\u0414\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u0430\u044f 3\u043c</th><th>\u041c\u0430\u0440\u0436\u0430</th><th>\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</th>',
+      '<th>\u0410\u0440\u0442\u0438\u043a\u0443\u043b</th><th>Owner</th><th>\u0421\u0442\u0430\u0442\u0443\u0441</th><th>\u0426\u0435\u043d\u0430 MP</th><th>\u0426\u0435\u043d\u0430 \u0440\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440\u0430</th><th>\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430</th><th>\u0421\u041f\u041f</th><th>\u0414\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u0430\u044f 3\u043c</th><th>\u041c\u0430\u0440\u0436\u0430</th><th>\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</th>',
       '</tr></thead><tbody>',
       sorted.map(function (row) {
         var danger = row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct;
@@ -788,6 +1035,7 @@
           '<td>', esc(row.owner || "\u2014"), '</td>',
           '<td><span class="pw-badge">', esc(row.status || "\u2014"), '</span></td>',
           '<td>', money(row.currentFillPrice), '</td>',
+          '<td>', renderRepricerCell(row.repricerDisplay), '</td>',
           '<td>', money(row.currentClientPrice), '</td>',
           '<td>', pct(row.currentSppPct), '</td>',
           '<td>', pct(row.allowedMarginPct), '</td>',
@@ -805,11 +1053,22 @@
     if (!items.length) {
       return '<div class="pw-empty">\u0412\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u043f\u0435\u0440\u0438\u043e\u0434\u0430 \u043d\u0435\u0442 \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u044b\u0445 \u0434\u043d\u0435\u0432\u043d\u044b\u0445 \u0442\u043e\u0447\u0435\u043a.</div>';
     }
+    var hasSalesHistory = items.some(function (item) {
+      return num(item && item.ordersUnits) != null || num(item && item.revenue) != null;
+    });
+    var note = '\u0417\u0434\u0435\u0441\u044c \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0442\u043e\u0447\u043a\u0438 \u0432\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u043f\u0435\u0440\u0438\u043e\u0434\u0430. \u0415\u0441\u043b\u0438 \u0441\u0435\u0433\u043e\u0434\u043d\u044f\u0448\u043d\u0435\u0439 \u0442\u043e\u0447\u043a\u0438 \u0435\u0449\u0451 \u043d\u0435\u0442, \u0438\u0441\u0442\u043e\u0440\u0438\u044f \u0437\u0430\u043a\u0430\u043d\u0447\u0438\u0432\u0430\u0435\u0442\u0441\u044f \u043d\u0430 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u043c \u0441\u0440\u0435\u0437\u0435.';
+    if (!hasSalesHistory) {
+      note += ' \u0414\u043d\u0435\u0432\u043d\u044b\u0435 \u0437\u0430\u043a\u0430\u0437\u044b \u0438 \u0432\u044b\u0440\u0443\u0447\u043a\u0430 \u0432 \u0442\u0435\u043a\u0443\u0449\u0435\u043c smart_price_workbench \u043f\u043e\u043a\u0430 \u043d\u0435 \u043f\u0440\u0438\u0435\u0445\u0430\u043b\u0438, \u043f\u043e\u044d\u0442\u043e\u043c\u0443 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u0442\u043e\u043b\u044c\u043a\u043e \u0446\u0435\u043d\u0443, SPP \u0438 \u043e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c.';
+    }
+    if (row.market === "wb") {
+      note += ' \u041f\u043e WB \u0438\u0441\u0442\u043e\u0440\u0438\u044f \u043f\u043e \u0434\u043d\u044f\u043c \u0441\u0442\u0440\u043e\u0438\u0442\u0441\u044f \u0438\u0437 daily market-facts. \u042d\u0442\u043e \u043d\u0435 \u0436\u0443\u0440\u043d\u0430\u043b \u0440\u0443\u0447\u043d\u044b\u0445 \u0441\u043c\u0435\u043d \u0446\u0435\u043d\u044b, \u043f\u043e\u044d\u0442\u043e\u043c\u0443 \u043f\u043e\u0440\u0442\u0430\u043b \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u0442 \u043f\u0435\u0440\u0432\u044b\u0439 \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u0434\u043d\u0435\u0432\u043d\u043e\u0439 \u0444\u0430\u043a\u0442 \u043f\u043e\u0441\u043b\u0435 \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f.';
+    }
     return [
       '<details class="pw-detail"><summary>\u0418\u0441\u0442\u043e\u0440\u0438\u044f \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0439 \u043f\u043e \u0434\u043d\u044f\u043c</summary>',
-      '<div class="pw-detail-note">\u0417\u0434\u0435\u0441\u044c \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0442\u043e\u0447\u043a\u0438 \u0432\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u043f\u0435\u0440\u0438\u043e\u0434\u0430. \u0415\u0441\u043b\u0438 \u0441\u0435\u0433\u043e\u0434\u043d\u044f\u0448\u043d\u0435\u0439 \u0442\u043e\u0447\u043a\u0438 \u0435\u0449\u0451 \u043d\u0435\u0442, \u0438\u0441\u0442\u043e\u0440\u0438\u044f \u0437\u0430\u043a\u0430\u043d\u0447\u0438\u0432\u0430\u0435\u0442\u0441\u044f \u043d\u0430 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u043c \u0441\u0440\u0435\u0437\u0435.</div>',
+      '<div class="pw-detail-note">', esc(note), '</div>',
       '<div class="pw-history-wrap"><table class="pw-history"><thead><tr>',
-      '<th>\u0414\u0430\u0442\u0430</th><th>\u0426\u0435\u043d\u0430 MP</th><th>\u0421\u041f\u041f</th><th>\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</th><th>\u0417\u0430\u043a\u0430\u0437\u044b</th><th>\u0412\u044b\u0440\u0443\u0447\u043a\u0430</th>',
+      '<th>\u0414\u0430\u0442\u0430</th><th>\u0426\u0435\u043d\u0430 MP</th><th>\u0421\u041f\u041f</th><th>\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</th>',
+      hasSalesHistory ? '<th>\u0417\u0430\u043a\u0430\u0437\u044b</th><th>\u0412\u044b\u0440\u0443\u0447\u043a\u0430</th>' : '',
       '</tr></thead><tbody>',
       items.map(function (item) {
         return [
@@ -817,8 +1076,8 @@
           '<td>', money(num(item.price)), '</td>',
           '<td>', pct(num(item.sppPct)), '</td>',
           '<td>', days(num(item.turnoverDays)), '</td>',
-          '<td>', intf(num(item.ordersUnits)), '</td>',
-          '<td>', money(num(item.revenue)), '</td></tr>'
+          hasSalesHistory ? '<td>' + intf(num(item.ordersUnits)) + '</td><td>' + money(num(item.revenue)) + '</td>' : '',
+          '</tr>'
         ].join("");
       }).join(""),
       '</tbody></table></div></details>'
@@ -838,15 +1097,15 @@
       '<button class="pw-close" type="button" data-close-price-modal>\u0417\u0430\u043a\u0440\u044b\u0442\u044c</button>',
       '</div>',
       '<div class="pw-kpis">',
-      '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 MP</span><strong>', money(row.currentFillPrice), '</strong><small>\u0422\u0435\u043a\u0443\u0449\u0430\u044f \u0446\u0435\u043d\u0430 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430.</small></div>',
-      '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430</span><strong>', money(row.currentClientPrice), '</strong><small>\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u043a\u043b\u0438\u0435\u043d\u0442\u0441\u043a\u0438\u0439 \u043a\u043e\u043d\u0442\u0443\u0440.</small></div>',
+      '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 MP</span><strong>', money(row.currentFillPrice), '</strong><small>', esc(metricHelp("\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0439 \u0444\u0430\u043a\u0442 \u0446\u0435\u043d\u044b \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430.", row.priceFactDate, row.valueDate)), '</small></div>',
+      '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430</span><strong>', money(row.currentClientPrice), '</strong><small>', esc(metricHelp("\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0439 \u043a\u043b\u0438\u0435\u043d\u0442\u0441\u043a\u0438\u0439 \u043a\u043e\u043d\u0442\u0443\u0440.", row.clientPriceFactDate, row.valueDate)), '</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0414\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u0430\u044f \u043c\u0430\u0440\u0436\u0430 3\u043c</span><strong>', pct(row.allowedMarginPct), '</strong><small>\u0411\u0435\u0440\u0435\u043c \u0438\u0437 smart/workbench \u0441\u043b\u043e\u044f \u0431\u0435\u0437 \u043f\u0440\u0438\u0432\u044f\u0437\u043a\u0438 \u043a \u043d\u043e\u043c\u0435\u0440\u0443 \u0441\u0442\u0440\u043e\u043a\u0438.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0422\u0435\u043a\u0443\u0449\u0430\u044f \u043c\u0430\u0440\u0436\u0430</span><strong>', pct(row.marginTotalPct), '</strong><small>\u041e\u043f\u0435\u0440\u0430\u0446\u0438\u043e\u043d\u043d\u044b\u0439 \u0443\u0440\u043e\u0432\u0435\u043d\u044c \u043f\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u0438.</small></div>',
-      '<div class="pw-mini"><span class="pw-label">\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</span><strong>', days(row.turnoverDays), '</strong><small>', turnoverHelp, '</small></div>',
+      '<div class="pw-mini"><span class="pw-label">\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</span><strong>', days(row.turnoverDays), '</strong><small>', esc(metricHelp(turnoverHelp, row.turnoverFactDate, row.valueDate)), '</small></div>',
       '<div class="pw-mini"><span class="pw-label">Owner</span><strong>', esc(row.owner || "\u2014"), '</strong><small>\u0420\u0443\u0447\u043d\u043e\u0435 \u043f\u043e\u043b\u0435 \u043d\u0435 \u043f\u0435\u0440\u0435\u0442\u0438\u0440\u0430\u0435\u043c.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0421\u0442\u0430\u0442\u0443\u0441 \u0442\u043e\u0432\u0430\u0440\u0430</span><strong>', esc(row.status || "\u2014"), '</strong><small>\u0421\u0442\u0430\u0442\u0443\u0441 \u0441\u0442\u0440\u043e\u043a\u0438 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u043c\u0443 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0443.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 \u043f\u043e \u043c\u0430\u0440\u0436\u0435</span><strong>', money(row.requiredPriceForMargin), '</strong><small>\u0415\u0441\u043b\u0438 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u0438\u0435\u0445\u0430\u043b\u043e \u0432 smart-\u0441\u043b\u043e\u0435.</small></div>',
-      '<div class="pw-mini"><span class="pw-label">\u0421\u0440\u0435\u0437 \u0446\u0435\u043d</span><strong>', esc(row.valueDate || state.latestFactDate || "\u2014"), '</strong><small>\u042d\u0442\u043e \u0434\u0430\u0442\u0430, \u043d\u0430 \u043a\u043e\u0442\u043e\u0440\u0443\u044e \u0432\u0437\u044f\u0442\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435.</small></div>',
+      '<div class="pw-mini"><span class="pw-label">\u0421\u0440\u0435\u0437 \u0446\u0435\u043d</span><strong>', esc(row.valueDate || state.latestFactDate || "\u2014"), '</strong><small>\u042d\u0442\u043e \u0434\u0430\u0442\u0430 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u0439 \u0442\u043e\u0447\u043a\u0438 \u0432 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u043c \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0435.</small></div>',
       '</div>',
       '<div class="pw-card">',
       '<div class="pw-label">\u041a\u043e\u043d\u0442\u0435\u043a\u0441\u0442 \u043f\u043e\u0437\u0438\u0446\u0438\u0438</div>',
@@ -895,7 +1154,7 @@
       '<div class="pw-title">\u0426\u0435\u043d\u044b</div>',
       '<div class="pw-sub">\u0412\u043a\u043b\u0430\u0434\u043a\u0430 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u0442 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0439 \u0441\u043b\u043e\u0439 `smart_price_workbench` + `smart_price_overlay`, \u0430 \u0434\u043b\u044f \u043e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u0438 \u043f\u0440\u0438 \u043d\u0443\u0436\u0434\u0435 \u0434\u043e\u0431\u0438\u0440\u0430\u0435\u0442 `order_procurement`. \u0415\u0441\u043b\u0438 \u0441\u0440\u0435\u0437 \u043d\u0435 \u043d\u0430 \u0441\u0435\u0433\u043e\u0434\u043d\u044f, \u044d\u0442\u043e \u044f\u0432\u043d\u043e \u043f\u043e\u043a\u0430\u0436\u0435\u043c \u0432\u044b\u0448\u0435.</div>',
       state.error ? '<div class="pw-error">' + esc(state.error) + '</div>' : '',
-      state.loaded ? '<div class="pw-alert ' + (state.dataLagDays > 1 ? 'warn' : '') + '"><strong>\u0414\u0430\u0442\u0430 \u0441\u0440\u0435\u0437\u0430: ' + esc(state.latestFactDate || "\u2014") + '</strong><div>' + esc(dataFreshnessLabel()) + '</div><div style="margin-top:6px">\u0412 \u0442\u0430\u0431\u043b\u0438\u0446\u0435 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u044e\u044e \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u0443\u044e \u0442\u043e\u0447\u043a\u0443 \u0432\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0430, \u0430 \u043d\u0435 \u043f\u0440\u043e\u0441\u0442\u043e \u0437\u0430\u0441\u0442\u044b\u0432\u0448\u0438\u0439 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 row.</div></div>' : '',
+      state.loaded ? '<div class="pw-alert ' + (state.dataLagDays > 1 ? 'warn' : '') + '"><strong>\u0414\u0430\u0442\u0430 \u0441\u0440\u0435\u0437\u0430: ' + esc(state.latestFactDate || "\u2014") + '</strong><div>' + esc(dataFreshnessLabel()) + '</div>' + (state.overlayGeneratedAt ? '<div style="margin-top:6px">' + esc(overlayFreshnessLabel()) + '</div>' : '') + '<div style="margin-top:6px">\u0412 \u0442\u0430\u0431\u043b\u0438\u0446\u0435 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u044e\u044e \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u0443\u044e \u0442\u043e\u0447\u043a\u0443 \u0432\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0430, \u0430 \u043d\u0435 \u043f\u0440\u043e\u0441\u0442\u043e \u0437\u0430\u0441\u0442\u044b\u0432\u0448\u0438\u0439 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 row.</div></div>' : '',
       '<div class="pw-grid" style="margin-top:14px;">',
       '<div class="pw-card">',
       '<div class="pw-label">\u041f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u0438 \u043f\u0435\u0440\u0438\u043e\u0434</div>',
@@ -967,12 +1226,22 @@
     var fromInput = document.getElementById("pwFrom");
     var toInput = document.getElementById("pwTo");
     var searchInput = document.getElementById("pwSearch");
-    if (fromInput) fromInput.addEventListener("change", function () {
+    function attachDateHandlers(input, apply) {
+      if (!input) return;
+      input.addEventListener("change", apply);
+      input.addEventListener("input", apply);
+      input.addEventListener("click", function () {
+        try {
+          if (typeof input.showPicker === "function") input.showPicker();
+        } catch {}
+      });
+    }
+    attachDateHandlers(fromInput, function () {
       state.dateFrom = fromInput.value;
       normalizeDateRange();
       renderPriceWorkbench();
     });
-    if (toInput) toInput.addEventListener("change", function () {
+    attachDateHandlers(toInput, function () {
       state.dateTo = toInput.value;
       normalizeDateRange();
       renderPriceWorkbench();

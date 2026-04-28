@@ -1,9 +1,9 @@
 (function () {
-  if (window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260425E__) return;
-  window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260425E__ = true;
+  if (window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260428A__) return;
+  window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260428A__ = true;
 
-  const SCRIPT_ID = 'portalPriceWorkbenchSimpleLive20260425e';
-  const SRC = 'portal-price-workbench-simple-live.js?v=20260425h';
+  const SCRIPT_ID = 'portalPriceWorkbenchSimpleLive20260428a';
+  const SRC = 'portal-price-workbench-simple-live.js?v=20260428a';
 
   function rerender() {
     if (typeof window.renderPriceWorkbench !== 'function') return;

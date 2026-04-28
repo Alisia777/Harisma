@@ -1,10 +1,11 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__) return;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260428C__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260428C__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260428b';
-  const STYLE_ID = 'altea-dashboard-interactive-20260428b';
+  const VERSION = '20260428c';
+  const STYLE_ID = 'altea-dashboard-interactive-20260428c';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
@@ -16,7 +17,9 @@
     adsSummary: null,
     skus: null,
     prices: null,
+    pricesFetched: null,
     smartPriceWorkbench: null,
+    smartPriceWorkbenchBase: null,
     smartPriceWorkbenchLive: null,
     smartPriceOverlay: null,
     priceWorkbenchSupport: null,
@@ -283,9 +286,18 @@
     return rowsForPlatform(current('smartPriceWorkbench'), platformKey);
   }
 
+  function workbenchBaseRowsForPlatform(platformKey) {
+    return rowsForPlatform(current('smartPriceWorkbenchBase'), platformKey);
+  }
+
   function workbenchRowForArticle(platformKey, article) {
     if (!article) return null;
     return workbenchRowsForPlatform(platformKey).find((row) => normalizeKey(row?.articleKey || row?.article) === normalizeKey(article)) || null;
+  }
+
+  function workbenchBaseRowForArticle(platformKey, article) {
+    if (!article) return null;
+    return workbenchBaseRowsForPlatform(platformKey).find((row) => normalizeKey(row?.articleKey || row?.article) === normalizeKey(article)) || null;
   }
 
   function monthRange(monthKey) {
@@ -524,7 +536,12 @@
     const rows = priceRowsForPlatform(platformKey);
     const byDate = new Map();
     rows.forEach((row) => {
-      turnoverPointsForRow(row, range.effectiveStart, range.effectiveEnd).forEach((point) => {
+      let points = turnoverPointsForRow(row, range.effectiveStart, range.effectiveEnd);
+      if (!points.length) {
+        const fallbackRow = workbenchBaseRowForArticle(row?.platformKey || platformKey, row?.articleKey || row?.article);
+        if (fallbackRow) points = turnoverPointsForRow(fallbackRow, range.effectiveStart, range.effectiveEnd);
+      }
+      points.forEach((point) => {
         const key = iso(point.date);
         if (!byDate.has(key)) byDate.set(key, { date: point.date, turnover: [] });
         byDate.get(key).turnover.push(point.turnoverDays);
@@ -5183,17 +5200,33 @@
 
   async function loadJson(key, path, required, forceRefresh = false) {
     const existing = current(key);
-    if (!forceRefresh && existing) return existing;
+    const hasUsablePayload = (payload) => {
+      if (!payload || typeof payload !== 'object') return false;
+      if (key === 'prices') {
+        const platforms = payload.platforms && typeof payload.platforms === 'object' ? Object.keys(payload.platforms) : [];
+        return Boolean(payload.generatedAt) || platforms.length > 0;
+      }
+      if (key === 'smartPriceWorkbench' || key === 'smartPriceOverlay') {
+        const platforms = payload.platforms && typeof payload.platforms === 'object' ? Object.keys(payload.platforms) : [];
+        return Boolean(payload.generatedAt) || platforms.length > 0;
+      }
+      if (key === 'priceWorkbenchSupport') {
+        const platforms = payload.platforms && typeof payload.platforms === 'object' ? Object.keys(payload.platforms) : [];
+        return platforms.length > 0;
+      }
+      return true;
+    };
+    if (!forceRefresh && hasUsablePayload(existing)) return existing;
     let response = null;
     try {
       response = await fetch(`${path}?v=${VERSION}`, { cache: 'no-store' });
     } catch (error) {
-      if (existing) return existing;
+      if (hasUsablePayload(existing)) return existing;
       if (required) throw error;
       return null;
     }
     if (!response.ok) {
-      if (existing) return existing;
+      if (hasUsablePayload(existing)) return existing;
       if (required) throw new Error(`Failed to load ${path}`);
       return null;
     }
@@ -5255,6 +5288,8 @@
     cache.adsSummary = adsSummary;
     cache.skus = skus;
     cache.prices = prices;
+    cache.pricesFetched = prices;
+    cache.smartPriceWorkbenchBase = smartPriceWorkbench;
     cache.smartPriceWorkbench = mergedWorkbench;
     cache.smartPriceWorkbenchLive = smartPriceWorkbenchLive;
     cache.smartPriceOverlay = smartPriceOverlay;
@@ -5263,6 +5298,8 @@
 
     const app = stateRef();
     if (app) {
+      app.prices = prices;
+      app.smartPriceWorkbenchBase = smartPriceWorkbench;
       app.smartPriceWorkbench = mergedWorkbench;
       app.smartPriceWorkbenchLive = smartPriceWorkbenchLive;
       app.smartPriceOverlay = smartPriceOverlay;

@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260428E__) return;
+  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260428F__) return;
+  window.__ALTEA_RUNTIME_OPTIMIZER_20260428F__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260428E__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260428D__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260428C__ = true;
@@ -7,7 +8,7 @@
 
   const BUNDLE_MAP = {
     dashboard: [
-      'portal-dashboard-interactive-hotfix.js?v=20260428c',
+      'portal-dashboard-interactive-hotfix.js?v=20260428d',
       'portal-dashboard-prime-hotfix-20260422e.js?v=20260428a'
     ],
     order: ['portal-order-logistics-hotfix.js?v=20260425a'],

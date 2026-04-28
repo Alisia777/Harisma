@@ -1,11 +1,12 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260428C__) return;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260428D__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260428D__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428C__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260428c';
-  const STYLE_ID = 'altea-dashboard-interactive-20260428c';
+  const VERSION = '20260428d';
+  const STYLE_ID = 'altea-dashboard-interactive-20260428d';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
@@ -710,6 +711,21 @@
     return false;
   }
 
+  function platformOwnerName(sku, platformKey, fallback = '') {
+    const generic = String(fallback || sku?.owner?.name || '').trim();
+    if (!sku) return generic || 'Без owner';
+    if (platformKey === 'ozon') {
+      return String(sku?.ownersByPlatform?.ozon || generic || '').trim() || 'Без owner';
+    }
+    if (platformKey === 'wb') {
+      return String(sku?.ownersByPlatform?.wb || generic || '').trim() || 'Без owner';
+    }
+    if (platformKey === 'ya' || platformKey === 'ym') {
+      return String(sku?.ownersByPlatform?.ym || sku?.ownersByPlatform?.ya || generic || '').trim() || 'Без owner';
+    }
+    return generic || 'Без owner';
+  }
+
   function issueCountersForSku(sku, platformKey) {
     const assigned = Boolean(sku?.flags?.assigned);
     const lowStock = Boolean(sku?.flags?.lowStock) && platformHasPresence(sku, platformKey);
@@ -747,6 +763,9 @@
 
   function focusRowsForPlatform(platformKey) {
     const focus = current('dashboard')?.focusTop || [];
+    const skuMap = new Map(
+      (current('skus') || []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku])
+    );
     const rows = [];
     const seen = new Set();
     const matchesPlatform = (text) => {
@@ -762,11 +781,12 @@
       if (!matchesPlatform(item?.focus_reasons)) return;
       const article = String(item?.article || item?.article_key || '').trim();
       if (!article || seen.has(article)) return;
+      const sku = skuMap.get(normalizeKey(article));
       seen.add(article);
       rows.push({
         article,
         name: item?.product_name_final || item?.name || article,
-        owner: item?.owner_name || 'Без owner',
+        owner: platformOwnerName(sku, platformKey, item?.owner_name),
         reasons: item?.focus_reasons || 'Нужна ручная оценка',
         score: num(item?.focus_score),
         completion: num(item?.plan_completion_feb26_pct)
@@ -782,7 +802,7 @@
       rows.push({
         article,
         name: sku?.name || article,
-        owner: sku?.owner?.name || 'Без owner',
+        owner: platformOwnerName(sku, platformKey),
         reasons: sku?.focusReasons || 'Есть риск по площадке',
         score: num(sku?.focusScore),
         completion: num(sku?.planFact?.completionFeb26Pct)
@@ -999,7 +1019,7 @@
         return {
           article: article || sku?.articleKey || sku?.article || '—',
           name: item?.product_name_final || sku?.name || article || '—',
-          owner: item?.owner_name || sku?.owner?.name || 'Без owner',
+          owner: platformOwnerName(sku, 'ozon', item?.owner_name),
           posts: num(item?.content_posts ?? content.posts),
           clicks: num(item?.content_clicks ?? content.clicks),
           orders: num(content.orders),
@@ -1033,9 +1053,11 @@
     const skus = current('skus') || [];
     const rows = [];
     skus.forEach((sku) => {
-      const owner = sku?.owner?.name || 'Без owner';
       const addRow = (key, label, source) => {
+
         if (!source) return;
+
+        const owner = platformOwnerName(sku, key);
         const stock = num(source.stock);
         const inTransit = num(source.stockInTransit) + num(source.stockInSupplyRequest);
         const turnoverDays = Number.isFinite(Number(source.turnoverDays)) ? Number(source.turnoverDays) : null;
@@ -1135,9 +1157,11 @@
   function marginRowsForPlatform(platformKey) {
     const rows = [];
     (current('skus') || []).forEach((sku) => {
-      const owner = sku?.owner?.name || 'Без owner';
       const addRow = (key, label, source) => {
+
         if (!source || !Number.isFinite(Number(source.marginPct))) return;
+
+        const owner = platformOwnerName(sku, key);
         rows.push({
           platformKey: key,
           platformLabel: label,
@@ -1199,7 +1223,7 @@
           name: row?.name || sku?.name || article,
           platformKey: row?.platformKey || platformKey,
           platformLabel: row?.platformLabel || shortPlatformLabel(row?.platformKey || platformKey),
-          owner: row?.owner || sku?.owner?.name || 'Без owner',
+          owner: platformOwnerName(sku, row?.platformKey || platformKey, row?.owner),
           startPrice,
           endPrice,
           avgPrice,

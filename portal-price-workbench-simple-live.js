@@ -760,8 +760,18 @@
     return buildOrderProcurementLookup(combinedPayload, wbPayload, ozonPayload);
   }
 
+  function pickPrimaryTimeline(source, overlayRow) {
+    if (Array.isArray(source && source.daily) && source.daily.length) return source.daily;
+    if (Array.isArray(overlayRow && overlayRow.daily) && overlayRow.daily.length) return overlayRow.daily;
+    if (Array.isArray(source && source.timeline) && source.timeline.length) return source.timeline;
+    if (Array.isArray(source && source.monthly) && source.monthly.length) return source.monthly;
+    if (Array.isArray(overlayRow && overlayRow.timeline) && overlayRow.timeline.length) return overlayRow.timeline;
+    if (Array.isArray(overlayRow && overlayRow.monthly) && overlayRow.monthly.length) return overlayRow.monthly;
+    return [];
+  }
+
   function buildRow(source, market, manualMap, overlayRow, maxDate, skuMeta, orderProcurementRow) {
-    var timeline = Array.isArray(source.monthly) ? source.monthly : Array.isArray(source.daily) ? source.daily : [];
+    var timeline = pickPrimaryTimeline(source, overlayRow);
     timeline = mergeTimelineWithOverlay(timeline, overlayRow, maxDate);
     var overlayClearsFill = overlayFlagEnabled(overlayRow && (overlayRow.clearCurrentFillPrice || overlayRow.clearCurrentPrice));
     var overlayClearsClient = overlayFlagEnabled(overlayRow && overlayRow.clearCurrentClientPrice);

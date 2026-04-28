@@ -20,7 +20,6 @@
       'portal-launch-manager-hotfix.js?v=20260422c'
     ],
     prices: [
-      'portal-price-snapshot-fastpath-hotfix.js?v=20260425e',
       'portal-price-workbench-runtime-loader.js?v=20260428c',
       'portal-team-reconnect-hotfix.js?v=20260420a'
     ]
@@ -33,17 +32,17 @@
     prices: 'prices'
   };
   const VIEW_TITLES = {
-    dashboard: 'Дашборд',
-    documents: 'Документы',
-    repricer: 'Репрайсер',
-    prices: 'Цены',
-    order: 'Логистика и заказ',
-    control: 'Задачи',
-    skus: 'Реестр SKU',
-    launches: 'Продукт / Ксения',
-    'launch-control': 'Запуск новинок',
-    meetings: 'Ритм работы',
-    executive: 'Руководителю'
+    dashboard: '\u0414\u0430\u0448\u0431\u043e\u0440\u0434',
+    documents: '\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b',
+    repricer: '\u0420\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440',
+    prices: '\u0426\u0435\u043d\u044b',
+    order: '\u041b\u043e\u0433\u0438\u0441\u0442\u0438\u043a\u0430 \u0438 \u0437\u0430\u043a\u0430\u0437',
+    control: '\u0417\u0430\u0434\u0430\u0447\u0438',
+    skus: '\u0420\u0435\u0435\u0441\u0442\u0440 SKU',
+    launches: '\u041f\u0440\u043e\u0434\u0443\u043a\u0442 / \u041a\u0441\u0435\u043d\u0438\u044f',
+    'launch-control': '\u0417\u0430\u043f\u0443\u0441\u043a \u043d\u043e\u0432\u0438\u043d\u043e\u043a',
+    meetings: '\u0420\u0438\u0442\u043c \u0440\u0430\u0431\u043e\u0442\u044b',
+    executive: '\u0420\u0443\u043a\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044e'
   };
   const VIEW_TO_DATA_KEY = {
     launches: 'launches',
@@ -56,7 +55,7 @@
     launches: {
       path: 'data/launches.json',
       fallback: [],
-      label: 'Продукт / Ксения',
+      label: '\u041f\u0440\u043e\u0434\u0443\u043a\u0442 / \u041a\u0441\u0435\u043d\u0438\u044f',
       assign(value) {
         state.launches = Array.isArray(value) ? value : [];
       }
@@ -64,7 +63,7 @@
     meetings: {
       path: 'data/meetings.json',
       fallback: [],
-      label: 'Ритм работы',
+      label: '\u0420\u0438\u0442\u043c \u0440\u0430\u0431\u043e\u0442\u044b',
       assign(value) {
         state.meetings = Array.isArray(value) ? value : [];
       }
@@ -72,7 +71,7 @@
     documents: {
       path: 'data/documents.json',
       fallback: { groups: [] },
-      label: 'Документы',
+      label: '\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b',
       assign(value) {
         state.documents = value || { groups: [] };
       }
@@ -80,7 +79,7 @@
     repricer: {
       path: 'data/repricer.json',
       fallback: { generatedAt: '', summary: {}, rows: [] },
-      label: 'Репрайсер',
+      label: '\u0420\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440',
       assign(value) {
         state.repricer = value || { generatedAt: '', summary: {}, rows: [] };
       }
@@ -172,7 +171,7 @@
       script.src = src;
       script.async = false;
       script.onload = () => resolve(script);
-      script.onerror = () => reject(new Error(`Не удалось загрузить ${src}`));
+      script.onerror = () => reject(new Error(`\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c ${src}`));
       (document.head || document.body || document.documentElement).appendChild(script);
     });
 
@@ -230,14 +229,14 @@
   function renderDeferredLoading(view) {
     const root = document.getElementById(`view-${view}`);
     if (!root) return;
-    const title = VIEW_TITLES[view] || 'Экран';
-    const statusChip = typeof badge === 'function' ? badge('загрузка', 'info') : '';
+    const title = VIEW_TITLES[view] || '\u042d\u043a\u0440\u0430\u043d';
+    const statusChip = typeof badge === 'function' ? badge('\u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0430', 'info') : '';
     root.innerHTML = `
       <div class="card">
         <div class="head">
           <div>
             <h3>${title}</h3>
-            <div class="muted small">Подгружаем данные только для этого раздела, чтобы старт портала не висел.</div>
+            <div class="muted small">\u041f\u043e\u0434\u0433\u0440\u0443\u0436\u0430\u0435\u043c \u0434\u0430\u043d\u043d\u044b\u0435 \u0442\u043e\u043b\u044c\u043a\u043e \u0434\u043b\u044f \u044d\u0442\u043e\u0433\u043e \u0440\u0430\u0437\u0434\u0435\u043b\u0430, \u0447\u0442\u043e\u0431\u044b \u0441\u0442\u0430\u0440\u0442 \u043f\u043e\u0440\u0442\u0430\u043b\u0430 \u043d\u0435 \u0432\u0438\u0441\u0435\u043b.</div>
           </div>
           ${statusChip}
         </div>
@@ -271,7 +270,7 @@
           renderViewFailure(`view-${requestedView}`, VIEW_TITLES[requestedView] || config.label, error);
         }
         if (typeof setAppError === 'function') {
-          setAppError(`Не удалось подгрузить ${config.label}: ${error.message}`);
+          setAppError(`\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u043e\u0434\u0433\u0440\u0443\u0437\u0438\u0442\u044c ${config.label}: ${error.message}`);
         }
       })
       .finally(() => {

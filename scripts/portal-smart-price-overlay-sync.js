@@ -7,6 +7,7 @@ const { spawn } = require('child_process');
 const XLSX = require('xlsx');
 const { buildSmartPriceOverlay } = require('./build-smart-price-overlay');
 const { buildLegacyPricesLayer } = require('./build-legacy-prices-layer');
+const { buildLegacyRepricerLayer } = require('./build-legacy-repricer-layer');
 
 const DEFAULT_SOURCE_URL = 'https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667';
 const MAX_LOCAL_FALLBACK_AGE_HOURS = 48;
@@ -72,8 +73,11 @@ function resolveOptions(args) {
     inputXlsx: args['input-xlsx'] ? path.resolve(args['input-xlsx']) : '',
     workbenchPath: path.resolve(args['workbench-file'] || process.env.ALTEA_WORKBENCH_JSON_PATH || cwdJoin('data', 'smart_price_workbench.json')),
     livePath: path.resolve(args['live-file'] || process.env.ALTEA_WORKBENCH_LIVE_JSON_PATH || cwdJoin('tmp-smart_price_workbench-live.json')),
+    liveRepricerPath: path.resolve(args['live-repricer-file'] || process.env.ALTEA_LIVE_REPRICER_JSON_PATH || cwdJoin('tmp-live-repricer.json')),
+    supportPath: path.resolve(args['support-file'] || process.env.ALTEA_PRICE_SUPPORT_JSON_PATH || cwdJoin('data', 'price_workbench_support.json')),
     overlayOutputPath: path.resolve(args['overlay-output-file'] || process.env.ALTEA_OVERLAY_JSON_PATH || cwdJoin('data', 'smart_price_overlay.json')),
     pricesOutputPath: path.resolve(args['prices-output-file'] || process.env.ALTEA_PRICES_JSON_PATH || cwdJoin('data', 'prices.json')),
+    repricerOutputPath: path.resolve(args['repricer-output-file'] || process.env.ALTEA_REPRICER_JSON_PATH || cwdJoin('data', 'repricer.json')),
     dryRun: Boolean(args.dryRun)
   };
 }
@@ -295,6 +299,15 @@ async function main() {
     livePath: options.livePath,
     outputPath: options.pricesOutputPath
   });
+  const repricerResult = buildLegacyRepricerLayer({
+    workbenchPath: options.workbenchPath,
+    overlayPath: options.overlayOutputPath,
+    liveWorkbenchPath: options.livePath,
+    liveRepricerPath: options.liveRepricerPath,
+    supportPath: options.supportPath,
+    pricesPath: options.pricesOutputPath,
+    outputPath: options.repricerOutputPath
+  });
   const summary = {
     dryRun: options.dryRun,
     sourceUrl: options.sourceUrl,
@@ -308,7 +321,8 @@ async function main() {
       stagedOutput: stagedOverlayPath,
       liveOutput: options.overlayOutputPath
     },
-    prices: pricesResult.summary
+    prices: pricesResult.summary,
+    repricer: repricerResult.summary
   };
   console.log(JSON.stringify(summary, null, 2));
 }

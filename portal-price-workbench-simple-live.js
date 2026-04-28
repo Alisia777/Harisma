@@ -747,13 +747,13 @@
   }
 
   async function loadOrderProcurementLookup() {
-    var combinedResult = await tryLoadSnapshotAwareJson(ORDER_PROCUREMENT_URL);
+    var combinedResult = await tryFetchJsonNoStore(ORDER_PROCUREMENT_URL);
     var combinedPayload = combinedResult ? combinedResult.payload : null;
     var wbPayload = null;
     var ozonPayload = null;
     if (!combinedPayload || !Array.isArray(combinedPayload.rows) || !combinedPayload.rows.length) {
-      var wbResult = await tryLoadSnapshotAwareJson(ORDER_PROCUREMENT_WB_URL);
-      var ozonResult = await tryLoadSnapshotAwareJson(ORDER_PROCUREMENT_OZON_URL);
+      var wbResult = await tryFetchJsonNoStore(ORDER_PROCUREMENT_WB_URL);
+      var ozonResult = await tryFetchJsonNoStore(ORDER_PROCUREMENT_OZON_URL);
       wbPayload = wbResult ? wbResult.payload : null;
       ozonPayload = ozonResult ? ozonResult.payload : null;
     }

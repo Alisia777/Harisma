@@ -1,13 +1,13 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260428E__) return;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_20260428E__ = true;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260428F__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260428F__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428D__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428C__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260428e';
-  const STYLE_ID = 'altea-dashboard-interactive-20260428e';
+  const VERSION = '20260428f';
+  const STYLE_ID = 'altea-dashboard-interactive-20260428f';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
@@ -764,11 +764,41 @@
       return Boolean(
         sku?.ownersByPlatform?.ym
         || sku?.ownersByPlatform?.ya
+        || sku?.ownersByPlatform?.ga
+        || sku?.ownersByPlatform?.letu
+        || sku?.ownersByPlatform?.mm
         || sku?.categoriesByPlatform?.ym
         || sku?.categoriesByPlatform?.ya
+        || sku?.categoriesByPlatform?.ga
+        || sku?.categoriesByPlatform?.letu
+        || sku?.categoriesByPlatform?.mm
       );
     }
     return false;
+  }
+
+  function retailOwnerName(sku, fallback = '') {
+    const generic = String(fallback || sku?.owner?.name || '').trim();
+    if (!sku) return generic || 'Без owner';
+    const ymOwner = String(sku?.ownersByPlatform?.ym || sku?.ownersByPlatform?.ya || '').trim();
+    const gaOwner = String(sku?.ownersByPlatform?.ga || '').trim();
+    const letuOwner = String(sku?.ownersByPlatform?.letu || '').trim();
+    const mmOwner = String(sku?.ownersByPlatform?.mm || '').trim();
+    const parts = [];
+    if (ymOwner) parts.push(`ЯМ: ${ymOwner}`);
+    const retailLabels = [];
+    if (gaOwner) retailLabels.push('ЗЯ');
+    if (letuOwner) retailLabels.push('Летуаль');
+    if (mmOwner) retailLabels.push('ММ');
+    const retailOwners = [...new Set([gaOwner, letuOwner, mmOwner].filter(Boolean))];
+    if (retailOwners.length === 1 && retailLabels.length) {
+      parts.push(`${retailLabels.join(' / ')}: ${retailOwners[0]}`);
+    } else {
+      if (gaOwner) parts.push(`ЗЯ: ${gaOwner}`);
+      if (letuOwner) parts.push(`Летуаль: ${letuOwner}`);
+      if (mmOwner) parts.push(`ММ: ${mmOwner}`);
+    }
+    return parts.join(' · ') || generic || 'Без owner';
   }
 
   function platformOwnerName(sku, platformKey, fallback = '') {
@@ -781,7 +811,16 @@
       return String(sku?.ownersByPlatform?.wb || generic || '').trim() || 'Без owner';
     }
     if (platformKey === 'ya' || platformKey === 'ym') {
-      return String(sku?.ownersByPlatform?.ym || sku?.ownersByPlatform?.ya || generic || '').trim() || 'Без owner';
+      return retailOwnerName(sku, fallback);
+    }
+    if (platformKey === 'ga') {
+      return String(sku?.ownersByPlatform?.ga || generic || '').trim() || 'Без owner';
+    }
+    if (platformKey === 'letu') {
+      return String(sku?.ownersByPlatform?.letu || generic || '').trim() || 'Без owner';
+    }
+    if (platformKey === 'mm') {
+      return String(sku?.ownersByPlatform?.mm || generic || '').trim() || 'Без owner';
     }
     return generic || 'Без owner';
   }
@@ -833,7 +872,18 @@
       if (platformKey === 'all') return true;
       if (platformKey === 'wb') return lowered.includes('wb');
       if (platformKey === 'ozon') return lowered.includes('ozon');
-      if (platformKey === 'ya') return lowered.includes('маркет') || lowered.includes('ym') || lowered.includes('yandex');
+      if (platformKey === 'ya') {
+        return lowered.includes('маркет')
+          || lowered.includes('ym')
+          || lowered.includes('yandex')
+          || lowered.includes('летуаль')
+          || lowered.includes('магнит')
+          || lowered.includes('золот')
+          || lowered.includes('зя')
+          || lowered.includes('ga')
+          || lowered.includes('letu')
+          || lowered.includes('mm');
+      }
       return false;
     };
 

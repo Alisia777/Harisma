@@ -1,9 +1,10 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__) return;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260428a';
-  const STYLE_ID = 'altea-dashboard-interactive-20260428a';
+  const VERSION = '20260428b';
+  const STYLE_ID = 'altea-dashboard-interactive-20260428b';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
@@ -474,6 +475,8 @@
   function pricePointsForRow(row, start, end) {
     const dailyPoints = pricePointsFromSeries(row?.daily, start, end);
     if (dailyPoints.length) return dailyPoints;
+    const timelinePoints = pricePointsFromSeries(row?.timeline, start, end);
+    if (timelinePoints.length) return timelinePoints;
     return pricePointsFromSeries(row?.monthly, start, end);
   }
 
@@ -500,7 +503,9 @@
     return (Array.isArray(series) ? series : [])
       .map((point) => ({
         date: parseDate(point?.date),
-        turnoverDays: Number.isFinite(Number(point?.turnoverDays)) ? Number(point.turnoverDays) : null
+        turnoverDays: point?.turnoverDays === null || point?.turnoverDays === undefined || point?.turnoverDays === ''
+          ? null
+          : (Number.isFinite(Number(point?.turnoverDays)) ? Number(point.turnoverDays) : null)
       }))
       .filter((point) => point.date instanceof Date && !Number.isNaN(point.date.getTime()))
       .filter((point) => point.date >= start && point.date <= end && point.turnoverDays !== null)
@@ -510,6 +515,8 @@
   function turnoverPointsForRow(row, start, end) {
     const dailyPoints = turnoverPointsFromSeries(row?.daily, start, end);
     if (dailyPoints.length) return dailyPoints;
+    const timelinePoints = turnoverPointsFromSeries(row?.timeline, start, end);
+    if (timelinePoints.length) return timelinePoints;
     return turnoverPointsFromSeries(row?.monthly, start, end);
   }
 
@@ -1086,12 +1093,20 @@
   function buildTurnoverMetric(platformKey, range) {
     const stockMetric = buildStockMetric(platformKey);
     const turnoverSeries = turnoverMatrixSeries(platformKey, range);
+    const publishedTurnoverSeries = turnoverSeries.length
+      ? turnoverSeries
+      : turnoverMatrixSeries(platformKey, {
+          effectiveStart: range?.min || range?.effectiveStart,
+          effectiveEnd: range?.max || range?.effectiveEnd
+        });
     const fallbackTurnover = stockMetric.rows
       .map((row) => row.turnoverDays)
       .filter((value) => value !== null);
     return {
       ...stockMetric,
       turnoverSeries,
+      turnoverPublishedSeries: publishedTurnoverSeries,
+      turnoverHistoryScope: turnoverSeries.length ? 'range' : (publishedTurnoverSeries.length ? 'published' : 'none'),
       avgTurnoverDays: turnoverSeries.length
         ? avg(turnoverSeries.map((row) => row.avgTurnover))
         : stockMetric.avgTurnover,
@@ -2661,7 +2676,7 @@
       .sort((left, right) => num(right.avgTurnoverDays) - num(left.avgTurnoverDays) || right.stock - left.stock)
       .slice(0, 18);
     const priceDailyMap = new Map(priceMatrixSeries(platformKey, executive.range).map((row) => [iso(row.date), row]));
-    const focusDays = detailTailRows(stockMetric.turnoverSeries, 14);
+    const focusDays = detailTailRows(stockMetric.turnoverPublishedSeries, 14);
     return {
       title: `${stockMetric.label} · оборачиваемость и запас`,
       subtitle: `Запрос: ${executive.range.requestedLabel}. В расчете: ${executive.range.effectiveLabel}. Справа последние 14 дней ряда по оборачиваемости, если он опубликован.`,
@@ -3584,7 +3599,7 @@
       .sort((left, right) => num(right.avgTurnoverDays) - num(left.avgTurnoverDays) || right.stock - left.stock)
       .slice(0, 18);
     const priceDailyMap = new Map(priceMatrixSeries(platformKey, executive.range).map((row) => [iso(row.date), row]));
-    const focusDays = detailTailRows(stockMetric.turnoverSeries, 14);
+    const focusDays = detailTailRows(stockMetric.turnoverPublishedSeries, 14);
     return {
       title: `${stockMetric.label} · оборачиваемость и запас`,
       subtitle: `Запрос: ${executive.range.requestedLabel}. В расчете: ${executive.range.effectiveLabel}. Справа последние 14 дней ряда по оборачиваемости, если он опубликован.`,
@@ -4364,7 +4379,7 @@
       .sort((left, right) => num(right.avgTurnoverDays) - num(left.avgTurnoverDays) || right.stock - left.stock)
       .slice(0, 18);
     const priceDailyMap = new Map(priceMatrixSeries(platformKey, executive.range).map((row) => [iso(row.date), row]));
-    const focusDays = detailTailRows(stockMetric.turnoverSeries, 14);
+    const focusDays = detailTailRows(stockMetric.turnoverPublishedSeries, 14);
     return {
       title: `${stockMetric.label} · оборачиваемость и запас`,
       subtitle: `Запрос: ${executive.range.requestedLabel}. В расчёте: ${executive.range.effectiveLabel}. Справа последние 14 дней ряда по оборачиваемости, если он опубликован.`,

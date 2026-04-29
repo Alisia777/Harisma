@@ -17,6 +17,12 @@ const DEFAULT_SUPABASE_KEY = 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw';
 const SNAPSHOT_TABLE = 'portal_data_snapshots';
 const SNAPSHOT_SOURCE = 'google-sheets-bridge';
 const SNAPSHOT_KEYS = ['dashboard', 'skus', 'platform_trends', 'logistics'];
+const REQUIRED_SOURCE_SHEETS = {
+  dimSku: ['dim_sku'],
+  factMarketplace: ['fact_marketplace_daily_sku'],
+  factLogistics: ['fact_logistics_daily_cluster_warehouse_sku', 'fact_logistics_daily_cluster_wa'],
+  dimWarehouse: ['dim_warehouse']
+};
 const PLATFORM_ORDER = ['wb', 'ozon', 'ya', 'all'];
 const PLATFORM_LABELS = {
   wb: 'WB',
@@ -278,6 +284,18 @@ function isoDate(value) {
   }
   const raw = String(value).trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  const usShortMatch = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
+  if (usShortMatch) {
+    const [, monthRaw, dayRaw, yearRaw] = usShortMatch;
+    const year = yearRaw.length === 2 ? `20${yearRaw}` : yearRaw;
+    return `${year}-${String(Number(monthRaw)).padStart(2, '0')}-${String(Number(dayRaw)).padStart(2, '0')}`;
+  }
+  const ruShortMatch = raw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2}|\d{4})$/);
+  if (ruShortMatch) {
+    const [, dayRaw, monthRaw, yearRaw] = ruShortMatch;
+    const year = yearRaw.length === 2 ? `20${yearRaw}` : yearRaw;
+    return `${year}-${String(Number(monthRaw)).padStart(2, '0')}-${String(Number(dayRaw)).padStart(2, '0')}`;
+  }
   const parsed = new Date(raw);
   if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
   return raw;
@@ -348,14 +366,38 @@ function requiredSheetRows(workbook, sheetName) {
 function parseWorkbook(buffer) {
   const workbook = XLSX.read(buffer, { type: 'buffer' });
   return {
-    dimSku: requiredSheetRows(workbook, 'dim_sku'),
-    factMarketplace: requiredSheetRows(workbook, 'fact_marketplace_daily_sku'),
-    factLogistics: requiredSheetRows(workbook, [
-      'fact_logistics_daily_cluster_warehouse_sku',
-      'fact_logistics_daily_cluster_wa'
-    ]),
-    dimWarehouse: requiredSheetRows(workbook, 'dim_warehouse')
+    dimSku: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.dimSku),
+    factMarketplace: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.factMarketplace),
+    factLogistics: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.factLogistics),
+    dimWarehouse: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.dimWarehouse)
   };
+}
+
+function parseCsvRows(csvText) {
+  const workbook = XLSX.read(csvText, { type: 'string' });
+  const [firstSheetName = 'Sheet1'] = workbook.SheetNames;
+  const sheet = workbook.Sheets[firstSheetName];
+  if (!sheet) return [];
+  return XLSX.utils.sheet_to_json(sheet, { defval: null, raw: false });
+}
+
+function looksBrokenDimSkuRows(rows) {
+  if (!Array.isArray(rows) || rows.length !== 1) return false;
+  const values = Object.values(rows[0] || {})
+    .map((value) => normalizeText(value))
+    .filter(Boolean);
+  return values.some((value) => /^#REF!?$/i.test(value));
+}
+
+function extractSheetGidsFromHtml(html) {
+  const gidMap = new Map();
+  const matcher = /\[\d+,0,\\"(\d+)\\",\[\{\\"1\\":\[\[0,0,\\"([^\\"]+)\\"/g;
+  let match;
+  while ((match = matcher.exec(String(html || '')))) {
+    const [, gid, sheetName] = match;
+    if (gid && sheetName && !gidMap.has(sheetName)) gidMap.set(sheetName, gid);
+  }
+  return gidMap;
 }
 
 async function fetchDirectWorkbook(exportUrl) {
@@ -436,6 +478,87 @@ async function fetchWorkbookViaBrowserAuth(options) {
       throw new Error(`Google export returned HTTP ${response.status()}`);
     }
     return Buffer.from(await response.body());
+  } finally {
+    await browser.close();
+  }
+}
+
+async function fetchSheetRowsViaBrowserAuth(options) {
+  const browser = await chromium.launchPersistentContext(options.profileDir, {
+    headless: true,
+    channel: 'chrome'
+  });
+  const page = await browser.newPage();
+  try {
+    await page.goto(options.sheetUrl, { waitUntil: 'domcontentloaded', timeout: 120000 });
+    await page.waitForTimeout(2500);
+    const currentUrl = page.url();
+    const title = await page.title();
+    if (/accounts\.google\.com/i.test(currentUrl) || /вход/i.test(title)) {
+      throw new Error('Google-авторизация для sync-профиля не настроена. Запустите `npm run portal:sheet-auth` один раз и войдите в Google.');
+    }
+
+    const htmlResponse = await browser.request.get(options.sheetUrl, {
+      failOnStatusCode: false,
+      timeout: 120000
+    });
+    if (!htmlResponse.ok()) {
+      throw new Error(`Google edit page returned HTTP ${htmlResponse.status()}`);
+    }
+
+    const gidMap = extractSheetGidsFromHtml(await htmlResponse.text());
+    const baseExportUrl = String(options.sheetUrl).replace(/\/edit.*$/, '');
+
+    function resolveSheetTarget(candidates, label) {
+      const names = Array.isArray(candidates) ? candidates : [candidates];
+      const resolvedName = names.find((name) => gidMap.has(name));
+      if (!resolvedName) {
+        throw new Error(`Не удалось найти gid для листа ${label || names.join(', ')}`);
+      }
+      return { name: resolvedName, gid: gidMap.get(resolvedName) };
+    }
+
+    async function fetchCsvRows(candidates, label) {
+      const target = resolveSheetTarget(candidates, label);
+      const response = await browser.request.get(
+        `${baseExportUrl}/export?format=csv&gid=${encodeURIComponent(target.gid)}`,
+        { failOnStatusCode: false, timeout: 120000 }
+      );
+      if (!response.ok()) {
+        throw new Error(`CSV export for ${target.name} returned HTTP ${response.status()}`);
+      }
+      const csvText = await response.text();
+      return { ...target, rows: parseCsvRows(csvText) };
+    }
+
+    const dimSkuSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.dimSku, 'dim_sku');
+    const factMarketplaceSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.factMarketplace, 'fact_marketplace_daily_sku');
+    const factLogisticsSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.factLogistics, 'fact_logistics_daily_cluster_warehouse_sku');
+    const dimWarehouseSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.dimWarehouse, 'dim_warehouse');
+
+    const warnings = [];
+    let dimSkuRows = dimSkuSource.rows;
+    if (looksBrokenDimSkuRows(dimSkuRows)) {
+      warnings.push('dim_sku returned #REF! in Google export; keeping local skus.json overlay for owners and contour metadata');
+      dimSkuRows = [];
+    }
+
+    return {
+      dimSku: dimSkuRows,
+      factMarketplace: factMarketplaceSource.rows,
+      factLogistics: factLogisticsSource.rows,
+      dimWarehouse: dimWarehouseSource.rows,
+      sourceMeta: {
+        mode: 'google-csv-tabs',
+        gids: {
+          dim_sku: dimSkuSource.gid,
+          fact_marketplace_daily_sku: factMarketplaceSource.gid,
+          fact_logistics_daily_cluster_warehouse_sku: factLogisticsSource.gid,
+          dim_warehouse: dimWarehouseSource.gid
+        },
+        warnings
+      }
+    };
   } finally {
     await browser.close();
   }
@@ -1007,6 +1130,9 @@ function buildSnapshots(rows, options) {
     meta: {
       generatedAt: new Date().toISOString(),
       sheetSource: options.inputXlsx || options.inputJson || options.sourceUrl,
+      sourceMode: rows?.sourceMeta?.mode || (options.inputJson ? 'input-json' : options.inputXlsx ? 'input-xlsx' : 'google-workbook'),
+      sourceGids: rows?.sourceMeta?.gids || {},
+      sourceWarnings: rows?.sourceMeta?.warnings || [],
       updatedSkus: updatedCount,
       dashboard: {
         latest_marketplace_date: dashboard.dataFreshness?.asOfDate || '',
@@ -1183,11 +1309,17 @@ async function main() {
       } catch (error) {
         console.log(`Direct export unavailable: ${error.message}`);
         console.log('Trying authenticated Chrome profile. If you just opened the sheet in Chrome, close that Chrome window first.');
-        workbookBuffer = await fetchWorkbookViaBrowserAuth(options);
-        console.log(`Workbook downloaded via authenticated Chrome profile: ${options.profileDir}`);
+        try {
+          rows = await fetchSheetRowsViaBrowserAuth(options);
+          console.log(`Sheet tabs downloaded via authenticated Chrome profile: ${options.profileDir}`);
+        } catch (sheetError) {
+          console.log(`Direct tab export unavailable: ${sheetError.message}`);
+          workbookBuffer = await fetchWorkbookViaBrowserAuth(options);
+          console.log(`Workbook downloaded via authenticated Chrome profile: ${options.profileDir}`);
+        }
       }
     }
-    rows = parseWorkbook(workbookBuffer);
+    if (!rows) rows = parseWorkbook(workbookBuffer);
   }
 
   const { snapshots, meta } = buildSnapshots(rows, options);

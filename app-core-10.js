@@ -406,9 +406,35 @@ function renderDashboardView() {
   renderDashboard();
 }
 
+function renderAdsFunnelView() {
+  const interactiveApi = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
+  if (interactiveApi && typeof interactiveApi.renderAdsFunnel === 'function') {
+    interactiveApi.renderAdsFunnel(false);
+    return;
+  }
+  if (typeof window.renderAdsFunnelView === 'function' && window.renderAdsFunnelView !== renderAdsFunnelView) {
+    window.renderAdsFunnelView(false);
+    return;
+  }
+  const root = document.getElementById('view-ads-funnel');
+  if (!root) return;
+  root.innerHTML = `
+    <div class="card">
+      <div class="head">
+        <div>
+          <h3>Рекламная воронка</h3>
+          <div class="muted small">Интерактивный слой ещё не догрузился. Обновите страницу после прогрева скриптов.</div>
+        </div>
+        ${badge('ожидание', 'info')}
+      </div>
+    </div>
+  `;
+}
+
 function rerenderCurrentView() {
   applyOwnerOverridesToSkus();
   const renderPlan = [
+    ['view-ads-funnel', 'Рекламная воронка', renderAdsFunnelView],
     ['view-dashboard', 'Дашборд', renderDashboardView],
     ['view-documents', 'Документы', renderDocuments],
     ['view-repricer', 'Репрайсер', renderRepricer],

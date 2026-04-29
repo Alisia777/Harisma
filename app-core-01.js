@@ -120,6 +120,7 @@ const VIEW_TITLES = {
   dashboard: 'Дашборд',
   documents: 'Документы',
   repricer: 'Репрайсер',
+  'ads-funnel': 'Рекламная воронка',
   prices: 'Цены',
   order: 'Заказ товара',
   control: 'Задачи',

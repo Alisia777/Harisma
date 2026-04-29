@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429E__) return;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429F__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429F__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429E__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429D__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429C__ = true;
@@ -11,9 +12,14 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260429e';
-  const STYLE_ID = 'altea-dashboard-interactive-20260429e';
+  const VERSION = '20260429f';
+  const STYLE_ID = 'altea-dashboard-interactive-20260429f';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
+  const DASHBOARD_VIEW_ID = 'view-dashboard';
+  const ADS_VIEW_ID = 'view-ads-funnel';
+  const ADS_ROOT_ID = 'portalAdsFunnelRoot';
+  const ADS_STYLE_ID = 'altea-dashboard-interactive-ads-20260429f';
+  const ADS_MANAGEMENT_STYLE_ID = 'portalDashboardAdsManagementStyles';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
   const PRESET_KEYS = ['yesterday', '7', 'prevweek', '14', '30'];
@@ -2046,6 +2052,19 @@
       @media (max-width: 900px) { #view-dashboard .portal-exec-metric-strip { grid-template-columns: repeat(2, minmax(0,1fr)); } body > .portal-exec-modal .portal-exec-task-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
       @media (max-width: 720px) { #view-dashboard .portal-exec-grid, #view-dashboard .portal-exec-metric-strip, #view-dashboard .portal-exec-issue-grid, #view-dashboard .portal-exec-metric-grid, body > .portal-exec-modal .portal-exec-modal-metrics, body > .portal-exec-modal .portal-exec-task-grid { grid-template-columns: 1fr; } #view-dashboard .portal-exec-dates { display: grid; grid-template-columns: 1fr; } #view-dashboard .portal-exec-date-shell { grid-template-columns: 1fr; } body > .portal-exec-modal { padding: 12px; } body > .portal-exec-modal .portal-exec-modal-card { padding: 16px; } }
     `;
+    document.head.appendChild(style);
+  }
+
+  function ensureAdsFunnelStyles() {
+    ensureStyles();
+    if (document.getElementById(ADS_STYLE_ID)) return;
+    const baseStyle = document.getElementById(STYLE_ID);
+    if (!baseStyle) return;
+    const style = document.createElement('style');
+    style.id = ADS_STYLE_ID;
+    style.textContent = String(baseStyle.textContent || '')
+      .replace(/#view-dashboard/g, `#${ADS_VIEW_ID}`)
+      .replace(new RegExp(ROOT_ID, 'g'), ADS_ROOT_ID);
     document.head.appendChild(style);
   }
 
@@ -4664,6 +4683,17 @@
     document.head.appendChild(style);
   }
 
+  function ensureAdsManagementStyles() {
+    ensureDashboardManagementStyles();
+    if (document.getElementById(ADS_MANAGEMENT_STYLE_ID)) return;
+    const baseStyle = document.getElementById('portalDashboardManagementStyles');
+    if (!baseStyle) return;
+    const style = document.createElement('style');
+    style.id = ADS_MANAGEMENT_STYLE_ID;
+    style.textContent = String(baseStyle.textContent || '').replace(/#view-dashboard/g, `#${ADS_VIEW_ID}`);
+    document.head.appendChild(style);
+  }
+
   function detailTailRows(rows, limit = 14) {
     return Array.isArray(rows) ? rows.slice(Math.max(0, rows.length - limit)) : [];
   }
@@ -4718,6 +4748,37 @@
       .map((row) => ({ ...row, signals: dashboardDecisionSignals(row) }))
       .filter((row) => row.signals.length)
       .sort((left, right) => dashboardDecisionScore(right) - dashboardDecisionScore(left) || num(right.salesValue) - num(left.salesValue))
+      .slice(0, 8);
+  }
+
+  function dashboardSelectedPlatformLabel(executive) {
+    return executive.selectedPlatform === 'all'
+      ? 'Все площадки'
+      : (executive.byKey.get(executive.selectedPlatform)?.label || String(executive.selectedPlatform || '').toUpperCase());
+  }
+
+  function dashboardAdsSignals(row) {
+    const items = [];
+    const priceShockKind = priceShockSignalKind(row?.priceDeltaPct);
+    const funnelKind = funnelDropSignalKind(row);
+    if (priceShockKind && Number.isFinite(Number(row?.priceDeltaPct))) {
+      items.push({ label: `Цена ${row.priceDeltaPct >= 0 ? '+' : ''}${pct(row.priceDeltaPct)}`, kind: priceShockKind });
+    }
+    if (funnelKind) items.push({ label: `Воронка ${strongestFunnelDropLabel(row)}`, kind: funnelKind });
+    if (row.adDrr !== null) items.push({ label: `ДРР ${pct(row.adDrr)}`, kind: toneDrr(row.adDrr) });
+    return items;
+  }
+
+  function dashboardAdsSignalScore(row) {
+    return (row.signals || []).reduce((sum, item) => sum + (item.kind === 'danger' ? 3 : item.kind === 'warn' ? 2 : 1), 0);
+  }
+
+  function dashboardAdsSignalQueue(executive) {
+    const scopedKey = executive.selectedPlatform === 'all' ? 'all' : executive.selectedPlatform;
+    return articleRowsForPlatform(scopedKey, executive.range)
+      .map((row) => ({ ...row, signals: dashboardAdsSignals(row) }))
+      .filter((row) => row.signals.length)
+      .sort((left, right) => dashboardAdsSignalScore(right) - dashboardAdsSignalScore(left) || num(right.adRevenue) - num(left.adRevenue) || num(right.salesValue) - num(left.salesValue))
       .slice(0, 8);
   }
 
@@ -5314,6 +5375,48 @@
     `;
   }
 
+  function adsSignalsSection(executive) {
+    const rows = dashboardAdsSignalQueue(executive);
+    const selectedPlatformLabel = dashboardSelectedPlatformLabel(executive);
+    return `
+      <section class="portal-exec-section is-highlight">
+        <div class="portal-exec-head">
+          <div class="portal-exec-copy">
+            <h3>Сигналы рекламы и цены</h3>
+            <p>Сюда попадают SKU, где цена сдвинулась больше чем на 10% или рекламная воронка провалилась относительно прошлого окна. Клик сразу открывает карточку цены по тому же периоду.</p>
+          </div>
+          ${sectionMetaHtml(executive, [
+            badgeHtml(selectedPlatformLabel, 'info'),
+            badgeHtml(`${int(rows.length)} SKU`, rows.length ? 'warn' : 'ok')
+          ])}
+        </div>
+        <div class="portal-exec-focus-grid">
+          ${rows.map((row) => {
+            const tone = row.signals.some((item) => item.kind === 'danger') ? 'danger' : row.signals.some((item) => item.kind === 'warn') ? 'warn' : 'ok';
+            return `
+              <article
+                class="portal-exec-card portal-exec-focus-card is-${tone} is-clickable"
+                data-portal-open-price-article="${esc(row.article)}"
+                data-portal-open-price-market="${esc(row.platformKey === 'ya' ? 'ym' : row.platformKey)}"
+                data-portal-open-price-from="${esc(iso(executive.range.effectiveStart))}"
+                data-portal-open-price-to="${esc(iso(executive.range.effectiveEnd))}"
+              >
+                <div class="portal-exec-card-head">
+                  <span class="portal-exec-card-label">${esc(row.platformLabel)}</span>
+                  ${badgeHtml(`Owner ${row.owner || '—'}`, row.owner && row.owner !== 'Без owner' ? 'ok' : 'warn')}
+                </div>
+                <strong>${esc(row.article)}</strong>
+                <p>${esc(row.name || 'Без названия')}</p>
+                <div class="portal-exec-chip-stack">${row.signals.map((item) => badgeHtml(item.label, item.kind)).join('')}</div>
+                <p>Реклама ${esc(money(row.adSpend))} · заказы ${esc(int(row.adOrders))} · выручка ${esc(money(row.adRevenue))}</p>
+              </article>
+            `;
+          }).join('') || `<div class="portal-exec-empty">По выбранному окну нет SKU с рекламным провалом или резким ценовым сдвигом.</div>`}
+        </div>
+      </section>
+    `;
+  }
+
   function issuesSection(executive) {
     const metrics = executive.selectedPlatform === 'all'
       ? [executive.overall, ...visibleMetrics(executive)]
@@ -5599,6 +5702,26 @@
       adsSection(executive),
       issuesSection(executive),
       `<div class="portal-exec-section-foot">Источник факта: ${esc(executive.range.availableLabel)} · daily bridge из Google Sheets в 09:00 МСК · актуально на ${esc(longDate(executive.range.max))}.</div>`
+    ].join('');
+    root.insertAdjacentElement('afterbegin', container);
+    bindDashboard(root, executive);
+  }
+
+  function renderAdsFunnel(executive) {
+    const root = document.getElementById(ADS_VIEW_ID);
+    if (!root) return;
+    ensureAdsFunnelStyles();
+    ensureAdsManagementStyles();
+    ensureModal();
+    root.querySelector(`#${ADS_ROOT_ID}`)?.remove();
+    const container = document.createElement('div');
+    container.id = ADS_ROOT_ID;
+    container.dataset.portalDashboardExecutiveRoot = 'true';
+    container.innerHTML = [
+      periodSection(executive, executive.metrics.some((metric) => metric.adsReady)),
+      adsSection(executive),
+      adsSignalsSection(executive),
+      `<div class="portal-exec-section-foot">Источник рекламы: ads_summary из Google Sheets · ${esc(executive.range.availableLabel)} · актуально на ${esc(longDate(executive.range.max))}.</div>`
     ].join('');
     root.insertAdjacentElement('afterbegin', container);
     bindDashboard(root, executive);
@@ -5939,7 +6062,7 @@
     const original = window[name];
     const wrapped = function () {
       const result = original.apply(this, arguments);
-      const onDashboard = typeof state !== 'object' || !state || state.activeView === 'dashboard';
+      const onDashboard = typeof state !== 'object' || !state || state.activeView === 'dashboard' || state.activeView === 'ads-funnel';
       if (onDashboard) scheduleApply(90);
       return result;
     };
@@ -6079,16 +6202,33 @@
   }
 
   function apply() {
-    const dashboardRoot = document.getElementById('view-dashboard');
-    if (!dashboardRoot) return;
+    const dashboardRoot = document.getElementById(DASHBOARD_VIEW_ID);
+    const adsRoot = document.getElementById(ADS_VIEW_ID);
+    if (!dashboardRoot && !adsRoot) return;
     syncChrome();
-    renderDashboard(buildPlatformMetrics());
+    const executive = buildPlatformMetrics();
+    if (dashboardRoot) renderDashboard(executive);
+    if (adsRoot) renderAdsFunnel(executive);
   }
 
   function isDashboardActive() {
     const app = stateRef();
-    const root = document.getElementById('view-dashboard');
-    return app?.activeView === 'dashboard' || Boolean(root?.classList.contains('active'));
+    const dashboardRoot = document.getElementById(DASHBOARD_VIEW_ID);
+    const adsRoot = document.getElementById(ADS_VIEW_ID);
+    return app?.activeView === 'dashboard'
+      || app?.activeView === 'ads-funnel'
+      || Boolean(dashboardRoot?.classList.contains('active'))
+      || Boolean(adsRoot?.classList.contains('active'));
+  }
+
+  function activeInteractiveRootReady() {
+    const app = stateRef();
+    const activeView = app?.activeView === 'ads-funnel' || document.getElementById(ADS_VIEW_ID)?.classList.contains('active')
+      ? 'ads-funnel'
+      : 'dashboard';
+    return activeView === 'ads-funnel'
+      ? Boolean(document.getElementById(ADS_ROOT_ID))
+      : Boolean(document.getElementById(ROOT_ID));
   }
 
   function scheduleApply(delay = 0, forceRefresh = false) {
@@ -6102,7 +6242,7 @@
   }
 
   function bindLiveTriggers() {
-    document.querySelectorAll('.nav-btn[data-view="dashboard"]').forEach((button) => {
+    document.querySelectorAll('.nav-btn[data-view="dashboard"], .nav-btn[data-view="ads-funnel"]').forEach((button) => {
       if (button.dataset.portalExecBound) return;
       button.dataset.portalExecBound = '1';
       button.addEventListener('click', () => scheduleApply(80));
@@ -6120,6 +6260,7 @@
   function rearmBridges() {
     bridge('rerenderCurrentView');
     bridge('renderDashboard');
+    bridge('renderAdsFunnelView');
   }
 
   function exposeDashboardApi() {
@@ -6136,6 +6277,14 @@
       applyNow(forceRefresh = false) {
         if (forceRefresh) dashboardBootPrimed = true;
         return refreshData(forceRefresh).then(apply);
+      },
+      renderAdsFunnel(forceRefresh = false) {
+        if (forceRefresh) dashboardBootPrimed = true;
+        return refreshData(forceRefresh).then(() => {
+          const executive = buildPlatformMetrics();
+          renderAdsFunnel(executive);
+          return executive;
+        });
       },
       getSignalSnapshot(platformKey = '') {
         const range = selectedRange();
@@ -6174,12 +6323,15 @@
         return Array.isArray(metric?.rows) ? metric.rows.map((row) => ({ ...row })) : [];
       }
     };
+    window.renderAdsFunnelView = function renderAdsFunnelView(forceRefresh = false) {
+      return window.__ALTEA_DASHBOARD_INTERACTIVE_API__?.renderAdsFunnel(forceRefresh);
+    };
   }
 
   function ensureInteractiveDashboardBoot(forceRefresh = false) {
     rearmBridges();
     if (!isDashboardActive()) return;
-    if (!forceRefresh && document.getElementById(ROOT_ID)) return;
+    if (!forceRefresh && activeInteractiveRootReady()) return;
     if (forceRefresh) {
       dashboardBootPrimed = true;
       scheduleApply(80, true);
@@ -6199,6 +6351,6 @@
     window.addEventListener('load', () => ensureInteractiveDashboardBoot(true), { once: true });
   }
   window.addEventListener('altea:viewchange', (event) => {
-    if (event.detail?.view === 'dashboard') primeDashboard(false);
+    if (event.detail?.view === 'dashboard' || event.detail?.view === 'ads-funnel') primeDashboard(false);
   });
 })();

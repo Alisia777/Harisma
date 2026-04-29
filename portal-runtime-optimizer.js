@@ -43,6 +43,7 @@
     dashboard: 'Дашборд',
     documents: 'Документы',
     repricer: 'Репрайсер',
+    'ads-funnel': 'Рекламная воронка',
     prices: 'Цены',
     order: 'Логистика и заказ',
     control: 'Задачи',

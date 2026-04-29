@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_REPRICER_COLDSTART_HOTFIX_20260428A__) return;
-  window.__ALTEA_REPRICER_COLDSTART_HOTFIX_20260428A__ = true;
+  if (window.__ALTEA_REPRICER_COLDSTART_HOTFIX_20260429A__) return;
+  window.__ALTEA_REPRICER_COLDSTART_HOTFIX_20260429A__ = true;
 
   let hydratePromise = null;
   let repricerIntentUntil = 0;
@@ -101,8 +101,82 @@
     }
   }
 
+  function numberOrZero(value) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function firstPositive(...values) {
+    for (const value of values) {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    }
+    return 0;
+  }
+
+  function formatRub(value) {
+    const amount = Number(value);
+    if (!Number.isFinite(amount) || amount <= 0) return '';
+    return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(amount)} \u20bd`;
+  }
+
+  function inferLegacySideStrategy(side) {
+    const currentPrice = numberOrZero(side?.currentPrice);
+    const recPrice = numberOrZero(side?.recPrice);
+    const minPrice = numberOrZero(side?.minPrice);
+    const stock = numberOrZero(side?.stock);
+    if (stock <= 0) return 'OOS';
+    if (currentPrice > 0 && minPrice > 0 && currentPrice + 0.001 < minPrice) return 'FLOOR';
+    if (recPrice > currentPrice + 1) return 'UP';
+    if (recPrice > 0 && currentPrice > recPrice + 1) return 'DOWN';
+    if (recPrice > 0) return 'KEEP';
+    return side?.strategy || 'BLOCK';
+  }
+
+  function sanitizeLegacyRepricerSide(side) {
+    if (!side || typeof side !== 'object') return side;
+    const currentPrice = numberOrZero(side.currentPrice);
+    const minPrice = numberOrZero(side.minPrice);
+    const upperCap = firstPositive(side.upperCap, side.workingZoneTo);
+    const originalRecPrice = numberOrZero(side.recPrice);
+    if (!(upperCap > 0) || !(originalRecPrice > upperCap + 0.001) || (minPrice > 0 && upperCap + 0.001 < minPrice)) {
+      return side;
+    }
+
+    const next = { ...side };
+    next.seedRecPrice = firstPositive(next.seedRecPrice, originalRecPrice);
+    next.upperCap = upperCap;
+    next.upperCapApplied = true;
+    next.recPrice = upperCap;
+    next.changePct = currentPrice > 0
+      ? Number((((upperCap - currentPrice) / currentPrice)).toFixed(6))
+      : 0;
+    if (currentPrice > 0 && numberOrZero(next.buyerPrice) > 0) {
+      next.newBuyerPrice = Number(((numberOrZero(next.buyerPrice) * upperCap) / currentPrice).toFixed(2));
+    } else if (upperCap > 0) {
+      next.newBuyerPrice = upperCap;
+    }
+    next.strategy = inferLegacySideStrategy(next);
+    next.reason = `\u0420\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u0430\u0446\u0438\u044f \u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0430 \u0432\u0435\u0440\u0445\u043d\u0435\u0439 \u0433\u0440\u0430\u043d\u0438\u0446\u0435\u0439 \u0440\u0430\u0431\u043e\u0447\u0435\u0433\u043e \u043a\u043e\u0440\u0438\u0434\u043e\u0440\u0430 ${formatRub(upperCap)}. \u0418\u0441\u0445\u043e\u0434\u043d\u044b\u0439 target ${formatRub(next.seedRecPrice || originalRecPrice)} \u0431\u044b\u043b \u0432\u044b\u0448\u0435 \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e\u0433\u043e \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0430.`;
+    return next;
+  }
+
+  function sanitizeLegacyRepricerPayload(payload) {
+    const next = cloneJson(payload) || { generatedAt: '', summary: {}, rows: [] };
+    if (!Array.isArray(next.rows)) return next;
+    next.rows = next.rows.map((row) => {
+      if (!row || typeof row !== 'object') return row;
+      return {
+        ...row,
+        wb: sanitizeLegacyRepricerSide(row.wb),
+        ozon: sanitizeLegacyRepricerSide(row.ozon)
+      };
+    });
+    return next;
+  }
+
   function normalizeArticleKey(value) {
-    return String(value || '').toLowerCase().replace(/[^a-zа-я0-9]+/gi, '');
+    return String(value || '').toLowerCase().replace(/[^a-z\u0430-\u044f0-9]+/gi, '');
   }
 
   function parseFreshStamp(value) {
@@ -364,7 +438,7 @@
         loadPrimary('data/price_workbench_support.json', { generatedAt: '', platforms: {} }, 'Price workbench support')
       ]);
 
-      state.repricer = repricer || { generatedAt: '', summary: {}, rows: [] };
+      state.repricer = sanitizeLegacyRepricerPayload(repricer || { generatedAt: '', summary: {}, rows: [] });
       state.repricerLive = repricerLive || { generatedAt: '', rows: [] };
       state.prices = prices || { generatedAt: '', platforms: {} };
       state.priceWorkbenchSupport = priceWorkbenchSupport || { generatedAt: '', platforms: {} };

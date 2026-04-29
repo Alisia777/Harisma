@@ -149,8 +149,8 @@ function normalizeTag(hasWb, hasOzon) {
 
 function defaultTargetTurnoverDays(status = '', platform = '') {
   const raw = String(status || '').toLowerCase();
-  if (raw.includes('нов')) return 45;
-  if (raw.includes('вывод')) return 999;
+  if (raw.includes('\u043d\u043e\u0432')) return 45;
+  if (raw.includes('\u0432\u044b\u0432\u043e\u0434')) return 999;
   if (platform === 'ozon') return 60;
   return 95;
 }
@@ -182,13 +182,13 @@ function inferReason({
     return liveReason;
   }
   if ((stock || 0) <= 0) return 'stock_total <= 0';
-  if (currentPrice > 0 && minPrice > 0 && currentPrice + 0.001 < minPrice) return 'текущая цена ниже рабочего floor';
-  if (strategy === 'UP') return 'seed target выше текущей цены';
-  if (strategy === 'DOWN') return 'seed target ниже текущей цены';
+  if (currentPrice > 0 && minPrice > 0 && currentPrice + 0.001 < minPrice) return '\u0442\u0435\u043a\u0443\u0449\u0430\u044f \u0446\u0435\u043d\u0430 \u043d\u0438\u0436\u0435 \u0440\u0430\u0431\u043e\u0447\u0435\u0433\u043e floor';
+  if (strategy === 'UP') return 'seed target \u0432\u044b\u0448\u0435 \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u0446\u0435\u043d\u044b';
+  if (strategy === 'DOWN') return 'seed target \u043d\u0438\u0436\u0435 \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u0446\u0435\u043d\u044b';
   if (textValue(sourceRow?.historyNote)) return textValue(sourceRow.historyNote);
-  if (textValue(priceRow?.historyFreshnessDate)) return `факт цены до ${priceRow.historyFreshnessDate}`;
+  if (textValue(priceRow?.historyFreshnessDate)) return `\u0444\u0430\u043a\u0442 \u0446\u0435\u043d\u044b \u0434\u043e ${priceRow.historyFreshnessDate}`;
   if (textValue(supportRow?.summary?.interpretation)) return textValue(supportRow.summary.interpretation);
-  return 'без изменения';
+  return '\u0431\u0435\u0437 \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f';
 }
 
 function estimateNewBuyerPrice(currentBuyerPrice, currentPrice, recPrice, seedTargetClientPrice, liveNewBuyerPrice) {
@@ -198,6 +198,50 @@ function estimateNewBuyerPrice(currentBuyerPrice, currentPrice, recPrice, seedTa
     return Number(((currentBuyerPrice * recPrice) / currentPrice).toFixed(2));
   }
   return positiveValue(currentBuyerPrice, recPrice);
+}
+
+function formatRub(value) {
+  const amount = numberValue(value);
+  if (amount === null) return '';
+  return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(amount)} \u20bd`;
+}
+
+function resolveUpperCap(sourceRow, supportRow) {
+  return positiveValue(
+    sourceRow?.workingZoneTo,
+    supportRow?.workingZoneTo,
+    supportRow?.maxPrice,
+    supportRow?.historicalMaxPrice
+  ) || 0;
+}
+
+function capRecommendation(recPrice, minPrice, upperCap) {
+  if (!(recPrice > 0) || !(upperCap > 0)) {
+    return {
+      recPrice,
+      capApplied: false,
+      capBlockedByFloor: false
+    };
+  }
+  if (minPrice > 0 && upperCap + 0.001 < minPrice) {
+    return {
+      recPrice,
+      capApplied: false,
+      capBlockedByFloor: true
+    };
+  }
+  if (recPrice > upperCap + 0.001) {
+    return {
+      recPrice: upperCap,
+      capApplied: true,
+      capBlockedByFloor: false
+    };
+  }
+  return {
+    recPrice,
+    capApplied: false,
+    capBlockedByFloor: false
+  };
 }
 
 function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRootGeneratedAt) {
@@ -232,11 +276,14 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     minPrice,
     currentPrice
   ) || 0;
-  const recPrice = positiveValue(
+  const seedRecPrice = positiveValue(
     sourceRow?.seedTargetFillPrice,
     liveSide?.recPrice,
     currentPrice
   ) || 0;
+  const upperCap = resolveUpperCap(sourceRow, supportRow);
+  const recGuard = capRecommendation(seedRecPrice, minPrice, upperCap);
+  const recPrice = recGuard.recPrice || 0;
   const stock = numberValue(
     sourceRow?.stockRepricer,
     sourceRow?.stock,
@@ -264,7 +311,7 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     0.15
   );
   const strategy = inferStrategy(currentPrice, recPrice, stock, minPrice);
-  const reason = inferReason({
+  const inferredReason = inferReason({
     sourceRow,
     supportRow,
     priceRow,
@@ -275,12 +322,23 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     stock,
     liveSide: liveSide ? { ...liveSide, generatedAt: liveRootGeneratedAt } : null
   });
+  let reason = inferredReason;
+  if (recGuard.capApplied) {
+    const capSourceLabel = sourceRow?.workingZoneTo
+      ? '\u0432\u0435\u0440\u0445\u043d\u0435\u0439 \u0433\u0440\u0430\u043d\u0438\u0446\u0435\u0439 \u0440\u0430\u0431\u043e\u0447\u0435\u0433\u043e \u043a\u043e\u0440\u0438\u0434\u043e\u0440\u0430'
+      : (supportRow?.workingZoneTo
+        ? '\u0432\u0435\u0440\u0445\u043d\u0435\u0439 \u0433\u0440\u0430\u043d\u0438\u0446\u0435\u0439 support-\u043a\u043e\u0440\u0438\u0434\u043e\u0440\u0430'
+        : (supportRow?.maxPrice ? 'support max price' : 'historical max price'));
+    reason = `\u0420\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u0430\u0446\u0438\u044f \u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0430 ${capSourceLabel} ${formatRub(upperCap)}. \u0418\u0441\u0445\u043e\u0434\u043d\u044b\u0439 target ${formatRub(seedRecPrice)} \u0431\u044b\u043b \u0432\u044b\u0448\u0435 \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e\u0433\u043e \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0430.`;
+  } else if (recGuard.capBlockedByFloor && upperCap > 0 && minPrice > 0) {
+    reason = `\u0412\u0435\u0440\u0445\u043d\u0438\u0439 cap ${formatRub(upperCap)} \u0438\u0433\u043d\u043e\u0440\u0438\u0440\u043e\u0432\u0430\u043d, \u043f\u043e\u0442\u043e\u043c\u0443 \u0447\u0442\u043e \u043e\u043d \u043d\u0438\u0436\u0435 floor ${formatRub(minPrice)}. ${inferredReason}`;
+  }
   const newBuyerPrice = estimateNewBuyerPrice(
     currentBuyerPrice,
     currentPrice,
     recPrice,
-    sourceRow?.seedTargetClientPrice,
-    liveSide?.newBuyerPrice
+    recGuard.capApplied ? null : sourceRow?.seedTargetClientPrice,
+    recGuard.capApplied ? null : liveSide?.newBuyerPrice
   ) || 0;
   const changePct = currentPrice > 0 && recPrice > 0
     ? Number((((recPrice - currentPrice) / currentPrice)).toFixed(6))
@@ -309,13 +367,16 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     historyFreshnessDate: textValue(sourceRow?.historyFreshnessDate, priceRow?.historyFreshnessDate),
     sourceMode: textValue(sourceRow?.sourceMode, priceRow?.sourceMode),
     workingZoneFrom: positiveValue(sourceRow?.workingZoneFrom, supportRow?.workingZoneFrom),
-    workingZoneTo: positiveValue(sourceRow?.workingZoneTo, supportRow?.workingZoneTo),
+    workingZoneTo: positiveValue(sourceRow?.workingZoneTo, supportRow?.workingZoneTo, supportRow?.maxPrice, supportRow?.historicalMaxPrice),
     requiredPriceForProfitability: positiveValue(sourceRow?.requiredPriceForProfitability, supportRow?.requiredPriceForProfitability),
     requiredPriceForMargin: positiveValue(sourceRow?.requiredPriceForMargin),
     allowedMarginPct: thresholdMarginPct === null ? null : thresholdMarginPct,
     liveRecPrice: positiveValue(liveSide?.recPrice),
     liveStrategy: textValue(liveSide?.strategy),
-    liveReason: textValue(liveSide?.reason)
+    liveReason: textValue(liveSide?.reason),
+    seedRecPrice: seedRecPrice || 0,
+    upperCap: upperCap || 0,
+    upperCapApplied: recGuard.capApplied
   };
 }
 
@@ -355,7 +416,7 @@ function buildSummary(rows = []) {
       }
       const strategy = String(side.strategy || '').toUpperCase();
       const reason = String(side.reason || '').toLowerCase();
-      if (strategy.includes('ALIGN') || reason.includes('equalize') || reason.includes('align') || reason.includes('вырав')) {
+      if (strategy.includes('ALIGN') || reason.includes('equalize') || reason.includes('align') || reason.includes('\u0432\u044b\u0440\u0430\u0432')) {
         summary[`${prefix}EqualizeCount`] += 1;
       }
     });

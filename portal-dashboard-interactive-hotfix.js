@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429G__) return;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429H__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429H__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429G__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429F__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429E__ = true;
@@ -13,13 +14,13 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260429g';
-  const STYLE_ID = 'altea-dashboard-interactive-20260429g';
+  const VERSION = '20260429h';
+  const STYLE_ID = 'altea-dashboard-interactive-20260429h';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const DASHBOARD_VIEW_ID = 'view-dashboard';
   const ADS_VIEW_ID = 'view-ads-funnel';
   const ADS_ROOT_ID = 'portalAdsFunnelRoot';
-  const ADS_STYLE_ID = 'altea-dashboard-interactive-ads-20260429g';
+  const ADS_STYLE_ID = 'altea-dashboard-interactive-ads-20260429h';
   const ADS_MANAGEMENT_STYLE_ID = 'portalDashboardAdsManagementStyles';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
@@ -376,7 +377,10 @@
   function rowsForPlatform(payload, platformKey) {
     const platforms = payload?.platforms || {};
     const collect = (key, sourceKey = key) => {
-      const rows = Array.isArray(platforms[key]?.rows) ? platforms[key].rows : [];
+      const rawRows = platforms[key]?.rows;
+      const rows = Array.isArray(rawRows)
+        ? rawRows
+        : (rawRows && typeof rawRows === 'object' ? Object.values(rawRows) : []);
       return rows.map((row) => ({
         ...row,
         platformKey: sourceKey,
@@ -1513,6 +1517,8 @@
       .map((row) => {
         const article = row?.article || row?.articleKey || '—';
         const sku = skuMap.get(normalizeKey(article));
+        const platformRowKey = row?.platformKey || platformKey;
+        if (!sku || !platformHasPresence(sku, platformRowKey)) return null;
         const side = row.platformKey === 'wb'
           ? sku?.wb
           : row.platformKey === 'ozon'
@@ -1542,8 +1548,7 @@
         const adsRows = adsRowsForArticle(row?.platformKey || platformKey, article);
         const adsFacts = aggregateAdsRows(adsRows, range.effectiveStart, range.effectiveEnd);
         const compareAdsFacts = compareRange ? aggregateAdsRows(adsRows, compareRange.effectiveStart, compareRange.effectiveEnd) : null;
-        const owner = platformOwnerName(sku, row?.platformKey || platformKey, row?.owner);
-        const platformRowKey = row?.platformKey || platformKey;
+        const owner = platformOwnerName(sku, platformRowKey, row?.owner);
         const negativeMarginFlag = platformRowKey === 'wb'
           ? Boolean(sku?.flags?.wbNegativeMargin) || (Number.isFinite(Number(marginSource)) && Number(marginSource) < 0)
           : platformRowKey === 'ozon'
@@ -1609,6 +1614,7 @@
           belowMinFlag: Boolean(row?.belowMin || side?.belowMin)
         };
       })
+      .filter(Boolean)
       .filter((row) => row.article && row.article !== '—');
   }
 

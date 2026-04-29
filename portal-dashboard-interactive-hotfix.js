@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429F__) return;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429G__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429G__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429F__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429E__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429D__ = true;
@@ -12,13 +13,13 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260429f';
-  const STYLE_ID = 'altea-dashboard-interactive-20260429f';
+  const VERSION = '20260429g';
+  const STYLE_ID = 'altea-dashboard-interactive-20260429g';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const DASHBOARD_VIEW_ID = 'view-dashboard';
   const ADS_VIEW_ID = 'view-ads-funnel';
   const ADS_ROOT_ID = 'portalAdsFunnelRoot';
-  const ADS_STYLE_ID = 'altea-dashboard-interactive-ads-20260429f';
+  const ADS_STYLE_ID = 'altea-dashboard-interactive-ads-20260429g';
   const ADS_MANAGEMENT_STYLE_ID = 'portalDashboardAdsManagementStyles';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];

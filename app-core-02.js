@@ -55,9 +55,15 @@ function loadLocalStorage() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultStorage();
     const parsed = JSON.parse(raw);
+    const tasks = Array.isArray(parsed.tasks) ? normalizeStorageTasks(parsed.tasks, 'manual') : [];
+    if (Array.isArray(parsed.tasks) && tasks.length !== parsed.tasks.length) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...parsed, tasks }));
+      } catch {}
+    }
     return {
       comments: Array.isArray(parsed.comments) ? parsed.comments.map(normalizeComment) : [],
-      tasks: Array.isArray(parsed.tasks) ? normalizeStorageTasks(parsed.tasks, 'manual') : [],
+      tasks,
       decisions: Array.isArray(parsed.decisions) ? parsed.decisions.map(normalizeDecision) : [],
       ownerOverrides: Array.isArray(parsed.ownerOverrides) ? parsed.ownerOverrides.map(normalizeOwnerOverride) : [],
       repricerSettings: normalizeRepricerSettings(parsed.repricerSettings || {}),
@@ -242,7 +248,7 @@ function mergeSeedStorage(seed) {
   }
   for (const task of seed.tasks || []) {
     const normalized = normalizeTask(task, 'seed');
-    if (normalized.source === 'auto') continue;
+    if (isNonPersistentTaskSource(normalized?.source)) continue;
     const key = `${normalized.articleKey}|${normalized.owner}|${normalized.due}|${normalized.title}`;
     if (!existingTasks.has(key)) state.storage.tasks.push(normalized);
   }
@@ -250,6 +256,7 @@ function mergeSeedStorage(seed) {
 }
 
 function mergeImportedStorage(imported) {
+  state.storage.tasks = normalizeStorageTasks(state.storage.tasks || [], 'manual');
   const seed = {
     comments: Array.isArray(imported.comments) ? imported.comments : [],
     tasks: Array.isArray(imported.tasks) ? imported.tasks : [],
@@ -459,10 +466,15 @@ function normalizeTask(task, sourceHint = 'manual') {
   };
 }
 
+function isNonPersistentTaskSource(source) {
+  const normalized = String(source || '').trim().toLowerCase();
+  return normalized === 'auto' || normalized === 'seed';
+}
+
 function normalizeStorageTasks(tasks, sourceHint = 'manual') {
   return (tasks || [])
     .map((task) => normalizeTask(task, task?.source || sourceHint))
-    .filter((task) => task?.source !== 'auto');
+    .filter((task) => !isNonPersistentTaskSource(task?.source));
 }
 
 function isTaskActive(task) {

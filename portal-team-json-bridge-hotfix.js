@@ -1,20 +1,21 @@
 (function () {
-  if (window.__ALTEA_TEAM_JSON_BRIDGE_HOTFIX_20260417N__) return;
-  window.__ALTEA_TEAM_JSON_BRIDGE_HOTFIX_20260417N__ = true;
+  if (window.__ALTEA_TEAM_JSON_BRIDGE_HOTFIX_20260429A__) return;
+  window.__ALTEA_TEAM_JSON_BRIDGE_HOTFIX_20260429A__ = true;
 
   const BRIDGE_URLS = [
     {
       type: 'base64Parts',
       urls: [
-        'data/team_state.b64.part1.txt?v=20260417n',
-        'data/team_state.b64.part2.txt?v=20260417n',
-        'data/team_state.b64.part3.txt?v=20260417n',
-        'data/team_state.b64.part4.txt?v=20260417n'
+        'data/team_state.b64.part1.txt?v=20260429a',
+        'data/team_state.b64.part2.txt?v=20260429a',
+        'data/team_state.b64.part3.txt?v=20260429a',
+        'data/team_state.b64.part4.txt?v=20260429a'
       ]
     },
-    { type: 'json', url: 'data/team_state.json?v=20260417l' }
+    { type: 'json', url: 'data/team_state.json?v=20260429a' }
   ];
   let bridgeLoaded = false;
+  let bridgeRefreshInFlight = false;
 
   function appState() {
     return typeof state === 'object' && state ? state : null;
@@ -39,8 +40,8 @@
     app.team.ready = false;
     app.team.error = '';
     app.team.note = generatedAt
-      ? `\u041a\u043e\u043c\u0430\u043d\u0434\u043d\u0430\u044f \u0431\u0430\u0437\u0430 \u0447\u0435\u0440\u0435\u0437 \u043f\u043e\u0440\u0442\u0430\u043b \u00b7 ${fmtDate(generatedAt)}`
-      : '\u041a\u043e\u043c\u0430\u043d\u0434\u043d\u0430\u044f \u0431\u0430\u0437\u0430 \u0447\u0435\u0440\u0435\u0437 \u043f\u043e\u0440\u0442\u0430\u043b';
+      ? `Командная база через портал · ${fmtDate(generatedAt)}`
+      : 'Командная база через портал';
     if (typeof updateSyncBadge === 'function') updateSyncBadge();
   }
 
@@ -55,7 +56,14 @@
       mergeImportedStorage(payload);
     } else {
       app.storage = app.storage || {};
-      app.storage.tasks = Array.isArray(payload.tasks) ? payload.tasks.slice() : [];
+      app.storage.tasks = typeof normalizeStorageTasks === 'function'
+        ? normalizeStorageTasks(Array.isArray(payload.tasks) ? payload.tasks : [], 'manual')
+        : (Array.isArray(payload.tasks)
+          ? payload.tasks.filter((task) => {
+            const source = String(task?.source || '').trim().toLowerCase();
+            return source !== 'auto' && source !== 'seed';
+          }).slice()
+          : []);
       app.storage.comments = Array.isArray(payload.comments) ? payload.comments.slice() : [];
       app.storage.decisions = Array.isArray(payload.decisions) ? payload.decisions.slice() : [];
       app.storage.ownerOverrides = Array.isArray(payload.ownerOverrides) ? payload.ownerOverrides.slice() : [];
@@ -83,30 +91,6 @@
     return JSON.parse(new TextDecoder('utf-8').decode(bytes));
   }
 
-  async function fetchTextWithTimeout(url, timeoutMs) {
-    const controller = new AbortController();
-    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
-      if (!response.ok) throw new Error(`team bridge ${response.status || 'request failed'}`);
-      return response.text();
-    } finally {
-      window.clearTimeout(timer);
-    }
-  }
-
-  async function fetchJsonWithTimeout(url, timeoutMs) {
-    const controller = new AbortController();
-    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
-      if (!response.ok) throw new Error(`team bridge ${response.status || 'request failed'}`);
-      return response.json();
-    } finally {
-      window.clearTimeout(timer);
-    }
-  }
-
   async function loadBridge() {
     let lastError = null;
     for (const candidate of BRIDGE_URLS) {
@@ -114,14 +98,16 @@
         if (candidate.type === 'base64Parts') {
           const parts = [];
           for (const url of candidate.urls || []) {
-            parts.push(await fetchTextWithTimeout(url, 8000));
+            const partResponse = await fetch(url, { cache: 'no-store' });
+            if (!partResponse.ok) throw new Error(`team bridge ${partResponse.status || 'request failed'}`);
+            parts.push(await partResponse.text());
           }
           return decodeBase64Json(parts.join(''));
         }
-        if (candidate.type === 'base64') {
-          return decodeBase64Json(await fetchTextWithTimeout(candidate.url, 8000));
-        }
-        return await fetchJsonWithTimeout(candidate.url, 8000);
+        const response = await fetch(candidate.url, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`team bridge ${response.status || 'request failed'}`);
+        if (candidate.type === 'base64') return decodeBase64Json(await response.text());
+        return response.json();
       } catch (error) {
         lastError = error;
       }
@@ -130,19 +116,17 @@
   }
 
   async function refreshBridge() {
+    if (bridgeRefreshInFlight) return false;
+    bridgeRefreshInFlight = true;
     try {
       const payload = await loadBridge();
       return mergeBridgePayload(payload);
     } catch (error) {
       console.warn('[portal-team-json-bridge-hotfix]', error);
       return false;
+    } finally {
+      bridgeRefreshInFlight = false;
     }
-  }
-
-  function queueRefresh(delay) {
-    window.setTimeout(() => {
-      refreshBridge().catch((error) => console.warn('[portal-team-json-bridge-hotfix]', error));
-    }, delay);
   }
 
   function patchSyncBadge() {
@@ -153,7 +137,7 @@
       const pullBtn = document.getElementById('pullRemoteBtn');
       if (pullBtn && bridgeLoaded) {
         pullBtn.disabled = false;
-        pullBtn.title = '\u041e\u0431\u043d\u043e\u0432\u0438\u0442\u044c \u0437\u0435\u0440\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0441\u043d\u0438\u043c\u043e\u043a \u043a\u043e\u043c\u0430\u043d\u0434\u043d\u043e\u0439 \u0431\u0430\u0437\u044b';
+        pullBtn.title = 'Обновить зеркальный снимок командной базы';
       }
     };
   }
@@ -165,15 +149,19 @@
       pullBtn.dataset.teamBridgeBound = '1';
       pullBtn.addEventListener('click', () => {
         if (typeof hasRemoteStore === 'function' && hasRemoteStore()) return;
-        queueRefresh(0);
+        window.setTimeout(() => {
+          refreshBridge().catch((error) => console.warn('[portal-team-json-bridge-hotfix]', error));
+        }, 0);
       });
     };
     [80, 600, 1800, 3600].forEach((delay) => window.setTimeout(attach, delay));
   }
 
-  window.__ALTEA_TEAM_JSON_BRIDGE_REFRESH__ = refreshBridge;
   patchSyncBadge();
   bindPullButton();
-  [200, 1400, 4200, 9000, 16000, 26000].forEach(queueRefresh);
-  window.addEventListener('load', () => queueRefresh(250));
+  [200, 1400, 4200].forEach((delay) => {
+    window.setTimeout(() => {
+      refreshBridge().catch((error) => console.warn('[portal-team-json-bridge-hotfix]', error));
+    }, delay);
+  });
 })();

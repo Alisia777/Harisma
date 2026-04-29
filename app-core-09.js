@@ -1,1 +1,712 @@
-function orderProcurementReadMetric(e,r,n){const t=n[r]||null;if(!t)return null;const o=Math.ceil(orderProcurementNumber(e?.[t]));return o>0?o:0}function orderProcurementOrdersForDays(e,r){const n=orderProcurementReadMetric(e,r,{7:"sales7",14:"sales14",28:"sales28"});return null!==n?n:Math.ceil(Math.max(0,orderProcurementNumber(e?.avgDaily)*r))}function orderProcurementNeedForDays(e,r){const n=orderProcurementReadMetric(e,r,{7:"targetNeed7",14:"targetNeed14",28:"targetNeed28"});if(null!==n&&n>=0)return n;const t=orderProcurementOrdersForDays(e,r),o=orderProcurementNumber(e?.inStock),a=orderProcurementNumber(e?.inTransit)+orderProcurementNumber(e?.inRequest);return Math.max(0,Math.ceil(t-o-a))}function orderProcurementSafeTurnover(e){if(null!=e?.turnoverDays&&""!==e?.turnoverDays){const r=Number(e.turnoverDays);return Number.isFinite(r)?r:null}const r=orderProcurementNumber(e?.avgDaily);return r<=0?null:orderProcurementNumber(e?.inStock)/r}function buildOrderProcurementModel(){const e=ensureOrderProcurementState(),r="ozon"===e.platform?"ozon":"wb",n=clampOrderProcurementDays(e.days),t=orderProcurementCurrentPayload(r)||{rows:[]},o=Array.isArray(t.rows)?t.rows:[],a=orderProcurementBuildSkuLookup(),c=orderProcurementBuildWarehouseMap(),d=new Map,l=[],s=new Set,u=new Map;o.forEach(e=>{const r=String(e?.article||"").trim(),t=orderProcurementNormalizeKey(e?.articleKey||r);if(!t)return;const o=String(e?.place||"").trim()||"Без кластера";s.has(o)||(s.add(o),l.push(o));const i=a.get(t)||a.get(orderProcurementNormalizeKey(r))||{},m=c.get(t)||c.get(orderProcurementNormalizeKey(r))||{},p=d.get(t)||{article:r,articleKey:t,name:i?.name||e?.name||r,owner:i?.owner?.name||e?.owner||"",warehouseStock:orderProcurementNumber(m.stockWarehouse),inboundWarehouse:orderProcurementNumber(m.inboundWarehouse),totalNeed:0,totalOrders:0,clusters:{}},_=orderProcurementOrdersForDays(e,n),b=orderProcurementNeedForDays(e,n),h={mpStock:orderProcurementNumber(e?.inStock),orders:_,turnover:orderProcurementSafeTurnover(e),need:b};p.totalNeed+=b,p.totalOrders+=_,p.clusters[o]=h,d.set(t,p);const g=u.get(o)||{mpStock:0,orders:0,need:0};g.mpStock+=h.mpStock,g.orders+=h.orders,g.need+=h.need,u.set(o,g)});const i=[...d.values()].sort((e,r)=>r.totalNeed!==e.totalNeed?r.totalNeed-e.totalNeed:r.totalOrders!==e.totalOrders?r.totalOrders-e.totalOrders:String(e.article).localeCompare(String(r.article),"ru")),m=i.reduce((e,r)=>(e.warehouseStock+=orderProcurementNumber(r.warehouseStock),e.inboundWarehouse+=orderProcurementNumber(r.inboundWarehouse),e.totalNeed+=orderProcurementNumber(r.totalNeed),e),{warehouseStock:0,inboundWarehouse:0,totalNeed:0});return{platform:r,platformLabel:"ozon"===r?"OZ":"WB",days:n,generatedAt:t.generatedAt||ORDER_PROCUREMENT_RUNTIME.cache.warehouse?.generatedAt||null,window:t.window||null,places:l,rows:i,totals:m,clusterTotals:l.map(e=>({place:e,...u.get(e)||{mpStock:0,orders:0,need:0}}))}}function exportOrderProcurementCell(e){return`"${String(e??"").replace(/"/g,'""')}"`}function exportOrderProcurementModel(e){const r=["SKU / Номенклатура","Артикул","Остатки мой склад","В пути на склад","Итого заказ товара"];e.places.forEach(e=>{r.push(`${e} · Остаток MP`,`${e} · Заказы`,`${e} · Оборачиваемость`,`${e} · Рек. к заказу`)});const n=[r.map(exportOrderProcurementCell).join(";")];e.rows.forEach(r=>{const t=[r.name,r.article,r.warehouseStock,r.inboundWarehouse,r.totalNeed];e.places.forEach(e=>{const n=r.clusters[e]||{};t.push(n.mpStock||0,n.orders||0,null==n.turnover?"":Number(n.turnover).toFixed(1),n.need||0)}),n.push(t.map(exportOrderProcurementCell).join(";"))});const t=new Blob([`\ufeff${n.join("\r\n")}`],{type:"text/csv;charset=utf-8;"}),o=URL.createObjectURL(t),a=document.createElement("a");a.href=o,a.download=`zakaz-tovara-${e.platform}-${e.days}d-${todayIso()}.csv`,document.body.appendChild(a),a.click(),a.remove(),window.setTimeout(()=>URL.revokeObjectURL(o),1e3)}function renderOrderProcurementClusterSummary(e){return e.clusterTotals.length?`\n    <div class="altea-order-procurement__cluster-strip">\n      ${e.clusterTotals.map(e=>`\n        <div class="altea-order-procurement__cluster-card">\n          <span>${orderProcurementEscape(e.place)}</span>\n          <strong>${fmt.int(e.need)}</strong>\n          <small>к заказу · ${fmt.int(e.mpStock)} на MP</small>\n        </div>\n      `).join("")}\n    </div>\n  `:""}function renderOrderProcurementTable(e){const r=e.places.map(e=>`<th colspan="4" class="altea-order-procurement__cluster-head">${orderProcurementEscape(e)}</th>`).join(""),n=e.places.map(()=>"\n      <th>Остаток MP</th>\n      <th>Заказы</th>\n      <th>Оборачиваемость</th>\n      <th>Рек. к заказу</th>\n    ").join(""),t=5+4*e.places.length;return`\n    <div class="altea-order-procurement__table-wrap imperial-table-wrap">\n      <table class="altea-order-procurement__table">\n        <thead>\n          <tr>\n            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--sku">SKU / Номенклатура</th>\n            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--article">Артикул</th>\n            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--warehouse">Остатки мой склад</th>\n            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--inbound">В пути на склад</th>\n            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--total">Итого заказ товара</th>\n            ${r}\n          </tr>\n          <tr>${n}</tr>\n        </thead>\n        <tbody>${e.rows.length?e.rows.map(r=>{const n=e.places.map(e=>{const n=r.clusters[e]||{};return`\n            <td class="altea-order-procurement__num">${fmt.int(n.mpStock)}</td>\n            <td class="altea-order-procurement__num">${fmt.int(n.orders)}</td>\n            <td>${orderProcurementTurnoverBadge(n.turnover)}</td>\n            <td>${orderProcurementBadge(fmt.int(n.need),n.need>0?"warn":"ok")}</td>\n          `}).join(""),t=r.article||r.articleKey,o="function"==typeof linkToSku?linkToSku(r.articleKey||t,t):orderProcurementEscape(t);return`\n          <tr>\n            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--sku">\n              <strong>${orderProcurementEscape(r.name||t)}</strong>\n              <div class="altea-order-procurement__meta">${orderProcurementEscape(r.owner||"Без owner")}</div>\n            </td>\n            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--article">${o}</td>\n            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--warehouse altea-order-procurement__num">${fmt.int(r.warehouseStock)}</td>\n            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--inbound altea-order-procurement__num">${fmt.int(r.inboundWarehouse)}</td>\n            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--total">${orderProcurementBadge(fmt.int(r.totalNeed),r.totalNeed>0?"warn":"ok")}</td>\n            ${n}\n          </tr>\n        `}).join(""):`\n      <tr>\n        <td colspan="${t}" class="altea-order-procurement__empty">По выбранной площадке строки не загрузились.</td>\n      </tr>\n    `}</tbody>\n      </table>\n    </div>\n  `}function renderOrderProcurement(e){const r=e.window?.from&&e.window?.to?`${orderProcurementEscape(e.window.from)} - ${orderProcurementEscape(e.window.to)}`:"последний доступный срез";return`\n    <section class="imperial-section altea-order-procurement" data-altea-order-procurement>\n      <div class="card">\n        <div class="section-title">\n          <div>\n            <h2>Заказ товара по кластерам</h2>\n            <p>Рабочая форма закупщика: слева центральный склад, справа кластеры площадки, ниже готовая рекомендация по заказу на каждый кластер.</p>\n          </div>\n          <div class="badge-stack">\n            ${orderProcurementBadge(`Площадка: ${e.platformLabel}`,"wb"===e.platform?"ok":"info")}\n            ${orderProcurementBadge(`Оборачиваемость: ${e.days} дн.`,"info")}\n            ${orderProcurementBadge(`Срез: ${r}`,"info")}\n          </div>\n        </div>\n\n        <div class="altea-order-procurement__toolbar">\n          <label class="altea-order-procurement__field">\n            <span>Оборачиваемость, дней</span>\n            <input id="alteaOrderTargetDays" type="number" min="1" max="180" step="1" value="${orderProcurementEscape(e.days)}">\n          </label>\n\n          <div class="altea-order-procurement__field">\n            <span>Площадка</span>\n            <div class="altea-order-procurement__platforms">\n              <button type="button" class="altea-order-procurement__platform-btn ${"wb"===e.platform?"is-active":""}" data-altea-order-platform="wb">WB</button>\n              <button type="button" class="altea-order-procurement__platform-btn ${"ozon"===e.platform?"is-active":""}" data-altea-order-platform="ozon">OZ</button>\n            </div>\n          </div>\n\n          <div class="badge-stack">\n            ${orderProcurementBadge(`SKU: ${fmt.int(e.rows.length)}`,e.rows.length?"ok":"warn")}\n            ${orderProcurementBadge(`Кластеры: ${fmt.int(e.places.length)}`,e.places.length?"ok":"warn")}\n            ${orderProcurementBadge(`Обновлено: ${orderProcurementFormatDateTime(e.generatedAt)}`,"info")}\n          </div>\n\n          <div class="altea-order-procurement__actions">\n            <button type="button" class="btn" data-altea-order-export>Выгрузить в Excel</button>\n          </div>\n        </div>\n      </div>\n\n      <div class="altea-order-procurement__summary">\n        <div class="mini-kpi">\n          <span>SKU в расчёте</span>\n          <strong>${fmt.int(e.rows.length)}</strong>\n          <span>${e.platformLabel}</span>\n        </div>\n        <div class="mini-kpi">\n          <span>Остаток мой склад</span>\n          <strong>${fmt.int(e.totals.warehouseStock)}</strong>\n          <span>из файла реальных остатков</span>\n        </div>\n        <div class="mini-kpi">\n          <span>В пути на склад</span>\n          <strong>${fmt.int(e.totals.inboundWarehouse)}</strong>\n          <span>источник пока не подключён</span>\n        </div>\n        <div class="mini-kpi warn">\n          <span>Итого к заказу</span>\n          <strong>${fmt.int(e.totals.totalNeed)}</strong>\n          <span>сумма по всем кластерам</span>\n        </div>\n      </div>\n\n      ${renderOrderProcurementClusterSummary(e)}\n\n      <div class="card altea-order-procurement__table-card">\n        <div class="section-subhead">\n          <div>\n            <h3>Таблица заказа</h3>\n            <p class="small muted">Слева фиксированные колонки по SKU и складу, справа блоки кластеров выбранной площадки: остатки MP, заказы, оборачиваемость и рекомендованный заказ.</p>\n          </div>\n          <div class="badge-stack">\n            ${orderProcurementBadge(`Период расчёта: ${e.days} дн.`,"info")}\n            ${orderProcurementBadge('Колонка "В пути" пока = 0',"warn")}\n          </div>\n        </div>\n\n        ${renderOrderProcurementTable(e)}\n\n        <div class="altea-order-procurement__caption">\n          Колонка "Остатки мой склад" уже берётся из файла реальных остатков. Колонку "В пути на склад" оставили отдельной, но пока не заполняем, потому что источник ещё не подключён.\n        </div>\n      </div>\n    </section>\n  `}function renderOrderProcurementLoading(){return'\n    <section class="imperial-section altea-order-procurement">\n      <div class="card">\n        <h2>Заказ товара по кластерам</h2>\n        <p class="small muted">Подтягиваю данные по складу и кластерам, чтобы собрать рабочую форму закупщика.</p>\n      </div>\n    </section>\n  '}function renderOrderProcurementError(){return'\n    <section class="imperial-section altea-order-procurement">\n      <div class="card">\n        <h3>Заказ товара пока не загрузился</h3>\n        <p class="small muted">Не удалось прочитать order-файлы. Проверьте, что доступны <code>data/order_procurement.json</code> и <code>data/warehouse_stock_overlay.json</code>.</p>\n      </div>\n    </section>\n  '}function orderProcurementRenderInto(e){const r=buildOrderProcurementModel();e.innerHTML=renderOrderProcurement(r),bindOrderProcurement(e)}function bindOrderProcurement(e){e.querySelectorAll("[data-altea-order-platform]").forEach(e=>{e.addEventListener("click",()=>{ensureOrderProcurementState().platform="ozon"===e.dataset.alteaOrderPlatform?"ozon":"wb",renderOrderCalculator()})}),e.querySelector("#alteaOrderTargetDays")?.addEventListener("change",e=>{ensureOrderProcurementState().days=clampOrderProcurementDays(e.target.value),renderOrderCalculator()}),e.querySelector("[data-altea-order-export]")?.addEventListener("click",()=>{try{exportOrderProcurementModel(buildOrderProcurementModel()),setAppError("Выгрузка заказа подготовлена."),window.setTimeout(()=>setAppError(""),1600)}catch(e){console.error("[order-procurement] export",e),setAppError("Не удалось выгрузить таблицу заказа. Попробуйте ещё раз.")}})}function injectOrderProcurementStyles(){if(document.getElementById(ORDER_PROCUREMENT_STYLE_ID))return;const e=document.createElement("style");e.id=ORDER_PROCUREMENT_STYLE_ID,e.textContent="\n    .altea-order-procurement {\n      --col-sku: 320px;\n      --col-article: 170px;\n      --col-warehouse: 150px;\n      --col-inbound: 150px;\n      --col-total: 170px;\n      display: grid;\n      gap: 14px;\n      width: 100%;\n      margin-top: 18px;\n    }\n\n    .altea-order-procurement__toolbar {\n      display: grid;\n      grid-template-columns: minmax(180px, 220px) auto 1fr auto;\n      gap: 12px;\n      align-items: end;\n      margin-top: 12px;\n    }\n\n    .altea-order-procurement__field span {\n      display: block;\n      margin-bottom: 6px;\n      color: rgba(255, 244, 229, 0.64);\n      font-size: 11px;\n      text-transform: uppercase;\n      letter-spacing: 0.08em;\n    }\n\n    .altea-order-procurement__field input {\n      width: 100%;\n      padding: 10px 12px;\n      border-radius: 14px;\n      border: 1px solid rgba(212, 164, 74, 0.18);\n      background: rgba(17, 14, 11, 0.96);\n      color: #fff1dd;\n    }\n\n    .altea-order-procurement__platforms,\n    .altea-order-procurement__actions {\n      display: flex;\n      gap: 8px;\n      flex-wrap: wrap;\n      align-items: center;\n    }\n\n    .altea-order-procurement__actions {\n      justify-content: flex-end;\n    }\n\n    .altea-order-procurement__platform-btn {\n      min-width: 70px;\n      padding: 10px 14px;\n      border-radius: 999px;\n      border: 1px solid rgba(212, 164, 74, 0.22);\n      background: rgba(18, 14, 10, 0.92);\n      color: #fff1dd;\n      font: inherit;\n      cursor: pointer;\n      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;\n    }\n\n    .altea-order-procurement__platform-btn:hover {\n      transform: translateY(-1px);\n      border-color: rgba(212, 164, 74, 0.44);\n    }\n\n    .altea-order-procurement__platform-btn.is-active {\n      background: linear-gradient(135deg, rgba(212, 164, 74, 0.30), rgba(101, 67, 33, 0.56));\n      border-color: rgba(240, 196, 101, 0.60);\n      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);\n    }\n\n    .altea-order-procurement__summary {\n      display: grid;\n      grid-template-columns: repeat(4, minmax(0, 1fr));\n      gap: 12px;\n    }\n\n    .altea-order-procurement__cluster-strip {\n      display: grid;\n      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));\n      gap: 12px;\n    }\n\n    .altea-order-procurement__cluster-card {\n      padding: 14px 16px;\n      border-radius: 18px;\n      border: 1px solid rgba(212, 164, 74, 0.14);\n      background:\n        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),\n        rgba(17, 14, 11, 0.96);\n    }\n\n    .altea-order-procurement__cluster-card span,\n    .altea-order-procurement__cluster-card small {\n      display: block;\n    }\n\n    .altea-order-procurement__cluster-card span {\n      color: rgba(255, 244, 229, 0.72);\n      font-size: 12px;\n      line-height: 1.4;\n    }\n\n    .altea-order-procurement__cluster-card strong {\n      display: block;\n      margin: 8px 0 4px;\n      font-size: 22px;\n      line-height: 1;\n    }\n\n    .altea-order-procurement__cluster-card small {\n      color: rgba(255, 244, 229, 0.56);\n    }\n\n    .altea-order-procurement__table-card {\n      overflow: hidden;\n    }\n\n    .altea-order-procurement__table-wrap {\n      margin-top: 14px;\n      overflow: auto;\n      max-width: 100%;\n    }\n\n    .altea-order-procurement__table {\n      width: max-content;\n      min-width: 100%;\n      border-collapse: separate;\n      border-spacing: 0;\n    }\n\n    .altea-order-procurement__table th,\n    .altea-order-procurement__table td {\n      padding: 12px 14px;\n      border-bottom: 1px solid rgba(212, 164, 74, 0.10);\n      vertical-align: top;\n    }\n\n    .altea-order-procurement__table thead th {\n      position: sticky;\n      top: 0;\n      z-index: 5;\n      background: rgba(18, 14, 11, 0.98);\n      white-space: nowrap;\n    }\n\n    .altea-order-procurement__table thead tr:nth-child(2) th {\n      top: 49px;\n      z-index: 6;\n    }\n\n    .altea-order-procurement__cluster-head {\n      text-align: center;\n      font-size: 12px;\n      letter-spacing: 0.04em;\n    }\n\n    .altea-order-procurement__sticky-head,\n    .altea-order-procurement__sticky-cell {\n      position: sticky;\n      z-index: 7;\n      background: rgba(17, 14, 11, 0.985);\n      box-shadow: 1px 0 0 rgba(212, 164, 74, 0.08);\n    }\n\n    .altea-order-procurement__sticky-head {\n      z-index: 8;\n    }\n\n    .altea-order-procurement__sticky-head--sku,\n    .altea-order-procurement__sticky-cell--sku {\n      left: 0;\n      min-width: var(--col-sku);\n      width: var(--col-sku);\n    }\n\n    .altea-order-procurement__sticky-head--article,\n    .altea-order-procurement__sticky-cell--article {\n      left: var(--col-sku);\n      min-width: var(--col-article);\n      width: var(--col-article);\n    }\n\n    .altea-order-procurement__sticky-head--warehouse,\n    .altea-order-procurement__sticky-cell--warehouse {\n      left: calc(var(--col-sku) + var(--col-article));\n      min-width: var(--col-warehouse);\n      width: var(--col-warehouse);\n    }\n\n    .altea-order-procurement__sticky-head--inbound,\n    .altea-order-procurement__sticky-cell--inbound {\n      left: calc(var(--col-sku) + var(--col-article) + var(--col-warehouse));\n      min-width: var(--col-inbound);\n      width: var(--col-inbound);\n    }\n\n    .altea-order-procurement__sticky-head--total,\n    .altea-order-procurement__sticky-cell--total {\n      left: calc(var(--col-sku) + var(--col-article) + var(--col-warehouse) + var(--col-inbound));\n      min-width: var(--col-total);\n      width: var(--col-total);\n    }\n\n    .altea-order-procurement__sticky-cell strong {\n      display: block;\n      margin-bottom: 4px;\n    }\n\n    .altea-order-procurement__meta {\n      color: rgba(255, 244, 229, 0.58);\n      font-size: 12px;\n      line-height: 1.4;\n    }\n\n    .altea-order-procurement__num {\n      text-align: right;\n      white-space: nowrap;\n    }\n\n    .altea-order-procurement__table tbody tr:hover td {\n      background: rgba(255, 244, 229, 0.03);\n    }\n\n    .altea-order-procurement__table tbody tr:hover .altea-order-procurement__sticky-cell {\n      background: rgba(28, 22, 16, 0.98);\n    }\n\n    .altea-order-procurement__empty {\n      padding: 22px 14px;\n      text-align: center;\n      color: rgba(255, 244, 229, 0.64);\n    }\n\n    .altea-order-procurement__caption {\n      margin-top: 10px;\n      color: rgba(255, 244, 229, 0.58);\n      font-size: 12px;\n    }\n\n    @media (max-width: 1400px) {\n      .altea-order-procurement__toolbar,\n      .altea-order-procurement__summary {\n        grid-template-columns: repeat(2, minmax(0, 1fr));\n      }\n\n      .altea-order-procurement__actions {\n        justify-content: flex-start;\n      }\n    }\n\n    @media (max-width: 900px) {\n      .altea-order-procurement {\n        --col-sku: 240px;\n        --col-article: 140px;\n        --col-warehouse: 120px;\n        --col-inbound: 120px;\n        --col-total: 140px;\n      }\n\n      .altea-order-procurement__toolbar,\n      .altea-order-procurement__summary {\n        grid-template-columns: 1fr;\n      }\n    }\n  ",document.head.appendChild(e)}
+function orderProcurementReadMetric(row, days, keys) {
+  const key = keys[days] || null;
+  if (!key) return null;
+  const value = Math.ceil(orderProcurementNumber(row?.[key]));
+  return value > 0 ? value : 0;
+}
+
+function orderProcurementOrdersForDays(row, days) {
+  const direct = orderProcurementReadMetric(row, days, {
+    7: 'sales7',
+    14: 'sales14',
+    28: 'sales28'
+  });
+  if (direct !== null) return direct;
+  return Math.ceil(Math.max(0, orderProcurementNumber(row?.avgDaily) * days));
+}
+
+function orderProcurementNeedForDays(row, days) {
+  const direct = orderProcurementReadMetric(row, days, {
+    7: 'targetNeed7',
+    14: 'targetNeed14',
+    28: 'targetNeed28'
+  });
+  if (direct !== null && direct >= 0) return direct;
+
+  const orders = orderProcurementOrdersForDays(row, days);
+  const stock = orderProcurementNumber(row?.inStock);
+  const inFlight = orderProcurementNumber(row?.inTransit) + orderProcurementNumber(row?.inRequest);
+  return Math.max(0, Math.ceil(orders - stock - inFlight));
+}
+
+function orderProcurementSafeTurnover(row) {
+  if (row?.turnoverDays !== null && row?.turnoverDays !== undefined && row?.turnoverDays !== '') {
+    const value = Number(row.turnoverDays);
+    return Number.isFinite(value) ? value : null;
+  }
+  const avgDaily = orderProcurementNumber(row?.avgDaily);
+  if (avgDaily <= 0) return null;
+  return orderProcurementNumber(row?.inStock) / avgDaily;
+}
+
+function orderProcurementOwnerForPlatform(sku, row, platform) {
+  const platformOwner = typeof platformOwnerName === 'function'
+    ? platformOwnerName(sku, platform)
+    : '';
+  if (platformOwner) return platformOwner;
+
+  const rowOwner = typeof canonicalOwnerName === 'function'
+    ? canonicalOwnerName(row?.owner || '')
+    : String(row?.owner || '').trim();
+  if (rowOwner) return rowOwner;
+
+  if (typeof ownerName === 'function') return ownerName(sku);
+  return typeof canonicalOwnerName === 'function'
+    ? canonicalOwnerName(sku?.owner?.name || '')
+    : String(sku?.owner?.name || '').trim();
+}
+
+function buildOrderProcurementModel() {
+  const orderState = ensureOrderProcurementState();
+  const platform = orderState.platform === 'ozon' ? 'ozon' : 'wb';
+  const days = clampOrderProcurementDays(orderState.days);
+  const payload = orderProcurementCurrentPayload(platform) || { rows: [] };
+  const rows = Array.isArray(payload.rows) ? payload.rows : [];
+  const skuLookup = orderProcurementBuildSkuLookup();
+  const warehouseLookup = orderProcurementBuildWarehouseMap();
+  const rowMap = new Map();
+  const placeOrder = [];
+  const placeSeen = new Set();
+  const clusterTotalsMap = new Map();
+
+  rows.forEach((row) => {
+    const article = String(row?.article || '').trim();
+    const articleKey = orderProcurementNormalizeKey(row?.articleKey || article);
+    if (!articleKey) return;
+
+    const place = String(row?.place || '').trim() || 'Без кластера';
+    if (!placeSeen.has(place)) {
+      placeSeen.add(place);
+      placeOrder.push(place);
+    }
+
+    const sku = skuLookup.get(articleKey) || skuLookup.get(orderProcurementNormalizeKey(article)) || {};
+    const warehouse = warehouseLookup.get(articleKey) || warehouseLookup.get(orderProcurementNormalizeKey(article)) || {};
+    const current = rowMap.get(articleKey) || {
+      article,
+      articleKey,
+      name: sku?.name || row?.name || article,
+      owner: orderProcurementOwnerForPlatform(sku, row, platform),
+      warehouseStock: orderProcurementNumber(warehouse.stockWarehouse),
+      inboundWarehouse: orderProcurementNumber(warehouse.inboundWarehouse),
+      totalNeed: 0,
+      totalOrders: 0,
+      clusters: {}
+    };
+
+    const clusterOrders = orderProcurementOrdersForDays(row, days);
+    const clusterNeed = orderProcurementNeedForDays(row, days);
+    const cluster = {
+      mpStock: orderProcurementNumber(row?.inStock),
+      orders: clusterOrders,
+      turnover: orderProcurementSafeTurnover(row),
+      need: clusterNeed
+    };
+
+    current.totalNeed += clusterNeed;
+    current.totalOrders += clusterOrders;
+    current.clusters[place] = cluster;
+    rowMap.set(articleKey, current);
+
+    const clusterTotal = clusterTotalsMap.get(place) || { mpStock: 0, orders: 0, need: 0 };
+    clusterTotal.mpStock += cluster.mpStock;
+    clusterTotal.orders += cluster.orders;
+    clusterTotal.need += cluster.need;
+    clusterTotalsMap.set(place, clusterTotal);
+  });
+
+  const list = [...rowMap.values()].sort((left, right) => {
+    if (right.totalNeed !== left.totalNeed) return right.totalNeed - left.totalNeed;
+    if (right.totalOrders !== left.totalOrders) return right.totalOrders - left.totalOrders;
+    return String(left.article).localeCompare(String(right.article), 'ru');
+  });
+
+  const totals = list.reduce((acc, row) => {
+    acc.warehouseStock += orderProcurementNumber(row.warehouseStock);
+    acc.inboundWarehouse += orderProcurementNumber(row.inboundWarehouse);
+    acc.totalNeed += orderProcurementNumber(row.totalNeed);
+    return acc;
+  }, { warehouseStock: 0, inboundWarehouse: 0, totalNeed: 0 });
+
+  return {
+    platform,
+    platformLabel: platform === 'ozon' ? 'OZ' : 'WB',
+    days,
+    generatedAt: payload.generatedAt || ORDER_PROCUREMENT_RUNTIME.cache.warehouse?.generatedAt || null,
+    window: payload.window || null,
+    places: placeOrder,
+    rows: list,
+    totals,
+    clusterTotals: placeOrder.map((place) => ({
+      place,
+      ...(clusterTotalsMap.get(place) || { mpStock: 0, orders: 0, need: 0 })
+    }))
+  };
+}
+
+function exportOrderProcurementCell(value) {
+  return `"${String(value == null ? '' : value).replace(/"/g, '""')}"`;
+}
+
+function exportOrderProcurementModel(model) {
+  const headers = [
+    'SKU / Номенклатура',
+    'Артикул',
+    'Остатки мой склад',
+    'В пути на склад',
+    'Итого заказ товара'
+  ];
+
+  model.places.forEach((place) => {
+    headers.push(
+      `${place} · Остаток MP`,
+      `${place} · Заказы`,
+      `${place} · Оборачиваемость`,
+      `${place} · Рек. к заказу`
+    );
+  });
+
+  const lines = [headers.map(exportOrderProcurementCell).join(';')];
+  model.rows.forEach((row) => {
+    const cells = [
+      row.name,
+      row.article,
+      row.warehouseStock,
+      row.inboundWarehouse,
+      row.totalNeed
+    ];
+
+    model.places.forEach((place) => {
+      const cluster = row.clusters[place] || {};
+      cells.push(
+        cluster.mpStock || 0,
+        cluster.orders || 0,
+        cluster.turnover == null ? '' : Number(cluster.turnover).toFixed(1),
+        cluster.need || 0
+      );
+    });
+
+    lines.push(cells.map(exportOrderProcurementCell).join(';'));
+  });
+
+  const blob = new Blob([`\uFEFF${lines.join('\r\n')}`], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `zakaz-tovara-${model.platform}-${model.days}d-${todayIso()}.csv`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function renderOrderProcurementClusterSummary(model) {
+  if (!model.clusterTotals.length) return '';
+  return `
+    <div class="altea-order-procurement__cluster-strip">
+      ${model.clusterTotals.map((cluster) => `
+        <div class="altea-order-procurement__cluster-card">
+          <span>${orderProcurementEscape(cluster.place)}</span>
+          <strong>${fmt.int(cluster.need)}</strong>
+          <small>к заказу · ${fmt.int(cluster.mpStock)} на MP</small>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderOrderProcurementTable(model) {
+  const headGroups = model.places
+    .map((place) => `<th colspan="4" class="altea-order-procurement__cluster-head">${orderProcurementEscape(place)}</th>`)
+    .join('');
+
+  const headMetrics = model.places
+    .map(() => `
+      <th>Остаток MP</th>
+      <th>Заказы</th>
+      <th>Оборачиваемость</th>
+      <th>Рек. к заказу</th>
+    `)
+    .join('');
+
+  const columnCount = 5 + (model.places.length * 4);
+  const body = model.rows.length
+    ? model.rows.map((row) => {
+        const clusterCells = model.places.map((place) => {
+          const cluster = row.clusters[place] || {};
+          return `
+            <td class="altea-order-procurement__num">${fmt.int(cluster.mpStock)}</td>
+            <td class="altea-order-procurement__num">${fmt.int(cluster.orders)}</td>
+            <td>${orderProcurementTurnoverBadge(cluster.turnover)}</td>
+            <td>${orderProcurementBadge(fmt.int(cluster.need), cluster.need > 0 ? 'warn' : 'ok')}</td>
+          `;
+        }).join('');
+
+        const articleLabel = row.article || row.articleKey;
+        const skuLink = typeof linkToSku === 'function'
+          ? linkToSku(row.articleKey || articleLabel, articleLabel)
+          : orderProcurementEscape(articleLabel);
+
+        return `
+          <tr>
+            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--sku">
+              <strong>${orderProcurementEscape(row.name || articleLabel)}</strong>
+              <div class="altea-order-procurement__meta">${orderProcurementEscape(row.owner || 'Без owner')}</div>
+            </td>
+            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--article">${skuLink}</td>
+            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--warehouse altea-order-procurement__num">${fmt.int(row.warehouseStock)}</td>
+            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--inbound altea-order-procurement__num">${fmt.int(row.inboundWarehouse)}</td>
+            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--total">${orderProcurementBadge(fmt.int(row.totalNeed), row.totalNeed > 0 ? 'warn' : 'ok')}</td>
+            ${clusterCells}
+          </tr>
+        `;
+      }).join('')
+    : `
+      <tr>
+        <td colspan="${columnCount}" class="altea-order-procurement__empty">По выбранной площадке строки не загрузились.</td>
+      </tr>
+    `;
+
+  return `
+    <div class="altea-order-procurement__table-wrap imperial-table-wrap">
+      <table class="altea-order-procurement__table">
+        <thead>
+          <tr>
+            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--sku">SKU / Номенклатура</th>
+            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--article">Артикул</th>
+            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--warehouse">Остатки мой склад</th>
+            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--inbound">В пути на склад</th>
+            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--total">Итого заказ товара</th>
+            ${headGroups}
+          </tr>
+          <tr>${headMetrics}</tr>
+        </thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderOrderProcurement(model) {
+  const range = model.window?.from && model.window?.to
+    ? `${orderProcurementEscape(model.window.from)} - ${orderProcurementEscape(model.window.to)}`
+    : 'последний доступный срез';
+
+  return `
+    <section class="imperial-section altea-order-procurement" data-altea-order-procurement>
+      <div class="card">
+        <div class="section-title">
+          <div>
+            <h2>Заказ товара по кластерам</h2>
+            <p>Рабочая форма закупщика: слева центральный склад, справа кластеры площадки, ниже готовая рекомендация по заказу на каждый кластер.</p>
+          </div>
+          <div class="badge-stack">
+            ${orderProcurementBadge(`Площадка: ${model.platformLabel}`, model.platform === 'wb' ? 'ok' : 'info')}
+            ${orderProcurementBadge(`Оборачиваемость: ${model.days} дн.`, 'info')}
+            ${orderProcurementBadge(`Срез: ${range}`, 'info')}
+          </div>
+        </div>
+
+        <div class="altea-order-procurement__toolbar">
+          <label class="altea-order-procurement__field">
+            <span>Оборачиваемость, дней</span>
+            <input id="alteaOrderTargetDays" type="number" min="1" max="180" step="1" value="${orderProcurementEscape(model.days)}">
+          </label>
+
+          <div class="altea-order-procurement__field">
+            <span>Площадка</span>
+            <div class="altea-order-procurement__platforms">
+              <button type="button" class="altea-order-procurement__platform-btn ${model.platform === 'wb' ? 'is-active' : ''}" data-altea-order-platform="wb">WB</button>
+              <button type="button" class="altea-order-procurement__platform-btn ${model.platform === 'ozon' ? 'is-active' : ''}" data-altea-order-platform="ozon">OZ</button>
+            </div>
+          </div>
+
+          <div class="badge-stack">
+            ${orderProcurementBadge(`SKU: ${fmt.int(model.rows.length)}`, model.rows.length ? 'ok' : 'warn')}
+            ${orderProcurementBadge(`Кластеры: ${fmt.int(model.places.length)}`, model.places.length ? 'ok' : 'warn')}
+            ${orderProcurementBadge(`Обновлено: ${orderProcurementFormatDateTime(model.generatedAt)}`, 'info')}
+          </div>
+
+          <div class="altea-order-procurement__actions">
+            <button type="button" class="btn" data-altea-order-export>Выгрузить в Excel</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="altea-order-procurement__summary">
+        <div class="mini-kpi">
+          <span>SKU в расчёте</span>
+          <strong>${fmt.int(model.rows.length)}</strong>
+          <span>${model.platformLabel}</span>
+        </div>
+        <div class="mini-kpi">
+          <span>Остаток мой склад</span>
+          <strong>${fmt.int(model.totals.warehouseStock)}</strong>
+          <span>из файла реальных остатков</span>
+        </div>
+        <div class="mini-kpi">
+          <span>В пути на склад</span>
+          <strong>${fmt.int(model.totals.inboundWarehouse)}</strong>
+          <span>источник пока не подключён</span>
+        </div>
+        <div class="mini-kpi warn">
+          <span>Итого к заказу</span>
+          <strong>${fmt.int(model.totals.totalNeed)}</strong>
+          <span>сумма по всем кластерам</span>
+        </div>
+      </div>
+
+      ${renderOrderProcurementClusterSummary(model)}
+
+      <div class="card altea-order-procurement__table-card">
+        <div class="section-subhead">
+          <div>
+            <h3>Таблица заказа</h3>
+            <p class="small muted">Слева фиксированные колонки по SKU и складу, справа блоки кластеров выбранной площадки: остатки MP, заказы, оборачиваемость и рекомендованный заказ.</p>
+          </div>
+          <div class="badge-stack">
+            ${orderProcurementBadge(`Период расчёта: ${model.days} дн.`, 'info')}
+            ${orderProcurementBadge('Колонка "В пути" пока = 0', 'warn')}
+          </div>
+        </div>
+
+        ${renderOrderProcurementTable(model)}
+
+        <div class="altea-order-procurement__caption">
+          Колонка "Остатки мой склад" уже берётся из файла реальных остатков. Колонку "В пути на склад" оставили отдельной, но пока не заполняем, потому что источник ещё не подключён.
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderOrderProcurementLoading() {
+  return `
+    <section class="imperial-section altea-order-procurement">
+      <div class="card">
+        <h2>Заказ товара по кластерам</h2>
+        <p class="small muted">Подтягиваю данные по складу и кластерам, чтобы собрать рабочую форму закупщика.</p>
+      </div>
+    </section>
+  `;
+}
+
+function renderOrderProcurementError() {
+  return `
+    <section class="imperial-section altea-order-procurement">
+      <div class="card">
+        <h3>Заказ товара пока не загрузился</h3>
+        <p class="small muted">Не удалось прочитать order-файлы. Проверьте, что доступны <code>data/order_procurement.json</code> и <code>data/warehouse_stock_overlay.json</code>.</p>
+      </div>
+    </section>
+  `;
+}
+
+function orderProcurementRenderInto(root) {
+  const model = buildOrderProcurementModel();
+  root.innerHTML = renderOrderProcurement(model);
+  bindOrderProcurement(root);
+}
+
+function bindOrderProcurement(root) {
+  root.querySelectorAll('[data-altea-order-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      ensureOrderProcurementState().platform = button.dataset.alteaOrderPlatform === 'ozon' ? 'ozon' : 'wb';
+      renderOrderCalculator();
+    });
+  });
+
+  root.querySelector('#alteaOrderTargetDays')?.addEventListener('change', (event) => {
+    ensureOrderProcurementState().days = clampOrderProcurementDays(event.target.value);
+    renderOrderCalculator();
+  });
+
+  root.querySelector('[data-altea-order-export]')?.addEventListener('click', () => {
+    try {
+      exportOrderProcurementModel(buildOrderProcurementModel());
+      setAppError('Выгрузка заказа подготовлена.');
+      window.setTimeout(() => setAppError(''), 1600);
+    } catch (error) {
+      console.error('[order-procurement] export', error);
+      setAppError('Не удалось выгрузить таблицу заказа. Попробуйте ещё раз.');
+    }
+  });
+}
+
+function injectOrderProcurementStyles() {
+  if (document.getElementById(ORDER_PROCUREMENT_STYLE_ID)) return;
+
+  const style = document.createElement('style');
+  style.id = ORDER_PROCUREMENT_STYLE_ID;
+  style.textContent = `
+    .altea-order-procurement {
+      --col-sku: 320px;
+      --col-article: 170px;
+      --col-warehouse: 150px;
+      --col-inbound: 150px;
+      --col-total: 170px;
+      display: grid;
+      gap: 14px;
+      width: 100%;
+      margin-top: 18px;
+    }
+
+    .altea-order-procurement__toolbar {
+      display: grid;
+      grid-template-columns: minmax(180px, 220px) auto 1fr auto;
+      gap: 12px;
+      align-items: end;
+      margin-top: 12px;
+    }
+
+    .altea-order-procurement__field span {
+      display: block;
+      margin-bottom: 6px;
+      color: rgba(255, 244, 229, 0.64);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .altea-order-procurement__field input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(212, 164, 74, 0.18);
+      background: rgba(17, 14, 11, 0.96);
+      color: #fff1dd;
+    }
+
+    .altea-order-procurement__platforms,
+    .altea-order-procurement__actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .altea-order-procurement__actions {
+      justify-content: flex-end;
+    }
+
+    .altea-order-procurement__platform-btn {
+      min-width: 70px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(212, 164, 74, 0.22);
+      background: rgba(18, 14, 10, 0.92);
+      color: #fff1dd;
+      font: inherit;
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+    }
+
+    .altea-order-procurement__platform-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(212, 164, 74, 0.44);
+    }
+
+    .altea-order-procurement__platform-btn.is-active {
+      background: linear-gradient(135deg, rgba(212, 164, 74, 0.30), rgba(101, 67, 33, 0.56));
+      border-color: rgba(240, 196, 101, 0.60);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+    }
+
+    .altea-order-procurement__summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .altea-order-procurement__cluster-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .altea-order-procurement__cluster-card {
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(212, 164, 74, 0.14);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
+        rgba(17, 14, 11, 0.96);
+    }
+
+    .altea-order-procurement__cluster-card span,
+    .altea-order-procurement__cluster-card small {
+      display: block;
+    }
+
+    .altea-order-procurement__cluster-card span {
+      color: rgba(255, 244, 229, 0.72);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .altea-order-procurement__cluster-card strong {
+      display: block;
+      margin: 8px 0 4px;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .altea-order-procurement__cluster-card small {
+      color: rgba(255, 244, 229, 0.56);
+    }
+
+    .altea-order-procurement__table-card {
+      overflow: hidden;
+    }
+
+    .altea-order-procurement__table-wrap {
+      margin-top: 14px;
+      overflow: auto;
+      max-width: 100%;
+    }
+
+    .altea-order-procurement__table {
+      width: max-content;
+      min-width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .altea-order-procurement__table th,
+    .altea-order-procurement__table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(212, 164, 74, 0.10);
+      vertical-align: top;
+    }
+
+    .altea-order-procurement__table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(18, 14, 11, 0.98);
+      white-space: nowrap;
+    }
+
+    .altea-order-procurement__table thead tr:nth-child(2) th {
+      top: 49px;
+      z-index: 6;
+    }
+
+    .altea-order-procurement__cluster-head {
+      text-align: center;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    .altea-order-procurement__sticky-head,
+    .altea-order-procurement__sticky-cell {
+      position: sticky;
+      z-index: 7;
+      background: rgba(17, 14, 11, 0.985);
+      box-shadow: 1px 0 0 rgba(212, 164, 74, 0.08);
+    }
+
+    .altea-order-procurement__sticky-head {
+      z-index: 8;
+    }
+
+    .altea-order-procurement__sticky-head--sku,
+    .altea-order-procurement__sticky-cell--sku {
+      left: 0;
+      min-width: var(--col-sku);
+      width: var(--col-sku);
+    }
+
+    .altea-order-procurement__sticky-head--article,
+    .altea-order-procurement__sticky-cell--article {
+      left: var(--col-sku);
+      min-width: var(--col-article);
+      width: var(--col-article);
+    }
+
+    .altea-order-procurement__sticky-head--warehouse,
+    .altea-order-procurement__sticky-cell--warehouse {
+      left: calc(var(--col-sku) + var(--col-article));
+      min-width: var(--col-warehouse);
+      width: var(--col-warehouse);
+    }
+
+    .altea-order-procurement__sticky-head--inbound,
+    .altea-order-procurement__sticky-cell--inbound {
+      left: calc(var(--col-sku) + var(--col-article) + var(--col-warehouse));
+      min-width: var(--col-inbound);
+      width: var(--col-inbound);
+    }
+
+    .altea-order-procurement__sticky-head--total,
+    .altea-order-procurement__sticky-cell--total {
+      left: calc(var(--col-sku) + var(--col-article) + var(--col-warehouse) + var(--col-inbound));
+      min-width: var(--col-total);
+      width: var(--col-total);
+    }
+
+    .altea-order-procurement__sticky-cell strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .altea-order-procurement__meta {
+      color: rgba(255, 244, 229, 0.58);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .altea-order-procurement__num {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .altea-order-procurement__table tbody tr:hover td {
+      background: rgba(255, 244, 229, 0.03);
+    }
+
+    .altea-order-procurement__table tbody tr:hover .altea-order-procurement__sticky-cell {
+      background: rgba(28, 22, 16, 0.98);
+    }
+
+    .altea-order-procurement__empty {
+      padding: 22px 14px;
+      text-align: center;
+      color: rgba(255, 244, 229, 0.64);
+    }
+
+    .altea-order-procurement__caption {
+      margin-top: 10px;
+      color: rgba(255, 244, 229, 0.58);
+      font-size: 12px;
+    }
+
+    @media (max-width: 1400px) {
+      .altea-order-procurement__toolbar,
+      .altea-order-procurement__summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .altea-order-procurement__actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .altea-order-procurement {
+        --col-sku: 240px;
+        --col-article: 140px;
+        --col-warehouse: 120px;
+        --col-inbound: 120px;
+        --col-total: 140px;
+      }
+
+      .altea-order-procurement__toolbar,
+      .altea-order-procurement__summary {
+        grid-template-columns: 1fr;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+}

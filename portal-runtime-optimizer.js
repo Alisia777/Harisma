@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260429D__) return;
+  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260429E__) return;
+  window.__ALTEA_RUNTIME_OPTIMIZER_20260429E__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260429D__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260429C__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260429A__ = true;
@@ -26,7 +27,7 @@
     ],
     prices: [
       'portal-price-local-fetch-bypass-hotfix.js?v=20260428a',
-      'portal-price-workbench-runtime-loader.js?v=20260429a',
+      'portal-price-workbench-runtime-loader.js?v=20260429b',
       'portal-team-reconnect-hotfix.js?v=20260420a'
     ]
   };

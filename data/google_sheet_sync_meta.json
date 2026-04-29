@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-04-28T07:40:42.438Z",
-  "sheetSource": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\smart-price-workbook.xlsx",
-  "updatedSkus": 89,
+  "generatedAt": "2026-04-29T12:10:51.613Z",
+  "sheetSource": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
+  "updatedSkus": 0,
   "dashboard": {
-    "latest_marketplace_date": "2026-04-27",
+    "latest_marketplace_date": "2026-04-28",
     "month_plan_units": 173171,
-    "month_fact_units": 145336,
-    "month_fact_revenue": 186957291,
-    "completion_to_date_pct": 0.9325
+    "month_fact_units": 150843,
+    "month_fact_revenue": 193793121,
+    "completion_to_date_pct": 0.9333
   },
   "platformTrends": {
-    "latest_marketplace_date": "2026-04-27",
+    "latest_marketplace_date": "2026-04-28",
     "points": 14
   },
   "logistics": {
-    "latest_logistics_date": "2026-04-16",
-    "ozon_cluster_count": 0,
-    "ozon_warehouse_count": 0,
-    "wb_warehouse_count": 0
+    "latest_logistics_date": "2026-04-29",
+    "ozon_cluster_count": 31,
+    "ozon_warehouse_count": 59,
+    "wb_warehouse_count": 84
   }
 }

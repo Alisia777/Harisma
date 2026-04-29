@@ -1395,6 +1395,9 @@ function buildRepricerRows() {
       const priceRow = pricesMaps[platform].get(normalizedKey) || null;
       const profile = repricerFindSkuProfile(articleKey);
       const skuOwnerName = typeof skuFact?.owner === 'object' ? skuFact.owner?.name : skuFact?.owner;
+      const platformSpecificOwner = typeof platformOwnerName === 'function'
+        ? platformOwnerName(skuFact, platform)
+        : '';
       const resolvedStatus = profile?.status || sourceRow.status || supportRow?.repricerStatus || supportRow?.productStatus || skuFact?.status || '';
       const resolvedRole = profile?.role || repricerSuggestedRole(resolvedStatus, sourceRow.segment || supportRow?.segment || skuFact?.segment);
       const resolvedLaunchReady = normalizeRepricerLaunchReady(profile?.launchReady || repricerDefaultLaunchReady(resolvedStatus));
@@ -1403,7 +1406,7 @@ function buildRepricerRows() {
         article: sourceRow.article || articleKey,
         brand: sourceRow.brand || skuFact?.brand || '',
         name: sourceRow.name || supportRow?.name || priceRow?.name || skuFact?.name || '',
-        owner: sourceRow.owner || supportRow?.owner || priceRow?.owner || skuOwnerName || '',
+        owner: platformSpecificOwner || sourceRow.owner || supportRow?.owner || priceRow?.owner || skuOwnerName || '',
         status: resolvedStatus,
         role: resolvedRole,
         launchReady: resolvedLaunchReady,
@@ -1419,7 +1422,7 @@ function buildRepricerRows() {
       row.article = row.article || sourceRow.article || articleKey;
       row.brand = row.brand || sourceRow.brand || skuFact?.brand || '';
       row.name = row.name || sourceRow.name || supportRow?.name || priceRow?.name || skuFact?.name || '';
-      row.owner = row.owner || sourceRow.owner || supportRow?.owner || priceRow?.owner || skuOwnerName || '';
+      row.owner = row.owner || platformSpecificOwner || sourceRow.owner || supportRow?.owner || priceRow?.owner || skuOwnerName || '';
       row.status = profile?.status || row.status || sourceRow.status || supportRow?.repricerStatus || supportRow?.productStatus || skuFact?.status || '';
       row.role = profile?.role || row.role || repricerSuggestedRole(row.status || sourceRow.status || supportRow?.repricerStatus || skuFact?.status, sourceRow.segment || supportRow?.segment || skuFact?.segment);
       row.launchReady = normalizeRepricerLaunchReady(profile?.launchReady || row.launchReady || repricerDefaultLaunchReady(row.status || sourceRow.status || skuFact?.status));

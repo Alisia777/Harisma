@@ -828,8 +828,19 @@
     skuRows.forEach(function (row) {
       var key = norm(row && (row.articleKey || row.article || row.sku));
       if (!key || map[key]) return;
+      var rawPlatformOwners = row && row.ownersByPlatform && typeof row.ownersByPlatform === "object"
+        ? row.ownersByPlatform
+        : (row && row.owner && typeof row.owner === "object" && row.owner.byPlatform && typeof row.owner.byPlatform === "object"
+          ? row.owner.byPlatform
+          : {});
       map[key] = {
-        owner: row && row.owner && typeof row.owner === "object" ? row.owner.name : (row && row.owner),
+        owner: normalizeOwnerValue(row && row.owner && typeof row.owner === "object" ? row.owner.name : (row && row.owner)),
+        ownersByPlatform: {
+          wb: normalizeOwnerValue(rawPlatformOwners && rawPlatformOwners.wb),
+          ozon: normalizeOwnerValue(rawPlatformOwners && rawPlatformOwners.ozon),
+          ym: normalizeOwnerValue(rawPlatformOwners && (rawPlatformOwners.ym || rawPlatformOwners.ya)),
+          ya: normalizeOwnerValue(rawPlatformOwners && (rawPlatformOwners.ya || rawPlatformOwners.ym))
+        },
         status: row && (row.statusSku || row.status),
         role: row && (row.roleSku || row.role),
         launchReady: row && row.launchReady
@@ -850,6 +861,21 @@
       });
     });
     return map;
+  }
+
+  function normalizeOwnerValue(value) {
+    if (typeof canonicalOwnerName === "function") return canonicalOwnerName(value || "");
+    return String(value || "").trim();
+  }
+
+  function skuMetaPlatformOwner(meta, market) {
+    if (!meta) return "";
+    var platform = procurementPlatform(market);
+    if (!platform && norm(market) === "ym") platform = "ym";
+    var ownersByPlatform = meta.ownersByPlatform || {};
+    if (platform === "ym") return normalizeOwnerValue(ownersByPlatform.ym || ownersByPlatform.ya || "");
+    if (platform === "wb" || platform === "ozon") return normalizeOwnerValue(ownersByPlatform[platform] || "");
+    return "";
   }
 
   function leaderboardSignalMeta(signal) {
@@ -1105,11 +1131,13 @@
     }
     var sourceKey = norm(source && (source.articleKey || source.article || source.sku));
     var skuRow = (skuMeta && skuMeta[sourceKey]) || null;
+    var skuPlatformOwner = skuMetaPlatformOwner(skuRow, market);
+    var resolvedOwner = normalizeOwnerValue(overlayOwner || skuPlatformOwner || source.owner || (skuRow && skuRow.owner) || "");
     var row = {
       market: market,
       articleKey: source.articleKey || source.article || source.sku || "",
       name: source.name || source.title || source.articleKey || "\u0411\u0435\u0437 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f",
-      owner: overlayOwner || source.owner || (skuRow && skuRow.owner) || "\u2014",
+      owner: resolvedOwner || "\u2014",
       status: overlayStatus || source.status || (skuRow && skuRow.status) || "\u2014",
       role: source.role || (skuRow && skuRow.role) || "\u2014",
       launchReady: source.launchReady || (skuRow && skuRow.launchReady) || "\u2014",
@@ -1143,7 +1171,7 @@
     };
     var manual = manualMap[norm(row.articleKey)];
     if (manual) {
-      if (manual.owner) row.owner = manual.owner;
+      if (manual.owner) row.owner = normalizeOwnerValue(manual.owner);
       if (manual.comment) row.comment = manual.comment;
       if (manual.reason) row.reason = manual.reason;
       if (manual.allowedMarginManualPct != null) {

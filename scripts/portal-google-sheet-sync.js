@@ -192,6 +192,65 @@ function normalizeText(value) {
   return String(value || '').trim();
 }
 
+const OWNER_CANONICAL_NAMES = new Map([
+  ['алексей', 'Алексей'],
+  ['александр', 'Александр Озон'],
+  ['анна', 'Анна'],
+  ['артем', 'Александр Озон'],
+  ['артём', 'Александр Озон'],
+  ['дарья', 'Даша'],
+  ['даша', 'Даша'],
+  ['екатерина', 'Екатерина'],
+  ['кирилл', 'Кирилл'],
+  ['ксения', 'Ксения'],
+  ['мария', 'Мария'],
+  ['олеся', 'Олеся'],
+  ['светлана', 'Светлана']
+]);
+
+const OWNER_NAME_ALIASES = new Map([
+  ['александр озон', 'Александр Озон'],
+  ['анна пирогова', 'Анна'],
+  ['екатерина доброжирова', 'Екатерина'],
+  ['екатерина доможирова', 'Екатерина'],
+  ['мария васильева', 'Мария'],
+  ['мария васильевна', 'Мария'],
+  ['олеся савинова', 'Олеся']
+]);
+
+function normalizeOwnerToken(value = '') {
+  return String(value ?? '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function canonicalOwnerName(value = '') {
+  const normalized = normalizeOwnerToken(value);
+  if (!normalized) return '';
+  const lowered = normalized.toLowerCase();
+  if (OWNER_NAME_ALIASES.has(lowered)) return OWNER_NAME_ALIASES.get(lowered);
+  if (OWNER_CANONICAL_NAMES.has(lowered)) return OWNER_CANONICAL_NAMES.get(lowered);
+  const [firstToken = ''] = normalized.split(' ');
+  const firstTokenLowered = firstToken.toLowerCase();
+  if (OWNER_CANONICAL_NAMES.has(firstTokenLowered)) return OWNER_CANONICAL_NAMES.get(firstTokenLowered);
+  return normalized;
+}
+
+function normalizeOwnerPlatformKey(platform = '') {
+  const normalized = String(platform || '').trim().toLowerCase();
+  if (normalized === 'ya' || normalized === 'yandex' || normalized === 'yandex_market' || normalized === 'market') return 'ym';
+  return normalized;
+}
+
+function skuOwnerForPlatform(sku, platform = '') {
+  const key = normalizeOwnerPlatformKey(platform);
+  const byPlatform = sku?.ownersByPlatform || sku?.owner?.byPlatform || {};
+  const platformOwner = key === 'ym'
+    ? (byPlatform.ym || byPlatform.ya || '')
+    : (byPlatform[key] || '');
+  return canonicalOwnerName(platformOwner || sku?.owner?.name || '');
+}
+
 function hasText(value) {
   return normalizeText(value).length > 0;
 }
@@ -404,12 +463,12 @@ function buildSkuOverlay(baseSkus, dimSkuRows) {
     updatedCount += 1;
     const next = deepClone(item);
     const ownersByPlatform = {
-      wb: normalizeText(sheetRow.owner_wb),
-      ozon: normalizeText(sheetRow.owner_oz),
-      ym: normalizeText(sheetRow.owner_ym),
-      ga: normalizeText(sheetRow.owner_ga),
-      letu: normalizeText(sheetRow.owner_letu),
-      mm: normalizeText(sheetRow.owner_mm)
+      wb: canonicalOwnerName(normalizeText(sheetRow.owner_wb)),
+      ozon: canonicalOwnerName(normalizeText(sheetRow.owner_oz)),
+      ym: canonicalOwnerName(normalizeText(sheetRow.owner_ym)),
+      ga: canonicalOwnerName(normalizeText(sheetRow.owner_ga)),
+      letu: canonicalOwnerName(normalizeText(sheetRow.owner_letu)),
+      mm: canonicalOwnerName(normalizeText(sheetRow.owner_mm))
     };
     const categoriesByPlatform = {
       wb: normalizeText(sheetRow.catygory_wb),
@@ -425,6 +484,7 @@ function buildSkuOverlay(baseSkus, dimSkuRows) {
     next.sheetStatus = normalizeText(sheetRow.status);
     next.owner = {
       ...(next.owner || {}),
+      name: canonicalOwnerName(next?.owner?.name || ''),
       byPlatform: ownersByPlatform
     };
     return next;
@@ -695,7 +755,9 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options) {
   for (const row of latestRows) {
     const sku = skuByKey.get(normalizeKey(row.article));
     const skuName = sku?.name || row.article || 'SKU';
-    const owner = sku?.owner?.name || '';
+    const wbOwner = skuOwnerForPlatform(sku, 'wb');
+    const ozonOwner = skuOwnerForPlatform(sku, 'ozon');
+    const ymOwner = skuOwnerForPlatform(sku, 'ym');
     const wbStock = numberOrZero(row.wb_stock);
     const ozonStock = numberOrZero(row.ozon_stock);
     const yandexStock = numberOrZero(row.yandex_stock);
@@ -729,7 +791,7 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options) {
         place: warehouse,
         article: articleKey,
         name: skuName,
-        owner,
+        owner: wbOwner,
         inStock: wbStock,
         inTransit: 0,
         inRequest: 0,
@@ -799,7 +861,7 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options) {
         place: cluster,
         article: articleKey,
         name: skuName,
-        owner,
+        owner: ozonOwner,
         inStock: ozonStock,
         inTransit: 0,
         inRequest: 0,
@@ -825,7 +887,7 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options) {
         place: warehouse,
         article: articleKey,
         name: skuName,
-        owner,
+        owner: ymOwner,
         inStock: yandexStock,
         inTransit: 0,
         inRequest: 0,

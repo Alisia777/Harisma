@@ -89,9 +89,19 @@ function normalizeSkuOwnerState(sku) {
 
   if (sku.owner && typeof sku.owner === 'object') {
     sku.owner.name = canonicalOwnerName(sku.owner.name || '');
+    if (sku.owner.byPlatform && typeof sku.owner.byPlatform === 'object') {
+      for (const key of Object.keys(sku.owner.byPlatform)) {
+        sku.owner.byPlatform[key] = canonicalOwnerName(sku.owner.byPlatform[key] || '');
+      }
+    }
   }
   if (sku.__baseOwner && typeof sku.__baseOwner === 'object') {
     sku.__baseOwner.name = canonicalOwnerName(sku.__baseOwner.name || '');
+    if (sku.__baseOwner.byPlatform && typeof sku.__baseOwner.byPlatform === 'object') {
+      for (const key of Object.keys(sku.__baseOwner.byPlatform)) {
+        sku.__baseOwner.byPlatform[key] = canonicalOwnerName(sku.__baseOwner.byPlatform[key] || '');
+      }
+    }
   }
   if (sku.ownersByPlatform && typeof sku.ownersByPlatform === 'object') {
     for (const key of Object.keys(sku.ownersByPlatform)) {
@@ -149,7 +159,15 @@ function ownerOptions() {
     const normalized = canonicalOwnerName(value || '');
     if (normalized) pool.add(normalized);
   };
-  for (const sku of state.skus) addOwner(ownerName(sku));
+  for (const sku of state.skus) {
+    addOwner(ownerName(sku));
+    if (sku?.ownersByPlatform && typeof sku.ownersByPlatform === 'object') {
+      Object.values(sku.ownersByPlatform).forEach(addOwner);
+    }
+    if (sku?.owner?.byPlatform && typeof sku.owner.byPlatform === 'object') {
+      Object.values(sku.owner.byPlatform).forEach(addOwner);
+    }
+  }
   for (const item of state.storage.ownerOverrides || []) addOwner(item.ownerName);
   for (const task of state.storage.tasks || []) addOwner(task.owner);
   addOwner(state.team.member?.name);

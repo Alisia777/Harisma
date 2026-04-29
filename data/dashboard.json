@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-28T07:40:42.433Z",
+  "generatedAt": "2026-04-29T12:10:51.584Z",
   "dataFreshness": {
     "planFactMonth": "Апрель 2026 · Smart = Altea",
     "ordersSnapshot": "orders (40).csv",
@@ -12,7 +12,7 @@
       "Для Анны (2).xlsx",
       "Рабочий _ Спецификации v2.xlsx"
     ],
-    "asOfDate": "2026-04-27",
+    "asOfDate": "2026-04-28",
     "googleSheetsMonth": "2026-04",
     "googleSheetsBridge": "scripts/portal-google-sheet-sync.js",
     "googleSheetsSourceUrl": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
@@ -49,8 +49,8 @@
     },
     {
       "label": "Закреплено за owner",
-      "value": 79,
-      "hint": "Нашли закрепление в рабочих реестрах"
+      "value": 83,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
     },
     {
       "label": "Р‘РµР· owner",
@@ -69,8 +69,8 @@
     },
     {
       "label": "Остатки MP, шт.",
-      "value": 220574,
-      "hint": "WB + Ozon по текущему срезу"
+      "value": 343342,
+      "hint": "WB + Ozon по срезу Google Sheets на 2026-04-28"
     },
     {
       "label": "Факт на 21.04, ₽",
@@ -128,22 +128,22 @@
       "hint": "Линейный план месяца по SKU рабочего контура."
     },
     {
-      "label": "Факт 01-27.04, шт.",
-      "value": 145336,
-      "hint": "Факт по данным Google Sheets на 2026-04-27."
+      "label": "Факт 01-28.04, шт.",
+      "value": 150843,
+      "hint": "Факт по данным Google Sheets на 2026-04-28."
     },
     {
       "label": "Выполнение к плану на дату",
-      "value": 0.9325,
+      "value": 0.9333,
       "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 0.9325
+      "valuePct": 0.9333
     }
   ],
   "brandSummary": [
     {
       "brand": "Алтея",
       "sku_count": 89,
-      "total_stock": 0,
+      "total_stock": 343342,
       "orders_value": 161631197.21,
       "feb_plan_units": 127838,
       "feb_fact_units": 48829,
@@ -157,19 +157,19 @@
       "google_sheets_plan_field": "planApr26Units",
       "google_sheets_month_key": "2026-04",
       "plan_units": 173171,
-      "fact_units_to_date": 145336,
-      "fact_revenue_to_date": 186957291,
-      "plan_completion_to_date_pct": 0.9325,
+      "fact_units_to_date": 150843,
+      "fact_revenue_to_date": 193793121,
+      "plan_completion_to_date_pct": 0.9333,
       "apr_plan_units": 173171,
-      "apr_fact_units_to_date": 145336,
+      "apr_fact_units_to_date": 150843,
       "asOfDate": "2026-04-21",
       "plan_source": "Выполнение плана.xlsx :: Апрель 26 | Altea",
       "apr_plan_revenue": 304896023,
-      "apr_fact_revenue_to_date": 186957291,
+      "apr_fact_revenue_to_date": 193793121,
       "apr_plan_to_date_revenue": 223590416.86666667,
       "apr_forecast_revenue": 208577270.4,
       "apr_plan_completion_month_pct": 0.501668284994324,
-      "apr_plan_completion_to_date_pct": 0.9325,
+      "apr_plan_completion_to_date_pct": 0.9333,
       "apr_forecast_pct": 0.6840931159013511
     }
   ],

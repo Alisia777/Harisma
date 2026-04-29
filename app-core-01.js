@@ -1431,9 +1431,10 @@ const EMPTY_OWNER_NAMES = new Set([
 
 const OWNER_CANONICAL_NAMES = new Map([
   ['алексей', 'Алексей'],
+  ['александр', 'Александр Озон'],
   ['анна', 'Анна'],
-  ['артем', 'Артем'],
-  ['артём', 'Артем'],
+  ['артем', 'Александр Озон'],
+  ['артём', 'Александр Озон'],
   ['дарья', 'Даша'],
   ['даша', 'Даша'],
   ['екатерина', 'Екатерина'],
@@ -1445,6 +1446,7 @@ const OWNER_CANONICAL_NAMES = new Map([
 ]);
 
 const OWNER_NAME_ALIASES = new Map([
+  ['александр озон', 'Александр Озон'],
   ['анна пирогова', 'Анна'],
   ['екатерина доброжирова', 'Екатерина'],
   ['екатерина доможирова', 'Екатерина'],
@@ -1473,6 +1475,33 @@ function canonicalOwnerName(value = '') {
   if (OWNER_CANONICAL_NAMES.has(firstTokenLowered)) return OWNER_CANONICAL_NAMES.get(firstTokenLowered);
 
   return normalized;
+}
+
+function normalizeOwnerPlatformKey(platform = '') {
+  const normalized = String(platform || '').trim().toLowerCase();
+  if (normalized === 'ya' || normalized === 'yandex' || normalized === 'yandex_market' || normalized === 'market') return 'ym';
+  return normalized;
+}
+
+function platformOwnerName(sku, platform = '') {
+  const key = normalizeOwnerPlatformKey(platform);
+  if (!sku || !key) return '';
+
+  const sources = [
+    sku?.ownersByPlatform,
+    sku?.owner?.byPlatform
+  ];
+
+  for (const source of sources) {
+    if (!source || typeof source !== 'object') continue;
+    const candidate = key === 'ym'
+      ? (source.ym || source.ya || '')
+      : source[key];
+    const normalized = canonicalOwnerName(candidate || '');
+    if (normalized) return normalized;
+  }
+
+  return '';
 }
 
 function normalizeDecision(item = {}) {
@@ -1525,7 +1554,7 @@ function linkToSku(articleKey, label) {
 }
 
 async function loadJson(path) {
-  const resolvedPath = path.includes("?") ? path : `${path}?v=20260423a`;
+  const resolvedPath = path.includes("?") ? path : `${path}?v=20260429a`;
   const response = await fetch(resolvedPath, { cache: "no-store" });
   if (!response.ok) throw new Error(`Не удалось загрузить ${path}`);
   const text = await response.text();

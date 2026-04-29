@@ -397,10 +397,19 @@ function renderViewFailure(rootId, title, error) {
   `;
 }
 
+function renderDashboardView() {
+  const interactiveApi = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
+  if (interactiveApi && typeof interactiveApi.prime === 'function') {
+    interactiveApi.prime(false);
+    return;
+  }
+  renderDashboard();
+}
+
 function rerenderCurrentView() {
   applyOwnerOverridesToSkus();
   const renderPlan = [
-    ['view-dashboard', 'Дашборд', renderDashboard],
+    ['view-dashboard', 'Дашборд', renderDashboardView],
     ['view-documents', 'Документы', renderDocuments],
     ['view-repricer', 'Репрайсер', renderRepricer],
     ['view-prices', 'Цены', () => { if (typeof window.renderPriceWorkbench === 'function') window.renderPriceWorkbench(); }],

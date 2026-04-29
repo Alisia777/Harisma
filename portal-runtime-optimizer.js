@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260429A__) return;
+  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260429C__) return;
+  window.__ALTEA_RUNTIME_OPTIMIZER_20260429C__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260429A__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260428J__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260428I__ = true;
@@ -14,8 +15,8 @@
 
   const BUNDLE_MAP = {
     dashboard: [
-      'portal-dashboard-interactive-hotfix.js?v=20260428f',
-      'portal-dashboard-prime-hotfix-20260422e.js?v=20260428a'
+      'portal-dashboard-interactive-hotfix.js?v=20260429a',
+      'portal-dashboard-prime-hotfix-20260422e.js?v=20260429a'
     ],
     order: ['portal-order-logistics-hotfix.js?v=20260428b'],
     launches: [
@@ -324,13 +325,14 @@
       if (getActiveView() !== 'dashboard') return;
       loadBundleForView('dashboard');
     };
-    const delayedStart = () => window.setTimeout(start, 120);
-    if (document.readyState === 'complete') {
-      delayedStart();
+    const scheduleStart = (delay = 0) => window.setTimeout(start, delay);
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      scheduleStart(0);
       return;
     }
-    window.addEventListener('load', delayedStart, { once: true });
-    window.setTimeout(start, 2200);
+    document.addEventListener('DOMContentLoaded', () => scheduleStart(0), { once: true });
+    window.addEventListener('load', () => scheduleStart(120), { once: true });
+    window.setTimeout(start, 1500);
   }
 
   installDeferredFetch();

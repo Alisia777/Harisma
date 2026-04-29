@@ -1,13 +1,14 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260428F__) return;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429A__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429A__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428F__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428D__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428C__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260428f';
-  const STYLE_ID = 'altea-dashboard-interactive-20260428f';
+  const VERSION = '20260429a';
+  const STYLE_ID = 'altea-dashboard-interactive-20260429a';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
@@ -5479,10 +5480,51 @@
     scheduleApply(forceRefresh ? 240 : 140, forceRefresh);
   }
 
-  bridge('rerenderCurrentView');
-  bridge('renderDashboard');
+  function rearmBridges() {
+    bridge('rerenderCurrentView');
+    bridge('renderDashboard');
+  }
+
+  function exposeDashboardApi() {
+    window.__ALTEA_DASHBOARD_INTERACTIVE_API__ = {
+      version: VERSION,
+      hasRoot: () => Boolean(document.getElementById(ROOT_ID)),
+      isActive: isDashboardActive,
+      prime(forceRefresh = false) {
+        primeDashboard(forceRefresh);
+      },
+      schedule(delay = 0, forceRefresh = false) {
+        scheduleApply(delay, forceRefresh);
+      },
+      applyNow(forceRefresh = false) {
+        if (forceRefresh) dashboardBootPrimed = true;
+        return refreshData(forceRefresh).then(apply);
+      }
+    };
+  }
+
+  function ensureInteractiveDashboardBoot(forceRefresh = false) {
+    rearmBridges();
+    if (!isDashboardActive()) return;
+    if (!forceRefresh && document.getElementById(ROOT_ID)) return;
+    if (forceRefresh) {
+      dashboardBootPrimed = true;
+      scheduleApply(80, true);
+      return;
+    }
+    primeDashboard(false);
+  }
+
+  rearmBridges();
+  exposeDashboardApi();
   bindLiveTriggers();
   syncChrome();
+  ensureInteractiveDashboardBoot(false);
+  window.setTimeout(() => ensureInteractiveDashboardBoot(false), 30);
+  window.setTimeout(() => ensureInteractiveDashboardBoot(true), 320);
+  if (document.readyState !== 'complete') {
+    window.addEventListener('load', () => ensureInteractiveDashboardBoot(true), { once: true });
+  }
   window.addEventListener('altea:viewchange', (event) => {
     if (event.detail?.view === 'dashboard') primeDashboard(false);
   });

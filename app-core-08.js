@@ -624,6 +624,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const skuMinPrice = numberOrZero(skuSide?.minPrice);
   const skuBasePrice = repricerFirstFilledNumber(skuSide?.basePrice, skuSide?.recPrice);
   const skuCapPrice = repricerFirstFilledNumber(skuSide?.maxPrice, skuSide?.stretchCap);
+  const sourceHasLiveCurrentPrice = String(sourceRow.currentSellerPriceSource || sourceRow.currentPriceSource || '').trim().toLowerCase() === 'live';
   const currentPricePresent = [sourceRow.currentFillPrice, sourceRow.currentPrice, priceRow?.currentPrice, supportRow?.currentExportPrice, skuSide?.currentPrice, liveSide?.currentPrice].some(repricerHasValue);
   const hardFloorPresent = [
     sourceRow.hardMinPrice,
@@ -642,17 +643,22 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   ].some(repricerHasValue);
   const costPresent = [sourceRow.cost, sourceRow.costRub, liveRow?.cost, skuFact?.costPrice].some(repricerHasValue);
   const currentPrice = numberOrZero(
-    sourceRow.currentFillPrice != null
+    sourceHasLiveCurrentPrice && sourceRow.currentFillPrice != null
       ? sourceRow.currentFillPrice
-      : (sourceRow.currentPrice != null
+      : (sourceHasLiveCurrentPrice && sourceRow.currentPrice != null
         ? sourceRow.currentPrice
         : (priceRow?.currentPrice != null
           ? priceRow.currentPrice
-          : (supportRow?.currentExportPrice != null
-            ? supportRow.currentExportPrice
-            : (skuSide?.currentPrice != null ? skuSide.currentPrice : liveSide?.currentPrice))))
+          : (sourceRow.currentFillPrice != null
+            ? sourceRow.currentFillPrice
+            : (sourceRow.currentPrice != null
+              ? sourceRow.currentPrice
+              : (supportRow?.currentExportPrice != null
+                ? supportRow.currentExportPrice
+                : (skuSide?.currentPrice != null ? skuSide.currentPrice : liveSide?.currentPrice))))))
   );
   const currentClientPrice = repricerFirstFilledNumber(
+    priceRow?.currentClientPrice,
     clientOnlyMarketFacts ? null : sourceRow.currentClientPrice,
     clientOnlyMarketFacts ? null : sourceRow.buyerPrice,
     supportRow?.buyerCurrentExportMinPrice,

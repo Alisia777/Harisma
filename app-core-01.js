@@ -464,6 +464,18 @@ function mergeWorkbenchField(target, key, value, force = false) {
   target[key] = cloneJsonValue(value);
 }
 
+function applyLiveWorkbenchCurrentSellerPrice(target = {}, liveRow = {}, liveGeneratedAt = '') {
+  const liveSellerPrice = repricerFirstFilledNumber(liveRow?.currentFillPrice, liveRow?.currentPrice);
+  if (!(liveSellerPrice > 0)) return false;
+  target.currentFillPrice = liveSellerPrice;
+  target.currentPrice = liveSellerPrice;
+  target.currentSellerPriceSource = 'live';
+  target.currentPriceSource = 'live';
+  const livePriceDate = asIsoDate(liveRow?.valueDate || liveRow?.historyFreshnessDate || liveGeneratedAt || '');
+  if (livePriceDate) target.currentPriceDate = livePriceDate;
+  return true;
+}
+
 function cloneWorkbenchSeries(series) {
   return Array.isArray(series)
     ? series.map((item) => cloneJsonValue(item) || {})
@@ -538,75 +550,80 @@ function shouldUseWorkbenchLivePayload(primaryPayload = {}, livePayload = {}) {
   return liveFreshness >= primaryFreshness;
 }
 
-function mergeSmartWorkbenchRow(primaryRow = {}, liveRow = {}, platform = '') {
+function mergeSmartWorkbenchRow(primaryRow = {}, liveRow = {}, platform = '', options = {}) {
   const next = cloneJsonValue(primaryRow) || {};
   const live = liveRow && typeof liveRow === 'object' ? liveRow : null;
   if (!live) return next;
+  const useFullLive = options.useFullLive !== false;
 
-  [
-    'articleKey',
-    'article',
-    'name',
-    'owner',
-    'marketplace',
-    'currentFillPrice',
-    'currentClientPrice',
-    'currentSppPct',
-    'seedTargetFillPrice',
-    'seedTargetClientPrice',
-    'seedReason',
-    'requiredPriceForProfitability',
-    'requiredPriceForMargin',
-    'allowedMarginPct',
-    'marginTotalPct',
-    'avgMargin7dPct',
-    'minPrice',
-    'basePrice',
-    'monthly'
-  ].forEach((key) => mergeWorkbenchField(next, key, live[key]));
+  if (useFullLive) {
+    [
+      'articleKey',
+      'article',
+      'name',
+      'owner',
+      'marketplace',
+      'currentFillPrice',
+      'currentClientPrice',
+      'currentSppPct',
+      'seedTargetFillPrice',
+      'seedTargetClientPrice',
+      'seedReason',
+      'requiredPriceForProfitability',
+      'requiredPriceForMargin',
+      'allowedMarginPct',
+      'marginTotalPct',
+      'avgMargin7dPct',
+      'minPrice',
+      'basePrice',
+      'monthly'
+    ].forEach((key) => mergeWorkbenchField(next, key, live[key]));
 
-  [
-    'brand',
-    'strategy',
-    'strategyNote',
-    'direction',
-    'cost',
-    'costRub',
-    'productStatus',
-    'wbBlock',
-    'trafficSignal',
-    'stockWarehouse',
-    'stockWb',
-    'stockOzon',
-    'stockTotal',
-    'sales7Wb',
-    'sales7Ozon',
-    'sales7Total',
-    'turnoverWbDays',
-    'turnoverOzonDays',
-    'turnoverTotalDays',
-    'arrivalDate',
-    'firstPrice',
-    'discountFromPricePct',
-    'recommendedFirstPrice',
-    'id',
-    'profitabilityPct',
-    'marginNoAdsPct',
-    'seedPriceRaise',
-    'seedNewProfitabilityPct',
-    'seedProfitabilityDeltaPct',
-    'neededRaiseForProfitability',
-    'neededClientPriceForProfitability',
-    'neededRaiseForMargin',
-    'neededClientPriceForMargin',
-    'monthlyCurrentTurnoverDays',
-    'monthlyCurrentPrice'
-  ].forEach((key) => mergeWorkbenchField(next, key, live[key], true));
+    [
+      'brand',
+      'strategy',
+      'strategyNote',
+      'direction',
+      'cost',
+      'costRub',
+      'productStatus',
+      'wbBlock',
+      'trafficSignal',
+      'stockWarehouse',
+      'stockWb',
+      'stockOzon',
+      'stockTotal',
+      'sales7Wb',
+      'sales7Ozon',
+      'sales7Total',
+      'turnoverWbDays',
+      'turnoverOzonDays',
+      'turnoverTotalDays',
+      'arrivalDate',
+      'firstPrice',
+      'discountFromPricePct',
+      'recommendedFirstPrice',
+      'id',
+      'profitabilityPct',
+      'marginNoAdsPct',
+      'seedPriceRaise',
+      'seedNewProfitabilityPct',
+      'seedProfitabilityDeltaPct',
+      'neededRaiseForProfitability',
+      'neededClientPriceForProfitability',
+      'neededRaiseForMargin',
+      'neededClientPriceForMargin',
+      'monthlyCurrentTurnoverDays',
+      'monthlyCurrentPrice'
+    ].forEach((key) => mergeWorkbenchField(next, key, live[key], true));
 
-  mergeWorkbenchField(next, 'status', live.productStatus || live.status);
-  mergeWorkbenchField(next, 'stock', workbenchPlatformStock(live, platform));
-  mergeWorkbenchField(next, 'stockRepricer', workbenchPlatformStock(live, platform));
-  mergeWorkbenchField(next, 'turnoverCurrentDays', workbenchPlatformTurnover(live, platform));
+    mergeWorkbenchField(next, 'status', live.productStatus || live.status);
+    mergeWorkbenchField(next, 'stock', workbenchPlatformStock(live, platform));
+    mergeWorkbenchField(next, 'stockRepricer', workbenchPlatformStock(live, platform));
+    mergeWorkbenchField(next, 'turnoverCurrentDays', workbenchPlatformTurnover(live, platform));
+  }
+
+  applyLiveWorkbenchCurrentSellerPrice(next, live, options.liveGeneratedAt || '');
 
   if (workbenchValueMissing(next.marketplace) && platform) next.marketplace = platform;
   if (workbenchValueMissing(next.costRub) && !workbenchValueMissing(next.cost)) next.costRub = next.cost;
@@ -619,7 +636,8 @@ function mergeSmartWorkbenchPayload(primaryPayload = {}, livePayload = {}) {
     ? cloneJsonValue(primaryPayload)
     : { generatedAt: '', platforms: {} };
   const liveCandidate = livePayload && typeof livePayload === 'object' ? cloneJsonValue(livePayload) : null;
-  const live = shouldUseWorkbenchLivePayload(primary, liveCandidate) ? liveCandidate : null;
+  const useFullLive = shouldUseWorkbenchLivePayload(primary, liveCandidate);
+  const live = liveCandidate?.platforms ? liveCandidate : null;
   const merged = primary && typeof primary === 'object' ? primary : { generatedAt: '', platforms: {} };
   merged.platforms = merged.platforms && typeof merged.platforms === 'object' ? merged.platforms : {};
 
@@ -653,14 +671,21 @@ function mergeSmartWorkbenchPayload(primaryPayload = {}, livePayload = {}) {
         usedKeys.add(key);
         liveEnrichedRows += 1;
       }
-      mergedRows.push(mergeSmartWorkbenchRow(row, liveRow, platform));
+      mergedRows.push(mergeSmartWorkbenchRow(row, liveRow, platform, {
+        useFullLive,
+        liveGeneratedAt: live?.generatedAt || liveCandidate?.generatedAt || ''
+      }));
     });
 
     liveRows.forEach((row) => {
+      if (!useFullLive) return;
       const key = normalizeWorkbenchArticleKey(row?.articleKey || row?.article);
       if (!key || usedKeys.has(key)) return;
       liveEnrichedRows += 1;
-      mergedRows.push(mergeSmartWorkbenchRow({}, row, platform));
+      mergedRows.push(mergeSmartWorkbenchRow({}, row, platform, {
+        useFullLive: true,
+        liveGeneratedAt: live?.generatedAt || liveCandidate?.generatedAt || ''
+      }));
     });
 
     const nextBucket = cloneJsonValue(primaryBucket) || {};
@@ -670,10 +695,11 @@ function mergeSmartWorkbenchPayload(primaryPayload = {}, livePayload = {}) {
     merged.platforms[platform] = nextBucket;
   });
 
-  if (!merged.generatedAt || parseFreshStamp(live?.generatedAt) > parseFreshStamp(merged.generatedAt)) {
+  if (useFullLive && (!merged.generatedAt || parseFreshStamp(live?.generatedAt) > parseFreshStamp(merged.generatedAt))) {
     merged.generatedAt = live?.generatedAt || merged.generatedAt || '';
   }
-  merged.liveEnrichmentAt = live?.generatedAt || '';
+  merged.liveEnrichmentAt = useFullLive ? (live?.generatedAt || '') : '';
+  merged.liveCurrentPriceEnrichmentAt = liveCandidate?.generatedAt || '';
   merged.liveEnrichmentUsed = liveEnrichedRows > 0;
   if (live?.sourceFile) merged.liveSourceFile = live.sourceFile;
 
@@ -781,9 +807,26 @@ function mergeSmartWorkbenchPriceOverlayRow(primaryRow = {}, overlayRow = {}, pl
     'sourceSheet'
   ].forEach((key) => mergeWorkbenchField(next, key, overlay[key], true));
 
+  const keepLiveSellerPrice = String(next.currentSellerPriceSource || next.currentPriceSource || '').trim().toLowerCase() === 'live'
+    && !overlayFlagEnabled(overlay?.clearCurrentFillPrice)
+    && !overlayFlagEnabled(overlay?.clearCurrentPrice);
+  if (!keepLiveSellerPrice) {
+    if (!workbenchValueMissing(overlay?.currentFillPrice)) {
+      next.currentFillPrice = cloneJsonValue(overlay.currentFillPrice);
+      next.currentPrice = cloneJsonValue(overlay.currentFillPrice);
+      next.currentSellerPriceSource = 'overlay';
+      next.currentPriceSource = 'overlay';
+      next.currentPriceDate = asIsoDate(overlay?.valueDate || overlay?.historyFreshnessDate || '');
+    } else if (!workbenchValueMissing(overlay?.currentPrice)) {
+      next.currentPrice = cloneJsonValue(overlay.currentPrice);
+      if (workbenchValueMissing(next.currentFillPrice)) next.currentFillPrice = cloneJsonValue(overlay.currentPrice);
+      next.currentSellerPriceSource = 'overlay';
+      next.currentPriceSource = 'overlay';
+      next.currentPriceDate = asIsoDate(overlay?.valueDate || overlay?.historyFreshnessDate || '');
+    }
+  }
+
   [
-    'currentFillPrice',
-    'currentPrice',
     'currentClientPrice',
     'currentSppPct',
     'currentTurnoverDays',

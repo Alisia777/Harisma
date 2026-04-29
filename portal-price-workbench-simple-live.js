@@ -1,11 +1,16 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428C__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429A__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429A__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428C__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428B__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428A__ = true;
 
   var DATA_URL = "data/smart_price_workbench.json";
   var OVERLAY_URL = "data/smart_price_overlay.json";
+  var PRICES_URL = "data/prices.json";
+  var LIVE_DATA_URL = "tmp-smart_price_workbench-live.json";
+  var REPRICER_URL = "data/repricer.json";
+  var REPRICER_LIVE_URL = "tmp-live-repricer.json";
   var ORDER_PROCUREMENT_URL = "data/order_procurement.json";
   var ORDER_PROCUREMENT_WB_URL = "data/order_procurement_wb.json";
   var ORDER_PROCUREMENT_OZON_URL = "data/order_procurement_ozon.json";
@@ -29,6 +34,9 @@
     orderProcurementGeneratedAt: "",
     orderProcurementFallbackCount: 0,
     sourceNote: "",
+    liveGeneratedAt: "",
+    repricer: { generatedAt: "", rows: [] },
+    repricerLive: { generatedAt: "", rows: [] },
     market: "wb",
     search: "",
     selectedKey: "",
@@ -185,6 +193,36 @@
     return null;
   }
 
+  function repricerRows(payload) {
+    return Array.isArray(payload && payload.rows) ? payload.rows : [];
+  }
+
+  function freshestRepricerPayload(primary, secondary) {
+    var primaryRows = repricerRows(primary);
+    var secondaryRows = repricerRows(secondary);
+    if (!primaryRows.length) return secondary || primary || null;
+    if (!secondaryRows.length) return primary || secondary || null;
+    return parseFreshStamp(secondary && secondary.generatedAt) > parseFreshStamp(primary && primary.generatedAt)
+      ? secondary
+      : primary;
+  }
+
+  function syncLocalRepricerPayloads(basePayload, livePayload) {
+    state.repricer = basePayload && typeof basePayload === "object"
+      ? basePayload
+      : { generatedAt: "", rows: [] };
+    state.repricerLive = livePayload && typeof livePayload === "object"
+      ? livePayload
+      : { generatedAt: "", rows: [] };
+
+    var root = rootState();
+    if (!root || root === state) return;
+    var rootBase = freshestRepricerPayload(root.repricer, state.repricer);
+    var rootLive = freshestRepricerPayload(root.repricerLive, state.repricerLive);
+    if (rootBase) root.repricer = rootBase;
+    if (rootLive) root.repricerLive = rootLive;
+  }
+
   function readPortalStorageState() {
     var raw = "";
     try {
@@ -276,10 +314,12 @@
 
   function chooseRepricerRows() {
     var root = rootState() || {};
-    var baseRows = Array.isArray(root.repricer && root.repricer.rows) ? root.repricer.rows : [];
-    var liveRows = Array.isArray(root.repricerLive && root.repricerLive.rows) ? root.repricerLive.rows : [];
-    var baseStamp = parseFreshStamp(root.repricer && root.repricer.generatedAt);
-    var liveStamp = parseFreshStamp(root.repricerLive && root.repricerLive.generatedAt);
+    var basePayload = freshestRepricerPayload(root.repricer, state.repricer);
+    var livePayload = freshestRepricerPayload(root.repricerLive, state.repricerLive);
+    var baseRows = repricerRows(basePayload);
+    var liveRows = repricerRows(livePayload);
+    var baseStamp = parseFreshStamp(basePayload && basePayload.generatedAt);
+    var liveStamp = parseFreshStamp(livePayload && livePayload.generatedAt);
     if (liveRows.length && liveStamp >= baseStamp) return liveRows;
     return baseRows.length ? baseRows : liveRows;
   }
@@ -1007,7 +1047,7 @@
     return [];
   }
 
-  function buildRow(source, market, manualMap, overlayRow, maxDate, skuMeta, orderProcurementRow) {
+  function buildRow(source, market, manualMap, overlayRow, priceRow, liveRow, liveGeneratedAt, maxDate, skuMeta, orderProcurementRow) {
     var timeline = pickPrimaryTimeline(source, overlayRow);
     timeline = mergeTimelineWithOverlay(timeline, overlayRow, maxDate);
     var overlayClearsFill = overlayFlagEnabled(overlayRow && (overlayRow.clearCurrentFillPrice || overlayRow.clearCurrentPrice));
@@ -1021,6 +1061,14 @@
     var overlayStatus = overlayRow && overlayRow.status;
     var overlayOwner = overlayRow && overlayRow.owner;
     var overlayValueDate = isoDate(overlayRow && (overlayRow.valueDate || overlayRow.historyFreshnessDate));
+    var priceFillPrice = num(priceRow && (priceRow.currentPrice != null ? priceRow.currentPrice : priceRow.currentFillPrice));
+    var priceClientPrice = num(priceRow && priceRow.currentClientPrice);
+    var priceSppPct = num(priceRow && priceRow.currentSppPct);
+    var priceTurnoverDays = num(priceRow && priceRow.currentTurnoverDays);
+    var priceCurrentDate = isoDate(priceRow && (priceRow.currentPriceDate || priceRow.historyFreshnessDate));
+    var liveFillPrice = num(liveRow && (liveRow.currentFillPrice != null ? liveRow.currentFillPrice : liveRow.currentPrice));
+    var liveClientPrice = num(liveRow && liveRow.currentClientPrice);
+    var livePriceDate = isoDate(liveRow && (liveRow.valueDate || liveRow.historyFreshnessDate || liveGeneratedAt));
     var sourceValueDate = isoDate(source && source.historyFreshnessDate) || isoDate(maxDate);
     var useOverlayFacts = Boolean(overlayRow) && (!overlayValueDate || !sourceValueDate || overlayValueDate >= sourceValueDate);
     var sourceFillPrice = num(source.currentFillPrice != null ? source.currentFillPrice : source.currentPrice);
@@ -1028,9 +1076,24 @@
     var sourceSppPct = num(source.currentSppPct);
     var sourceTurnoverDays = num(source.turnoverCurrentDays != null ? source.turnoverCurrentDays : source.currentTurnoverDays);
     var procurementTurnoverDays = num(orderProcurementRow && orderProcurementRow.turnoverDays);
+    var currentFillPrice = overlayClearsFill
+      ? null
+      : (priceFillPrice != null
+        ? priceFillPrice
+        : (liveFillPrice != null
+        ? liveFillPrice
+        : ((overlayFillPrice != null && (useOverlayFacts || sourceFillPrice == null)) ? overlayFillPrice : sourceFillPrice)));
+    var currentFillPriceSource = priceFillPrice != null
+      ? "prices"
+      : (liveFillPrice != null
+      ? "live"
+      : ((overlayFillPrice != null && (useOverlayFacts || sourceFillPrice == null)) ? "overlay" : "workbench"));
     var turnoverDays = null;
     var turnoverSource = "";
-    if (overlayTurnoverDays != null && (useOverlayFacts || sourceTurnoverDays == null)) {
+    if (priceTurnoverDays != null) {
+      turnoverDays = priceTurnoverDays;
+      turnoverSource = "prices";
+    } else if (overlayTurnoverDays != null && (useOverlayFacts || sourceTurnoverDays == null)) {
       turnoverDays = overlayTurnoverDays;
       turnoverSource = "overlay";
     } else if (!overlayClearsTurnover && sourceTurnoverDays != null) {
@@ -1054,17 +1117,27 @@
       marginTotalPct: num(source.marginTotalPct != null ? source.marginTotalPct : source.avgMargin7dPct),
       turnoverDays: turnoverDays,
       turnoverSource: turnoverSource,
-      currentFillPrice: overlayClearsFill
-        ? null
-        : ((overlayFillPrice != null && (useOverlayFacts || sourceFillPrice == null)) ? overlayFillPrice : sourceFillPrice),
+      currentFillPrice: currentFillPrice,
+      currentFillPriceSource: currentFillPriceSource,
       currentClientPrice: overlayClearsClient
         ? null
-        : ((overlayClientPrice != null && (useOverlayFacts || sourceClientPrice == null)) ? overlayClientPrice : sourceClientPrice),
+        : (priceClientPrice != null
+          ? priceClientPrice
+          : ((overlayClientPrice != null && (useOverlayFacts || sourceClientPrice == null))
+          ? overlayClientPrice
+          : ((liveClientPrice != null && sourceClientPrice == null) ? liveClientPrice : sourceClientPrice))),
       currentSppPct: overlayClearsSpp
         ? null
-        : sanitizeDiscountPct((overlaySppPct != null && (useOverlayFacts || sourceSppPct == null)) ? overlaySppPct : sourceSppPct),
+        : sanitizeDiscountPct(priceSppPct != null
+          ? priceSppPct
+          : ((overlaySppPct != null && (useOverlayFacts || sourceSppPct == null)) ? overlaySppPct : sourceSppPct)),
       requiredPriceForMargin: num(source.requiredPriceForMargin),
       historyNote: source.historyNote || "",
+      currentPriceDate: priceFillPrice != null
+        ? (priceCurrentDate || livePriceDate || overlayValueDate || sourceValueDate || isoDate(maxDate))
+        : (liveFillPrice != null
+        ? (livePriceDate || overlayValueDate || sourceValueDate || isoDate(maxDate))
+        : ((useOverlayFacts && overlayValueDate) ? overlayValueDate : (sourceValueDate || isoDate(maxDate)))),
       valueDate: (useOverlayFacts && overlayValueDate) ? overlayValueDate : (sourceValueDate || isoDate(maxDate)),
       timeline: timeline
     };
@@ -1117,24 +1190,52 @@
       } catch (error) {
         console.warn("[price-simple] order procurement", error);
       }
+      var livePayload = null;
+      var liveSource = "none";
+      var liveResult = await tryLoadSnapshotAwareJson(LIVE_DATA_URL);
+      if (liveResult) {
+        livePayload = liveResult.payload || null;
+        liveSource = liveResult.source || "local";
+      }
+      var pricesPayload = null;
+      var pricesSource = "none";
+      var pricesResult = await tryLoadSnapshotAwareJson(PRICES_URL);
+      if (pricesResult) {
+        pricesPayload = pricesResult.payload || null;
+        pricesSource = pricesResult.source || "local";
+      }
+      var repricerResult = await tryLoadSnapshotAwareJson(REPRICER_URL);
+      var repricerLiveResult = await tryLoadSnapshotAwareJson(REPRICER_LIVE_URL);
+      syncLocalRepricerPayloads(
+        repricerResult && repricerResult.payload ? repricerResult.payload : { generatedAt: "", rows: [] },
+        repricerLiveResult && repricerLiveResult.payload ? repricerLiveResult.payload : { generatedAt: "", rows: [] }
+      );
       var manualMap = readManualMap();
       var skuMetaMap = buildSkuMetaMap();
       var overlayMaps = buildOverlayMaps(overlayPayload || {});
+      var pricesMaps = buildOverlayMaps(pricesPayload || {});
+      var liveMaps = buildOverlayMaps(livePayload || {});
       var maxDate = isoDate((overlayPayload && (overlayPayload.asOfDate || overlayPayload.generatedAt)) || payload.generatedAt);
       var rows = [];
       Object.keys(payload.platforms || {}).forEach(function (market) {
         normalizeRows((payload.platforms[market] || {}).rows).forEach(function (item) {
           var overlayRow = overlayMaps[market] && overlayMaps[market][norm(item.articleKey || item.article || item.sku)];
+          var priceRow = pricesMaps[market] && pricesMaps[market][norm(item.articleKey || item.article || item.sku)];
+          var liveRow = liveMaps[market] && liveMaps[market][norm(item.articleKey || item.article || item.sku)];
           var orderProcurementRow = orderProcurementLookup.maps[market] && orderProcurementLookup.maps[market][norm(item.articleKey || item.article || item.sku)];
-          rows.push(buildRow(item, market, manualMap, overlayRow || null, maxDate, skuMetaMap, orderProcurementRow || null));
+          rows.push(buildRow(item, market, manualMap, overlayRow || null, priceRow || null, liveRow || null, livePayload && livePayload.generatedAt, maxDate, skuMetaMap, orderProcurementRow || null));
         });
       });
       state.rows = rows;
+      state.liveGeneratedAt = livePayload && livePayload.generatedAt ? livePayload.generatedAt : "";
       state.overlayGeneratedAt = overlayPayload && overlayPayload.generatedAt ? overlayPayload.generatedAt : "";
       state.orderProcurementGeneratedAt = orderProcurementLookup.generatedAt || "";
       state.orderProcurementFallbackCount = rows.filter(function (row) { return row.turnoverSource === "order_procurement"; }).length;
       state.sourceNote = overlayPayload && overlayPayload.generatedAt
-        ? DATA_URL + " (" + dataResult.source + ") + " + OVERLAY_URL + " (" + overlaySource + ") \u00b7 \u0446\u0435\u043d\u044b \u0434\u043e " + isoDate(overlayPayload.asOfDate || overlayPayload.generatedAt)
+        ? DATA_URL + " (" + dataResult.source + ")"
+          + (pricesPayload && pricesPayload.generatedAt ? " + " + PRICES_URL + " (" + pricesSource + ")" : "")
+          + (state.liveGeneratedAt ? " + " + LIVE_DATA_URL + " (" + liveSource + ")" : "")
+          + " + " + OVERLAY_URL + " (" + overlaySource + ") \u00b7 \u0446\u0435\u043d\u044b \u0434\u043e " + isoDate(overlayPayload.asOfDate || overlayPayload.generatedAt)
         : DATA_URL + " (" + dataResult.source + ") \u00b7 \u0431\u0435\u0437 \u0441\u0432\u0435\u0436\u0435\u0433\u043e overlay";
       if (state.orderProcurementFallbackCount > 0) {
         state.sourceNote += " \u00b7 \u043e\u0431\u043e\u0440\u043e\u0442 fallback: order_procurement";
@@ -1213,13 +1314,19 @@
     var clientMetric = latestNonNullRangeMetric(row, "clientPrice");
     var sppMetric = latestNonNullRangeMetric(row, "sppPct");
     var turnoverMetric = latestNonNullRangeMetric(row, "turnoverDays");
+    var currentSnapshotPrice = /^(live|prices)$/i.test(String(row.currentFillPriceSource || "")) ? num(row.currentFillPrice) : null;
+    var preferSnapshotPrice = currentSnapshotPrice != null;
 
-    next.currentFillPrice = priceMetric.value != null ? priceMetric.value : row.currentFillPrice;
+    next.currentFillPrice = preferSnapshotPrice ? currentSnapshotPrice : (priceMetric.value != null ? priceMetric.value : row.currentFillPrice);
     next.currentClientPrice = clientMetric.value != null ? clientMetric.value : row.currentClientPrice;
     next.currentSppPct = sanitizeDiscountPct(sppMetric.value != null ? sppMetric.value : row.currentSppPct);
     next.turnoverDays = turnoverMetric.value != null ? turnoverMetric.value : row.turnoverDays;
-    next.valueDate = isoDate(point.date) || row.valueDate;
-    next.priceFactDate = priceMetric.value != null ? priceMetric.date : isoDate(row.valueDate);
+    next.valueDate = preferSnapshotPrice
+      ? (isoDate(row.currentPriceDate) || isoDate(point.date) || row.valueDate)
+      : (isoDate(point.date) || row.valueDate);
+    next.priceFactDate = preferSnapshotPrice
+      ? (isoDate(row.currentPriceDate) || priceMetric.date || isoDate(row.valueDate))
+      : (priceMetric.value != null ? priceMetric.date : (isoDate(row.currentPriceDate) || isoDate(row.valueDate)));
     next.clientPriceFactDate = clientMetric.value != null ? clientMetric.date : isoDate(row.valueDate);
     next.sppFactDate = sppMetric.value != null ? sppMetric.date : isoDate(row.valueDate);
     next.turnoverFactDate = turnoverMetric.value != null ? turnoverMetric.date : isoDate(row.valueDate);

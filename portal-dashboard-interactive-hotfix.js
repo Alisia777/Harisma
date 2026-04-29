@@ -1,5 +1,7 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429A__) return;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429C__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429C__ = true;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429A__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428F__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428D__ = true;
@@ -7,8 +9,8 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260429a';
-  const STYLE_ID = 'altea-dashboard-interactive-20260429a';
+  const VERSION = '20260429c';
+  const STYLE_ID = 'altea-dashboard-interactive-20260429c';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
@@ -21,6 +23,7 @@
     skus: null,
     prices: null,
     pricesFetched: null,
+    productLeaderboard: null,
     smartPriceWorkbench: null,
     smartPriceWorkbenchBase: null,
     smartPriceWorkbenchLive: null,
@@ -1114,7 +1117,66 @@
     return 0;
   }
 
-  function contentSliceRows() {
+  function normalizeContentRomiValue(value) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return null;
+    return Math.abs(numeric) <= 10 ? numeric : numeric / 100;
+  }
+
+  function contentRomiLabel(value) {
+    const normalized = normalizeContentRomiValue(value);
+    return normalized === null ? 'вЂ”' : pct(normalized);
+  }
+
+  function contentRomiTone(value) {
+    const normalized = normalizeContentRomiValue(value);
+    if (normalized === null) return 'warn';
+    if (normalized >= 1) return 'ok';
+    if (normalized >= 0.5) return 'warn';
+    return 'danger';
+  }
+
+  function currentProductLeaderboard() {
+    const payload = current('productLeaderboard') || { generatedAt: '', items: [], summary: {} };
+    return typeof normalizeProductLeaderboardPayload === 'function'
+      ? normalizeProductLeaderboardPayload(payload)
+      : payload;
+  }
+
+  function contentSliceRowsFromProductLeaderboard() {
+    const leaderboard = currentProductLeaderboard();
+    const items = Array.isArray(leaderboard.items) ? leaderboard.items : [];
+    if (!items.length) return [];
+    const skuMap = new Map(
+      (current('skus') || []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku])
+    );
+    return items
+      .map((item) => {
+        const sku = skuMap.get(normalizeKey(item?.articleKey || item?.article));
+        return {
+          article: item?.articleKey || item?.article || sku?.articleKey || sku?.article || 'вЂ”',
+          articleKey: item?.articleKey || sku?.articleKey || '',
+          name: item?.name || sku?.name || item?.articleKey || item?.article || 'вЂ”',
+          owner: item?.owner || platformOwnerName(sku, 'all'),
+          posts: num(item?.posts),
+          clicks: num(item?.clicks),
+          orders: num(item?.orders),
+          buys: num(item?.buys),
+          revenue: num(item?.revenue),
+          income: num(item?.income),
+          spend: num(item?.contentCost),
+          romi: normalizeContentRomiValue(item?.romiPct),
+          drr: Number.isFinite(Number(item?.drrPct)) ? Number(item.drrPct) : null,
+          traffic: item?.traffic || '',
+          signal: item?.signal || '',
+          channels: Array.isArray(sku?.traffic?.channels) ? sku.traffic.channels : []
+        };
+      })
+      .filter((item) => item.posts > 0 || item.clicks > 0 || item.orders > 0 || item.revenue > 0 || item.spend > 0)
+      .sort((left, right) => right.revenue - left.revenue || right.orders - left.orders || right.clicks - left.clicks);
+  }
+
+  function contentSliceRowsFallback() {
     const topContent = current('dashboard')?.topContent || [];
     const skuMap = new Map(
       (current('skus') || []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku])
@@ -1137,7 +1199,7 @@
           revenue,
           income,
           spend: deriveContentSpend(revenue, income, romi),
-          romi: Number.isFinite(Number(romi)) ? Number(romi) : null,
+          romi: normalizeContentRomiValue(romi),
           channels: Array.isArray(sku?.traffic?.channels) ? sku.traffic.channels : []
         };
       })
@@ -1145,17 +1207,44 @@
       .sort((left, right) => right.revenue - left.revenue || right.clicks - left.clicks);
   }
 
+  function contentSliceRows() {
+    const leaderboardRows = contentSliceRowsFromProductLeaderboard();
+    if (leaderboardRows.length) return leaderboardRows;
+    return contentSliceRowsFallback();
+  }
+
   function contentSliceSummary() {
     const rows = contentSliceRows();
-    const periods = current('dashboard')?.dataFreshness?.contentPeriods || [];
+    const leaderboard = currentProductLeaderboard();
+    const leaderboardRows = contentSliceRowsFromProductLeaderboard();
+    const usingLeaderboard = leaderboardRows.length > 0;
+    const periods = usingLeaderboard
+      ? [leaderboard.weekLabel || leaderboard.sourceSheetName || 'weekly КЗ-срез'].filter(Boolean)
+      : (current('dashboard')?.dataFreshness?.contentPeriods || []);
+    const posts = usingLeaderboard ? num(leaderboard.summary?.posts) : rows.reduce((sum, row) => sum + row.posts, 0);
+    const clicks = usingLeaderboard ? num(leaderboard.summary?.clicks) : rows.reduce((sum, row) => sum + row.clicks, 0);
+    const orders = usingLeaderboard ? num(leaderboard.summary?.orders) : rows.reduce((sum, row) => sum + row.orders, 0);
+    const spend = usingLeaderboard ? num(leaderboard.summary?.contentCost) : rows.reduce((sum, row) => sum + row.spend, 0);
+    const revenue = usingLeaderboard ? num(leaderboard.summary?.revenue) : rows.reduce((sum, row) => sum + row.revenue, 0);
+    const income = usingLeaderboard ? num(leaderboard.summary?.income) : rows.reduce((sum, row) => sum + row.income, 0);
+    const romi = usingLeaderboard
+      ? normalizeContentRomiValue(leaderboard.summary?.romiPct)
+      : (spend > 0 ? income / spend : null);
     return {
       rows,
       periods,
-      posts: rows.reduce((sum, row) => sum + row.posts, 0),
-      clicks: rows.reduce((sum, row) => sum + row.clicks, 0),
-      orders: rows.reduce((sum, row) => sum + row.orders, 0),
-      spend: rows.reduce((sum, row) => sum + row.spend, 0),
-      revenue: rows.reduce((sum, row) => sum + row.revenue, 0),
+      posts,
+      clicks,
+      orders,
+      spend,
+      revenue,
+      income,
+      romi,
+      generatedAt: usingLeaderboard ? (leaderboard.generatedAt || '') : (current('dashboard')?.generatedAt || ''),
+      sourceLabel: usingLeaderboard ? 'product_leaderboard.json' : 'dashboard.topContent + skus.content',
+      sourceSheetName: usingLeaderboard ? (leaderboard.sourceSheetName || leaderboard.weekLabel || '') : '',
+      modeLabel: usingLeaderboard ? 'weekly КЗ лидерборд' : 'аварийный fallback',
+      usingLeaderboard,
       topRow: rows[0] || null
     };
   }
@@ -2256,9 +2345,14 @@
   function buildContentSliceDetail() {
     const summary = contentSliceSummary();
     const periodLabel = summary.periods.length ? summary.periods.join(' · ') : 'последний доступный срез';
+    const subtitle = summary.usingLeaderboard
+      ? `${periodLabel}. Источник: продуктовый лидерборд, обновлено ${fmt.date(summary.generatedAt)}.`
+      : `${periodLabel}. Этот блок пока не управляется календарём и нужен как временная витрина, пока daily ads_summary не опубликован.`;
     return {
-      title: 'Контент и окупаемость (ROMI) · последний доступный срез',
-      subtitle: `${periodLabel}. Этот блок пока не управляется календарём и нужен как временная витрина, пока daily ads_summary не опубликован.`,
+      title: summary.usingLeaderboard
+        ? 'Контент и окупаемость (ROMI) · продуктовый лидерборд'
+        : 'Контент и окупаемость (ROMI) · последний доступный срез',
+      subtitle,
       body: `
         <div class="portal-exec-modal-metrics">
           ${modalSummaryCard('Посты', int(summary.posts))}
@@ -2266,9 +2360,10 @@
           ${modalSummaryCard('Заказы', int(summary.orders))}
           ${modalSummaryCard('Расчётные затраты', money(summary.spend))}
           ${modalSummaryCard('Выручка', money(summary.revenue))}
+          ${modalSummaryCard('ROMI', summary.romi !== null ? pct(summary.romi) : '—')}
           ${modalSummaryCard('Топ SKU', summary.topRow ? summary.topRow.article : '—')}
-          ${modalSummaryCard('Источник', 'dashboard.topContent + skus.content')}
-          ${modalSummaryCard('Режим', 'временный fallback')}
+          ${modalSummaryCard('Источник', summary.sourceLabel)}
+          ${modalSummaryCard('Режим', summary.modeLabel)}
         </div>
         <div class="portal-exec-modal-card">
           <table class="portal-exec-modal-table">
@@ -2293,7 +2388,7 @@
                   <td>${esc(int(row.orders))}</td>
                   <td>${esc(money(row.revenue))}</td>
                   <td>${esc(row.spend > 0 ? money(row.spend) : '—')}</td>
-                  <td>${esc(row.romi !== null ? wholePct(row.romi) : '—')}</td>
+                  <td>${esc(contentRomiLabel(row.romi))}</td>
                   <td>${esc(row.owner || 'Без owner')}</td>
                 </tr>
               `).join('') : `<tr><td colspan="8">Нет доступных строк по контенту.</td></tr>`}
@@ -2345,7 +2440,8 @@
   }
 
   function periodSection(executive, adsReady) {
-    const contentReady = contentSliceSummary().rows.length > 0;
+    const contentSummary = contentSliceSummary();
+    const contentReady = contentSummary.rows.length > 0;
     const activePlatformLabel = currentFocusLabel(executive);
     const selectedStart = parseDate(executive.range.state.start) || executive.range.effectiveStart;
     const selectedEnd = parseDate(executive.range.state.end) || executive.range.effectiveEnd;
@@ -2362,7 +2458,9 @@
         adsReady
           ? 'Реклама подключена'
           : contentReady
-            ? 'Daily-реклама ждёт публикации, fallback доступен'
+            ? contentSummary.usingLeaderboard
+              ? 'Контент из лидерборда подключен'
+              : 'Daily-реклама ждёт публикации, fallback доступен'
             : 'Реклама пока без факта',
         adsReady ? 'ok' : 'warn'
       )
@@ -3161,28 +3259,35 @@
     if (!readyCards.length) {
       const content = contentSliceSummary();
       if (content.rows.length) {
+        const sectionTitle = content.usingLeaderboard
+          ? 'Контент и окупаемость (ROMI) · продуктовый лидерборд'
+          : 'Контент и окупаемость (ROMI) · последний срез';
+        const sectionDescription = content.usingLeaderboard
+          ? 'На главной показываем weekly КЗ-срез из продуктового лидерборда: клики, заказы, выручка, затраты на контент и ROMI берём из одного источника, без старого fallback-слоя.'
+          : 'Ежедневная рекламная витрина ещё не доехала в <code>ads_summary.json</code>, поэтому здесь временно показывается последний доступный контент-срез. Он не привязан к календарю, но уже даёт понятный ответ по кликам, заказам, выручке и окупаемости контента.';
         return `
           <section class="portal-exec-section">
             <div class="portal-exec-head">
               <div class="portal-exec-copy">
-                <h3>Контент и окупаемость (ROMI) · последний срез</h3>
-                <p>Ежедневная рекламная витрина ещё не доехала в <code>ads_summary.json</code>, поэтому здесь временно показывается последний доступный контент-срез. Он не привязан к календарю, но уже даёт понятный ответ по кликам, заказам, выручке и окупаемости контента.</p>
+                <h3>${sectionTitle}</h3>
+                <p>${sectionDescription}</p>
               </div>
               <div class="portal-exec-chip-stack">
-                ${badgeHtml('Временный fallback', 'warn')}
+                ${badgeHtml(content.usingLeaderboard ? 'Продуктовый лидерборд' : 'Временный fallback', content.usingLeaderboard ? 'ok' : 'warn')}
                 ${badgeHtml(content.periods.length ? content.periods.join(' · ') : 'последний срез', 'info')}
+                ${content.generatedAt ? badgeHtml(`Обновлено ${fmt.date(content.generatedAt)}`, 'info') : ''}
               </div>
             </div>
             <div class="portal-exec-grid">
-                <article class="portal-exec-card is-warn is-clickable" data-portal-exec-open="content-summary">
-                  <div class="portal-exec-card-head"><span class="portal-exec-card-label">Контент / ROMI</span>${badgeHtml('не daily', 'warn')}</div>
+                <article class="portal-exec-card ${content.usingLeaderboard ? 'is-ok' : 'is-warn'} is-clickable" data-portal-exec-open="content-summary">
+                  <div class="portal-exec-card-head"><span class="portal-exec-card-label">Контент / ROMI</span>${badgeHtml(content.usingLeaderboard ? 'weekly КЗ' : 'не daily', content.usingLeaderboard ? 'ok' : 'warn')}</div>
                   <div class="portal-exec-card-value compact">${esc(money(content.revenue))}</div>
-                  <div class="portal-exec-sub">Клики ${esc(int(content.clicks))} · заказы ${esc(int(content.orders))} · расчётные затраты ${esc(money(content.spend))}</div>
+                  <div class="portal-exec-sub">Клики ${esc(int(content.clicks))} · заказы ${esc(int(content.orders))} · контент ${esc(money(content.spend))} · ROMI ${esc(content.romi !== null ? pct(content.romi) : '—')}</div>
                   <div class="portal-exec-card-foot"><span>Посты ${esc(int(content.posts))}</span><span>SKU ${esc(int(content.rows.length))}</span></div>
                 </article>
               ${content.rows.slice(0, 3).map((row) => `
                 <article class="portal-exec-card">
-                  <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(row.article)}</span>${badgeHtml(row.romi !== null ? `Окупаемость ${wholePct(row.romi)}` : 'без ROMI', row.romi !== null && row.romi >= 100 ? 'ok' : 'warn')}</div>
+                  <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(row.article)}</span>${badgeHtml(row.romi !== null ? `Окупаемость ${contentRomiLabel(row.romi)}` : 'без ROMI', contentRomiTone(row.romi))}</div>
                   <div class="portal-exec-card-value compact">${esc(money(row.revenue))}</div>
                   <div class="portal-exec-sub">${esc(row.name)}</div>
                   <div class="portal-exec-card-foot"><span>Клики ${esc(int(row.clicks))}</span><span>Заказы ${esc(int(row.orders))}</span></div>
@@ -5382,6 +5487,7 @@
       adsSummary,
       skus,
       prices,
+      productLeaderboard,
       smartPriceWorkbench,
       smartPriceWorkbenchLive,
       smartPriceOverlay,
@@ -5394,6 +5500,7 @@
       loadJson('adsSummary', 'data/ads_summary.json', false, forceRefresh),
       loadJson('skus', 'data/skus.json', true, forceRefresh),
       loadJson('prices', 'data/prices.json', false, forceRefresh),
+      loadJson('productLeaderboard', 'data/product_leaderboard.json', false, forceRefresh),
       loadJson('smartPriceWorkbench', 'data/smart_price_workbench.json', false, forceRefresh),
       loadJson('smartPriceWorkbenchLive', 'tmp-smart_price_workbench-live.json', false, forceRefresh),
       loadJson('smartPriceOverlay', 'data/smart_price_overlay.json', false, forceRefresh),
@@ -5416,6 +5523,9 @@
     const mergedWorkbench = mergeWorkbenchOverlay
       ? mergeWorkbenchOverlay(baseWorkbench, smartPriceOverlay || null)
       : baseWorkbench;
+    const normalizedProductLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
+      ? normalizeProductLeaderboardPayload(productLeaderboard || { generatedAt: '', items: [], summary: {} })
+      : (productLeaderboard || { generatedAt: '', items: [], summary: {} });
 
     cache.dashboard = dashboard;
     cache.platformTrends = platformTrends;
@@ -5424,6 +5534,7 @@
     cache.skus = skus;
     cache.prices = prices;
     cache.pricesFetched = prices;
+    cache.productLeaderboard = normalizedProductLeaderboard;
     cache.smartPriceWorkbenchBase = smartPriceWorkbench;
     cache.smartPriceWorkbench = mergedWorkbench;
     cache.smartPriceWorkbenchLive = smartPriceWorkbenchLive;
@@ -5434,6 +5545,7 @@
     const app = stateRef();
     if (app) {
       app.prices = prices;
+      app.productLeaderboard = normalizedProductLeaderboard;
       app.smartPriceWorkbenchBase = smartPriceWorkbench;
       app.smartPriceWorkbench = mergedWorkbench;
       app.smartPriceWorkbenchLive = smartPriceWorkbenchLive;

@@ -413,7 +413,7 @@ function rerenderCurrentView() {
     ['view-documents', 'Документы', renderDocuments],
     ['view-repricer', 'Репрайсер', renderRepricer],
     ['view-prices', 'Цены', () => { if (typeof window.renderPriceWorkbench === 'function') window.renderPriceWorkbench(); }],
-    ['view-order', 'Логистика и заказ', renderOrderCalculator],
+    ['view-order', 'Логистика и заказ', () => { if (typeof renderOrderCalculator === 'function') renderOrderCalculator(); }],
     ['view-control', 'Задачи', renderControlCenter],
     ['view-skus', 'Реестр SKU', renderSkuRegistry],
     ['view-launches', 'Продукт / Ксения', renderLaunches],

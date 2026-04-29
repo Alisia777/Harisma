@@ -452,6 +452,16 @@ function normalizeWorkbenchArticleKey(value = '') {
   return String(value || '').toLowerCase().replace(/[^a-zа-я0-9]+/gi, '');
 }
 
+function asIsoDate(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const directMatch = raw.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (directMatch) return directMatch[1];
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return '';
+  return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}-${String(parsed.getDate()).padStart(2, '0')}`;
+}
+
 function workbenchValueMissing(value) {
   return value === null || value === undefined || value === ''
     || (Array.isArray(value) && value.length === 0);

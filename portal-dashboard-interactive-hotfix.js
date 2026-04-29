@@ -131,6 +131,13 @@
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : 0;
   };
+  const firstPositive = (...values) => {
+    for (const value of values) {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    }
+    return 0;
+  };
   const avg = (values) => {
     const numbers = (Array.isArray(values) ? values : []).map((value) => Number(value)).filter((value) => Number.isFinite(value));
     return numbers.length ? numbers.reduce((sum, value) => sum + value, 0) / numbers.length : 0;
@@ -201,6 +208,49 @@
   const toneCompletion = (value) => (num(value) >= 1 ? 'ok' : num(value) >= 0.85 ? 'warn' : 'danger');
   const toneMargin = (value) => (num(value) >= 0.65 ? 'ok' : num(value) >= 0.45 ? 'warn' : 'danger');
   const toneDrr = (value) => (num(value) <= 0.15 ? 'ok' : num(value) <= 0.22 ? 'warn' : 'danger');
+
+  function repricerPayloadRows(payload) {
+    return Array.isArray(payload?.rows) ? payload.rows : [];
+  }
+
+  function repricerPayloadStamp(payload) {
+    const stamp = Date.parse(String(payload?.generatedAt || '').trim());
+    return Number.isFinite(stamp) ? stamp : 0;
+  }
+
+  function chooseDashboardRepricerRows() {
+    const basePayload = current('repricer') || null;
+    const livePayload = current('repricerLive') || null;
+    const baseRows = repricerPayloadRows(basePayload);
+    const liveRows = repricerPayloadRows(livePayload);
+    if (liveRows.length && repricerPayloadStamp(livePayload) >= repricerPayloadStamp(basePayload)) return liveRows;
+    return baseRows.length ? baseRows : liveRows;
+  }
+
+  function findDashboardRepricerSide(articleKey, platformKey) {
+    const wanted = normalizeKey(articleKey);
+    if (!wanted || (platformKey !== 'wb' && platformKey !== 'ozon')) return null;
+    const row = chooseDashboardRepricerRows().find((item) => normalizeKey(item?.articleKey || item?.article || item?.sku) === wanted) || null;
+    return row && row[platformKey] && typeof row[platformKey] === 'object' ? row[platformKey] : null;
+  }
+
+  function repricerResolvedPrice(articleKey, platformKey, fallback = 0) {
+    const side = findDashboardRepricerSide(articleKey, platformKey);
+    if (!side) return num(fallback);
+    let price = firstPositive(side.finalPrice, side.recommendedPrice, side.recPrice);
+    if (!(price > 0)) return num(fallback);
+    const floor = Math.max(
+      firstPositive(side.effectiveFloor),
+      firstPositive(side.hardFloor),
+      firstPositive(side.economicFloor),
+      firstPositive(side.minPrice),
+      firstPositive(side.finalGuardFloor)
+    );
+    const cap = firstPositive(side.finalGuardCap, side.capPrice, side.upperCap, side.workingZoneTo);
+    if (cap > 0 && !(floor > 0 && cap + 0.001 < floor) && price > cap + 0.001) price = cap;
+    if (floor > 0 && price + 0.001 < floor) price = floor;
+    return price > 0 ? price : num(fallback);
+  }
 
   function anchorDate() {
     return parseDate(current('dashboard')?.dataFreshness?.asOfDate)
@@ -1273,7 +1323,7 @@
           turnoverDays,
           targetTurnoverDays: Number.isFinite(Number(source.targetTurnoverDays)) ? Number(source.targetTurnoverDays) : null,
           currentPrice: num(source.currentPrice),
-          recPrice: num(source.recPrice),
+          recPrice: repricerResolvedPrice(sku?.articleKey || sku?.article, key, source?.recPrice),
           minPrice: num(source.minPrice),
           marginPct,
           toWork: Boolean(
@@ -1373,7 +1423,7 @@
           turnoverDays: Number.isFinite(Number(source.turnoverDays)) ? Number(source.turnoverDays) : null,
           currentPrice: num(source.currentPrice),
           minPrice: num(source.minPrice),
-          recPrice: num(source.recPrice),
+          recPrice: repricerResolvedPrice(sku?.articleKey || sku?.article, key, source?.recPrice),
           toWork: Boolean(key === 'wb' ? sku?.flags?.toWorkWB : sku?.flags?.toWorkOzon),
           belowMin: Boolean(source.belowMin)
         });

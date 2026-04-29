@@ -457,6 +457,30 @@
     }) || null;
   }
 
+  function firstPositive() {
+    for (var index = 0; index < arguments.length; index += 1) {
+      var parsed = Number(arguments[index]);
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    }
+    return 0;
+  }
+
+  function resolvedRepricerSidePrice(side) {
+    var price = moneyRound(side && (side.finalPrice != null ? side.finalPrice : (side.recommendedPrice != null ? side.recommendedPrice : side.recPrice)));
+    if (price == null || price <= 0) return null;
+    var floor = Math.max(
+      firstPositive(side && side.effectiveFloor),
+      firstPositive(side && side.hardFloor),
+      firstPositive(side && side.economicFloor),
+      firstPositive(side && side.minPrice),
+      firstPositive(side && side.finalGuardFloor)
+    );
+    var cap = firstPositive(side && side.finalGuardCap, side && side.capPrice, side && side.upperCap, side && side.workingZoneTo);
+    if (cap > 0 && !(floor > 0 && cap + 0.001 < floor) && price > cap + 0.001) price = moneyRound(cap);
+    if (floor > 0 && price + 0.001 < floor) price = moneyRound(floor);
+    return price > 0 ? price : null;
+  }
+
   function buildRepricerDisplay(market, articleKey) {
     var normalizedMarket = normalizeMarket(market);
     var key = entryKey(normalizedMarket, articleKey);
@@ -479,7 +503,7 @@
       : normalizedMarket === "ozon"
         ? repricerRow.ozon
         : null;
-    var recPrice = moneyRound(side && side.recPrice);
+    var recPrice = resolvedRepricerSidePrice(side);
     if (recPrice == null || recPrice <= 0) return null;
     return {
       price: recPrice,

@@ -622,7 +622,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const roleRule = repricerRoleRule(role, settings);
   const feeRule = repricerFeeRule(platform, settings);
   const skuMinPrice = numberOrZero(skuSide?.minPrice);
-  const skuBasePrice = repricerFirstFilledNumber(skuSide?.basePrice, skuSide?.recPrice);
+  const skuBasePrice = repricerFirstFilledNumber(skuSide?.basePrice);
   const skuCapPrice = repricerFirstFilledNumber(skuSide?.maxPrice, skuSide?.stretchCap);
   const sourceHasLiveCurrentPrice = String(sourceRow.currentSellerPriceSource || sourceRow.currentPriceSource || '').trim().toLowerCase() === 'live';
   const currentPricePresent = [sourceRow.currentFillPrice, sourceRow.currentPrice, priceRow?.currentPrice, supportRow?.currentExportPrice, skuSide?.currentPrice, liveSide?.currentPrice].some(repricerHasValue);
@@ -693,7 +693,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
                 ? liveSide.basePrice
                 : (liveSide?.recPrice != null ? liveSide.recPrice : currentPrice))))))
   );
-  const managedBasePrice = repricerFirstFilledNumber(corridor?.basePrice, skuBasePrice, seedTargetPrice, currentPrice);
+  const rawManagedBasePrice = repricerFirstFilledNumber(corridor?.basePrice, skuBasePrice, seedTargetPrice, currentPrice);
   const sourceFloorCandidate = Math.max(
     numberOrZero(sourceRow.hardMinPrice),
     numberOrZero(sourceRow.requiredPriceForProfitability),
@@ -849,12 +849,25 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const promoAdjustedToFloor = promoActive && Boolean(preferredPromo?.adjustedToFloor);
   const zoneFrom = Math.max(numberOrZero(sourceRow.workingZoneFrom), numberOrZero(corridor?.promoFloor), effectiveFloor);
   const stretchMultiplier = Math.max(1, numberOrZero(roleRule.stretchMultiplier) || 1);
-  const derivedStretchCap = managedBasePrice > 0 ? Math.round(Math.max(managedBasePrice, managedBasePrice * stretchMultiplier)) : 0;
+  const derivedStretchCapBase = repricerFirstFilledNumber(
+    corridor?.basePrice,
+    skuBasePrice,
+    sourceRow.basePrice,
+    priceRow?.basePrice,
+    supportRow?.workingZoneFrom,
+    currentPrice
+  );
+  const derivedStretchCap = derivedStretchCapBase > 0
+    ? Math.round(Math.max(derivedStretchCapBase, derivedStretchCapBase * stretchMultiplier))
+    : 0;
   const stretchCap = repricerFirstFilledNumber(corridor?.stretchCap, skuCapPrice, sourceRow.workingZoneTo, supportRow?.workingZoneTo, supportRow?.maxPrice, derivedStretchCap);
   const manualCapPrice = numberOrZero(override?.capPrice);
   const capPrice = manualCapPrice > 0
     ? (stretchCap > 0 ? Math.min(manualCapPrice, stretchCap) : manualCapPrice)
     : Math.max(stretchCap, 0);
+  const managedBasePrice = capPrice > 0
+    ? Math.min(rawManagedBasePrice, Math.max(capPrice, effectiveFloor))
+    : rawManagedBasePrice;
   const managedBaseSourceSummary = numberOrZero(corridor?.basePrice) > 0
     ? 'corridor_base'
     : (skuBasePrice > 0

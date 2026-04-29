@@ -1,9 +1,46 @@
 (function () {
-  if (window.__ALTEA_REPRICER_SETTINGS_UX_HOTFIX_20260425A__) return;
-  window.__ALTEA_REPRICER_SETTINGS_UX_HOTFIX_20260425A__ = true;
+  if (window.__ALTEA_REPRICER_SETTINGS_UX_HOTFIX_20260429C__) return;
+  window.__ALTEA_REPRICER_SETTINGS_UX_HOTFIX_20260429C__ = true;
 
   const STORAGE_KEY = 'altea-repricer-ux-state-v1';
   const PORTAL_STORAGE_KEY = 'brand-portal-local-v1';
+  const STYLE_ID = 'altea-repricer-settings-ux-style';
+  const GUIDE_TEXT = {
+    topActions: [
+      ['Audit Excel', 'Выгружает полный аудит по всем SKU и площадкам для проверки. Ничего не меняет в портале и не отправляет цены на маркетплейс автоматически.'],
+      ['WB загрузка', 'Готовит файл для ручной загрузки обычных цен в WB по финальным рекомендациям репрайсера.'],
+      ['Ozon загрузка', 'Готовит файл для ручной загрузки обычных цен в Ozon по финальным рекомендациям репрайсера.'],
+      ['WB promo загрузка', 'Готовит отдельный WB-шаблон только для акционных строк и промо-окон.'],
+      ['Ozon promo загрузка', 'Готовит отдельный Ozon-шаблон только для акционных строк и промо-окон.']
+    ],
+    settingsActions: [
+      ['Сохранить сейчас', 'Принудительно сохраняет общие настройки репрайсера немедленно. По сути это ручной дубль автосохранения.'],
+      ['Сбросить к базовым', 'Удаляет ручные настройки контура и возвращает значения по умолчанию. Это влияет на весь контур, а не на одну SKU.']
+    ],
+    corridorActions: [
+      ['Сохранить коридор', 'Запоминает ручные границы цены для конкретной SKU на конкретной площадке: floor, base, cap и promo floor.'],
+      ['Сбросить коридор', 'Удаляет ручной коридор для этой SKU/площадки и возвращает расчёт к источникам модели.']
+    ],
+    overrideActions: [
+      ['Сохранить override', 'Запоминает ручной режим и ручные цены для одной SKU на одной площадке. После сохранения этот override участвует в расчёте, пока вы его не снимете.'],
+      ['Сбросить override', 'Полностью снимает ручной override и возвращает строку в автоматический режим модели.'],
+      ['Принять предложение акции', 'Копирует предложение акции из фактов в обычный ручной override, чтобы его можно было сохранить, отредактировать и удержать как решение.']
+    ],
+    managementSteps: [
+      ['Верхний блок — для массовых правил', 'Меняйте общие правила, бренды, статусы и роли только если правило должно влиять сразу на много SKU.'],
+      ['Карточка SKU — для точечных решений', 'Если нужно управлять одной позицией, открывайте её карточку и работайте через corridor или override, а не через весь контур.'],
+      ['Corridor задаёт рамки модели', 'Hard floor, base, cap и promo floor ограничивают, где репрайсер может принимать решение по этой SKU и площадке.'],
+      ['Override фиксирует ручное решение', 'Override имеет приоритет над автоматикой, пока вы его не сбросите. Используйте его для ручных акций, фиксации цены или временной заморозки.'],
+      ['Alignment работает не всегда', 'WB/Ozon alignment включается только когда глобально разрешён, разрешён брендом и статусом, не отключён override и SKU остаётся в режиме Auto.']
+    ],
+    metricGlossary: [
+      ['Текущая', 'Фактическая цена на площадке сейчас по рабочему срезу.'],
+      ['Финал', 'Итоговая цена, которую репрайсер рекомендует после floor/cap, alignment и промо-правил.'],
+      ['floor / econ / cap', 'floor — нижняя защита, econ — экономический floor от себестоимости и fee stack, cap — верхняя граница обычной цены.'],
+      ['pre / capped', 'pre — цена до alignment, capped — цена после применения ценового потолка и защитных ограничений.'],
+      ['action / reason / align', 'action — что делает модель с ценой, reason — почему это произошло, align — итог alignment-сценария между WB и Ozon.']
+    ]
+  };
   const SECTION_HELP = {
     global: 'База для всего контура: маржа, целевая оборачиваемость, launch, OOS и deadband.',
     brands: 'Переопределяет общие правила для конкретного бренда.',
@@ -94,6 +131,58 @@
       .replaceAll("'", '&#39;');
   }
 
+  function ensureStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = [
+      '.repricer-ux-guide{margin-top:12px;padding:14px 16px;border-radius:18px;border:1px solid rgba(214,175,85,.14);background:rgba(214,175,85,.05);display:grid;gap:10px;}',
+      '.repricer-ux-guide summary{cursor:pointer;font-weight:700;color:#f4ead6;}',
+      '.repricer-ux-guide-list{display:grid;gap:8px;margin-top:10px;}',
+      '.repricer-ux-guide-item{padding:10px 12px;border-radius:14px;border:1px solid rgba(214,175,85,.12);background:rgba(9,7,5,.42);}',
+      '.repricer-ux-inline-note{margin-top:8px;padding:10px 12px;border-radius:14px;border:1px solid rgba(214,175,85,.12);background:rgba(214,175,85,.04);}',
+      '.repricer-ux-inline-note strong{display:block;margin-bottom:4px;color:#f4ead6;}',
+      '.repricer-ux-field-note{line-height:1.4;color:#cdb58b;}'
+    ].join('');
+    document.head.appendChild(style);
+  }
+
+  function normalizedText(value) {
+    return String(value ?? '').replace(/\s+/g, ' ').trim();
+  }
+
+  function setButtonTitle(button, text) {
+    if (!(button instanceof HTMLElement) || !text) return;
+    button.title = text;
+    button.setAttribute('aria-label', text);
+  }
+
+  function buildGuide(sectionKey, title, intro, items, defaultOpen = false) {
+    const details = document.createElement('details');
+    details.className = 'repricer-ux-guide';
+    details.dataset.repricerUxGuide = sectionKey;
+    details.open = isOpen('sections', `guide:${sectionKey}`, defaultOpen);
+    details.innerHTML = `<summary>${escapeHtml(title)}</summary>`;
+
+    const body = document.createElement('div');
+    body.className = 'repricer-ux-guide-list';
+    if (intro) {
+      const introNode = document.createElement('div');
+      introNode.className = 'muted small';
+      introNode.textContent = intro;
+      body.appendChild(introNode);
+    }
+    items.forEach(([label, description]) => {
+      const card = document.createElement('div');
+      card.className = 'repricer-ux-guide-item';
+      card.innerHTML = `<strong>${escapeHtml(label)}</strong><div class="muted small" style="margin-top:4px">${escapeHtml(description)}</div>`;
+      body.appendChild(card);
+    });
+    details.appendChild(body);
+    attachTogglePersistence(details, 'sections', `guide:${sectionKey}`);
+    return details;
+  }
+
   function labelForField(input) {
     const name = String(input?.name || '').trim();
     const inBrand = Boolean(input.closest('[data-repricer-brand-card]'));
@@ -120,13 +209,76 @@
     if (name === 'adRub') return 'Реклама, ₽';
     if (name === 'returnsRub') return 'Возвраты, ₽';
     if (name === 'otherRub') return 'Прочее, ₽';
+    if (name === 'hardFloor') return 'Hard floor, ₽';
+    if (name === 'b2bFloor') return 'B2B floor, ₽';
+    if (name === 'basePrice') return 'Base price, ₽';
+    if (name === 'stretchCap') return 'Stretch cap, ₽';
+    if (name === 'promoFloor') return 'Promo floor, ₽';
+    if (name === 'elasticity') return 'Elasticity';
+    if (name === 'floorPrice') return 'Manual floor, ₽';
+    if (name === 'capPrice') return 'Manual cap, ₽';
+    if (name === 'forcePrice') return 'Force price, ₽';
+    if (name === 'promoPrice') return 'Promo price, ₽';
+    if (name === 'promoLabel') return 'Акция / причина';
+    if (name === 'promoFrom') return 'Promo from';
+    if (name === 'promoTo') return 'Promo to';
+    if (name === 'disableAlignment') return 'Отключить alignment';
+    if (name === 'note') return 'Комментарий';
     if (name === 'alignmentEnabled') return inBrand ? 'Разрешить alignment' : 'Разрешить alignment WB/Ozon по score-модели';
     return String(input?.placeholder || '').trim() || 'Параметр';
+  }
+
+  function helpForField(input) {
+    const name = String(input?.name || '').trim();
+    const inStatus = Boolean(input.closest('[data-repricer-status-card]'));
+    const inCorridor = Boolean(input.closest('.repricer-corridor-form'));
+    const inOverride = Boolean(input.closest('.repricer-override-form'));
+    const inBrand = Boolean(input.closest('[data-repricer-brand-card]'));
+
+    if (name === 'minMarginPct') return 'Минимальная маржа, ниже которой модель не должна опускаться.';
+    if (name === 'defaultTargetDays') return 'Целевая оборачиваемость для обычного Auto-режима. Ниже цели модель может повышать цену, выше — снижать.';
+    if (name === 'launchTargetDays') return 'Отдельная цель оборачиваемости для новинок и перезапусков.';
+    if (name === 'oosDays') return 'Если покрытие остатка падает ниже этого числа дней, включается low-stock/OOS-логика.';
+    if (name === 'deadbandPct') return 'Минимальный процентный разрыв между WB и Ozon, чтобы вообще рассматривать alignment.';
+    if (name === 'deadbandRub') return 'Минимальный разрыв в рублях для alignment между площадками.';
+    if (name === 'mode') return inOverride
+      ? 'Auto — вернуть модель; Hold — удерживать текущий контур; Freeze — не двигать автоматически; Force — держать ручную force price.'
+      : 'Auto — обычный расчёт; Launch — мягкий режим новинки; Freeze — не двигать автоматически; Off — не давать рекомендацию.';
+    if (name === 'allowAutoprice') return 'Разрешает автоматический расчёт для этого статуса.';
+    if (name === 'allowLaunch') return 'Разрешает launch-логику для этого статуса.';
+    if (name === 'allowAlignment') return 'Разрешает WB/Ozon alignment для этого статуса.';
+    if (name === 'targetDays') return 'Целевая оборачиваемость для этой роли SKU.';
+    if (name === 'minLiftPct') return 'Минимальный шаг изменения цены, чтобы репрайсер не дёргал цену из-за шума.';
+    if (name === 'stretchMultiplier') return 'Насколько далеко модель может держаться выше базы, если рынок и коридор это позволяют.';
+    if (name === 'elasticityDefault') return 'Чувствительность спроса к цене для score/alignment-модели.';
+    if (name === 'allowVolumePush') return 'Если включено, модель может снижать цену ради ускорения оборота при перегреве.';
+    if (name === 'commissionPct' || name === 'logisticsRub' || name === 'storageRub' || name === 'adRub' || name === 'returnsRub' || name === 'otherRub') {
+      return 'Эти расходы участвуют в расчёте economic floor, если по SKU есть себестоимость.';
+    }
+    if (name === 'alignmentEnabled') return inBrand
+      ? 'Разрешает или запрещает alignment для конкретного бренда.'
+      : 'Включает межплощадочное выравнивание для всего контура. Ниже его ещё могут запретить бренд, статус или override.';
+    if (inCorridor && name === 'hardFloor') return 'Жёсткий минимум цены для этой SKU и этой площадки.';
+    if (inCorridor && name === 'b2bFloor') return 'Дополнительный floor для внутренних/B2B-ограничений, если нужен отдельно от market floor.';
+    if (inCorridor && name === 'basePrice') return 'Опорная цена, от которой модель будет считать повышение или снижение.';
+    if (inCorridor && name === 'stretchCap') return 'Верхняя граница обычной цены. Выше неё репрайсер не поднимет итог.';
+    if (inCorridor && name === 'promoFloor') return 'Минимум для промо-цены, даже если акция предлагает поставить ниже.';
+    if (inCorridor && name === 'elasticity') return 'Локальная эластичность этой SKU, если нужно переопределить роль.';
+    if (inOverride && name === 'floorPrice') return 'Ручной минимум поверх модели для этой SKU и площадки.';
+    if (inOverride && name === 'capPrice') return 'Ручной максимум поверх модели для этой SKU и площадки.';
+    if (inOverride && name === 'forcePrice') return 'Цена, которую режим Force будет удерживать принудительно.';
+    if (inOverride && name === 'promoPrice') return 'Цена только внутри выбранного промо-окна.';
+    if (inOverride && name === 'promoLabel') return 'Короткое название акции или причина ручного решения.';
+    if (inOverride && (name === 'promoFrom' || name === 'promoTo')) return 'Границы календарного промо-окна без привязки к часу.';
+    if (inOverride && name === 'disableAlignment') return 'Запрещает выравнивание с другой площадкой именно для этой SKU.';
+    if (inOverride && name === 'note') return 'Внутренний комментарий, зачем вы закрепили это ручное решение.';
+    return '';
   }
 
   function ensureFieldLabel(input) {
     if (!(input instanceof HTMLElement)) return;
     const labelText = labelForField(input);
+    const helpText = helpForField(input);
     if (!labelText) return;
 
     if (input.type === 'checkbox') {
@@ -153,6 +305,13 @@
       if (!host.style.display) host.style.display = 'grid';
       host.style.gap = '6px';
       host.style.alignItems = 'start';
+      if (helpText && !host.querySelector('[data-repricer-ux-field-note]')) {
+        const note = document.createElement('span');
+        note.className = 'muted small repricer-ux-field-note';
+        note.dataset.repricerUxFieldNote = 'true';
+        note.textContent = helpText;
+        host.appendChild(note);
+      }
       return;
     }
 
@@ -170,6 +329,13 @@
     wrapper.replaceChild(field, input);
     field.appendChild(title);
     field.appendChild(input);
+    if (helpText) {
+      const note = document.createElement('span');
+      note.className = 'muted small repricer-ux-field-note';
+      note.dataset.repricerUxFieldNote = 'true';
+      note.textContent = helpText;
+      field.appendChild(note);
+    }
   }
 
   function detailsSummary(title, meta) {
@@ -323,6 +489,20 @@
 
     form.innerHTML = '';
     form.appendChild(buildInfoLine());
+    form.appendChild(buildGuide(
+      'repricer-playbook',
+      'Как управлять репрайсером',
+      'Короткая инструкция, когда менять общий контур, а когда работать точечно по одной SKU.',
+      GUIDE_TEXT.managementSteps,
+      true
+    ));
+    form.appendChild(buildGuide(
+      'repricer-metric-glossary',
+      'Что значат цифры в карточке SKU',
+      'Это расшифровка основных цен и бейджей, которые видны справа в карточках WB/Ozon.',
+      GUIDE_TEXT.metricGlossary,
+      false
+    ));
 
     const generalNodes = [];
     if (generalFilters) generalNodes.push(generalFilters);
@@ -340,6 +520,14 @@
       if (caption && caption.classList.contains('muted')) caption.remove();
       form.appendChild(buildSection(sectionId, title, [stack], false));
     });
+
+    form.appendChild(buildGuide(
+      'settings-actions',
+      'Что делают кнопки в настройках контура',
+      'Верхний блок меняет общие правила расчёта репрайсера для всего контура. Это не настройки одной SKU.',
+      GUIDE_TEXT.settingsActions,
+      false
+    ));
 
     if (submitRow) form.appendChild(submitRow);
 
@@ -406,6 +594,38 @@
     return details;
   }
 
+  function buildContextDetails(side, nodes) {
+    const key = `context:${historyKey(side)}`;
+    const details = document.createElement('details');
+    details.dataset.repricerUxHistory = key;
+    details.open = isOpen('history', key, false);
+    details.style.marginTop = '8px';
+    details.innerHTML = `
+      <summary class="small muted" style="cursor:pointer">
+        Почему такая цена сейчас
+      </summary>
+    `;
+
+    const body = document.createElement('div');
+    body.className = 'stack';
+    body.style.marginTop = '10px';
+    body.style.gap = '6px';
+
+    const note = document.createElement('div');
+    note.className = 'muted small';
+    note.textContent = 'Этот блок только объясняет текущее решение репрайсера: стратегию, причину и контекст расчёта. Он ничего не сохраняет и не меняет.';
+    body.appendChild(note);
+
+    nodes.forEach((node, index) => {
+      if (index === 0 && node?.style) node.style.fontWeight = '600';
+      body.appendChild(node);
+    });
+
+    details.appendChild(body);
+    attachTogglePersistence(details, 'history', key);
+    return details;
+  }
+
   function enhanceHistory(root) {
     root.querySelectorAll('.repricer-side').forEach((side) => {
       if (side.dataset.repricerUxHistoryEnhanced === 'true') return;
@@ -426,10 +646,98 @@
       if (firstInfo) historyNodes.push(firstInfo);
       historyNodes.push(...directInfoNodes);
       const anchor = side.querySelector('details');
-      const history = buildHistory(side, historyNodes);
+      const history = buildContextDetails(side, historyNodes);
       if (anchor) side.insertBefore(history, anchor);
       else side.appendChild(history);
       side.dataset.repricerUxHistoryEnhanced = 'true';
+    });
+  }
+
+  function enhanceNativeHistoryBlocks(root) {
+    root.querySelectorAll('details[data-repricer-history]').forEach((details) => {
+      if (details.dataset.repricerUxNativeHistory === 'true') return;
+      details.dataset.repricerUxNativeHistory = 'true';
+      const summary = details.querySelector('summary');
+      if (summary) summary.textContent = 'История расчёта и источники';
+      const body = details.querySelector('.stack');
+      if (body && !body.querySelector('[data-repricer-ux-history-note]')) {
+        const note = document.createElement('div');
+        note.className = 'muted small';
+        note.dataset.repricerUxHistoryNote = 'true';
+        note.textContent = 'Здесь видны источники floor/base/cap, активное промо, alignment, guard-ограничения и дата свежести истории. Это объяснение расчёта, а не ручная настройка.';
+        body.insertBefore(note, body.firstChild);
+      }
+    });
+  }
+
+  function enhanceTopActionGuide(root) {
+    if (root.querySelector('[data-repricer-ux-guide="top-actions"]')) return;
+    const sectionTitle = root.querySelector('.section-title');
+    if (!sectionTitle) return;
+    const guide = buildGuide(
+      'top-actions',
+      'Что делает каждая кнопка в репрайсере',
+      'Важно: эти кнопки не отправляют цены в WB/Ozon автоматически. Они либо сохраняют настройки внутри портала, либо выгружают файл, который потом загружается вручную.',
+      GUIDE_TEXT.topActions,
+      false
+    );
+    sectionTitle.insertAdjacentElement('afterend', guide);
+  }
+
+  function enhancePlatformForms(root) {
+    root.querySelectorAll('.repricer-corridor-form').forEach((form) => {
+      if (form.dataset.repricerUxCorridor === 'true') return;
+      form.dataset.repricerUxCorridor = 'true';
+      const note = document.createElement('div');
+      note.className = 'repricer-ux-inline-note';
+      note.innerHTML = '<strong>Коридор цены</strong><div class="muted small">Коридор задаёт ручные границы модели для этой SKU на этой площадке: минимальную защиту, базу, верхнюю крышу и promo floor. Пока коридор сохранён, модель опирается на него.</div>';
+      form.insertBefore(note, form.firstChild);
+
+      const saveButton = Array.from(form.querySelectorAll('button')).find((button) => normalizedText(button.textContent) === 'Сохранить коридор');
+      const resetButton = Array.from(form.querySelectorAll('button')).find((button) => normalizedText(button.textContent) === 'Сбросить коридор');
+      setButtonTitle(saveButton, GUIDE_TEXT.corridorActions[0][1]);
+      setButtonTitle(resetButton, GUIDE_TEXT.corridorActions[1][1]);
+      form.querySelectorAll('input, select, textarea').forEach(ensureFieldLabel);
+    });
+
+    root.querySelectorAll('.repricer-override-form').forEach((form) => {
+      if (form.dataset.repricerUxOverride === 'true') return;
+      form.dataset.repricerUxOverride = 'true';
+      const note = document.createElement('div');
+      note.className = 'repricer-ux-inline-note';
+      note.innerHTML = '<strong>Ручной override</strong><div class="muted small">Override действует только на одну SKU и одну площадку. Здесь можно зафиксировать режим, ручной floor/cap/force и окно акции. Пока override сохранён, он имеет приоритет над автоматическим решением модели.</div>';
+      form.insertBefore(note, form.firstChild);
+
+      const modeHelp = document.createElement('div');
+      modeHelp.className = 'muted small';
+      modeHelp.style.marginTop = '8px';
+      modeHelp.textContent = 'Auto — вернуть модель; Hold — удерживать текущий контур; Freeze — не двигать автоматически; Force — принудительно держать цену force price.';
+      const firstFilters = form.querySelector('.filters');
+      if (firstFilters) firstFilters.insertAdjacentElement('afterend', modeHelp);
+
+      Array.from(form.querySelectorAll('input[type="date"]')).forEach((input) => {
+        input.title = 'Поле хранит обычную календарную дату без привязки к часу. Здесь можно выбирать и сегодняшнюю дату.';
+      });
+
+      const saveButton = Array.from(form.querySelectorAll('button')).find((button) => normalizedText(button.textContent) === 'Сохранить override');
+      const resetButton = Array.from(form.querySelectorAll('button')).find((button) => normalizedText(button.textContent) === 'Сбросить override');
+      const adoptButton = Array.from(form.querySelectorAll('button')).find((button) => normalizedText(button.textContent) === 'Принять предложение акции');
+      setButtonTitle(saveButton, GUIDE_TEXT.overrideActions[0][1]);
+      setButtonTitle(resetButton, GUIDE_TEXT.overrideActions[1][1]);
+      setButtonTitle(adoptButton, GUIDE_TEXT.overrideActions[2][1]);
+
+      form.querySelectorAll('input, select, textarea').forEach(ensureFieldLabel);
+    });
+  }
+
+  function enhanceActionTitles(root) {
+    GUIDE_TEXT.topActions.forEach(([label, description]) => {
+      const button = Array.from(root.querySelectorAll('button')).find((node) => normalizedText(node.textContent) === label);
+      setButtonTitle(button, description);
+    });
+    GUIDE_TEXT.settingsActions.forEach(([label, description]) => {
+      const button = Array.from(root.querySelectorAll('button')).find((node) => normalizedText(node.textContent) === label);
+      setButtonTitle(button, description);
     });
   }
 
@@ -440,8 +748,13 @@
       const root = document.getElementById('view-repricer');
       if (!root || !root.children.length) return;
       try {
+        ensureStyles();
         enhanceSettingsForm(root);
         enhanceHistory(root);
+        enhanceNativeHistoryBlocks(root);
+        enhanceTopActionGuide(root);
+        enhancePlatformForms(root);
+        enhanceActionTitles(root);
         normalizeBrandChips(root);
       } catch (error) {
         console.warn('[repricer-settings-ux] enhance failed', error);

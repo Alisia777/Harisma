@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429I__) return;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429J__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429J__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429I__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429H__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429G__ = true;
@@ -15,13 +16,13 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260429i';
-  const STYLE_ID = 'altea-dashboard-interactive-20260429i';
+  const VERSION = '20260429j';
+  const STYLE_ID = 'altea-dashboard-interactive-20260429j';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const DASHBOARD_VIEW_ID = 'view-dashboard';
   const ADS_VIEW_ID = 'view-ads-funnel';
   const ADS_ROOT_ID = 'portalAdsFunnelRoot';
-  const ADS_STYLE_ID = 'altea-dashboard-interactive-ads-20260429i';
+  const ADS_STYLE_ID = 'altea-dashboard-interactive-ads-20260429j';
   const ADS_MANAGEMENT_STYLE_ID = 'portalDashboardAdsManagementStyles';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
@@ -3659,6 +3660,66 @@
         </div>
       </section>
     `;
+    /*
+    return `
+      <section class="portal-exec-section is-highlight">
+        <div class="portal-exec-head">
+          <div class="portal-exec-copy">
+            <h3>Маржа по площадкам</h3>
+            <p>Маржа поднята выше, чтобы сразу видеть, где проблема уже не в плане, а в качестве прибыли. По клику открывается полный список SKU с маржой по выбранной площадке.</p>
+          </div>
+          ${sectionMetaHtml(executive, [
+            badgeHtml(`${int(marketplaceAdsCards.length)} MP`, marketplaceAdsCards.length ? 'ok' : 'warn'),
+            badgeHtml(`${int((executive.selectedPlatform === 'all' ? marketplaceAdsCards : readyCards).reduce((sum, metric) => sum + num(metric?.orders), 0))} заказов`, 'info')
+          ])}
+        </div>
+        <div class="portal-exec-grid">
+          ${adsSummaryCards.map((metric) => `
+            <article class="portal-exec-card is-${adsMetricTone(metric)} is-clickable" data-portal-exec-open="ads" data-portal-exec-key="${esc(metric.key)}">
+              <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(metric.label)}</span>${badgeHtml(metric.drr !== null ? `ДРР ${pct(metric.drr)}` : 'нет ДРР', metric.drr !== null ? toneDrr(metric.drr) : 'warn')}</div>
+              <div class="portal-exec-card-value compact">${esc(money(metric.adRevenue))}</div>
+              <div class="portal-exec-sub">Реклама ${esc(money(metric.spend))} В· CTR ${esc(metric.ctr !== null ? pct(metric.ctr) : '—')} В· клики ${esc(int(metric.clicks))}</div>
+              <div class="portal-exec-metric-grid">
+                <div class="portal-exec-metric"><span>Заказы</span><strong>${esc(int(metric.orders))}</strong></div>
+                <div class="portal-exec-metric"><span>CTR</span><strong>${esc(metric.ctr !== null ? pct(metric.ctr) : '—')}</strong></div>
+                <div class="portal-exec-metric"><span>ДРР</span><strong>${esc(metric.drr !== null ? pct(metric.drr) : '—')}</strong></div>
+                <div class="portal-exec-metric"><span>Показы</span><strong>${esc(int(metric.views))}</strong></div>
+              </div>
+              ${renderSparkline(metric.sparkSpend)}
+              <div class="portal-exec-card-foot"><span>Выручка ${esc(money(metric.adRevenue))}</span><span>${esc(metric.key === 'all' ? 'сводно' : 'drilldown')}</span></div>
+            </article>
+          `).join('')}
+        </div>
+        ${executive.selectedPlatform === 'all' && adsSummaryCards.length ? `
+          <div class="portal-exec-grid">
+            ${adsSummaryCards.map((metric) => `
+              <article class="portal-exec-card is-${adsMetricTone(metric)} is-clickable" data-portal-exec-open="ads" data-portal-exec-key="${esc(metric.key === 'all' ? 'wb' : metric.key)}">
+                <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(metric.label)}</span>${badgeHtml(metric.drr !== null ? `Р”Р Р  ${pct(metric.drr)}` : 'РЅРµС‚ Р”Р Р ', metric.drr !== null ? toneDrr(metric.drr) : 'warn')}</div>
+                <div class="portal-exec-card-value compact">${esc(money(metric.spend))}</div>
+                <div class="portal-exec-sub">РџРѕРєР°Р·С‹ ${esc(int(metric.views))} В· РєР»РёРєРё ${esc(int(metric.clicks))} В· Р·Р°РєР°Р·С‹ ${esc(int(metric.orders))}</div>
+                ${renderSparkline(metric.sparkSpend)}
+                <div class="portal-exec-card-foot"><span>Р’С‹СЂСѓС‡РєР° ${esc(money(metric.adRevenue))}</span><span>CTR ${esc(metric.ctr !== null ? pct(metric.ctr) : 'вЂ”')}</span></div>
+              </article>
+            `).join('')}
+          </div>
+        ` : ''}
+        <div class="portal-exec-platform-grid">
+          ${metrics.map((metric) => `
+            <article class="portal-exec-card is-${toneMargin(metric.marginPct)} is-clickable" data-portal-exec-open="margin" data-portal-exec-key="${esc(metric.key)}">
+              <div class="portal-exec-card-head">
+                <span class="portal-exec-card-label">${esc(metric.label)}</span>
+                ${badgeHtml(`Маржинальность ${pct(metric.marginPct)}`, toneMargin(metric.marginPct))}
+              </div>
+              <div class="portal-exec-card-value compact">${esc(money(metric.margin))}</div>
+              <div class="portal-exec-sub">Выручка ${esc(money(metric.revenue))} · отрицательная маржа ${esc(int(metric.issues?.counters?.negativeMargin || 0))}</div>
+              ${renderSparkline(metric.sparkMargin)}
+              <div class="portal-exec-axis"><span>${esc(shortDate(executive.range.effectiveStart))}</span><span>${esc(shortDate(executive.range.effectiveEnd))}</span></div>
+            </article>
+          `).join('') || `<div class="portal-exec-empty">Нет данных по марже.</div>`}
+        </div>
+      </section>
+    `;
+    */
   }
 
   function stockSection(executive) {
@@ -3738,6 +3799,156 @@
 
   function adsSection(executive) {
     const readyCards = visibleMetrics(executive).filter((metric) => metric.adsReady);
+    const marketplaceAdsCards = readyCards.filter((metric) => metric.key === 'wb' || metric.key === 'ozon');
+    const adsMetricTone = (metric) => (
+      metric?.drr !== null
+        ? toneDrr(metric.drr)
+        : (num(metric?.orders) > 0 || num(metric?.spend) > 0 ? 'ok' : 'warn')
+    );
+    const buildAdsRollupMetric = (metrics) => {
+      const byDate = new Map();
+      metrics.forEach((metric) => {
+        (metric?.days || []).forEach((row) => {
+          const key = iso(row?.date);
+          if (!key) return;
+          const bucket = byDate.get(key) || { spend: 0, orders: 0, views: 0, clicks: 0, adRevenue: 0 };
+          bucket.spend += num(row?.spend);
+          bucket.orders += num(row?.orders);
+          bucket.views += num(row?.views);
+          bucket.clicks += num(row?.clicks);
+          bucket.adRevenue += num(row?.adRevenue);
+          byDate.set(key, bucket);
+        });
+      });
+      const ordered = [...byDate.entries()]
+        .sort((left, right) => left[0].localeCompare(right[0]))
+        .map(([, value]) => value);
+      const views = metrics.reduce((sum, metric) => sum + num(metric?.views), 0);
+      const clicks = metrics.reduce((sum, metric) => sum + num(metric?.clicks), 0);
+      const orders = metrics.reduce((sum, metric) => sum + num(metric?.orders), 0);
+      const spend = metrics.reduce((sum, metric) => sum + num(metric?.spend), 0);
+      const adRevenue = metrics.reduce((sum, metric) => sum + num(metric?.adRevenue), 0);
+      return {
+        key: 'all',
+        label: 'WB + Ozon',
+        views,
+        clicks,
+        orders,
+        spend,
+        adRevenue,
+        ctr: views > 0 ? clicks / views : null,
+        drr: adRevenue > 0 ? spend / adRevenue : null,
+        sparkSpend: sparkline(ordered.map((row) => row.spend))
+      };
+    };
+    const adsSummaryCards = executive.selectedPlatform === 'all' && marketplaceAdsCards.length > 1
+      ? [buildAdsRollupMetric(marketplaceAdsCards), ...marketplaceAdsCards]
+      : marketplaceAdsCards;
+    const renderAdsCard = (metric, options = {}) => {
+      const summary = options.summary === true;
+      const clickable = metric.key !== 'all';
+      const openAttrs = clickable ? ` data-portal-exec-open="ads" data-portal-exec-key="${esc(metric.key)}"` : '';
+      const primaryValue = summary ? money(metric.adRevenue) : money(metric.spend);
+      const subtitle = summary
+        ? `Реклама ${money(metric.spend)} · CTR ${metric.ctr !== null ? pct(metric.ctr) : '—'} · клики ${int(metric.clicks)}`
+        : `Показы ${int(metric.views)} · клики ${int(metric.clicks)} · заказы ${int(metric.orders)}`;
+      const footRight = summary
+        ? (metric.key === 'all' ? 'сводно' : 'drilldown')
+        : `CTR ${metric.ctr !== null ? pct(metric.ctr) : '—'}`;
+      return `
+        <article class="portal-exec-card is-${adsMetricTone(metric)}${clickable ? ' is-clickable' : ''}"${openAttrs}>
+          <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(metric.label)}</span>${badgeHtml(metric.drr !== null ? `ДРР ${pct(metric.drr)}` : 'нет ДРР', metric.drr !== null ? toneDrr(metric.drr) : 'warn')}</div>
+          <div class="portal-exec-card-value compact">${esc(primaryValue)}</div>
+          <div class="portal-exec-sub">${esc(subtitle)}</div>
+          ${summary ? `
+            <div class="portal-exec-metric-grid">
+              <div class="portal-exec-metric"><span>Заказы</span><strong>${esc(int(metric.orders))}</strong></div>
+              <div class="portal-exec-metric"><span>CTR</span><strong>${esc(metric.ctr !== null ? pct(metric.ctr) : '—')}</strong></div>
+              <div class="portal-exec-metric"><span>ДРР</span><strong>${esc(metric.drr !== null ? pct(metric.drr) : '—')}</strong></div>
+              <div class="portal-exec-metric"><span>Показы</span><strong>${esc(int(metric.views))}</strong></div>
+            </div>
+          ` : ''}
+          ${renderSparkline(metric.sparkSpend)}
+          <div class="portal-exec-card-foot"><span>Выручка ${esc(money(metric.adRevenue))}</span><span>${esc(footRight)}</span></div>
+        </article>
+      `;
+    };
+    if (!readyCards.length) {
+      const content = contentSliceSummary();
+      if (content.rows.length) {
+        const sectionTitle = content.usingLeaderboard
+          ? 'Контент и окупаемость (ROMI) · продуктовый лидерборд'
+          : 'Контент и окупаемость (ROMI) · последний срез';
+        const sectionDescription = content.usingLeaderboard
+          ? 'На главной показываем weekly КЗ-срез из продуктового лидерборда: клики, заказы, выручка, затраты на контент и ROMI берём из одного источника, без старого fallback-слоя.'
+          : 'Ежедневная рекламная витрина ещё не доехала в <code>ads_summary.json</code>, поэтому здесь временно показывается последний доступный контент-срез. Он не привязан к календарю, но уже даёт понятный ответ по кликам, заказам, выручке и окупаемости контента.';
+        return `
+          <section class="portal-exec-section">
+            <div class="portal-exec-head">
+              <div class="portal-exec-copy">
+                <h3>${sectionTitle}</h3>
+                <p>${sectionDescription}</p>
+              </div>
+              <div class="portal-exec-chip-stack">
+                ${badgeHtml(content.usingLeaderboard ? 'Продуктовый лидерборд' : 'Временный fallback', content.usingLeaderboard ? 'ok' : 'warn')}
+                ${badgeHtml(content.periods.length ? content.periods.join(' · ') : 'последний срез', 'info')}
+                ${content.generatedAt ? badgeHtml(`Обновлено ${fmt.date(content.generatedAt)}`, 'info') : ''}
+              </div>
+            </div>
+            <div class="portal-exec-grid">
+              <article class="portal-exec-card ${content.usingLeaderboard ? 'is-ok' : 'is-warn'} is-clickable" data-portal-exec-open="content-summary">
+                <div class="portal-exec-card-head"><span class="portal-exec-card-label">Контент / ROMI</span>${badgeHtml(content.usingLeaderboard ? 'weekly КЗ' : 'не daily', content.usingLeaderboard ? 'ok' : 'warn')}</div>
+                <div class="portal-exec-card-value compact">${esc(money(content.revenue))}</div>
+                <div class="portal-exec-sub">Клики ${esc(int(content.clicks))} · заказы ${esc(int(content.orders))} · контент ${esc(money(content.spend))} · ROMI ${esc(content.romi !== null ? pct(content.romi) : '—')}</div>
+                <div class="portal-exec-card-foot"><span>Посты ${esc(int(content.posts))}</span><span>SKU ${esc(int(content.rows.length))}</span></div>
+              </article>
+              ${content.rows.slice(0, 3).map((row) => `
+                <article class="portal-exec-card">
+                  <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(row.article)}</span>${badgeHtml(row.romi !== null ? `Окупаемость ${contentRomiLabel(row.romi)}` : 'без ROMI', contentRomiTone(row.romi))}</div>
+                  <div class="portal-exec-card-value compact">${esc(money(row.revenue))}</div>
+                  <div class="portal-exec-sub">${esc(row.name)}</div>
+                  <div class="portal-exec-card-foot"><span>Клики ${esc(int(row.clicks))}</span><span>Заказы ${esc(int(row.orders))}</span></div>
+                </article>
+              `).join('')}
+            </div>
+          </section>
+        `;
+      }
+      return `
+        <section class="portal-exec-section">
+          <div class="portal-exec-head">
+            <div class="portal-exec-copy">
+              <h3>Рекламная воронка</h3>
+              <p>Рекламная логика уже встроена в главную, но опубликованного рекламного факта по текущему диапазону пока нет. Когда витрина доедет, здесь автоматически появятся графики, ДРР и drilldown по товарам.</p>
+            </div>
+            <div class="portal-exec-chip-stack">${badgeHtml('Интерактив готов', 'info')}${badgeHtml('Нет рекламной витрины', 'warn')}</div>
+          </div>
+          <div class="portal-exec-empty">Пока не опубликован рабочий ads_summary. Главная уже умеет его читать и раскрывать по клику, но сам факт в витрину ещё не доехал.</div>
+        </section>
+      `;
+    }
+    return `
+      <section class="portal-exec-section">
+        <div class="portal-exec-head">
+          <div class="portal-exec-copy">
+            <h3>Рекламная воронка</h3>
+            <p>Здесь остаются только рекламные метрики. Нажатие на карточку открывает воронку по площадке и список товаров, которые продавались в рекламе за этот период.</p>
+          </div>
+          ${sectionMetaHtml(executive, [
+            badgeHtml(`${int(marketplaceAdsCards.length)} MP`, marketplaceAdsCards.length ? 'ok' : 'warn'),
+            badgeHtml(`${int(readyCards.reduce((sum, metric) => sum + num(metric?.orders), 0))} заказов`, 'info')
+          ])}
+        </div>
+        ${executive.selectedPlatform === 'all' && adsSummaryCards.length ? `
+          <div class="portal-exec-grid">
+            ${adsSummaryCards.map((metric) => renderAdsCard(metric, { summary: true })).join('')}
+          </div>
+        ` : ''}
+        <div class="portal-exec-platform-grid">
+          ${readyCards.map((metric) => renderAdsCard(metric)).join('')}
+        </div>
+      </section>
+    `;
     if (!readyCards.length) {
       const content = contentSliceSummary();
       if (content.rows.length) {

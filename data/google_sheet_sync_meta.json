@@ -1,16 +1,9 @@
 {
-  "generatedAt": "2026-04-29T13:05:33.196Z",
-  "sheetSource": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
-  "sourceMode": "google-csv-tabs",
-  "sourceGids": {
-    "dim_sku": "4625365",
-    "fact_marketplace_daily_sku": "657645553",
-    "fact_logistics_daily_cluster_warehouse_sku": "2003059667",
-    "dim_warehouse": "1429580252"
-  },
-  "sourceWarnings": [
-    "dim_sku returned #REF! in Google export; keeping local skus.json overlay for owners and contour metadata"
-  ],
+  "generatedAt": "2026-04-29T17:57:18.915Z",
+  "sheetSource": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\tmp-google-current.xlsx",
+  "sourceMode": "input-xlsx",
+  "sourceGids": {},
+  "sourceWarnings": [],
   "updatedSkus": 0,
   "dashboard": {
     "latest_marketplace_date": "2026-04-28",
@@ -22,6 +15,11 @@
   "platformTrends": {
     "latest_marketplace_date": "2026-04-28",
     "points": 14
+  },
+  "adsSummary": {
+    "latest_ads_date": "2026-04-28",
+    "platforms_with_ads": 3,
+    "item_rows": 4214
   },
   "logistics": {
     "latest_logistics_date": "2026-04-29",

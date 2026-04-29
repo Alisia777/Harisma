@@ -72,6 +72,11 @@ function parseArgs(argv) {
       args['mirror-local-fallback'] = false;
       continue;
     }
+    if (token === '--skip-upload') {
+      args.skipUpload = true;
+      args['skip-upload'] = true;
+      continue;
+    }
     const [rawKey, inlineValue] = token.split('=');
     const key = rawKey.replace(/^--/, '');
     const nextValue = inlineValue !== undefined ? inlineValue : argv[index + 1];
@@ -709,7 +714,7 @@ function buildAdsSummary(baseSkus, factAdsRows, options) {
   for (const row of factAdsRows || []) {
     const date = isoDate(row.date);
     const platform = normalizeMarketplace(row.platform || row.marketplace || row.data_source);
-    const articleKey = normalizeKey(row.sku || row.offer_id || row.offerId);
+    const articleKey = normalizeKey(row.offer_id || row.offerId || row.sku);
     if (!date || !platform || !articleKey || !relevantSkuKeys.has(articleKey)) continue;
     const mapKey = `${platform}::${date}`;
     const bucket = seriesBuckets.get(mapKey) || { platform, date, views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
@@ -725,9 +730,9 @@ function buildAdsSummary(baseSkus, factAdsRows, options) {
     const itemBucket = itemBuckets.get(itemKey) || {
       date,
       platformKey: platform,
-      articleKey: sku?.articleKey || normalizeText(row.sku || row.offer_id || row.offerId),
+      articleKey: sku?.articleKey || normalizeText(row.offer_id || row.offerId || row.sku),
       offerId: normalizeText(row.offer_id || row.offerId || row.sku),
-      name: sku?.name || normalizeText(row.sku || row.offer_id || row.offerId) || 'SKU',
+      name: sku?.name || normalizeText(row.offer_id || row.offerId || row.sku) || 'SKU',
       views: 0,
       clicks: 0,
       spend: 0,
@@ -1408,6 +1413,7 @@ function resolveOptions(args) {
     inputJson: args['input-json'] ? path.resolve(args['input-json']) : '',
     supabaseUrl: process.env.ALTEA_SUPABASE_URL || DEFAULT_SUPABASE_URL,
     supabaseKey: process.env.ALTEA_SUPABASE_KEY || DEFAULT_SUPABASE_KEY,
+    skipUpload: resolveBooleanOption(args['skip-upload'], false),
     dryRun: Boolean(args.dryRun)
   };
 }
@@ -1464,6 +1470,19 @@ async function main() {
   if (options.dryRun) {
     console.log(JSON.stringify({
       dryRun: true,
+      meta,
+      outputDir: options.outputDir || '',
+      outputFiles,
+      mirrorLocalFallback: options.mirrorLocalFallback,
+      mirrorDataDir: options.mirrorDataDir || '',
+      mirroredFiles
+    }, null, 2));
+    return;
+  }
+
+  if (options.skipUpload) {
+    console.log(JSON.stringify({
+      skippedUpload: true,
       meta,
       outputDir: options.outputDir || '',
       outputFiles,

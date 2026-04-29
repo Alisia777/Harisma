@@ -187,7 +187,12 @@ function buildFactTimelinePoint(platform, row) {
     point.sppPct = 0;
   }
 
-  if (Number.isFinite(soldQty)) point.ordersUnits = soldQty;
+  // Ozon source here is a daily sales fact from Google Sheets, not the LK "ordered" metric.
+  if (platform === 'ozon') {
+    if (Number.isFinite(soldQty)) point.deliveredUnits = soldQty;
+  } else if (Number.isFinite(soldQty)) {
+    point.ordersUnits = soldQty;
+  }
   if (Number.isFinite(revenue)) point.revenue = revenue;
   return point;
 }

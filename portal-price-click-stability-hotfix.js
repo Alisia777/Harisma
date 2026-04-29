@@ -42,6 +42,16 @@
     return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(Number(value));
   }
 
+  function historyUnits(item) {
+    var delivered = num(item && item.deliveredUnits);
+    if (delivered != null) return delivered;
+    return num(item && item.ordersUnits);
+  }
+
+  function historyUnitsLabel(market) {
+    return market === "ozon" ? "\u0424\u0430\u043a\u0442, \u0448\u0442." : "\u0417\u0430\u043a\u0430\u0437\u044b";
+  }
+
   function sanitizeDiscountPct(value) {
     if (!Number.isFinite(Number(value))) return null;
     return Math.min(1, Math.max(0, Number(value)));
@@ -162,13 +172,13 @@
       return '<div class="pw-empty">\u0412\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u043f\u0435\u0440\u0438\u043e\u0434\u0430 \u043d\u0435\u0442 \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u044b\u0445 \u0434\u043d\u0435\u0432\u043d\u044b\u0445 \u0442\u043e\u0447\u0435\u043a.</div>';
     }
     var hasSalesHistory = items.some(function (item) {
-      return num(item && item.ordersUnits) != null || num(item && item.revenue) != null;
+      return historyUnits(item) != null || num(item && item.revenue) != null;
     });
     return [
       '<details class="pw-detail" open><summary>\u0418\u0441\u0442\u043e\u0440\u0438\u044f \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0439 \u043f\u043e \u0434\u043d\u044f\u043c</summary>',
       '<div class="pw-history-wrap"><table class="pw-history"><thead><tr>',
       '<th>\u0414\u0430\u0442\u0430</th><th>\u0426\u0435\u043d\u0430 MP</th><th>\u0421\u041f\u041f</th><th>\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</th>',
-      hasSalesHistory ? '<th>\u0417\u0430\u043a\u0430\u0437\u044b</th><th>\u0412\u044b\u0440\u0443\u0447\u043a\u0430</th>' : "",
+      hasSalesHistory ? '<th>' + historyUnitsLabel(row && row.market) + '</th><th>\u0412\u044b\u0440\u0443\u0447\u043a\u0430</th>' : "",
       '</tr></thead><tbody>',
       items.map(function (item) {
         return [
@@ -177,7 +187,7 @@
           "<td>", money(num(item.price)), "</td>",
           "<td>", pct(num(item.sppPct)), "</td>",
           "<td>", days(num(item.turnoverDays)), "</td>",
-          hasSalesHistory ? "<td>" + intf(num(item.ordersUnits)) + "</td><td>" + money(num(item.revenue)) + "</td>" : "",
+          hasSalesHistory ? "<td>" + intf(historyUnits(item)) + "</td><td>" + money(num(item.revenue)) + "</td>" : "",
           "</tr>"
         ].join("");
       }).join(""),

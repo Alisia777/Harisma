@@ -1,13 +1,14 @@
 (function () {
-  if (window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260429B__) return;
+  if (window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260429C__) return;
+  window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260429C__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260429B__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260429A__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260428C__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260428B__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260428A__ = true;
 
-  const SCRIPT_ID = 'portalPriceWorkbenchSimpleLive20260429b';
-  const SRC = 'portal-price-workbench-simple-live.js?v=20260429b';
+  const SCRIPT_ID = 'portalPriceWorkbenchSimpleLive20260429c';
+  const SRC = 'portal-price-workbench-simple-live.js?v=20260429c';
 
   function rerender() {
     if (typeof window.renderPriceWorkbench !== 'function') return;
@@ -19,7 +20,7 @@
   }
 
   function ensureLoaded() {
-    if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429B__ || window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429A__ || window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428C__) {
+    if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429C__ || window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429B__ || window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429A__ || window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428C__) {
       rerender();
       return;
     }

@@ -1,5 +1,7 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429A__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429C__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429C__ = true;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429B__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429A__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428C__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428B__ = true;
@@ -96,6 +98,16 @@
   function intf(value) {
     if (value === null || value === undefined || !Number.isFinite(Number(value))) return "\u2014";
     return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(Number(value));
+  }
+
+  function historyUnits(item) {
+    var delivered = num(item && item.deliveredUnits);
+    if (delivered != null) return delivered;
+    return num(item && item.ordersUnits);
+  }
+
+  function historyUnitsLabel(market) {
+    return market === "ozon" ? "\u0424\u0430\u043a\u0442, \u0448\u0442." : "\u0417\u0430\u043a\u0430\u0437\u044b";
   }
 
   function sanitizeDiscountPct(value) {
@@ -1487,7 +1499,7 @@
       return '<div class="pw-empty">\u0412\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u043f\u0435\u0440\u0438\u043e\u0434\u0430 \u043d\u0435\u0442 \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u044b\u0445 \u0434\u043d\u0435\u0432\u043d\u044b\u0445 \u0442\u043e\u0447\u0435\u043a.</div>';
     }
     var hasSalesHistory = items.some(function (item) {
-      return num(item && item.ordersUnits) != null || num(item && item.revenue) != null;
+      return historyUnits(item) != null || num(item && item.revenue) != null;
     });
     var note = '\u0417\u0434\u0435\u0441\u044c \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0442\u043e\u0447\u043a\u0438 \u0432\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u043f\u0435\u0440\u0438\u043e\u0434\u0430. \u0415\u0441\u043b\u0438 \u0441\u0435\u0433\u043e\u0434\u043d\u044f\u0448\u043d\u0435\u0439 \u0442\u043e\u0447\u043a\u0438 \u0435\u0449\u0451 \u043d\u0435\u0442, \u0438\u0441\u0442\u043e\u0440\u0438\u044f \u0437\u0430\u043a\u0430\u043d\u0447\u0438\u0432\u0430\u0435\u0442\u0441\u044f \u043d\u0430 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u043c \u0441\u0440\u0435\u0437\u0435.';
     if (!hasSalesHistory) {
@@ -1495,13 +1507,15 @@
     }
     if (row.market === "wb") {
       note += ' \u041f\u043e WB \u0438\u0441\u0442\u043e\u0440\u0438\u044f \u043f\u043e \u0434\u043d\u044f\u043c \u0441\u0442\u0440\u043e\u0438\u0442\u0441\u044f \u0438\u0437 daily market-facts. \u042d\u0442\u043e \u043d\u0435 \u0436\u0443\u0440\u043d\u0430\u043b \u0440\u0443\u0447\u043d\u044b\u0445 \u0441\u043c\u0435\u043d \u0446\u0435\u043d\u044b, \u043f\u043e\u044d\u0442\u043e\u043c\u0443 \u043f\u043e\u0440\u0442\u0430\u043b \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u0442 \u043f\u0435\u0440\u0432\u044b\u0439 \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u0434\u043d\u0435\u0432\u043d\u043e\u0439 \u0444\u0430\u043a\u0442 \u043f\u043e\u0441\u043b\u0435 \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f.';
+    } else if (row.market === "ozon") {
+      note += ' \u041f\u043e Ozon \u0437\u0434\u0435\u0441\u044c \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c daily fact \u0438\u0437 Google Sheets, \u0430 \u043d\u0435 \u043c\u0435\u0442\u0440\u0438\u043a\u0443 \"\u0417\u0430\u043a\u0430\u0437\u0430\u043d\u043e\" \u0438\u0437 \u041b\u041a Ozon.';
     }
     return [
       '<details class="pw-detail"><summary>\u0418\u0441\u0442\u043e\u0440\u0438\u044f \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0439 \u043f\u043e \u0434\u043d\u044f\u043c</summary>',
       '<div class="pw-detail-note">', esc(note), '</div>',
       '<div class="pw-history-wrap"><table class="pw-history"><thead><tr>',
       '<th>\u0414\u0430\u0442\u0430</th><th>\u0426\u0435\u043d\u0430 MP</th><th>\u0421\u041f\u041f</th><th>\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</th>',
-      hasSalesHistory ? '<th>\u0417\u0430\u043a\u0430\u0437\u044b</th><th>\u0412\u044b\u0440\u0443\u0447\u043a\u0430</th>' : '',
+      hasSalesHistory ? '<th>' + esc(historyUnitsLabel(row.market)) + '</th><th>\u0412\u044b\u0440\u0443\u0447\u043a\u0430</th>' : '',
       '</tr></thead><tbody>',
       items.map(function (item) {
         return [
@@ -1509,7 +1523,7 @@
           '<td>', money(num(item.price)), '</td>',
           '<td>', pct(num(item.sppPct)), '</td>',
           '<td>', days(num(item.turnoverDays)), '</td>',
-          hasSalesHistory ? '<td>' + intf(num(item.ordersUnits)) + '</td><td>' + money(num(item.revenue)) + '</td>' : '',
+          hasSalesHistory ? '<td>' + intf(historyUnits(item)) + '</td><td>' + money(num(item.revenue)) + '</td>' : '',
           '</tr>'
         ].join("");
       }).join(""),

@@ -79,17 +79,20 @@ function monthLabelFromKey(monthKey) {
   return `${MONTH_LABELS_RU[month - 1]} ${year}`;
 }
 
-function pointFromSource(point = {}) {
+function pointFromSource(point = {}, platform = '') {
   const date = asIsoDate(point?.date);
   if (!date) return null;
+  const orderedUnits = firstNumber(point?.ordersUnits);
+  const deliveredUnits = firstNumber(point?.deliveredUnits);
+  const isOzon = platform === 'ozon';
   return {
     date,
     turnoverDays: firstNumber(point?.turnoverDays),
     price: firstPositive(point?.price, point?.currentFillPrice, point?.currentPrice),
     clientPrice: firstPositive(point?.clientPrice, point?.currentClientPrice),
     sppPct: sanitizeDiscountPct(point?.sppPct, point?.currentSppPct),
-    ordersUnits: firstNumber(point?.ordersUnits),
-    deliveredUnits: firstNumber(point?.deliveredUnits),
+    ordersUnits: isOzon ? null : orderedUnits,
+    deliveredUnits: deliveredUnits !== null ? deliveredUnits : (isOzon ? orderedUnits : null),
     revenue: firstNumber(point?.revenue)
   };
 }
@@ -101,10 +104,10 @@ function selectSeries(row = {}) {
   return [];
 }
 
-function normalizeSeries(row = {}) {
+function normalizeSeries(row = {}, platform = '') {
   const byDate = new Map();
   selectSeries(row).forEach((point) => {
-    const normalized = pointFromSource(point);
+    const normalized = pointFromSource(point, platform);
     if (!normalized) return;
     byDate.set(normalized.date, normalized);
   });
@@ -144,7 +147,7 @@ function lastSeriesSpp(series) {
 }
 
 function buildLegacyRow(row = {}, platform = '') {
-  const series = normalizeSeries(row);
+  const series = normalizeSeries(row, platform);
   const lastPrice = lastSeriesPrice(series);
   const lastClientPrice = lastSeriesClientPrice(series);
   const lastTurnover = lastSeriesValue(series, 'turnoverDays');

@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429K__) return;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429L__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429L__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429K__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429J__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429I__ = true;
@@ -17,13 +18,13 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260429k';
-  const STYLE_ID = 'altea-dashboard-interactive-20260429k';
+  const VERSION = '20260429l';
+  const STYLE_ID = 'altea-dashboard-interactive-20260429l';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const DASHBOARD_VIEW_ID = 'view-dashboard';
   const ADS_VIEW_ID = 'view-ads-funnel';
   const ADS_ROOT_ID = 'portalAdsFunnelRoot';
-  const ADS_STYLE_ID = 'altea-dashboard-interactive-ads-20260429k';
+  const ADS_STYLE_ID = 'altea-dashboard-interactive-ads-20260429l';
   const ADS_MANAGEMENT_STYLE_ID = 'portalDashboardAdsManagementStyles';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
@@ -2928,7 +2929,9 @@
 
     return {
       title: `${metric.label} · рекламная воронка`,
-      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчёте: ${executive.range.effectiveLabel}.`,
+      subtitle: executive.range.clamped
+        ? `Период: ${executive.range.effectiveLabel} · факт доступен за ${executive.range.availableLabel}.`
+        : `Период: ${executive.range.effectiveLabel}.`,
       body: `
         <div class="portal-exec-modal-metrics">
           ${modalSummaryCard('Показы', int(metric.views))}
@@ -2945,7 +2948,7 @@
         <div class="portal-exec-modal-card">
           <div class="portal-exec-modal-copy">
             <strong>Сводка по SKU</strong>
-            <p>Верхняя таблица даёт быстрый срез по товарам за весь выбранный период. Ниже идёт подневная матрица расходов по тем же артикулам.</p>
+            <p>Верхняя таблица даёт быстрый срез по товарам. Ниже идёт подневная матрица расходов по тем же артикулам.</p>
           </div>
           <table class="portal-exec-modal-table">
             <thead>
@@ -2979,7 +2982,7 @@
         <div class="portal-exec-modal-card">
           <div class="portal-exec-modal-copy">
             <strong>Затраты по дням и артикулам</strong>
-            <p>По строкам стоят все SKU из рекламного среза. По столбцам каждый день выбранного периода. В ячейке виден расход и число заказов за день.</p>
+            <p>По строкам стоят все SKU из рекламного среза. По столбцам дни периода. В ячейке виден расход и число заказов за день.</p>
           </div>
           <table class="portal-exec-modal-table">
             <thead>

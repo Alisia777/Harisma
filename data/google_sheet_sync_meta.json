@@ -1,6 +1,16 @@
 {
-  "generatedAt": "2026-04-29T12:10:51.613Z",
+  "generatedAt": "2026-04-29T13:05:33.196Z",
   "sheetSource": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
+  "sourceMode": "google-csv-tabs",
+  "sourceGids": {
+    "dim_sku": "4625365",
+    "fact_marketplace_daily_sku": "657645553",
+    "fact_logistics_daily_cluster_warehouse_sku": "2003059667",
+    "dim_warehouse": "1429580252"
+  },
+  "sourceWarnings": [
+    "dim_sku returned #REF! in Google export; keeping local skus.json overlay for owners and contour metadata"
+  ],
   "updatedSkus": 0,
   "dashboard": {
     "latest_marketplace_date": "2026-04-28",

@@ -1,5 +1,7 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429C__) return;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429E__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429E__ = true;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429D__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429C__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429A__ = true;
@@ -9,12 +11,22 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260429c';
-  const STYLE_ID = 'altea-dashboard-interactive-20260429c';
+  const VERSION = '20260429e';
+  const STYLE_ID = 'altea-dashboard-interactive-20260429e';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
   const PRESET_KEYS = ['yesterday', '7', 'prevweek', '14', '30'];
+  const DASHBOARD_SIGNAL_THRESHOLDS = {
+    priceShockWarnPct: 0.10,
+    priceShockDangerPct: 0.20,
+    funnelDropWarnPct: 0.25,
+    funnelDropDangerPct: 0.40,
+    ctrDropWarnPct: 0.20,
+    ctrDropDangerPct: 0.35,
+    minAdsOrdersForCompare: 5,
+    minAdsRevenueForCompare: 5000
+  };
   const cache = {
     dashboard: null,
     platformTrends: null,
@@ -33,6 +45,8 @@
   };
   let applyTimer = 0;
   let dashboardBootPrimed = false;
+  let adsItemSeriesIndexStamp = '';
+  let adsItemSeriesIndex = new Map();
 
   function syncChrome() {
     document.title = 'Дом бренда Алтея · v8.7.1 Imperial';
@@ -300,6 +314,56 @@
       }))
       .filter((point) => point.date instanceof Date && !Number.isNaN(point.date.getTime()))
       .sort((left, right) => left.date - right.date);
+  }
+
+  function adsItemRowsIndexMap() {
+    const payload = current('adsSummary') || {};
+    const stamp = String(payload?.generatedAt || payload?.asOfDate || '').trim();
+    if (stamp === adsItemSeriesIndexStamp && adsItemSeriesIndex.size) return adsItemSeriesIndex;
+    adsItemSeriesIndexStamp = stamp;
+    adsItemSeriesIndex = new Map();
+    (payload?.itemSeries || []).forEach((item) => {
+      const platformKey = normalizeKey(item?.platformKey);
+      const articleKey = normalizeKey(item?.articleKey || item?.offerId || item?.offer_id);
+      const date = parseDate(item?.date);
+      if (!platformKey || !articleKey || !(date instanceof Date) || Number.isNaN(date.getTime())) return;
+      const key = `${platformKey}::${articleKey}`;
+      if (!adsItemSeriesIndex.has(key)) adsItemSeriesIndex.set(key, []);
+      adsItemSeriesIndex.get(key).push({
+        date,
+        views: num(item?.views),
+        clicks: num(item?.clicks),
+        spend: num(item?.spend),
+        orders: num(item?.orders),
+        revenue: num(item?.revenue)
+      });
+    });
+    adsItemSeriesIndex.forEach((items) => items.sort((left, right) => left.date - right.date));
+    return adsItemSeriesIndex;
+  }
+
+  function adsRowsForArticle(platformKey, articleKey) {
+    if (!platformKey || !articleKey) return [];
+    const map = adsItemRowsIndexMap();
+    return map.get(`${normalizeKey(platformKey)}::${normalizeKey(articleKey)}`) || [];
+  }
+
+  function aggregateAdsRows(rows, start, end) {
+    const items = (rows || []).filter((item) => item.date >= start && item.date <= end);
+    const views = items.reduce((sum, item) => sum + num(item?.views), 0);
+    const clicks = items.reduce((sum, item) => sum + num(item?.clicks), 0);
+    const spend = items.reduce((sum, item) => sum + num(item?.spend), 0);
+    const orders = items.reduce((sum, item) => sum + num(item?.orders), 0);
+    const revenue = items.reduce((sum, item) => sum + num(item?.revenue), 0);
+    return {
+      views,
+      clicks,
+      spend,
+      orders,
+      revenue,
+      ctr: views > 0 ? clicks / views : null,
+      drr: revenue > 0 ? spend / revenue : null
+    };
   }
 
   function rowsForPlatform(payload, platformKey) {
@@ -1117,7 +1181,7 @@
   function buildPlatformMetrics() {
     const range = selectedRange();
     const compare = comparisonRange(range);
-    const issueMap = buildIssueMap();
+    const issueMap = buildIssueMap(range, compare);
     const adsAnchor = parseDate(current('adsSummary')?.asOfDate) || range.anchor;
     const metrics = PLATFORM_KEYS.map((platformKey) => buildWindowMetric(platformKey, range, range.anchor, adsAnchor, issueMap));
     const compareMetrics = compare
@@ -1434,7 +1498,7 @@
     return rows;
   }
 
-  function articleRowsForPlatform(platformKey, range) {
+  function articleRowsForPlatform(platformKey, range, compareRange = null) {
     const skuMap = new Map(
       (current('skus') || []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku])
     );
@@ -1468,15 +1532,37 @@
         const marginSource = side?.marginPct ?? row?.avgMargin7dPct;
         const periodFacts = articleWindowFacts(row?.platformKey || platformKey, article, range);
         const completionSource = periodFacts.completionPct ?? sku?.planFact?.completionApr26Pct ?? sku?.planFact?.completionMar26Pct ?? sku?.planFact?.completionFeb26Pct;
+        const adsRows = adsRowsForArticle(row?.platformKey || platformKey, article);
+        const adsFacts = aggregateAdsRows(adsRows, range.effectiveStart, range.effectiveEnd);
+        const compareAdsFacts = compareRange ? aggregateAdsRows(adsRows, compareRange.effectiveStart, compareRange.effectiveEnd) : null;
+        const owner = platformOwnerName(sku, row?.platformKey || platformKey, row?.owner);
+        const platformRowKey = row?.platformKey || platformKey;
+        const negativeMarginFlag = platformRowKey === 'wb'
+          ? Boolean(sku?.flags?.wbNegativeMargin) || (Number.isFinite(Number(marginSource)) && Number(marginSource) < 0)
+          : platformRowKey === 'ozon'
+            ? Boolean(sku?.flags?.ozonNegativeMargin) || (Number.isFinite(Number(marginSource)) && Number(marginSource) < 0)
+            : Boolean(sku?.flags?.negativeMargin) || (Number.isFinite(Number(marginSource)) && Number(marginSource) < 0);
+        const lowStockFlag = platformRowKey === 'wb'
+          ? Boolean(sku?.wb?.belowMin || sku?.flags?.lowStock)
+          : platformRowKey === 'ozon'
+            ? Boolean(sku?.ozon?.belowMin || sku?.flags?.lowStock)
+            : Boolean(sku?.ym?.belowMin || sku?.ya?.belowMin || sku?.flags?.lowStock);
+        const toWorkFlag = platformRowKey === 'wb'
+          ? Boolean(sku?.flags?.toWorkWB)
+          : platformRowKey === 'ozon'
+            ? Boolean(sku?.flags?.toWorkOzon)
+            : Boolean(sku?.flags?.toWork);
+        const priceDeltaPct = startPrice > 0 && endPrice > 0 ? (endPrice - startPrice) / startPrice : null;
         return {
           article,
           name: row?.name || sku?.name || article,
-          platformKey: row?.platformKey || platformKey,
-          platformLabel: row?.platformLabel || shortPlatformLabel(row?.platformKey || platformKey),
-          owner: platformOwnerName(sku, row?.platformKey || platformKey, row?.owner),
+          platformKey: platformRowKey,
+          platformLabel: row?.platformLabel || shortPlatformLabel(platformRowKey),
+          owner,
           startPrice,
           endPrice,
           avgPrice,
+          priceDeltaPct,
           currentPrice: num(row?.currentPrice) || num(side?.currentPrice),
           minPrice: num(row?.minPrice) || num(side?.minPrice),
           stock: num(side?.stock),
@@ -1490,10 +1576,325 @@
           actualRevenueSelected: Number.isFinite(Number(periodFacts.actualRevenue)) ? Number(periodFacts.actualRevenue) : null,
           periodAvgCheck: periodFacts.actualUnits > 0 && periodFacts.actualRevenue > 0 ? periodFacts.actualRevenue / periodFacts.actualUnits : null,
           factSource: periodFacts.factSource || '',
-          salesValue: Number.isFinite(Number(periodFacts.actualRevenue)) ? Number(periodFacts.actualRevenue) : num(sku?.planFact?.factTotalRevenue || sku?.orders?.value)
+          salesValue: Number.isFinite(Number(periodFacts.actualRevenue)) ? Number(periodFacts.actualRevenue) : num(sku?.planFact?.factTotalRevenue || sku?.orders?.value),
+          adViews: adsFacts.views,
+          adClicks: adsFacts.clicks,
+          adOrders: adsFacts.orders,
+          adSpend: adsFacts.spend,
+          adRevenue: adsFacts.revenue,
+          adCtr: adsFacts.ctr,
+          adDrr: adsFacts.drr,
+          compareAdViews: compareAdsFacts?.views ?? null,
+          compareAdClicks: compareAdsFacts?.clicks ?? null,
+          compareAdOrders: compareAdsFacts?.orders ?? null,
+          compareAdSpend: compareAdsFacts?.spend ?? null,
+          compareAdRevenue: compareAdsFacts?.revenue ?? null,
+          compareAdCtr: compareAdsFacts?.ctr ?? null,
+          compareAdDrr: compareAdsFacts?.drr ?? null,
+          adOrdersDeltaPct: compareAdsFacts ? relativeDelta(adsFacts.orders, compareAdsFacts.orders) : null,
+          adRevenueDeltaPct: compareAdsFacts ? relativeDelta(adsFacts.revenue, compareAdsFacts.revenue) : null,
+          adClicksDeltaPct: compareAdsFacts ? relativeDelta(adsFacts.clicks, compareAdsFacts.clicks) : null,
+          adCtrDeltaPct: compareAdsFacts ? relativeDelta(adsFacts.ctr, compareAdsFacts.ctr) : null,
+          noOwnerFlag: !owner || owner === 'Без owner',
+          negativeMarginFlag,
+          lowStockFlag,
+          toWorkFlag,
+          belowMinFlag: Boolean(row?.belowMin || side?.belowMin)
         };
       })
       .filter((row) => row.article && row.article !== '—');
+  }
+
+  function issueCountersForSku(sku, platformKey) {
+    const assigned = Boolean(sku?.flags?.assigned);
+    const lowStock = Boolean(sku?.flags?.lowStock) && platformHasPresence(sku, platformKey);
+    const underPlan = Boolean(sku?.flags?.underPlan) && platformHasPresence(sku, platformKey);
+    const negativeMargin = platformKey === 'wb'
+      ? Boolean(sku?.flags?.wbNegativeMargin)
+      : platformKey === 'ozon'
+        ? Boolean(sku?.flags?.ozonNegativeMargin)
+        : platformKey === 'all'
+          ? Boolean(sku?.flags?.negativeMargin)
+          : false;
+    const toWork = platformKey === 'wb'
+      ? Boolean(sku?.flags?.toWorkWB)
+      : platformKey === 'ozon'
+        ? Boolean(sku?.flags?.toWorkOzon)
+        : platformKey === 'all'
+          ? Boolean(sku?.flags?.toWork)
+          : false;
+    const belowMin = platformKey === 'wb'
+      ? Boolean(sku?.wb?.belowMin)
+      : platformKey === 'ozon'
+        ? Boolean(sku?.ozon?.belowMin)
+        : platformKey === 'all'
+          ? Boolean(sku?.wb?.belowMin || sku?.ozon?.belowMin)
+          : false;
+    return {
+      noOwner: !assigned,
+      lowStock,
+      underPlan,
+      negativeMargin,
+      toWork,
+      belowMin
+    };
+  }
+
+  function priceShockSignalKind(deltaPct) {
+    if (!Number.isFinite(Number(deltaPct))) return '';
+    const absDelta = Math.abs(Number(deltaPct));
+    if (absDelta >= DASHBOARD_SIGNAL_THRESHOLDS.priceShockDangerPct) return 'danger';
+    if (absDelta >= DASHBOARD_SIGNAL_THRESHOLDS.priceShockWarnPct) return 'warn';
+    return '';
+  }
+
+  function funnelDropSignalKind(row) {
+    if (!row) return '';
+    const hasComparableOrders = Number.isFinite(Number(row.compareAdOrders))
+      && Number(row.compareAdOrders) >= DASHBOARD_SIGNAL_THRESHOLDS.minAdsOrdersForCompare;
+    const hasComparableRevenue = Number.isFinite(Number(row.compareAdRevenue))
+      && Number(row.compareAdRevenue) >= DASHBOARD_SIGNAL_THRESHOLDS.minAdsRevenueForCompare;
+    const hasComparableCtr = Number.isFinite(Number(row.compareAdClicks))
+      && Number(row.compareAdClicks) >= DASHBOARD_SIGNAL_THRESHOLDS.minAdsOrdersForCompare;
+    if (!hasComparableOrders && !hasComparableRevenue && !hasComparableCtr) return '';
+
+    const orderDrop = Number(row.adOrdersDeltaPct);
+    const revenueDrop = Number(row.adRevenueDeltaPct);
+    const ctrDrop = Number(row.adCtrDeltaPct);
+
+    const isDanger = (
+      (Number.isFinite(orderDrop) && orderDrop <= -DASHBOARD_SIGNAL_THRESHOLDS.funnelDropDangerPct)
+      || (Number.isFinite(revenueDrop) && revenueDrop <= -DASHBOARD_SIGNAL_THRESHOLDS.funnelDropDangerPct)
+      || (Number.isFinite(ctrDrop) && ctrDrop <= -DASHBOARD_SIGNAL_THRESHOLDS.ctrDropDangerPct)
+    );
+    if (isDanger) return 'danger';
+
+    const isWarn = (
+      (Number.isFinite(orderDrop) && orderDrop <= -DASHBOARD_SIGNAL_THRESHOLDS.funnelDropWarnPct)
+      || (Number.isFinite(revenueDrop) && revenueDrop <= -DASHBOARD_SIGNAL_THRESHOLDS.funnelDropWarnPct)
+      || (Number.isFinite(ctrDrop) && ctrDrop <= -DASHBOARD_SIGNAL_THRESHOLDS.ctrDropWarnPct)
+    );
+    return isWarn ? 'warn' : '';
+  }
+
+  function issueFlagsForArticleRow(row) {
+    const completionPct = Number.isFinite(Number(row?.completionPct)) ? Number(row.completionPct) : null;
+    const priceShockKind = priceShockSignalKind(row?.priceDeltaPct);
+    const funnelDropKind = funnelDropSignalKind(row);
+    return {
+      noOwner: Boolean(row?.noOwnerFlag),
+      lowStock: Boolean(row?.lowStockFlag),
+      underPlan: completionPct !== null && completionPct < 0.85,
+      negativeMargin: Boolean(row?.negativeMarginFlag),
+      toWork: Boolean(row?.toWorkFlag),
+      belowMin: Boolean(row?.belowMinFlag),
+      priceShock: Boolean(priceShockKind),
+      funnelDrop: Boolean(funnelDropKind),
+      priceShockKind,
+      funnelDropKind
+    };
+  }
+
+  function strongestFunnelDropLabel(row) {
+    const candidates = [
+      Number.isFinite(Number(row?.adOrdersDeltaPct))
+        ? { label: `Заказы ${row.adOrdersDeltaPct >= 0 ? '+' : ''}${pct(row.adOrdersDeltaPct)}`, delta: Number(row.adOrdersDeltaPct) }
+        : null,
+      Number.isFinite(Number(row?.adRevenueDeltaPct))
+        ? { label: `Выручка ${row.adRevenueDeltaPct >= 0 ? '+' : ''}${pct(row.adRevenueDeltaPct)}`, delta: Number(row.adRevenueDeltaPct) }
+        : null,
+      Number.isFinite(Number(row?.adCtrDeltaPct))
+        ? { label: `CTR ${row.adCtrDeltaPct >= 0 ? '+' : ''}${pct(row.adCtrDeltaPct)}`, delta: Number(row.adCtrDeltaPct) }
+        : null
+    ].filter(Boolean);
+    if (!candidates.length) return 'Провал воронки';
+    candidates.sort((left, right) => left.delta - right.delta);
+    return candidates[0].label;
+  }
+
+  function issueReasonsForRow(row, flags, scopeKey) {
+    const reasons = [];
+    if (flags.priceShock && Number.isFinite(Number(row?.priceDeltaPct))) {
+      reasons.push(`Цена ${row.priceDeltaPct >= 0 ? '+' : ''}${pct(row.priceDeltaPct)}`);
+    }
+    if (flags.funnelDrop) reasons.push(`Воронка ${strongestFunnelDropLabel(row)}`);
+    if (flags.negativeMargin) reasons.push('Отрицательная маржа');
+    if (flags.toWork) reasons.push('SKU уже в работе');
+    if (flags.lowStock) reasons.push('Низкий остаток');
+    if (flags.noOwner) reasons.push('Без owner');
+    if (flags.belowMin) reasons.push('Ниже min price');
+    if (flags.underPlan && Number.isFinite(Number(row?.completionPct))) reasons.push(`План ${pct(row.completionPct)}`);
+    if (!reasons.length) reasons.push('Нужна ручная проверка');
+    const prefix = scopeKey === 'all' && row?.platformLabel ? `${row.platformLabel}: ` : '';
+    return `${prefix}${reasons.join(' · ')}`;
+  }
+
+  function issueScoreForFlags(flags) {
+    let score = 0;
+    if (flags.priceShockKind === 'danger') score += 6;
+    else if (flags.priceShockKind === 'warn') score += 4;
+    if (flags.funnelDropKind === 'danger') score += 6;
+    else if (flags.funnelDropKind === 'warn') score += 4;
+    if (flags.negativeMargin) score += 5;
+    if (flags.toWork) score += 4;
+    if (flags.lowStock) score += 3;
+    if (flags.noOwner) score += 2;
+    if (flags.belowMin) score += 2;
+    if (flags.underPlan) score += 1;
+    return score;
+  }
+
+  function issueSummaryLabel(counters) {
+    if (!counters || typeof counters !== 'object') return 'Риски пока не собраны';
+    const parts = [
+      num(counters.toWork) > 0 ? `${int(counters.toWork)} в работе` : '',
+      num(counters.negativeMargin) > 0 ? `${int(counters.negativeMargin)} отриц. маржа` : '',
+      num(counters.lowStock) > 0 ? `${int(counters.lowStock)} низкий остаток` : '',
+      num(counters.noOwner) > 0 ? `${int(counters.noOwner)} без owner` : '',
+      num(counters.priceShock) > 0 ? `${int(counters.priceShock)} скачок цены` : '',
+      num(counters.funnelDrop) > 0 ? `${int(counters.funnelDrop)} провал воронки` : ''
+    ].filter(Boolean);
+    return parts.join(' · ') || 'Риски пока не собраны';
+  }
+
+  function focusRowsForPlatform(platformKey, range, compareRange = null) {
+    const focus = current('dashboard')?.focusTop || [];
+    const skuMap = new Map(
+      (current('skus') || []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku])
+    );
+    const rows = [];
+    const seen = new Set();
+    const rowKey = (article, key = platformKey) => `${normalizeKey(article)}|${key || 'all'}`;
+    const matchesPlatform = (text) => {
+      const lowered = repairBrokenUtf8Cp1251String(String(text || '')).toLowerCase();
+      if (platformKey === 'all') return true;
+      if (platformKey === 'wb') return lowered.includes('wb');
+      if (platformKey === 'ozon') return lowered.includes('ozon');
+      if (platformKey === 'ya') {
+        return lowered.includes('маркет')
+          || lowered.includes('ym')
+          || lowered.includes('yandex')
+          || lowered.includes('летуаль')
+          || lowered.includes('магнит')
+          || lowered.includes('золот')
+          || lowered.includes('зя')
+          || lowered.includes('ga')
+          || lowered.includes('letu')
+          || lowered.includes('mm');
+      }
+      return false;
+    };
+
+    articleRowsForPlatform(platformKey, range, compareRange).forEach((row) => {
+      const flags = issueFlagsForArticleRow(row);
+      if (!Object.keys(flags).some((key) => key.endsWith('Kind') ? Boolean(flags[key]) : flags[key] === true)) return;
+      const article = String(row?.article || '').trim();
+      if (!article) return;
+      const key = rowKey(article, row?.platformKey || platformKey);
+      if (seen.has(key)) return;
+      seen.add(key);
+      rows.push({
+        article,
+        name: row?.name || article,
+        owner: row?.owner || 'Без owner',
+        platformKey: row?.platformKey || platformKey,
+        reasons: issueReasonsForRow(row, flags, platformKey),
+        score: issueScoreForFlags(flags),
+        completion: num(row?.completionPct),
+        salesValue: num(row?.salesValue),
+        signalCodes: Object.entries(flags)
+          .filter(([name, active]) => !name.endsWith('Kind') && active === true)
+          .map(([name]) => name),
+        priceShockKind: flags.priceShockKind || '',
+        funnelDropKind: flags.funnelDropKind || ''
+      });
+    });
+
+    focus.forEach((item) => {
+      if (!matchesPlatform(item?.focus_reasons)) return;
+      const article = String(item?.article || item?.article_key || '').trim();
+      if (!article) return;
+      const sku = skuMap.get(normalizeKey(article));
+      const key = rowKey(article, platformKey);
+      if (seen.has(key)) return;
+      seen.add(key);
+      rows.push({
+        article,
+        name: item?.product_name_final || item?.name || article,
+        owner: platformOwnerName(sku, platformKey, item?.owner_name),
+        platformKey,
+        reasons: item?.focus_reasons || 'Нужна ручная оценка',
+        score: num(item?.focus_score),
+        completion: num(item?.plan_completion_feb26_pct),
+        salesValue: 0,
+        signalCodes: [],
+        priceShockKind: '',
+        funnelDropKind: ''
+      });
+    });
+
+    (current('skus') || []).forEach((sku) => {
+      const article = String(sku?.articleKey || sku?.article || '').trim();
+      if (!article || !platformHasPresence(sku, platformKey)) return;
+      const flags = issueCountersForSku(sku, platformKey);
+      if (!Object.values(flags).some(Boolean)) return;
+      const key = rowKey(article, platformKey);
+      if (seen.has(key)) return;
+      seen.add(key);
+      rows.push({
+        article,
+        name: sku?.name || article,
+        owner: platformOwnerName(sku, platformKey),
+        platformKey,
+        reasons: sku?.focusReasons || 'Есть риск по площадке',
+        score: num(sku?.focusScore),
+        completion: num(sku?.planFact?.completionFeb26Pct),
+        salesValue: num(sku?.planFact?.factTotalRevenue || sku?.orders?.value),
+        signalCodes: Object.entries(flags).filter(([, active]) => active).map(([name]) => name),
+        priceShockKind: '',
+        funnelDropKind: ''
+      });
+    });
+
+    return rows
+      .sort((left, right) => right.score - left.score || right.salesValue - left.salesValue || right.completion - left.completion)
+      .slice(0, 12);
+  }
+
+  function buildIssueMap(range, compareRange = null) {
+    const map = new Map();
+    PLATFORM_KEYS.forEach((platformKey) => {
+      const relevantSkus = (current('skus') || []).filter((sku) => platformHasPresence(sku, platformKey));
+      const periodRows = articleRowsForPlatform(platformKey, range, compareRange);
+      const counters = relevantSkus.reduce((acc, sku) => {
+        const flags = issueCountersForSku(sku, platformKey);
+        Object.keys(flags).forEach((key) => {
+          if (flags[key]) acc[key] += 1;
+        });
+        return acc;
+      }, {
+        noOwner: 0,
+        lowStock: 0,
+        underPlan: 0,
+        negativeMargin: 0,
+        toWork: 0,
+        belowMin: 0,
+        priceShock: 0,
+        funnelDrop: 0
+      });
+      periodRows.forEach((row) => {
+        const flags = issueFlagsForArticleRow(row);
+        if (flags.priceShock) counters.priceShock += 1;
+        if (flags.funnelDrop) counters.funnelDrop += 1;
+      });
+      map.set(platformKey, {
+        key: platformKey,
+        label: shortPlatformLabel(platformKey),
+        counters,
+        rows: focusRowsForPlatform(platformKey, range, compareRange)
+      });
+    });
+    return map;
   }
 
   function ensureStyles() {
@@ -1749,9 +2150,7 @@
 
   function buildPlatformDetail(metric, executive, mode) {
     const issueRows = metric.issues?.rows || [];
-    const issueLabel = metric.issues
-      ? `${int(metric.issues.counters.toWork)} в работе · ${int(metric.issues.counters.negativeMargin)} с отрицательной маржей`
-      : 'Риски пока не собраны';
+    const issueLabel = issueSummaryLabel(metric?.issues?.counters || null);
     const detailTable = metric.days.map((row) => `
       <tr>
         <td>${esc(shortDate(row.date))}</td>
@@ -3285,7 +3684,12 @@
         <div class="portal-exec-issue-grid">
           ${metrics.map((metric) => {
             const counters = metric.issues?.counters || {};
-            const total = num(counters.toWork) + num(counters.negativeMargin) + num(counters.lowStock) + num(counters.noOwner);
+            const total = num(counters.toWork)
+              + num(counters.negativeMargin)
+              + num(counters.lowStock)
+              + num(counters.noOwner)
+              + num(counters.priceShock)
+              + num(counters.funnelDrop);
             return `
               <article class="portal-exec-card is-${total > 0 ? 'danger' : 'ok'} is-clickable" data-portal-exec-open="issues" data-portal-exec-key="${esc(metric.key)}">
                 <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(metric.label)}</span>${badgeHtml(`${int(total)} сигналов`, total > 0 ? 'danger' : 'ok')}</div>
@@ -4279,6 +4683,8 @@
     const items = [];
     const turnover = turnoverMetric || buildTurnoverMetric(metric.key, executive.range);
     if (num(metric.completion) < 0.85) items.push(`План закрывается только на ${pct(metric.completion)}. Проверьте лидирующие и провальные SKU.`);
+    if (num(metric.issues?.counters?.priceShock) > 0) items.push(`Есть ${int(metric.issues.counters.priceShock)} SKU со сдвигом цены больше 10% по выбранному окну. Их стоит открыть из ценового drilldown и проверить коридор.`);
+    if (num(metric.issues?.counters?.funnelDrop) > 0) items.push(`Есть ${int(metric.issues.counters.funnelDrop)} SKU с провалом рекламной воронки. Сначала смотрим CTR, заказы и выручку относительно прошлого окна.`);
     if (num(metric.marginPct) < 0.18) items.push(`Маржа просела до ${pct(metric.marginPct)}. Нужна проверка цены, скидки клиента и промо.`);
     if (turnover.avgTurnoverDays !== null && turnover.avgTurnoverDays > 60) items.push(`Оборачиваемость выросла до ${turnover.avgTurnoverDays.toFixed(1)} дн. Смотрите запас и спрос по SKU.`);
     if (num(metric.issues?.counters?.negativeMargin) > 0) items.push(`Есть ${int(metric.issues.counters.negativeMargin)} SKU с отрицательной маржой. Их стоит открыть во вкладке цен.`);
@@ -4289,6 +4695,12 @@
 
   function dashboardDecisionSignals(row) {
     const items = [];
+    const priceShockKind = priceShockSignalKind(row?.priceDeltaPct);
+    const funnelKind = funnelDropSignalKind(row);
+    if (priceShockKind && Number.isFinite(Number(row?.priceDeltaPct))) {
+      items.push({ label: `Цена ${row.priceDeltaPct >= 0 ? '+' : ''}${pct(row.priceDeltaPct)}`, kind: priceShockKind });
+    }
+    if (funnelKind) items.push({ label: `Воронка ${strongestFunnelDropLabel(row)}`, kind: funnelKind });
     if (row.marginPct !== null && row.marginPct < 0.18) items.push({ label: `Маржа ${pct(row.marginPct)}`, kind: row.marginPct < 0.1 ? 'danger' : 'warn' });
     if (row.completionPct !== null && row.completionPct < 0.8) items.push({ label: `План ${pct(row.completionPct)}`, kind: row.completionPct < 0.6 ? 'danger' : 'warn' });
     if (row.avgTurnoverDays !== null && row.avgTurnoverDays > 60) items.push({ label: `Оборач. ${row.avgTurnoverDays.toFixed(1)} дн.`, kind: row.avgTurnoverDays > 90 ? 'danger' : 'warn' });
@@ -4840,7 +5252,11 @@
         <div class="portal-exec-platform-grid">
           ${metrics.map((metric) => {
             const turnover = buildTurnoverMetric(metric.key, executive.range);
-            const totalSignals = num(metric.issues?.counters?.toWork) + num(metric.issues?.counters?.negativeMargin) + num(metric.issues?.counters?.lowStock);
+            const totalSignals = num(metric.issues?.counters?.toWork)
+              + num(metric.issues?.counters?.negativeMargin)
+              + num(metric.issues?.counters?.lowStock)
+              + num(metric.issues?.counters?.priceShock)
+              + num(metric.issues?.counters?.funnelDrop);
             return `
               <article class="portal-exec-card is-${toneCompletion(metric.completion)} is-clickable" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}">
                 <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(metric.label)}</span>${badgeHtml(`План ${pct(metric.completion)}`, toneCompletion(metric.completion))}</div>
@@ -4924,6 +5340,49 @@
                   <div class="portal-exec-metric"><span>Отриц. маржа</span><strong>${esc(int(counters.negativeMargin))}</strong></div>
                   <div class="portal-exec-metric"><span>Низкий остаток</span><strong>${esc(int(counters.lowStock))}</strong></div>
                   <div class="portal-exec-metric"><span>Без owner</span><strong>${esc(int(counters.noOwner))}</strong></div>
+                </div>
+                <div class="portal-exec-card-foot"><span>${esc(topIssue ? topIssue.article : 'Без явного лидера риска')}</span><span>${esc(topIssue ? (topIssue.owner || 'Без owner') : '')}</span></div>
+              </article>
+            `;
+          }).join('')}
+        </div>
+      </section>
+    `;
+  }
+
+  function issuesSection(executive) {
+    const metrics = executive.selectedPlatform === 'all'
+      ? [executive.overall, ...visibleMetrics(executive)]
+      : visibleMetrics(executive);
+    return `
+      <section class="portal-exec-section">
+        <div class="portal-exec-head">
+          <div class="portal-exec-copy">
+            <h3>Сигналы по площадкам</h3>
+            <p>Здесь одним слоем собраны текущие операционные риски и аномалии выбранного окна: owner, маржа, запас, резкий сдвиг цены и провал воронки.</p>
+          </div>
+          ${sectionMetaHtml(executive)}
+        </div>
+        <div class="portal-exec-issue-grid">
+          ${metrics.map((metric) => {
+            const counters = metric.issues?.counters || {};
+            const total = num(counters.toWork)
+              + num(counters.negativeMargin)
+              + num(counters.lowStock)
+              + num(counters.noOwner)
+              + num(counters.priceShock)
+              + num(counters.funnelDrop);
+            const topIssue = metric.issues?.rows?.[0];
+            return `
+              <article class="portal-exec-card is-${total > 0 ? 'danger' : 'ok'} is-clickable" data-portal-exec-open="issues" data-portal-exec-key="${esc(metric.key)}">
+                <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(metric.label)}</span>${badgeHtml(`${int(total)} сигналов`, total > 0 ? 'danger' : 'ok')}</div>
+                <div class="portal-exec-metric-grid">
+                  <div class="portal-exec-metric"><span>В работе</span><strong>${esc(int(counters.toWork))}</strong></div>
+                  <div class="portal-exec-metric"><span>Отриц. маржа</span><strong>${esc(int(counters.negativeMargin))}</strong></div>
+                  <div class="portal-exec-metric"><span>Низкий остаток</span><strong>${esc(int(counters.lowStock))}</strong></div>
+                  <div class="portal-exec-metric"><span>Без owner</span><strong>${esc(int(counters.noOwner))}</strong></div>
+                  <div class="portal-exec-metric"><span>Цена >10%</span><strong>${esc(int(counters.priceShock))}</strong></div>
+                  <div class="portal-exec-metric"><span>Воронка</span><strong>${esc(int(counters.funnelDrop))}</strong></div>
                 </div>
                 <div class="portal-exec-card-foot"><span>${esc(topIssue ? topIssue.article : 'Без явного лидера риска')}</span><span>${esc(topIssue ? (topIssue.owner || 'Без owner') : '')}</span></div>
               </article>
@@ -5507,6 +5966,22 @@
       return true;
     };
     if (!forceRefresh && hasUsablePayload(existing)) return existing;
+    const snapshotLoader = typeof window.__alteaLoadPortalSnapshot === 'function'
+      ? window.__alteaLoadPortalSnapshot
+      : null;
+    if (snapshotLoader) {
+      try {
+        const snapshotPayload = await snapshotLoader(path);
+        if (hasUsablePayload(snapshotPayload)) {
+          cache[key] = snapshotPayload;
+          const app = stateRef();
+          if (app) app[key] = snapshotPayload;
+          return snapshotPayload;
+        }
+      } catch (error) {
+        console.warn(`[portal-dashboard-interactive] snapshot ${path}`, error);
+      }
+    }
     let response = null;
     try {
       response = await fetch(`${path}?v=${VERSION}`, { cache: 'no-store' });
@@ -5661,6 +6136,42 @@
       applyNow(forceRefresh = false) {
         if (forceRefresh) dashboardBootPrimed = true;
         return refreshData(forceRefresh).then(apply);
+      },
+      getSignalSnapshot(platformKey = '') {
+        const range = selectedRange();
+        const compare = comparisonRange(range);
+        const issueMap = buildIssueMap(range, compare);
+        if (platformKey) {
+          const metric = issueMap.get(platformKey) || null;
+          return metric ? { ...metric, rows: Array.isArray(metric.rows) ? metric.rows.map((row) => ({ ...row })) : [] } : null;
+        }
+        return {
+          version: VERSION,
+          range: {
+            requestedLabel: range.requestedLabel,
+            effectiveLabel: range.effectiveLabel,
+            effectiveStart: iso(range.effectiveStart),
+            effectiveEnd: iso(range.effectiveEnd),
+            availableLabel: range.availableLabel
+          },
+          compareRange: compare ? {
+            label: compare.label,
+            effectiveStart: iso(compare.effectiveStart),
+            effectiveEnd: iso(compare.effectiveEnd)
+          } : null,
+          platforms: PLATFORM_KEYS
+            .map((key) => issueMap.get(key))
+            .filter(Boolean)
+            .map((metric) => ({
+              ...metric,
+              counters: { ...(metric.counters || {}) },
+              rows: Array.isArray(metric.rows) ? metric.rows.map((row) => ({ ...row })) : []
+            }))
+        };
+      },
+      getSignalRows(platformKey = 'all') {
+        const metric = this.getSignalSnapshot(platformKey);
+        return Array.isArray(metric?.rows) ? metric.rows.map((row) => ({ ...row })) : [];
       }
     };
   }

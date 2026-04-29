@@ -679,9 +679,108 @@ function buildLeaderboardAutoTask({
   }, 'auto');
 }
 
+function dashboardSignalPriority(kind) {
+  return kind === 'danger' ? 'critical' : 'high';
+}
+
+function dashboardSignalDue(kind) {
+  return plusDays(kind === 'danger' ? 1 : 2);
+}
+
+function dashboardSignalPlatform(row) {
+  const key = String(row?.platformKey || '').trim().toLowerCase();
+  if (key === 'ya') return 'retail';
+  return key || 'cross';
+}
+
+function dashboardSignalOwner(row) {
+  const owner = String(row?.owner || '').trim();
+  return owner && owner !== 'Без owner' ? owner : '';
+}
+
+function buildDashboardSignalAutoTasks(keys) {
+  const api = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
+  if (!api || typeof api.getSignalSnapshot !== 'function') return [];
+  const snapshot = api.getSignalSnapshot();
+  const platforms = Array.isArray(snapshot?.platforms) ? snapshot.platforms : [];
+  const rows = platforms
+    .filter((metric) => metric?.key && metric.key !== 'all')
+    .flatMap((metric) => (Array.isArray(metric?.rows) ? metric.rows : []).map((row) => ({
+      ...row,
+      platformKey: row?.platformKey || metric.key || ''
+    })));
+  const tasks = [];
+
+  rows
+    .filter((row) => row?.priceShockKind)
+    .sort((left, right) =>
+      leaderboardSeverityRank(right?.priceShockKind === 'danger' ? 'critical' : 'high')
+      - leaderboardSeverityRank(left?.priceShockKind === 'danger' ? 'critical' : 'high')
+      || Number(right?.score || 0) - Number(left?.score || 0)
+    )
+    .forEach((row) => {
+      const articleKey = String(row?.article || row?.articleKey || '').trim();
+      if (!articleKey || !canRegisterAutoTask(keys, articleKey, 'price_margin')) return;
+      const kind = row.priceShockKind === 'danger' ? 'danger' : 'warn';
+      const deltaLabel = Number.isFinite(Number(row?.priceDeltaPct))
+        ? `${Number(row.priceDeltaPct) >= 0 ? '+' : ''}${fmt.pct(Number(row.priceDeltaPct), 1)}`
+        : 'н/д';
+      tasks.push(normalizeTask({
+        id: `auto-price-shock-${articleKey}`,
+        source: 'auto',
+        autoCode: 'price_shock',
+        articleKey,
+        title: 'Проверить резкое изменение цены',
+        nextAction: 'Проверить коридор, min/max, alignment и причину изменения цены по SKU. Зафиксировать, это управляемое действие или ошибка.',
+        reason: `${snapshot?.range?.effectiveLabel || 'Текущее окно'}: цена ${deltaLabel}. ${row?.reasons || 'Есть ценовая аномалия.'}`,
+        owner: dashboardSignalOwner(row),
+        due: dashboardSignalDue(kind),
+        status: 'new',
+        type: 'price_margin',
+        priority: dashboardSignalPriority(kind),
+        platform: dashboardSignalPlatform(row),
+        entityLabel: row?.name || articleKey
+      }, 'auto'));
+    });
+
+  rows
+    .filter((row) => row?.funnelDropKind)
+    .sort((left, right) =>
+      leaderboardSeverityRank(right?.funnelDropKind === 'danger' ? 'critical' : 'high')
+      - leaderboardSeverityRank(left?.funnelDropKind === 'danger' ? 'critical' : 'high')
+      || Number(right?.score || 0) - Number(left?.score || 0)
+    )
+    .forEach((row) => {
+      const articleKey = String(row?.article || row?.articleKey || '').trim();
+      if (!articleKey || !canRegisterAutoTask(keys, articleKey, 'traffic')) return;
+      const kind = row.funnelDropKind === 'danger' ? 'danger' : 'warn';
+      const orderDelta = Number.isFinite(Number(row?.adOrdersDeltaPct))
+        ? `${Number(row.adOrdersDeltaPct) >= 0 ? '+' : ''}${fmt.pct(Number(row.adOrdersDeltaPct), 1)}`
+        : 'н/д';
+      tasks.push(normalizeTask({
+        id: `auto-funnel-drop-${articleKey}`,
+        source: 'auto',
+        autoCode: 'funnel_drop',
+        articleKey,
+        title: 'Разобрать провал рекламной воронки',
+        nextAction: 'Проверить CTR, клики, заказы, выручку и активные кампании по SKU. Зафиксировать гипотезу и следующий запуск.',
+        reason: `${snapshot?.range?.effectiveLabel || 'Текущее окно'}: заказы ${orderDelta}. ${row?.reasons || 'Есть провал рекламной воронки.'}`,
+        owner: dashboardSignalOwner(row),
+        due: dashboardSignalDue(kind),
+        status: 'new',
+        type: 'traffic',
+        priority: dashboardSignalPriority(kind),
+        platform: dashboardSignalPlatform(row),
+        entityLabel: row?.name || articleKey
+      }, 'auto'));
+    });
+
+  return tasks;
+}
+
 function buildAutoTasks() {
   const keys = storedTaskKeys();
-  const tasks = [];
+  const tasks = buildDashboardSignalAutoTasks(keys);
   const leaderboardPayload = typeof normalizeProductLeaderboardPayload === 'function'
     ? normalizeProductLeaderboardPayload(state.productLeaderboard || {})
     : (state.productLeaderboard || { items: [] });

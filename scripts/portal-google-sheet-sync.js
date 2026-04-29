@@ -16,10 +16,11 @@ const DEFAULT_SUPABASE_URL = 'https://iyckwryrucqrxwlowxow.supabase.co';
 const DEFAULT_SUPABASE_KEY = 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw';
 const SNAPSHOT_TABLE = 'portal_data_snapshots';
 const SNAPSHOT_SOURCE = 'google-sheets-bridge';
-const SNAPSHOT_KEYS = ['dashboard', 'skus', 'platform_trends', 'logistics'];
+const SNAPSHOT_KEYS = ['dashboard', 'skus', 'platform_trends', 'logistics', 'ads_summary'];
 const REQUIRED_SOURCE_SHEETS = {
   dimSku: ['dim_sku'],
   factMarketplace: ['fact_marketplace_daily_sku'],
+  factAds: ['fact_ads_daily_sku'],
   factLogistics: ['fact_logistics_daily_cluster_warehouse_sku', 'fact_logistics_daily_cluster_wa'],
   dimWarehouse: ['dim_warehouse']
 };
@@ -368,6 +369,7 @@ function parseWorkbook(buffer) {
   return {
     dimSku: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.dimSku),
     factMarketplace: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.factMarketplace),
+    factAds: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.factAds),
     factLogistics: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.factLogistics),
     dimWarehouse: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.dimWarehouse)
   };
@@ -533,6 +535,7 @@ async function fetchSheetRowsViaBrowserAuth(options) {
 
     const dimSkuSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.dimSku, 'dim_sku');
     const factMarketplaceSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.factMarketplace, 'fact_marketplace_daily_sku');
+    const factAdsSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.factAds, 'fact_ads_daily_sku');
     const factLogisticsSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.factLogistics, 'fact_logistics_daily_cluster_warehouse_sku');
     const dimWarehouseSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.dimWarehouse, 'dim_warehouse');
 
@@ -546,6 +549,7 @@ async function fetchSheetRowsViaBrowserAuth(options) {
     return {
       dimSku: dimSkuRows,
       factMarketplace: factMarketplaceSource.rows,
+      factAds: factAdsSource.rows,
       factLogistics: factLogisticsSource.rows,
       dimWarehouse: dimWarehouseSource.rows,
       sourceMeta: {
@@ -553,6 +557,7 @@ async function fetchSheetRowsViaBrowserAuth(options) {
         gids: {
           dim_sku: dimSkuSource.gid,
           fact_marketplace_daily_sku: factMarketplaceSource.gid,
+          fact_ads_daily_sku: factAdsSource.gid,
           fact_logistics_daily_cluster_warehouse_sku: factLogisticsSource.gid,
           dim_warehouse: dimWarehouseSource.gid
         },
@@ -692,6 +697,111 @@ function buildPlatformTrends(baseSkus, factRows, options) {
     portalRefreshTimeLocal: options.portalRefreshTimeLocal,
     latestMarketplaceDate: latestDate,
     platforms: platformPayload
+  };
+}
+
+function buildAdsSummary(baseSkus, factAdsRows, options) {
+  const skuByKey = new Map(baseSkus.map((item) => [normalizeKey(item.articleKey || item.article), item]));
+  const relevantSkuKeys = portalSkuKeySet(baseSkus);
+  const seriesBuckets = new Map();
+  const itemBuckets = new Map();
+
+  for (const row of factAdsRows || []) {
+    const date = isoDate(row.date);
+    const platform = normalizeMarketplace(row.platform || row.marketplace || row.data_source);
+    const articleKey = normalizeKey(row.sku || row.offer_id || row.offerId);
+    if (!date || !platform || !articleKey || !relevantSkuKeys.has(articleKey)) continue;
+    const mapKey = `${platform}::${date}`;
+    const bucket = seriesBuckets.get(mapKey) || { platform, date, views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
+    bucket.views += numberOrZero(row.views_orders);
+    bucket.clicks += numberOrZero(row.clicks_orders);
+    bucket.spend += numberOrZero(row.spend_orders);
+    bucket.orders += numberOrZero(row.orders_count_orders);
+    bucket.revenue += numberOrZero(row.orders_sum_orders);
+    seriesBuckets.set(mapKey, bucket);
+
+    const itemKey = `${platform}::${articleKey}::${date}`;
+    const sku = skuByKey.get(articleKey) || null;
+    const itemBucket = itemBuckets.get(itemKey) || {
+      date,
+      platformKey: platform,
+      articleKey: sku?.articleKey || normalizeText(row.sku || row.offer_id || row.offerId),
+      offerId: normalizeText(row.offer_id || row.offerId || row.sku),
+      name: sku?.name || normalizeText(row.sku || row.offer_id || row.offerId) || 'SKU',
+      views: 0,
+      clicks: 0,
+      spend: 0,
+      orders: 0,
+      revenue: 0
+    };
+    itemBucket.views += numberOrZero(row.views_orders);
+    itemBucket.clicks += numberOrZero(row.clicks_orders);
+    itemBucket.spend += numberOrZero(row.spend_orders);
+    itemBucket.orders += numberOrZero(row.orders_count_orders);
+    itemBucket.revenue += numberOrZero(row.orders_sum_orders);
+    itemBuckets.set(itemKey, itemBucket);
+  }
+
+  const dates = Array.from(new Set(Array.from(seriesBuckets.values()).map((item) => item.date))).sort();
+  const latestDate = dates[dates.length - 1] || '';
+  const latestIndex = dates.length - 1;
+
+  const aggregateSeries = (platformKey, date) => {
+    if (platformKey === 'all') {
+      return ['wb', 'ozon', 'ya'].reduce((acc, key) => {
+        const source = seriesBuckets.get(`${key}::${date}`);
+        if (!source) return acc;
+        acc.views += source.views;
+        acc.clicks += source.clicks;
+        acc.spend += source.spend;
+        acc.orders += source.orders;
+        acc.revenue += source.revenue;
+        return acc;
+      }, { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 });
+    }
+    return seriesBuckets.get(`${platformKey}::${date}`) || { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
+  };
+
+  const platforms = PLATFORM_ORDER.map((platformKey) => ({
+    key: platformKey,
+    label: PLATFORM_LABELS[platformKey],
+    series: dates.map((date, index) => {
+      const bucket = aggregateSeries(platformKey, date);
+      return {
+        dayOffset: latestIndex - index,
+        label: date,
+        views: Number(bucket.views.toFixed(4)),
+        clicks: Number(bucket.clicks.toFixed(4)),
+        spend: Number(bucket.spend.toFixed(4)),
+        orders: Number(bucket.orders.toFixed(4)),
+        revenue: Number(bucket.revenue.toFixed(4))
+      };
+    })
+  }));
+
+  return {
+    generatedAt: new Date().toISOString(),
+    asOfDate: latestDate || null,
+    note: 'Рекламная витрина daily bridge пересчитана из fact_ads_daily_sku Google Sheets. Сейчас факт есть для WB и Ozon; retail-канал в исходном листе не опубликован.',
+    googleSheetsSourceUrl: options.sourceUrl,
+    googleSheetsSourceGid: options.sourceGid,
+    googleSheetsRefreshTimeLocal: options.sourceRefreshTimeLocal,
+    portalRefreshTimeLocal: options.portalRefreshTimeLocal,
+    platforms,
+    itemSeries: Array.from(itemBuckets.values())
+      .map((item) => ({
+        ...item,
+        views: Number(item.views.toFixed(4)),
+        clicks: Number(item.clicks.toFixed(4)),
+        spend: Number(item.spend.toFixed(4)),
+        orders: Number(item.orders.toFixed(4)),
+        revenue: Number(item.revenue.toFixed(4))
+      }))
+      .sort((left, right) =>
+        String(left.date).localeCompare(String(right.date))
+        || String(left.platformKey).localeCompare(String(right.platformKey))
+        || String(left.articleKey).localeCompare(String(right.articleKey))
+      )
   };
 }
 
@@ -1119,13 +1229,15 @@ function buildSnapshots(rows, options) {
   const { skus, updatedCount } = buildSkuOverlay(baseSkus, rows.dimSku);
   const dashboard = buildDashboard(baseDashboard, skus, rows.factMarketplace, rows.factLogistics, options);
   const platformTrends = buildPlatformTrends(skus, rows.factMarketplace, options);
+  const adsSummary = buildAdsSummary(skus, rows.factAds, options);
   const logistics = buildLogistics(baseLogistics, skus, rows.factLogistics, options);
   return {
     snapshots: {
       dashboard,
       skus,
       platform_trends: platformTrends,
-      logistics
+      logistics,
+      ads_summary: adsSummary
     },
     meta: {
       generatedAt: new Date().toISOString(),
@@ -1144,6 +1256,19 @@ function buildSnapshots(rows, options) {
       platformTrends: {
         latest_marketplace_date: platformTrends.latestMarketplaceDate || '',
         points: platformTrends.platforms?.[0]?.series?.length || 0
+      },
+      adsSummary: {
+        latest_ads_date: adsSummary.asOfDate || '',
+        platforms_with_ads: (adsSummary.platforms || []).filter((platform) =>
+          Array.isArray(platform?.series) && platform.series.some((item) =>
+            numberOrZero(item?.views) > 0
+            || numberOrZero(item?.clicks) > 0
+            || numberOrZero(item?.orders) > 0
+            || numberOrZero(item?.spend) > 0
+            || numberOrZero(item?.revenue) > 0
+          )
+        ).length,
+        item_rows: adsSummary.itemSeries?.length || 0
       },
       logistics: {
         latest_logistics_date: logistics.window?.to || '',

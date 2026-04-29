@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429H__) return;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429I__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429I__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429H__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429G__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429F__ = true;
@@ -14,13 +15,13 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260429h';
-  const STYLE_ID = 'altea-dashboard-interactive-20260429h';
+  const VERSION = '20260429i';
+  const STYLE_ID = 'altea-dashboard-interactive-20260429i';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const DASHBOARD_VIEW_ID = 'view-dashboard';
   const ADS_VIEW_ID = 'view-ads-funnel';
   const ADS_ROOT_ID = 'portalAdsFunnelRoot';
-  const ADS_STYLE_ID = 'altea-dashboard-interactive-ads-20260429h';
+  const ADS_STYLE_ID = 'altea-dashboard-interactive-ads-20260429i';
   const ADS_MANAGEMENT_STYLE_ID = 'portalDashboardAdsManagementStyles';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
@@ -53,6 +54,7 @@
   };
   let applyTimer = 0;
   let dashboardBootPrimed = false;
+  let backgroundHydrationPromise = null;
   let adsItemSeriesIndexStamp = '';
   let adsItemSeriesIndex = new Map();
 
@@ -6264,6 +6266,23 @@
     scheduleApply(forceRefresh ? 240 : 140, forceRefresh);
   }
 
+  function hydrateDashboardData(forceRefresh = false) {
+    const hasSignalsPayload = Boolean(cache.skus && cache.prices && cache.smartPriceWorkbench);
+    if (!forceRefresh && hasSignalsPayload) return Promise.resolve(true);
+    if (!forceRefresh && backgroundHydrationPromise) return backgroundHydrationPromise;
+    backgroundHydrationPromise = refreshData(forceRefresh)
+      .then(() => {
+        backgroundHydrationPromise = null;
+        if (typeof window.rerenderCurrentView === 'function') window.rerenderCurrentView();
+        return true;
+      })
+      .catch((error) => {
+        backgroundHydrationPromise = null;
+        throw error;
+      });
+    return backgroundHydrationPromise;
+  }
+
   function rearmBridges() {
     bridge('rerenderCurrentView');
     bridge('renderDashboard');
@@ -6337,7 +6356,12 @@
 
   function ensureInteractiveDashboardBoot(forceRefresh = false) {
     rearmBridges();
-    if (!isDashboardActive()) return;
+    if (!isDashboardActive()) {
+      if (!forceRefresh) {
+        hydrateDashboardData(false).catch((error) => console.warn('[portal-dashboard-interactive]', error));
+      }
+      return;
+    }
     if (!forceRefresh && activeInteractiveRootReady()) return;
     if (forceRefresh) {
       dashboardBootPrimed = true;
@@ -6351,6 +6375,7 @@
   exposeDashboardApi();
   bindLiveTriggers();
   syncChrome();
+  hydrateDashboardData(false).catch((error) => console.warn('[portal-dashboard-interactive]', error));
   ensureInteractiveDashboardBoot(false);
   window.setTimeout(() => ensureInteractiveDashboardBoot(false), 30);
   window.setTimeout(() => ensureInteractiveDashboardBoot(true), 320);

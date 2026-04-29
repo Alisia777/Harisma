@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429J__) return;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429K__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429K__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429J__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429I__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429H__ = true;
@@ -16,13 +17,13 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260429j';
-  const STYLE_ID = 'altea-dashboard-interactive-20260429j';
+  const VERSION = '20260429k';
+  const STYLE_ID = 'altea-dashboard-interactive-20260429k';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const DASHBOARD_VIEW_ID = 'view-dashboard';
   const ADS_VIEW_ID = 'view-ads-funnel';
   const ADS_ROOT_ID = 'portalAdsFunnelRoot';
-  const ADS_STYLE_ID = 'altea-dashboard-interactive-ads-20260429j';
+  const ADS_STYLE_ID = 'altea-dashboard-interactive-ads-20260429k';
   const ADS_MANAGEMENT_STYLE_ID = 'portalDashboardAdsManagementStyles';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
@@ -2819,6 +2820,203 @@
       `
     };
   }
+
+  buildAdsDetail = function buildAdsDetail(metric, executive) {
+    if (!metric.adsReady) {
+      return {
+        title: `${metric.label} · реклама`,
+        subtitle: 'В этом диапазоне опубликованных рекламных фактов пока нет.',
+        body: `<div class="portal-exec-empty">Рекламная витрина для этого диапазона пока пустая. Как только в витрину попадет ads_summary, здесь появится воронка, дневная динамика и список товаров.</div>`
+      };
+    }
+
+    const items = (current('adsSummary')?.itemSeries || [])
+      .map((item) => ({
+        date: parseDate(item?.date),
+        platformKey: String(item?.platformKey || '').toLowerCase(),
+        article: String(item?.articleKey || item?.offer_id || item?.offerId || '').trim(),
+        name: String(item?.name || item?.articleKey || '').trim(),
+        views: num(item?.views),
+        clicks: num(item?.clicks),
+        spend: num(item?.spend),
+        orders: num(item?.orders),
+        revenue: num(item?.revenue)
+      }))
+      .filter((item) => item.date instanceof Date && !Number.isNaN(item.date.getTime()))
+      .filter((item) => (metric.key === 'all' ? true : item.platformKey === metric.key))
+      .filter((item) => item.date >= executive.range.effectiveStart && item.date <= executive.range.effectiveEnd);
+
+    const grouped = new Map();
+    const dailyTotals = new Map();
+    items.forEach((item) => {
+      const key = item.article || item.name || 'Без SKU';
+      if (!grouped.has(key)) {
+        grouped.set(key, {
+          article: item.article || key,
+          name: item.name || item.article || key,
+          views: 0,
+          clicks: 0,
+          spend: 0,
+          orders: 0,
+          revenue: 0,
+          days: new Map()
+        });
+      }
+      const bucket = grouped.get(key);
+      bucket.views += item.views;
+      bucket.clicks += item.clicks;
+      bucket.spend += item.spend;
+      bucket.orders += item.orders;
+      bucket.revenue += item.revenue;
+
+      const dayKey = iso(item.date);
+      const dayBucket = bucket.days.get(dayKey) || { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
+      dayBucket.views += item.views;
+      dayBucket.clicks += item.clicks;
+      dayBucket.spend += item.spend;
+      dayBucket.orders += item.orders;
+      dayBucket.revenue += item.revenue;
+      bucket.days.set(dayKey, dayBucket);
+
+      const totalsBucket = dailyTotals.get(dayKey) || { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
+      totalsBucket.views += item.views;
+      totalsBucket.clicks += item.clicks;
+      totalsBucket.spend += item.spend;
+      totalsBucket.orders += item.orders;
+      totalsBucket.revenue += item.revenue;
+      dailyTotals.set(dayKey, totalsBucket);
+    });
+
+    const periodDays = [];
+    for (let cursor = cleanDate(executive.range.effectiveStart); cursor <= executive.range.effectiveEnd; cursor = addDays(cursor, 1)) {
+      periodDays.push(cleanDate(cursor));
+    }
+
+    const matrixRows = [...grouped.values()]
+      .map((item) => ({
+        ...item,
+        ctr: item.views > 0 ? item.clicks / item.views : null,
+        drr: item.revenue > 0 ? item.spend / item.revenue : null,
+        cells: periodDays.map((date) => {
+          const cell = item.days.get(iso(date)) || { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
+          return {
+            date,
+            views: cell.views,
+            clicks: cell.clicks,
+            spend: cell.spend,
+            orders: cell.orders,
+            revenue: cell.revenue
+          };
+        })
+      }))
+      .sort((left, right) => right.spend - left.spend || right.revenue - left.revenue || right.orders - left.orders);
+
+    const summaryRows = matrixRows.slice(0, 18);
+    const dailyTotalRows = periodDays.map((date) => {
+      const totals = dailyTotals.get(iso(date)) || { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
+      return {
+        date,
+        views: totals.views,
+        clicks: totals.clicks,
+        spend: totals.spend,
+        orders: totals.orders,
+        revenue: totals.revenue,
+        drr: totals.revenue > 0 ? totals.spend / totals.revenue : null
+      };
+    });
+    const activeDayCount = dailyTotalRows.filter((row) => row.spend > 0 || row.orders > 0 || row.clicks > 0).length;
+
+    return {
+      title: `${metric.label} · рекламная воронка`,
+      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчёте: ${executive.range.effectiveLabel}.`,
+      body: `
+        <div class="portal-exec-modal-metrics">
+          ${modalSummaryCard('Показы', int(metric.views))}
+          ${modalSummaryCard('Клики', int(metric.clicks))}
+          ${modalSummaryCard('Заказы', int(metric.orders))}
+          ${modalSummaryCard('CTR', metric.ctr !== null ? pct(metric.ctr) : '—')}
+          ${modalSummaryCard('Затраты', money(metric.spend))}
+          ${modalSummaryCard('Выручка с рекламы', money(metric.adRevenue))}
+          ${modalSummaryCard('ДРР', metric.drr !== null ? pct(metric.drr) : '—')}
+          ${modalSummaryCard('Площадка', metric.label)}
+          ${modalSummaryCard('SKU в рекламе', int(matrixRows.length))}
+          ${modalSummaryCard('Дней с фактом', int(activeDayCount))}
+        </div>
+        <div class="portal-exec-modal-card">
+          <div class="portal-exec-modal-copy">
+            <strong>Сводка по SKU</strong>
+            <p>Верхняя таблица даёт быстрый срез по товарам за весь выбранный период. Ниже идёт подневная матрица расходов по тем же артикулам.</p>
+          </div>
+          <table class="portal-exec-modal-table">
+            <thead>
+              <tr>
+                <th>Товар / SKU</th>
+                <th>Показы</th>
+                <th>Клики</th>
+                <th>Заказы</th>
+                <th>Затраты</th>
+                <th>Выручка</th>
+                <th>CTR</th>
+                <th>ДРР</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${summaryRows.length ? summaryRows.map((row) => `
+                <tr>
+                  <td><strong>${esc(row.name)}</strong><div class="muted small">${esc(row.article)}</div></td>
+                  <td>${esc(int(row.views))}</td>
+                  <td>${esc(int(row.clicks))}</td>
+                  <td>${esc(int(row.orders))}</td>
+                  <td>${esc(money(row.spend))}</td>
+                  <td>${esc(money(row.revenue))}</td>
+                  <td>${esc(row.ctr !== null ? pct(row.ctr) : '—')}</td>
+                  <td>${esc(row.drr !== null ? pct(row.drr) : '—')}</td>
+                </tr>
+              `).join('') : `<tr><td colspan="8">По этому диапазону нет рекламных SKU-строк.</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+        <div class="portal-exec-modal-card">
+          <div class="portal-exec-modal-copy">
+            <strong>Затраты по дням и артикулам</strong>
+            <p>По строкам стоят все SKU из рекламного среза. По столбцам каждый день выбранного периода. В ячейке виден расход и число заказов за день.</p>
+          </div>
+          <table class="portal-exec-modal-table">
+            <thead>
+              <tr>
+                <th>Товар / SKU</th>
+                ${periodDays.map((date) => `<th>${esc(shortDate(date))}</th>`).join('')}
+                <th>Итого</th>
+                <th>Заказы</th>
+                <th>Выручка</th>
+                <th>ДРР</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Итого по дням</strong><div class="muted small">${esc(metric.label)}</div></td>
+                ${dailyTotalRows.map((row) => `<td>${row.spend > 0 ? `<strong>${esc(money(row.spend))}</strong><div class="muted small">${esc(int(row.orders))} зак.</div>` : '—'}</td>`).join('')}
+                <td>${esc(money(metric.spend))}</td>
+                <td>${esc(int(metric.orders))}</td>
+                <td>${esc(money(metric.adRevenue))}</td>
+                <td>${esc(metric.drr !== null ? pct(metric.drr) : '—')}</td>
+              </tr>
+              ${matrixRows.length ? matrixRows.map((row) => `
+                <tr>
+                  <td><strong>${esc(row.name)}</strong><div class="muted small">${esc(row.article)}</div></td>
+                  ${row.cells.map((cell) => `<td>${cell.spend > 0 ? `<strong>${esc(money(cell.spend))}</strong><div class="muted small">${esc(int(cell.orders))} зак.</div>` : '—'}</td>`).join('')}
+                  <td>${esc(money(row.spend))}</td>
+                  <td>${esc(int(row.orders))}</td>
+                  <td>${esc(money(row.revenue))}</td>
+                  <td>${esc(row.drr !== null ? pct(row.drr) : '—')}</td>
+                </tr>
+              `).join('') : `<tr><td colspan="${periodDays.length + 5}">По этому периоду нет подневных рекламных строк.</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      `
+    };
+  };
 
   function buildContentSliceDetail() {
     const summary = contentSliceSummary();

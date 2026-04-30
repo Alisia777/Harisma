@@ -1,30 +1,38 @@
 {
-  "generatedAt": "2026-04-29T17:57:18.915Z",
-  "sheetSource": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\tmp-google-current.xlsx",
-  "sourceMode": "input-xlsx",
-  "sourceGids": {},
-  "sourceWarnings": [],
+  "generatedAt": "2026-04-30T06:00:46.809Z",
+  "sheetSource": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
+  "sourceMode": "google-csv-tabs",
+  "sourceGids": {
+    "dim_sku": "4625365",
+    "fact_marketplace_daily_sku": "657645553",
+    "fact_ads_daily_sku": "1450570373",
+    "fact_logistics_daily_cluster_warehouse_sku": "2003059667",
+    "dim_warehouse": "1429580252"
+  },
+  "sourceWarnings": [
+    "dim_sku returned #REF! in Google export; keeping local skus.json overlay for owners and contour metadata"
+  ],
   "updatedSkus": 0,
   "dashboard": {
-    "latest_marketplace_date": "2026-04-28",
+    "latest_marketplace_date": "2026-04-29",
     "month_plan_units": 173171,
-    "month_fact_units": 150843,
-    "month_fact_revenue": 193793121,
-    "completion_to_date_pct": 0.9333
+    "month_fact_units": 151758,
+    "month_fact_revenue": 194443070,
+    "completion_to_date_pct": 0.9066
   },
   "platformTrends": {
-    "latest_marketplace_date": "2026-04-28",
+    "latest_marketplace_date": "2026-04-29",
     "points": 14
   },
   "adsSummary": {
-    "latest_ads_date": "2026-04-28",
+    "latest_ads_date": "2026-04-29",
     "platforms_with_ads": 3,
-    "item_rows": 4214
+    "item_rows": 4211
   },
   "logistics": {
-    "latest_logistics_date": "2026-04-29",
+    "latest_logistics_date": "2026-04-30",
     "ozon_cluster_count": 31,
     "ozon_warehouse_count": 59,
-    "wb_warehouse_count": 84
+    "wb_warehouse_count": 83
   }
 }

@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-04-29T17:57:18.879Z",
-  "asOfDate": "2026-04-28",
+  "generatedAt": "2026-04-30T06:00:46.737Z",
+  "asOfDate": "2026-04-29",
   "note": "Рекламная витрина daily bridge пересчитана из fact_ads_daily_sku Google Sheets. Сейчас факт есть для WB и Ozon; retail-канал в исходном листе не опубликован.",
   "googleSheetsSourceUrl": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
   "googleSheetsSourceGid": "2003059667",
@@ -13,15 +13,6 @@
       "series": [
         {
           "dayOffset": 27,
-          "label": "2026-04-01",
-          "views": 922477,
-          "clicks": 13163,
-          "spend": 233456.76,
-          "orders": 966,
-          "revenue": 1201525
-        },
-        {
-          "dayOffset": 26,
           "label": "2026-04-02",
           "views": 993036,
           "clicks": 14264,
@@ -30,7 +21,7 @@
           "revenue": 1251621
         },
         {
-          "dayOffset": 25,
+          "dayOffset": 26,
           "label": "2026-04-03",
           "views": 948448,
           "clicks": 14282,
@@ -39,7 +30,7 @@
           "revenue": 1276351
         },
         {
-          "dayOffset": 24,
+          "dayOffset": 25,
           "label": "2026-04-04",
           "views": 689113,
           "clicks": 12658,
@@ -48,7 +39,7 @@
           "revenue": 1401257
         },
         {
-          "dayOffset": 23,
+          "dayOffset": 24,
           "label": "2026-04-05",
           "views": 573934,
           "clicks": 10501,
@@ -57,7 +48,7 @@
           "revenue": 1192861
         },
         {
-          "dayOffset": 22,
+          "dayOffset": 23,
           "label": "2026-04-06",
           "views": 881982,
           "clicks": 13598,
@@ -66,7 +57,7 @@
           "revenue": 1210589
         },
         {
-          "dayOffset": 21,
+          "dayOffset": 22,
           "label": "2026-04-07",
           "views": 957624,
           "clicks": 15438,
@@ -75,7 +66,7 @@
           "revenue": 1239366
         },
         {
-          "dayOffset": 20,
+          "dayOffset": 21,
           "label": "2026-04-08",
           "views": 1068686,
           "clicks": 16611,
@@ -84,7 +75,7 @@
           "revenue": 1564398
         },
         {
-          "dayOffset": 19,
+          "dayOffset": 20,
           "label": "2026-04-09",
           "views": 930879,
           "clicks": 14885,
@@ -93,7 +84,7 @@
           "revenue": 1553610
         },
         {
-          "dayOffset": 18,
+          "dayOffset": 19,
           "label": "2026-04-10",
           "views": 713453,
           "clicks": 11118,
@@ -102,7 +93,7 @@
           "revenue": 1426642
         },
         {
-          "dayOffset": 17,
+          "dayOffset": 18,
           "label": "2026-04-11",
           "views": 742257,
           "clicks": 12099,
@@ -111,7 +102,7 @@
           "revenue": 1472289
         },
         {
-          "dayOffset": 16,
+          "dayOffset": 17,
           "label": "2026-04-12",
           "views": 825410,
           "clicks": 13680,
@@ -120,7 +111,7 @@
           "revenue": 1455801
         },
         {
-          "dayOffset": 15,
+          "dayOffset": 16,
           "label": "2026-04-13",
           "views": 735257,
           "clicks": 12207,
@@ -129,7 +120,7 @@
           "revenue": 1314436
         },
         {
-          "dayOffset": 14,
+          "dayOffset": 15,
           "label": "2026-04-14",
           "views": 686880,
           "clicks": 11276,
@@ -138,7 +129,7 @@
           "revenue": 1429546
         },
         {
-          "dayOffset": 13,
+          "dayOffset": 14,
           "label": "2026-04-15",
           "views": 847293,
           "clicks": 12556,
@@ -147,7 +138,7 @@
           "revenue": 1339193
         },
         {
-          "dayOffset": 12,
+          "dayOffset": 13,
           "label": "2026-04-16",
           "views": 806964,
           "clicks": 12381,
@@ -156,7 +147,7 @@
           "revenue": 1639472
         },
         {
-          "dayOffset": 11,
+          "dayOffset": 12,
           "label": "2026-04-17",
           "views": 818347,
           "clicks": 12425,
@@ -165,7 +156,7 @@
           "revenue": 1515512
         },
         {
-          "dayOffset": 10,
+          "dayOffset": 11,
           "label": "2026-04-18",
           "views": 845060,
           "clicks": 13388,
@@ -174,7 +165,7 @@
           "revenue": 1229213
         },
         {
-          "dayOffset": 9,
+          "dayOffset": 10,
           "label": "2026-04-19",
           "views": 1099934,
           "clicks": 16808,
@@ -183,7 +174,7 @@
           "revenue": 1357033
         },
         {
-          "dayOffset": 8,
+          "dayOffset": 9,
           "label": "2026-04-20",
           "views": 847427,
           "clicks": 14688,
@@ -192,7 +183,7 @@
           "revenue": 1328798
         },
         {
-          "dayOffset": 7,
+          "dayOffset": 8,
           "label": "2026-04-21",
           "views": 1186792,
           "clicks": 16143,
@@ -201,7 +192,7 @@
           "revenue": 1346503
         },
         {
-          "dayOffset": 6,
+          "dayOffset": 7,
           "label": "2026-04-22",
           "views": 1072529,
           "clicks": 15355,
@@ -210,7 +201,7 @@
           "revenue": 1430925
         },
         {
-          "dayOffset": 5,
+          "dayOffset": 6,
           "label": "2026-04-23",
           "views": 855273,
           "clicks": 13390,
@@ -219,7 +210,7 @@
           "revenue": 1242083
         },
         {
-          "dayOffset": 4,
+          "dayOffset": 5,
           "label": "2026-04-24",
           "views": 855127,
           "clicks": 12747,
@@ -228,7 +219,7 @@
           "revenue": 1429102
         },
         {
-          "dayOffset": 3,
+          "dayOffset": 4,
           "label": "2026-04-25",
           "views": 889868,
           "clicks": 14635,
@@ -237,7 +228,7 @@
           "revenue": 1798368
         },
         {
-          "dayOffset": 2,
+          "dayOffset": 3,
           "label": "2026-04-26",
           "views": 937285,
           "clicks": 16695,
@@ -246,22 +237,31 @@
           "revenue": 1923958
         },
         {
-          "dayOffset": 1,
+          "dayOffset": 2,
           "label": "2026-04-27",
           "views": 856571,
           "clicks": 14250,
           "spend": 298458.14,
-          "orders": 1377,
-          "revenue": 1756581
+          "orders": 1381,
+          "revenue": 1760585
         },
         {
-          "dayOffset": 0,
+          "dayOffset": 1,
           "label": "2026-04-28",
           "views": 826140,
           "clicks": 13194,
           "spend": 286499.16,
-          "orders": 1236,
-          "revenue": 1546259
+          "orders": 1282,
+          "revenue": 1597592
+        },
+        {
+          "dayOffset": 0,
+          "label": "2026-04-29",
+          "views": 1114059,
+          "clicks": 15711,
+          "spend": 322591.56,
+          "orders": 1368,
+          "revenue": 1665390
         }
       ]
     },
@@ -271,15 +271,6 @@
       "series": [
         {
           "dayOffset": 27,
-          "label": "2026-04-01",
-          "views": 159943,
-          "clicks": 4237,
-          "spend": 115640,
-          "orders": 316,
-          "revenue": 558926
-        },
-        {
-          "dayOffset": 26,
           "label": "2026-04-02",
           "views": 165852,
           "clicks": 4271,
@@ -288,7 +279,7 @@
           "revenue": 445821
         },
         {
-          "dayOffset": 25,
+          "dayOffset": 26,
           "label": "2026-04-03",
           "views": 165529,
           "clicks": 4526,
@@ -297,7 +288,7 @@
           "revenue": 541201
         },
         {
-          "dayOffset": 24,
+          "dayOffset": 25,
           "label": "2026-04-04",
           "views": 180542,
           "clicks": 4909,
@@ -306,7 +297,7 @@
           "revenue": 478352
         },
         {
-          "dayOffset": 23,
+          "dayOffset": 24,
           "label": "2026-04-05",
           "views": 187439,
           "clicks": 5179,
@@ -315,7 +306,7 @@
           "revenue": 471131
         },
         {
-          "dayOffset": 22,
+          "dayOffset": 23,
           "label": "2026-04-06",
           "views": 172746,
           "clicks": 4501,
@@ -324,7 +315,7 @@
           "revenue": 457558
         },
         {
-          "dayOffset": 21,
+          "dayOffset": 22,
           "label": "2026-04-07",
           "views": 166551,
           "clicks": 4587,
@@ -333,7 +324,7 @@
           "revenue": 388874
         },
         {
-          "dayOffset": 20,
+          "dayOffset": 21,
           "label": "2026-04-08",
           "views": 200622,
           "clicks": 5160,
@@ -342,7 +333,7 @@
           "revenue": 435784
         },
         {
-          "dayOffset": 19,
+          "dayOffset": 20,
           "label": "2026-04-09",
           "views": 228804,
           "clicks": 5551,
@@ -351,7 +342,7 @@
           "revenue": 494061
         },
         {
-          "dayOffset": 18,
+          "dayOffset": 19,
           "label": "2026-04-10",
           "views": 222177,
           "clicks": 4744,
@@ -360,7 +351,7 @@
           "revenue": 570713
         },
         {
-          "dayOffset": 17,
+          "dayOffset": 18,
           "label": "2026-04-11",
           "views": 184350,
           "clicks": 4398,
@@ -369,7 +360,7 @@
           "revenue": 435085
         },
         {
-          "dayOffset": 16,
+          "dayOffset": 17,
           "label": "2026-04-12",
           "views": 174327,
           "clicks": 4496,
@@ -378,7 +369,7 @@
           "revenue": 472289
         },
         {
-          "dayOffset": 15,
+          "dayOffset": 16,
           "label": "2026-04-13",
           "views": 209161,
           "clicks": 5017,
@@ -387,7 +378,7 @@
           "revenue": 473828
         },
         {
-          "dayOffset": 14,
+          "dayOffset": 15,
           "label": "2026-04-14",
           "views": 172679,
           "clicks": 4109,
@@ -396,7 +387,7 @@
           "revenue": 485803
         },
         {
-          "dayOffset": 13,
+          "dayOffset": 14,
           "label": "2026-04-15",
           "views": 86618,
           "clicks": 2669,
@@ -405,7 +396,7 @@
           "revenue": 391564
         },
         {
-          "dayOffset": 12,
+          "dayOffset": 13,
           "label": "2026-04-16",
           "views": 69034,
           "clicks": 2437,
@@ -414,7 +405,7 @@
           "revenue": 365404
         },
         {
-          "dayOffset": 11,
+          "dayOffset": 12,
           "label": "2026-04-17",
           "views": 65985,
           "clicks": 2243,
@@ -423,7 +414,7 @@
           "revenue": 343187
         },
         {
-          "dayOffset": 10,
+          "dayOffset": 11,
           "label": "2026-04-18",
           "views": 64503,
           "clicks": 2421,
@@ -432,7 +423,7 @@
           "revenue": 290877
         },
         {
-          "dayOffset": 9,
+          "dayOffset": 10,
           "label": "2026-04-19",
           "views": 78033,
           "clicks": 3038,
@@ -441,7 +432,7 @@
           "revenue": 286778
         },
         {
-          "dayOffset": 8,
+          "dayOffset": 9,
           "label": "2026-04-20",
           "views": 69694,
           "clicks": 2872,
@@ -450,7 +441,7 @@
           "revenue": 289354
         },
         {
-          "dayOffset": 7,
+          "dayOffset": 8,
           "label": "2026-04-21",
           "views": 68399,
           "clicks": 2429,
@@ -459,7 +450,7 @@
           "revenue": 305676
         },
         {
-          "dayOffset": 6,
+          "dayOffset": 7,
           "label": "2026-04-22",
           "views": 80216,
           "clicks": 2737,
@@ -468,7 +459,7 @@
           "revenue": 325198
         },
         {
-          "dayOffset": 5,
+          "dayOffset": 6,
           "label": "2026-04-23",
           "views": 76326,
           "clicks": 2446,
@@ -477,7 +468,7 @@
           "revenue": 269230
         },
         {
-          "dayOffset": 4,
+          "dayOffset": 5,
           "label": "2026-04-24",
           "views": 74990,
           "clicks": 2353,
@@ -486,7 +477,7 @@
           "revenue": 293304
         },
         {
-          "dayOffset": 3,
+          "dayOffset": 4,
           "label": "2026-04-25",
           "views": 70308,
           "clicks": 2518,
@@ -495,7 +486,7 @@
           "revenue": 261279
         },
         {
-          "dayOffset": 2,
+          "dayOffset": 3,
           "label": "2026-04-26",
           "views": 71615,
           "clicks": 2645,
@@ -504,7 +495,7 @@
           "revenue": 293217
         },
         {
-          "dayOffset": 1,
+          "dayOffset": 2,
           "label": "2026-04-27",
           "views": 71391,
           "clicks": 2418,
@@ -513,13 +504,22 @@
           "revenue": 302110
         },
         {
-          "dayOffset": 0,
+          "dayOffset": 1,
           "label": "2026-04-28",
           "views": 71385,
           "clicks": 2474,
           "spend": 49319,
           "orders": 242,
           "revenue": 333301
+        },
+        {
+          "dayOffset": 0,
+          "label": "2026-04-29",
+          "views": 74685,
+          "clicks": 2563,
+          "spend": 49352,
+          "orders": 217,
+          "revenue": 294234
         }
       ]
     },
@@ -529,15 +529,6 @@
       "series": [
         {
           "dayOffset": 27,
-          "label": "2026-04-01",
-          "views": 0,
-          "clicks": 0,
-          "spend": 0,
-          "orders": 0,
-          "revenue": 0
-        },
-        {
-          "dayOffset": 26,
           "label": "2026-04-02",
           "views": 0,
           "clicks": 0,
@@ -546,7 +537,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 25,
+          "dayOffset": 26,
           "label": "2026-04-03",
           "views": 0,
           "clicks": 0,
@@ -555,7 +546,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 24,
+          "dayOffset": 25,
           "label": "2026-04-04",
           "views": 0,
           "clicks": 0,
@@ -564,7 +555,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 23,
+          "dayOffset": 24,
           "label": "2026-04-05",
           "views": 0,
           "clicks": 0,
@@ -573,7 +564,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 22,
+          "dayOffset": 23,
           "label": "2026-04-06",
           "views": 0,
           "clicks": 0,
@@ -582,7 +573,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 21,
+          "dayOffset": 22,
           "label": "2026-04-07",
           "views": 0,
           "clicks": 0,
@@ -591,7 +582,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 20,
+          "dayOffset": 21,
           "label": "2026-04-08",
           "views": 0,
           "clicks": 0,
@@ -600,7 +591,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 19,
+          "dayOffset": 20,
           "label": "2026-04-09",
           "views": 0,
           "clicks": 0,
@@ -609,7 +600,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 18,
+          "dayOffset": 19,
           "label": "2026-04-10",
           "views": 0,
           "clicks": 0,
@@ -618,7 +609,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 17,
+          "dayOffset": 18,
           "label": "2026-04-11",
           "views": 0,
           "clicks": 0,
@@ -627,7 +618,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 16,
+          "dayOffset": 17,
           "label": "2026-04-12",
           "views": 0,
           "clicks": 0,
@@ -636,7 +627,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 15,
+          "dayOffset": 16,
           "label": "2026-04-13",
           "views": 0,
           "clicks": 0,
@@ -645,7 +636,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 14,
+          "dayOffset": 15,
           "label": "2026-04-14",
           "views": 0,
           "clicks": 0,
@@ -654,7 +645,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 13,
+          "dayOffset": 14,
           "label": "2026-04-15",
           "views": 0,
           "clicks": 0,
@@ -663,7 +654,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 12,
+          "dayOffset": 13,
           "label": "2026-04-16",
           "views": 0,
           "clicks": 0,
@@ -672,7 +663,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 11,
+          "dayOffset": 12,
           "label": "2026-04-17",
           "views": 0,
           "clicks": 0,
@@ -681,7 +672,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 10,
+          "dayOffset": 11,
           "label": "2026-04-18",
           "views": 0,
           "clicks": 0,
@@ -690,7 +681,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 9,
+          "dayOffset": 10,
           "label": "2026-04-19",
           "views": 0,
           "clicks": 0,
@@ -699,7 +690,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 8,
+          "dayOffset": 9,
           "label": "2026-04-20",
           "views": 0,
           "clicks": 0,
@@ -708,7 +699,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 7,
+          "dayOffset": 8,
           "label": "2026-04-21",
           "views": 0,
           "clicks": 0,
@@ -717,7 +708,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 6,
+          "dayOffset": 7,
           "label": "2026-04-22",
           "views": 0,
           "clicks": 0,
@@ -726,7 +717,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 5,
+          "dayOffset": 6,
           "label": "2026-04-23",
           "views": 0,
           "clicks": 0,
@@ -735,7 +726,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 4,
+          "dayOffset": 5,
           "label": "2026-04-24",
           "views": 0,
           "clicks": 0,
@@ -744,7 +735,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 3,
+          "dayOffset": 4,
           "label": "2026-04-25",
           "views": 0,
           "clicks": 0,
@@ -753,7 +744,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 2,
+          "dayOffset": 3,
           "label": "2026-04-26",
           "views": 0,
           "clicks": 0,
@@ -762,7 +753,7 @@
           "revenue": 0
         },
         {
-          "dayOffset": 1,
+          "dayOffset": 2,
           "label": "2026-04-27",
           "views": 0,
           "clicks": 0,
@@ -771,8 +762,17 @@
           "revenue": 0
         },
         {
-          "dayOffset": 0,
+          "dayOffset": 1,
           "label": "2026-04-28",
+          "views": 0,
+          "clicks": 0,
+          "spend": 0,
+          "orders": 0,
+          "revenue": 0
+        },
+        {
+          "dayOffset": 0,
+          "label": "2026-04-29",
           "views": 0,
           "clicks": 0,
           "spend": 0,
@@ -787,15 +787,6 @@
       "series": [
         {
           "dayOffset": 27,
-          "label": "2026-04-01",
-          "views": 1082420,
-          "clicks": 17400,
-          "spend": 349096.76,
-          "orders": 1282,
-          "revenue": 1760451
-        },
-        {
-          "dayOffset": 26,
           "label": "2026-04-02",
           "views": 1158888,
           "clicks": 18535,
@@ -804,7 +795,7 @@
           "revenue": 1697442
         },
         {
-          "dayOffset": 25,
+          "dayOffset": 26,
           "label": "2026-04-03",
           "views": 1113977,
           "clicks": 18808,
@@ -813,7 +804,7 @@
           "revenue": 1817552
         },
         {
-          "dayOffset": 24,
+          "dayOffset": 25,
           "label": "2026-04-04",
           "views": 869655,
           "clicks": 17567,
@@ -822,7 +813,7 @@
           "revenue": 1879609
         },
         {
-          "dayOffset": 23,
+          "dayOffset": 24,
           "label": "2026-04-05",
           "views": 761373,
           "clicks": 15680,
@@ -831,7 +822,7 @@
           "revenue": 1663992
         },
         {
-          "dayOffset": 22,
+          "dayOffset": 23,
           "label": "2026-04-06",
           "views": 1054728,
           "clicks": 18099,
@@ -840,7 +831,7 @@
           "revenue": 1668147
         },
         {
-          "dayOffset": 21,
+          "dayOffset": 22,
           "label": "2026-04-07",
           "views": 1124175,
           "clicks": 20025,
@@ -849,7 +840,7 @@
           "revenue": 1628240
         },
         {
-          "dayOffset": 20,
+          "dayOffset": 21,
           "label": "2026-04-08",
           "views": 1269308,
           "clicks": 21771,
@@ -858,7 +849,7 @@
           "revenue": 2000182
         },
         {
-          "dayOffset": 19,
+          "dayOffset": 20,
           "label": "2026-04-09",
           "views": 1159683,
           "clicks": 20436,
@@ -867,7 +858,7 @@
           "revenue": 2047671
         },
         {
-          "dayOffset": 18,
+          "dayOffset": 19,
           "label": "2026-04-10",
           "views": 935630,
           "clicks": 15862,
@@ -876,7 +867,7 @@
           "revenue": 1997355
         },
         {
-          "dayOffset": 17,
+          "dayOffset": 18,
           "label": "2026-04-11",
           "views": 926607,
           "clicks": 16497,
@@ -885,7 +876,7 @@
           "revenue": 1907374
         },
         {
-          "dayOffset": 16,
+          "dayOffset": 17,
           "label": "2026-04-12",
           "views": 999737,
           "clicks": 18176,
@@ -894,7 +885,7 @@
           "revenue": 1928090
         },
         {
-          "dayOffset": 15,
+          "dayOffset": 16,
           "label": "2026-04-13",
           "views": 944418,
           "clicks": 17224,
@@ -903,7 +894,7 @@
           "revenue": 1788264
         },
         {
-          "dayOffset": 14,
+          "dayOffset": 15,
           "label": "2026-04-14",
           "views": 859559,
           "clicks": 15385,
@@ -912,7 +903,7 @@
           "revenue": 1915349
         },
         {
-          "dayOffset": 13,
+          "dayOffset": 14,
           "label": "2026-04-15",
           "views": 933911,
           "clicks": 15225,
@@ -921,7 +912,7 @@
           "revenue": 1730757
         },
         {
-          "dayOffset": 12,
+          "dayOffset": 13,
           "label": "2026-04-16",
           "views": 875998,
           "clicks": 14818,
@@ -930,7 +921,7 @@
           "revenue": 2004876
         },
         {
-          "dayOffset": 11,
+          "dayOffset": 12,
           "label": "2026-04-17",
           "views": 884332,
           "clicks": 14668,
@@ -939,7 +930,7 @@
           "revenue": 1858699
         },
         {
-          "dayOffset": 10,
+          "dayOffset": 11,
           "label": "2026-04-18",
           "views": 909563,
           "clicks": 15809,
@@ -948,7 +939,7 @@
           "revenue": 1520090
         },
         {
-          "dayOffset": 9,
+          "dayOffset": 10,
           "label": "2026-04-19",
           "views": 1177967,
           "clicks": 19846,
@@ -957,7 +948,7 @@
           "revenue": 1643811
         },
         {
-          "dayOffset": 8,
+          "dayOffset": 9,
           "label": "2026-04-20",
           "views": 917121,
           "clicks": 17560,
@@ -966,7 +957,7 @@
           "revenue": 1618152
         },
         {
-          "dayOffset": 7,
+          "dayOffset": 8,
           "label": "2026-04-21",
           "views": 1255191,
           "clicks": 18572,
@@ -975,7 +966,7 @@
           "revenue": 1652179
         },
         {
-          "dayOffset": 6,
+          "dayOffset": 7,
           "label": "2026-04-22",
           "views": 1152745,
           "clicks": 18092,
@@ -984,7 +975,7 @@
           "revenue": 1756123
         },
         {
-          "dayOffset": 5,
+          "dayOffset": 6,
           "label": "2026-04-23",
           "views": 931599,
           "clicks": 15836,
@@ -993,7 +984,7 @@
           "revenue": 1511313
         },
         {
-          "dayOffset": 4,
+          "dayOffset": 5,
           "label": "2026-04-24",
           "views": 930117,
           "clicks": 15100,
@@ -1002,7 +993,7 @@
           "revenue": 1722406
         },
         {
-          "dayOffset": 3,
+          "dayOffset": 4,
           "label": "2026-04-25",
           "views": 960176,
           "clicks": 17153,
@@ -1011,7 +1002,7 @@
           "revenue": 2059647
         },
         {
-          "dayOffset": 2,
+          "dayOffset": 3,
           "label": "2026-04-26",
           "views": 1008900,
           "clicks": 19340,
@@ -1020,1827 +1011,36 @@
           "revenue": 2217175
         },
         {
-          "dayOffset": 1,
+          "dayOffset": 2,
           "label": "2026-04-27",
           "views": 927962,
           "clicks": 16668,
           "spend": 349434.14,
-          "orders": 1600,
-          "revenue": 2058691
+          "orders": 1604,
+          "revenue": 2062695
         },
         {
-          "dayOffset": 0,
+          "dayOffset": 1,
           "label": "2026-04-28",
           "views": 897525,
           "clicks": 15668,
           "spend": 335818.16,
-          "orders": 1478,
-          "revenue": 1879560
+          "orders": 1524,
+          "revenue": 1930893
+        },
+        {
+          "dayOffset": 0,
+          "label": "2026-04-29",
+          "views": 1188744,
+          "clicks": 18274,
+          "spend": 371943.56,
+          "orders": 1585,
+          "revenue": 1959624
         }
       ]
     }
   ],
   "itemSeries": [
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "alteya_beauty_brows_box",
-      "offerId": "alteya_beauty_brows_box",
-      "name": "Уход за бровями набор Гель для бровей + сыворотка для ресниц, набор для бровей и ресниц, Алтея",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "alteya_young_skin_box",
-      "offerId": "alteya_young_skin_box",
-      "name": "Подарочный набор для женщин. Набор для лица уходовый косметический бьюти Young Skin Box Алтея",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "b_kompleks_bad_60tabl",
-      "offerId": "b_kompleks_BAD_60tabl",
-      "name": "Витамины группы В комплекс Алтея 60 жевательных таблеток",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "berberin_laif_bad_60caps",
-      "offerId": "berberin_laif_BAD_60caps",
-      "name": "Берберин + хром + коэнзим + B6 для похудения, контроль аппетита и веса, Алтея, Берберин Лайф, 60 капсул",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "chudofrukt_bad_60caps",
-      "offerId": "chudofrukt_BAD_60caps",
-      "name": "Таблетки для похудения, жиросжигатель детокс для снижения веса, Алтея, Чудофрукт, 60 капсул",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "curly_method_300ml",
-      "offerId": "curly_method_300ml",
-      "name": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
-      "views": 3935,
-      "clicks": 404,
-      "spend": 4252,
-      "orders": 56,
-      "revenue": 88674
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "ekdisteron_ultra_man_60caps",
-      "offerId": "ekdisteron_ultra_man_60caps",
-      "name": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "enzim_pudra_80gr",
-      "offerId": "enzim_pudra_80gr",
-      "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "enzim_pudra_80gr_v2",
-      "offerId": "enzim_pudra_80gr_v2",
-      "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "frutalika_bad_60caps",
-      "offerId": "frutalika_BAD_60caps",
-      "name": "Пиколинат хрома для похудения, детокс, жиросжигатель, Алтея, Фруталика, 60 капсул",
-      "views": 0,
-      "clicks": 0,
-      "spend": 54,
-      "orders": 1,
-      "revenue": 535
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "gel_antiakne_20ml",
-      "offerId": "gel_antiakne_20ml",
-      "name": "Точечный крем от прыщей. Корректор точечный против прыщей, крем от акне. Салициловая кислота, азелаиновая кислота Алтея 20 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "gel_antiakne_20ml_v2",
-      "offerId": "gel_antiakne_20ml_v2",
-      "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "gel_brows_5ml",
-      "offerId": "gel_brows_5ml",
-      "name": "Гель для бровей с коллагеном и эластином, фиксация на 24 часа, Алтея, 5 мл",
-      "views": 66,
-      "clicks": 4,
-      "spend": 36,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "gel_dlya_britya_300ml",
-      "offerId": "gel_dlya_britya_300ml",
-      "name": "Гель для бритья мужской без пены охлаждающий с ментолом Алтея 300 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "gel_dlya_brovei_6ml",
-      "offerId": "gel_dlya_brovei_6ml",
-      "name": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл",
-      "views": 5181,
-      "clicks": 222,
-      "spend": 4775,
-      "orders": 6,
-      "revenue": 3809
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "gel_for_men_3_in_1_1000ml",
-      "offerId": "gel_for_men_3_in_1_1000ml",
-      "name": "Гель для душа мужской парфюмированный Алтея 1000 мл",
-      "views": 735,
-      "clicks": 17,
-      "spend": 463,
-      "orders": 2,
-      "revenue": 2106
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "gel_parfum_tabacco_vanille_450ml",
-      "offerId": "gel_parfum_tabacco_vanille_450ml",
-      "name": "Гель для душа женский парфюмированный Tobacco Vanille, Алтея, 450 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "gidrofilnoe_maslo_150ml",
-      "offerId": "gidrofilnoe_maslo_150ml",
-      "name": "Гидрофильное масло для снятия макияжа с лавандой, Алтея , 150 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "glikiron_bad_60caps",
-      "offerId": "glikiron_BAD_60caps",
-      "name": "Гликирон БАД для профилактики диабета контроль аппетита",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "i_am_alpha_bad_60caps",
-      "offerId": "i_am_alpha_BAD_60caps",
-      "name": "Тестостерон для мужчин I am alpha Алтея 60 капсул, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер",
-      "views": 985,
-      "clicks": 31,
-      "spend": 566,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "indolakt_bad_60caps",
-      "offerId": "indolakt_BAD_60caps",
-      "name": "Индол 3 карбинол брокколи витамины с зеленым чаем Алтея, Индолакт, 60 капсул",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "insulight_bad_60caps",
-      "offerId": "insulight_BAD_60caps",
-      "name": "Витамины для диабетиков, для профилактики от сахарного диабета, Алтея, Инсулайт, 60 капсул",
-      "views": 1765,
-      "clicks": 62,
-      "spend": 1504,
-      "orders": 3,
-      "revenue": 3597
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "intimvita_200ml",
-      "offerId": "intimvita_200ml",
-      "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 200 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "intimvita_300ml",
-      "offerId": "intimvita_300ml",
-      "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 300 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "krem_buster_250ml",
-      "offerId": "krem_buster_250ml",
-      "name": "Антицеллюлитный крем гель для тела от целлюлита Алтея 250 мл",
-      "views": 1113,
-      "clicks": 58,
-      "spend": 880,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "krem_dlya_ruk_75ml",
-      "offerId": "krem_dlya_ruk_75ml",
-      "name": "Крем для рук ламеллярный с мочевиной 3%, увлажняющий и питательный, Алтея, 75 мл",
-      "views": 3682,
-      "clicks": 109,
-      "spend": 3988,
-      "orders": 3,
-      "revenue": 2296
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "krem_dlya_vek_30ml",
-      "offerId": "krem_dlya_vek_30ml",
-      "name": "Крем для век и кожи вокруг глаз Жидкие патчи для глаз Алтея 30 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "krem_ot_rastyazhek",
-      "offerId": "krem_ot_rastyazhek",
-      "name": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
-      "views": 3003,
-      "clicks": 112,
-      "spend": 3701,
-      "orders": 15,
-      "revenue": 21187
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "krem-filler_15ml",
-      "offerId": "krem-filler_15ml",
-      "name": "Питательный крем для лица антивозрастной, Крем филлер вокруг глаз, с коллагеном с ниацинамидом, Алтея, 15 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "kremshelk_100ml",
-      "offerId": "kremshelk_100ml",
-      "name": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "krovavii_piling_30ml",
-      "offerId": "krovavii_piling_30ml",
-      "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "limfaks_bad_30caps",
-      "offerId": "limfaks_BAD_30caps",
-      "name": "Биологически активная добавка к пище: \"Комплекс для здоровья лимфатической системы\" Лимфакс",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "maska_dlya_lica_100ml",
-      "offerId": "maska_dlya_lica_100ml",
-      "name": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
-      "views": 796,
-      "clicks": 36,
-      "spend": 649,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "maska-batter_250ml",
-      "offerId": "maska-batter_250ml",
-      "name": "Маска для волос с кератином восстанавливающая увлажняющая, Алтея, 250 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "maska-batter_500ml",
-      "offerId": "maska-batter_500ml",
-      "name": "Маска для волос с кератином увлажняющая 500мл Алтея",
-      "views": 0,
-      "clicks": 0,
-      "spend": 171,
-      "orders": 1,
-      "revenue": 1708
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "maska-batter_dlya_rosta_500ml",
-      "offerId": "maska-batter_dlya_rosta_500ml",
-      "name": "Маска для роста волос с перцем, средство для роста волос, для укрепления, Алтея 500мл",
-      "views": 4226,
-      "clicks": 92,
-      "spend": 3642,
-      "orders": 7,
-      "revenue": 10180
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "maslo_dlya_borodi_50ml",
-      "offerId": "maslo_dlya_borodi_50ml",
-      "name": "Масло для роста бороды, средство для роста, уход за бородой, смягчающее, Алтея, 50 мл",
-      "views": 727,
-      "clicks": 28,
-      "spend": 369,
-      "orders": 1,
-      "revenue": 577
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "maslo_dlya_volos_parf_110ml_",
-      "offerId": "maslo_dlya_volos_parf_110ml_",
-      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
-      "views": 895,
-      "clicks": 12,
-      "spend": 233,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "matte_wax_50ml",
-      "offerId": "matte_wax_50ml",
-      "name": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "menoflavon_bad_60caps",
-      "offerId": "menoflavon_BAD_60caps",
-      "name": "Фитоэстрогены для женщин, от приливов при климаксе, при менопаузе, Алтея, Мено Флавон, 60 капсул",
-      "views": 694,
-      "clicks": 35,
-      "spend": 902,
-      "orders": 1,
-      "revenue": 1317
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "monarda_30ml",
-      "offerId": "monarda_30ml",
-      "name": "Масло монарды и экстракт зеленого чая для ногтей, универсальное, Алтея, 30 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "nabor_penka_dlya_resnic",
-      "offerId": "nabor_penka_dlya_resnic",
-      "name": "Пенка для нарощенных ресниц и для бровей, для умывания и очищения ресниц Алтея 150 мл",
-      "views": 1501,
-      "clicks": 62,
-      "spend": 1178,
-      "orders": 8,
-      "revenue": 8040
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "nabor_remuver_40ml",
-      "offerId": "nabor_remuver_40ml",
-      "name": "Ремувер для удаления кутикулы, Алтея, 40 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "nabor_remuver_40ml_1_1",
-      "offerId": "nabor_remuver_40ml_1_1",
-      "name": "Ремувер для удаления кутикулы, Алтея, 40 мл х 2",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "nabor_remuver_kremovii",
-      "offerId": "nabor_remuver_kremovii",
-      "name": "Ремувер для снятия ресниц, Алтея, 18г",
-      "views": 1626,
-      "clicks": 71,
-      "spend": 2419,
-      "orders": 12,
-      "revenue": 10635
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "penka_160ml",
-      "offerId": "penka_160ml",
-      "name": "Мицеллярная пенка для умывания лица, для снятия макияжа, средство для снятия макияжа, Алтея, 160",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "penka_kudryavii_metod_150ml",
-      "offerId": "penka_kudryavii_metod_150ml",
-      "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "piling_100ml",
-      "offerId": "piling_100ml",
-      "name": "Пилинг для кожи головы профессиональный скраб от перхоти, Алтея, 100 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "pink_pepper_50ml",
-      "offerId": "pink_pepper_50ml",
-      "name": "Крем для лица матирующий с ниацинамидом дневной база под макияж Алтея 50 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "pirantoks_bad_60caps",
-      "offerId": "pirantoks_BAD_60caps",
-      "name": "Антипаразитарный комплекс от глистов, очищение организма от паразитов, черный орех детокс, Алтея, Пирантокс, 60 капсул",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "relaksinol_bad_60caps",
-      "offerId": "relaksinol_BAD_60caps",
-      "name": "Магний В6 с лавандой, Алтея, Релаксинол, 60 капсул",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "retiderm_50ml",
-      "offerId": "retiderm_50ml",
-      "name": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
-      "views": 35793,
-      "clicks": 1124,
-      "spend": 36538,
-      "orders": 84,
-      "revenue": 185523
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "retinait_krem_01_50ml",
-      "offerId": "retinait_krem_01_50ml",
-      "name": "Крем для лица с ретинолом и церамидами 50 мл Ретинайт",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "retinait_krem_025_50ml",
-      "offerId": "retinait_krem_025_50ml",
-      "name": "Крем для лица с липосомальным ретинолом 0,25% Ретинайт",
-      "views": 11442,
-      "clicks": 195,
-      "spend": 3761,
-      "orders": 9,
-      "revenue": 20618
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "retinait_krem_1_50ml",
-      "offerId": "retinait_krem_1_50ml",
-      "name": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
-      "views": 47724,
-      "clicks": 837,
-      "spend": 28579,
-      "orders": 36,
-      "revenue": 101897
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "retinait_syvorotka_1_30ml",
-      "offerId": "retinait_syvorotka_1_30ml",
-      "name": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
-      "views": 1354,
-      "clicks": 35,
-      "spend": 332,
-      "orders": 8,
-      "revenue": 15504
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "revmastop_bad_60caps",
-      "offerId": "revmastop_BAD_60caps",
-      "name": "Глюкозамин хондроитин МСМ для суставов и связок Ревмастоп Алтея 60 капсул",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "shampun_dlya_rosta_250ml",
-      "offerId": "shampun_dlya_rosta_250ml",
-      "name": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
-      "views": 9093,
-      "clicks": 321,
-      "spend": 9713,
-      "orders": 42,
-      "revenue": 50804
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "shampun_protiv_perhoti_250ml",
-      "offerId": "shampun_protiv_perhoti_250ml",
-      "name": "Шампунь от перхоти лечебный с климбазолом Алтея, 250мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "silk_hair_300ml",
-      "offerId": "silk_hair_300ml",
-      "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
-      "views": 2352,
-      "clicks": 165,
-      "spend": 2370,
-      "orders": 13,
-      "revenue": 14729
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "skrab_babl_gam_200ml",
-      "offerId": "skrab_babl_gam_200ml",
-      "name": "Скраб пилинг для кожи головы, Алтея, 200 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "solevoy_sprei_200ml",
-      "offerId": "solevoy_sprei_200ml",
-      "name": "Солевой спрей для волос/ текстурайзер для объема и укладки волос с фиксацией Алтея 200 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "sprei_buster_100ml",
-      "offerId": "sprei_buster_100ml",
-      "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "syvorotka_dlya_lica_30ml",
-      "offerId": "syvorotka_dlya_lica_30ml",
-      "name": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
-      "views": 214,
-      "clicks": 3,
-      "spend": 63,
-      "orders": 4,
-      "revenue": 7371
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "syvorotka_dlya_rosta_6ml",
-      "offerId": "syvorotka_dlya_rosta_6ml",
-      "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "syvorotka_dlya_rosta_6ml_v2",
-      "offerId": "syvorotka_dlya_rosta_6ml_v2",
-      "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "syvorotka_guk_30ml",
-      "offerId": "syvorotka_guk_30ml",
-      "name": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "syvorotka_niacin_05_30ml",
-      "offerId": "syvorotka_niacin_05_30ml",
-      "name": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
-      "views": 0,
-      "clicks": 0,
-      "spend": 308,
-      "orders": 2,
-      "revenue": 3079
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "telomeras_60caps",
-      "offerId": "telomeras_60caps",
-      "name": "Теломераза NMN ТА-65 Алтея 60 капсул",
-      "views": 20532,
-      "clicks": 199,
-      "spend": 4124,
-      "orders": 2,
-      "revenue": 4740
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "termo_sprei_200ml",
-      "offerId": "termo_sprei_200ml",
-      "name": "Термозащита Спрей для волос 17 в 1 восстанавливающий с кератином, Алтея, 200 мл",
-      "views": 509,
-      "clicks": 3,
-      "spend": 70,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "tonik_dlya_lica_200ml",
-      "offerId": "tonik_dlya_lica_200ml",
-      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "ozon",
-      "articleKey": "vosk_stik_15ml",
-      "offerId": "vosk_stik_15ml",
-      "name": "Воск стик для укладки и фиксации волос Алтея 15 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "т-34_bad_60caps",
-      "offerId": "Т-34_BAD_60caps",
-      "name": "Возбудитель для мужчин, БАД Т-34 возбуждающие для потенции, эрекции, 60 капсул",
-      "views": 0,
-      "clicks": 1,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "alteya_beauty_brows_box",
-      "offerId": "alteya_beauty_brows_box",
-      "name": "Уход за бровями набор Гель для бровей + сыворотка для ресниц, набор для бровей и ресниц, Алтея",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "b_kompleks_bad_60tabl",
-      "offerId": "b_kompleks_BAD_60tabl",
-      "name": "Витамины группы В комплекс Алтея 60 жевательных таблеток",
-      "views": 1,
-      "clicks": 0,
-      "spend": 0.6,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "berberin_laif_bad_60caps",
-      "offerId": "berberin_laif_BAD_60caps",
-      "name": "Берберин + хром + коэнзим + B6 для похудения, контроль аппетита и веса, Алтея, Берберин Лайф, 60 капсул",
-      "views": 2,
-      "clicks": 0,
-      "spend": 1.64,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "chudofrukt_bad_60caps",
-      "offerId": "chudofrukt_BAD_60caps",
-      "name": "Таблетки для похудения, жиросжигатель детокс для снижения веса, Алтея, Чудофрукт, 60 капсул",
-      "views": 1,
-      "clicks": 0,
-      "spend": 0.11,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "curly_method_300ml",
-      "offerId": "curly_method_300ml",
-      "name": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
-      "views": 44692,
-      "clicks": 1340,
-      "spend": 12641.94,
-      "orders": 90,
-      "revenue": 113389
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "ekdisteron_ultra_man_60caps",
-      "offerId": "ekdisteron_ultra_man_60caps",
-      "name": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
-      "views": 455,
-      "clicks": 12,
-      "spend": 465.79,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "enzim_pudra_80gr_v2",
-      "offerId": "enzim_pudra_80gr_v2",
-      "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
-      "views": 2,
-      "clicks": 0,
-      "spend": 0.19,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "frutaksa_bad_200gr",
-      "offerId": "frutaksa_BAD_200gr",
-      "name": "Жиросжигатель, детокс, Алтея, Алтея, Фрутакса, 200 грамм",
-      "views": 1,
-      "clicks": 0,
-      "spend": 0.3,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "frutalika_bad_60caps",
-      "offerId": "frutalika_BAD_60caps",
-      "name": "Пиколинат хрома для похудения, детокс, жиросжигатель, Алтея, Фруталика, 60 капсул",
-      "views": 736,
-      "clicks": 16,
-      "spend": 107.89,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "gel_antiakne_20ml",
-      "offerId": "gel_antiakne_20ml",
-      "name": "Точечный крем от прыщей. Корректор точечный против прыщей, крем от акне. Салициловая кислота, азелаиновая кислота Алтея 20 мл",
-      "views": 23227,
-      "clicks": 170,
-      "spend": 1863.78,
-      "orders": 11,
-      "revenue": 8580
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "gel_antiakne_20ml_v2",
-      "offerId": "gel_antiakne_20ml_v2",
-      "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
-      "views": 519,
-      "clicks": 21,
-      "spend": 116.45,
-      "orders": 40,
-      "revenue": 36002
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "gel_brows_5ml",
-      "offerId": "gel_brows_5ml",
-      "name": "Гель для бровей с коллагеном и эластином, фиксация на 24 часа, Алтея, 5 мл",
-      "views": 4743,
-      "clicks": 68,
-      "spend": 1435.46,
-      "orders": 5,
-      "revenue": 3075
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "gel_dlya_britya_300ml",
-      "offerId": "gel_dlya_britya_300ml",
-      "name": "Гель для бритья мужской без пены охлаждающий с ментолом Алтея 300 мл",
-      "views": 6,
-      "clicks": 2,
-      "spend": 12.48,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "gel_dlya_brovei_6ml",
-      "offerId": "gel_dlya_brovei_6ml",
-      "name": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл",
-      "views": 15276,
-      "clicks": 237,
-      "spend": 2420.39,
-      "orders": 21,
-      "revenue": 8400
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "gel_for_men_3_in_1_1000ml",
-      "offerId": "gel_for_men_3_in_1_1000ml",
-      "name": "Гель для душа мужской парфюмированный Алтея 1000 мл",
-      "views": 851,
-      "clicks": 10,
-      "spend": 176.18,
-      "orders": 1,
-      "revenue": 813
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "gel_parfum_tabacco_vanille_450ml",
-      "offerId": "gel_parfum_tabacco_vanille_450ml",
-      "name": "Гель для душа женский парфюмированный Tobacco Vanille, Алтея, 450 мл",
-      "views": 243,
-      "clicks": 12,
-      "spend": 681.12,
-      "orders": 3,
-      "revenue": 1770
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "gidrofilnoe_maslo_150ml",
-      "offerId": "gidrofilnoe_maslo_150ml",
-      "name": "Гидрофильное масло для снятия макияжа с лавандой, Алтея , 150 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "glikiron_bad_60caps",
-      "offerId": "glikiron_BAD_60caps",
-      "name": "Гликирон БАД для профилактики диабета контроль аппетита",
-      "views": 1038,
-      "clicks": 16,
-      "spend": 851.25,
-      "orders": 2,
-      "revenue": 1886
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "i_am_alpha_bad_60caps",
-      "offerId": "i_am_alpha_BAD_60caps",
-      "name": "Тестостерон для мужчин I am alpha Алтея 60 капсул, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер",
-      "views": 752,
-      "clicks": 6,
-      "spend": 74.35,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "indolakt_bad_60caps",
-      "offerId": "indolakt_BAD_60caps",
-      "name": "Индол 3 карбинол брокколи витамины с зеленым чаем Алтея, Индолакт, 60 капсул",
-      "views": 705,
-      "clicks": 22,
-      "spend": 155.29,
-      "orders": 3,
-      "revenue": 3285
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "insulight_bad_60caps",
-      "offerId": "insulight_BAD_60caps",
-      "name": "Витамины для диабетиков, для профилактики от сахарного диабета, Алтея, Инсулайт, 60 капсул",
-      "views": 2775,
-      "clicks": 97,
-      "spend": 642.14,
-      "orders": 7,
-      "revenue": 7287
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "intimvita_200ml",
-      "offerId": "intimvita_200ml",
-      "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 200 мл",
-      "views": 7428,
-      "clicks": 127,
-      "spend": 2512.09,
-      "orders": 10,
-      "revenue": 3910
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "intimvita_300ml",
-      "offerId": "intimvita_300ml",
-      "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 300 мл",
-      "views": 1236,
-      "clicks": 14,
-      "spend": 147.2,
-      "orders": 3,
-      "revenue": 1950
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "krem_buster_250ml",
-      "offerId": "krem_buster_250ml",
-      "name": "Антицеллюлитный крем гель для тела от целлюлита Алтея 250 мл",
-      "views": 7134,
-      "clicks": 229,
-      "spend": 3537.8,
-      "orders": 12,
-      "revenue": 9348
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "krem_dlya_ruk_75ml",
-      "offerId": "krem_dlya_ruk_75ml",
-      "name": "Крем для рук ламеллярный с мочевиной 3%, увлажняющий и питательный, Алтея, 75 мл",
-      "views": 758,
-      "clicks": 2,
-      "spend": 59.97,
-      "orders": 5,
-      "revenue": 2809
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "krem_dlya_vek_30ml",
-      "offerId": "krem_dlya_vek_30ml",
-      "name": "Крем для век и кожи вокруг глаз Жидкие патчи для глаз Алтея 30 мл",
-      "views": 11630,
-      "clicks": 111,
-      "spend": 1895.5,
-      "orders": 13,
-      "revenue": 15599
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "krem_ot_rastyazhek",
-      "offerId": "krem_ot_rastyazhek",
-      "name": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
-      "views": 150882,
-      "clicks": 1520,
-      "spend": 19416.83,
-      "orders": 77,
-      "revenue": 70062
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "krem_spf50_50ml",
-      "offerId": "krem_spf50_50ml",
-      "name": "СПФ для лица База под макияж увлажняющая с SPF 50 для лица Крем солнцезащитный, крем-флюид, Алтея, 50 мл",
-      "views": 35124,
-      "clicks": 379,
-      "spend": 7810.59,
-      "orders": 22,
-      "revenue": 26398
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "kremshelk_100ml",
-      "offerId": "kremshelk_100ml",
-      "name": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
-      "views": 3661,
-      "clicks": 46,
-      "spend": 1695.8,
-      "orders": 11,
-      "revenue": 7248
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "krovavii_piling_30ml",
-      "offerId": "krovavii_piling_30ml",
-      "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
-      "views": 54382,
-      "clicks": 1414,
-      "spend": 18760.18,
-      "orders": 49,
-      "revenue": 108339
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "limfaks_bad_30caps",
-      "offerId": "limfaks_BAD_30caps",
-      "name": "Биологически активная добавка к пище: \"Комплекс для здоровья лимфатической системы\" Лимфакс",
-      "views": 4329,
-      "clicks": 64,
-      "spend": 848.76,
-      "orders": 3,
-      "revenue": 3135
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "maska_dlya_lica_100ml",
-      "offerId": "maska_dlya_lica_100ml",
-      "name": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
-      "views": 5168,
-      "clicks": 55,
-      "spend": 396.38,
-      "orders": 2,
-      "revenue": 14400
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "maska-batter_250ml",
-      "offerId": "maska-batter_250ml",
-      "name": "Маска для волос с кератином восстанавливающая увлажняющая, Алтея, 250 мл",
-      "views": 1,
-      "clicks": 0,
-      "spend": 0.45,
-      "orders": 1,
-      "revenue": 860
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "maska-batter_500ml",
-      "offerId": "maska-batter_500ml",
-      "name": "Маска для волос с кератином увлажняющая 500мл Алтея",
-      "views": 2222,
-      "clicks": 23,
-      "spend": 289.98,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "maska-batter_dlya_rosta_500ml",
-      "offerId": "maska-batter_dlya_rosta_500ml",
-      "name": "Маска для роста волос с перцем, средство для роста волос, для укрепления, Алтея 500мл",
-      "views": 3906,
-      "clicks": 28,
-      "spend": 307.62,
-      "orders": 3,
-      "revenue": 2880
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "maslo_dlya_borodi_50ml",
-      "offerId": "maslo_dlya_borodi_50ml",
-      "name": "Масло для роста бороды, средство для роста, уход за бородой, смягчающее, Алтея, 50 мл",
-      "views": 62933,
-      "clicks": 536,
-      "spend": 13042.58,
-      "orders": 30,
-      "revenue": 18113
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "maslo_dlya_volos_parf_110ml_",
-      "offerId": "maslo_dlya_volos_parf_110ml_",
-      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
-      "views": 5065,
-      "clicks": 39,
-      "spend": 761.8,
-      "orders": 4,
-      "revenue": 3120
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "matte_wax_50ml",
-      "offerId": "matte_wax_50ml",
-      "name": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
-      "views": 3156,
-      "clicks": 41,
-      "spend": 489.83,
-      "orders": 2,
-      "revenue": 1800
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "menoflavon_bad_60caps",
-      "offerId": "menoflavon_BAD_60caps",
-      "name": "Фитоэстрогены для женщин, от приливов при климаксе, при менопаузе, Алтея, Мено Флавон, 60 капсул",
-      "views": 2080,
-      "clicks": 67,
-      "spend": 410.98,
-      "orders": 2,
-      "revenue": 1866
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "nabor_penka_dlya_resnic",
-      "offerId": "nabor_penka_dlya_resnic",
-      "name": "Пенка для нарощенных ресниц и для бровей, для умывания и очищения ресниц Алтея 150 мл",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "nabor_remuver_40ml",
-      "offerId": "nabor_remuver_40ml",
-      "name": "Ремувер для удаления кутикулы, Алтея, 40 мл",
-      "views": 18357,
-      "clicks": 269,
-      "spend": 5323.53,
-      "orders": 28,
-      "revenue": 12320
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "nabor_remuver_40ml_1_1",
-      "offerId": "nabor_remuver_40ml_1_1",
-      "name": "Ремувер для удаления кутикулы, Алтея, 40 мл х 2",
-      "views": 62,
-      "clicks": 0,
-      "spend": 8.7,
-      "orders": 1,
-      "revenue": 660
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "nabor_remuver_kremovii",
-      "offerId": "nabor_remuver_kremovii",
-      "name": "Ремувер для снятия ресниц, Алтея, 18г",
-      "views": 2733,
-      "clicks": 36,
-      "spend": 1728.63,
-      "orders": 9,
-      "revenue": 5634
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "penka_160ml",
-      "offerId": "penka_160ml",
-      "name": "Мицеллярная пенка для умывания лица, для снятия макияжа, средство для снятия макияжа, Алтея, 160",
-      "views": 2,
-      "clicks": 0,
-      "spend": 0.37,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "penka_kudryavii_metod_150ml",
-      "offerId": "penka_kudryavii_metod_150ml",
-      "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
-      "views": 11670,
-      "clicks": 141,
-      "spend": 3447.72,
-      "orders": 8,
-      "revenue": 26656
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "pink_pepper_50ml",
-      "offerId": "pink_pepper_50ml",
-      "name": "Крем для лица матирующий с ниацинамидом дневной база под макияж Алтея 50 мл",
-      "views": 18192,
-      "clicks": 92,
-      "spend": 2583.04,
-      "orders": 12,
-      "revenue": 10080
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "relaksinol_bad_60caps",
-      "offerId": "relaksinol_BAD_60caps",
-      "name": "Магний В6 с лавандой, Алтея, Релаксинол, 60 капсул",
-      "views": 24,
-      "clicks": 0,
-      "spend": 6.76,
-      "orders": 1,
-      "revenue": 551
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "retiderm_50ml",
-      "offerId": "retiderm_50ml",
-      "name": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
-      "views": 71633,
-      "clicks": 892,
-      "spend": 20531.64,
-      "orders": 55,
-      "revenue": 82719
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "retinait_krem_01_50ml",
-      "offerId": "retinait_krem_01_50ml",
-      "name": "Крем для лица с ретинолом и церамидами 50 мл Ретинайт",
-      "views": 4227,
-      "clicks": 40,
-      "spend": 1124.61,
-      "orders": 1,
-      "revenue": 1735
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "retinait_krem_025_50ml",
-      "offerId": "retinait_krem_025_50ml",
-      "name": "Крем для лица с липосомальным ретинолом 0,25% Ретинайт",
-      "views": 3283,
-      "clicks": 46,
-      "spend": 650.32,
-      "orders": 6,
-      "revenue": 9750
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "retinait_krem_05_50ml",
-      "offerId": "retinait_krem_05_50ml",
-      "name": "Крем для лица с липосомальным ретинолом 0,5% Ретинайт",
-      "views": 5462,
-      "clicks": 88,
-      "spend": 3377.95,
-      "orders": 11,
-      "revenue": 17600
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "retinait_krem_1_5_50ml",
-      "offerId": "retinait_krem_1_5_50ml",
-      "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
-      "views": 12438,
-      "clicks": 198,
-      "spend": 2459.38,
-      "orders": 23,
-      "revenue": 45080
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "retinait_krem_1_50ml",
-      "offerId": "retinait_krem_1_50ml",
-      "name": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
-      "views": 12349,
-      "clicks": 123,
-      "spend": 2840.56,
-      "orders": 19,
-      "revenue": 43131
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "retinait_syvorotka_025_30ml",
-      "offerId": "retinait_syvorotka_025_30ml",
-      "name": "Сыворотка с ретинолом 0,25% для лица от морщин антивозрастная Алтея 30 мл",
-      "views": 2553,
-      "clicks": 36,
-      "spend": 557.02,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "retinait_syvorotka_05_30ml",
-      "offerId": "retinait_syvorotka_05_30ml",
-      "name": "Сыворотка для лица с ретинолом омолаживающая",
-      "views": 7481,
-      "clicks": 146,
-      "spend": 1539.05,
-      "orders": 7,
-      "revenue": 7700
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "retinait_syvorotka_1_30ml",
-      "offerId": "retinait_syvorotka_1_30ml",
-      "name": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
-      "views": 41856,
-      "clicks": 469,
-      "spend": 9497.27,
-      "orders": 59,
-      "revenue": 90327
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "retinol_boost_krem_dlya_vek_30ml",
-      "offerId": "retinol_boost_krem_dlya_vek_30ml",
-      "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
-      "views": 42641,
-      "clicks": 612,
-      "spend": 10101.58,
-      "orders": 112,
-      "revenue": 159996
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "retinol_full_journey",
-      "offerId": "Retinol_Full_Journey",
-      "name": "Набор уходовой косметики для лица антивозрастной",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "retinol_start_kit",
-      "offerId": "Retinol_Start_Kit",
-      "name": "Набор уходовой косметики для лица с ретинолом",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "shampun_dlya_rosta_250ml",
-      "offerId": "shampun_dlya_rosta_250ml",
-      "name": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
-      "views": 4471,
-      "clicks": 59,
-      "spend": 355.92,
-      "orders": 1,
-      "revenue": 795
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "shampun_protiv_perhoti_250ml",
-      "offerId": "shampun_protiv_perhoti_250ml",
-      "name": "Шампунь от перхоти лечебный с климбазолом Алтея, 250мл",
-      "views": 1188,
-      "clicks": 13,
-      "spend": 94.38,
-      "orders": 3,
-      "revenue": 2478
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "silk_hair_300ml",
-      "offerId": "silk_hair_300ml",
-      "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
-      "views": 17965,
-      "clicks": 268,
-      "spend": 5533.99,
-      "orders": 16,
-      "revenue": 14439
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "skrab_babl_gam_200ml",
-      "offerId": "skrab_babl_gam_200ml",
-      "name": "Скраб пилинг для кожи головы, Алтея, 200 мл",
-      "views": 4578,
-      "clicks": 31,
-      "spend": 2141.33,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "solevoy_sprei_200ml",
-      "offerId": "solevoy_sprei_200ml",
-      "name": "Солевой спрей для волос/ текстурайзер для объема и укладки волос с фиксацией Алтея 200 мл",
-      "views": 17441,
-      "clicks": 411,
-      "spend": 5684.92,
-      "orders": 14,
-      "revenue": 11256
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "spicul_gel_mask_75ml",
-      "offerId": "spicul_gel_mask_75ml",
-      "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "spiculboost_30ml",
-      "offerId": "spiculboost_30ml",
-      "name": "Сыворотка для лица с микроиглами и коллагеном",
-      "views": 3118,
-      "clicks": 41,
-      "spend": 3332.55,
-      "orders": 9,
-      "revenue": 18000
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "sprei_buster_100ml",
-      "offerId": "sprei_buster_100ml",
-      "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
-      "views": 459,
-      "clicks": 6,
-      "spend": 188.36,
-      "orders": 0,
-      "revenue": 0
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "stik_ot_mozoley",
-      "offerId": "stik_ot_mozoley",
-      "name": "Карандаш от мозолей, стик от натирания, мозольный пластырь, Алтея, 20 г",
-      "views": 9,
-      "clicks": 0,
-      "spend": 0.66,
-      "orders": 3,
-      "revenue": 798
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "syvorotka_dlya_lica_30ml",
-      "offerId": "syvorotka_dlya_lica_30ml",
-      "name": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
-      "views": 36293,
-      "clicks": 540,
-      "spend": 13461.47,
-      "orders": 46,
-      "revenue": 73267
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "syvorotka_dlya_rosta_6ml",
-      "offerId": "syvorotka_dlya_rosta_6ml",
-      "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
-      "views": 847,
-      "clicks": 13,
-      "spend": 66.87,
-      "orders": 1,
-      "revenue": 799
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "syvorotka_dlya_rosta_6ml_v2",
-      "offerId": "syvorotka_dlya_rosta_6ml_v2",
-      "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
-      "views": 16395,
-      "clicks": 274,
-      "spend": 2939.01,
-      "orders": 15,
-      "revenue": 13500
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "syvorotka_guk_30ml",
-      "offerId": "syvorotka_guk_30ml",
-      "name": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
-      "views": 4327,
-      "clicks": 64,
-      "spend": 3221.88,
-      "orders": 6,
-      "revenue": 4320
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "syvorotka_niacin_05_30ml",
-      "offerId": "syvorotka_niacin_05_30ml",
-      "name": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
-      "views": 84978,
-      "clicks": 1278,
-      "spend": 22756.9,
-      "orders": 43,
-      "revenue": 52470
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "telomeras_60caps",
-      "offerId": "telomeras_60caps",
-      "name": "Теломераза NMN ТА-65 Алтея 60 капсул",
-      "views": 89,
-      "clicks": 12,
-      "spend": 33.43,
-      "orders": 1,
-      "revenue": 2520
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "termo_sprei_200ml",
-      "offerId": "termo_sprei_200ml",
-      "name": "Термозащита Спрей для волос 17 в 1 восстанавливающий с кератином, Алтея, 200 мл",
-      "views": 10945,
-      "clicks": 143,
-      "spend": 11203.84,
-      "orders": 11,
-      "revenue": 8910
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "tonik_dlya_lica_200ml",
-      "offerId": "tonik_dlya_lica_200ml",
-      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
-      "views": 2130,
-      "clicks": 38,
-      "spend": 519.99,
-      "orders": 9,
-      "revenue": 4842
-    },
-    {
-      "date": "2026-04-01",
-      "platformKey": "wb",
-      "articleKey": "vosk_stik_15ml",
-      "offerId": "vosk_stik_15ml",
-      "name": "Воск стик для укладки и фиксации волос Алтея 15 мл",
-      "views": 5161,
-      "clicks": 59,
-      "spend": 2111.44,
-      "orders": 4,
-      "revenue": 2868
-    },
     {
       "date": "2026-04-02",
       "platformKey": "ozon",
@@ -49194,8 +47394,8 @@
       "views": 16515,
       "clicks": 287,
       "spend": 5352.79,
-      "orders": 20,
-      "revenue": 15280
+      "orders": 21,
+      "revenue": 16044
     },
     {
       "date": "2026-04-27",
@@ -49254,8 +47454,8 @@
       "views": 14527,
       "clicks": 205,
       "spend": 4499.88,
-      "orders": 19,
-      "revenue": 12089
+      "orders": 20,
+      "revenue": 12720
     },
     {
       "date": "2026-04-27",
@@ -49734,8 +47934,8 @@
       "views": 52727,
       "clicks": 1273,
       "spend": 22875.74,
-      "orders": 232,
-      "revenue": 407517
+      "orders": 233,
+      "revenue": 409355
     },
     {
       "date": "2026-04-27",
@@ -49758,8 +47958,8 @@
       "views": 15635,
       "clicks": 191,
       "spend": 2826.03,
-      "orders": 5,
-      "revenue": 3855
+      "orders": 6,
+      "revenue": 4626
     },
     {
       "date": "2026-04-27",
@@ -50742,8 +48942,8 @@
       "views": 119432,
       "clicks": 1923,
       "spend": 30710.5,
-      "orders": 155,
-      "revenue": 189302
+      "orders": 157,
+      "revenue": 191740
     },
     {
       "date": "2026-04-28",
@@ -50790,8 +48990,8 @@
       "views": 2271,
       "clicks": 35,
       "spend": 338.02,
-      "orders": 1,
-      "revenue": 548
+      "orders": 2,
+      "revenue": 1096
     },
     {
       "date": "2026-04-28",
@@ -50814,8 +49014,8 @@
       "views": 3049,
       "clicks": 156,
       "spend": 622.77,
-      "orders": 69,
-      "revenue": 69145
+      "orders": 75,
+      "revenue": 75157
     },
     {
       "date": "2026-04-28",
@@ -50970,8 +49170,8 @@
       "views": 20620,
       "clicks": 329,
       "spend": 4667.41,
-      "orders": 15,
-      "revenue": 11460
+      "orders": 16,
+      "revenue": 12224
     },
     {
       "date": "2026-04-28",
@@ -51006,8 +49206,8 @@
       "views": 31684,
       "clicks": 463,
       "spend": 9773.62,
-      "orders": 48,
-      "revenue": 42335
+      "orders": 50,
+      "revenue": 44099
     },
     {
       "date": "2026-04-28",
@@ -51018,8 +49218,8 @@
       "views": 27068,
       "clicks": 157,
       "spend": 2929.29,
-      "orders": 11,
-      "revenue": 13200
+      "orders": 12,
+      "revenue": 14400
     },
     {
       "date": "2026-04-28",
@@ -51042,8 +49242,8 @@
       "views": 44210,
       "clicks": 1134,
       "spend": 16550.58,
-      "orders": 126,
-      "revenue": 153196
+      "orders": 129,
+      "revenue": 156460
     },
     {
       "date": "2026-04-28",
@@ -51102,8 +49302,8 @@
       "views": 17856,
       "clicks": 280,
       "spend": 7025.62,
-      "orders": 9,
-      "revenue": 8370
+      "orders": 13,
+      "revenue": 12088
     },
     {
       "date": "2026-04-28",
@@ -51114,8 +49314,8 @@
       "views": 34792,
       "clicks": 358,
       "spend": 7641.8,
-      "orders": 24,
-      "revenue": 14229
+      "orders": 25,
+      "revenue": 14822
     },
     {
       "date": "2026-04-28",
@@ -51162,8 +49362,8 @@
       "views": 27569,
       "clicks": 594,
       "spend": 11429.55,
-      "orders": 48,
-      "revenue": 16805
+      "orders": 51,
+      "revenue": 17855
     },
     {
       "date": "2026-04-28",
@@ -51210,8 +49410,8 @@
       "views": 10817,
       "clicks": 141,
       "spend": 4845.77,
-      "orders": 40,
-      "revenue": 58023
+      "orders": 41,
+      "revenue": 59467
     },
     {
       "date": "2026-04-28",
@@ -51222,8 +49422,8 @@
       "views": 3484,
       "clicks": 52,
       "spend": 935.07,
-      "orders": 6,
-      "revenue": 4860
+      "orders": 7,
+      "revenue": 5670
     },
     {
       "date": "2026-04-28",
@@ -51246,8 +49446,8 @@
       "views": 39063,
       "clicks": 673,
       "spend": 8898.99,
-      "orders": 55,
-      "revenue": 82720
+      "orders": 58,
+      "revenue": 87232
     },
     {
       "date": "2026-04-28",
@@ -51294,8 +49494,8 @@
       "views": 8469,
       "clicks": 121,
       "spend": 1764.95,
-      "orders": 9,
-      "revenue": 17640
+      "orders": 10,
+      "revenue": 19600
     },
     {
       "date": "2026-04-28",
@@ -51306,8 +49506,8 @@
       "views": 7235,
       "clicks": 111,
       "spend": 1419.4,
-      "orders": 8,
-      "revenue": 18160
+      "orders": 9,
+      "revenue": 20430
     },
     {
       "date": "2026-04-28",
@@ -51342,8 +49542,8 @@
       "views": 72134,
       "clicks": 821,
       "spend": 20614.11,
-      "orders": 57,
-      "revenue": 87209
+      "orders": 60,
+      "revenue": 91810
     },
     {
       "date": "2026-04-28",
@@ -51354,8 +49554,8 @@
       "views": 16490,
       "clicks": 214,
       "spend": 5254.99,
-      "orders": 39,
-      "revenue": 58029
+      "orders": 41,
+      "revenue": 60831
     },
     {
       "date": "2026-04-28",
@@ -51390,8 +49590,8 @@
       "views": 3716,
       "clicks": 54,
       "spend": 439.76,
-      "orders": 2,
-      "revenue": 1589
+      "orders": 3,
+      "revenue": 2384
     },
     {
       "date": "2026-04-28",
@@ -51438,8 +49638,8 @@
       "views": 10648,
       "clicks": 235,
       "spend": 4556.88,
-      "orders": 20,
-      "revenue": 16077
+      "orders": 22,
+      "revenue": 17685
     },
     {
       "date": "2026-04-28",
@@ -51510,8 +49710,8 @@
       "views": 49791,
       "clicks": 1169,
       "spend": 22109.86,
-      "orders": 217,
-      "revenue": 398770
+      "orders": 220,
+      "revenue": 404284
     },
     {
       "date": "2026-04-28",
@@ -51534,8 +49734,8 @@
       "views": 9465,
       "clicks": 147,
       "spend": 1694.16,
-      "orders": 8,
-      "revenue": 6168
+      "orders": 10,
+      "revenue": 7710
     },
     {
       "date": "2026-04-28",
@@ -51558,8 +49758,8 @@
       "views": 25757,
       "clicks": 580,
       "spend": 13028.35,
-      "orders": 33,
-      "revenue": 44146
+      "orders": 34,
+      "revenue": 45732
     },
     {
       "date": "2026-04-28",
@@ -51606,8 +49806,1772 @@
       "views": 11095,
       "clicks": 219,
       "spend": 3060.8,
+      "orders": 25,
+      "revenue": 13450
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "alteya_beauty_brows_box",
+      "offerId": "alteya_beauty_brows_box",
+      "name": "Уход за бровями набор Гель для бровей + сыворотка для ресниц, набор для бровей и ресниц, Алтея",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "alteya_young_skin_box",
+      "offerId": "alteya_young_skin_box",
+      "name": "Подарочный набор для женщин. Набор для лица уходовый косметический бьюти Young Skin Box Алтея",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "b_kompleks_bad_60tabl",
+      "offerId": "b_kompleks_BAD_60tabl",
+      "name": "Витамины группы В комплекс Алтея 60 жевательных таблеток",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "berberin_laif_bad_60caps",
+      "offerId": "berberin_laif_BAD_60caps",
+      "name": "Берберин + хром + коэнзим + B6 для похудения, контроль аппетита и веса, Алтея, Берберин Лайф, 60 капсул",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "chudofrukt_bad_60caps",
+      "offerId": "chudofrukt_BAD_60caps",
+      "name": "Таблетки для похудения, жиросжигатель детокс для снижения веса, Алтея, Чудофрукт, 60 капсул",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "curly_method_300ml",
+      "offerId": "curly_method_300ml",
+      "name": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
+      "views": 4581,
+      "clicks": 582,
+      "spend": 5722,
+      "orders": 59,
+      "revenue": 95080
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "ekdisteron_ultra_man_60caps",
+      "offerId": "ekdisteron_ultra_man_60caps",
+      "name": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "enzim_pudra_80gr",
+      "offerId": "enzim_pudra_80gr",
+      "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "enzim_pudra_80gr_v2",
+      "offerId": "enzim_pudra_80gr_v2",
+      "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "frutalika_bad_60caps",
+      "offerId": "frutalika_BAD_60caps",
+      "name": "Пиколинат хрома для похудения, детокс, жиросжигатель, Алтея, Фруталика, 60 капсул",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "gel_antiakne_20ml",
+      "offerId": "gel_antiakne_20ml",
+      "name": "Точечный крем от прыщей. Корректор точечный против прыщей, крем от акне. Салициловая кислота, азелаиновая кислота Алтея 20 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "gel_antiakne_20ml_v2",
+      "offerId": "gel_antiakne_20ml_v2",
+      "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "gel_brows_5ml",
+      "offerId": "gel_brows_5ml",
+      "name": "Гель для бровей с коллагеном и эластином, фиксация на 24 часа, Алтея, 5 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "gel_dlya_britya_300ml",
+      "offerId": "gel_dlya_britya_300ml",
+      "name": "Гель для бритья мужской без пены охлаждающий с ментолом Алтея 300 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "gel_dlya_brovei_6ml",
+      "offerId": "gel_dlya_brovei_6ml",
+      "name": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл",
+      "views": 4396,
+      "clicks": 209,
+      "spend": 2929,
+      "orders": 13,
+      "revenue": 7953
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "gel_for_men_3_in_1_1000ml",
+      "offerId": "gel_for_men_3_in_1_1000ml",
+      "name": "Гель для душа мужской парфюмированный Алтея 1000 мл",
+      "views": 1164,
+      "clicks": 24,
+      "spend": 585,
+      "orders": 4,
+      "revenue": 3434
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "gel_parfum_tabacco_vanille_450ml",
+      "offerId": "gel_parfum_tabacco_vanille_450ml",
+      "name": "Гель для душа женский парфюмированный Tobacco Vanille, Алтея, 450 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "gidrofilnoe_maslo_150ml",
+      "offerId": "gidrofilnoe_maslo_150ml",
+      "name": "Гидрофильное масло для снятия макияжа с лавандой, Алтея , 150 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "glikiron_bad_60caps",
+      "offerId": "glikiron_BAD_60caps",
+      "name": "Гликирон БАД для профилактики диабета контроль аппетита",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "i_am_alpha_bad_60caps",
+      "offerId": "i_am_alpha_BAD_60caps",
+      "name": "Тестостерон для мужчин I am alpha Алтея 60 капсул, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "indolakt_bad_60caps",
+      "offerId": "indolakt_BAD_60caps",
+      "name": "Индол 3 карбинол брокколи витамины с зеленым чаем Алтея, Индолакт, 60 капсул",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "insulight_bad_60caps",
+      "offerId": "insulight_BAD_60caps",
+      "name": "Витамины для диабетиков, для профилактики от сахарного диабета, Алтея, Инсулайт, 60 капсул",
+      "views": 1562,
+      "clicks": 59,
+      "spend": 1130,
+      "orders": 7,
+      "revenue": 7875
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "intimvita_200ml",
+      "offerId": "intimvita_200ml",
+      "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 200 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "intimvita_300ml",
+      "offerId": "intimvita_300ml",
+      "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 300 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "krem_buster_250ml",
+      "offerId": "krem_buster_250ml",
+      "name": "Антицеллюлитный крем гель для тела от целлюлита Алтея 250 мл",
+      "views": 85,
+      "clicks": 4,
+      "spend": 46,
+      "orders": 1,
+      "revenue": 887
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "krem_dlya_ruk_75ml",
+      "offerId": "krem_dlya_ruk_75ml",
+      "name": "Крем для рук ламеллярный с мочевиной 3%, увлажняющий и питательный, Алтея, 75 мл",
+      "views": 4440,
+      "clicks": 139,
+      "spend": 4142,
+      "orders": 13,
+      "revenue": 8214
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "krem_dlya_vek_30ml",
+      "offerId": "krem_dlya_vek_30ml",
+      "name": "Крем для век и кожи вокруг глаз Жидкие патчи для глаз Алтея 30 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "krem_ot_rastyazhek",
+      "offerId": "krem_ot_rastyazhek",
+      "name": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
+      "views": 3547,
+      "clicks": 110,
+      "spend": 3668,
+      "orders": 15,
+      "revenue": 19325
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "krem-filler_15ml",
+      "offerId": "krem-filler_15ml",
+      "name": "Питательный крем для лица антивозрастной, Крем филлер вокруг глаз, с коллагеном с ниацинамидом, Алтея, 15 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "kremshelk_100ml",
+      "offerId": "kremshelk_100ml",
+      "name": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "krovavii_piling_30ml",
+      "offerId": "krovavii_piling_30ml",
+      "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "limfaks_bad_30caps",
+      "offerId": "limfaks_BAD_30caps",
+      "name": "Биологически активная добавка к пище: \"Комплекс для здоровья лимфатической системы\" Лимфакс",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "maska_dlya_lica_100ml",
+      "offerId": "maska_dlya_lica_100ml",
+      "name": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "maska-batter_250ml",
+      "offerId": "maska-batter_250ml",
+      "name": "Маска для волос с кератином восстанавливающая увлажняющая, Алтея, 250 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "maska-batter_500ml",
+      "offerId": "maska-batter_500ml",
+      "name": "Маска для волос с кератином увлажняющая 500мл Алтея",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "maska-batter_dlya_rosta_500ml",
+      "offerId": "maska-batter_dlya_rosta_500ml",
+      "name": "Маска для роста волос с перцем, средство для роста волос, для укрепления, Алтея 500мл",
+      "views": 2765,
+      "clicks": 69,
+      "spend": 1754,
+      "orders": 3,
+      "revenue": 4149
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "maslo_dlya_borodi_50ml",
+      "offerId": "maslo_dlya_borodi_50ml",
+      "name": "Масло для роста бороды, средство для роста, уход за бородой, смягчающее, Алтея, 50 мл",
+      "views": 1043,
+      "clicks": 49,
+      "spend": 686,
+      "orders": 8,
+      "revenue": 7200
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "maslo_dlya_volos_parf_110ml_",
+      "offerId": "maslo_dlya_volos_parf_110ml_",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
+      "views": 922,
+      "clicks": 24,
+      "spend": 430,
+      "orders": 3,
+      "revenue": 2223
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "matte_wax_50ml",
+      "offerId": "matte_wax_50ml",
+      "name": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "menoflavon_bad_60caps",
+      "offerId": "menoflavon_BAD_60caps",
+      "name": "Фитоэстрогены для женщин, от приливов при климаксе, при менопаузе, Алтея, Мено Флавон, 60 капсул",
+      "views": 625,
+      "clicks": 45,
+      "spend": 739,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "monarda_30ml",
+      "offerId": "monarda_30ml",
+      "name": "Масло монарды и экстракт зеленого чая для ногтей, универсальное, Алтея, 30 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "nabor_penka_dlya_resnic",
+      "offerId": "nabor_penka_dlya_resnic",
+      "name": "Пенка для нарощенных ресниц и для бровей, для умывания и очищения ресниц Алтея 150 мл",
+      "views": 2536,
+      "clicks": 86,
+      "spend": 1647,
+      "orders": 7,
+      "revenue": 6935
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "nabor_remuver_40ml",
+      "offerId": "nabor_remuver_40ml",
+      "name": "Ремувер для удаления кутикулы, Алтея, 40 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "nabor_remuver_40ml_1_1",
+      "offerId": "nabor_remuver_40ml_1_1",
+      "name": "Ремувер для удаления кутикулы, Алтея, 40 мл х 2",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "nabor_remuver_kremovii",
+      "offerId": "nabor_remuver_kremovii",
+      "name": "Ремувер для снятия ресниц, Алтея, 18г",
+      "views": 2464,
+      "clicks": 86,
+      "spend": 2387,
       "orders": 24,
-      "revenue": 12912
+      "revenue": 20858
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "penka_160ml",
+      "offerId": "penka_160ml",
+      "name": "Мицеллярная пенка для умывания лица, для снятия макияжа, средство для снятия макияжа, Алтея, 160",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "penka_kudryavii_metod_150ml",
+      "offerId": "penka_kudryavii_metod_150ml",
+      "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "piling_100ml",
+      "offerId": "piling_100ml",
+      "name": "Пилинг для кожи головы профессиональный скраб от перхоти, Алтея, 100 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "pink_pepper_50ml",
+      "offerId": "pink_pepper_50ml",
+      "name": "Крем для лица матирующий с ниацинамидом дневной база под макияж Алтея 50 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "pirantoks_bad_60caps",
+      "offerId": "pirantoks_BAD_60caps",
+      "name": "Антипаразитарный комплекс от глистов, очищение организма от паразитов, черный орех детокс, Алтея, Пирантокс, 60 капсул",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "relaksinol_bad_60caps",
+      "offerId": "relaksinol_BAD_60caps",
+      "name": "Магний В6 с лавандой, Алтея, Релаксинол, 60 капсул",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "retiderm_50ml",
+      "offerId": "retiderm_50ml",
+      "name": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
+      "views": 16957,
+      "clicks": 346,
+      "spend": 6159,
+      "orders": 28,
+      "revenue": 60427
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "retinait_krem_01_50ml",
+      "offerId": "retinait_krem_01_50ml",
+      "name": "Крем для лица с ретинолом и церамидами 50 мл Ретинайт",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "retinait_krem_025_50ml",
+      "offerId": "retinait_krem_025_50ml",
+      "name": "Крем для лица с липосомальным ретинолом 0,25% Ретинайт",
+      "views": 1695,
+      "clicks": 35,
+      "spend": 540,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "retinait_krem_1_50ml",
+      "offerId": "retinait_krem_1_50ml",
+      "name": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
+      "views": 8883,
+      "clicks": 165,
+      "spend": 4311,
+      "orders": 7,
+      "revenue": 18744
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "retinait_syvorotka_1_30ml",
+      "offerId": "retinait_syvorotka_1_30ml",
+      "name": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
+      "views": 3876,
+      "clicks": 89,
+      "spend": 826,
+      "orders": 4,
+      "revenue": 6815
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "revmastop_bad_60caps",
+      "offerId": "revmastop_BAD_60caps",
+      "name": "Глюкозамин хондроитин МСМ для суставов и связок Ревмастоп Алтея 60 капсул",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "shampun_dlya_rosta_250ml",
+      "offerId": "shampun_dlya_rosta_250ml",
+      "name": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
+      "views": 9644,
+      "clicks": 261,
+      "spend": 9131,
+      "orders": 15,
+      "revenue": 17139
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "shampun_protiv_perhoti_250ml",
+      "offerId": "shampun_protiv_perhoti_250ml",
+      "name": "Шампунь от перхоти лечебный с климбазолом Алтея, 250мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "silk_hair_300ml",
+      "offerId": "silk_hair_300ml",
+      "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
+      "views": 3001,
+      "clicks": 173,
+      "spend": 2403,
+      "orders": 6,
+      "revenue": 6976
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "skrab_babl_gam_200ml",
+      "offerId": "skrab_babl_gam_200ml",
+      "name": "Скраб пилинг для кожи головы, Алтея, 200 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "solevoy_sprei_200ml",
+      "offerId": "solevoy_sprei_200ml",
+      "name": "Солевой спрей для волос/ текстурайзер для объема и укладки волос с фиксацией Алтея 200 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "sprei_buster_100ml",
+      "offerId": "sprei_buster_100ml",
+      "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "syvorotka_dlya_lica_30ml",
+      "offerId": "syvorotka_dlya_lica_30ml",
+      "name": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "syvorotka_dlya_rosta_6ml",
+      "offerId": "syvorotka_dlya_rosta_6ml",
+      "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "syvorotka_dlya_rosta_6ml_v2",
+      "offerId": "syvorotka_dlya_rosta_6ml_v2",
+      "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "syvorotka_guk_30ml",
+      "offerId": "syvorotka_guk_30ml",
+      "name": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "syvorotka_niacin_05_30ml",
+      "offerId": "syvorotka_niacin_05_30ml",
+      "name": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "telomeras_60caps",
+      "offerId": "telomeras_60caps",
+      "name": "Теломераза NMN ТА-65 Алтея 60 капсул",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "termo_sprei_200ml",
+      "offerId": "termo_sprei_200ml",
+      "name": "Термозащита Спрей для волос 17 в 1 восстанавливающий с кератином, Алтея, 200 мл",
+      "views": 499,
+      "clicks": 8,
+      "spend": 117,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "tonik_dlya_lica_200ml",
+      "offerId": "tonik_dlya_lica_200ml",
+      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "ozon",
+      "articleKey": "vosk_stik_15ml",
+      "offerId": "vosk_stik_15ml",
+      "name": "Воск стик для укладки и фиксации волос Алтея 15 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "т-34_bad_60caps",
+      "offerId": "Т-34_BAD_60caps",
+      "name": "Возбудитель для мужчин, БАД Т-34 возбуждающие для потенции, эрекции, 60 капсул",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 1,
+      "revenue": 785
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "alteya_beauty_brows_box",
+      "offerId": "alteya_beauty_brows_box",
+      "name": "Уход за бровями набор Гель для бровей + сыворотка для ресниц, набор для бровей и ресниц, Алтея",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "curly_method_300ml",
+      "offerId": "curly_method_300ml",
+      "name": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
+      "views": 120825,
+      "clicks": 2270,
+      "spend": 33537.81,
+      "orders": 231,
+      "revenue": 279279
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "ekdisteron_ultra_man_60caps",
+      "offerId": "ekdisteron_ultra_man_60caps",
+      "name": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
+      "views": 419,
+      "clicks": 24,
+      "spend": 442.06,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "enzim_pudra_80gr_v2",
+      "offerId": "enzim_pudra_80gr_v2",
+      "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
+      "views": 6705,
+      "clicks": 71,
+      "spend": 9398.89,
+      "orders": 11,
+      "revenue": 9404
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "frutaksa_bad_200gr",
+      "offerId": "frutaksa_BAD_200gr",
+      "name": "Жиросжигатель, детокс, Алтея, Алтея, Фрутакса, 200 грамм",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 1,
+      "revenue": 729
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "frutalika_bad_60caps",
+      "offerId": "frutalika_BAD_60caps",
+      "name": "Пиколинат хрома для похудения, детокс, жиросжигатель, Алтея, Фруталика, 60 капсул",
+      "views": 740,
+      "clicks": 19,
+      "spend": 109.22,
+      "orders": 3,
+      "revenue": 1644
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "gel_antiakne_20ml",
+      "offerId": "gel_antiakne_20ml",
+      "name": "Точечный крем от прыщей. Корректор точечный против прыщей, крем от акне. Салициловая кислота, азелаиновая кислота Алтея 20 мл",
+      "views": 6,
+      "clicks": 0,
+      "spend": 0.46,
+      "orders": 2,
+      "revenue": 1560
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "gel_antiakne_20ml_v2",
+      "offerId": "gel_antiakne_20ml_v2",
+      "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
+      "views": 209592,
+      "clicks": 1555,
+      "spend": 25199.59,
+      "orders": 92,
+      "revenue": 92182
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "gel_brows_5ml",
+      "offerId": "gel_brows_5ml",
+      "name": "Гель для бровей с коллагеном и эластином, фиксация на 24 часа, Алтея, 5 мл",
+      "views": 3625,
+      "clicks": 80,
+      "spend": 3446.11,
+      "orders": 8,
+      "revenue": 4800
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "gel_dlya_britya_300ml",
+      "offerId": "gel_dlya_britya_300ml",
+      "name": "Гель для бритья мужской без пены охлаждающий с ментолом Алтея 300 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 2,
+      "revenue": 1220
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "gel_dlya_brovei_6ml",
+      "offerId": "gel_dlya_brovei_6ml",
+      "name": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл",
+      "views": 11987,
+      "clicks": 167,
+      "spend": 2640.66,
+      "orders": 13,
+      "revenue": 5940
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "gel_for_men_3_in_1_1000ml",
+      "offerId": "gel_for_men_3_in_1_1000ml",
+      "name": "Гель для душа мужской парфюмированный Алтея 1000 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "gel_parfum_tabacco_vanille_450ml",
+      "offerId": "gel_parfum_tabacco_vanille_450ml",
+      "name": "Гель для душа женский парфюмированный Tobacco Vanille, Алтея, 450 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 1,
+      "revenue": 470
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "gidrofilnoe_maslo_150ml",
+      "offerId": "gidrofilnoe_maslo_150ml",
+      "name": "Гидрофильное масло для снятия макияжа с лавандой, Алтея , 150 мл",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "glikiron_bad_60caps",
+      "offerId": "glikiron_BAD_60caps",
+      "name": "Гликирон БАД для профилактики диабета контроль аппетита",
+      "views": 618,
+      "clicks": 12,
+      "spend": 490.68,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "i_am_alpha_bad_60caps",
+      "offerId": "i_am_alpha_BAD_60caps",
+      "name": "Тестостерон для мужчин I am alpha Алтея 60 капсул, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер",
+      "views": 641,
+      "clicks": 10,
+      "spend": 102.99,
+      "orders": 1,
+      "revenue": 800
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "indolakt_bad_60caps",
+      "offerId": "indolakt_BAD_60caps",
+      "name": "Индол 3 карбинол брокколи витамины с зеленым чаем Алтея, Индолакт, 60 капсул",
+      "views": 1540,
+      "clicks": 50,
+      "spend": 340.46,
+      "orders": 3,
+      "revenue": 2700
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "insulight_bad_60caps",
+      "offerId": "insulight_BAD_60caps",
+      "name": "Витамины для диабетиков, для профилактики от сахарного диабета, Алтея, Инсулайт, 60 капсул",
+      "views": 2195,
+      "clicks": 99,
+      "spend": 556.46,
+      "orders": 5,
+      "revenue": 4705
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "intimvita_200ml",
+      "offerId": "intimvita_200ml",
+      "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 200 мл",
+      "views": 1312,
+      "clicks": 20,
+      "spend": 156.82,
+      "orders": 1,
+      "revenue": 371
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "intimvita_300ml",
+      "offerId": "intimvita_300ml",
+      "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 300 мл",
+      "views": 912,
+      "clicks": 7,
+      "spend": 440.9,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "krem_buster_250ml",
+      "offerId": "krem_buster_250ml",
+      "name": "Антицеллюлитный крем гель для тела от целлюлита Алтея 250 мл",
+      "views": 16221,
+      "clicks": 242,
+      "spend": 4686.62,
+      "orders": 16,
+      "revenue": 12225
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "krem_dlya_ruk_75ml",
+      "offerId": "krem_dlya_ruk_75ml",
+      "name": "Крем для рук ламеллярный с мочевиной 3%, увлажняющий и питательный, Алтея, 75 мл",
+      "views": 2,
+      "clicks": 0,
+      "spend": 0.17,
+      "orders": 4,
+      "revenue": 1919
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "krem_dlya_vek_30ml",
+      "offerId": "krem_dlya_vek_30ml",
+      "name": "Крем для век и кожи вокруг глаз Жидкие патчи для глаз Алтея 30 мл",
+      "views": 9206,
+      "clicks": 88,
+      "spend": 3328.54,
+      "orders": 6,
+      "revenue": 6948
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "krem_ot_rastyazhek",
+      "offerId": "krem_ot_rastyazhek",
+      "name": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
+      "views": 42427,
+      "clicks": 577,
+      "spend": 12730.36,
+      "orders": 49,
+      "revenue": 43218
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "krem_spf50_50ml",
+      "offerId": "krem_spf50_50ml",
+      "name": "СПФ для лица База под макияж увлажняющая с SPF 50 для лица Крем солнцезащитный, крем-флюид, Алтея, 50 мл",
+      "views": 28104,
+      "clicks": 160,
+      "spend": 3212.84,
+      "orders": 16,
+      "revenue": 19201
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "kremshelk_100ml",
+      "offerId": "kremshelk_100ml",
+      "name": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
+      "views": 16218,
+      "clicks": 140,
+      "spend": 4886.79,
+      "orders": 13,
+      "revenue": 8284
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "krovavii_piling_30ml",
+      "offerId": "krovavii_piling_30ml",
+      "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
+      "views": 38390,
+      "clicks": 1243,
+      "spend": 17337.5,
+      "orders": 143,
+      "revenue": 155578
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "limfaks_bad_30caps",
+      "offerId": "limfaks_BAD_30caps",
+      "name": "Биологически активная добавка к пище: \"Комплекс для здоровья лимфатической системы\" Лимфакс",
+      "views": 14855,
+      "clicks": 214,
+      "spend": 2927.44,
+      "orders": 4,
+      "revenue": 4420
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "maska_dlya_lica_100ml",
+      "offerId": "maska_dlya_lica_100ml",
+      "name": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
+      "views": 5948,
+      "clicks": 44,
+      "spend": 684.94,
+      "orders": 1,
+      "revenue": 5000
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "maska-batter_250ml",
+      "offerId": "maska-batter_250ml",
+      "name": "Маска для волос с кератином восстанавливающая увлажняющая, Алтея, 250 мл",
+      "views": 6916,
+      "clicks": 19,
+      "spend": 826.52,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "maska-batter_500ml",
+      "offerId": "maska-batter_500ml",
+      "name": "Маска для волос с кератином увлажняющая 500мл Алтея",
+      "views": 1619,
+      "clicks": 12,
+      "spend": 212.51,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "maska-batter_dlya_rosta_500ml",
+      "offerId": "maska-batter_dlya_rosta_500ml",
+      "name": "Маска для роста волос с перцем, средство для роста волос, для укрепления, Алтея 500мл",
+      "views": 18011,
+      "clicks": 239,
+      "spend": 6068.31,
+      "orders": 13,
+      "revenue": 12090
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "maslo_dlya_borodi_50ml",
+      "offerId": "maslo_dlya_borodi_50ml",
+      "name": "Масло для роста бороды, средство для роста, уход за бородой, смягчающее, Алтея, 50 мл",
+      "views": 45325,
+      "clicks": 401,
+      "spend": 9297.77,
+      "orders": 40,
+      "revenue": 23718
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "maslo_dlya_volos_parf_110ml_",
+      "offerId": "maslo_dlya_volos_parf_110ml_",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
+      "views": 6958,
+      "clicks": 64,
+      "spend": 1181.03,
+      "orders": 4,
+      "revenue": 2880
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "matte_wax_50ml",
+      "offerId": "matte_wax_50ml",
+      "name": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
+      "views": 1162,
+      "clicks": 16,
+      "spend": 365.84,
+      "orders": 1,
+      "revenue": 870
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "menoflavon_bad_60caps",
+      "offerId": "menoflavon_BAD_60caps",
+      "name": "Фитоэстрогены для женщин, от приливов при климаксе, при менопаузе, Алтея, Мено Флавон, 60 капсул",
+      "views": 3431,
+      "clicks": 115,
+      "spend": 677.12,
+      "orders": 6,
+      "revenue": 5447
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "nabor_remuver_40ml",
+      "offerId": "nabor_remuver_40ml",
+      "name": "Ремувер для удаления кутикулы, Алтея, 40 мл",
+      "views": 27385,
+      "clicks": 533,
+      "spend": 11703.44,
+      "orders": 35,
+      "revenue": 12248
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "nabor_remuver_40ml_1_1",
+      "offerId": "nabor_remuver_40ml_1_1",
+      "name": "Ремувер для удаления кутикулы, Алтея, 40 мл х 2",
+      "views": 2,
+      "clicks": 0,
+      "spend": 0.07,
+      "orders": 2,
+      "revenue": 1199
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "nabor_remuver_kremovii",
+      "offerId": "nabor_remuver_kremovii",
+      "name": "Ремувер для снятия ресниц, Алтея, 18г",
+      "views": 3368,
+      "clicks": 45,
+      "spend": 5806.48,
+      "orders": 12,
+      "revenue": 6671
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "penka_160ml",
+      "offerId": "penka_160ml",
+      "name": "Мицеллярная пенка для умывания лица, для снятия макияжа, средство для снятия макияжа, Алтея, 160",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "penka_kudryavii_metod_150ml",
+      "offerId": "penka_kudryavii_metod_150ml",
+      "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
+      "views": 10290,
+      "clicks": 154,
+      "spend": 6065.08,
+      "orders": 37,
+      "revenue": 53650
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "pink_pepper_50ml",
+      "offerId": "pink_pepper_50ml",
+      "name": "Крем для лица матирующий с ниацинамидом дневной база под макияж Алтея 50 мл",
+      "views": 3633,
+      "clicks": 38,
+      "spend": 960.99,
+      "orders": 5,
+      "revenue": 4050
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "relaksinol_bad_60caps",
+      "offerId": "relaksinol_BAD_60caps",
+      "name": "Магний В6 с лавандой, Алтея, Релаксинол, 60 капсул",
+      "views": 65,
+      "clicks": 0,
+      "spend": 42.94,
+      "orders": 1,
+      "revenue": 551
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "retiderm_50ml",
+      "offerId": "retiderm_50ml",
+      "name": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
+      "views": 40430,
+      "clicks": 684,
+      "spend": 9395.45,
+      "orders": 48,
+      "revenue": 72191
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "retinait_krem_01_50ml",
+      "offerId": "retinait_krem_01_50ml",
+      "name": "Крем для лица с ретинолом и церамидами 50 мл Ретинайт",
+      "views": 4809,
+      "clicks": 61,
+      "spend": 1384.69,
+      "orders": 3,
+      "revenue": 3522
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "retinait_krem_025_50ml",
+      "offerId": "retinait_krem_025_50ml",
+      "name": "Крем для лица с липосомальным ретинолом 0,25% Ретинайт",
+      "views": 3380,
+      "clicks": 63,
+      "spend": 885.61,
+      "orders": 7,
+      "revenue": 9625
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "retinait_krem_05_50ml",
+      "offerId": "retinait_krem_05_50ml",
+      "name": "Крем для лица с липосомальным ретинолом 0,5% Ретинайт",
+      "views": 5807,
+      "clicks": 109,
+      "spend": 3416.17,
+      "orders": 10,
+      "revenue": 15000
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "retinait_krem_1_5_50ml",
+      "offerId": "retinait_krem_1_5_50ml",
+      "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
+      "views": 7034,
+      "clicks": 116,
+      "spend": 1779.68,
+      "orders": 22,
+      "revenue": 43120
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "retinait_krem_1_50ml",
+      "offerId": "retinait_krem_1_50ml",
+      "name": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
+      "views": 10065,
+      "clicks": 136,
+      "spend": 1873.99,
+      "orders": 24,
+      "revenue": 54480
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "retinait_syvorotka_025_30ml",
+      "offerId": "retinait_syvorotka_025_30ml",
+      "name": "Сыворотка с ретинолом 0,25% для лица от морщин антивозрастная Алтея 30 мл",
+      "views": 3113,
+      "clicks": 36,
+      "spend": 379.5,
+      "orders": 9,
+      "revenue": 8640
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "retinait_syvorotka_05_30ml",
+      "offerId": "retinait_syvorotka_05_30ml",
+      "name": "Сыворотка для лица с ретинолом омолаживающая",
+      "views": 5672,
+      "clicks": 141,
+      "spend": 5321.49,
+      "orders": 5,
+      "revenue": 5500
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "retinait_syvorotka_1_30ml",
+      "offerId": "retinait_syvorotka_1_30ml",
+      "name": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
+      "views": 91371,
+      "clicks": 940,
+      "spend": 24753.46,
+      "orders": 52,
+      "revenue": 79560
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "retinol_boost_krem_dlya_vek_30ml",
+      "offerId": "retinol_boost_krem_dlya_vek_30ml",
+      "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
+      "views": 13152,
+      "clicks": 206,
+      "spend": 6247.03,
+      "orders": 35,
+      "revenue": 58935
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "retinol_full_journey",
+      "offerId": "Retinol_Full_Journey",
+      "name": "Набор уходовой косметики для лица антивозрастной",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "retinol_start_kit",
+      "offerId": "Retinol_Start_Kit",
+      "name": "Набор уходовой косметики для лица с ретинолом",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "shampun_dlya_rosta_250ml",
+      "offerId": "shampun_dlya_rosta_250ml",
+      "name": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
+      "views": 1911,
+      "clicks": 40,
+      "spend": 224.43,
+      "orders": 5,
+      "revenue": 3975
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "shampun_protiv_perhoti_250ml",
+      "offerId": "shampun_protiv_perhoti_250ml",
+      "name": "Шампунь от перхоти лечебный с климбазолом Алтея, 250мл",
+      "views": 824,
+      "clicks": 5,
+      "spend": 101.24,
+      "orders": 2,
+      "revenue": 1532
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "silk_hair_300ml",
+      "offerId": "silk_hair_300ml",
+      "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
+      "views": 7907,
+      "clicks": 132,
+      "spend": 3962.57,
+      "orders": 8,
+      "revenue": 10904
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "skrab_babl_gam_200ml",
+      "offerId": "skrab_babl_gam_200ml",
+      "name": "Скраб пилинг для кожи головы, Алтея, 200 мл",
+      "views": 2859,
+      "clicks": 18,
+      "spend": 431.18,
+      "orders": 1,
+      "revenue": 675
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "solevoy_sprei_200ml",
+      "offerId": "solevoy_sprei_200ml",
+      "name": "Солевой спрей для волос/ текстурайзер для объема и укладки волос с фиксацией Алтея 200 мл",
+      "views": 10771,
+      "clicks": 206,
+      "spend": 4402.47,
+      "orders": 29,
+      "revenue": 23316
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "spicul_gel_mask_75ml",
+      "offerId": "spicul_gel_mask_75ml",
+      "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+      "views": 7387,
+      "clicks": 76,
+      "spend": 3547.19,
+      "orders": 3,
+      "revenue": 6000
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "spiculboost_30ml",
+      "offerId": "spiculboost_30ml",
+      "name": "Сыворотка для лица с микроиглами и коллагеном",
+      "views": 8252,
+      "clicks": 220,
+      "spend": 4465.21,
+      "orders": 15,
+      "revenue": 18600
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "sprei_buster_100ml",
+      "offerId": "sprei_buster_100ml",
+      "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
+      "views": 74891,
+      "clicks": 618,
+      "spend": 14306.75,
+      "orders": 9,
+      "revenue": 8748
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "stik_ot_mozoley",
+      "offerId": "stik_ot_mozoley",
+      "name": "Карандаш от мозолей, стик от натирания, мозольный пластырь, Алтея, 20 г",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "strong_hair",
+      "offerId": "Strong_Hair",
+      "name": "Набор для волос шампунь + маска для роста волос",
+      "views": 0,
+      "clicks": 0,
+      "spend": 0,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "syvorotka_dlya_lica_30ml",
+      "offerId": "syvorotka_dlya_lica_30ml",
+      "name": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
+      "views": 58115,
+      "clicks": 1237,
+      "spend": 23528,
+      "orders": 170,
+      "revenue": 312394
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "syvorotka_dlya_rosta_6ml",
+      "offerId": "syvorotka_dlya_rosta_6ml",
+      "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
+      "views": 296,
+      "clicks": 5,
+      "spend": 23.46,
+      "orders": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "syvorotka_dlya_rosta_6ml_v2",
+      "offerId": "syvorotka_dlya_rosta_6ml_v2",
+      "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
+      "views": 7780,
+      "clicks": 131,
+      "spend": 1396.62,
+      "orders": 9,
+      "revenue": 6939
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "syvorotka_guk_30ml",
+      "offerId": "syvorotka_guk_30ml",
+      "name": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
+      "views": 2686,
+      "clicks": 40,
+      "spend": 1397.57,
+      "orders": 1,
+      "revenue": 698
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "syvorotka_niacin_05_30ml",
+      "offerId": "syvorotka_niacin_05_30ml",
+      "name": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
+      "views": 34268,
+      "clicks": 722,
+      "spend": 14772.69,
+      "orders": 53,
+      "revenue": 63400
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "telomeras_60caps",
+      "offerId": "telomeras_60caps",
+      "name": "Теломераза NMN ТА-65 Алтея 60 капсул",
+      "views": 25533,
+      "clicks": 655,
+      "spend": 7540.49,
+      "orders": 20,
+      "revenue": 45001
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "termo_sprei_200ml",
+      "offerId": "termo_sprei_200ml",
+      "name": "Термозащита Спрей для волос 17 в 1 восстанавливающий с кератином, Алтея, 200 мл",
+      "views": 10511,
+      "clicks": 186,
+      "spend": 13363.53,
+      "orders": 27,
+      "revenue": 16197
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "tonik_dlya_lica_200ml",
+      "offerId": "tonik_dlya_lica_200ml",
+      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
+      "views": 2377,
+      "clicks": 31,
+      "spend": 702.99,
+      "orders": 6,
+      "revenue": 3228
+    },
+    {
+      "date": "2026-04-29",
+      "platformKey": "wb",
+      "articleKey": "vosk_stik_15ml",
+      "offerId": "vosk_stik_15ml",
+      "name": "Воск стик для укладки и фиксации волос Алтея 15 мл",
+      "views": 12205,
+      "clicks": 169,
+      "spend": 3121.69,
+      "orders": 12,
+      "revenue": 6454
     }
   ]
 }

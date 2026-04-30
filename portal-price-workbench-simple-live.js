@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429C__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429D__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429D__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429C__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429B__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429A__ = true;
@@ -1459,8 +1460,15 @@
     return summary;
   }
 
-  function findRow(key) {
+  function findRow(key, preferredMarket) {
     var wanted = norm(key);
+    var targetMarket = repricerMarket(preferredMarket) || repricerMarket(state.market);
+    if (targetMarket && targetMarket !== "all") {
+      var exact = state.rows.find(function (row) {
+        return repricerMarket(row.market) === targetMarket && norm(row.articleKey) === wanted;
+      });
+      if (exact) return exact;
+    }
     return state.rows.find(function (row) { return norm(row.articleKey) === wanted; }) || null;
   }
 
@@ -1769,6 +1777,30 @@
     renderRoot();
   }
 
+  window.__alteaOpenPriceWorkbenchSelection = function openPriceWorkbenchSelection(options) {
+    var payload = options || {};
+    var articleKey = String(payload.articleKey || payload.article || "").trim();
+    var targetMarket = repricerMarket(payload.marketplace || payload.market) || state.market || "all";
+    var fromValue = isoDate(payload.dateFrom);
+    var toValue = isoDate(payload.dateTo);
+
+    state.market = targetMarket;
+    if (articleKey) {
+      state.search = articleKey;
+      state.selectedKey = articleKey;
+    }
+    if (fromValue) state.dateFrom = fromValue;
+    if (toValue) state.dateTo = toValue;
+    normalizeDateRange();
+
+    var selected = articleKey ? findRow(articleKey, targetMarket) : null;
+    if (selected && repricerMarket(selected.market) && repricerMarket(selected.market) !== "all") {
+      state.market = repricerMarket(selected.market);
+    }
+
+    renderPriceWorkbench();
+    return selected || findRow(articleKey, targetMarket) || null;
+  };
   window.renderPriceWorkbench = renderPriceWorkbench;
   window.__alteaRefreshPriceWorkbench = function refreshPriceWorkbench(forceRefresh) {
     return loadData(forceRefresh !== false);

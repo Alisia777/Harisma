@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260429F__) return;
+  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260429G__) return;
+  window.__ALTEA_RUNTIME_OPTIMIZER_20260429G__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260429F__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260429E__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260429D__ = true;
@@ -28,7 +29,7 @@
     ],
     prices: [
       'portal-price-local-fetch-bypass-hotfix.js?v=20260428a',
-      'portal-price-workbench-runtime-loader.js?v=20260429c',
+      'portal-price-workbench-runtime-loader.js?v=20260429d',
       'portal-team-reconnect-hotfix.js?v=20260420a'
     ]
   };
@@ -217,6 +218,36 @@
     if (bundleKey === 'launches') readyBundles.add('launch-control');
   }
 
+  function waitForPriceWorkbenchBridge(timeoutMs = 6000) {
+    const startedAt = Date.now();
+    return new Promise((resolve, reject) => {
+      function fail() {
+        reject(new Error('Не удалось открыть вкладку Цены для выбранного сигнала.'));
+      }
+
+      function poll() {
+        if (typeof window.__alteaOpenPriceWorkbenchSelection === 'function') {
+          resolve(window.__alteaOpenPriceWorkbenchSelection);
+          return;
+        }
+        if (Date.now() - startedAt >= timeoutMs) {
+          fail();
+          return;
+        }
+        window.setTimeout(poll, 80);
+      }
+
+      if (typeof window.__alteaEnsurePriceWorkbenchLoaded === 'function') {
+        Promise.resolve(window.__alteaEnsurePriceWorkbenchLoaded())
+          .then(() => poll())
+          .catch(reject);
+        return;
+      }
+
+      poll();
+    });
+  }
+
   function loadBundleForView(view) {
     const bundleKey = bundleKeyForView(view);
     if (!bundleKey || readyBundles.has(bundleKey)) return Promise.resolve();
@@ -342,4 +373,10 @@
   installDeferredFetch();
   bindNavigation();
   warmInitialDashboard();
+  window.openPriceWorkbenchArticle = function openPriceWorkbenchArticle(options) {
+    forceActivateView('prices');
+    return loadBundleForView('prices')
+      .then(() => waitForPriceWorkbenchBridge())
+      .then((openSelection) => openSelection(options || {}));
+  };
 })();

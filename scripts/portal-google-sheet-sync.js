@@ -464,11 +464,29 @@ async function initAuthSession(options) {
   await browser.waitForEvent('close');
 }
 
+function shouldRetryWithVisibleChrome(error) {
+  const message = String(error?.message || error || '');
+  return /Browser\.getWindowForTarget/i.test(message) || /Browser window not found/i.test(message);
+}
+
+async function launchSyncProfileContext(options) {
+  try {
+    return await chromium.launchPersistentContext(options.profileDir, {
+      headless: true,
+      channel: 'chrome'
+    });
+  } catch (error) {
+    if (!shouldRetryWithVisibleChrome(error)) throw error;
+    console.log('Headless Chrome profile launch failed. Retrying with visible Chrome window.');
+    return chromium.launchPersistentContext(options.profileDir, {
+      headless: false,
+      channel: 'chrome'
+    });
+  }
+}
+
 async function fetchWorkbookViaBrowserAuth(options) {
-  const browser = await chromium.launchPersistentContext(options.profileDir, {
-    headless: true,
-    channel: 'chrome'
-  });
+  const browser = await launchSyncProfileContext(options);
   const page = await browser.newPage();
   try {
     await page.goto(options.sheetUrl, { waitUntil: 'domcontentloaded', timeout: 120000 });
@@ -491,10 +509,7 @@ async function fetchWorkbookViaBrowserAuth(options) {
 }
 
 async function fetchSheetRowsViaBrowserAuth(options) {
-  const browser = await chromium.launchPersistentContext(options.profileDir, {
-    headless: true,
-    channel: 'chrome'
-  });
+  const browser = await launchSyncProfileContext(options);
   const page = await browser.newPage();
   try {
     await page.goto(options.sheetUrl, { waitUntil: 'domcontentloaded', timeout: 120000 });

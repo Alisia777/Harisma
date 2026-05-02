@@ -29,7 +29,7 @@
     ],
     prices: [
       'portal-price-local-fetch-bypass-hotfix.js?v=20260428a',
-      'portal-price-workbench-runtime-loader.js?v=20260429d',
+      'portal-price-workbench-runtime-loader.js?v=20260502a',
       'portal-team-reconnect-hotfix.js?v=20260420a'
     ]
   };

@@ -1,14 +1,5 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429L__) return;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429L__ = true;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429K__ = true;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429J__ = true;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429I__ = true;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429H__ = true;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429G__ = true;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429F__ = true;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429E__ = true;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_20260429D__ = true;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429C__) return;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429C__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429A__ = true;
@@ -18,27 +9,12 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260429l';
-  const STYLE_ID = 'altea-dashboard-interactive-20260429l';
+  const VERSION = '20260429c';
+  const STYLE_ID = 'altea-dashboard-interactive-20260429c';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
-  const DASHBOARD_VIEW_ID = 'view-dashboard';
-  const ADS_VIEW_ID = 'view-ads-funnel';
-  const ADS_ROOT_ID = 'portalAdsFunnelRoot';
-  const ADS_STYLE_ID = 'altea-dashboard-interactive-ads-20260429l';
-  const ADS_MANAGEMENT_STYLE_ID = 'portalDashboardAdsManagementStyles';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
   const PRESET_KEYS = ['yesterday', '7', 'prevweek', '14', '30'];
-  const DASHBOARD_SIGNAL_THRESHOLDS = {
-    priceShockWarnPct: 0.10,
-    priceShockDangerPct: 0.20,
-    funnelDropWarnPct: 0.25,
-    funnelDropDangerPct: 0.40,
-    ctrDropWarnPct: 0.20,
-    ctrDropDangerPct: 0.35,
-    minAdsOrdersForCompare: 5,
-    minAdsRevenueForCompare: 5000
-  };
   const cache = {
     dashboard: null,
     platformTrends: null,
@@ -57,9 +33,6 @@
   };
   let applyTimer = 0;
   let dashboardBootPrimed = false;
-  let backgroundHydrationPromise = null;
-  let adsItemSeriesIndexStamp = '';
-  let adsItemSeriesIndex = new Map();
 
   function syncChrome() {
     document.title = 'Дом бренда Алтея · v8.7.1 Imperial';
@@ -329,63 +302,10 @@
       .sort((left, right) => left.date - right.date);
   }
 
-  function adsItemRowsIndexMap() {
-    const payload = current('adsSummary') || {};
-    const stamp = String(payload?.generatedAt || payload?.asOfDate || '').trim();
-    if (stamp === adsItemSeriesIndexStamp && adsItemSeriesIndex.size) return adsItemSeriesIndex;
-    adsItemSeriesIndexStamp = stamp;
-    adsItemSeriesIndex = new Map();
-    (payload?.itemSeries || []).forEach((item) => {
-      const platformKey = normalizeKey(item?.platformKey);
-      const articleKey = normalizeKey(item?.articleKey || item?.offerId || item?.offer_id);
-      const date = parseDate(item?.date);
-      if (!platformKey || !articleKey || !(date instanceof Date) || Number.isNaN(date.getTime())) return;
-      const key = `${platformKey}::${articleKey}`;
-      if (!adsItemSeriesIndex.has(key)) adsItemSeriesIndex.set(key, []);
-      adsItemSeriesIndex.get(key).push({
-        date,
-        views: num(item?.views),
-        clicks: num(item?.clicks),
-        spend: num(item?.spend),
-        orders: num(item?.orders),
-        revenue: num(item?.revenue)
-      });
-    });
-    adsItemSeriesIndex.forEach((items) => items.sort((left, right) => left.date - right.date));
-    return adsItemSeriesIndex;
-  }
-
-  function adsRowsForArticle(platformKey, articleKey) {
-    if (!platformKey || !articleKey) return [];
-    const map = adsItemRowsIndexMap();
-    return map.get(`${normalizeKey(platformKey)}::${normalizeKey(articleKey)}`) || [];
-  }
-
-  function aggregateAdsRows(rows, start, end) {
-    const items = (rows || []).filter((item) => item.date >= start && item.date <= end);
-    const views = items.reduce((sum, item) => sum + num(item?.views), 0);
-    const clicks = items.reduce((sum, item) => sum + num(item?.clicks), 0);
-    const spend = items.reduce((sum, item) => sum + num(item?.spend), 0);
-    const orders = items.reduce((sum, item) => sum + num(item?.orders), 0);
-    const revenue = items.reduce((sum, item) => sum + num(item?.revenue), 0);
-    return {
-      views,
-      clicks,
-      spend,
-      orders,
-      revenue,
-      ctr: views > 0 ? clicks / views : null,
-      drr: revenue > 0 ? spend / revenue : null
-    };
-  }
-
   function rowsForPlatform(payload, platformKey) {
     const platforms = payload?.platforms || {};
     const collect = (key, sourceKey = key) => {
-      const rawRows = platforms[key]?.rows;
-      const rows = Array.isArray(rawRows)
-        ? rawRows
-        : (rawRows && typeof rawRows === 'object' ? Object.values(rawRows) : []);
+      const rows = Array.isArray(platforms[key]?.rows) ? platforms[key].rows : [];
       return rows.map((row) => ({
         ...row,
         platformKey: sourceKey,
@@ -1197,7 +1117,7 @@
   function buildPlatformMetrics() {
     const range = selectedRange();
     const compare = comparisonRange(range);
-    const issueMap = buildIssueMap(range, compare);
+    const issueMap = buildIssueMap();
     const adsAnchor = parseDate(current('adsSummary')?.asOfDate) || range.anchor;
     const metrics = PLATFORM_KEYS.map((platformKey) => buildWindowMetric(platformKey, range, range.anchor, adsAnchor, issueMap));
     const compareMetrics = compare
@@ -1514,7 +1434,7 @@
     return rows;
   }
 
-  function articleRowsForPlatform(platformKey, range, compareRange = null) {
+  function articleRowsForPlatform(platformKey, range) {
     const skuMap = new Map(
       (current('skus') || []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku])
     );
@@ -1522,8 +1442,6 @@
       .map((row) => {
         const article = row?.article || row?.articleKey || '—';
         const sku = skuMap.get(normalizeKey(article));
-        const platformRowKey = row?.platformKey || platformKey;
-        if (!sku || !platformHasPresence(sku, platformRowKey)) return null;
         const side = row.platformKey === 'wb'
           ? sku?.wb
           : row.platformKey === 'ozon'
@@ -1550,36 +1468,15 @@
         const marginSource = side?.marginPct ?? row?.avgMargin7dPct;
         const periodFacts = articleWindowFacts(row?.platformKey || platformKey, article, range);
         const completionSource = periodFacts.completionPct ?? sku?.planFact?.completionApr26Pct ?? sku?.planFact?.completionMar26Pct ?? sku?.planFact?.completionFeb26Pct;
-        const adsRows = adsRowsForArticle(row?.platformKey || platformKey, article);
-        const adsFacts = aggregateAdsRows(adsRows, range.effectiveStart, range.effectiveEnd);
-        const compareAdsFacts = compareRange ? aggregateAdsRows(adsRows, compareRange.effectiveStart, compareRange.effectiveEnd) : null;
-        const owner = platformOwnerName(sku, platformRowKey, row?.owner);
-        const negativeMarginFlag = platformRowKey === 'wb'
-          ? Boolean(sku?.flags?.wbNegativeMargin) || (Number.isFinite(Number(marginSource)) && Number(marginSource) < 0)
-          : platformRowKey === 'ozon'
-            ? Boolean(sku?.flags?.ozonNegativeMargin) || (Number.isFinite(Number(marginSource)) && Number(marginSource) < 0)
-            : Boolean(sku?.flags?.negativeMargin) || (Number.isFinite(Number(marginSource)) && Number(marginSource) < 0);
-        const lowStockFlag = platformRowKey === 'wb'
-          ? Boolean(sku?.wb?.belowMin || sku?.flags?.lowStock)
-          : platformRowKey === 'ozon'
-            ? Boolean(sku?.ozon?.belowMin || sku?.flags?.lowStock)
-            : Boolean(sku?.ym?.belowMin || sku?.ya?.belowMin || sku?.flags?.lowStock);
-        const toWorkFlag = platformRowKey === 'wb'
-          ? Boolean(sku?.flags?.toWorkWB)
-          : platformRowKey === 'ozon'
-            ? Boolean(sku?.flags?.toWorkOzon)
-            : Boolean(sku?.flags?.toWork);
-        const priceDeltaPct = startPrice > 0 && endPrice > 0 ? (endPrice - startPrice) / startPrice : null;
         return {
           article,
           name: row?.name || sku?.name || article,
-          platformKey: platformRowKey,
-          platformLabel: row?.platformLabel || shortPlatformLabel(platformRowKey),
-          owner,
+          platformKey: row?.platformKey || platformKey,
+          platformLabel: row?.platformLabel || shortPlatformLabel(row?.platformKey || platformKey),
+          owner: platformOwnerName(sku, row?.platformKey || platformKey, row?.owner),
           startPrice,
           endPrice,
           avgPrice,
-          priceDeltaPct,
           currentPrice: num(row?.currentPrice) || num(side?.currentPrice),
           minPrice: num(row?.minPrice) || num(side?.minPrice),
           stock: num(side?.stock),
@@ -1593,326 +1490,157 @@
           actualRevenueSelected: Number.isFinite(Number(periodFacts.actualRevenue)) ? Number(periodFacts.actualRevenue) : null,
           periodAvgCheck: periodFacts.actualUnits > 0 && periodFacts.actualRevenue > 0 ? periodFacts.actualRevenue / periodFacts.actualUnits : null,
           factSource: periodFacts.factSource || '',
-          salesValue: Number.isFinite(Number(periodFacts.actualRevenue)) ? Number(periodFacts.actualRevenue) : num(sku?.planFact?.factTotalRevenue || sku?.orders?.value),
-          adViews: adsFacts.views,
-          adClicks: adsFacts.clicks,
-          adOrders: adsFacts.orders,
-          adSpend: adsFacts.spend,
-          adRevenue: adsFacts.revenue,
-          adCtr: adsFacts.ctr,
-          adDrr: adsFacts.drr,
-          compareAdViews: compareAdsFacts?.views ?? null,
-          compareAdClicks: compareAdsFacts?.clicks ?? null,
-          compareAdOrders: compareAdsFacts?.orders ?? null,
-          compareAdSpend: compareAdsFacts?.spend ?? null,
-          compareAdRevenue: compareAdsFacts?.revenue ?? null,
-          compareAdCtr: compareAdsFacts?.ctr ?? null,
-          compareAdDrr: compareAdsFacts?.drr ?? null,
-          adOrdersDeltaPct: compareAdsFacts ? relativeDelta(adsFacts.orders, compareAdsFacts.orders) : null,
-          adRevenueDeltaPct: compareAdsFacts ? relativeDelta(adsFacts.revenue, compareAdsFacts.revenue) : null,
-          adClicksDeltaPct: compareAdsFacts ? relativeDelta(adsFacts.clicks, compareAdsFacts.clicks) : null,
-          adCtrDeltaPct: compareAdsFacts ? relativeDelta(adsFacts.ctr, compareAdsFacts.ctr) : null,
-          noOwnerFlag: !owner || owner === 'Без owner',
-          negativeMarginFlag,
-          lowStockFlag,
-          toWorkFlag,
-          belowMinFlag: Boolean(row?.belowMin || side?.belowMin)
+          salesValue: Number.isFinite(Number(periodFacts.actualRevenue)) ? Number(periodFacts.actualRevenue) : num(sku?.planFact?.factTotalRevenue || sku?.orders?.value)
         };
       })
-      .filter(Boolean)
       .filter((row) => row.article && row.article !== '—');
   }
 
-  function issueCountersForSku(sku, platformKey) {
-    const assigned = Boolean(sku?.flags?.assigned);
-    const lowStock = Boolean(sku?.flags?.lowStock) && platformHasPresence(sku, platformKey);
-    const underPlan = Boolean(sku?.flags?.underPlan) && platformHasPresence(sku, platformKey);
-    const negativeMargin = platformKey === 'wb'
-      ? Boolean(sku?.flags?.wbNegativeMargin)
-      : platformKey === 'ozon'
-        ? Boolean(sku?.flags?.ozonNegativeMargin)
-        : platformKey === 'all'
-          ? Boolean(sku?.flags?.negativeMargin)
-          : false;
-    const toWork = platformKey === 'wb'
-      ? Boolean(sku?.flags?.toWorkWB)
-      : platformKey === 'ozon'
-        ? Boolean(sku?.flags?.toWorkOzon)
-        : platformKey === 'all'
-          ? Boolean(sku?.flags?.toWork)
-          : false;
-    const belowMin = platformKey === 'wb'
-      ? Boolean(sku?.wb?.belowMin)
-      : platformKey === 'ozon'
-        ? Boolean(sku?.ozon?.belowMin)
-        : platformKey === 'all'
-          ? Boolean(sku?.wb?.belowMin || sku?.ozon?.belowMin)
-          : false;
-    return {
-      noOwner: !assigned,
-      lowStock,
-      underPlan,
-      negativeMargin,
-      toWork,
-      belowMin
-    };
+  function dashboardExportPlatformKeys(executive) {
+    if (executive?.selectedPlatform && executive.selectedPlatform !== 'all') return [executive.selectedPlatform];
+    return ['wb', 'ozon', 'ya'];
   }
 
-  function priceShockSignalKind(deltaPct) {
-    if (!Number.isFinite(Number(deltaPct))) return '';
-    const absDelta = Math.abs(Number(deltaPct));
-    if (absDelta >= DASHBOARD_SIGNAL_THRESHOLDS.priceShockDangerPct) return 'danger';
-    if (absDelta >= DASHBOARD_SIGNAL_THRESHOLDS.priceShockWarnPct) return 'warn';
-    return '';
+  function dashboardExportScope(executive) {
+    const platformKey = executive?.selectedPlatform || 'all';
+    const from = executive?.range?.effectiveStart ? iso(executive.range.effectiveStart) : '';
+    const to = executive?.range?.effectiveEnd ? iso(executive.range.effectiveEnd) : '';
+    return `${platformKey}-${from || 'na'}-to-${to || 'na'}`;
   }
 
-  function funnelDropSignalKind(row) {
-    if (!row) return '';
-    const hasComparableOrders = Number.isFinite(Number(row.compareAdOrders))
-      && Number(row.compareAdOrders) >= DASHBOARD_SIGNAL_THRESHOLDS.minAdsOrdersForCompare;
-    const hasComparableRevenue = Number.isFinite(Number(row.compareAdRevenue))
-      && Number(row.compareAdRevenue) >= DASHBOARD_SIGNAL_THRESHOLDS.minAdsRevenueForCompare;
-    const hasComparableCtr = Number.isFinite(Number(row.compareAdClicks))
-      && Number(row.compareAdClicks) >= DASHBOARD_SIGNAL_THRESHOLDS.minAdsOrdersForCompare;
-    if (!hasComparableOrders && !hasComparableRevenue && !hasComparableCtr) return '';
-
-    const orderDrop = Number(row.adOrdersDeltaPct);
-    const revenueDrop = Number(row.adRevenueDeltaPct);
-    const ctrDrop = Number(row.adCtrDeltaPct);
-
-    const isDanger = (
-      (Number.isFinite(orderDrop) && orderDrop <= -DASHBOARD_SIGNAL_THRESHOLDS.funnelDropDangerPct)
-      || (Number.isFinite(revenueDrop) && revenueDrop <= -DASHBOARD_SIGNAL_THRESHOLDS.funnelDropDangerPct)
-      || (Number.isFinite(ctrDrop) && ctrDrop <= -DASHBOARD_SIGNAL_THRESHOLDS.ctrDropDangerPct)
-    );
-    if (isDanger) return 'danger';
-
-    const isWarn = (
-      (Number.isFinite(orderDrop) && orderDrop <= -DASHBOARD_SIGNAL_THRESHOLDS.funnelDropWarnPct)
-      || (Number.isFinite(revenueDrop) && revenueDrop <= -DASHBOARD_SIGNAL_THRESHOLDS.funnelDropWarnPct)
-      || (Number.isFinite(ctrDrop) && ctrDrop <= -DASHBOARD_SIGNAL_THRESHOLDS.ctrDropWarnPct)
-    );
-    return isWarn ? 'warn' : '';
-  }
-
-  function issueFlagsForArticleRow(row) {
-    const completionPct = Number.isFinite(Number(row?.completionPct)) ? Number(row.completionPct) : null;
-    const priceShockKind = priceShockSignalKind(row?.priceDeltaPct);
-    const funnelDropKind = funnelDropSignalKind(row);
-    return {
-      noOwner: Boolean(row?.noOwnerFlag),
-      lowStock: Boolean(row?.lowStockFlag),
-      underPlan: completionPct !== null && completionPct < 0.85,
-      negativeMargin: Boolean(row?.negativeMarginFlag),
-      toWork: Boolean(row?.toWorkFlag),
-      belowMin: Boolean(row?.belowMinFlag),
-      priceShock: Boolean(priceShockKind),
-      funnelDrop: Boolean(funnelDropKind),
-      priceShockKind,
-      funnelDropKind
-    };
-  }
-
-  function strongestFunnelDropLabel(row) {
-    const candidates = [
-      Number.isFinite(Number(row?.adOrdersDeltaPct))
-        ? { label: `Заказы ${row.adOrdersDeltaPct >= 0 ? '+' : ''}${pct(row.adOrdersDeltaPct)}`, delta: Number(row.adOrdersDeltaPct) }
-        : null,
-      Number.isFinite(Number(row?.adRevenueDeltaPct))
-        ? { label: `Выручка ${row.adRevenueDeltaPct >= 0 ? '+' : ''}${pct(row.adRevenueDeltaPct)}`, delta: Number(row.adRevenueDeltaPct) }
-        : null,
-      Number.isFinite(Number(row?.adCtrDeltaPct))
-        ? { label: `CTR ${row.adCtrDeltaPct >= 0 ? '+' : ''}${pct(row.adCtrDeltaPct)}`, delta: Number(row.adCtrDeltaPct) }
-        : null
-    ].filter(Boolean);
-    if (!candidates.length) return 'Провал воронки';
-    candidates.sort((left, right) => left.delta - right.delta);
-    return candidates[0].label;
-  }
-
-  function issueReasonsForRow(row, flags, scopeKey) {
-    const reasons = [];
-    if (flags.priceShock && Number.isFinite(Number(row?.priceDeltaPct))) {
-      reasons.push(`Цена ${row.priceDeltaPct >= 0 ? '+' : ''}${pct(row.priceDeltaPct)}`);
+  function dashboardDownloadHtmlTable(columns, rows, filename) {
+    if (!rows.length) {
+      window.alert('По текущему периоду нет строк для выгрузки.');
+      return;
     }
-    if (flags.funnelDrop) reasons.push(`Воронка ${strongestFunnelDropLabel(row)}`);
-    if (flags.negativeMargin) reasons.push('Отрицательная маржа');
-    if (flags.toWork) reasons.push('SKU уже в работе');
-    if (flags.lowStock) reasons.push('Низкий остаток');
-    if (flags.noOwner) reasons.push('Без owner');
-    if (flags.belowMin) reasons.push('Ниже min price');
-    if (flags.underPlan && Number.isFinite(Number(row?.completionPct))) reasons.push(`План ${pct(row.completionPct)}`);
-    if (!reasons.length) reasons.push('Нужна ручная проверка');
-    const prefix = scopeKey === 'all' && row?.platformLabel ? `${row.platformLabel}: ` : '';
-    return `${prefix}${reasons.join(' · ')}`;
+    const head = `<tr>${columns.map(([, label]) => `<th>${esc(label)}</th>`).join('')}</tr>`;
+    const body = rows.map((row) => `<tr>${columns.map(([key]) => {
+      const value = row[key] === null || row[key] === undefined ? '' : row[key];
+      return `<td>${esc(value)}</td>`;
+    }).join('')}</tr>`).join('');
+    const html = `<!doctype html><html><head><meta charset="utf-8"></head><body><table border="1">${head}${body}</table></body></html>`;
+    const blob = new Blob(['\uFEFF', html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  function issueScoreForFlags(flags) {
-    let score = 0;
-    if (flags.priceShockKind === 'danger') score += 6;
-    else if (flags.priceShockKind === 'warn') score += 4;
-    if (flags.funnelDropKind === 'danger') score += 6;
-    else if (flags.funnelDropKind === 'warn') score += 4;
-    if (flags.negativeMargin) score += 5;
-    if (flags.toWork) score += 4;
-    if (flags.lowStock) score += 3;
-    if (flags.noOwner) score += 2;
-    if (flags.belowMin) score += 2;
-    if (flags.underPlan) score += 1;
-    return score;
+  function dashboardExpandedExportRows(executive) {
+    return dashboardExportPlatformKeys(executive)
+      .flatMap((platformKey) => articleRowsForPlatform(platformKey, executive.range)
+        .map((row) => ({
+          platform: row.platformLabel || shortPlatformLabel(platformKey),
+          article: row.article || '',
+          name: row.name || '',
+          owner: row.owner || '',
+          start_price: row.startPrice,
+          end_price: row.endPrice,
+          avg_price: row.avgPrice,
+          current_price: row.currentPrice,
+          min_price: row.minPrice,
+          stock: row.stock,
+          in_transit: row.inTransit,
+          margin_pct: row.marginPct != null ? Math.round(Number(row.marginPct) * 10000) / 100 : '',
+          turnover_days: row.turnoverDays,
+          avg_turnover_days: row.avgTurnoverDays,
+          completion_pct: row.completionPct != null ? Math.round(Number(row.completionPct) * 10000) / 100 : '',
+          plan_units: row.planUnitsSelected,
+          fact_units: row.actualUnitsSelected,
+          revenue: row.actualRevenueSelected,
+          avg_check: row.periodAvgCheck,
+          fact_source: row.factSource || ''
+        })))
+      .sort((left, right) => String(left.platform).localeCompare(String(right.platform), 'ru') || String(left.article).localeCompare(String(right.article), 'ru'));
   }
 
-  function issueSummaryLabel(counters) {
-    if (!counters || typeof counters !== 'object') return 'Риски пока не собраны';
-    const parts = [
-      num(counters.toWork) > 0 ? `${int(counters.toWork)} в работе` : '',
-      num(counters.negativeMargin) > 0 ? `${int(counters.negativeMargin)} отриц. маржа` : '',
-      num(counters.lowStock) > 0 ? `${int(counters.lowStock)} низкий остаток` : '',
-      num(counters.noOwner) > 0 ? `${int(counters.noOwner)} без owner` : '',
-      num(counters.priceShock) > 0 ? `${int(counters.priceShock)} скачок цены` : '',
-      num(counters.funnelDrop) > 0 ? `${int(counters.funnelDrop)} провал воронки` : ''
-    ].filter(Boolean);
-    return parts.join(' · ') || 'Риски пока не собраны';
-  }
-
-  function focusRowsForPlatform(platformKey, range, compareRange = null) {
-    const focus = current('dashboard')?.focusTop || [];
-    const skuMap = new Map(
-      (current('skus') || []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku])
-    );
-    const rows = [];
-    const seen = new Set();
-    const rowKey = (article, key = platformKey) => `${normalizeKey(article)}|${key || 'all'}`;
-    const matchesPlatform = (text) => {
-      const lowered = repairBrokenUtf8Cp1251String(String(text || '')).toLowerCase();
-      if (platformKey === 'all') return true;
-      if (platformKey === 'wb') return lowered.includes('wb');
-      if (platformKey === 'ozon') return lowered.includes('ozon');
-      if (platformKey === 'ya') {
-        return lowered.includes('маркет')
-          || lowered.includes('ym')
-          || lowered.includes('yandex')
-          || lowered.includes('летуаль')
-          || lowered.includes('магнит')
-          || lowered.includes('золот')
-          || lowered.includes('зя')
-          || lowered.includes('ga')
-          || lowered.includes('letu')
-          || lowered.includes('mm');
-      }
-      return false;
-    };
-
-    articleRowsForPlatform(platformKey, range, compareRange).forEach((row) => {
-      const flags = issueFlagsForArticleRow(row);
-      if (!Object.keys(flags).some((key) => key.endsWith('Kind') ? Boolean(flags[key]) : flags[key] === true)) return;
-      const article = String(row?.article || '').trim();
-      if (!article) return;
-      const key = rowKey(article, row?.platformKey || platformKey);
-      if (seen.has(key)) return;
-      seen.add(key);
-      rows.push({
-        article,
-        name: row?.name || article,
-        owner: row?.owner || 'Без owner',
-        platformKey: row?.platformKey || platformKey,
-        reasons: issueReasonsForRow(row, flags, platformKey),
-        score: issueScoreForFlags(flags),
-        completion: num(row?.completionPct),
-        salesValue: num(row?.salesValue),
-        signalCodes: Object.entries(flags)
-          .filter(([name, active]) => !name.endsWith('Kind') && active === true)
-          .map(([name]) => name),
-        priceShockKind: flags.priceShockKind || '',
-        funnelDropKind: flags.funnelDropKind || ''
-      });
-    });
-
-    focus.forEach((item) => {
-      if (!matchesPlatform(item?.focus_reasons)) return;
-      const article = String(item?.article || item?.article_key || '').trim();
-      if (!article) return;
-      const sku = skuMap.get(normalizeKey(article));
-      const key = rowKey(article, platformKey);
-      if (seen.has(key)) return;
-      seen.add(key);
-      rows.push({
-        article,
-        name: item?.product_name_final || item?.name || article,
-        owner: platformOwnerName(sku, platformKey, item?.owner_name),
-        platformKey,
-        reasons: item?.focus_reasons || 'Нужна ручная оценка',
-        score: num(item?.focus_score),
-        completion: num(item?.plan_completion_feb26_pct),
-        salesValue: 0,
-        signalCodes: [],
-        priceShockKind: '',
-        funnelDropKind: ''
-      });
-    });
-
-    (current('skus') || []).forEach((sku) => {
-      const article = String(sku?.articleKey || sku?.article || '').trim();
-      if (!article || !platformHasPresence(sku, platformKey)) return;
-      const flags = issueCountersForSku(sku, platformKey);
-      if (!Object.values(flags).some(Boolean)) return;
-      const key = rowKey(article, platformKey);
-      if (seen.has(key)) return;
-      seen.add(key);
-      rows.push({
-        article,
-        name: sku?.name || article,
-        owner: platformOwnerName(sku, platformKey),
-        platformKey,
-        reasons: sku?.focusReasons || 'Есть риск по площадке',
-        score: num(sku?.focusScore),
-        completion: num(sku?.planFact?.completionFeb26Pct),
-        salesValue: num(sku?.planFact?.factTotalRevenue || sku?.orders?.value),
-        signalCodes: Object.entries(flags).filter(([, active]) => active).map(([name]) => name),
-        priceShockKind: '',
-        funnelDropKind: ''
-      });
-    });
-
-    return rows
-      .sort((left, right) => right.score - left.score || right.salesValue - left.salesValue || right.completion - left.completion)
-      .slice(0, 12);
-  }
-
-  function buildIssueMap(range, compareRange = null) {
-    const map = new Map();
-    PLATFORM_KEYS.forEach((platformKey) => {
-      const relevantSkus = (current('skus') || []).filter((sku) => platformHasPresence(sku, platformKey));
-      const periodRows = articleRowsForPlatform(platformKey, range, compareRange);
-      const counters = relevantSkus.reduce((acc, sku) => {
-        const flags = issueCountersForSku(sku, platformKey);
-        Object.keys(flags).forEach((key) => {
-          if (flags[key]) acc[key] += 1;
+  function dashboardDailyExportRows(executive) {
+    return dashboardExportPlatformKeys(executive)
+      .flatMap((platformKey) => {
+        const metric = executive?.byKey?.get(platformKey);
+        if (!metric) return [];
+        const turnoverMetric = buildTurnoverMetric(platformKey, executive.range);
+        const priceMap = new Map((metric.priceMatrixSeries || []).map((point) => [iso(point.date), point]));
+        const turnoverMap = new Map((turnoverMetric.turnoverSeries || []).map((point) => [iso(point.date), point]));
+        return (metric.days || []).map((day) => {
+          const dateKey = iso(day.date);
+          const pricePoint = priceMap.get(dateKey) || null;
+          const turnoverPoint = turnoverMap.get(dateKey) || null;
+          return {
+            platform: shortPlatformLabel(platformKey),
+            date: dateKey,
+            plan_units: day.planUnits,
+            fact_units: day.factUnits,
+            completion_pct: day.completion != null ? Math.round(Number(day.completion) * 10000) / 100 : '',
+            revenue: day.revenue,
+            margin: day.margin,
+            margin_pct: day.marginPct != null ? Math.round(Number(day.marginPct) * 10000) / 100 : '',
+            avg_price_mp: pricePoint?.avgPrice ?? '',
+            sku_count_with_price: pricePoint?.skuCount ?? '',
+            avg_turnover_days: turnoverPoint?.avgTurnover ?? '',
+            sku_count_with_turnover: turnoverPoint?.skuCount ?? '',
+            views: day.views,
+            clicks: day.clicks,
+            orders_ads: day.orders,
+            spend: day.spend,
+            ad_revenue: day.adRevenue,
+            drr_pct: day.drr != null ? Math.round(Number(day.drr) * 10000) / 100 : ''
+          };
         });
-        return acc;
-      }, {
-        noOwner: 0,
-        lowStock: 0,
-        underPlan: 0,
-        negativeMargin: 0,
-        toWork: 0,
-        belowMin: 0,
-        priceShock: 0,
-        funnelDrop: 0
-      });
-      periodRows.forEach((row) => {
-        const flags = issueFlagsForArticleRow(row);
-        if (flags.priceShock) counters.priceShock += 1;
-        if (flags.funnelDrop) counters.funnelDrop += 1;
-      });
-      map.set(platformKey, {
-        key: platformKey,
-        label: shortPlatformLabel(platformKey),
-        counters,
-        rows: focusRowsForPlatform(platformKey, range, compareRange)
-      });
-    });
-    return map;
+      })
+      .sort((left, right) => String(left.platform).localeCompare(String(right.platform), 'ru') || String(left.date).localeCompare(String(right.date)));
+  }
+
+  function downloadDashboardExpandedExcel(executive) {
+    dashboardDownloadHtmlTable([
+      ['platform', 'Площадка'],
+      ['article', 'Артикул'],
+      ['name', 'Название'],
+      ['owner', 'Owner'],
+      ['start_price', 'Цена на старт периода'],
+      ['end_price', 'Цена на конец периода'],
+      ['avg_price', 'Средняя цена MP'],
+      ['current_price', 'Текущая цена'],
+      ['min_price', 'Min price'],
+      ['stock', 'Остаток'],
+      ['in_transit', 'В пути'],
+      ['margin_pct', 'Маржа, %'],
+      ['turnover_days', 'Оборачиваемость, дн'],
+      ['avg_turnover_days', 'Средняя оборачиваемость, дн'],
+      ['completion_pct', 'Выполнение плана, %'],
+      ['plan_units', 'План, шт'],
+      ['fact_units', 'Факт, шт'],
+      ['revenue', 'Выручка'],
+      ['avg_check', 'Средний чек'],
+      ['fact_source', 'Источник факта']
+    ], dashboardExpandedExportRows(executive), `dashboard-detail-${dashboardExportScope(executive)}.xls`);
+  }
+
+  function downloadDashboardDailyExcel(executive) {
+    dashboardDownloadHtmlTable([
+      ['platform', 'Площадка'],
+      ['date', 'Дата'],
+      ['plan_units', 'План, шт'],
+      ['fact_units', 'Факт, шт'],
+      ['completion_pct', 'Выполнение, %'],
+      ['revenue', 'Выручка'],
+      ['margin', 'Маржа'],
+      ['margin_pct', 'Маржа, %'],
+      ['avg_price_mp', 'Средняя цена MP'],
+      ['sku_count_with_price', 'SKU с ценой'],
+      ['avg_turnover_days', 'Средняя оборачиваемость, дн'],
+      ['sku_count_with_turnover', 'SKU с оборачиваемостью'],
+      ['views', 'Показы'],
+      ['clicks', 'Клики'],
+      ['orders_ads', 'Заказы ads'],
+      ['spend', 'Расход'],
+      ['ad_revenue', 'Рекламная выручка'],
+      ['drr_pct', 'ДРР, %']
+    ], dashboardDailyExportRows(executive), `dashboard-daily-${dashboardExportScope(executive)}.xls`);
   }
 
   function ensureStyles() {
@@ -2067,19 +1795,6 @@
     document.head.appendChild(style);
   }
 
-  function ensureAdsFunnelStyles() {
-    ensureStyles();
-    if (document.getElementById(ADS_STYLE_ID)) return;
-    const baseStyle = document.getElementById(STYLE_ID);
-    if (!baseStyle) return;
-    const style = document.createElement('style');
-    style.id = ADS_STYLE_ID;
-    style.textContent = String(baseStyle.textContent || '')
-      .replace(/#view-dashboard/g, `#${ADS_VIEW_ID}`)
-      .replace(new RegExp(ROOT_ID, 'g'), ADS_ROOT_ID);
-    document.head.appendChild(style);
-  }
-
   function ensureModal() {
     let modal = document.getElementById(MODAL_ID);
     if (modal) return modal;
@@ -2181,7 +1896,9 @@
 
   function buildPlatformDetail(metric, executive, mode) {
     const issueRows = metric.issues?.rows || [];
-    const issueLabel = issueSummaryLabel(metric?.issues?.counters || null);
+    const issueLabel = metric.issues
+      ? `${int(metric.issues.counters.toWork)} в работе · ${int(metric.issues.counters.negativeMargin)} с отрицательной маржей`
+      : 'Риски пока не собраны';
     const detailTable = metric.days.map((row) => `
       <tr>
         <td>${esc(shortDate(row.date))}</td>
@@ -2822,205 +2539,6 @@
     };
   }
 
-  buildAdsDetail = function buildAdsDetail(metric, executive) {
-    if (!metric.adsReady) {
-      return {
-        title: `${metric.label} · реклама`,
-        subtitle: 'В этом диапазоне опубликованных рекламных фактов пока нет.',
-        body: `<div class="portal-exec-empty">Рекламная витрина для этого диапазона пока пустая. Как только в витрину попадет ads_summary, здесь появится воронка, дневная динамика и список товаров.</div>`
-      };
-    }
-
-    const items = (current('adsSummary')?.itemSeries || [])
-      .map((item) => ({
-        date: parseDate(item?.date),
-        platformKey: String(item?.platformKey || '').toLowerCase(),
-        article: String(item?.articleKey || item?.offer_id || item?.offerId || '').trim(),
-        name: String(item?.name || item?.articleKey || '').trim(),
-        views: num(item?.views),
-        clicks: num(item?.clicks),
-        spend: num(item?.spend),
-        orders: num(item?.orders),
-        revenue: num(item?.revenue)
-      }))
-      .filter((item) => item.date instanceof Date && !Number.isNaN(item.date.getTime()))
-      .filter((item) => (metric.key === 'all' ? true : item.platformKey === metric.key))
-      .filter((item) => item.date >= executive.range.effectiveStart && item.date <= executive.range.effectiveEnd);
-
-    const grouped = new Map();
-    const dailyTotals = new Map();
-    items.forEach((item) => {
-      const key = item.article || item.name || 'Без SKU';
-      if (!grouped.has(key)) {
-        grouped.set(key, {
-          article: item.article || key,
-          name: item.name || item.article || key,
-          views: 0,
-          clicks: 0,
-          spend: 0,
-          orders: 0,
-          revenue: 0,
-          days: new Map()
-        });
-      }
-      const bucket = grouped.get(key);
-      bucket.views += item.views;
-      bucket.clicks += item.clicks;
-      bucket.spend += item.spend;
-      bucket.orders += item.orders;
-      bucket.revenue += item.revenue;
-
-      const dayKey = iso(item.date);
-      const dayBucket = bucket.days.get(dayKey) || { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
-      dayBucket.views += item.views;
-      dayBucket.clicks += item.clicks;
-      dayBucket.spend += item.spend;
-      dayBucket.orders += item.orders;
-      dayBucket.revenue += item.revenue;
-      bucket.days.set(dayKey, dayBucket);
-
-      const totalsBucket = dailyTotals.get(dayKey) || { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
-      totalsBucket.views += item.views;
-      totalsBucket.clicks += item.clicks;
-      totalsBucket.spend += item.spend;
-      totalsBucket.orders += item.orders;
-      totalsBucket.revenue += item.revenue;
-      dailyTotals.set(dayKey, totalsBucket);
-    });
-
-    const periodDays = [];
-    for (let cursor = cleanDate(executive.range.effectiveStart); cursor <= executive.range.effectiveEnd; cursor = addDays(cursor, 1)) {
-      periodDays.push(cleanDate(cursor));
-    }
-
-    const matrixRows = [...grouped.values()]
-      .map((item) => ({
-        ...item,
-        ctr: item.views > 0 ? item.clicks / item.views : null,
-        drr: item.revenue > 0 ? item.spend / item.revenue : null,
-        cells: periodDays.map((date) => {
-          const cell = item.days.get(iso(date)) || { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
-          return {
-            date,
-            views: cell.views,
-            clicks: cell.clicks,
-            spend: cell.spend,
-            orders: cell.orders,
-            revenue: cell.revenue
-          };
-        })
-      }))
-      .sort((left, right) => right.spend - left.spend || right.revenue - left.revenue || right.orders - left.orders);
-
-    const summaryRows = matrixRows.slice(0, 18);
-    const dailyTotalRows = periodDays.map((date) => {
-      const totals = dailyTotals.get(iso(date)) || { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
-      return {
-        date,
-        views: totals.views,
-        clicks: totals.clicks,
-        spend: totals.spend,
-        orders: totals.orders,
-        revenue: totals.revenue,
-        drr: totals.revenue > 0 ? totals.spend / totals.revenue : null
-      };
-    });
-    const activeDayCount = dailyTotalRows.filter((row) => row.spend > 0 || row.orders > 0 || row.clicks > 0).length;
-
-    return {
-      title: `${metric.label} · рекламная воронка`,
-      subtitle: executive.range.clamped
-        ? `Период: ${executive.range.effectiveLabel} · факт доступен за ${executive.range.availableLabel}.`
-        : `Период: ${executive.range.effectiveLabel}.`,
-      body: `
-        <div class="portal-exec-modal-metrics">
-          ${modalSummaryCard('Показы', int(metric.views))}
-          ${modalSummaryCard('Клики', int(metric.clicks))}
-          ${modalSummaryCard('Заказы', int(metric.orders))}
-          ${modalSummaryCard('CTR', metric.ctr !== null ? pct(metric.ctr) : '—')}
-          ${modalSummaryCard('Затраты', money(metric.spend))}
-          ${modalSummaryCard('Выручка с рекламы', money(metric.adRevenue))}
-          ${modalSummaryCard('ДРР', metric.drr !== null ? pct(metric.drr) : '—')}
-          ${modalSummaryCard('Площадка', metric.label)}
-          ${modalSummaryCard('SKU в рекламе', int(matrixRows.length))}
-          ${modalSummaryCard('Дней с фактом', int(activeDayCount))}
-        </div>
-        <div class="portal-exec-modal-card">
-          <div class="portal-exec-modal-copy">
-            <strong>Сводка по SKU</strong>
-            <p>Верхняя таблица даёт быстрый срез по товарам. Ниже идёт подневная матрица расходов по тем же артикулам.</p>
-          </div>
-          <table class="portal-exec-modal-table">
-            <thead>
-              <tr>
-                <th>Товар / SKU</th>
-                <th>Показы</th>
-                <th>Клики</th>
-                <th>Заказы</th>
-                <th>Затраты</th>
-                <th>Выручка</th>
-                <th>CTR</th>
-                <th>ДРР</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${summaryRows.length ? summaryRows.map((row) => `
-                <tr>
-                  <td><strong>${esc(row.name)}</strong><div class="muted small">${esc(row.article)}</div></td>
-                  <td>${esc(int(row.views))}</td>
-                  <td>${esc(int(row.clicks))}</td>
-                  <td>${esc(int(row.orders))}</td>
-                  <td>${esc(money(row.spend))}</td>
-                  <td>${esc(money(row.revenue))}</td>
-                  <td>${esc(row.ctr !== null ? pct(row.ctr) : '—')}</td>
-                  <td>${esc(row.drr !== null ? pct(row.drr) : '—')}</td>
-                </tr>
-              `).join('') : `<tr><td colspan="8">По этому диапазону нет рекламных SKU-строк.</td></tr>`}
-            </tbody>
-          </table>
-        </div>
-        <div class="portal-exec-modal-card">
-          <div class="portal-exec-modal-copy">
-            <strong>Затраты по дням и артикулам</strong>
-            <p>По строкам стоят все SKU из рекламного среза. По столбцам дни периода. В ячейке виден расход и число заказов за день.</p>
-          </div>
-          <table class="portal-exec-modal-table">
-            <thead>
-              <tr>
-                <th>Товар / SKU</th>
-                ${periodDays.map((date) => `<th>${esc(shortDate(date))}</th>`).join('')}
-                <th>Итого</th>
-                <th>Заказы</th>
-                <th>Выручка</th>
-                <th>ДРР</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Итого по дням</strong><div class="muted small">${esc(metric.label)}</div></td>
-                ${dailyTotalRows.map((row) => `<td>${row.spend > 0 ? `<strong>${esc(money(row.spend))}</strong><div class="muted small">${esc(int(row.orders))} зак.</div>` : '—'}</td>`).join('')}
-                <td>${esc(money(metric.spend))}</td>
-                <td>${esc(int(metric.orders))}</td>
-                <td>${esc(money(metric.adRevenue))}</td>
-                <td>${esc(metric.drr !== null ? pct(metric.drr) : '—')}</td>
-              </tr>
-              ${matrixRows.length ? matrixRows.map((row) => `
-                <tr>
-                  <td><strong>${esc(row.name)}</strong><div class="muted small">${esc(row.article)}</div></td>
-                  ${row.cells.map((cell) => `<td>${cell.spend > 0 ? `<strong>${esc(money(cell.spend))}</strong><div class="muted small">${esc(int(cell.orders))} зак.</div>` : '—'}</td>`).join('')}
-                  <td>${esc(money(row.spend))}</td>
-                  <td>${esc(int(row.orders))}</td>
-                  <td>${esc(money(row.revenue))}</td>
-                  <td>${esc(row.drr !== null ? pct(row.drr) : '—')}</td>
-                </tr>
-              `).join('') : `<tr><td colspan="${periodDays.length + 5}">По этому периоду нет подневных рекламных строк.</td></tr>`}
-            </tbody>
-          </table>
-        </div>
-      `
-    };
-  };
-
   function buildContentSliceDetail() {
     const summary = contentSliceSummary();
     const periodLabel = summary.periods.length ? summary.periods.join(' · ') : 'последний доступный срез';
@@ -3203,6 +2721,10 @@
                 </div>
                 <small class="portal-exec-date-value">${esc(longDate(selectedEnd))}</small>
               </label>
+            </div>
+            <div class="portal-exec-actions" style="margin-top:12px">
+              <button type="button" class="quick-chip" data-portal-export="dashboard-summary">Скачать отчет Excel</button>
+              <button type="button" class="quick-chip" data-portal-export="dashboard-daily">Скачать по дням Excel</button>
             </div>
             <div class="portal-exec-period-note" style="margin-top:12px">Календарь открывается по клику в поле или по кнопке рядом. Выбранный диапазон подсвечен и сразу отражается на всех карточках ниже.</div>
           </div>
@@ -3861,66 +3383,6 @@
         </div>
       </section>
     `;
-    /*
-    return `
-      <section class="portal-exec-section is-highlight">
-        <div class="portal-exec-head">
-          <div class="portal-exec-copy">
-            <h3>Маржа по площадкам</h3>
-            <p>Маржа поднята выше, чтобы сразу видеть, где проблема уже не в плане, а в качестве прибыли. По клику открывается полный список SKU с маржой по выбранной площадке.</p>
-          </div>
-          ${sectionMetaHtml(executive, [
-            badgeHtml(`${int(marketplaceAdsCards.length)} MP`, marketplaceAdsCards.length ? 'ok' : 'warn'),
-            badgeHtml(`${int((executive.selectedPlatform === 'all' ? marketplaceAdsCards : readyCards).reduce((sum, metric) => sum + num(metric?.orders), 0))} заказов`, 'info')
-          ])}
-        </div>
-        <div class="portal-exec-grid">
-          ${adsSummaryCards.map((metric) => `
-            <article class="portal-exec-card is-${adsMetricTone(metric)} is-clickable" data-portal-exec-open="ads" data-portal-exec-key="${esc(metric.key)}">
-              <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(metric.label)}</span>${badgeHtml(metric.drr !== null ? `ДРР ${pct(metric.drr)}` : 'нет ДРР', metric.drr !== null ? toneDrr(metric.drr) : 'warn')}</div>
-              <div class="portal-exec-card-value compact">${esc(money(metric.adRevenue))}</div>
-              <div class="portal-exec-sub">Реклама ${esc(money(metric.spend))} В· CTR ${esc(metric.ctr !== null ? pct(metric.ctr) : '—')} В· клики ${esc(int(metric.clicks))}</div>
-              <div class="portal-exec-metric-grid">
-                <div class="portal-exec-metric"><span>Заказы</span><strong>${esc(int(metric.orders))}</strong></div>
-                <div class="portal-exec-metric"><span>CTR</span><strong>${esc(metric.ctr !== null ? pct(metric.ctr) : '—')}</strong></div>
-                <div class="portal-exec-metric"><span>ДРР</span><strong>${esc(metric.drr !== null ? pct(metric.drr) : '—')}</strong></div>
-                <div class="portal-exec-metric"><span>Показы</span><strong>${esc(int(metric.views))}</strong></div>
-              </div>
-              ${renderSparkline(metric.sparkSpend)}
-              <div class="portal-exec-card-foot"><span>Выручка ${esc(money(metric.adRevenue))}</span><span>${esc(metric.key === 'all' ? 'сводно' : 'drilldown')}</span></div>
-            </article>
-          `).join('')}
-        </div>
-        ${executive.selectedPlatform === 'all' && adsSummaryCards.length ? `
-          <div class="portal-exec-grid">
-            ${adsSummaryCards.map((metric) => `
-              <article class="portal-exec-card is-${adsMetricTone(metric)} is-clickable" data-portal-exec-open="ads" data-portal-exec-key="${esc(metric.key === 'all' ? 'wb' : metric.key)}">
-                <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(metric.label)}</span>${badgeHtml(metric.drr !== null ? `Р”Р Р  ${pct(metric.drr)}` : 'РЅРµС‚ Р”Р Р ', metric.drr !== null ? toneDrr(metric.drr) : 'warn')}</div>
-                <div class="portal-exec-card-value compact">${esc(money(metric.spend))}</div>
-                <div class="portal-exec-sub">РџРѕРєР°Р·С‹ ${esc(int(metric.views))} В· РєР»РёРєРё ${esc(int(metric.clicks))} В· Р·Р°РєР°Р·С‹ ${esc(int(metric.orders))}</div>
-                ${renderSparkline(metric.sparkSpend)}
-                <div class="portal-exec-card-foot"><span>Р’С‹СЂСѓС‡РєР° ${esc(money(metric.adRevenue))}</span><span>CTR ${esc(metric.ctr !== null ? pct(metric.ctr) : 'вЂ”')}</span></div>
-              </article>
-            `).join('')}
-          </div>
-        ` : ''}
-        <div class="portal-exec-platform-grid">
-          ${metrics.map((metric) => `
-            <article class="portal-exec-card is-${toneMargin(metric.marginPct)} is-clickable" data-portal-exec-open="margin" data-portal-exec-key="${esc(metric.key)}">
-              <div class="portal-exec-card-head">
-                <span class="portal-exec-card-label">${esc(metric.label)}</span>
-                ${badgeHtml(`Маржинальность ${pct(metric.marginPct)}`, toneMargin(metric.marginPct))}
-              </div>
-              <div class="portal-exec-card-value compact">${esc(money(metric.margin))}</div>
-              <div class="portal-exec-sub">Выручка ${esc(money(metric.revenue))} · отрицательная маржа ${esc(int(metric.issues?.counters?.negativeMargin || 0))}</div>
-              ${renderSparkline(metric.sparkMargin)}
-              <div class="portal-exec-axis"><span>${esc(shortDate(executive.range.effectiveStart))}</span><span>${esc(shortDate(executive.range.effectiveEnd))}</span></div>
-            </article>
-          `).join('') || `<div class="portal-exec-empty">Нет данных по марже.</div>`}
-        </div>
-      </section>
-    `;
-    */
   }
 
   function stockSection(executive) {
@@ -3974,12 +3436,7 @@
         <div class="portal-exec-issue-grid">
           ${metrics.map((metric) => {
             const counters = metric.issues?.counters || {};
-            const total = num(counters.toWork)
-              + num(counters.negativeMargin)
-              + num(counters.lowStock)
-              + num(counters.noOwner)
-              + num(counters.priceShock)
-              + num(counters.funnelDrop);
+            const total = num(counters.toWork) + num(counters.negativeMargin) + num(counters.lowStock) + num(counters.noOwner);
             return `
               <article class="portal-exec-card is-${total > 0 ? 'danger' : 'ok'} is-clickable" data-portal-exec-open="issues" data-portal-exec-key="${esc(metric.key)}">
                 <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(metric.label)}</span>${badgeHtml(`${int(total)} сигналов`, total > 0 ? 'danger' : 'ok')}</div>
@@ -4000,156 +3457,6 @@
 
   function adsSection(executive) {
     const readyCards = visibleMetrics(executive).filter((metric) => metric.adsReady);
-    const marketplaceAdsCards = readyCards.filter((metric) => metric.key === 'wb' || metric.key === 'ozon');
-    const adsMetricTone = (metric) => (
-      metric?.drr !== null
-        ? toneDrr(metric.drr)
-        : (num(metric?.orders) > 0 || num(metric?.spend) > 0 ? 'ok' : 'warn')
-    );
-    const buildAdsRollupMetric = (metrics) => {
-      const byDate = new Map();
-      metrics.forEach((metric) => {
-        (metric?.days || []).forEach((row) => {
-          const key = iso(row?.date);
-          if (!key) return;
-          const bucket = byDate.get(key) || { spend: 0, orders: 0, views: 0, clicks: 0, adRevenue: 0 };
-          bucket.spend += num(row?.spend);
-          bucket.orders += num(row?.orders);
-          bucket.views += num(row?.views);
-          bucket.clicks += num(row?.clicks);
-          bucket.adRevenue += num(row?.adRevenue);
-          byDate.set(key, bucket);
-        });
-      });
-      const ordered = [...byDate.entries()]
-        .sort((left, right) => left[0].localeCompare(right[0]))
-        .map(([, value]) => value);
-      const views = metrics.reduce((sum, metric) => sum + num(metric?.views), 0);
-      const clicks = metrics.reduce((sum, metric) => sum + num(metric?.clicks), 0);
-      const orders = metrics.reduce((sum, metric) => sum + num(metric?.orders), 0);
-      const spend = metrics.reduce((sum, metric) => sum + num(metric?.spend), 0);
-      const adRevenue = metrics.reduce((sum, metric) => sum + num(metric?.adRevenue), 0);
-      return {
-        key: 'all',
-        label: 'WB + Ozon',
-        views,
-        clicks,
-        orders,
-        spend,
-        adRevenue,
-        ctr: views > 0 ? clicks / views : null,
-        drr: adRevenue > 0 ? spend / adRevenue : null,
-        sparkSpend: sparkline(ordered.map((row) => row.spend))
-      };
-    };
-    const adsSummaryCards = executive.selectedPlatform === 'all' && marketplaceAdsCards.length > 1
-      ? [buildAdsRollupMetric(marketplaceAdsCards), ...marketplaceAdsCards]
-      : marketplaceAdsCards;
-    const renderAdsCard = (metric, options = {}) => {
-      const summary = options.summary === true;
-      const clickable = metric.key !== 'all';
-      const openAttrs = clickable ? ` data-portal-exec-open="ads" data-portal-exec-key="${esc(metric.key)}"` : '';
-      const primaryValue = summary ? money(metric.adRevenue) : money(metric.spend);
-      const subtitle = summary
-        ? `Реклама ${money(metric.spend)} · CTR ${metric.ctr !== null ? pct(metric.ctr) : '—'} · клики ${int(metric.clicks)}`
-        : `Показы ${int(metric.views)} · клики ${int(metric.clicks)} · заказы ${int(metric.orders)}`;
-      const footRight = summary
-        ? (metric.key === 'all' ? 'сводно' : 'drilldown')
-        : `CTR ${metric.ctr !== null ? pct(metric.ctr) : '—'}`;
-      return `
-        <article class="portal-exec-card is-${adsMetricTone(metric)}${clickable ? ' is-clickable' : ''}"${openAttrs}>
-          <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(metric.label)}</span>${badgeHtml(metric.drr !== null ? `ДРР ${pct(metric.drr)}` : 'нет ДРР', metric.drr !== null ? toneDrr(metric.drr) : 'warn')}</div>
-          <div class="portal-exec-card-value compact">${esc(primaryValue)}</div>
-          <div class="portal-exec-sub">${esc(subtitle)}</div>
-          ${summary ? `
-            <div class="portal-exec-metric-grid">
-              <div class="portal-exec-metric"><span>Заказы</span><strong>${esc(int(metric.orders))}</strong></div>
-              <div class="portal-exec-metric"><span>CTR</span><strong>${esc(metric.ctr !== null ? pct(metric.ctr) : '—')}</strong></div>
-              <div class="portal-exec-metric"><span>ДРР</span><strong>${esc(metric.drr !== null ? pct(metric.drr) : '—')}</strong></div>
-              <div class="portal-exec-metric"><span>Показы</span><strong>${esc(int(metric.views))}</strong></div>
-            </div>
-          ` : ''}
-          ${renderSparkline(metric.sparkSpend)}
-          <div class="portal-exec-card-foot"><span>Выручка ${esc(money(metric.adRevenue))}</span><span>${esc(footRight)}</span></div>
-        </article>
-      `;
-    };
-    if (!readyCards.length) {
-      const content = contentSliceSummary();
-      if (content.rows.length) {
-        const sectionTitle = content.usingLeaderboard
-          ? 'Контент и окупаемость (ROMI) · продуктовый лидерборд'
-          : 'Контент и окупаемость (ROMI) · последний срез';
-        const sectionDescription = content.usingLeaderboard
-          ? 'На главной показываем weekly КЗ-срез из продуктового лидерборда: клики, заказы, выручка, затраты на контент и ROMI берём из одного источника, без старого fallback-слоя.'
-          : 'Ежедневная рекламная витрина ещё не доехала в <code>ads_summary.json</code>, поэтому здесь временно показывается последний доступный контент-срез. Он не привязан к календарю, но уже даёт понятный ответ по кликам, заказам, выручке и окупаемости контента.';
-        return `
-          <section class="portal-exec-section">
-            <div class="portal-exec-head">
-              <div class="portal-exec-copy">
-                <h3>${sectionTitle}</h3>
-                <p>${sectionDescription}</p>
-              </div>
-              <div class="portal-exec-chip-stack">
-                ${badgeHtml(content.usingLeaderboard ? 'Продуктовый лидерборд' : 'Временный fallback', content.usingLeaderboard ? 'ok' : 'warn')}
-                ${badgeHtml(content.periods.length ? content.periods.join(' · ') : 'последний срез', 'info')}
-                ${content.generatedAt ? badgeHtml(`Обновлено ${fmt.date(content.generatedAt)}`, 'info') : ''}
-              </div>
-            </div>
-            <div class="portal-exec-grid">
-              <article class="portal-exec-card ${content.usingLeaderboard ? 'is-ok' : 'is-warn'} is-clickable" data-portal-exec-open="content-summary">
-                <div class="portal-exec-card-head"><span class="portal-exec-card-label">Контент / ROMI</span>${badgeHtml(content.usingLeaderboard ? 'weekly КЗ' : 'не daily', content.usingLeaderboard ? 'ok' : 'warn')}</div>
-                <div class="portal-exec-card-value compact">${esc(money(content.revenue))}</div>
-                <div class="portal-exec-sub">Клики ${esc(int(content.clicks))} · заказы ${esc(int(content.orders))} · контент ${esc(money(content.spend))} · ROMI ${esc(content.romi !== null ? pct(content.romi) : '—')}</div>
-                <div class="portal-exec-card-foot"><span>Посты ${esc(int(content.posts))}</span><span>SKU ${esc(int(content.rows.length))}</span></div>
-              </article>
-              ${content.rows.slice(0, 3).map((row) => `
-                <article class="portal-exec-card">
-                  <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(row.article)}</span>${badgeHtml(row.romi !== null ? `Окупаемость ${contentRomiLabel(row.romi)}` : 'без ROMI', contentRomiTone(row.romi))}</div>
-                  <div class="portal-exec-card-value compact">${esc(money(row.revenue))}</div>
-                  <div class="portal-exec-sub">${esc(row.name)}</div>
-                  <div class="portal-exec-card-foot"><span>Клики ${esc(int(row.clicks))}</span><span>Заказы ${esc(int(row.orders))}</span></div>
-                </article>
-              `).join('')}
-            </div>
-          </section>
-        `;
-      }
-      return `
-        <section class="portal-exec-section">
-          <div class="portal-exec-head">
-            <div class="portal-exec-copy">
-              <h3>Рекламная воронка</h3>
-              <p>Рекламная логика уже встроена в главную, но опубликованного рекламного факта по текущему диапазону пока нет. Когда витрина доедет, здесь автоматически появятся графики, ДРР и drilldown по товарам.</p>
-            </div>
-            <div class="portal-exec-chip-stack">${badgeHtml('Интерактив готов', 'info')}${badgeHtml('Нет рекламной витрины', 'warn')}</div>
-          </div>
-          <div class="portal-exec-empty">Пока не опубликован рабочий ads_summary. Главная уже умеет его читать и раскрывать по клику, но сам факт в витрину ещё не доехал.</div>
-        </section>
-      `;
-    }
-    return `
-      <section class="portal-exec-section">
-        <div class="portal-exec-head">
-          <div class="portal-exec-copy">
-            <h3>Рекламная воронка</h3>
-            <p>Здесь остаются только рекламные метрики. Нажатие на карточку открывает воронку по площадке и список товаров, которые продавались в рекламе за этот период.</p>
-          </div>
-          ${sectionMetaHtml(executive, [
-            badgeHtml(`${int(marketplaceAdsCards.length)} MP`, marketplaceAdsCards.length ? 'ok' : 'warn'),
-            badgeHtml(`${int(readyCards.reduce((sum, metric) => sum + num(metric?.orders), 0))} заказов`, 'info')
-          ])}
-        </div>
-        ${executive.selectedPlatform === 'all' && adsSummaryCards.length ? `
-          <div class="portal-exec-grid">
-            ${adsSummaryCards.map((metric) => renderAdsCard(metric, { summary: true })).join('')}
-          </div>
-        ` : ''}
-        <div class="portal-exec-platform-grid">
-          ${readyCards.map((metric) => renderAdsCard(metric)).join('')}
-        </div>
-      </section>
-    `;
     if (!readyCards.length) {
       const content = contentSliceSummary();
       if (content.rows.length) {
@@ -5011,6 +4318,19 @@
   const bindDashboardBase = bindDashboard;
   bindDashboard = function (root, executive) {
     bindDashboardBase(root, executive);
+    root.querySelectorAll('[data-portal-export]').forEach((node) => {
+      if (node.dataset.portalExportBound === '1') return;
+      node.dataset.portalExportBound = '1';
+      node.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (node.dataset.portalExport === 'dashboard-daily') {
+          downloadDashboardDailyExcel(executive);
+          return;
+        }
+        downloadDashboardExpandedExcel(executive);
+      });
+    });
     root.querySelectorAll('[data-portal-open-control]').forEach((node) => {
       if (node.dataset.portalControlBound === '1') return;
       node.dataset.portalControlBound = '1';
@@ -5104,17 +4424,6 @@
     document.head.appendChild(style);
   }
 
-  function ensureAdsManagementStyles() {
-    ensureDashboardManagementStyles();
-    if (document.getElementById(ADS_MANAGEMENT_STYLE_ID)) return;
-    const baseStyle = document.getElementById('portalDashboardManagementStyles');
-    if (!baseStyle) return;
-    const style = document.createElement('style');
-    style.id = ADS_MANAGEMENT_STYLE_ID;
-    style.textContent = String(baseStyle.textContent || '').replace(/#view-dashboard/g, `#${ADS_VIEW_ID}`);
-    document.head.appendChild(style);
-  }
-
   function detailTailRows(rows, limit = 14) {
     return Array.isArray(rows) ? rows.slice(Math.max(0, rows.length - limit)) : [];
   }
@@ -5134,8 +4443,6 @@
     const items = [];
     const turnover = turnoverMetric || buildTurnoverMetric(metric.key, executive.range);
     if (num(metric.completion) < 0.85) items.push(`План закрывается только на ${pct(metric.completion)}. Проверьте лидирующие и провальные SKU.`);
-    if (num(metric.issues?.counters?.priceShock) > 0) items.push(`Есть ${int(metric.issues.counters.priceShock)} SKU со сдвигом цены больше 10% по выбранному окну. Их стоит открыть из ценового drilldown и проверить коридор.`);
-    if (num(metric.issues?.counters?.funnelDrop) > 0) items.push(`Есть ${int(metric.issues.counters.funnelDrop)} SKU с провалом рекламной воронки. Сначала смотрим CTR, заказы и выручку относительно прошлого окна.`);
     if (num(metric.marginPct) < 0.18) items.push(`Маржа просела до ${pct(metric.marginPct)}. Нужна проверка цены, скидки клиента и промо.`);
     if (turnover.avgTurnoverDays !== null && turnover.avgTurnoverDays > 60) items.push(`Оборачиваемость выросла до ${turnover.avgTurnoverDays.toFixed(1)} дн. Смотрите запас и спрос по SKU.`);
     if (num(metric.issues?.counters?.negativeMargin) > 0) items.push(`Есть ${int(metric.issues.counters.negativeMargin)} SKU с отрицательной маржой. Их стоит открыть во вкладке цен.`);
@@ -5146,12 +4453,6 @@
 
   function dashboardDecisionSignals(row) {
     const items = [];
-    const priceShockKind = priceShockSignalKind(row?.priceDeltaPct);
-    const funnelKind = funnelDropSignalKind(row);
-    if (priceShockKind && Number.isFinite(Number(row?.priceDeltaPct))) {
-      items.push({ label: `Цена ${row.priceDeltaPct >= 0 ? '+' : ''}${pct(row.priceDeltaPct)}`, kind: priceShockKind });
-    }
-    if (funnelKind) items.push({ label: `Воронка ${strongestFunnelDropLabel(row)}`, kind: funnelKind });
     if (row.marginPct !== null && row.marginPct < 0.18) items.push({ label: `Маржа ${pct(row.marginPct)}`, kind: row.marginPct < 0.1 ? 'danger' : 'warn' });
     if (row.completionPct !== null && row.completionPct < 0.8) items.push({ label: `План ${pct(row.completionPct)}`, kind: row.completionPct < 0.6 ? 'danger' : 'warn' });
     if (row.avgTurnoverDays !== null && row.avgTurnoverDays > 60) items.push({ label: `Оборач. ${row.avgTurnoverDays.toFixed(1)} дн.`, kind: row.avgTurnoverDays > 90 ? 'danger' : 'warn' });
@@ -5169,37 +4470,6 @@
       .map((row) => ({ ...row, signals: dashboardDecisionSignals(row) }))
       .filter((row) => row.signals.length)
       .sort((left, right) => dashboardDecisionScore(right) - dashboardDecisionScore(left) || num(right.salesValue) - num(left.salesValue))
-      .slice(0, 8);
-  }
-
-  function dashboardSelectedPlatformLabel(executive) {
-    return executive.selectedPlatform === 'all'
-      ? 'Все площадки'
-      : (executive.byKey.get(executive.selectedPlatform)?.label || String(executive.selectedPlatform || '').toUpperCase());
-  }
-
-  function dashboardAdsSignals(row) {
-    const items = [];
-    const priceShockKind = priceShockSignalKind(row?.priceDeltaPct);
-    const funnelKind = funnelDropSignalKind(row);
-    if (priceShockKind && Number.isFinite(Number(row?.priceDeltaPct))) {
-      items.push({ label: `Цена ${row.priceDeltaPct >= 0 ? '+' : ''}${pct(row.priceDeltaPct)}`, kind: priceShockKind });
-    }
-    if (funnelKind) items.push({ label: `Воронка ${strongestFunnelDropLabel(row)}`, kind: funnelKind });
-    if (row.adDrr !== null) items.push({ label: `ДРР ${pct(row.adDrr)}`, kind: toneDrr(row.adDrr) });
-    return items;
-  }
-
-  function dashboardAdsSignalScore(row) {
-    return (row.signals || []).reduce((sum, item) => sum + (item.kind === 'danger' ? 3 : item.kind === 'warn' ? 2 : 1), 0);
-  }
-
-  function dashboardAdsSignalQueue(executive) {
-    const scopedKey = executive.selectedPlatform === 'all' ? 'all' : executive.selectedPlatform;
-    return articleRowsForPlatform(scopedKey, executive.range)
-      .map((row) => ({ ...row, signals: dashboardAdsSignals(row) }))
-      .filter((row) => row.signals.length)
-      .sort((left, right) => dashboardAdsSignalScore(right) - dashboardAdsSignalScore(left) || num(right.adRevenue) - num(left.adRevenue) || num(right.salesValue) - num(left.salesValue))
       .slice(0, 8);
   }
 
@@ -5734,11 +5004,7 @@
         <div class="portal-exec-platform-grid">
           ${metrics.map((metric) => {
             const turnover = buildTurnoverMetric(metric.key, executive.range);
-            const totalSignals = num(metric.issues?.counters?.toWork)
-              + num(metric.issues?.counters?.negativeMargin)
-              + num(metric.issues?.counters?.lowStock)
-              + num(metric.issues?.counters?.priceShock)
-              + num(metric.issues?.counters?.funnelDrop);
+            const totalSignals = num(metric.issues?.counters?.toWork) + num(metric.issues?.counters?.negativeMargin) + num(metric.issues?.counters?.lowStock);
             return `
               <article class="portal-exec-card is-${toneCompletion(metric.completion)} is-clickable" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}">
                 <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(metric.label)}</span>${badgeHtml(`План ${pct(metric.completion)}`, toneCompletion(metric.completion))}</div>
@@ -5796,48 +5062,6 @@
     `;
   }
 
-  function adsSignalsSection(executive) {
-    const rows = dashboardAdsSignalQueue(executive);
-    const selectedPlatformLabel = dashboardSelectedPlatformLabel(executive);
-    return `
-      <section class="portal-exec-section is-highlight">
-        <div class="portal-exec-head">
-          <div class="portal-exec-copy">
-            <h3>Сигналы рекламы и цены</h3>
-            <p>Сюда попадают SKU, где цена сдвинулась больше чем на 10% или рекламная воронка провалилась относительно прошлого окна. Клик сразу открывает карточку цены по тому же периоду.</p>
-          </div>
-          ${sectionMetaHtml(executive, [
-            badgeHtml(selectedPlatformLabel, 'info'),
-            badgeHtml(`${int(rows.length)} SKU`, rows.length ? 'warn' : 'ok')
-          ])}
-        </div>
-        <div class="portal-exec-focus-grid">
-          ${rows.map((row) => {
-            const tone = row.signals.some((item) => item.kind === 'danger') ? 'danger' : row.signals.some((item) => item.kind === 'warn') ? 'warn' : 'ok';
-            return `
-              <article
-                class="portal-exec-card portal-exec-focus-card is-${tone} is-clickable"
-                data-portal-open-price-article="${esc(row.article)}"
-                data-portal-open-price-market="${esc(row.platformKey === 'ya' ? 'ym' : row.platformKey)}"
-                data-portal-open-price-from="${esc(iso(executive.range.effectiveStart))}"
-                data-portal-open-price-to="${esc(iso(executive.range.effectiveEnd))}"
-              >
-                <div class="portal-exec-card-head">
-                  <span class="portal-exec-card-label">${esc(row.platformLabel)}</span>
-                  ${badgeHtml(`Owner ${row.owner || '—'}`, row.owner && row.owner !== 'Без owner' ? 'ok' : 'warn')}
-                </div>
-                <strong>${esc(row.article)}</strong>
-                <p>${esc(row.name || 'Без названия')}</p>
-                <div class="portal-exec-chip-stack">${row.signals.map((item) => badgeHtml(item.label, item.kind)).join('')}</div>
-                <p>Реклама ${esc(money(row.adSpend))} · заказы ${esc(int(row.adOrders))} · выручка ${esc(money(row.adRevenue))}</p>
-              </article>
-            `;
-          }).join('') || `<div class="portal-exec-empty">По выбранному окну нет SKU с рекламным провалом или резким ценовым сдвигом.</div>`}
-        </div>
-      </section>
-    `;
-  }
-
   function issuesSection(executive) {
     const metrics = executive.selectedPlatform === 'all'
       ? [executive.overall, ...visibleMetrics(executive)]
@@ -5864,49 +5088,6 @@
                   <div class="portal-exec-metric"><span>Отриц. маржа</span><strong>${esc(int(counters.negativeMargin))}</strong></div>
                   <div class="portal-exec-metric"><span>Низкий остаток</span><strong>${esc(int(counters.lowStock))}</strong></div>
                   <div class="portal-exec-metric"><span>Без owner</span><strong>${esc(int(counters.noOwner))}</strong></div>
-                </div>
-                <div class="portal-exec-card-foot"><span>${esc(topIssue ? topIssue.article : 'Без явного лидера риска')}</span><span>${esc(topIssue ? (topIssue.owner || 'Без owner') : '')}</span></div>
-              </article>
-            `;
-          }).join('')}
-        </div>
-      </section>
-    `;
-  }
-
-  function issuesSection(executive) {
-    const metrics = executive.selectedPlatform === 'all'
-      ? [executive.overall, ...visibleMetrics(executive)]
-      : visibleMetrics(executive);
-    return `
-      <section class="portal-exec-section">
-        <div class="portal-exec-head">
-          <div class="portal-exec-copy">
-            <h3>Сигналы по площадкам</h3>
-            <p>Здесь одним слоем собраны текущие операционные риски и аномалии выбранного окна: owner, маржа, запас, резкий сдвиг цены и провал воронки.</p>
-          </div>
-          ${sectionMetaHtml(executive)}
-        </div>
-        <div class="portal-exec-issue-grid">
-          ${metrics.map((metric) => {
-            const counters = metric.issues?.counters || {};
-            const total = num(counters.toWork)
-              + num(counters.negativeMargin)
-              + num(counters.lowStock)
-              + num(counters.noOwner)
-              + num(counters.priceShock)
-              + num(counters.funnelDrop);
-            const topIssue = metric.issues?.rows?.[0];
-            return `
-              <article class="portal-exec-card is-${total > 0 ? 'danger' : 'ok'} is-clickable" data-portal-exec-open="issues" data-portal-exec-key="${esc(metric.key)}">
-                <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(metric.label)}</span>${badgeHtml(`${int(total)} сигналов`, total > 0 ? 'danger' : 'ok')}</div>
-                <div class="portal-exec-metric-grid">
-                  <div class="portal-exec-metric"><span>В работе</span><strong>${esc(int(counters.toWork))}</strong></div>
-                  <div class="portal-exec-metric"><span>Отриц. маржа</span><strong>${esc(int(counters.negativeMargin))}</strong></div>
-                  <div class="portal-exec-metric"><span>Низкий остаток</span><strong>${esc(int(counters.lowStock))}</strong></div>
-                  <div class="portal-exec-metric"><span>Без owner</span><strong>${esc(int(counters.noOwner))}</strong></div>
-                  <div class="portal-exec-metric"><span>Цена >10%</span><strong>${esc(int(counters.priceShock))}</strong></div>
-                  <div class="portal-exec-metric"><span>Воронка</span><strong>${esc(int(counters.funnelDrop))}</strong></div>
                 </div>
                 <div class="portal-exec-card-foot"><span>${esc(topIssue ? topIssue.article : 'Без явного лидера риска')}</span><span>${esc(topIssue ? (topIssue.owner || 'Без owner') : '')}</span></div>
               </article>
@@ -6123,26 +5304,6 @@
       adsSection(executive),
       issuesSection(executive),
       `<div class="portal-exec-section-foot">Источник факта: ${esc(executive.range.availableLabel)} · daily bridge из Google Sheets в 09:00 МСК · актуально на ${esc(longDate(executive.range.max))}.</div>`
-    ].join('');
-    root.insertAdjacentElement('afterbegin', container);
-    bindDashboard(root, executive);
-  }
-
-  function renderAdsFunnel(executive) {
-    const root = document.getElementById(ADS_VIEW_ID);
-    if (!root) return;
-    ensureAdsFunnelStyles();
-    ensureAdsManagementStyles();
-    ensureModal();
-    root.querySelector(`#${ADS_ROOT_ID}`)?.remove();
-    const container = document.createElement('div');
-    container.id = ADS_ROOT_ID;
-    container.dataset.portalDashboardExecutiveRoot = 'true';
-    container.innerHTML = [
-      periodSection(executive, executive.metrics.some((metric) => metric.adsReady)),
-      adsSection(executive),
-      adsSignalsSection(executive),
-      `<div class="portal-exec-section-foot">Источник рекламы: ads_summary из Google Sheets · ${esc(executive.range.availableLabel)} · актуально на ${esc(longDate(executive.range.max))}.</div>`
     ].join('');
     root.insertAdjacentElement('afterbegin', container);
     bindDashboard(root, executive);
@@ -6483,7 +5644,7 @@
     const original = window[name];
     const wrapped = function () {
       const result = original.apply(this, arguments);
-      const onDashboard = typeof state !== 'object' || !state || state.activeView === 'dashboard' || state.activeView === 'ads-funnel';
+      const onDashboard = typeof state !== 'object' || !state || state.activeView === 'dashboard';
       if (onDashboard) scheduleApply(90);
       return result;
     };
@@ -6510,22 +5671,6 @@
       return true;
     };
     if (!forceRefresh && hasUsablePayload(existing)) return existing;
-    const snapshotLoader = typeof window.__alteaLoadPortalSnapshot === 'function'
-      ? window.__alteaLoadPortalSnapshot
-      : null;
-    if (snapshotLoader) {
-      try {
-        const snapshotPayload = await snapshotLoader(path);
-        if (hasUsablePayload(snapshotPayload)) {
-          cache[key] = snapshotPayload;
-          const app = stateRef();
-          if (app) app[key] = snapshotPayload;
-          return snapshotPayload;
-        }
-      } catch (error) {
-        console.warn(`[portal-dashboard-interactive] snapshot ${path}`, error);
-      }
-    }
     let response = null;
     try {
       response = await fetch(`${path}?v=${VERSION}`, { cache: 'no-store' });
@@ -6623,33 +5768,16 @@
   }
 
   function apply() {
-    const dashboardRoot = document.getElementById(DASHBOARD_VIEW_ID);
-    const adsRoot = document.getElementById(ADS_VIEW_ID);
-    if (!dashboardRoot && !adsRoot) return;
+    const dashboardRoot = document.getElementById('view-dashboard');
+    if (!dashboardRoot) return;
     syncChrome();
-    const executive = buildPlatformMetrics();
-    if (dashboardRoot) renderDashboard(executive);
-    if (adsRoot) renderAdsFunnel(executive);
+    renderDashboard(buildPlatformMetrics());
   }
 
   function isDashboardActive() {
     const app = stateRef();
-    const dashboardRoot = document.getElementById(DASHBOARD_VIEW_ID);
-    const adsRoot = document.getElementById(ADS_VIEW_ID);
-    return app?.activeView === 'dashboard'
-      || app?.activeView === 'ads-funnel'
-      || Boolean(dashboardRoot?.classList.contains('active'))
-      || Boolean(adsRoot?.classList.contains('active'));
-  }
-
-  function activeInteractiveRootReady() {
-    const app = stateRef();
-    const activeView = app?.activeView === 'ads-funnel' || document.getElementById(ADS_VIEW_ID)?.classList.contains('active')
-      ? 'ads-funnel'
-      : 'dashboard';
-    return activeView === 'ads-funnel'
-      ? Boolean(document.getElementById(ADS_ROOT_ID))
-      : Boolean(document.getElementById(ROOT_ID));
+    const root = document.getElementById('view-dashboard');
+    return app?.activeView === 'dashboard' || Boolean(root?.classList.contains('active'));
   }
 
   function scheduleApply(delay = 0, forceRefresh = false) {
@@ -6663,7 +5791,7 @@
   }
 
   function bindLiveTriggers() {
-    document.querySelectorAll('.nav-btn[data-view="dashboard"], .nav-btn[data-view="ads-funnel"]').forEach((button) => {
+    document.querySelectorAll('.nav-btn[data-view="dashboard"]').forEach((button) => {
       if (button.dataset.portalExecBound) return;
       button.dataset.portalExecBound = '1';
       button.addEventListener('click', () => scheduleApply(80));
@@ -6678,27 +5806,9 @@
     scheduleApply(forceRefresh ? 240 : 140, forceRefresh);
   }
 
-  function hydrateDashboardData(forceRefresh = false) {
-    const hasSignalsPayload = Boolean(cache.skus && cache.prices && cache.smartPriceWorkbench);
-    if (!forceRefresh && hasSignalsPayload) return Promise.resolve(true);
-    if (!forceRefresh && backgroundHydrationPromise) return backgroundHydrationPromise;
-    backgroundHydrationPromise = refreshData(forceRefresh)
-      .then(() => {
-        backgroundHydrationPromise = null;
-        if (typeof window.rerenderCurrentView === 'function') window.rerenderCurrentView();
-        return true;
-      })
-      .catch((error) => {
-        backgroundHydrationPromise = null;
-        throw error;
-      });
-    return backgroundHydrationPromise;
-  }
-
   function rearmBridges() {
     bridge('rerenderCurrentView');
     bridge('renderDashboard');
-    bridge('renderAdsFunnelView');
   }
 
   function exposeDashboardApi() {
@@ -6715,66 +5825,14 @@
       applyNow(forceRefresh = false) {
         if (forceRefresh) dashboardBootPrimed = true;
         return refreshData(forceRefresh).then(apply);
-      },
-      renderAdsFunnel(forceRefresh = false) {
-        if (forceRefresh) dashboardBootPrimed = true;
-        return refreshData(forceRefresh).then(() => {
-          const executive = buildPlatformMetrics();
-          renderAdsFunnel(executive);
-          return executive;
-        });
-      },
-      getSignalSnapshot(platformKey = '') {
-        const range = selectedRange();
-        const compare = comparisonRange(range);
-        const issueMap = buildIssueMap(range, compare);
-        if (platformKey) {
-          const metric = issueMap.get(platformKey) || null;
-          return metric ? { ...metric, rows: Array.isArray(metric.rows) ? metric.rows.map((row) => ({ ...row })) : [] } : null;
-        }
-        return {
-          version: VERSION,
-          range: {
-            requestedLabel: range.requestedLabel,
-            effectiveLabel: range.effectiveLabel,
-            effectiveStart: iso(range.effectiveStart),
-            effectiveEnd: iso(range.effectiveEnd),
-            availableLabel: range.availableLabel
-          },
-          compareRange: compare ? {
-            label: compare.label,
-            effectiveStart: iso(compare.effectiveStart),
-            effectiveEnd: iso(compare.effectiveEnd)
-          } : null,
-          platforms: PLATFORM_KEYS
-            .map((key) => issueMap.get(key))
-            .filter(Boolean)
-            .map((metric) => ({
-              ...metric,
-              counters: { ...(metric.counters || {}) },
-              rows: Array.isArray(metric.rows) ? metric.rows.map((row) => ({ ...row })) : []
-            }))
-        };
-      },
-      getSignalRows(platformKey = 'all') {
-        const metric = this.getSignalSnapshot(platformKey);
-        return Array.isArray(metric?.rows) ? metric.rows.map((row) => ({ ...row })) : [];
       }
-    };
-    window.renderAdsFunnelView = function renderAdsFunnelView(forceRefresh = false) {
-      return window.__ALTEA_DASHBOARD_INTERACTIVE_API__?.renderAdsFunnel(forceRefresh);
     };
   }
 
   function ensureInteractiveDashboardBoot(forceRefresh = false) {
     rearmBridges();
-    if (!isDashboardActive()) {
-      if (!forceRefresh) {
-        hydrateDashboardData(false).catch((error) => console.warn('[portal-dashboard-interactive]', error));
-      }
-      return;
-    }
-    if (!forceRefresh && activeInteractiveRootReady()) return;
+    if (!isDashboardActive()) return;
+    if (!forceRefresh && document.getElementById(ROOT_ID)) return;
     if (forceRefresh) {
       dashboardBootPrimed = true;
       scheduleApply(80, true);
@@ -6787,7 +5845,6 @@
   exposeDashboardApi();
   bindLiveTriggers();
   syncChrome();
-  hydrateDashboardData(false).catch((error) => console.warn('[portal-dashboard-interactive]', error));
   ensureInteractiveDashboardBoot(false);
   window.setTimeout(() => ensureInteractiveDashboardBoot(false), 30);
   window.setTimeout(() => ensureInteractiveDashboardBoot(true), 320);
@@ -6795,6 +5852,6 @@
     window.addEventListener('load', () => ensureInteractiveDashboardBoot(true), { once: true });
   }
   window.addEventListener('altea:viewchange', (event) => {
-    if (event.detail?.view === 'dashboard' || event.detail?.view === 'ads-funnel') primeDashboard(false);
+    if (event.detail?.view === 'dashboard') primeDashboard(false);
   });
 })();

@@ -1,1 +1,656 @@
-function renderControlWorkstreamSection(e){const n=e.tasks.filter(isTaskActive).length?e.tasks.filter(isTaskActive):e.tasks,t=n.length?n.slice(0,10).map(renderTaskCard).join(""):'<div class="empty">Нет задач под текущий срез</div>',a=e.ownerPreview.length?`Ключевые owner: ${e.ownerPreview.join(" · ")}`:"Owner пока не закреплены или контур заполнен только авто-сигналами.";return`\n    <div class="card" style="margin-top:14px">\n      <div class="section-subhead">\n        <div>\n          <h3>${escapeHtml(e.meta.label)}</h3>\n          <p class="small muted">${escapeHtml(e.meta.description)}</p>\n        </div>\n        <div class="badge-stack">\n          ${badge(`${fmt.int(e.activeCount)} активн.`,e.activeCount?e.meta.kind:"")}\n          ${e.overdueCount?badge(`${fmt.int(e.overdueCount)} проср.`,"danger"):""}\n          ${e.criticalCount?badge(`${fmt.int(e.criticalCount)} крит.`,"warn"):""}\n        </div>\n      </div>\n      <div class="muted small" style="margin-top:6px">${escapeHtml(a)}</div>\n      <div class="stack" style="margin-top:12px">${t}</div>\n    </div>\n  `}function skuOperationalStatusMeta(e){const n=String(e?.status||"").toLowerCase(),t=String(e?.owner?.registryStatus||"").toLowerCase();return n.includes("вывод")||t.includes("вывод")?{label:"На вывод",tone:""}:n.includes("нов")||t.includes("нов")?{label:"Новинка",tone:"info"}:n.includes("вопрос")||t.includes("вопрос")?{label:"Под вопросом",tone:"warn"}:n.includes("специф")||t.includes("специф")?{label:"Нет в спецификации",tone:"warn"}:e?.flags?.assigned?e?.flags?.toWorkWB&&e?.flags?.toWorkOzon?{label:"В работу WB + Ozon",tone:"danger"}:e?.flags?.toWorkWB?{label:"В работу WB",tone:"danger"}:e?.flags?.toWorkOzon?{label:"В работу Ozon",tone:"danger"}:e?.flags?.negativeMargin?{label:"Маржа в риске",tone:"danger"}:e?.flags?.lowStock?{label:"Низкий остаток",tone:"warn"}:e?.flags?.underPlan?{label:"Ниже плана",tone:"warn"}:(e?.focusScore||0)>=4?{label:"Наблюдать",tone:"warn"}:t?{label:e.owner.registryStatus,tone:"ok"}:e?.status?{label:e.status,tone:"ok"}:{label:"Актуальный",tone:"ok"}:{label:"Без owner",tone:"warn"}}function skuOperationalStatus(e){const n=skuOperationalStatusMeta(e);return badge(n.label,n.tone)}function renderSkuTaskSummary(e){const n=nextTaskForSku(e.articleKey);return n?`\n    <div><strong>${escapeHtml(n.title)}</strong></div>\n    <div class="muted small">${escapeHtml(n.nextAction||n.reason||"Нужен апдейт")}</div>\n    <div class="badge-stack" style="margin-top:6px">${taskStatusBadge(n)}${taskPriorityBadge(n)}</div>\n  `:'<div class="muted small">Нет активной задачи</div>'}function numberOrZero(e){const n=Number(e);return Number.isFinite(n)?n:0}function avg(e){const n=e.map(e=>Number(e)).filter(e=>Number.isFinite(e));return n.length?n.reduce((e,n)=>e+n,0)/n.length:null}function bestTurnoverDays(e){const n=[e?.wb?.turnoverDays,e?.ozon?.turnoverDays].map(e=>Number(e)).filter(e=>Number.isFinite(e)&&e>0);return n.length?Math.min(...n):null}function totalSkuStock(e){return numberOrZero(e?.wb?.stock)+numberOrZero(e?.ozon?.stockProducts??e?.ozon?.stock)}function currentCompletionPct(e){return numberOrZero(e?.planFact?.completionAprToDatePct??e?.planFact?.completionAprMonthPct??e?.planFact?.completionFeb26Pct)}function currentMarginPct(e){const n=e?.planFact?.factApr16MarginPct??e?.planFact?.factFeb26MarginPct;if(null!=n&&""!==n)return numberOrZero(n);const t=e?.wb?.marginPct,a=e?.ozon?.marginPct,r=[t,a].filter(e=>null!=e&&""!==e&&!Number.isNaN(Number(e))).map(Number);return r.length?r.reduce((e,n)=>e+n,0)/r.length:0}function monthRevenue(e){return numberOrZero(e?.planFact?.factApr16Revenue??e?.planFact?.factFeb26Revenue??e?.orders?.value??e?.planFact?.factTotalRevenue)}function monthNetRevenue(e){return numberOrZero(e?.planFact?.factApr16NetRevenue??e?.planFact?.factFeb26NetRevenue??e?.orders?.value??e?.planFact?.factApr16Revenue)}function monthUnits(e){return numberOrZero(e?.planFact?.factApr16Units??e?.planFact?.factFeb26Units??e?.orders?.units)}function externalTrafficLabel(e){const n=[];return e?.flags?.hasKZ&&n.push("🚀 КЗ"),e?.flags?.hasVK&&n.push("📣 VK"),n.join(" · ")||"без внешнего трафика"}function renderLeaderRow(e,n,t,a,r=""){const s=t>0?Math.max(6,Math.round(numberOrZero(e.metricValue)/t*100)):12;return`\n    <div class="leader-row interactive-row" data-open-sku="${escapeHtml(e.articleKey)}">\n      <div class="leader-rank">${n+1}</div>\n      <div class="leader-main">\n        <div class="leader-headline">\n          <div>\n            <strong>${linkToSku(e.articleKey,e.article||e.articleKey)}</strong>\n            <div class="muted small">${escapeHtml(e.title||"Без названия")}</div>\n          </div>\n          <div class="leader-value">${escapeHtml(a(e.metricValue))}</div>\n        </div>\n        <div class="leader-bar"><span style="width:${s}%"></span></div>\n        <div class="leader-meta">${r}</div>\n      </div>\n    </div>\n  `}function renderInverseLeaderRow(e,n,t,a,r=""){const s=numberOrZero(e.metricValue),i=t>0?Math.max(8,Math.round(100*(1-s/t))):12;return`\n    <div class="leader-row interactive-row" data-open-sku="${escapeHtml(e.articleKey)}">\n      <div class="leader-rank">${n+1}</div>\n      <div class="leader-main">\n        <div class="leader-headline">\n          <div>\n            <strong>${linkToSku(e.articleKey,e.article||e.articleKey)}</strong>\n            <div class="muted small">${escapeHtml(e.title||"Без названия")}</div>\n          </div>\n          <div class="leader-value">${escapeHtml(a(e.metricValue))}</div>\n        </div>\n        <div class="leader-bar inverse"><span style="width:${i}%"></span></div>\n        <div class="leader-meta">${r}</div>\n      </div>\n    </div>\n  `}function buildVisualDashboardModel(){const e=getControlSnapshot(),n=state.skus.filter(e=>!String(e?.status||"").toLowerCase().includes("вывод"));return{control:e,revenueTotal:n.reduce((e,n)=>e+monthRevenue(n),0),netRevenueTotal:n.reduce((e,n)=>e+monthNetRevenue(n),0),unitsTotal:n.reduce((e,n)=>e+monthUnits(n),0),avgCompletion:avg(n.map(e=>currentCompletionPct(e))),avgMargin:avg(n.map(e=>currentMarginPct(e))),trafficCount:n.filter(e=>e?.flags?.hasExternalTraffic).length,leadersSales:[...n].filter(e=>monthRevenue(e)>0).sort((e,n)=>monthRevenue(n)-monthRevenue(e)).slice(0,8).map(e=>({articleKey:e.articleKey,article:e.article,title:e.name,metricValue:monthRevenue(e),owner:ownerName(e),marginPct:currentMarginPct(e),units:monthUnits(e),traffic:externalTrafficLabel(e)})),turnoverCandidates:[...n].map(e=>({sku:e,metricValue:bestTurnoverDays(e)})).filter(e=>e.metricValue&&e.metricValue>0&&totalSkuStock(e.sku)>0).sort((e,n)=>e.metricValue-n.metricValue).slice(0,8).map(e=>({articleKey:e.sku.articleKey,article:e.sku.article,title:e.sku.name,metricValue:e.metricValue,stock:totalSkuStock(e.sku),target:avg([e.sku?.wb?.targetTurnoverDays,e.sku?.ozon?.targetTurnoverDays]),owner:ownerName(e.sku)})),romiLeaders:[...n].filter(e=>numberOrZero(e?.content?.romi)>0).sort((e,n)=>numberOrZero(n?.content?.romi)-numberOrZero(e?.content?.romi)).slice(0,6).map(e=>({articleKey:e.articleKey,article:e.article,title:e.name,metricValue:numberOrZero(e?.content?.romi),posts:numberOrZero(e?.content?.posts),clicks:numberOrZero(e?.content?.clicks),orders:numberOrZero(e?.content?.orders)})),worklist:[...state.skus].filter(e=>e?.flags?.toWork).sort((e,n)=>numberOrZero(n?.focusScore)-numberOrZero(e?.focusScore)||monthRevenue(n)-monthRevenue(e)).slice(0,6),freshness:state.dashboard?.dataFreshness||{}}}function renderDashboard(){const e=document.getElementById("view-dashboard"),n=buildVisualDashboardModel(),t=n.control,a=Math.max(1,...n.leadersSales.map(e=>numberOrZero(e.metricValue))),r=Math.max(1,...n.turnoverCandidates.map(e=>numberOrZero(e.metricValue))),s=Math.max(1,...n.romiLeaders.map(e=>numberOrZero(e.metricValue))),i=[{label:"Выручка за срез",value:fmt.money(n.revenueTotal),hint:"Сумма факта / order value по активным SKU."},{label:"Net revenue",value:fmt.money(n.netRevenueTotal),hint:"Чистая выручка по доступному срезу."},{label:"Продано единиц",value:fmt.int(n.unitsTotal),hint:"Факт units по SKU в текущем портале."},{label:"Среднее выполнение",value:fmt.pct(n.avgCompletion),hint:"Средний completion по SKU с планом."},{label:"Средняя маржа",value:fmt.pct(n.avgMargin),hint:"Средняя маржа по текущему месячному срезу."},{label:"SKU с внешним трафиком",value:fmt.int(n.trafficCount),hint:"КЗ / VK уже отмечены в рабочем контуре."}].map(e=>`\n    <div class="hero-kpi">\n      <span>${escapeHtml(e.label)}</span>\n      <strong>${escapeHtml(e.value)}</strong>\n      <small>${escapeHtml(e.hint)}</small>\n    </div>\n  `).join(""),l=(Array.isArray(state.dashboard?.cards)?state.dashboard.cards:[]).map(e=>`\n    <div class="card kpi">\n      <div class="label">${escapeHtml(e.label)}</div>\n      <div class="value">${(e=>"string"==typeof e?.value?escapeHtml(e.value):"money"===e?.format?escapeHtml(fmt.money(e.value)):"pct"===e?.format?escapeHtml(fmt.pct(e.value)):escapeHtml(fmt.int(e?.value)))(e)}</div>\n      <div class="hint">${escapeHtml(e.hint)}</div>\n    </div>\n  `).join(""),o=n.leadersSales.map((e,n)=>renderLeaderRow(e,n,a,e=>fmt.money(e),`${badge(e.owner||"Без owner",e.owner?"ok":"warn")}${marginBadge("Маржа",e.marginPct)}${badge(`${fmt.int(e.units)} шт.`)}${badge(e.traffic,e.traffic.includes("без")?"":"info")}`)).join(""),c=n.turnoverCandidates.map((e,n)=>renderInverseLeaderRow(e,n,r,e=>`${fmt.num(e,1)} дн.`,`${badge(`Цель ${fmt.num(e.target,0)} дн.`,"info")}${badge(`Остаток ${fmt.int(e.stock)} шт.`)}${badge(e.owner||"Без owner",e.owner?"ok":"warn")}`)).join(""),d=n.romiLeaders.map((e,n)=>renderLeaderRow(e,n,s,e=>fmt.num(e,1),`${badge(`${fmt.int(e.posts)} постов`)}${badge(`${fmt.int(e.clicks)} кликов`)}${badge(`${fmt.int(e.orders)} заказов`,"info")}`)).join(""),u=n.worklist.map(e=>`\n    <div class="alert-row">\n      <div>\n        <strong>${linkToSku(e.articleKey,e.article||e.articleKey)}</strong>\n        <div class="muted small">${escapeHtml(e.name||"Без названия")}</div>\n      </div>\n      <div class="badge-stack">\n        ${skuOperationalStatus(e)}\n        ${marginBadge("WB",e?.wb?.marginPct)}\n        ${marginBadge("Ozon",e?.ozon?.marginPct)}\n      </div>\n      <div class="muted small">${escapeHtml(e.focusReasons||"Ниже плана и отрицательная маржа")}</div>\n    </div>\n  `).join("");e.innerHTML=`\n    <section class="hero-panel">\n      <div class="hero-copy">\n        <div class="eyebrow">ALTEA · brand pulse</div>\n        <h2>Красивый дашборд бренда</h2>\n        <p>Отдельный визуальный слой для общего состояния бренда: сверху pulse, ниже лидеры продаж и оборачиваемости, а внизу — красные зоны, которые нельзя потерять.</p>\n        <div class="badge-stack" style="margin-top:12px">\n          ${badge(`План/факт: ${n.freshness.planFactMonth||"—"}`)}\n          ${badge(`Лидерборд: ${(n.freshness.contentPeriods||[]).join(" / ")||"—"}`,"info")}\n          ${badge(`Новинки: ${n.freshness.launchPlanHorizon||"—"}`)}\n        </div>\n      </div>\n      <div class="hero-grid">${i}</div>\n    </section>\n\n    <div class="section-title" style="margin-top:18px">\n      <div>\n        <h2>Общее состояние бренда</h2>\n        <p>Крупные KPI, чтобы за минуту понять, где мы стоим по Алтея.</p>\n      </div>\n      <div class="quick-actions">\n        <button class="quick-chip" data-view-control>Открыть задачи</button>\n        <button class="quick-chip" data-control-preset="overdue">Просрочено</button>\n        <button class="quick-chip" data-view-executive>Свод руководителя</button>\n      </div>\n    </div>\n\n    <div class="grid cards">${l}</div>\n\n    <div class="dashboard-grid-3" style="margin-top:14px">\n      <div class="card visual-card">\n        <div class="section-subhead">\n          <div>\n            <h3>Лидеры продаж</h3>\n            <p class="small muted">Берём текущую выручку по срезу и показываем сильнейшие SKU.</p>\n          </div>\n          ${badge(`${fmt.int(n.leadersSales.length)} SKU`,"ok")}\n        </div>\n        <div class="leader-list">${o||'<div class="empty">Нет данных по продажам</div>'}</div>\n      </div>\n\n      <div class="card visual-card">\n        <div class="section-subhead">\n          <div>\n            <h3>Лидеры по оборачиваемости</h3>\n            <p class="small muted">Чем меньше дней оборота, тем быстрее крутится SKU.</p>\n          </div>\n          ${badge("быстрее = лучше","info")}\n        </div>\n        <div class="leader-list">${c||'<div class="empty">Нет данных по оборачиваемости</div>'}</div>\n      </div>\n\n      <div class="card visual-card">\n        <div class="section-subhead">\n          <div>\n            <h3>Лидеры по контенту / ROMI</h3>\n            <p class="small muted">Кого уже тащит контент и где есть наглядный сигнал для масштабирования.</p>\n          </div>\n          ${badge("контент-потенциал","info")}\n        </div>\n        <div class="leader-list">${d||'<div class="empty">Нет ROMI в текущем срезе</div>'}</div>\n      </div>\n    </div>\n\n    <div class="two-col" style="margin-top:14px">\n      <div class="card">\n        <div class="section-subhead">\n          <div>\n            <h3>Красные зоны</h3>\n            <p class="small muted">SKU, которые уже просятся в работу из-за плана и маржи.</p>\n          </div>\n          ${badge(`${fmt.int(n.worklist.length)} в фокусе`,n.worklist.length?"danger":"ok")}\n        </div>\n        <div class="alert-stack">${u||'<div class="empty">Сейчас нет критичных SKU</div>'}</div>\n      </div>\n\n      <div class="card">\n        <div class="section-subhead">\n          <div>\n            <h3>Операционный чек на сегодня</h3>\n            <p class="small muted">Сразу видно, что показать на утреннем / weekly созвоне.</p>\n          </div>\n          ${badge(`${fmt.int(t.todayList.length)} в short-list`,"warn")}\n        </div>\n        <div class="task-mini-grid">${t.todayList.slice(0,8).map(renderMiniTask).join("")||'<div class="empty">Нет задач для экспресс-чека</div>'}</div>\n      </div>\n    </div>\n\n    <div class="footer-note">Последняя генерация данных: ${escapeHtml(state.dashboard.generatedAt||"—")}. Этот экран теперь отвечает за визуальный pulse бренда, а не за канбан задач.</div>\n  `}
+function renderControlWorkstreamSection(summary) {
+  const pool = summary.tasks.filter(isTaskActive).length ? summary.tasks.filter(isTaskActive) : summary.tasks;
+  const tasksHtml = pool.length
+    ? pool.slice(0, 10).map(renderTaskCard).join('')
+    : '<div class="empty">Нет задач под текущий срез</div>';
+  const ownerLine = summary.ownerPreview.length
+    ? `Ключевые owner: ${summary.ownerPreview.join(' · ')}`
+    : 'Owner пока не закреплены или контур заполнен только авто-сигналами.';
+  return `
+    <div class="card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>${escapeHtml(summary.meta.label)}</h3>
+          <p class="small muted">${escapeHtml(summary.meta.description)}</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(summary.activeCount)} активн.`, summary.activeCount ? summary.meta.kind : '')}
+          ${summary.overdueCount ? badge(`${fmt.int(summary.overdueCount)} проср.`, 'danger') : ''}
+          ${summary.criticalCount ? badge(`${fmt.int(summary.criticalCount)} крит.`, 'warn') : ''}
+        </div>
+      </div>
+      <div class="muted small" style="margin-top:6px">${escapeHtml(ownerLine)}</div>
+      <div class="stack" style="margin-top:12px">${tasksHtml}</div>
+    </div>
+  `;
+}
+
+function skuOperationalStatusMeta(sku) {
+  const rawStatus = String(sku?.status || '').toLowerCase();
+  const registryStatus = String(sku?.owner?.registryStatus || '').toLowerCase();
+
+  if (rawStatus.includes('вывод') || registryStatus.includes('вывод')) return { label: 'На вывод', tone: '' };
+  if (rawStatus.includes('нов') || registryStatus.includes('нов')) return { label: 'Новинка', tone: 'info' };
+  if (rawStatus.includes('вопрос') || registryStatus.includes('вопрос')) return { label: 'Под вопросом', tone: 'warn' };
+  if (rawStatus.includes('специф') || registryStatus.includes('специф')) return { label: 'Нет в спецификации', tone: 'warn' };
+  if (!sku?.flags?.assigned) return { label: 'Без owner', tone: 'warn' };
+  if (sku?.flags?.toWorkWB && sku?.flags?.toWorkOzon) return { label: 'В работу WB + Ozon', tone: 'danger' };
+  if (sku?.flags?.toWorkWB) return { label: 'В работу WB', tone: 'danger' };
+  if (sku?.flags?.toWorkOzon) return { label: 'В работу Ozon', tone: 'danger' };
+  if (sku?.flags?.negativeMargin) return { label: 'Маржа в риске', tone: 'danger' };
+  if (sku?.flags?.lowStock) return { label: 'Низкий остаток', tone: 'warn' };
+  if (sku?.flags?.underPlan) return { label: 'Ниже плана', tone: 'warn' };
+  if ((sku?.focusScore || 0) >= 4) return { label: 'Наблюдать', tone: 'warn' };
+  if (registryStatus) return { label: sku.owner.registryStatus, tone: 'ok' };
+  if (sku?.status) return { label: sku.status, tone: 'ok' };
+  return { label: 'Актуальный', tone: 'ok' };
+}
+
+function skuOperationalStatus(sku) {
+  const meta = skuOperationalStatusMeta(sku);
+  return badge(meta.label, meta.tone);
+}
+
+function renderSkuTaskSummary(sku, task = nextTaskForSku(sku.articleKey)) {
+  if (!task) return `<div class="muted small">Нет активной задачи</div>`;
+  return `
+    <div><strong>${escapeHtml(task.title)}</strong></div>
+    <div class="muted small">${escapeHtml(task.nextAction || task.reason || 'Нужен апдейт')}</div>
+    <div class="badge-stack" style="margin-top:6px">${taskStatusBadge(task)}${taskPriorityBadge(task)}</div>
+  `;
+}
+
+
+function numberOrZero(value) {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : 0;
+}
+
+function avg(values) {
+  const clean = values.map((v) => Number(v)).filter((v) => Number.isFinite(v));
+  if (!clean.length) return null;
+  return clean.reduce((acc, value) => acc + value, 0) / clean.length;
+}
+
+function bestTurnoverDays(sku) {
+  const values = [sku?.wb?.turnoverDays, sku?.ozon?.turnoverDays]
+    .map((v) => Number(v))
+    .filter((v) => Number.isFinite(v) && v > 0);
+  return values.length ? Math.min(...values) : null;
+}
+
+function totalSkuStock(sku) {
+  return numberOrZero(sku?.wb?.stock) + numberOrZero(sku?.ozon?.stockProducts ?? sku?.ozon?.stock);
+}
+
+function finiteNumberOrNull(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function firstFiniteValue(...values) {
+  for (const value of values) {
+    const parsed = finiteNumberOrNull(value);
+    if (parsed !== null) return parsed;
+  }
+  return null;
+}
+
+function firstPositiveValue(...values) {
+  for (const value of values) {
+    const parsed = finiteNumberOrNull(value);
+    if (parsed !== null && parsed > 0) return parsed;
+  }
+  return null;
+}
+
+function dashboardBrandSummary() {
+  return Array.isArray(state.dashboard?.brandSummary) && state.dashboard.brandSummary.length
+    ? state.dashboard.brandSummary[0]
+    : null;
+}
+
+function parseDashboardDate(value) {
+  const match = String(value || '').slice(0, 10).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function dashboardAsOfDate() {
+  return parseDashboardDate(
+    state.dashboard?.asOfDate
+    ?? state.dashboard?.dataFreshness?.asOfDate
+    ?? dashboardBrandSummary()?.asOfDate
+  );
+}
+
+function dashboardAsOfLabel() {
+  const asOfDate = dashboardAsOfDate();
+  return asOfDate ? asOfDate.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }) : null;
+}
+
+function currentMonthDayCount() {
+  const asOfDate = dashboardAsOfDate();
+  return asOfDate ? Math.max(1, asOfDate.getDate()) : null;
+}
+
+function buildBrandPlanSnapshot() {
+  const summary = dashboardBrandSummary();
+  const monthPlanRevenue = firstPositiveValue(
+    summary?.apr_plan_revenue,
+    state.dashboard?.apr_plan_revenue
+  );
+  const factRevenue = firstPositiveValue(
+    summary?.apr_fact_revenue_to_date,
+    state.dashboard?.apr_fact_revenue_to_date,
+    summary?.fact_revenue_to_date,
+    state.dashboard?.fact_revenue_to_date
+  );
+  const planToDateRevenue = firstPositiveValue(
+    summary?.apr_plan_to_date_revenue,
+    state.dashboard?.apr_plan_to_date_revenue
+  );
+  const forecastRevenue = firstPositiveValue(
+    summary?.apr_forecast_revenue,
+    state.dashboard?.apr_forecast_revenue
+  );
+
+  const monthCompletionRaw = firstFiniteValue(
+    summary?.apr_plan_completion_month_pct,
+    state.dashboard?.apr_plan_completion_month_pct
+  );
+  const toDateCompletionRaw = firstFiniteValue(
+    summary?.apr_plan_completion_to_date_pct,
+    state.dashboard?.apr_plan_completion_to_date_pct,
+    summary?.plan_completion_to_date_pct,
+    state.dashboard?.plan_completion_to_date_pct
+  );
+  const forecastPctRaw = firstFiniteValue(
+    summary?.apr_forecast_pct,
+    state.dashboard?.apr_forecast_pct,
+    summary?.forecast_pct,
+    state.dashboard?.forecast_pct
+  );
+
+  const monthCompletionPct = monthCompletionRaw !== null
+    ? monthCompletionRaw
+    : (monthPlanRevenue && factRevenue ? factRevenue / monthPlanRevenue : null);
+  const toDateCompletionPct = toDateCompletionRaw !== null
+    ? toDateCompletionRaw
+    : (planToDateRevenue && factRevenue ? factRevenue / planToDateRevenue : null);
+  const forecastPct = forecastPctRaw !== null
+    ? forecastPctRaw
+    : (forecastRevenue && monthPlanRevenue ? forecastRevenue / monthPlanRevenue : null);
+
+  return {
+    monthPlanRevenue,
+    factRevenue,
+    planToDateRevenue,
+    forecastRevenue,
+    monthCompletionPct,
+    toDateCompletionPct,
+    forecastPct,
+    asOfLabel: dashboardAsOfLabel(),
+    hasWorkbookPlan: monthPlanRevenue !== null || monthCompletionPct !== null || toDateCompletionPct !== null
+  };
+}
+
+function alignedDashboardCards() {
+  const cards = Array.isArray(state.dashboard?.cards) ? state.dashboard.cards : [];
+  const brandPlan = buildBrandPlanSnapshot();
+  if (!brandPlan.hasWorkbookPlan) return cards;
+
+  const preservedCards = cards.slice(0, Math.min(cards.length, 10));
+  const asOfLabel = brandPlan.asOfLabel || 'дату файла';
+  const planCards = [
+    {
+      label: `Факт на ${asOfLabel}, ₽`,
+      value: brandPlan.factRevenue,
+      format: 'money',
+      hint: 'Smart = Altea по файлу выполнения плана.'
+    },
+    {
+      label: 'План апреля, ₽',
+      value: brandPlan.monthPlanRevenue,
+      format: 'money',
+      hint: 'Qharisma v5 план месяца для Smart = Altea.'
+    },
+    {
+      label: 'Выполнение плана',
+      value: brandPlan.monthCompletionPct,
+      format: 'pct',
+      hint: 'Факт / полный план месяца.'
+    },
+    {
+      label: 'План к дате, ₽',
+      value: brandPlan.planToDateRevenue,
+      format: 'money',
+      hint: `Линейный план к ${asOfLabel} из файла.`
+    },
+    {
+      label: 'Прогноз / план',
+      value: brandPlan.forecastPct,
+      format: 'pct',
+      hint: brandPlan.forecastRevenue !== null
+        ? `Базовый прогноз ${fmt.money(brandPlan.forecastRevenue)} к концу месяца.`
+        : 'Прогноз по текущему темпу.'
+    }
+  ].filter((card) => card.value !== null && card.value !== undefined);
+
+  return [...preservedCards, ...planCards];
+}
+
+function currentCompletionSnapshot(sku) {
+  const monthPct = firstFiniteValue(
+    sku?.planFact?.completionAprMonthPct,
+    sku?.planFact?.completionMonthPct
+  );
+  const toDatePct = firstFiniteValue(
+    sku?.planFact?.completionAprToDatePct,
+    sku?.planFact?.completionToDatePct
+  );
+  const legacyPct = firstFiniteValue(sku?.planFact?.completionFeb26Pct);
+  return {
+    monthPct,
+    toDatePct,
+    legacyPct,
+    primaryPct: monthPct ?? toDatePct ?? legacyPct
+  };
+}
+
+function currentCompletionPct(sku) {
+  return numberOrZero(currentCompletionSnapshot(sku).primaryPct);
+}
+
+function currentPlanDailyUnits(sku) {
+  const aprPlan = firstPositiveValue(sku?.planFact?.planApr26Units);
+  if (aprPlan !== null) return aprPlan / 30;
+  const marPlan = firstPositiveValue(sku?.planFact?.planMar26Units);
+  if (marPlan !== null) return marPlan / 31;
+  const febPlan = firstPositiveValue(sku?.planFact?.planFeb26Units);
+  if (febPlan !== null) return febPlan / 29;
+  return 0;
+}
+
+function currentFactDailyUnits(sku) {
+  const currentMonthDays = currentMonthDayCount();
+  const aprFact = firstPositiveValue(
+    sku?.planFact?.factApr16Units,
+    sku?.planFact?.factAprToDateUnits
+  );
+  if (aprFact !== null && currentMonthDays) return aprFact / currentMonthDays;
+  const febFact = firstPositiveValue(sku?.planFact?.factFeb26Units);
+  return febFact !== null ? febFact / 29 : 0;
+}
+
+function currentMarginPct(sku) {
+  const direct = sku?.planFact?.factApr16MarginPct ?? sku?.planFact?.factFeb26MarginPct;
+  if (direct !== undefined && direct !== null && direct !== '') return numberOrZero(direct);
+  const wb = sku?.wb?.marginPct;
+  const oz = sku?.ozon?.marginPct;
+  const values = [wb, oz].filter(v => v !== undefined && v !== null && v !== '' && !Number.isNaN(Number(v))).map(Number);
+  return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+}
+
+function monthRevenue(sku) {
+  return numberOrZero(
+    sku?.planFact?.factApr16Revenue
+    ?? sku?.planFact?.factFeb26Revenue
+    ?? sku?.orders?.value
+    ?? sku?.planFact?.factTotalRevenue
+  );
+}
+
+function monthNetRevenue(sku) {
+  return numberOrZero(
+    sku?.planFact?.factApr16NetRevenue
+    ?? sku?.planFact?.factFeb26NetRevenue
+    ?? sku?.orders?.value
+    ?? sku?.planFact?.factApr16Revenue
+  );
+}
+
+function monthUnits(sku) {
+  return numberOrZero(
+    sku?.planFact?.factApr16Units
+    ?? sku?.planFact?.factFeb26Units
+    ?? sku?.orders?.units
+  );
+}
+
+function externalTrafficLabel(sku) {
+  const parts = [];
+  if (sku?.flags?.hasKZ) parts.push('🚀 КЗ');
+  if (sku?.flags?.hasVK) parts.push('📣 VK');
+  return parts.join(' · ') || 'без внешнего трафика';
+}
+
+function renderLeaderRow(item, index, maxValue, metricLabel, metaHtml = '') {
+  const width = maxValue > 0 ? Math.max(6, Math.round((numberOrZero(item.metricValue) / maxValue) * 100)) : 12;
+  return `
+    <div class="leader-row interactive-row" data-open-sku="${escapeHtml(item.articleKey)}">
+      <div class="leader-rank">${index + 1}</div>
+      <div class="leader-main">
+        <div class="leader-headline">
+          <div>
+            <strong>${linkToSku(item.articleKey, item.article || item.articleKey)}</strong>
+            <div class="muted small">${escapeHtml(item.title || 'Без названия')}</div>
+          </div>
+          <div class="leader-value">${escapeHtml(metricLabel(item.metricValue))}</div>
+        </div>
+        <div class="leader-bar"><span style="width:${width}%"></span></div>
+        <div class="leader-meta">${metaHtml}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderInverseLeaderRow(item, index, maxValue, metricLabel, metaHtml = '') {
+  const rawValue = numberOrZero(item.metricValue);
+  const width = maxValue > 0 ? Math.max(8, Math.round((1 - rawValue / maxValue) * 100)) : 12;
+  return `
+    <div class="leader-row interactive-row" data-open-sku="${escapeHtml(item.articleKey)}">
+      <div class="leader-rank">${index + 1}</div>
+      <div class="leader-main">
+        <div class="leader-headline">
+          <div>
+            <strong>${linkToSku(item.articleKey, item.article || item.articleKey)}</strong>
+            <div class="muted small">${escapeHtml(item.title || 'Без названия')}</div>
+          </div>
+          <div class="leader-value">${escapeHtml(metricLabel(item.metricValue))}</div>
+        </div>
+        <div class="leader-bar inverse"><span style="width:${width}%"></span></div>
+        <div class="leader-meta">${metaHtml}</div>
+      </div>
+    </div>
+  `;
+}
+
+function buildVisualDashboardModel() {
+  const control = getControlSnapshot();
+  const activeSkus = state.skus.filter((sku) => !String(sku?.status || '').toLowerCase().includes('вывод'));
+  const revenueTotal = activeSkus.reduce((acc, sku) => acc + monthRevenue(sku), 0);
+  const netRevenueTotal = activeSkus.reduce((acc, sku) => acc + monthNetRevenue(sku), 0);
+  const unitsTotal = activeSkus.reduce((acc, sku) => acc + monthUnits(sku), 0);
+  const avgCompletion = avg(activeSkus.map((sku) => currentCompletionPct(sku)));
+  const avgMargin = avg(activeSkus.map((sku) => currentMarginPct(sku)));
+  const trafficCount = activeSkus.filter((sku) => sku?.flags?.hasExternalTraffic).length;
+  const leadersSales = [...activeSkus]
+    .filter((sku) => monthRevenue(sku) > 0)
+    .sort((a, b) => monthRevenue(b) - monthRevenue(a))
+    .slice(0, 8)
+    .map((sku) => ({
+      articleKey: sku.articleKey,
+      article: sku.article,
+      title: sku.name,
+      metricValue: monthRevenue(sku),
+      owner: ownerName(sku),
+      marginPct: currentMarginPct(sku),
+      units: monthUnits(sku),
+      traffic: externalTrafficLabel(sku)
+    }));
+  const turnoverCandidates = [...activeSkus]
+    .map((sku) => ({
+      sku,
+      metricValue: bestTurnoverDays(sku)
+    }))
+    .filter((row) => row.metricValue && row.metricValue > 0 && totalSkuStock(row.sku) > 0)
+    .sort((a, b) => a.metricValue - b.metricValue)
+    .slice(0, 8)
+    .map((row) => ({
+      articleKey: row.sku.articleKey,
+      article: row.sku.article,
+      title: row.sku.name,
+      metricValue: row.metricValue,
+      stock: totalSkuStock(row.sku),
+      target: avg([row.sku?.wb?.targetTurnoverDays, row.sku?.ozon?.targetTurnoverDays]),
+      owner: ownerName(row.sku)
+    }));
+  const romiLeaders = [...activeSkus]
+    .filter((sku) => numberOrZero(sku?.content?.romi) > 0)
+    .sort((a, b) => numberOrZero(b?.content?.romi) - numberOrZero(a?.content?.romi))
+    .slice(0, 6)
+    .map((sku) => ({
+      articleKey: sku.articleKey,
+      article: sku.article,
+      title: sku.name,
+      metricValue: numberOrZero(sku?.content?.romi),
+      posts: numberOrZero(sku?.content?.posts),
+      clicks: numberOrZero(sku?.content?.clicks),
+      orders: numberOrZero(sku?.content?.orders)
+    }));
+  const worklist = [...state.skus]
+    .filter((sku) => sku?.flags?.toWork)
+    .sort((a, b) => numberOrZero(b?.focusScore) - numberOrZero(a?.focusScore) || monthRevenue(b) - monthRevenue(a))
+    .slice(0, 6);
+  const freshness = state.dashboard?.dataFreshness || {};
+  const brandPlan = buildBrandPlanSnapshot();
+  return {
+    control,
+    revenueTotal,
+    netRevenueTotal,
+    unitsTotal,
+    avgCompletion,
+    avgMargin,
+    trafficCount,
+    leadersSales,
+    turnoverCandidates,
+    romiLeaders,
+    worklist,
+    freshness,
+    brandPlan
+  };
+}
+
+function renderDashboard() {
+  const root = document.getElementById('view-dashboard');
+  const model = buildVisualDashboardModel();
+  const control = model.control;
+  const brandPlan = model.brandPlan;
+  const salesMax = Math.max(1, ...model.leadersSales.map((item) => numberOrZero(item.metricValue)));
+  const turnoverMax = Math.max(1, ...model.turnoverCandidates.map((item) => numberOrZero(item.metricValue)));
+  const romiMax = Math.max(1, ...model.romiLeaders.map((item) => numberOrZero(item.metricValue)));
+
+  const fallbackHeroCards = [
+    { label: 'Выручка за срез', value: fmt.money(model.revenueTotal), hint: 'Сумма факта / order value по активным SKU.' },
+    { label: 'Net revenue', value: fmt.money(model.netRevenueTotal), hint: 'Чистая выручка по доступному срезу.' },
+    { label: 'Продано единиц', value: fmt.int(model.unitsTotal), hint: 'Факт units по SKU в текущем портале.' },
+    { label: 'Среднее выполнение', value: fmt.pct(model.avgCompletion), hint: 'Средний completion по SKU с планом.' },
+    { label: 'Средняя маржа', value: fmt.pct(model.avgMargin), hint: 'Средняя маржа по текущему месячному срезу.' },
+    { label: 'SKU с внешним трафиком', value: fmt.int(model.trafficCount), hint: 'КЗ / VK уже отмечены в рабочем контуре.' }
+  ];
+
+  const heroSourceCards = brandPlan.hasWorkbookPlan
+    ? [
+        {
+          label: `Факт на ${brandPlan.asOfLabel || 'дату файла'}`,
+          value: brandPlan.factRevenue !== null ? fmt.money(brandPlan.factRevenue) : '—',
+          hint: 'Smart = Altea по файлу выполнения плана.'
+        },
+        {
+          label: 'План апреля',
+          value: brandPlan.monthPlanRevenue !== null ? fmt.money(brandPlan.monthPlanRevenue) : '—',
+          hint: 'Qharisma v5 план месяца.'
+        },
+        {
+          label: 'Выполнение плана',
+          value: brandPlan.monthCompletionPct !== null ? fmt.pct(brandPlan.monthCompletionPct) : '—',
+          hint: 'Факт / полный план месяца.'
+        },
+        {
+          label: 'К плану на дату',
+          value: brandPlan.toDateCompletionPct !== null ? fmt.pct(brandPlan.toDateCompletionPct) : '—',
+          hint: brandPlan.planToDateRevenue !== null
+            ? `План к ${brandPlan.asOfLabel || 'доступной дате'} из файла.`
+            : 'Линейный план к доступной дате.'
+        },
+        {
+          label: 'Прогноз / план',
+          value: brandPlan.forecastPct !== null ? fmt.pct(brandPlan.forecastPct) : '—',
+          hint: brandPlan.forecastRevenue !== null
+            ? `Базовый прогноз ${fmt.money(brandPlan.forecastRevenue)} к концу месяца.`
+            : 'Прогноз по текущему темпу.'
+        },
+        {
+          label: 'Средняя маржа',
+          value: fmt.pct(model.avgMargin),
+          hint: 'Средняя маржа по текущему месячному срезу.'
+        }
+      ]
+    : fallbackHeroCards;
+
+  const heroCards = heroSourceCards.map((card) => `
+    <div class="hero-kpi">
+      <span>${escapeHtml(card.label)}</span>
+      <strong>${escapeHtml(card.value)}</strong>
+      <small>${escapeHtml(card.hint)}</small>
+    </div>
+  `).join('');
+
+  const formatCardValue = (card) => {
+    if (typeof card?.value === 'string') return escapeHtml(card.value);
+    if (card?.format === 'money') return escapeHtml(fmt.money(card.value));
+    if (card?.format === 'pct') return escapeHtml(fmt.pct(card.value));
+    return escapeHtml(fmt.int(card?.value));
+  };
+
+  const dashboardCards = alignedDashboardCards();
+  const baseCards = dashboardCards.map((card) => `
+    <div class="card kpi">
+      <div class="label">${escapeHtml(card.label)}</div>
+      <div class="value">${formatCardValue(card)}</div>
+      <div class="hint">${escapeHtml(card.hint)}</div>
+    </div>
+  `).join('');
+
+  const salesRows = model.leadersSales.map((item, index) => renderLeaderRow(
+    item,
+    index,
+    salesMax,
+    (value) => fmt.money(value),
+    `${badge(item.owner || 'Без owner', item.owner ? 'ok' : 'warn')}${marginBadge('Маржа', item.marginPct)}${badge(`${fmt.int(item.units)} шт.`)}${badge(item.traffic, item.traffic.includes('без') ? '' : 'info')}`
+  )).join('');
+
+  const turnoverRows = model.turnoverCandidates.map((item, index) => renderInverseLeaderRow(
+    item,
+    index,
+    turnoverMax,
+    (value) => `${fmt.num(value, 1)} дн.`,
+    `${badge(`Цель ${fmt.num(item.target, 0)} дн.`, 'info')}${badge(`Остаток ${fmt.int(item.stock)} шт.`)}${badge(item.owner || 'Без owner', item.owner ? 'ok' : 'warn')}`
+  )).join('');
+
+  const romiRows = model.romiLeaders.map((item, index) => renderLeaderRow(
+    item,
+    index,
+    romiMax,
+    (value) => fmt.num(value, 1),
+    `${badge(`${fmt.int(item.posts)} постов`)}${badge(`${fmt.int(item.clicks)} кликов`)}${badge(`${fmt.int(item.orders)} заказов`, 'info')}`
+  )).join('');
+
+  const workRows = model.worklist.map((sku) => `
+    <div class="alert-row">
+      <div>
+        <strong>${linkToSku(sku.articleKey, sku.article || sku.articleKey)}</strong>
+        <div class="muted small">${escapeHtml(sku.name || 'Без названия')}</div>
+      </div>
+      <div class="badge-stack">
+        ${skuOperationalStatus(sku)}
+        ${marginBadge('WB', sku?.wb?.marginPct)}
+        ${marginBadge('Ozon', sku?.ozon?.marginPct)}
+      </div>
+      <div class="muted small">${escapeHtml(sku.focusReasons || 'Ниже плана и отрицательная маржа')}</div>
+    </div>
+  `).join('');
+
+  root.innerHTML = `
+    <section class="hero-panel">
+      <div class="hero-copy">
+        <div class="eyebrow">ALTEA · brand pulse</div>
+        <h2>Красивый дашборд бренда</h2>
+        <p>Отдельный визуальный слой для общего состояния бренда: сверху pulse, ниже лидеры продаж и оборачиваемости, а внизу — красные зоны, которые нельзя потерять.</p>
+        <div class="badge-stack" style="margin-top:12px">
+          ${badge(`План/факт: ${model.freshness.planFactMonth || '—'}`)}
+          ${badge(`Лидерборд: ${(model.freshness.contentPeriods || []).join(' / ') || '—'}`, 'info')}
+          ${badge(`Новинки: ${model.freshness.launchPlanHorizon || '—'}`)}
+        </div>
+      </div>
+      <div class="hero-grid">${heroCards}</div>
+    </section>
+
+    <div class="section-title" style="margin-top:18px">
+      <div>
+        <h2>Общее состояние бренда</h2>
+        <p>Крупные KPI, чтобы за минуту понять, где мы стоим по Алтея.</p>
+      </div>
+      <div class="quick-actions">
+        <button class="quick-chip" data-view-control>Открыть задачи</button>
+        <button class="quick-chip" data-control-preset="overdue">Просрочено</button>
+        <button class="quick-chip" data-view-executive>Свод руководителя</button>
+      </div>
+    </div>
+
+    <div class="grid cards">${baseCards}</div>
+
+    <div class="dashboard-grid-3" style="margin-top:14px">
+      <div class="card visual-card">
+        <div class="section-subhead">
+          <div>
+            <h3>Лидеры продаж</h3>
+            <p class="small muted">Берём текущую выручку по срезу и показываем сильнейшие SKU.</p>
+          </div>
+          ${badge(`${fmt.int(model.leadersSales.length)} SKU`, 'ok')}
+        </div>
+        <div class="leader-list">${salesRows || '<div class="empty">Нет данных по продажам</div>'}</div>
+      </div>
+
+      <div class="card visual-card">
+        <div class="section-subhead">
+          <div>
+            <h3>Лидеры по оборачиваемости</h3>
+            <p class="small muted">Чем меньше дней оборота, тем быстрее крутится SKU.</p>
+          </div>
+          ${badge('быстрее = лучше', 'info')}
+        </div>
+        <div class="leader-list">${turnoverRows || '<div class="empty">Нет данных по оборачиваемости</div>'}</div>
+      </div>
+
+      <div class="card visual-card">
+        <div class="section-subhead">
+          <div>
+            <h3>Лидеры по контенту / ROMI</h3>
+            <p class="small muted">Кого уже тащит контент и где есть наглядный сигнал для масштабирования.</p>
+          </div>
+          ${badge('контент-потенциал', 'info')}
+        </div>
+        <div class="leader-list">${romiRows || '<div class="empty">Нет ROMI в текущем срезе</div>'}</div>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-top:14px">
+      <div class="card">
+        <div class="section-subhead">
+          <div>
+            <h3>Красные зоны</h3>
+            <p class="small muted">SKU, которые уже просятся в работу из-за плана и маржи.</p>
+          </div>
+          ${badge(`${fmt.int(model.worklist.length)} в фокусе`, model.worklist.length ? 'danger' : 'ok')}
+        </div>
+        <div class="alert-stack">${workRows || '<div class="empty">Сейчас нет критичных SKU</div>'}</div>
+      </div>
+
+      <div class="card">
+        <div class="section-subhead">
+          <div>
+            <h3>Операционный чек на сегодня</h3>
+            <p class="small muted">Сразу видно, что показать на утреннем / weekly созвоне.</p>
+          </div>
+          ${badge(`${fmt.int(control.todayList.length)} в short-list`, 'warn')}
+        </div>
+        <div class="task-mini-grid">${control.todayList.slice(0, 8).map(renderMiniTask).join('') || '<div class="empty">Нет задач для экспресс-чека</div>'}</div>
+      </div>
+    </div>
+
+    <div class="footer-note">Последняя генерация данных: ${escapeHtml(state.dashboard.generatedAt || '—')}. Этот экран теперь отвечает за визуальный pulse бренда, а не за канбан задач.</div>
+  `;
+}

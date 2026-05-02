@@ -75,6 +75,17 @@ function firstPositive(...values) {
   return null;
 }
 
+function resolvedRowSellerPriceDate(row = {}, fallback = '') {
+  return asIsoDate(
+    row?.currentPriceDate
+    || row?.currentFillPriceDate
+    || row?.valueDate
+    || row?.historyFreshnessDate
+    || latestSeriesDate(row)
+    || fallback
+  );
+}
+
 function workbenchPayloadFreshness(payload = {}) {
   let score = parseFreshStamp(payload?.generatedAt || payload?.updatedAt || payload?.updated_at || '');
   Object.values(payload?.platforms || {}).forEach((bucket) => {
@@ -115,38 +126,65 @@ function mergeWorkbenchField(target, key, value, force = false) {
   target[key] = clone(value);
 }
 
-function mergeWorkbenchRow(primaryRow = {}, liveRow = {}, platform = '') {
+function applyLiveCurrentSellerPrice(target = {}, liveRow = {}, liveGeneratedAt = '') {
+  const liveSellerPrice = firstPositive(liveRow?.currentFillPrice, liveRow?.currentPrice);
+  if (liveSellerPrice === null) return false;
+  const livePriceDate = resolvedRowSellerPriceDate(liveRow, liveGeneratedAt);
+  const currentSellerPrice = firstPositive(target?.currentFillPrice, target?.currentPrice);
+  const currentPriceDate = resolvedRowSellerPriceDate(target);
+  if (
+    currentSellerPrice !== null
+    && parseFreshStamp(currentPriceDate)
+    && parseFreshStamp(livePriceDate || liveGeneratedAt)
+    && parseFreshStamp(livePriceDate || liveGeneratedAt) < parseFreshStamp(currentPriceDate)
+  ) {
+    return false;
+  }
+  target.currentFillPrice = liveSellerPrice;
+  target.currentPrice = liveSellerPrice;
+  target.currentSellerPriceSource = 'live';
+  target.currentPriceSource = 'live';
+  if (livePriceDate) target.currentPriceDate = livePriceDate;
+  return true;
+}
+
+function mergeWorkbenchRow(primaryRow = {}, liveRow = {}, platform = '', options = {}) {
   const next = clone(primaryRow) || {};
   const live = liveRow && typeof liveRow === 'object' ? liveRow : null;
   if (!live) return next;
+  const useFullLive = options.useFullLive !== false;
 
-  [
-    'articleKey',
-    'article',
-    'name',
-    'owner',
-    'marketplace',
-    'currentFillPrice',
-    'currentPrice',
-    'currentClientPrice',
-    'currentSppPct',
-    'currentTurnoverDays',
-    'monthly',
-    'daily',
-    'timeline'
-  ].forEach((key) => mergeWorkbenchField(next, key, live[key]));
+  if (useFullLive) {
+    [
+      'articleKey',
+      'article',
+      'name',
+      'owner',
+      'marketplace',
+      'currentFillPrice',
+      'currentPrice',
+      'currentClientPrice',
+      'currentSppPct',
+      'currentTurnoverDays',
+      'monthly',
+      'daily',
+      'timeline'
+    ].forEach((key) => mergeWorkbenchField(next, key, live[key]));
 
-  [
-    'productStatus',
-    'stockWarehouse',
-    'stockWb',
-    'stockOzon',
-    'stockTotal',
-    'turnoverWbDays',
-    'turnoverOzonDays',
-    'turnoverTotalDays',
-    'turnoverCurrentDays'
-  ].forEach((key) => mergeWorkbenchField(next, key, live[key], true));
+    [
+      'productStatus',
+      'stockWarehouse',
+      'stockWb',
+      'stockOzon',
+      'stockTotal',
+      'turnoverWbDays',
+      'turnoverOzonDays',
+      'turnoverTotalDays',
+      'turnoverCurrentDays'
+    ].forEach((key) => mergeWorkbenchField(next, key, live[key], true));
+  }
+
+  applyLiveCurrentSellerPrice(next, live, options.liveGeneratedAt || '');
 
   if (valueMissing(next.marketplace) && platform) next.marketplace = platform;
   return next;
@@ -157,7 +195,8 @@ function mergeWorkbenchPayload(primaryPayload = {}, livePayload = {}) {
     ? clone(primaryPayload)
     : { generatedAt: '', platforms: {} };
   const liveCandidate = livePayload && typeof livePayload === 'object' ? clone(livePayload) : null;
-  const live = shouldUseLiveWorkbench(primary, liveCandidate) ? liveCandidate : null;
+  const useFullLive = shouldUseLiveWorkbench(primary, liveCandidate);
+  const live = liveCandidate?.platforms ? liveCandidate : null;
   const merged = primary && typeof primary === 'object' ? primary : { generatedAt: '', platforms: {} };
   merged.platforms = merged.platforms && typeof merged.platforms === 'object' ? merged.platforms : {};
 
@@ -186,13 +225,20 @@ function mergeWorkbenchPayload(primaryPayload = {}, livePayload = {}) {
       const key = normalizeKey(row?.articleKey || row?.article);
       const liveRow = key ? liveMap.get(key) : null;
       if (liveRow && key) used.add(key);
-      mergedRows.push(mergeWorkbenchRow(row, liveRow, platform));
+      mergedRows.push(mergeWorkbenchRow(row, liveRow, platform, {
+        useFullLive,
+        liveGeneratedAt: live?.generatedAt || liveCandidate?.generatedAt || ''
+      }));
     });
 
     liveRows.forEach((row) => {
+      if (!useFullLive) return;
       const key = normalizeKey(row?.articleKey || row?.article);
       if (!key || used.has(key)) return;
-      mergedRows.push(mergeWorkbenchRow({}, row, platform));
+      mergedRows.push(mergeWorkbenchRow({}, row, platform, {
+        useFullLive: true,
+        liveGeneratedAt: live?.generatedAt || liveCandidate?.generatedAt || ''
+      }));
     });
 
     merged.platforms[platform] = {
@@ -201,10 +247,11 @@ function mergeWorkbenchPayload(primaryPayload = {}, livePayload = {}) {
     };
   });
 
-  if (!merged.generatedAt || parseFreshStamp(live?.generatedAt) > parseFreshStamp(merged.generatedAt)) {
+  if (useFullLive && (!merged.generatedAt || parseFreshStamp(live?.generatedAt) > parseFreshStamp(merged.generatedAt))) {
     merged.generatedAt = live?.generatedAt || merged.generatedAt || '';
   }
-  merged.liveEnrichmentAt = live?.generatedAt || '';
+  merged.liveEnrichmentAt = useFullLive ? (live?.generatedAt || '') : '';
+  merged.liveCurrentPriceEnrichmentAt = liveCandidate?.generatedAt || '';
   return merged;
 }
 
@@ -334,9 +381,28 @@ function mergeWorkbenchOverlayRow(primaryRow = {}, overlayRow = {}, platform = '
     'sourceMode'
   ].forEach((key) => mergeWorkbenchField(next, key, overlay[key], true));
 
+  const keepLiveSellerPrice = String(next.currentSellerPriceSource || next.currentPriceSource || '').trim().toLowerCase() === 'live'
+    && !overlayFlagEnabled(overlay?.clearCurrentFillPrice)
+    && !overlayFlagEnabled(overlay?.clearCurrentPrice)
+    && firstPositive(next.currentFillPrice, next.currentPrice) !== null
+    && parseFreshStamp(resolvedRowSellerPriceDate(next)) > parseFreshStamp(resolvedRowSellerPriceDate(overlay));
+  if (!keepLiveSellerPrice) {
+    if (!valueMissing(overlay?.currentFillPrice)) {
+      next.currentFillPrice = clone(overlay.currentFillPrice);
+      next.currentPrice = clone(overlay.currentFillPrice);
+      next.currentSellerPriceSource = 'overlay';
+      next.currentPriceSource = 'overlay';
+      next.currentPriceDate = asIsoDate(overlay?.valueDate || overlay?.historyFreshnessDate || '');
+    } else if (!valueMissing(overlay?.currentPrice)) {
+      next.currentFillPrice = clone(overlay.currentPrice);
+      next.currentPrice = clone(overlay.currentPrice);
+      next.currentSellerPriceSource = 'overlay';
+      next.currentPriceSource = 'overlay';
+      next.currentPriceDate = asIsoDate(overlay?.valueDate || overlay?.historyFreshnessDate || '');
+    }
+  }
+
   [
-    'currentFillPrice',
-    'currentPrice',
     'currentClientPrice',
     'currentSppPct',
     'currentTurnoverDays',

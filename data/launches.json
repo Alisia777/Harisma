@@ -1,1428 +1,6649 @@
 [
   {
+    "id": "launch-спрей-сыворотка-с-pdrn",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "тренд",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Май 2026",
-    "status": "NDA подписан, рецептура наша",
+    "status": "Производство",
     "production": "Контрактное",
     "name": "Спрей-сыворотка с PDRN",
     "subCategory": "Anti-age",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": 100.0,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "Увлажнение, регенерация, сияние кожи Anti-Age",
+    "category": "Anti-age",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 148.6,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 100000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": 5000000.0
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 106000,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": 9000
+      },
+      {
+        "label": "Сентябрь",
+        "value": 15000
+      },
+      {
+        "label": "Октябрь",
+        "value": 22000
+      },
+      {
+        "label": "Ноябрь",
+        "value": 30000
+      },
+      {
+        "label": "Декабрь",
+        "value": 30000
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Май",
+        "monthKey": "2026-05",
+        "value": 1
+      }
+    ],
+    "sourceRow": 2,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-шампунь-для-кудрявых-волос",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за волосами",
     "tag": "база",
-    "skuCount": 1.0,
-    "launchMonth": "Апрель 2026",
-    "status": "Договор на производство заключен, этикетки в печати",
+    "skuBucket": "1",
+    "launchMonth": "Май 2026",
+    "status": "Производство",
     "production": "Контрактное",
     "name": "Шампунь для кудрявых волос",
     "subCategory": "Curly",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": 135.0,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "Уход за кудрявыми волосами Формирование упругого завитка",
+    "category": "Curly",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 171.7,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 105000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Апрель",
+        "monthKey": "2026-04",
+        "value": 1
+      }
+    ],
+    "sourceRow": 3,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-термозащитное-масло-для-волос",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за волосами",
     "tag": "база",
-    "skuCount": 1.0,
-    "launchMonth": "Апрель 2026",
-    "status": "Договор на производство заключен, этикетки в печати",
+    "skuBucket": "1",
+    "launchMonth": "Май 2026",
+    "status": "Производство",
+    "production": "Контрактное",
+    "name": "Термозащитное масло для волос",
+    "subCategory": "",
+    "characteristic": "Термозащита Питание",
+    "category": "",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 160,
+    "srcWithoutVat": null,
+    "srcWithVat": null,
+    "srcWithSpp28": null,
+    "mrpDeltaPct": null,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
+    "grossMarginPct": null,
+    "grossMarginRub": null,
+    "revenueAnchor": null,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [],
+    "sourceRow": 4,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
+  },
+  {
+    "id": "launch-бальзам-для-кудрявых-волос",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
+    "reportGroup": "Уход за волосами",
+    "tag": "база",
+    "skuBucket": "1",
+    "launchMonth": "Май 2026",
+    "status": "Производство",
     "production": "Контрактное",
     "name": "Бальзам для кудрявых волос",
     "subCategory": "Curly",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": 140.0,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "Уход за кудрявыми волосами Формирование упругого завитка",
+    "category": "Curly",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 161.7,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 24000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 41000,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": 10000
+      },
+      {
+        "label": "Ноябрь",
+        "value": 15000
+      },
+      {
+        "label": "Декабрь",
+        "value": 16000
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Апрель",
+        "monthKey": "2026-04",
+        "value": 1
+      }
+    ],
+    "sourceRow": 5,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-syvorotka_guk_30ml",
+    "articleKey": "syvorotka_guk_30ml",
+    "article": "syvorotka_guk_30ml",
+    "owner": "Олеся",
+    "reportGroup": "Уход за лицом",
+    "tag": "база",
+    "skuBucket": "1",
+    "launchMonth": "Май 2026",
+    "status": "Производство",
+    "production": "Контрактное",
+    "name": "Сыворотка для лица с Витамином С",
+    "subCategory": "",
+    "characteristic": "Сияние Увлажнение кожи Ровный тон",
+    "category": "Косметика для ухода",
+    "marketplaces": "",
+    "registryStatus": "Актуальный",
+    "segment": "CORE",
+    "targetCost": 120,
+    "srcWithoutVat": null,
+    "srcWithVat": null,
+    "srcWithSpp28": null,
+    "mrpDeltaPct": null,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
+    "grossMarginPct": null,
+    "grossMarginRub": null,
+    "revenueAnchor": null,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [],
+    "sourceRow": 6,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
+  },
+  {
+    "id": "launch-пэды-с-pdrn",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "тренд",
-    "skuCount": 1.0,
-    "launchMonth": "Май 2026",
-    "status": "Договор направлен КП",
-    "production": "Контрактное ",
+    "skuBucket": "1",
+    "launchMonth": "Июль 2026",
+    "status": "Договор с брокером Ожидаем счет на оплату",
+    "production": "Контрактное",
     "name": "Пэды с PDRN",
     "subCategory": "Anti-age",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "Увлажнение, регенерация, сияние кожи Anti-Age",
+    "category": "Anti-age",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 220,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 35000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Май",
+        "monthKey": "2026-05",
+        "value": 1
+      }
+    ],
+    "sourceRow": 7,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-капли-сыворотка-тинт-для-ровного-тона-сияния-кожи-glow-drops-spf-25",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "тренд",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Октябрь 2026",
-    "status": null,
-    "production": "Контрактное ",
+    "status": "",
+    "production": "Контрактное",
     "name": "Капли/сыворотка/тинт для ровного тона/сияния кожи (glow drops) spf 25",
-    "subCategory": "MakeUp+Care",
-    "itemType": null,
+    "subCategory": "MakeUp+ Care",
     "characteristic": "Увлажнение, ровный тон, сияние кожи",
-    "targetCost": 120.0,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "category": "MakeUp+ Care",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 120,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 85000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 8,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-крем-стик-с-pdrn-и-пептидами-spf-25",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "тренд",
-    "skuCount": 1.0,
-    "launchMonth": "Август 2026",
-    "status": null,
+    "skuBucket": "1",
+    "launchMonth": "Апрель 2027",
+    "status": "Процесс согласования запуска",
     "production": "Контрактное",
     "name": "Крем-стик с PDRN и пептидами spf 25",
     "subCategory": "Anti-age",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": 180.0,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "Защита от УФ регенерация увлажнение Anti-Age",
+    "category": "Anti-age",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 180,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 6000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2027,
+        "label": "Апрель",
+        "monthKey": "2027-04",
+        "value": 1
+      }
+    ],
+    "sourceRow": 9,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-гель-для-волос-кудрявый-метод",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за волосами",
     "tag": "база",
-    "skuCount": 1.0,
-    "launchMonth": "Апрель 2026",
-    "status": "ТЗ направлены КП",
+    "skuBucket": "1",
+    "launchMonth": "Май 2026",
+    "status": "Производство",
     "production": "Контрактное",
     "name": "Гель для волос кудрявый метод",
     "subCategory": "Curly",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "Уход за кудрявыми волосами Формирование упругого завитка",
+    "category": "Curly",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 150,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 5000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Май",
+        "monthKey": "2026-05",
+        "value": 1
+      }
+    ],
+    "sourceRow": 10,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-крем-для-рук-парфюмированный",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "база",
-    "skuCount": 3.0,
+    "skuBucket": "3",
     "launchMonth": "Июль 2026",
-    "status": null,
-    "production": "Контрактное ",
+    "status": "Ожидаем цену и образцы",
+    "production": "Контрактное",
     "name": "Крем для рук парфюмированный",
     "subCategory": "Руки",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": 60.0,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "Питание кожи рук",
+    "category": "Руки",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 5000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Август",
+        "monthKey": "2026-08",
+        "value": 1
+      }
+    ],
+    "sourceRow": 11,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-крем-питательный-для-тела",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Сентябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контрактное",
     "name": "Крем питательный для тела",
     "subCategory": "Тело",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Тело",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 10000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Сентябрь",
+        "monthKey": "2026-09",
+        "value": 1
+      }
+    ],
+    "sourceRow": 12,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-крем-баттер-для-тела-парфюмированный",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "база",
-    "skuCount": 3.0,
+    "skuBucket": "3",
     "launchMonth": "Сентябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контрактное",
     "name": "Крем-баттер для тела парфюмированный",
     "subCategory": "Тело",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Тело",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 5000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Сентябрь",
+        "monthKey": "2026-09",
+        "value": 3
+      }
+    ],
+    "sourceRow": 13,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-увлажняющий-лосьон-для-тела-подходит-для-чувствительной-кожи-",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "база",
-    "skuCount": 3.0,
+    "skuBucket": "3",
     "launchMonth": "Июль 2026",
-    "status": null,
-    "production": "Собственное",
+    "status": "Выбираем отдушки, исходя из образцов парф гелей для душа",
+    "production": "Контрактное",
     "name": "Увлажняющий лосьон для тела (подходит для чувствительной кожи)",
     "subCategory": "Тело",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "Увлажнение Питание кожи тела",
+    "category": "Тело",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 126,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 10000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Июль",
+        "monthKey": "2026-07",
+        "value": 3
+      }
+    ],
+    "sourceRow": 14,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-крем-для-кутикулы",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Сентябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контрактное",
     "name": "Крем для кутикулы",
     "subCategory": "Руки",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Руки",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 10000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Сентябрь",
+        "monthKey": "2026-09",
+        "value": 1
+      }
+    ],
+    "sourceRow": 15,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-сухой-шампунь",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за волосами",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Июль 2026",
-    "status": null,
-    "production": "Контрактное (Арнест?)",
+    "status": "Ждем согласование от Сергея ЦЗ",
+    "production": "Контрактное",
     "name": "Сухой шампунь",
     "subCategory": "Стайлинг",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": 100.0,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "",
+    "category": "Стайлинг",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 115,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 10000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 9803.921569,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": 9803.921568627451
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Июль",
+        "monthKey": "2026-07",
+        "value": 1
+      }
+    ],
+    "sourceRow": 16,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-шампунь-восстановление-с-badd",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за волосами",
     "tag": "база",
-    "skuCount": 1.0,
-    "launchMonth": "Июнь 2026",
-    "status": null,
-    "production": "Контрактное",
-    "name": "Шампунь-гладкость для волос",
-    "subCategory": "Anti-frizz",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": 120.0,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
-    "grossMarginPct": null,
-    "grossMarginRub": 0,
-    "plannedRevenue": 40000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
-  },
-  {
-    "reportGroup": "Уход за волосами",
-    "tag": "база",
-    "skuCount": 1.0,
-    "launchMonth": "Июнь 2026",
-    "status": null,
-    "production": "Контрактное",
-    "name": "Бальзам-гладкость для волос",
-    "subCategory": "Anti-frizz",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": 130.0,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
-    "grossMarginPct": null,
-    "grossMarginRub": 0,
-    "plannedRevenue": 10000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
-  },
-  {
-    "reportGroup": "Уход за волосами",
-    "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Июль 2026",
-    "status": null,
+    "status": "Согласован флакон, ждем подписание договора и счет",
     "production": "Контрактное",
     "name": "Шампунь-восстановление с BADD",
     "subCategory": "Восстановление",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": 120.0,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "",
+    "category": "Восстановление",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 130,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 10000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [],
+    "sourceRow": 17,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-бальзам-восстановление-c-badd",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за волосами",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Июль 2026",
-    "status": null,
+    "status": "Согласован флакон, ждем подписание договора и счет",
     "production": "Контрактное",
     "name": "Бальзам-восстановление c BADD",
     "subCategory": "Восстановление",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": 130.0,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "",
+    "category": "Восстановление",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 140,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 34000000,
-    "may": null,
-    "june": null,
-    "july": 3000000.0,
-    "august": 4000000.0
+    "revenueAnchor": 3000000,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": 3000000
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": 10000
+      },
+      {
+        "label": "Сентябрь",
+        "value": 8000
+      },
+      {
+        "label": "Октябрь",
+        "value": 7000
+      },
+      {
+        "label": "Ноябрь",
+        "value": 6000
+      },
+      {
+        "label": "Декабрь",
+        "value": 6000
+      }
+    ],
+    "ganttMonths": [],
+    "sourceRow": 18,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-парфюмированное-масло-для-волос",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за волосами",
     "tag": "тренд",
-    "skuCount": 1.0,
-    "launchMonth": "Май 2026",
+    "skuBucket": "3",
+    "launchMonth": "Июнь 2026",
     "status": "ТЗ направлено",
     "production": "Контрактное",
     "name": "Парфюмированное масло для волос",
-    "subCategory": null,
-    "itemType": null,
-    "characteristic": null,
+    "subCategory": "",
+    "characteristic": "Питание Термозащита до 230 С Ароматерапия для волос",
+    "category": "",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 43000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": 5000000.0
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 83334,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": 9690
+      },
+      {
+        "label": "Сентябрь",
+        "value": 17442
+      },
+      {
+        "label": "Октябрь",
+        "value": 21318
+      },
+      {
+        "label": "Ноябрь",
+        "value": 21318
+      },
+      {
+        "label": "Декабрь",
+        "value": 13566
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Май",
+        "monthKey": "2026-05",
+        "value": 1
+      }
+    ],
+    "sourceRow": 19,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-бальзам-для-умывания-для-чувствительной-кожи",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Сентябрь 2026",
-    "status": null,
-    "production": "Собственное",
+    "status": "",
+    "production": "Контрактное",
     "name": "Бальзам для умывания для чувствительной кожи",
     "subCategory": "Чувствительная кожа",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Чувствительная кожа",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 35000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": 4000000.0
+    "revenueAnchor": 0,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Сентябрь",
+        "monthKey": "2026-09",
+        "value": 1
+      }
+    ],
+    "sourceRow": 20,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-сыворотка-успокаивающая",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Сентябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Собственное",
     "name": "Сыворотка успокаивающая",
     "subCategory": "Чувствительная кожа",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Чувствительная кожа",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 35000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": 4000000.0
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 67829.45736,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": 7751.937984496124
+      },
+      {
+        "label": "Сентябрь",
+        "value": 13565.891472868218
+      },
+      {
+        "label": "Октябрь",
+        "value": 17441.86046511628
+      },
+      {
+        "label": "Ноябрь",
+        "value": 15503.875968992248
+      },
+      {
+        "label": "Декабрь",
+        "value": 13565.891472868218
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Сентябрь",
+        "monthKey": "2026-09",
+        "value": 1
+      }
+    ],
+    "sourceRow": 21,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-маска-для-сна",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Аксессуары",
     "tag": "в набор",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Ноябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Китай - заказ",
     "name": "Маска для сна",
     "subCategory": "Зимняя лимитка",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Зимняя лимитка",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": null,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": null,
+    "srcWithSpp28": null,
+    "mrpDeltaPct": null,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": null,
-    "plannedRevenue": null,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": null,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Ноябрь",
+        "monthKey": "2026-11",
+        "value": 1
+      }
+    ],
+    "sourceRow": 22,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-варежка-мочалка",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Аксессуары",
     "tag": "в набор",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Ноябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Китай - заказ",
     "name": "Варежка-мочалка",
     "subCategory": "Зимняя лимитка",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Зимняя лимитка",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": null,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": null,
+    "srcWithSpp28": null,
+    "mrpDeltaPct": null,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": null,
-    "plannedRevenue": null,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": null,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Ноябрь",
+        "monthKey": "2026-11",
+        "value": 1
+      }
+    ],
+    "sourceRow": 23,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-щетка-для-массажа",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Аксессуары",
     "tag": "в набор",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Ноябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Китай - заказ",
     "name": "Щетка для массажа",
     "subCategory": "Зимняя лимитка",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Зимняя лимитка",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": null,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": null,
+    "srcWithSpp28": null,
+    "mrpDeltaPct": null,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": null,
-    "plannedRevenue": null,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": null,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Ноябрь",
+        "monthKey": "2026-11",
+        "value": 1
+      }
+    ],
+    "sourceRow": 24,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-чай-для-ванной",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "тренд",
-    "skuCount": 3.0,
+    "skuBucket": "3",
     "launchMonth": "Ноябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контрактное",
     "name": "Чай для ванной",
     "subCategory": "Зимняя лимитка",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Зимняя лимитка",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 40000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 40000,
+    "yearlyPlanValue": 20000,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": 2000
+      },
+      {
+        "label": "Октябрь",
+        "value": 4000
+      },
+      {
+        "label": "Ноябрь",
+        "value": 6000
+      },
+      {
+        "label": "Декабрь",
+        "value": 8000
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 3
+      }
+    ],
+    "sourceRow": 25,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-масло-для-ванной",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "тренд",
-    "skuCount": 3.0,
+    "skuBucket": "3",
     "launchMonth": "Ноябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Собственное",
     "name": "Масло для ванной",
     "subCategory": "Зимняя лимитка",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Зимняя лимитка",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
-    "grossMarginRub": "#DIV/0!",
-    "plannedRevenue": "#DIV/0!",
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": 3000000.0
+    "grossMarginRub": null,
+    "revenueAnchor": null,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": 2000
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 3
+      }
+    ],
+    "sourceRow": 26,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-свеча-воск-для-рук",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "тренд",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Ноябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контрактное",
     "name": "Свеча-воск для рук",
     "subCategory": "Зимняя лимитка",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Зимняя лимитка",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
-    "grossMarginRub": "#DIV/0!",
-    "plannedRevenue": "#DIV/0!",
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": 5000000.0
+    "grossMarginRub": null,
+    "revenueAnchor": null,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": 3000
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 27,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-спрей-для-тела-увлажняющий-питательный-ароматизированный",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "тренд",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Ноябрь 2026",
-    "status": null,
+    "status": "",
     "production": "?",
     "name": "Спрей для тела увлажняющий питательный ароматизированный",
     "subCategory": "Зимняя лимитка",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Зимняя лимитка",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": null,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": null,
+    "srcWithSpp28": null,
+    "mrpDeltaPct": null,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": null,
-    "plannedRevenue": null,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": null,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 28,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-скраб-для-тела",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
-    "tag": null,
-    "skuCount": 1.0,
+    "tag": "",
+    "skuBucket": "1",
     "launchMonth": "Ноябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контрактное",
     "name": "Скраб для тела",
     "subCategory": "Зимняя лимитка",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Зимняя лимитка",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": null,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": null,
+    "srcWithSpp28": null,
+    "mrpDeltaPct": null,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": null,
-    "plannedRevenue": null,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": null,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 29,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-гель-для-душа-парфюмированный",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
-    "tag": null,
-    "skuCount": 1.0,
+    "tag": "",
+    "skuBucket": "1",
     "launchMonth": "Ноябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контрактное",
     "name": "Гель для душа парфюмированный",
     "subCategory": "Зимняя лимитка",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Зимняя лимитка",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": null,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": null,
+    "srcWithSpp28": null,
+    "mrpDeltaPct": null,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": null,
-    "plannedRevenue": null,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": null,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Август",
+        "monthKey": "2026-08",
+        "value": 1
+      }
+    ],
+    "sourceRow": 30,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-крем-для-рук-ароматизированный",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "тренд",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Ноябрь 2026",
-    "status": null,
+    "status": "Зимняя лимитка",
     "production": "Контрактное",
     "name": "Крем для рук ароматизированный",
-    "subCategory": "Зимняя лимитка",
-    "itemType": null,
-    "characteristic": null,
+    "subCategory": "",
+    "characteristic": "",
+    "category": "",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": null,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": null,
+    "srcWithSpp28": null,
+    "mrpDeltaPct": null,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": null,
-    "plannedRevenue": null,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": null,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 31,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-крем-для-рук-парфюмированный",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "тренд",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Август 2026",
-    "status": null,
+    "status": "",
     "production": "Контрактное",
     "name": "Крем для рук парфюмированный",
     "subCategory": "Осенняя лимитка Pumpkin latte",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Осенняя лимитка Pumpkin latte",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
-    "grossMarginRub": "#DIV/0!",
-    "plannedRevenue": "#DIV/0!",
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": 3000000.0
+    "grossMarginRub": 0,
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Август",
+        "monthKey": "2026-08",
+        "value": 1
+      }
+    ],
+    "sourceRow": 32,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-гель-для-душа-парфюмированный",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "тренд",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Август 2026",
-    "status": null,
+    "status": "",
     "production": "Собственное",
     "name": "Гель для душа парфюмированный",
     "subCategory": "Осенняя лимитка Pumpkin latte",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Осенняя лимитка Pumpkin latte",
+    "marketplaces": "0",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 49000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Август",
+        "monthKey": "2026-08",
+        "value": 1
+      }
+    ],
+    "sourceRow": 33,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-мыло-для-рук-парфюмированное",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "тренд",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Август 2026",
-    "status": null,
+    "status": "",
     "production": "Собственное",
     "name": "Мыло для рук парфюмированное",
     "subCategory": "Осенняя лимитка Pumpkin latte",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Осенняя лимитка Pumpkin latte",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 87000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": 7000000.0
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Август",
+        "monthKey": "2026-08",
+        "value": 1
+      }
+    ],
+    "sourceRow": 34,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-гель-для-умывания-для-жирной-и-проблемной-кожи",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "база",
-    "skuCount": 1.0,
-    "launchMonth": "Май 2026",
-    "status": "ТЗ передано",
+    "skuBucket": "1",
+    "launchMonth": "Июнь 2026",
+    "status": "Согласован, отдали в производство",
     "production": "Контрактное",
     "name": "Гель для умывания для жирной и проблемной кожи",
     "subCategory": "Жирная и проблемная кожа",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "Ровный тон Борьба с воспалениями",
+    "category": "Жирная и проблемная кожа",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 133,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 51000000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Май",
+        "monthKey": "2026-05",
+        "value": 1
+      }
+    ],
+    "sourceRow": 35,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-гель-для-интимной-гигиены-парфюмированный",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "база",
-    "skuCount": 3.0,
+    "skuBucket": "3",
     "launchMonth": "Сентябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Собственное",
     "name": "Гель для интимной гигиены парфюмированный",
     "subCategory": "Тело",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Тело",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 700000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Сентябрь",
+        "monthKey": "2026-09",
+        "value": 3
+      }
+    ],
+    "sourceRow": 36,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-гель-для-душа-парфюмированный",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "база",
-    "skuCount": 3.0,
+    "skuBucket": "3",
     "launchMonth": "Июль 2026",
-    "status": null,
+    "status": "ТЗ направлено",
     "production": "Собственное",
     "name": "Гель для душа парфюмированный",
     "subCategory": "Тело",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Тело",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 700000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Август",
+        "monthKey": "2026-08",
+        "value": 1
+      }
+    ],
+    "sourceRow": 37,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-жидкое-мыло-парфюмированное",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "база",
-    "skuCount": 3.0,
+    "skuBucket": "3",
     "launchMonth": "Июль 2026",
-    "status": null,
+    "status": "ТЗ направлено",
     "production": "Собственное",
     "name": "Жидкое мыло парфюмированное",
     "subCategory": "Тело",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Тело",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 700000,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Июль",
+        "monthKey": "2026-07",
+        "value": 3
+      }
+    ],
+    "sourceRow": 38,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-бальзам-блеск-для-губ-ухаживающий",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "тренд",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Октябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контрактное",
     "name": "Бальзам-блеск для губ ухаживающий",
     "subCategory": "MakeUp+Care",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "MakeUp+Care",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": 0.0
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 39,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-румяна-стик-3-в-1-ухаживающий-с-церамидами-и-гиалуроновой-кислотой",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "тренд",
-    "skuCount": 3.0,
+    "skuBucket": "3",
     "launchMonth": "Октябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контрактное",
     "name": "Румяна-стик 3-в-1 ухаживающий с церамидами и гиалуроновой кислотой",
     "subCategory": "MakeUp+Care",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "MakeUp+Care",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": 0.0,
-    "august": 0.0
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": 0
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 3
+      }
+    ],
+    "sourceRow": 40,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-ночная-маска-уход-для-губ",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Октябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контрактное",
     "name": "Ночная маска-уход для губ",
     "subCategory": "MakeUp+Care",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "MakeUp+Care",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": 0.0,
-    "august": 0.0
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": 0
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 41,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-консилер-от-отеков-и-синяков-со-светоотражающими-частицами",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Октябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контрактное",
     "name": "Консилер от отеков и синяков со светоотражающими частицами",
     "subCategory": "MakeUp+Care",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "MakeUp+Care",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 42,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-антиотечная-скульптурирующая-сыворотка-бронзер",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "тренд",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Октябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Собственное",
     "name": "Антиотечная скульптурирующая сыворотка-бронзер",
     "subCategory": "MakeUp+Care",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "MakeUp+Care",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 43,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-сыворотка-увлажняющая",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Май 2026",
-    "status": null,
-    "production": "?",
+    "status": "Производство",
+    "production": "Контрактное",
     "name": "Сыворотка увлажняющая",
     "subCategory": "Увлажнение",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "Увлажнение интенсивное Барьерная защита",
+    "category": "Увлажнение",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 138,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [],
+    "sourceRow": 44,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-маска-для-лица-интенсивно-увлажняющая",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Май 2026",
-    "status": null,
-    "production": "?",
+    "status": "Производство",
+    "production": "Контрактное",
     "name": "Маска для лица интенсивно увлажняющая",
     "subCategory": "Увлажнение",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "Увлажнение интенсивное Барьерная защита",
+    "category": "Увлажнение",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 145,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [],
+    "sourceRow": 45,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-сыворотка-от-перхоти-с-климбазолом",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за волосами",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Октябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Собственное",
     "name": "Сыворотка от перхоти с климбазолом",
     "subCategory": "Перхоть",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Перхоть",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": 0
+      },
+      {
+        "label": "Октябрь",
+        "value": 0
+      },
+      {
+        "label": "Ноябрь",
+        "value": 0
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 46,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-сыворотка-восстановление-микробиома-кожи-головы",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за волосами",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Октябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Собственное",
     "name": "Сыворотка-восстановление микробиома кожи головы",
     "subCategory": "Перхоть",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Перхоть",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": 0
+      },
+      {
+        "label": "Октябрь",
+        "value": 0
+      },
+      {
+        "label": "Ноябрь",
+        "value": 0
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 47,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-шампунь-восстановление-микробиома-от-перхоти",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за волосами",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Октябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Собственное",
-    "name": "Шампунь-восстановление микробиома от перхоти ",
+    "name": "Шампунь-восстановление микробиома от перхоти",
     "subCategory": "Перхоть",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Перхоть",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": 0
+      },
+      {
+        "label": "Октябрь",
+        "value": 0
+      },
+      {
+        "label": "Ноябрь",
+        "value": 0
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 48,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-крем-для-восстановления-микробиома",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Ноябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Собственное",
     "name": "Крем для восстановления микробиома",
     "subCategory": "Микробиом кожи",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Микробиом кожи",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": 0
+      },
+      {
+        "label": "Ноябрь",
+        "value": 0
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Ноябрь",
+        "monthKey": "2026-11",
+        "value": 1
+      }
+    ],
+    "sourceRow": 49,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-сыворотка-для-восстановления-микробиома",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Ноябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Собственное",
     "name": "Сыворотка для восстановления микробиома",
     "subCategory": "Микробиом кожи",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Микробиом кожи",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": 0.0
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": 0
+      },
+      {
+        "label": "Сентябрь",
+        "value": 0
+      },
+      {
+        "label": "Октябрь",
+        "value": 0
+      },
+      {
+        "label": "Ноябрь",
+        "value": 0
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Ноябрь",
+        "monthKey": "2026-11",
+        "value": 1
+      }
+    ],
+    "sourceRow": 50,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-ночной-крем-с-мелатонином-и-экстрактами-ночных-растений",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "тренд",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Ноябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Собственное",
     "name": "Ночной крем с мелатонином и экстрактами ночных растений",
     "subCategory": "Ночной уход",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Ночной уход",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": 0.0
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": 0
+      },
+      {
+        "label": "Сентябрь",
+        "value": 0
+      },
+      {
+        "label": "Октябрь",
+        "value": 0
+      },
+      {
+        "label": "Ноябрь",
+        "value": 0
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Ноябрь",
+        "monthKey": "2026-11",
+        "value": 1
+      }
+    ],
+    "sourceRow": 51,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-ночная-сыворотка-с-мелатонином-и-экстрактами-ночных-растений",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "тренд",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Ноябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Собственное",
     "name": "Ночная сыворотка с мелатонином и экстрактами ночных растений",
     "subCategory": "Ночной уход",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Ночной уход",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": 0
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Ноябрь",
+        "monthKey": "2026-11",
+        "value": 1
+      }
+    ],
+    "sourceRow": 52,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-фисетин",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "БАД",
     "tag": "тренд",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Октябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контрактное",
     "name": "Фисетин",
     "subCategory": "Professional",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Professional",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": 0
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 53,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-антиоксидантный-комплекс",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "БАД",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Октябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контрактное",
-    "name": "Антиоксидантный комплекс ",
-    "subCategory": null,
-    "itemType": null,
-    "characteristic": null,
+    "name": "Антиоксидантный комплекс",
+    "subCategory": "",
+    "characteristic": "",
+    "category": "",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": 0
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 54,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-комплекс-про--пре--и-постбиотиков",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "БАД",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Октябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контрактное",
     "name": "Комплекс про-, пре- и постбиотиков",
-    "subCategory": null,
-    "itemType": null,
-    "characteristic": null,
+    "subCategory": "",
+    "characteristic": "",
+    "category": "",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": 0
+      },
+      {
+        "label": "Ноябрь",
+        "value": 0
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 55,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-комплекс-для-упругой-кожи-коллаген-витамин-с-церамиды-гиалуроновая-кислота-",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "БАД",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Октябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контракное",
     "name": "Комплекс для упругой кожи (коллаген, витамин С, церамиды, гиалуроновая кислота)",
-    "subCategory": null,
-    "itemType": null,
-    "characteristic": null,
+    "subCategory": "",
+    "characteristic": "",
+    "category": "",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": 0
+      },
+      {
+        "label": "Ноябрь",
+        "value": 0
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Октябрь",
+        "monthKey": "2026-10",
+        "value": 1
+      }
+    ],
+    "sourceRow": 56,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-патчи-под-глаза-гелевые-с-nad-рыбным-коллагеном-пептидами-охлаждающими-ингредиентами-и-ниацинамидом-selfie-friendly-",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "тренд",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Сентябрь 2026",
-    "status": null,
+    "status": "Разосланы ТЗ по корейским про-вам",
     "production": "Контрактное (Китай)",
     "name": "Патчи под глаза гелевые с NAD+, рыбным коллагеном, пептидами, охлаждающими ингредиентами и ниацинамидом (selfie-friendly)",
     "subCategory": "Anti-age",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Anti-age",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": 0
+      },
+      {
+        "label": "Ноябрь",
+        "value": 0
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Сентябрь",
+        "monthKey": "2026-09",
+        "value": 1
+      }
+    ],
+    "sourceRow": 57,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-крем-для-лица-с-pdrn-и-спикулами",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "тренд",
-    "skuCount": 1.0,
-    "launchMonth": "Апрель 2026",
-    "status": null,
+    "skuBucket": "1",
+    "launchMonth": "Май 2026",
+    "status": "Производство",
     "production": "Контракное",
     "name": "Крем для лица с PDRN и спикулами",
     "subCategory": "Anti-age",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "Регенерация Увлажнение Ровный тон",
+    "category": "Anti-age",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 178.3,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": 0
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Май",
+        "monthKey": "2026-05",
+        "value": 1
+      }
+    ],
+    "sourceRow": 58,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-масло-для-загара-с-сияющими-частицами",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за телом",
     "tag": "тренд",
-    "skuCount": 1.0,
-    "launchMonth": "Апрель 2026",
-    "status": null,
+    "skuBucket": "1",
+    "launchMonth": "Июнь 2026",
+    "status": "Производство корректирует состав для уменьшения себеса",
     "production": "Контракное",
     "name": "Масло для загара с сияющими частицами",
     "subCategory": "Тело",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "Защита от УФ Усиление загара Питание, увлажнение",
+    "category": "Тело",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Май",
+        "monthKey": "2026-05",
+        "value": 1
+      }
+    ],
+    "sourceRow": 59,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-маска-пл-нка-с-пдрн-и-пептидами",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "тренд",
-    "skuCount": 1.0,
-    "launchMonth": "Апрель 2026",
-    "status": null,
+    "skuBucket": "1",
+    "launchMonth": "Июнь 2026",
+    "status": "Производство",
     "production": "Контракное",
-    "name": "Маска-плёнка с ПДРН и коллагеном",
+    "name": "Маска-плёнка с ПДРН и пептидами",
     "subCategory": "Anti-age",
-    "itemType": null,
-    "characteristic": null,
-    "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "characteristic": "Лифтинг эффект Увлажнение Регенерация",
+    "category": "Anti-age",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
+    "targetCost": 130,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [],
+    "sourceRow": 60,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-крем-для-век-с-pdrn-и-пептидами-и-бакучиолом",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "тренд",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Сентябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Контракное",
     "name": "Крем для век с PDRN и пептидами и бакучиолом",
     "subCategory": "Anti-age",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Anti-age",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Сентябрь",
+        "monthKey": "2026-09",
+        "value": 1
+      }
+    ],
+    "sourceRow": 61,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-крем-для-чувствительной-кожи",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "база",
-    "skuCount": 1.0,
+    "skuBucket": "1",
     "launchMonth": "Сентябрь 2026",
-    "status": null,
+    "status": "",
     "production": "Собственное",
     "name": "Крем для чувствительной кожи",
     "subCategory": "Чувствительная кожа",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "",
+    "category": "Чувствительная кожа",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": null,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": null,
+    "srcWithSpp28": null,
+    "mrpDeltaPct": null,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": null,
-    "plannedRevenue": null,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": null,
+    "yearlyPlanValue": null,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Сентябрь",
+        "monthKey": "2026-09",
+        "value": 1
+      }
+    ],
+    "sourceRow": 62,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
   {
+    "id": "launch-кремовый-тонер-для-лица-молочный-для-чувствительной-кожи",
+    "articleKey": "",
+    "article": "",
+    "owner": "",
     "reportGroup": "Уход за лицом",
     "tag": "тренд",
-    "skuCount": 1.0,
-    "launchMonth": "Сентябрь 2026",
-    "status": null,
+    "skuBucket": "1",
+    "launchMonth": "Июль 2026",
+    "status": "Тестируем образец",
     "production": "Собственное",
     "name": "Кремовый тонер для лица (Молочный) для чувствительной кожи",
     "subCategory": "Чувствительная кожа",
-    "itemType": null,
-    "characteristic": null,
+    "characteristic": "Glass skin Барьерная защита",
+    "category": "Чувствительная кожа",
+    "marketplaces": "",
+    "registryStatus": "",
+    "segment": "",
     "targetCost": null,
-    "srcPriceVat": 0.0,
-    "rrpVat": null,
-    "mrpVat": null,
+    "srcWithoutVat": null,
+    "srcWithVat": 0,
+    "srcWithSpp28": 0,
+    "mrpDeltaPct": 0,
+    "rrpWithVat": null,
+    "mrpWithVat": null,
     "grossMarginPct": null,
     "grossMarginRub": 0,
-    "plannedRevenue": 0,
-    "may": null,
-    "june": null,
-    "july": null,
-    "august": null
+    "revenueAnchor": 0,
+    "yearlyPlanValue": 0,
+    "monthlyRevenuePlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": 0
+      }
+    ],
+    "monthlyLaunchPlan": [
+      {
+        "label": "Май",
+        "value": null
+      },
+      {
+        "label": "Июнь",
+        "value": null
+      },
+      {
+        "label": "Июль",
+        "value": null
+      },
+      {
+        "label": "Август",
+        "value": null
+      },
+      {
+        "label": "Сентябрь",
+        "value": null
+      },
+      {
+        "label": "Октябрь",
+        "value": null
+      },
+      {
+        "label": "Ноябрь",
+        "value": null
+      },
+      {
+        "label": "Декабрь",
+        "value": null
+      }
+    ],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Сентябрь",
+        "monthKey": "2026-09",
+        "value": 1
+      }
+    ],
+    "sourceRow": 63,
+    "sourceFile": "Календарь новинок Алтея (2).xlsx"
   }
 ]

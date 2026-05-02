@@ -8,6 +8,7 @@
   smartPriceOverlay: { generatedAt: '', platforms: {} },
   priceWorkbenchSupport: { generatedAt: '', platforms: {} },
   productLeaderboard: { generatedAt: '', items: [], summary: {} },
+  productLeaderboardHistory: [],
   launches: [],
   meetings: [],
   documents: { groups: [] },
@@ -50,13 +51,20 @@
     group: 'all'
   },
   launchFilters: {
-    month: 'all'
+    month: 'all',
+    search: '',
+    group: 'all',
+    tag: 'all',
+    status: 'all',
+    phase: 'all'
   },
   productLeaderboardFilters: {
     search: '',
     owner: 'all',
     signal: 'all',
-    sort: 'buys'
+    sort: 'buys',
+    category: 'all',
+    snapshot: 'latest'
   },
   repricerFilters: {
     search: '',
@@ -120,7 +128,6 @@ const VIEW_TITLES = {
   dashboard: 'Дашборд',
   documents: 'Документы',
   repricer: 'Репрайсер',
-  'ads-funnel': 'Рекламная воронка',
   prices: 'Цены',
   order: 'Заказ товара',
   control: 'Задачи',
@@ -211,6 +218,18 @@ const CONTROL_WORKSTREAM_META = {
     description: 'Яндекс Маркет, Летуаль, Магнит и Золотое Яблоко одним РОПом.',
     kind: 'ok'
   },
+  product: {
+    label: 'Продукт / новинки',
+    chip: 'Продукт',
+    description: 'Календарь новинок, продуктовая проработка и запуск карточек.',
+    kind: 'info'
+  },
+  executive: {
+    label: 'Руководитель / директор',
+    chip: 'Директор',
+    description: 'Согласования, эскалации и задачи продукт-директора.',
+    kind: 'danger'
+  },
   cross: {
     label: 'Общий контур',
     chip: 'Общий контур',
@@ -219,7 +238,7 @@ const CONTROL_WORKSTREAM_META = {
   }
 };
 
-const CONTROL_WORKSTREAM_ORDER = ['ozon', 'wb', 'retail', 'cross'];
+const CONTROL_WORKSTREAM_ORDER = ['cross', 'wb', 'ozon', 'retail', 'product', 'executive'];
 const CONTROL_WORKSTREAM_FILTER_ORDER = ['all', ...CONTROL_WORKSTREAM_ORDER];
 
 const DEFAULT_APP_CONFIG = {
@@ -263,7 +282,8 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/prices.json': 'prices',
   'data/smart_price_workbench.json': 'smart_price_workbench',
   'data/smart_price_overlay.json': 'smart_price_overlay',
-  'data/product_leaderboard.json': 'product_leaderboard'
+  'data/product_leaderboard.json': 'product_leaderboard',
+  'data/product_leaderboard_history.json': 'product_leaderboard_history'
 };
 const portalSnapshotState = {
   client: null,
@@ -936,6 +956,9 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
   }
   if (snapshotKey === 'product_leaderboard') {
     return Array.isArray(payload?.items) && payload.items.length > 0;
+  }
+  if (snapshotKey === 'product_leaderboard_history') {
+    return Array.isArray(payload) && payload.length > 0;
   }
   if (snapshotKey === 'logistics') {
     return Array.isArray(payload?.allRows) && payload.allRows.length > 0
@@ -1705,10 +1728,14 @@ const LAZY_DATA_LOADERS = {
     state.launches = Array.isArray(launches) ? launches : [];
   },
   productLeaderboard: async () => {
-    const payload = await loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд');
+    const [payload, history] = await Promise.all([
+      loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
+      loadJsonOrFallback('data/product_leaderboard_history.json', [], 'История продуктового лидерборда')
+    ]);
     state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
       ? normalizeProductLeaderboardPayload(payload)
       : (payload || { generatedAt: '', items: [], summary: {} });
+    state.productLeaderboardHistory = Array.isArray(history) ? history : [];
   },
   meetings: async () => {
     const meetings = await loadJsonOrFallback('data/meetings.json', [], 'Ритм работы');

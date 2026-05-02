@@ -242,11 +242,11 @@
 }
 
 function deriveLaunchStatus(sku) {
-  if (!ownerName(sku)) return 'РќСѓР¶РµРЅ owner';
-  if (sku?.flags?.negativeMargin || sku?.flags?.toWork) return 'РќСѓР¶РЅР° РєРѕСЂСЂРµРєС‚РёСЂРѕРІРєР° СЌРєРѕРЅРѕРјРёРєРё';
-  if (totalSkuStock(sku) <= 0) return 'Р–РґС‘Рј РїРѕСЃС‚Р°РІРєСѓ';
-  if (!sku?.flags?.hasExternalTraffic) return 'Р“РѕС‚РѕРІРёРј С‚СЂР°С„РёРє';
-  return 'Р’ СЂР°Р±РѕС‚Рµ';
+  if (!ownerName(sku)) return 'Нужен owner';
+  if (sku?.flags?.negativeMargin || sku?.flags?.toWork) return 'Нужно проверить экономику';
+  if (totalSkuStock(sku) <= 0) return 'Ждём поставку';
+  if (!sku?.flags?.hasExternalTraffic) return 'Готовим карточку и трафик';
+  return 'В работе';
 }
 
 function deriveLaunchPhase(sku) {
@@ -259,106 +259,195 @@ function deriveLaunchPhase(sku) {
 
 function launchPhaseMeta(phase) {
   const map = {
-    owner: { label: 'РќСѓР¶РµРЅ owner', tone: 'warn' },
-    supply: { label: 'РџРѕСЃС‚Р°РІРєР°', tone: 'warn' },
-    content: { label: 'РљРѕРЅС‚РµРЅС‚ / С‚СЂР°С„РёРє', tone: 'info' },
-    economy: { label: 'Р­РєРѕРЅРѕРјРёРєР°', tone: 'danger' },
-    scale: { label: 'РњР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРµ', tone: 'ok' }
+    owner: { label: 'Owner / ответственный', tone: 'warn' },
+    supply: { label: 'Производство / поставка', tone: 'warn' },
+    content: { label: 'Карточка / контент', tone: 'info' },
+    economy: { label: 'Цена / экономика', tone: 'danger' },
+    scale: { label: 'Запуск / масштабирование', tone: 'ok' }
   };
   return map[phase] || map.content;
 }
 
-function normalizeLaunchItem(item = {}) {
+function normalizeLaunchMonthLabel(value) {
+  const label = String(value || '').trim();
+  return label || 'Без месяца';
+}
+
+function launchMonthDateKey(label = '') {
+  const match = String(label || '').trim().toLowerCase().match(/^([а-яё]+)\s+(\d{4})$/i);
+  if (!match) return '';
+  const monthMap = {
+    январь: '01',
+    февраль: '02',
+    март: '03',
+    апрель: '04',
+    май: '05',
+    июнь: '06',
+    июль: '07',
+    август: '08',
+    сентябрь: '09',
+    октябрь: '10',
+    ноябрь: '11',
+    декабрь: '12'
+  };
+  const month = monthMap[match[1]];
+  return month ? `${match[2]}-${month}-01` : '';
+}
+
+function launchMonthSortValue(label) {
+  const normalized = normalizeLaunchMonthLabel(label).toLowerCase().replace(/\s+/g, ' ').trim();
+  if (!normalized || normalized === 'без месяца') return Number.MAX_SAFE_INTEGER - 1;
+  if (normalized.includes('текущий') || normalized.includes('фокус')) return Number.MAX_SAFE_INTEGER - 2;
+  const dateKey = launchMonthDateKey(normalized);
+  if (!dateKey) return Number.MAX_SAFE_INTEGER;
+  return Number(dateKey.slice(0, 4)) * 100 + Number(dateKey.slice(5, 7));
+}
+
+function launchPlanSum(plan) {
+  return (Array.isArray(plan) ? plan : []).reduce((total, item) => total + numberOrZero(item?.value), 0);
+}
+
+function launchLinkedTasks(item, options = {}) {
+  if (options.skipTaskLookup) return [];
+  const nameKey = String(item?.name || '').trim().toLowerCase();
+  return getAllTasks().filter((task) => {
+    if (item?.articleKey && task.articleKey === item.articleKey) return true;
+    return task.type === 'launch' && String(task.entityLabel || '').trim().toLowerCase() === nameKey;
+  });
+}
+
+function launchManualActiveTaskCount(articleKey, entityLabel = '') {
+  const titleKey = String(entityLabel || '').trim().toLowerCase();
+  return (state.storage?.tasks || []).filter((task) => {
+    if (!isTaskActive(task)) return false;
+    if (articleKey && task.articleKey === articleKey) return true;
+    return task.type === 'launch' && String(task.entityLabel || '').trim().toLowerCase() === titleKey;
+  }).length;
+}
+
+function launchCurrentOwner(item) {
+  if (item?.owner) return item.owner;
+  const sku = item?.articleKey ? getSku(item.articleKey) : null;
+  return ownerName(sku) || '';
+}
+
+function launchCurrentPhase(item) {
+  if (item?.phase) return item.phase;
+  const owner = launchCurrentOwner(item);
+  const statusRaw = String(item?.status || '').toLowerCase();
+  if (!owner) return 'owner';
+  if (/производ|контракт|поставка|сырье|жд/.test(statusRaw)) return 'supply';
+  if (/карточ|контент|дизайн|презент|маркет/.test(statusRaw)) return 'content';
+  if (/цен|марж|эконом/.test(statusRaw)) return 'economy';
+  if (/запуск|live|продаж|готов/.test(statusRaw)) return 'scale';
+  if (!String(item?.marketplaces || '').trim()) return 'content';
+  return 'supply';
+}
+
+function launchBlockers(item) {
+  const blockers = Array.isArray(item?.blockers) ? item.blockers.filter(Boolean) : [];
+  if (!launchCurrentOwner(item)) blockers.push('не назначен owner');
+  if (!String(item?.articleKey || '').trim()) blockers.push('нет связки с реестром SKU');
+  if (!String(item?.marketplaces || '').trim()) blockers.push('не указаны площадки');
+  if (!Array.isArray(item?.ganttMonths) || !item.ganttMonths.length) blockers.push('не заполнен gantt');
+  return [...new Set(blockers)];
+}
+
+function normalizeLaunchItem(item = {}, options = {}) {
+  const monthlyRevenuePlan = Array.isArray(item.monthlyRevenuePlan) ? item.monthlyRevenuePlan : [];
+  const monthlyLaunchPlan = Array.isArray(item.monthlyLaunchPlan) ? item.monthlyLaunchPlan : [];
+  const plannedRevenue = numberOrZero(item.plannedRevenue ?? item.yearlyPlanValue ?? launchPlanSum(monthlyLaunchPlan));
+  const owner = launchCurrentOwner(item);
+  const phase = launchCurrentPhase(item);
+  const linkedTasks = launchLinkedTasks(item, options);
   return {
     id: item.id || stableId('launch', item.articleKey || item.name || item.title || ''),
     articleKey: item.articleKey || '',
-    name: item.name || item.title || 'РќРѕРІРёРЅРєР°',
-    reportGroup: item.reportGroup || item.segment || 'РџСЂРѕРґСѓРєС‚',
-    subCategory: item.subCategory || item.category || 'вЂ”',
-    launchMonth: item.launchMonth || state.dashboard?.dataFreshness?.launchPlanHorizon || 'РўРµРєСѓС‰РёР№ С„РѕРєСѓСЃ',
-    status: item.status || 'РЎС‚Р°С‚СѓСЃ РЅРµ СѓРєР°Р·Р°РЅ',
-    phase: item.phase || 'content',
-    owner: item.owner || '',
+    article: item.article || '',
+    name: item.name || item.title || 'Новинка',
+    reportGroup: item.reportGroup || item.segment || 'Продукт',
+    tag: item.tag || 'без тега',
+    subCategory: item.subCategory || item.category || '—',
+    category: item.category || item.subCategory || '—',
+    characteristic: item.characteristic || '',
+    marketplaces: item.marketplaces || '',
+    launchMonth: normalizeLaunchMonthLabel(item.launchMonth || state.dashboard?.dataFreshness?.launchPlanHorizon || 'Текущий фокус'),
+    launchDateKey: launchMonthDateKey(item.launchMonth || state.dashboard?.dataFreshness?.launchPlanHorizon || ''),
+    status: item.status || 'Статус не указан',
+    phase,
+    owner,
     production: item.production || '',
-    plannedRevenue: numberOrZero(item.plannedRevenue),
+    plannedRevenue,
     targetCost: numberOrZero(item.targetCost),
-    externalTraffic: item.externalTraffic || 'Р±РµР· РІРЅРµС€РЅРµРіРѕ С‚СЂР°С„РёРєР°',
-    activeTasks: numberOrZero(item.activeTasks),
-    blockers: Array.isArray(item.blockers) ? item.blockers.filter(Boolean) : []
+    grossMarginPct: item.grossMarginPct === null || item.grossMarginPct === undefined ? null : Number(item.grossMarginPct),
+    grossMarginRub: numberOrZero(item.grossMarginRub),
+    externalTraffic: item.externalTraffic || 'без внешнего трафика',
+    articleMatched: Boolean(item.articleKey),
+    ganttMonths: Array.isArray(item.ganttMonths) ? item.ganttMonths : [],
+    monthlyRevenuePlan,
+    monthlyLaunchPlan,
+    yearlyPlanValue: numberOrZero(item.yearlyPlanValue),
+    registryStatus: item.registryStatus || '',
+    segment: item.segment || '',
+    sourceRow: item.sourceRow || '',
+    activeTasks: options.skipTaskLookup ? numberOrZero(item.activeTasks) : linkedTasks.filter(isTaskActive).length,
+    blockers: launchBlockers(item),
+    sourceFile: item.sourceFile || ''
   };
 }
 
-function buildLaunchItemsFromSkus() {
+function buildLaunchItemsFromSkus(options = {}) {
   return state.skus
-    .filter((sku) => String(sku?.segment || '').toUpperCase() === 'GROWTH' || String(sku?.status || '').toLowerCase().includes('РЅРѕРІ'))
+    .filter((sku) => String(sku?.segment || '').toUpperCase() === 'GROWTH' || String(sku?.status || '').toLowerCase().includes('нов'))
     .map((sku) => {
+      const safeOptions = { ...options, skipTaskLookup: true };
       const phase = deriveLaunchPhase(sku);
       const blockers = [];
-      if (!ownerName(sku)) blockers.push('РЅРµ РЅР°Р·РЅР°С‡РµРЅ owner');
-      if (totalSkuStock(sku) <= 0) blockers.push('РЅРµС‚ РѕСЃС‚Р°С‚РєР°');
-      if (!sku?.flags?.hasExternalTraffic) blockers.push('РЅРµС‚ РІРЅРµС€РЅРµРіРѕ С‚СЂР°С„РёРєР°');
-      if (sku?.flags?.negativeMargin) blockers.push('РјР°СЂР¶Р° РІ СЂРёСЃРєРµ');
-      if (sku?.flags?.highReturn) blockers.push('РІС‹СЃРѕРєРёРµ РІРѕР·РІСЂР°С‚С‹');
+      if (!ownerName(sku)) blockers.push('не назначен owner');
+      if (totalSkuStock(sku) <= 0) blockers.push('нет остатка');
+      if (!sku?.flags?.hasExternalTraffic) blockers.push('нет внешнего трафика');
+      if (sku?.flags?.negativeMargin) blockers.push('маржа в риске');
+      if (sku?.flags?.highReturn) blockers.push('высокие возвраты');
+      const title = sku.name || sku.article || sku.articleKey;
       return normalizeLaunchItem({
         articleKey: sku.articleKey,
-        name: sku.name || sku.article || sku.articleKey,
+        article: sku.article,
+        name: title,
         reportGroup: sku.segment || 'GROWTH',
-        subCategory: sku.category || 'вЂ”',
-        launchMonth: state.dashboard?.dataFreshness?.launchPlanHorizon || 'РўРµРєСѓС‰РёР№ С„РѕРєСѓСЃ',
+        tag: sku?.flags?.hasExternalTraffic ? 'трафик' : 'база',
+        subCategory: sku.category || '—',
+        category: sku.category || '—',
+        launchMonth: state.dashboard?.dataFreshness?.launchPlanHorizon || 'Текущий фокус',
         status: deriveLaunchStatus(sku),
         phase,
         owner: ownerName(sku),
-        production: totalSkuStock(sku) > 0 ? `РћСЃС‚Р°С‚РѕРє ${fmt.int(totalSkuStock(sku))}` : 'Р‘РµР· РѕСЃС‚Р°С‚РєР°',
+        production: totalSkuStock(sku) > 0 ? `Остаток ${fmt.int(totalSkuStock(sku))}` : 'Без остатка',
         plannedRevenue: monthRevenue(sku),
         targetCost: 0,
         externalTraffic: externalTrafficLabel(sku),
-        activeTasks: getSkuControlTasks(sku.articleKey).filter(isTaskActive).length,
+        activeTasks: launchManualActiveTaskCount(sku.articleKey, title),
         blockers
-      });
+      }, safeOptions);
     })
-    .sort((a, b) => b.activeTasks - a.activeTasks || b.plannedRevenue - a.plannedRevenue || a.name.localeCompare(b.name, 'ru'));
+    .sort((a, b) => launchMonthSortValue(a.launchMonth) - launchMonthSortValue(b.launchMonth) || b.activeTasks - a.activeTasks || b.plannedRevenue - a.plannedRevenue || a.name.localeCompare(b.name, 'ru'));
 }
 
-function getLaunchItems() {
-  const source = Array.isArray(state.launches) && state.launches.length ? state.launches.map(normalizeLaunchItem) : buildLaunchItemsFromSkus();
-  return source.slice(0, 24);
+function getLaunchItems(options = {}) {
+  const source = Array.isArray(state.launches) && state.launches.length
+    ? state.launches.map((item) => normalizeLaunchItem(item, options))
+    : buildLaunchItemsFromSkus(options);
+  return source.sort((a, b) => launchMonthSortValue(a.launchMonth) - launchMonthSortValue(b.launchMonth) || a.name.localeCompare(b.name, 'ru'));
 }
 
 function getLaunchFilters() {
   state.launchFilters = state.launchFilters || {};
   state.launchFilters.month = state.launchFilters.month || 'all';
+  state.launchFilters.search = state.launchFilters.search || '';
+  state.launchFilters.group = state.launchFilters.group || 'all';
+  state.launchFilters.tag = state.launchFilters.tag || 'all';
+  state.launchFilters.status = state.launchFilters.status || 'all';
+  state.launchFilters.phase = state.launchFilters.phase || 'all';
   return state.launchFilters;
-}
-
-function normalizeLaunchMonthLabel(value) {
-  const label = String(value || '').trim();
-  return label || 'Р‘РµР· РјРµСЃСЏС†Р°';
-}
-
-function launchMonthSortValue(label) {
-  const normalized = normalizeLaunchMonthLabel(label).toLowerCase().replace(/\s+/g, ' ').trim();
-  if (!normalized || normalized === 'Р±РµР· РјРµСЃСЏС†Р°') return Number.MAX_SAFE_INTEGER - 1;
-  if (normalized.includes('С‚РµРєСѓС‰РёР№') || normalized.includes('С„РѕРєСѓСЃ')) return Number.MAX_SAFE_INTEGER - 2;
-  const monthMap = {
-    'СЏРЅРІР°СЂСЊ': 1,
-    'С„РµРІСЂР°Р»СЊ': 2,
-    'РјР°СЂС‚': 3,
-    'Р°РїСЂРµР»СЊ': 4,
-    'РјР°Р№': 5,
-    'РёСЋРЅСЊ': 6,
-    'РёСЋР»СЊ': 7,
-    'Р°РІРіСѓСЃС‚': 8,
-    'СЃРµРЅС‚СЏР±СЂСЊ': 9,
-    'РѕРєС‚СЏР±СЂСЊ': 10,
-    'РЅРѕСЏР±СЂСЊ': 11,
-    'РґРµРєР°Р±СЂСЊ': 12
-  };
-  const match = normalized.match(/^([Р°-СЏС‘]+)\s+(\d{4})$/i);
-  if (!match) return Number.MAX_SAFE_INTEGER;
-  const month = monthMap[match[1]];
-  const year = Number(match[2]);
-  if (!month || !Number.isFinite(year)) return Number.MAX_SAFE_INTEGER;
-  return year * 100 + month;
 }
 
 function getLaunchMonthOptions(items) {
@@ -372,16 +461,115 @@ function getLaunchMonthOptions(items) {
     .map(([label, count]) => ({ label, count }));
 }
 
+function launchUniqueOptions(items, getter) {
+  return [...new Set(items.map(getter).filter(Boolean))]
+    .sort((left, right) => String(left).localeCompare(String(right), 'ru'));
+}
+
+function launchDaysUntil(item) {
+  if (!item?.launchDateKey) return Number.POSITIVE_INFINITY;
+  return diffFromTodayInDays(item.launchDateKey);
+}
+
+function launchExportRows(items) {
+  return items.map((item) => ({
+    article_key: item.articleKey || '',
+    article: item.article || '',
+    owner: item.owner || '',
+    group: item.reportGroup || '',
+    tag: item.tag || '',
+    launch_month: item.launchMonth || '',
+    status: item.status || '',
+    phase: launchPhaseMeta(item.phase).label,
+    name: item.name || '',
+    sub_category: item.subCategory || '',
+    marketplaces: item.marketplaces || '',
+    characteristic: item.characteristic || '',
+    target_cost: item.targetCost || '',
+    planned_revenue: item.plannedRevenue || '',
+    yearly_plan: item.yearlyPlanValue || '',
+    active_tasks: item.activeTasks || 0,
+    blockers: (item.blockers || []).join(' | '),
+    gantt: (item.ganttMonths || []).map((entry) => `${entry.label} ${entry.year}`).join(', ')
+  }));
+}
+
+function downloadLaunchesHtmlTable(columns, rows, filename) {
+  if (!rows.length) {
+    window.alert('По текущим фильтрам нет строк для выгрузки.');
+    return;
+  }
+  const head = `<tr>${columns.map((column) => `<th>${escapeHtml(column[1])}</th>`).join('')}</tr>`;
+  const body = rows.map((row) => `<tr>${columns.map((column) => `<td>${escapeHtml(row[column[0]])}</td>`).join('')}</tr>`).join('');
+  const html = `<!doctype html><html><head><meta charset="utf-8"></head><body><table border="1">${head}${body}</table></body></html>`;
+  const blob = new Blob(['\uFEFF', html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function downloadLaunchesExcel(items, scope = 'launches') {
+  downloadLaunchesHtmlTable([
+    ['group', 'Группа'],
+    ['tag', 'Тег'],
+    ['launch_month', 'Месяц запуска'],
+    ['status', 'Статус'],
+    ['phase', 'Этап'],
+    ['name', 'Новинка'],
+    ['sub_category', 'Подкатегория'],
+    ['owner', 'Owner'],
+    ['article_key', 'Article key'],
+    ['article', 'Артикул'],
+    ['marketplaces', 'Площадки'],
+    ['characteristic', 'Характеристика'],
+    ['target_cost', 'Целевая себестоимость'],
+    ['planned_revenue', 'План / сумма'],
+    ['yearly_plan', 'План за год'],
+    ['active_tasks', 'Активные задачи'],
+    ['blockers', 'Блокеры'],
+    ['gantt', 'Gantt']
+  ], launchExportRows(items), `${scope}-${todayIso()}.xls`);
+}
+
 function getLaunchViewModel() {
   const items = getLaunchItems();
   const filters = getLaunchFilters();
   const months = getLaunchMonthOptions(items);
-  if (filters.month !== 'all' && !months.some((item) => item.label === filters.month)) {
-    filters.month = 'all';
-  }
-  const filteredItems = filters.month === 'all'
-    ? items
-    : items.filter((item) => normalizeLaunchMonthLabel(item.launchMonth) === filters.month);
+  const groups = launchUniqueOptions(items, (item) => item.reportGroup);
+  const tags = launchUniqueOptions(items, (item) => item.tag);
+  const statuses = launchUniqueOptions(items, (item) => item.status);
+  const phases = ['owner', 'supply', 'content', 'economy', 'scale'];
+  if (filters.month !== 'all' && !months.some((item) => item.label === filters.month)) filters.month = 'all';
+  if (filters.group !== 'all' && !groups.includes(filters.group)) filters.group = 'all';
+  if (filters.tag !== 'all' && !tags.includes(filters.tag)) filters.tag = 'all';
+  if (filters.status !== 'all' && !statuses.includes(filters.status)) filters.status = 'all';
+  if (filters.phase !== 'all' && !phases.includes(filters.phase)) filters.phase = 'all';
+  const search = String(filters.search || '').trim().toLowerCase();
+  const filteredItems = items.filter((item) => {
+    if (filters.month !== 'all' && normalizeLaunchMonthLabel(item.launchMonth) !== filters.month) return false;
+    if (filters.group !== 'all' && item.reportGroup !== filters.group) return false;
+    if (filters.tag !== 'all' && item.tag !== filters.tag) return false;
+    if (filters.status !== 'all' && item.status !== filters.status) return false;
+    if (filters.phase !== 'all' && item.phase !== filters.phase) return false;
+    if (!search) return true;
+    const haystack = [
+      item.name,
+      item.articleKey,
+      item.article,
+      item.reportGroup,
+      item.subCategory,
+      item.characteristic,
+      item.owner,
+      item.status,
+      item.marketplaces
+    ].filter(Boolean).join(' ').toLowerCase();
+    return haystack.includes(search);
+  });
   const sectionMap = new Map();
   filteredItems.forEach((item) => {
     const label = normalizeLaunchMonthLabel(item.launchMonth);
@@ -391,8 +579,20 @@ function getLaunchViewModel() {
   });
   const sections = [...sectionMap.entries()]
     .sort((left, right) => launchMonthSortValue(left[0]) - launchMonthSortValue(right[0]) || left[0].localeCompare(right[0], 'ru'))
-    .map(([label, monthItems]) => ({ label, items: monthItems }));
-  return { items, filters, months, filteredItems, sections };
+    .map(([label, monthItems]) => ({ label, items: monthItems.sort((a, b) => a.name.localeCompare(b.name, 'ru')) }));
+  const ganttColumns = [...new Set(filteredItems
+    .flatMap((item) => item.ganttMonths || [])
+    .map((entry) => `${entry.label} ${entry.year}`)
+    .filter(Boolean))]
+    .sort((left, right) => launchMonthSortValue(left) - launchMonthSortValue(right) || left.localeCompare(right, 'ru'))
+    .slice(0, 12);
+  const upcomingItems = filteredItems
+    .filter((item) => {
+      const days = launchDaysUntil(item);
+      return Number.isFinite(days) && days >= -10 && days <= 45;
+    })
+    .sort((a, b) => launchMonthSortValue(a.launchMonth) - launchMonthSortValue(b.launchMonth) || a.name.localeCompare(b.name, 'ru'));
+  return { items, filters, months, groups, tags, statuses, phases, filteredItems, sections, ganttColumns, upcomingItems };
 }
 
 function renderLaunchMonthFilters(model) {
@@ -400,24 +600,74 @@ function renderLaunchMonthFilters(model) {
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
         <div>
-          <h3>Р¤РёР»СЊС‚СЂ РїРѕ РјРµСЃСЏС†Р°Рј</h3>
-          <p class="small muted">РљСЃРµРЅРёСЏ РјРѕР¶РµС‚ РѕС‚РєСЂС‹С‚СЊ РєРѕРЅРєСЂРµС‚РЅС‹Р№ РјРµСЃСЏС† Р·Р°РїСѓСЃРєР° РёР»Рё РґРµСЂР¶Р°С‚СЊ РІСЃСЋ РєР°СЂС‚Сѓ РЅРѕРІРёРЅРѕРє СЃСЂР°Р·Сѓ.</p>
+          <h3>Фильтры продукта</h3>
+          <p class="small muted">Срез можно быстро сузить по месяцу, группе, тегу, статусу и этапу запуска. Выгрузка в Excel берёт уже отфильтрованный список.</p>
         </div>
-        <div class="badge-stack">${badge(`${fmt.int(model.months.length)} РјРµСЃ.`, model.months.length ? 'info' : '')}${model.filters.month !== 'all' ? badge(model.filters.month, 'warn') : badge('Р’СЃРµ РјРµСЃСЏС†С‹', 'ok')}</div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(model.filteredItems.length)} строк`, model.filteredItems.length ? 'info' : 'warn')}
+          ${model.filters.month !== 'all' ? badge(model.filters.month, 'warn') : badge('Все месяцы', 'ok')}
+        </div>
       </div>
-      <div class="quick-actions">
-        <button class="quick-chip ${model.filters.month === 'all' ? 'active' : ''}" type="button" data-launch-month="all">Р’СЃРµ РјРµСЃСЏС†С‹ В· ${fmt.int(model.items.length)}</button>
-        ${model.months.map((item) => `<button class="quick-chip ${model.filters.month === item.label ? 'active' : ''}" type="button" data-launch-month="${escapeHtml(item.label)}">${escapeHtml(item.label)} В· ${fmt.int(item.count)}</button>`).join('')}
+      <div class="control-filters" style="margin-top:12px">
+        <input id="launchSearchInput" placeholder="Поиск по новинке, SKU, owner, характеристике…" value="${escapeHtml(model.filters.search)}">
+        <select id="launchMonthFilter">
+          <option value="all">Все месяцы</option>
+          ${model.months.map((item) => `<option value="${escapeHtml(item.label)}" ${model.filters.month === item.label ? 'selected' : ''}>${escapeHtml(item.label)} · ${fmt.int(item.count)}</option>`).join('')}
+        </select>
+        <select id="launchGroupFilter">
+          <option value="all">Все группы</option>
+          ${model.groups.map((item) => `<option value="${escapeHtml(item)}" ${model.filters.group === item ? 'selected' : ''}>${escapeHtml(item)}</option>`).join('')}
+        </select>
+        <select id="launchTagFilter">
+          <option value="all">Все теги</option>
+          ${model.tags.map((item) => `<option value="${escapeHtml(item)}" ${model.filters.tag === item ? 'selected' : ''}>${escapeHtml(item)}</option>`).join('')}
+        </select>
+        <select id="launchStatusFilter">
+          <option value="all">Все статусы</option>
+          ${model.statuses.map((item) => `<option value="${escapeHtml(item)}" ${model.filters.status === item ? 'selected' : ''}>${escapeHtml(item)}</option>`).join('')}
+        </select>
+        <select id="launchPhaseFilter">
+          <option value="all">Все этапы</option>
+          ${model.phases.map((item) => `<option value="${item}" ${model.filters.phase === item ? 'selected' : ''}>${escapeHtml(launchPhaseMeta(item).label)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="quick-actions" style="margin-top:12px">
+        <button class="quick-chip" type="button" data-launch-export="product">Выгрузить Excel</button>
+        <button class="quick-chip" type="button" data-launch-export="launch-control">Excel для запуска</button>
       </div>
     </div>
   `;
 }
 
-function bindLaunchMonthFilters(root) {
-  root.querySelectorAll('[data-launch-month]').forEach((button) => {
+function bindLaunchMonthFilters(root, model) {
+  root.querySelector('#launchSearchInput')?.addEventListener('input', (event) => {
+    getLaunchFilters().search = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#launchMonthFilter')?.addEventListener('change', (event) => {
+    getLaunchFilters().month = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#launchGroupFilter')?.addEventListener('change', (event) => {
+    getLaunchFilters().group = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#launchTagFilter')?.addEventListener('change', (event) => {
+    getLaunchFilters().tag = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#launchStatusFilter')?.addEventListener('change', (event) => {
+    getLaunchFilters().status = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#launchPhaseFilter')?.addEventListener('change', (event) => {
+    getLaunchFilters().phase = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelectorAll('[data-launch-export]').forEach((button) => {
     button.addEventListener('click', () => {
-      getLaunchFilters().month = button.dataset.launchMonth || 'all';
-      rerenderCurrentView();
+      const scope = button.getAttribute('data-launch-export') || 'launches';
+      downloadLaunchesExcel(model.filteredItems, scope);
     });
   });
 }
@@ -609,6 +859,8 @@ function openProductLeaderboardForSku(articleKey = '') {
   filters.search = articleKey || '';
   filters.owner = 'all';
   filters.signal = 'all';
+  filters.category = 'all';
+  filters.snapshot = 'latest';
   if (!filters.sort) filters.sort = 'buys';
   setView('product-leaderboard');
 }
@@ -619,9 +871,105 @@ function getProductLeaderboardFilters() {
   state.productLeaderboardFilters = state.productLeaderboardFilters || {};
   state.productLeaderboardFilters.search = state.productLeaderboardFilters.search || '';
   state.productLeaderboardFilters.owner = state.productLeaderboardFilters.owner || 'all';
+  state.productLeaderboardFilters.category = state.productLeaderboardFilters.category || 'all';
   state.productLeaderboardFilters.signal = state.productLeaderboardFilters.signal || 'all';
   state.productLeaderboardFilters.sort = state.productLeaderboardFilters.sort || 'buys';
+  state.productLeaderboardFilters.snapshot = state.productLeaderboardFilters.snapshot || 'latest';
   return state.productLeaderboardFilters;
+}
+
+function productLeaderboardHistoryPayloads() {
+  const current = normalizeProductLeaderboardPayload(state.productLeaderboard || {});
+  const history = Array.isArray(state.productLeaderboardHistory)
+    ? state.productLeaderboardHistory.map((item) => normalizeProductLeaderboardPayload(item || {}))
+    : [];
+  const seen = new Set();
+  return [current, ...history]
+    .filter((item) => item.generatedAt || item.weekLabel || (item.items || []).length)
+    .filter((item) => {
+      const key = String(item.generatedAt || item.weekLabel || '').trim();
+      if (!key) return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((left, right) => parseFreshStamp(right.generatedAt || right.weekLabel) - parseFreshStamp(left.generatedAt || left.weekLabel));
+}
+
+function currentProductLeaderboardPayload() {
+  const filters = getProductLeaderboardFilters();
+  const snapshots = productLeaderboardHistoryPayloads();
+  if (filters.snapshot !== 'latest') {
+    const matched = snapshots.find((item) => item.generatedAt === filters.snapshot);
+    if (matched) return matched;
+    filters.snapshot = 'latest';
+  }
+  return snapshots[0] || normalizeProductLeaderboardPayload(state.productLeaderboard || {});
+}
+
+function productLeaderboardSnapshotLabel(payload) {
+  const weekLabel = payload.weekLabel || payload.sourceSheetName || 'Срез';
+  const generatedAt = payload.generatedAt ? fmt.date(payload.generatedAt) : 'без даты';
+  return `${weekLabel} · выгружено ${generatedAt}`;
+}
+
+function productLeaderboardExportRows(items, payload) {
+  return items.map((item) => ({
+    week_label: payload.weekLabel || payload.sourceSheetName || '',
+    generated_at: payload.generatedAt || '',
+    article_key: item.articleKey || '',
+    article: item.article || '',
+    name: item.name || '',
+    owner: item.owner || '',
+    category: item.category || '',
+    traffic: item.traffic || '',
+    signal: productLeaderboardSignalMeta(item.signal).label,
+    reach: item.reach,
+    clicks: item.clicks,
+    carts: item.carts,
+    orders: item.orders,
+    buys: item.buys,
+    ctr_pct: item.ctrPct === null ? '' : item.ctrPct,
+    cart_rate_pct: item.cartRatePct === null ? '' : item.cartRatePct,
+    buyout_pct: item.buyoutPct === null ? '' : item.buyoutPct,
+    revenue: item.revenue,
+    income: item.income,
+    romi_pct: item.romiPct === null ? '' : item.romiPct,
+    drr_pct: item.drrPct === null ? '' : item.drrPct,
+    diagnostics: item.diagnostics?.summary || ''
+  }));
+}
+
+function downloadProductLeaderboardExcel(payload, items) {
+  const rows = productLeaderboardExportRows(items, payload);
+  if (!rows.length) {
+    window.alert('По текущим фильтрам нет строк для выгрузки.');
+    return;
+  }
+  downloadLaunchesHtmlTable([
+    ['week_label', 'Неделя'],
+    ['generated_at', 'Выгружено'],
+    ['article_key', 'Article key'],
+    ['article', 'Артикул'],
+    ['name', 'Товар'],
+    ['owner', 'Owner'],
+    ['category', 'Категория'],
+    ['traffic', 'Трафик'],
+    ['signal', 'Сигнал'],
+    ['reach', 'Охваты'],
+    ['clicks', 'Клики'],
+    ['carts', 'Корзины'],
+    ['orders', 'Заказы'],
+    ['buys', 'Выкупы'],
+    ['ctr_pct', 'CTR'],
+    ['cart_rate_pct', 'CR в корзину'],
+    ['buyout_pct', 'Выкуп'],
+    ['revenue', 'Выручка'],
+    ['income', 'Доход'],
+    ['romi_pct', 'ROMI'],
+    ['drr_pct', 'ДРР'],
+    ['diagnostics', 'Комментарий']
+  ], rows, `product-leaderboard-${todayIso()}.xls`);
 }
 
 function getFilteredProductLeaderboardItems(payload) {
@@ -629,6 +977,7 @@ function getFilteredProductLeaderboardItems(payload) {
   const search = String(filters.search || '').trim().toLowerCase();
   const filtered = (payload.items || []).filter((item) => {
     if (filters.owner !== 'all' && item.owner !== filters.owner) return false;
+    if (filters.category !== 'all' && item.category !== filters.category) return false;
     if (filters.signal !== 'all' && item.signal !== filters.signal) return false;
     if (!search) return true;
     const haystack = [
@@ -647,6 +996,7 @@ function getFilteredProductLeaderboardItems(payload) {
     if (sortKey === 'romiPct') return item.romiPct ?? Number.NEGATIVE_INFINITY;
     if (sortKey === 'ctrPct') return item.ctrPct ?? Number.NEGATIVE_INFINITY;
     if (sortKey === 'drrPct') return item.drrPct ?? Number.POSITIVE_INFINITY;
+    if (sortKey === 'buyoutPct') return item.buyoutPct ?? Number.NEGATIVE_INFINITY;
     return numberOrZero(item[sortKey]);
   };
 
@@ -662,18 +1012,39 @@ function getFilteredProductLeaderboardItems(payload) {
 
 function renderProductLeaderboard() {
   const root = document.getElementById('view-product-leaderboard');
-  const payload = normalizeProductLeaderboardPayload(state.productLeaderboard || {});
-  state.productLeaderboard = payload;
+  state.productLeaderboard = normalizeProductLeaderboardPayload(state.productLeaderboard || {});
+  const payload = currentProductLeaderboardPayload();
   const filters = getProductLeaderboardFilters();
   const filteredItems = getFilteredProductLeaderboardItems(payload);
   const filteredSummary = productLeaderboardSummaryFromItems(filteredItems);
   const ownerCoverage = filteredSummary.skuCount > 0 ? filteredSummary.ownerCount / filteredSummary.skuCount : 0;
+  const snapshots = productLeaderboardHistoryPayloads();
+  const historyOptions = snapshots.slice(1);
+  const historyCards = snapshots.slice(0, 6).map((snapshot) => {
+    const snapshotSummary = productLeaderboardSummaryFromItems(snapshot.items || []);
+    return `
+      <div class="list-item">
+        <div class="head">
+          <div>
+            <strong>${escapeHtml(productLeaderboardSnapshotLabel(snapshot))}</strong>
+            <div class="muted small">${escapeHtml(snapshot.sourceSheetName || 'weekly КЗ-лист')} · ${fmt.int(snapshotSummary.skuCount)} SKU</div>
+          </div>
+          <div class="badge-stack">
+            ${badge(`Охваты ${fmt.int(snapshotSummary.reach)}`, 'info')}
+            ${badge(`Клики ${fmt.int(snapshotSummary.clicks)}`, 'info')}
+            ${badge(`Корзины ${fmt.int(snapshotSummary.carts)}`, 'info')}
+          </div>
+        </div>
+        <div class="muted small" style="margin-top:8px">Выручка ${fmt.money(snapshotSummary.revenue)} · ROMI ${fmt.pct(snapshotSummary.romiPct)} · ДРР ${fmt.pct(snapshotSummary.drrPct)}</div>
+      </div>
+    `;
+  }).join('');
 
   root.innerHTML = `
     <div class="section-title">
       <div>
         <h2>Продуктовый лидерборд</h2>
-        <p>Недельный КЗ-срез по нашим артикулам: сверху общая воронка, ниже SKU с ROMI, ДРР, CTR и выкупами по каждому продукту.</p>
+        <p>Единый недельный продуктовый срез: сверху общая воронка и история выгрузок, ниже SKU с охватами, кликами, корзинами, экономикой и рисками.</p>
       </div>
       <div class="badge-stack">
         ${badge(payload.weekLabel || 'недельный срез', 'info')}
@@ -684,9 +1055,9 @@ function renderProductLeaderboard() {
     </div>
 
     <div class="kpi-strip">
-      <div class="mini-kpi"><span>Охват</span><strong>${fmt.int(filteredSummary.reach)}</strong><span>общий верх воронки</span></div>
+      <div class="mini-kpi"><span>Охваты</span><strong>${fmt.int(filteredSummary.reach)}</strong><span>верх воронки</span></div>
       <div class="mini-kpi"><span>Клики</span><strong>${fmt.int(filteredSummary.clicks)}</strong><span>CTR ${fmt.pct(filteredSummary.ctrPct)}</span></div>
-      <div class="mini-kpi"><span>Корзина</span><strong>${fmt.int(filteredSummary.carts)}</strong><span>из кликов ${fmt.pct(filteredSummary.cartRatePct)}</span></div>
+      <div class="mini-kpi"><span>Корзины</span><strong>${fmt.int(filteredSummary.carts)}</strong><span>из кликов ${fmt.pct(filteredSummary.cartRatePct)}</span></div>
       <div class="mini-kpi"><span>Заказы</span><strong>${fmt.int(filteredSummary.orders)}</strong><span>из кликов ${fmt.pct(filteredSummary.orderRatePct)}</span></div>
       <div class="mini-kpi"><span>Выкупы</span><strong>${fmt.int(filteredSummary.buys)}</strong><span>buyout ${fmt.pct(filteredSummary.buyoutPct)}</span></div>
       <div class="mini-kpi"><span>Выручка / доход</span><strong>${fmt.money(filteredSummary.revenue)}</strong><span>${fmt.money(filteredSummary.income)}</span></div>
@@ -718,21 +1089,35 @@ function renderProductLeaderboard() {
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
         <div>
-          <h3>Фильтры</h3>
-          <p class="small muted">Можно быстро отфильтровать по owner, сигналу и метрике сортировки, чтобы weekly не превращался в длинный ручной разбор.</p>
+          <h3>Фильтры и выгрузка</h3>
+          <p class="small muted">Фильтруем по owner, категории, сигналу и нужному срезу. Выгрузка в Excel берёт уже отфильтрованный список.</p>
+        </div>
+        <div class="quick-actions">
+          <button class="quick-chip" type="button" data-product-leaderboard-export>Выгрузить Excel</button>
         </div>
       </div>
       <div class="control-filters" style="margin-top:12px">
         <input id="productLeaderboardSearch" placeholder="Поиск по SKU, названию, owner, категории…" value="${escapeHtml(filters.search)}">
+        <select id="productLeaderboardSnapshot">
+          <option value="latest" ${filters.snapshot === 'latest' ? 'selected' : ''}>Текущий срез</option>
+          ${historyOptions.map((snapshot) => `<option value="${escapeHtml(snapshot.generatedAt)}" ${filters.snapshot === snapshot.generatedAt ? 'selected' : ''}>${escapeHtml(productLeaderboardSnapshotLabel(snapshot))}</option>`).join('')}
+        </select>
         <select id="productLeaderboardOwner">
           <option value="all" ${filters.owner === 'all' ? 'selected' : ''}>Все owner</option>
           ${payload.owners.map((owner) => `<option value="${escapeHtml(owner)}" ${filters.owner === owner ? 'selected' : ''}>${escapeHtml(owner)}</option>`).join('')}
+        </select>
+        <select id="productLeaderboardCategory">
+          <option value="all" ${filters.category === 'all' ? 'selected' : ''}>Все категории</option>
+          ${payload.categories.map((category) => `<option value="${escapeHtml(category)}" ${filters.category === category ? 'selected' : ''}>${escapeHtml(category)}</option>`).join('')}
         </select>
         <select id="productLeaderboardSignal">
           <option value="all" ${filters.signal === 'all' ? 'selected' : ''}>Все сигналы</option>
           ${['leader', 'steady', 'risk', 'no_owner', 'no_sales'].map((signal) => `<option value="${signal}" ${filters.signal === signal ? 'selected' : ''}>${escapeHtml(productLeaderboardSignalMeta(signal).label)}</option>`).join('')}
         </select>
         <select id="productLeaderboardSort">
+          <option value="reach" ${filters.sort === 'reach' ? 'selected' : ''}>Сортировка: охваты</option>
+          <option value="clicks" ${filters.sort === 'clicks' ? 'selected' : ''}>Сортировка: клики</option>
+          <option value="carts" ${filters.sort === 'carts' ? 'selected' : ''}>Сортировка: корзины</option>
           <option value="buys" ${filters.sort === 'buys' ? 'selected' : ''}>Сортировка: выкупы</option>
           <option value="orders" ${filters.sort === 'orders' ? 'selected' : ''}>Сортировка: заказы</option>
           <option value="revenue" ${filters.sort === 'revenue' ? 'selected' : ''}>Сортировка: выручка</option>
@@ -740,7 +1125,7 @@ function renderProductLeaderboard() {
           <option value="romiPct" ${filters.sort === 'romiPct' ? 'selected' : ''}>Сортировка: ROMI</option>
           <option value="ctrPct" ${filters.sort === 'ctrPct' ? 'selected' : ''}>Сортировка: CTR</option>
           <option value="drrPct" ${filters.sort === 'drrPct' ? 'selected' : ''}>Сортировка: ДРР</option>
-          <option value="reach" ${filters.sort === 'reach' ? 'selected' : ''}>Сортировка: охват</option>
+          <option value="buyoutPct" ${filters.sort === 'buyoutPct' ? 'selected' : ''}>Сортировка: выкуп</option>
         </select>
       </div>
     </div>
@@ -748,8 +1133,19 @@ function renderProductLeaderboard() {
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
         <div>
+          <h3>История логов</h3>
+          <p class="small muted">Здесь остаются прошлые выгрузки и пересборки недели. Даже если источник не сменился, видно когда обновляли данные и как выглядел верх воронки.</p>
+        </div>
+        ${badge(`${fmt.int(snapshots.length)} логов`, snapshots.length ? 'info' : 'ok')}
+      </div>
+      <div class="list" style="margin-top:12px">${historyCards || '<div class="empty">История выгрузок пока не накопилась.</div>'}</div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
           <h3>SKU и воронка</h3>
-          <p class="small muted">В одной строке видно товар, owner, краткую воронку и экономику.</p>
+          <p class="small muted">Охваты, клики и корзины вынесены в отдельные столбцы сверху, чтобы продукт видел рабочую воронку без открытия каждой карточки.</p>
         </div>
         <div class="badge-stack">
           ${badge(`${fmt.int(filteredItems.filter((item) => item.signal === 'leader').length)} КЗ работает`, filteredItems.some((item) => item.signal === 'leader') ? 'ok' : '')}
@@ -762,13 +1158,17 @@ function renderProductLeaderboard() {
             <tr>
               <th>SKU / товар</th>
               <th>Owner</th>
-              <th>Воронка</th>
+              <th>Охваты</th>
+              <th>Клики</th>
+              <th>Корзины</th>
+              <th>Заказы</th>
+              <th>Выкупы</th>
               <th>CTR</th>
-              <th>Конверсия</th>
-              <th>Выручка</th>
-              <th>Доход</th>
+              <th>CR</th>
               <th>ROMI</th>
               <th>ДРР</th>
+              <th>Выручка</th>
+              <th>Доход</th>
             </tr>
           </thead>
           <tbody>
@@ -792,20 +1192,20 @@ function renderProductLeaderboard() {
                     <div>${item.owner ? badge(item.owner, 'info') : badge('Без owner', 'warn')}</div>
                     <div class="muted small" style="margin-top:8px">${item.article ? escapeHtml(item.article) : '—'}</div>
                   </td>
-                  <td>
-                    <div class="muted small">Охват ${fmt.int(item.reach)} · Клики ${fmt.int(item.clicks)}</div>
-                    <div class="muted small">Корзина ${fmt.int(item.carts)} · Заказы ${fmt.int(item.orders)} · Выкупы ${fmt.int(item.buys)}</div>
-                    <div class="muted small">ERview ${fmt.pct(item.erviewPct)} · Buyout ${fmt.pct(item.buyoutPct)}</div>
-                  </td>
+                  <td>${fmt.int(item.reach)}</td>
+                  <td>${fmt.int(item.clicks)}</td>
+                  <td>${fmt.int(item.carts)}</td>
+                  <td>${fmt.int(item.orders)}</td>
+                  <td>${fmt.int(item.buys)}</td>
                   <td>${fmt.pct(item.ctrPct)}</td>
                   <td>${fmt.pct(item.conversionPct)}</td>
-                  <td>${fmt.money(item.revenue)}</td>
-                  <td>${fmt.money(item.income)}</td>
                   <td>${fmt.pct(item.romiPct)}</td>
                   <td>${fmt.pct(item.drrPct)}</td>
+                  <td>${fmt.money(item.revenue)}</td>
+                  <td>${fmt.money(item.income)}</td>
                 </tr>
               `;
-            }).join('') || '<tr><td colspan="9"><div class="empty">По текущим фильтрам пока нет строк.</div></td></tr>'}
+            }).join('') || '<tr><td colspan="13"><div class="empty">По текущим фильтрам пока нет строк.</div></td></tr>'}
           </tbody>
         </table>
       </div>
@@ -841,8 +1241,16 @@ function renderProductLeaderboard() {
     getProductLeaderboardFilters().search = event.target.value;
     rerenderCurrentView();
   });
+  root.querySelector('#productLeaderboardSnapshot')?.addEventListener('change', (event) => {
+    getProductLeaderboardFilters().snapshot = event.target.value;
+    rerenderCurrentView();
+  });
   root.querySelector('#productLeaderboardOwner')?.addEventListener('change', (event) => {
     getProductLeaderboardFilters().owner = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#productLeaderboardCategory')?.addEventListener('change', (event) => {
+    getProductLeaderboardFilters().category = event.target.value;
     rerenderCurrentView();
   });
   root.querySelector('#productLeaderboardSignal')?.addEventListener('change', (event) => {
@@ -853,22 +1261,46 @@ function renderProductLeaderboard() {
     getProductLeaderboardFilters().sort = event.target.value;
     rerenderCurrentView();
   });
+  root.querySelector('[data-product-leaderboard-export]')?.addEventListener('click', () => {
+    downloadProductLeaderboardExcel(payload, filteredItems);
+  });
 }
 
 function renderLaunchItem(item) {
+  const phaseMeta = launchPhaseMeta(item.phase);
+  const daysUntil = launchDaysUntil(item);
+  const timingLabel = !Number.isFinite(daysUntil)
+    ? 'без точной даты'
+    : daysUntil < 0
+      ? `в запуске ${fmt.int(Math.abs(daysUntil))} дн.`
+      : `до запуска ${fmt.int(daysUntil)} дн.`;
+  const ganttPreview = (item.ganttMonths || [])
+    .slice(0, 4)
+    .map((entry) => `${entry.label} ${entry.year}`)
+    .join(' · ');
   return `
     <div class="list-item">
       <div class="head">
         <div>
-          <strong>${item.articleKey ? linkToSku(item.articleKey, item.name || 'РќРѕРІРёРЅРєР°') : escapeHtml(item.name || 'РќРѕРІРёРЅРєР°')}</strong>
-          <div class="muted small">${escapeHtml(item.reportGroup || 'вЂ”')} В· ${escapeHtml(item.subCategory || 'вЂ”')}</div>
+          <strong>${item.articleKey ? linkToSku(item.articleKey, item.name || 'Новинка') : escapeHtml(item.name || 'Новинка')}</strong>
+          <div class="muted small">${escapeHtml(item.reportGroup || '—')} · ${escapeHtml(item.subCategory || '—')} · ${escapeHtml(item.launchMonth || 'Без месяца')}</div>
         </div>
-        ${badge(item.launchMonth || 'вЂ”', 'info')}
+        <div class="badge-stack">
+          ${badge(phaseMeta.label, phaseMeta.tone)}
+          ${badge(timingLabel, Number.isFinite(daysUntil) && daysUntil <= 14 ? 'warn' : 'info')}
+        </div>
       </div>
-      <div class="badge-stack">${badge(launchPhaseMeta(item.phase).label, launchPhaseMeta(item.phase).tone)}${item.production ? badge(item.production) : ''}${item.owner ? badge(item.owner, 'info') : badge('Р‘РµР· owner', 'warn')}</div>
-      <div class="muted small" style="margin-top:8px">${escapeHtml(item.status || 'РЎС‚Р°С‚СѓСЃ РЅРµ СѓРєР°Р·Р°РЅ')}</div>
-      <div class="muted small" style="margin-top:8px">РџР»Р°РЅ РІС‹СЂСѓС‡РєРё: ${fmt.money(item.plannedRevenue)} В· РўСЂР°С„РёРє: ${escapeHtml(item.externalTraffic || 'вЂ”')}</div>
-      <div class="badge-stack" style="margin-top:8px">${badge(`${fmt.int(item.activeTasks || 0)} Р°РєС‚РёРІРЅ. Р·Р°РґР°С‡`, item.activeTasks ? 'warn' : 'ok')}${(item.blockers || []).slice(0, 2).map((text) => badge(text, 'warn')).join('')}</div>
+      <div class="badge-stack">
+        ${item.owner ? badge(item.owner, 'info') : badge('Без owner', 'warn')}
+        ${item.production ? badge(item.production, '') : ''}
+        ${item.marketplaces ? badge(item.marketplaces, '') : badge('Площадки не указаны', 'warn')}
+        ${item.articleMatched ? badge('Есть в SKU', 'ok') : badge('Нет связки с SKU', 'warn')}
+      </div>
+      <div class="muted small" style="margin-top:8px">${escapeHtml(item.status || 'Статус не указан')}</div>
+      <div class="muted small" style="margin-top:8px">План выручки ${fmt.money(item.plannedRevenue)} · Целевая себестоимость ${fmt.money(item.targetCost)} · Активных задач ${fmt.int(item.activeTasks || 0)}</div>
+      <div class="muted small" style="margin-top:8px">${escapeHtml(item.characteristic || 'Описание по новинке пока не заполнено')}</div>
+      <div class="muted small" style="margin-top:8px">Gantt: ${escapeHtml(ganttPreview || 'месяцы в плане пока не отмечены')}</div>
+      <div class="badge-stack" style="margin-top:8px">${(item.blockers || []).slice(0, 3).map((text) => badge(text, 'warn')).join('') || badge('Блокеры не найдены', 'ok')}</div>
     </div>
   `;
 }
@@ -876,37 +1308,111 @@ function renderLaunchItem(item) {
 function renderLaunches() {
   const root = document.getElementById('view-launches');
   const model = getLaunchViewModel();
+  const registryLinked = model.filteredItems.filter((item) => item.articleMatched).length;
+  const withoutOwner = model.filteredItems.filter((item) => !item.owner).length;
+  const withBlockers = model.filteredItems.filter((item) => (item.blockers || []).length).length;
+  const activeTasksTotal = model.filteredItems.reduce((total, item) => total + numberOrZero(item.activeTasks), 0);
+  const ganttRows = model.filteredItems.slice(0, 12).map((item) => `
+    <tr>
+      <td>
+        <div><strong>${item.articleKey ? linkToSku(item.articleKey, item.name || item.articleKey) : escapeHtml(item.name || 'Новинка')}</strong></div>
+        <div class="muted small">${escapeHtml(item.reportGroup || '—')} · ${escapeHtml(item.owner || 'Без owner')}</div>
+      </td>
+      ${model.ganttColumns.map((column) => {
+        const active = (item.ganttMonths || []).some((entry) => `${entry.label} ${entry.year}` === column);
+        return `<td>${active ? badge('●', 'ok') : ''}</td>`;
+      }).join('')}
+    </tr>
+  `).join('');
 
   root.innerHTML = `
     <div class="section-title">
       <div>
-        <h2>РќРѕРІРёРЅРєРё Рё pipeline</h2>
-        <p>РЎРѕР±СЂР°Р»Р° product-layer РїРѕ SKU СЂРѕСЃС‚Р° Рё РЅРѕРІРёРЅРєР°Рј: РєР°СЂС‚РѕС‡РєР°, owner, СЌРєРѕРЅРѕРјРёРєР°, С‚СЂР°С„РёРє Рё С‚РµРєСѓС‰РёРµ Р±Р»РѕРєРµСЂС‹ РІ РѕРґРЅРѕРј РјРµСЃС‚Рµ.</p>
+        <h2>Продукт / календарь новинок</h2>
+        <p>Единый слой по новинкам: фильтры по календарю, карточки товаров, связь с реестром SKU, месяцы gantt и выгрузка в Excel.</p>
       </div>
-      <div class="badge-stack">${badge(`${fmt.int(model.filteredItems.length)} SKU РІ С„РѕРєСѓСЃРµ`, model.filteredItems.length ? 'info' : 'warn')}${badge(`${fmt.int(model.filteredItems.filter((item) => !item.owner).length)} Р±РµР· owner`, model.filteredItems.filter((item) => !item.owner).length ? 'warn' : 'ok')}${badge(`${fmt.int(model.filteredItems.filter((item) => item.activeTasks).length)} СЃ Р°РєС‚РёРІРЅС‹РјРё Р·Р°РґР°С‡Р°РјРё`, model.filteredItems.filter((item) => item.activeTasks).length ? 'warn' : 'ok')}</div>
+      <div class="badge-stack">
+        ${badge(`${fmt.int(model.filteredItems.length)} строк в фокусе`, model.filteredItems.length ? 'info' : 'warn')}
+        ${badge(`${fmt.int(model.upcomingItems.length)} скоро к запуску`, model.upcomingItems.length ? 'warn' : 'ok')}
+        ${badge(`${fmt.int(withoutOwner)} без owner`, withoutOwner ? 'warn' : 'ok')}
+      </div>
     </div>
+
+    <div class="kpi-strip">
+      <div class="mini-kpi"><span>Всего новинок</span><strong>${fmt.int(model.filteredItems.length)}</strong><span>по текущему фильтру</span></div>
+      <div class="mini-kpi"><span>Есть в реестре SKU</span><strong>${fmt.int(registryLinked)}</strong><span>${fmt.pct(model.filteredItems.length ? registryLinked / model.filteredItems.length : 0)}</span></div>
+      <div class="mini-kpi warn"><span>С блокерами</span><strong>${fmt.int(withBlockers)}</strong><span>нужно добить данные или owner</span></div>
+      <div class="mini-kpi"><span>Активные задачи</span><strong>${fmt.int(activeTasksTotal)}</strong><span>подтянуты из задач портала</span></div>
+    </div>
+
     ${renderLaunchMonthFilters(model)}
     <div class="card" style="margin-top:14px">
-      <div class="pipeline-strip">
-        <span>Owner</span><span>РџРѕСЃС‚Р°РІРєР°</span><span>РљРѕРЅС‚РµРЅС‚</span><span>РўСЂР°С„РёРє</span><span>Р­РєРѕРЅРѕРјРёРєР°</span><span>РњР°СЃС€С‚Р°Р±</span>
+      <div class="section-subhead">
+        <div>
+          <h3>Как читать этот экран</h3>
+          <p class="small muted">Сначала фильтруем продуктовый календарь, затем смотрим ближайшие запуски и только потом уходим в конкретный месяц. Так сохраняется логика “от общего к частному”.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge('Фильтр → ближайшие запуски → месяцы', 'info')}
+          ${badge('Excel по текущему фильтру', 'ok')}
+        </div>
       </div>
-      <div class="muted small" style="margin-top:12px">РЎРЅР°С‡Р°Р»Р° С„РёР»СЊС‚СЂСѓРµРј РїРѕ РјРµСЃСЏС†Сѓ, РїРѕС‚РѕРј СЂР°Р·Р±РёСЂР°РµРј РєР°СЂС‚РѕС‡РєРё РІРЅСѓС‚СЂРё СЌС‚РѕРіРѕ РјРµСЃСЏС†Р°. РўР°Рє РљСЃРµРЅРёСЏ СЃРЅРѕРІР° РІРёРґРёС‚ pipeline Р±Р»РѕРєР°РјРё, Р° РЅРµ РѕРґРЅРѕР№ РґР»РёРЅРЅРѕР№ Р»РµРЅС‚РѕР№.</div>
     </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Ближайшие запуски</h3>
+          <p class="small muted">Сюда попадают товары, у которых месяц запуска уже близко. Это возвращает в работу новинки до того, как они потеряются в таблице.</p>
+        </div>
+        ${badge(`${fmt.int(model.upcomingItems.length)} позиций`, model.upcomingItems.length ? 'warn' : 'ok')}
+      </div>
+      <div class="list" style="margin-top:12px">${model.upcomingItems.slice(0, 8).map(renderLaunchItem).join('') || '<div class="empty">В ближайшие 45 дней новинок по фильтру не найдено.</div>'}</div>
+    </div>
+
+    ${model.ganttColumns.length ? `
+      <div class="card" style="margin-top:14px">
+        <div class="section-subhead">
+          <div>
+            <h3>Gantt по фильтру</h3>
+            <p class="small muted">Верхние месяцы подтягиваются из листа “Календарь новинок Гант”. Для удобства показываем первые 12 строк текущего среза.</p>
+          </div>
+          ${badge(`${fmt.int(model.ganttColumns.length)} месяцев`, 'info')}
+        </div>
+        <div class="table-wrap" style="margin-top:12px">
+          <table>
+            <thead>
+              <tr>
+                <th>Новинка</th>
+                ${model.ganttColumns.map((column) => `<th>${escapeHtml(column)}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${ganttRows || `<tr><td colspan="${model.ganttColumns.length + 1}"><div class="empty">Gantt по текущему фильтру пока пустой.</div></td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    ` : ''}
+
     ${model.sections.map((section) => `
       <div class="card" style="margin-top:14px">
         <div class="section-subhead">
           <div>
             <h3>${escapeHtml(section.label)}</h3>
-            <p class="small muted">РљР°СЂС‚РѕС‡РєРё РЅРѕРІРёРЅРѕРє, РєРѕС‚РѕСЂС‹Рµ РѕС‚РЅРѕСЃСЏС‚СЃСЏ Рє СЌС‚РѕРјСѓ РјРµСЃСЏС†Сѓ Р·Р°РїСѓСЃРєР°.</p>
+            <p class="small muted">Карточки новинок, которые относятся к этому месяцу запуска.</p>
           </div>
-          <div class="badge-stack">${badge(`${fmt.int(section.items.length)} SKU`, section.items.length ? 'info' : '')}${badge(`${fmt.int(section.items.filter((item) => !item.owner).length)} Р±РµР· owner`, section.items.filter((item) => !item.owner).length ? 'warn' : 'ok')}</div>
+          <div class="badge-stack">
+            ${badge(`${fmt.int(section.items.length)} SKU`, section.items.length ? 'info' : '')}
+            ${badge(`${fmt.int(section.items.filter((item) => !item.owner).length)} без owner`, section.items.filter((item) => !item.owner).length ? 'warn' : 'ok')}
+          </div>
         </div>
-        <div class="list" style="margin-top:14px">${section.items.map(renderLaunchItem).join('') || '<div class="empty">РќРµС‚ РЅРѕРІРёРЅРѕРє РІ СЌС‚РѕРј РјРµСЃСЏС†Рµ.</div>'}</div>
+        <div class="list" style="margin-top:14px">${section.items.map(renderLaunchItem).join('') || '<div class="empty">В этом месяце запусков по фильтру нет.</div>'}</div>
       </div>
-    `).join('') || '<div class="card" style="margin-top:14px"><div class="empty">РќРµС‚ РЅРѕРІРёРЅРѕРє РІ С‚РµРєСѓС‰РµРј СЃСЂРµР·Рµ</div></div>'}
+    `).join('') || '<div class="card" style="margin-top:14px"><div class="empty">В текущем срезе новинок не найдено.</div></div>'}
   `;
 
-  bindLaunchMonthFilters(root);
+  bindLaunchMonthFilters(root, model);
 }
 
 function renderLaunchControl() {
@@ -921,13 +1427,13 @@ function renderLaunchControl() {
   root.innerHTML = `
     <div class="section-title">
       <div>
-        <h2>Р—Р°РїСѓСЃРє РЅРѕРІРёРЅРѕРє</h2>
-        <p>РћС‚РґРµР»СЊРЅС‹Р№ СЌРєСЂР°РЅ Р·Р°РїСѓСЃРєР°: СЃРІРµСЂС…Сѓ РІРёРґРЅРѕ, РіРґРµ РёРјРµРЅРЅРѕ СЃРµР№С‡Р°СЃ Р±Р»РѕРєРёСЂСѓРµС‚СЃСЏ Р·Р°РїСѓСЃРє, Р° РЅРёР¶Рµ РјРѕР¶РЅРѕ РїСЂРѕР№С‚РёСЃСЊ РїРѕ SKU РєР°Рє РїРѕ С‡РµРє-Р»РёСЃС‚Сѓ.</p>
+        <h2>Запуск новинок</h2>
+        <p>Операционный экран запуска: сверху видно, какой этап сейчас держит новинку, ниже ближайшие позиции и карточки по каждой фазе запуска.</p>
       </div>
       <div class="badge-stack">
-        ${badge(`${fmt.int(items.length)} РІ Р·Р°РїСѓСЃРєРµ`, items.length ? 'info' : 'warn')}
-        ${badge(`${fmt.int(items.filter((item) => item.phase === 'owner').length)} Р¶РґСѓС‚ owner`, items.filter((item) => item.phase === 'owner').length ? 'warn' : 'ok')}
-        ${badge(`${fmt.int(items.filter((item) => item.phase === 'content').length)} Р¶РґСѓС‚ С‚СЂР°С„РёРє`, items.filter((item) => item.phase === 'content').length ? 'warn' : 'ok')}
+        ${badge(`${fmt.int(items.length)} в запуске`, items.length ? 'info' : 'warn')}
+        ${badge(`${fmt.int(items.filter((item) => item.phase === 'owner').length)} ждут owner`, items.filter((item) => item.phase === 'owner').length ? 'warn' : 'ok')}
+        ${badge(`${fmt.int(model.upcomingItems.length)} скоро к запуску`, model.upcomingItems.length ? 'warn' : 'ok')}
       </div>
     </div>
 
@@ -938,10 +1444,21 @@ function renderLaunchControl() {
         <div class="card kpi">
           <div class="label">${escapeHtml(group.meta.label)}</div>
           <div class="value">${fmt.int(group.items.length)}</div>
-          <div class="hint">SKU РІ СЌС‚РѕР№ С„Р°Р·Рµ Р·Р°РїСѓСЃРєР°</div>
+          <div class="hint">SKU в этой фазе запуска</div>
           <div class="badge-stack" style="margin-top:10px">${group.items.slice(0, 3).map((item) => badge(item.owner || item.name, item.owner ? '' : 'warn')).join('')}</div>
         </div>
-      `).join('') || '<div class="card"><div class="empty">РќРµС‚ SKU РІ Р·Р°РїСѓСЃРєРµ</div></div>'}
+      `).join('') || '<div class="card"><div class="empty">SKU в запуске сейчас не найдены.</div></div>'}
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Ближайшие позиции к запуску</h3>
+          <p class="small muted">Если в продукте подходит срок, новинка должна появляться здесь автоматически вместе с owner, карточкой и статусом по реестру SKU.</p>
+        </div>
+        ${badge(`${fmt.int(model.upcomingItems.length)} позиций`, model.upcomingItems.length ? 'warn' : 'ok')}
+      </div>
+      <div class="list" style="margin-top:12px">${model.upcomingItems.slice(0, 8).map(renderLaunchItem).join('') || '<div class="empty">Нет ближайших запусков по текущему фильтру.</div>'}</div>
     </div>
 
     ${groups.map((group) => `
@@ -949,7 +1466,7 @@ function renderLaunchControl() {
         <div class="section-subhead">
           <div>
             <h3>${escapeHtml(group.meta.label)}</h3>
-            <p class="small muted">Р§С‚Рѕ РЅР°РґРѕ Р·Р°РєСЂС‹С‚СЊ РЅР° СЌС‚РѕРј СЌС‚Р°РїРµ, С‡С‚РѕР±С‹ SKU РЅРµ Р·Р°РІРёСЃР°Р» РјРµР¶РґСѓ РѕС‚РґРµР»Р°РјРё.</p>
+            <p class="small muted">Что надо закрыть на этом этапе, чтобы новинка не зависала между отделами.</p>
           </div>
           ${badge(`${fmt.int(group.items.length)} SKU`, group.meta.tone)}
         </div>
@@ -958,16 +1475,20 @@ function renderLaunchControl() {
             <div class="list-item">
               <div class="head">
                 <div>
-                  <strong>${item.articleKey ? linkToSku(item.articleKey, item.name || 'РќРѕРІРёРЅРєР°') : escapeHtml(item.name || 'РќРѕРІРёРЅРєР°')}</strong>
-                  <div class="muted small">${escapeHtml(item.subCategory || 'вЂ”')}</div>
+                  <strong>${item.articleKey ? linkToSku(item.articleKey, item.name || 'Новинка') : escapeHtml(item.name || 'Новинка')}</strong>
+                  <div class="muted small">${escapeHtml(item.subCategory || '—')} · ${escapeHtml(item.launchMonth || 'Без месяца')}</div>
                 </div>
-                <div class="badge-stack">${item.owner ? badge(item.owner, 'info') : badge('Р‘РµР· owner', 'warn')}${badge(`${fmt.int(item.activeTasks || 0)} Р·Р°РґР°С‡`, item.activeTasks ? 'warn' : 'ok')}</div>
+                <div class="badge-stack">
+                  ${item.owner ? badge(item.owner, 'info') : badge('Без owner', 'warn')}
+                  ${badge(`${fmt.int(item.activeTasks || 0)} задач`, item.activeTasks ? 'warn' : 'ok')}
+                  ${item.articleMatched ? badge('SKU найден', 'ok') : badge('Нужна связка с SKU', 'warn')}
+                </div>
               </div>
               <div class="check-list">
-                <div class="check-item"><strong>1.</strong><span>${ownerName(getSku(item.articleKey)) ? 'Owner РЅР°Р·РЅР°С‡РµРЅ' : 'РќР°Р·РЅР°С‡РёС‚СЊ owner Рё Р·РѕРЅСѓ РѕС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚Рё'}</span></div>
-                <div class="check-item"><strong>2.</strong><span>${totalSkuStock(getSku(item.articleKey)) > 0 ? `РћСЃС‚Р°С‚РѕРє РµСЃС‚СЊ: ${fmt.int(totalSkuStock(getSku(item.articleKey)))}` : 'РџСЂРѕРІРµСЂРёС‚СЊ РїРѕСЃС‚Р°РІРєСѓ Рё РґРѕСЃС‚СѓРїРЅРѕСЃС‚СЊ SKU'}</span></div>
-                <div class="check-item"><strong>3.</strong><span>${getSku(item.articleKey)?.flags?.hasExternalTraffic ? `РўСЂР°С„РёРє РµСЃС‚СЊ: ${escapeHtml(item.externalTraffic)}` : 'РџРѕРґРіРѕС‚РѕРІРёС‚СЊ Р·Р°РїСѓСЃРє С‚СЂР°С„РёРєР° / РєРѕРЅС‚РµРЅС‚Р°'}</span></div>
-                <div class="check-item"><strong>4.</strong><span>${(item.blockers || []).length ? `Р‘Р»РѕРєРµСЂС‹: ${escapeHtml(item.blockers.join(', '))}` : 'РљСЂРёС‚РёС‡РЅС‹С… Р±Р»РѕРєРµСЂРѕРІ РЅРµ РІРёРґРЅРѕ'}</span></div>
+                <div class="check-item"><strong>1.</strong><span>${item.owner ? `Owner назначен: ${escapeHtml(item.owner)}` : 'Назначить owner и контур работы по новинке'}</span></div>
+                <div class="check-item"><strong>2.</strong><span>${item.articleMatched ? `Связка с реестром SKU есть${item.registryStatus ? ` · ${escapeHtml(item.registryStatus)}` : ''}` : 'Связать товар с реестром SKU, чтобы подтягивались карточка и задачи'}</span></div>
+                <div class="check-item"><strong>3.</strong><span>${item.marketplaces ? `Площадки: ${escapeHtml(item.marketplaces)}` : 'Указать площадки запуска и базовые материалы по товару'}</span></div>
+                <div class="check-item"><strong>4.</strong><span>${(item.blockers || []).length ? `Блокеры: ${escapeHtml(item.blockers.join(', '))}` : 'Критичных блокеров на текущем этапе не видно'}</span></div>
               </div>
             </div>
           `).join('')}
@@ -976,7 +1497,7 @@ function renderLaunchControl() {
     `).join('')}
   `;
 
-  bindLaunchMonthFilters(root);
+  bindLaunchMonthFilters(root, model);
 }
 
 function renderMeetings() {

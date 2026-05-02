@@ -23,6 +23,10 @@ function renderControlWorkstreamSection(summary) {
       <div class="stack" style="margin-top:12px">${tasksHtml}</div>
     </div>
   `;
+
+  root.querySelector('[data-dashboard-export]')?.addEventListener('click', () => {
+    downloadDashboardExcel(model);
+  });
 }
 
 function skuOperationalStatusMeta(sku) {
@@ -443,6 +447,78 @@ function buildVisualDashboardModel() {
   };
 }
 
+function dashboardExportRows(model) {
+  const heroCards = alignedDashboardCards().map((card) => ({
+    section: 'Общие KPI',
+    block: card.label || '',
+    sku: '',
+    owner: '',
+    value: typeof card.value === 'string' ? card.value : card.value ?? '',
+    note: card.hint || ''
+  }));
+  const leaderRows = model.leadersSales.map((item) => ({
+    section: 'Лидеры продаж',
+    block: item.article || item.articleKey || item.name || '',
+    sku: item.articleKey || '',
+    owner: item.owner || '',
+    value: numberOrZero(item.metricValue),
+    note: item.name || ''
+  }));
+  const turnoverRows = model.turnoverCandidates.map((item) => ({
+    section: 'Оборачиваемость',
+    block: item.article || item.articleKey || item.name || '',
+    sku: item.articleKey || '',
+    owner: item.owner || '',
+    value: numberOrZero(item.metricValue),
+    note: item.name || ''
+  }));
+  const romiRows = model.romiLeaders.map((item) => ({
+    section: 'Контент / ROMI',
+    block: item.article || item.articleKey || item.name || '',
+    sku: item.articleKey || '',
+    owner: item.owner || '',
+    value: numberOrZero(item.metricValue),
+    note: item.name || ''
+  }));
+  const workRows = model.worklist.map((item) => ({
+    section: 'Красные зоны',
+    block: item.article || item.articleKey || item.name || '',
+    sku: item.articleKey || '',
+    owner: ownerName(item) || '',
+    value: item.focusScore || 0,
+    note: item.focusReasons || ''
+  }));
+  return [...heroCards, ...leaderRows, ...turnoverRows, ...romiRows, ...workRows];
+}
+
+function downloadDashboardExcel(model) {
+  const rows = dashboardExportRows(model);
+  if (!rows.length) {
+    window.alert('Для выгрузки дашборда пока нет строк.');
+    return;
+  }
+  const columns = [
+    ['section', 'Раздел'],
+    ['block', 'Блок / показатель'],
+    ['sku', 'SKU'],
+    ['owner', 'Owner'],
+    ['value', 'Значение'],
+    ['note', 'Комментарий']
+  ];
+  const head = `<tr>${columns.map((column) => `<th>${escapeHtml(column[1])}</th>`).join('')}</tr>`;
+  const body = rows.map((row) => `<tr>${columns.map((column) => `<td>${escapeHtml(row[column[0]])}</td>`).join('')}</tr>`).join('');
+  const html = `<!doctype html><html><head><meta charset="utf-8"></head><body><table border="1">${head}${body}</table></body></html>`;
+  const blob = new Blob(['\uFEFF', html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `dashboard-${todayIso()}.xls`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function renderDashboard() {
   const root = document.getElementById('view-dashboard');
   const model = buildVisualDashboardModel();
@@ -584,6 +660,7 @@ function renderDashboard() {
         <p>Крупные KPI, чтобы за минуту понять, где мы стоим по Алтея.</p>
       </div>
       <div class="quick-actions">
+        <button class="quick-chip" data-dashboard-export>Excel</button>
         <button class="quick-chip" data-view-control>Открыть задачи</button>
         <button class="quick-chip" data-control-preset="overdue">Просрочено</button>
         <button class="quick-chip" data-view-executive>Свод руководителя</button>

@@ -392,7 +392,11 @@ function normalizeTaskPlatform(value, contextText = '') {
   if (['ozon', 'озон'].includes(raw)) return 'ozon';
   if (['wb+ozon', 'wb + ozon', 'wb_ozon', 'wb-ozon'].includes(raw)) return 'wb+ozon';
   if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return 'retail';
+  if (['product', 'launch', 'launches', 'новинки', 'продукт', 'ксюша'].includes(raw)) return 'product';
+  if (['executive', 'director', 'ceo', 'lead', 'директор', 'руководитель'].includes(raw)) return 'executive';
 
+  if (/продукт|новин|launch|ксюш/.test(text)) return 'product';
+  if (/директор|руководител|ceo|executive|эскалац|согласовани/.test(text)) return 'executive';
   if (/яндекс|я[.\s-]?маркет|yandex|letu?al|л[еэ]туал|л[еэ]туаль|магнит|golden apple|золот[а-я\s-]*яблок/.test(text)) return 'retail';
   if (/(^|\W)wb($|\W)|wildberries|вб/.test(text)) return 'wb';
   if (/ozon|озон/.test(text)) return 'ozon';
@@ -418,8 +422,11 @@ function controlWorkstreamKey(task, sku = null) {
   if (platform === 'wb') return 'wb';
   if (platform === 'ozon') return 'ozon';
   if (platform === 'retail') return 'retail';
+  if (platform === 'product') return 'product';
+  if (platform === 'executive') return 'executive';
   if (platform === 'wb+ozon' || platform === 'cross' || platform === 'all') return 'cross';
 
+  if (task?.type === 'launch') return 'product';
   if (sku?.flags?.toWorkWB && !sku?.flags?.toWorkOzon) return 'wb';
   if (sku?.flags?.toWorkOzon && !sku?.flags?.toWorkWB) return 'ozon';
   return 'cross';
@@ -428,6 +435,8 @@ function controlWorkstreamKey(task, sku = null) {
 function detectTaskPlatform(task, sku) {
   const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''}`.toLowerCase();
   if (task?.platform) return normalizeTaskPlatform(task.platform, text);
+  if (/директор|руководител|ceo|executive|эскалац|согласовани/.test(text)) return 'executive';
+  if (/продукт|новин|launch|ксюш/.test(text) || task?.type === 'launch') return 'product';
   if (/яндекс|я[.\s-]?маркет|yandex|letu?al|л[еэ]туал|л[еэ]туаль|магнит|golden apple|золот[а-я\s-]*яблок/.test(text)) return 'retail';
   if (text.includes('wb') && text.includes('ozon')) return 'wb+ozon';
   if (text.includes('wb')) return 'wb';
@@ -589,6 +598,50 @@ function canRegisterAutoTask(keys, articleKey, type) {
   return true;
 }
 
+function parseRuDateRangeEnd(value = '') {
+  const match = String(value || '').match(/-\s*(\d{2})\.(\d{2})\.(\d{4})$/);
+  if (!match) return '';
+  return `${match[3]}-${match[2]}-${match[1]}`;
+}
+
+function diffFromTodayInDays(dateKey = '') {
+  if (!dateKey) return Number.POSITIVE_INFINITY;
+  const today = todayIso();
+  const todayDate = new Date(`${today}T00:00:00`);
+  const targetDate = new Date(`${dateKey}T00:00:00`);
+  if (Number.isNaN(todayDate.getTime()) || Number.isNaN(targetDate.getTime())) return Number.POSITIVE_INFINITY;
+  return Math.round((targetDate.getTime() - todayDate.getTime()) / 86400000);
+}
+
+function productLeaderboardFreshForAuto(payload = {}) {
+  const weekEnd = parseRuDateRangeEnd(payload?.weekLabel || payload?.sourceSheetName || '');
+  if (weekEnd) return diffFromTodayInDays(weekEnd) >= -21;
+  const generated = String(payload?.generatedAt || '').slice(0, 10);
+  return generated ? diffFromTodayInDays(generated) >= -21 : false;
+}
+
+function launchMonthToDateKey(label = '') {
+  const match = String(label || '').trim().toLowerCase().match(/^([а-яё]+)\s+(\d{4})$/i);
+  if (!match) return '';
+  const monthMap = {
+    январь: '01',
+    февраль: '02',
+    март: '03',
+    апрель: '04',
+    май: '05',
+    июнь: '06',
+    июль: '07',
+    август: '08',
+    сентябрь: '09',
+    октябрь: '10',
+    ноябрь: '11',
+    декабрь: '12'
+  };
+  const month = monthMap[match[1]];
+  if (!month) return '';
+  return `${match[2]}-${month}-01`;
+}
+
 function leaderboardSeverityRank(severity) {
   if (severity === 'critical') return 4;
   if (severity === 'high') return 3;
@@ -679,111 +732,16 @@ function buildLeaderboardAutoTask({
   }, 'auto');
 }
 
-function dashboardSignalPriority(kind) {
-  return kind === 'danger' ? 'critical' : 'high';
-}
-
-function dashboardSignalDue(kind) {
-  return plusDays(kind === 'danger' ? 1 : 2);
-}
-
-function dashboardSignalPlatform(row) {
-  const key = String(row?.platformKey || '').trim().toLowerCase();
-  if (key === 'ya') return 'retail';
-  return key || 'cross';
-}
-
-function dashboardSignalOwner(row) {
-  const owner = String(row?.owner || '').trim();
-  return owner && owner !== 'Без owner' ? owner : '';
-}
-
-function buildDashboardSignalAutoTasks(keys) {
-  const api = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
-  if (!api || typeof api.getSignalSnapshot !== 'function') return [];
-  const snapshot = api.getSignalSnapshot();
-  const platforms = Array.isArray(snapshot?.platforms) ? snapshot.platforms : [];
-  const rows = platforms
-    .filter((metric) => metric?.key && metric.key !== 'all')
-    .flatMap((metric) => (Array.isArray(metric?.rows) ? metric.rows : []).map((row) => ({
-      ...row,
-      platformKey: row?.platformKey || metric.key || ''
-    })));
-  const tasks = [];
-
-  rows
-    .filter((row) => row?.priceShockKind)
-    .sort((left, right) =>
-      leaderboardSeverityRank(right?.priceShockKind === 'danger' ? 'critical' : 'high')
-      - leaderboardSeverityRank(left?.priceShockKind === 'danger' ? 'critical' : 'high')
-      || Number(right?.score || 0) - Number(left?.score || 0)
-    )
-    .forEach((row) => {
-      const articleKey = String(row?.article || row?.articleKey || '').trim();
-      if (!articleKey || !canRegisterAutoTask(keys, articleKey, 'price_margin')) return;
-      const kind = row.priceShockKind === 'danger' ? 'danger' : 'warn';
-      const deltaLabel = Number.isFinite(Number(row?.priceDeltaPct))
-        ? `${Number(row.priceDeltaPct) >= 0 ? '+' : ''}${fmt.pct(Number(row.priceDeltaPct), 1)}`
-        : 'н/д';
-      tasks.push(normalizeTask({
-        id: `auto-price-shock-${articleKey}`,
-        source: 'auto',
-        autoCode: 'price_shock',
-        articleKey,
-        title: 'Проверить резкое изменение цены',
-        nextAction: 'Проверить коридор, min/max, alignment и причину изменения цены по SKU. Зафиксировать, это управляемое действие или ошибка.',
-        reason: `${snapshot?.range?.effectiveLabel || 'Текущее окно'}: цена ${deltaLabel}. ${row?.reasons || 'Есть ценовая аномалия.'}`,
-        owner: dashboardSignalOwner(row),
-        due: dashboardSignalDue(kind),
-        status: 'new',
-        type: 'price_margin',
-        priority: dashboardSignalPriority(kind),
-        platform: dashboardSignalPlatform(row),
-        entityLabel: row?.name || articleKey
-      }, 'auto'));
-    });
-
-  rows
-    .filter((row) => row?.funnelDropKind)
-    .sort((left, right) =>
-      leaderboardSeverityRank(right?.funnelDropKind === 'danger' ? 'critical' : 'high')
-      - leaderboardSeverityRank(left?.funnelDropKind === 'danger' ? 'critical' : 'high')
-      || Number(right?.score || 0) - Number(left?.score || 0)
-    )
-    .forEach((row) => {
-      const articleKey = String(row?.article || row?.articleKey || '').trim();
-      if (!articleKey || !canRegisterAutoTask(keys, articleKey, 'traffic')) return;
-      const kind = row.funnelDropKind === 'danger' ? 'danger' : 'warn';
-      const orderDelta = Number.isFinite(Number(row?.adOrdersDeltaPct))
-        ? `${Number(row.adOrdersDeltaPct) >= 0 ? '+' : ''}${fmt.pct(Number(row.adOrdersDeltaPct), 1)}`
-        : 'н/д';
-      tasks.push(normalizeTask({
-        id: `auto-funnel-drop-${articleKey}`,
-        source: 'auto',
-        autoCode: 'funnel_drop',
-        articleKey,
-        title: 'Разобрать провал рекламной воронки',
-        nextAction: 'Проверить CTR, клики, заказы, выручку и активные кампании по SKU. Зафиксировать гипотезу и следующий запуск.',
-        reason: `${snapshot?.range?.effectiveLabel || 'Текущее окно'}: заказы ${orderDelta}. ${row?.reasons || 'Есть провал рекламной воронки.'}`,
-        owner: dashboardSignalOwner(row),
-        due: dashboardSignalDue(kind),
-        status: 'new',
-        type: 'traffic',
-        priority: dashboardSignalPriority(kind),
-        platform: dashboardSignalPlatform(row),
-        entityLabel: row?.name || articleKey
-      }, 'auto'));
-    });
-
-  return tasks;
-}
-
 function buildAutoTasks() {
+  if (state.__buildingAutoTasks) return [];
+  state.__buildingAutoTasks = true;
+  try {
   const keys = storedTaskKeys();
-  const tasks = buildDashboardSignalAutoTasks(keys);
+  const tasks = [];
   const leaderboardPayload = typeof normalizeProductLeaderboardPayload === 'function'
     ? normalizeProductLeaderboardPayload(state.productLeaderboard || {})
     : (state.productLeaderboard || { items: [] });
+  const leaderboardFresh = productLeaderboardFreshForAuto(leaderboardPayload);
   const leaderboardMap = new Map(
     (Array.isArray(leaderboardPayload.items) ? leaderboardPayload.items : [])
       .filter((item) => item?.articleKey)
@@ -797,7 +755,7 @@ function buildAutoTasks() {
     const exitSku = String(sku?.status || '').toLowerCase().includes('вывод');
     const leaderboardItem = leaderboardMap.get(String(articleKey || '').trim().toLowerCase()) || null;
 
-    if (leaderboardItem?.inPortal !== false) {
+    if (leaderboardFresh && leaderboardItem?.inPortal !== false) {
       const assignmentAlerts = leaderboardAlertsForFamilies(leaderboardItem, 'ownership');
       if (assignmentAlerts.length && canRegisterAutoTask(keys, articleKey, 'assignment')) {
         tasks.push(buildLeaderboardAutoTask({
@@ -948,7 +906,43 @@ function buildAutoTasks() {
     }
   }
 
+  const activeLaunchTaskKeys = new Set(
+    (state.storage.tasks || [])
+      .filter((task) => task?.type === 'launch' && isTaskActive(task))
+      .map((task) => `${String(task.articleKey || '').trim()}|${String(task.entityLabel || task.title || '').trim().toLowerCase()}`)
+  );
+  const launchItems = typeof getLaunchItems === 'function' ? getLaunchItems({ skipTaskLookup: true }) : [];
+  launchItems.forEach((item) => {
+    const launchDate = launchMonthToDateKey(item?.launchMonth);
+    const daysUntilLaunch = diffFromTodayInDays(launchDate);
+    const statusRaw = String(item?.status || '').toLowerCase();
+    if (!launchDate || daysUntilLaunch < -10 || daysUntilLaunch > 45) return;
+    if (/запущ|live|продаж|готово/.test(statusRaw)) return;
+    const dedupeKey = `${String(item?.articleKey || '').trim()}|${String(item?.name || '').trim().toLowerCase()}`;
+    if (activeLaunchTaskKeys.has(dedupeKey)) return;
+    activeLaunchTaskKeys.add(dedupeKey);
+    tasks.push(normalizeTask({
+      id: `auto-launch-${item.id || item.articleKey || hashString(item.name || launchDate)}`,
+      source: 'auto',
+      autoCode: 'launch_pipeline',
+      articleKey: item.articleKey || '',
+      entityLabel: item.name || item.articleKey || 'Новинка',
+      title: 'Подготовить запуск новинки',
+      nextAction: 'Проверить owner, карточку, презентацию, запуск в реестре SKU и ближайшие блокеры по новинке.',
+      reason: `${item.launchMonth || 'Срок запуска'} · ${item.status || 'Нужно уточнить статус'}${item.production ? ` · ${item.production}` : ''}`,
+      owner: item.owner || '',
+      due: daysUntilLaunch <= 14 ? plusDays(1) : plusDays(3),
+      status: 'new',
+      type: 'launch',
+      priority: daysUntilLaunch <= 14 ? 'high' : 'medium',
+      platform: 'product'
+    }, 'auto'));
+  });
+
   return tasks;
+  } finally {
+    state.__buildingAutoTasks = false;
+  }
 }
 
 function getAllTasks() {

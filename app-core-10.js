@@ -406,35 +406,9 @@ function renderDashboardView() {
   renderDashboard();
 }
 
-function renderAdsFunnelView() {
-  const interactiveApi = window.__ALTEA_DASHBOARD_INTERACTIVE_API__;
-  if (interactiveApi && typeof interactiveApi.renderAdsFunnel === 'function') {
-    interactiveApi.renderAdsFunnel(false);
-    return;
-  }
-  if (typeof window.renderAdsFunnelView === 'function' && window.renderAdsFunnelView !== renderAdsFunnelView) {
-    window.renderAdsFunnelView(false);
-    return;
-  }
-  const root = document.getElementById('view-ads-funnel');
-  if (!root) return;
-  root.innerHTML = `
-    <div class="card">
-      <div class="head">
-        <div>
-          <h3>Рекламная воронка</h3>
-          <div class="muted small">Интерактивный слой ещё не догрузился. Обновите страницу после прогрева скриптов.</div>
-        </div>
-        ${badge('ожидание', 'info')}
-      </div>
-    </div>
-  `;
-}
-
 function rerenderCurrentView() {
   applyOwnerOverridesToSkus();
   const renderPlan = [
-    ['view-ads-funnel', 'Рекламная воронка', renderAdsFunnelView],
     ['view-dashboard', 'Дашборд', renderDashboardView],
     ['view-documents', 'Документы', renderDocuments],
     ['view-repricer', 'Репрайсер', renderRepricer],
@@ -574,11 +548,12 @@ async function init() {
 
   try {
     const local = loadLocalStorage();
-    const [dashboard, skus, seed, productLeaderboard] = await Promise.all([
+    const [dashboard, skus, seed, productLeaderboard, productLeaderboardHistory] = await Promise.all([
       loadJsonOrFallback('data/dashboard.json', { cards: [], generatedAt: '' }, 'Дашборд'),
       loadJsonOrFallback('data/skus.json', [], 'SKU'),
       loadJsonOrFallback('data/seed_comments.json', { comments: [], tasks: [] }, 'Seed comments'),
-      loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд')
+      loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
+      loadJsonOrFallback('data/product_leaderboard_history.json', [], 'История продуктового лидерборда')
     ]);
 
     state.dashboard = dashboard || { cards: [] };
@@ -589,6 +564,7 @@ async function init() {
     state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
       ? normalizeProductLeaderboardPayload(productLeaderboard)
       : (productLeaderboard || { generatedAt: '', items: [], summary: {} });
+    state.productLeaderboardHistory = Array.isArray(productLeaderboardHistory) ? productLeaderboardHistory : [];
     state.boot.lazyReady.productLeaderboard = true;
     state.repricer = { generatedAt: '', summary: {}, rows: [] };
     if (!state.orderCalc.articleKey) state.orderCalc.articleKey = state.skus[0]?.articleKey || '';

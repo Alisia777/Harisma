@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429A__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260502A__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260502A__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429A__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428C__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428B__ = true;
@@ -245,6 +246,109 @@
     return derived.portalStorageParsed;
   }
 
+  function cloneValue(value) {
+    return value == null ? value : JSON.parse(JSON.stringify(value));
+  }
+
+  function writePortalStorageState(next) {
+    var safeNext = next && typeof next === "object" ? next : {};
+    var raw = JSON.stringify(safeNext);
+    localStorage.setItem("brand-portal-local-v1", raw);
+    derived.portalStorageRaw = raw;
+    derived.portalStorageParsed = safeNext;
+    derived.explicitRepricerMapRaw = null;
+    derived.explicitRepricerMap = null;
+
+    var root = rootState();
+    if (root && root.storage) {
+      root.storage.repricerOverrides = Array.isArray(safeNext.repricerOverrides) ? safeNext.repricerOverrides.slice() : [];
+      if (typeof root.saveLocalStorage === "function") {
+        try { root.saveLocalStorage(); } catch {}
+      }
+    }
+    if (typeof window.persistRepricerControls === "function") {
+      Promise.resolve(window.persistRepricerControls()).catch(function (error) {
+        console.error("[price-simple] persist repricer controls", error);
+      });
+    }
+  }
+
+  function overrideHasMeaning(override) {
+    if (!override) return false;
+    return override.floorPrice != null
+      || override.capPrice != null
+      || (override.forcePrice != null && override.forcePrice > 0)
+      || override.promoActive
+      || (override.promoPrice != null && override.promoPrice > 0)
+      || Boolean(override.note)
+      || (override.mode && override.mode !== "auto")
+      || override.disableAlignment;
+  }
+
+  function pickFreshestOverride(current, candidate) {
+    if (!candidate) return current || null;
+    if (!current) return candidate;
+    return parseFreshStamp(candidate.updatedAt) >= parseFreshStamp(current.updatedAt) ? candidate : current;
+  }
+
+  function findRepricerOverride(targetMarket, articleKey) {
+    var wanted = norm(articleKey);
+    if (!wanted) return null;
+    var portal = readPortalStorageState();
+    var overrides = Array.isArray(portal && portal.repricerOverrides) ? portal.repricerOverrides : [];
+    var fromAll = null;
+    var fromMarket = null;
+    overrides.forEach(function (entry) {
+      var normalized = normalizeRepricerOverride(entry);
+      if (norm(normalized.articleKey) !== wanted) return;
+      if (normalized.platform === "all") fromAll = pickFreshestOverride(fromAll, normalized);
+      if (normalized.platform === targetMarket) fromMarket = pickFreshestOverride(fromMarket, normalized);
+    });
+    return pickFreshestOverride(fromAll, fromMarket);
+  }
+
+  function upsertMinMaxOverride(articleKey, platform, values) {
+    var targetArticle = String(articleKey || "").trim();
+    var targetPlatform = repricerMarket(platform);
+    if (!targetArticle || (targetPlatform !== "wb" && targetPlatform !== "ozon")) return;
+
+    var portal = cloneValue(readPortalStorageState()) || {};
+    var overrides = Array.isArray(portal.repricerOverrides) ? portal.repricerOverrides.slice() : [];
+    var nextOverride = null;
+
+    overrides = overrides.map(function (entry) {
+      var normalized = normalizeRepricerOverride(entry);
+      if (norm(normalized.articleKey) !== norm(targetArticle) || normalized.platform !== targetPlatform) return normalized;
+      nextOverride = Object.assign({}, normalized, values, {
+        articleKey: targetArticle,
+        platform: targetPlatform,
+        updatedAt: new Date().toISOString(),
+        updatedBy: (rootState() && rootState().team && rootState().team.member && rootState().team.member.name) || "Команда"
+      });
+      return nextOverride;
+    });
+
+    if (!nextOverride) {
+      nextOverride = Object.assign({}, normalizeRepricerOverride({
+        articleKey: targetArticle,
+        platform: targetPlatform
+      }), values, {
+        articleKey: targetArticle,
+        platform: targetPlatform,
+        updatedAt: new Date().toISOString(),
+        updatedBy: (rootState() && rootState().team && rootState().team.member && rootState().team.member.name) || "Команда"
+      });
+      overrides.push(nextOverride);
+    }
+
+    overrides = overrides.filter(function (entry) {
+      return overrideHasMeaning(normalizeRepricerOverride(entry));
+    });
+
+    portal.repricerOverrides = overrides;
+    writePortalStorageState(portal);
+  }
+
   function pickFreshestDisplay(current, candidate) {
     if (!candidate) return current || null;
     if (!current) return candidate;
@@ -275,14 +379,18 @@
       articleKey: String(entry && (entry.articleKey || entry.article) || "").trim(),
       platform: repricerMarket(entry && entry.platform) || "all",
       mode: String(entry && entry.mode || "auto").trim().toLowerCase() || "auto",
+      floorPrice: moneyRound(entry && (entry.floorPrice != null ? entry.floorPrice : (entry.minPrice != null ? entry.minPrice : entry.floorOverride))),
+      capPrice: moneyRound(entry && (entry.capPrice != null ? entry.capPrice : (entry.maxPrice != null ? entry.maxPrice : entry.capOverride))),
       forcePrice: moneyRound(entry && entry.forcePrice),
       promoActive: entry ? (entry.promoActive === true || entry.promoActive === "true" || entry.promoActive === 1 || entry.promoActive === "1") : false,
       promoPrice: moneyRound(entry && entry.promoPrice),
       promoLabel: String(entry && entry.promoLabel || "").trim(),
       promoFrom: isoDate(entry && entry.promoFrom),
       promoTo: isoDate(entry && entry.promoTo),
+      disableAlignment: entry ? (entry.disableAlignment === true || entry.disableAlignment === "true" || entry.disableAlignment === 1 || entry.disableAlignment === "1") : false,
       note: String(entry && entry.note || "").trim(),
-      updatedAt: String(entry && entry.updatedAt || "").trim()
+      updatedAt: String(entry && entry.updatedAt || "").trim(),
+      updatedBy: String(entry && entry.updatedBy || "").trim()
     };
   }
 
@@ -423,6 +531,36 @@
       price: recPrice,
       label: String(side && side.strategy || "Рекомендация").trim() || "Рекомендация",
       hint: String(side && side.reason || "").trim()
+    };
+  }
+
+  function buildRepricerBounds(market, articleKey) {
+    var targetMarket = repricerMarket(market);
+    if (targetMarket !== "wb" && targetMarket !== "ozon") return null;
+    var override = findRepricerOverride(targetMarket, articleKey);
+    var row = findRepricerRow(articleKey);
+    var side = row ? (targetMarket === "wb" ? row.wb : row.ozon) : null;
+    var manualMin = moneyRound(override && override.floorPrice);
+    var manualMax = moneyRound(override && override.capPrice);
+    var computedMin = Math.max(
+      firstPositive(side && side.effectiveFloor),
+      firstPositive(side && side.hardFloor),
+      firstPositive(side && side.economicFloor),
+      firstPositive(side && side.minPrice),
+      firstPositive(side && side.finalGuardFloor)
+    );
+    var computedMax = firstPositive(side && side.finalGuardCap, side && side.capPrice, side && side.upperCap, side && side.workingZoneTo, side && side.stretchCap);
+    var effectiveMin = manualMin != null && manualMin > 0 ? manualMin : (computedMin > 0 ? moneyRound(computedMin) : null);
+    var effectiveMax = manualMax != null && manualMax > 0 ? manualMax : (computedMax > 0 ? moneyRound(computedMax) : null);
+    if (effectiveMin == null && effectiveMax == null && !override) return null;
+    return {
+      override: override,
+      manualMin: manualMin,
+      manualMax: manualMax,
+      effectiveMin: effectiveMin,
+      effectiveMax: effectiveMax,
+      minSource: manualMin != null && manualMin > 0 ? "portal" : "расчет",
+      maxSource: manualMax != null && manualMax > 0 ? "portal" : "расчет"
     };
   }
 
@@ -1368,6 +1506,7 @@
     var point = latestRangePoint(row);
     next.rangeHasPoint = Boolean(point);
     next.repricerDisplay = buildRepricerDisplay(next.market, next.articleKey);
+    next.repricerBounds = buildRepricerBounds(next.market, next.articleKey);
     if (!point) return next;
 
     var priceMetric = latestNonNullRangeMetric(row, "price");
@@ -1471,6 +1610,11 @@
     ].join("");
   }
 
+  function renderBoundCell(value, source) {
+    if (value == null || value <= 0) return "\u2014";
+    return '<div class="pw-repricer-cell"><strong>' + money(value) + '</strong><small>' + esc(source || "") + '</small></div>';
+  }
+
   function sortedVisiblePriceRows(rows) {
     return rows.slice().sort(function (a, b) {
       var dangerA = a.allowedMarginPct != null && a.marginTotalPct != null && a.marginTotalPct < a.allowedMarginPct ? 1 : 0;
@@ -1520,6 +1664,12 @@
         current_price_source: row.currentFillPriceSource || "",
         repricer_price: moneyRound(row.repricerDisplay && row.repricerDisplay.price),
         repricer_label: row.repricerDisplay && row.repricerDisplay.label || "",
+        min_price: moneyRound(row.repricerBounds && row.repricerBounds.effectiveMin),
+        min_price_source: row.repricerBounds && row.repricerBounds.minSource || "",
+        max_price: moneyRound(row.repricerBounds && row.repricerBounds.effectiveMax),
+        max_price_source: row.repricerBounds && row.repricerBounds.maxSource || "",
+        manual_min_price: moneyRound(row.repricerBounds && row.repricerBounds.manualMin),
+        manual_max_price: moneyRound(row.repricerBounds && row.repricerBounds.manualMax),
         client_price: moneyRound(row.currentClientPrice),
         spp_pct: row.currentSppPct != null ? Math.round(Number(row.currentSppPct) * 10000) / 100 : "",
         allowed_margin_pct: row.allowedMarginPct != null ? Math.round(Number(row.allowedMarginPct) * 10000) / 100 : "",
@@ -1558,23 +1708,29 @@
     });
   }
 
-  function downloadPriceSummaryExcel(rows) {
-    downloadPriceHtmlTable([
-      ["marketplace", "Площадка"],
-      ["article_key", "Артикул"],
-      ["name", "Название"],
-      ["owner", "Owner"],
-      ["status", "Статус"],
-      ["current_price_mp", "Текущая цена MP"],
-      ["current_price_mp_date", "Дата цены MP"],
-      ["current_price_source", "Источник цены MP"],
-      ["repricer_price", "Цена репрайсера"],
-      ["repricer_label", "Контур репрайсера"],
-      ["client_price", "Цена клиента"],
-      ["spp_pct", "СПП, %"],
-      ["allowed_margin_pct", "Допустимая 3м, %"],
-      ["margin_pct", "Маржа, %"],
-      ["turnover_days", "Оборачиваемость, дн"],
+function downloadPriceSummaryExcel(rows) {
+  downloadPriceHtmlTable([
+    ["marketplace", "Площадка"],
+    ["article_key", "Артикул"],
+    ["name", "Название"],
+    ["owner", "Owner"],
+    ["status", "Статус"],
+    ["current_price_mp", "Текущая цена MP"],
+    ["current_price_mp_date", "Дата цены MP"],
+    ["current_price_source", "Источник цены MP"],
+    ["repricer_price", "Цена репрайсера"],
+    ["repricer_label", "Контур репрайсера"],
+    ["min_price", "MIN"],
+    ["min_price_source", "MIN источник"],
+    ["max_price", "MAX"],
+    ["max_price_source", "MAX источник"],
+    ["manual_min_price", "Ручной MIN"],
+    ["manual_max_price", "Ручной MAX"],
+    ["client_price", "Цена клиента"],
+    ["spp_pct", "СПП, %"],
+    ["allowed_margin_pct", "Допустимая 3м, %"],
+    ["margin_pct", "Маржа, %"],
+    ["turnover_days", "Оборачиваемость, дн"],
       ["turnover_source", "Источник оборачиваемости"],
       ["range_date", "Срез"],
       ["history_note", "Комментарий по истории"],
@@ -1619,7 +1775,7 @@
     });
     var html = [
       '<div class="pw-table-wrap"><table class="pw-table"><thead><tr>',
-      '<th>\u0410\u0440\u0442\u0438\u043a\u0443\u043b</th><th>Owner</th><th>\u0421\u0442\u0430\u0442\u0443\u0441</th><th>\u0426\u0435\u043d\u0430 MP</th><th>\u0426\u0435\u043d\u0430 \u0440\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440\u0430</th><th>\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430</th><th>\u0421\u041f\u041f</th><th>\u0414\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u0430\u044f 3\u043c</th><th>\u041c\u0430\u0440\u0436\u0430</th><th>\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</th>',
+      '<th>\u0410\u0440\u0442\u0438\u043a\u0443\u043b</th><th>Owner</th><th>\u0421\u0442\u0430\u0442\u0443\u0441</th><th>\u0426\u0435\u043d\u0430 MP</th><th>\u0426\u0435\u043d\u0430 \u0440\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440\u0430</th><th>MIN</th><th>MAX</th><th>\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430</th><th>\u0421\u041f\u041f</th><th>\u0414\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u0430\u044f 3\u043c</th><th>\u041c\u0430\u0440\u0436\u0430</th><th>\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</th>',
       '</tr></thead><tbody>',
       sorted.map(function (row) {
         var danger = row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct;
@@ -1632,6 +1788,8 @@
           '<td><span class="pw-badge">', esc(row.status || "\u2014"), '</span></td>',
           '<td>', money(row.currentFillPrice), '</td>',
           '<td>', renderRepricerCell(row.repricerDisplay), '</td>',
+          '<td>', renderBoundCell(row.repricerBounds && row.repricerBounds.effectiveMin, row.repricerBounds && row.repricerBounds.minSource), '</td>',
+          '<td>', renderBoundCell(row.repricerBounds && row.repricerBounds.effectiveMax, row.repricerBounds && row.repricerBounds.maxSource), '</td>',
           '<td>', money(row.currentClientPrice), '</td>',
           '<td>', pct(row.currentSppPct), '</td>',
           '<td>', pct(row.allowedMarginPct), '</td>',
@@ -1708,6 +1866,7 @@
   function renderModal(row) {
     if (!row) return "";
     var leaderboardEntry = row.productLeaderboard || findProductLeaderboardEntry(row.articleKey);
+    var bounds = row.repricerBounds || buildRepricerBounds(row.market, row.articleKey);
     var turnoverHelp = row.turnoverSource === "order_procurement"
       ? "\u0424\u043e\u043b\u0431\u044d\u043a \u0438\u0437 \u0417\u0430\u043a\u0430\u0437\u0430: inStock / avgDaily \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0435."
       : "\u0422\u0435\u043a\u0443\u0449\u0435\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043f\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u0438.";
@@ -1728,6 +1887,19 @@
       '<div class="pw-mini"><span class="pw-label">\u0421\u0442\u0430\u0442\u0443\u0441 \u0442\u043e\u0432\u0430\u0440\u0430</span><strong>', esc(row.status || "\u2014"), '</strong><small>\u0421\u0442\u0430\u0442\u0443\u0441 \u0441\u0442\u0440\u043e\u043a\u0438 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u043c\u0443 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0443.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 \u043f\u043e \u043c\u0430\u0440\u0436\u0435</span><strong>', money(row.requiredPriceForMargin), '</strong><small>\u0415\u0441\u043b\u0438 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u0438\u0435\u0445\u0430\u043b\u043e \u0432 smart-\u0441\u043b\u043e\u0435.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0421\u0440\u0435\u0437 \u0446\u0435\u043d</span><strong>', esc(row.valueDate || state.latestFactDate || "\u2014"), '</strong><small>\u042d\u0442\u043e \u0434\u0430\u0442\u0430 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u0439 \u0442\u043e\u0447\u043a\u0438 \u0432 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u043c \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0435.</small></div>',
+      '</div>',
+      '<div class="pw-card">',
+      '<div class="pw-label">MIN / MAX</div>',
+      '<div class="pw-note">На этой вкладке можно задать ручные границы цены по позиции. Формат такой же, как в шаблоне с вкладки "Цены".</div>',
+      '<form id="priceMinMaxForm" data-article-key="', esc(row.articleKey), '" data-platform="', esc(row.market), '" style="margin-top:12px">',
+      '<div class="pw-grid2">',
+      '<label style="display:grid;gap:6px"><span class="pw-label">MIN</span><input type="number" step="1" min="0" name="floorPrice" value="', esc(bounds && bounds.manualMin != null ? bounds.manualMin : ""), '" placeholder="Ручной MIN"></label>',
+      '<label style="display:grid;gap:6px"><span class="pw-label">MAX</span><input type="number" step="1" min="0" name="capPrice" value="', esc(bounds && bounds.manualMax != null ? bounds.manualMax : ""), '" placeholder="Ручной MAX"></label>',
+      '</div>',
+      '<textarea name="note" rows="2" placeholder="Комментарий" style="margin-top:10px;width:100%">', esc(bounds && bounds.override && bounds.override.note || ""), '</textarea>',
+      '<div class="pw-note" style="margin-top:8px">Расчетный коридор: MIN ', esc(bounds && bounds.effectiveMin != null ? money(bounds.effectiveMin) : "—"), ' · MAX ', esc(bounds && bounds.effectiveMax != null ? money(bounds.effectiveMax) : "—"), '.</div>',
+      '<div class="pw-chip-row" style="margin-top:10px"><button class="pw-chip" type="submit">Сохранить MIN/MAX</button><button class="pw-chip" type="button" data-reset-minmax data-article-key="', esc(row.articleKey), '" data-platform="', esc(row.market), '">Сбросить MIN/MAX</button></div>',
+      '</form>',
       '</div>',
       renderProductLeaderboardContext(leaderboardEntry, row.articleKey),
       '<div class="pw-card">',
@@ -1758,6 +1930,35 @@
         state.selectedKey = "";
         renderSelectedModal();
       }
+    });
+    var minMaxForm = modal.querySelector("#priceMinMaxForm");
+    if (minMaxForm) {
+      minMaxForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        var articleKey = minMaxForm.getAttribute("data-article-key") || "";
+        var platform = minMaxForm.getAttribute("data-platform") || "";
+        upsertMinMaxOverride(articleKey, platform, {
+          floorPrice: moneyRound(num(minMaxForm.querySelector('[name=\"floorPrice\"]') && minMaxForm.querySelector('[name=\"floorPrice\"]').value)),
+          capPrice: moneyRound(num(minMaxForm.querySelector('[name=\"capPrice\"]') && minMaxForm.querySelector('[name=\"capPrice\"]').value)),
+          note: String(minMaxForm.querySelector('[name=\"note\"]') && minMaxForm.querySelector('[name=\"note\"]').value || "").trim()
+        });
+        renderPriceWorkbench();
+        renderSelectedModal();
+      });
+    }
+    modal.querySelectorAll("[data-reset-minmax]").forEach(function (button) {
+      button.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        upsertMinMaxOverride(button.getAttribute("data-article-key") || "", button.getAttribute("data-platform") || "", {
+          floorPrice: null,
+          capPrice: null,
+          note: ""
+        });
+        renderPriceWorkbench();
+        renderSelectedModal();
+      });
     });
   }
 
@@ -1790,6 +1991,140 @@
       '</details>',
       '</div>'
     ].join("");
+  }
+
+  function priceMinMaxTemplateRows(rows) {
+    return sortedVisiblePriceRows(rows)
+      .filter(function (row) {
+        var market = repricerMarket(row && row.market);
+        return market === "wb" || market === "ozon";
+      })
+      .map(function (row) {
+        return {
+          article_key: row.articleKey || "",
+          article: row.article || "",
+          name: row.name || "",
+          marketplace: String((row.market || "")).toUpperCase(),
+          min_price: row.repricerBounds && row.repricerBounds.manualMin != null ? row.repricerBounds.manualMin : "",
+          max_price: row.repricerBounds && row.repricerBounds.manualMax != null ? row.repricerBounds.manualMax : "",
+          current_price_mp: moneyRound(row.currentFillPrice),
+          repricer_price: moneyRound(row.repricerDisplay && row.repricerDisplay.price),
+          note: row.repricerBounds && row.repricerBounds.override && row.repricerBounds.override.note || ""
+        };
+      });
+  }
+
+  function downloadPriceMinMaxTemplate(rows) {
+    var templateRows = priceMinMaxTemplateRows(rows);
+    if (!templateRows.length) {
+      window.alert("По текущим фильтрам нет строк WB/Ozon для шаблона MIN/MAX.");
+      return;
+    }
+    downloadPriceHtmlTable([
+      ["article_key", "article_key"],
+      ["article", "Артикул"],
+      ["name", "Название"],
+      ["marketplace", "Площадка"],
+      ["min_price", "min_price"],
+      ["max_price", "max_price"],
+      ["current_price_mp", "current_price_mp"],
+      ["repricer_price", "repricer_price"],
+      ["note", "note"]
+    ], templateRows, "prices-minmax-template-" + priceExportScope() + ".xls");
+  }
+
+  function normalizeImportHeader(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-zа-я0-9_]+/gi, "_");
+  }
+
+  function parseHtmlTableText(text) {
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(text, "text/html");
+    return Array.prototype.map.call(doc.querySelectorAll("tr"), function (row) {
+      return Array.prototype.map.call(row.querySelectorAll("th,td"), function (cell) {
+        return String(cell.textContent || "").trim();
+      });
+    }).filter(function (row) { return row.some(function (value) { return value; }); });
+  }
+
+  function parseDelimitedText(text) {
+    var lines = String(text || "").replace(/\r/g, "").split("\n").filter(function (line) { return String(line).trim(); });
+    var delimiter = "\t";
+    var first = lines[0] || "";
+    if (first.indexOf("\t") === -1) delimiter = first.indexOf(";") >= 0 ? ";" : ",";
+    return lines.map(function (line) {
+      return line.split(delimiter).map(function (part) {
+        return String(part || "").trim().replace(/^"(.*)"$/, "$1");
+      });
+    });
+  }
+
+  function parsePriceMinMaxRows(text) {
+    var matrix = /<table[\s>]/i.test(text) ? parseHtmlTableText(text) : parseDelimitedText(text);
+    if (!matrix.length) return [];
+    var headers = matrix[0].map(normalizeImportHeader);
+    var findColumn = function () {
+      for (var index = 0; index < arguments.length; index += 1) {
+        var wanted = arguments[index];
+        var found = headers.indexOf(wanted);
+        if (found >= 0) return found;
+      }
+      return -1;
+    };
+    var articleIndex = findColumn("article_key", "articlekey", "sku", "sku_code", "article");
+    var marketIndex = findColumn("marketplace", "platform", "market");
+    var minIndex = findColumn("min_price", "min", "floor_price");
+    var maxIndex = findColumn("max_price", "max", "cap_price");
+    var noteIndex = findColumn("note", "comment");
+    if (articleIndex < 0 || marketIndex < 0 || (minIndex < 0 && maxIndex < 0)) return [];
+
+    return matrix.slice(1).map(function (row) {
+      var market = repricerMarket(row[marketIndex]);
+      return {
+        articleKey: String(row[articleIndex] || "").trim(),
+        platform: market,
+        minPrice: moneyRound(num(minIndex >= 0 ? row[minIndex] : null)),
+        maxPrice: moneyRound(num(maxIndex >= 0 ? row[maxIndex] : null)),
+        note: String(noteIndex >= 0 ? row[noteIndex] || "" : "").trim()
+      };
+    }).filter(function (row) {
+      return row.articleKey && (row.platform === "wb" || row.platform === "ozon");
+    });
+  }
+
+  function importPriceMinMaxFile(file) {
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var parsedRows = parsePriceMinMaxRows(String(reader.result || ""));
+        if (!parsedRows.length) {
+          window.alert("Не удалось распознать строки MIN/MAX. Используйте шаблон с этой вкладки.");
+          return;
+        }
+        var applied = 0;
+        parsedRows.forEach(function (row) {
+          if (row.minPrice == null && row.maxPrice == null && !row.note) return;
+          upsertMinMaxOverride(row.articleKey, row.platform, {
+            floorPrice: row.minPrice,
+            capPrice: row.maxPrice,
+            note: row.note
+          });
+          applied += 1;
+        });
+        renderPriceWorkbench();
+        if (state.selectedKey) renderSelectedModal();
+        window.alert("MIN/MAX загружены: " + applied + " строк.");
+      } catch (error) {
+        console.error("[price-simple] min/max import", error);
+        window.alert("Не удалось загрузить файл MIN/MAX.");
+      }
+    };
+    reader.readAsText(file, "utf-8");
   }
 
   function renderRoot() {
@@ -1843,9 +2178,10 @@
       '<div class="pw-card pw-stat"><span class="pw-label">\u041d\u0438\u0436\u0435 \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e\u0439</span><strong>', intf(summary.belowAllowed), '</strong><small>\u0421\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u0435\u043c \u043c\u0430\u0440\u0436\u0443 \u0441\u0440\u0435\u0437\u0430 \u0441 \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e\u0439 3\u043c.</small></div>',
       '</section>',
       '<section class="pw-card">',
-      '<div class="pw-table-head"><div class="pw-label">\u0422\u0430\u0431\u043b\u0438\u0446\u0430</div><div class="pw-chip-row"><button type="button" class="pw-chip" data-price-export="summary">\u0421\u043a\u0430\u0447\u0430\u0442\u044c Excel</button><button type="button" class="pw-chip" data-price-export="daily">\u041f\u043e \u0434\u043d\u044f\u043c Excel</button></div></div>',
+      '<div class="pw-table-head"><div class="pw-label">\u0422\u0430\u0431\u043b\u0438\u0446\u0430</div><div class="pw-chip-row"><button type="button" class="pw-chip" data-price-export="summary">\u0421\u0432\u043e\u0434 Excel</button><button type="button" class="pw-chip" data-price-export="daily">\u041f\u043e \u0434\u043d\u044f\u043c Excel</button><button type="button" class="pw-chip" data-price-minmax-template>\u0424\u043e\u0440\u043c\u0430 MIN/MAX</button><button type="button" class="pw-chip" data-price-minmax-import>\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c MIN/MAX</button></div></div>',
       state.loading && !state.loaded ? '<div class="pw-empty">\u0417\u0430\u0433\u0440\u0443\u0436\u0430\u044e \u0434\u0430\u043d\u043d\u044b\u0435 \u0432\u043a\u043b\u0430\u0434\u043a\u0438 \u0426\u0435\u043d\u044b...</div>' : renderTable(rows),
       '</section>',
+      '<input type="file" id="pwMinMaxFile" accept=".xls,.html,.csv,.tsv,.txt" style="display:none">',
       '<div id="priceSimpleModalHost">', renderModal(selected), '</div>',
       '</div>'
     ].join("");
@@ -1884,6 +2220,18 @@
         }
         downloadPriceSummaryExcel(rowsForExport);
       });
+    });
+    root.querySelector("[data-price-minmax-template]")?.addEventListener("click", function () {
+      downloadPriceMinMaxTemplate(visibleRows());
+    });
+    root.querySelector("[data-price-minmax-import]")?.addEventListener("click", function () {
+      root.querySelector("#pwMinMaxFile")?.click();
+    });
+    root.querySelector("#pwMinMaxFile")?.addEventListener("change", function (event) {
+      var file = event && event.target && event.target.files ? event.target.files[0] : null;
+      if (!file) return;
+      importPriceMinMaxFile(file);
+      event.target.value = "";
     });
     var fromInput = document.getElementById("pwFrom");
     var toInput = document.getElementById("pwTo");

@@ -12,7 +12,7 @@ function renderTaskModal(taskId) {
     ? history.map(renderTaskHistoryItem).join('')
     : `<div class="comment-item"><div class="head"><strong>Портал</strong>${taskHistoryBadge('created')}</div><div class="muted small">${fmt.date(task.createdAt)}</div><p>Задача уже есть в контуре. Дальше все апдейты и отчёты будут появляться здесь.</p></div>`;
 
-  body.innerHTML = `
+  const modalMarkup = `
     <div class="modal-head">
       <div>
         <div class="muted small">${escapeHtml(controlWorkstreamMeta(controlWorkstreamKey(task, sku)).label)} · ${escapeHtml(task.entityLabel || taskHeadline(task))}</div>
@@ -108,6 +108,7 @@ function renderTaskModal(taskId) {
       </div>
     ` : ''}
   `;
+  body.innerHTML = safeUiMarkup(modalMarkup);
 
   modal.classList.add('open');
 
@@ -154,6 +155,13 @@ function filterSkuByMarket(sku) {
   if (state.filters.market === 'wb') return sku?.flags?.hasWB;
   if (state.filters.market === 'ozon') return sku?.flags?.hasOzon;
   return true;
+}
+
+function safeUiMarkup(value) {
+  const source = String(value ?? '');
+  return typeof repairBrokenUtf8Cp1251String === 'function'
+    ? repairBrokenUtf8Cp1251String(source)
+    : source;
 }
 
 function filterSkuByWorkLogic(sku) {
@@ -226,6 +234,10 @@ function renderSkuRegistry() {
   const root = document.getElementById('view-skus');
   const skuTaskMap = buildSkuRegistryTaskMap();
   const items = getFilteredSkus(skuTaskMap);
+  const renderLimit = 240;
+  const showAllRows = Boolean(state.filters.showAllSkus);
+  const visibleItems = showAllRows ? items : items.slice(0, renderLimit);
+  const hiddenRows = Math.max(0, items.length - visibleItems.length);
   const owners = [...new Set(state.skus.map((sku) => ownerName(sku)).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
   const segments = [...new Set(state.skus.map((sku) => sku.segment).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
   const assignedCount = items.filter((sku) => sku?.flags?.assigned).length;
@@ -242,8 +254,9 @@ function renderSkuRegistry() {
     </div>
   `;
 
-  const rows = items.map((sku) => {
+  const rows = visibleItems.map((sku) => {
     const task = skuTaskMap.get(String(sku.articleKey || '').trim()) || null;
+    const taskDue = task?.due ? escapeHtml(task.due) : '—';
     return `
     <tr>
       <td>${linkToSku(sku.articleKey, sku.article || sku.articleKey)}</td>
@@ -252,19 +265,19 @@ function renderSkuRegistry() {
       <td>${ownerCell(sku)}</td>
       <td>${trafficBadges(sku, 'нет')}</td>
       <td>${renderSkuTaskSummary(sku, task)}</td>
-      <td>${nextTaskForSku(sku.articleKey)?.due ? escapeHtml(nextTaskForSku(sku.articleKey).due) : '—'}</td>
+      <td>${taskDue}</td>
     </tr>
   `;
   }).join('');
 
-  root.innerHTML = `
+  const registryMarkup = `
     <div class="section-title">
       <div>
         <h2>Реестр SKU · Алтея</h2>
         <p>Сократила строку до операционного минимума: статус, owner, внешний трафик, следующее действие и срок.</p>
       </div>
       <div class="badge-stack">
-        ${badge(`${fmt.int(items.length)} SKU`)}
+        ${badge(`${fmt.int(visibleItems.length)} / ${fmt.int(items.length)} SKU`)}
         ${badge(`${fmt.int(assignedCount)} с owner`, 'ok')}
         ${badge(`${fmt.int(unassignedCount)} без owner`, unassignedCount ? 'warn' : 'ok')}
         ${badge(`🚀 КЗ ${fmt.int(kzCount)}`, kzCount ? 'info' : '')}
@@ -332,16 +345,65 @@ function renderSkuRegistry() {
       </table>
     </div>
 
+    ${hiddenRows > 0 ? `
+      <div class="card subtle" style="margin-top:12px">
+        <div class="section-subhead">
+          <div>
+            <strong>Показаны первые ${fmt.int(visibleItems.length)} SKU из ${fmt.int(items.length)}.</strong>
+            <p class="small muted">Чтобы не подвешивать страницу, длинный список открываем по кнопке.</p>
+          </div>
+          <button class="btn" type="button" data-sku-show-all>Показать все ${fmt.int(items.length)}</button>
+        </div>
+      </div>
+    ` : ''}
+
     <div class="footer-note">Белый бейдж артикулов оставила. Главная строка теперь читается как рабочий список, а не как длинный аналитический отчёт.</div>
   `;
+  root.innerHTML = safeUiMarkup(registryMarkup);
 
-  document.getElementById('skuSearchInput').addEventListener('input', (e) => { state.filters.search = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuOwnerFilter').addEventListener('change', (e) => { state.filters.owner = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuSegmentFilter').addEventListener('change', (e) => { state.filters.segment = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuFocusFilter').addEventListener('change', (e) => { state.filters.focus = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuTrafficFilter').addEventListener('change', (e) => { state.filters.traffic = e.target.value; renderSkuRegistry(); });
-  document.getElementById('skuAssignmentFilter').addEventListener('change', (e) => { state.filters.assignment = e.target.value; renderSkuRegistry(); });
-  root.querySelectorAll('[data-market-filter]').forEach((btn) => btn.addEventListener('click', (e) => { state.filters.market = e.currentTarget.dataset.marketFilter; renderSkuRegistry(); }));
+  document.getElementById('skuSearchInput').addEventListener('input', (e) => {
+    const searchValue = e.target.value;
+    if (state.__skuSearchRenderTimer) clearTimeout(state.__skuSearchRenderTimer);
+    state.__skuSearchRenderTimer = setTimeout(() => {
+      state.filters.search = searchValue;
+      state.filters.showAllSkus = false;
+      renderSkuRegistry();
+    }, 120);
+  });
+  document.getElementById('skuOwnerFilter').addEventListener('change', (e) => {
+    state.filters.owner = e.target.value;
+    state.filters.showAllSkus = false;
+    renderSkuRegistry();
+  });
+  document.getElementById('skuSegmentFilter').addEventListener('change', (e) => {
+    state.filters.segment = e.target.value;
+    state.filters.showAllSkus = false;
+    renderSkuRegistry();
+  });
+  document.getElementById('skuFocusFilter').addEventListener('change', (e) => {
+    state.filters.focus = e.target.value;
+    state.filters.showAllSkus = false;
+    renderSkuRegistry();
+  });
+  document.getElementById('skuTrafficFilter').addEventListener('change', (e) => {
+    state.filters.traffic = e.target.value;
+    state.filters.showAllSkus = false;
+    renderSkuRegistry();
+  });
+  document.getElementById('skuAssignmentFilter').addEventListener('change', (e) => {
+    state.filters.assignment = e.target.value;
+    state.filters.showAllSkus = false;
+    renderSkuRegistry();
+  });
+  root.querySelectorAll('[data-market-filter]').forEach((btn) => btn.addEventListener('click', (e) => {
+    state.filters.market = e.currentTarget.dataset.marketFilter;
+    state.filters.showAllSkus = false;
+    renderSkuRegistry();
+  }));
+  root.querySelector('[data-sku-show-all]')?.addEventListener('click', () => {
+    state.filters.showAllSkus = true;
+    renderSkuRegistry();
+  });
 }
 
 function metricRow(label, value, kind = '') {

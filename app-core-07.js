@@ -35,7 +35,7 @@
     resultRows.push(metricRow('К плану на дату', fmt.pct(completion.toDatePct), completion.toDatePct < 0.85 ? 'warn-text' : ''));
   }
 
-  body.innerHTML = `
+  const modalMarkup = `
     <div class="modal-head">
       <div>
         <div class="muted small">${escapeHtml(sku.brand || 'Алтея')} · ${escapeHtml(sku.segment || sku.category || '—')}</div>
@@ -179,6 +179,7 @@
       </div>
     </div>
   `;
+  body.innerHTML = safeUiMarkup(modalMarkup);
 
   modal.classList.add('open');
 

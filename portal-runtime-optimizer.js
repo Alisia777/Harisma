@@ -1,5 +1,6 @@
 (function () {
-if (window.__ALTEA_RUNTIME_OPTIMIZER_20260503D__) return;
+if (window.__ALTEA_RUNTIME_OPTIMIZER_20260503H__) return;
+window.__ALTEA_RUNTIME_OPTIMIZER_20260503H__ = true;
 window.__ALTEA_RUNTIME_OPTIMIZER_20260503D__ = true;
 window.__ALTEA_RUNTIME_OPTIMIZER_20260503C__ = true;
 window.__ALTEA_RUNTIME_OPTIMIZER_20260503B__ = true;
@@ -97,7 +98,7 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
   const deferredPathMap = Object.fromEntries(
     Object.entries(DEFERRED_DATA).map(([key, config]) => [config.path, { key, fallback: config.fallback }])
   );
-  const JSON_REQUEST_VERSION = String(window.__ALTEA_JSON_VERSION__ || '20260503f').trim() || '20260503f';
+  const JSON_REQUEST_VERSION = String(window.__ALTEA_JSON_VERSION__ || '20260503h').trim() || '20260503h';
   window.__ALTEA_JSON_VERSION__ = JSON_REQUEST_VERSION;
   const deferredReady = Object.fromEntries(Object.keys(DEFERRED_DATA).map((key) => [key, false]));
   const deferredLoads = new Map();

@@ -171,6 +171,10 @@
 
     resetRoles(node);
 
+    if (node.closest("#view-prices .pw-table-head .pw-chip-row")) {
+      return;
+    }
+
     var text = textOf(node);
     var isFilter =
       node.matches(".pw-chip, .market-tab, .portal-exec-filter-chip, [data-v86-market], [data-v86-preset]") ||

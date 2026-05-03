@@ -42,6 +42,7 @@
     owner: 'all',
     status: 'active',
     type: 'all',
+    priority: 'all',
     platform: 'all',
     horizon: 'all',
     source: 'all'
@@ -70,7 +71,8 @@
     search: '',
     platform: 'all',
     mode: 'changes',
-    economicSource: 'all'
+    economicSource: 'all',
+    listSize: 'focus'
   },
   orderCalc: {
     articleKey: '',
@@ -139,16 +141,17 @@ const VIEW_TITLES = {
   executive: 'Руководителю'
 };
 const VIEW_DATA_REQUIREMENTS = {
+  control: 'launches',
   launches: 'launches',
   'product-leaderboard': 'productLeaderboard',
   'launch-control': 'launches',
+  executive: 'launches',
   meetings: 'meetings',
   documents: 'documents',
   repricer: 'repricer'
 };
-const DISABLED_VIEWS = new Set(['documents', 'meetings']);
+const DISABLED_VIEWS = new Set(['meetings']);
 const VIEW_REDIRECTS = {
-  documents: 'dashboard',
   meetings: 'dashboard'
 };
 
@@ -1101,6 +1104,8 @@ function defaultStorage() {
     tasks: [],
     decisions: [],
     ownerOverrides: [],
+    launchOverrides: [],
+    launchDeletedIds: [],
     repricerSettings: defaultRepricerSettings(),
     repricerSettingsUpdatedAt: '',
     repricerOverrides: [],
@@ -1578,7 +1583,8 @@ function linkToSku(articleKey, label) {
 }
 
 async function loadJson(path) {
-  const resolvedPath = path.includes("?") ? path : `${path}?v=20260429a`;
+  const requestVersion = String(window.__ALTEA_JSON_VERSION__ || '20260503d').trim() || '20260503d';
+  const resolvedPath = path.includes("?") ? path : `${path}?v=${requestVersion}`;
   const response = await fetch(resolvedPath, { cache: "no-store" });
   if (!response.ok) throw new Error(`Не удалось загрузить ${path}`);
   const text = await response.text();

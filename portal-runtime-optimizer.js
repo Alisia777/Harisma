@@ -1,7 +1,10 @@
 (function () {
-  if (window.__ALTEA_RUNTIME_OPTIMIZER_20260429G__) return;
-  window.__ALTEA_RUNTIME_OPTIMIZER_20260429G__ = true;
-  window.__ALTEA_RUNTIME_OPTIMIZER_20260429F__ = true;
+if (window.__ALTEA_RUNTIME_OPTIMIZER_20260503D__) return;
+window.__ALTEA_RUNTIME_OPTIMIZER_20260503D__ = true;
+window.__ALTEA_RUNTIME_OPTIMIZER_20260503C__ = true;
+window.__ALTEA_RUNTIME_OPTIMIZER_20260503B__ = true;
+window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
+  window.__ALTEA_RUNTIME_OPTIMIZER_20260502A__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260429E__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260429D__ = true;
   window.__ALTEA_RUNTIME_OPTIMIZER_20260429C__ = true;
@@ -18,49 +21,44 @@
   window.__ALTEA_PRICE_SIMPLE_RUNTIME_MODE__ = true;
 
   const BUNDLE_MAP = {
-    dashboard: [
-      'portal-dashboard-interactive-hotfix.js?v=20260429c',
-      'portal-dashboard-prime-hotfix-20260422e.js?v=20260429a'
-    ],
     order: ['portal-order-logistics-hotfix.js?v=20260428b'],
-    launches: [
-      'portal-launch-month-filter-hotfix.js?v=20260422c',
-      'portal-launch-manager-hotfix.js?v=20260422c'
-    ],
     prices: [
       'portal-price-local-fetch-bypass-hotfix.js?v=20260428a',
-      'portal-price-workbench-runtime-loader.js?v=20260502a',
+      'portal-price-workbench-runtime-loader.js?v=20260503d',
       'portal-team-reconnect-hotfix.js?v=20260420a'
     ]
   };
+
   const VIEW_TO_BUNDLE = {
-    dashboard: 'dashboard',
     order: 'order',
-    launches: 'launches',
-    'launch-control': 'launches',
     prices: 'prices'
   };
+
   const VIEW_TITLES = {
     dashboard: 'Дашборд',
     documents: 'Документы',
     repricer: 'Репрайсер',
-    'ads-funnel': 'Рекламная воронка',
     prices: 'Цены',
     order: 'Логистика и заказ',
     control: 'Задачи',
     skus: 'Реестр SKU',
     launches: 'Продукт / Ксения',
+    'product-leaderboard': 'Продуктовый лидерборд',
     'launch-control': 'Запуск новинок',
     meetings: 'Ритм работы',
     executive: 'Руководителю'
   };
+
   const VIEW_TO_DATA_KEY = {
+    control: 'launches',
+    executive: 'launches',
     launches: 'launches',
     'launch-control': 'launches',
     meetings: 'meetings',
     documents: 'documents',
     repricer: 'repricer'
   };
+
   const DEFERRED_DATA = {
     launches: {
       path: 'data/launches.json',
@@ -99,18 +97,19 @@
   const deferredPathMap = Object.fromEntries(
     Object.entries(DEFERRED_DATA).map(([key, config]) => [config.path, { key, fallback: config.fallback }])
   );
-  const FORCED_JSON_VERSION = {
-    'data/dashboard.json': '20260423a'
-  };
+  const JSON_REQUEST_VERSION = String(window.__ALTEA_JSON_VERSION__ || '20260503f').trim() || '20260503f';
+  window.__ALTEA_JSON_VERSION__ = JSON_REQUEST_VERSION;
   const deferredReady = Object.fromEntries(Object.keys(DEFERRED_DATA).map((key) => [key, false]));
   const deferredLoads = new Map();
   const scriptPromises = new Map();
   const bundlePromises = new Map();
   const readyBundles = new Set();
   const originalFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
+
   if (originalFetch && typeof window.__ALTEA_BASE_FETCH__ !== 'function') {
     window.__ALTEA_BASE_FETCH__ = originalFetch;
   }
+
   let hasUserNavigation = false;
 
   function getActiveView() {
@@ -140,13 +139,17 @@
     });
   }
 
+  function shouldRewritePortalJson(path) {
+    return /^data\/.+\.json$/i.test(path) || /^tmp-[^/]+\.json$/i.test(path);
+  }
+
   function rewriteStaticJsonVersion(input, path) {
-    const forcedVersion = FORCED_JSON_VERSION[path];
-    if (!forcedVersion) return input;
+    if (!JSON_REQUEST_VERSION || !shouldRewritePortalJson(path)) return input;
     try {
       const raw = typeof input === 'string' ? input : input?.url || '';
       const url = new URL(raw, window.location.href);
-      url.searchParams.set('v', forcedVersion);
+      if (url.origin !== window.location.origin) return input;
+      url.searchParams.set('v', JSON_REQUEST_VERSION);
       return url.toString();
     } catch {
       return input;
@@ -207,45 +210,14 @@
       return;
     }
     if (typeof state === 'object' && state) state.activeView = view;
-    document.querySelectorAll('.nav-btn').forEach((btn) => btn.classList.toggle('active', btn.dataset.view === view));
+    document.querySelectorAll('.nav-btn').forEach((button) => button.classList.toggle('active', button.dataset.view === view));
     document.querySelectorAll('.view').forEach((section) => section.classList.toggle('active', section.id === `view-${view}`));
     window.dispatchEvent(new CustomEvent('altea:viewchange', { detail: { view } }));
     safeRerender();
   }
 
   function markBundleReady(bundleKey) {
-    readyBundles.add(bundleKey);
-    if (bundleKey === 'launches') readyBundles.add('launch-control');
-  }
-
-  function waitForPriceWorkbenchBridge(timeoutMs = 6000) {
-    const startedAt = Date.now();
-    return new Promise((resolve, reject) => {
-      function fail() {
-        reject(new Error('Не удалось открыть вкладку Цены для выбранного сигнала.'));
-      }
-
-      function poll() {
-        if (typeof window.__alteaOpenPriceWorkbenchSelection === 'function') {
-          resolve(window.__alteaOpenPriceWorkbenchSelection);
-          return;
-        }
-        if (Date.now() - startedAt >= timeoutMs) {
-          fail();
-          return;
-        }
-        window.setTimeout(poll, 80);
-      }
-
-      if (typeof window.__alteaEnsurePriceWorkbenchLoaded === 'function') {
-        Promise.resolve(window.__alteaEnsurePriceWorkbenchLoaded())
-          .then(() => poll())
-          .catch(reject);
-        return;
-      }
-
-      poll();
-    });
+    if (bundleKey) readyBundles.add(bundleKey);
   }
 
   function loadBundleForView(view) {
@@ -258,12 +230,14 @@
       chain = chain.then(() => loadScript(src));
     });
 
-    const promise = chain.then(() => {
-      markBundleReady(bundleKey);
-      if (bundleKeyForView(getActiveView()) === bundleKey) safeRerender();
-    }).catch((error) => {
-      console.warn('[portal-runtime-optimizer] bundle', bundleKey, error);
-    });
+    const promise = chain
+      .then(() => {
+        markBundleReady(bundleKey);
+        if (bundleKeyForView(getActiveView()) === bundleKey) safeRerender();
+      })
+      .catch((error) => {
+        console.warn('[portal-runtime-optimizer] bundle', bundleKey, error);
+      });
 
     bundlePromises.set(bundleKey, promise);
     return promise;
@@ -355,28 +329,23 @@
     });
   }
 
-  function warmInitialDashboard() {
-    const start = () => {
-      if (getActiveView() !== 'dashboard') return;
-      loadBundleForView('dashboard');
+  function warmCurrentView() {
+    const boot = () => {
+      const activeView = getActiveView();
+      loadBundleForView(activeView);
+      handleDeferredView(activeView);
     };
-    const scheduleStart = (delay = 0) => window.setTimeout(start, delay);
+
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
-      scheduleStart(0);
+      boot();
       return;
     }
-    document.addEventListener('DOMContentLoaded', () => scheduleStart(0), { once: true });
-    window.addEventListener('load', () => scheduleStart(120), { once: true });
-    window.setTimeout(start, 1500);
+
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+    window.addEventListener('load', boot, { once: true });
   }
 
   installDeferredFetch();
   bindNavigation();
-  warmInitialDashboard();
-  window.openPriceWorkbenchArticle = function openPriceWorkbenchArticle(options) {
-    forceActivateView('prices');
-    return loadBundleForView('prices')
-      .then(() => waitForPriceWorkbenchBridge())
-      .then((openSelection) => openSelection(options || {}));
-  };
+  warmCurrentView();
 })();

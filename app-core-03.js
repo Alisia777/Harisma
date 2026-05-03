@@ -750,7 +750,7 @@ async function persistOwnerOverride(item) {
   if (!hasRemoteStore()) return;
   await upsertRemote(TEAM_TABLES.owners, [remoteOwnerRow(item)], 'brand,article_key');
   state.team.lastSyncAt = new Date().toISOString();
-  state.team.note = `Owner синхронизирован · ${fmt.date(state.team.lastSyncAt)}`;
+  state.team.note = `Ответственный синхронизирован · ${fmt.date(state.team.lastSyncAt)}`;
   state.team.mode = 'ready';
   updateSyncBadge();
 }
@@ -771,14 +771,22 @@ function updateSyncBadge() {
   const member = state.team.member?.name ? ` · ${state.team.member.name}` : '';
   const uiNote = hasUiError ? ' · есть ошибка интерфейса' : '';
   badgeEl.textContent = `${state.team.note || 'Локальный режим'}${member}${uiNote}`;
-  if (pullBtn) pullBtn.disabled = !hasRemoteStore();
-  if (pushBtn) pushBtn.disabled = !hasRemoteStore();
+  const allowRemoteActions = mode !== 'local';
+  if (pullBtn) {
+    pullBtn.disabled = !hasRemoteStore();
+    pullBtn.classList.toggle('hidden', !allowRemoteActions);
+  }
+  if (pushBtn) {
+    pushBtn.disabled = !hasRemoteStore();
+    pushBtn.classList.toggle('hidden', !allowRemoteActions);
+  }
 }
 
 function filteredControlTasks(options = {}) {
   const f = state.controlFilters;
   const search = String(f.search || '').trim().toLowerCase();
   const selectedWorkstream = normalizeControlWorkstreamFilter(f.platform);
+  const selectedPriority = String(f.priority || 'all').trim().toLowerCase();
   const ignorePlatform = Boolean(options.ignorePlatform);
 
   return getAllTasks().filter((task) => {
@@ -786,13 +794,14 @@ function filteredControlTasks(options = {}) {
     const workstream = controlWorkstreamMeta(controlWorkstreamKey(task, sku));
     const hay = [task.title, task.nextAction, task.reason, task.owner, task.articleKey, sku?.article, sku?.name, sku?.category, workstream.label, workstream.chip].filter(Boolean).join(' ').toLowerCase();
     if (search && !hay.includes(search)) return false;
-    if (f.owner !== 'all' && (task.owner || 'Без owner') !== f.owner) return false;
+    if (f.owner !== 'all' && (task.owner || 'Без ответственного') !== f.owner) return false;
     if (f.status === 'active' && !isTaskActive(task)) return false;
     if (f.status !== 'active' && f.status !== 'all' && task.status !== f.status) return false;
     if (f.type !== 'all' && task.type !== f.type) return false;
     if (!ignorePlatform && selectedWorkstream !== 'all' && controlWorkstreamKey(task, sku) !== selectedWorkstream) return false;
     if (f.source === 'manual' && task.source === 'auto') return false;
     if (f.source === 'auto' && task.source !== 'auto') return false;
+    if (selectedPriority !== 'all' && task.priority !== selectedPriority) return false;
     if (f.horizon === 'overdue' && !isTaskOverdue(task)) return false;
     if (f.horizon === 'today' && task.due !== todayIso()) return false;
     if (f.horizon === 'week' && (!task.due || task.due > plusDays(7))) return false;
@@ -824,7 +833,7 @@ function renderTaskCard(task) {
       ${task.reason ? `<div class="muted small">${escapeHtml(task.reason)}</div>` : ''}
       ${task.nextAction ? `<div><strong class="small">Следующее действие</strong><div class="muted small" style="margin-top:4px">${escapeHtml(task.nextAction)}</div></div>` : ''}
       <div class="foot">
-        <div class="muted small">${escapeHtml(task.owner || 'Без owner')} · срок ${escapeHtml(task.due || '—')}</div>
+        <div class="muted small">${escapeHtml(task.owner || 'Без ответственного')} · срок ${escapeHtml(task.due || '—')}</div>
         <div class="actions">${controls}</div>
       </div>
     </div>
@@ -837,7 +846,7 @@ function renderMiniTask(task) {
     <div class="task-mini ${isTaskOverdue(task) ? 'overdue' : ''}" data-open-task="${escapeHtml(task.id)}" style="cursor:pointer">
       <div class="left">
         <strong>${escapeHtml(task.title)}</strong>
-        <div class="muted small">${escapeHtml(sku?.article || task.articleKey || task.entityLabel || '—')} · ${escapeHtml(task.owner || 'Без owner')} · ${escapeHtml(task.due || '—')}</div>
+        <div class="muted small">${escapeHtml(sku?.article || task.articleKey || task.entityLabel || '—')} · ${escapeHtml(task.owner || 'Без ответственного')} · ${escapeHtml(task.due || '—')}</div>
       </div>
       <div class="badge-stack">${taskPriorityBadge(task)}${taskStatusBadge(task)}</div>
     </div>
@@ -866,7 +875,7 @@ function buildControlWorkstreamSummary(tasks, key) {
     ? sortTasks(tasks)
     : sortTasks(tasks.filter((task) => controlWorkstreamKey(task, getSku(task.articleKey)) === key));
   const active = grouped.filter(isTaskActive);
-  const owners = [...new Set(active.map((task) => task.owner || 'Без owner'))].slice(0, 3);
+  const owners = [...new Set(active.map((task) => task.owner || 'Без ответственного'))].slice(0, 3);
   const meta = controlWorkstreamMeta(key);
   return {
     key,

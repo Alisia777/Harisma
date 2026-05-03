@@ -1,12 +1,13 @@
 function renderControlCenter() {
   const root = document.getElementById('view-control');
   state.controlFilters.platform = normalizeControlWorkstreamFilter(state.controlFilters.platform);
+  state.controlFilters.priority = state.controlFilters.priority || 'all';
 
   const tasks = filteredControlTasks();
   const baseTasks = filteredControlTasks({ ignorePlatform: true });
   const selectedWorkstream = state.controlFilters.platform;
   const selectedSummary = buildControlWorkstreamSummary(baseTasks, selectedWorkstream);
-  const owners = [...new Set(getAllTasks().map((task) => task.owner || 'Без owner'))].sort((a, b) => a.localeCompare(b, 'ru'));
+  const owners = [...new Set(getAllTasks().map((task) => task.owner || 'Без ответственного'))].sort((a, b) => a.localeCompare(b, 'ru'));
   const ownerSuggestions = ownerOptions();
   const unassignedSkus = [...state.skus]
     .filter((sku) => !sku?.flags?.assigned)
@@ -29,7 +30,7 @@ function renderControlCenter() {
     active: tasks.filter(isTaskActive).length,
     overdue: tasks.filter(isTaskOverdue).length,
     noOwner: tasks.filter((task) => isTaskActive(task) && !task.owner).length,
-    waiting: tasks.filter((task) => task.status === 'waiting_rop').length,
+    waiting: tasks.filter((task) => task.status === 'waiting_rop' || task.status === 'waiting_decision').length,
     critical: tasks.filter((task) => isTaskActive(task) && task.priority === 'critical').length,
     auto: tasks.filter((task) => task.source === 'auto' && isTaskActive(task)).length
   };
@@ -50,10 +51,10 @@ function renderControlCenter() {
         </div>
         <div class="badge-stack">${scoreChip(sku.focusScore || 0)}${skuOperationalStatus(sku)}</div>
       </div>
-      <div class="team-note">${escapeHtml(sku.focusReasons || 'Нужно закрепить owner и первый срок обновления.')}</div>
+      <div class="team-note">${escapeHtml(sku.focusReasons || 'Нужно назначить ответственного и первый срок обновления.')}</div>
       <div class="inline-form" style="margin-top:10px">
         <input class="inline-input" list="ownerOptionsList" data-owner-assign-input="${escapeHtml(sku.articleKey)}" placeholder="Кто отвечает за SKU">
-        <input class="inline-input" data-owner-assign-role="${escapeHtml(sku.articleKey)}" placeholder="Роль / зона" value="Owner SKU">
+        <input class="inline-input" data-owner-assign-role="${escapeHtml(sku.articleKey)}" placeholder="Роль / зона" value="Ответственный SKU">
         <button class="btn small-btn" type="button" data-save-owner="${escapeHtml(sku.articleKey)}">Закрепить</button>
       </div>
     </div>
@@ -94,26 +95,42 @@ function renderControlCenter() {
       `;
     }).join('')
     : '<div class="empty">История появится после первых обновлений по задачам.</div>';
+  const teamMode = state.team.mode || 'local';
+  const taskSyncLabel = teamMode === 'ready'
+    ? 'задачи: командная база'
+    : teamMode === 'error'
+      ? 'задачи: синхронизация недоступна'
+      : 'задачи: локально';
+  const taskSyncTone = teamMode === 'ready' ? 'ok' : teamMode === 'error' ? 'danger' : 'info';
+  const taskHistoryLabel = teamMode === 'ready'
+    ? 'история общая для команды'
+    : 'история хранится в этом браузере';
+  const skuAssignLabel = teamMode === 'ready'
+    ? 'Командная база'
+    : teamMode === 'error'
+      ? 'Ошибка синхронизации'
+      : 'Локальный режим';
 
   root.innerHTML = `
     <div class="section-title">
       <div>
         <h2>Контур задач</h2>
-        <p>Сначала общий обзор по всем блокам, затем конкретный контур, а ниже уже точечная работа по задачам, owner и решениям. Это делает экран ближе к формату Asana, а не к разрозненному списку.</p>
+        <p>Сначала общий обзор по всем блокам, затем конкретный контур, а ниже уже точечная работа по задачам, ответственным и решениям. Это делает экран ближе к формату Asana, а не к разрозненному списку.</p>
       </div>
       <div class="quick-actions">
         <button class="quick-chip" data-control-preset="active">Активные</button>
         <button class="quick-chip" data-control-preset="overdue">Просроченные</button>
         <button class="quick-chip" data-control-preset="critical">Критичные</button>
-        <button class="quick-chip" data-control-preset="no_owner">Без owner</button>
+        <button class="quick-chip" data-control-preset="no_owner">Без ответственного</button>
       </div>
     </div>
+    <div class="badge-stack" style="margin-top:8px">${badge(taskSyncLabel, taskSyncTone)}${badge(taskHistoryLabel, 'info')}${badge(`${fmt.int(counts.active)} активных`, counts.active ? 'ok' : 'info')}</div>
 
     <div class="kpi-strip">
       <div class="mini-kpi"><span>Активно</span><strong>${fmt.int(counts.active)}</strong></div>
       <div class="mini-kpi danger"><span>Просрочено</span><strong>${fmt.int(counts.overdue)}</strong></div>
       <div class="mini-kpi warn"><span>Критично</span><strong>${fmt.int(counts.critical)}</strong></div>
-      <div class="mini-kpi warn"><span>Без owner</span><strong>${fmt.int(counts.noOwner)}</strong></div>
+      <div class="mini-kpi warn"><span>Без ответственного</span><strong>${fmt.int(counts.noOwner)}</strong></div>
       <div class="mini-kpi"><span>Ждут решения</span><strong>${fmt.int(counts.waiting)}</strong></div>
       <div class="mini-kpi"><span>Авто-сигналы</span><strong>${fmt.int(counts.auto)}</strong></div>
     </div>
@@ -140,8 +157,8 @@ function renderControlCenter() {
         </div>
         <div class="task-mini">
           <div class="left">
-            <strong>Ключевые owner</strong>
-            <div class="muted small">${escapeHtml(selectedSummary.ownerPreview.length ? selectedSummary.ownerPreview.join(' · ') : 'Пока без явных owner')}</div>
+            <strong>Ключевые ответственные</strong>
+            <div class="muted small">${escapeHtml(selectedSummary.ownerPreview.length ? selectedSummary.ownerPreview.join(' · ') : 'Пока без явных ответственных')}</div>
           </div>
           <div class="badge-stack">${badge(`${fmt.int(selectedSummary.criticalCount)} критичных`, selectedSummary.criticalCount ? 'danger' : 'ok')}</div>
         </div>
@@ -218,24 +235,28 @@ function renderControlCenter() {
         <div class="section-subhead">
           <div>
             <h3>Фильтры текущего контура</h3>
-            <p class="small muted">После общего обзора переходим к частному: можно быстро сузить срез по owner, статусу, типу, горизонту и источнику задачи.</p>
+            <p class="small muted">После общего обзора переходим к частному: можно быстро сузить срез по ответственному, статусу, типу, горизонту и источнику задачи.</p>
           </div>
         </div>
         <div class="control-filters" style="margin-top:12px">
-          <input id="controlSearchInput" placeholder="Поиск по SKU, задаче, owner, контуру…" value="${escapeHtml(state.controlFilters.search)}">
+          <input id="controlSearchInput" placeholder="Поиск по SKU, задаче, ответственному, контуру…" value="${escapeHtml(state.controlFilters.search)}">
           <select id="controlPlatformFilter">
             <option value="all" ${selectedWorkstream === 'all' ? 'selected' : ''}>Все контуры</option>
             <option value="cross" ${selectedWorkstream === 'cross' ? 'selected' : ''}>Общие</option>
             ${workstreamOptions}
           </select>
           <select id="controlOwnerFilter">
-            <option value="all">Все owner</option>
+            <option value="all">Все ответственные</option>
             ${owners.map((owner) => `<option value="${escapeHtml(owner)}" ${state.controlFilters.owner === owner ? 'selected' : ''}>${escapeHtml(owner)}</option>`).join('')}
           </select>
           <select id="controlStatusFilter">
             <option value="active" ${state.controlFilters.status === 'active' ? 'selected' : ''}>Только активные</option>
             <option value="all" ${state.controlFilters.status === 'all' ? 'selected' : ''}>Все статусы</option>
             ${Object.entries(TASK_STATUS_META).map(([value, meta]) => `<option value="${value}" ${state.controlFilters.status === value ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}
+          </select>
+          <select id="controlPriorityFilter">
+            <option value="all" ${state.controlFilters.priority === 'all' ? 'selected' : ''}>Все приоритеты</option>
+            ${Object.entries(PRIORITY_META).map(([value, meta]) => `<option value="${value}" ${state.controlFilters.priority === value ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}
           </select>
           <select id="controlTypeFilter">
             <option value="all">Все типы</option>
@@ -246,7 +267,7 @@ function renderControlCenter() {
             <option value="overdue" ${state.controlFilters.horizon === 'overdue' ? 'selected' : ''}>Просрочено</option>
             <option value="today" ${state.controlFilters.horizon === 'today' ? 'selected' : ''}>Срок сегодня</option>
             <option value="week" ${state.controlFilters.horizon === 'week' ? 'selected' : ''}>Срок на 7 дней</option>
-            <option value="no_owner" ${state.controlFilters.horizon === 'no_owner' ? 'selected' : ''}>Без owner</option>
+            <option value="no_owner" ${state.controlFilters.horizon === 'no_owner' ? 'selected' : ''}>Без ответственного</option>
           </select>
           <select id="controlSourceFilter">
             <option value="all">Все источники</option>
@@ -275,9 +296,9 @@ function renderControlCenter() {
         <div class="section-subhead">
           <div>
             <h3>Закрепление SKU</h3>
-            <p class="small muted">Быстрый блок, чтобы не оставлять новинки и проблемные карточки без owner.</p>
+            <p class="small muted">Быстрый блок, чтобы не оставлять новинки и проблемные карточки без ответственного.</p>
           </div>
-          ${badge(state.team.mode === 'ready' ? 'Supabase ready' : state.team.mode === 'local' ? 'local' : state.team.mode, state.team.mode === 'ready' ? 'ok' : state.team.mode === 'error' ? 'danger' : 'warn')}
+          ${badge(skuAssignLabel, teamMode === 'ready' ? 'ok' : teamMode === 'error' ? 'danger' : 'info')}
         </div>
         <div class="team-note">${escapeHtml(state.team.note || 'Локальный режим')} · ${escapeHtml(teamMemberLabel())}</div>
         <datalist id="ownerOptionsList">${ownerSuggestions.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
@@ -301,7 +322,7 @@ function renderControlCenter() {
         <h3>Чек-лист контроля</h3>
         <div class="check-list">
           <div class="check-item"><strong>1.</strong><span>Закрыть просрочки и сразу переносить срок, если реально ждём другой отдел.</span></div>
-          <div class="check-item"><strong>2.</strong><span>Проверить все задачи без owner и закрепить их.</span></div>
+          <div class="check-item"><strong>2.</strong><span>Проверить все задачи без ответственного и закрепить их.</span></div>
           <div class="check-item"><strong>3.</strong><span>Открывать задачу через карточку и фиксировать следующий шаг, а не только менять статус в списке.</span></div>
           <div class="check-item"><strong>4.</strong><span>При закрытии просить короткий отчёт: что сделали, какой результат и где артефакт.</span></div>
         </div>
@@ -323,10 +344,20 @@ function renderControlCenter() {
   }));
   document.getElementById('controlOwnerFilter').addEventListener('change', (e) => { state.controlFilters.owner = e.target.value; renderControlCenter(); });
   document.getElementById('controlStatusFilter').addEventListener('change', (e) => { state.controlFilters.status = e.target.value; renderControlCenter(); });
+  document.getElementById('controlPriorityFilter').addEventListener('change', (e) => { state.controlFilters.priority = e.target.value; renderControlCenter(); });
   document.getElementById('controlTypeFilter').addEventListener('change', (e) => { state.controlFilters.type = e.target.value; renderControlCenter(); });
   document.getElementById('controlPlatformFilter').addEventListener('change', (e) => { state.controlFilters.platform = e.target.value; renderControlCenter(); });
   document.getElementById('controlHorizonFilter').addEventListener('change', (e) => { state.controlFilters.horizon = e.target.value; renderControlCenter(); });
   document.getElementById('controlSourceFilter').addEventListener('change', (e) => { state.controlFilters.source = e.target.value; renderControlCenter(); });
+  root.querySelectorAll('[data-control-preset]').forEach((btn) => btn.addEventListener('click', () => {
+    const preset = String(btn.dataset.controlPreset || '').trim().toLowerCase();
+    const patch = { status: 'active', priority: 'all', type: 'all', horizon: 'all', source: 'all' };
+    if (preset === 'overdue') patch.horizon = 'overdue';
+    if (preset === 'critical') patch.priority = 'critical';
+    if (preset === 'no_owner') patch.horizon = 'no_owner';
+    state.controlFilters = { ...state.controlFilters, ...patch };
+    renderControlCenter();
+  }));
   document.getElementById('generalTaskForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -352,7 +383,7 @@ function renderControlCenter() {
     await upsertOwnerAssignment({
       articleKey,
       ownerName: ownerInput?.value || '',
-      ownerRole: roleInput?.value || 'Owner SKU',
+      ownerRole: roleInput?.value || 'Ответственный SKU',
       note: 'Закреплено из центра задач'
     });
     renderControlCenter();

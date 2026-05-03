@@ -2097,6 +2097,7 @@ function openProductLeaderboardForSku(articleKey = '') {
   filters.category = 'all';
   filters.snapshot = 'latest';
   if (!filters.sort) filters.sort = 'buys';
+  if (!filters.sortDir) filters.sortDir = 'desc';
   setView('product-leaderboard');
 }
 
@@ -2109,6 +2110,7 @@ function getProductLeaderboardFilters() {
   state.productLeaderboardFilters.category = state.productLeaderboardFilters.category || 'all';
   state.productLeaderboardFilters.signal = state.productLeaderboardFilters.signal || 'all';
   state.productLeaderboardFilters.sort = state.productLeaderboardFilters.sort || 'buys';
+  state.productLeaderboardFilters.sortDir = state.productLeaderboardFilters.sortDir === 'asc' ? 'asc' : 'desc';
   state.productLeaderboardFilters.snapshot = state.productLeaderboardFilters.snapshot || 'latest';
   return state.productLeaderboardFilters;
 }
@@ -2285,21 +2287,22 @@ function getFilteredProductLeaderboardItems(payload) {
   });
 
   const sortKey = filters.sort || 'buys';
+  const sortDir = filters.sortDir === 'asc' ? 'asc' : 'desc';
+  const directionFactor = sortDir === 'asc' ? 1 : -1;
+  const emptyMetric = sortDir === 'asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
   const getMetric = (item) => {
-    if (sortKey === 'romiPct') return item.romiPct ?? Number.NEGATIVE_INFINITY;
-    if (sortKey === 'ctrPct') return item.ctrPct ?? Number.NEGATIVE_INFINITY;
-    if (sortKey === 'drrPct') return item.drrPct ?? Number.POSITIVE_INFINITY;
-    if (sortKey === 'buyoutPct') return item.buyoutPct ?? Number.NEGATIVE_INFINITY;
-    return numberOrZero(item[sortKey]);
+    const raw = item?.[sortKey];
+    if (raw === null || raw === undefined || raw === '') return emptyMetric;
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? parsed : emptyMetric;
   };
 
   return filtered.sort((left, right) => {
     const leftMetric = getMetric(left);
     const rightMetric = getMetric(right);
-    if (sortKey === 'drrPct') {
-      return leftMetric - rightMetric || right.buys - left.buys || left.name.localeCompare(right.name, 'ru');
-    }
-    return rightMetric - leftMetric || right.buys - left.buys || left.name.localeCompare(right.name, 'ru');
+    return (leftMetric - rightMetric) * directionFactor
+      || right.buys - left.buys
+      || left.name.localeCompare(right.name, 'ru');
   });
 }
 
@@ -2347,6 +2350,17 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
       <div class="muted small" style="margin-top:10px">${escapeHtml(freshness.technicalLine || freshness.actionLine)}</div>
       ${freshness.technicalLine ? `<div class="muted small" style="margin-top:6px">${escapeHtml(freshness.actionLine)}</div>` : ''}
     </div>
+  `;
+  const sortIndicator = (key) => {
+    if (filters.sort !== key) return '';
+    return filters.sortDir === 'asc' ? ' ↑' : ' ↓';
+  };
+  const sortHeader = (label, key) => `
+    <th
+      data-product-sort="${escapeHtml(key)}"
+      style="cursor:pointer;user-select:none"
+      title="Сортировка как в Excel: первый клик по колонке — от большего к меньшему, второй — в обратную сторону."
+    >${escapeHtml(label)}${sortIndicator(key)}</th>
   `;
 
   root.innerHTML = `
@@ -2470,17 +2484,17 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
             <tr>
               <th>SKU / товар</th>
               <th>Owner</th>
-              <th>Охваты</th>
-              <th>Клики</th>
-              <th>Корзины</th>
-              <th>Заказы</th>
-              <th>Выкупы</th>
-              <th>CTR</th>
-              <th>CR</th>
-              <th>ROMI</th>
-              <th>ДРР</th>
-              <th>Выручка</th>
-              <th>Доход</th>
+              ${sortHeader('Охваты', 'reach')}
+              ${sortHeader('Клики', 'clicks')}
+              ${sortHeader('Корзины', 'carts')}
+              ${sortHeader('Заказы', 'orders')}
+              ${sortHeader('Выкупы', 'buys')}
+              ${sortHeader('CTR', 'ctrPct')}
+              ${sortHeader('CR', 'conversionPct')}
+              ${sortHeader('ROMI', 'romiPct')}
+              ${sortHeader('ДРР', 'drrPct')}
+              ${sortHeader('Выручка', 'revenue')}
+              ${sortHeader('Доход', 'income')}
             </tr>
           </thead>
           <tbody>
@@ -2571,7 +2585,22 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   });
   root.querySelector('#productLeaderboardSort')?.addEventListener('change', (event) => {
     getProductLeaderboardFilters().sort = event.target.value;
+    getProductLeaderboardFilters().sortDir = 'desc';
     rerenderCurrentView();
+  });
+  root.querySelectorAll('[data-product-sort]').forEach((cell) => {
+    cell.addEventListener('click', () => {
+      const nextSort = String(cell.getAttribute('data-product-sort') || '').trim();
+      if (!nextSort) return;
+      const productFilters = getProductLeaderboardFilters();
+      if (productFilters.sort === nextSort) {
+        productFilters.sortDir = productFilters.sortDir === 'desc' ? 'asc' : 'desc';
+      } else {
+        productFilters.sort = nextSort;
+        productFilters.sortDir = 'desc';
+      }
+      rerenderCurrentView();
+    });
   });
   root.querySelector('[data-product-leaderboard-export]')?.addEventListener('click', () => {
     downloadProductLeaderboardExcel(payload, filteredItems);

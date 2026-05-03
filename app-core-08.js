@@ -457,6 +457,16 @@ function repricerPricesMap(platform) {
   return map;
 }
 
+function repricerLegacyMap() {
+  const rows = Array.isArray(state.repricer?.rows) ? state.repricer.rows : [];
+  const map = new Map();
+  rows.forEach((row) => {
+    const key = repricerNormalizeArticleKey(row?.articleKey || row?.article);
+    if (key && !map.has(key)) map.set(key, row);
+  });
+  return map;
+}
+
 function repricerHasValue(value) {
   return value !== null && value !== undefined && value !== '';
 }
@@ -569,8 +579,27 @@ function repricerProtectRecommendedPrice(side, notePrefix = '') {
 
 function repricerFinalizeSide(side) {
   if (!side) return null;
-  side.recommendedPrice = Math.round(numberOrZero(side.recommendedPrice));
-  side.finalPrice = side.recommendedPrice;
+  const rawPrice = numberOrZero(side.recommendedPrice);
+  const guardFloor = Math.ceil(Math.max(
+    numberOrZero(side.finalGuardFloor),
+    numberOrZero(side.effectiveFloor),
+    numberOrZero(side.hardFloor),
+    numberOrZero(side.b2bFloor),
+    numberOrZero(side.economicFloor),
+    numberOrZero(side.skuMinPrice),
+    numberOrZero(side.override?.floorPrice)
+  ));
+  const rawGuardCap = numberOrZero(side.finalGuardCap) > 0
+    ? Math.floor(Math.max(numberOrZero(side.finalGuardCap), numberOrZero(side.effectiveFloor)))
+    : 0;
+  const guardCap = rawGuardCap > 0 ? Math.max(rawGuardCap, guardFloor) : 0;
+  let roundedPrice = Math.round(rawPrice);
+  if (guardFloor > 0) roundedPrice = Math.max(roundedPrice, guardFloor);
+  if (guardCap > 0) roundedPrice = Math.min(roundedPrice, guardCap);
+  side.recommendedPrice = roundedPrice;
+  side.finalPrice = roundedPrice;
+  side.finalGuardFloorRounded = guardFloor > 0 ? guardFloor : 0;
+  side.finalGuardCapRounded = guardCap > 0 ? guardCap : 0;
   side.changeRub = numberOrZero(side.recommendedPrice) - numberOrZero(side.currentPrice);
   side.changePct = numberOrZero(side.currentPrice) > 0 ? side.changeRub / numberOrZero(side.currentPrice) : null;
   side.changed = Math.abs(side.changeRub) >= 1;
@@ -591,6 +620,8 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const articleKey = sourceRow.articleKey || sourceRow.article || '';
   const override = repricerFindOverride(articleKey, platform);
   const corridor = repricerFindCorridor(articleKey, platform);
+  const legacyRow = context.legacyRow && typeof context.legacyRow === 'object' ? context.legacyRow : null;
+  const legacySide = context.legacySide && typeof context.legacySide === 'object' ? context.legacySide : null;
   const liveRow = context.liveRow && typeof context.liveRow === 'object' ? context.liveRow : null;
   const liveSide = liveRow && liveRow[platform] && typeof liveRow[platform] === 'object' ? liveRow[platform] : null;
   const skuFact = context.skuFact && typeof context.skuFact === 'object' ? context.skuFact : null;
@@ -642,7 +673,16 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     priceRow?.minPrice,
     liveSide?.minPrice
   ].some(repricerHasValue);
-  const costPresent = [sourceRow.cost, sourceRow.costRub, liveRow?.cost, skuFact?.costPrice].some(repricerHasValue);
+  const costPresent = [
+    sourceRow.cost,
+    sourceRow.costRub,
+    liveRow?.cost,
+    skuFact?.costPrice,
+    legacyRow?.cost,
+    legacyRow?.costRub,
+    legacySide?.cost,
+    legacySide?.costRub
+  ].some(repricerHasValue);
   const currentPrice = numberOrZero(
     sourceHasLiveCurrentPrice && sourceRow.currentFillPrice != null
       ? sourceRow.currentFillPrice
@@ -718,7 +758,16 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const hardFloor = Math.max(sourceHardFloor, numberOrZero(corridor?.hardFloor));
   const hardFloorSourceSummary = repricerSourceSummary(hardFloorCandidates, hardFloor, hardFloor > 0 ? 'hard_floor' : '');
   const b2bFloor = numberOrZero(corridor?.b2bFloor);
-  const costRub = Math.max(numberOrZero(sourceRow.cost), numberOrZero(sourceRow.costRub), numberOrZero(liveRow?.cost), numberOrZero(skuFact?.costPrice));
+  const costRub = Math.max(
+    numberOrZero(sourceRow.cost),
+    numberOrZero(sourceRow.costRub),
+    numberOrZero(liveRow?.cost),
+    numberOrZero(skuFact?.costPrice),
+    numberOrZero(legacyRow?.cost),
+    numberOrZero(legacyRow?.costRub),
+    numberOrZero(legacySide?.cost),
+    numberOrZero(legacySide?.costRub)
+  );
   const liveMinMarginPct = numberOrZero(liveSide?.marginNoAdsMinPct);
   const baseAllowedMarginPct = Math.max(numberOrZero(sourceRow.allowedMarginPct), numberOrZero(supportRow?.allowedMarginPct), numberOrZero(priceRow?.allowedMarginPct), liveMinMarginPct, 0.0001);
   const requiredMarginPct = Math.max(numberOrZero(brandRule.minMarginPct) / 100, numberOrZero(sourceRow.allowedMarginPct), numberOrZero(supportRow?.allowedMarginPct), numberOrZero(priceRow?.allowedMarginPct), liveMinMarginPct);
@@ -861,7 +910,17 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const derivedStretchCap = derivedStretchCapBase > 0
     ? Math.round(Math.max(derivedStretchCapBase, derivedStretchCapBase * stretchMultiplier))
     : 0;
-  const stretchCap = repricerFirstFilledNumber(corridor?.stretchCap, skuCapPrice, sourceRow.workingZoneTo, supportRow?.workingZoneTo, supportRow?.maxPrice, derivedStretchCap);
+  const priceSnapshotCapCandidate = Math.max(numberOrZero(priceRow?.maxPrice), numberOrZero(priceRow?.workingZoneTo));
+  const stretchCap = repricerFirstFilledNumber(
+    corridor?.stretchCap,
+    skuCapPrice,
+    sourceRow.workingZoneTo,
+    supportRow?.workingZoneTo,
+    supportRow?.maxPrice,
+    priceSnapshotCapCandidate,
+    numberOrZero(liveSide?.maxPrice),
+    derivedStretchCap
+  );
   const manualCapPrice = numberOrZero(override?.capPrice);
   const capPrice = manualCapPrice > 0
     ? (stretchCap > 0 ? Math.min(manualCapPrice, stretchCap) : manualCapPrice)
@@ -884,7 +943,11 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
         ? 'market_cap'
         : (numberOrZero(supportRow?.workingZoneTo) > 0
           ? 'support_zone_cap'
-          : (numberOrZero(supportRow?.maxPrice) > 0 ? 'support_max_cap' : (derivedStretchCap > 0 ? 'role_derived_cap' : '')))));
+          : (numberOrZero(supportRow?.maxPrice) > 0
+            ? 'support_max_cap'
+            : (priceSnapshotCapCandidate > 0
+              ? 'price_snapshot_cap'
+              : (numberOrZero(liveSide?.maxPrice) > 0 ? 'live_cap' : (derivedStretchCap > 0 ? 'role_derived_cap' : '')))))));
   const capSourceSummary = repricerSourceSummary([
     { label: 'override_cap', value: manualCapPrice },
     { label: stretchCapSourceSummary || 'stretch_cap', value: stretchCap }
@@ -1388,6 +1451,7 @@ function buildRepricerRows() {
   const platforms = state.smartPriceWorkbench?.platforms || {};
   const liveMap = repricerLiveMap();
   const skuMap = repricerSkuFactMap();
+  const legacyMap = repricerLegacyMap();
   const supportMaps = {
     wb: repricerSupportMap('wb'),
     ozon: repricerSupportMap('ozon')
@@ -1405,6 +1469,10 @@ function buildRepricerRows() {
       const normalizedKey = repricerNormalizeArticleKey(articleKey);
       const liveRow = liveMap.get(normalizedKey) || null;
       const skuFact = skuMap.get(normalizedKey) || null;
+      const legacyRow = legacyMap.get(normalizedKey) || null;
+      const legacySide = legacyRow && legacyRow[platform] && typeof legacyRow[platform] === 'object'
+        ? legacyRow[platform]
+        : null;
       const supportRow = supportMaps[platform].get(normalizedKey) || null;
       const priceRow = pricesMaps[platform].get(normalizedKey) || null;
       const profile = repricerFindSkuProfile(articleKey);
@@ -1453,6 +1521,8 @@ function buildRepricerRows() {
         launchReady: row.launchReady,
         liveRow: row.liveRow,
         skuFact: row.skuFact,
+        legacyRow,
+        legacySide,
         supportRow,
         priceRow
       });
@@ -1682,6 +1752,7 @@ function renderRepricerSettingsCard(settings, brandNames, statuses, roles, feePl
   const settingsSavedAt = state.storage?.repricerSettingsUpdatedAt || '';
   const syncScope = hasRemoteStore() ? 'локально и в командной базе' : 'локально в браузере';
   const updatedLabel = settingsSavedAt ? fmt.date(settingsSavedAt) : 'ещё не сохранялись';
+  const isOpen = repricerUiToggleOpen('sections', 'settingsCard', false);
   const globalSection = renderRepricerSettingsSection(
     'globalRules',
     'Общие правила',
@@ -1760,15 +1831,15 @@ function renderRepricerSettingsCard(settings, brandNames, statuses, roles, feePl
     `
   );
   return `
-    <div class="card" style="margin-top:14px">
-      <div class="section-subhead">
+    <details class="card repricer-settings-card" data-repricer-section="settingsCard" ${isOpen ? 'open' : ''} style="margin-top:14px">
+      <summary class="section-subhead" style="cursor:pointer; list-style:none">
         <div>
-          <h3>Контур управления</h3>
-          <p class="small muted">Это общие правила репрайсера, а не настройки одной SKU. Любое изменение здесь сохраняется автоматически и потом участвует в расчёте для всего контура.</p>
+          <h3>Массовые правила репрайсера</h3>
+          <p class="small muted">Это общие правила расчёта для всего контура. Для одной SKU лучше работать ниже через MIN/MAX, corridor или ручное решение.</p>
         </div>
         <div class="badge-stack">${badge('автосохранение', 'ok')}${badge(syncScope, hasRemoteStore() ? 'ok' : 'info')}${badge(`сохранено ${updatedLabel}`, settingsSavedAt ? 'ok' : 'info')}</div>
-      </div>
-      <div class="muted small" style="margin-top:10px">Если нужно вручную закрепить цену или промо для конкретной позиции, это делается ниже в карточке SKU через corridor / override. Этот верхний блок задаёт общие правила расчёта.</div>
+      </summary>
+      <div class="muted small" style="margin-top:10px">Открывайте этот блок, только если правило должно влиять сразу на много SKU. Точечные действия по одной карточке удобнее делать в карточке SKU ниже.</div>
       <form id="repricerSettingsForm">
         ${globalSection}
         ${brandSection}
@@ -1780,8 +1851,157 @@ function renderRepricerSettingsCard(settings, brandNames, statuses, roles, feePl
           <button type="button" class="quick-chip" data-repricer-settings-reset>Сбросить к базовым</button>
         </div>
       </form>
+    </details>
+  `;
+}
+
+function renderRepricerWorkflowGuide() {
+  return `
+    <div class="grid cards repricer-guide-grid" style="margin-top:14px">
+      <div class="card repricer-guide-card">
+        <div class="label">1. Проверяем границы</div>
+        <div class="value">MIN / MAX</div>
+        <div class="hint">Если в «Ценах» меняем MIN/MAX, репрайсер сразу пересчитывает финальную цену в этих границах.</div>
+      </div>
+      <div class="card repricer-guide-card">
+        <div class="label">2. Если нужен ручной шаг</div>
+        <div class="value">Фикс / промо</div>
+        <div class="hint">Ручной фикс или промо приоритетнее автоматики. Это значение уходит в выгрузку как рабочее.</div>
+      </div>
+      <div class="card repricer-guide-card">
+        <div class="label">3. Массовые правила</div>
+        <div class="value">Для групп SKU</div>
+        <div class="hint">Настройки бренда, статуса и роли используем для группы SKU. Для одной карточки меняем решение в самой карточке.</div>
+      </div>
     </div>
   `;
+}
+
+function renderRepricerSignalsCard(summaryBadges, techBadges, healthOk) {
+  const isOpen = repricerUiToggleOpen('sections', 'techSignals', false);
+  return `
+    <div class="card" style="margin-top:12px">
+      <div class="section-subhead">
+        <div>
+          <h3>Что проверить в первую очередь</h3>
+          <p class="small muted">Сверху оставляем только сигналы для решения человеком. Подробные технические метрики модели раскрываются ниже.</p>
+        </div>
+        <div class="badge-stack">${healthOk ? badge('выгрузка: можно', 'ok') : badge('выгрузка: нужна проверка', 'warn')}</div>
+      </div>
+      <div class="badge-stack" style="margin-top:10px">${summaryBadges}</div>
+      <details data-repricer-section="techSignals" ${isOpen ? 'open' : ''} style="margin-top:12px">
+        <summary class="small muted" style="cursor:pointer">Техническая сводка модели</summary>
+        <div class="badge-stack" style="margin-top:10px">${techBadges}</div>
+        <div class="muted small" style="margin-top:10px">Эта сводка нужна для диагностики расчёта. Для ежедневной работы обычно достаточно сигналов выше и блока «Перед выгрузкой в Excel».</div>
+      </details>
+    </div>
+  `;
+}
+
+function repricerTurnoverActionLabel(action = '') {
+  const code = String(action || '').trim().toUpperCase();
+  const map = {
+    KEEP: 'оставить',
+    UP: 'поднять',
+    DOWN: 'снизить',
+    HOLD: 'на удержании',
+    FREEZE: 'заморозка',
+    BLOCK: 'пауза по данным',
+    OFF: 'вне контура',
+    FORCE: 'ручной фикс',
+    LAUNCH_HOLD: 'стоп до READY',
+    OOS: 'поднять из-за OOS',
+    PROMO: 'промо',
+    PROMO_OFFER: 'акция'
+  };
+  return map[code] || (code ? code.toLowerCase() : 'оставить');
+}
+
+function repricerExplainSideAction(side) {
+  const currentPrice = numberOrZero(side?.currentPrice);
+  const finalPrice = numberOrZero(side?.finalPrice);
+  const effectiveFloor = numberOrZero(side?.effectiveFloor);
+  const capPrice = numberOrZero(side?.capPrice);
+  const delta = finalPrice - currentPrice;
+  if (side?.criticalGate === 'SKIP' || side?.reasonCode === 'NO_SPEC') {
+    return {
+      tone: 'warn',
+      title: 'Вне контура',
+      hint: 'По SKU не хватает спецификации. В выгрузку лучше не отправлять.'
+    };
+  }
+  if (side?.criticalGate === 'BLOCK' || side?.reasonCode === 'BLOCK') {
+    return {
+      tone: 'danger',
+      title: 'Пауза: не хватает входных данных',
+      hint: 'Нужны текущая цена и рабочий MIN/себестоимость для расчёта.'
+    };
+  }
+  if (side?.promoActive) {
+    const promoLabel = side.promoSource === 'promo_offer' ? 'Акция ведёт цену' : 'Промо активно';
+    const promoWindow = side.promoTo ? ` до ${side.promoTo}` : '';
+    return {
+      tone: side.promoSource === 'promo_offer' ? 'info' : 'warn',
+      title: promoLabel,
+      hint: `Финальная цена ${fmt.money(finalPrice)}${promoWindow}.`
+    };
+  }
+  if (side?.reasonCode === 'FORCE' || side?.modeCode === 'FORCE') {
+    return {
+      tone: 'warn',
+      title: 'Ручной фикс цены',
+      hint: `Цена зафиксирована вручную: ${fmt.money(finalPrice)}.`
+    };
+  }
+  if (side?.reasonCode === 'LAUNCH_HOLD') {
+    return {
+      tone: 'warn',
+      title: 'Стоп до READY',
+      hint: 'Новинка не в READY. Автоматический сдвиг цены не выполняется.'
+    };
+  }
+  if (side?.turnoverAction === 'HOLD' || side?.turnoverAction === 'FREEZE') {
+    return {
+      tone: 'info',
+      title: 'Цена на удержании',
+      hint: `Оставляем ${fmt.money(finalPrice)} в текущем режиме управления.`
+    };
+  }
+  if (side?.turnoverAction === 'OFF') {
+    return {
+      tone: 'info',
+      title: 'Авторежим выключен',
+      hint: 'Для этой площадки сейчас нет автоматического сдвига цены.'
+    };
+  }
+  if (delta >= 1) {
+    const floorHint = effectiveFloor > 0 && finalPrice <= effectiveFloor + 0.001 ? ' (до рабочего MIN)' : '';
+    return {
+      tone: 'warn',
+      title: 'Нужно поднять цену',
+      hint: `${fmt.money(currentPrice)} → ${fmt.money(finalPrice)}${floorHint}.`
+    };
+  }
+  if (delta <= -1) {
+    const capHint = capPrice > 0 && finalPrice >= capPrice - 0.001 ? ' (до MAX)' : '';
+    return {
+      tone: 'info',
+      title: 'Можно снизить цену',
+      hint: `${fmt.money(currentPrice)} → ${fmt.money(finalPrice)}${capHint}.`
+    };
+  }
+  if (currentPrice > 0 && effectiveFloor > 0 && currentPrice + 0.001 < effectiveFloor) {
+    return {
+      tone: 'danger',
+      title: 'Текущая цена ниже MIN',
+      hint: `Нужно выйти минимум на ${fmt.money(effectiveFloor)}.`
+    };
+  }
+  return {
+    tone: 'ok',
+    title: 'Оставить без изменений',
+    hint: `Текущая цена ${fmt.money(currentPrice)} остаётся рабочей.`
+  };
 }
 
 function renderRepricerSide(title, side) {
@@ -1790,53 +2010,76 @@ function renderRepricerSide(title, side) {
   }
   const override = side.override || null;
   const corridor = side.corridor || null;
+  const displayedCap = numberOrZero(side.finalGuardCap) > 0
+    ? numberOrZero(side.finalGuardCap)
+    : numberOrZero(side.capPrice || side.stretchCap);
+  const manualCap = numberOrZero(side.capPrice);
+  const floorForCapGuard = Math.max(numberOrZero(side.finalGuardFloor), numberOrZero(side.effectiveFloor));
+  const capLiftedByFloorGuard = manualCap > 0 && floorForCapGuard > 0 && manualCap + 0.001 < floorForCapGuard;
+  const action = repricerExplainSideAction(side);
+  const businessBadges = [
+    badge(`MIN ${fmt.money(side.effectiveFloor)}`, side.belowFloorNow ? 'danger' : ''),
+    badge(`MAX ${fmt.money(displayedCap)}`),
+    capLiftedByFloorGuard ? badge(`MAX поднят до MIN ${fmt.money(displayedCap)}`, 'warn') : '',
+    badge(`оборот ${fmt.num(side.turnoverDays, 1)} дн.`, side.lowStockRisk ? 'warn' : ''),
+    side.marginPct == null ? '' : badge(`маржа ${fmt.pct(side.marginPct)}`, side.marginRisk ? 'danger' : 'ok'),
+    side.promoActive ? badge(`${side.promoSource === 'promo_offer' ? 'акция' : 'промо'} ${fmt.money(side.promoPrice)}`, side.promoSource === 'promo_offer' ? 'info' : 'warn') : '',
+    side.hasLiveBenchmark ? badge(`live ${fmt.money(side.liveReferencePrice)}`, side.liveDrift ? 'warn' : 'info') : ''
+  ].filter(Boolean).join('');
+  const summaryBadges = [
+    badge(`действие: ${repricerTurnoverActionLabel(side.turnoverAction)}`, side.criticalGate === 'BLOCK' ? 'danger' : 'info'),
+    side.autopriceAllowed ? badge('авторежим: включен', 'ok') : badge('авторежим: выключен', 'warn'),
+    side.economicFloorSource === 'snapshot_fallback' ? badge('себестоимость: нет', 'warn') : badge('себестоимость: есть', 'ok'),
+    side.launchHold ? badge('стоп до READY', 'warn') : '',
+    side.hasOverride ? badge('ручное решение', 'warn') : ''
+  ].filter(Boolean).join('');
+  const techBadges = [
+    badge(`роль ${side.role || '—'}`, 'info'),
+    badge(`launch ${side.launchReady || '—'}`, side.launchHold ? 'warn' : ''),
+    badge(`reason ${side.reasonCode || 'KEEP'}`, side.reasonCode === 'BLOCK' ? 'danger' : 'info'),
+    side.finalReasonCode && !side.promoActive ? badge(`final ${side.finalReasonCode}`, side.alignmentApplied ? 'ok' : 'info') : '',
+    badge(side.economicFloorSource === 'fee_stack' ? 'экономика: полная' : side.economicFloorSource === 'snapshot_guard' ? 'экономика: guard' : 'экономика: fallback', side.economicFloorSource === 'snapshot_fallback' ? 'warn' : 'info'),
+    side.engineModeCode === 'LAUNCH' ? (side.launchAllowed ? badge('launch rule: on', 'ok') : badge('launch rule: off', 'warn')) : '',
+    side.volumePushAllowed ? badge('volume push', 'info') : badge('защита маржи', 'ok'),
+    side.allowAlignment ? badge('alignment: on', 'ok') : badge('alignment: off', 'warn'),
+    side.promoConfigured ? badge(side.promoActive ? (side.promoAdjustedToFloor ? `${side.promoSource === 'promo_offer' ? 'акция' : 'промо'} + floor guard` : `${side.promoSource === 'promo_offer' ? 'акция' : 'промо'} fixed`) : repricerPromoWindowLabel({ status: side.promoWindowStatus }, side.promoSource === 'promo_offer' ? 'offer' : 'promo'), side.promoSource === 'promo_offer' ? 'info' : (side.promoActive ? 'warn' : 'info')) : '',
+    side.liveDeltaPct == null ? '' : badge(`к live ${side.liveDeltaPct > 0 ? '+' : ''}${fmt.pct(side.liveDeltaPct)}`, side.liveDrift ? 'warn' : 'ok')
+  ].filter(Boolean).join('');
   return `
     <div class="repricer-side ${side.changed ? 'changed' : ''}">
-      <div class="repricer-side-head">${escapeHtml(title)} <span class="badge-stack">${badge(repricerModeLabel(side.mode), repricerModeTone(side.mode))}${side.manualPromoConfigured ? badge(repricerPromoWindowLabel({ status: side.manualPromoWindowStatus }), side.manualPromoActive ? 'warn' : 'info') : ''}${side.promoOfferConfigured ? badge(repricerPromoWindowLabel({ status: side.promoOfferWindowStatus }, 'offer'), side.promoSource === 'promo_offer' && side.promoActive ? 'info' : 'warn') : ''}${side.promoSource === 'promo_offer' ? badge('offer drives price', 'info') : ''}${side.hasOverride ? badge('override', 'warn') : ''}${side.hasCorridor ? badge('corridor', 'info') : ''}${side.alignmentApplied ? badge('align', 'info') : ''}</span></div>
+      <div class="repricer-side-head">${escapeHtml(title)} <span class="badge-stack">${badge(repricerModeLabel(side.mode), repricerModeTone(side.mode))}${side.manualPromoConfigured ? badge(repricerPromoWindowLabel({ status: side.manualPromoWindowStatus }), side.manualPromoActive ? 'warn' : 'info') : ''}${side.promoOfferConfigured ? badge(repricerPromoWindowLabel({ status: side.promoOfferWindowStatus }, 'offer'), side.promoSource === 'promo_offer' && side.promoActive ? 'info' : 'warn') : ''}${side.promoSource === 'promo_offer' ? badge('акция ведёт цену', 'info') : ''}${side.hasOverride ? badge('ручное решение', 'warn') : ''}${side.hasCorridor ? badge('коридор', 'info') : ''}${side.alignmentApplied ? badge('выравнивание', 'info') : ''}</span></div>
       <div class="repricer-prices">
         <div><span>Текущая</span><strong>${fmt.money(side.currentPrice)}</strong></div>
         <div><span>Финал</span><strong>${fmt.money(side.finalPrice)}</strong></div>
         <div><span>Δ</span><strong>${side.changePct == null ? '—' : fmt.pct(side.changePct)}</strong></div>
       </div>
-      <div class="badge-stack" style="margin-top:8px">
-        ${badge(`floor ${fmt.money(side.effectiveFloor)}`, side.belowFloorNow ? 'danger' : '')}
-        ${badge(`econ ${fmt.money(side.economicFloor)}`, side.economicFloorSource === 'snapshot_fallback' ? 'warn' : 'ok')}
-        ${badge(`cap ${fmt.money(side.capPrice || side.stretchCap)}`)}
-        ${badge(`pre ${fmt.money(side.preAlignPrice)}`, 'info')}
-        ${badge(`capped ${fmt.money(side.cappedPrice)}`, 'info')}
-        ${side.promoActive ? badge(`${side.promoSource === 'promo_offer' ? 'offer' : 'promo'} ${fmt.money(side.promoPrice)}`, side.promoSource === 'promo_offer' ? 'info' : 'warn') : ''}
-        ${badge(`оборот ${fmt.num(side.turnoverDays, 1)} дн.`, side.lowStockRisk ? 'warn' : '')}
-        ${side.marginPct == null ? '' : badge(`маржа ${fmt.pct(side.marginPct)}`, side.marginRisk ? 'danger' : 'ok')}
-        ${side.hasLiveBenchmark ? badge(`live ${fmt.money(side.liveReferencePrice)}`, side.liveDrift ? 'warn' : 'info') : ''}
+      <div class="repricer-side-action ${escapeHtml(action.tone)}" style="margin-top:10px">
+        <strong>${escapeHtml(action.title)}</strong>
+        <span>${escapeHtml(action.hint)}</span>
       </div>
       <div class="badge-stack" style="margin-top:8px">
-        ${badge(`роль ${escapeHtml(side.role || '—')}`, 'info')}
-        ${badge(`launch ${escapeHtml(side.launchReady || '—')}`, side.launchHold ? 'warn' : '')}
-        ${badge(`action ${escapeHtml(side.turnoverAction || 'KEEP')}`)}
-        ${badge(`reason ${escapeHtml(side.reasonCode || 'KEEP')}`, side.reasonCode === 'BLOCK' ? 'danger' : 'info')}
-        ${side.finalReasonCode && !side.promoActive ? badge(`align ${escapeHtml(side.finalReasonCode)}`, side.alignmentApplied ? 'ok' : 'info') : ''}
-        ${badge(side.economicFloorSource === 'fee_stack' ? 'econ: fee stack' : side.economicFloorSource === 'snapshot_guard' ? 'econ: mixed guard' : 'econ: fallback', side.economicFloorSource === 'snapshot_fallback' ? 'warn' : 'info')}
-        ${side.autopriceAllowed ? badge('auto on', 'ok') : badge('auto off', 'warn')}
-        ${side.engineModeCode === 'LAUNCH' ? (side.launchAllowed ? badge('launch on', 'ok') : badge('launch off', 'warn')) : ''}
-        ${side.volumePushAllowed ? badge('volume push', 'info') : badge('margin guard', 'ok')}
-        ${side.allowAlignment ? badge('align on', 'ok') : badge('align off', 'warn')}
-        ${side.promoConfigured ? badge(side.promoActive ? (side.promoAdjustedToFloor ? `${side.promoSource === 'promo_offer' ? 'offer' : 'promo'} + floor guard` : `${side.promoSource === 'promo_offer' ? 'offer' : 'promo'} fixed`) : repricerPromoWindowLabel({ status: side.promoWindowStatus }, side.promoSource === 'promo_offer' ? 'offer' : 'promo'), side.promoSource === 'promo_offer' ? 'info' : (side.promoActive ? 'warn' : 'info')) : ''}
-        ${side.liveDeltaPct == null ? '' : badge(`vs live ${side.liveDeltaPct > 0 ? '+' : ''}${fmt.pct(side.liveDeltaPct)}`, side.liveDrift ? 'warn' : 'ok')}
+        ${businessBadges}
+      </div>
+      <div class="badge-stack" style="margin-top:8px">
+        ${summaryBadges}
       </div>
       <div class="muted small" style="margin-top:8px"><strong>${escapeHtml(side.strategy || 'Стратегия не определена')}</strong></div>
       <div class="muted small" style="margin-top:6px">${escapeHtml(side.reason || 'Причина не указана')}</div>
       ${renderRepricerHistoryBlock(side)}
       <details style="margin-top:10px">
-        <summary class="small muted" style="cursor:pointer">Управлять площадкой</summary>
-        <div class="muted small" style="margin-top:10px">Engine: ${escapeHtml(side.engineModeCode || 'AUTO')} · Gate: ${escapeHtml(side.criticalGate || 'OK')} · Stock flag: ${escapeHtml(side.oosFlag || '—')} · Sales7d: ${fmt.num(side.sales7d, 1)} · buyer factor: ${fmt.num(side.buyerDiscountFactor, 3)}</div>
+        <summary class="small muted" style="cursor:pointer">Управление площадкой</summary>
+        <div class="muted small" style="margin-top:10px">MIN/MAX из вкладки «Цены» попадают сюда автоматически как ручные границы. Здесь уже управляем точечным решением по этой площадке.</div>
+        <div class="muted small" style="margin-top:8px">Engine: ${escapeHtml(side.engineModeCode || 'AUTO')} · Gate: ${escapeHtml(side.criticalGate || 'OK')} · Stock flag: ${escapeHtml(side.oosFlag || '—')} · Sales7d: ${fmt.num(side.sales7d, 1)} · buyer factor: ${fmt.num(side.buyerDiscountFactor, 3)}</div>
+        <div class="badge-stack" style="margin-top:8px">${techBadges}</div>
+        <div class="badge-stack" style="margin-top:8px">${badge(`до выравнивания ${fmt.money(side.preAlignPrice)}`, 'info')}${badge(`после ограничений ${fmt.money(side.cappedPrice)}`, 'info')}${badge(`экон. MIN ${fmt.money(side.economicFloor)}`, side.economicFloorSource === 'snapshot_fallback' ? 'warn' : 'ok')}</div>
         <form class="repricer-corridor-form" data-article-key="${escapeHtml(side.articleKey)}" data-platform="${escapeHtml(side.platform)}" style="margin-top:10px">
           <div class="filters repricer-filters">
-            <input type="number" step="1" min="0" name="hardFloor" value="${escapeHtml(corridor?.hardFloor ?? '')}" placeholder="Hard floor, ₽">
-            <input type="number" step="1" min="0" name="b2bFloor" value="${escapeHtml(corridor?.b2bFloor ?? '')}" placeholder="B2B floor, ₽">
-            <input type="number" step="1" min="0" name="basePrice" value="${escapeHtml(corridor?.basePrice ?? '')}" placeholder="Base price, ₽">
-            <input type="number" step="1" min="0" name="stretchCap" value="${escapeHtml(corridor?.stretchCap ?? '')}" placeholder="Stretch cap, ₽">
-            <input type="number" step="1" min="0" name="promoFloor" value="${escapeHtml(corridor?.promoFloor ?? '')}" placeholder="Promo floor, ₽">
-            <input type="number" step="0.1" name="elasticity" value="${escapeHtml(corridor?.elasticity ?? '')}" placeholder="Elasticity">
+            <input type="number" step="1" min="0" name="hardFloor" value="${escapeHtml(corridor?.hardFloor ?? '')}" placeholder="Жёсткий MIN, ₽">
+            <input type="number" step="1" min="0" name="b2bFloor" value="${escapeHtml(corridor?.b2bFloor ?? '')}" placeholder="B2B MIN, ₽">
+            <input type="number" step="1" min="0" name="basePrice" value="${escapeHtml(corridor?.basePrice ?? '')}" placeholder="База, ₽">
+            <input type="number" step="1" min="0" name="stretchCap" value="${escapeHtml(corridor?.stretchCap ?? '')}" placeholder="MAX, ₽">
+            <input type="number" step="1" min="0" name="promoFloor" value="${escapeHtml(corridor?.promoFloor ?? '')}" placeholder="Promo MIN, ₽">
+            <input type="number" step="0.1" name="elasticity" value="${escapeHtml(corridor?.elasticity ?? '')}" placeholder="Эластичность">
           </div>
           <div class="quick-actions" style="margin-top:10px">
             <button type="submit" class="quick-chip">Сохранить коридор</button>
@@ -1851,16 +2094,16 @@ function renderRepricerSide(title, side) {
               <option value="freeze" ${override?.mode === 'freeze' ? 'selected' : ''}>Freeze</option>
               <option value="force" ${override?.mode === 'force' ? 'selected' : ''}>Force</option>
             </select>
-            <input type="number" step="1" min="0" name="floorPrice" value="${escapeHtml(override?.floorPrice ?? '')}" placeholder="Manual floor, ₽">
-            <input type="number" step="1" min="0" name="capPrice" value="${escapeHtml(override?.capPrice ?? '')}" placeholder="Manual cap, ₽">
-            <input type="number" step="1" min="0" name="forcePrice" value="${escapeHtml(override?.forcePrice ?? '')}" placeholder="Force price, ₽">
+            <input type="number" step="1" min="0" name="floorPrice" value="${escapeHtml(override?.floorPrice ?? '')}" placeholder="Ручной MIN, ₽">
+            <input type="number" step="1" min="0" name="capPrice" value="${escapeHtml(override?.capPrice ?? '')}" placeholder="Ручной MAX, ₽">
+            <input type="number" step="1" min="0" name="forcePrice" value="${escapeHtml(override?.forcePrice ?? '')}" placeholder="Фикс-цена, ₽">
           </div>
           <div class="filters repricer-filters" style="margin-top:8px">
             <label class="muted small" style="display:flex; align-items:center; gap:8px">
               <input type="checkbox" name="promoActive" ${override?.promoActive ? 'checked' : ''}>
               Акционная цена
             </label>
-            <input type="number" step="1" min="0" name="promoPrice" value="${escapeHtml(override?.promoPrice ?? '')}" placeholder="Promo price, ₽">
+            <input type="number" step="1" min="0" name="promoPrice" value="${escapeHtml(override?.promoPrice ?? '')}" placeholder="Акционная цена, ₽">
             <input type="text" name="promoLabel" value="${escapeHtml(override?.promoLabel ?? '')}" placeholder="Акция / причина">
           </div>
           <div class="filters repricer-filters" style="margin-top:8px">
@@ -1876,8 +2119,8 @@ function renderRepricerSide(title, side) {
           ${side.promoOfferConfigured ? `<div class="quick-actions" style="margin-top:8px"><button type="button" class="quick-chip" data-repricer-adopt-offer data-article-key="${escapeHtml(side.articleKey)}" data-platform="${escapeHtml(side.platform)}">Принять предложение акции</button></div>` : ''}
           <textarea name="note" rows="2" placeholder="Комментарий" style="margin-top:8px; width:100%">${escapeHtml(override?.note || '')}</textarea>
           <div class="quick-actions" style="margin-top:10px">
-            <button type="submit" class="quick-chip">Сохранить override</button>
-            <button type="button" class="quick-chip" data-repricer-reset data-article-key="${escapeHtml(side.articleKey)}" data-platform="${escapeHtml(side.platform)}">Сбросить override</button>
+            <button type="submit" class="quick-chip">Сохранить ручное решение</button>
+            <button type="button" class="quick-chip" data-repricer-reset data-article-key="${escapeHtml(side.articleKey)}" data-platform="${escapeHtml(side.platform)}">Сбросить ручное решение</button>
           </div>
         </form>
       </details>
@@ -2462,6 +2705,45 @@ function downloadRepricerPromoTemplateExcel(platform) {
   repricerDownloadHtmlTable(columns, templateRows, `repricer-promo-upload-${normalizedPlatform}-${new Date().toISOString().slice(0, 10)}.xls`);
 }
 
+function repricerListSizeLimit(mode = 'focus') {
+  if (mode === 'expanded') return 80;
+  if (mode === 'all') return Number.POSITIVE_INFINITY;
+  return 40;
+}
+
+function repricerEconomicSourceLabel(source = 'all') {
+  const map = {
+    all: 'все варианты экономики',
+    ready: 'экономика подтверждена',
+    fee_stack: 'себестоимость + комиссии',
+    snapshot_guard: 'себестоимость есть, с guard',
+    snapshot_fallback: 'без себестоимости (fallback)'
+  };
+  return map[source] || map.all;
+}
+
+function repricerPriorityScore(row) {
+  const sides = [row?.wb, row?.ozon].filter(Boolean);
+  let score = 0;
+  if (row?.blocked || row?.blockedByGate || sides.some((side) => side?.criticalGate === 'BLOCK')) score += 100;
+  if (row?.belowFloorNow || sides.some((side) => side?.belowFloorNow)) score += 50;
+  if (row?.marginRisk || sides.some((side) => side?.marginRisk)) score += 45;
+  if (row?.changed) score += 30;
+  if (row?.hasManualOverride || sides.some((side) => side?.hasOverride)) score += 20;
+  if (row?.liveDrift || sides.some((side) => side?.liveDrift)) score += 12;
+  if (!row?.owner) score += 8;
+  return score;
+}
+
+function repricerVisibleRows(rows) {
+  const mode = state.repricerFilters.listSize || 'focus';
+  const limit = repricerListSizeLimit(mode);
+  if (!Number.isFinite(limit)) return rows;
+  return [...rows]
+    .sort((left, right) => repricerPriorityScore(right) - repricerPriorityScore(left) || String(left.name || '').localeCompare(String(right.name || ''), 'ru'))
+    .slice(0, limit);
+}
+
 function attachRepricerEvents(root) {
   root.querySelector('#repricerSearchInput')?.addEventListener('input', (event) => {
     state.repricerFilters.search = event.target.value;
@@ -2478,6 +2760,22 @@ function attachRepricerEvents(root) {
   root.querySelector('#repricerEconomicFilter')?.addEventListener('change', (event) => {
     state.repricerFilters.economicSource = event.target.value;
     renderRepricer();
+  });
+  root.querySelector('#repricerListSizeFilter')?.addEventListener('change', (event) => {
+    state.repricerFilters.listSize = event.target.value;
+    renderRepricer();
+  });
+  root.querySelectorAll('[data-repricer-quick-mode]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.repricerFilters.mode = button.getAttribute('data-repricer-quick-mode') || 'changes';
+      renderRepricer();
+    });
+  });
+  root.querySelectorAll('[data-repricer-list-size]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.repricerFilters.listSize = button.getAttribute('data-repricer-list-size') || 'focus';
+      renderRepricer();
+    });
   });
   root.querySelector('#repricerSettingsForm')?.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -2572,6 +2870,9 @@ function renderRepricer() {
     return;
   }
   const rows = getFilteredRepricerRows();
+  const visibleRows = repricerVisibleRows(rows);
+  const visibleHidden = Math.max(0, rows.length - visibleRows.length);
+  const listSize = state.repricerFilters.listSize || 'focus';
   const duplicateNames = buildRepricerDuplicateNameMap(sourceRows);
   const settings = normalizeRepricerSettings(state.storage?.repricerSettings || {});
   const health = repricerHealthcheck(sourceRows);
@@ -2599,114 +2900,158 @@ function renderRepricer() {
   const launchHoldSides = sideRows.filter((side) => side.launchHold === 'LAUNCH_HOLD').length;
   const alignmentEligibleRows = sourceRows.filter((row) => row.alignmentEligible).length;
   const alignmentChangedRows = sourceRows.filter((row) => row.alignmentChanged).length;
+  const actionableRows = sourceRows.filter((row) => row.changed).length;
+  const manualOverrideRows = sourceRows.filter((row) => row.hasManualOverride).length;
+  const belowMinSides = sideRows.filter((side) => side.belowFloorNow).length;
   const smokePassed = health.metrics.smoke_passed;
   const cards = [
     { label: 'SKU в контуре', value: sourceRows.length, hint: 'Все SKU, которые уже кормятся от smart price workbench.' },
-    { label: 'Нужно менять цену', value: sourceRows.filter((row) => row.changed).length, hint: 'Есть разница между текущей и рекомендованной ценой.' },
-    { label: 'SKU-профили', value: sourceRows.filter((row) => row.hasManagedProfile).length, hint: 'Статус, роль или launch-профиль уже правили на портале.' },
-    { label: 'Коридоры MP', value: sideRows.filter((side) => side.hasCorridor).length, hint: 'По площадке уже задан отдельный ценовой коридор.' },
-    { label: 'Ручные override', value: sourceRows.filter((row) => row.hasManualOverride).length, hint: 'Портал уже вмешался в базовый расчет.' },
-    { label: 'Freeze / Hold / Force / Off', value: sideRows.filter((side) => ['freeze', 'hold', 'force', 'off'].includes(side.mode)).length, hint: 'Количество площадок с ручным или статусным блоком.' },
-    { label: 'BLOCK gate', value: blockedGateSides, hint: 'Не хватает обязательных входов: цена, hard floor или cost.' },
-    { label: 'Launch hold', value: launchHoldSides, hint: 'Новинки и перезапуски сдерживаются до READY.' },
-    { label: 'Ниже floor', value: sideRows.filter((side) => side.belowFloorNow).length, hint: 'Текущая цена уже ниже рабочего порога.' },
+    { label: 'Нужны решения', value: actionableRows, hint: 'Есть разница между текущей и рекомендованной ценой.' },
+    { label: 'Профили SKU', value: sourceRows.filter((row) => row.hasManagedProfile).length, hint: 'Статус, роль или launch-профиль уже правили на портале.' },
+    { label: 'Коридоры площадок', value: sideRows.filter((side) => side.hasCorridor).length, hint: 'По площадке уже задан отдельный ценовой коридор.' },
+    { label: 'Ручные решения', value: manualOverrideRows, hint: 'Портал уже вмешался в базовый расчёт.' },
+    { label: 'Режимы stop', value: sideRows.filter((side) => ['freeze', 'hold', 'force', 'off'].includes(side.mode)).length, hint: 'Количество площадок с ручным или статусным стопом.' },
+    { label: 'Нет входов', value: blockedGateSides, hint: 'Не хватает обязательных входов: цены, рабочего MIN или себестоимости.' },
+    { label: 'Стоп до READY', value: launchHoldSides, hint: 'Новинки и перезапуски сдерживаются до READY.' },
+    { label: 'Ниже MIN', value: belowMinSides, hint: 'Текущая цена уже ниже рабочего порога.' },
     { label: 'Риск маржи', value: sideRows.filter((side) => side.marginRisk).length, hint: 'Маржа ниже рабочего порога.' },
-    { label: 'Align eligible', value: alignmentEligibleRows, hint: 'SKU, где можно запускать scoring alignment WB/Ozon.' },
-    { label: 'Aligned by score', value: alignmentChangedRows, hint: 'Сценарий follow победил keep по score-модели.' },
-    { label: 'Smoke tests', value: `${fmt.int(smokePassed)}/${fmt.int(smokeTests.length)}`, hint: 'Базовые тест-кейсы: AUTO, LAUNCH, FREEZE, OOS, KEEP и PROMO_OFFER.' },
-    { label: 'Fee stack ready', value: feeStackSides, hint: 'Площадки, где economic floor считается прямо из себестоимости и fee stack.' },
-    { label: 'Mixed guard', value: mixedGuardSides, hint: 'Есть cost, но итоговый economic floor все еще держит snapshot guard.' },
-    { label: 'Fallback', value: fallbackSides, hint: 'Пока считаем без cost, только по текущему smart-срезу.' },
+    { label: 'Можно выровнять', value: alignmentEligibleRows, hint: 'SKU, где можно запускать scoring alignment WB/Ozon.' },
+    { label: 'Уже выровнены', value: alignmentChangedRows, hint: 'Сценарий follow победил keep по score-модели.' },
+    { label: 'Проверка сценариев', value: `${fmt.int(smokePassed)}/${fmt.int(smokeTests.length)}`, hint: 'Базовые тест-кейсы: AUTO, LAUNCH, FREEZE, OOS, KEEP и PROMO_OFFER.' },
+    { label: 'Полная экономика', value: feeStackSides, hint: 'Площадки, где economic floor считается прямо из себестоимости и fee stack.' },
+    { label: 'Защита snapshot', value: mixedGuardSides, hint: 'Есть cost, но итоговый economic floor всё ещё держится на страхующем snapshot-ограничении.' },
+    { label: 'Без себестоимости', value: fallbackSides, hint: 'Расчёт идёт без cost, только по текущему smart-срезу.' },
     { label: 'Предложения акций', value: promoOfferSides, hint: 'Read-only promo offers из текущих слоев фактов, без новых таблиц.' },
-    { label: 'Live benchmark', value: liveBenchmarkSides, hint: 'Площадки, где есть живая рекомендация текущего репрайсера.' },
-    { label: 'Live drift > 3%', value: liveDriftSides, hint: 'Наш финал заметно расходится с живым repricer rec.' },
-    { label: 'Дубли карточек', value: duplicateNames.duplicateRows, hint: 'Proxy-контроль по названию карточки: отдельного поля описания в текущем слое пока нет.' }
+    { label: 'Есть live-ориентир', value: liveBenchmarkSides, hint: 'Площадки, где есть живая рекомендация текущего репрайсера.' },
+    { label: 'Расходятся с live', value: liveDriftSides, hint: 'Наш финал заметно расходится с живым repricer rec.' },
+    { label: 'Дубли карточек', value: duplicateNames.duplicateRows, hint: 'Proxy-контроль по названию карточки: в текущем слое нет отдельного поля описания.' }
   ].map((card) => `<div class="card kpi control-card"><div class="label">${escapeHtml(card.label)}</div><div class="value">${typeof card.value === 'string' ? escapeHtml(card.value) : fmt.int(card.value)}</div><div class="hint">${escapeHtml(card.hint)}</div></div>`).join('');
+  const summaryBadges = [
+    badge(`нужны решения ${fmt.int(actionableRows)}`, actionableRows ? 'warn' : 'ok'),
+    badge(`ручные решения ${fmt.int(manualOverrideRows)}`, manualOverrideRows ? 'info' : 'ok'),
+    badge(`ниже MIN ${fmt.int(belowMinSides)}`, belowMinSides ? 'danger' : 'ok'),
+    badge(`нет входов ${fmt.int(blockedGateSides)}`, blockedGateSides ? 'danger' : 'ok'),
+    badge(`без себестоимости ${fmt.int(fallbackSides)}`, fallbackSides ? 'warn' : 'ok'),
+    badge(`расходятся с live ${fmt.int(liveDriftSides)}`, liveDriftSides ? 'warn' : 'ok')
+  ].join('');
+  const techBadges = [
+    badge(`полная экономика ${fmt.int(feeStackSides)}`, feeStackSides ? 'ok' : 'warn'),
+    badge(`защита snapshot ${fmt.int(mixedGuardSides)}`, mixedGuardSides ? 'info' : ''),
+    badge(`без себестоимости ${fmt.int(fallbackSides)}`, fallbackSides ? 'warn' : 'ok'),
+    badge(`промо активно ${fmt.int(promoSides)}`, promoSides ? 'warn' : 'info'),
+    badge(`предложения акций ${fmt.int(promoOfferSides)}`, promoOfferSides ? 'info' : ''),
+    badge(`акция ведёт цену ${fmt.int(promoOfferActiveSides)}`, promoOfferActiveSides ? 'ok' : ''),
+    badge(`план промо ${fmt.int(promoScheduledSides)}`, promoScheduledSides ? 'info' : ''),
+    badge(`промо истекло ${fmt.int(promoExpiredSides)}`, promoExpiredSides ? 'warn' : ''),
+    badge(`выравнивание ${fmt.int(alignmentChangedRows)}`, alignmentChangedRows ? 'ok' : 'info'),
+    badge(`тесты ${fmt.int(smokePassed)}/${fmt.int(smokeTests.length)}`, smokePassed === smokeTests.length ? 'ok' : 'warn'),
+    badge(`есть live-ориентир ${fmt.int(liveBenchmarkSides)}`, liveBenchmarkSides ? 'info' : 'warn'),
+    badge(`расходятся с live ${fmt.int(liveDriftSides)}`, liveDriftSides ? 'warn' : 'ok')
+  ].join('');
 
   root.innerHTML = `
     <div class="section-title">
       <div>
         <h2>Репрайсер</h2>
-        <p>Вкладка стала управляемым слоем портала: 05_ENGINE считаем из smart price workbench + SKU/Order facts, а затем отдельным шагом запускаем 06_ALIGNMENT по score-модели WB/Ozon.</p>
+        <p>Здесь связываются три вещи: рабочие MIN/MAX из «Цен», рекомендация модели и ручные решения по конкретной площадке.</p>
       </div>
       <div class="quick-actions">
-        <button type="button" class="quick-chip" data-repricer-export="all">Audit Excel</button>
-        <button type="button" class="quick-chip" data-repricer-export="template:wb">WB загрузка</button>
-        <button type="button" class="quick-chip" data-repricer-export="template:ozon">Ozon загрузка</button>
-        <button type="button" class="quick-chip" data-repricer-export="promo:wb">WB promo загрузка</button>
-        <button type="button" class="quick-chip" data-repricer-export="promo:ozon">Ozon promo загрузка</button>
+        <button type="button" class="quick-chip" data-repricer-export="all">Аудит в Excel</button>
+        <button type="button" class="quick-chip" data-repricer-export="template:wb">Шаблон WB</button>
+        <button type="button" class="quick-chip" data-repricer-export="template:ozon">Шаблон Ozon</button>
+        <button type="button" class="quick-chip" data-repricer-export="promo:wb">WB промо</button>
+        <button type="button" class="quick-chip" data-repricer-export="promo:ozon">Ozon промо</button>
       </div>
     </div>
 
-    <div class="badge-stack" style="margin-top:8px">${badge(`Источник ${state.smartPriceWorkbench?.generatedAt ? fmt.date(state.smartPriceWorkbench.generatedAt) : '—'}`, 'info')}${badge(state.smartPriceWorkbench?.liveEnrichmentUsed ? 'данные: smart_price_workbench + live enrich' : 'данные: smart_price_workbench', 'ok')}${state.smartPriceWorkbench?.liveEnrichmentAt ? badge(`live ${fmt.date(state.smartPriceWorkbench.liveEnrichmentAt)}`, 'info') : ''}${badge(hasRemoteStore() ? 'repricer controls в команде' : 'repricer controls локально', hasRemoteStore() ? 'ok' : 'info')}</div>
+    <div class="badge-stack" style="margin-top:8px">${badge(`обновлено ${state.smartPriceWorkbench?.generatedAt ? fmt.date(state.smartPriceWorkbench.generatedAt) : '—'}`, 'info')}${badge(state.smartPriceWorkbench?.liveEnrichmentUsed ? 'слой: workbench + live' : 'слой: workbench', 'ok')}${state.smartPriceWorkbench?.liveEnrichmentAt ? badge(`live ${fmt.date(state.smartPriceWorkbench.liveEnrichmentAt)}`, 'info') : ''}${badge(hasRemoteStore() ? 'решения: команда' : 'решения: локально', hasRemoteStore() ? 'ok' : 'info')}</div>
+    <div class="muted small" style="margin-top:8px">Проверка дублей в репрайсере сейчас идёт по совпадающим названиям карточек. Если названия похожи, дополнительно сверяйте артикул и площадку перед выгрузкой.</div>
 
-    <div class="badge-stack" style="margin-top:8px">${badge(`fee stack ${fmt.int(feeStackSides)}`, feeStackSides ? 'ok' : 'warn')}${badge(`mixed guard ${fmt.int(mixedGuardSides)}`, mixedGuardSides ? 'info' : '')}${badge(`fallback ${fmt.int(fallbackSides)}`, fallbackSides ? 'warn' : 'ok')}${badge(`promo active ${fmt.int(promoSides)}`, promoSides ? 'warn' : 'info')}${badge(`promo offers ${fmt.int(promoOfferSides)}`, promoOfferSides ? 'info' : '')}${badge(`offer active ${fmt.int(promoOfferActiveSides)}`, promoOfferActiveSides ? 'ok' : '')}${badge(`promo scheduled ${fmt.int(promoScheduledSides)}`, promoScheduledSides ? 'info' : '')}${badge(`promo expired ${fmt.int(promoExpiredSides)}`, promoExpiredSides ? 'warn' : '')}${badge(`align ${fmt.int(alignmentChangedRows)}`, alignmentChangedRows ? 'ok' : 'info')}${badge(`tests ${fmt.int(smokePassed)}/${fmt.int(smokeTests.length)}`, smokePassed === smokeTests.length ? 'ok' : 'warn')}${badge(`live ${fmt.int(liveBenchmarkSides)}`, liveBenchmarkSides ? 'info' : 'warn')}${badge(`live drift ${fmt.int(liveDriftSides)}`, liveDriftSides ? 'warn' : 'ok')}</div>
-    <div class="muted small" style="margin-top:8px">Проверка дублей в репрайсере сейчас идёт по совпадающим названиям карточек. Когда в источник добавим отдельное поле описания, этот контроль можно перевести на полные описания без смены интерфейса.</div>
+    ${renderRepricerWorkflowGuide()}
+    ${renderRepricerSignalsCard(summaryBadges, techBadges, health.ok)}
 
     <div class="grid cards">${cards}</div>
 
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
         <div>
-          <h3>Healthcheck</h3>
-          <p class="small muted">Минимальный контроль перед выгрузкой шаблонов WB/Ozon. Если здесь красное, шаблон лучше не отправлять без проверки.</p>
+          <h3>Перед выгрузкой в Excel</h3>
+          <p class="small muted">Короткий контроль перед отправкой шаблонов WB/Ozon. Если здесь красное, выгрузку лучше перепроверить.</p>
       </div>
-      <div class="badge-stack">${health.ok ? badge('export ready', 'ok') : badge('needs review', 'warn')}</div>
+      <div class="badge-stack">${health.ok ? badge('можно выгружать', 'ok') : badge('нужна проверка', 'warn')}</div>
       </div>
       <div class="badge-stack" style="margin-top:10px">
-        ${badge(`block ${fmt.int(health.metrics.blocked_gate)}`, health.metrics.blocked_gate ? 'danger' : 'ok')}
-        ${badge(`out of spec ${fmt.int(health.metrics.out_of_spec_rows)}`, health.metrics.out_of_spec_rows ? 'info' : '')}
-        ${badge(`promo ${fmt.int(health.metrics.promo_rows)}`, health.metrics.promo_rows ? 'warn' : 'info')}
-        ${badge(`no price ${fmt.int(health.metrics.missing_current_price)}`, health.metrics.missing_current_price ? 'warn' : 'ok')}
-        ${badge(`active no price ${fmt.int(health.metrics.missing_current_price_actionable)}`, health.metrics.missing_current_price_actionable ? 'danger' : 'ok')}
-        ${badge(`no cost ${fmt.int(health.metrics.missing_cost)}`, health.metrics.missing_cost ? 'warn' : 'ok')}
-        ${badge(`cost proxy ${fmt.int(health.metrics.protected_without_cost)}`, health.metrics.protected_without_cost ? 'info' : '')}
-        ${badge(`no floor ${fmt.int(health.metrics.missing_effective_floor)}`, health.metrics.missing_effective_floor ? 'warn' : 'ok')}
-        ${badge(`active no floor ${fmt.int(health.metrics.missing_effective_floor_actionable)}`, health.metrics.missing_effective_floor_actionable ? 'danger' : 'ok')}
-        ${badge(`wb change ${fmt.int(health.metrics.wb_change_rows)}`, health.metrics.wb_change_rows ? 'info' : '')}
-        ${badge(`ozon change ${fmt.int(health.metrics.ozon_change_rows)}`, health.metrics.ozon_change_rows ? 'info' : '')}
+        ${badge(`нет входов ${fmt.int(health.metrics.blocked_gate)}`, health.metrics.blocked_gate ? 'danger' : 'ok')}
+        ${badge(`вне спецификации ${fmt.int(health.metrics.out_of_spec_rows)}`, health.metrics.out_of_spec_rows ? 'info' : '')}
+        ${badge(`промо ${fmt.int(health.metrics.promo_rows)}`, health.metrics.promo_rows ? 'warn' : 'info')}
+        ${badge(`нет цены ${fmt.int(health.metrics.missing_current_price)}`, health.metrics.missing_current_price ? 'warn' : 'ok')}
+        ${badge(`в работе без цены ${fmt.int(health.metrics.missing_current_price_actionable)}`, health.metrics.missing_current_price_actionable ? 'danger' : 'ok')}
+        ${badge(`нет себестоимости ${fmt.int(health.metrics.missing_cost)}`, health.metrics.missing_cost ? 'warn' : 'ok')}
+        ${badge(`без cost, но защищено ${fmt.int(health.metrics.protected_without_cost)}`, health.metrics.protected_without_cost ? 'info' : '')}
+        ${badge(`нет MIN ${fmt.int(health.metrics.missing_effective_floor)}`, health.metrics.missing_effective_floor ? 'warn' : 'ok')}
+        ${badge(`в работе без MIN ${fmt.int(health.metrics.missing_effective_floor_actionable)}`, health.metrics.missing_effective_floor_actionable ? 'danger' : 'ok')}
+        ${badge(`изменения WB ${fmt.int(health.metrics.wb_change_rows)}`, health.metrics.wb_change_rows ? 'info' : '')}
+        ${badge(`изменения Ozon ${fmt.int(health.metrics.ozon_change_rows)}`, health.metrics.ozon_change_rows ? 'info' : '')}
       </div>
       <div class="muted small" style="margin-top:10px">${health.issues.length ? escapeHtml(health.issues.join(' · ')) : 'Критичных замечаний нет.'}</div>
       ${renderRepricerSmokeTests(smokeTests, smokePassed)}
     </div>
 
-    ${renderRepricerSettingsCard(settings, brandNames, statuses, roles, feePlatforms)}
-
     <div class="filters repricer-filters" style="margin-top:14px">
-      <input id="repricerSearchInput" placeholder="Поиск по артикулу, названию, owner, причине…" value="${escapeHtml(state.repricerFilters.search)}">
+      <input id="repricerSearchInput" placeholder="Поиск по артикулу, названию, owner или причине…" value="${escapeHtml(state.repricerFilters.search)}">
       <select id="repricerPlatformFilter">
         <option value="all" ${state.repricerFilters.platform === 'all' ? 'selected' : ''}>WB + Ozon</option>
         <option value="wb" ${state.repricerFilters.platform === 'wb' ? 'selected' : ''}>Только WB</option>
         <option value="ozon" ${state.repricerFilters.platform === 'ozon' ? 'selected' : ''}>Только Ozon</option>
       </select>
       <select id="repricerModeFilter">
-        <option value="changes" ${state.repricerFilters.mode === 'changes' ? 'selected' : ''}>Только с изменением цены</option>
-        <option value="manual" ${state.repricerFilters.mode === 'manual' ? 'selected' : ''}>Только с override</option>
-        <option value="promo" ${state.repricerFilters.mode === 'promo' ? 'selected' : ''}>Только promo</option>
-        <option value="blocked" ${state.repricerFilters.mode === 'blocked' ? 'selected' : ''}>Freeze / Hold / Force</option>
-        <option value="below_min" ${state.repricerFilters.mode === 'below_min' ? 'selected' : ''}>Ниже floor</option>
+        <option value="changes" ${state.repricerFilters.mode === 'changes' ? 'selected' : ''}>Нужны действия по цене</option>
+        <option value="manual" ${state.repricerFilters.mode === 'manual' ? 'selected' : ''}>Есть ручные решения</option>
+        <option value="promo" ${state.repricerFilters.mode === 'promo' ? 'selected' : ''}>Есть промо</option>
+        <option value="blocked" ${state.repricerFilters.mode === 'blocked' ? 'selected' : ''}>Пауза (стоп / нет данных)</option>
+        <option value="below_min" ${state.repricerFilters.mode === 'below_min' ? 'selected' : ''}>Ниже рабочего MIN</option>
         <option value="margin_risk" ${state.repricerFilters.mode === 'margin_risk' ? 'selected' : ''}>Риск маржи</option>
-        <option value="live_benchmark" ${state.repricerFilters.mode === 'live_benchmark' ? 'selected' : ''}>Есть live repricer</option>
-        <option value="live_drift" ${state.repricerFilters.mode === 'live_drift' ? 'selected' : ''}>Наш финал != live &gt; 3%</option>
+        <option value="live_benchmark" ${state.repricerFilters.mode === 'live_benchmark' ? 'selected' : ''}>Есть live ориентир</option>
+        <option value="live_drift" ${state.repricerFilters.mode === 'live_drift' ? 'selected' : ''}>Сильно расходится с live</option>
         <option value="all" ${state.repricerFilters.mode === 'all' ? 'selected' : ''}>Все SKU</option>
       </select>
       <select id="repricerEconomicFilter">
-        <option value="all" ${state.repricerFilters.economicSource === 'all' ? 'selected' : ''}>Экономика: все</option>
-        <option value="ready" ${state.repricerFilters.economicSource === 'ready' ? 'selected' : ''}>Только fee-ready</option>
-        <option value="fee_stack" ${state.repricerFilters.economicSource === 'fee_stack' ? 'selected' : ''}>Только fee stack</option>
-        <option value="snapshot_guard" ${state.repricerFilters.economicSource === 'snapshot_guard' ? 'selected' : ''}>Только mixed guard</option>
-        <option value="snapshot_fallback" ${state.repricerFilters.economicSource === 'snapshot_fallback' ? 'selected' : ''}>Только fallback</option>
+        <option value="all" ${state.repricerFilters.economicSource === 'all' ? 'selected' : ''}>Экономика: все варианты</option>
+        <option value="ready" ${state.repricerFilters.economicSource === 'ready' ? 'selected' : ''}>Экономика подтверждена</option>
+        <option value="fee_stack" ${state.repricerFilters.economicSource === 'fee_stack' ? 'selected' : ''}>Себестоимость + комиссии</option>
+        <option value="snapshot_guard" ${state.repricerFilters.economicSource === 'snapshot_guard' ? 'selected' : ''}>Себестоимость есть, но с guard</option>
+        <option value="snapshot_fallback" ${state.repricerFilters.economicSource === 'snapshot_fallback' ? 'selected' : ''}>Без себестоимости (fallback)</option>
+      </select>
+      <select id="repricerListSizeFilter">
+        <option value="focus" ${listSize === 'focus' ? 'selected' : ''}>Первые 40 SKU</option>
+        <option value="expanded" ${listSize === 'expanded' ? 'selected' : ''}>Первые 80 SKU</option>
+        <option value="all" ${listSize === 'all' ? 'selected' : ''}>Все SKU</option>
       </select>
     </div>
+    <div class="quick-actions" style="margin-top:10px">
+      <button type="button" class="quick-chip ${state.repricerFilters.mode === 'changes' ? 'active' : ''}" data-repricer-quick-mode="changes">Требуют решения</button>
+      <button type="button" class="quick-chip ${state.repricerFilters.mode === 'manual' ? 'active' : ''}" data-repricer-quick-mode="manual">Ручные решения</button>
+      <button type="button" class="quick-chip ${state.repricerFilters.mode === 'below_min' ? 'active' : ''}" data-repricer-quick-mode="below_min">Ниже MIN</button>
+      <button type="button" class="quick-chip ${state.repricerFilters.mode === 'promo' ? 'active' : ''}" data-repricer-quick-mode="promo">Промо</button>
+      <button type="button" class="quick-chip ${state.repricerFilters.mode === 'all' ? 'active' : ''}" data-repricer-quick-mode="all">Все SKU</button>
+    </div>
+    <div class="quick-actions" style="margin-top:10px">
+      <button type="button" class="quick-chip ${listSize === 'focus' ? 'active' : ''}" data-repricer-list-size="focus">40 SKU</button>
+      <button type="button" class="quick-chip ${listSize === 'expanded' ? 'active' : ''}" data-repricer-list-size="expanded">80 SKU</button>
+      <button type="button" class="quick-chip ${listSize === 'all' ? 'active' : ''}" data-repricer-list-size="all">Все SKU</button>
+    </div>
+    <div class="muted small" style="margin-top:8px">По фильтрам найдено ${fmt.int(rows.length)} SKU. На экране показываем ${fmt.int(visibleRows.length)}${visibleHidden ? `, ещё ${fmt.int(visibleHidden)} остаются в полной Excel-выгрузке` : ''}. Фильтр экономики: ${escapeHtml(repricerEconomicSourceLabel(state.repricerFilters.economicSource))}.</div>
+
+    ${renderRepricerSettingsCard(settings, brandNames, statuses, roles, feePlatforms)}
 
     <div class="repricer-stack">
-      ${rows.map((row) => {
+      ${visibleRows.map((row) => {
         const duplicateEntry = duplicateNames.byArticle.get(String(row.articleKey || '').trim());
         const duplicatePeers = (duplicateEntry?.articles || [])
           .filter((article) => article !== String(row.article || row.articleKey || '').trim())
           .slice(0, 4);
-        return `<div class="card repricer-card"><div class="head"><div><strong>${linkToSku(row.articleKey, row.article || row.articleKey)}</strong><div class="muted small">${escapeHtml(row.name || 'Без названия')} · ${escapeHtml(row.owner || 'Без owner')}</div>${duplicatePeers.length ? `<div class="muted small" style="margin-top:6px">Похожие карточки: ${escapeHtml(duplicatePeers.join(', '))}</div>` : ''}</div><div class="badge-stack">${row.brand ? badge(row.brand, 'info') : ''}${badge(row.status || '—')}${badge(`role ${row.role || '—'}`, 'info')}${badge(`launch ${row.launchReady || '—'}`, row.launchReady !== 'READY' ? 'warn' : 'ok')}${row.segment ? badge(row.segment, 'info') : ''}${row.abc ? badge(`ABC ${row.abc}`) : ''}${row.hasManagedProfile ? badge('sku rule', 'ok') : ''}${row.hasCorridor ? badge('corridor', 'info') : ''}${row.hasManualOverride ? badge('manual', 'warn') : ''}${duplicateEntry ? badge(`дубль названия x${fmt.int(duplicateEntry.count)}`, 'warn') : ''}</div></div><details style="margin:10px 0"><summary class="small muted" style="cursor:pointer">Управлять SKU</summary><form class="repricer-sku-form" data-article-key="${escapeHtml(row.articleKey)}" style="margin-top:10px"><div class="filters repricer-filters"><select name="status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${row.status === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select><select name="role">${roles.map((role) => `<option value="${escapeHtml(role)}" ${row.role === role ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}</select><select name="launchReady"><option value="READY" ${row.launchReady === 'READY' ? 'selected' : ''}>READY</option><option value="HOLD" ${row.launchReady !== 'READY' ? 'selected' : ''}>HOLD</option></select></div><div class="quick-actions" style="margin-top:10px"><button type="submit" class="quick-chip">Сохранить SKU rule</button><button type="button" class="quick-chip" data-repricer-sku-reset data-article-key="${escapeHtml(row.articleKey)}">Сбросить SKU rule</button></div></form></details><div class="repricer-side-grid ${state.repricerFilters.platform !== 'all' ? 'single' : ''}">${state.repricerFilters.platform !== 'ozon' ? renderRepricerSide('WB', row.wb) : ''}${state.repricerFilters.platform !== 'wb' ? renderRepricerSide('Ozon', row.ozon) : ''}</div></div>`;
-      }).join('') || '<div class="empty">По выбранным фильтрам repricer ничего не показал.</div>'}
+        return `<div class="card repricer-card"><div class="head"><div><strong>${linkToSku(row.articleKey, row.article || row.articleKey)}</strong><div class="muted small">${escapeHtml(row.name || 'Без названия')} · ${escapeHtml(row.owner || 'Без owner')}</div>${duplicatePeers.length ? `<div class="muted small" style="margin-top:6px">Похожие карточки: ${escapeHtml(duplicatePeers.join(', '))}</div>` : ''}</div><div class="badge-stack">${row.brand ? badge(row.brand, 'info') : ''}${badge(row.status || 'Статус не указан')}${badge(`роль ${row.role || '—'}`, 'info')}${badge(row.launchReady === 'READY' ? 'готов к запуску' : 'hold до запуска', row.launchReady === 'READY' ? 'ok' : 'warn')}${row.segment ? badge(row.segment, 'info') : ''}${row.abc ? badge(`ABC ${row.abc}`) : ''}${row.hasManagedProfile ? badge('профиль SKU', 'ok') : ''}${row.hasCorridor ? badge('коридор', 'info') : ''}${row.hasManualOverride ? badge('ручное решение', 'warn') : ''}${duplicateEntry ? badge(`дубль названия x${fmt.int(duplicateEntry.count)}`, 'warn') : ''}</div></div><details style="margin:10px 0"><summary class="small muted" style="cursor:pointer">Настроить профиль SKU</summary><form class="repricer-sku-form" data-article-key="${escapeHtml(row.articleKey)}" style="margin-top:10px"><div class="filters repricer-filters"><select name="status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${row.status === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select><select name="role">${roles.map((role) => `<option value="${escapeHtml(role)}" ${row.role === role ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}</select><select name="launchReady"><option value="READY" ${row.launchReady === 'READY' ? 'selected' : ''}>READY</option><option value="HOLD" ${row.launchReady !== 'READY' ? 'selected' : ''}>HOLD</option></select></div><div class="quick-actions" style="margin-top:10px"><button type="submit" class="quick-chip">Сохранить профиль</button><button type="button" class="quick-chip" data-repricer-sku-reset data-article-key="${escapeHtml(row.articleKey)}">Сбросить профиль</button></div></form></details><div class="repricer-side-grid ${state.repricerFilters.platform !== 'all' ? 'single' : ''}">${state.repricerFilters.platform !== 'ozon' ? renderRepricerSide('WB', row.wb) : ''}${state.repricerFilters.platform !== 'wb' ? renderRepricerSide('Ozon', row.ozon) : ''}</div></div>`;
+      }).join('') || '<div class="empty">По выбранным фильтрам репрайсер ничего не показал.</div>'}
     </div>
   `;
 
@@ -3023,9 +3368,14 @@ function orderProcurementBuildWarehouseMap() {
   rows.forEach((row) => {
     const key = orderProcurementNormalizeKey(row?.articleKey || row?.article);
     if (!key) return;
+    const hasInboundWarehouse = ['inboundWarehouse', 'inbound', 'warehouseInbound', 'inTransitWarehouse', 'inboundUnits']
+      .some((field) => row?.[field] !== undefined && row?.[field] !== null && String(row[field]).trim() !== '');
     lookup.set(key, {
       stockWarehouse: orderProcurementNumber(row?.stockWarehouse),
-      inboundWarehouse: 0,
+      inboundWarehouse: typeof orderProcurementReadWarehouseInbound === 'function'
+        ? orderProcurementReadWarehouseInbound(row)
+        : 0,
+      hasInboundWarehouse,
       accepted: orderProcurementNumber(row?.accepted),
       shippedWB: orderProcurementNumber(row?.shippedWB),
       shippedOzon: orderProcurementNumber(row?.shippedOzon)

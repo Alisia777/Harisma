@@ -6,10 +6,11 @@
   <title>&#1044;&#1086;&#1084; &#1073;&#1088;&#1077;&#1085;&#1076;&#1072; &#1040;&#1083;&#1090;&#1077;&#1103; &#183; v8.7.1 Imperial</title>
   <meta name="description" content="&#1044;&#1086;&#1084; &#1073;&#1088;&#1077;&#1085;&#1076;&#1072; &#1040;&#1083;&#1090;&#1077;&#1103;: &#1086;&#1087;&#1077;&#1088;&#1072;&#1090;&#1080;&#1074;&#1085;&#1099;&#1081; &#1082;&#1086;&#1085;&#1090;&#1091;&#1088; &#1073;&#1088;&#1077;&#1085;&#1076;&#1072;, &#1087;&#1083;&#1086;&#1097;&#1072;&#1076;&#1086;&#1082;, &#1088;&#1077;&#1082;&#1083;&#1072;&#1084;&#1099; &#1080; &#1088;&#1077;&#1096;&#1077;&#1085;&#1080;&#1081; &#1074; &#1086;&#1076;&#1085;&#1086;&#1084; &#1101;&#1082;&#1088;&#1072;&#1085;&#1077;.">
   <link rel="icon" href="assets/altea-imperial-mark.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=20260422a">
-  <link rel="stylesheet" href="portal-form-visual-refine.css?v=20260422a">
-  <link rel="stylesheet" href="imperial.css?v=20260419q1">
-  <link rel="stylesheet" href="v87.css?v=20260419q1">
+<link rel="stylesheet" href="styles.css?v=20260503b">
+<link rel="stylesheet" href="portal-form-visual-refine.css?v=20260422a">
+<link rel="stylesheet" href="imperial.css?v=20260419q1">
+<link rel="stylesheet" href="v87.css?v=20260419q1">
+<link rel="stylesheet" href="portal-sand-dark.css?v=20260503i">
 </head>
 <body class="v87-imperial">
   <div class="app-shell">
@@ -29,13 +30,13 @@
           <span>&#1044;&#1072;&#1096;&#1073;&#1086;&#1088;&#1076;</span>
           <small>&#1055;&#1091;&#1083;&#1100;&#1089; &#183; &#1083;&#1080;&#1076;&#1077;&#1088;&#1099; &#183; &#1089;&#1080;&#1075;&#1085;&#1072;&#1083;&#1099;</small>
         </button>
+        <button class="nav-btn" data-view="documents">
+          <span>&#1044;&#1086;&#1082;&#1091;&#1084;&#1077;&#1085;&#1090;&#1099;</span>
+          <small>&#1043;&#1072;&#1081;&#1076;&#1099; &#183; &#1096;&#1072;&#1073;&#1083;&#1086;&#1085;&#1099; &#183; &#1089;&#1089;&#1099;&#1083;&#1082;&#1080;</small>
+        </button>
         <button class="nav-btn" data-view="repricer">
           <span>&#1056;&#1077;&#1087;&#1088;&#1072;&#1081;&#1089;&#1077;&#1088;</span>
           <small>&#1062;&#1077;&#1085;&#1072; &#183; &#1088;&#1080;&#1089;&#1082;&#1080; &#183; &#1088;&#1077;&#1082;&#1086;&#1084;&#1077;&#1085;&#1076;&#1072;&#1094;&#1080;&#1080;</small>
-        </button>
-        <button class="nav-btn" data-view="ads-funnel">
-          <span>&#1056;&#1077;&#1082;&#1083;&#1072;&#1084;&#1085;&#1072;&#1103; &#1074;&#1086;&#1088;&#1086;&#1085;&#1082;&#1072;</span>
-          <small>Ads &#183; CTR &#183; &#1044;&#1056;&#1056;</small>
         </button>
         <button class="nav-btn" data-view="prices">
           <span>&#1062;&#1077;&#1085;&#1099;</span>
@@ -95,7 +96,6 @@
       <section class="view active" id="view-dashboard"></section>
       <section class="view" id="view-documents"></section>
       <section class="view" id="view-repricer"></section>
-      <section class="view" id="view-ads-funnel"></section>
       <section class="view" id="view-prices"></section>
       <section class="view" id="view-order"></section>
       <section class="view" id="view-control"></section>
@@ -174,6 +174,8 @@
         return result;
       }
 
+      window.__ALTEA_JSON_VERSION__ = '20260503d';
+
       Response.prototype.json = async function patchedResponseJson() {
         const backup = this.clone();
         try {
@@ -187,35 +189,33 @@
       };
     })();
   </script>
-<script defer src="portal-runtime-optimizer.js?v=20260502a"></script>
-<script defer src="app-core-01.js?v=20260502a"></script>
-  <script defer src="app-core-02.js?v=20260502a"></script>
-  <script defer src="app-core-03.js?v=20260428b"></script>
+<script defer src="portal-runtime-optimizer.js?v=20260503d"></script>
+<script defer src="app-core-01.js?v=20260503e"></script>
+  <script defer src="app-core-02.js?v=20260503b"></script>
+  <script defer src="app-core-03.js?v=20260503d"></script>
   <script defer src="app-core-04.js?v=20260502a"></script>
-  <script defer src="app-core-05.js?v=20260502a"></script>
-  <script defer src="app-core-06.js?v=20260502a"></script>
-  <script defer src="app-core-07.js?v=20260502a"></script>
-  <script defer src="app-core-08.js?v=20260502a"></script>
-  <script defer src="app-core-09.js?v=20260429a"></script>
-  <script defer src="app-core-10.js?v=20260502a"></script>
-<script defer src="portal-dashboard-interactive-hotfix.js?v=20260502a"></script>
+  <script defer src="app-core-05.js?v=20260503c"></script>
+  <script defer src="app-core-06.js?v=20260425i"></script>
+<script defer src="app-core-07.js?v=20260503e"></script>
+<script defer src="app-core-08.js?v=20260503j"></script>
+  <script defer src="app-core-09.js?v=20260503c"></script>
+<script defer src="app-core-10.js?v=20260503d"></script>
+<script defer src="portal-dashboard-interactive-hotfix.js?v=20260503e"></script>
   <script defer src="portal-documents-hotfix.js?v=20260425a"></script>
-  <script defer src="portal-snapshot-refresh-hotfix.js?v=20260425c"></script>
-  <script defer src="portal-launch-month-filter-hotfix.js?v=20260422c"></script>
-  <script defer src="portal-launch-manager-hotfix.js?v=20260422c"></script>
+  <script defer src="portal-snapshot-refresh-hotfix.js?v=20260503a"></script>
   <script defer src="portal-dashboard-prime-hotfix-20260422e.js?v=20260429a"></script>
   <script defer src="portal-control-center-v2-hotfix.js?v=20260421a"></script>
-  <script defer src="portal-control-center-simple-patch.js?v=20260422a"></script>
-  <script defer src="portal-form-visual-refine.js?v=20260422a"></script>
+  <script defer src="portal-control-center-simple-patch.js?v=20260502b"></script>
+  <script defer src="portal-form-visual-refine.js?v=20260502b"></script>
   <script defer src="portal-team-runtime-hotfix.js?v=20260417k"></script>
   <script defer src="portal-plan-alignment-hotfix.js?v=20260423c"></script>
   <script defer src="portal-supabase-snapshot-hotfix.js?v=20260423d"></script>
   <script defer src="portal-smart-price-overlay-hotfix.js?v=20260424c"></script>
-<script defer src="portal-repricer-managed-hotfix.js?v=20260425c"></script>
-<script defer src="portal-repricer-settings-ux-hotfix.js?v=20260429c"></script>
-<script defer src="portal-repricer-actions-explainer-hotfix.js?v=20260425a"></script>
-<script defer src="portal-repricer-coldstart-hotfix.js?v=20260429a"></script>
-<script defer src="portal-sidebar-priority-hotfix.js?v=20260425a"></script>
+<script defer src="portal-repricer-managed-hotfix.js?v=20260502b"></script>
+<script defer src="portal-repricer-actions-explainer-hotfix.js?v=20260503a"></script>
+<script defer src="portal-repricer-coldstart-hotfix.js?v=20260503a"></script>
+<script defer src="portal-sidebar-priority-hotfix.js?v=20260503a"></script>
 <script defer src="portal-sku-registry-live-note-hotfix.js?v=20260425a"></script>
+<script defer src="portal-ux-unify.js?v=20260503e"></script>
 </body>
 </html>

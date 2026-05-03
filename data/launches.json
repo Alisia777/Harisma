@@ -975,7 +975,7 @@
     "marketplaces": "",
     "registryStatus": "",
     "segment": "",
-    "targetCost": null,
+    "targetCost": 80,
     "srcWithoutVat": null,
     "srcWithVat": 0,
     "srcWithSpp28": 0,
@@ -1702,7 +1702,14 @@
         "value": null
       }
     ],
-    "ganttMonths": [],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Июнь",
+        "monthKey": "2026-06",
+        "value": 1
+      }
+    ],
     "sourceRow": 17,
     "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
@@ -1803,7 +1810,14 @@
         "value": 6000
       }
     ],
-    "ganttMonths": [],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Июнь",
+        "monthKey": "2026-06",
+        "value": 1
+      }
+    ],
     "sourceRow": 18,
     "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
@@ -1825,7 +1839,7 @@
     "marketplaces": "",
     "registryStatus": "",
     "segment": "",
-    "targetCost": null,
+    "targetCost": 160,
     "srcWithoutVat": null,
     "srcWithVat": 0,
     "srcWithSpp28": 0,
@@ -6131,7 +6145,7 @@
     "marketplaces": "",
     "registryStatus": "",
     "segment": "",
-    "targetCost": null,
+    "targetCost": 160,
     "srcWithoutVat": null,
     "srcWithVat": 0,
     "srcWithSpp28": 0,
@@ -6318,7 +6332,14 @@
         "value": null
       }
     ],
-    "ganttMonths": [],
+    "ganttMonths": [
+      {
+        "year": 2026,
+        "label": "Май",
+        "monthKey": "2026-05",
+        "value": 1
+      }
+    ],
     "sourceRow": 60,
     "sourceFile": "Календарь новинок Алтея (2).xlsx"
   },
@@ -6556,7 +6577,7 @@
     "marketplaces": "",
     "registryStatus": "",
     "segment": "",
-    "targetCost": null,
+    "targetCost": 158,
     "srcWithoutVat": null,
     "srcWithVat": 0,
     "srcWithSpp28": 0,

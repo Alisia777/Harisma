@@ -1,269 +1,218 @@
 (function () {
-  if (window.__ALTEA_REPRICER_ACTIONS_EXPLAINER_20260425A__) return;
-  window.__ALTEA_REPRICER_ACTIONS_EXPLAINER_20260425A__ = true;
+  if (window.__ALTEA_REPRICER_UI_SAFE_20260503A__) return;
+  window.__ALTEA_REPRICER_UI_SAFE_20260503A__ = true;
+  window.__ALTEA_REPRICER_UI_SAFE_20260502E__ = true;
 
-  var VIEW_ID = "view-repricer";
-  var STYLE_ID = "altea-repricer-actions-explainer-style";
-  var enhanceTimer = 0;
-  var observer = null;
+  const VIEW_ID = "view-repricer";
+  let observer = null;
+  let enhanceTimer = 0;
 
-  var TOP_ACTIONS = {
-    "Audit Excel": "Выгружает полный аудит по всем SKU и площадкам для проверки. Ничего не меняет в портале и не отправляет цены в маркетплейс автоматически.",
-    "WB загрузка": "Готовит шаблон обычных цен для ручной загрузки в WB по финальным рекомендациям репрайсера.",
-    "Ozon загрузка": "Готовит шаблон обычных цен для ручной загрузки в Ozon по финальным рекомендациям репрайсера.",
-    "WB promo загрузка": "Готовит отдельный WB-шаблон только для акционных строк и промо-окон.",
-    "Ozon promo загрузка": "Готовит отдельный Ozon-шаблон только для акционных строк и промо-окон."
+  const TOP_ACTION_LABELS = {
+    all: "Аудит Excel",
+    "template:wb": "WB цены",
+    "template:ozon": "Ozon цены",
+    "promo:wb": "WB акции",
+    "promo:ozon": "Ozon акции"
   };
 
-  var SETTINGS_ACTIONS = {
-    "Сохранить сейчас": "Принудительно сохраняет общие настройки контура немедленно. Это ручной дубль автосохранения.",
-    "Сбросить к базовым": "Удаляет ручные настройки контура и возвращает базовые значения. Влияет на весь контур, а не на одну SKU."
-  };
-
-  var CORRIDOR_ACTIONS = {
-    "Сохранить коридор": "Запоминает ручные границы цены для одной SKU на одной площадке: floor, base, cap и promo floor.",
-    "Сбросить коридор": "Удаляет ручной коридор для этой SKU/площадки и возвращает строку к источникам модели."
-  };
-
-  var OVERRIDE_ACTIONS = {
-    "Сохранить override": "Сохраняет ручной режим и ручные цены для одной SKU на одной площадке. Override остаётся активным, пока вы его не снимете.",
-    "Сбросить override": "Полностью снимает ручной override и возвращает строку в автоматический режим модели.",
-    "Принять предложение акции": "Копирует предложение акции из фактов в обычный ручной override, чтобы его можно было сохранить и дальше редактировать как решение."
+  const TOP_ACTION_TITLES = {
+    all: "Выгружает полный аудит по всем SKU и площадкам для проверки.",
+    "template:wb": "Готовит файл обычных цен для ручной загрузки в Wildberries.",
+    "template:ozon": "Готовит файл обычных цен для ручной загрузки в Ozon.",
+    "promo:wb": "Готовит отдельный файл для акционных цен Wildberries.",
+    "promo:ozon": "Готовит отдельный файл для акционных цен Ozon."
   };
 
   function normalizedText(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
 
-  function escapeHtml(value) {
-    return String(value == null ? "" : value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+  function replaceOptionTexts(select, replacements) {
+    if (!(select instanceof HTMLSelectElement)) return;
+    Array.from(select.options).forEach(function (option) {
+      const original = normalizedText(option.textContent);
+      if (!original) return;
+      replacements.forEach(function (pair) {
+        if (pair[0].test(original)) option.textContent = pair[1];
+      });
+    });
   }
 
-  function ensureStyles() {
-    if (document.getElementById(STYLE_ID)) return;
-    var style = document.createElement("style");
-    style.id = STYLE_ID;
-    style.textContent = [
-      "#view-repricer .repricer-ux-guide{margin-top:12px;padding:14px 16px;border-radius:18px;border:1px solid rgba(214,175,85,.14);background:rgba(214,175,85,.05);display:grid;gap:10px;}",
-      "#view-repricer .repricer-ux-guide summary{cursor:pointer;font-weight:700;color:#f4ead6;}",
-      "#view-repricer .repricer-ux-guide-list{display:grid;gap:8px;margin-top:10px;}",
-      "#view-repricer .repricer-ux-guide-item{padding:10px 12px;border-radius:14px;border:1px solid rgba(214,175,85,.12);background:rgba(9,7,5,.42);}",
-      "#view-repricer .repricer-ux-note{margin-top:8px;padding:10px 12px;border-radius:14px;border:1px solid rgba(214,175,85,.12);background:rgba(214,175,85,.04);}",
-      "#view-repricer .repricer-ux-note strong{display:block;margin-bottom:4px;color:#f4ead6;}"
-    ].join("");
-    document.head.appendChild(style);
+  function relabelTopActions(root) {
+    Object.keys(TOP_ACTION_LABELS).forEach(function (key) {
+      const button = root.querySelector('[data-repricer-export="' + key + '"]');
+      if (!button) return;
+      button.textContent = TOP_ACTION_LABELS[key];
+      button.title = TOP_ACTION_TITLES[key];
+      button.setAttribute("aria-label", TOP_ACTION_TITLES[key]);
+    });
   }
 
-  function setButtonTitle(button, text) {
-    if (!button || !text) return;
-    button.title = text;
-    button.setAttribute("aria-label", text);
+  function refineIntro(root) {
+    const intro = root.querySelector(".section-title p");
+    if (!intro) return;
+    intro.textContent = "Здесь решаем три вещи: рабочие границы цены по SKU, текущую рекомендацию модели и точки, где уже включено ручное решение вместо автоматики.";
   }
 
-  function findButton(root, label) {
-    var normalized = normalizedText(label);
-    return Array.from(root.querySelectorAll("button")).find(function (button) {
-      return normalizedText(button.textContent) === normalized;
-    }) || null;
+  function refineSummaries(root) {
+    root.querySelectorAll("details > summary").forEach(function (summary) {
+      const text = normalizedText(summary.textContent);
+      if (text === "Управлять SKU") summary.textContent = "Карточка SKU";
+      if (text === "Управлять площадкой") summary.textContent = "Управление площадкой";
+    });
   }
 
-  function buildGuide(title, intro, items) {
-    var details = document.createElement("details");
-    details.className = "repricer-ux-guide";
-    details.innerHTML = "<summary>" + escapeHtml(title) + "</summary>";
-
-    var body = document.createElement("div");
-    body.className = "repricer-ux-guide-list";
-    if (intro) {
-      var introNode = document.createElement("div");
-      introNode.className = "muted small";
-      introNode.textContent = intro;
-      body.appendChild(introNode);
+  function refineFilters(root) {
+    const blankSelects = Array.from(root.querySelectorAll("select")).filter(function (select) {
+      return !String(select.name || "").trim();
+    });
+    if (blankSelects[0]) {
+      blankSelects[0].title = "Фильтр по площадке.";
     }
-
-    Object.keys(items).forEach(function (label) {
-      var card = document.createElement("div");
-      card.className = "repricer-ux-guide-item";
-      card.innerHTML = "<strong>" + escapeHtml(label) + "</strong><div class=\"muted small\" style=\"margin-top:4px\">" + escapeHtml(items[label]) + "</div>";
-      body.appendChild(card);
-    });
-
-    details.appendChild(body);
-    return details;
+    if (blankSelects[1]) {
+      replaceOptionTexts(blankSelects[1], [
+        [/^Только с изменением цены$/i, "Требует решения"],
+        [/^Только с override$/i, "Ручные решения"],
+        [/^Только promo$/i, "Промо"],
+        [/^Freeze \/ Hold \/ Force$/i, "Заморозка / фиксация"],
+        [/^Ниже floor$/i, "Ниже MIN"],
+        [/^Все SKU$/i, "Показать всё"]
+      ]);
+      blankSelects[1].title = "Главный фильтр экрана: где нужно решение, где уже стоит ручной режим и где есть промо.";
+    }
+    if (blankSelects[2]) {
+      replaceOptionTexts(blankSelects[2], [
+        [/^Только fee-ready$/i, "Готовая экономика"],
+        [/^Только fee stack$/i, "Есть fee stack"],
+        [/^Только mixed guard$/i, "Есть mixed guard"],
+        [/^Только fallback$/i, "Через fallback"]
+      ]);
+      blankSelects[2].title = "Показывает, насколько уверенно собрана экономика по SKU.";
+    }
   }
 
-  function ensureTopGuide(root) {
-    if (root.querySelector("[data-repricer-ux-top-guide]")) return;
-    var sectionTitle = root.querySelector(".section-title");
-    if (!sectionTitle) return;
-    var guide = buildGuide(
-      "Что делает каждая кнопка в репрайсере",
-      "Важно: эти кнопки не отправляют цены в WB/Ozon автоматически. Они либо сохраняют настройки внутри портала, либо выгружают файл, который потом загружается вручную.",
-      TOP_ACTIONS
-    );
-    guide.dataset.repricerUxTopGuide = "true";
-    sectionTitle.insertAdjacentElement("afterend", guide);
-  }
-
-  function ensureSettingsGuide(root) {
-    var form = root.querySelector("#repricerSettingsForm");
-    if (!form || form.querySelector("[data-repricer-ux-settings-guide]")) return;
-    var guide = buildGuide(
-      "Что делают кнопки в настройках контура",
-      "Верхний блок меняет общие правила расчёта для всего контура. Это не настройка одной SKU.",
-      SETTINGS_ACTIONS
-    );
-    guide.dataset.repricerUxSettingsGuide = "true";
-    form.appendChild(guide);
-  }
-
-  function ensureContextBlocks(root) {
-    root.querySelectorAll(".repricer-side").forEach(function (side) {
-      if (side.querySelector("[data-repricer-ux-context]")) return;
-      var directInfo = Array.from(side.children).filter(function (node) {
-        return node.matches && node.matches(".muted.small") && !node.closest("details");
-      });
-      if (!directInfo.length) return;
-
-      var details = document.createElement("details");
-      details.dataset.repricerUxContext = "true";
-      details.style.marginTop = "8px";
-      details.innerHTML = "<summary class=\"small muted\" style=\"cursor:pointer\">Почему такая цена сейчас</summary>";
-
-      var body = document.createElement("div");
-      body.className = "stack";
-      body.style.marginTop = "10px";
-      body.style.gap = "6px";
-
-      var note = document.createElement("div");
-      note.className = "muted small";
-      note.textContent = "Этот блок только объясняет текущее решение репрайсера: стратегию, причину и контекст расчёта. Он ничего не сохраняет и не меняет.";
-      body.appendChild(note);
-
-      directInfo.forEach(function (node, index) {
-        if (index === 0) node.style.fontWeight = "600";
-        body.appendChild(node);
-      });
-
-      details.appendChild(body);
-      var firstDetails = side.querySelector("details");
-      if (firstDetails) side.insertBefore(details, firstDetails);
-      else side.appendChild(details);
-    });
-  }
-
-  function enhanceHistorySummaries(root) {
-    root.querySelectorAll("details[data-repricer-history]").forEach(function (details) {
-      var summary = details.querySelector("summary");
-      if (summary) summary.textContent = "История расчёта и источники";
-      var stack = details.querySelector(".stack");
-      if (stack && !stack.querySelector("[data-repricer-ux-history-note]")) {
-        var note = document.createElement("div");
-        note.className = "muted small";
-        note.dataset.repricerUxHistoryNote = "true";
-        note.textContent = "Здесь видны источники floor/base/cap, промо, alignment, guard-ограничения и дата свежести истории. Это объяснение расчёта, а не ручная настройка.";
-        stack.insertBefore(note, stack.firstChild);
-      }
-    });
-  }
-
-  function enhanceForms(root) {
-    root.querySelectorAll(".repricer-corridor-form").forEach(function (form) {
-      if (!form.querySelector("[data-repricer-ux-corridor-note]")) {
-        var note = document.createElement("div");
-        note.className = "repricer-ux-note";
-        note.dataset.repricerUxCorridorNote = "true";
-        note.innerHTML = "<strong>Коридор цены</strong><div class=\"muted small\">Коридор задаёт ручные границы модели для этой SKU на этой площадке: нижнюю защиту, базу, верхнюю крышу и promo floor. Пока коридор сохранён, модель опирается на него.</div>";
-        form.insertBefore(note, form.firstChild);
-      }
-      Object.keys(CORRIDOR_ACTIONS).forEach(function (label) {
-        setButtonTitle(findButton(form, label), CORRIDOR_ACTIONS[label]);
-      });
-    });
-
+  function refineForms(root) {
     root.querySelectorAll(".repricer-override-form").forEach(function (form) {
-      if (!form.querySelector("[data-repricer-ux-override-note]")) {
-        var note = document.createElement("div");
-        note.className = "repricer-ux-note";
-        note.dataset.repricerUxOverrideNote = "true";
-        note.innerHTML = "<strong>Ручной override</strong><div class=\"muted small\">Override действует только на одну SKU и одну площадку. Здесь можно зафиксировать режим, ручной floor/cap/force и окно акции. Пока override сохранён, он имеет приоритет над автоматическим решением модели.</div>";
-        form.insertBefore(note, form.firstChild);
-      }
-      if (!form.querySelector("[data-repricer-ux-mode-help]")) {
-        var help = document.createElement("div");
-        help.className = "muted small";
-        help.dataset.repricerUxModeHelp = "true";
-        help.style.marginTop = "8px";
-        help.textContent = "Auto — вернуть модель; Hold — удерживать текущий контур; Freeze — не двигать автоматически; Force — принудительно держать цену force price.";
-        var firstFilters = form.querySelector(".filters");
-        if (firstFilters) firstFilters.insertAdjacentElement("afterend", help);
-      }
-      form.querySelectorAll("input[type='date']").forEach(function (input) {
-        input.title = "Поле хранит обычную календарную дату без привязки к часу. Здесь можно выбирать и сегодняшнюю дату.";
-      });
-      Object.keys(OVERRIDE_ACTIONS).forEach(function (label) {
-        setButtonTitle(findButton(form, label), OVERRIDE_ACTIONS[label]);
-      });
+      const floor = form.querySelector('[name="floorPrice"]');
+      const cap = form.querySelector('[name="capPrice"]');
+      const force = form.querySelector('[name="forcePrice"]');
+      const promo = form.querySelector('[name="promoPrice"]');
+      const note = form.querySelector('[name="note"]');
+      if (floor) floor.title = "Ручной MIN. Синхронизируется с вкладкой «Цены».";
+      if (cap) cap.title = "Ручной MAX. Синхронизируется с вкладкой «Цены».";
+      if (force) force.title = "Фиксированная цена для конкретной SKU и площадки.";
+      if (promo) promo.title = "Промо-цена внутри промо-окна.";
+      if (note) note.placeholder = "Почему ставим ручное решение";
+    });
+
+    root.querySelectorAll(".repricer-corridor-form").forEach(function (form) {
+      const hardFloor = form.querySelector('[name="hardFloor"]');
+      const basePrice = form.querySelector('[name="basePrice"]');
+      const stretchCap = form.querySelector('[name="stretchCap"]');
+      const promoFloor = form.querySelector('[name="promoFloor"]');
+      if (hardFloor) hardFloor.title = "Жесткий MIN внутри репрайсера.";
+      if (basePrice) basePrice.title = "База, от которой модель двигает цену.";
+      if (stretchCap) stretchCap.title = "MAX внутри репрайсера для этой площадки.";
+      if (promoFloor) promoFloor.title = "Минимум для промо-цены.";
     });
   }
 
-  function enhanceButtonTitles(root) {
-    Object.keys(TOP_ACTIONS).forEach(function (label) {
-      setButtonTitle(findButton(root, label), TOP_ACTIONS[label]);
-    });
-    Object.keys(SETTINGS_ACTIONS).forEach(function (label) {
-      setButtonTitle(findButton(root, label), SETTINGS_ACTIONS[label]);
+  function parseMoneyLike(value) {
+    if (value === null || value === undefined) return NaN;
+    const normalized = String(value).replace(/\s+/g, "").replace(",", ".").replace(/[^\d.-]/g, "");
+    const numeric = Number(normalized);
+    return Number.isFinite(numeric) ? numeric : NaN;
+  }
+
+  function backfillCapLiftBadge(root) {
+    root.querySelectorAll(".repricer-side").forEach(function (side) {
+      if (!side || side.querySelector(".altea-cap-lift-badge")) return;
+      const chips = Array.from(side.querySelectorAll(".badge-stack .chip"));
+      const minChip = chips.find(function (chip) {
+        return /^MIN\s/i.test(normalizedText(chip.textContent));
+      });
+      const maxChip = chips.find(function (chip) {
+        return /^MAX\s/i.test(normalizedText(chip.textContent));
+      });
+      const capInput = side.querySelector('.repricer-override-form [name="capPrice"]');
+      if (!minChip || !maxChip || !capInput) return;
+
+      const manualCap = parseMoneyLike(capInput.value);
+      const minValue = parseMoneyLike(minChip.textContent);
+      const maxValue = parseMoneyLike(maxChip.textContent);
+      if (!(manualCap > 0 && minValue > 0 && maxValue > 0 && manualCap + 0.001 < minValue)) return;
+
+      const suffix = normalizedText(maxChip.textContent).replace(/^MAX\s*/i, "").trim();
+      const badge = document.createElement("span");
+      badge.className = "chip warn portal-pill altea-cap-lift-badge";
+      badge.textContent = suffix ? "MAX поднят до MIN " + suffix : "MAX поднят до MIN";
+      maxChip.insertAdjacentElement("afterend", badge);
     });
   }
 
   function enhance() {
     window.clearTimeout(enhanceTimer);
     enhanceTimer = window.setTimeout(function () {
-      var root = document.getElementById(VIEW_ID);
+      const root = document.getElementById(VIEW_ID);
       if (!root || !root.children.length) return;
-      ensureStyles();
-      ensureTopGuide(root);
-      ensureSettingsGuide(root);
-      ensureContextBlocks(root);
-      enhanceHistorySummaries(root);
-      enhanceForms(root);
-      enhanceButtonTitles(root);
-    }, 60);
+      relabelTopActions(root);
+      refineIntro(root);
+      refineSummaries(root);
+      refineFilters(root);
+      refineForms(root);
+      backfillCapLiftBadge(root);
+    }, 80);
   }
 
-  function install() {
-    var root = document.getElementById(VIEW_ID);
+  function installObserver() {
+    const root = document.getElementById(VIEW_ID);
     if (!root || observer) return;
-    observer = new MutationObserver(function () { enhance(); });
-    observer.observe(root, { childList: true, subtree: true });
+    observer = new MutationObserver(function () {
+      enhance();
+    });
+    observer.observe(root, { childList: true });
+  }
+
+  function wrapFunction(name) {
+    const current = window[name];
+    if (typeof current !== "function" || current.__alteaRepricerUiSafeWrapped) return;
+    const wrapped = function () {
+      const result = current.apply(this, arguments);
+      enhance();
+      return result;
+    };
+    wrapped.__alteaRepricerUiSafeWrapped = true;
+    window[name] = wrapped;
+  }
+
+  function installWrappers() {
+    wrapFunction("renderRepricer");
+    wrapFunction("rerenderCurrentView");
+  }
+
+  document.addEventListener("click", function (event) {
+    const target = event.target && event.target.closest ? event.target.closest('[data-view="repricer"]') : null;
+    if (!target) return;
+    window.setTimeout(function () {
+      installObserver();
+      installWrappers();
+      enhance();
+    }, 120);
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    installObserver();
+    installWrappers();
     enhance();
-  }
+  }, { once: true });
 
-  var originalRenderRepricer = window.renderRepricer;
-  if (typeof originalRenderRepricer === "function") {
-    window.renderRepricer = function patchedRenderRepricer() {
-      var result = originalRenderRepricer.apply(this, arguments);
-      enhance();
-      return result;
-    };
-  }
+  window.addEventListener("load", function () {
+    installObserver();
+    installWrappers();
+    enhance();
+  }, { once: true });
 
-  var originalRerenderCurrentView = window.rerenderCurrentView;
-  if (typeof originalRerenderCurrentView === "function") {
-    window.rerenderCurrentView = function patchedRerenderCurrentView() {
-      var result = originalRerenderCurrentView.apply(this, arguments);
-      enhance();
-      return result;
-    };
-  }
-
-  document.addEventListener("DOMContentLoaded", install, { once: true });
-  window.addEventListener("load", install, { once: true });
-  install();
+  installObserver();
+  installWrappers();
   enhance();
 })();

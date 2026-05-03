@@ -75,6 +75,18 @@ function repricerFirstFilledNumber(...values) {
   return 0;
 }
 
+function repricerHasBrokenText(value) {
+  if (value === null || value === undefined) return false;
+  return String(value).includes('\uFFFD');
+}
+
+function repricerSafeText(value, fallback = '') {
+  const normalized = String(value ?? '').trim();
+  if (!normalized) return fallback;
+  if (repricerHasBrokenText(normalized)) return fallback;
+  return normalized;
+}
+
 function repricerCurrentDateKey() {
   const now = new Date();
   const year = now.getFullYear();
@@ -1213,9 +1225,9 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     marginPct: sourceRow.marginTotalPct == null ? (liveSide?.marginPct == null ? null : numberOrZero(liveSide.marginPct)) : numberOrZero(sourceRow.marginTotalPct),
     requiredMarginPct,
     strategy,
-    reason: reasons.join(' · ') || sourceRow.seedReason || 'Без пояснения',
+    reason: reasons.join(' · ') || repricerSafeText(sourceRow.seedReason, '') || 'Без пояснения',
     historyFreshnessDate: sourceRow.historyFreshnessDate || '',
-    historyNote: sourceRow.historyNote || '',
+    historyNote: repricerSafeText(sourceRow.historyNote, ''),
     mode,
     modeCode,
     engineMode,
@@ -1277,8 +1289,8 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     alignmentApplied: false,
     liveReferencePrice: numberOrZero(liveSide?.recPrice),
     liveTargetDays: numberOrZero(liveSide?.targetTurnoverDays),
-    liveStrategy: liveSide?.strategy || '',
-    liveReason: liveSide?.reason || '',
+    liveStrategy: repricerSafeText(liveSide?.strategy, ''),
+    liveReason: repricerSafeText(liveSide?.reason, ''),
     liveBuyerPrice: numberOrZero(liveSide?.buyerPrice),
     liveMarginPct: liveSide?.marginPct == null ? null : numberOrZero(liveSide.marginPct),
     liveMarginNoAdsMinPct: liveSide?.marginNoAdsMinPct == null ? null : numberOrZero(liveSide.marginNoAdsMinPct)

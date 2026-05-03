@@ -1,5 +1,6 @@
 (function () {
-if (window.__ALTEA_RUNTIME_OPTIMIZER_20260503H__) return;
+if (window.__ALTEA_RUNTIME_OPTIMIZER_20260503I__) return;
+window.__ALTEA_RUNTIME_OPTIMIZER_20260503I__ = true;
 window.__ALTEA_RUNTIME_OPTIMIZER_20260503H__ = true;
 window.__ALTEA_RUNTIME_OPTIMIZER_20260503D__ = true;
 window.__ALTEA_RUNTIME_OPTIMIZER_20260503C__ = true;
@@ -36,6 +37,7 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
   };
 
   const VIEW_TITLES = {
+    'ads-funnel': 'Рекламная воронка',
     dashboard: 'Дашборд',
     documents: 'Документы',
     repricer: 'Репрайсер',
@@ -98,7 +100,7 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
   const deferredPathMap = Object.fromEntries(
     Object.entries(DEFERRED_DATA).map(([key, config]) => [config.path, { key, fallback: config.fallback }])
   );
-  const JSON_REQUEST_VERSION = String(window.__ALTEA_JSON_VERSION__ || '20260503h').trim() || '20260503h';
+  const JSON_REQUEST_VERSION = String(window.__ALTEA_JSON_VERSION__ || '20260503i').trim() || '20260503i';
   window.__ALTEA_JSON_VERSION__ = JSON_REQUEST_VERSION;
   const deferredReady = Object.fromEntries(Object.keys(DEFERRED_DATA).map((key) => [key, false]));
   const deferredLoads = new Map();

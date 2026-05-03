@@ -409,6 +409,7 @@ function renderDashboardView() {
 function rerenderCurrentView() {
   applyOwnerOverridesToSkus();
   const renderPlan = [
+    ['view-ads-funnel', 'Рекламная воронка', () => renderProductLeaderboard('view-ads-funnel')],
     ['view-dashboard', 'Дашборд', renderDashboardView],
     ['view-documents', 'Документы', renderDocuments],
     ['view-repricer', 'Репрайсер', renderRepricer],

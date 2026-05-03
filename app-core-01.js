@@ -130,6 +130,7 @@ const VIEW_TITLES = {
   dashboard: 'Дашборд',
   documents: 'Документы',
   repricer: 'Репрайсер',
+  'ads-funnel': 'Рекламная воронка',
   prices: 'Цены',
   order: 'Заказ товара',
   control: 'Задачи',
@@ -143,6 +144,7 @@ const VIEW_TITLES = {
 const VIEW_DATA_REQUIREMENTS = {
   control: 'launches',
   launches: 'launches',
+  'ads-funnel': 'productLeaderboard',
   'product-leaderboard': 'productLeaderboard',
   'launch-control': 'launches',
   executive: 'launches',

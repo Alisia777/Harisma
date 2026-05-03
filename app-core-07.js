@@ -2283,8 +2283,8 @@ function getFilteredProductLeaderboardItems(payload) {
   });
 }
 
-function renderProductLeaderboard() {
-  const root = document.getElementById('view-product-leaderboard');
+function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
+  const root = document.getElementById(rootId);
   state.productLeaderboard = normalizeProductLeaderboardPayload(state.productLeaderboard || {});
   const payload = currentProductLeaderboardPayload();
   const freshness = productLeaderboardFreshnessMeta(payload);

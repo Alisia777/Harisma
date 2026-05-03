@@ -38,60 +38,60 @@
   body.innerHTML = `
     <div class="modal-head">
       <div>
-        <div class="muted small">${escapeHtml(sku.brand || 'РђР»С‚РµСЏ')} В· ${escapeHtml(sku.segment || sku.category || 'вЂ”')}</div>
-        <h2>${escapeHtml(sku.name || 'Р‘РµР· РЅР°Р·РІР°РЅРёСЏ')}</h2>
-        <div class="badge-stack">${linkToSku(sku.articleKey, sku.article || sku.articleKey)}${skuOperationalStatus(sku)}${scoreChip(sku.focusScore || 0)}${trafficBadges(sku, 'РЅРµС‚')}</div>
+        <div class="muted small">${escapeHtml(sku.brand || 'Алтея')} · ${escapeHtml(sku.segment || sku.category || '—')}</div>
+        <h2>${escapeHtml(sku.name || 'Без названия')}</h2>
+        <div class="badge-stack">${linkToSku(sku.articleKey, sku.article || sku.articleKey)}${skuOperationalStatus(sku)}${scoreChip(sku.focusScore || 0)}${trafficBadges(sku, 'нет')}</div>
       </div>
-      <button class="btn ghost" data-close-modal>Р—Р°РєСЂС‹С‚СЊ</button>
+      <button class="btn ghost" data-close-modal>Закрыть</button>
     </div>
 
     <div class="kv-3">
       <div class="card subtle">
-        <h3>Р РµР·СѓР»СЊС‚Р°С‚</h3>
+        <h3>Результат</h3>
         ${resultRows.join('')}
-        ${metricRow('WB РјР°СЂР¶Р°', fmt.pct(sku.wb?.marginPct), (sku.wb?.marginPct || 0) < 0 ? 'danger-text' : '')}
-        ${metricRow('Ozon РјР°СЂР¶Р°', fmt.pct(sku.ozon?.marginPct), (sku.ozon?.marginPct || 0) < 0 ? 'danger-text' : '')}
+        ${metricRow('WB маржа', fmt.pct(sku.wb?.marginPct), (sku.wb?.marginPct || 0) < 0 ? 'danger-text' : '')}
+        ${metricRow('Ozon маржа', fmt.pct(sku.ozon?.marginPct), (sku.ozon?.marginPct || 0) < 0 ? 'danger-text' : '')}
       </div>
       <div class="card subtle">
-        <h3>РџРѕС‡РµРјСѓ РІ С„РѕРєСѓСЃРµ</h3>
-        ${metricRow('Owner', escapeHtml(ownerName(sku) || 'РќРµ Р·Р°РєСЂРµРїР»С‘РЅ'))}
-        ${metricRow('WB РѕСЃС‚Р°С‚РѕРє', fmt.int(sku.wb?.stock), (sku.wb?.stock || 0) <= 50 ? 'warn-text' : '')}
-        ${metricRow('Ozon РѕСЃС‚Р°С‚РѕРє', fmt.int(sku.ozon?.stock), (sku.ozon?.stock || 0) <= 50 ? 'warn-text' : '')}
-        ${metricRow('Р’РѕР·РІСЂР°С‚С‹ WB', fmt.pct(sku.returns?.wbPct), (sku.returns?.wbPct || 0) >= 0.05 ? 'warn-text' : '')}
-        ${metricRow('Р’РѕР·РІСЂР°С‚С‹ Ozon', fmt.pct(sku.returns?.ozonPct), (sku.returns?.ozonPct || 0) >= 0.05 ? 'warn-text' : '')}
-        <div class="note-box">${escapeHtml(sku.focusReasons || 'РќРµС‚ СЏРІРЅРѕР№ РїСЂРёС‡РёРЅС‹ РІ С‚РµРєСѓС‰РµРј СЃСЂРµР·Рµ.')}</div>
+        <h3>Почему в фокусе</h3>
+        ${metricRow('Owner', escapeHtml(ownerName(sku) || 'Не закреплён'))}
+        ${metricRow('WB остаток', fmt.int(sku.wb?.stock), (sku.wb?.stock || 0) <= 50 ? 'warn-text' : '')}
+        ${metricRow('Ozon остаток', fmt.int(sku.ozon?.stock), (sku.ozon?.stock || 0) <= 50 ? 'warn-text' : '')}
+        ${metricRow('Возвраты WB', fmt.pct(sku.returns?.wbPct), (sku.returns?.wbPct || 0) >= 0.05 ? 'warn-text' : '')}
+        ${metricRow('Возвраты Ozon', fmt.pct(sku.returns?.ozonPct), (sku.returns?.ozonPct || 0) >= 0.05 ? 'warn-text' : '')}
+        <div class="note-box">${escapeHtml(sku.focusReasons || 'Нет явной причины в текущем срезе.')}</div>
       </div>
       <div class="card subtle">
-        <h3>Р§С‚Рѕ РґРµР»Р°РµРј</h3>
+        <h3>Что делаем</h3>
         <div class="badge-stack">${activeTask ? taskPriorityBadge(activeTask) : ''}${activeTask ? taskStatusBadge(activeTask) : ''}${activeTask ? taskTypeBadge(activeTask) : ''}</div>
-        <div class="note-box">${escapeHtml(activeTask?.nextAction || 'РђРєС‚РёРІРЅРѕР№ Р·Р°РґР°С‡Рё РїРѕРєР° РЅРµС‚.')}</div>
-        <div class="metric-row"><span>РЎР»РµРґСѓСЋС‰РёР№ СЃСЂРѕРє</span><strong>${escapeHtml(activeTask?.due || 'вЂ”')}</strong></div>
-        <div class="metric-row"><span>Р’РЅРµС€РЅРёР№ С‚СЂР°С„РёРє</span><strong>${sku?.flags?.hasExternalTraffic ? 'Р•СЃС‚СЊ' : 'РќРµС‚'}</strong></div>
+        <div class="note-box">${escapeHtml(activeTask?.nextAction || 'Активной задачи пока нет.')}</div>
+        <div class="metric-row"><span>Следующий срок</span><strong>${escapeHtml(activeTask?.due || '—')}</strong></div>
+        <div class="metric-row"><span>Внешний трафик</span><strong>${sku?.flags?.hasExternalTraffic ? 'Есть' : 'Нет'}</strong></div>
       </div>
     </div>
 
     <div class="two-col" style="margin-top:14px">
       <div class="card">
-        <h3>Р—Р°РґР°С‡Рё РїРѕ SKU</h3>
-        <div class="list">${tasks.length ? tasks.map(renderTaskCard).join('') : '<div class="empty">РџРѕ СЌС‚РѕРјСѓ SKU Р·Р°РґР°С‡ РµС‰С‘ РЅРµС‚</div>'}</div>
+        <h3>Задачи по SKU</h3>
+        <div class="list">${tasks.length ? tasks.map(renderTaskCard).join('') : '<div class="empty">По этому SKU задач ещё нет</div>'}</div>
       </div>
       <div class="card">
-        <h3>Р”РѕР±Р°РІРёС‚СЊ Р·Р°РґР°С‡Сѓ</h3>
+        <h3>Добавить задачу</h3>
         <form id="manualTaskForm" class="form-grid compact">
           <input type="hidden" name="articleKey" value="${escapeHtml(articleKey)}">
-          <input name="title" placeholder="Р§С‚Рѕ РґРµР»Р°РµРј" required>
+          <input name="title" placeholder="Что делаем" required>
           <select name="type">${Object.entries(TASK_TYPE_META).map(([value, label]) => `<option value="${value}">${escapeHtml(label)}</option>`).join('')}</select>
           <select name="priority">${Object.entries(PRIORITY_META).map(([value, meta]) => `<option value="${value}">${escapeHtml(meta.label)}</option>`).join('')}</select>
           <select name="platform">
-            <option value="cross">РћР±С‰РёР№ РєРѕРЅС‚СѓСЂ</option>
-            <option value="wb">Р РћРџ WB</option>
-            <option value="ozon">Р РћРџ Ozon</option>
-            <option value="retail">РЇРњ / Р›РµС‚СѓР°Р»СЊ / РњР°РіРЅРёС‚ / Р—РЇ</option>
+            <option value="cross">Общий контур</option>
+            <option value="wb">РОП WB</option>
+            <option value="ozon">РОП Ozon</option>
+            <option value="retail">ЯМ / Летуаль / Магнит / ЗЯ</option>
           </select>
           <input name="owner" placeholder="Owner" value="${escapeHtml(ownerName(sku) || '')}">
           <input name="due" type="date" value="${plusDays(3)}">
-          <textarea name="nextAction" rows="3" placeholder="РЎР»РµРґСѓСЋС‰РµРµ РґРµР№СЃС‚РІРёРµ Рё С‡С‚Рѕ СЃС‡РёС‚Р°РµРј СЂРµР·СѓР»СЊС‚Р°С‚РѕРј"></textarea>
-          <button class="btn primary" type="submit">Р”РѕР±Р°РІРёС‚СЊ Р·Р°РґР°С‡Сѓ</button>
+          <textarea name="nextAction" rows="3" placeholder="Следующее действие и что считаем результатом"></textarea>
+          <button class="btn primary" type="submit">Добавить задачу</button>
         </form>
       </div>
     </div>
@@ -100,27 +100,27 @@
       <div class="card">
         <div class="modal-section-title">
           <div>
-            <h3>Owner Рё Р·РѕРЅР° РѕС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚Рё</h3>
-            <p class="small muted">Р—Р°РєСЂРµРїР»РµРЅРёРµ РїРѕ SKU Рё РєРѕСЂРѕС‚РєР°СЏ РїРѕРјРµС‚РєР°, РµСЃР»Рё owner РјРµРЅСЏРµС‚СЃСЏ.</p>
+            <h3>Owner и зона ответственности</h3>
+            <p class="small muted">Закрепление по SKU и короткая пометка, если owner меняется.</p>
           </div>
-          <span class="owner-badge">${escapeHtml(ownerName(sku) || 'РќРµ Р·Р°РєСЂРµРїР»С‘РЅ')}</span>
+          <span class="owner-badge">${escapeHtml(ownerName(sku) || 'Не закреплён')}</span>
         </div>
         <datalist id="skuOwnerList">${owners.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
         <form id="ownerForm" class="form-grid compact">
-          <input name="ownerName" list="skuOwnerList" placeholder="РљС‚Рѕ owner" value="${escapeHtml(ownerName(sku) || '')}" required>
-          <input name="ownerRole" placeholder="Р РѕР»СЊ / Р·РѕРЅР°" value="${escapeHtml(sku?.owner?.registryStatus || 'Owner SKU')}">
-          <textarea name="note" rows="3" placeholder="Р§С‚Рѕ РІР°Р¶РЅРѕ РїРѕ Р·Р°РєСЂРµРїР»РµРЅРёСЋ / РїРµСЂРµРґР°С‡Рµ SKU"></textarea>
-          <button class="btn" type="submit">РЎРѕС…СЂР°РЅРёС‚СЊ owner</button>
+          <input name="ownerName" list="skuOwnerList" placeholder="Кто owner" value="${escapeHtml(ownerName(sku) || '')}" required>
+          <input name="ownerRole" placeholder="Роль / зона" value="${escapeHtml(sku?.owner?.registryStatus || 'Owner SKU')}">
+          <textarea name="note" rows="3" placeholder="Что важно по закреплению / передаче SKU"></textarea>
+          <button class="btn" type="submit">Сохранить owner</button>
         </form>
-        <div class="team-note">РљРѕРјР°РЅРґРЅС‹Р№ СЂРµР¶РёРј: ${escapeHtml(state.team.note || 'Р›РѕРєР°Р»СЊРЅС‹Р№ СЂРµР¶РёРј')}</div>
+        <div class="team-note">Командный режим: ${escapeHtml(state.team.note || 'Локальный режим')}</div>
       </div>
       <div class="card">
         <div class="modal-section-title">
           <div>
-            <h3>Р–СѓСЂРЅР°Р» СЂРµС€РµРЅРёР№</h3>
-            <p class="small muted">РўРѕ, С‡С‚Рѕ СѓР¶Рµ СЃРѕРіР»Р°СЃРѕРІР°Р»Рё РёР»Рё Р¶РґС‘С‚ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ СЂСѓРєРѕРІРѕРґРёС‚РµР»СЏ.</p>
+            <h3>Журнал решений</h3>
+            <p class="small muted">То, что уже согласовали или ждёт подтверждения руководителя.</p>
           </div>
-          ${badge(`${fmt.int(decisions.length)} Р·Р°РїРёСЃРµР№`, decisions.length ? 'info' : '')}
+          ${badge(`${fmt.int(decisions.length)} записей`, decisions.length ? 'info' : '')}
         </div>
         <div class="small-stack">${decisions.length ? decisions.map((item) => `
           <div class="decision-item">
@@ -128,53 +128,53 @@
               <strong>${escapeHtml(item.title)}</strong>
               <div class="badge-stack">${taskStatusBadge(item)}${item.owner ? badge(item.owner, 'info') : ''}</div>
             </div>
-            <div class="muted small">${escapeHtml(item.decision || 'Р РµС€РµРЅРёРµ РЅРµ Р·Р°РїРѕР»РЅРµРЅРѕ')}</div>
-            <div class="meta-line" style="margin-top:8px"><span class="muted small">РЎСЂРѕРє ${escapeHtml(item.due || 'вЂ”')}</span><span class="muted small">${escapeHtml(item.createdBy || 'РљРѕРјР°РЅРґР°')}</span></div>
+            <div class="muted small">${escapeHtml(item.decision || 'Решение не заполнено')}</div>
+            <div class="meta-line" style="margin-top:8px"><span class="muted small">Срок ${escapeHtml(item.due || '—')}</span><span class="muted small">${escapeHtml(item.createdBy || 'Команда')}</span></div>
           </div>
-        `).join('') : '<div class="empty">Р РµС€РµРЅРёР№ РїРѕРєР° РЅРµС‚</div>'}</div>
+        `).join('') : '<div class="empty">Решений пока нет</div>'}</div>
       </div>
       <div class="card">
         <div class="modal-section-title">
           <div>
-            <h3>Р”РѕР±Р°РІРёС‚СЊ СЂРµС€РµРЅРёРµ</h3>
-            <p class="small muted">Р¤РёРєСЃРёСЂСѓРµРј РЅРµ РѕР±СЃСѓР¶РґРµРЅРёРµ, Р° РёС‚РѕРі: С‡С‚Рѕ СЂРµС€РёР»Рё, РєС‚Рѕ owner, РєР°РєРѕР№ СЃСЂРѕРє.</p>
+            <h3>Добавить решение</h3>
+            <p class="small muted">Фиксируем не обсуждение, а итог: что решили, кто owner, какой срок.</p>
           </div>
         </div>
         <form id="decisionForm" class="form-grid compact">
-          <input name="title" placeholder="РљРѕСЂРѕС‚РєРёР№ Р·Р°РіРѕР»РѕРІРѕРє СЂРµС€РµРЅРёСЏ" required>
-          <input name="owner" placeholder="РљС‚Рѕ РІРµРґС‘С‚ СЂРµС€РµРЅРёРµ" value="${escapeHtml(ownerName(sku) || '')}">
+          <input name="title" placeholder="Короткий заголовок решения" required>
+          <input name="owner" placeholder="Кто ведёт решение" value="${escapeHtml(ownerName(sku) || '')}">
           <select name="status">${Object.entries(TASK_STATUS_META).map(([value, meta]) => `<option value="${value}" ${value === 'waiting_decision' ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}</select>
           <input name="due" type="date" value="${plusDays(3)}">
-          <textarea name="decision" rows="4" placeholder="Р§С‚Рѕ РёРјРµРЅРЅРѕ СЂРµС€РёР»Рё / С‡С‚Рѕ РµС‰С‘ РЅСѓР¶РЅРѕ РїРѕРґС‚РІРµСЂРґРёС‚СЊ" required></textarea>
-          <button class="btn" type="submit">РЎРѕС…СЂР°РЅРёС‚СЊ СЂРµС€РµРЅРёРµ</button>
+          <textarea name="decision" rows="4" placeholder="Что именно решили / что ещё нужно подтвердить" required></textarea>
+          <button class="btn" type="submit">Сохранить решение</button>
         </form>
       </div>
     </div>
 
     <div class="two-col" style="margin-top:14px">
       <div class="card">
-        <h3>РљРѕРјРјРµРЅС‚Р°СЂРёРё Рё Р°РїРґРµР№С‚С‹</h3>
+        <h3>Комментарии и апдейты</h3>
         <div class="list">${comments.length ? comments.map((comment) => `
           <div class="comment-item">
-            <div class="head"><strong>${escapeHtml(comment.author || 'РљРѕРјР°РЅРґР°')}</strong><div class="badge-stack">${commentTypeChip(comment.type)}${badge(comment.team || 'РљРѕРјР°РЅРґР°')}</div></div>
+            <div class="head"><strong>${escapeHtml(comment.author || 'Команда')}</strong><div class="badge-stack">${commentTypeChip(comment.type)}${badge(comment.team || 'Команда')}</div></div>
             <div class="muted small">${fmt.date(comment.createdAt)}</div>
             <p>${escapeHtml(comment.text)}</p>
           </div>
-        `).join('') : '<div class="empty">РљРѕРјРјРµРЅС‚Р°СЂРёРµРІ РїРѕРєР° РЅРµС‚</div>'}</div>
+        `).join('') : '<div class="empty">Комментариев пока нет</div>'}</div>
       </div>
       <div class="card">
-        <h3>Р”РѕР±Р°РІРёС‚СЊ Р°РїРґРµР№С‚</h3>
+        <h3>Добавить апдейт</h3>
         <form id="commentForm" class="form-grid compact">
           <input type="hidden" name="articleKey" value="${escapeHtml(articleKey)}">
-          <input name="author" placeholder="РљС‚Рѕ РїРёС€РµС‚" value="${escapeHtml(state.team.member.name || ownerName(sku) || 'РљРѕРјР°РЅРґР°')}" required>
+          <input name="author" placeholder="Кто пишет" value="${escapeHtml(state.team.member.name || ownerName(sku) || 'Команда')}" required>
           <select name="type">
-            <option value="signal">РЎРёРіРЅР°Р»</option>
-            <option value="risk">Р РёСЃРє</option>
-            <option value="focus">Р¤РѕРєСѓСЃ</option>
-            <option value="idea">РРґРµСЏ</option>
+            <option value="signal">Сигнал</option>
+            <option value="risk">Риск</option>
+            <option value="focus">Фокус</option>
+            <option value="idea">Идея</option>
           </select>
-          <textarea name="text" rows="5" placeholder="РљРѕСЂРѕС‚РєРѕ: С‡С‚Рѕ СЃР»СѓС‡РёР»РѕСЃСЊ, С‡С‚Рѕ РґРµР»Р°РµРј, С‡С‚Рѕ РЅСѓР¶РЅРѕ РѕС‚ РґСЂСѓРіРёС…" required></textarea>
-          <button class="btn" type="submit">РЎРѕС…СЂР°РЅРёС‚СЊ Р°РїРґРµР№С‚</button>
+          <textarea name="text" rows="5" placeholder="Коротко: что случилось, что делаем, что нужно от других…" required></textarea>
+          <button class="btn" type="submit">Сохранить апдейт</button>
         </form>
       </div>
     </div>

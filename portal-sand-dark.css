@@ -810,6 +810,27 @@ body.v87-imperial.theme-sand-dark #view-product-leaderboard .list-item {
     linear-gradient(180deg, rgba(27, 21, 17, 0.98), rgba(12, 10, 8, 0.98)) !important;
 }
 
+body.v87-imperial.theme-sand-dark #view-launches [data-launch-gantt-fold] > summary {
+  list-style: none;
+}
+
+body.v87-imperial.theme-sand-dark #view-launches [data-launch-gantt-fold] > summary::-webkit-details-marker {
+  display: none;
+}
+
+body.v87-imperial.theme-sand-dark #view-launches [data-launch-gantt-fold] > summary::after {
+  content: "▾";
+  float: right;
+  color: rgba(246, 230, 198, 0.8);
+  font-size: 14px;
+  line-height: 1;
+  margin-top: 8px;
+}
+
+body.v87-imperial.theme-sand-dark #view-launches [data-launch-gantt-fold]:not([open]) > summary::after {
+  content: "▸";
+}
+
 body.v87-imperial.theme-sand-dark #view-control .ui-group-head strong,
 body.v87-imperial.theme-sand-dark #view-executive .ui-group-head strong,
 body.v87-imperial.theme-sand-dark #view-control .ui-label,

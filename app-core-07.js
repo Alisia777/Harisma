@@ -726,6 +726,16 @@ function getLaunchFilters() {
   return state.launchFilters;
 }
 
+function launchGanttExpanded() {
+  const filters = getLaunchFilters();
+  if (typeof filters.ganttExpanded !== 'boolean') filters.ganttExpanded = true;
+  return filters.ganttExpanded;
+}
+
+function setLaunchGanttExpanded(expanded) {
+  getLaunchFilters().ganttExpanded = Boolean(expanded);
+}
+
 function getLaunchMonthOptions(items) {
   const counts = new Map();
   items.forEach((item) => {
@@ -1569,9 +1579,18 @@ function bindLaunchMonthFilters(root, model) {
       phase: 'all',
       owner: 'all',
       readiness: 'all',
-      tasks: 'all'
+      tasks: 'all',
+      ganttExpanded: true
     };
     rerenderCurrentView();
+  });
+}
+
+function bindLaunchGanttFold(root) {
+  const panel = root.querySelector('[data-launch-gantt-fold]');
+  if (!panel) return;
+  panel.addEventListener('toggle', () => {
+    setLaunchGanttExpanded(panel.open);
   });
 }
 
@@ -2634,6 +2653,7 @@ function renderLaunches() {
   const withBlockers = model.filteredItems.filter((item) => (item.blockers || []).length).length;
   const activeTasksTotal = model.filteredItems.reduce((total, item) => total + numberOrZero(item.activeTasks), 0);
   const sourceLabel = model.sourceFiles[0] || 'Портальные черновики';
+  const ganttExpanded = launchGanttExpanded();
   const ganttRows = model.filteredItems.slice(0, 12).map((item) => `
     <tr>
       <td>
@@ -2670,6 +2690,37 @@ function renderLaunches() {
     </div>
 
     ${renderLaunchMonthFilters(model)}
+
+    ${model.ganttColumns.length ? `
+      <details class="card" style="margin-top:14px" data-launch-gantt-fold ${ganttExpanded ? 'open' : ''}>
+        <summary style="list-style:none; cursor:pointer;">
+          <div class="section-subhead">
+            <div>
+              <h3>Gantt по фильтру</h3>
+              <p class="small muted">Верхние месяцы подтягиваются из листа “Календарь новинок Гант”. Для удобства показываем первые 12 строк текущего среза.</p>
+            </div>
+            <div class="badge-stack">
+              ${badge(`${fmt.int(model.ganttColumns.length)} месяцев`, 'info')}
+              ${badge(ganttExpanded ? 'Свернуть' : 'Развернуть', 'info')}
+            </div>
+          </div>
+        </summary>
+        <div class="table-wrap" style="margin-top:12px">
+          <table>
+            <thead>
+              <tr>
+                <th>Новинка</th>
+                ${model.ganttColumns.map((column) => `<th>${escapeHtml(column)}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${ganttRows || `<tr><td colspan="${model.ganttColumns.length + 1}"><div class="empty">Gantt по текущему фильтру пока пустой.</div></td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </details>
+    ` : ''}
+
     <div class="card launch-audit-card" style="margin-top:14px">
       <div class="section-subhead">
         <div>
@@ -2706,31 +2757,6 @@ function renderLaunches() {
       <div class="list" style="margin-top:12px">${model.upcomingItems.slice(0, 8).map(renderLaunchItem).join('') || '<div class="empty">В ближайшие 45 дней новинок по фильтру не найдено.</div>'}</div>
     </div>
 
-    ${model.ganttColumns.length ? `
-      <div class="card" style="margin-top:14px">
-        <div class="section-subhead">
-          <div>
-            <h3>Gantt по фильтру</h3>
-            <p class="small muted">Верхние месяцы подтягиваются из листа “Календарь новинок Гант”. Для удобства показываем первые 12 строк текущего среза.</p>
-          </div>
-          ${badge(`${fmt.int(model.ganttColumns.length)} месяцев`, 'info')}
-        </div>
-        <div class="table-wrap" style="margin-top:12px">
-          <table>
-            <thead>
-              <tr>
-                <th>Новинка</th>
-                ${model.ganttColumns.map((column) => `<th>${escapeHtml(column)}</th>`).join('')}
-              </tr>
-            </thead>
-            <tbody>
-              ${ganttRows || `<tr><td colspan="${model.ganttColumns.length + 1}"><div class="empty">Gantt по текущему фильтру пока пустой.</div></td></tr>`}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    ` : ''}
-
     ${model.sections.map((section) => `
       <div class="card" style="margin-top:14px">
         <div class="section-subhead">
@@ -2749,6 +2775,7 @@ function renderLaunches() {
   `;
 
   bindLaunchMonthFilters(root, model);
+  bindLaunchGanttFold(root);
   bindLaunchItemActions(root);
 }
 

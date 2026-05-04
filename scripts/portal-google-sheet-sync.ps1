@@ -88,26 +88,27 @@ if ($LASTEXITCODE -ne 0) {
 Write-Output "[sync] smart_price_overlay build phase completed"
 
 $kzSyncScript = Join-Path $PSScriptRoot "portal-kz-product-leaderboard-sync.ps1"
-$kzArguments = @(
-  "-OutputDir",
-  $resolvedOutputDir
-)
+$kzParams = @{
+  OutputDir = $resolvedOutputDir
+  AllowStaleWeek = $true
+}
 
 if ($ProfileDir) {
-  $kzArguments += "-ProfileDir"
-  $kzArguments += $ProfileDir
+  $kzParams.ProfileDir = $ProfileDir
 }
 
 if ($DryRun) {
-  $kzArguments += "-DryRun"
+  $kzParams.DryRun = $true
 }
 
 Write-Output "[sync] product leaderboard sync started"
-& $kzSyncScript @kzArguments
-if ($LASTEXITCODE -ne 0) {
-  exit $LASTEXITCODE
+& $kzSyncScript @kzParams
+$kzExitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
+if ($kzExitCode -ne 0) {
+  Write-Warning "[sync] product leaderboard sync failed with exit code $kzExitCode. Continuing portal sync without leaderboard refresh."
+} else {
+  Write-Output "[sync] product leaderboard sync completed"
 }
-Write-Output "[sync] product leaderboard sync completed"
 
 $metaPath = Join-Path $resolvedOutputDir "meta.json"
 if (Test-Path -LiteralPath $metaPath) {

@@ -107,10 +107,13 @@
         </div>
         <datalist id="skuOwnerList">${owners.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
         <form id="ownerForm" class="form-grid compact">
-          <input name="ownerName" list="skuOwnerList" placeholder="Кто owner" value="${escapeHtml(ownerName(sku) || '')}" required>
+          <input name="ownerName" list="skuOwnerList" placeholder="Кто owner" value="${escapeHtml(ownerName(sku) || '')}">
           <input name="ownerRole" placeholder="Роль / зона" value="${escapeHtml(sku?.owner?.registryStatus || 'Owner SKU')}">
           <textarea name="note" rows="3" placeholder="Что важно по закреплению / передаче SKU"></textarea>
-          <button class="btn" type="submit">Сохранить owner</button>
+          <div class="quick-actions">
+            <button class="btn" type="submit">Сохранить owner</button>
+            <button class="btn ghost" type="button" id="clearOwnerBtn">Снять owner</button>
+          </div>
         </form>
         <div class="team-note">Командный режим: ${escapeHtml(state.team.note || 'Локальный режим')}</div>
       </div>
@@ -209,6 +212,12 @@
       ownerRole: form.get('ownerRole'),
       note: form.get('note')
     });
+    renderSkuModal(articleKey);
+    rerenderCurrentView();
+  });
+
+  body.querySelector('#clearOwnerBtn')?.addEventListener('click', async () => {
+    await removeOwnerAssignment(articleKey);
     renderSkuModal(articleKey);
     rerenderCurrentView();
   });

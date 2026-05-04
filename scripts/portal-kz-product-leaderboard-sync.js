@@ -32,10 +32,22 @@ function parseArgs(argv) {
       args.mirrorLocalFallback = true;
       continue;
     }
+    if (token === '--allow-stale-week') {
+      args['allow-stale-week'] = true;
+      continue;
+    }
     const [rawKey, inlineValue] = token.split('=');
     const key = rawKey.replace(/^--/, '');
-    const nextValue = inlineValue !== undefined ? inlineValue : argv[index + 1];
-    if (inlineValue === undefined) index += 1;
+    if (inlineValue !== undefined) {
+      args[key] = inlineValue;
+      continue;
+    }
+    const nextValue = argv[index + 1];
+    if (nextValue === undefined || String(nextValue).startsWith('--')) {
+      args[key] = true;
+      continue;
+    }
+    index += 1;
     args[key] = nextValue;
   }
   return args;

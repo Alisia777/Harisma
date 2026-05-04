@@ -1,5 +1,6 @@
 param(
   [switch]$DryRun,
+  [switch]$AllowStaleWeek,
   [string]$ProfileDir = "",
   [string]$OutputDir = "",
   [string]$SourceUrl = "",
@@ -35,6 +36,10 @@ if ($SourceUrl) {
 if ($Gid) {
   $buildArguments += "--gid"
   $buildArguments += $Gid
+}
+
+if ($AllowStaleWeek) {
+  $buildArguments += "--allow-stale-week"
 }
 
 if ($DryRun) {

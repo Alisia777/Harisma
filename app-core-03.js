@@ -755,6 +755,45 @@ async function persistOwnerOverride(item) {
   updateSyncBadge();
 }
 
+async function deleteOwnerOverride(articleKey) {
+  const normalizedArticleKey = String(articleKey || '').trim();
+  if (!normalizedArticleKey || !hasRemoteStore()) return;
+
+  if (state.team.accessToken) {
+    const cfg = teamRestConfig();
+    if (!cfg) return;
+    const url = new URL(`${cfg.baseUrl}/rest/v1/${TEAM_TABLES.owners}`);
+    url.searchParams.set('brand', `eq.${cfg.brand}`);
+    url.searchParams.set('article_key', `eq.${normalizedArticleKey}`);
+    const response = await withTimeout(fetch(url.toString(), {
+      method: 'DELETE',
+      headers: {
+        apikey: cfg.anonKey,
+        Authorization: `Bearer ${cfg.accessToken}`,
+        Accept: 'application/json',
+        Prefer: 'return=representation'
+      }
+    }), 8000, 'Удаление owner');
+    await readSupabaseJson(response, 'Удаление owner');
+  } else {
+    const response = await withTimeout(
+      state.team.client
+        .from(TEAM_TABLES.owners)
+        .delete()
+        .eq('brand', currentBrand())
+        .eq('article_key', normalizedArticleKey),
+      8000,
+      'Удаление owner'
+    );
+    if (response.error) throw response.error;
+  }
+
+  state.team.lastSyncAt = new Date().toISOString();
+  state.team.note = `Owner снят · ${fmt.date(state.team.lastSyncAt)}`;
+  state.team.mode = 'ready';
+  updateSyncBadge();
+}
+
 function updateSyncBadge() {
   const badgeEl = document.getElementById('syncStatusBadge');
   const pullBtn = document.getElementById('pullRemoteBtn');

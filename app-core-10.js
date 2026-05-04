@@ -229,6 +229,7 @@ async function createDecision(payload) {
 }
 
 async function createManualTask(payload) {
+  const skipRerender = Boolean(payload?.skipRerender);
   const task = normalizeTask({
     id: uid('task'),
     source: 'manual',
@@ -252,8 +253,10 @@ async function createManualTask(payload) {
     console.error(error);
   }
   await createTaskHistoryEntry(task.id, 'created', `Задача создана${task.owner ? ` · owner ${task.owner}` : ''}${task.due ? ` · срок ${task.due}` : ''}.`);
-  rerenderCurrentView();
-  if (state.activeSku === task.articleKey) renderSkuModal(task.articleKey);
+  if (!skipRerender) {
+    rerenderCurrentView();
+    if (state.activeSku === task.articleKey) renderSkuModal(task.articleKey);
+  }
   return task;
 }
 

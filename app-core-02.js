@@ -50,6 +50,15 @@ function plusDays(days) {
   return d.toISOString().slice(0, 10);
 }
 
+function shiftDateKey(dateKey, days) {
+  const value = String(dateKey || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return '';
+  const date = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return '';
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
 function loadLocalStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -66,6 +75,9 @@ function loadLocalStorage() {
       tasks,
       decisions: Array.isArray(parsed.decisions) ? parsed.decisions.map(normalizeDecision) : [],
       ownerOverrides: Array.isArray(parsed.ownerOverrides) ? parsed.ownerOverrides.map(normalizeOwnerOverride) : [],
+      taskAttachments: Array.isArray(parsed.taskAttachments) ? parsed.taskAttachments.map(normalizeTaskAttachment).filter((item) => item.taskId && item.objectPath) : [],
+      launchOverrides: Array.isArray(parsed.launchOverrides) ? parsed.launchOverrides.filter((item) => item && typeof item === 'object') : [],
+      launchDeletedIds: Array.isArray(parsed.launchDeletedIds) ? parsed.launchDeletedIds.map((item) => String(item || '').trim()).filter(Boolean) : [],
       repricerSettings: normalizeRepricerSettings(parsed.repricerSettings || {}),
       repricerSettingsUpdatedAt: String(parsed.repricerSettingsUpdatedAt || '').trim(),
       repricerOverrides: Array.isArray(parsed.repricerOverrides) ? parsed.repricerOverrides.map(normalizeRepricerOverride).filter((item) => item.articleKey) : [],
@@ -82,7 +94,53 @@ function loadLocalStorage() {
 
 function saveLocalStorage() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.storage));
+  window.dispatchEvent(new CustomEvent('altea:portal-storage-updated', {
+    detail: {
+      key: STORAGE_KEY,
+      source: 'app-core'
+    }
+  }));
 }
+
+let externalPortalStorageSyncQueued = false;
+
+function syncPortalStorageFromExternal(source = 'external') {
+  if (!state?.boot?.dataReady) return;
+
+  state.storage = loadLocalStorage();
+  applyOwnerOverridesToSkus();
+
+  const skipPricesRerender = state.activeView === 'prices' && source === 'prices';
+  if (skipPricesRerender) return;
+
+  try {
+    rerenderCurrentView();
+    if (state.activeSku) renderSkuModal(state.activeSku);
+  } catch (error) {
+    console.error('[portal-storage-sync]', source, error);
+  }
+}
+
+function queuePortalStorageSync(source = 'external') {
+  if (externalPortalStorageSyncQueued) return;
+  externalPortalStorageSyncQueued = true;
+  window.setTimeout(() => {
+    externalPortalStorageSyncQueued = false;
+    syncPortalStorageFromExternal(source);
+  }, 0);
+}
+
+window.addEventListener('altea:portal-storage-updated', (event) => {
+  const detail = event?.detail || {};
+  if (detail.key && detail.key !== STORAGE_KEY) return;
+  if (detail.source === 'app-core') return;
+  queuePortalStorageSync(detail.source || 'event');
+});
+
+window.addEventListener('storage', (event) => {
+  if (event.key !== STORAGE_KEY) return;
+  queuePortalStorageSync('storage');
+});
 
 function teamMemberLabel() {
   const member = state.team.member || {};
@@ -133,15 +191,13 @@ function applyOwnerOverridesToSkus() {
   for (const sku of state.skus) {
     const baseOwner = JSON.parse(JSON.stringify(sku.__baseOwner || {}));
     baseOwner.name = canonicalOwnerName(baseOwner.name || '');
-    const baseRegistryStatus = normalizePortalText(sku?.registryStatus || baseOwner.registryStatus || sku?.sheetStatus || sku?.status || '');
     const override = overrideMap.get(sku.articleKey);
     if (override) {
       sku.owner = {
         ...baseOwner,
         name: canonicalOwnerName(override.ownerName || ''),
         source: override.ownerName ? 'Командное закрепление' : (baseOwner.source || ''),
-        registryStatus: baseRegistryStatus,
-        role: normalizePortalText(override.ownerRole || baseOwner.role || '')
+        registryStatus: override.ownerRole || baseOwner.registryStatus || ''
       };
       sku.flags = sku.flags || {};
       sku.flags.assigned = Boolean(canonicalOwnerName(override.ownerName || ''));
@@ -149,10 +205,6 @@ function applyOwnerOverridesToSkus() {
       sku.owner = baseOwner;
       sku.flags = sku.flags || {};
       sku.flags.assigned = Boolean(baseOwner?.name);
-    }
-    if (baseRegistryStatus) {
-      sku.registryStatus = baseRegistryStatus;
-      if (sku.owner && typeof sku.owner === 'object') sku.owner.registryStatus = baseRegistryStatus;
     }
   }
 }
@@ -243,9 +295,19 @@ function getSkuDecisions(articleKey) {
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 }
 
+function getTaskAttachments(taskId) {
+  const wantedTaskId = String(taskId || '').trim();
+  if (!wantedTaskId) return [];
+  return (state.storage.taskAttachments || [])
+    .map(normalizeTaskAttachment)
+    .filter((item) => item.taskId === wantedTaskId && item.objectPath)
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+}
+
 function mergeSeedStorage(seed) {
   const existingComments = new Set((state.storage.comments || []).map((item) => `${item.articleKey}|${item.author}|${item.createdAt}|${item.text}`));
   const existingTasks = new Set((state.storage.tasks || []).map((item) => `${item.articleKey}|${item.owner}|${item.due}|${item.title}`));
+  const existingAttachments = new Set((state.storage.taskAttachments || []).map((item) => String(item?.id || '').trim()).filter(Boolean));
 
   for (const rawComment of seed.comments || []) {
     const comment = normalizeComment(rawComment);
@@ -258,6 +320,11 @@ function mergeSeedStorage(seed) {
     const key = `${normalized.articleKey}|${normalized.owner}|${normalized.due}|${normalized.title}`;
     if (!existingTasks.has(key)) state.storage.tasks.push(normalized);
   }
+  for (const rawAttachment of seed.taskAttachments || []) {
+    const attachment = normalizeTaskAttachment(rawAttachment);
+    if (!attachment.taskId || !attachment.objectPath || existingAttachments.has(attachment.id)) continue;
+    state.storage.taskAttachments.push(attachment);
+  }
   saveLocalStorage();
 }
 
@@ -268,6 +335,9 @@ function mergeImportedStorage(imported) {
     tasks: Array.isArray(imported.tasks) ? imported.tasks : [],
     decisions: Array.isArray(imported.decisions) ? imported.decisions : [],
     ownerOverrides: Array.isArray(imported.ownerOverrides) ? imported.ownerOverrides : [],
+    taskAttachments: Array.isArray(imported.taskAttachments) ? imported.taskAttachments : [],
+    launchOverrides: Array.isArray(imported.launchOverrides) ? imported.launchOverrides : [],
+    launchDeletedIds: Array.isArray(imported.launchDeletedIds) ? imported.launchDeletedIds : [],
     repricerSettings: imported.repricerSettings || {},
     repricerSettingsUpdatedAt: String(imported.repricerSettingsUpdatedAt || '').trim(),
     repricerOverrides: Array.isArray(imported.repricerOverrides) ? imported.repricerOverrides : [],
@@ -286,6 +356,25 @@ function mergeImportedStorage(imported) {
     const override = normalizeOwnerOverride(raw);
     state.storage.ownerOverrides = (state.storage.ownerOverrides || []).filter((item) => item.articleKey !== override.articleKey);
     state.storage.ownerOverrides.unshift(override);
+  }
+  for (const raw of seed.taskAttachments) {
+    const attachment = normalizeTaskAttachment(raw);
+    if (!attachment.taskId || !attachment.objectPath) continue;
+    state.storage.taskAttachments = (state.storage.taskAttachments || []).filter((item) => item.id !== attachment.id);
+    state.storage.taskAttachments.unshift(attachment);
+  }
+  for (const raw of seed.launchOverrides) {
+    if (!raw || typeof raw !== 'object') continue;
+    const launchId = String(raw.id || '').trim();
+    if (!launchId) continue;
+    state.storage.launchOverrides = (state.storage.launchOverrides || []).filter((item) => String(item?.id || '').trim() !== launchId);
+    state.storage.launchOverrides.unshift({ ...raw, id: launchId });
+  }
+  for (const rawId of seed.launchDeletedIds) {
+    const launchId = String(rawId || '').trim();
+    if (!launchId) continue;
+    if (!Array.isArray(state.storage.launchDeletedIds)) state.storage.launchDeletedIds = [];
+    if (!state.storage.launchDeletedIds.includes(launchId)) state.storage.launchDeletedIds.unshift(launchId);
   }
   state.storage.repricerSettings = normalizeRepricerSettings(seed.repricerSettings || state.storage.repricerSettings || {});
   if (seed.repricerSettingsUpdatedAt) {
@@ -758,7 +847,19 @@ function buildAutoTasks() {
     const articleKey = sku.articleKey;
     const owner = ownerName(sku);
     const platform = sku?.flags?.toWorkWB && sku?.flags?.toWorkOzon ? 'wb+ozon' : sku?.flags?.toWorkWB ? 'wb' : sku?.flags?.toWorkOzon ? 'ozon' : detectTaskPlatform({}, sku);
-    const exitSku = skuStatusSearchValue(sku).includes('вывод');
+    const exitSku = String(sku?.status || '').toLowerCase().includes('вывод');
+    const needsOwnerSignal = !sku?.flags?.assigned && (
+      sku?.flags?.toWorkWB
+      || sku?.flags?.toWorkOzon
+      || sku?.flags?.toWork
+      || sku?.flags?.negativeMargin
+      || sku?.flags?.lowStock
+      || sku?.flags?.highReturn
+      || numberOrZero(sku?.focusScore) >= 60
+      || monthRevenue(sku) > 0
+      || String(sku?.status || '').toLowerCase().includes('нов')
+      || String(sku?.segment || '').toUpperCase() === 'GROWTH'
+    );
     const leaderboardItem = leaderboardMap.get(String(articleKey || '').trim().toLowerCase()) || null;
 
     if (leaderboardFresh && leaderboardItem?.inPortal !== false) {
@@ -875,7 +976,7 @@ function buildAutoTasks() {
       }, 'auto'));
     }
 
-    if (!sku?.flags?.assigned && canRegisterAutoTask(keys, articleKey, 'assignment')) {
+    if (needsOwnerSignal && canRegisterAutoTask(keys, articleKey, 'assignment')) {
       tasks.push(normalizeTask({
         id: `auto-owner-${articleKey}`,
         source: 'auto',
@@ -919,8 +1020,11 @@ function buildAutoTasks() {
   );
   const launchItems = typeof getLaunchItems === 'function' ? getLaunchItems({ skipTaskLookup: true }) : [];
   launchItems.forEach((item) => {
-    const launchDate = launchMonthToDateKey(item?.launchMonth);
+    const launchDate = typeof launchDueDateKey === 'function'
+      ? launchDueDateKey(item)
+      : launchMonthToDateKey(item?.launchMonth);
     const daysUntilLaunch = diffFromTodayInDays(launchDate);
+    const launchGateDate = shiftDateKey(launchDate, -30);
     const statusRaw = String(item?.status || '').toLowerCase();
     if (!launchDate || daysUntilLaunch < -10 || daysUntilLaunch > 45) return;
     if (/запущ|live|продаж|готово/.test(statusRaw)) return;
@@ -934,10 +1038,22 @@ function buildAutoTasks() {
       articleKey: item.articleKey || '',
       entityLabel: item.name || item.articleKey || 'Новинка',
       title: 'Подготовить запуск новинки',
-      nextAction: 'Проверить owner, карточку, презентацию, запуск в реестре SKU и ближайшие блокеры по новинке.',
-      reason: `${item.launchMonth || 'Срок запуска'} · ${item.status || 'Нужно уточнить статус'}${item.production ? ` · ${item.production}` : ''}`,
+      nextAction: 'Проверить owner, карточку, презентацию, запуск в реестре SKU, gantt и ближайшие блокеры по новинке.',
+      reason: [
+        item.launchMonth || 'Срок запуска',
+        item.status || 'Нужно уточнить статус',
+        item.production || '',
+        item.articleKey ? 'SKU связано' : 'без SKU',
+        item.presentationUrl ? 'материалы есть' : 'без презентации'
+      ].filter(Boolean).join(' · '),
       owner: item.owner || '',
-      due: daysUntilLaunch <= 14 ? plusDays(1) : plusDays(3),
+      due: launchGateDate && diffFromTodayInDays(launchGateDate) > 0
+        ? launchGateDate
+        : daysUntilLaunch <= 14
+          ? plusDays(1)
+          : daysUntilLaunch <= 30
+            ? plusDays(2)
+            : plusDays(5),
       status: 'new',
       type: 'launch',
       priority: daysUntilLaunch <= 14 ? 'high' : 'medium',

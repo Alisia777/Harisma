@@ -176,6 +176,93 @@ function fromRemoteOwner(row) {
   });
 }
 
+function remoteTaskAttachmentRow(item) {
+  return {
+    id: item.id,
+    brand: currentBrand(),
+    task_id: item.taskId,
+    article_key: item.articleKey || '',
+    file_name: item.fileName || 'Файл',
+    mime_type: item.mimeType || '',
+    file_size: Number(item.size || 0) || 0,
+    bucket_name: item.bucket || TASK_ATTACHMENTS_BUCKET,
+    object_path: item.objectPath || '',
+    public_url: item.publicUrl || '',
+    created_at: item.createdAt || new Date().toISOString(),
+    created_by: item.createdBy || state.team.member.name || 'Команда'
+  };
+}
+
+function fromRemoteTaskAttachment(row) {
+  return normalizeTaskAttachment({
+    id: row.id,
+    taskId: row.task_id,
+    articleKey: row.article_key,
+    fileName: row.file_name,
+    mimeType: row.mime_type,
+    size: row.file_size,
+    bucket: row.bucket_name,
+    objectPath: row.object_path,
+    publicUrl: row.public_url,
+    createdAt: row.created_at,
+    createdBy: row.created_by
+  });
+}
+
+function safeStoragePathSegment(value = '') {
+  return String(value || '')
+    .trim()
+    .replace(/[^\w.\-а-яА-ЯёЁ]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 120);
+}
+
+function encodeStoragePath(path = '') {
+  return String(path || '')
+    .split('/')
+    .filter(Boolean)
+    .map((part) => encodeURIComponent(part))
+    .join('/');
+}
+
+function taskAttachmentPublicUrl(bucket, objectPath) {
+  const cfg = teamRestConfig();
+  if (!cfg?.baseUrl || !bucket || !objectPath) return '';
+  return `${cfg.baseUrl}/storage/v1/object/public/${encodeURIComponent(bucket)}/${encodeStoragePath(objectPath)}`;
+}
+
+function taskAttachmentObjectPath(taskId, fileName) {
+  const brandSegment = safeStoragePathSegment(currentBrand() || 'brand');
+  const taskSegment = safeStoragePathSegment(taskId || 'task');
+  const fileSegment = safeStoragePathSegment(fileName || 'file');
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  return `${brandSegment}/tasks/${taskSegment}/${stamp}-${uid('file')}-${fileSegment}`;
+}
+
+function taskAttachmentExt(name = '') {
+  const match = String(name || '').toLowerCase().match(/\.([a-z0-9]+)$/);
+  return match ? match[1] : '';
+}
+
+function taskAttachmentAllowed(file) {
+  const ext = taskAttachmentExt(file?.name || '');
+  return TASK_ATTACHMENT_ALLOWED_EXTENSIONS.includes(ext);
+}
+
+function isTaskAttachmentSchemaMissingError(error) {
+  const message = String(error?.message || error || '');
+  return /portal_task_attachments|relation .* does not exist|PGRST205|Could not find the table/i.test(message);
+}
+
+function isTaskAttachmentBucketMissingError(error) {
+  const message = String(error?.message || error || '');
+  return /portal-task-files|bucket.*not found|storage\/v1\/object|The resource was not found|NoSuchBucket/i.test(message);
+}
+
+function taskAttachmentSetupHint() {
+  return 'Supabase setup is incomplete. Create table public.portal_task_attachments and bucket portal-task-files.';
+}
+
 const REPRICER_CONTROLS_SNAPSHOT_KEY = 'repricer_controls';
 
 function buildRepricerControlsPayload() {
@@ -523,6 +610,7 @@ function hasRemoteStore() {
 async function queryRemote(table) {
   if (!hasRemoteStore()) return [];
   const isTaskTable = table === TEAM_TABLES.tasks;
+  const isAttachmentTable = table === TEAM_TABLES.attachments;
   if (state.team.accessToken) {
     const cfg = teamRestConfig();
     if (!cfg) return [];
@@ -531,6 +619,8 @@ async function queryRemote(table) {
     if (isTaskTable) {
       url.searchParams.set('select', 'id,article_key,title,next_action,reason,owner,due,status,type,priority,platform,source,entity_label,auto_code,created_at,updated_at');
       url.searchParams.set('status', 'in.(new,in_progress,waiting_team,waiting_rop,waiting_decision)');
+    } else if (isAttachmentTable) {
+      url.searchParams.set('select', 'id,task_id,article_key,file_name,mime_type,file_size,bucket_name,object_path,public_url,created_at,created_by,updated_at');
     } else {
       url.searchParams.set('select', '*');
     }
@@ -549,7 +639,12 @@ async function queryRemote(table) {
         .select('id,article_key,title,next_action,reason,owner,due,status,type,priority,platform,source,entity_label,auto_code,created_at,updated_at')
         .eq('brand', currentBrand())
         .in('status', ['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision'])
-    : state.team.client.from(table).select('*').eq('brand', currentBrand());
+    : isAttachmentTable
+      ? state.team.client
+          .from(table)
+          .select('id,task_id,article_key,file_name,mime_type,file_size,bucket_name,object_path,public_url,created_at,created_by,updated_at')
+          .eq('brand', currentBrand())
+      : state.team.client.from(table).select('*').eq('brand', currentBrand());
   const response = await withTimeout(query, 8000, `Запрос ${table}`);
   if (response.error) throw response.error;
   return response.data || [];
@@ -626,6 +721,20 @@ async function upsertRemote(table, rows, onConflict) {
   if (response.error) throw response.error;
 }
 
+async function upsertTaskAttachmentsSafe(rows = []) {
+  const preparedRows = Array.isArray(rows) ? rows : [];
+  if (!preparedRows.length) return { skipped: false, warning: '' };
+  try {
+    await upsertRemote(TEAM_TABLES.attachments, preparedRows, 'id');
+    return { skipped: false, warning: '' };
+  } catch (error) {
+    if (isTaskAttachmentSchemaMissingError(error)) {
+      return { skipped: true, warning: taskAttachmentSetupHint() };
+    }
+    throw error;
+  }
+}
+
 async function pullRemoteState(rerender = true) {
   if (!hasRemoteStore()) return;
   try {
@@ -633,10 +742,11 @@ async function pullRemoteState(rerender = true) {
     state.team.note = 'Загружаем командные данные…';
     updateSyncBadge();
     const taskRows = await queryRemote(TEAM_TABLES.tasks);
-    const [commentResult, decisionResult, ownerResult, repricerControlsResult] = await Promise.allSettled([
+    const [commentResult, decisionResult, ownerResult, attachmentResult, repricerControlsResult] = await Promise.allSettled([
       queryRemote(TEAM_TABLES.comments),
       queryRemote(TEAM_TABLES.decisions),
       queryRemote(TEAM_TABLES.owners),
+      queryRemote(TEAM_TABLES.attachments),
       queryRemoteRepricerControls()
     ]);
     const manualTaskRows = taskRows.filter((row) => row?.source !== 'auto');
@@ -644,8 +754,9 @@ async function pullRemoteState(rerender = true) {
     const commentRows = commentResult.status === 'fulfilled' ? (commentResult.value || []) : [];
     const decisionRows = decisionResult.status === 'fulfilled' ? (decisionResult.value || []) : [];
     const ownerRows = ownerResult.status === 'fulfilled' ? (ownerResult.value || []) : [];
+    const attachmentRows = attachmentResult.status === 'fulfilled' ? (attachmentResult.value || []) : [];
     const repricerControls = repricerControlsResult.status === 'fulfilled' ? (repricerControlsResult.value || null) : null;
-    const softErrors = [commentResult, decisionResult, ownerResult, repricerControlsResult]
+    const softErrors = [commentResult, decisionResult, ownerResult, attachmentResult, repricerControlsResult]
       .filter((result) => result.status !== 'fulfilled')
       .map((result) => result.reason?.message || String(result.reason || 'Неизвестная ошибка'))
       .filter(Boolean);
@@ -657,12 +768,13 @@ async function pullRemoteState(rerender = true) {
         softErrors.push(error?.message || String(error));
       }
     }
-    const remoteEmpty = !manualTaskRows.length && !commentRows.length && !decisionRows.length && !ownerRows.length && !repricerControls;
+    const remoteEmpty = !manualTaskRows.length && !commentRows.length && !decisionRows.length && !ownerRows.length && !attachmentRows.length && !repricerControls;
     if (!remoteEmpty) {
       state.storage.tasks = normalizeStorageTasks(manualTaskRows.map(fromRemoteTask), 'manual');
       state.storage.comments = commentRows.map(fromRemoteComment);
       state.storage.decisions = decisionRows.map(fromRemoteDecision);
       state.storage.ownerOverrides = ownerRows.map(fromRemoteOwner);
+      state.storage.taskAttachments = attachmentRows.map(fromRemoteTaskAttachment).filter((item) => item.taskId && item.objectPath);
       if (repricerControls) applyRepricerControlsPayload(repricerControls);
       applyOwnerOverridesToSkus();
       saveLocalStorage();
@@ -706,9 +818,13 @@ async function pushStateToRemote() {
       upsertRemote(TEAM_TABLES.owners, (state.storage.ownerOverrides || []).map(remoteOwnerRow), 'brand,article_key'),
       persistRepricerControls()
     ]);
+    const attachmentSync = await upsertTaskAttachmentsSafe((state.storage.taskAttachments || []).map(remoteTaskAttachmentRow));
     state.team.mode = 'ready';
     state.team.lastSyncAt = new Date().toISOString();
-    state.team.note = `Данные отправлены в Supabase · ${fmt.date(state.team.lastSyncAt)}`;
+    state.team.error = attachmentSync.warning || '';
+    state.team.note = attachmentSync.skipped
+      ? `Данные отправлены в Supabase · ${fmt.date(state.team.lastSyncAt)} · attachments paused`
+      : `Данные отправлены в Supabase · ${fmt.date(state.team.lastSyncAt)}`;
     updateSyncBadge();
   } catch (error) {
     console.error(error);
@@ -753,6 +869,184 @@ async function persistOwnerOverride(item) {
   state.team.note = `Ответственный синхронизирован · ${fmt.date(state.team.lastSyncAt)}`;
   state.team.mode = 'ready';
   updateSyncBadge();
+}
+
+async function persistTaskAttachment(item) {
+  if (!hasRemoteStore()) return;
+  try {
+    await upsertRemote(TEAM_TABLES.attachments, [remoteTaskAttachmentRow(item)], 'id');
+  } catch (error) {
+    if (isTaskAttachmentSchemaMissingError(error)) {
+      throw new Error(taskAttachmentSetupHint());
+    }
+    throw error;
+  }
+  state.team.lastSyncAt = new Date().toISOString();
+  state.team.note = `Вложение синхронизировано · ${fmt.date(state.team.lastSyncAt)}`;
+  state.team.mode = 'ready';
+  updateSyncBadge();
+}
+
+async function deleteTaskAttachmentRecord(attachmentId) {
+  const normalizedId = String(attachmentId || '').trim();
+  if (!normalizedId || !hasRemoteStore()) return;
+  try {
+    if (state.team.accessToken) {
+      const cfg = teamRestConfig();
+      if (!cfg) return;
+      const url = new URL(`${cfg.baseUrl}/rest/v1/${TEAM_TABLES.attachments}`);
+      url.searchParams.set('brand', `eq.${cfg.brand}`);
+      url.searchParams.set('id', `eq.${normalizedId}`);
+      const response = await withTimeout(fetch(url.toString(), {
+        method: 'DELETE',
+        headers: {
+          apikey: cfg.anonKey,
+          Authorization: `Bearer ${cfg.accessToken}`,
+          Accept: 'application/json',
+          Prefer: 'return=representation'
+        }
+      }), 10000, 'Удаление вложения');
+      await readSupabaseJson(response, 'Удаление вложения');
+    } else {
+      const response = await withTimeout(
+        state.team.client
+          .from(TEAM_TABLES.attachments)
+          .delete()
+          .eq('brand', currentBrand())
+          .eq('id', normalizedId),
+        10000,
+        'Удаление вложения'
+      );
+      if (response.error) throw response.error;
+    }
+  } catch (error) {
+    if (isTaskAttachmentSchemaMissingError(error)) return;
+    throw error;
+  }
+}
+
+async function removeTaskAttachmentObject(item) {
+  const attachment = normalizeTaskAttachment(item || {});
+  if (!attachment.bucket || !attachment.objectPath || !state.team.accessToken) return;
+  const cfg = teamRestConfig();
+  if (!cfg) return;
+  const objectUrl = `${cfg.baseUrl}/storage/v1/object/${encodeURIComponent(attachment.bucket)}/${encodeStoragePath(attachment.objectPath)}`;
+  const response = await withTimeout(fetch(objectUrl, {
+    method: 'DELETE',
+    headers: {
+      apikey: cfg.anonKey,
+      Authorization: `Bearer ${cfg.accessToken}`,
+      Accept: 'application/json'
+    }
+  }), 15000, 'Удаление файла');
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Удаление файла: ${body || response.status || 'request failed'}`);
+  }
+}
+
+async function deleteTaskAttachment(attachmentId) {
+  const normalizedId = String(attachmentId || '').trim();
+  if (!normalizedId) return;
+  const currentAttachment = (state.storage.taskAttachments || []).map(normalizeTaskAttachment).find((item) => item.id === normalizedId);
+  state.storage.taskAttachments = (state.storage.taskAttachments || []).filter((item) => String(item?.id || '').trim() !== normalizedId);
+  saveLocalStorage();
+  try {
+    if (currentAttachment) {
+      try {
+        await removeTaskAttachmentObject(currentAttachment);
+      } catch (error) {
+        console.warn('[task-attachment] file delete', error);
+      }
+    }
+    await deleteTaskAttachmentRecord(normalizedId);
+    state.team.lastSyncAt = new Date().toISOString();
+    state.team.note = `Вложение удалено · ${fmt.date(state.team.lastSyncAt)}`;
+    state.team.mode = 'ready';
+    updateSyncBadge();
+  } catch (error) {
+    if (currentAttachment) {
+      state.storage.taskAttachments.unshift(currentAttachment);
+      saveLocalStorage();
+    }
+    throw error;
+  }
+}
+
+async function uploadTaskAttachment(taskId, file, options = {}) {
+  const normalizedTaskId = String(taskId || '').trim();
+  if (!normalizedTaskId) throw new Error('Не выбрана задача для вложения.');
+  if (!file) throw new Error('Файл не выбран.');
+  if (!taskAttachmentAllowed(file)) {
+    throw new Error(`Разрешены только файлы: ${TASK_ATTACHMENT_ALLOWED_EXTENSIONS.join(', ')}.`);
+  }
+  if (Number(file.size || 0) <= 0) throw new Error('Файл пустой.');
+  if (Number(file.size || 0) > TASK_ATTACHMENT_MAX_BYTES) {
+    throw new Error(`Файл больше ${Math.round(TASK_ATTACHMENT_MAX_BYTES / (1024 * 1024))} МБ.`);
+  }
+  if (!hasRemoteStore() || !state.team.accessToken) {
+    throw new Error('Нужна активная синхронизация с Supabase, чтобы загрузить вложение.');
+  }
+  const task = typeof getTask === 'function' ? getTask(normalizedTaskId) : null;
+  if (!task) throw new Error('Задача не найдена.');
+
+  const cfg = teamRestConfig();
+  if (!cfg) throw new Error('Supabase REST недоступен.');
+  const bucket = String(options.bucket || TASK_ATTACHMENTS_BUCKET).trim() || TASK_ATTACHMENTS_BUCKET;
+  const objectPath = taskAttachmentObjectPath(normalizedTaskId, file.name || 'file');
+  const uploadUrl = `${cfg.baseUrl}/storage/v1/object/${encodeURIComponent(bucket)}/${encodeStoragePath(objectPath)}`;
+
+  const uploadResponse = await withTimeout(fetch(uploadUrl, {
+    method: 'POST',
+    headers: {
+      apikey: cfg.anonKey,
+      Authorization: `Bearer ${cfg.accessToken}`,
+      'Content-Type': file.type || 'application/octet-stream',
+      'x-upsert': 'false'
+    },
+    body: file
+  }), 30000, 'Загрузка вложения');
+
+  if (!uploadResponse.ok) {
+    const body = await uploadResponse.text();
+    if (isTaskAttachmentBucketMissingError(body)) {
+      throw new Error(taskAttachmentSetupHint());
+    }
+    throw new Error(`Загрузка вложения: ${body || uploadResponse.status || 'request failed'}`);
+  }
+
+  const attachment = normalizeTaskAttachment({
+    id: uid('attach'),
+    taskId: normalizedTaskId,
+    articleKey: task.articleKey || '',
+    fileName: String(file.name || 'Файл'),
+    mimeType: String(file.type || ''),
+    size: Number(file.size || 0),
+    bucket,
+    objectPath,
+    publicUrl: taskAttachmentPublicUrl(bucket, objectPath),
+    createdAt: new Date().toISOString(),
+    createdBy: state.team.member.name || task.owner || 'Команда'
+  });
+
+  state.storage.taskAttachments = (state.storage.taskAttachments || []).filter((item) => item.id !== attachment.id);
+  state.storage.taskAttachments.unshift(attachment);
+  saveLocalStorage();
+
+  try {
+    await persistTaskAttachment(attachment);
+  } catch (error) {
+    try {
+      await removeTaskAttachmentObject(attachment);
+    } catch (cleanupError) {
+      console.warn('[task-attachment] cleanup after failed persist', cleanupError);
+    }
+    state.storage.taskAttachments = (state.storage.taskAttachments || []).filter((item) => item.id !== attachment.id);
+    saveLocalStorage();
+    throw error;
+  }
+
+  return attachment;
 }
 
 async function deleteOwnerOverride(articleKey) {
@@ -869,8 +1163,8 @@ function renderTaskCard(task) {
         ${taskStatusBadge(task)}
       </div>
       <div class="meta">${taskPriorityBadge(task)}${taskTypeBadge(task)}${taskPlatformBadge(task)}${taskSourceBadge(task)}</div>
-      ${task.reason ? `<div class="muted small">${escapeHtml(task.reason)}</div>` : ''}
-      ${task.nextAction ? `<div><strong class="small">Следующее действие</strong><div class="muted small" style="margin-top:4px">${escapeHtml(task.nextAction)}</div></div>` : ''}
+      ${task.reason ? `<div class="muted small">${escapeHtmlMultiline(task.reason)}</div>` : ''}
+      ${task.nextAction ? `<div><strong class="small">Следующее действие</strong><div class="muted small" style="margin-top:4px">${escapeHtmlMultiline(task.nextAction)}</div></div>` : ''}
       <div class="foot">
         <div class="muted small">${escapeHtml(task.owner || 'Без ответственного')} · срок ${escapeHtml(task.due || '—')}</div>
         <div class="actions">${controls}</div>

@@ -627,12 +627,37 @@
   }
 
   function turnoverPointsFromSeries(series, start, end) {
+    const parseTurnoverValue = (rawValue) => {
+      if (rawValue === null || rawValue === undefined || rawValue === '') return null;
+      if (typeof rawValue === 'string') {
+        const normalized = rawValue.replace(/\s+/g, '').replace(',', '.');
+        const parsed = Number(normalized);
+        return Number.isFinite(parsed) ? parsed : null;
+      }
+      const parsed = Number(rawValue);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+    const turnoverFromPoint = (point) => {
+      if (!point || typeof point !== 'object') return null;
+      const candidates = [
+        point.turnoverDays,
+        point.turnover_days,
+        point.currentTurnoverDays,
+        point.turnoverCurrentDays,
+        point.turnover_days_current
+      ];
+      for (const value of candidates) {
+        const parsed = parseTurnoverValue(value);
+        if (parsed !== null) return parsed;
+      }
+      return null;
+    };
+    const pointDate = (point) => parseDate(point?.date || point?.day || point?.dt || point?.label);
+
     return (Array.isArray(series) ? series : [])
       .map((point) => ({
-        date: parseDate(point?.date),
-        turnoverDays: point?.turnoverDays === null || point?.turnoverDays === undefined || point?.turnoverDays === ''
-          ? null
-          : (Number.isFinite(Number(point?.turnoverDays)) ? Number(point.turnoverDays) : null)
+        date: pointDate(point),
+        turnoverDays: turnoverFromPoint(point)
       }))
       .filter((point) => point.date instanceof Date && !Number.isNaN(point.date.getTime()))
       .filter((point) => point.date >= start && point.date <= end && point.turnoverDays !== null)
@@ -661,6 +686,74 @@
         if (!byDate.has(key)) byDate.set(key, { date: point.date, turnover: [] });
         byDate.get(key).turnover.push(point.turnoverDays);
       });
+    });
+    return [...byDate.values()]
+      .map((item) => ({
+        date: item.date,
+        avgTurnover: avg(item.turnover),
+        skuCount: item.turnover.length
+      }))
+      .sort((left, right) => left.date - right.date);
+  }
+
+  function turnoverPublishedBounds(platformKey) {
+    const rows = priceRowsForPlatform(platformKey);
+    let minDate = null;
+    let maxDate = null;
+    const consumeSeries = (series) => {
+      (Array.isArray(series) ? series : []).forEach((point) => {
+        const date = parseDate(point?.date || point?.day || point?.dt || point?.label);
+        if (!(date instanceof Date) || Number.isNaN(date.getTime())) return;
+        const rawValue = point?.turnoverDays ?? point?.turnover_days ?? point?.currentTurnoverDays ?? point?.turnoverCurrentDays ?? point?.turnover_days_current;
+        if (rawValue === null || rawValue === undefined || rawValue === '') return;
+        const parsed = typeof rawValue === 'string'
+          ? Number(rawValue.replace(/\s+/g, '').replace(',', '.'))
+          : Number(rawValue);
+        if (!Number.isFinite(parsed)) return;
+        if (!minDate || date < minDate) minDate = date;
+        if (!maxDate || date > maxDate) maxDate = date;
+      });
+    };
+    rows.forEach((row) => {
+      consumeSeries(row?.daily);
+      consumeSeries(row?.timeline);
+      consumeSeries(row?.monthly);
+      const fallbackRow = workbenchBaseRowForArticle(row?.platformKey || platformKey, row?.articleKey || row?.article);
+      if (fallbackRow) {
+        consumeSeries(fallbackRow?.daily);
+        consumeSeries(fallbackRow?.timeline);
+        consumeSeries(fallbackRow?.monthly);
+      }
+    });
+    return (minDate && maxDate) ? { minDate, maxDate } : null;
+  }
+
+  function turnoverFreshnessSeries(platformKey) {
+    const rows = priceRowsForPlatform(platformKey);
+    const byDate = new Map();
+    rows.forEach((row) => {
+      const date = parseDate(
+        row?.historyFreshnessDate
+        || row?.historyDate
+        || row?.historyAsOfDate
+        || row?.historyUpdatedAt
+      );
+      if (!(date instanceof Date) || Number.isNaN(date.getTime())) return;
+      const turnover = [
+        row?.turnoverCurrentDays,
+        row?.currentTurnoverDays,
+        row?.turnoverDays,
+        row?.turnover_days
+      ]
+        .map((value) => {
+          if (typeof value === 'string') return Number(value.replace(/\s+/g, '').replace(',', '.'));
+          return Number(value);
+        })
+        .find((value) => Number.isFinite(value));
+      if (!Number.isFinite(turnover)) return;
+      const key = iso(date);
+      if (!byDate.has(key)) byDate.set(key, { date, turnover: [] });
+      byDate.get(key).turnover.push(turnover);
     });
     return [...byDate.values()]
       .map((item) => ({
@@ -1382,25 +1475,62 @@
   function buildTurnoverMetric(platformKey, range) {
     const stockMetric = buildStockMetric(platformKey);
     const turnoverSeries = turnoverMatrixSeries(platformKey, range);
-    const publishedTurnoverSeries = turnoverSeries.length
-      ? turnoverSeries
-      : turnoverMatrixSeries(platformKey, {
-          effectiveStart: range?.min || range?.effectiveStart,
-          effectiveEnd: range?.max || range?.effectiveEnd
+    let publishedTurnoverSeries = turnoverSeries;
+    let publishedFromFreshness = false;
+    if (!publishedTurnoverSeries.length) {
+      const bounds = turnoverPublishedBounds(platformKey);
+      if (bounds?.maxDate instanceof Date) {
+        const end = cleanDate(bounds.maxDate);
+        const rawStart = addDays(end, -13);
+        const start = bounds?.minDate instanceof Date && rawStart < bounds.minDate ? cleanDate(bounds.minDate) : rawStart;
+        publishedTurnoverSeries = turnoverMatrixSeries(platformKey, {
+          effectiveStart: start,
+          effectiveEnd: end
         });
+      }
+    }
+    if (!turnoverSeries.length) {
+      const freshnessSeries = turnoverFreshnessSeries(platformKey);
+      if (freshnessSeries.length) {
+        const freshnessTail = detailTailRows(freshnessSeries, 14);
+        const freshnessEnd = freshnessTail[freshnessTail.length - 1]?.date || freshnessSeries[freshnessSeries.length - 1]?.date || null;
+        const publishedEndDate = publishedTurnoverSeries[publishedTurnoverSeries.length - 1]?.date || null;
+        if (!publishedTurnoverSeries.length || !(publishedEndDate instanceof Date) || (freshnessEnd instanceof Date && freshnessEnd > publishedEndDate)) {
+          publishedTurnoverSeries = freshnessTail;
+          publishedFromFreshness = true;
+        }
+      }
+    }
+    if (!publishedTurnoverSeries.length) {
+      publishedTurnoverSeries = turnoverMatrixSeries(platformKey, {
+        effectiveStart: range?.min || range?.effectiveStart,
+        effectiveEnd: range?.max || range?.effectiveEnd
+      });
+    }
     const fallbackTurnover = stockMetric.rows
       .map((row) => row.turnoverDays)
       .filter((value) => value !== null);
+    const publishedStart = publishedTurnoverSeries.length ? publishedTurnoverSeries[0].date : null;
+    const publishedEnd = publishedTurnoverSeries.length ? publishedTurnoverSeries[publishedTurnoverSeries.length - 1].date : null;
+    const latestPublishedDate = publishedEnd || null;
     return {
       ...stockMetric,
       turnoverSeries,
       turnoverPublishedSeries: publishedTurnoverSeries,
-      turnoverHistoryScope: turnoverSeries.length ? 'range' : (publishedTurnoverSeries.length ? 'published' : 'none'),
+      turnoverHistoryScope: turnoverSeries.length
+        ? 'range'
+        : (publishedTurnoverSeries.length ? (publishedFromFreshness ? 'freshness' : 'published') : 'none'),
+      turnoverPublishedLabel: publishedStart && publishedEnd ? rangeLabel(publishedStart, publishedEnd) : '',
+      turnoverLatestPublishedDate: latestPublishedDate,
       avgTurnoverDays: turnoverSeries.length
         ? avg(turnoverSeries.map((row) => row.avgTurnover))
-        : stockMetric.avgTurnover,
-      sparkTurnover: sparkline(turnoverSeries.length ? turnoverSeries.map((row) => row.avgTurnover) : fallbackTurnover),
-      turnoverHistoryReady: turnoverSeries.length > 0
+        : (publishedTurnoverSeries.length ? avg(publishedTurnoverSeries.map((row) => row.avgTurnover)) : stockMetric.avgTurnover),
+      sparkTurnover: sparkline(
+        turnoverSeries.length
+          ? turnoverSeries.map((row) => row.avgTurnover)
+          : (publishedTurnoverSeries.length ? publishedTurnoverSeries.map((row) => row.avgTurnover) : fallbackTurnover)
+      ),
+      turnoverHistoryReady: turnoverSeries.length > 0 || publishedTurnoverSeries.length > 0
     };
   }
 
@@ -3126,8 +3256,19 @@
     const turnoverRows = articleRowsForPlatform(platformKey, executive.range)
       .sort((left, right) => num(right.avgTurnoverDays) - num(left.avgTurnoverDays) || right.stock - left.stock)
       .slice(0, 18);
-    const priceDailyMap = new Map(priceMatrixSeries(platformKey, executive.range).map((row) => [iso(row.date), row]));
-    const focusDays = detailTailRows(stockMetric.turnoverPublishedSeries, 14);
+    let focusDays = detailTailRows(stockMetric.turnoverPublishedSeries, 14);
+    if (!focusDays.length) {
+      focusDays = detailTailRows(turnoverFreshnessSeries(platformKey), 14);
+    }
+    const publishedStart = focusDays[0]?.date || null;
+    const publishedEnd = focusDays[focusDays.length - 1]?.date || null;
+    const priceSeriesRange = (stockMetric.turnoverHistoryScope === 'published' || stockMetric.turnoverHistoryScope === 'freshness') && publishedStart && publishedEnd
+      ? { effectiveStart: publishedStart, effectiveEnd: publishedEnd }
+      : executive.range;
+    const priceDailyMap = new Map(priceMatrixSeries(platformKey, priceSeriesRange).map((row) => [iso(row.date), row]));
+    const noHistoryHint = stockMetric.turnoverLatestPublishedDate
+      ? `История по daily пока не обновлена после ${shortDate(stockMetric.turnoverLatestPublishedDate)}.`
+      : 'Для выбранного окна daily-ряд оборачиваемости пока не опубликован.';
     return {
       title: `${stockMetric.label} · оборачиваемость и запас`,
       subtitle: `Запрос: ${executive.range.requestedLabel}. В расчете: ${executive.range.effectiveLabel}. Справа последние 14 дней ряда по оборачиваемости, если он опубликован.`,
@@ -4056,8 +4197,13 @@
     const turnoverRows = articleRowsForPlatform(platformKey, executive.range)
       .sort((left, right) => num(right.avgTurnoverDays) - num(left.avgTurnoverDays) || right.stock - left.stock)
       .slice(0, 18);
-    const priceDailyMap = new Map(priceMatrixSeries(platformKey, executive.range).map((row) => [iso(row.date), row]));
     const focusDays = detailTailRows(stockMetric.turnoverPublishedSeries, 14);
+    const publishedStart = focusDays[0]?.date || null;
+    const publishedEnd = focusDays[focusDays.length - 1]?.date || null;
+    const priceSeriesRange = (stockMetric.turnoverHistoryScope === 'published' || stockMetric.turnoverHistoryScope === 'freshness') && publishedStart && publishedEnd
+      ? { effectiveStart: publishedStart, effectiveEnd: publishedEnd }
+      : executive.range;
+    const priceDailyMap = new Map(priceMatrixSeries(platformKey, priceSeriesRange).map((row) => [iso(row.date), row]));
     return {
       title: `${stockMetric.label} · оборачиваемость и запас`,
       subtitle: `Запрос: ${executive.range.requestedLabel}. В расчете: ${executive.range.effectiveLabel}. Справа последние 14 дней ряда по оборачиваемости, если он опубликован.`,
@@ -4849,8 +4995,13 @@
     const turnoverRows = articleRowsForPlatform(platformKey, executive.range)
       .sort((left, right) => num(right.avgTurnoverDays) - num(left.avgTurnoverDays) || right.stock - left.stock)
       .slice(0, 18);
-    const priceDailyMap = new Map(priceMatrixSeries(platformKey, executive.range).map((row) => [iso(row.date), row]));
     const focusDays = detailTailRows(stockMetric.turnoverPublishedSeries, 14);
+    const publishedStart = focusDays[0]?.date || null;
+    const publishedEnd = focusDays[focusDays.length - 1]?.date || null;
+    const priceSeriesRange = (stockMetric.turnoverHistoryScope === 'published' || stockMetric.turnoverHistoryScope === 'freshness') && publishedStart && publishedEnd
+      ? { effectiveStart: publishedStart, effectiveEnd: publishedEnd }
+      : executive.range;
+    const priceDailyMap = new Map(priceMatrixSeries(platformKey, priceSeriesRange).map((row) => [iso(row.date), row]));
     return {
       title: `${stockMetric.label} · оборачиваемость и запас`,
       subtitle: `Запрос: ${executive.range.requestedLabel}. В расчёте: ${executive.range.effectiveLabel}. Справа последние 14 дней ряда по оборачиваемости, если он опубликован.`,
@@ -5765,6 +5916,109 @@
       app.smartPriceWorkbenchLive = smartPriceWorkbenchLive;
       app.smartPriceOverlay = smartPriceOverlay;
     }
+  }
+
+  function buildStockDetail(platformKey, executive) {
+    const stockMetric = buildTurnoverMetric(platformKey, executive.range);
+    const turnoverRows = articleRowsForPlatform(platformKey, executive.range)
+      .sort((left, right) => num(right.avgTurnoverDays) - num(left.avgTurnoverDays) || right.stock - left.stock)
+      .slice(0, 18);
+
+    let focusDays = detailTailRows(stockMetric.turnoverPublishedSeries, 14);
+    if (!focusDays.length) {
+      focusDays = detailTailRows(turnoverFreshnessSeries(platformKey), 14);
+    }
+    const publishedStart = focusDays[0]?.date || null;
+    const publishedEnd = focusDays[focusDays.length - 1]?.date || null;
+    const priceSeriesRange = (stockMetric.turnoverHistoryScope === 'published' || stockMetric.turnoverHistoryScope === 'freshness') && publishedStart && publishedEnd
+      ? { effectiveStart: publishedStart, effectiveEnd: publishedEnd }
+      : executive.range;
+    const priceDailyMap = new Map(priceMatrixSeries(platformKey, priceSeriesRange).map((row) => [iso(row.date), row]));
+
+    const publishedScopeHint = stockMetric.turnoverHistoryScope === 'published' && stockMetric.turnoverPublishedLabel
+      ? ` Daily за выбранный интервал не приехал — показываем последний опубликованный ряд: ${stockMetric.turnoverPublishedLabel}.`
+      : '';
+    const noHistoryHint = stockMetric.turnoverLatestPublishedDate
+      ? `История по daily пока не обновлена после ${shortDate(stockMetric.turnoverLatestPublishedDate)}.`
+      : 'Для выбранного окна daily-ряд оборачиваемости пока не опубликован.';
+
+    return {
+      title: `${stockMetric.label} · оборачиваемость и запас`,
+      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчёте: ${executive.range.effectiveLabel}. Справа последние 14 дней ряда по оборачиваемости, если он опубликован.${publishedScopeHint}`,
+      body: `
+        <div class="portal-exec-modal-metrics">
+          ${modalSummaryCard('Остаток, шт.', int(stockMetric.totalStock))}
+          ${modalSummaryCard('В пути, шт.', int(stockMetric.totalTransit))}
+          ${modalSummaryCard('Средняя оборачиваемость', stockMetric.avgTurnoverDays !== null ? `${stockMetric.avgTurnoverDays.toFixed(1)} дн.` : '—')}
+          ${modalSummaryCard('Низкое покрытие', int(stockMetric.lowCoverage))}
+          ${modalSummaryCard('Избыточный запас', int(stockMetric.overstock))}
+          ${modalSummaryCard('SKU в срезе', int(stockMetric.skuCount))}
+        </div>
+        <div class="portal-exec-modal-grid">
+          <div class="portal-exec-modal-card">
+            <h4 class="portal-exec-table-title">Слева артикула</h4>
+            <p class="portal-exec-table-sub">Список SKU по запасу и оборачиваемости. Это главный слой для решения: распродавать, поднимать цену или дозаказывать.</p>
+            <table class="portal-exec-modal-table">
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Площадка</th>
+                  <th>Обор.</th>
+                  <th>Остаток</th>
+                  <th>В пути</th>
+                  <th>Маржа %</th>
+                  <th>Owner</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${turnoverRows.length ? turnoverRows.map((row) => `
+                  <tr${priceWorkbenchOpenAttrs(row.platformKey, row.article, executive)}>
+                    <td><strong>${esc(row.article)}</strong><div class="muted small">${esc(row.name)}</div></td>
+                    <td>${esc(row.platformLabel)}</td>
+                    <td>${esc(row.avgTurnoverDays !== null ? `${row.avgTurnoverDays.toFixed(1)} дн.` : '—')}</td>
+                    <td>${esc(int(row.stock))}</td>
+                    <td>${esc(int(row.inTransit))}</td>
+                    <td>${esc(row.marginPct !== null ? pct(row.marginPct) : '—')}</td>
+                    <td>${esc(row.owner)}</td>
+                  </tr>
+                `).join('') : `<tr><td colspan="7">По площадке нет рабочего списка по запасу.</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+          <div class="portal-exec-side-stack">
+            <div class="portal-exec-modal-card">
+              <h4 class="portal-exec-table-title">Справа 14 дней</h4>
+              <p class="portal-exec-table-sub">Если daily-ряд оборачиваемости приехал, здесь видно, когда запас стал проблемой. Если нет, используйте левую таблицу как основной контур.</p>
+              <table class="portal-exec-modal-table">
+                <thead>
+                  <tr>
+                    <th>Дата</th>
+                    <th>Средняя обор.</th>
+                    <th>SKU с daily</th>
+                    <th>Средняя цена</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${focusDays.length ? focusDays.map((row) => `
+                    <tr>
+                      <td>${esc(shortDate(row.date))}</td>
+                      <td>${esc(row.avgTurnover !== null ? `${row.avgTurnover.toFixed(1)} дн.` : '—')}</td>
+                      <td>${esc(int(row.skuCount))}</td>
+                      <td>${esc(priceDailyMap.get(iso(row.date))?.avgPrice > 0 ? money(priceDailyMap.get(iso(row.date)).avgPrice) : '—')}</td>
+                    </tr>
+                  `).join('') : `<tr><td colspan="4">${esc(noHistoryHint)}</td></tr>`}
+                </tbody>
+              </table>
+            </div>
+            ${renderActionBullets([
+              stockMetric.lowCoverage > 0 ? `Есть ${int(stockMetric.lowCoverage)} SKU с низким покрытием. Проверяйте риск выпадения спроса.` : '',
+              stockMetric.overstock > 0 ? `Есть ${int(stockMetric.overstock)} SKU с медленной оборачиваемостью. Ищите связку цена + спрос.` : '',
+              stockMetric.avgTurnoverDays !== null && stockMetric.avgTurnoverDays > 60 ? `Средняя оборачиваемость ${stockMetric.avgTurnoverDays.toFixed(1)} дн. Для РОПа это уже зона ручного решения.` : ''
+            ], 'По запасу сильных отклонений не видно.')}
+          </div>
+        </div>
+      `
+    };
   }
 
   function apply() {

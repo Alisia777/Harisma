@@ -133,13 +133,15 @@ function applyOwnerOverridesToSkus() {
   for (const sku of state.skus) {
     const baseOwner = JSON.parse(JSON.stringify(sku.__baseOwner || {}));
     baseOwner.name = canonicalOwnerName(baseOwner.name || '');
+    const baseRegistryStatus = normalizePortalText(sku?.registryStatus || baseOwner.registryStatus || sku?.sheetStatus || sku?.status || '');
     const override = overrideMap.get(sku.articleKey);
     if (override) {
       sku.owner = {
         ...baseOwner,
         name: canonicalOwnerName(override.ownerName || ''),
         source: override.ownerName ? 'Командное закрепление' : (baseOwner.source || ''),
-        registryStatus: override.ownerRole || baseOwner.registryStatus || ''
+        registryStatus: baseRegistryStatus,
+        role: normalizePortalText(override.ownerRole || baseOwner.role || '')
       };
       sku.flags = sku.flags || {};
       sku.flags.assigned = Boolean(canonicalOwnerName(override.ownerName || ''));
@@ -147,6 +149,10 @@ function applyOwnerOverridesToSkus() {
       sku.owner = baseOwner;
       sku.flags = sku.flags || {};
       sku.flags.assigned = Boolean(baseOwner?.name);
+    }
+    if (baseRegistryStatus) {
+      sku.registryStatus = baseRegistryStatus;
+      if (sku.owner && typeof sku.owner === 'object') sku.owner.registryStatus = baseRegistryStatus;
     }
   }
 }
@@ -752,7 +758,7 @@ function buildAutoTasks() {
     const articleKey = sku.articleKey;
     const owner = ownerName(sku);
     const platform = sku?.flags?.toWorkWB && sku?.flags?.toWorkOzon ? 'wb+ozon' : sku?.flags?.toWorkWB ? 'wb' : sku?.flags?.toWorkOzon ? 'ozon' : detectTaskPlatform({}, sku);
-    const exitSku = String(sku?.status || '').toLowerCase().includes('вывод');
+    const exitSku = skuStatusSearchValue(sku).includes('вывод');
     const leaderboardItem = leaderboardMap.get(String(articleKey || '').trim().toLowerCase()) || null;
 
     if (leaderboardFresh && leaderboardItem?.inPortal !== false) {

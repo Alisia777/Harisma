@@ -185,7 +185,7 @@ function getFilteredSkus(taskMap = null) {
   const q = String(state.filters.search || '').trim().toLowerCase();
   return state.skus.filter((sku) => {
     if (!filterSkuByMarket(sku)) return false;
-    const hay = [sku.article, sku.articleKey, sku.name, sku.brand, sku.category, sku.segment, ownerName(sku), sku.status, sku.focusReasons].filter(Boolean).join(' ').toLowerCase();
+    const hay = [sku.article, sku.articleKey, sku.name, sku.brand, sku.category, sku.segment, ownerName(sku), skuRegistryStatusLabel(sku), sku.status, sku.focusReasons].filter(Boolean).join(' ').toLowerCase();
     if (q && !hay.includes(q)) return false;
     if (state.filters.owner !== 'all' && ownerName(sku) !== state.filters.owner) return false;
     if (state.filters.segment !== 'all' && sku.segment !== state.filters.segment) return false;

@@ -1636,6 +1636,32 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
+function normalizePortalText(value = '') {
+  const raw = String(value ?? '').trim();
+  if (!raw) return '';
+  return typeof repairBrokenUtf8Cp1251String === 'function'
+    ? repairBrokenUtf8Cp1251String(raw)
+    : raw;
+}
+
+function skuRegistryStatusLabel(sku) {
+  const candidates = [
+    sku?.registryStatus,
+    sku?.owner?.registryStatus,
+    sku?.sheetStatus,
+    sku?.status
+  ];
+  for (const candidate of candidates) {
+    const normalized = normalizePortalText(candidate);
+    if (normalized) return normalized;
+  }
+  return '';
+}
+
+function skuStatusSearchValue(sku) {
+  return normalizePortalText(skuRegistryStatusLabel(sku)).toLowerCase();
+}
+
 function badge(text, kind = '') {
   return `<span class="chip ${kind}">${escapeHtml(text)}</span>`;
 }

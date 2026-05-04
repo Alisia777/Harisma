@@ -108,7 +108,7 @@
         <datalist id="skuOwnerList">${owners.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
         <form id="ownerForm" class="form-grid compact">
           <input name="ownerName" list="skuOwnerList" placeholder="Кто owner" value="${escapeHtml(ownerName(sku) || '')}">
-          <input name="ownerRole" placeholder="Роль / зона" value="${escapeHtml(sku?.owner?.registryStatus || 'Owner SKU')}">
+          <input name="ownerRole" placeholder="Роль / зона" value="${escapeHtml(sku?.owner?.role || '')}">
           <textarea name="note" rows="3" placeholder="Что важно по закреплению / передаче SKU"></textarea>
           <div class="quick-actions">
             <button class="btn" type="submit">Сохранить owner</button>
@@ -662,7 +662,7 @@ function normalizeLaunchItem(item = {}, options = {}) {
 
 function buildLaunchItemsFromSkus(options = {}) {
   return state.skus
-    .filter((sku) => String(sku?.segment || '').toUpperCase() === 'GROWTH' || String(sku?.status || '').toLowerCase().includes('нов'))
+    .filter((sku) => String(sku?.segment || '').toUpperCase() === 'GROWTH' || skuStatusSearchValue(sku).includes('нов'))
     .map((sku) => {
       const safeOptions = { ...options, skipTaskLookup: true };
       const phase = deriveLaunchPhase(sku);
@@ -897,7 +897,7 @@ function hydrateLaunchDraftWithSkuLink(draft = {}, options = {}) {
   setField('owner', ownerName(sku));
   setField('category', sku.category || '');
   setField('subCategory', next.subCategory || sku.category || '');
-  setField('registryStatus', sku.registryStatus || sku.status || '');
+  setField('registryStatus', skuRegistryStatusLabel(sku));
   setField('segment', sku.segment || '');
   setField('marketplaces', launchMarketplaceLabelsFromSku(sku));
   return serializeLaunchDraft(next);
@@ -918,7 +918,7 @@ function applySkuToLaunchEditorForm(form, sku, options = {}) {
   write('owner', ownerName(sku) || '');
   write('category', sku.category || '');
   write('subCategory', sku.category || '');
-  write('registryStatus', sku.registryStatus || sku.status || '');
+  write('registryStatus', skuRegistryStatusLabel(sku));
   write('marketplaces', launchMarketplaceLabelsFromSku(sku));
   return true;
 }

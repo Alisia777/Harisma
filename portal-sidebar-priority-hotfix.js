@@ -5,7 +5,6 @@
 
   var ORDER = [
     "dashboard",
-    "documents",
     "repricer",
     "prices",
     "order",
@@ -21,10 +20,6 @@
     dashboard: {
       title: "\u0414\u0430\u0448\u0431\u043e\u0440\u0434",
       subtitle: "\u041f\u0443\u043b\u044c\u0441 \u00b7 \u043b\u0438\u0434\u0435\u0440\u044b \u00b7 \u0441\u0438\u0433\u043d\u0430\u043b\u044b"
-    },
-    documents: {
-      title: "\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b",
-      subtitle: "\u0413\u0430\u0439\u0434\u044b \u00b7 \u0448\u0430\u0431\u043b\u043e\u043d\u044b \u00b7 \u0441\u0441\u044b\u043b\u043a\u0438"
     },
     repricer: {
       title: "\u0420\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440",
@@ -65,7 +60,8 @@
   };
 
   var REDIRECTS = {
-    meetings: "dashboard"
+    meetings: "dashboard",
+    documents: "dashboard"
   };
 
   function normalizeView(view) {
@@ -132,7 +128,7 @@
       byView[String(btn.dataset.view || "").trim()] = btn;
     });
 
-    ["meetings"].forEach(function (view) {
+    ["meetings", "documents"].forEach(function (view) {
       if (byView[view] && byView[view].parentNode) byView[view].parentNode.removeChild(byView[view]);
       delete byView[view];
     });

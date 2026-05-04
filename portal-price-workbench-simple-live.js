@@ -1,5 +1,8 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260502A__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260503C__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260503C__ = true;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260503B__ = true;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260503A__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260502A__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429A__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428C__ = true;
@@ -40,6 +43,10 @@
     repricerLive: { generatedAt: "", rows: [] },
     market: "wb",
     search: "",
+    ownerFilter: "all",
+    statusFilter: "all",
+    sortBy: "risk",
+    sortDir: "desc",
     selectedKey: "",
     dateFrom: "",
     dateTo: "",
@@ -55,9 +62,16 @@
     portalStorageParsed: null,
     explicitRepricerMapRaw: null,
     explicitRepricerMap: null,
+    repricerModelKey: "",
+    repricerModelSmartRef: null,
+    repricerModelSupportRef: null,
+    repricerModelPricesRef: null,
+    repricerModelLiveRef: null,
+    repricerModelSkusRef: null,
+    repricerModelRows: null,
     repricerRowsRef: null,
     repricerRowLookup: null,
-    visibleRows: { rowsRef: null, market: "", search: "", dateFrom: "", dateTo: "", leaderboardRef: null, value: null },
+    visibleRows: { rowsRef: null, market: "", search: "", ownerFilter: "", statusFilter: "", dateFrom: "", dateTo: "", portalStorageRaw: "", leaderboardRef: null, value: null },
     stats: { rowsRef: null, value: null },
     table: { rowsRef: null, value: null },
     productLeaderboardRef: null,
@@ -262,15 +276,41 @@
     var root = rootState();
     if (root && root.storage) {
       root.storage.repricerOverrides = Array.isArray(safeNext.repricerOverrides) ? safeNext.repricerOverrides.slice() : [];
-      if (typeof root.saveLocalStorage === "function") {
-        try { root.saveLocalStorage(); } catch {}
-      }
+      root.storage.repricerSkuProfiles = Array.isArray(safeNext.repricerSkuProfiles)
+        ? safeNext.repricerSkuProfiles.slice()
+        : (Array.isArray(root.storage.repricerSkuProfiles) ? root.storage.repricerSkuProfiles : []);
+      root.storage.repricerCorridors = Array.isArray(safeNext.repricerCorridors)
+        ? safeNext.repricerCorridors.slice()
+        : (Array.isArray(root.storage.repricerCorridors) ? root.storage.repricerCorridors : []);
+      root.storage.repricerOverrideDeletes = Array.isArray(safeNext.repricerOverrideDeletes)
+        ? safeNext.repricerOverrideDeletes.slice()
+        : (Array.isArray(root.storage.repricerOverrideDeletes) ? root.storage.repricerOverrideDeletes : []);
+      root.storage.repricerSkuProfileDeletes = Array.isArray(safeNext.repricerSkuProfileDeletes)
+        ? safeNext.repricerSkuProfileDeletes.slice()
+        : (Array.isArray(root.storage.repricerSkuProfileDeletes) ? root.storage.repricerSkuProfileDeletes : []);
+      root.storage.repricerCorridorDeletes = Array.isArray(safeNext.repricerCorridorDeletes)
+        ? safeNext.repricerCorridorDeletes.slice()
+        : (Array.isArray(root.storage.repricerCorridorDeletes) ? root.storage.repricerCorridorDeletes : []);
+      root.storage.repricerSettings = safeNext.repricerSettings && typeof safeNext.repricerSettings === "object"
+        ? cloneValue(safeNext.repricerSettings)
+        : (root.storage.repricerSettings || {});
+      root.storage.repricerSettingsUpdatedAt = String(
+        safeNext.repricerSettingsUpdatedAt
+        || root.storage.repricerSettingsUpdatedAt
+        || ""
+      ).trim();
     }
     if (typeof window.persistRepricerControls === "function") {
       Promise.resolve(window.persistRepricerControls()).catch(function (error) {
         console.error("[price-simple] persist repricer controls", error);
       });
     }
+    window.dispatchEvent(new CustomEvent("altea:portal-storage-updated", {
+      detail: {
+        key: "brand-portal-local-v1",
+        source: "prices"
+      }
+    }));
   }
 
   function overrideHasMeaning(override) {
@@ -305,6 +345,42 @@
       if (normalized.platform === targetMarket) fromMarket = pickFreshestOverride(fromMarket, normalized);
     });
     return pickFreshestOverride(fromAll, fromMarket);
+  }
+
+  function normalizeRepricerCorridor(entry) {
+    return {
+      articleKey: String(entry && (entry.articleKey || entry.article) || "").trim(),
+      platform: repricerMarket(entry && entry.platform),
+      hardFloor: moneyRound(entry && entry.hardFloor),
+      b2bFloor: moneyRound(entry && entry.b2bFloor),
+      basePrice: moneyRound(entry && entry.basePrice),
+      stretchCap: moneyRound(entry && entry.stretchCap),
+      promoFloor: moneyRound(entry && entry.promoFloor),
+      elasticity: num(entry && entry.elasticity),
+      updatedAt: String(entry && entry.updatedAt || "")
+    };
+  }
+
+  function pickFreshestCorridor(current, candidate) {
+    if (!candidate) return current || null;
+    if (!current) return candidate;
+    return parseFreshStamp(candidate.updatedAt) >= parseFreshStamp(current.updatedAt) ? candidate : current;
+  }
+
+  function findRepricerCorridor(targetMarket, articleKey) {
+    var wanted = norm(articleKey);
+    if (!wanted) return null;
+    var portal = readPortalStorageState();
+    var corridors = Array.isArray(portal && portal.repricerCorridors) ? portal.repricerCorridors : [];
+    var fromAll = null;
+    var fromMarket = null;
+    corridors.forEach(function (entry) {
+      var normalized = normalizeRepricerCorridor(entry);
+      if (norm(normalized.articleKey) !== wanted) return;
+      if (normalized.platform === "all") fromAll = pickFreshestCorridor(fromAll, normalized);
+      if (normalized.platform === targetMarket) fromMarket = pickFreshestCorridor(fromMarket, normalized);
+    });
+    return pickFreshestCorridor(fromAll, fromMarket);
   }
 
   function upsertMinMaxOverride(articleKey, platform, values) {
@@ -427,8 +503,58 @@
     return null;
   }
 
+  function repricerModelCacheKey(root) {
+    var storage = root && root.storage && typeof root.storage === "object" ? root.storage : {};
+    var pricesPayload = root && root.prices && typeof root.prices === "object" ? root.prices : {};
+    var pricesStamp = pricesPayload.generatedAt
+      || pricesPayload.asOfDate
+      || (pricesPayload.month && pricesPayload.month.key ? pricesPayload.month.key + "-01" : "");
+    return [
+      parseFreshStamp(root && root.smartPriceWorkbench && root.smartPriceWorkbench.generatedAt),
+      parseFreshStamp(root && root.priceWorkbenchSupport && root.priceWorkbenchSupport.generatedAt),
+      parseFreshStamp(pricesStamp),
+      parseFreshStamp(root && root.repricerLive && root.repricerLive.generatedAt),
+      Array.isArray(root && root.skus) ? root.skus.length : 0,
+      Array.isArray(storage.repricerOverrides) ? storage.repricerOverrides.length : 0,
+      Array.isArray(storage.repricerCorridors) ? storage.repricerCorridors.length : 0,
+      Array.isArray(storage.repricerSkuProfiles) ? storage.repricerSkuProfiles.length : 0,
+      String(storage.repricerSettingsUpdatedAt || "").trim(),
+      derived.portalStorageRaw || ""
+    ].join("|");
+  }
+
   function chooseRepricerRows() {
     var root = rootState() || {};
+    if (typeof window.buildRepricerRows === "function") {
+      readPortalStorageState();
+      var unifiedKey = repricerModelCacheKey(root);
+      if (
+        derived.repricerModelRows &&
+        derived.repricerModelKey === unifiedKey &&
+        derived.repricerModelSmartRef === root.smartPriceWorkbench &&
+        derived.repricerModelSupportRef === root.priceWorkbenchSupport &&
+        derived.repricerModelPricesRef === root.prices &&
+        derived.repricerModelLiveRef === root.repricerLive &&
+        derived.repricerModelSkusRef === root.skus
+      ) {
+        return derived.repricerModelRows;
+      }
+      try {
+        var unifiedRows = window.buildRepricerRows();
+        if (Array.isArray(unifiedRows) && unifiedRows.length) {
+          derived.repricerModelKey = unifiedKey;
+          derived.repricerModelSmartRef = root.smartPriceWorkbench;
+          derived.repricerModelSupportRef = root.priceWorkbenchSupport;
+          derived.repricerModelPricesRef = root.prices;
+          derived.repricerModelLiveRef = root.repricerLive;
+          derived.repricerModelSkusRef = root.skus;
+          derived.repricerModelRows = unifiedRows;
+          return unifiedRows;
+        }
+      } catch (error) {
+        console.warn("[price-simple] repricer unified model", error);
+      }
+    }
     var basePayload = freshestRepricerPayload(root.repricer, state.repricer);
     var livePayload = freshestRepricerPayload(root.repricerLive, state.repricerLive);
     var baseRows = repricerRows(basePayload);
@@ -481,10 +607,11 @@
   }
 
   function explicitRepricerMaps() {
+    readPortalStorageState();
     if (derived.explicitRepricerMapRaw === derived.portalStorageRaw && derived.explicitRepricerMap) {
       return derived.explicitRepricerMap;
     }
-    var portal = readPortalStorageState();
+    var portal = derived.portalStorageParsed || {};
     var overrides = Array.isArray(portal && portal.repricerOverrides) ? portal.repricerOverrides : [];
     var maps = {
       all: Object.create(null),
@@ -537,6 +664,46 @@
   function buildRepricerBounds(market, articleKey) {
     var targetMarket = repricerMarket(market);
     if (targetMarket !== "wb" && targetMarket !== "ozon") return null;
+    var syncedOverride = findRepricerOverride(targetMarket, articleKey);
+    var syncedCorridor = findRepricerCorridor(targetMarket, articleKey);
+    var syncedRow = findRepricerRow(articleKey);
+    var syncedSide = syncedRow ? (targetMarket === "wb" ? syncedRow.wb : syncedRow.ozon) : null;
+    var syncedManualMin = moneyRound(syncedOverride && syncedOverride.floorPrice);
+    var syncedManualMax = moneyRound(syncedOverride && syncedOverride.capPrice);
+    var syncedCorridorMin = Math.max(
+      firstPositive(syncedCorridor && syncedCorridor.hardFloor),
+      firstPositive(syncedCorridor && syncedCorridor.b2bFloor)
+    );
+    syncedCorridorMin = syncedCorridorMin > 0 ? moneyRound(syncedCorridorMin) : null;
+    var syncedCorridorMax = firstPositive(syncedCorridor && syncedCorridor.stretchCap);
+    syncedCorridorMax = syncedCorridorMax > 0 ? moneyRound(syncedCorridorMax) : null;
+    var syncedComputedMin = Math.max(
+      firstPositive(syncedSide && syncedSide.effectiveFloor),
+      firstPositive(syncedSide && syncedSide.hardFloor),
+      firstPositive(syncedSide && syncedSide.economicFloor),
+      firstPositive(syncedSide && syncedSide.minPrice),
+      firstPositive(syncedSide && syncedSide.finalGuardFloor)
+    );
+    var syncedComputedMax = firstPositive(syncedSide && syncedSide.finalGuardCap, syncedSide && syncedSide.capPrice, syncedSide && syncedSide.upperCap, syncedSide && syncedSide.workingZoneTo, syncedSide && syncedSide.stretchCap);
+    var syncedEffectiveMin = syncedManualMin != null && syncedManualMin > 0
+      ? syncedManualMin
+      : (syncedCorridorMin != null ? syncedCorridorMin : (syncedComputedMin > 0 ? moneyRound(syncedComputedMin) : null));
+    var syncedEffectiveMax = syncedManualMax != null && syncedManualMax > 0
+      ? syncedManualMax
+      : (syncedCorridorMax != null ? syncedCorridorMax : (syncedComputedMax > 0 ? moneyRound(syncedComputedMax) : null));
+    if (syncedEffectiveMin == null && syncedEffectiveMax == null && !syncedOverride && !syncedCorridor) return null;
+    return {
+      override: syncedOverride,
+      corridor: syncedCorridor,
+      manualMin: syncedManualMin,
+      manualMax: syncedManualMax,
+      corridorMin: syncedCorridorMin,
+      corridorMax: syncedCorridorMax,
+      effectiveMin: syncedEffectiveMin,
+      effectiveMax: syncedEffectiveMax,
+      minSource: syncedManualMin != null && syncedManualMin > 0 ? "ручной" : (syncedCorridorMin != null ? "коридор" : "расчет"),
+      maxSource: syncedManualMax != null && syncedManualMax > 0 ? "ручной" : (syncedCorridorMax != null ? "коридор" : "расчет")
+    };
     var override = findRepricerOverride(targetMarket, articleKey);
     var row = findRepricerRow(articleKey);
     var side = row ? (targetMarket === "wb" ? row.wb : row.ozon) : null;
@@ -910,7 +1077,7 @@
       ".pw-chip{border:1px solid rgba(214,175,85,.24);background:rgba(214,175,85,.06);color:#f3e3bf;border-radius:999px;padding:8px 12px;font-size:13px;cursor:pointer;}",
       ".pw-chip.active{background:linear-gradient(135deg,#c49a37,#f2d48d);color:#23180b;border-color:transparent;}",
       ".pw-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px;}",
-      ".pw-grid2 input,.pw-search{width:100%;box-sizing:border-box;border-radius:14px;border:1px solid rgba(214,175,85,.18);background:rgba(9,7,5,.78);color:#f7ead1;padding:12px 14px;}",
+      ".pw-grid2 input,.pw-grid2 select,.pw-search{width:100%;box-sizing:border-box;border-radius:14px;border:1px solid rgba(214,175,85,.18);background:rgba(9,7,5,.78);color:#f7ead1;padding:12px 14px;}",
       ".pw-help{display:grid;gap:10px;margin-top:12px;padding:14px 16px;border-radius:18px;border:1px solid rgba(214,175,85,.14);background:rgba(214,175,85,.05);}",
       ".pw-help details{border-top:1px solid rgba(214,175,85,.12);padding-top:10px;}",
       ".pw-help details:first-child{border-top:0;padding-top:0;}",
@@ -926,9 +1093,11 @@
       ".pw-stat strong{display:block;margin-top:8px;font-size:28px;color:#fff0cf;}",
       ".pw-stat small{display:block;margin-top:6px;color:#cdb892;line-height:1.45;}",
       ".pw-table-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}",
-      ".pw-table-wrap{overflow:auto;}",
+      ".pw-table-wrap{overflow:auto;max-height:72vh;border-radius:14px;}",
       ".pw-table{width:100%;border-collapse:collapse;min-width:1180px;}",
-      ".pw-table th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#bda57a;text-align:left;padding:0 14px 10px;}",
+      ".pw-table th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#bda57a;text-align:left;padding:0 14px 10px;position:sticky;top:0;z-index:2;background:rgba(10,8,6,.96);backdrop-filter:blur(4px);}",
+      ".pw-th-btn{border:0;background:transparent;color:inherit;text-transform:inherit;letter-spacing:inherit;font:inherit;cursor:pointer;padding:0;line-height:1.2;}",
+      ".pw-th-btn:hover{color:#f4e6c6;}",
       ".pw-table td{padding:14px;border-top:1px solid rgba(214,175,85,.1);vertical-align:top;color:#f4ead6;}",
       ".pw-row{cursor:pointer;transition:background .18s ease;}",
       ".pw-row:hover{background:rgba(214,175,85,.05);}",
@@ -1137,6 +1306,7 @@
     var key = String(articleKey || "").trim();
     if (!key) return;
     state.selectedKey = "";
+    unlockModalBackgroundScroll();
     try {
       if (typeof window.openProductLeaderboardForSku === "function") {
         window.openProductLeaderboardForSku(key);
@@ -1262,8 +1432,12 @@
     var priceSppPct = num(priceRow && priceRow.currentSppPct);
     var priceTurnoverDays = num(priceRow && priceRow.currentTurnoverDays);
     var priceCurrentDate = isoDate(priceRow && (priceRow.currentPriceDate || priceRow.historyFreshnessDate));
+    var sourceListPrice = firstPositive(source && source.firstPrice, source && source.currentFirstPrice, source && source.sellerPrice, source && source.currentSellerPriceBeforeDiscount);
+    var overlayListPrice = firstPositive(overlayRow && overlayRow.firstPrice, overlayRow && overlayRow.currentFirstPrice, overlayRow && overlayRow.sellerPrice, overlayRow && overlayRow.currentSellerPriceBeforeDiscount);
+    var priceListPrice = firstPositive(priceRow && priceRow.firstPrice, priceRow && priceRow.currentFirstPrice, priceRow && priceRow.sellerPrice, priceRow && priceRow.currentSellerPriceBeforeDiscount);
     var liveFillPrice = num(liveRow && (liveRow.currentFillPrice != null ? liveRow.currentFillPrice : liveRow.currentPrice));
     var liveClientPrice = num(liveRow && liveRow.currentClientPrice);
+    var liveListPrice = firstPositive(liveRow && liveRow.firstPrice, liveRow && liveRow.currentFirstPrice, liveRow && liveRow.sellerPrice, liveRow && liveRow.currentSellerPriceBeforeDiscount);
     var livePriceDate = isoDate(liveRow && (liveRow.valueDate || liveRow.historyFreshnessDate || liveGeneratedAt));
     var sourceValueDate = isoDate(source && source.historyFreshnessDate) || isoDate(maxDate);
     var useOverlayFacts = Boolean(overlayRow) && (!overlayValueDate || !sourceValueDate || overlayValueDate >= sourceValueDate);
@@ -1272,6 +1446,10 @@
     var sourceSppPct = num(source.currentSppPct);
     var sourceTurnoverDays = num(source.turnoverCurrentDays != null ? source.turnoverCurrentDays : source.currentTurnoverDays);
     var procurementTurnoverDays = num(orderProcurementRow && orderProcurementRow.turnoverDays);
+    var sourcePriceMode = String(source && source.sourceMode || "");
+    var overlayPriceMode = String(overlayRow && overlayRow.sourceMode || "");
+    var pricePriceMode = String(priceRow && priceRow.sourceMode || "");
+    var livePriceMode = String(liveRow && liveRow.sourceMode || "");
     var currentFillPrice = overlayClearsFill
       ? null
       : (priceFillPrice != null
@@ -1284,6 +1462,33 @@
       : (liveFillPrice != null
       ? "live"
       : ((overlayFillPrice != null && (useOverlayFacts || sourceFillPrice == null)) ? "overlay" : "workbench"));
+    var currentFillPriceMode = priceFillPrice != null
+      ? pricePriceMode
+      : (liveFillPrice != null
+      ? livePriceMode
+      : ((overlayFillPrice != null && (useOverlayFacts || sourceFillPrice == null)) ? overlayPriceMode : sourcePriceMode));
+    var listPrice = priceListPrice != null
+      ? priceListPrice
+      : ((overlayListPrice != null && (useOverlayFacts || sourceListPrice == null))
+        ? overlayListPrice
+        : (sourceListPrice != null ? sourceListPrice : liveListPrice));
+    var listPriceSource = priceListPrice != null
+      ? "prices"
+      : ((overlayListPrice != null && (useOverlayFacts || sourceListPrice == null))
+        ? "overlay"
+        : (sourceListPrice != null ? "workbench" : (liveListPrice != null ? "live" : "")));
+    var listPriceMode = priceListPrice != null
+      ? pricePriceMode
+      : ((overlayListPrice != null && (useOverlayFacts || sourceListPrice == null))
+        ? overlayPriceMode
+        : (sourceListPrice != null ? sourcePriceMode : livePriceMode));
+    var listPriceDate = listPriceSource === "prices"
+      ? (priceCurrentDate || livePriceDate || overlayValueDate || sourceValueDate || isoDate(maxDate))
+      : (listPriceSource === "overlay"
+        ? (overlayValueDate || priceCurrentDate || sourceValueDate || livePriceDate || isoDate(maxDate))
+        : (listPriceSource === "workbench"
+          ? (sourceValueDate || overlayValueDate || priceCurrentDate || livePriceDate || isoDate(maxDate))
+          : (livePriceDate || isoDate(liveGeneratedAt) || sourceValueDate || overlayValueDate || priceCurrentDate || isoDate(maxDate))));
     var turnoverDays = null;
     var turnoverSource = "";
     if (priceTurnoverDays != null) {
@@ -1317,6 +1522,11 @@
       turnoverSource: turnoverSource,
       currentFillPrice: currentFillPrice,
       currentFillPriceSource: currentFillPriceSource,
+      currentFillPriceMode: currentFillPriceMode,
+      listPrice: listPrice,
+      listPriceSource: listPriceSource,
+      listPriceMode: listPriceMode,
+      listPriceDate: listPriceDate,
       currentClientPrice: overlayClearsClient
         ? null
         : (priceClientPrice != null
@@ -1531,18 +1741,34 @@
     next.clientPriceFactDate = clientMetric.value != null ? clientMetric.date : isoDate(row.valueDate);
     next.sppFactDate = sppMetric.value != null ? sppMetric.date : isoDate(row.valueDate);
     next.turnoverFactDate = turnoverMetric.value != null ? turnoverMetric.date : isoDate(row.valueDate);
+    next.listPrice = num(row.listPrice) != null ? num(row.listPrice) : num(next.currentFillPrice);
+    next.listPriceFactDate = isoDate(row.listPriceDate) || next.priceFactDate || next.valueDate;
+    next.listPriceSource = String(row.listPriceSource || row.currentFillPriceSource || "").trim();
+    if (next.listPrice != null && next.currentFillPrice != null && next.listPrice > 0 && next.listPrice >= next.currentFillPrice) {
+      next.sellerDiscountPct = sanitizeDiscountPct(1 - (next.currentFillPrice / next.listPrice));
+    } else {
+      next.sellerDiscountPct = null;
+    }
     return next;
   }
 
   function visibleRows() {
     var search = String(state.search || "").trim().toLowerCase();
+    var searchNorm = norm(search);
+    var ownerFilter = String(state.ownerFilter || "all").trim();
+    var statusFilter = String(state.statusFilter || "all").trim();
     var leaderboardRef = (rootState() || {}).productLeaderboard || null;
+    readPortalStorageState();
+    var portalStorageRaw = derived.portalStorageRaw || "";
     if (
       derived.visibleRows.rowsRef === state.rows &&
       derived.visibleRows.market === state.market &&
       derived.visibleRows.search === search &&
+      derived.visibleRows.ownerFilter === ownerFilter &&
+      derived.visibleRows.statusFilter === statusFilter &&
       derived.visibleRows.dateFrom === state.dateFrom &&
       derived.visibleRows.dateTo === state.dateTo &&
+      derived.visibleRows.portalStorageRaw === portalStorageRaw &&
       derived.visibleRows.leaderboardRef === leaderboardRef &&
       derived.visibleRows.value
     ) {
@@ -1551,9 +1777,12 @@
     var next = [];
     state.rows.forEach(function (row) {
       if (state.market !== "all" && row.market !== state.market) return;
+      if (ownerFilter !== "all" && norm(row.owner) !== ownerFilter) return;
+      if (statusFilter !== "all" && norm(row.status) !== statusFilter) return;
       if (search) {
         var hay = [row.articleKey, row.name, row.owner, row.status, row.comment, row.reason].join(" ").toLowerCase();
-        if (hay.indexOf(search) === -1) return;
+        var hayNorm = norm(hay);
+        if (hay.indexOf(search) === -1 && (!searchNorm || hayNorm.indexOf(searchNorm) === -1)) return;
       }
       var displayRow = buildDisplayRow(row);
       if ((state.dateFrom || state.dateTo) && !displayRow.rangeHasPoint) return;
@@ -1562,8 +1791,11 @@
     derived.visibleRows.rowsRef = state.rows;
     derived.visibleRows.market = state.market;
     derived.visibleRows.search = search;
+    derived.visibleRows.ownerFilter = ownerFilter;
+    derived.visibleRows.statusFilter = statusFilter;
     derived.visibleRows.dateFrom = state.dateFrom;
     derived.visibleRows.dateTo = state.dateTo;
+    derived.visibleRows.portalStorageRaw = portalStorageRaw;
     derived.visibleRows.leaderboardRef = leaderboardRef;
     derived.visibleRows.value = next;
     return next;
@@ -1579,7 +1811,8 @@
     var turnover = [];
     var below = 0;
     rows.forEach(function (row) {
-      if (row.currentFillPrice != null) price.push(row.currentFillPrice);
+      if (row.listPrice != null) price.push(row.listPrice);
+      else if (row.currentFillPrice != null) price.push(row.currentFillPrice);
       if (row.marginTotalPct != null) margin.push(row.marginTotalPct);
       if (row.turnoverDays != null) turnover.push(row.turnoverDays);
       if (row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct) below += 1;
@@ -1615,12 +1848,106 @@
     return '<div class="pw-repricer-cell"><strong>' + money(value) + '</strong><small>' + esc(source || "") + '</small></div>';
   }
 
+  function priceSourceLabel(source) {
+    var key = String(source || "").trim().toLowerCase();
+    if (key === "prices") return "prices-срез";
+    if (key === "live") return "live-срез";
+    if (key === "overlay") return "overlay-срез";
+    if (key === "workbench") return "workbench";
+    return key;
+  }
+
+  function priceModeLabel(mode) {
+    var value = String(mode || "").trim().toLowerCase();
+    if (!value) return "";
+    if (value.indexOf("market-facts") >= 0) return "факт продаж (средняя)";
+    if (value.indexOf("client-only") >= 0) return "только клиентский факт";
+    return value;
+  }
+
+  function renderPriceCell(value, source, mode, date) {
+    if (value == null || !Number.isFinite(Number(value))) return "\u2014";
+    var noteParts = [];
+    var modeLabel = priceModeLabel(mode);
+    if (modeLabel) noteParts.push(modeLabel);
+    else if (source) noteParts.push(priceSourceLabel(source));
+    var dateLabel = isoDate(date);
+    if (dateLabel) noteParts.push(dateLabel);
+    if (!noteParts.length) return money(value);
+    return '<div class="pw-repricer-cell"><strong>' + money(value) + '</strong><small>' + esc(noteParts.join(" · ")) + '</small></div>';
+  }
+
+  function modalListPriceHelp(row) {
+    if (priceModeLabel(row && row.listPriceMode) === "факт продаж (средняя)") {
+      return "По этому SKU в слое нет кабинетной полки; показываем факт продаж по срезу.";
+    }
+    return "Полка цены продавца до внутренних скидок.";
+  }
+
+  function modalDiscountedPriceHelp(row) {
+    if (priceModeLabel(row && row.currentFillPriceMode) === "факт продаж (средняя)") {
+      return "По этому SKU цена собрана из факта продаж (средняя по срезу), а не из кабинета WB/Ozon.";
+    }
+    return "Текущая цена после скидки продавца.";
+  }
+
+  function sortToggleDirection(sortKey) {
+    if (state.sortBy === sortKey) return state.sortDir === "asc" ? "desc" : "asc";
+    return sortKey === "article" || sortKey === "owner" || sortKey === "status" ? "asc" : "desc";
+  }
+
+  function sortIndicator(sortKey) {
+    if (state.sortBy !== sortKey) return "";
+    return state.sortDir === "asc" ? " ↑" : " ↓";
+  }
+
+  function rowSortNumber(row, sortKey) {
+    if (sortKey === "price_mp") return num(row && row.listPrice);
+    if (sortKey === "discount_price") return num(row && row.currentFillPrice);
+    if (sortKey === "repricer_price") return num(row && row.repricerDisplay && row.repricerDisplay.price);
+    if (sortKey === "min") return num(row && row.repricerBounds && row.repricerBounds.effectiveMin);
+    if (sortKey === "max") return num(row && row.repricerBounds && row.repricerBounds.effectiveMax);
+    if (sortKey === "client_price") return num(row && row.currentClientPrice);
+    if (sortKey === "spp") return num(row && row.currentSppPct);
+    if (sortKey === "allowed_margin") return num(row && row.allowedMarginPct);
+    if (sortKey === "margin") return num(row && row.marginTotalPct);
+    if (sortKey === "turnover") return num(row && row.turnoverDays);
+    if (sortKey === "seller_discount") return num(row && row.sellerDiscountPct);
+    return null;
+  }
+
+  function rowSortText(row, sortKey) {
+    if (sortKey === "article") return String(row && row.articleKey || "");
+    if (sortKey === "owner") return String(row && row.owner || "");
+    if (sortKey === "status") return String(row && row.status || "");
+    return "";
+  }
+
   function sortedVisiblePriceRows(rows) {
+    var sortBy = String(state.sortBy || "risk");
+    var sortDir = state.sortDir === "asc" ? "asc" : "desc";
     return rows.slice().sort(function (a, b) {
-      var dangerA = a.allowedMarginPct != null && a.marginTotalPct != null && a.marginTotalPct < a.allowedMarginPct ? 1 : 0;
-      var dangerB = b.allowedMarginPct != null && b.marginTotalPct != null && b.marginTotalPct < b.allowedMarginPct ? 1 : 0;
-      if (dangerA !== dangerB) return dangerB - dangerA;
-      return (b.currentFillPrice || 0) - (a.currentFillPrice || 0);
+      if (sortBy === "risk") {
+        var dangerA = a.allowedMarginPct != null && a.marginTotalPct != null && a.marginTotalPct < a.allowedMarginPct ? 1 : 0;
+        var dangerB = b.allowedMarginPct != null && b.marginTotalPct != null && b.marginTotalPct < b.allowedMarginPct ? 1 : 0;
+        if (dangerA !== dangerB) return dangerB - dangerA;
+        return (b.listPrice || b.currentFillPrice || 0) - (a.listPrice || a.currentFillPrice || 0);
+      }
+
+      var numberA = rowSortNumber(a, sortBy);
+      var numberB = rowSortNumber(b, sortBy);
+      var comparison = 0;
+      if (numberA != null || numberB != null) {
+        var safeA = numberA == null ? Number.NEGATIVE_INFINITY : numberA;
+        var safeB = numberB == null ? Number.NEGATIVE_INFINITY : numberB;
+        comparison = safeA === safeB ? 0 : (safeA > safeB ? 1 : -1);
+      } else {
+        var textA = rowSortText(a, sortBy);
+        var textB = rowSortText(b, sortBy);
+        comparison = textA.localeCompare(textB, "ru", { sensitivity: "base" });
+      }
+      if (comparison !== 0) return sortDir === "asc" ? comparison : -comparison;
+      return String(a.articleKey || "").localeCompare(String(b.articleKey || ""), "ru", { sensitivity: "base" });
     });
   }
 
@@ -1651,6 +1978,36 @@
     window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
   }
 
+  function downloadPriceDelimitedFile(columns, rows, filename, delimiter) {
+    if (!rows.length) {
+      window.alert("По текущим фильтрам нет строк для выгрузки.");
+      return;
+    }
+    var normalizedDelimiter = delimiter || "\t";
+    var serializeCell = function (value) {
+      var text = String(value == null ? "" : value);
+      if (normalizedDelimiter === "\t") return text.replace(/\r?\n/g, " ");
+      if (/["\r\n,;]/.test(text)) return '"' + text.replace(/"/g, '""') + '"';
+      return text;
+    };
+    var lines = [];
+    lines.push(columns.map(function (column) { return serializeCell(column[0]); }).join(normalizedDelimiter));
+    rows.forEach(function (row) {
+      lines.push(columns.map(function (column) {
+        return serializeCell(row[column[0]]);
+      }).join(normalizedDelimiter));
+    });
+    var blob = new Blob(["\uFEFF", lines.join("\r\n")], { type: "text/tab-separated-values;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
   function priceSummaryExportRows(rows) {
     return sortedVisiblePriceRows(rows).map(function (row) {
       return {
@@ -1659,9 +2016,15 @@
         name: row.name || "",
         owner: row.owner || "",
         status: row.status || "",
-        current_price_mp: moneyRound(row.currentFillPrice),
-        current_price_mp_date: row.priceFactDate || row.currentPriceDate || row.valueDate || "",
-        current_price_source: row.currentFillPriceSource || "",
+        current_price_mp_before_discount: moneyRound(row.listPrice),
+        current_price_mp_before_discount_date: row.listPriceFactDate || row.priceFactDate || row.currentPriceDate || row.valueDate || "",
+        current_price_mp_before_discount_source: row.listPriceSource || "",
+        current_price_mp_before_discount_mode: row.listPriceMode || "",
+        current_price_mp_discounted: moneyRound(row.currentFillPrice),
+        current_price_mp_discounted_date: row.priceFactDate || row.currentPriceDate || row.valueDate || "",
+        current_price_mp_discounted_source: row.currentFillPriceSource || "",
+        current_price_mp_discounted_mode: row.currentFillPriceMode || "",
+        seller_discount_pct: row.sellerDiscountPct != null ? Math.round(Number(row.sellerDiscountPct) * 10000) / 100 : "",
         repricer_price: moneyRound(row.repricerDisplay && row.repricerDisplay.price),
         repricer_label: row.repricerDisplay && row.repricerDisplay.label || "",
         min_price: moneyRound(row.repricerBounds && row.repricerBounds.effectiveMin),
@@ -1715,9 +2078,15 @@ function downloadPriceSummaryExcel(rows) {
     ["name", "Название"],
     ["owner", "Owner"],
     ["status", "Статус"],
-    ["current_price_mp", "Текущая цена MP"],
-    ["current_price_mp_date", "Дата цены MP"],
-    ["current_price_source", "Источник цены MP"],
+    ["current_price_mp_before_discount", "Цена MP до скидки"],
+    ["current_price_mp_before_discount_date", "Дата цены MP до скидки"],
+    ["current_price_mp_before_discount_source", "Источник цены MP до скидки"],
+    ["current_price_mp_before_discount_mode", "Режим цены MP до скидки"],
+    ["current_price_mp_discounted", "Цена MP со скидкой / факт"],
+    ["current_price_mp_discounted_date", "Дата цены MP со скидкой / факт"],
+    ["current_price_mp_discounted_source", "Источник цены MP со скидкой / факт"],
+    ["current_price_mp_discounted_mode", "Режим цены MP со скидкой / факт"],
+    ["seller_discount_pct", "Скидка продавца, %"],
     ["repricer_price", "Цена репрайсера"],
     ["repricer_label", "Контур репрайсера"],
     ["min_price", "MIN"],
@@ -1740,7 +2109,7 @@ function downloadPriceSummaryExcel(rows) {
   }
 
   function downloadPriceDailyExcel(rows) {
-    downloadPriceHtmlTable([
+    downloadPriceDelimitedFile([
       ["marketplace", "Площадка"],
       ["article_key", "Артикул"],
       ["name", "Название"],
@@ -1759,6 +2128,10 @@ function downloadPriceSummaryExcel(rows) {
     ], priceDailyExportRows(rows), "prices-daily-" + priceExportScope() + ".xls");
   }
 
+  function sortableHead(sortKey, label) {
+    return '<th><button type="button" class="pw-th-btn" data-price-sort="' + esc(sortKey) + '" title="Сортировать">' + esc(label) + sortIndicator(sortKey) + '</button></th>';
+  }
+
   function renderTable(rows) {
     if (derived.table.rowsRef === rows && typeof derived.table.value === "string") return derived.table.value;
     if (!rows.length) {
@@ -1767,15 +2140,23 @@ function downloadPriceSummaryExcel(rows) {
       derived.table.value = emptyHtml;
       return emptyHtml;
     }
-    var sorted = rows.slice().sort(function (a, b) {
-      var dangerA = a.allowedMarginPct != null && a.marginTotalPct != null && a.marginTotalPct < a.allowedMarginPct ? 1 : 0;
-      var dangerB = b.allowedMarginPct != null && b.marginTotalPct != null && b.marginTotalPct < b.allowedMarginPct ? 1 : 0;
-      if (dangerA !== dangerB) return dangerB - dangerA;
-      return (b.currentFillPrice || 0) - (a.currentFillPrice || 0);
-    });
+    var sorted = sortedVisiblePriceRows(rows);
     var html = [
       '<div class="pw-table-wrap"><table class="pw-table"><thead><tr>',
-      '<th>\u0410\u0440\u0442\u0438\u043a\u0443\u043b</th><th>Owner</th><th>\u0421\u0442\u0430\u0442\u0443\u0441</th><th>\u0426\u0435\u043d\u0430 MP</th><th>\u0426\u0435\u043d\u0430 \u0440\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440\u0430</th><th>MIN</th><th>MAX</th><th>\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430</th><th>\u0421\u041f\u041f</th><th>\u0414\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u0430\u044f 3\u043c</th><th>\u041c\u0430\u0440\u0436\u0430</th><th>\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</th>',
+      sortableHead("article", "\u0410\u0440\u0442\u0438\u043a\u0443\u043b"),
+      sortableHead("owner", "Owner"),
+      sortableHead("status", "\u0421\u0442\u0430\u0442\u0443\u0441"),
+      sortableHead("price_mp", "\u0426\u0435\u043d\u0430 MP (\u0434\u043e \u0441\u043a\u0438\u0434\u043a\u0438)"),
+      sortableHead("discount_price", "\u0426\u0435\u043d\u0430 MP (\u0441\u043e \u0441\u043a\u0438\u0434\u043a\u043e\u0439 / \u0444\u0430\u043a\u0442)"),
+      sortableHead("seller_discount", "\u0421\u043a\u0438\u0434\u043a\u0430 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430"),
+      sortableHead("repricer_price", "\u0426\u0435\u043d\u0430 \u0440\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440\u0430"),
+      sortableHead("min", "MIN"),
+      sortableHead("max", "MAX"),
+      sortableHead("client_price", "\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430"),
+      sortableHead("spp", "\u0421\u041f\u041f"),
+      sortableHead("allowed_margin", "\u0414\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u0430\u044f 3\u043c"),
+      sortableHead("margin", "\u041c\u0430\u0440\u0436\u0430"),
+      sortableHead("turnover", "\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c"),
       '</tr></thead><tbody>',
       sorted.map(function (row) {
         var danger = row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct;
@@ -1786,7 +2167,9 @@ function downloadPriceSummaryExcel(rows) {
           '</td>',
           '<td>', esc(row.owner || "\u2014"), '</td>',
           '<td><span class="pw-badge">', esc(row.status || "\u2014"), '</span></td>',
-          '<td>', money(row.currentFillPrice), '</td>',
+          '<td>', renderPriceCell(row.listPrice != null ? row.listPrice : row.currentFillPrice, row.listPriceSource, row.listPriceMode, row.listPriceFactDate || row.valueDate), '</td>',
+          '<td>', renderPriceCell(row.currentFillPrice, row.currentFillPriceSource, row.currentFillPriceMode, row.priceFactDate || row.valueDate), '</td>',
+          '<td>', pct(row.sellerDiscountPct), '</td>',
           '<td>', renderRepricerCell(row.repricerDisplay), '</td>',
           '<td>', renderBoundCell(row.repricerBounds && row.repricerBounds.effectiveMin, row.repricerBounds && row.repricerBounds.minSource), '</td>',
           '<td>', renderBoundCell(row.repricerBounds && row.repricerBounds.effectiveMax, row.repricerBounds && row.repricerBounds.maxSource), '</td>',
@@ -1878,7 +2261,9 @@ function downloadPriceSummaryExcel(rows) {
       '<button class="pw-close" type="button" data-close-price-modal>\u0417\u0430\u043a\u0440\u044b\u0442\u044c</button>',
       '</div>',
       '<div class="pw-kpis">',
-      '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 MP</span><strong>', money(row.currentFillPrice), '</strong><small>', esc(metricHelp("\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0439 \u0444\u0430\u043a\u0442 \u0446\u0435\u043d\u044b \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430.", row.priceFactDate, row.valueDate)), '</small></div>',
+      '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 MP \u0434\u043e \u0441\u043a\u0438\u0434\u043a\u0438</span><strong>', money(row.listPrice != null ? row.listPrice : row.currentFillPrice), '</strong><small>', esc(metricHelp(modalListPriceHelp(row), row.listPriceFactDate || row.priceFactDate, row.valueDate)), '</small></div>',
+      '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 MP \u0441\u043e \u0441\u043a\u0438\u0434\u043a\u043e\u0439</span><strong>', money(row.currentFillPrice), '</strong><small>', esc(metricHelp(modalDiscountedPriceHelp(row), row.priceFactDate, row.valueDate)), '</small></div>',
+      '<div class="pw-mini"><span class="pw-label">\u0421\u043a\u0438\u0434\u043a\u0430 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430</span><strong>', pct(row.sellerDiscountPct), '</strong><small>\u0421\u0447\u0438\u0442\u0430\u0435\u043c \u043a\u0430\u043a \u0440\u0430\u0437\u043d\u0438\u0446\u0443 \u043c\u0435\u0436\u0434\u0443 \u0446\u0435\u043d\u043e\u0439 \u0434\u043e \u0441\u043a\u0438\u0434\u043a\u0438 \u0438 \u0446\u0435\u043d\u043e\u0439 \u0441\u043e \u0441\u043a\u0438\u0434\u043a\u043e\u0439.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430</span><strong>', money(row.currentClientPrice), '</strong><small>', esc(metricHelp("\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0439 \u043a\u043b\u0438\u0435\u043d\u0442\u0441\u043a\u0438\u0439 \u043a\u043e\u043d\u0442\u0443\u0440.", row.clientPriceFactDate, row.valueDate)), '</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0414\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u0430\u044f \u043c\u0430\u0440\u0436\u0430 3\u043c</span><strong>', pct(row.allowedMarginPct), '</strong><small>\u0411\u0435\u0440\u0435\u043c \u0438\u0437 smart/workbench \u0441\u043b\u043e\u044f \u0431\u0435\u0437 \u043f\u0440\u0438\u0432\u044f\u0437\u043a\u0438 \u043a \u043d\u043e\u043c\u0435\u0440\u0443 \u0441\u0442\u0440\u043e\u043a\u0438.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0422\u0435\u043a\u0443\u0449\u0430\u044f \u043c\u0430\u0440\u0436\u0430</span><strong>', pct(row.marginTotalPct), '</strong><small>\u041e\u043f\u0435\u0440\u0430\u0446\u0438\u043e\u043d\u043d\u044b\u0439 \u0443\u0440\u043e\u0432\u0435\u043d\u044c \u043f\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u0438.</small></div>',
@@ -1890,7 +2275,11 @@ function downloadPriceSummaryExcel(rows) {
       '</div>',
       '<div class="pw-card">',
       '<div class="pw-label">MIN / MAX</div>',
+      '<div class="pw-note">Здесь задаются ручные границы цены по позиции. Эти MIN/MAX сразу участвуют в расчёте репрайсера по этой площадке.</div>',
       '<div class="pw-note">На этой вкладке можно задать ручные границы цены по позиции. Формат такой же, как в шаблоне с вкладки "Цены".</div>',
+      bounds && (bounds.corridorMin != null || bounds.corridorMax != null)
+        ? '<div class="pw-note">Коридор из Репрайсера: MIN ' + esc(bounds.corridorMin != null ? money(bounds.corridorMin) : "—") + ' · MAX ' + esc(bounds.corridorMax != null ? money(bounds.corridorMax) : "—") + '. Это внутренняя рамка расчета по площадке.</div>'
+        : '',
       '<form id="priceMinMaxForm" data-article-key="', esc(row.articleKey), '" data-platform="', esc(row.market), '" style="margin-top:12px">',
       '<div class="pw-grid2">',
       '<label style="display:grid;gap:6px"><span class="pw-label">MIN</span><input type="number" step="1" min="0" name="floorPrice" value="', esc(bounds && bounds.manualMin != null ? bounds.manualMin : ""), '" placeholder="Ручной MIN"></label>',
@@ -1915,6 +2304,31 @@ function downloadPriceSummaryExcel(rows) {
     return state.selectedKey ? buildDisplayRow(findRow(state.selectedKey)) : null;
   }
 
+  function lockModalBackgroundScroll() {
+    if (document.body.getAttribute("data-pw-scroll-lock") === "1") return;
+    var top = window.scrollY || window.pageYOffset || 0;
+    document.body.style.position = "fixed";
+    document.body.style.top = "-" + top + "px";
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
+    document.body.setAttribute("data-pw-scroll-lock", "1");
+  }
+
+  function unlockModalBackgroundScroll() {
+    if (document.body.getAttribute("data-pw-scroll-lock") !== "1") return;
+    var rawTop = String(document.body.style.top || "0").replace("px", "");
+    var top = Number(rawTop);
+    if (!Number.isFinite(top)) top = 0;
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    document.body.style.width = "";
+    document.body.removeAttribute("data-pw-scroll-lock");
+    window.scrollTo(0, Math.abs(top));
+  }
+
   function attachModalHandlers() {
     var modal = document.getElementById("priceSimpleModal");
     if (!modal) return;
@@ -1929,6 +2343,7 @@ function downloadPriceSummaryExcel(rows) {
       if (event.target === modal || event.target.closest("[data-close-price-modal]")) {
         state.selectedKey = "";
         renderSelectedModal();
+        unlockModalBackgroundScroll();
       }
     });
     var minMaxForm = modal.querySelector("#priceMinMaxForm");
@@ -1967,6 +2382,8 @@ function downloadPriceSummaryExcel(rows) {
     if (!host) return;
     host.innerHTML = renderModal(selectedDisplayRow());
     attachModalHandlers();
+    if (state.selectedKey) lockModalBackgroundScroll();
+    else unlockModalBackgroundScroll();
   }
 
   function renderControlGuide() {
@@ -2030,7 +2447,7 @@ function downloadPriceSummaryExcel(rows) {
       ["current_price_mp", "current_price_mp"],
       ["repricer_price", "repricer_price"],
       ["note", "note"]
-    ], templateRows, "prices-minmax-template-" + priceExportScope() + ".xls");
+    ], templateRows, "prices-minmax-template-" + priceExportScope() + ".tsv", "\t");
   }
 
   function normalizeImportHeader(value) {
@@ -2127,6 +2544,28 @@ function downloadPriceSummaryExcel(rows) {
     reader.readAsText(file, "utf-8");
   }
 
+  function buildFilterOptions() {
+    var owners = Object.create(null);
+    var statuses = Object.create(null);
+    state.rows.forEach(function (row) {
+      if (state.market !== "all" && row.market !== state.market) return;
+      var ownerLabel = String(row.owner || "").trim();
+      var ownerKey = norm(ownerLabel);
+      if (ownerLabel && ownerKey && !owners[ownerKey]) owners[ownerKey] = ownerLabel;
+      var statusLabel = String(row.status || "").trim();
+      var statusKey = norm(statusLabel);
+      if (statusLabel && statusKey && !statuses[statusKey]) statuses[statusKey] = statusLabel;
+    });
+    return {
+      owners: Object.keys(owners).sort(function (left, right) {
+        return String(owners[left] || "").localeCompare(String(owners[right] || ""), "ru", { sensitivity: "base" });
+      }).map(function (key) { return { value: key, label: owners[key] }; }),
+      statuses: Object.keys(statuses).sort(function (left, right) {
+        return String(statuses[left] || "").localeCompare(String(statuses[right] || ""), "ru", { sensitivity: "base" });
+      }).map(function (key) { return { value: key, label: statuses[key] }; })
+    };
+  }
+
   function renderRoot() {
     var root = document.getElementById(VIEW_ID);
     if (!root) return;
@@ -2135,11 +2574,12 @@ function downloadPriceSummaryExcel(rows) {
     var rows = visibleRows();
     var summary = stats(rows);
     var selected = state.selectedKey ? buildDisplayRow(findRow(state.selectedKey)) : null;
+    var filters = buildFilterOptions();
     root.innerHTML = [
       '<div class="pw-shell">',
       '<section class="pw-card">',
       '<div class="pw-title">\u0426\u0435\u043d\u044b</div>',
-      '<div class="pw-sub">\u0412\u043a\u043b\u0430\u0434\u043a\u0430 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u0442 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0439 \u0441\u043b\u043e\u0439 `smart_price_workbench` + `smart_price_overlay`, \u0430 \u0434\u043b\u044f \u043e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u0438 \u043f\u0440\u0438 \u043d\u0443\u0436\u0434\u0435 \u0434\u043e\u0431\u0438\u0440\u0430\u0435\u0442 `order_procurement`. \u0415\u0441\u043b\u0438 \u0441\u0440\u0435\u0437 \u043d\u0435 \u043d\u0430 \u0441\u0435\u0433\u043e\u0434\u043d\u044f, \u044d\u0442\u043e \u044f\u0432\u043d\u043e \u043f\u043e\u043a\u0430\u0436\u0435\u043c \u0432\u044b\u0448\u0435.</div>',
+      '<div class="pw-sub">\u0417\u0434\u0435\u0441\u044c \u043a\u043e\u043c\u0430\u043d\u0434\u0430 \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442 \u0441 \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u0446\u0435\u043d\u043e\u0439, \u0440\u0430\u0431\u043e\u0447\u0438\u043c MIN/MAX, \u043c\u0430\u0440\u0436\u043e\u0439 \u0438 \u0441\u0432\u044f\u0437\u043a\u043e\u0439 \u0441 \u0440\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440\u043e\u043c. \u0415\u0441\u043b\u0438 \u0441\u0440\u0435\u0437 \u043d\u0435 \u0437\u0430 \u0441\u0435\u0433\u043e\u0434\u043d\u044f, \u043f\u043e\u0440\u0442\u0430\u043b \u043f\u043e\u043a\u0430\u0436\u0435\u0442 \u044d\u0442\u043e \u0432\u044b\u0448\u0435 \u0442\u0430\u0431\u043b\u0438\u0446\u044b.</div>',
       state.error ? '<div class="pw-error">' + esc(state.error) + '</div>' : '',
       state.loaded ? '<div class="pw-alert ' + (state.dataLagDays > 1 ? 'warn' : '') + '"><strong>\u0414\u0430\u0442\u0430 \u0441\u0440\u0435\u0437\u0430: ' + esc(state.latestFactDate || "\u2014") + '</strong><div>' + esc(dataFreshnessLabel()) + '</div>' + (state.overlayGeneratedAt ? '<div style="margin-top:6px">' + esc(overlayFreshnessLabel()) + '</div>' : '') + '<div style="margin-top:6px">\u0412 \u0442\u0430\u0431\u043b\u0438\u0446\u0435 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u043c \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u044e\u044e \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u0443\u044e \u0442\u043e\u0447\u043a\u0443 \u0432\u043d\u0443\u0442\u0440\u0438 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0430, \u0430 \u043d\u0435 \u043f\u0440\u043e\u0441\u0442\u043e \u0437\u0430\u0441\u0442\u044b\u0432\u0448\u0438\u0439 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 row.</div></div>' : '',
       '<div class="pw-grid" style="margin-top:14px;">',
@@ -2165,7 +2605,15 @@ function downloadPriceSummaryExcel(rows) {
       '</div></div>',
       '<div class="pw-card">',
       '<div class="pw-label">\u041f\u043e\u0438\u0441\u043a</div>',
-      '<input class="pw-search" id="pwSearch" placeholder="\u0410\u0440\u0442\u0438\u043a\u0443\u043b, owner, \u0441\u0442\u0430\u0442\u0443\u0441" value="', esc(state.search), '">',
+      '<input class="pw-search" id="pwSearch" placeholder="\u0410\u0440\u0442\u0438\u043a\u0443\u043b / SKU, \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0435, owner, \u0441\u0442\u0430\u0442\u0443\u0441" value="', esc(state.search), '">',
+      '<div class="pw-grid2" style="margin-top:10px;">',
+      '<select id="pwOwnerFilter"><option value="all">Все owner</option>',
+      filters.owners.map(function (option) { return '<option value="' + esc(option.value) + '"' + (state.ownerFilter === option.value ? ' selected' : '') + '>' + esc(option.label) + '</option>'; }).join(""),
+      '</select>',
+      '<select id="pwStatusFilter"><option value="all">Все статусы</option>',
+      filters.statuses.map(function (option) { return '<option value="' + esc(option.value) + '"' + (state.statusFilter === option.value ? ' selected' : '') + '>' + esc(option.label) + '</option>'; }).join(""),
+      '</select>',
+      '</div>',
       '<div class="pw-note">\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a: ', esc(state.sourceNote || DATA_URL), '</div>',
       '<div class="pw-note">\u0415\u0441\u043b\u0438 \u043d\u0430 \u043f\u0440\u043e\u0434\u0435 \u043d\u0435\u0442 fresh overlay \u0438\u043b\u0438 order-procurement \u0444\u0430\u0439\u043b\u043e\u0432, \u0432\u043a\u043b\u0430\u0434\u043a\u0430 \u0447\u0435\u0441\u0442\u043d\u043e \u043f\u0430\u0434\u0430\u0435\u0442 \u043d\u0430 \u043f\u043e\u0441\u0442\u0430\u0440\u0435\u0432\u0448\u0438\u0439 \u0441\u0440\u0435\u0437.</div>',
       '</div></div>',
@@ -2178,10 +2626,12 @@ function downloadPriceSummaryExcel(rows) {
       '<div class="pw-card pw-stat"><span class="pw-label">\u041d\u0438\u0436\u0435 \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e\u0439</span><strong>', intf(summary.belowAllowed), '</strong><small>\u0421\u0440\u0430\u0432\u043d\u0438\u0432\u0430\u0435\u043c \u043c\u0430\u0440\u0436\u0443 \u0441\u0440\u0435\u0437\u0430 \u0441 \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e\u0439 3\u043c.</small></div>',
       '</section>',
       '<section class="pw-card">',
-      '<div class="pw-table-head"><div class="pw-label">\u0422\u0430\u0431\u043b\u0438\u0446\u0430</div><div class="pw-chip-row"><button type="button" class="pw-chip" data-price-export="summary">\u0421\u0432\u043e\u0434 Excel</button><button type="button" class="pw-chip" data-price-export="daily">\u041f\u043e \u0434\u043d\u044f\u043c Excel</button><button type="button" class="pw-chip" data-price-minmax-template>\u0424\u043e\u0440\u043c\u0430 MIN/MAX</button><button type="button" class="pw-chip" data-price-minmax-import>\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c MIN/MAX</button></div></div>',
+      '<div class="pw-table-head"><div class="pw-label">\u0422\u0430\u0431\u043b\u0438\u0446\u0430</div><div class="pw-chip-row"><button type="button" class="pw-chip" data-price-export="summary">\u0421\u0432\u043e\u0434 \u0432 Excel</button><button type="button" class="pw-chip" data-price-export="daily">\u0414\u0438\u043d\u0430\u043c\u0438\u043a\u0430 \u043f\u043e \u0434\u043d\u044f\u043c</button><button type="button" class="pw-chip" data-price-minmax-template>\u0421\u043a\u0430\u0447\u0430\u0442\u044c MIN/MAX (TSV)</button><button type="button" class="pw-chip" data-price-minmax-import>\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c MIN/MAX</button></div></div>',
+      '<div class="pw-note" style="margin-top:10px">\u0428\u0430\u0431\u043b\u043e\u043d MIN/MAX \u0442\u0435\u043f\u0435\u0440\u044c \u0432\u044b\u0433\u0440\u0443\u0436\u0430\u0435\u0442\u0441\u044f \u0432 TSV, \u0447\u0442\u043e\u0431\u044b Excel / Google Sheets \u0434\u0430\u0432\u0430\u043b\u0438 \u0447\u0435\u0441\u0442\u043d\u044b\u0439 round-trip \u0431\u0435\u0437 fake .xls.</div>',
+      '<div class="pw-note" style="margin-top:6px">Нажмите на заголовок столбца для сортировки (как в Excel). Под суммой цены показан источник: если видите “факт продаж (средняя)”, это не кабинетная полка, а средняя цена по факту продаж за срез.</div>',
       state.loading && !state.loaded ? '<div class="pw-empty">\u0417\u0430\u0433\u0440\u0443\u0436\u0430\u044e \u0434\u0430\u043d\u043d\u044b\u0435 \u0432\u043a\u043b\u0430\u0434\u043a\u0438 \u0426\u0435\u043d\u044b...</div>' : renderTable(rows),
       '</section>',
-      '<input type="file" id="pwMinMaxFile" accept=".xls,.html,.csv,.tsv,.txt" style="display:none">',
+      '<input type="file" id="pwMinMaxFile" accept=".tsv,.csv,.txt,.html" style="display:none">',
       '<div id="priceSimpleModalHost">', renderModal(selected), '</div>',
       '</div>'
     ].join("");
@@ -2189,6 +2639,8 @@ function downloadPriceSummaryExcel(rows) {
     root.querySelectorAll("[data-price-market]").forEach(function (button) {
       button.addEventListener("click", function () {
         state.market = button.getAttribute("data-price-market");
+        state.ownerFilter = "all";
+        state.statusFilter = "all";
         renderPriceWorkbench();
       });
     });
@@ -2236,6 +2688,8 @@ function downloadPriceSummaryExcel(rows) {
     var fromInput = document.getElementById("pwFrom");
     var toInput = document.getElementById("pwTo");
     var searchInput = document.getElementById("pwSearch");
+    var ownerFilterInput = document.getElementById("pwOwnerFilter");
+    var statusFilterInput = document.getElementById("pwStatusFilter");
     function attachDateHandlers(input, apply) {
       if (!input) return;
       input.addEventListener("change", apply);
@@ -2257,6 +2711,24 @@ function downloadPriceSummaryExcel(rows) {
       renderPriceWorkbench();
     });
     if (searchInput) searchInput.addEventListener("input", function () { state.search = searchInput.value; renderPriceWorkbench(); });
+    if (ownerFilterInput) ownerFilterInput.addEventListener("change", function () {
+      state.ownerFilter = ownerFilterInput.value || "all";
+      renderPriceWorkbench();
+    });
+    if (statusFilterInput) statusFilterInput.addEventListener("change", function () {
+      state.statusFilter = statusFilterInput.value || "all";
+      renderPriceWorkbench();
+    });
+    root.querySelectorAll("[data-price-sort]").forEach(function (headerButton) {
+      headerButton.addEventListener("click", function (event) {
+        event.preventDefault();
+        var key = headerButton.getAttribute("data-price-sort") || "risk";
+        state.sortDir = sortToggleDirection(key);
+        state.sortBy = key;
+        derived.table.rowsRef = null;
+        renderPriceWorkbench();
+      });
+    });
     root.querySelectorAll("[data-open-price]").forEach(function (rowNode) {
       rowNode.addEventListener("click", function () {
         state.selectedKey = rowNode.getAttribute("data-open-price");
@@ -2282,10 +2754,24 @@ function downloadPriceSummaryExcel(rows) {
     return loadData(forceRefresh !== false);
   };
 
+  window.addEventListener("altea:portal-storage-updated", function (event) {
+    if (!event || !event.detail || event.detail.key !== "brand-portal-local-v1") return;
+    if (!state.loaded) return;
+    if (document.querySelector("#view-prices.view.active")) {
+      renderPriceWorkbench();
+    } else {
+      derived.portalStorageRaw = null;
+      derived.portalStorageParsed = null;
+      derived.explicitRepricerMapRaw = null;
+      derived.explicitRepricerMap = null;
+    }
+  });
+
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape" && state.selectedKey) {
       state.selectedKey = "";
       renderSelectedModal();
+      unlockModalBackgroundScroll();
     }
   });
 

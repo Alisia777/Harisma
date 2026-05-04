@@ -29,16 +29,9 @@ function renderControlWorkstreamSection(summary) {
   });
 }
 
-function skuOperationalStatusMetaLegacy(sku) {
-  return skuOperationalStatusMeta(sku);
-  const resolvedLabel = skuRegistryStatusLabel(sku);
-  const statusRaw = normalizePortalText([
-    resolvedLabel,
-    sku?.status,
-    sku?.registryStatus,
-    sku?.owner?.registryStatus,
-    sku?.sheetStatus
-  ].filter(Boolean).join(' ')).toLowerCase();
+function skuOperationalStatusMeta(sku) {
+  const rawStatus = String(sku?.status || '').toLowerCase();
+  const registryStatus = String(sku?.owner?.registryStatus || '').toLowerCase();
 
   if (rawStatus.includes('вывод') || registryStatus.includes('вывод')) return { label: 'На вывод', tone: '' };
   if (rawStatus.includes('нов') || registryStatus.includes('нов')) return { label: 'Новинка', tone: 'info' };
@@ -62,38 +55,11 @@ function skuOperationalStatus(sku) {
   return badge(meta.label, meta.tone);
 }
 
-// Canonical status resolver: keeps SKU status in one source chain for all views.
-function skuOperationalStatusMeta(sku) {
-  const resolvedLabel = skuRegistryStatusLabel(sku);
-  const statusRaw = normalizePortalText([
-    resolvedLabel,
-    sku?.status,
-    sku?.registryStatus,
-    sku?.owner?.registryStatus,
-    sku?.sheetStatus
-  ].filter(Boolean).join(' ')).toLowerCase();
-
-  if (statusRaw.includes('вывод')) return { label: 'На вывод', tone: '' };
-  if (statusRaw.includes('нов')) return { label: 'Новинка', tone: 'info' };
-  if (statusRaw.includes('вопрос')) return { label: 'Под вопросом', tone: 'warn' };
-  if (statusRaw.includes('специф')) return { label: 'Нет в спецификации', tone: 'warn' };
-  if (!sku?.flags?.assigned) return { label: 'Без owner', tone: 'warn' };
-  if (sku?.flags?.toWorkWB && sku?.flags?.toWorkOzon) return { label: 'В работу WB + Ozon', tone: 'danger' };
-  if (sku?.flags?.toWorkWB) return { label: 'В работу WB', tone: 'danger' };
-  if (sku?.flags?.toWorkOzon) return { label: 'В работу Ozon', tone: 'danger' };
-  if (sku?.flags?.negativeMargin) return { label: 'Маржа в риске', tone: 'danger' };
-  if (sku?.flags?.lowStock) return { label: 'Низкий остаток', tone: 'warn' };
-  if (sku?.flags?.underPlan) return { label: 'Ниже плана', tone: 'warn' };
-  if ((sku?.focusScore || 0) >= 4) return { label: 'Наблюдать', tone: 'warn' };
-  if (resolvedLabel) return { label: resolvedLabel, tone: 'ok' };
-  return { label: 'Актуальный', tone: 'ok' };
-}
-
 function renderSkuTaskSummary(sku, task = nextTaskForSku(sku.articleKey)) {
   if (!task) return `<div class="muted small">Нет активной задачи</div>`;
   return `
     <div><strong>${escapeHtml(task.title)}</strong></div>
-    <div class="muted small">${escapeHtml(task.nextAction || task.reason || 'Нужен апдейт')}</div>
+    <div class="muted small">${escapeHtmlMultiline(task.nextAction || task.reason || 'Нужен апдейт')}</div>
     <div class="badge-stack" style="margin-top:6px">${taskStatusBadge(task)}${taskPriorityBadge(task)}</div>
   `;
 }
@@ -407,7 +373,7 @@ function renderInverseLeaderRow(item, index, maxValue, metricLabel, metaHtml = '
 
 function buildVisualDashboardModel() {
   const control = getControlSnapshot();
-  const activeSkus = state.skus.filter((sku) => !skuStatusSearchValue(sku).includes('вывод'));
+  const activeSkus = state.skus.filter((sku) => !String(sku?.status || '').toLowerCase().includes('вывод'));
   const revenueTotal = activeSkus.reduce((acc, sku) => acc + monthRevenue(sku), 0);
   const netRevenueTotal = activeSkus.reduce((acc, sku) => acc + monthNetRevenue(sku), 0);
   const unitsTotal = activeSkus.reduce((acc, sku) => acc + monthUnits(sku), 0);

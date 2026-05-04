@@ -75,18 +75,6 @@ function repricerFirstFilledNumber(...values) {
   return 0;
 }
 
-function repricerHasBrokenText(value) {
-  if (value === null || value === undefined) return false;
-  return String(value).includes('\uFFFD');
-}
-
-function repricerSafeText(value, fallback = '') {
-  const normalized = String(value ?? '').trim();
-  if (!normalized) return fallback;
-  if (repricerHasBrokenText(normalized)) return fallback;
-  return normalized;
-}
-
 function repricerCurrentDateKey() {
   const now = new Date();
   const year = now.getFullYear();
@@ -383,7 +371,7 @@ function repricerFindSkuProfile(articleKey) {
 
 function repricerHasSkuProfile(profile) {
   if (!profile) return false;
-  return Boolean(String(profile.role || '').trim() || String(profile.launchReady || '').trim());
+  return Boolean(String(profile.status || '').trim() || String(profile.role || '').trim() || String(profile.launchReady || '').trim());
 }
 
 function repricerFindCorridor(articleKey, platform) {
@@ -437,21 +425,6 @@ function repricerSkuFactMap() {
     });
   });
   return map;
-}
-
-function repricerResolvedSkuStatus(sourceRow = {}, supportRow = {}, skuFact = {}) {
-  const candidates = [
-    skuRegistryStatusLabel(skuFact),
-    supportRow?.repricerStatus,
-    supportRow?.productStatus,
-    sourceRow?.status,
-    skuFact?.status
-  ];
-  for (const candidate of candidates) {
-    const normalized = normalizePortalText(candidate);
-    if (normalized) return normalized;
-  }
-  return '';
 }
 
 function repricerSupportMap(platform) {
@@ -1240,9 +1213,9 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     marginPct: sourceRow.marginTotalPct == null ? (liveSide?.marginPct == null ? null : numberOrZero(liveSide.marginPct)) : numberOrZero(sourceRow.marginTotalPct),
     requiredMarginPct,
     strategy,
-    reason: reasons.join(' · ') || repricerSafeText(sourceRow.seedReason, '') || 'Без пояснения',
+    reason: reasons.join(' · ') || sourceRow.seedReason || 'Без пояснения',
     historyFreshnessDate: sourceRow.historyFreshnessDate || '',
-    historyNote: repricerSafeText(sourceRow.historyNote, ''),
+    historyNote: sourceRow.historyNote || '',
     mode,
     modeCode,
     engineMode,
@@ -1304,8 +1277,8 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     alignmentApplied: false,
     liveReferencePrice: numberOrZero(liveSide?.recPrice),
     liveTargetDays: numberOrZero(liveSide?.targetTurnoverDays),
-    liveStrategy: repricerSafeText(liveSide?.strategy, ''),
-    liveReason: repricerSafeText(liveSide?.reason, ''),
+    liveStrategy: liveSide?.strategy || '',
+    liveReason: liveSide?.reason || '',
     liveBuyerPrice: numberOrZero(liveSide?.buyerPrice),
     liveMarginPct: liveSide?.marginPct == null ? null : numberOrZero(liveSide.marginPct),
     liveMarginNoAdsMinPct: liveSide?.marginNoAdsMinPct == null ? null : numberOrZero(liveSide.marginNoAdsMinPct)
@@ -1508,7 +1481,7 @@ function buildRepricerRows() {
       const platformSpecificOwner = typeof platformOwnerName === 'function'
         ? platformOwnerName(skuFact, platform)
         : '';
-      const resolvedStatus = repricerResolvedSkuStatus(sourceRow, supportRow, skuFact);
+      const resolvedStatus = profile?.status || sourceRow.status || supportRow?.repricerStatus || supportRow?.productStatus || skuFact?.status || '';
       const resolvedRole = profile?.role || repricerSuggestedRole(resolvedStatus, sourceRow.segment || supportRow?.segment || skuFact?.segment);
       const resolvedLaunchReady = normalizeRepricerLaunchReady(profile?.launchReady || repricerDefaultLaunchReady(resolvedStatus));
       if (!byArticle.has(articleKey)) byArticle.set(articleKey, {
@@ -1533,9 +1506,9 @@ function buildRepricerRows() {
       row.brand = row.brand || resolvedBrand;
       row.name = row.name || sourceRow.name || supportRow?.name || priceRow?.name || skuFact?.name || '';
       row.owner = row.owner || platformSpecificOwner || sourceRow.owner || supportRow?.owner || priceRow?.owner || skuOwnerName || '';
-      row.status = row.status || resolvedStatus;
-      row.role = profile?.role || row.role || repricerSuggestedRole(row.status || resolvedStatus, sourceRow.segment || supportRow?.segment || skuFact?.segment);
-      row.launchReady = normalizeRepricerLaunchReady(profile?.launchReady || row.launchReady || repricerDefaultLaunchReady(row.status || resolvedStatus));
+      row.status = profile?.status || row.status || sourceRow.status || supportRow?.repricerStatus || supportRow?.productStatus || skuFact?.status || '';
+      row.role = profile?.role || row.role || repricerSuggestedRole(row.status || sourceRow.status || supportRow?.repricerStatus || skuFact?.status, sourceRow.segment || supportRow?.segment || skuFact?.segment);
+      row.launchReady = normalizeRepricerLaunchReady(profile?.launchReady || row.launchReady || repricerDefaultLaunchReady(row.status || sourceRow.status || skuFact?.status));
       row.segment = row.segment || sourceRow.segment || supportRow?.segment || skuFact?.segment || '';
       row.abc = row.abc || sourceRow.abc || supportRow?.abc || skuFact?.abc || '';
       row.profile = profile || row.profile || null;
@@ -2258,7 +2231,7 @@ function saveRepricerSkuProfile(form) {
   const articleKey = form.getAttribute('data-article-key') || '';
   const next = normalizeRepricerSkuProfile({
     articleKey,
-    status: '',
+    status: form.status.value,
     role: form.role.value,
     launchReady: form.launchReady.value,
     updatedAt: new Date().toISOString(),
@@ -2827,12 +2800,6 @@ function attachRepricerEvents(root) {
     });
   });
   root.querySelectorAll('.repricer-sku-form').forEach((form) => {
-    const statusField = form.querySelector('select[name="status"]');
-    if (statusField) {
-      statusField.setAttribute('disabled', 'disabled');
-      statusField.setAttribute('title', 'Статус берём из Реестра SKU');
-      statusField.classList.add('is-readonly');
-    }
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       saveRepricerSkuProfile(event.currentTarget);

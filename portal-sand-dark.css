@@ -745,36 +745,6 @@ body.v87-imperial.theme-sand-dark #view-prices .pw-label {
   letter-spacing: 0.08em;
 }
 
-body.v87-imperial.theme-sand-dark #view-prices .pw-table-head .pw-chip-row {
-  margin-top: 0 !important;
-  margin-left: auto;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-body.v87-imperial.theme-sand-dark #view-prices .pw-table-head .pw-chip-row :where(
-  [data-price-export],
-  [data-price-minmax-template],
-  [data-price-minmax-import]
-) {
-  background: linear-gradient(180deg, rgba(26, 20, 16, 0.98), rgba(11, 9, 7, 0.98)) !important;
-  color: var(--sand-text) !important;
-  border-color: rgba(221, 192, 138, 0.18) !important;
-  min-height: 34px !important;
-  padding: 8px 12px !important;
-  gap: 8px !important;
-  box-shadow: none !important;
-}
-
-body.v87-imperial.theme-sand-dark #view-prices .pw-table-head .pw-chip-row :where(
-  [data-price-export],
-  [data-price-minmax-template],
-  [data-price-minmax-import]
-)::before {
-  content: none !important;
-  display: none !important;
-}
-
 body.v87-imperial.theme-sand-dark #view-prices .pw-table th {
   position: sticky;
   top: 0;
@@ -808,27 +778,6 @@ body.v87-imperial.theme-sand-dark #view-product-leaderboard .list-item {
   background:
     radial-gradient(circle at top right, rgba(226, 193, 130, 0.1), transparent 26%),
     linear-gradient(180deg, rgba(27, 21, 17, 0.98), rgba(12, 10, 8, 0.98)) !important;
-}
-
-body.v87-imperial.theme-sand-dark #view-launches [data-launch-gantt-fold] > summary {
-  list-style: none;
-}
-
-body.v87-imperial.theme-sand-dark #view-launches [data-launch-gantt-fold] > summary::-webkit-details-marker {
-  display: none;
-}
-
-body.v87-imperial.theme-sand-dark #view-launches [data-launch-gantt-fold] > summary::after {
-  content: "▾";
-  float: right;
-  color: rgba(246, 230, 198, 0.8);
-  font-size: 14px;
-  line-height: 1;
-  margin-top: 8px;
-}
-
-body.v87-imperial.theme-sand-dark #view-launches [data-launch-gantt-fold]:not([open]) > summary::after {
-  content: "▸";
 }
 
 body.v87-imperial.theme-sand-dark #view-control .ui-group-head strong,

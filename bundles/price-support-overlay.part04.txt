@@ -1,0 +1,1214 @@
+₽; ниже 185 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 6–383 ₽.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 29815 | repricer_vs_core: выше | last_price_vs_core: внутри",
+          "currentExportPrice": 30000,
+          "hardMinPrice": 185,
+          "requiredPriceForProfitability": 209,
+          "workingZoneFrom": 185,
+          "workingZoneTo": 930,
+          "buyerHistoryQuality": "Средняя",
+          "buyerCurrentExportMinPrice": 30000,
+          "buyerCurrentExportMaxPrice": 30000,
+          "buyerCurrentExportStrikethroughPrice": 50000
+        },
+        "erobrut": {
+          "name": "Возбудитель для мужчин, таблетки для потенции, капсулы для секса, 18+, Эробрут,Алтея, 20 капсул",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 597–800 ₽; ниже 419 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 425–546 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "hardMinPrice": 419,
+          "requiredPriceForProfitability": 518,
+          "workingZoneFrom": 597,
+          "workingZoneTo": 800,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 777,
+          "buyerCurrentExportMaxPrice": 777,
+          "buyerCurrentExportStrikethroughPrice": 1250
+        },
+        "wboptitrin": {
+          "name": "Витамины для глаз, лютеин комплекс для зрения, Оптитрин, 7 ампул",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 400–565 ₽; ниже 357 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 165–365 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "hardMinPrice": 357,
+          "requiredPriceForProfitability": 433,
+          "workingZoneFrom": 400,
+          "workingZoneTo": 565,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 776,
+          "buyerCurrentExportMaxPrice": 776,
+          "buyerCurrentExportStrikethroughPrice": 1636
+        },
+        "dardrakona_1_1": {
+          "name": "Крем от варикоза усталости и отеков ног охлаждающий Дар Дракона, 30 мл",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 787–907 ₽; ниже 674 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 510–653 ₽.",
+          "statusComment": "last_price_vs_core: выше",
+          "hardMinPrice": 674,
+          "requiredPriceForProfitability": 835,
+          "workingZoneFrom": 787,
+          "workingZoneTo": 907,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 1281,
+          "buyerCurrentExportMaxPrice": 1281,
+          "buyerCurrentExportStrikethroughPrice": 2500
+        },
+        "micolan": {
+          "name": "Мазь от грибка ногтей на ногах, противогрибковое средство с коллоидным серебром, Алтея, Миколан, 15 мл",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 341–562 ₽; ниже 341 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 175–343 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "hardMinPrice": 341,
+          "requiredPriceForProfitability": 420,
+          "workingZoneFrom": 341,
+          "workingZoneTo": 562,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 562,
+          "buyerCurrentExportMaxPrice": 562,
+          "buyerCurrentExportStrikethroughPrice": 1340
+        },
+        "dardrakona_75ml": {
+          "name": "Крем от варикоза усталости и отеков ног, Алтея, Дар Дракона, 75 мл",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 412–680 ₽; ниже 412 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 187–412 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "hardMinPrice": 412,
+          "requiredPriceForProfitability": 509,
+          "workingZoneFrom": 412,
+          "workingZoneTo": 680,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 2000,
+          "buyerCurrentExportMaxPrice": 2000,
+          "buyerCurrentExportStrikethroughPrice": 2564
+        },
+        "glikiron": {
+          "name": "Витаминный комплекс пищевая добавка для диабетиков Гликирон. Для иммунитета, для энергии. Сахарный диабет / 50 мл",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 495–507 ₽; ниже 458 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 286–348 ₽.",
+          "statusComment": "last_price_vs_core: выше",
+          "hardMinPrice": 458,
+          "requiredPriceForProfitability": 567,
+          "workingZoneFrom": 495,
+          "workingZoneTo": 507,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 610,
+          "buyerCurrentExportMaxPrice": 610,
+          "buyerCurrentExportStrikethroughPrice": 1285
+        },
+        "wbvaritox": {
+          "name": "Крем от варикоза усталости и отеков ног охлаждающий Varitox, 30 мл",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "По истории ядро 261–396 ₽; жесткого минимума нет.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 150–260 ₽.",
+          "statusComment": "last_price_vs_core: выше",
+          "workingZoneFrom": 261,
+          "workingZoneTo": 396,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 810,
+          "buyerCurrentExportMaxPrice": 810,
+          "buyerCurrentExportStrikethroughPrice": 1440
+        },
+        "glukofol": {
+          "name": "Витамины для диабетиков от сахарного диабета, Алтея, Глюкофол, 10 мл",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 532–600 ₽; ниже 276 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 326–480 ₽.",
+          "statusComment": "last_price_vs_core: ниже",
+          "hardMinPrice": 276,
+          "requiredPriceForProfitability": 339,
+          "workingZoneFrom": 532,
+          "workingZoneTo": 600,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 1000,
+          "buyerCurrentExportMaxPrice": 1000,
+          "buyerCurrentExportStrikethroughPrice": 2500
+        },
+        "wbalkotoxic": {
+          "name": "Капли от алкогольной зависимости, от алкоголизма от запоя, от похмелья Alkotoxic, 10 мл",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 515–649 ₽; ниже 398 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 290–354 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "hardMinPrice": 398,
+          "requiredPriceForProfitability": 493,
+          "workingZoneFrom": 515,
+          "workingZoneTo": 649,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 649,
+          "buyerCurrentExportMaxPrice": 649,
+          "buyerCurrentExportStrikethroughPrice": 1387
+        },
+        "vetonus_1_1": {
+          "name": "Крем от варикоза усталости и отеков ног Ветонус натуральный, 30 мл",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 630–777 ₽; ниже 630 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 346–423 ₽.",
+          "statusComment": "last_price_vs_core: ниже",
+          "hardMinPrice": 630,
+          "requiredPriceForProfitability": 783,
+          "workingZoneFrom": 630,
+          "workingZoneTo": 777,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 1300,
+          "buyerCurrentExportMaxPrice": 1300,
+          "buyerCurrentExportStrikethroughPrice": 3700
+        },
+        "urinofix": {
+          "name": "От цистита для женщин, от недержания мочи, Уринофикс, Алтея 20 капсул",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 583–611 ₽; ниже 382 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 365–460 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "hardMinPrice": 382,
+          "requiredPriceForProfitability": 473,
+          "workingZoneFrom": 583,
+          "workingZoneTo": 611,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 1210,
+          "buyerCurrentExportMaxPrice": 1210,
+          "buyerCurrentExportStrikethroughPrice": 1500
+        },
+        "dardrakona": {
+          "name": "Крем от варикоза усталости и отеков ног мазь вен на ногах от варикоза ног крем , Алтея, Дар Дракона, 30 мл",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 482–698 ₽; ниже 407 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 276–390 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "hardMinPrice": 407,
+          "requiredPriceForProfitability": 506,
+          "workingZoneFrom": 482,
+          "workingZoneTo": 698,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 1275,
+          "buyerCurrentExportMaxPrice": 1275,
+          "buyerCurrentExportStrikethroughPrice": 1760
+        },
+        "papiderm": {
+          "name": "Средство от бородавок, удаление папиллом, Алтея, Папидерм, 11 мл",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 571–634 ₽; ниже 369 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 281–369 ₽.",
+          "statusComment": "last_price_vs_core: ниже",
+          "hardMinPrice": 369,
+          "requiredPriceForProfitability": 456,
+          "workingZoneFrom": 571,
+          "workingZoneTo": 634,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 721,
+          "buyerCurrentExportMaxPrice": 721,
+          "buyerCurrentExportStrikethroughPrice": 1210
+        },
+        "spiculboost_30ml": {
+          "name": "Микроиглы для лица Сыворотка со спикулами, для лица с микроиглами и коллагеном",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Средняя",
+          "statusInterpretation": "По истории ядро 1300–1400 ₽; жесткого минимума нет.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 453–716 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "workingZoneFrom": 1300,
+          "workingZoneTo": 1400,
+          "buyerHistoryQuality": "Средняя",
+          "buyerCurrentExportMinPrice": 2000,
+          "buyerCurrentExportMaxPrice": 2000,
+          "buyerCurrentExportStrikethroughPrice": 10000
+        },
+        "varifit_1_1": {
+          "name": "Крем мазь от варикоза, конский каштан, Алтея, Варифит, 30 мл х 2",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 653–727 ₽; ниже 648 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 456–546 ₽.",
+          "statusComment": "last_price_vs_core: выше",
+          "hardMinPrice": 648,
+          "requiredPriceForProfitability": 803,
+          "workingZoneFrom": 653,
+          "workingZoneTo": 727,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 1744,
+          "buyerCurrentExportMaxPrice": 1744,
+          "buyerCurrentExportStrikethroughPrice": 5500
+        },
+        "wbmicelix_1_1": {
+          "name": "Комплекс Детокс для очищения печени и кишечника, для похудения, детокc для печени, Алтея, Мицеликс, 10 шт х 2",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 918–1090 ₽; ниже 712 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 541–765 ₽.",
+          "statusComment": "last_price_vs_core: ниже",
+          "hardMinPrice": 712,
+          "requiredPriceForProfitability": 884,
+          "workingZoneFrom": 918,
+          "workingZoneTo": 1090,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 1932,
+          "buyerCurrentExportMaxPrice": 1932,
+          "buyerCurrentExportStrikethroughPrice": 2500
+        },
+        "chudofrukt_BAD_60caps": {
+          "name": "Таблетки для похудения, жиросжигатель детокс для снижения веса, Алтея, Чудофрукт, 60 капсул",
+          "productStatus": "Готов к продаже",
+          "repricerStatus": "Вывод",
+          "inCurrentExport": true,
+          "historyQuality": "Средняя",
+          "statusInterpretation": "Рабочая зона 299–370 ₽; ниже 171 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 152–198 ₽.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 363 | repricer_vs_core: выше | last_price_vs_core: выше",
+          "currentExportPrice": 534,
+          "hardMinPrice": 171,
+          "requiredPriceForProfitability": 194,
+          "workingZoneFrom": 299,
+          "workingZoneTo": 370,
+          "buyerHistoryQuality": "Средняя",
+          "buyerCurrentExportMinPrice": 717,
+          "buyerCurrentExportMaxPrice": 717,
+          "buyerCurrentExportStrikethroughPrice": 1900
+        },
+        "stik_ot_mozoley": {
+          "name": "Карандаш от мозолей, стик от натирания, мозольный пластырь, Алтея, 20 г",
+          "productStatus": "Готов к продаже",
+          "repricerStatus": "Вывод",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 290–300 ₽; ниже 138 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 153–201 ₽.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 772 | repricer_vs_core: выше | last_price_vs_core: выше",
+          "currentExportPrice": 910,
+          "hardMinPrice": 138,
+          "requiredPriceForProfitability": 157,
+          "workingZoneFrom": 290,
+          "workingZoneTo": 300,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 915,
+          "buyerCurrentExportMaxPrice": 915,
+          "buyerCurrentExportStrikethroughPrice": 1500
+        },
+        "urolgan": {
+          "name": "Средство от простатита для потенции Уролган",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 399–399 ₽; ниже 335 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 204–245 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "hardMinPrice": 335,
+          "requiredPriceForProfitability": 415,
+          "workingZoneFrom": 399,
+          "workingZoneTo": 399,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 730,
+          "buyerCurrentExportMaxPrice": 730,
+          "buyerCurrentExportStrikethroughPrice": 1200
+        },
+        "dolgar": {
+          "name": "Мазь от грибка ногтей на ногах, противогрибковое средство с коллоидным серебром, Алтея, Долгар, 15 мл",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 466–541 ₽; ниже 390 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 246–316 ₽.",
+          "statusComment": "last_price_vs_core: выше",
+          "hardMinPrice": 390,
+          "requiredPriceForProfitability": 482,
+          "workingZoneFrom": 466,
+          "workingZoneTo": 541.2,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 1500,
+          "buyerCurrentExportMaxPrice": 1500,
+          "buyerCurrentExportStrikethroughPrice": 5693
+        },
+        "adenofrin": {
+          "name": "Возбудитель для мужчин, для эрекции, для потенции, для секса. 18+ / Аденофрин",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 612–670 ₽; ниже 388 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 403–454 ₽.",
+          "statusComment": "last_price_vs_core: ниже",
+          "hardMinPrice": 388,
+          "requiredPriceForProfitability": 479,
+          "workingZoneFrom": 612,
+          "workingZoneTo": 670,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 670,
+          "buyerCurrentExportMaxPrice": 670,
+          "buyerCurrentExportStrikethroughPrice": 1297
+        },
+        "arterol_1_1": {
+          "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Артерол, 10мл х 2",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Высокая",
+          "statusInterpretation": "Рабочая зона 985–1366 ₽; ниже 601 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 760–993 ₽.",
+          "statusComment": "last_price_vs_core: ниже",
+          "hardMinPrice": 601,
+          "requiredPriceForProfitability": 746,
+          "workingZoneFrom": 985,
+          "workingZoneTo": 1366,
+          "buyerHistoryQuality": "Высокая",
+          "buyerCurrentExportMinPrice": 1585,
+          "buyerCurrentExportMaxPrice": 1585,
+          "buyerCurrentExportStrikethroughPrice": 2500
+        },
+        "gidrofilnoe_maslo_150ml": {
+          "name": "Гидрофильное масло для снятия макияжа с лавандой, Алтея , 150 мл",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "historyQuality": "Средняя",
+          "statusInterpretation": "Рабочая зона 358–415 ₽; ниже 203 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 136–192 ₽.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 329 | repricer_vs_core: выше | last_price_vs_core: выше",
+          "currentExportPrice": 532,
+          "hardMinPrice": 203,
+          "requiredPriceForProfitability": 230,
+          "workingZoneFrom": 358,
+          "workingZoneTo": 415,
+          "buyerHistoryQuality": "Средняя",
+          "buyerCurrentExportMinPrice": 800,
+          "buyerCurrentExportMaxPrice": 800,
+          "buyerCurrentExportStrikethroughPrice": 1050
+        },
+        "alteya_beauty_brows_box": {
+          "name": "Уход за бровями набор Гель для бровей + сыворотка для ресниц, набор для бровей и ресниц, Алтея",
+          "productStatus": "Готов к продаже",
+          "repricerStatus": "Вывод",
+          "inCurrentExport": true,
+          "historyQuality": "Средняя",
+          "statusInterpretation": "Рабочая зона 728–809 ₽; ниже 176 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 229–321 ₽.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 924 | repricer_vs_core: выше | last_price_vs_core: выше",
+          "currentExportPrice": 1100,
+          "hardMinPrice": 176,
+          "requiredPriceForProfitability": 199,
+          "workingZoneFrom": 728,
+          "workingZoneTo": 809,
+          "buyerHistoryQuality": "Средняя",
+          "buyerCurrentExportMinPrice": 1100,
+          "buyerCurrentExportMaxPrice": 1100,
+          "buyerCurrentExportStrikethroughPrice": 2000
+        },
+        "glikiron_BAD_60caps": {
+          "name": "Гликирон БАД для профилактики диабета контроль аппетита",
+          "productStatus": "Продается",
+          "repricerStatus": "Актуальный",
+          "inCurrentExport": true,
+          "historyQuality": "Средняя",
+          "statusInterpretation": "Рабочая зона 762–862 ₽; ниже 492 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 547–710 ₽.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 338 | repricer_vs_core: внутри | last_price_vs_core: внутри",
+          "currentExportPrice": 830,
+          "hardMinPrice": 492,
+          "requiredPriceForProfitability": 597,
+          "workingZoneFrom": 762,
+          "workingZoneTo": 862,
+          "buyerHistoryQuality": "Средняя",
+          "buyerCurrentExportMinPrice": 1000,
+          "buyerCurrentExportMaxPrice": 1000,
+          "buyerCurrentExportStrikethroughPrice": 2500
+        },
+        "mycoplax_1_1": {
+          "name": "Мазь от грибка ногтей на ногах, крем гель Алтея, Микоплакс Mycoplax, 15 мл х 2",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Средняя",
+          "statusInterpretation": "Рабочая зона 1241–1279 ₽; ниже 648 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 838–974 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "hardMinPrice": 648,
+          "requiredPriceForProfitability": 802,
+          "workingZoneFrom": 1241,
+          "workingZoneTo": 1279,
+          "buyerHistoryQuality": "Средняя",
+          "buyerCurrentExportMinPrice": 1456,
+          "buyerCurrentExportMaxPrice": 1456,
+          "buyerCurrentExportStrikethroughPrice": 3500
+        },
+        "wbvizox": {
+          "name": "Витамины для глаз, комплекс для зрения с лютеином и черникой Алтея, Визокс, Vizox, 10 мл",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "historyQuality": "Средняя",
+          "statusInterpretation": "Рабочая зона 466–550 ₽; ниже 419 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 295–425 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "hardMinPrice": 419,
+          "requiredPriceForProfitability": 507,
+          "workingZoneFrom": 466,
+          "workingZoneTo": 550,
+          "buyerHistoryQuality": "Средняя",
+          "buyerCurrentExportMinPrice": 562,
+          "buyerCurrentExportMaxPrice": 562,
+          "buyerCurrentExportStrikethroughPrice": 1315
+        },
+        "antigiperton": {
+          "name": "Антигипертон витамины для сердца и сосудов от давления 10 шт",
+          "productStatus": "Не продается",
+          "inCurrentExport": true,
+          "historyQuality": "Низкая",
+          "statusInterpretation": "По истории ядро 2810–3000 ₽; жесткого минимума нет.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 1518–1736 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "workingZoneFrom": 2810,
+          "workingZoneTo": 3000,
+          "buyerHistoryQuality": "Низкая",
+          "buyerCurrentExportMinPrice": 3000,
+          "buyerCurrentExportMaxPrice": 3000,
+          "buyerCurrentExportStrikethroughPrice": 5000
+        },
+        "t34poten10caps": {
+          "name": "Возбудитель для мужчин, таблетки для потенции, капсулы для секса, 18+, Т-34",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "historyQuality": "Низкая",
+          "statusInterpretation": "Рабочая зона 448–665 ₽; ниже 370 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 265–429 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "hardMinPrice": 370,
+          "requiredPriceForProfitability": 456,
+          "workingZoneFrom": 448,
+          "workingZoneTo": 665,
+          "buyerHistoryQuality": "Низкая",
+          "buyerCurrentExportMinPrice": 665,
+          "buyerCurrentExportMaxPrice": 665,
+          "buyerCurrentExportStrikethroughPrice": 1800
+        },
+        "nabor_remuver_40ml_1_1": {
+          "name": "Ремувер для удаления кутикулы, Алтея, 40 мл х 2",
+          "productStatus": "Готов к продаже",
+          "repricerStatus": "Вывод",
+          "inCurrentExport": true,
+          "historyQuality": "Низкая",
+          "statusInterpretation": "Рабочая зона 650–650 ₽; ниже 117 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 230–264 ₽.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 1033 | repricer_vs_core: выше | last_price_vs_core: выше",
+          "currentExportPrice": 1150,
+          "hardMinPrice": 117,
+          "requiredPriceForProfitability": 132,
+          "workingZoneFrom": 650,
+          "workingZoneTo": 650,
+          "buyerHistoryQuality": "Низкая",
+          "buyerCurrentExportMinPrice": 1205,
+          "buyerCurrentExportMaxPrice": 1205,
+          "buyerCurrentExportStrikethroughPrice": 1500
+        },
+        "b_kompleks_BAD_60tabl": {
+          "name": "Витамины группы В комплекс Алтея 60 жевательных таблеток",
+          "productStatus": "Готов к продаже",
+          "repricerStatus": "Вывод",
+          "inCurrentExport": true,
+          "historyQuality": "Низкая",
+          "statusInterpretation": "Рабочая зона 441–465 ₽; ниже 157 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 206–297 ₽.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 480 | repricer_vs_core: выше | last_price_vs_core: выше",
+          "currentExportPrice": 637,
+          "hardMinPrice": 157,
+          "requiredPriceForProfitability": 177,
+          "workingZoneFrom": 441,
+          "workingZoneTo": 465,
+          "buyerHistoryQuality": "Низкая",
+          "buyerCurrentExportMinPrice": 637,
+          "buyerCurrentExportMaxPrice": 637,
+          "buyerCurrentExportStrikethroughPrice": 2500
+        },
+        "chudofrukt_1_1": {
+          "name": "Шипучие таблетки для похудения, детокс, жиросжигатель, Алтея, Чудо фрукт, 10 шт х 2",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "historyQuality": "Низкая",
+          "statusInterpretation": "Экономика выше истории: ниже 636 ₽ не опускаться; историческое ядро 601–601 ₽ требует пересмотра.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 316–571 ₽.",
+          "statusComment": "history_vs_economy: Да | last_price_vs_core: выше",
+          "hardMinPrice": 636,
+          "requiredPriceForProfitability": 785,
+          "workingZoneFrom": 636,
+          "workingZoneTo": 601,
+          "buyerHistoryQuality": "Низкая",
+          "buyerCurrentExportMinPrice": 1010,
+          "buyerCurrentExportMaxPrice": 1010,
+          "buyerCurrentExportStrikethroughPrice": 2500
+        },
+        "chudofrukt": {
+          "name": "Шипучие таблетки для похудения, детокс, жиросжигатель, Алтея, Чудо фрукт, 10 таблеток",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "historyQuality": "Низкая",
+          "statusInterpretation": "По истории ядро 360–368 ₽; жесткого минимума нет.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 154–194 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "workingZoneFrom": 360,
+          "workingZoneTo": 368,
+          "buyerHistoryQuality": "Низкая",
+          "buyerCurrentExportMinPrice": 650,
+          "buyerCurrentExportMaxPrice": 650,
+          "buyerCurrentExportStrikethroughPrice": 1860
+        },
+        "piling_100ml": {
+          "name": "Пилинг для кожи головы профессиональный скраб от перхоти, Алтея, 100 мл",
+          "productStatus": "Готов к продаже",
+          "repricerStatus": "Вывод",
+          "inCurrentExport": true,
+          "historyQuality": "Низкая",
+          "statusInterpretation": "Рабочая зона 222–227 ₽; ниже 122 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 156–173 ₽.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 578 | repricer_vs_core: выше | last_price_vs_core: выше",
+          "currentExportPrice": 700,
+          "hardMinPrice": 122,
+          "requiredPriceForProfitability": 138,
+          "workingZoneFrom": 222,
+          "workingZoneTo": 227,
+          "buyerHistoryQuality": "Низкая",
+          "buyerCurrentExportMinPrice": 700,
+          "buyerCurrentExportMaxPrice": 700,
+          "buyerCurrentExportStrikethroughPrice": 1000
+        },
+        "Т-34_BAD_60caps": {
+          "name": "Возбудитель для мужчин, БАД Т-34 возбуждающие для потенции, эрекции, 60 капсул",
+          "productStatus": "Готов к продаже",
+          "repricerStatus": "Вывод",
+          "inCurrentExport": true,
+          "historyQuality": "Низкая",
+          "statusInterpretation": "Рабочая зона 539–550 ₽; ниже 299 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 356–401 ₽.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 651 | repricer_vs_core: выше | last_price_vs_core: внутри",
+          "currentExportPrice": 950,
+          "hardMinPrice": 299,
+          "requiredPriceForProfitability": 339,
+          "workingZoneFrom": 539,
+          "workingZoneTo": 550,
+          "buyerHistoryQuality": "Низкая",
+          "buyerCurrentExportMinPrice": 975,
+          "buyerCurrentExportMaxPrice": 975,
+          "buyerCurrentExportStrikethroughPrice": 2475
+        },
+        "enzim_pudra_80gr": {
+          "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
+          "productStatus": "Готов к продаже",
+          "repricerStatus": "Вывод",
+          "inCurrentExport": true,
+          "historyQuality": "Низкая",
+          "statusInterpretation": "Рабочая зона 779–779 ₽; ниже 135 ₽ не опускаться.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 415–440 ₽.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 644 | repricer_vs_core: внутри | last_price_vs_core: внутри",
+          "currentExportPrice": 779,
+          "hardMinPrice": 135,
+          "requiredPriceForProfitability": 153,
+          "workingZoneFrom": 779,
+          "workingZoneTo": 779,
+          "buyerHistoryQuality": "Низкая",
+          "buyerCurrentExportMinPrice": 779,
+          "buyerCurrentExportMaxPrice": 779,
+          "buyerCurrentExportStrikethroughPrice": 1500
+        },
+        "wbneomax": {
+          "name": "Таблетки для мужчин для секса, возбудитель, средство для потенции и эрекции, витамины для мужчины, Neomax, Неомакс, 13 штук",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "historyQuality": "Низкая",
+          "statusInterpretation": "По истории ядро 399–635 ₽; жесткого минимума нет.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 470–470 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "workingZoneFrom": 399,
+          "workingZoneTo": 635,
+          "buyerHistoryQuality": "Низкая",
+          "buyerCurrentExportMinPrice": 635,
+          "buyerCurrentExportMaxPrice": 635,
+          "buyerCurrentExportStrikethroughPrice": 2095
+        },
+        "wbneomaxblue": {
+          "name": "Таблетки для мужчин для секса, возбудитель, средство для потенции и эрекции,витамины для мужчины, Neomax blue, Неомаксблу, 10 штук",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "historyQuality": "Низкая",
+          "statusInterpretation": "По истории ядро 319–319 ₽; жесткого минимума нет.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 163–167 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "workingZoneFrom": 319,
+          "workingZoneTo": 319,
+          "buyerHistoryQuality": "Низкая",
+          "buyerCurrentExportMinPrice": 608,
+          "buyerCurrentExportMaxPrice": 608,
+          "buyerCurrentExportStrikethroughPrice": 1841
+        },
+        "adenofringreen": {
+          "name": "Таблетки от простатита для мужчин для потенции Алтея, Аденофрин, 20 шт",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "historyQuality": "Низкая",
+          "statusInterpretation": "По истории ядро 605–605 ₽; жесткого минимума нет.",
+          "buyerInterpretation": "Историческое ядро цены покупателя: 579–579 ₽.",
+          "statusComment": "last_price_vs_core: внутри",
+          "workingZoneFrom": 605,
+          "workingZoneTo": 605,
+          "buyerHistoryQuality": "Низкая",
+          "buyerCurrentExportMinPrice": 605,
+          "buyerCurrentExportMaxPrice": 605,
+          "buyerCurrentExportStrikethroughPrice": 1300
+        },
+        "Retinol_Full_Journey": {
+          "name": "Набор уходовой косметики для лица антивозрастной",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "statusInterpretation": "Недостаточно данных.",
+          "buyerInterpretation": "Есть current export 6665–6665 ₽, но истории покупателя мало.",
+          "buyerCurrentExportMinPrice": 6665,
+          "buyerCurrentExportMaxPrice": 6665,
+          "buyerCurrentExportStrikethroughPrice": 8500
+        },
+        "Retinol_Start_Kit": {
+          "name": "Набор уходовой косметики для лица с ретинолом",
+          "productStatus": "Продается",
+          "repricerStatus": "Актуальный",
+          "inCurrentExport": true,
+          "statusInterpretation": "Недостаточно данных.",
+          "buyerInterpretation": "Есть current export 4250–4250 ₽, но истории покупателя мало.",
+          "currentExportPrice": 4250,
+          "buyerCurrentExportMinPrice": 4250,
+          "buyerCurrentExportMaxPrice": 4250,
+          "buyerCurrentExportStrikethroughPrice": 6000
+        },
+        "Strong_Hair": {
+          "name": "Набор для волос шампунь + маска для роста волос",
+          "productStatus": "Продается",
+          "inCurrentExport": true,
+          "statusInterpretation": "Недостаточно данных.",
+          "buyerInterpretation": "Есть current export 3000–3000 ₽, но истории покупателя мало.",
+          "buyerCurrentExportMinPrice": 3000,
+          "buyerCurrentExportMaxPrice": 3000,
+          "buyerCurrentExportStrikethroughPrice": 4000
+        },
+        "alteya_young_skin_box": {
+          "name": "Подарочный набор для женщин. Набор для лица уходовый косметический бьюти Young Skin Box Алтея",
+          "productStatus": "Готов к продаже",
+          "repricerStatus": "Вывод",
+          "inCurrentExport": true,
+          "statusInterpretation": "Истории мало/нет; ориентир снизу 285 ₽.",
+          "buyerInterpretation": "Есть current export 2800–2800 ₽, но истории покупателя мало.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 2515",
+          "currentExportPrice": 2800,
+          "hardMinPrice": 285,
+          "requiredPriceForProfitability": 323,
+          "workingZoneFrom": 285,
+          "buyerCurrentExportMinPrice": 2800,
+          "buyerCurrentExportMaxPrice": 2800,
+          "buyerCurrentExportStrikethroughPrice": 3500
+        },
+        "balzam_kudryavii_metod_500ml": {
+          "name": "Бальзам для кудрявых волос с кератином 50 0мл",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "statusInterpretation": "Недостаточно данных.",
+          "buyerInterpretation": "Есть current export 5000–5000 ₽, но истории покупателя мало.",
+          "buyerCurrentExportMinPrice": 5000,
+          "buyerCurrentExportMaxPrice": 5000,
+          "buyerCurrentExportStrikethroughPrice": 0
+        },
+        "biotrin_60ml": {
+          "name": "Мазь для суставов обезболивающая, панты морала, хондротин, глюкозамин, Биотрин, 60 мл",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "statusInterpretation": "Недостаточно данных.",
+          "buyerInterpretation": "Есть current export 860–860 ₽, но истории покупателя мало.",
+          "buyerCurrentExportMinPrice": 860,
+          "buyerCurrentExportMaxPrice": 860,
+          "buyerCurrentExportStrikethroughPrice": 2470
+        },
+        "biotrin_60mlV1": {
+          "name": "Мазь для суставов обезболивающая, панты морала, хондротин, глюкозамин, Биотрин, 60 мл",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "statusInterpretation": "Недостаточно данных.",
+          "buyerInterpretation": "Есть current export 3000–3000 ₽, но истории покупателя мало.",
+          "buyerCurrentExportMinPrice": 3000,
+          "buyerCurrentExportMaxPrice": 3000,
+          "buyerCurrentExportStrikethroughPrice": 4000
+        },
+        "gel_antiakne_20ml": {
+          "name": "Точечный крем от прыщей. Корректор точечный против прыщей, крем от акне. Салициловая кислота, азелаиновая кислота Алтея 20 мл",
+          "productStatus": "Готов к продаже",
+          "repricerStatus": "Вывод",
+          "inCurrentExport": true,
+          "statusInterpretation": "Истории мало/нет; ориентир снизу 92 ₽.",
+          "buyerInterpretation": "Есть current export 1450–1450 ₽, но истории покупателя мало.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 1358",
+          "currentExportPrice": 1450,
+          "hardMinPrice": 92,
+          "requiredPriceForProfitability": 105,
+          "workingZoneFrom": 92,
+          "buyerCurrentExportMinPrice": 1450,
+          "buyerCurrentExportMaxPrice": 1450,
+          "buyerCurrentExportStrikethroughPrice": 1550
+        },
+        "intimvita_200ml": {
+          "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 200 мл",
+          "productStatus": "Готов к продаже",
+          "repricerStatus": "Вывод",
+          "inCurrentExport": true,
+          "statusInterpretation": "Истории мало/нет; ориентир снизу 103 ₽.",
+          "buyerInterpretation": "Есть current export 900–900 ₽, но истории покупателя мало.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 537",
+          "currentExportPrice": 640,
+          "hardMinPrice": 103,
+          "requiredPriceForProfitability": 117,
+          "workingZoneFrom": 103,
+          "buyerCurrentExportMinPrice": 900,
+          "buyerCurrentExportMaxPrice": 900,
+          "buyerCurrentExportStrikethroughPrice": 1100
+        },
+        "maslo_dlya_volos_parf_110ml": {
+          "name": "Масло для волос парфюмированное, сыворотка для волос Том Форд Вишня, Алтея, 110 мл",
+          "productStatus": "Готов к продаже",
+          "repricerStatus": "Вывод",
+          "inCurrentExport": true,
+          "statusInterpretation": "Истории мало/нет; ориентир снизу 177 ₽.",
+          "buyerInterpretation": "Есть current export 1000–1000 ₽, но истории покупателя мало.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 823",
+          "currentExportPrice": 1000,
+          "hardMinPrice": 177,
+          "requiredPriceForProfitability": 200,
+          "workingZoneFrom": 177,
+          "buyerCurrentExportMinPrice": 1000,
+          "buyerCurrentExportMaxPrice": 1000,
+          "buyerCurrentExportStrikethroughPrice": 1500
+        },
+        "mikardin plus_BAD_60 caps": {
+          "name": "Средство для сердца и сосудов от давления, чистка сосудов, Микардин Плюс, Алтея, 60 капсул",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "statusInterpretation": "Недостаточно данных.",
+          "buyerInterpretation": "Есть current export 1128–1128 ₽, но истории покупателя мало.",
+          "buyerCurrentExportMinPrice": 1128,
+          "buyerCurrentExportMaxPrice": 1128,
+          "buyerCurrentExportStrikethroughPrice": 2500
+        },
+        "monarda_30ml": {
+          "name": "Масло монарды и экстракт зеленого чая для ногтей, универсальное, Алтея, 30 мл",
+          "productStatus": "Готов к продаже",
+          "repricerStatus": "Вывод",
+          "inCurrentExport": true,
+          "statusInterpretation": "Истории мало/нет; ориентир снизу 137 ₽.",
+          "buyerInterpretation": "Есть current export 590–590 ₽, но истории покупателя мало.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 408",
+          "currentExportPrice": 545,
+          "hardMinPrice": 137,
+          "requiredPriceForProfitability": 155,
+          "workingZoneFrom": 137,
+          "buyerCurrentExportMinPrice": 590,
+          "buyerCurrentExportMaxPrice": 590,
+          "buyerCurrentExportStrikethroughPrice": 1511
+        },
+        "pirantoks_BAD_60caps": {
+          "name": "Антипаразитарный комплекс от глистов, очищение организма от паразитов, черный орех детокс, Алтея, Пирантокс, 60 капсул",
+          "productStatus": "Готов к продаже",
+          "repricerStatus": "Вывод",
+          "inCurrentExport": true,
+          "statusInterpretation": "Истории мало/нет; ориентир снизу 248 ₽.",
+          "buyerInterpretation": "Есть current export 960–960 ₽, но истории покупателя мало.",
+          "statusComment": "repricer_below_min: Нет | buffer_to_min: 579",
+          "currentExportPrice": 827,
+          "hardMinPrice": 248,
+          "requiredPriceForProfitability": 280,
+          "workingZoneFrom": 248,
+          "buyerCurrentExportMinPrice": 960,
+          "buyerCurrentExportMaxPrice": 960,
+          "buyerCurrentExportStrikethroughPrice": 2475
+        },
+        "psoral11": {
+          "name": "Мазь от псориаза и дерматита, крем от зуда, Алтея, Псорал, 30 мл",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "statusInterpretation": "Недостаточно данных.",
+          "buyerInterpretation": "Есть current export 2000–2000 ₽, но истории покупателя мало.",
+          "buyerCurrentExportMinPrice": 2000,
+          "buyerCurrentExportMaxPrice": 2000,
+          "buyerCurrentExportStrikethroughPrice": 2500
+        },
+        "remuver_40ml": {
+          "repricerStatus": "Вывод",
+          "statusInterpretation": "Истории мало/нет; ориентир снизу 59 ₽.",
+          "buyerInterpretation": "Недостаточно данных.",
+          "statusComment": "repricer_below_min: Да | buffer_to_min: -59",
+          "currentExportPrice": 0,
+          "hardMinPrice": 59,
+          "requiredPriceForProfitability": 66,
+          "workingZoneFrom": 59
+        },
+        "sanaсin_BAD_60caps": {
+          "name": "Капсулы пробиотик, энзимы, д манноза, метабиотик, Санацин, Алтея, 60 капсул",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "statusInterpretation": "Недостаточно данных.",
+          "buyerInterpretation": "Есть current export 1000–1000 ₽, но истории покупателя мало.",
+          "buyerCurrentExportMinPrice": 1000,
+          "buyerCurrentExportMaxPrice": 1000,
+          "buyerCurrentExportStrikethroughPrice": 2470
+        },
+        "spicul_gel_mask_75ml": {
+          "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+          "productStatus": "Готов к продаже",
+          "repricerStatus": "Новинка",
+          "inCurrentExport": true,
+          "statusInterpretation": "Недостаточно данных.",
+          "buyerInterpretation": "Есть current export 2000–2000 ₽, но истории покупателя мало.",
+          "currentExportPrice": 0,
+          "buyerCurrentExportMinPrice": 2000,
+          "buyerCurrentExportMaxPrice": 2000,
+          "buyerCurrentExportStrikethroughPrice": 2500
+        },
+        "visitCREAMamarant": {
+          "name": "Крем для рук питательный Амарант, 75 мл",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "statusInterpretation": "Недостаточно данных.",
+          "buyerInterpretation": "Есть current export 300–300 ₽, но истории покупателя мало.",
+          "buyerCurrentExportMinPrice": 300,
+          "buyerCurrentExportMaxPrice": 300,
+          "buyerCurrentExportStrikethroughPrice": 900
+        },
+        "wbgetsize1gel2": {
+          "name": "Эрекционное кольцо для мужчин, насадка на член, кольцо для эрекции, товары для взрослых",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "statusInterpretation": "Недостаточно данных.",
+          "buyerInterpretation": "Есть current export 2154–2154 ₽, но истории покупателя мало.",
+          "buyerCurrentExportMinPrice": 2154,
+          "buyerCurrentExportMaxPrice": 2154,
+          "buyerCurrentExportStrikethroughPrice": 6622
+        },
+        "wbvaranga": {
+          "name": "Мазь от грибка ногтей Варанга, Алтея, 10 мл",
+          "productStatus": "Готов к продаже",
+          "inCurrentExport": true,
+          "statusInterpretation": "Недостаточно данных.",
+          "buyerInterpretation": "Есть current export 620–620 ₽, но истории покупателя мало.",
+          "buyerCurrentExportMinPrice": 620,
+          "buyerCurrentExportMaxPrice": 620,
+          "buyerCurrentExportStrikethroughPrice": 1215
+        },
+        "pdrn_spray_2026": {
+          "name": "Спрей-сыворотка с PDRN"
+        },
+        "pdrn_pads_2026": {
+          "name": "Пэды с PDRN"
+        },
+        "gel_oily_skin_2026": {
+          "name": "Гель для умывания для жирной и проблемной кожи"
+        },
+        "hair_oil_parfum_2026": {
+          "name": "Парфюмированное масло для волос"
+        },
+        "anti_frizz_shampoo_2026": {
+          "name": "Шампунь-гладкость для волос"
+        },
+        "anti_frizz_cond_2026": {
+          "name": "Бальзам-гладкость для волос"
+        },
+        "dry_shampoo_2026": {
+          "name": "Сухой шампунь"
+        },
+        "body_lotion_sensitive_2026": {
+          "name": "Увлажняющий лосьон для тела (чувствительная кожа)"
+        },
+        "pumpkin_hand_cream_2026": {
+          "name": "Крем для рук парфюмированный Pumpkin Latte"
+        },
+        "pumpkin_shower_gel_2026": {
+          "name": "Гель для душа парфюмированный Pumpkin Latte"
+        },
+        "pumpkin_handsoap_2026": {
+          "name": "Мыло для рук парфюмированное Pumpkin Latte"
+        },
+        "soothing_serum_2026": {
+          "name": "Сыворотка успокаивающая"
+        },
+        "glow_drops_spf25_2026": {
+          "name": "Glow drops SPF 25"
+        },
+        "microbiome_cream_2026": {
+          "name": "Крем для восстановления микробиома"
+        }
+      }
+    },
+    "ym": {
+      "rows": {
+        "0": {
+          "name": "0"
+        },
+        "retiderm_50ml": {
+          "name": "Крем для лица с ретинолом 0.5, антивозрастной, против м"
+        },
+        "ekdisteron_ultra_man_60caps": {
+          "name": "Тестостерон для мужчин, экдистерон для потенции и мышц"
+        },
+        "krovavii_piling_30ml": {
+          "name": "Кровавый кислотный пилинг для лица от прыщей от акне AH"
+        },
+        "retinait_syvorotka_1_30ml": {
+          "name": "Сыворотка с ретинолом 1% для лица от морщин антивозраст"
+        },
+        "syvorotka_dlya_lica_30ml": {
+          "name": "Сыворотка с ниацинамидом для лица антивозрастная, от пи"
+        },
+        "curly_method_300ml": {
+          "name": "Крем для кудрявых и вьющихся волос Алтея 300 мл"
+        },
+        "retinait_krem_1_50ml": {
+          "name": "Крем для лица с липосомальным ретинолом 1% Ретинайт"
+        },
+        "penka_kudryavii_metod_150ml": {
+          "name": "Пенка для укладки кудрявых волос Алтея 150 мл"
+        },
+        "berberin_laif_BAD_60caps": {
+          "name": "Берберин + хром + коэнзим + B6 для похудения, контроль"
+        },
+        "telomeras_60caps": {
+          "name": "Теломераза NMN ТА-65 Алтея 60 капсул"
+        },
+        "retinait_krem_05_50ml": {
+          "name": "Крем для лица с липосомальным ретинолом 0,5% Ретинайт"
+        },
+        "cardicin_BAD_60caps": {
+          "name": "Таблетки от давления при гипертонии для сердца, чистка"
+        },
+        "krem_ot_rastyazhek": {
+          "name": "Крем/масло от растяжек для беременных и подростков с эл"
+        },
+        "maska_dlya_lica_100ml": {
+          "name": "Маска для лица очищающая и увлажняющая , для сужения по"
+        },
+        "krem_spf50_50ml": {
+          "name": "База под макияж увлажняющая с SPF 50 для лица Крем солн"
+        },
+        "i_am_alpha_BAD_60caps": {
+          "name": "Тестостерон для мужчин I am alpha Алтея 60 капсул, экди"
+        },
+        "retinait_krem_025_50ml": {
+          "name": "Крем для лица с липосомальным ретинолом 0,25% Ретинайт"
+        },
+        "retinait_krem_1_5_50ml": {
+          "name": "Крем для Лица с Липосомальным Ретинолом 1.5% Ретинайт"
+        },
+        "maslo_dlya_borodi_50ml": {
+          "name": "Масло для роста бороды, средство для роста, уход за бор"
+        },
+        "relaksinol_BAD_60caps": {
+          "name": "Магний В6 с лавандой, Алтея, Релаксинол, 60 капсул"
+        },
+        "insulight_BAD_60caps": {
+          "name": "Витамины для диабетиков, для профилактики от сахарного"
+        },
+        "nabor_remuver_kremovii": {
+          "name": "Ремувер для снятия ресниц, Алтея, 18г"
+        },
+        "matte_wax_50ml": {
+          "name": "Воск для укладки волос Алтея 50 мл"
+        },
+        "krem_buster_250ml": {
+          "name": "Антицеллюитный крем гель для тела от целлюлита Алтея 25"
+        },
+        "limfaks_BAD_30caps": {
+          "name": "Биологически активная добавка к пище: \"Комплекс для здо"
+        },
+        "gel_antiakne_20ml_v2": {
+          "name": "Крем от прыщей точечный/против прыщей, от акне комедоно"
+        },
+        "sprei_buster_100ml": {
+          "name": "Спрей для волос для роста и от выпадения волос никотино"
+        },
+        "shampun_protiv_perhoti_250ml": {
+          "name": "Шампунь от перхоти лечебный с климбазолом Алтея, 250мл"
+        },
+        "menoflavon_BAD_60caps": {
+          "name": "Фитоэстрогены для женщин, от приливов при климаксе, при"
+        },
+        "retinait_krem_01_50ml": {
+          "name": "Крем для лица с ретинолом и церамидами 50 мл Ретинайт"
+        },
+        "krem_dlya_vek_30ml": {
+          "name": "Крем для век и кожи вокруг глаз Жидкие патчи для глаз А"
+        },
+        "enzim_pudra_80gr_v2": {
+          "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алт"
+        },
+        "shampun_dlya_rosta_250ml": {
+          "name": "Шампунь лечебный для роста волос, против выпадения, с к"
+        },
+        "wowglam": {
+          "name": "Сыворотка для роста волос, биотин, бетаин, кератин, мас"
+        },
+        "Т-34_BAD_60caps": {
+          "name": "Возбудитель для мужчин, БАД Т-34 возбуждающие для потен"
+        },
+        "kremshelk_100ml": {
+          "name": "Крем с мочевиной 10% увлажняющий для рук и тела, от тре"
+        },
+        "maslo_dlya_volos_parf_110ml_": {
+          "name": "Масло для волос несмываемое профессиональное Tom Ford L"
+        },
+        "gel_dlya_britya_300ml": {
+          "name": "Гель для бритья мужской охлаждающий с ментолом Алтея 30"
+        },
+        "revmastop_BAD_60caps": {
+          "name": "Глюкозамин хондроитин МСМ для суставов и связок Ревмаст"
+        },
+        "solevoy_sprei_200ml": {
+          "name": "Спрей для волос солевой для объема и укладки волос с фи"
+        },
+        "nabor_penka_dlya_resnic": {
+          "name": "Пенка для нарощенных ресниц и для бровей, для умывания"
+        },
+        "silk_hair_300ml": {
+          "name": "Kрем для волос разглаживающий праймер кондиционер рекон"
+        },
+        "frutaksa_BAD_200gr": {
+          "name": "Жиросжигатель, детокс, Алтея, Алтея, Фрутакса, 200 грам"
+        },
+        "pink_pepper_50ml": {
+          "name": "Крем для лица увлажняющий питательный с ниацинамидом Ал"
+        },
+        "penka_160ml": {
+          "name": "Мицеллярная пенка для умывания лица, для снятия макияжа"
+        },
+        "glikiron_BAD_60caps": {
+          "name": "Гликирон БАД для профилактики диабета контроль аппетита"
+        },
+        "b_kompleks_BAD_60tabl": {
+          "name": "Витамины группы В комплекс Алтея 60 жевательных таблето"
+        },
+        "nabor_remuver_40ml": {
+          "name": "Ремувер для удаления кутикулы, Алтея, 40 мл"
+        },
+        "maska-batter_250ml": {
+          "name": "Восстанавливающая маска для волос с кератином увлажняющ"
+        },
+        "tonik_dlya_lica_200ml": {
+          "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от"
+        },
+        "intimvita_300ml": {
+          "name": "Гель для интимной гигиены с молочной кислотой, Алтея, И"
+        },
+        "syvorotka_guk_30ml": {
+          "name": "Сыворотка с витамином с, увлажняющая с гиалуроновой кис"
+        },
+        "piling_100ml": {
+          "name": "Пилинг для кожи головы профессиональный скраб от перхот"
+        },
+        "maska-batter_dlya_rosta_500ml": {
+          "name": "Маска для роста волос с перцем, средство для роста воло"
+        },
+        "fruitalica": {
+          "name": "Таблетки для похудения, жиросжигатель, детокс Алтея, Фр"
+        },
+        "gidrofilnoe_maslo_150ml": {
+          "name": "Гидрофильное масло для снятия макияжа с лавандой, Алтея"
+        },
+        "skrab_babl_gam_200ml": {
+          "name": "Скраб пилинг для кожи головы, Алтея, 200 мл"
+        },
+        "krem-filler_15ml": {
+          "name": "Крем для лица антивозрастной, Крем филлер вокруг глаз,"
+        },
+        "frutalika_BAD_60caps": {
+          "name": "Пиколинат хрома для похудения, детокс, жиросжигатель, А"
+        },
+        "termo_sprei_200ml": {
+          "name": "Спрей для волос 17 в 1 восстанавливающий с кератином, А"
+        },
+        "gel_for_men_3_in_1_1000ml": {
+          "name": "Гель для душа мужской парфюмированный Алтея 1000 мл"
+        },
+        "chudofrukt_BAD_60caps": {
+          "name": "Таблетки для похудения, жиросжигатель детокс для снижен"
+        },
+        "gel_dlya_brovei_6ml": {
+          "name": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл"
+        },
+        "stik_ot_mozoley": {
+          "name": "Карандаш от мозолей, стик от натирания, мозольный пласт"
+        },
+        "maska-batter_500ml": {
+          "name": "Маска для волос с кератином торговой марки Алтея"
+        },
+        "alteya_young_skin_box": {
+          "name": "Подарочный набор для женщин. Набор для лица уходовый ко"
+        },
+        "vosk_stik_15ml": {
+          "name": "Воск стик для укладки и фиксации волос"
+        },
+        "syvorotka_dlya_rosta_6ml": {
+          "name": "Сыворотка для роста ресниц и бровей, гель для роста, Ал"
+        },
+        "syvorotka_dlya_lica_30ml_v2": {
+          "name": "Сыворотка для лица с ниацинамидом для лица антивозрастн"
+        },
+        "gel_brows_5ml": {
+          "name": "Гель для бровей с коллагеном и эластином, фиксация на 2"
+        },
+        "indolakt_BAD_60caps": {
+          "name": "Индол 3 карбинол брокколи витамины с зеленым чаем Алтея"
+        },
+        "syvorotka_dlya_rosta_6ml_v2": {
+          "name": "Сыворотка для роста ресниц и бровей, гель для роста, Ал"
+        },
+        "krem_dlya_ruk_75ml": {
+          "name": "Ламеллярный крем для рук с мочевиной, увлажняющий и пит"
+        },
+        "alteya_beauty_brows_box": {
+          "name": "Уход за бровями набор Гель для бровей + сыворотка для р"
+        },
+        "gel_parfum_tabacco_vanille_450ml": {
+          "name": "Гель для душа женский парфюмированный Tobacco Vanille,"
+        },
+        "enzim_pudra_80gr": {
+          "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алт"
+        },
+        "gel_antiakne_20ml": {
+          "name": "Точечный крем от прыщей. Корректор точечный против прыщ"
+        },
+        "intimvita_200ml": {
+          "name": "Гель для интимной гигиены с молочной кислотой, Алтея, И"
+        },
+        "maslo_dlya_volos_parf_110ml": {
+          "name": "Масло для волос парфюмированное, сыворотка для волос To"
+        },
+        "nabor_remuver_40ml_1_1": {
+          "name": "Ремувер для удаления кутикулы, Алтея, 40 мл х 2"
+        }
+      }
+    }
+  }
+}

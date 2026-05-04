@@ -27,7 +27,7 @@
     price_workbench_support: 'priceWorkbenchSupport'
   };
   const FALLBACK_CONFIG = {
-    brand: 'РђР»С‚РµСЏ',
+    brand: 'Алтея',
     supabase: {
       url: 'https://iyckwryrucqrxwlowxow.supabase.co',
       anonKey: 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw'
@@ -153,7 +153,7 @@
     if (typeof state !== 'object' || !state || !state.team) return;
     state.team.mode = 'local';
     state.team.ready = false;
-    state.team.note = noteText || 'Р›РѕРєР°Р»СЊРЅС‹Р№ СЂРµР¶РёРј В· РІРёС‚СЂРёРЅР° РёР· Supabase';
+    state.team.note = noteText || 'Локальный режим · витрина из Supabase';
     if (typeof updateSyncBadge === 'function') updateSyncBadge();
   }
 
@@ -175,11 +175,11 @@
       }
     });
     const response = typeof withTimeout === 'function'
-      ? await withTimeout(request, SNAPSHOT_TIMEOUT_MS, 'Р’РёС‚СЂРёРЅР° Supabase')
+      ? await withTimeout(request, SNAPSHOT_TIMEOUT_MS, 'Витрина Supabase')
       : await request;
     if (!response?.ok) throw new Error(`Supabase snapshots ${response?.status || 'request failed'}`);
     return typeof withTimeout === 'function'
-      ? await withTimeout(response.json(), SNAPSHOT_TIMEOUT_MS, 'Р§С‚РµРЅРёРµ РІРёС‚СЂРёРЅС‹ Supabase')
+      ? await withTimeout(response.json(), SNAPSHOT_TIMEOUT_MS, 'Чтение витрины Supabase')
       : await response.json();
   }
 
@@ -202,10 +202,10 @@
     const note = String(state.team?.note || '');
     const shouldNormalizeBadge = state.team?.mode === 'pending';
     if (shouldNormalizeBadge) {
-      normalizeBadge('Р вЂєР С•Р С”Р В°Р В»РЎРЉР Р…РЎвЂ№Р в„– РЎР‚Р ВµР В¶Р С‘Р С Р’В· Р Р†Р С‘РЎвЂљРЎР‚Р С‘Р Р…Р В° Р С‘Р В· Supabase');
-    }
-    if (/РћС€РёР±РєР°|Supabase|Р±Р°Р·Р° РїРѕРєР° Р±РµР· СЂРµС€РµРЅРёР№|С†РµРЅРѕРІРѕР№ РєРѕРЅС‚СѓСЂ/i.test(note)) {
       normalizeBadge('Р›РѕРєР°Р»СЊРЅС‹Р№ СЂРµР¶РёРј В· РІРёС‚СЂРёРЅР° РёР· Supabase');
+    }
+    if (/Ошибка|Supabase|база пока без решений|ценовой контур/i.test(note)) {
+      normalizeBadge('Локальный режим · витрина из Supabase');
     }
     try {
       if (typeof rerenderCurrentView === 'function') rerenderCurrentView();

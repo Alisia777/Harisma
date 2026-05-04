@@ -64,7 +64,7 @@
       <div class="card subtle">
         <h3>Что делаем</h3>
         <div class="badge-stack">${activeTask ? taskPriorityBadge(activeTask) : ''}${activeTask ? taskStatusBadge(activeTask) : ''}${activeTask ? taskTypeBadge(activeTask) : ''}</div>
-        <div class="note-box">${escapeHtml(activeTask?.nextAction || 'Активной задачи пока нет.')}</div>
+        <div class="note-box">${escapeHtmlMultiline(activeTask?.nextAction || 'Активной задачи пока нет.')}</div>
         <div class="metric-row"><span>Следующий срок</span><strong>${escapeHtml(activeTask?.due || '—')}</strong></div>
         <div class="metric-row"><span>Внешний трафик</span><strong>${sku?.flags?.hasExternalTraffic ? 'Есть' : 'Нет'}</strong></div>
       </div>
@@ -108,7 +108,7 @@
         <datalist id="skuOwnerList">${owners.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
         <form id="ownerForm" class="form-grid compact">
           <input name="ownerName" list="skuOwnerList" placeholder="Кто owner" value="${escapeHtml(ownerName(sku) || '')}">
-          <input name="ownerRole" placeholder="Роль / зона" value="${escapeHtml(sku?.owner?.role || '')}">
+          <input name="ownerRole" placeholder="Роль / зона" value="${escapeHtml(sku?.owner?.registryStatus || 'Owner SKU')}">
           <textarea name="note" rows="3" placeholder="Что важно по закреплению / передаче SKU"></textarea>
           <div class="quick-actions">
             <button class="btn" type="submit">Сохранить owner</button>
@@ -662,7 +662,7 @@ function normalizeLaunchItem(item = {}, options = {}) {
 
 function buildLaunchItemsFromSkus(options = {}) {
   return state.skus
-    .filter((sku) => String(sku?.segment || '').toUpperCase() === 'GROWTH' || skuStatusSearchValue(sku).includes('нов'))
+    .filter((sku) => String(sku?.segment || '').toUpperCase() === 'GROWTH' || String(sku?.status || '').toLowerCase().includes('нов'))
     .map((sku) => {
       const safeOptions = { ...options, skipTaskLookup: true };
       const phase = deriveLaunchPhase(sku);
@@ -897,7 +897,7 @@ function hydrateLaunchDraftWithSkuLink(draft = {}, options = {}) {
   setField('owner', ownerName(sku));
   setField('category', sku.category || '');
   setField('subCategory', next.subCategory || sku.category || '');
-  setField('registryStatus', skuRegistryStatusLabel(sku));
+  setField('registryStatus', sku.registryStatus || sku.status || '');
   setField('segment', sku.segment || '');
   setField('marketplaces', launchMarketplaceLabelsFromSku(sku));
   return serializeLaunchDraft(next);
@@ -918,7 +918,7 @@ function applySkuToLaunchEditorForm(form, sku, options = {}) {
   write('owner', ownerName(sku) || '');
   write('category', sku.category || '');
   write('subCategory', sku.category || '');
-  write('registryStatus', skuRegistryStatusLabel(sku));
+  write('registryStatus', sku.registryStatus || sku.status || '');
   write('marketplaces', launchMarketplaceLabelsFromSku(sku));
   return true;
 }
@@ -2315,62 +2315,84 @@ function getFilteredProductLeaderboardItems(payload) {
   });
 }
 
-function adsFunnelNormalizeArticleKey(value) {
-  return String(value || '').trim().toLowerCase().replace(/[^a-zа-я0-9]+/gi, '');
+function adsFunnelNormalizePlatformKey(value = '') {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw) return 'all';
+  if (['wb', 'wildberries', 'вб'].includes(raw)) return 'wb';
+  if (['ozon', 'озон'].includes(raw)) return 'ozon';
+  if (['ya', 'yam', 'yandex', 'yandex_market', 'yandexmarket', 'ya_market', 'ям', 'я.маркет', 'яндекс'].includes(raw)) return 'ya';
+  if (['all', 'total', 'overall', 'итого'].includes(raw)) return 'all';
+  return raw;
 }
 
-function adsFunnelPlatformLabel(platformKey = '') {
-  const key = String(platformKey || '').trim().toLowerCase();
-  if (key === 'wb') return 'WB';
-  if (key === 'ozon') return 'Ozon';
-  if (key === 'ya' || key === 'ym' || key === 'yandex' || key === 'market') return 'Я.Маркет';
-  if (key === 'all') return 'Все площадки';
-  return normalizePortalText(platformKey || '—');
+function adsFunnelPlatformLabel(platformKey = 'all') {
+  const key = adsFunnelNormalizePlatformKey(platformKey);
+  const map = {
+    all: 'Все площадки',
+    wb: 'WB',
+    ozon: 'Ozon',
+    ya: 'Я.Маркет'
+  };
+  return map[key] || key.toUpperCase();
+}
+
+function adsFunnelRate(numerator, denominator) {
+  const top = numberOrZero(numerator);
+  const bottom = numberOrZero(denominator);
+  if (bottom <= 0) return null;
+  return top / bottom;
 }
 
 function normalizeAdsSummaryPayload(payload = {}) {
-  const platformEntries = Array.isArray(payload.platforms) ? payload.platforms : [];
-  const platforms = platformEntries.map((platform) => {
-    const key = String(platform?.key || platform?.platformKey || '').trim().toLowerCase();
-    const series = (Array.isArray(platform?.series) ? platform.series : [])
-      .map((point) => ({
-        date: String(point?.label || point?.date || '').trim(),
-        views: numberOrZero(point?.views),
-        clicks: numberOrZero(point?.clicks),
-        spend: numberOrZero(point?.spend),
-        orders: numberOrZero(point?.orders),
-        revenue: numberOrZero(point?.revenue)
-      }))
-      .filter((point) => Boolean(point.date))
-      .sort((left, right) => String(left.date).localeCompare(String(right.date)));
+  const rawPlatforms = Array.isArray(payload.platforms)
+    ? payload.platforms
+    : Object.values(payload.platforms || {});
+  const platforms = rawPlatforms.map((platform) => {
+    const key = adsFunnelNormalizePlatformKey(platform?.platformKey || platform?.platform || platform?.key || platform?.id || platform?.label);
+    const series = Array.isArray(platform?.series)
+      ? platform.series.map((point) => ({
+          dateKey: point?.date || point?.day || point?.label || '',
+          dateStamp: parseFreshStamp(point?.date || point?.day || point?.label || ''),
+          views: numberOrZero(point?.views),
+          clicks: numberOrZero(point?.clicks),
+          spend: numberOrZero(point?.spend),
+          orders: numberOrZero(point?.orders),
+          revenue: numberOrZero(point?.revenue)
+        }))
+      : [];
     return {
       key,
-      label: adsFunnelPlatformLabel(key || platform?.label || ''),
+      label: String(platform?.label || platform?.platformLabel || adsFunnelPlatformLabel(key)).trim(),
+      views: numberOrZero(platform?.views),
+      clicks: numberOrZero(platform?.clicks),
+      spend: numberOrZero(platform?.spend),
+      orders: numberOrZero(platform?.orders),
+      revenue: numberOrZero(platform?.revenue),
       series
     };
-  }).filter((platform) => platform.key);
-
-  const itemSeries = (Array.isArray(payload.itemSeries) ? payload.itemSeries : [])
-    .map((item) => ({
-      date: String(item?.date || '').trim(),
-      platformKey: String(item?.platformKey || '').trim().toLowerCase(),
-      articleKey: String(item?.articleKey || item?.offerId || '').trim(),
-      offerId: String(item?.offerId || '').trim(),
-      name: normalizePortalText(item?.name || ''),
+  });
+  const itemSeries = Array.isArray(payload.itemSeries) ? payload.itemSeries.map((item) => {
+    const dateKey = item?.date || item?.day || item?.label || '';
+    const platformKey = adsFunnelNormalizePlatformKey(item?.platformKey || item?.platform || item?.channel || item?.market);
+    return {
+      dateKey,
+      dateStamp: parseFreshStamp(dateKey),
+      platformKey,
+      articleKey: String(item?.articleKey || item?.offer_id || item?.offerId || item?.article || item?.sku || '').trim(),
+      article: String(item?.article || item?.articleKey || item?.offer_id || item?.offerId || '').trim(),
+      name: String(item?.name || item?.title || item?.productName || item?.articleKey || item?.offer_id || '').trim(),
+      owner: String(item?.owner || item?.ownerName || '').trim(),
       views: numberOrZero(item?.views),
       clicks: numberOrZero(item?.clicks),
       spend: numberOrZero(item?.spend),
       orders: numberOrZero(item?.orders),
       revenue: numberOrZero(item?.revenue)
-    }))
-    .filter((item) => item.date && item.platformKey && item.articleKey);
-
+    };
+  }) : [];
   return {
     generatedAt: payload.generatedAt || '',
-    asOfDate: String(payload.asOfDate || '').trim(),
-    note: normalizePortalText(payload.note || ''),
-    sourceUrl: String(payload.googleSheetsSourceUrl || '').trim(),
-    sourceGid: String(payload.googleSheetsSourceGid || '').trim(),
+    asOfDate: payload.asOfDate || '',
+    note: payload.note || '',
     platforms,
     itemSeries
   };
@@ -2379,70 +2401,53 @@ function normalizeAdsSummaryPayload(payload = {}) {
 function getAdsFunnelFilters() {
   state.adsFunnelFilters = state.adsFunnelFilters || {};
   state.adsFunnelFilters.search = state.adsFunnelFilters.search || '';
-  state.adsFunnelFilters.platform = state.adsFunnelFilters.platform || 'all';
-  state.adsFunnelFilters.horizon = state.adsFunnelFilters.horizon || '28';
+  state.adsFunnelFilters.platform = adsFunnelNormalizePlatformKey(state.adsFunnelFilters.platform || 'all');
+  state.adsFunnelFilters.horizon = String(state.adsFunnelFilters.horizon || '28');
   state.adsFunnelFilters.sort = state.adsFunnelFilters.sort || 'spend';
   state.adsFunnelFilters.sortDir = state.adsFunnelFilters.sortDir === 'asc' ? 'asc' : 'desc';
   return state.adsFunnelFilters;
 }
 
-function adsFunnelHorizonDays(value = '') {
-  const raw = String(value || '').trim().toLowerCase();
-  if (raw === 'all') return 0;
-  const parsed = Number(raw);
-  if (!Number.isFinite(parsed) || parsed <= 0) return 28;
-  return Math.min(120, Math.round(parsed));
+function adsFunnelHorizonDays(value = '28') {
+  const key = String(value || '28').trim();
+  if (key === '7') return 7;
+  if (key === '14') return 14;
+  if (key === '28') return 28;
+  return null;
 }
 
-function adsFunnelBuildModel(payload) {
+function adsFunnelBuildModel(payload = state.adsSummary || {}) {
   const filters = getAdsFunnelFilters();
-  const platformMap = new Map((payload.platforms || []).map((platform) => [platform.key, platform]));
-  const platformOptions = ['all', 'wb', 'ozon', 'ya']
-    .filter((key) => key === 'all' || platformMap.has(key))
-    .map((key) => ({ key, label: adsFunnelPlatformLabel(key) }));
-  if (!platformOptions.some((item) => item.key === filters.platform)) filters.platform = 'all';
-  const selectedPlatform = filters.platform;
-  const platformSeries = selectedPlatform === 'all'
-    ? (platformMap.get('all')?.series || [])
-    : (platformMap.get(selectedPlatform)?.series || []);
-  const uniqueDates = [...new Set(platformSeries.map((point) => point.date))].sort((left, right) => String(left).localeCompare(String(right)));
+  const normalized = normalizeAdsSummaryPayload(payload || {});
   const horizonDays = adsFunnelHorizonDays(filters.horizon);
-  const activeDates = horizonDays > 0 ? uniqueDates.slice(-horizonDays) : uniqueDates;
-  const activeDateSet = new Set(activeDates);
-  const activeSeries = platformSeries.filter((point) => activeDateSet.has(point.date));
-  const summary = activeSeries.reduce((acc, point) => {
-    acc.views += numberOrZero(point.views);
-    acc.clicks += numberOrZero(point.clicks);
-    acc.spend += numberOrZero(point.spend);
-    acc.orders += numberOrZero(point.orders);
-    acc.revenue += numberOrZero(point.revenue);
-    return acc;
-  }, { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 });
-  summary.ctrPct = summary.views > 0 ? summary.clicks / summary.views : 0;
-  summary.crPct = summary.clicks > 0 ? summary.orders / summary.clicks : 0;
-  summary.cpc = summary.clicks > 0 ? summary.spend / summary.clicks : 0;
-  summary.cpo = summary.orders > 0 ? summary.spend / summary.orders : 0;
-  summary.drrPct = summary.revenue > 0 ? summary.spend / summary.revenue : 0;
+  const allDateStamps = [
+    parseFreshStamp(normalized.asOfDate),
+    parseFreshStamp(normalized.generatedAt),
+    ...normalized.itemSeries.map((row) => row.dateStamp),
+    ...normalized.platforms.flatMap((platform) => platform.series.map((point) => point.dateStamp))
+  ].filter((stamp) => Number.isFinite(stamp) && stamp > 0);
+  const latestStamp = allDateStamps.length ? Math.max(...allDateStamps) : 0;
+  const minStamp = horizonDays && latestStamp ? latestStamp - ((horizonDays - 1) * 86400000) : 0;
+  const platformFilter = adsFunnelNormalizePlatformKey(filters.platform || 'all');
+  const searchNeedle = String(filters.search || '').trim().toLowerCase();
 
-  const ownerMap = new Map();
-  (state.skus || []).forEach((sku) => {
-    const owner = ownerName(sku) || '';
-    const keys = [sku?.articleKey, sku?.article].map((value) => adsFunnelNormalizeArticleKey(value)).filter(Boolean);
-    keys.forEach((key) => {
-      if (!ownerMap.has(key) || owner) ownerMap.set(key, owner);
-    });
-  });
+  const inScopeDate = (stamp) => {
+    if (!horizonDays || !latestStamp) return true;
+    if (!Number.isFinite(stamp) || stamp <= 0) return false;
+    return stamp >= minStamp && stamp <= latestStamp;
+  };
+  const inScopePlatform = (platformKey) => platformFilter === 'all' || adsFunnelNormalizePlatformKey(platformKey) === platformFilter;
 
+  const filteredSeries = normalized.itemSeries.filter((row) => inScopeDate(row.dateStamp) && inScopePlatform(row.platformKey));
   const grouped = new Map();
-  (payload.itemSeries || []).forEach((item) => {
-    if (!activeDateSet.has(item.date)) return;
-    if (selectedPlatform !== 'all' && item.platformKey !== selectedPlatform) return;
-    const key = item.articleKey || item.offerId || `${item.platformKey}|${item.name}`;
+  filteredSeries.forEach((row) => {
+    const key = row.articleKey || row.article || row.name || `no-sku-${row.platformKey || 'all'}`;
     if (!grouped.has(key)) {
       grouped.set(key, {
-        articleKey: item.articleKey || item.offerId,
-        name: item.name || item.articleKey || item.offerId,
-        owner: ownerMap.get(adsFunnelNormalizeArticleKey(item.articleKey || item.offerId)) || '',
+        articleKey: row.articleKey || row.article || '',
+        article: row.article || row.articleKey || '',
+        name: row.name || row.article || row.articleKey || 'SKU',
+        owner: row.owner || '',
         platforms: new Set(),
         views: 0,
         clicks: 0,
@@ -2451,220 +2456,294 @@ function adsFunnelBuildModel(payload) {
         revenue: 0
       });
     }
-    const row = grouped.get(key);
-    row.platforms.add(item.platformKey);
-    row.views += numberOrZero(item.views);
-    row.clicks += numberOrZero(item.clicks);
-    row.spend += numberOrZero(item.spend);
-    row.orders += numberOrZero(item.orders);
-    row.revenue += numberOrZero(item.revenue);
+    const bucket = grouped.get(key);
+    bucket.platforms.add(adsFunnelNormalizePlatformKey(row.platformKey));
+    bucket.views += row.views;
+    bucket.clicks += row.clicks;
+    bucket.spend += row.spend;
+    bucket.orders += row.orders;
+    bucket.revenue += row.revenue;
+    if (!bucket.owner && row.owner) bucket.owner = row.owner;
+    if ((!bucket.article || bucket.article === bucket.articleKey) && row.article) bucket.article = row.article;
+    if ((!bucket.name || bucket.name === bucket.article || bucket.name === bucket.articleKey) && row.name) bucket.name = row.name;
   });
 
-  const search = String(filters.search || '').trim().toLowerCase();
-  const rows = [...grouped.values()].map((row) => {
-    const ctrPct = row.views > 0 ? row.clicks / row.views : 0;
-    const crPct = row.clicks > 0 ? row.orders / row.clicks : 0;
-    const cpc = row.clicks > 0 ? row.spend / row.clicks : 0;
-    const cpo = row.orders > 0 ? row.spend / row.orders : 0;
-    const drrPct = row.revenue > 0 ? row.spend / row.revenue : 0;
-    const platforms = [...row.platforms].sort().map((key) => adsFunnelPlatformLabel(key)).join(', ');
-    return {
-      ...row,
-      platforms,
-      ctrPct,
-      crPct,
-      cpc,
-      cpo,
-      drrPct
-    };
-  }).filter((row) => {
-    if (!search) return true;
-    const haystack = [row.articleKey, row.name, row.owner, row.platforms].filter(Boolean).join(' ').toLowerCase();
-    return haystack.includes(search);
-  });
+  let rows = [...grouped.values()].map((row) => ({
+    ...row,
+    ctr: adsFunnelRate(row.clicks, row.views),
+    cr: adsFunnelRate(row.orders, row.clicks),
+    cpc: adsFunnelRate(row.spend, row.clicks),
+    cpo: adsFunnelRate(row.spend, row.orders),
+    drr: adsFunnelRate(row.spend, row.revenue)
+  }));
+  if (searchNeedle) {
+    rows = rows.filter((row) => {
+      const haystack = [
+        row.articleKey,
+        row.article,
+        row.name,
+        row.owner,
+        ...[...row.platforms].map((platform) => adsFunnelPlatformLabel(platform))
+      ].filter(Boolean).join(' ').toLowerCase();
+      return haystack.includes(searchNeedle);
+    });
+  }
 
-  const sortKey = String(filters.sort || 'spend');
+  const sortKey = filters.sort || 'spend';
   const sortDir = filters.sortDir === 'asc' ? 'asc' : 'desc';
-  const direction = sortDir === 'asc' ? 1 : -1;
+  const directionFactor = sortDir === 'asc' ? 1 : -1;
+  const asMetric = (row) => {
+    const value = row?.[sortKey];
+    if (typeof value === 'string') return value.toLowerCase();
+    if (value === null || value === undefined || value === '') return sortDir === 'asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : (sortDir === 'asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY);
+  };
   rows.sort((left, right) => {
-    const leftValue = numberOrZero(left?.[sortKey]);
-    const rightValue = numberOrZero(right?.[sortKey]);
-    return (leftValue - rightValue) * direction
-      || right.spend - left.spend
-      || String(left.articleKey || '').localeCompare(String(right.articleKey || ''), 'ru');
+    const leftMetric = asMetric(left);
+    const rightMetric = asMetric(right);
+    if (typeof leftMetric === 'string' || typeof rightMetric === 'string') {
+      return String(leftMetric).localeCompare(String(rightMetric), 'ru') * directionFactor
+        || (right.revenue - left.revenue)
+        || (right.orders - left.orders);
+    }
+    return (leftMetric - rightMetric) * directionFactor
+      || (right.revenue - left.revenue)
+      || (right.orders - left.orders)
+      || left.name.localeCompare(right.name, 'ru');
   });
 
+  const summaryBase = rows.reduce((acc, row) => {
+    acc.views += row.views;
+    acc.clicks += row.clicks;
+    acc.spend += row.spend;
+    acc.orders += row.orders;
+    acc.revenue += row.revenue;
+    return acc;
+  }, { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 });
+  const summary = {
+    ...summaryBase,
+    ctr: adsFunnelRate(summaryBase.clicks, summaryBase.views),
+    cr: adsFunnelRate(summaryBase.orders, summaryBase.clicks),
+    cpc: adsFunnelRate(summaryBase.spend, summaryBase.clicks),
+    cpo: adsFunnelRate(summaryBase.spend, summaryBase.orders),
+    drr: adsFunnelRate(summaryBase.spend, summaryBase.revenue)
+  };
+
+  const platformKeys = new Set(['all']);
+  normalized.platforms.forEach((platform) => platformKeys.add(adsFunnelNormalizePlatformKey(platform.key)));
+  normalized.itemSeries.forEach((row) => platformKeys.add(adsFunnelNormalizePlatformKey(row.platformKey)));
+  const platformOptions = [...platformKeys].filter(Boolean).map((key) => ({
+    key,
+    label: adsFunnelPlatformLabel(key)
+  }));
+  platformOptions.sort((left, right) => {
+    if (left.key === 'all') return -1;
+    if (right.key === 'all') return 1;
+    return left.label.localeCompare(right.label, 'ru');
+  });
+
+  const horizonLabel = horizonDays ? `${horizonDays} дней` : 'весь доступный период';
+  const minDateLabel = minStamp ? new Date(minStamp).toLocaleDateString('ru-RU') : '—';
+  const maxDateLabel = latestStamp ? new Date(latestStamp).toLocaleDateString('ru-RU') : '—';
   return {
+    payload: normalized,
     filters,
-    platformOptions,
-    selectedPlatform,
-    activeDates,
-    summary,
     rows,
-    rowsTotal: grouped.size
+    summary,
+    platformOptions,
+    platformLabel: adsFunnelPlatformLabel(platformFilter),
+    platformFilter,
+    horizonDays,
+    horizonLabel,
+    minDateLabel,
+    maxDateLabel,
+    latestStamp
   };
 }
 
-function adsFunnelExportRows(rows, model, payload) {
+function adsFunnelExportRows(rows, model) {
   return rows.map((row) => ({
-    platform: model.selectedPlatform === 'all' ? row.platforms : adsFunnelPlatformLabel(model.selectedPlatform),
+    as_of_date: model.payload.asOfDate || model.payload.generatedAt || '',
+    platform_filter: model.platformLabel,
+    horizon: model.horizonLabel,
     article_key: row.articleKey || '',
+    article: row.article || '',
     name: row.name || '',
     owner: row.owner || '',
+    platforms: [...row.platforms].map((key) => adsFunnelPlatformLabel(key)).join(', '),
     views: row.views,
     clicks: row.clicks,
-    spend: row.spend,
     orders: row.orders,
+    spend: row.spend,
     revenue: row.revenue,
-    ctr_pct: row.ctrPct,
-    cr_pct: row.crPct,
-    cpc: row.cpc,
-    cpo: row.cpo,
-    drr_pct: row.drrPct,
-    date_from: model.activeDates[0] || '',
-    date_to: model.activeDates[model.activeDates.length - 1] || '',
-    generated_at: payload.generatedAt || ''
+    ctr_pct: row.ctr === null ? '' : row.ctr,
+    cr_pct: row.cr === null ? '' : row.cr,
+    cpc: row.cpc === null ? '' : row.cpc,
+    cpo: row.cpo === null ? '' : row.cpo,
+    drr_pct: row.drr === null ? '' : row.drr
   }));
 }
 
-function downloadAdsFunnelExcel(rows, model, payload) {
-  const exportRows = adsFunnelExportRows(rows, model, payload);
-  if (!exportRows.length) {
+function downloadAdsFunnelExcel(model) {
+  const rows = adsFunnelExportRows(model.rows, model);
+  if (!rows.length) {
     window.alert('По текущим фильтрам нет строк для выгрузки.');
     return;
   }
   downloadLaunchesHtmlTable([
-    ['platform', 'Площадка'],
+    ['as_of_date', 'Дата среза'],
+    ['platform_filter', 'Площадка'],
+    ['horizon', 'Период'],
     ['article_key', 'Article key'],
+    ['article', 'Артикул'],
     ['name', 'Товар'],
     ['owner', 'Owner'],
-    ['views', 'Охваты'],
+    ['platforms', 'Площадки'],
+    ['views', 'Показы'],
     ['clicks', 'Клики'],
-    ['spend', 'Расход рекламы'],
     ['orders', 'Заказы'],
+    ['spend', 'Затраты'],
     ['revenue', 'Выручка'],
     ['ctr_pct', 'CTR'],
     ['cr_pct', 'CR'],
     ['cpc', 'CPC'],
     ['cpo', 'CPO'],
-    ['drr_pct', 'ДРР'],
-    ['date_from', 'Дата от'],
-    ['date_to', 'Дата до'],
-    ['generated_at', 'Выгружено']
-  ], exportRows, `ads-funnel-${todayIso()}.xls`);
+    ['drr_pct', 'ДРР']
+  ], rows, `ads-funnel-${todayIso()}.xls`);
 }
 
-function renderAdsFunnel() {
-  const root = document.getElementById('view-ads-funnel');
-  const payload = normalizeAdsSummaryPayload(state.adsSummary || {});
-  const model = adsFunnelBuildModel(payload);
-  const { filters, summary, rows } = model;
-  const dateFrom = model.activeDates[0] || payload.asOfDate || '—';
-  const dateTo = model.activeDates[model.activeDates.length - 1] || payload.asOfDate || '—';
+function renderAdsFunnel(rootId = 'view-ads-funnel') {
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  const model = adsFunnelBuildModel(state.adsSummary || {});
   const sortIndicator = (key) => {
-    if (filters.sort !== key) return '';
-    return filters.sortDir === 'asc' ? ' ↑' : ' ↓';
+    if (model.filters.sort !== key) return '';
+    return model.filters.sortDir === 'asc' ? ' ↑' : ' ↓';
   };
   const sortHeader = (label, key) => `
     <th
       data-ads-sort="${escapeHtml(key)}"
       style="cursor:pointer;user-select:none"
-      title="Сортировка как в Excel: первый клик — от большего к меньшему, второй — наоборот."
+      title="Сортировка как в Excel: первый клик по колонке — от большего к меньшему, второй — в обратную сторону."
     >${escapeHtml(label)}${sortIndicator(key)}</th>
   `;
+  const dateRangeLine = model.horizonDays
+    ? `${model.minDateLabel} — ${model.maxDateLabel}`
+    : `${model.maxDateLabel}`;
+  const emptyState = model.latestStamp
+    ? 'В выбранном фильтре нет SKU-строк рекламы. Сбросьте фильтры или проверьте, что itemSeries заполнен в ads_summary.'
+    : 'Рекламный слой пуст: в ads_summary пока нет дат и строк. После публикации bridge-среза здесь появится внутренняя реклама.';
 
   root.innerHTML = `
     <div class="section-title">
       <div>
         <h2>Рекламная воронка</h2>
-        <p>Внутренняя реклама по площадкам WB/Ozon/Я.Маркет из daily ads слоя. Это отдельный экран, не статистика КЗ-контента.</p>
+        <p>Отдельный слой внутренней рекламы: показы, клики, заказы, затраты и ДРР по SKU. Здесь не используется недельный КЗ-лист.</p>
       </div>
       <div class="badge-stack">
-        ${badge(`Срез ${escapeHtml(dateFrom)} — ${escapeHtml(dateTo)}`, 'info')}
-        ${badge(`Площадка: ${adsFunnelPlatformLabel(model.selectedPlatform)}`, 'info')}
-        ${badge(`${fmt.int(rows.length)} SKU`, rows.length ? 'info' : 'warn')}
+        ${badge(model.payload.asOfDate ? `Срез ${model.payload.asOfDate}` : 'Без даты среза', model.payload.asOfDate ? 'info' : 'warn')}
+        ${badge(`Период ${escapeHtml(model.horizonLabel)}`, 'info')}
+        ${badge(`${fmt.int(model.rows.length)} SKU`, model.rows.length ? 'ok' : 'warn')}
+        ${badge(model.platformLabel, 'info')}
       </div>
     </div>
 
-    <div class="kpi-strip">
-      <div class="mini-kpi"><span>Охваты</span><strong>${fmt.int(summary.views)}</strong><span>верх воронки</span></div>
-      <div class="mini-kpi"><span>Клики</span><strong>${fmt.int(summary.clicks)}</strong><span>CTR ${fmt.pct(summary.ctrPct)}</span></div>
-      <div class="mini-kpi"><span>Расход рекламы</span><strong>${fmt.money(summary.spend)}</strong><span>CPC ${fmt.money(summary.cpc)}</span></div>
-      <div class="mini-kpi"><span>Заказы</span><strong>${fmt.int(summary.orders)}</strong><span>CR ${fmt.pct(summary.crPct)}</span></div>
-      <div class="mini-kpi"><span>Выручка</span><strong>${fmt.money(summary.revenue)}</strong><span>ДРР ${fmt.pct(summary.drrPct)}</span></div>
-      <div class="mini-kpi"><span>CPO</span><strong>${fmt.money(summary.cpo)}</strong><span>стоимость заказа</span></div>
+    <div class="card">
+      <div class="section-subhead">
+        <div>
+          <h3>Фильтры и источник</h3>
+          <p class="small muted">Диапазон воронки: ${escapeHtml(dateRangeLine)}. Источник: data/ads_summary.json${model.payload.generatedAt ? ` · выгружено ${escapeHtml(fmt.date(model.payload.generatedAt))}` : ''}.</p>
+        </div>
+        <div class="quick-actions">
+          <button class="quick-chip" type="button" data-ads-export>Выгрузить в Excel</button>
+        </div>
+      </div>
+      <div class="control-filters" style="margin-top:12px">
+        <input id="adsFunnelSearch" placeholder="Поиск по SKU, названию, owner…" value="${escapeHtml(model.filters.search)}">
+        <select id="adsFunnelPlatform">
+          ${model.platformOptions.map((option) => `<option value="${escapeHtml(option.key)}" ${model.filters.platform === option.key ? 'selected' : ''}>${escapeHtml(option.label)}</option>`).join('')}
+        </select>
+        <select id="adsFunnelHorizon">
+          <option value="7" ${model.filters.horizon === '7' ? 'selected' : ''}>Последние 7 дней</option>
+          <option value="14" ${model.filters.horizon === '14' ? 'selected' : ''}>Последние 14 дней</option>
+          <option value="28" ${model.filters.horizon === '28' ? 'selected' : ''}>Последние 28 дней</option>
+          <option value="all" ${model.filters.horizon === 'all' ? 'selected' : ''}>Весь период</option>
+        </select>
+        <select id="adsFunnelSort">
+          <option value="spend" ${model.filters.sort === 'spend' ? 'selected' : ''}>Сортировка: затраты</option>
+          <option value="revenue" ${model.filters.sort === 'revenue' ? 'selected' : ''}>Сортировка: выручка</option>
+          <option value="orders" ${model.filters.sort === 'orders' ? 'selected' : ''}>Сортировка: заказы</option>
+          <option value="clicks" ${model.filters.sort === 'clicks' ? 'selected' : ''}>Сортировка: клики</option>
+          <option value="views" ${model.filters.sort === 'views' ? 'selected' : ''}>Сортировка: показы</option>
+          <option value="drr" ${model.filters.sort === 'drr' ? 'selected' : ''}>Сортировка: ДРР</option>
+          <option value="ctr" ${model.filters.sort === 'ctr' ? 'selected' : ''}>Сортировка: CTR</option>
+          <option value="cr" ${model.filters.sort === 'cr' ? 'selected' : ''}>Сортировка: CR</option>
+          <option value="cpc" ${model.filters.sort === 'cpc' ? 'selected' : ''}>Сортировка: CPC</option>
+          <option value="cpo" ${model.filters.sort === 'cpo' ? 'selected' : ''}>Сортировка: CPO</option>
+        </select>
+      </div>
+      ${model.payload.note ? `<div class="muted small" style="margin-top:10px">${escapeHtml(model.payload.note)}</div>` : ''}
+    </div>
+
+    <div class="kpi-strip" style="margin-top:14px">
+      <div class="mini-kpi"><span>Показы</span><strong>${fmt.int(model.summary.views)}</strong><span>после фильтра</span></div>
+      <div class="mini-kpi"><span>Клики</span><strong>${fmt.int(model.summary.clicks)}</strong><span>CTR ${fmt.pct(model.summary.ctr)}</span></div>
+      <div class="mini-kpi"><span>Заказы</span><strong>${fmt.int(model.summary.orders)}</strong><span>CR ${fmt.pct(model.summary.cr)}</span></div>
+      <div class="mini-kpi"><span>Затраты</span><strong>${fmt.money(model.summary.spend)}</strong><span>CPC ${model.summary.cpc === null ? '—' : fmt.money(model.summary.cpc)}</span></div>
+      <div class="mini-kpi"><span>Выручка</span><strong>${fmt.money(model.summary.revenue)}</strong><span>ДРР ${fmt.pct(model.summary.drr)}</span></div>
     </div>
 
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
         <div>
-          <h3>Фильтры и выгрузка</h3>
-          <p class="small muted">Фильтруем по площадке, периоду и SKU. Выгрузка в Excel берёт текущий отфильтрованный список.</p>
+          <h3>SKU и внутренняя реклама</h3>
+          <p class="small muted">Каждая строка агрегируется по выбранному периоду. Площадки внутри строки показывают, где у SKU был рекламный факт.</p>
         </div>
-        <button class="quick-chip" type="button" data-ads-export>Выгрузить в Excel</button>
+        <div class="badge-stack">
+          ${badge(`SKU ${fmt.int(model.rows.length)}`, model.rows.length ? 'info' : 'warn')}
+        </div>
       </div>
-      <div class="control-filters" style="margin-top:12px">
-        <input id="adsFunnelSearch" placeholder="Поиск по SKU, названию, owner…" value="${escapeHtml(filters.search)}">
-        <select id="adsFunnelPlatform">
-          ${model.platformOptions.map((option) => `<option value="${escapeHtml(option.key)}" ${filters.platform === option.key ? 'selected' : ''}>${escapeHtml(option.label)}</option>`).join('')}
-        </select>
-        <select id="adsFunnelHorizon">
-          <option value="7" ${filters.horizon === '7' ? 'selected' : ''}>7 дней</option>
-          <option value="14" ${filters.horizon === '14' ? 'selected' : ''}>14 дней</option>
-          <option value="28" ${filters.horizon === '28' ? 'selected' : ''}>28 дней</option>
-          <option value="all" ${filters.horizon === 'all' ? 'selected' : ''}>Весь период</option>
-        </select>
-        <select id="adsFunnelSort">
-          <option value="views" ${filters.sort === 'views' ? 'selected' : ''}>Сортировка: охваты</option>
-          <option value="clicks" ${filters.sort === 'clicks' ? 'selected' : ''}>Сортировка: клики</option>
-          <option value="spend" ${filters.sort === 'spend' ? 'selected' : ''}>Сортировка: расход рекламы</option>
-          <option value="orders" ${filters.sort === 'orders' ? 'selected' : ''}>Сортировка: заказы</option>
-          <option value="revenue" ${filters.sort === 'revenue' ? 'selected' : ''}>Сортировка: выручка</option>
-          <option value="ctrPct" ${filters.sort === 'ctrPct' ? 'selected' : ''}>Сортировка: CTR</option>
-          <option value="crPct" ${filters.sort === 'crPct' ? 'selected' : ''}>Сортировка: CR</option>
-          <option value="drrPct" ${filters.sort === 'drrPct' ? 'selected' : ''}>Сортировка: ДРР</option>
-        </select>
-      </div>
-      ${payload.generatedAt ? `<div class="muted small" style="margin-top:10px">Выгрузка: ${escapeHtml(fmt.date(payload.generatedAt))}${payload.sourceGid ? ` · gid ${escapeHtml(payload.sourceGid)}` : ''}</div>` : ''}
-    </div>
-
-    <div class="card" style="margin-top:14px">
-      <div class="table-wrap">
+      <div class="table-wrap" style="margin-top:12px">
         <table>
           <thead>
             <tr>
               <th>SKU / товар</th>
               <th>Owner</th>
-              <th>Площадка</th>
-              ${sortHeader('Охваты', 'views')}
+              <th>Площадки</th>
+              ${sortHeader('Показы', 'views')}
               ${sortHeader('Клики', 'clicks')}
-              ${sortHeader('Расход', 'spend')}
+              ${sortHeader('CTR', 'ctr')}
               ${sortHeader('Заказы', 'orders')}
+              ${sortHeader('CR', 'cr')}
+              ${sortHeader('Затраты', 'spend')}
+              ${sortHeader('CPC', 'cpc')}
+              ${sortHeader('CPO', 'cpo')}
               ${sortHeader('Выручка', 'revenue')}
-              ${sortHeader('CTR', 'ctrPct')}
-              ${sortHeader('CR', 'crPct')}
-              ${sortHeader('ДРР', 'drrPct')}
+              ${sortHeader('ДРР', 'drr')}
             </tr>
           </thead>
           <tbody>
-            ${rows.map((row) => `
+            ${model.rows.map((row) => `
               <tr>
                 <td>
-                  <div><strong>${row.articleKey ? linkToSku(row.articleKey, row.articleKey) : escapeHtml(row.name || 'SKU')}</strong></div>
-                  <div class="muted small">${escapeHtml(row.name || 'Без названия')}</div>
+                  <div><strong>${row.articleKey ? linkToSku(row.articleKey, row.articleKey) : escapeHtml(row.article || row.name)}</strong></div>
+                  <div class="muted small">${escapeHtml(row.name || row.article || row.articleKey || '—')}</div>
                 </td>
                 <td>${row.owner ? badge(row.owner, 'info') : badge('Без owner', 'warn')}</td>
-                <td>${escapeHtml(row.platforms || adsFunnelPlatformLabel(model.selectedPlatform))}</td>
+                <td><div class="badge-stack">${[...row.platforms].map((platform) => badge(adsFunnelPlatformLabel(platform), '')).join('')}</div></td>
                 <td>${fmt.int(row.views)}</td>
                 <td>${fmt.int(row.clicks)}</td>
-                <td>${fmt.money(row.spend)}</td>
+                <td>${fmt.pct(row.ctr)}</td>
                 <td>${fmt.int(row.orders)}</td>
+                <td>${fmt.pct(row.cr)}</td>
+                <td>${fmt.money(row.spend)}</td>
+                <td>${row.cpc === null ? '—' : fmt.money(row.cpc)}</td>
+                <td>${row.cpo === null ? '—' : fmt.money(row.cpo)}</td>
                 <td>${fmt.money(row.revenue)}</td>
-                <td>${fmt.pct(row.ctrPct)}</td>
-                <td>${fmt.pct(row.crPct)}</td>
-                <td>${fmt.pct(row.drrPct)}</td>
+                <td>${fmt.pct(row.drr)}</td>
               </tr>
-            `).join('') || '<tr><td colspan="11"><div class="empty">По текущим фильтрам строк нет.</div></td></tr>'}
+            `).join('') || `<tr><td colspan="13"><div class="empty">${escapeHtml(emptyState)}</div></td></tr>`}
           </tbody>
         </table>
       </div>
@@ -2676,15 +2755,15 @@ function renderAdsFunnel() {
     rerenderCurrentView();
   });
   root.querySelector('#adsFunnelPlatform')?.addEventListener('change', (event) => {
-    getAdsFunnelFilters().platform = event.target.value;
+    getAdsFunnelFilters().platform = adsFunnelNormalizePlatformKey(event.target.value);
     rerenderCurrentView();
   });
   root.querySelector('#adsFunnelHorizon')?.addEventListener('change', (event) => {
-    getAdsFunnelFilters().horizon = event.target.value;
+    getAdsFunnelFilters().horizon = String(event.target.value || '28');
     rerenderCurrentView();
   });
   root.querySelector('#adsFunnelSort')?.addEventListener('change', (event) => {
-    getAdsFunnelFilters().sort = event.target.value;
+    getAdsFunnelFilters().sort = String(event.target.value || 'spend');
     getAdsFunnelFilters().sortDir = 'desc';
     rerenderCurrentView();
   });
@@ -2693,8 +2772,9 @@ function renderAdsFunnel() {
       const nextSort = String(cell.getAttribute('data-ads-sort') || '').trim();
       if (!nextSort) return;
       const adsFilters = getAdsFunnelFilters();
-      if (adsFilters.sort === nextSort) adsFilters.sortDir = adsFilters.sortDir === 'desc' ? 'asc' : 'desc';
-      else {
+      if (adsFilters.sort === nextSort) {
+        adsFilters.sortDir = adsFilters.sortDir === 'desc' ? 'asc' : 'desc';
+      } else {
         adsFilters.sort = nextSort;
         adsFilters.sortDir = 'desc';
       }
@@ -2702,13 +2782,13 @@ function renderAdsFunnel() {
     });
   });
   root.querySelector('[data-ads-export]')?.addEventListener('click', () => {
-    downloadAdsFunnelExcel(rows, model, payload);
+    downloadAdsFunnelExcel(model);
   });
 }
 
 function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   if (rootId === 'view-ads-funnel') {
-    renderAdsFunnel();
+    renderAdsFunnel(rootId);
     return;
   }
   const root = document.getElementById(rootId);

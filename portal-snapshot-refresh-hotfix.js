@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_SNAPSHOT_REFRESH_HOTFIX_20260425C__) return;
+  if (window.__ALTEA_SNAPSHOT_REFRESH_HOTFIX_20260503A__) return;
+  window.__ALTEA_SNAPSHOT_REFRESH_HOTFIX_20260503A__ = true;
   window.__ALTEA_SNAPSHOT_REFRESH_HOTFIX_20260425C__ = true;
 
   var SNAPSHOT_TABLE = "portal_data_snapshots";
@@ -19,6 +20,11 @@
     "data/order_procurement_ozon.json": "order_procurement_ozon",
     "data/warehouse_stock_overlay.json": "warehouse_stock_overlay"
   };
+  var ALLOWED_SNAPSHOT_KEYS = Object.keys(PATH_MAP).reduce(function (acc, path) {
+    var key = PATH_MAP[path];
+    if (key && acc.indexOf(key) === -1) acc.push(key);
+    return acc;
+  }, []);
   var cache = {
     promise: null,
     rows: {},
@@ -38,6 +44,10 @@
 
   function snapshotKeyFromPath(path) {
     return PATH_MAP[normalizePath(path)] || null;
+  }
+
+  function isAllowedSnapshotKey(snapshotKey) {
+    return ALLOWED_SNAPSHOT_KEYS.indexOf(String(snapshotKey || "").trim()) >= 0;
   }
 
   function clone(value) {
@@ -142,8 +152,10 @@
     (rows || []).forEach(function (row) {
       var snapshotKey = String(row && row.snapshot_key || "").trim();
       if (!snapshotKey) return;
-      metaByKey[snapshotKey] = row;
       var chunkMeta = parseChunkedSnapshotKey(snapshotKey);
+      if (!chunkMeta && !isAllowedSnapshotKey(snapshotKey)) return;
+      if (chunkMeta && !isAllowedSnapshotKey(chunkMeta.baseKey)) return;
+      metaByKey[snapshotKey] = row;
       if (!chunkMeta) {
         payloadByKey[snapshotKey] = withRowMeta(row, row && row.payload);
         return;
@@ -262,6 +274,44 @@
     return snapshotPayload || localPayload || null;
   }
 
+  function stableSerialize(value) {
+    try {
+      return JSON.stringify(value == null ? null : value);
+    } catch (error) {
+      console.warn("[portal-snapshot-refresh-hotfix] serialize", error);
+      return "";
+    }
+  }
+
+  function normalizeSkuForCompare(sku) {
+    if (!sku || typeof sku !== "object") return sku;
+    var next = clone(sku) || {};
+    if (next.__baseOwner && typeof next.__baseOwner === "object") {
+      next.owner = clone(next.__baseOwner) || {};
+    }
+    delete next.__baseOwner;
+    if (next.flags && typeof next.flags === "object") {
+      next.flags = Object.assign({}, next.flags);
+      delete next.flags.assigned;
+      if (!Object.keys(next.flags).length) delete next.flags;
+    }
+    return next;
+  }
+
+  function comparablePayload(snapshotKey, payload) {
+    if (snapshotKey === "skus") {
+      return Array.isArray(payload)
+        ? payload.map(normalizeSkuForCompare)
+        : [];
+    }
+    return payload == null ? null : payload;
+  }
+
+  function payloadChanged(snapshotKey, currentPayload, nextPayload) {
+    return stableSerialize(comparablePayload(snapshotKey, currentPayload))
+      !== stableSerialize(comparablePayload(snapshotKey, nextPayload));
+  }
+
   async function loadSnapshotAwareJson(path, fallback, force) {
     var snapshotKey = snapshotKeyFromPath(path);
     var snapshotPayload = null;
@@ -309,14 +359,24 @@
     ]);
     var dashboard = results[0];
     var skus = results[1];
+    var changed = false;
 
     if (typeof state === "object" && state) {
-      state.dashboard = dashboard || { cards: [], generatedAt: "" };
-      state.skus = Array.isArray(skus) ? skus : [];
-      if (typeof applyOwnerOverridesToSkus === "function") applyOwnerOverridesToSkus();
+      var nextDashboard = dashboard || { cards: [], generatedAt: "" };
+      var nextSkus = Array.isArray(skus) ? skus : [];
+
+      if (payloadChanged("dashboard", state.dashboard, nextDashboard)) {
+        state.dashboard = nextDashboard;
+        changed = true;
+      }
+      if (payloadChanged("skus", state.skus, nextSkus)) {
+        state.skus = nextSkus;
+        changed = true;
+      }
+      if (changed && typeof applyOwnerOverridesToSkus === "function") applyOwnerOverridesToSkus();
     }
 
-    if (rerender && typeof rerenderCurrentView === "function") {
+    if (changed && rerender && typeof rerenderCurrentView === "function") {
       try {
         rerenderCurrentView();
         if (state && state.activeSku && typeof renderSkuModal === "function") {
@@ -327,7 +387,7 @@
       }
     }
 
-    return true;
+    return changed;
   };
 
   function wrapPullRemoteState() {
@@ -339,12 +399,13 @@
 
     var wrapped = async function wrappedPullRemoteState() {
       var result = await base.apply(this, arguments);
+      var snapshotChanged = false;
       try {
-        await window.__alteaRefreshSnapshotBackedState({ rerender: false });
+        snapshotChanged = await window.__alteaRefreshSnapshotBackedState({ rerender: false });
       } catch (error) {
         console.warn("[portal-snapshot-refresh-hotfix] refresh after pull", error);
       }
-      if (arguments[0] !== false && typeof rerenderCurrentView === "function") {
+      if (snapshotChanged && arguments[0] !== false && typeof rerenderCurrentView === "function") {
         try {
           rerenderCurrentView();
           if (state && state.activeSku && typeof renderSkuModal === "function") {

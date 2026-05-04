@@ -56,6 +56,23 @@ function orderProcurementOwnerForPlatform(sku, row, platform) {
     : String(sku?.owner?.name || '').trim();
 }
 
+function orderProcurementReadWarehouseInbound(row) {
+  const candidates = [
+    row?.inboundWarehouse,
+    row?.inbound,
+    row?.warehouseInbound,
+    row?.inTransitWarehouse,
+    row?.inboundUnits
+  ];
+
+  for (const candidate of candidates) {
+    const value = orderProcurementNumber(candidate);
+    if (value > 0) return value;
+  }
+
+  return 0;
+}
+
 function buildOrderProcurementModel() {
   const orderState = ensureOrderProcurementState();
   const platform = orderState.platform === 'ozon' ? 'ozon' : 'wb';
@@ -89,6 +106,7 @@ function buildOrderProcurementModel() {
       owner: orderProcurementOwnerForPlatform(sku, row, platform),
       warehouseStock: orderProcurementNumber(warehouse.stockWarehouse),
       inboundWarehouse: orderProcurementNumber(warehouse.inboundWarehouse),
+      hasInboundWarehouse: Boolean(warehouse.hasInboundWarehouse),
       totalNeed: 0,
       totalOrders: 0,
       clusters: {}
@@ -120,6 +138,7 @@ function buildOrderProcurementModel() {
     if (right.totalOrders !== left.totalOrders) return right.totalOrders - left.totalOrders;
     return String(left.article).localeCompare(String(right.article), 'ru');
   });
+  const hasInboundWarehouse = list.some((row) => Boolean(row.hasInboundWarehouse));
 
   const totals = list.reduce((acc, row) => {
     acc.warehouseStock += orderProcurementNumber(row.warehouseStock);
@@ -136,6 +155,7 @@ function buildOrderProcurementModel() {
     window: payload.window || null,
     places: placeOrder,
     rows: list,
+    hasInboundWarehouse,
     totals,
     clusterTotals: placeOrder.map((place) => ({
       place,
@@ -152,10 +172,10 @@ function exportOrderProcurementModel(model) {
   const headers = [
     'SKU / Номенклатура',
     'Артикул',
-    'Остатки мой склад',
-    'В пути на склад',
-    'Итого заказ товара'
+    'Остатки мой склад'
   ];
+  if (model.hasInboundWarehouse) headers.push('В пути на склад');
+  headers.push('Итого заказ товара');
 
   model.places.forEach((place) => {
     headers.push(
@@ -171,10 +191,10 @@ function exportOrderProcurementModel(model) {
     const cells = [
       row.name,
       row.article,
-      row.warehouseStock,
-      row.inboundWarehouse,
-      row.totalNeed
+      row.warehouseStock
     ];
+    if (model.hasInboundWarehouse) cells.push(row.inboundWarehouse);
+    cells.push(row.totalNeed);
 
     model.places.forEach((place) => {
       const cluster = row.clusters[place] || {};
@@ -229,7 +249,7 @@ function renderOrderProcurementTable(model) {
     `)
     .join('');
 
-  const columnCount = 5 + (model.places.length * 4);
+  const columnCount = (model.hasInboundWarehouse ? 5 : 4) + (model.places.length * 4);
   const body = model.rows.length
     ? model.rows.map((row) => {
         const clusterCells = model.places.map((place) => {
@@ -246,6 +266,9 @@ function renderOrderProcurementTable(model) {
         const skuLink = typeof linkToSku === 'function'
           ? linkToSku(row.articleKey || articleLabel, articleLabel)
           : orderProcurementEscape(articleLabel);
+        const inboundCell = model.hasInboundWarehouse
+          ? `<td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--inbound altea-order-procurement__num">${fmt.int(row.inboundWarehouse)}</td>`
+          : '';
 
         return `
           <tr>
@@ -255,7 +278,7 @@ function renderOrderProcurementTable(model) {
             </td>
             <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--article">${skuLink}</td>
             <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--warehouse altea-order-procurement__num">${fmt.int(row.warehouseStock)}</td>
-            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--inbound altea-order-procurement__num">${fmt.int(row.inboundWarehouse)}</td>
+            ${inboundCell}
             <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--total">${orderProcurementBadge(fmt.int(row.totalNeed), row.totalNeed > 0 ? 'warn' : 'ok')}</td>
             ${clusterCells}
           </tr>
@@ -275,7 +298,7 @@ function renderOrderProcurementTable(model) {
             <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--sku">SKU / Номенклатура</th>
             <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--article">Артикул</th>
             <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--warehouse">Остатки мой склад</th>
-            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--inbound">В пути на склад</th>
+            ${model.hasInboundWarehouse ? '<th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--inbound">В пути на склад</th>' : ''}
             <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--total">Итого заказ товара</th>
             ${headGroups}
           </tr>
@@ -291,9 +314,25 @@ function renderOrderProcurement(model) {
   const range = model.window?.from && model.window?.to
     ? `${orderProcurementEscape(model.window.from)} - ${orderProcurementEscape(model.window.to)}`
     : 'последний доступный срез';
+  const sectionClass = model.hasInboundWarehouse
+    ? 'imperial-section altea-order-procurement'
+    : 'imperial-section altea-order-procurement altea-order-procurement--no-inbound';
+  const inboundSummary = model.hasInboundWarehouse ? `
+        <div class="mini-kpi">
+          <span>В пути на склад</span>
+          <strong>${fmt.int(model.totals.inboundWarehouse)}</strong>
+          <span>из входящего слоя склада</span>
+        </div>
+  ` : '';
+  const inboundBadge = model.hasInboundWarehouse
+    ? orderProcurementBadge('Входящий слой: учтён', 'ok')
+    : orderProcurementBadge('Входящий слой: отдельного поля нет', 'info');
+  const inboundCaption = model.hasInboundWarehouse
+    ? 'Колонка "В пути на склад" заполняется из входящего слоя склада.'
+    : 'Во входящем слое склада сейчас нет отдельного inbound-поля, поэтому таблица показывает остаток центрального склада и расчёт потребности по кластерам.';
 
   return `
-    <section class="imperial-section altea-order-procurement" data-altea-order-procurement>
+    <section class="${sectionClass}" data-altea-order-procurement>
       <div class="card">
         <div class="section-title">
           <div>
@@ -344,11 +383,7 @@ function renderOrderProcurement(model) {
           <strong>${fmt.int(model.totals.warehouseStock)}</strong>
           <span>из файла реальных остатков</span>
         </div>
-        <div class="mini-kpi">
-          <span>В пути на склад</span>
-          <strong>${fmt.int(model.totals.inboundWarehouse)}</strong>
-          <span>источник пока не подключён</span>
-        </div>
+        ${inboundSummary}
         <div class="mini-kpi warn">
           <span>Итого к заказу</span>
           <strong>${fmt.int(model.totals.totalNeed)}</strong>
@@ -366,14 +401,14 @@ function renderOrderProcurement(model) {
           </div>
           <div class="badge-stack">
             ${orderProcurementBadge(`Период расчёта: ${model.days} дн.`, 'info')}
-            ${orderProcurementBadge('Колонка "В пути" пока = 0', 'warn')}
+            ${inboundBadge}
           </div>
         </div>
 
         ${renderOrderProcurementTable(model)}
 
         <div class="altea-order-procurement__caption">
-          Колонка "Остатки мой склад" уже берётся из файла реальных остатков. Колонку "В пути на склад" оставили отдельной, но пока не заполняем, потому что источник ещё не подключён.
+          ${inboundCaption}
         </div>
       </div>
     </section>
@@ -451,6 +486,10 @@ function injectOrderProcurementStyles() {
       margin-top: 18px;
     }
 
+    .altea-order-procurement.altea-order-procurement--no-inbound {
+      --col-inbound: 0px;
+    }
+
     .altea-order-procurement__toolbar {
       display: grid;
       grid-template-columns: minmax(180px, 220px) auto 1fr auto;
@@ -514,7 +553,7 @@ function injectOrderProcurementStyles() {
 
     .altea-order-procurement__summary {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 12px;
     }
 

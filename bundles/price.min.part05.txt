@@ -1,0 +1,284 @@
+ допустимая маржа за последние 3 месяца.")}</small></div>
+          <div class="price-modal-kpi"><span class="label">Текущая маржа</span><strong>${pctShort(row.marginTotalPct)}</strong><small>Операционный уровень по площадке.</small></div>
+          <div class="price-modal-kpi"><span class="label">Оборачиваемость</span><strong>${row.turnoverDisplay == null ? "—" : `${fmt.num(row.turnoverDisplay, 1)} дн.`}</strong><small>Под выбранный период.</small></div>
+          <div class="price-modal-kpi"><span class="label">Факт за период</span><strong>${row.actualUnitsSelected == null ? "—" : `${fmt.int(row.actualUnitsSelected)} шт.`}</strong><small>${row.actualSource === "daily" ? `daily-факт по диапазону · план ${row.planUnitsSelected == null ? "—" : `${fmt.int(row.planUnitsSelected)} шт.`}` : row.actualSource === "monthly" ? "Факт собран из помесячного файла, потому что daily по SKU в пакете нет." : "По этому диапазону факт по SKU не опубликован."}</small></div>
+          <div class="price-modal-kpi"><span class="label">Выручка за период</span><strong>${periodRevenue != null && periodRevenue > 0 ? moneyShort(periodRevenue) : "—"}</strong><small>${row.actualSource === "monthly" ? "Выручка взята из помесячного файла факта." : "Сумма выручки по выбранному диапазону."}</small></div>
+          <div class="price-modal-kpi"><span class="label">% выполнения плана</span><strong>${row.completionPctSelected == null ? "—" : pctShort(row.completionPctSelected)}</strong><small>${row.planUnitsSelected == null ? "На выбранный диапазон пока нет помесячного плана по SKU." : row.actualUnitsSelected == null ? `План ${fmt.int(row.planUnitsSelected)} шт., но факта по SKU в источнике нет.` : `Факт ${fmt.int(row.actualUnitsSelected)} шт. против плана ${fmt.int(row.planUnitsSelected)} шт.`}</small></div>
+          <div class="price-modal-kpi"><span class="label">Остаток</span><strong>${row.stock == null ? "—" : fmt.int(row.stock)}</strong><small>${escapeHtml(row.supportRow?.summary?.interpretation || row.supportRow?.sellerSummary?.interpretation || row.historyNote || "Смотри историю, задачи и коридор цены ниже.")}</small></div>
+        </div>
+        <div class="price-modal-projections">
+          <div class="price-modal-kpi"><span class="label">Из файла Smart</span><strong>${moneyShort(row.seedTargetFillPrice)}</strong><small>${escapeHtml(row.seedReason || "Целевая цена из рабочего пакета данных.")}</small></div>
+          <div class="price-modal-kpi"><span class="label">Жёсткий минимум</span><strong>${moneyShort(row.hardMinPrice || row.minPrice)}</strong><small>Ниже этой цены опускаться нельзя.</small></div>
+          <div class="price-modal-kpi"><span class="label">Рабочая зона</span><strong>${row.workingZoneFrom == null && row.workingZoneTo == null ? "—" : `${moneyShort(row.workingZoneFrom)} – ${moneyShort(row.workingZoneTo)}`}</strong><small>Коридор, в котором товар можно держать безопасно.</small></div>
+          <div class="price-modal-kpi"><span class="label">Нужно для рентаб.</span><strong>${moneyShort(row.requiredPriceForProfitability)}</strong><small>Минимум для безубыточности.</small></div>
+          <div class="price-modal-kpi"><span class="label">Нужно для маржи</span><strong>${moneyShort(row.requiredPriceForMargin)}</strong><small>Цена для выхода на допустимую маржу.</small></div>
+          <div class="price-modal-kpi"><span class="label">План месяца</span><strong>${row.planMonthUnits == null ? "—" : `${fmt.int(row.planMonthUnits)} шт.`}</strong><small>${row.planMonthRevenue == null ? "—" : `Выручка ${moneyShort(row.planMonthRevenue)} · чек ${moneyShort(row.planMonthCheck)}`}</small></div>
+          <div class="price-modal-kpi"><span class="label">Запасы в контуре</span><strong>${totalSupply > 0 ? fmt.int(totalSupply) : "—"}</strong><small>${escapeHtml([
+            row.stock != null ? `на остатке ${fmt.int(row.stock)}` : "",
+            row.stockRepricer != null ? `repricer ${fmt.int(row.stockRepricer)}` : "",
+            row.stockInSupplyRequest != null ? `в заявке ${fmt.int(row.stockInSupplyRequest)}` : "",
+            row.stockInTransit != null ? `в пути ${fmt.int(row.stockInTransit)}` : ""
+          ].filter(Boolean).join(" · ") || "Разбивки по запасам в файле нет.")}</small></div>
+        </div>
+        <div class="price-modal-section">
+          <div class="price-inline-meta">Из этой карточки можно сохранить решение по цене, задать owner, срок и сразу поставить задачу.</div>
+          <form class="price-modal-form" data-price-form="${escapeHtml(workbenchKey(row.marketplace, row.articleKey))}">
+            <div class="price-modal-form-grid">
+              <label><span>Статус</span><select name="decisionStatus">${Object.entries(DECISION_STATUS_META).map(([key, meta]) => `<option value="${key}" ${row.decisionStatus === key ? "selected" : ""}>${escapeHtml(meta.label)}</option>`).join("")}</select></label>
+              <label><span>Owner</span><input name="owner" value="${escapeHtml(row.owner || "")}" list="priceWorkbenchOwners"></label>
+              <label><span>Срок</span><input type="date" name="dueDate" value="${escapeHtml(row.dueDate || "")}"></label>
+              <label><span>Эскалация</span><select name="escalation">${Object.entries(ESCALATION_META).map(([key, meta]) => `<option value="${key}" ${row.escalation === key ? "selected" : ""}>${escapeHtml(meta.label)}</option>`).join("")}</select></label>
+              <label><span>Новая цена MP</span><input type="number" step="0.01" name="targetFillPrice" value="${row.targetFillPrice ?? ""}"></label>
+              <label><span>Новая цена клиента</span><input type="number" step="0.01" name="targetClientPrice" value="${row.targetClientPrice ?? ""}"></label>
+              <label><span>Допустимая маржа, %</span><input type="number" step="0.1" name="allowedMarginManualPct" value="${row.allowedMarginManualPct != null ? (row.allowedMarginManualPct * 100).toFixed(1) : ""}" placeholder="Например 18.0"></label>
+              <label class="price-toggle" style="align-self:end;"><input type="checkbox" name="needsTask" ${row.needsTask ? "checked" : ""}> Нужна задача</label>
+              <label class="wide"><span>Логика решения</span><textarea name="reason" rows="3">${escapeHtml(row.reason || "")}</textarea></label>
+              <label class="wide"><span>Комментарий</span><textarea name="comment" rows="3">${escapeHtml(row.comment || "")}</textarea></label>
+            </div>
+            <div class="price-modal-actions">
+              <button type="submit" class="btn">Сохранить решение</button>
+              <button type="button" class="btn ghost" data-price-task="${escapeHtml(workbenchKey(row.marketplace, row.articleKey))}">Создать / обновить задачу</button>
+            </div>
+          </form>
+          <datalist id="priceWorkbenchOwners">${ownerOptions().map((name) => `<option value="${escapeHtml(name)}"></option>`).join("")}</datalist>
+        </div>
+        <div class="price-modal-section">
+          <h3 class="price-section-title">История периода</h3>
+          <div class="price-section-subtitle">Цена MP, цена клиента, СПП, оборачиваемость, выручка, дневной % к плану и ежедневное изменение цены по выбранному диапазону.</div>
+          ${renderPeriodHistory(row)}
+        </div>
+        <div class="price-modal-section">
+          <h3 class="price-section-title">История решений и допустимой маржи</h3>
+          <div class="price-section-subtitle">Кто и когда менял допустимую маржу, целевую цену, статус и логику решения по артикулу.</div>
+          ${renderDecisionHistory(row)}
+        </div>
+        <div class="price-modal-section">
+          <h3 class="price-section-title">Задачи по артикулу</h3>
+          <div class="price-section-subtitle">Ниже видны текущие задачи по цене, owner, срок и следующий шаг по выбранной позиции.</div>
+          ${renderTaskSummary(tasks)}
+          ${renderTaskList(tasks)}
+        </div>
+      </div>
+    `;
+    modal.classList.add("open");
+    const form = body.querySelector("[data-price-form]");
+    if (form) form.addEventListener("submit", handleSubmit);
+    body.querySelectorAll("[data-price-task]").forEach((button) => button.addEventListener("click", handleCreateTask));
+  }
+
+  function ensurePriceManagementStyles() {
+    if (document.getElementById("priceWorkbenchManagementStyles")) return;
+    const style = document.createElement("style");
+    style.id = "priceWorkbenchManagementStyles";
+    style.textContent = `
+      #view-prices .price-section-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; flex-wrap:wrap; margin-bottom:14px; }
+      #view-prices .price-section-head h3 { margin:0 0 6px; }
+      #view-prices .price-section-head p { margin:0; color:rgba(255,244,222,.68); max-width:780px; }
+      #view-prices .price-priority-section { padding:18px; border:1px solid rgba(212,164,74,.16); border-radius:22px; background:linear-gradient(180deg, rgba(20,16,12,.92), rgba(12,10,8,.96)); }
+      #view-prices .price-priority-grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
+      #view-prices .price-priority-card { display:grid; gap:12px; text-align:left; width:100%; padding:16px; border-radius:18px; border:1px solid rgba(212,164,74,.14); background:rgba(17,13,10,.82); color:#fff1d4; cursor:pointer; transition:transform .15s ease, border-color .15s ease, background .15s ease; }
+      #view-prices .price-priority-card:hover { transform:translateY(-1px); border-color:rgba(212,164,74,.32); background:rgba(22,17,13,.92); }
+      #view-prices .price-priority-card.is-selected { border-color:rgba(212,164,74,.52); box-shadow:0 0 0 1px rgba(212,164,74,.18), 0 16px 28px rgba(0,0,0,.22); }
+      #view-prices .price-priority-top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+      #view-prices .price-priority-rank { min-width:36px; height:36px; border-radius:999px; display:grid; place-items:center; background:rgba(212,164,74,.12); color:#f3c978; font-size:12px; font-weight:700; }
+      #view-prices .price-priority-kpis { display:grid; gap:8px; grid-template-columns:repeat(2,minmax(0,1fr)); }
+      #view-prices .price-priority-kpi { padding:10px 12px; border-radius:14px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.05); }
+      #view-prices .price-priority-kpi span { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:rgba(212,164,74,.78); margin-bottom:4px; }
+      #view-prices .price-priority-kpi strong { display:block; font-size:16px; color:#fff6df; }
+      #view-prices .price-priority-action { padding:12px 14px; border-radius:14px; background:rgba(212,164,74,.08); border:1px solid rgba(212,164,74,.14); color:#fff1d4; font-size:13px; line-height:1.45; }
+      #view-prices .price-bullet-list { display:grid; gap:8px; }
+      #view-prices .price-bullet-list > div { position:relative; padding-left:14px; color:rgba(255,244,222,.76); font-size:12px; line-height:1.45; }
+      #view-prices .price-bullet-list > div::before { content:""; position:absolute; left:0; top:8px; width:5px; height:5px; border-radius:999px; background:rgba(212,164,74,.82); }
+      #view-prices .price-table-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; flex-wrap:wrap; padding:18px 18px 0; }
+      #view-prices .price-table-head h3 { margin:0 0 6px; }
+      #view-prices .price-table-head p { margin:0; color:rgba(255,244,222,.68); max-width:720px; }
+    #view-prices .price-management-table { min-width:1560px; table-layout:auto; }
+    #view-prices .price-management-table th:first-child,
+    #view-prices .price-management-table td:first-child { min-width:320px; max-width:420px; }
+    #view-prices .price-management-table th:nth-child(2),
+    #view-prices .price-management-table td:nth-child(2) { min-width:140px; }
+    #view-prices .price-management-table th:nth-child(n+3),
+    #view-prices .price-management-table td:nth-child(n+3) { min-width:110px; white-space:nowrap; }
+      #view-prices .price-signal-stack { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+      #view-prices .price-stat-stack { display:grid; gap:7px; }
+      #view-prices .price-stat-row { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+      #view-prices .price-stat-row strong { color:#fff4db; font-size:12px; }
+      #view-prices .price-stat-row span { color:rgba(255,244,222,.74); text-align:right; }
+      #view-prices .price-stat-row.is-danger strong, #view-prices .price-stat-row.is-danger span { color:#ff9f9f; }
+      .price-manager-grid { display:grid; gap:14px; grid-template-columns:1.15fr .85fr; }
+      .price-manager-panel { display:grid; gap:12px; padding:16px; border-radius:18px; border:1px solid rgba(212,164,74,.12); background:rgba(255,255,255,.03); }
+      .price-next-step { padding:14px 16px; border-radius:16px; background:rgba(212,164,74,.08); border:1px solid rgba(212,164,74,.14); color:#fff6e1; font-size:14px; line-height:1.5; }
+      .price-corridor-grid { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
+      .price-corridor-card { padding:12px 14px; border-radius:16px; background:rgba(17,13,10,.8); border:1px solid rgba(212,164,74,.12); }
+      .price-corridor-card span { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:rgba(212,164,74,.78); margin-bottom:5px; }
+      .price-corridor-card strong { display:block; color:#fff6de; font-size:18px; margin-bottom:5px; }
+      .price-corridor-card small { color:rgba(255,244,222,.68); }
+      @media (max-width: 980px) {
+        #view-prices .price-priority-grid { grid-template-columns:1fr; }
+        .price-manager-grid { grid-template-columns:1fr; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function pricePriorityScore(row) {
+    let score = riskScore(row) * 10;
+    if (row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && Number(row.marginTotalPct) < Number(row.effectiveAllowedMarginPct)) score += 8;
+    if (row.turnoverDisplay != null && Number(row.turnoverDisplay) >= 60) score += 6;
+    else if (row.turnoverDisplay != null && Number(row.turnoverDisplay) >= 40) score += 3;
+    if (row.completionPctSelected != null && Number(row.completionPctSelected) < 0.8) score += 5;
+    if (row.needsTask) score += 4;
+    if (row.decisionStatus === "review") score += 3;
+    if (row.decisionStatus === "approved") score += 2;
+    if (row.historyMode === "daily") score += 1;
+    return score;
+  }
+
+  function pricePrimaryAction(row) {
+    if (row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && Number(row.marginTotalPct) < Number(row.effectiveAllowedMarginPct)) {
+      if (row.requiredPriceForMargin != null) {
+        return `Маржа ниже допустимой. Сначала проверьте, можно ли удержать цену не ниже ${moneyShort(row.requiredPriceForMargin)} без ухода за жесткий минимум и рабочую зону.`;
+      }
+      return "Маржа ниже допустимой. Нужна проверка коридора цены и причин, почему позиция ушла в минус относительно 3-месячной средней.";
+    }
+    if (row.turnoverDisplay != null && Number(row.turnoverDisplay) >= 60) {
+      return "Позиция зависает по оборачиваемости. Сверьте рабочую зону цены, остаток и план продаж, прежде чем согласовывать новое решение.";
+    }
+    if (row.completionPctSelected != null && Number(row.completionPctSelected) < 0.8) {
+      return "План по артикулу не дотягивает. Нужна проверка: это проблема цены, наличия, контента или ограничение по данным факта.";
+    }
+    if (row.needsTask) {
+      return "По позиции уже зафиксировано действие. Проверьте owner, срок и статус, чтобы решение не зависало без исполнения.";
+    }
+    return "Критического отклонения нет. Используйте карточку для сверки Smart-цели, истории цены и принятого решения.";
+  }
+
+  function priceActionBullets(row) {
+    const items = [];
+    if (row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && Number(row.marginTotalPct) < Number(row.effectiveAllowedMarginPct)) {
+      const gap = Number(row.effectiveAllowedMarginPct) - Number(row.marginTotalPct);
+      items.push(`Маржа ниже допустимой на ${pctShort(gap)}.`);
+    }
+    if (row.turnoverDisplay != null && Number(row.turnoverDisplay) >= 60) {
+      items.push(`Оборачиваемость ${fmt.num(row.turnoverDisplay, 1)} дн. Требуется ускорение оборота.`);
+    } else if (row.turnoverDisplay != null && Number(row.turnoverDisplay) >= 40) {
+      items.push(`Оборачиваемость ${fmt.num(row.turnoverDisplay, 1)} дн. уже в зоне внимания.`);
+    }
+    if (row.completionPctSelected != null && Number(row.completionPctSelected) < 0.8) {
+      const actual = row.actualUnitsSelected == null ? "факт не опубликован" : `${fmt.int(row.actualUnitsSelected)} шт.`;
+      const plan = row.planUnitsSelected == null ? "план не загружен" : `${fmt.int(row.planUnitsSelected)} шт.`;
+      items.push(`План-факт ${pctShort(row.completionPctSelected)}: ${actual} при плане ${plan}.`);
+    }
+    if (row.targetFillPrice != null && row.hardMinPrice != null && Number(row.targetFillPrice) < Number(row.hardMinPrice)) {
+      items.push(`Текущее решение ниже жесткого минимума ${moneyShort(row.hardMinPrice)}.`);
+    }
+    if (row.historyMode === "price_only") {
+      items.push("В истории доступны цена и оборачиваемость, но дневной факт продаж ограничен.");
+    }
+    if (row.marketplace === "wb" && row.currentClientPriceDisplay != null && row.currentSppDisplay != null) {
+      items.push("По WB перепроверьте, не пришла ли клиентская цена уже со скидкой СПП.");
+    }
+    if (!items.length) items.push("Позиция выглядит стабильной и может использоваться как контрольная.");
+    return items.slice(0, 4);
+  }
+
+  function priceSignalMarkup(row) {
+    const items = signalsForRow(row);
+    if (!items.length) return badge("Стабильно", "ok");
+    return items.map((item) => badge(item.label, item.kind)).join("");
+  }
+
+  function pricePriorityRows(rows, limit = 6) {
+    return rows
+      .slice()
+      .sort((left, right) => {
+        return pricePriorityScore(right) - pricePriorityScore(left)
+          || riskScore(right) - riskScore(left)
+          || (Number(right.turnoverDisplay) || 0) - (Number(left.turnoverDisplay) || 0)
+          || (Number(left.completionPctSelected) || 0) - (Number(right.completionPctSelected) || 0);
+      })
+      .slice(0, limit);
+  }
+
+  function renderPriorityQueue(rows) {
+    const focusRows = pricePriorityRows(rows, 6);
+    if (!focusRows.length) return "";
+    return `
+      <section class="price-priority-section">
+        <div class="price-section-head">
+          <div>
+            <h3>Приоритетные артикулы на сейчас</h3>
+            <p>Это верх очереди для РОПа: позиции с сочетанием риска по марже, плана, оборачиваемости и уже зафиксированных решений. Нажатие открывает рабочую карточку SKU.</p>
+          </div>
+        </div>
+        <div class="price-priority-grid">
+          ${focusRows.map((row, index) => {
+            const key = workbenchKey(row.marketplace, row.articleKey);
+            const tasks = relatedTasks(row);
+            const selected = key === state.priceWorkbench.selectedKey;
+            return `
+              <button type="button" class="price-priority-card ${selected ? "is-selected" : ""}" data-price-open="${escapeHtml(key)}">
+                <div class="price-priority-top">
+                  <div>
+                    <div class="price-sku-title">${escapeHtml(row.articleKey)}</div>
+                    <div class="price-sku-note">${escapeHtml((row.name || "").slice(0, 140))}</div>
+                    <div class="price-inline-meta">${escapeHtml([row.owner || "Без owner", row.segment || "—", row.abc || "—"].join(" · "))}</div>
+                  </div>
+                  <div class="price-priority-rank">#${index + 1}</div>
+                </div>
+                  <div class="price-signal-stack">
+                    ${decisionBadge(row)}
+                    ${row.escalation !== "none" ? badge((ESCALATION_META[row.escalation] || ESCALATION_META.none).label, (ESCALATION_META[row.escalation] || ESCALATION_META.none).kind) : ""}
+                    ${productStatusBadges(row).join("")}
+                    ${priceSignalMarkup(row)}
+                  </div>
+                <div class="price-priority-kpis">
+                  <div class="price-priority-kpi"><span>Маржа / доп. 3м</span><strong>${pctShort(row.marginTotalPct)} / ${pctShort(row.effectiveAllowedMarginPct)}</strong></div>
+                  <div class="price-priority-kpi"><span>Оборот / план</span><strong>${row.turnoverDisplay == null ? "—" : `${fmt.num(row.turnoverDisplay, 1)} дн.`} / ${row.completionPctSelected == null ? "—" : pctShort(row.completionPctSelected)}</strong></div>
+                  <div class="price-priority-kpi"><span>Цена MP / клиент</span><strong>${moneyShort(row.currentFillPriceDisplay)} / ${moneyShort(row.currentClientPriceDisplay)}</strong></div>
+                  <div class="price-priority-kpi"><span>Smart / решение</span><strong>${moneyShort(row.seedTargetFillPrice)} / ${moneyShort(row.targetFillPrice)}</strong></div>
+                </div>
+                <div class="price-priority-action">${escapeHtml(pricePrimaryAction(row))}</div>
+                <div class="price-bullet-list">
+                  ${priceActionBullets(row).map((item) => `<div>${escapeHtml(item)}</div>`).join("")}
+                </div>
+                ${tasks.length ? renderTaskSummary(tasks) : `<div class="price-inline-meta">Задача по позиции пока не заведена.</div>`}
+              </button>
+            `;
+          }).join("")}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderSummary(rows) {
+    const totals = aggregateMetrics(rows);
+    const belowMargin = rows.filter((row) => row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && row.marginTotalPct < row.effectiveAllowedMarginPct).length;
+    const underPlan = rows.filter((row) => row.completionPctSelected != null && row.completionPctSelected < 0.8).length;
+    const tasks = rows.filter((row) => row.needsTask || relatedTasks(row).length).length;
+    const dailyReady = rows.filter((row) => row.historyHasDailyFact).length;
+    const priceOnly = rows.filter((row) => row.historyMode === "price_only").length;
+    const priority = rows.filter((row) => pricePriorityScore(row) >= 18).length;
+    const avgTurnover = meanOrNull(rows.map((row) => row.turnoverDisplay));
+    return `
+      <div class="price-summary-grid">
+        <div class="price-summary-card"><span class="label">В контуре</span><strong>${fmt.int(rows.length)}</strong><small>Артикулы выбранной площадки и периода, по которым можно принимать решение.</small></div>
+        <div class="price-summary-card"><span class="label">Приоритет сегодня</span><strong>${fmt.int(priority)}</strong><small>Позиции, где уже совпали несколько сигналов риска и их стоит разбирать первыми.</small></div>
+        <div class="price-summary-card"><span class="label">Ниже допустимой маржи</span><strong>${fmt.int(belowMargin)}</strong><small>Сравнение идет с допустимой маржой, которую берем как среднюю за 3 месяца, если она есть в поддерживающих файлах.</small></div>
+        <div class="price-summary-card"><span class="label">Под риском по плану</span><strong>${fmt.int(underPlan)}</strong><small>${totals.planUnits == null ? "План по SKU еще не загружен для выбранного диапазона." : `Суммарный план по видимым SKU ${fmt.int(totals.planUnits)} шт.`}</small></div>
+        <div class="price-summary-card"><span class="label">Выручка / средний чек</span><strong>${moneyShort(totals.periodRevenue)}</strong><small>${totals.avgCheck == null ? "Средний чек появится там, где есть дневной факт." : `Средний чек ${moneyShort(totals.avgCheck)}.`}</small></div>
+        <div class="price-summary-card"><span class="label">Средняя оборачиваемость</span><strong>${avgTurnover == null ? "—" : `${fmt.num(avgTurnover, 1)} дн.`}</strong><small>Показываем средний уровень по видимому списку, чтобы быстро понять скорость оборота площадки.</small></div>
+        <div class="price-summary-card"><span class="label">История по дням</span><strong>${fmt.int(dailyReady)}</strong><small>${priceOnly ? `Еще у ${fmt.int(priceOnly)} SKU история только по цене и оборачиваемости.` : "По всем видимым позициям история доступна на уровне дня."}</small></div>
+        <div class="price-summary-card"><span class="label">Задачи и решения</span><strong>${fmt.int(tasks)}</strong><small>Позиции, где уже есть задача, согласование или ручное решение по цене.</small></div>
+      </div>
+    `;
+  }
+
+  function renderTable(rows) {
+    if (!rows.length) return `<div class="price-empty">По текущим фильтрам ничего не найдено.</div>`;
+    return `
+      <div class="card price-table-card">
+        <div class="price-table-head">
+          <div>
+            <h3>Рабочий список по артикулам</h3>
+            <p>Таблица ниже нужна не для просмотра ради просмотра, а для быстрого ответа на три во

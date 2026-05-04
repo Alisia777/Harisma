@@ -1,15 +1,18 @@
 (function () {
-  if (window.__ALTEA_SIDEBAR_PRIORITY_HOTFIX_20260425A__) return;
+  if (window.__ALTEA_SIDEBAR_PRIORITY_HOTFIX_20260503A__) return;
+  window.__ALTEA_SIDEBAR_PRIORITY_HOTFIX_20260503A__ = true;
   window.__ALTEA_SIDEBAR_PRIORITY_HOTFIX_20260425A__ = true;
 
   var ORDER = [
     "dashboard",
+    "documents",
     "repricer",
     "prices",
     "order",
     "control",
     "executive",
     "launches",
+    "product-leaderboard",
     "launch-control",
     "skus"
   ];
@@ -18,6 +21,10 @@
     dashboard: {
       title: "\u0414\u0430\u0448\u0431\u043e\u0440\u0434",
       subtitle: "\u041f\u0443\u043b\u044c\u0441 \u00b7 \u043b\u0438\u0434\u0435\u0440\u044b \u00b7 \u0441\u0438\u0433\u043d\u0430\u043b\u044b"
+    },
+    documents: {
+      title: "\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b",
+      subtitle: "\u0413\u0430\u0439\u0434\u044b \u00b7 \u0448\u0430\u0431\u043b\u043e\u043d\u044b \u00b7 \u0441\u0441\u044b\u043b\u043a\u0438"
     },
     repricer: {
       title: "\u0420\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440",
@@ -43,6 +50,10 @@
       title: "\u041f\u0440\u043e\u0434\u0443\u043a\u0442 / \u041a\u0441\u0435\u043d\u0438\u044f",
       subtitle: "\u0422\u043e\u0432\u0430\u0440 \u00b7 \u043d\u043e\u0432\u0438\u043d\u043a\u0438 \u00b7 \u044d\u043a\u043e\u043d\u043e\u043c\u0438\u043a\u0430"
     },
+    "product-leaderboard": {
+      title: "\u041f\u0440\u043e\u0434\u0443\u043a\u0442\u043e\u0432\u044b\u0439 \u043b\u0438\u0434\u0435\u0440\u0431\u043e\u0440\u0434",
+      subtitle: "\u041a\u0417 \u00b7 \u0432\u043e\u0440\u043e\u043d\u043a\u0430 \u00b7 ROMI"
+    },
     "launch-control": {
       title: "\u0417\u0430\u043f\u0443\u0441\u043a \u043d\u043e\u0432\u0438\u043d\u043e\u043a",
       subtitle: "\u0427\u0435\u043a-\u043b\u0438\u0441\u0442\u044b \u00b7 \u0444\u0430\u0437\u044b \u00b7 \u043f\u0440\u043e\u0441\u0440\u043e\u0447\u043a\u0438"
@@ -54,7 +65,6 @@
   };
 
   var REDIRECTS = {
-    documents: "dashboard",
     meetings: "dashboard"
   };
 
@@ -122,31 +132,48 @@
       byView[String(btn.dataset.view || "").trim()] = btn;
     });
 
-    ["documents", "meetings"].forEach(function (view) {
+    ["meetings"].forEach(function (view) {
       if (byView[view] && byView[view].parentNode) byView[view].parentNode.removeChild(byView[view]);
       delete byView[view];
     });
 
+    var orderedButtons = [];
     ORDER.forEach(function (view) {
       var btn = byView[view];
       if (!btn) return;
       var meta = META[view] || {};
       setText(btn.querySelector("span"), meta.title);
       setText(btn.querySelector("small"), meta.subtitle);
-      nav.appendChild(btn);
+      orderedButtons.push(btn);
     });
 
     Object.keys(byView).forEach(function (view) {
-      if (ORDER.indexOf(view) === -1) nav.appendChild(byView[view]);
+      if (ORDER.indexOf(view) === -1) orderedButtons.push(byView[view]);
     });
+
+    var needsReorder = orderedButtons.length !== buttons.length;
+    if (!needsReorder) {
+      for (var index = 0; index < orderedButtons.length; index += 1) {
+        if (nav.children[index] !== orderedButtons[index]) {
+          needsReorder = true;
+          break;
+        }
+      }
+    }
+
+    if (needsReorder) {
+      orderedButtons.forEach(function (btn) {
+        nav.appendChild(btn);
+      });
+    }
 
     return true;
   }
 
   function enforceActiveView() {
-    if (!window.state || !window.state.activeView) return;
-    var normalized = normalizeView(window.state.activeView);
-    if (normalized === window.state.activeView) return;
+    if (typeof state !== "object" || !state || !state.activeView) return;
+    var normalized = normalizeView(state.activeView);
+    if (normalized === state.activeView) return;
     if (typeof window.setView === "function") window.setView(normalized);
   }
 
@@ -165,5 +192,4 @@
 
   window.addEventListener("load", run);
   window.addEventListener("altea:viewchange", run);
-  window.setInterval(run, 1500);
 })();

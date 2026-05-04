@@ -1,0 +1,547 @@
+d_decision_status || "").trim(),
+      newDecisionStatus: String(item.newDecisionStatus || item.new_decision_status || "").trim(),
+      reason: String(item.reason || "").trim(),
+      comment: String(item.comment || "").trim(),
+      changedBy: String(item.changedBy || item.changed_by || state.team.member?.name || "Команда").trim() || "Команда",
+      changedAt: String(item.changedAt || item.changed_at || new Date().toISOString()).trim() || new Date().toISOString(),
+      synced: item.synced !== false,
+    };
+  }
+
+  function loadLocalState() {
+    try {
+      const entries = JSON.parse(localStorage.getItem(LOCAL_ENTRIES_KEY) || "[]");
+      state.priceWorkbench.localEntries = Array.isArray(entries) ? entries.map(normalizeEntry) : [];
+    } catch {
+      state.priceWorkbench.localEntries = [];
+    }
+    try {
+      const history = JSON.parse(localStorage.getItem(LOCAL_HISTORY_KEY) || "[]");
+      state.priceWorkbench.localHistory = Array.isArray(history) ? history.map(normalizeHistory) : [];
+    } catch {
+      state.priceWorkbench.localHistory = [];
+    }
+  }
+
+  function saveLocalState() {
+    localStorage.setItem(LOCAL_ENTRIES_KEY, JSON.stringify(state.priceWorkbench.localEntries || []));
+    localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(state.priceWorkbench.localHistory || []));
+  }
+
+  async function queryRemoteEntries() {
+    if (!state.team.client) return [];
+    const response = await state.team.client.from(ENTRIES_TABLE).select("*").eq("brand", currentBrand()).limit(2000);
+    if (response.error) throw response.error;
+    return response.data || [];
+  }
+
+  async function queryRemoteHistory() {
+    if (!state.team.client) return [];
+    const response = await state.team.client.from(HISTORY_TABLE).select("*").eq("brand", currentBrand()).order("changed_at", { ascending: false }).limit(4000);
+    if (response.error) throw response.error;
+    return response.data || [];
+  }
+
+  async function upsertRemoteEntries(rows) {
+    if (!state.team.client || !rows.length) return;
+    const payload = rows.map((entry) => ({
+      id: entry.id,
+      brand: currentBrand(),
+      marketplace: entry.marketplace,
+      article_key: entry.articleKey,
+      decision_status: entry.decisionStatus,
+      target_fill_price: entry.targetFillPrice,
+      target_client_price: entry.targetClientPrice,
+      allowed_margin_manual_pct: entry.allowedMarginManualPct,
+      reason: entry.reason,
+      owner_name: entry.owner,
+      due_date: entry.dueDate || null,
+      needs_task: entry.needsTask,
+      escalation: entry.escalation,
+      comment: entry.comment,
+      updated_by: entry.updatedBy,
+      updated_at: entry.updatedAt,
+      created_at: entry.createdAt,
+    }));
+    const response = await state.team.client.from(ENTRIES_TABLE).upsert(payload, { onConflict: "id" });
+    if (response.error) throw response.error;
+  }
+
+  async function insertRemoteHistory(rows) {
+    if (!state.team.client || !rows.length) return;
+    const payload = rows.map((item) => ({
+      id: item.id,
+      brand: currentBrand(),
+      marketplace: item.marketplace,
+      article_key: item.articleKey,
+      event_type: item.eventType,
+      old_target_fill_price: item.oldTargetFillPrice,
+      new_target_fill_price: item.newTargetFillPrice,
+      old_target_client_price: item.oldTargetClientPrice,
+      new_target_client_price: item.newTargetClientPrice,
+      old_allowed_margin_pct: item.oldAllowedMarginPct,
+      new_allowed_margin_pct: item.newAllowedMarginPct,
+      old_decision_status: item.oldDecisionStatus,
+      new_decision_status: item.newDecisionStatus,
+      reason: item.reason,
+      comment: item.comment,
+      changed_by: item.changedBy,
+      changed_at: item.changedAt,
+    }));
+    const response = await state.team.client.from(HISTORY_TABLE).insert(payload);
+    if (response.error) throw response.error;
+  }
+
+  function ensureSeedLoaded() {
+    if (state.priceWorkbench.seed || state.priceWorkbench.loading) return Promise.resolve(state.priceWorkbench.seed);
+    state.priceWorkbench.loading = true;
+    const snapshotLoader = typeof window.__alteaLoadPortalSnapshot === "function"
+      ? window.__alteaLoadPortalSnapshot("data/smart_price_workbench.json").catch((error) => {
+        console.warn("[price-workbench] snapshot fallback failed", error);
+        return null;
+      })
+      : Promise.resolve(null);
+    const localLoader = loadJson("data/smart_price_workbench.json").catch((error) => {
+      console.warn("[price-workbench] local seed failed", error);
+      return null;
+    });
+    const supportLoader = loadJson("data/price_workbench_support.json").catch((error) => {
+      console.warn("[price-workbench] support payload failed", error);
+      return null;
+    });
+    const supportOverlayLoader = loadSupportOverlay();
+    return Promise.all([snapshotLoader, localLoader, supportLoader, supportOverlayLoader])
+      .then(([snapshotPayload, localPayload, supportPayload, supportOverlayPayload]) => {
+        state.priceWorkbench.support = mergeSupportPayload(supportPayload, supportOverlayPayload);
+        const chosen = chooseSeedPayload(snapshotPayload, localPayload);
+        if (!chosen) throw new Error("Не удалось загрузить smart_price_workbench.json");
+        state.priceWorkbench.seed = chosen.payload;
+        state.priceWorkbench.seedSource = chosen.source;
+        state.priceWorkbench.issue = "";
+        ensureDateRange();
+        return chosen.payload;
+      })
+      .catch((error) => {
+        console.error(error);
+        state.priceWorkbench.issue = error.message;
+        return null;
+      })
+      .finally(() => {
+        state.priceWorkbench.loading = false;
+        if (typeof rerenderCurrentView === "function") rerenderCurrentView();
+      });
+  }
+
+  function ensureRemoteLoaded() {
+    if (state.priceWorkbench.remoteReady || state.priceWorkbench.remoteLoading || state.priceWorkbench.remoteDisabled || !hasRemoteStore() || !state.team.client) {
+      return Promise.resolve();
+    }
+    state.priceWorkbench.remoteLoading = true;
+    return Promise.all([queryRemoteEntries(), queryRemoteHistory()])
+      .then(([entries, history]) => {
+        state.priceWorkbench.remoteEntries = entries.map(normalizeEntry);
+        state.priceWorkbench.remoteHistory = history.map(normalizeHistory);
+        state.priceWorkbench.remoteReady = true;
+      })
+      .catch((error) => {
+        console.error(error);
+        state.priceWorkbench.remoteDisabled = true;
+      })
+      .finally(() => {
+        state.priceWorkbench.remoteLoading = false;
+        if (typeof rerenderCurrentView === "function") rerenderCurrentView();
+      });
+  }
+
+  function baseRowsForMarket(market) {
+    const seed = state.priceWorkbench.seed;
+    if (!seed) return [];
+    return (((seed.platforms || {})[market] || {}).rows || []).map((row) => mergeSupportRow({ ...row }));
+  }
+
+  function allDatesForMarket(market) {
+    const seen = new Set();
+    const dates = [];
+    baseRowsForMarket(market).forEach((row) => {
+      (row.monthly || []).forEach((item) => {
+        const value = isoDate(item.date);
+        if (value && !seen.has(value)) {
+          seen.add(value);
+          dates.push(value);
+        }
+      });
+    });
+    dates.sort();
+    return dates;
+  }
+
+  function presetRange(preset, market) {
+    const dates = allDatesForMarket(market);
+    if (!dates.length) return { dateFrom: "", dateTo: "" };
+    const min = dates[0];
+    const max = dates[dates.length - 1];
+    if (preset === "all") return { dateFrom: min, dateTo: max };
+    const maxDate = new Date(max);
+    if (preset === "prev_month") {
+      const start = new Date(Date.UTC(maxDate.getUTCFullYear(), maxDate.getUTCMonth() - 1, 1));
+      const end = new Date(Date.UTC(maxDate.getUTCFullYear(), maxDate.getUTCMonth(), 0));
+      return { dateFrom: start.toISOString().slice(0, 10), dateTo: end.toISOString().slice(0, 10) };
+    }
+    if (preset === "month") {
+      const start = new Date(Date.UTC(maxDate.getUTCFullYear(), maxDate.getUTCMonth(), 1));
+      return { dateFrom: start.toISOString().slice(0, 10), dateTo: max };
+    }
+    const days = PRESETS[preset]?.days || 30;
+    const start = new Date(maxDate);
+    start.setUTCDate(start.getUTCDate() - (days - 1));
+    const startIso = start.toISOString().slice(0, 10);
+    return { dateFrom: startIso < min ? min : startIso, dateTo: max };
+  }
+
+  function ensureDateRange() {
+    if (state.priceWorkbench.filters.dateFrom && state.priceWorkbench.filters.dateTo) return;
+    const range = presetRange(state.priceWorkbench.filters.preset || "month", state.priceWorkbench.filters.market || "wb");
+    state.priceWorkbench.filters.dateFrom = range.dateFrom;
+    state.priceWorkbench.filters.dateTo = range.dateTo;
+  }
+
+  function applyPreset(preset) {
+    state.priceWorkbench.filters.preset = preset;
+    const range = presetRange(preset, state.priceWorkbench.filters.market || "wb");
+    state.priceWorkbench.filters.dateFrom = range.dateFrom;
+    state.priceWorkbench.filters.dateTo = range.dateTo;
+    renderPriceWorkbench();
+  }
+
+  function withinRange(value) {
+    const dateValue = isoDate(value);
+    if (!dateValue) return false;
+    const from = state.priceWorkbench.filters.dateFrom || "";
+    const to = state.priceWorkbench.filters.dateTo || "";
+    if (from && dateValue < from) return false;
+    if (to && dateValue > to) return false;
+    return true;
+  }
+
+  function mergeEntryLayers() {
+    const map = new Map();
+    (state.priceWorkbench.remoteEntries || []).forEach((item) => map.set(workbenchKey(item.marketplace, item.articleKey), item));
+    (state.priceWorkbench.localEntries || []).forEach((item) => map.set(workbenchKey(item.marketplace, item.articleKey), item));
+    return map;
+  }
+
+  function computePlanMetrics(row, series) {
+    const rangeFrom = state.priceWorkbench.filters.dateFrom || "";
+    const rangeTo = state.priceWorkbench.filters.dateTo || "";
+    if (!rangeFrom || !rangeTo || rangeFrom > rangeTo) {
+      return {
+        planUnitsSelected: null,
+        actualUnitsSelected: null,
+        completionPct: null,
+        selectedDays: 0,
+        actualRevenueSelected: null,
+        actualSource: "",
+        planSource: "",
+      };
+    }
+    const rangeStart = dateKeyToUtc(rangeFrom);
+    const rangeEnd = dateKeyToUtc(rangeTo);
+    if (!rangeStart || !rangeEnd) {
+      return {
+        planUnitsSelected: null,
+        actualUnitsSelected: null,
+        completionPct: null,
+        selectedDays: 0,
+        actualRevenueSelected: null,
+        actualSource: "",
+        planSource: "",
+      };
+    }
+    const selectedDays = Math.floor((rangeEnd - rangeStart) / 86400000) + 1;
+    const support = row.supportRow || null;
+    const planFromSupport = sumMonthlyBuckets(support?.planMonths, rangeStart, rangeEnd);
+    const fallbackPlanUnits = parseNum(row.planMonthUnits);
+    const fallbackPlanDays = parseNum(row.planMonthDays) || 30;
+    const planUnitsSelected = planFromSupport?.units != null
+      ? planFromSupport.units
+      : (fallbackPlanUnits && fallbackPlanDays ? (fallbackPlanUnits / fallbackPlanDays) * selectedDays : null);
+    const actualPool = series.filter((item) => {
+      const itemDate = isoDate(item.date);
+      return itemDate && itemDate >= rangeFrom && itemDate <= rangeTo;
+    });
+    const actualValues = actualPool
+      .map((item) => parseNum(item.ordersUnits) ?? parseNum(item.deliveredUnits))
+      .filter((value) => value != null);
+    const actualRevenueValues = actualPool
+      .map((item) => parseNum(item.revenue))
+      .filter((value) => value != null);
+    let actualUnitsSelected = actualValues.length ? actualValues.reduce((sum, value) => sum + value, 0) : null;
+    let actualRevenueSelected = actualRevenueValues.length ? actualRevenueValues.reduce((sum, value) => sum + value, 0) : null;
+    let actualSource = actualUnitsSelected != null ? "daily" : "";
+    if (actualUnitsSelected == null) {
+      const monthlyActual = sumMonthlyBuckets(support?.actualMonths, rangeStart, rangeEnd);
+      if (monthlyActual?.units != null) {
+        actualUnitsSelected = monthlyActual.units;
+        actualRevenueSelected = monthlyActual.revenue;
+        actualSource = "monthly";
+      }
+    }
+    const completionPct = actualUnitsSelected != null && planUnitsSelected > 0 ? actualUnitsSelected / planUnitsSelected : null;
+    return {
+      planUnitsSelected,
+      actualUnitsSelected,
+      completionPct,
+      selectedDays,
+      actualRevenueSelected,
+      actualSource,
+      planSource: planFromSupport?.units != null ? "monthly_plan" : (planUnitsSelected != null ? "seed" : ""),
+    };
+  }
+
+  function sourceLabel(row) {
+    if (row.allowedMarginManualPct != null) return "manual";
+    if (row.allowedMarginSourceBaseline) return row.allowedMarginSourceBaseline;
+    if (row.allowedMarginPct != null) return "smart_seed";
+    return "default";
+  }
+
+  function allowedMarginSourceCopy(row) {
+    switch (row.allowedMarginSource) {
+      case "manual":
+        return "вручную";
+      case "avg_3m_actual":
+        return "ср. маржа 3м";
+      case "support_workbook":
+        return "из файла";
+      case "smart_seed":
+        return "из smart";
+      default:
+        return "резерв";
+    }
+  }
+
+  function historySourceCopy(row) {
+    if (row.historyMode === "daily") return "дни + продажи";
+    if (row.historyMode === "price_only") return "цена/оборач. без daily";
+    return "история не заполнена";
+  }
+
+  function compactHistoryNote(row, limit = 140) {
+    const note = String(row?.historyNoteDisplay || row?.historyNote || "").trim();
+    if (!note) return "";
+    if (note.length <= limit) return note;
+    return `${note.slice(0, limit - 1).trimEnd()}…`;
+  }
+
+  function supportStatusKind(value) {
+    const raw = String(value || "").trim().toLowerCase();
+    if (!raw) return "info";
+    if (/актуал|продается|доставлен|в наличии/.test(raw)) return "ok";
+    if (/вывод|архив|стоп|неактуал|не продается|скрыт/.test(raw)) return "danger";
+    if (/пауза|огранич|нет данных|конфликт/.test(raw)) return "warn";
+    return "info";
+  }
+
+  function productStatusValue(row) {
+    const support = row?.supportRow || null;
+    if (!support) return "";
+    const values = [];
+    if (support.productStatus) values.push(String(support.productStatus).trim());
+    if (support.repricerStatus) {
+      const repricer = `Repricer: ${String(support.repricerStatus).trim()}`;
+      if (!values.includes(repricer)) values.push(repricer);
+    }
+    return values.filter(Boolean).join(" · ");
+  }
+
+  function productStatusNote(row) {
+    const support = row?.supportRow || null;
+    if (!support) return "";
+    const values = [];
+    if (support.inCurrentExport === false) values.push("Позиция не отмечена в текущем export.");
+    if (support.inCurrentExport === true) values.push("Позиция есть в текущем export.");
+    if (support.historyQuality) values.push(`Качество истории: ${String(support.historyQuality).trim()}`);
+    if (support.statusInterpretation) values.push(String(support.statusInterpretation).trim());
+    else if (support.buyerInterpretation) values.push(String(support.buyerInterpretation).trim());
+    if (support.statusComment) values.push(String(support.statusComment).trim());
+    return values.filter(Boolean).join(" · ");
+  }
+
+  function productStatusBadges(row) {
+    const support = row?.supportRow || null;
+    if (!support) return [];
+    const values = [];
+    if (support.productStatus) values.push(badge(String(support.productStatus).trim(), supportStatusKind(support.productStatus)));
+    if (support.repricerStatus) values.push(badge(`Repricer: ${String(support.repricerStatus).trim()}`, supportStatusKind(support.repricerStatus)));
+    return values.filter(Boolean);
+  }
+
+  function modalRangeCopy(row) {
+    const bits = [];
+    bits.push(`Период ${state.priceWorkbench.filters.dateFrom || "—"} — ${state.priceWorkbench.filters.dateTo || "—"}`);
+    bits.push(`История: ${historySourceCopy(row)}`);
+    if (row.historyFreshnessDisplay) bits.push(`свежесть до ${row.historyFreshnessDisplay}`);
+    return bits.join(" · ");
+  }
+
+  function applyEntry(row, entry) {
+    const merged = entry ? normalizeEntry(entry) : normalizeEntry({ marketplace: row.marketplace, articleKey: row.articleKey, owner: row.owner });
+    const series = (Array.isArray(row.monthly) ? row.monthly : [])
+      .filter((item) => withinRange(item.date))
+      .sort((left, right) => String(left?.date || "").localeCompare(String(right?.date || "")));
+    const allowedMargin = resolveAllowedMargin(row);
+    const effectiveAllowed = merged.allowedMarginManualPct != null ? merged.allowedMarginManualPct : allowedMargin.value;
+    const latest = series.length ? series[series.length - 1] : null;
+    const avgTurnover = series.length ? meanOrNull(series.map((item) => parseNum(item.turnoverDays))) : parseNum(row.turnoverCurrentDays);
+    const latestPrice = latest ? parseNum(latest.price) : parseNum(row.currentFillPrice);
+    const latestClient = latest ? (parseNum(latest.clientPrice) ?? (latestPrice != null && parseNum(latest.sppPct) != null ? latestPrice * (1 - parseNum(latest.sppPct)) : null)) : parseNum(row.currentClientPrice);
+    const latestSpp = latest ? parseNum(latest.sppPct) : parseNum(row.currentSppPct);
+    const historyMeta = buildHistoryMeta(series, row);
+    const plan = computePlanMetrics(row, series);
+    const periodPriceStart = series.length ? parseNum(series[0].price) : latestPrice;
+    const periodClientStart = series.length ? (parseNum(series[0].clientPrice) ?? latestClient) : latestClient;
+    const periodAvgPrice = series.length ? meanOrNull(series.map((item) => parseNum(item.price))) : latestPrice;
+    const periodAvgClientPrice = series.length ? meanOrNull(series.map((item) => parseNum(item.clientPrice) ?? null)) : latestClient;
+    const periodPriceDeltaPct = periodPriceStart != null && latestPrice != null && periodPriceStart > 0
+      ? (latestPrice - periodPriceStart) / periodPriceStart
+      : null;
+    const periodClientDeltaPct = periodClientStart != null && latestClient != null && periodClientStart > 0
+      ? (latestClient - periodClientStart) / periodClientStart
+      : null;
+    return {
+      ...row,
+      decisionId: merged.id,
+      decisionStatus: merged.decisionStatus,
+      targetFillPrice: merged.targetFillPrice ?? row.seedTargetFillPrice ?? latestPrice,
+      targetClientPrice: merged.targetClientPrice ?? row.seedTargetClientPrice ?? latestClient,
+      allowedMarginManualPct: merged.allowedMarginManualPct,
+      effectiveAllowedMarginPct: effectiveAllowed,
+      allowedMarginBaselinePct: allowedMargin.value,
+      allowedMarginSourceBaseline: allowedMargin.source,
+      allowedMarginNote: allowedMargin.note,
+      allowedMarginSource: sourceLabel({ ...row, allowedMarginManualPct: merged.allowedMarginManualPct }),
+      currentFillPriceDisplay: latestPrice,
+      currentClientPriceDisplay: latestClient,
+      currentSppDisplay: latestSpp,
+      valueDate: isoDate(latest?.date) || historyMeta.freshnessDate || "",
+      clientDiscountPct: latestPrice != null && latestClient != null && latestPrice > 0 ? 1 - (latestClient / latestPrice) : null,
+      periodPriceStartDisplay: periodPriceStart,
+      periodClientPriceStartDisplay: periodClientStart,
+      periodAvgFillPriceDisplay: periodAvgPrice,
+      periodAvgClientPriceDisplay: periodAvgClientPrice,
+      periodPriceDeltaPct,
+      periodClientDeltaPct,
+      turnoverDisplay: avgTurnover,
+      monthlyFiltered: series,
+      historyMode: historyMeta.mode,
+      historyFreshnessDisplay: historyMeta.freshnessDate,
+      historyNoteDisplay: historyMeta.note,
+      historyHasDailyFact: historyMeta.mode === "daily",
+      owner: merged.owner || row.owner || "",
+      dueDate: merged.dueDate || "",
+      needsTask: merged.needsTask,
+      escalation: merged.escalation,
+      reason: merged.reason || row.seedReason || "",
+      comment: merged.comment || "",
+      updatedBy: merged.updatedBy,
+      updatedAt: merged.updatedAt,
+      createdAt: merged.createdAt,
+      planUnitsSelected: plan.planUnitsSelected,
+      actualUnitsSelected: plan.actualUnitsSelected,
+      completionPctSelected: plan.completionPct,
+      selectedDays: plan.selectedDays,
+      periodRevenueSelected: plan.actualRevenueSelected,
+      actualSource: plan.actualSource,
+      planSource: plan.planSource,
+    };
+  }
+
+  function signalsForRow(row) {
+    const items = [];
+    if (row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && Number(row.marginTotalPct) < Number(row.effectiveAllowedMarginPct)) items.push({ label: "Маржа ниже допустимой", kind: "danger" });
+    if (row.turnoverDisplay != null && Number(row.turnoverDisplay) >= 60) items.push({ label: "Высокая оборачиваемость", kind: "danger" });
+    else if (row.turnoverDisplay != null && Number(row.turnoverDisplay) >= 40) items.push({ label: "Оборачиваемость требует внимания", kind: "warn" });
+    if (row.completionPctSelected != null && Number(row.completionPctSelected) < 0.8) items.push({ label: "Отстаёт от плана", kind: "warn" });
+    if (row.targetFillPrice != null && row.hardMinPrice != null && Number(row.targetFillPrice) < Number(row.hardMinPrice)) items.push({ label: "Новая цена ниже жёсткого минимума", kind: "danger" });
+    if (row.needsTask) items.push({ label: "Есть задача", kind: "info" });
+    if (row.historyNote) items.push({ label: "Проверь свежесть факта", kind: "info" });
+    return items;
+  }
+
+  function riskScore(row) {
+    return signalsForRow(row).reduce((sum, item) => sum + (item.kind === "danger" ? 3 : item.kind === "warn" ? 2 : 1), 0);
+  }
+
+  function effectiveRows() {
+    const market = state.priceWorkbench.filters.market || "wb";
+    const decisions = mergeEntryLayers();
+    return baseRowsForMarket(market).map((row) => applyEntry(row, decisions.get(workbenchKey(market, row.articleKey))));
+  }
+
+  function filteredRows() {
+    const search = String(state.priceWorkbench.filters.search || "").trim().toLowerCase();
+    const ownerFilter = state.priceWorkbench.filters.owner || "all";
+    const statusFilter = state.priceWorkbench.filters.status || "all";
+    const sortMode = state.priceWorkbench.filters.sort || "risk";
+    const riskOnly = Boolean(state.priceWorkbench.filters.riskOnly);
+    const rows = effectiveRows().filter((row) => {
+      if (search) {
+        const haystack = [
+          row.articleKey,
+          row.name,
+          row.owner,
+          row.reason,
+          row.seedReason,
+          row.segment,
+          row.abc,
+          productStatusValue(row),
+          productStatusNote(row),
+        ].filter(Boolean).join(" ").toLowerCase();
+        if (!haystack.includes(search)) return false;
+      }
+      if (ownerFilter !== "all" && (row.owner || "Без owner") !== ownerFilter) return false;
+      if (statusFilter !== "all" && row.decisionStatus !== statusFilter) return false;
+      if (riskOnly && riskScore(row) < 3) return false;
+      return true;
+    });
+    rows.sort((a, b) => {
+      if (sortMode === "turnover") return (Number(b.turnoverDisplay) || 0) - (Number(a.turnoverDisplay) || 0);
+      if (sortMode === "margin") return (Number(a.marginTotalPct) || 0) - (Number(b.marginTotalPct) || 0);
+      if (sortMode === "plan") return (Number(a.completionPctSelected) || 0) - (Number(b.completionPctSelected) || 0);
+      return riskScore(b) - riskScore(a) || (Number(b.turnoverDisplay) || 0) - (Number(a.turnoverDisplay) || 0);
+    });
+    return rows;
+  }
+
+  function selectedRow(rows) {
+    if (!rows.length) return null;
+    const found = rows.find((row) => workbenchKey(row.marketplace, row.articleKey) === state.priceWorkbench.selectedKey);
+    if (found) return found;
+    state.priceWorkbench.selectedKey = workbenchKey(rows[0].marketplace, rows[0].articleKey);
+    return rows[0];
+  }
+
+  function ownerList(rows) {
+    return Array.from(new Set(rows.map((row) => row.owner).filter(Boolean))).sort((a, b) => a.localeCompare(b, "ru"));
+  }
+
+  function dataFreshnessLabel(rows) {
+    const dates = Array.from(new Set(rows.map((row) => isoDate(row.historyFreshnessDate)).filter(Boolean))).sort();
+    if (!dates.length) return "Свежесть факта не отмечена";
+    if (dates.length === 1) return `Факт в пакете до ${dates[0]}`;
+    return `Факт в пакете: ${dates[0]} – ${dates[dates.length - 1]}`;
+  }
+
+  function seedSourceLabel() {
+    if (state.priceWorkbench.seedSource === "snapshot") return "Источник: Supabase snapshot";
+    if (state.priceWorkbench.seedSource === "local") return "Источник: локальный JSON";
+    return "Источник данных уточняется";
+  }
+
+  function marketWarnings(rows) {
+    const notes = Array.from(new Set(rows.map((row) => String(row.historyNote || "").trim()).filter(Boolean)));
+    if ((state.priceWorkbench.filters.market || "wb") === "wb") {
+      notes.push("WB: перед внедрением решения перепроверьте, не является ли цена клиента ценой со СПП из файла.");
+    }
+    if ((state.priceWorkbench.filters.market || "wb") === "wb") {
+      notes.push("WB: допустимая 

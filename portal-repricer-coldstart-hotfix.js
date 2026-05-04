@@ -1,12 +1,15 @@
 (function () {
-  if (window.__ALTEA_REPRICER_COLDSTART_HOTFIX_20260429A__) return;
+  if (window.__ALTEA_REPRICER_COLDSTART_HOTFIX_20260503A__) return;
+  window.__ALTEA_REPRICER_COLDSTART_HOTFIX_20260503A__ = true;
   window.__ALTEA_REPRICER_COLDSTART_HOTFIX_20260429A__ = true;
 
   let hydratePromise = null;
   let repricerIntentUntil = 0;
   let repricerIntentTimer = null;
+  let repricerIntentAttempts = 0;
   let renderEnforcerUntil = 0;
   let renderEnforcerTimer = null;
+  let renderEnforcerAttempts = 0;
 
   function readBinding(name) {
     try {
@@ -117,7 +120,7 @@
   function formatRub(value) {
     const amount = Number(value);
     if (!Number.isFinite(amount) || amount <= 0) return '';
-    return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(amount)} \u20bd`;
+    return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(amount)} ₽`;
   }
 
   function inferLegacySideStrategy(side) {
@@ -157,7 +160,7 @@
       next.newBuyerPrice = upperCap;
     }
     next.strategy = inferLegacySideStrategy(next);
-    next.reason = `\u0420\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u0430\u0446\u0438\u044f \u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0430 \u0432\u0435\u0440\u0445\u043d\u0435\u0439 \u0433\u0440\u0430\u043d\u0438\u0446\u0435\u0439 \u0440\u0430\u0431\u043e\u0447\u0435\u0433\u043e \u043a\u043e\u0440\u0438\u0434\u043e\u0440\u0430 ${formatRub(upperCap)}. \u0418\u0441\u0445\u043e\u0434\u043d\u044b\u0439 target ${formatRub(next.seedRecPrice || originalRecPrice)} \u0431\u044b\u043b \u0432\u044b\u0448\u0435 \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e\u0433\u043e \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0430.`;
+    next.reason = `Рекомендация ограничена верхней границей рабочего коридора ${formatRub(upperCap)}. Исходный target ${formatRub(next.seedRecPrice || originalRecPrice)} был выше допустимого диапазона.`;
     return next;
   }
 
@@ -176,7 +179,7 @@
   }
 
   function normalizeArticleKey(value) {
-    return String(value || '').toLowerCase().replace(/[^a-z\u0430-\u044f0-9]+/gi, '');
+    return String(value || '').toLowerCase().replace(/[^a-zа-я0-9]+/gi, '');
   }
 
   function parseFreshStamp(value) {
@@ -502,6 +505,7 @@
 
   function clearRepricerIntent() {
     repricerIntentUntil = 0;
+    repricerIntentAttempts = 0;
     if (repricerIntentTimer) {
       window.clearTimeout(repricerIntentTimer);
       repricerIntentTimer = null;
@@ -514,6 +518,7 @@
       return;
     }
 
+    repricerIntentAttempts += 1;
     if (getActiveView() !== 'repricer' && window.__ALTEA_PRIMARY_INIT_FINISHED__) {
       const setView = getSetView();
       if (typeof setView === 'function') {
@@ -539,17 +544,24 @@
       }
     }
 
-    repricerIntentTimer = window.setTimeout(() => maintainRepricerIntent(reason), 1000);
+    if ((getActiveView() === 'repricer' && !repricerRootNeedsHydration()) || repricerIntentAttempts >= 3) {
+      clearRepricerIntent();
+      return;
+    }
+
+    repricerIntentTimer = window.setTimeout(() => maintainRepricerIntent(reason), 1200);
   }
 
   function primeRepricerIntent(reason) {
-    repricerIntentUntil = Date.now() + 30000;
+    repricerIntentUntil = Date.now() + 5000;
+    repricerIntentAttempts = 0;
     if (repricerIntentTimer) window.clearTimeout(repricerIntentTimer);
     repricerIntentTimer = window.setTimeout(() => maintainRepricerIntent(reason), 0);
   }
 
   function clearRenderEnforcer() {
     renderEnforcerUntil = 0;
+    renderEnforcerAttempts = 0;
     if (renderEnforcerTimer) {
       window.clearTimeout(renderEnforcerTimer);
       renderEnforcerTimer = null;
@@ -562,21 +574,23 @@
       return;
     }
 
+    renderEnforcerAttempts += 1;
     repairWorkbenchState(true);
     if (getActiveView() === 'repricer' && (repricerHydrated() || buildRowsCount() > 0)) {
       forceRenderRepricer();
     }
 
-    if (repricerUiReady()) {
+    if (repricerUiReady() || !repricerRootNeedsHydration() || renderEnforcerAttempts >= 2) {
       clearRenderEnforcer();
       return;
     }
 
-    renderEnforcerTimer = window.setTimeout(() => maintainRenderEnforcer(reason), 1000);
+    renderEnforcerTimer = window.setTimeout(() => maintainRenderEnforcer(reason), 1200);
   }
 
   function primeRenderEnforcer(reason) {
-    renderEnforcerUntil = Date.now() + 30000;
+    renderEnforcerUntil = Date.now() + 2500;
+    renderEnforcerAttempts = 0;
     if (renderEnforcerTimer) window.clearTimeout(renderEnforcerTimer);
     renderEnforcerTimer = window.setTimeout(() => maintainRenderEnforcer(reason), 0);
   }

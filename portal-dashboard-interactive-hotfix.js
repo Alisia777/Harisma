@@ -3465,7 +3465,7 @@
           : 'Контент и окупаемость (ROMI) · последний срез';
         const sectionDescription = content.usingLeaderboard
           ? 'На главной показываем weekly КЗ-срез из продуктового лидерборда: клики, заказы, выручка, затраты на контент и ROMI берём из одного источника, без старого fallback-слоя.'
-          : 'Ежедневная рекламная витрина ещё не доехала в <code>ads_summary.json</code>, поэтому здесь временно показывается последний доступный контент-срез. Он не привязан к календарю, но уже даёт понятный ответ по кликам, заказам, выручке и окупаемости контента.';
+          : 'В daily-рекламной витрине для выбранного окна нет опубликованного факта, поэтому блок собран по последнему доступному контент-срезу. Он даёт базовую картину по кликам, заказам, выручке и окупаемости без дневной детализации.';
         return `
           <section class="portal-exec-section">
             <div class="portal-exec-head">
@@ -3474,14 +3474,14 @@
                 <p>${sectionDescription}</p>
               </div>
               <div class="portal-exec-chip-stack">
-                ${badgeHtml(content.usingLeaderboard ? 'Продуктовый лидерборд' : 'Временный fallback', content.usingLeaderboard ? 'ok' : 'warn')}
+                ${badgeHtml(content.usingLeaderboard ? 'Продуктовый лидерборд' : 'Последний контент-срез', content.usingLeaderboard ? 'ok' : 'warn')}
                 ${badgeHtml(content.periods.length ? content.periods.join(' · ') : 'последний срез', 'info')}
                 ${content.generatedAt ? badgeHtml(`Обновлено ${fmt.date(content.generatedAt)}`, 'info') : ''}
               </div>
             </div>
             <div class="portal-exec-grid">
                 <article class="portal-exec-card ${content.usingLeaderboard ? 'is-ok' : 'is-warn'} is-clickable" data-portal-exec-open="content-summary">
-                  <div class="portal-exec-card-head"><span class="portal-exec-card-label">Контент / ROMI</span>${badgeHtml(content.usingLeaderboard ? 'weekly КЗ' : 'не daily', content.usingLeaderboard ? 'ok' : 'warn')}</div>
+                  <div class="portal-exec-card-head"><span class="portal-exec-card-label">Контент / ROMI</span>${badgeHtml(content.usingLeaderboard ? 'weekly КЗ' : 'контент-срез', content.usingLeaderboard ? 'ok' : 'warn')}</div>
                   <div class="portal-exec-card-value compact">${esc(money(content.revenue))}</div>
                   <div class="portal-exec-sub">Клики ${esc(int(content.clicks))} · заказы ${esc(int(content.orders))} · контент ${esc(money(content.spend))} · ROMI ${esc(content.romi !== null ? pct(content.romi) : '—')}</div>
                   <div class="portal-exec-card-foot"><span>Посты ${esc(int(content.posts))}</span><span>SKU ${esc(int(content.rows.length))}</span></div>
@@ -3503,11 +3503,11 @@
           <div class="portal-exec-head">
             <div class="portal-exec-copy">
               <h3>Рекламная воронка</h3>
-              <p>Рекламная логика уже встроена в главную, но опубликованного рекламного факта по текущему диапазону пока нет. Когда витрина доедет, здесь автоматически появятся графики, ДРР и drilldown по товарам.</p>
+              <p>Для выбранного диапазона не найден опубликованный рекламный факт и нет резервного контент-среза, поэтому блок остаётся пустым без подстановки случайных чисел.</p>
             </div>
-            <div class="portal-exec-chip-stack">${badgeHtml('Интерактив готов', 'info')}${badgeHtml('Нет рекламной витрины', 'warn')}</div>
+            <div class="portal-exec-chip-stack">${badgeHtml('Нет рекламного факта', 'warn')}${badgeHtml('ads_summary пуст', 'info')}</div>
           </div>
-          <div class="portal-exec-empty">Пока не опубликован рабочий ads_summary. Главная уже умеет его читать и раскрывать по клику, но сам факт в витрину еще не доехал.</div>
+          <div class="portal-exec-empty">В этом диапазоне <code>ads_summary</code> не содержит рабочего факта, и резервный контент-срез тоже не найден.</div>
         </section>
       `;
     }

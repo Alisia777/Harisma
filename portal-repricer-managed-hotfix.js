@@ -1,8 +1,9 @@
 (function () {
-  if (window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260425C__) return;
+  if (window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260502A__) return;
+  window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260502A__ = true;
   window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260425C__ = true;
 
-  const VERSION = '20260425c';
+  const VERSION = '20260502a';
   const SNAPSHOT_TABLE = 'portal_data_snapshots';
   const SNAPSHOT_KEY = 'repricer_runtime_hotfix_20260424b';
   const LOCAL_RUNTIME_MANIFEST = `${SNAPSHOT_KEY}.json`;
@@ -483,6 +484,17 @@
     ]);
   }
 
+  function parseChunkFragment(text) {
+    const raw = String(text || '').trim();
+    if (!raw) return '';
+    try {
+      const parsed = JSON.parse(raw);
+      return typeof parsed === 'string' ? parsed : String(parsed ?? '');
+    } catch (error) {
+      return raw.replace(/^"+/, '').replace(/"+$/, '');
+    }
+  }
+
   async function fetchSupabasePayload() {
     const activeCfg = cfg();
     if (!activeCfg.supabase?.url || !activeCfg.supabase?.anonKey) {
@@ -517,27 +529,33 @@
     if (!main) throw new Error(`Runtime snapshot ${SNAPSHOT_KEY} is missing`);
 
     if (main.payload?.chunked) {
+      const partPattern = new RegExp(`^${SNAPSHOT_KEY}__part__(\\d{4})$`);
       const parts = rows
-        .filter((row) => String(row?.snapshot_key || '').startsWith(`${SNAPSHOT_KEY}__part__`))
-        .sort((left, right) => String(left.snapshot_key).localeCompare(String(right.snapshot_key)));
+        .map((row) => {
+          const match = String(row?.snapshot_key || '').match(partPattern);
+          if (!match) return null;
+          return {
+            index: Number(match[1]),
+            data: row?.payload?.data || ''
+          };
+        })
+        .filter(Boolean)
+        .sort((left, right) => left.index - right.index);
       const expectedParts = Number(main.payload.chunk_count || 0);
       if (expectedParts && parts.length < expectedParts) {
         throw new Error(`Runtime snapshot is incomplete: ${parts.length}/${expectedParts}`);
       }
-      return JSON.parse(parts.map((row) => String(row?.payload?.data || '')).join(''));
+      return parts
+        .slice(0, expectedParts > 0 ? expectedParts : parts.length)
+        .map((row) => parseChunkFragment(row.data || ''))
+        .join('');
     }
 
     return main.payload;
   }
 
   function parseLocalChunk(text) {
-    const raw = String(text || '').trim();
-    if (!raw) return '';
-    try {
-      return JSON.parse(raw);
-    } catch (error) {
-      return raw.replace(/^"+/, '').replace(/"+$/, '');
-    }
+    return parseChunkFragment(text);
   }
 
   async function fetchLocalPayload() {
@@ -579,7 +597,7 @@
         });
       }));
 
-      return parseLocalChunk(chunks.join(''));
+      return chunks.map((chunk) => parseLocalChunk(chunk)).join('');
     }
 
     if (typeof manifest?.payload === 'string' && manifest.payload) return manifest.payload;
@@ -650,7 +668,14 @@
     return bootPromise;
   }
 
-  function start() {
+  function repricerViewRequested() {
+    if (window.state?.activeView === 'repricer') return true;
+    if (document.querySelector('#view-repricer.view.active')) return true;
+    if (document.querySelector('.nav-btn.active[data-view="repricer"]')) return true;
+    return false;
+  }
+
+  function start(forceBoot = false) {
     const installedEmergencyFallbacks = installEmergencyAppCoreFallbacks();
     if (installedEmergencyFallbacks) scheduleRecoveryRerender();
 
@@ -661,10 +686,20 @@
       return;
     }
 
+    if (!forceBoot && !repricerViewRequested()) {
+      return;
+    }
+
     boot().catch(() => {});
   }
 
   installEmergencyAppCoreFallbacks();
+
+  document.addEventListener('click', (event) => {
+    const target = event.target?.closest?.('[data-view="repricer"]');
+    if (!target) return;
+    window.setTimeout(() => start(true), 0);
+  });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => window.setTimeout(start, 120), { once: true });

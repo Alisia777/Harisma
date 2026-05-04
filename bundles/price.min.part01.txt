@@ -1,0 +1,497 @@
+(function () {
+  if (window.__ALTEA_PRICE_WORKBENCH_HOTFIX_20260419D__) return;
+  window.__ALTEA_PRICE_WORKBENCH_HOTFIX_20260419D__ = true;
+
+  const ENTRIES_TABLE = "portal_price_workbench_entries";
+  const HISTORY_TABLE = "portal_price_workbench_history";
+  const LOCAL_ENTRIES_KEY = "brand-portal-price-workbench-v20260419-entries";
+  const LOCAL_HISTORY_KEY = "brand-portal-price-workbench-v20260419-history";
+
+  const DECISION_STATUS_META = {
+    draft: { label: "Черновик", kind: "" },
+    review: { label: "На согласовании", kind: "warn" },
+    approved: { label: "Согласовано", kind: "ok" },
+    applied: { label: "Внедрено", kind: "info" },
+    on_hold: { label: "Стоп", kind: "danger" },
+  };
+
+  const ESCALATION_META = {
+    none: { label: "Без эскалации", kind: "" },
+    rop: { label: "РОПу", kind: "warn" },
+    ksenia: { label: "Ксении", kind: "warn" },
+    finance: { label: "Финансы", kind: "info" },
+    me_ksenia: { label: "Я + Ксения", kind: "danger" },
+  };
+
+  const PRESETS = {
+    "7d": { label: "7 дней", days: 7 },
+    "14d": { label: "14 дней", days: 14 },
+    "30d": { label: "30 дней", days: 30 },
+    month: { label: "Текущий месяц", month: true },
+    prev_month: { label: "Прошлый месяц", prevMonth: true },
+    all: { label: "Весь период", all: true },
+  };
+
+  state.priceWorkbench = Object.assign(
+    {
+      seed: null,
+      support: null,
+      seedSource: "",
+      loading: false,
+      issue: "",
+      localEntries: [],
+      remoteEntries: [],
+      localHistory: [],
+      remoteHistory: [],
+      remoteReady: false,
+      remoteLoading: false,
+      remoteDisabled: false,
+      selectedKey: "",
+      filters: {
+        market: "wb",
+        search: "",
+        owner: "all",
+        status: "all",
+        sort: "risk",
+        riskOnly: false,
+        dateFrom: "",
+        dateTo: "",
+        preset: "month",
+      },
+    },
+    state.priceWorkbench || {}
+  );
+
+  function ensureStyles() {
+    if (document.getElementById("priceWorkbenchHotfixStyles")) return;
+    const style = document.createElement("style");
+    style.id = "priceWorkbenchHotfixStyles";
+    style.textContent = `
+      #view-prices .price-workbench-shell { display:grid; gap:16px; }
+      #view-prices .price-toolbar { display:grid; gap:14px; padding:18px; border:1px solid rgba(212,164,74,.18); border-radius:20px; background:linear-gradient(180deg, rgba(31,25,17,.88), rgba(18,14,10,.92)); box-shadow:0 16px 32px rgba(0,0,0,.22); }
+      #view-prices .price-toolbar-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; flex-wrap:wrap; }
+      #view-prices .price-toolbar-head h2 { margin:0 0 6px; }
+      #view-prices .price-toolbar-head p { margin:0; max-width:920px; color:rgba(255,244,222,.72); }
+      #view-prices .price-market-switch, #view-prices .price-preset-row { display:flex; gap:8px; flex-wrap:wrap; }
+      #view-prices .price-range-row { display:grid; gap:12px; grid-template-columns:repeat(2,minmax(160px,220px)) 1fr; align-items:end; }
+      #view-prices .price-range-row label, #view-prices .price-filters-grid label, .price-modal-form label { display:grid; gap:6px; font-size:12px; color:rgba(255,244,222,.72); }
+      #view-prices .price-range-row input, #view-prices .price-filters-grid input, #view-prices .price-filters-grid select, .price-modal-form input, .price-modal-form select, .price-modal-form textarea { width:100%; border-radius:12px; border:1px solid rgba(212,164,74,.18); background:rgba(12,10,8,.75); color:#fff2d9; padding:11px 12px; }
+      #view-prices .price-range-row input:focus, #view-prices .price-filters-grid input:focus, #view-prices .price-filters-grid select:focus, .price-modal-form input:focus, .price-modal-form select:focus, .price-modal-form textarea:focus { outline:none; border-color:rgba(212,164,74,.5); box-shadow:0 0 0 2px rgba(212,164,74,.12); }
+      #view-prices .price-filters-grid { display:grid; gap:10px; grid-template-columns:2fr repeat(3,minmax(160px,1fr)); }
+      #view-prices .price-toggle { display:inline-flex; align-items:center; gap:8px; font-size:12px; color:rgba(255,244,222,.82); }
+      #view-prices .price-summary-grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); }
+      #view-prices .price-summary-card { padding:16px; border:1px solid rgba(212,164,74,.16); border-radius:18px; background:rgba(17,13,10,.84); }
+      #view-prices .price-summary-card .label { display:block; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:rgba(212,164,74,.82); margin-bottom:8px; }
+      #view-prices .price-summary-card strong { display:block; font-size:28px; line-height:1; color:#fff5dc; margin-bottom:6px; }
+      #view-prices .price-summary-card small { color:rgba(255,244,222,.64); }
+      #view-prices .price-data-note { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+      #view-prices .price-helper-copy { color:rgba(255,244,222,.7); font-size:12px; line-height:1.45; margin-top:8px; }
+      #view-prices .price-table-card { padding:0; overflow:hidden; }
+      #view-prices .price-table-wrap { overflow:auto; }
+      #view-prices .price-table { width:100%; min-width:1320px; border-collapse:collapse; }
+      #view-prices .price-table thead th { position:sticky; top:0; z-index:1; background:rgba(20,15,11,.95); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:rgba(212,164,74,.82); padding:14px 12px; text-align:left; border-bottom:1px solid rgba(212,164,74,.14); }
+      #view-prices .price-table tbody td { padding:14px 12px; vertical-align:top; border-top:1px solid rgba(255,255,255,.05); color:#f7ead0; }
+      #view-prices .price-table tbody tr { cursor:pointer; transition:background .15s ease, box-shadow .15s ease; }
+      #view-prices .price-table tbody tr:hover { background:rgba(212,164,74,.06); }
+      #view-prices .price-table tbody tr.is-risk { box-shadow:inset 3px 0 0 rgba(255,96,96,.9); }
+      #view-prices .price-table tbody tr.is-selected { background:rgba(212,164,74,.09); }
+      #view-prices .price-sku-title { font-weight:700; margin-bottom:4px; }
+      #view-prices .price-sku-note { color:rgba(255,244,222,.62); font-size:12px; line-height:1.35; max-width:480px; }
+      #view-prices .price-note { padding:14px 16px; border-radius:16px; border:1px solid rgba(212,164,74,.16); background:rgba(17,13,10,.84); color:rgba(255,244,222,.72); font-size:13px; }
+      #view-prices .price-empty { padding:36px 20px; text-align:center; color:rgba(255,244,222,.7); }
+    .price-modal-card { display:grid; gap:16px; width:min(1520px, 96vw); max-height:min(90vh, 1000px); overflow:auto; padding:22px; border-radius:24px; background:linear-gradient(180deg, rgba(28,22,16,.98), rgba(14,10,8,.98)); color:#fff1d4; box-shadow:0 24px 64px rgba(0,0,0,.38); }
+      .price-modal-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+      .price-modal-title h2 { margin:0 0 8px; }
+      .price-modal-title p { margin:0; color:rgba(255,244,222,.7); max-width:840px; }
+      .price-modal-badges { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .price-modal-grid, .price-modal-projections { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+    .price-modal-kpi { padding:16px; border:1px solid rgba(212,164,74,.16); border-radius:18px; background:rgba(16,13,10,.82); }
+    .price-modal-kpi .label { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:rgba(212,164,74,.82); margin-bottom:7px; }
+    .price-modal-kpi strong { display:block; font-size:26px; color:#fff6de; line-height:1.05; margin-bottom:6px; overflow-wrap:anywhere; }
+    .price-modal-kpi small { color:rgba(255,244,222,.64); }
+      .price-modal-form { display:grid; gap:14px; }
+      .price-modal-form-grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); }
+      .price-modal-form-grid .wide { grid-column:1 / -1; }
+      .price-modal-actions { display:flex; flex-wrap:wrap; gap:10px; }
+      .price-modal-section { display:grid; gap:10px; padding:18px; border:1px solid rgba(212,164,74,.14); border-radius:20px; background:rgba(16,13,10,.76); }
+      .price-section-title { margin:0; font-size:16px; color:#fff3d6; }
+      .price-section-subtitle { color:rgba(255,244,222,.66); font-size:12px; line-height:1.45; }
+    .price-history-wrap { overflow:auto; max-width:100%; max-height:min(44vh, 420px); border-radius:16px; border:1px solid rgba(212,164,74,.12); }
+    .price-history-table { width:max-content; min-width:100%; border-collapse:collapse; table-layout:auto; }
+    .price-history-table th, .price-history-table td { min-width:132px; padding:11px 12px; text-align:left; vertical-align:top; line-height:1.4; border-top:1px solid rgba(255,255,255,.05); white-space:normal; word-break:break-word; overflow-wrap:anywhere; }
+    .price-history-table th:last-child, .price-history-table td:last-child { min-width:260px; }
+    .price-history-table thead th { position:sticky; top:0; z-index:1; background:rgba(21,16,12,.96); color:rgba(212,164,74,.82); font-size:11px; text-transform:uppercase; letter-spacing:.08em; border-top:none; }
+      .price-task-list { display:grid; gap:10px; }
+      .price-task-item { padding:14px 16px; border-radius:16px; border:1px solid rgba(212,164,74,.14); background:rgba(12,10,8,.78); }
+      .price-inline-meta { color:rgba(255,244,222,.62); font-size:12px; }
+      .price-danger-text { color:#ff8f8f; }
+      @media (max-width: 980px) {
+        #view-prices .price-range-row, #view-prices .price-filters-grid { grid-template-columns:1fr; }
+    .price-modal-card { width:min(96vw, 96vw); padding:16px; }
+  }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function ensureBranding() {
+    try {
+      document.title = "Дом бренда Алтея · v8.7.1 Imperial";
+      const h1 = document.querySelector(".topbar h1");
+      if (h1) h1.textContent = "Дом бренда Алтея";
+      const brandTitle = document.querySelector(".brand-title");
+      if (brandTitle) brandTitle.textContent = "Дом бренда Алтея";
+      const brandSub = document.querySelector(".brand-sub");
+      if (brandSub) brandSub.textContent = "Рабочий контур бренда и решений.";
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function parseNum(value) {
+    if (value === null || value === undefined || value === "") return null;
+    const parsed = Number(String(value).replace(",", ".").replace("%", ""));
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+
+  function moneyShort(value) {
+    if (value === null || value === undefined || value === "" || Number.isNaN(Number(value))) return "—";
+    return `${fmt.num(Number(value), 0)} ₽`;
+  }
+
+  function pctShort(value) {
+    if (value === null || value === undefined || value === "" || Number.isNaN(Number(value))) return "—";
+    return `${(Number(value) * 100).toFixed(1)}%`;
+  }
+
+  function isoDate(value) {
+    if (!value) return "";
+    try {
+      return String(value).slice(0, 10);
+    } catch {
+      return "";
+    }
+  }
+
+  function marketLabel(key) {
+    return ({ wb: "WB", ozon: "OZ", ym: "ЯМ" })[key] || key.toUpperCase();
+  }
+
+  function workbenchKey(marketplace, articleKey) {
+    return `${marketplace}|${articleKey}`;
+  }
+
+  function normalizeWorkbenchMarket(marketplace) {
+    const normalized = String(marketplace || "").trim().toLowerCase();
+    if (normalized === "ya") return "ym";
+    return normalized || "wb";
+  }
+
+  function plusDaysLocal(days) {
+    const base = new Date();
+    base.setHours(12, 0, 0, 0);
+    base.setDate(base.getDate() + days);
+    return base.toISOString().slice(0, 10);
+  }
+
+  function meanOrNull(values) {
+    const cleaned = values.filter((value) => value != null && !Number.isNaN(Number(value))).map(Number);
+    if (!cleaned.length) return null;
+    return cleaned.reduce((sum, value) => sum + value, 0) / cleaned.length;
+  }
+
+  function averageRecentMargin(items, limit = 3) {
+    const values = (Array.isArray(items) ? items : [])
+      .map((item) => parseNum(item?.marginPct))
+      .filter((value) => value != null);
+    if (!values.length) return null;
+    const slice = values.slice(-limit);
+    return slice.reduce((sum, value) => sum + value, 0) / slice.length;
+  }
+
+  function resolveAllowedMargin(row) {
+    const support = row.supportRow || null;
+    const avg3mActual = averageRecentMargin(support?.actualMonths, 3);
+    const supportAllowed = parseNum(support?.allowedMarginPct);
+    const seedAllowed = parseNum(row.allowedMarginPct);
+    if (avg3mActual != null) {
+      return {
+        value: avg3mActual,
+        source: "avg_3m_actual",
+        note: "Средняя маржа последних 3 месяцев."
+      };
+    }
+    if (supportAllowed != null) {
+      return {
+        value: supportAllowed,
+        source: "support_workbook",
+        note: "Допустимая маржа из рабочего файла."
+      };
+    }
+    if (seedAllowed != null) {
+      return {
+        value: seedAllowed,
+        source: "smart_seed",
+        note: "Допустимая маржа из smart-пакета."
+      };
+    }
+    return {
+      value: 0.15,
+      source: "default",
+      note: "Резервное значение, потому что источник не заполнен."
+    };
+  }
+
+  function defaultAllowedMargin(row) {
+    return resolveAllowedMargin(row).value;
+  }
+
+  function parseStamp(value) {
+    if (!value) return 0;
+    const direct = Date.parse(value);
+    if (Number.isFinite(direct)) return direct;
+    const normalized = isoDate(value);
+    if (!normalized) return 0;
+    const parsed = Date.parse(`${normalized}T23:59:59Z`);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function seedFreshnessScore(payload) {
+    if (!payload?.platforms) return 0;
+    const scores = [parseStamp(payload.generatedAt)];
+    Object.values(payload.platforms || {}).forEach((platform) => {
+      ((platform || {}).rows || []).forEach((row) => {
+        const score = parseStamp(row?.historyFreshnessDate);
+        if (score) scores.push(score);
+      });
+    });
+    return Math.max(...scores, 0);
+  }
+
+  function mergeSupportPayload(basePayload, overlayPayload) {
+    const baseReady = basePayload?.platforms ? basePayload : null;
+    const overlayReady = overlayPayload?.platforms ? overlayPayload : null;
+    if (!baseReady && !overlayReady) return null;
+    const merged = {
+      ...(baseReady || {}),
+      ...(overlayReady || {}),
+      generatedAt: overlayReady?.generatedAt || baseReady?.generatedAt || "",
+      platforms: {},
+    };
+    const platformKeys = new Set([
+      ...Object.keys(baseReady?.platforms || {}),
+      ...Object.keys(overlayReady?.platforms || {}),
+    ]);
+    platformKeys.forEach((platformKey) => {
+      const basePlatform = (baseReady?.platforms || {})[platformKey] || {};
+      const overlayPlatform = (overlayReady?.platforms || {})[platformKey] || {};
+      const rows = { ...(basePlatform.rows || {}) };
+      Object.entries(overlayPlatform.rows || {}).forEach(([articleKey, overlayRow]) => {
+        rows[articleKey] = { ...(rows[articleKey] || {}), ...(overlayRow || {}) };
+      });
+      merged.platforms[platformKey] = {
+        ...basePlatform,
+        ...overlayPlatform,
+        rows,
+      };
+    });
+    return merged;
+  }
+
+  const SUPPORT_OVERLAY_PARTS = [
+    "bundles/price-support-overlay.part01.txt?v=20260420i",
+    "bundles/price-support-overlay.part02.txt?v=20260420i",
+    "bundles/price-support-overlay.part03.txt?v=20260420i",
+    "bundles/price-support-overlay.part04.txt?v=20260420i",
+  ];
+
+  function loadSupportOverlay() {
+    const directLoader = loadJson("data/price_workbench_status_overlay.json").catch(() => null);
+    const chunkLoader = Promise.all(
+      SUPPORT_OVERLAY_PARTS.map((url) => fetch(url, { cache: "no-store" }).then((response) => {
+        if (!response.ok) throw new Error(url);
+        return response.text();
+      }))
+    )
+      .then((parts) => JSON.parse(parts.join("")))
+      .catch((error) => {
+        console.warn("[price-workbench] support overlay parts skipped", error);
+        return null;
+      });
+    return directLoader.then((payload) => (payload?.platforms ? payload : chunkLoader));
+  }
+
+  function chooseSeedPayload(snapshotPayload, localPayload) {
+    const snapshotReady = snapshotPayload?.platforms ? snapshotPayload : null;
+    const localReady = localPayload?.platforms ? localPayload : null;
+    if (snapshotReady && localReady) {
+      return seedFreshnessScore(localReady) >= seedFreshnessScore(snapshotReady)
+        ? { payload: localReady, source: "local" }
+        : { payload: snapshotReady, source: "snapshot" };
+    }
+    if (localReady) return { payload: localReady, source: "local" };
+    if (snapshotReady) return { payload: snapshotReady, source: "snapshot" };
+    return null;
+  }
+
+  function supportPlatformKey(marketplace) {
+    return marketplace === "ya" ? "ym" : marketplace;
+  }
+
+  function latestSeriesDate(series, predicate) {
+    const rows = Array.isArray(series) ? [...series] : [];
+    for (let index = rows.length - 1; index >= 0; index -= 1) {
+      if (predicate(rows[index])) return isoDate(rows[index]?.date);
+    }
+    return "";
+  }
+
+  function buildHistoryMeta(series, row) {
+    const hasDailyFact = (Array.isArray(series) ? series : []).some((item) => {
+      return parseNum(item?.ordersUnits) != null || parseNum(item?.deliveredUnits) != null || parseNum(item?.revenue) != null;
+    });
+    const latestPriceDate = latestSeriesDate(series, (item) => parseNum(item?.price) != null || parseNum(item?.clientPrice) != null);
+    const latestDailyDate = latestSeriesDate(series, (item) => parseNum(item?.ordersUnits) != null || parseNum(item?.deliveredUnits) != null || parseNum(item?.revenue) != null);
+    if (hasDailyFact) {
+      return {
+        mode: "daily",
+        freshnessDate: latestDailyDate || isoDate(row?.historyFreshnessDate),
+        note: String(row?.historyNote || "").trim()
+      };
+    }
+    if (latestPriceDate || row?.historyFreshnessDate) {
+      return {
+        mode: "price_only",
+        freshnessDate: isoDate(row?.historyFreshnessDate) || latestPriceDate,
+        note: String(row?.historyNote || "").trim()
+      };
+    }
+    return {
+      mode: "empty",
+      freshnessDate: "",
+      note: String(row?.historyNote || "").trim()
+    };
+  }
+
+  function supportRow(marketplace, articleKey) {
+    if (!articleKey) return null;
+    const platformKey = supportPlatformKey(String(marketplace || "").trim().toLowerCase());
+    return state.priceWorkbench.support?.platforms?.[platformKey]?.rows?.[articleKey] || null;
+  }
+
+  function mergeSupportRow(row) {
+    const support = supportRow(row.marketplace, row.articleKey);
+    if (!support) return { ...row, supportRow: null };
+    const merged = { ...row, supportRow: support };
+    const workbookAllowed = parseNum(support.allowedMarginPct);
+    const profitability = parseNum(support.requiredPriceForProfitability);
+    const hardMin = parseNum(support.historicalMinProfitablePrice) ?? parseNum(support.hardMinPrice) ?? parseNum(support.summary?.hardMinPrice) ?? parseNum(support.sellerSummary?.hardMinPrice);
+    const zoneFrom = parseNum(support.workingZoneFrom) ?? parseNum(support.summary?.workingZoneFrom) ?? parseNum(support.sellerSummary?.workingZoneFrom);
+    const zoneTo = parseNum(support.workingZoneTo) ?? parseNum(support.summary?.workingZoneTo) ?? parseNum(support.sellerSummary?.workingZoneTo);
+    if (workbookAllowed != null) merged.allowedMarginPct = workbookAllowed;
+    if (profitability != null) merged.requiredPriceForProfitability = profitability;
+    if (hardMin != null) merged.hardMinPrice = hardMin;
+    if (parseNum(support.minPrice) != null) merged.minPrice = parseNum(support.minPrice);
+    if (parseNum(support.maxPrice) != null) merged.maxPrice = parseNum(support.maxPrice);
+    if (zoneFrom != null) merged.workingZoneFrom = zoneFrom;
+    if (zoneTo != null) merged.workingZoneTo = zoneTo;
+    if (!merged.name && support.name) merged.name = support.name;
+    if (!merged.owner && support.owner) merged.owner = support.owner;
+    if (!merged.segment && support.segment) merged.segment = support.segment;
+    if (!merged.abc && support.abc) merged.abc = support.abc;
+    return merged;
+  }
+
+  function dateKeyToUtc(value) {
+    const normalized = isoDate(value);
+    if (!normalized) return null;
+    const [year, month, day] = normalized.split("-").map((part) => Number(part));
+    if (!year || !month || !day) return null;
+    return new Date(Date.UTC(year, month - 1, day));
+  }
+
+  function monthBounds(monthKey) {
+    const match = String(monthKey || "").match(/^(\d{4})-(\d{2})$/);
+    if (!match) return null;
+    const year = Number(match[1]);
+    const monthIndex = Number(match[2]) - 1;
+    const start = new Date(Date.UTC(year, monthIndex, 1));
+    const end = new Date(Date.UTC(year, monthIndex + 1, 0));
+    return { start, end, days: end.getUTCDate() };
+  }
+
+  function overlapDays(rangeStart, rangeEnd, monthStart, monthEnd) {
+    const startMs = Math.max(rangeStart.getTime(), monthStart.getTime());
+    const endMs = Math.min(rangeEnd.getTime(), monthEnd.getTime());
+    if (startMs > endMs) return 0;
+    return Math.floor((endMs - startMs) / 86400000) + 1;
+  }
+
+  function sumMonthlyBuckets(items, rangeStart, rangeEnd) {
+    const rows = Array.isArray(items) ? items : [];
+    const summary = rows.reduce((acc, item) => {
+      const bounds = monthBounds(item?.monthKey);
+      if (!bounds) return acc;
+      const coveredDays = overlapDays(rangeStart, rangeEnd, bounds.start, bounds.end);
+      if (!coveredDays) return acc;
+      const ratio = coveredDays / bounds.days;
+      acc.used = true;
+      acc.coveredDays += coveredDays;
+      if (parseNum(item?.units) != null) acc.units += parseNum(item.units) * ratio;
+      if (parseNum(item?.revenue) != null) acc.revenue += parseNum(item.revenue) * ratio;
+      return acc;
+    }, { used: false, coveredDays: 0, units: 0, revenue: 0 });
+    if (!summary.used) return null;
+    return {
+      units: summary.units,
+      revenue: summary.revenue,
+      coveredDays: summary.coveredDays,
+    };
+  }
+
+  function normalizeEntry(item = {}) {
+    const marketplace = ["wb", "ozon", "ym"].includes(String(item.marketplace || item.marketplace_key || "").toLowerCase())
+      ? String(item.marketplace || item.marketplace_key || "").toLowerCase()
+      : "wb";
+    const articleKey = String(item.articleKey || item.article_key || "").trim();
+    const sku = articleKey ? getSku(articleKey) : null;
+    const decisionStatus = DECISION_STATUS_META[item.decisionStatus || item.decision_status]
+      ? (item.decisionStatus || item.decision_status)
+      : "draft";
+    const escalation = ESCALATION_META[item.escalation || item.escalation_code]
+      ? (item.escalation || item.escalation_code)
+      : "none";
+    return {
+      id: String(item.id || stableId("price-decision", `${currentBrand()}|${marketplace}|${articleKey}`)).trim(),
+      brand: currentBrand(),
+      marketplace,
+      articleKey,
+      decisionStatus,
+      targetFillPrice: parseNum(item.targetFillPrice ?? item.target_fill_price),
+      targetClientPrice: parseNum(item.targetClientPrice ?? item.target_client_price),
+      allowedMarginManualPct: parseNum(item.allowedMarginManualPct ?? item.allowed_margin_manual_pct),
+      reason: String(item.reason || "").trim(),
+      owner: String(item.owner || item.owner_name || ownerName(sku) || "").trim(),
+      dueDate: isoDate(item.dueDate || item.due_date),
+      needsTask: Boolean(item.needsTask ?? item.needs_task),
+      escalation,
+      comment: String(item.comment || "").trim(),
+      updatedBy: String(item.updatedBy || item.updated_by || state.team.member?.name || "Команда").trim() || "Команда",
+      updatedAt: String(item.updatedAt || item.updated_at || new Date().toISOString()).trim() || new Date().toISOString(),
+      createdAt: String(item.createdAt || item.created_at || item.updatedAt || new Date().toISOString()).trim() || new Date().toISOString(),
+    };
+  }
+
+  function normalizeHistory(item = {}) {
+    return {
+      id: String(item.id || stableId("price-history", JSON.stringify(item))).trim(),
+      brand: currentBrand(),
+      marketplace: String(item.marketplace || item.marketplace_key || "").trim() || "wb",
+      articleKey: String(item.articleKey || item.article_key || "").trim(),
+      eventType: String(item.eventType || item.event_type || "save").trim() || "save",
+      oldTargetFillPrice: parseNum(item.oldTargetFillPrice ?? item.old_target_fill_price),
+      newTargetFillPrice: parseNum(item.newTargetFillPrice ?? item.new_target_fill_price),
+      oldTargetClientPrice: parseNum(item.oldTargetClientPrice ?? item.old_target_client_price),
+      newTargetClientPrice: parseNum(item.newTargetClientPrice ?? item.new_target_client_price),
+      oldAllowedMarginPct: parseNum(item.oldAllowedMarginPct ?? item.old_allowed_margin_pct),
+      newAllowedMarginPct: parseNum(item.newAllowedMarginPct ?? item.new_allowed_margin_pct),
+      oldDecisionStatus: String(item.oldDecisionStatus || item.ol

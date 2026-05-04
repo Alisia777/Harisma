@@ -101,7 +101,7 @@
         <div class="modal-section-title">
           <div>
             <h3>Owner и зона ответственности</h3>
-            <p class="small muted">Закрепление по SKU и короткая пометка, если owner меняется.</p>
+            <p class="small muted">Источник owner — Реестр SKU. Отсюда закрепление идёт во все разделы портала.</p>
           </div>
           <span class="owner-badge">${escapeHtml(ownerName(sku) || 'Не закреплён')}</span>
         </div>

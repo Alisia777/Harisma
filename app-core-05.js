@@ -376,8 +376,24 @@ function renderControlCenter() {
     if (task?.id) openTaskModal(task.id);
   });
 
+  root.querySelectorAll('[data-save-owner]').forEach((btn) => {
+    btn.textContent = 'Открыть в Реестре SKU';
+    const inlineForm = btn.closest('.inline-form');
+    inlineForm?.querySelectorAll('.inline-input').forEach((input) => {
+      input.setAttribute('disabled', 'disabled');
+      input.setAttribute('aria-hidden', 'true');
+      input.style.display = 'none';
+    });
+  });
+
   root.querySelectorAll('[data-save-owner]').forEach((btn) => btn.addEventListener('click', async () => {
-    const articleKey = btn.dataset.saveOwner;
+    const articleKey = String(btn.dataset.saveOwner || '').trim();
+    if (!articleKey) return;
+    state.filters.search = articleKey;
+    state.filters.showAllSkus = true;
+    setView('skus');
+    openSkuModal(articleKey);
+    return;
     const ownerInput = root.querySelector(`[data-owner-assign-input="${articleKey}"]`);
     const roleInput = root.querySelector(`[data-owner-assign-role="${articleKey}"]`);
     await upsertOwnerAssignment({

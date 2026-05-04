@@ -77,6 +77,11 @@
     productLeaderboardRef: null,
     productLeaderboardLookup: null
   };
+  var modalScrollState = {
+    savedY: 0,
+    savedOverflow: "",
+    pendingOpenY: null
+  };
 
   function esc(value) {
     return String(value == null ? "" : value)
@@ -2304,29 +2309,21 @@ function downloadPriceSummaryExcel(rows) {
     return state.selectedKey ? buildDisplayRow(findRow(state.selectedKey)) : null;
   }
 
-  function lockModalBackgroundScroll() {
+  function lockModalBackgroundScroll(preferredY) {
     if (document.body.getAttribute("data-pw-scroll-lock") === "1") return;
-    var top = window.scrollY || window.pageYOffset || 0;
-    document.body.style.position = "fixed";
-    document.body.style.top = "-" + top + "px";
-    document.body.style.left = "0";
-    document.body.style.right = "0";
-    document.body.style.width = "100%";
+    var resolvedY = Number(preferredY);
+    if (!Number.isFinite(resolvedY)) {
+      resolvedY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+    }
+    modalScrollState.savedY = resolvedY;
+    modalScrollState.savedOverflow = document.body.style.overflow || "";
     document.body.setAttribute("data-pw-scroll-lock", "1");
   }
 
   function unlockModalBackgroundScroll() {
     if (document.body.getAttribute("data-pw-scroll-lock") !== "1") return;
-    var rawTop = String(document.body.style.top || "0").replace("px", "");
-    var top = Number(rawTop);
-    if (!Number.isFinite(top)) top = 0;
-    document.body.style.position = "";
-    document.body.style.top = "";
-    document.body.style.left = "";
-    document.body.style.right = "";
-    document.body.style.width = "";
     document.body.removeAttribute("data-pw-scroll-lock");
-    window.scrollTo(0, Math.abs(top));
+    window.scrollTo(0, Number(modalScrollState.savedY) || 0);
   }
 
   function attachModalHandlers() {
@@ -2380,9 +2377,14 @@ function downloadPriceSummaryExcel(rows) {
   function renderSelectedModal() {
     var host = document.getElementById("priceSimpleModalHost");
     if (!host) return;
+    var pending = Number(modalScrollState.pendingOpenY);
+    var scrollBeforeRender = Number.isFinite(pending)
+      ? pending
+      : (window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0);
+    modalScrollState.pendingOpenY = null;
     host.innerHTML = renderModal(selectedDisplayRow());
     attachModalHandlers();
-    if (state.selectedKey) lockModalBackgroundScroll();
+    if (state.selectedKey) lockModalBackgroundScroll(scrollBeforeRender);
     else unlockModalBackgroundScroll();
   }
 
@@ -2730,6 +2732,11 @@ function downloadPriceSummaryExcel(rows) {
       });
     });
     root.querySelectorAll("[data-open-price]").forEach(function (rowNode) {
+      var rememberScroll = function () {
+        modalScrollState.pendingOpenY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+      };
+      rowNode.addEventListener("mousedown", rememberScroll);
+      rowNode.addEventListener("touchstart", rememberScroll, { passive: true });
       rowNode.addEventListener("click", function () {
         state.selectedKey = rowNode.getAttribute("data-open-price");
         renderSelectedModal();

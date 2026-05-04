@@ -9,6 +9,7 @@
   priceWorkbenchSupport: { generatedAt: '', platforms: {} },
   productLeaderboard: { generatedAt: '', items: [], summary: {} },
   productLeaderboardHistory: [],
+  adsSummary: { generatedAt: '', asOfDate: '', platforms: [], itemSeries: [] },
   launches: [],
   meetings: [],
   documents: { groups: [] },
@@ -66,6 +67,13 @@
     sort: 'buys',
     category: 'all',
     snapshot: 'latest'
+  },
+  adsFunnelFilters: {
+    search: '',
+    platform: 'all',
+    horizon: '28',
+    sort: 'spend',
+    sortDir: 'desc'
   },
   repricerFilters: {
     search: '',
@@ -144,7 +152,7 @@ const VIEW_TITLES = {
 const VIEW_DATA_REQUIREMENTS = {
   control: 'launches',
   launches: 'launches',
-  'ads-funnel': 'productLeaderboard',
+  'ads-funnel': 'adsFunnel',
   'product-leaderboard': 'productLeaderboard',
   'launch-control': 'launches',
   executive: 'launches',
@@ -1824,6 +1832,12 @@ async function loadJsonOrFallback(path, fallback, label = path) {
 }
 
 const LAZY_DATA_LOADERS = {
+  adsFunnel: async () => {
+    const adsSummary = await loadJsonOrFallback('data/ads_summary.json', { generatedAt: '', asOfDate: '', platforms: [], itemSeries: [] }, 'Рекламная воронка');
+    state.adsSummary = adsSummary && typeof adsSummary === 'object'
+      ? adsSummary
+      : { generatedAt: '', asOfDate: '', platforms: [], itemSeries: [] };
+  },
   launches: async () => {
     const launches = await loadJsonOrFallback('data/launches.json', [], 'Продукт / Ксения');
     state.launches = Array.isArray(launches) ? launches : [];

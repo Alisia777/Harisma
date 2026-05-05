@@ -5970,6 +5970,35 @@
     if (!focusDays.length) {
       focusDays = detailTailRows(turnoverFreshnessSeries(platformKey), 14);
     }
+    const rangeEnd = executive?.range?.effectiveEnd instanceof Date ? cleanDate(executive.range.effectiveEnd) : null;
+    const focusEnd = focusDays.length ? parseDate(focusDays[focusDays.length - 1]?.date) : null;
+    const normalizedFocusEnd = focusEnd instanceof Date && !Number.isNaN(focusEnd.getTime()) ? cleanDate(focusEnd) : null;
+    if (rangeEnd && (!normalizedFocusEnd || normalizedFocusEnd < rangeEnd)) {
+      const liveTurnoverRows = (Array.isArray(stockMetric.rows) ? stockMetric.rows : [])
+        .map((row) => Number(row?.turnoverDays))
+        .filter((value) => Number.isFinite(value));
+      if (liveTurnoverRows.length) {
+        const focusMap = new Map();
+        focusDays.forEach((row) => {
+          const key = iso(parseDate(row?.date));
+          if (key) focusMap.set(key, row);
+        });
+        focusMap.set(iso(rangeEnd), {
+          date: rangeEnd,
+          avgTurnover: avg(liveTurnoverRows),
+          skuCount: liveTurnoverRows.length,
+          fromLiveSnapshot: true
+        });
+        focusDays = detailTailRows(
+          [...focusMap.values()].sort((left, right) => {
+            const leftDate = parseDate(left?.date);
+            const rightDate = parseDate(right?.date);
+            return (leftDate?.getTime() || 0) - (rightDate?.getTime() || 0);
+          }),
+          14
+        );
+      }
+    }
     const publishedStart = focusDays[0]?.date || null;
     const publishedEnd = focusDays[focusDays.length - 1]?.date || null;
     const priceSeriesRange = (stockMetric.turnoverHistoryScope === 'published' || stockMetric.turnoverHistoryScope === 'freshness') && publishedStart && publishedEnd

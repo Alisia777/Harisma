@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260503C__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260505A__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260505A__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260503C__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260503B__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260503A__ = true;
@@ -792,10 +793,6 @@
     var cutoff = isoDate((overlayRow && (overlayRow.valueDate || overlayRow.historyFreshnessDate)) || maxDate);
     var next = cloneSeries(timeline);
     if (cutoff) {
-      next = next.filter(function (item) {
-        var date = isoDate(item && item.date);
-        return !date || date <= cutoff;
-      });
       var pointsByDate = Object.create(null);
       next.forEach(function (item) {
         var date = isoDate(item && item.date);
@@ -2195,7 +2192,12 @@ function downloadPriceSummaryExcel(rows) {
 
   function historyItemsForRow(row) {
     var items = rangeSlice(row).slice();
-    var snapshotDate = isoDate(row && (row.priceFactDate || row.currentPriceDate));
+    var priceFactDate = isoDate(row && row.priceFactDate);
+    var currentSnapshotDate = isoDate(row && row.currentPriceDate);
+    var snapshotDate = priceFactDate;
+    if (currentSnapshotDate && (!snapshotDate || currentSnapshotDate > snapshotDate)) {
+      snapshotDate = currentSnapshotDate;
+    }
     var snapshotPrice = num(row && row.currentFillPrice);
     if (!snapshotDate || snapshotPrice == null) return items;
     if (state.dateFrom && snapshotDate < state.dateFrom) return items;

@@ -102,7 +102,7 @@
       url.searchParams.set('brand', `eq.${cfg.brand}`);
       if (isTaskTable) {
         url.searchParams.set('select', 'id,article_key,title,next_action,reason,owner,due,status,type,priority,platform,source,entity_label,auto_code,created_at,updated_at');
-        url.searchParams.set('status', 'in.(new,in_progress,waiting_team,waiting_decision)');
+        url.searchParams.set('status', 'in.(new,in_progress,waiting_team,waiting_rop,waiting_decision)');
       } else {
         url.searchParams.set('select', '*');
       }
@@ -121,7 +121,7 @@
           .from(table)
           .select('id,article_key,title,next_action,reason,owner,due,status,type,priority,platform,source,entity_label,auto_code,created_at,updated_at')
           .eq('brand', currentBrandSafe())
-          .in('status', ['new', 'in_progress', 'waiting_team', 'waiting_decision'])
+          .in('status', ['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision'])
       : app.team.client.from(table).select('*').eq('brand', currentBrandSafe());
     const response = await query;
     if (response?.error) throw response.error;

@@ -1,19 +1,28 @@
-  function plusDaysLocal(days) {
-    const base = new Date();
-    base.setHours(12, 0, 0, 0);
-    base.setDate(base.getDate() + days);
-    return base.toISOString().slice(0, 10);
+dMs = Math.min(rangeEnd.getTime(), monthEnd.getTime());
+    if (startMs > endMs) return 0;
+    return Math.floor((endMs - startMs) / 86400000) + 1;
   }
 
-  function meanOrNull(values) {
-    const cleaned = values.filter((value) => value != null && !Number.isNaN(Number(value))).map(Number);
-    if (!cleaned.length) return null;
-    return cleaned.reduce((sum, value) => sum + value, 0) / cleaned.length;
-  }
-
-  function defaultAllowedMargin(row) {
-    const raw = parseNum(row.allowedMarginPct);
-    return raw == null ? 0.15 : raw;
+  function sumMonthlyBuckets(items, rangeStart, rangeEnd) {
+    const rows = Array.isArray(items) ? items : [];
+    const summary = rows.reduce((acc, item) => {
+      const bounds = monthBounds(item?.monthKey);
+      if (!bounds) return acc;
+      const coveredDays = overlapDays(rangeStart, rangeEnd, bounds.start, bounds.end);
+      if (!coveredDays) return acc;
+      const ratio = coveredDays / bounds.days;
+      acc.used = true;
+      acc.coveredDays += coveredDays;
+      if (parseNum(item?.units) != null) acc.units += parseNum(item.units) * ratio;
+      if (parseNum(item?.revenue) != null) acc.revenue += parseNum(item.revenue) * ratio;
+      return acc;
+    }, { used: false, coveredDays: 0, units: 0, revenue: 0 });
+    if (!summary.used) return null;
+    return {
+      units: summary.units,
+      revenue: summary.revenue,
+      coveredDays: summary.coveredDays,
+    };
   }
 
   function normalizeEntry(item = {}) {
@@ -88,3 +97,136 @@
   }
 
   function saveLocalState() {
+    localStorage.setItem(LOCAL_ENTRIES_KEY, JSON.stringify(state.priceWorkbench.localEntries || []));
+    localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(state.priceWorkbench.localHistory || []));
+  }
+
+  async function queryRemoteEntries() {
+    if (!state.team.client) return [];
+    const response = await state.team.client.from(ENTRIES_TABLE).select("*").eq("brand", currentBrand()).limit(2000);
+    if (response.error) throw response.error;
+    return response.data || [];
+  }
+
+  async function queryRemoteHistory() {
+    if (!state.team.client) return [];
+    const response = await state.team.client.from(HISTORY_TABLE).select("*").eq("brand", currentBrand()).order("changed_at", { ascending: false }).limit(4000);
+    if (response.error) throw response.error;
+    return response.data || [];
+  }
+
+  async function upsertRemoteEntries(rows) {
+    if (!state.team.client || !rows.length) return;
+    const payload = rows.map((entry) => ({
+      id: entry.id,
+      brand: currentBrand(),
+      marketplace: entry.marketplace,
+      article_key: entry.articleKey,
+      decision_status: entry.decisionStatus,
+      target_fill_price: entry.targetFillPrice,
+      target_client_price: entry.targetClientPrice,
+      allowed_margin_manual_pct: entry.allowedMarginManualPct,
+      reason: entry.reason,
+      owner_name: entry.owner,
+      due_date: entry.dueDate || null,
+      needs_task: entry.needsTask,
+      escalation: entry.escalation,
+      comment: entry.comment,
+      updated_by: entry.updatedBy,
+      updated_at: entry.updatedAt,
+      created_at: entry.createdAt,
+    }));
+    const response = await state.team.client.from(ENTRIES_TABLE).upsert(payload, { onConflict: "id" });
+    if (response.error) throw response.error;
+  }
+
+  async function insertRemoteHistory(rows) {
+    if (!state.team.client || !rows.length) return;
+    const payload = rows.map((item) => ({
+      id: item.id,
+      brand: currentBrand(),
+      marketplace: item.marketplace,
+      article_key: item.articleKey,
+      event_type: item.eventType,
+      old_target_fill_price: item.oldTargetFillPrice,
+      new_target_fill_price: item.newTargetFillPrice,
+      old_target_client_price: item.oldTargetClientPrice,
+      new_target_client_price: item.newTargetClientPrice,
+      old_allowed_margin_pct: item.oldAllowedMarginPct,
+      new_allowed_margin_pct: item.newAllowedMarginPct,
+      old_decision_status: item.oldDecisionStatus,
+      new_decision_status: item.newDecisionStatus,
+      reason: item.reason,
+      comment: item.comment,
+      changed_by: item.changedBy,
+      changed_at: item.changedAt,
+    }));
+    const response = await state.team.client.from(HISTORY_TABLE).insert(payload);
+    if (response.error) throw response.error;
+  }
+
+  function ensureSeedLoaded() {
+    if (state.priceWorkbench.seed || state.priceWorkbench.loading) return Promise.resolve(state.priceWorkbench.seed);
+    state.priceWorkbench.loading = true;
+    const snapshotLoader = typeof window.__alteaLoadPortalSnapshot === "function"
+      ? window.__alteaLoadPortalSnapshot("data/smart_price_workbench.json").catch((error) => {
+        console.warn("[price-workbench] snapshot fallback failed", error);
+        return null;
+      })
+      : Promise.resolve(null);
+    const localLoader = loadJson("data/smart_price_workbench.json").catch((error) => {
+      console.warn("[price-workbench] local seed failed", error);
+      return null;
+    });
+    const supportLoader = loadJson("data/price_workbench_support.json").catch((error) => {
+      console.warn("[price-workbench] support payload failed", error);
+      return null;
+    });
+    const supportOverlayLoader = loadSupportOverlay();
+    return Promise.all([snapshotLoader, localLoader, supportLoader, supportOverlayLoader])
+      .then(([snapshotPayload, localPayload, supportPayload, supportOverlayPayload]) => {
+        state.priceWorkbench.support = mergeSupportPayload(supportPayload, supportOverlayPayload);
+        const chosen = chooseSeedPayload(snapshotPayload, localPayload);
+        if (!chosen) throw new Error("Не удалось загрузить smart_price_workbench.json");
+        state.priceWorkbench.seed = chosen.payload;
+        state.priceWorkbench.seedSource = chosen.source;
+        state.priceWorkbench.issue = "";
+        ensureDateRange();
+        return chosen.payload;
+      })
+      .catch((error) => {
+        console.error(error);
+        state.priceWorkbench.issue = error.message;
+        return null;
+      })
+      .finally(() => {
+        state.priceWorkbench.loading = false;
+        if (typeof rerenderCurrentView === "function") rerenderCurrentView();
+      });
+  }
+
+  function ensureRemoteLoaded() {
+    if (state.priceWorkbench.remoteReady || state.priceWorkbench.remoteLoading || state.priceWorkbench.remoteDisabled || !hasRemoteStore() || !state.team.client) {
+      return Promise.resolve();
+    }
+    state.priceWorkbench.remoteLoading = true;
+    return Promise.all([queryRemoteEntries(), queryRemoteHistory()])
+      .then(([entries, history]) => {
+        state.priceWorkbench.remoteEntries = entries.map(normalizeEntry);
+        state.priceWorkbench.remoteHistory = history.map(normalizeHistory);
+        state.priceWorkbench.remoteReady = true;
+      })
+      .catch((error) => {
+        console.error(error);
+        state.priceWorkbench.remoteDisabled = true;
+      })
+      .finally(() => {
+        state.priceWorkbench.remoteLoading = false;
+        if (typeof rerenderCurrentView === "function") rerenderCurrentView();
+      });
+  }
+
+  function baseRowsForMarket(market) {
+    const seed = state.priceWorkbench.seed;
+    if (!seed) return [];
+    return (((

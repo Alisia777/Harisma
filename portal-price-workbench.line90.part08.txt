@@ -1,90 +1,179 @@
-    const actualUnits = rows.map((row) => row.actualUnitsSelected).filter((value) => value != null);
-    const planUnits = rows.map((row) => row.planUnitsSelected).filter((value) => value != null);
-    const stock = rows.map((row) => parseNum(row.stock)).filter((value) => value != null);
-    const periodRows = rows.flatMap((row) => row.monthlyFiltered || []);
-    const periodRevenueValues = periodRows.map((item) => parseNum(item.revenue)).filter((value) => value != null);
-    const periodOrderValues = periodRows.map((item) => parseNum(item.ordersUnits)).filter((value) => value != null);
-    const actualSum = actualUnits.length ? actualUnits.reduce((sum, value) => sum + value, 0) : null;
-    const periodRevenue = periodRevenueValues.length ? periodRevenueValues.reduce((sum, value) => sum + value, 0) : null;
-    return {
-      actualUnits: actualSum,
-      planUnits: planUnits.length ? planUnits.reduce((sum, value) => sum + value, 0) : null,
-      periodRevenue,
-      periodOrders: periodOrderValues.length ? periodOrderValues.reduce((sum, value) => sum + value, 0) : null,
-      avgCheck: actualSum && periodRevenue ? periodRevenue / actualSum : null,
-      stock: stock.length ? stock.reduce((sum, value) => sum + value, 0) : null,
-    };
-  }
-
-  function decisionBadge(row) {
-    const meta = DECISION_STATUS_META[row.decisionStatus] || DECISION_STATUS_META.draft;
-    return badge(meta.label, meta.kind);
-  }
-
-  function renderToolbar() {
-    const market = state.priceWorkbench.filters.market || "wb";
-    const baseRows = baseRowsForMarket(market);
-    const owners = ownerList(baseRows);
-    const notes = marketWarnings(baseRows);
-    return `
-      <div class="price-toolbar">
-        <div class="price-toolbar-head">
-          <div>
-            <h2>Цены и маржа по артикулам</h2>
-            <p>РОП выбирает площадку и период, видит цену, маржу, оборачиваемость, план-факт и открывает карточку артикула с историей, задачами и решением.</p>
-            <div class="price-data-note">
-              ${badge(dataFreshnessLabel(baseRows), "info")}
-              ${badge(seedSourceLabel(), "")}
-              ${badge(`Площадка ${marketLabel(market)}`, "warn")}
-              ${badge(`Диапазон ${state.priceWorkbench.filters.dateFrom || "—"} – ${state.priceWorkbench.filters.dateTo || "—"}`, "")}
+ ? "—" : `Выручка ${moneyShort(row.planMonthRevenue)} · чек ${moneyShort(row.planMonthCheck)}`}</small></div>
+          <div class="price-modal-kpi"><span class="label">Запасы в контуре</span><strong>${totalSupply > 0 ? fmt.int(totalSupply) : "—"}</strong><small>${escapeHtml([
+            row.stock != null ? `на остатке ${fmt.int(row.stock)}` : "",
+            row.stockRepricer != null ? `repricer ${fmt.int(row.stockRepricer)}` : "",
+            row.stockInSupplyRequest != null ? `в заявке ${fmt.int(row.stockInSupplyRequest)}` : "",
+            row.stockInTransit != null ? `в пути ${fmt.int(row.stockInTransit)}` : ""
+          ].filter(Boolean).join(" · ") || "Разбивки по запасам в файле нет.")}</small></div>
+        </div>
+        <div class="price-modal-section">
+          <div class="price-inline-meta">Из этой карточки можно сохранить решение по цене, задать owner, срок и сразу поставить задачу.</div>
+          <form class="price-modal-form" data-price-form="${escapeHtml(workbenchKey(row.marketplace, row.articleKey))}">
+            <div class="price-modal-form-grid">
+              <label><span>Статус</span><select name="decisionStatus">${Object.entries(DECISION_STATUS_META).map(([key, meta]) => `<option value="${key}" ${row.decisionStatus === key ? "selected" : ""}>${escapeHtml(meta.label)}</option>`).join("")}</select></label>
+              <label><span>Owner</span><input name="owner" value="${escapeHtml(row.owner || "")}" list="priceWorkbenchOwners"></label>
+              <label><span>Срок</span><input type="date" name="dueDate" value="${escapeHtml(row.dueDate || "")}"></label>
+              <label><span>Эскалация</span><select name="escalation">${Object.entries(ESCALATION_META).map(([key, meta]) => `<option value="${key}" ${row.escalation === key ? "selected" : ""}>${escapeHtml(meta.label)}</option>`).join("")}</select></label>
+              <label><span>Новая цена MP</span><input type="number" step="0.01" name="targetFillPrice" value="${row.targetFillPrice ?? ""}"></label>
+              <label><span>Новая цена клиента</span><input type="number" step="0.01" name="targetClientPrice" value="${row.targetClientPrice ?? ""}"></label>
+              <label><span>Допустимая маржа, %</span><input type="number" step="0.1" name="allowedMarginManualPct" value="${row.allowedMarginManualPct != null ? (row.allowedMarginManualPct * 100).toFixed(1) : ""}" placeholder="Например 18.0"></label>
+              <label class="price-toggle" style="align-self:end;"><input type="checkbox" name="needsTask" ${row.needsTask ? "checked" : ""}> Нужна задача</label>
+              <label class="wide"><span>Логика решения</span><textarea name="reason" rows="3">${escapeHtml(row.reason || "")}</textarea></label>
+              <label class="wide"><span>Комментарий</span><textarea name="comment" rows="3">${escapeHtml(row.comment || "")}</textarea></label>
             </div>
-            ${notes.length ? `<div class="price-helper-copy">${escapeHtml(notes.join(" "))}</div>` : ""}
-          </div>
-          <div class="price-market-switch">
-            ${["wb", "ozon", "ym"].map((market) => `<button type="button" class="quick-chip ${state.priceWorkbench.filters.market === market ? "active" : ""}" data-price-market="${market}">${marketLabel(market)}</button>`).join("")}
-          </div>
+            <div class="price-modal-actions">
+              <button type="submit" class="btn">Сохранить решение</button>
+              <button type="button" class="btn ghost" data-price-task="${escapeHtml(workbenchKey(row.marketplace, row.articleKey))}">Создать / обновить задачу</button>
+            </div>
+          </form>
+          <datalist id="priceWorkbenchOwners">${ownerOptions().map((name) => `<option value="${escapeHtml(name)}"></option>`).join("")}</datalist>
         </div>
-        <div class="price-range-row">
-          <label><span>С даты</span><input type="date" id="priceDateFrom" value="${escapeHtml(state.priceWorkbench.filters.dateFrom)}"></label>
-          <label><span>По дату</span><input type="date" id="priceDateTo" value="${escapeHtml(state.priceWorkbench.filters.dateTo)}"></label>
-          <div class="price-preset-row">
-            ${Object.entries(PRESETS).map(([key, meta]) => `<button type="button" class="quick-chip ${state.priceWorkbench.filters.preset === key ? "active" : ""}" data-price-preset="${key}">${escapeHtml(meta.label)}</button>`).join("")}
-          </div>
+        <div class="price-modal-section">
+          <h3 class="price-section-title">История периода</h3>
+          <div class="price-section-subtitle">Цена MP, цена клиента, СПП, оборачиваемость, выручка и дневной % к плану по выбранному диапазону. Если в пакете нет daily-факта, цены всё равно показываются по дням, а факт отмечается отдельно.</div>
+          ${renderPeriodHistory(row)}
         </div>
-        <div class="price-filters-grid">
-          <label><span>Поиск</span><input id="priceSearch" value="${escapeHtml(state.priceWorkbench.filters.search)}" placeholder="Поиск по SKU, названию, owner или логике решения"></label>
-          <label><span>Owner</span><select id="priceOwnerFilter"><option value="all">Все owner</option>${owners.map((owner) => `<option value="${escapeHtml(owner)}" ${state.priceWorkbench.filters.owner === owner ? "selected" : ""}>${escapeHtml(owner)}</option>`).join("")}</select></label>
-          <label><span>Статус</span><select id="priceStatusFilter"><option value="all">Все статусы</option>${Object.entries(DECISION_STATUS_META).map(([key, meta]) => `<option value="${key}" ${state.priceWorkbench.filters.status === key ? "selected" : ""}>${escapeHtml(meta.label)}</option>`).join("")}</select></label>
-          <label><span>Сортировка</span><select id="priceSortMode"><option value="risk" ${state.priceWorkbench.filters.sort === "risk" ? "selected" : ""}>Сначала рисковые</option><option value="turnover" ${state.priceWorkbench.filters.sort === "turnover" ? "selected" : ""}>По оборачиваемости</option><option value="margin" ${state.priceWorkbench.filters.sort === "margin" ? "selected" : ""}>По марже</option><option value="plan" ${state.priceWorkbench.filters.sort === "plan" ? "selected" : ""}>По план-факту</option></select></label>
+        <div class="price-modal-section">
+          <h3 class="price-section-title">История решений и допустимой маржи</h3>
+          <div class="price-section-subtitle">Кто и когда менял допустимую маржу, целевую цену и статус решения по артикулу.</div>
+          ${renderDecisionHistory(row)}
         </div>
-        <label class="price-toggle"><input type="checkbox" id="priceRiskOnly" ${state.priceWorkbench.filters.riskOnly ? "checked" : ""}> Только проблемные позиции</label>
+        <div class="price-modal-section">
+          <h3 class="price-section-title">Задачи по артикулу</h3>
+          <div class="price-section-subtitle">Ниже видны текущие задачи по цене, owner, срок и следующий шаг по выбранной позиции.</div>
+          ${renderTaskList(tasks)}
+        </div>
       </div>
     `;
+    modal.classList.add("open");
+    const form = body.querySelector("[data-price-form]");
+    if (form) form.addEventListener("submit", handleSubmit);
+    body.querySelectorAll("[data-price-task]").forEach((button) => button.addEventListener("click", handleCreateTask));
   }
 
-  function renderSummary(rows) {
-    const totals = aggregateMetrics(rows);
-    const belowMargin = rows.filter((row) => row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && row.marginTotalPct < row.effectiveAllowedMarginPct).length;
-    const underPlan = rows.filter((row) => row.completionPctSelected != null && row.completionPctSelected < 0.8).length;
-    const tasks = rows.filter((row) => row.needsTask).length;
-    const avgPrice = meanOrNull(rows.map((row) => row.currentFillPriceDisplay));
-    return `
-      <div class="price-summary-grid">
-        <div class="price-summary-card"><span class="label">В работе</span><strong>${fmt.int(rows.length)}</strong><small>SKU в текущем срезе по выбранной площадке.</small></div>
-        <div class="price-summary-card"><span class="label">Продажи за период</span><strong>${totals.actualUnits == null ? "—" : fmt.int(totals.actualUnits)}</strong><small>${totals.periodOrders == null ? "Факт по дням есть не для всех SKU." : `Заказы ${fmt.int(totals.periodOrders)} шт. за выбранный диапазон.`}</small></div>
-        <div class="price-summary-card"><span class="label">Выручка за период</span><strong>${moneyShort(totals.periodRevenue)}</strong><small>${totals.avgCheck == null ? "Средний чек посчитается, когда есть daily-факт." : `Средний чек ${moneyShort(totals.avgCheck)}.`}</small></div>
-        <div class="price-summary-card"><span class="label">Ниже допустимой маржи</span><strong>${fmt.int(belowMargin)}</strong><small>Позиции, где текущая маржа ниже средней допустимой за 3 месяца.</small></div>
-        <div class="price-summary-card"><span class="label">Под риском по плану</span><strong>${fmt.int(underPlan)}</strong><small>${totals.planUnits == null ? "План по артикулу ещё не приехал." : `План в диапазоне ${fmt.int(totals.planUnits)} шт.`}</small></div>
-        <div class="price-summary-card"><span class="label">Средняя цена MP</span><strong>${moneyShort(avgPrice)}</strong><small>Пересчитывается от площадки и диапазона дат.</small></div>
-        <div class="price-summary-card"><span class="label">Остатки в срезе</span><strong>${totals.stock == null ? "—" : fmt.int(totals.stock)}</strong><small>Сумма текущих остатков по выбранной площадке.</small></div>
-        <div class="price-summary-card"><span class="label">Нужны действия</span><strong>${fmt.int(tasks)}</strong><small>Артикулы, где уже зафиксировано решение или нужна задача.</small></div>
+  async function handleSubmit(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const key = form.dataset.priceForm;
+    const row = getCurrentRowByKey(key);
+    if (!row) return;
+    const previous = mergeEntryLayers().get(key);
+    const entry = upsertLocalEntry({
+      id: row.decisionId,
+      marketplace: row.marketplace,
+      articleKey: row.articleKey,
+      decisionStatus: form.elements.decisionStatus.value,
+      targetFillPrice: form.elements.targetFillPrice.value,
+      targetClientPrice: form.elements.targetClientPrice.value,
+      allowedMarginManualPct: parseNum(form.elements.allowedMarginManualPct.value) == null ? null : parseNum(form.elements.allowedMarginManualPct.value) / 100,
+      reason: form.elements.reason.value,
+      owner: form.elements.owner.value,
+      dueDate: form.elements.dueDate.value,
+      needsTask: form.elements.needsTask.checked,
+      escalation: form.elements.escalation.value,
+      comment: form.elements.comment.value,
+      updatedBy: state.team.member?.name || "Команда",
+      updatedAt: new Date().toISOString(),
+      createdAt: previous?.createdAt || row.createdAt || new Date().toISOString(),
+    });
+    const history = addHistoryRow(entry, previous);
+    if (entry.needsTask || entry.decisionStatus === "review" || entry.escalation !== "none") ensurePriceTask(row, entry);
+    if (state.team.client && !state.priceWorkbench.remoteDisabled) {
+      try {
+        await upsertRemoteEntries([entry]);
+        try {
+          await insertRemoteHistory([history]);
+          history.synced = true;
+          saveLocalState();
+        } catch (historyError) {
+          console.error(historyError);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    state.team.note = "Решение по цене сохранено";
+    updateSyncBadge();
+    renderPriceWorkbench();
+    const fresh = getCurrentRowByKey(key);
+    if (fresh) renderPriceModal(fresh);
+  }
+
+  function handleCreateTask(event) {
+    const key = event.currentTarget.dataset.priceTask;
+    const row = getCurrentRowByKey(key);
+    if (!row) return;
+    const entry = normalizeEntry({
+      id: row.decisionId,
+      marketplace: row.marketplace,
+      articleKey: row.articleKey,
+      decisionStatus: row.decisionStatus,
+      targetFillPrice: row.targetFillPrice,
+      targetClientPrice: row.targetClientPrice,
+      allowedMarginManualPct: row.allowedMarginManualPct,
+      reason: row.reason,
+      owner: row.owner,
+      dueDate: row.dueDate,
+      needsTask: true,
+      escalation: row.escalation,
+      comment: row.comment,
+      createdAt: row.createdAt,
+      updatedAt: new Date().toISOString(),
+    });
+    upsertLocalEntry(entry);
+    ensurePriceTask(row, entry);
+    state.team.note = "Задача по цене создана / обновлена";
+    saveLocalState();
+    saveLocalStorage();
+    updateSyncBadge();
+    renderPriceWorkbench();
+    const fresh = getCurrentRowByKey(key);
+    if (fresh) renderPriceModal(fresh);
+  }
+
+  function renderPriceWorkbench() {
+    const root = document.getElementById("view-prices");
+    if (!root) return;
+    ensureStyles();
+    ensureBranding();
+    if (state.priceWorkbench.loading && !state.priceWorkbench.seed) {
+      root.innerHTML = `<div class="card"><div class="price-empty">Загружаю контур цен…</div></div>`;
+      return;
+    }
+    if (state.priceWorkbench.issue && !state.priceWorkbench.seed) {
+      root.innerHTML = `<div class="card"><div class="price-empty">Не удалось загрузить блок цен: ${escapeHtml(state.priceWorkbench.issue)}</div></div>`;
+      return;
+    }
+    if (!state.priceWorkbench.seed) {
+      root.innerHTML = `<div class="card"><div class="price-empty">Ценовой контур ещё не загружен.</div></div>`;
+      return;
+    }
+    ensureDateRange();
+    const rows = filteredRows();
+    selectedRow(rows);
+    root.innerHTML = `
+      <div class="price-workbench-shell">
+        ${renderToolbar()}
+        ${renderSummary(rows)}
+        <div class="price-note">Календарь, площадка и период влияют на таблицу, план-факт, историю по дням и карточку артикула. Для Ozon факт по дням есть до 16 апреля 2026, по WB после 31 марта 2026 сейчас используется текущий срез без daily-продаж.</div>
+        ${renderTable(rows)}
       </div>
     `;
-  }
-
-  function renderTable(rows) {
-    if (!rows.length) return `<div class="price-empty">По текущим фильтрам ничего не найдено.</div>`;
-    return `
-      <div class="card price-table-card">
-        <div class="price-table-wrap">
-          <table class="price-table">
+    const bind = (selector, eventName, handler) => {
+      const node = root.querySelector(selector);
+      if (node) node.addEventListener(eventName, handler);
+    };
+    bind("#priceSearch", "input", (event) => { state.priceWorkbench.filters.search = event.target.value; renderPriceWorkbench(); });
+    bind("#priceOwnerFilter", "change", (event) => { state.priceWorkbench.filters.owner = event.target.value; renderPriceWorkbench(); });
+    bind("#priceStatusFilter", "change", (event) => { state.priceWorkbench.filters.status = event.target.value; renderPriceWorkbench(); });
+    bind("#priceSortMode", "change", (event) => { state.priceWorkbench.filters.sort = event.target.value; renderPriceWorkbench(); });
+    bind("#priceRiskOnly", "change", (event) => { state.priceWorkbench.filters.riskOnly = event.target.checked; renderPriceWorkbench(); });
+    bind("#priceDateFrom", "change", (event) => { state.priceWorkbench.filters.dateFrom = event.target.value; state.priceWorkbench.filters.preset = "custom"; renderPriceWorkbench(); });
+    bind("#priceDateTo", "change", (event) => { state.priceWorkbench.filters.dateTo = event.target.value; state.priceWorkbench.filters.preset = "custom"; renderPriceWorkbench(); });
+    root.querySelectorAll("[data-price-preset]").forEach((button) => button.addEventListener("click", () => applyPreset(button.dataset.pricePreset)));
+    root.querySelectorAll("[data-price-market]").forEach((button) => button.addEventListener("click", () => {
+      state.priceWorkbench.filters.market = button.dataset.priceMarket;
+      state.priceWorkbench.selectedKey = "";
+      const range = presetRange(state.priceWorkbench.filters.preset || "month", state.priceWorkbench.filters.market);
+      state.priceWorkbench.filters.dateFrom = range.dateFrom;
+      state.price

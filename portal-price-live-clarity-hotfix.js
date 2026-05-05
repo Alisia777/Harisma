@@ -1,4 +1,5 @@
 (function () {
+  if (window.__ALTEA_PRICE_SIMPLE_RUNTIME_MODE__) return;
   if (window.__ALTEA_PRICE_LIVE_CLARITY_HOTFIX_20260425A__) return;
   window.__ALTEA_PRICE_LIVE_CLARITY_HOTFIX_20260425A__ = true;
 
@@ -371,6 +372,7 @@
     }
     var overlayMeta = priceState() && priceState().overlayMeta || null;
     var overlayDate = isoDate(overlayMeta && (overlayMeta.asOfDate || overlayMeta.generatedAt));
+    var latestDate = latestSeedDate();
     var lag = overlayDate ? Math.max(0, Math.round((new Date(todayKey() + "T12:00:00").getTime() - new Date(overlayDate + "T12:00:00").getTime()) / 86400000)) : null;
     banner.className = "price-live-banner" + (lag != null && lag > 1 ? " warn" : "");
     banner.innerHTML = overlayDate

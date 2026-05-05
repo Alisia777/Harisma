@@ -268,7 +268,14 @@
     body.querySelector('#taskEditForm')?.addEventListener('submit', async (event) => {
       event.preventDefault();
       const form = new FormData(event.currentTarget);
-      await updateTaskRecord(taskId, {
+      const updateFn = typeof window.updateTaskRecordSafe === 'function'
+        ? window.updateTaskRecordSafe
+        : (typeof updateTaskRecord === 'function' ? updateTaskRecord : null);
+      if (!updateFn) {
+        alert('Функция сохранения задачи недоступна. Обновите страницу.');
+        return;
+      }
+      const updatedTask = await updateFn(taskId, {
         title: form.get('title'),
         entityLabel: form.get('entityLabel'),
         owner: form.get('owner'),
@@ -280,22 +287,66 @@
         nextAction: form.get('nextAction'),
         reason: form.get('reason')
       });
+      if (!updatedTask) {
+        alert('Не удалось сохранить задачу. Обновите страницу и повторите.');
+        return;
+      }
       renderTaskModal(taskId);
     });
     body.querySelector('#taskCommentForm')?.addEventListener('submit', async (event) => {
       event.preventDefault();
       const form = new FormData(event.currentTarget);
-      await createTaskHistoryEntry(taskId, 'comment', String(form.get('text') || '').trim(), { team: typeof teamMemberLabel === 'function' ? teamMemberLabel() : 'Команда' });
+      const text = String(form.get('text') || '').trim();
+      if (!text) return;
+      const historyFn = typeof window.appendTaskHistorySafe === 'function'
+        ? window.appendTaskHistorySafe
+        : (typeof createTaskHistoryEntry === 'function' ? createTaskHistoryEntry : null);
+      if (!historyFn) {
+        alert('Функция сохранения апдейта недоступна. Обновите страницу.');
+        return;
+      }
+      await historyFn(taskId, 'comment', text, { team: typeof teamMemberLabel === 'function' ? teamMemberLabel() : 'Команда' });
       renderTaskModal(taskId);
     });
-    body.querySelector('#taskSubmitToRopForm')?.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const form = new FormData(event.currentTarget);
-      const report = String(form.get('report') || '').trim();
-      if (!report) return;
-      await submitTaskForRopApproval(taskId, report);
-      renderTaskModal(taskId);
-    });
+    const submitToRopForm = body.querySelector('#taskSubmitToRopForm') || body.querySelector('#taskCloseForm');
+    if (submitToRopForm && submitToRopForm.dataset.ropSubmitBound !== '1') {
+      submitToRopForm.dataset.ropSubmitBound = '1';
+      submitToRopForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (submitToRopForm.dataset.sending === '1') return;
+        const form = new FormData(event.currentTarget);
+        const report = String(form.get('report') || '').trim();
+        if (!report) {
+          event.currentTarget.querySelector('textarea[name="report"]')?.focus();
+          return;
+        }
+        const submitButton = event.currentTarget.querySelector('button[type="submit"]');
+        const initialText = submitButton?.textContent || '';
+        try {
+          submitToRopForm.dataset.sending = '1';
+          if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Отправляем...';
+          }
+          const submitFn = typeof window.submitTaskForRopApproval === 'function'
+            ? window.submitTaskForRopApproval
+            : (typeof submitTaskForRopApproval === 'function' ? submitTaskForRopApproval : null);
+          if (typeof submitFn !== 'function') throw new Error('Функция отправки РОПу недоступна.');
+          const updatedTask = await submitFn(taskId, report);
+          if (!updatedTask) throw new Error('Не удалось найти задачу в текущем слое.');
+          renderTaskModal(taskId);
+        } catch (error) {
+          console.error(error);
+          alert(error?.message || 'Не удалось отправить задачу РОПу. Повторите попытку.');
+        } finally {
+          submitToRopForm.dataset.sending = '0';
+          if (submitButton && submitButton.isConnected) {
+            submitButton.disabled = false;
+            submitButton.textContent = initialText || 'Отправить РОПу';
+          }
+        }
+      });
+    }
     body.querySelector('#taskRopApproveForm')?.addEventListener('submit', async (event) => {
       event.preventDefault();
       const form = new FormData(event.currentTarget);

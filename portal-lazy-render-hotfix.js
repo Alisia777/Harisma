@@ -3,8 +3,8 @@
   window.__ALTEA_PORTAL_LAZY_RENDER_HOTFIX_20260418L__ = true;
 
   const LAZY_MODE_DELAY_MS = 9000;
-  const PRICE_INTEL_SRC = 'portal-dashboard-interactive-hotfix.js?v=20260418zb';
-  const PRICE_INTEL_FLAG = '__ALTEA_PRICE_INTEL_20260418Z__';
+  const DASHBOARD_LOADER_VERSION = '20260418w';
+  const DASHBOARD_SCRIPT_PATH = '/portal-dashboard-interactive-hotfix.js';
   const VIEW_RENDERERS = {
     dashboard: ['view-dashboard', 'Дашборд', () => typeof renderDashboard === 'function' && renderDashboard()],
     documents: ['view-documents', 'Документы', () => typeof renderDocuments === 'function' && renderDocuments()],
@@ -22,41 +22,6 @@
     if (explicit && VIEW_RENDERERS[explicit]) return explicit;
     const domView = document.querySelector('.view.active')?.id?.replace(/^view-/, '') || 'dashboard';
     return VIEW_RENDERERS[domView] ? domView : 'dashboard';
-  }
-
-  function triggerPriceIntelBoot(force) {
-    if (typeof window.__ALTEA_PRICE_INTEL_BOOT__ === 'function') {
-      window.__ALTEA_PRICE_INTEL_BOOT__(!!force);
-    }
-  }
-
-  function scheduleBootRetries() {
-    [500, 1800, 4800].forEach((delay) => {
-      window.setTimeout(() => triggerPriceIntelBoot(false), delay);
-    });
-  }
-
-  function ensureDashboardPriceIntel() {
-    if (window[PRICE_INTEL_FLAG]) {
-      triggerPriceIntelBoot(false);
-      scheduleBootRetries();
-      return;
-    }
-    if (document.querySelector('script[data-portal-price-intel-lazy="' + PRICE_INTEL_SRC + '"]')) {
-      triggerPriceIntelBoot(false);
-      scheduleBootRetries();
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = PRICE_INTEL_SRC;
-    script.async = true;
-    script.dataset.portalPriceIntelLazy = PRICE_INTEL_SRC;
-    script.onload = () => {
-      triggerPriceIntelBoot(false);
-      scheduleBootRetries();
-    };
-    script.onerror = () => console.warn('[portal-lazy-render-hotfix] Failed to load ' + PRICE_INTEL_SRC);
-    document.body.appendChild(script);
   }
 
   function clearInactiveViews(activeKey) {
@@ -83,6 +48,26 @@
     }
   }
 
+  async function ensureDashboardLoader() {
+    if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260418A__) return;
+    if (window.__ALTEA_DASHBOARD_INTERACTIVE_LOADING_20260418W__) return;
+    window.__ALTEA_DASHBOARD_INTERACTIVE_LOADING_20260418W__ = true;
+    try {
+      if (!window.__ALTEA_DASHBOARD_INTERACTIVE_20260418A__) {
+        const response = await fetch(DASHBOARD_SCRIPT_PATH + '?v=' + DASHBOARD_LOADER_VERSION, { cache: 'no-store' });
+        if (!response.ok) throw new Error('interactive dashboard script failed to load');
+        const source = await response.text();
+        const runner = new Function(source + '\n//# sourceURL=portal-dashboard-interactive-hotfix.runtime.js?v=' + DASHBOARD_LOADER_VERSION);
+        runner.call(window);
+      }
+      if (!window.__ALTEA_DASHBOARD_INTERACTIVE_20260418A__) throw new Error('interactive dashboard did not initialize');
+    } catch (error) {
+      console.warn('[portal-lazy-render-hotfix]', error && error.message ? error.message : error);
+    } finally {
+      window.__ALTEA_DASHBOARD_INTERACTIVE_LOADING_20260418W__ = false;
+    }
+  }
+
   function installLazyRenderer() {
     if (typeof rerenderCurrentView !== 'function' || rerenderCurrentView.__portalLazyRenderWrapped) return false;
     const original = rerenderCurrentView;
@@ -101,7 +86,6 @@
         errors.push(`${title}: ${error.message}`);
         if (typeof renderViewFailure === 'function') renderViewFailure(rootId, title, error);
       }
-      if (activeKey === 'dashboard') ensureDashboardPriceIntel();
       clearInactiveViews(activeKey);
       applyUiState(errors);
     };
@@ -113,7 +97,6 @@
   function activateLazyMode() {
     if (!installLazyRenderer()) return;
     const activeKey = getActiveViewKey();
-    if (activeKey === 'dashboard') ensureDashboardPriceIntel();
     if (VIEW_RENDERERS[activeKey]) {
       clearInactiveViews(activeKey);
       applyUiState([]);
@@ -121,17 +104,29 @@
   }
 
   function scheduleActivation() {
-    [1200, 4200, LAZY_MODE_DELAY_MS, 16000].forEach((delay) => {
+    window.setTimeout(activateLazyMode, LAZY_MODE_DELAY_MS);
+  }
+
+  function bindDashboardLoader() {
+    document.querySelectorAll('.nav-btn[data-view="dashboard"]').forEach((button) => {
+      if (button.dataset.portalDashboardLoaderBound) return;
+      button.dataset.portalDashboardLoaderBound = '1';
+      button.addEventListener('click', () => window.setTimeout(() => { void ensureDashboardLoader(); }, 40));
+    });
+    [2200, 4800].forEach((delay) => {
       window.setTimeout(() => {
-        if (getActiveViewKey() === 'dashboard') ensureDashboardPriceIntel();
-        if (delay === LAZY_MODE_DELAY_MS) activateLazyMode();
+        if (!window.__ALTEA_DASHBOARD_INTERACTIVE_20260418A__) void ensureDashboardLoader();
       }, delay);
     });
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', scheduleActivation, { once: true });
+    document.addEventListener('DOMContentLoaded', () => {
+      bindDashboardLoader();
+      scheduleActivation();
+    }, { once: true });
   } else {
+    bindDashboardLoader();
     scheduleActivation();
   }
 })();

@@ -1,14 +1,15 @@
 function buildExecutiveModel() {
   const control = getControlSnapshot();
-  const active = sortTasks(control.active.filter((task) => task.status !== 'waiting_rop'));
+  const active = sortTasks(control.active);
   const overdue = active.filter(isTaskOverdue);
-  const waiting = sortTasks(active.filter((task) => task.status === 'waiting_decision'));
+  const waiting = sortTasks(active.filter((task) => task.status === 'waiting_decision' || task.status === 'waiting_rop'));
   const critical = sortTasks(active.filter((task) => task.priority === 'critical'));
   const noOwnerTasks = sortTasks(active.filter((task) => !task.owner));
   const launchFocus = getLaunchItems().slice(0, 4);
   const unassignedSkus = state.skus.filter((sku) => !sku?.flags?.assigned).slice(0, 6);
   const escalations = sortTasks(active.filter((task) => (
     task.status === 'waiting_decision'
+    || task.status === 'waiting_rop'
     || isTaskOverdue(task)
     || task.priority === 'critical'
     || !task.owner
@@ -283,8 +284,35 @@ async function takeAutoTask(taskId) {
   openTaskModal(manual.id);
 }
 
+async function ensureTaskRecordForUpdate(taskId) {
+  const normalizedTaskId = String(taskId || '').trim();
+  if (!normalizedTaskId) return null;
+
+  const existing = state.storage.tasks.find((item) => item.id === normalizedTaskId);
+  if (existing) return existing;
+
+  const sourceTask = getAllTasks().find((item) => item.id === normalizedTaskId);
+  if (!sourceTask) return null;
+
+  const materialized = normalizeTask({
+    ...sourceTask,
+    id: normalizedTaskId,
+    source: 'manual',
+    createdAt: sourceTask.createdAt || new Date().toISOString()
+  }, 'manual');
+
+  state.storage.tasks.unshift(materialized);
+  saveLocalStorage();
+  try {
+    await persistTask(materialized);
+  } catch (error) {
+    console.error(error);
+  }
+  return materialized;
+}
+
 async function updateTaskRecord(taskId, patch = {}) {
-  const current = state.storage.tasks.find((item) => item.id === taskId);
+  const current = await ensureTaskRecordForUpdate(taskId);
   if (!current) return null;
 
   const before = { ...current };

@@ -1,9 +1,9 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260418ZA__) return;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260418ZA__ = true;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260419A__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260419A__ = true;
 
   const SCRIPT_ID = 'portalDashboardInteractiveHotfixRuntime';
-  const SCRIPT_SRC = 'portal-dashboard-interactive-hotfix.js?v=20260418z';
+  const SCRIPT_SRC = 'portal-dashboard-interactive-hotfix.js?v=20260419a';
 
   function kick() {
     if (typeof window.__ALTEA_PRICE_INTEL_BOOT__ === 'function') {

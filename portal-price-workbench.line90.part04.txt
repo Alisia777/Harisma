@@ -1,90 +1,244 @@
-    localStorage.setItem(LOCAL_ENTRIES_KEY, JSON.stringify(state.priceWorkbench.localEntries || []));
-    localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(state.priceWorkbench.localHistory || []));
+seed.platforms || {})[market] || {}).rows || []).map((row) => mergeSupportRow({ ...row }));
   }
 
-  async function queryRemoteEntries() {
-    if (!state.team.client) return [];
-    const response = await state.team.client.from(ENTRIES_TABLE).select("*").eq("brand", currentBrand()).limit(2000);
-    if (response.error) throw response.error;
-    return response.data || [];
-  }
-
-  async function queryRemoteHistory() {
-    if (!state.team.client) return [];
-    const response = await state.team.client.from(HISTORY_TABLE).select("*").eq("brand", currentBrand()).order("changed_at", { ascending: false }).limit(4000);
-    if (response.error) throw response.error;
-    return response.data || [];
-  }
-
-  async function upsertRemoteEntries(rows) {
-    if (!state.team.client || !rows.length) return;
-    const payload = rows.map((entry) => ({
-      id: entry.id,
-      brand: currentBrand(),
-      marketplace: entry.marketplace,
-      article_key: entry.articleKey,
-      decision_status: entry.decisionStatus,
-      target_fill_price: entry.targetFillPrice,
-      target_client_price: entry.targetClientPrice,
-      allowed_margin_manual_pct: entry.allowedMarginManualPct,
-      reason: entry.reason,
-      owner_name: entry.owner,
-      due_date: entry.dueDate || null,
-      needs_task: entry.needsTask,
-      escalation: entry.escalation,
-      comment: entry.comment,
-      updated_by: entry.updatedBy,
-      updated_at: entry.updatedAt,
-      created_at: entry.createdAt,
-    }));
-    const response = await state.team.client.from(ENTRIES_TABLE).upsert(payload, { onConflict: "id" });
-    if (response.error) throw response.error;
-  }
-
-  async function insertRemoteHistory(rows) {
-    if (!state.team.client || !rows.length) return;
-    const payload = rows.map((item) => ({
-      id: item.id,
-      brand: currentBrand(),
-      marketplace: item.marketplace,
-      article_key: item.articleKey,
-      event_type: item.eventType,
-      old_target_fill_price: item.oldTargetFillPrice,
-      new_target_fill_price: item.newTargetFillPrice,
-      old_target_client_price: item.oldTargetClientPrice,
-      new_target_client_price: item.newTargetClientPrice,
-      old_allowed_margin_pct: item.oldAllowedMarginPct,
-      new_allowed_margin_pct: item.newAllowedMarginPct,
-      old_decision_status: item.oldDecisionStatus,
-      new_decision_status: item.newDecisionStatus,
-      reason: item.reason,
-      comment: item.comment,
-      changed_by: item.changedBy,
-      changed_at: item.changedAt,
-    }));
-    const response = await state.team.client.from(HISTORY_TABLE).insert(payload);
-    if (response.error) throw response.error;
-  }
-
-  function ensureSeedLoaded() {
-    if (state.priceWorkbench.seed || state.priceWorkbench.loading) return Promise.resolve(state.priceWorkbench.seed);
-    state.priceWorkbench.loading = true;
-    const snapshotLoader = typeof window.__alteaLoadPortalSnapshot === "function"
-      ? window.__alteaLoadPortalSnapshot("data/smart_price_workbench.json").catch((error) => {
-        console.warn("[price-workbench] snapshot fallback failed", error);
-        return null;
-      })
-      : Promise.resolve(null);
-    return snapshotLoader
-      .then((snapshotPayload) => {
-        if (snapshotPayload?.platforms) {
-          state.priceWorkbench.seed = snapshotPayload;
-          state.priceWorkbench.seedSource = "snapshot";
-          state.priceWorkbench.issue = "";
-          ensureDateRange();
-          return snapshotPayload;
+  function allDatesForMarket(market) {
+    const seen = new Set();
+    const dates = [];
+    baseRowsForMarket(market).forEach((row) => {
+      (row.monthly || []).forEach((item) => {
+        const value = isoDate(item.date);
+        if (value && !seen.has(value)) {
+          seen.add(value);
+          dates.push(value);
         }
-        return loadJson("data/smart_price_workbench.json").then((payload) => {
-          state.priceWorkbench.seed = payload;
-          state.priceWorkbench.seedSource = "local";
-          state.priceWorkbench.issue = "
+      });
+    });
+    dates.sort();
+    return dates;
+  }
+
+  function presetRange(preset, market) {
+    const dates = allDatesForMarket(market);
+    if (!dates.length) return { dateFrom: "", dateTo: "" };
+    const min = dates[0];
+    const max = dates[dates.length - 1];
+    if (preset === "all") return { dateFrom: min, dateTo: max };
+    const maxDate = new Date(max);
+    if (preset === "prev_month") {
+      const start = new Date(Date.UTC(maxDate.getUTCFullYear(), maxDate.getUTCMonth() - 1, 1));
+      const end = new Date(Date.UTC(maxDate.getUTCFullYear(), maxDate.getUTCMonth(), 0));
+      return { dateFrom: start.toISOString().slice(0, 10), dateTo: end.toISOString().slice(0, 10) };
+    }
+    if (preset === "month") {
+      const start = new Date(Date.UTC(maxDate.getUTCFullYear(), maxDate.getUTCMonth(), 1));
+      return { dateFrom: start.toISOString().slice(0, 10), dateTo: max };
+    }
+    const days = PRESETS[preset]?.days || 30;
+    const start = new Date(maxDate);
+    start.setUTCDate(start.getUTCDate() - (days - 1));
+    const startIso = start.toISOString().slice(0, 10);
+    return { dateFrom: startIso < min ? min : startIso, dateTo: max };
+  }
+
+  function ensureDateRange() {
+    if (state.priceWorkbench.filters.dateFrom && state.priceWorkbench.filters.dateTo) return;
+    const range = presetRange(state.priceWorkbench.filters.preset || "month", state.priceWorkbench.filters.market || "wb");
+    state.priceWorkbench.filters.dateFrom = range.dateFrom;
+    state.priceWorkbench.filters.dateTo = range.dateTo;
+  }
+
+  function applyPreset(preset) {
+    state.priceWorkbench.filters.preset = preset;
+    const range = presetRange(preset, state.priceWorkbench.filters.market || "wb");
+    state.priceWorkbench.filters.dateFrom = range.dateFrom;
+    state.priceWorkbench.filters.dateTo = range.dateTo;
+    renderPriceWorkbench();
+  }
+
+  function withinRange(value) {
+    const dateValue = isoDate(value);
+    if (!dateValue) return false;
+    const from = state.priceWorkbench.filters.dateFrom || "";
+    const to = state.priceWorkbench.filters.dateTo || "";
+    if (from && dateValue < from) return false;
+    if (to && dateValue > to) return false;
+    return true;
+  }
+
+  function mergeEntryLayers() {
+    const map = new Map();
+    (state.priceWorkbench.remoteEntries || []).forEach((item) => map.set(workbenchKey(item.marketplace, item.articleKey), item));
+    (state.priceWorkbench.localEntries || []).forEach((item) => map.set(workbenchKey(item.marketplace, item.articleKey), item));
+    return map;
+  }
+
+  function computePlanMetrics(row, series) {
+    const rangeFrom = state.priceWorkbench.filters.dateFrom || "";
+    const rangeTo = state.priceWorkbench.filters.dateTo || "";
+    if (!rangeFrom || !rangeTo || rangeFrom > rangeTo) {
+      return {
+        planUnitsSelected: null,
+        actualUnitsSelected: null,
+        completionPct: null,
+        selectedDays: 0,
+        actualRevenueSelected: null,
+        actualSource: "",
+        planSource: "",
+      };
+    }
+    const rangeStart = dateKeyToUtc(rangeFrom);
+    const rangeEnd = dateKeyToUtc(rangeTo);
+    if (!rangeStart || !rangeEnd) {
+      return {
+        planUnitsSelected: null,
+        actualUnitsSelected: null,
+        completionPct: null,
+        selectedDays: 0,
+        actualRevenueSelected: null,
+        actualSource: "",
+        planSource: "",
+      };
+    }
+    const selectedDays = Math.floor((rangeEnd - rangeStart) / 86400000) + 1;
+    const support = row.supportRow || null;
+    const planFromSupport = sumMonthlyBuckets(support?.planMonths, rangeStart, rangeEnd);
+    const fallbackPlanUnits = parseNum(row.planMonthUnits);
+    const fallbackPlanDays = parseNum(row.planMonthDays) || 30;
+    const planUnitsSelected = planFromSupport?.units != null
+      ? planFromSupport.units
+      : (fallbackPlanUnits && fallbackPlanDays ? (fallbackPlanUnits / fallbackPlanDays) * selectedDays : null);
+    const actualPool = series.filter((item) => {
+      const itemDate = isoDate(item.date);
+      return itemDate && itemDate >= rangeFrom && itemDate <= rangeTo;
+    });
+    const actualValues = actualPool
+      .map((item) => parseNum(item.ordersUnits) ?? parseNum(item.deliveredUnits))
+      .filter((value) => value != null);
+    const actualRevenueValues = actualPool
+      .map((item) => parseNum(item.revenue))
+      .filter((value) => value != null);
+    let actualUnitsSelected = actualValues.length ? actualValues.reduce((sum, value) => sum + value, 0) : null;
+    let actualRevenueSelected = actualRevenueValues.length ? actualRevenueValues.reduce((sum, value) => sum + value, 0) : null;
+    let actualSource = actualUnitsSelected != null ? "daily" : "";
+    if (actualUnitsSelected == null) {
+      const monthlyActual = sumMonthlyBuckets(support?.actualMonths, rangeStart, rangeEnd);
+      if (monthlyActual?.units != null) {
+        actualUnitsSelected = monthlyActual.units;
+        actualRevenueSelected = monthlyActual.revenue;
+        actualSource = "monthly";
+      }
+    }
+    const completionPct = actualUnitsSelected != null && planUnitsSelected > 0 ? actualUnitsSelected / planUnitsSelected : null;
+    return {
+      planUnitsSelected,
+      actualUnitsSelected,
+      completionPct,
+      selectedDays,
+      actualRevenueSelected,
+      actualSource,
+      planSource: planFromSupport?.units != null ? "monthly_plan" : (planUnitsSelected != null ? "seed" : ""),
+    };
+  }
+
+  function sourceLabel(row) {
+    if (row.allowedMarginManualPct != null) return "manual";
+    if (row.allowedMarginSourceBaseline) return row.allowedMarginSourceBaseline;
+    if (row.allowedMarginPct != null) return "smart_seed";
+    return "default";
+  }
+
+  function allowedMarginSourceCopy(row) {
+    switch (row.allowedMarginSource) {
+      case "manual":
+        return "вручную";
+      case "avg_3m_actual":
+        return "ср. маржа 3м";
+      case "support_workbook":
+        return "из файла";
+      case "smart_seed":
+        return "из smart";
+      default:
+        return "резерв";
+    }
+  }
+
+  function historySourceCopy(row) {
+    if (row.historyMode === "daily") return "дни + продажи";
+    if (row.historyMode === "price_only") return "цена/оборач. без daily";
+    return "история не заполнена";
+  }
+
+  function compactHistoryNote(row, limit = 140) {
+    const note = String(row?.historyNoteDisplay || row?.historyNote || "").trim();
+    if (!note) return "";
+    if (note.length <= limit) return note;
+    return `${note.slice(0, limit - 1).trimEnd()}…`;
+  }
+
+  function supportStatusKind(value) {
+    const raw = String(value || "").trim().toLowerCase();
+    if (!raw) return "info";
+    if (/актуал|продается|доставлен|в наличии/.test(raw)) return "ok";
+    if (/вывод|архив|стоп|неактуал|не продается|скрыт/.test(raw)) return "danger";
+    if (/пауза|огранич|нет данных|конфликт/.test(raw)) return "warn";
+    return "info";
+  }
+
+  function productStatusValue(row) {
+    const support = row?.supportRow || null;
+    if (!support) return "";
+    const values = [];
+    if (support.productStatus) values.push(String(support.productStatus).trim());
+    if (support.repricerStatus) {
+      const repricer = `Repricer: ${String(support.repricerStatus).trim()}`;
+      if (!values.includes(repricer)) values.push(repricer);
+    }
+    return values.filter(Boolean).join(" · ");
+  }
+
+  function productStatusNote(row) {
+    const support = row?.supportRow || null;
+    if (!support) return "";
+    const values = [];
+    if (support.inCurrentExport === false) values.push("Позиция не отмечена в текущем export.");
+    if (support.inCurrentExport === true) values.push("Позиция есть в текущем export.");
+    if (support.historyQuality) values.push(`Качество истории: ${String(support.historyQuality).trim()}`);
+    if (support.statusInterpretation) values.push(String(support.statusInterpretation).trim());
+    else if (support.buyerInterpretation) values.push(String(support.buyerInterpretation).trim());
+    if (support.statusComment) values.push(String(support.statusComment).trim());
+    return values.filter(Boolean).join(" · ");
+  }
+
+  function productStatusBadges(row) {
+    const support = row?.supportRow || null;
+    if (!support) return [];
+    const values = [];
+    if (support.productStatus) values.push(badge(String(support.productStatus).trim(), supportStatusKind(support.productStatus)));
+    if (support.repricerStatus) values.push(badge(`Repricer: ${String(support.repricerStatus).trim()}`, supportStatusKind(support.repricerStatus)));
+    return values.filter(Boolean);
+  }
+
+  function modalRangeCopy(row) {
+    const bits = [];
+    bits.push(`Период ${state.priceWorkbench.filters.dateFrom || "—"} — ${state.priceWorkbench.filters.dateTo || "—"}`);
+    bits.push(`История: ${historySourceCopy(row)}`);
+    if (row.historyFreshnessDisplay) bits.push(`свежесть до ${row.historyFreshnessDisplay}`);
+    return bits.join(" · ");
+  }
+
+  function applyEntry(row, entry) {
+    const merged = entry ? normalizeEntry(entry) : normalizeEntry({ marketplace: row.marketplace, articleKey: row.articleKey, owner: row.owner });
+    const series = (Array.isArray(row.monthly) ? row.monthly : [])
+      .filter((item) => withinRange(item.date))
+      .sort((left, right) => String(left?.date || "").localeCompare(String(right?.date || "")));
+    const allowedMargin = resolveAllowedMargin(row);
+    const effectiveAllowed = merged.allowedMarginManualPct != null ? merged.allowedMarginManualPct : allowedMargin.value;
+    const latest = series.length ? series[series.length - 1] : null;
+    const avgTurnover = series.length ? meanOrNull(series.map((item) => parseNum(item.turnoverDays))) : parseNum(row.turnoverCurrentDays);
+    const latestPrice = latest ? parseNum(latest.price) : parseNum(row.currentFillPrice);
+    const latestClient = latest ? (parseNum(latest.clientPrice) ?? (latestPrice != null && parseNum(latest.sppPct) != null ? latestPrice * (1 - parseNum(latest.sppPct)) : null)) : parseNum(row.currentClientPrice);
+    const latestSpp = latest ? parseNum(latest.sppPct) : parseNum(row.currentSppPct);
+    const historyMeta = buildHistoryMeta(series, row);
+    const plan = computePlanMetrics(row, series);
+    const periodPriceStart = series.length ? parseNum(series[0].price) : latestPrice;
+    const periodClientStart = series.length ? (parseNum(series[0].clientPrice)

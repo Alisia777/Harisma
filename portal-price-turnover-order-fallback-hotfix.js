@@ -1,4 +1,5 @@
 (function () {
+  if (window.__ALTEA_PRICE_SIMPLE_RUNTIME_MODE__) return;
   if (window.__ALTEA_PRICE_TURNOVER_ORDER_FALLBACK_20260425A__) return;
   window.__ALTEA_PRICE_TURNOVER_ORDER_FALLBACK_20260425A__ = true;
 

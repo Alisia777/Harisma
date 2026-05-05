@@ -98,6 +98,59 @@
       : null;
   }
 
+  async function updateTaskRecordSafe(taskId, patch = {}) {
+    const updater = typeof window.updateTaskRecord === 'function'
+      ? window.updateTaskRecord
+      : (typeof updateTaskRecord === 'function' ? updateTaskRecord : null);
+    if (typeof updater !== 'function') return null;
+    try {
+      return await updater(taskId, patch);
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
+  async function appendTaskHistorySafe(taskId, kind, text, payload = {}) {
+    const message = String(text || '').trim();
+    if (!message) return false;
+    const writer = typeof window.createTaskHistoryEntry === 'function'
+      ? window.createTaskHistoryEntry
+      : (typeof createTaskHistoryEntry === 'function' ? createTaskHistoryEntry : null);
+    try {
+      if (typeof writer === 'function') {
+        await writer(taskId, kind, message, payload);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    const recentEntry = getTaskHistoryLocal(taskId).find((item) => (
+      String(item?.kind || '') === String(kind || '')
+      && String(item?.text || '').trim() === message
+    ));
+    if (recentEntry) return true;
+
+    const task = getTaskLocal(taskId);
+    if (!task || typeof createComment !== 'function') return false;
+    try {
+      await createComment({
+        articleKey: task.articleKey || '',
+        author: payload.author || state.team?.member?.name || task.owner || 'Команда',
+        team: payload.team || (typeof teamMemberLabel === 'function' ? teamMemberLabel() : 'Команда'),
+        type: 'task_log',
+        text: `[[task:${taskId}]] [[kind:${kind}]] ${message}`
+      });
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+    return Boolean(getTaskHistoryLocal(taskId).find((item) => (
+      String(item?.kind || '') === String(kind || '')
+      && String(item?.text || '').trim() === message
+    )));
+  }
+
   function getTaskHistoryLocal(taskId) {
     return (state.storage.comments || [])
       .map((comment) => {
@@ -323,14 +376,14 @@
   }
 
   async function submitTaskForRopApproval(taskId, report) {
-    const task = await updateTaskRecord(taskId, { status: 'waiting_rop' });
+    const task = await updateTaskRecordSafe(taskId, { status: 'waiting_rop' });
     if (!task) return null;
     await createTaskHistoryEntry(taskId, 'report', `Исполнитель сдал результат и передал задачу РОПу на согласование: ${report}`);
     return task;
   }
 
   async function approveTaskByRop(taskId, comment) {
-    const task = await updateTaskRecord(taskId, { status: 'waiting_decision' });
+    const task = await updateTaskRecordSafe(taskId, { status: 'waiting_decision' });
     if (!task) return null;
     const note = String(comment || '').trim();
     await createTaskHistoryEntry(
@@ -344,7 +397,7 @@
   }
 
   async function returnTaskToWork(taskId, comment) {
-    const task = await updateTaskRecord(taskId, { status: 'in_progress' });
+    const task = await updateTaskRecordSafe(taskId, { status: 'in_progress' });
     if (!task) return null;
     const note = String(comment || '').trim();
     await createTaskHistoryEntry(
@@ -356,9 +409,50 @@
   }
 
   async function finalCloseTaskWithReport(taskId, report) {
-    const task = await updateTaskRecord(taskId, { status: 'done' });
+    const task = await updateTaskRecordSafe(taskId, { status: 'done' });
     if (!task) return null;
     await createTaskHistoryEntry(taskId, 'report', `Руководитель финально закрыл задачу: ${report}`);
+    return task;
+  }
+
+  // Override lifecycle handlers with guarded storage/history writes.
+  async function submitTaskForRopApproval(taskId, report) {
+    const task = await updateTaskRecordSafe(taskId, { status: 'waiting_rop' });
+    if (!task) return null;
+    await appendTaskHistorySafe(taskId, 'report', `Исполнитель сдал результат и передал задачу РОПу на согласование: ${report}`);
+    return task;
+  }
+
+  async function approveTaskByRop(taskId, comment) {
+    const task = await updateTaskRecordSafe(taskId, { status: 'waiting_decision' });
+    if (!task) return null;
+    const note = String(comment || '').trim();
+    await appendTaskHistorySafe(
+      taskId,
+      'status',
+      note
+        ? `РОП согласовал результат и передал задачу руководителю: ${note}`
+        : 'РОП согласовал результат и передал задачу руководителю на финальное закрытие.'
+    );
+    return task;
+  }
+
+  async function returnTaskToWork(taskId, comment) {
+    const task = await updateTaskRecordSafe(taskId, { status: 'in_progress' });
+    if (!task) return null;
+    const note = String(comment || '').trim();
+    await appendTaskHistorySafe(
+      taskId,
+      'comment',
+      note ? `РОП вернул задачу в работу: ${note}` : 'РОП вернул задачу в работу.'
+    );
+    return task;
+  }
+
+  async function finalCloseTaskWithReport(taskId, report) {
+    const task = await updateTaskRecordSafe(taskId, { status: 'done' });
+    if (!task) return null;
+    await appendTaskHistorySafe(taskId, 'report', `Руководитель финально закрыл задачу: ${report}`);
     return task;
   }
 
@@ -652,7 +746,7 @@
     body.querySelector('#taskEditForm')?.addEventListener('submit', async (event) => {
       event.preventDefault();
       const form = new FormData(event.currentTarget);
-      await updateTaskRecord(taskId, {
+      const updatedTask = await updateTaskRecordSafe(taskId, {
         title: form.get('title'),
         entityLabel: form.get('entityLabel'),
         owner: form.get('owner'),
@@ -664,37 +758,80 @@
         nextAction: form.get('nextAction'),
         reason: form.get('reason')
       });
+      if (!updatedTask) {
+        alert('Task save failed. Refresh the page and try again.');
+        return;
+      }
       patchedRenderTaskModal(taskId);
     });
 
     body.querySelector('#taskCommentForm')?.addEventListener('submit', async (event) => {
       event.preventDefault();
       const form = new FormData(event.currentTarget);
-      await createTaskHistoryEntry(taskId, 'comment', String(form.get('text') || '').trim(), {
+      const saved = await appendTaskHistorySafe(taskId, 'comment', String(form.get('text') || '').trim(), {
         team: typeof teamMemberLabel === 'function' ? teamMemberLabel() : 'Команда'
       });
       patchedRenderTaskModal(taskId);
     });
 
-    body.querySelector('#taskSubmitToRopForm')?.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const form = new FormData(event.currentTarget);
-      const report = String(form.get('report') || '').trim();
-      if (!report) return;
-      await submitTaskForRopApproval(taskId, report);
-      patchedRenderTaskModal(taskId);
-    });
+    const submitToRopForm = body.querySelector('#taskSubmitToRopForm') || body.querySelector('#taskCloseForm');
+    if (submitToRopForm && submitToRopForm.dataset.ropSubmitBound !== '1') {
+      submitToRopForm.dataset.ropSubmitBound = '1';
+      submitToRopForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (submitToRopForm.dataset.sending === '1') return;
+        const form = new FormData(event.currentTarget);
+        const report = String(form.get('report') || '').trim();
+        if (!report) {
+          event.currentTarget.querySelector('textarea[name="report"]')?.focus();
+          return;
+        }
+        const submitButton = event.currentTarget.querySelector('button[type="submit"]');
+        const initialText = submitButton?.textContent || '';
+        try {
+          submitToRopForm.dataset.sending = '1';
+          if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Отправляем...';
+          }
+          const submitFn = typeof window.submitTaskForRopApproval === 'function'
+            ? window.submitTaskForRopApproval
+            : (typeof submitTaskForRopApproval === 'function' ? submitTaskForRopApproval : null);
+          if (typeof submitFn !== 'function') throw new Error('Функция отправки РОПу недоступна.');
+          const updatedTask = await submitFn(taskId, report);
+          if (!updatedTask) throw new Error('Не удалось найти задачу в текущем слое.');
+          patchedRenderTaskModal(taskId);
+        } catch (error) {
+          console.error(error);
+          alert(error?.message || 'Не удалось отправить задачу РОПу. Повторите попытку.');
+        } finally {
+          submitToRopForm.dataset.sending = '0';
+          if (submitButton && submitButton.isConnected) {
+            submitButton.disabled = false;
+            submitButton.textContent = initialText || 'Отправить РОПу';
+          }
+        }
+      });
+    }
 
     body.querySelector('#taskRopApproveForm')?.addEventListener('submit', async (event) => {
       event.preventDefault();
       const form = new FormData(event.currentTarget);
-      await approveTaskByRop(taskId, String(form.get('comment') || '').trim());
+      const updatedTask = await approveTaskByRop(taskId, String(form.get('comment') || '').trim());
+      if (!updatedTask) {
+        alert('Task status update failed. Refresh the page and try again.');
+        return;
+      }
       patchedRenderTaskModal(taskId);
     });
 
     body.querySelector('[data-task-return-to-work]')?.addEventListener('click', async () => {
       const comment = String(body.querySelector('#taskRopApproveForm textarea[name="comment"]')?.value || '').trim();
-      await returnTaskToWork(taskId, comment);
+      const updatedTask = await returnTaskToWork(taskId, comment);
+      if (!updatedTask) {
+        alert('Task status update failed. Refresh the page and try again.');
+        return;
+      }
       patchedRenderTaskModal(taskId);
     });
 
@@ -703,7 +840,11 @@
       const form = new FormData(event.currentTarget);
       const report = String(form.get('report') || '').trim();
       if (!report) return;
-      await finalCloseTaskWithReport(taskId, report);
+      const updatedTask = await finalCloseTaskWithReport(taskId, report);
+      if (!updatedTask) {
+        alert('Task close failed. Refresh the page and try again.');
+        return;
+      }
       patchedRenderTaskModal(taskId);
     });
 

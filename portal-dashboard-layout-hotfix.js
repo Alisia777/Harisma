@@ -160,6 +160,10 @@
   function reflow() {
     const root = document.getElementById('view-dashboard');
     if (!root) return;
+    if (root.querySelector('[data-portal-dashboard-executive-root]')) {
+      root.querySelector('[data-dashboard-layout-root]')?.remove();
+      return;
+    }
     ensureStyles();
 
     let container = root.querySelector('[data-dashboard-layout-root]');

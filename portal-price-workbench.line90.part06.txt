@@ -1,90 +1,130 @@
-    const range = presetRange(preset, state.priceWorkbench.filters.market || "wb");
-    state.priceWorkbench.filters.dateFrom = range.dateFrom;
-    state.priceWorkbench.filters.dateTo = range.dateTo;
-    renderPriceWorkbench();
+ id="priceDateFrom" value="${escapeHtml(state.priceWorkbench.filters.dateFrom)}"></label>
+          <label><span>По дату</span><input type="date" id="priceDateTo" value="${escapeHtml(state.priceWorkbench.filters.dateTo)}"></label>
+          <div class="price-preset-row">
+            ${Object.entries(PRESETS).map(([key, meta]) => `<button type="button" class="quick-chip ${state.priceWorkbench.filters.preset === key ? "active" : ""}" data-price-preset="${key}">${escapeHtml(meta.label)}</button>`).join("")}
+          </div>
+        </div>
+        <div class="price-filters-grid">
+          <label><span>Поиск</span><input id="priceSearch" value="${escapeHtml(state.priceWorkbench.filters.search)}" placeholder="Поиск по SKU, названию, owner или логике решения"></label>
+          <label><span>Owner</span><select id="priceOwnerFilter"><option value="all">Все owner</option>${owners.map((owner) => `<option value="${escapeHtml(owner)}" ${state.priceWorkbench.filters.owner === owner ? "selected" : ""}>${escapeHtml(owner)}</option>`).join("")}</select></label>
+          <label><span>Статус</span><select id="priceStatusFilter"><option value="all">Все статусы</option>${Object.entries(DECISION_STATUS_META).map(([key, meta]) => `<option value="${key}" ${state.priceWorkbench.filters.status === key ? "selected" : ""}>${escapeHtml(meta.label)}</option>`).join("")}</select></label>
+          <label><span>Сортировка</span><select id="priceSortMode"><option value="risk" ${state.priceWorkbench.filters.sort === "risk" ? "selected" : ""}>Сначала рисковые</option><option value="turnover" ${state.priceWorkbench.filters.sort === "turnover" ? "selected" : ""}>По оборачиваемости</option><option value="margin" ${state.priceWorkbench.filters.sort === "margin" ? "selected" : ""}>По марже</option><option value="plan" ${state.priceWorkbench.filters.sort === "plan" ? "selected" : ""}>По план-факту</option></select></label>
+        </div>
+        <label class="price-toggle"><input type="checkbox" id="priceRiskOnly" ${state.priceWorkbench.filters.riskOnly ? "checked" : ""}> Только проблемные позиции</label>
+      </div>
+    `;
   }
 
-  function withinRange(value) {
-    const dateValue = isoDate(value);
-    if (!dateValue) return false;
-    const from = state.priceWorkbench.filters.dateFrom || "";
-    const to = state.priceWorkbench.filters.dateTo || "";
-    if (from && dateValue < from) return false;
-    if (to && dateValue > to) return false;
-    return true;
+  function renderSummary(rows) {
+    const totals = aggregateMetrics(rows);
+    const belowMargin = rows.filter((row) => row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && row.marginTotalPct < row.effectiveAllowedMarginPct).length;
+    const underPlan = rows.filter((row) => row.completionPctSelected != null && row.completionPctSelected < 0.8).length;
+    const tasks = rows.filter((row) => row.needsTask).length;
+    const avgPrice = meanOrNull(rows.map((row) => row.currentFillPriceDisplay));
+    const dailyReady = rows.filter((row) => row.historyHasDailyFact).length;
+    const priceOnly = rows.filter((row) => row.historyMode === "price_only").length;
+    return `
+      <div class="price-summary-grid">
+        <div class="price-summary-card"><span class="label">В работе</span><strong>${fmt.int(rows.length)}</strong><small>SKU в текущем срезе по выбранной площадке.</small></div>
+        <div class="price-summary-card"><span class="label">Продажи за период</span><strong>${totals.actualUnits == null ? "—" : fmt.int(totals.actualUnits)}</strong><small>${totals.periodOrders == null ? "Факт по дням есть не для всех SKU." : `Заказы ${fmt.int(totals.periodOrders)} шт. за выбранный диапазон.`}</small></div>
+        <div class="price-summary-card"><span class="label">Выручка за период</span><strong>${moneyShort(totals.periodRevenue)}</strong><small>${totals.avgCheck == null ? "Средний чек посчитается, когда есть daily-факт." : `Средний чек ${moneyShort(totals.avgCheck)}.`}</small></div>
+        <div class="price-summary-card"><span class="label">Ниже допустимой маржи</span><strong>${fmt.int(belowMargin)}</strong><small>Позиции, где текущая маржа ниже средней допустимой за 3 месяца.</small></div>
+        <div class="price-summary-card"><span class="label">Под риском по плану</span><strong>${fmt.int(underPlan)}</strong><small>${totals.planUnits == null ? "План по артикулу ещё не приехал." : `План в диапазоне ${fmt.int(totals.planUnits)} шт.`}</small></div>
+        <div class="price-summary-card"><span class="label">Средняя цена MP</span><strong>${moneyShort(avgPrice)}</strong><small>Пересчитывается от площадки и диапазона дат.</small></div>
+        <div class="price-summary-card"><span class="label">Остатки в срезе</span><strong>${totals.stock == null ? "—" : fmt.int(totals.stock)}</strong><small>Сумма текущих остатков по выбранной площадке.</small></div>
+        <div class="price-summary-card"><span class="label">Нужны действия</span><strong>${fmt.int(tasks)}</strong><small>Артикулы, где уже зафиксировано решение или нужна задача.</small></div>
+      </div>
+    `;
   }
 
-  function mergeEntryLayers() {
-    const map = new Map();
-    (state.priceWorkbench.remoteEntries || []).forEach((item) => map.set(workbenchKey(item.marketplace, item.articleKey), item));
-    (state.priceWorkbench.localEntries || []).forEach((item) => map.set(workbenchKey(item.marketplace, item.articleKey), item));
-    return map;
+  function renderTable(rows) {
+    if (!rows.length) return `<div class="price-empty">По текущим фильтрам ничего не найдено.</div>`;
+    return `
+      <div class="card price-table-card">
+        <div class="price-table-wrap">
+          <table class="price-table">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Owner</th>
+                <th>Маржа</th>
+                <th>Допустимая 3м</th>
+                <th>Обор.</th>
+                <th>Продажи</th>
+                <th>Выручка</th>
+                <th>% плана</th>
+                <th>Цена MP</th>
+                <th>Цена клиента</th>
+                <th>СПП</th>
+                <th>Целевая Smart</th>
+                <th>Статус</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map((row) => {
+                const key = workbenchKey(row.marketplace, row.articleKey);
+                const selected = key === state.priceWorkbench.selectedKey;
+                const periodRevenue = parseNum(row.periodRevenueSelected);
+                const smartTarget = row.seedTargetFillPrice ?? row.targetFillPrice;
+                const decisionTarget = row.targetFillPrice ?? smartTarget;
+                const smartVsDecisionChanged = smartTarget != null
+                  && decisionTarget != null
+                  && Math.abs(Number(decisionTarget) - Number(smartTarget)) > 0.009;
+                return `
+                  <tr data-price-open="${escapeHtml(key)}" class="${selected ? "is-selected" : ""} ${riskScore(row) >= 3 ? "is-risk" : ""}">
+                    <td><div class="price-sku-title">${escapeHtml(row.articleKey)}</div><div class="price-sku-note">${escapeHtml((row.name || "").slice(0, 120))}</div></td>
+                    <td>${escapeHtml(row.owner || "—")}</td>
+                    <td class="${row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && row.marginTotalPct < row.effectiveAllowedMarginPct ? "price-danger-text" : ""}">${pctShort(row.marginTotalPct)}</td>
+                    <td>${pctShort(row.effectiveAllowedMarginPct)}</td>
+                    <td>${row.turnoverDisplay == null ? "—" : `${fmt.num(row.turnoverDisplay, 1)} дн.`}</td>
+                    <td>${row.actualUnitsSelected == null ? "—" : fmt.int(row.actualUnitsSelected)}<div class="price-inline-meta">${escapeHtml(row.actualSource === "daily" ? "daily-факт" : row.actualSource === "monthly" ? "помесячный факт" : "факт не опубликован")}</div></td>
+                    <td>${periodRevenue != null && periodRevenue > 0 ? moneyShort(periodRevenue) : "—"}</td>
+                    <td>${row.completionPctSelected == null ? "—" : pctShort(row.completionPctSelected)}<div class="price-inline-meta">${row.planUnitsSelected == null ? "без плана" : `план ${fmt.int(row.planUnitsSelected)} шт.`}</div></td>
+                    <td>${moneyShort(row.currentFillPriceDisplay)}<div class="price-inline-meta">${row.periodPriceDeltaPct == null ? `ср. ${moneyShort(row.periodAvgFillPriceDisplay)}` : `Δ ${pctShort(row.periodPriceDeltaPct)}`}</div></td>
+                    <td>${moneyShort(row.currentClientPriceDisplay)}<div class="price-inline-meta">${row.periodClientDeltaPct == null ? `ср. ${moneyShort(row.periodAvgClientPriceDisplay)}` : `Δ ${pctShort(row.periodClientDeltaPct)}`}</div></td>
+                    <td>${pctShort(row.currentSppDisplay)}</td>
+                    <td>${moneyShort(smartTarget)}<div class="price-inline-meta">${smartVsDecisionChanged ? `решение ${moneyShort(decisionTarget)}` : "из smart"}</div></td>
+                    <td>${decisionBadge(row)}</td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
   }
 
-  function computePlanMetrics(row, series) {
-    const planUnits = parseNum(row.planMonthUnits);
-    const planDays = parseNum(row.planMonthDays) || 30;
-    if (!planUnits || !planDays) {
-      return { planUnitsSelected: null, actualUnitsSelected: null, completionPct: null, selectedDays: 0 };
+  function relatedTasks(row) {
+    return (state.storage.tasks || []).filter((task) => task.articleKey === row.articleKey && (task.type === "price_margin" || String(task.autoCode || "").startsWith("price|")));
+  }
+
+  function renderTaskList(tasks) {
+    if (!tasks.length) return `<div class="price-empty">По этому артикулу задач по цене пока нет.</div>`;
+    if (typeof renderTaskCard === "function") {
+      return `<div class="price-task-list">${tasks.map(renderTaskCard).join("")}</div>`;
     }
-    const planMonthKey = String(row.planMonthKey || "");
-    const planMonthStart = planMonthKey ? `${planMonthKey}-01` : "";
-    const planMonthEnd = planMonthKey ? `${planMonthKey}-${String(planDays).padStart(2, "0")}` : "";
-    const rangeFrom = state.priceWorkbench.filters.dateFrom || planMonthStart;
-    const dataFreshTo = row.historyFreshnessDate ? [state.priceWorkbench.filters.dateTo || row.historyFreshnessDate, row.historyFreshnessDate].sort()[0] : (state.priceWorkbench.filters.dateTo || "");
-    const effectiveFrom = [rangeFrom, planMonthStart].filter(Boolean).sort().slice(-1)[0] || "";
-    const effectiveTo = [dataFreshTo || planMonthEnd, planMonthEnd].filter(Boolean).sort()[0] || "";
-    if (!effectiveFrom || !effectiveTo || effectiveFrom > effectiveTo) {
-      return { planUnitsSelected: null, actualUnitsSelected: null, completionPct: null, selectedDays: 0 };
-    }
-    const selectedDays = Math.floor((new Date(effectiveTo) - new Date(effectiveFrom)) / 86400000) + 1;
-    const actualPool = series.filter((item) => {
-      const itemDate = isoDate(item.date);
-      return itemDate && itemDate >= effectiveFrom && itemDate <= effectiveTo;
+    return `<div class="price-task-list">${tasks.map((task) => `<div class="price-task-item"><strong>${escapeHtml(task.title || "Задача")}</strong><div class="price-inline-meta">${escapeHtml(task.nextAction || "—")}</div><div class="price-inline-meta">${escapeHtml(task.owner || "Без owner")} · ${escapeHtml(task.due || "без срока")}</div></div>`).join("")}</div>`;
+  }
+
+  function filteredDecisionHistory(row) {
+    const all = [...(state.priceWorkbench.remoteHistory || []), ...(state.priceWorkbench.localHistory || [])]
+      .filter((item) => item.articleKey === row.articleKey && item.marketplace === row.marketplace)
+      .sort((a, b) => String(b.changedAt).localeCompare(String(a.changedAt)));
+    const seen = new Set();
+    return all.filter((item) => {
+      const key = `${item.id}|${item.changedAt}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return withinRange(item.changedAt);
     });
-    const actualValues = actualPool
-      .map((item) => parseNum(item.deliveredUnits) ?? parseNum(item.ordersUnits))
-      .filter((value) => value != null);
-    const actualUnitsSelected = actualValues.length ? actualValues.reduce((sum, value) => sum + value, 0) : null;
-    const planUnitsSelected = (planUnits / planDays) * selectedDays;
-    const completionPct = actualUnitsSelected != null && planUnitsSelected > 0 ? actualUnitsSelected / planUnitsSelected : null;
-    return { planUnitsSelected, actualUnitsSelected, completionPct, selectedDays };
   }
 
-  function sourceLabel(row) {
-    if (row.allowedMarginManualPct != null) return "manual";
-    if (row.allowedMarginPct != null) return "source";
-    return "default";
-  }
-
-  function applyEntry(row, entry) {
-    const merged = entry ? normalizeEntry(entry) : normalizeEntry({ marketplace: row.marketplace, articleKey: row.articleKey, owner: row.owner });
-    const effectiveAllowed = merged.allowedMarginManualPct != null ? merged.allowedMarginManualPct : defaultAllowedMargin(row);
-    const series = (Array.isArray(row.monthly) ? row.monthly : []).filter((item) => withinRange(item.date));
-    const latest = series.length ? series[series.length - 1] : null;
-    const avgTurnover = series.length ? meanOrNull(series.map((item) => parseNum(item.turnoverDays))) : parseNum(row.turnoverCurrentDays);
-    const latestPrice = latest ? parseNum(latest.price) : parseNum(row.currentFillPrice);
-    const latestClient = latest ? (parseNum(latest.clientPrice) ?? (latestPrice != null && parseNum(latest.sppPct) != null ? latestPrice * (1 - parseNum(latest.sppPct)) : null)) : parseNum(row.currentClientPrice);
-    const latestSpp = latest ? parseNum(latest.sppPct) : parseNum(row.currentSppPct);
-    const plan = computePlanMetrics(row, series);
-    return {
-      ...row,
-      decisionId: merged.id,
-      decisionStatus: merged.decisionStatus,
-      targetFillPrice: merged.targetFillPrice ?? row.seedTargetFillPrice ?? latestPrice,
-      targetClientPrice: merged.targetClientPrice ?? row.seedTargetClientPrice ?? latestClient,
-      allowedMarginManualPct: merged.allowedMarginManualPct,
-      effectiveAllowedMarginPct: effectiveAllowed,
-      allowedMarginSource: sourceLabel({ ...row, allowedMarginManualPct: merged.allowedMarginManualPct }),
-      currentFillPriceDisplay: latestPrice,
-      currentClientPriceDisplay: latestClient,
-      currentSppDisplay: latestSpp,
-      turnoverDisplay: avgTurnover,
-      monthlyFiltered: series,
-      owner: merged.owner || row.owner || "",
-      dueDate: merged.dueDate || "",
-      needsTask: merged.needsTask,
-      escalation: merged.escalation,
-      reason: merged.reason || row.seedReason || "",
-      comment: merged.comment || "",
-      updatedBy: merged.updatedBy,
+  function renderDecisionHistory(row) {
+    const items = filteredDecisionHistory(row);
+    if (!items.length) return `<div class="price-empty">История решений по выбранному диапазону пока пуста.</div>`;
+    return `
+      <div class="price-history-wrap">
+        <table class="price-history-table">
+          <thead><tr><th>Дата</th><th>Кто</th><th>Допустимая маржа</th><th>Цена MP</th><th>Цена клиента</th><th>Статус</th></tr></thead>
+          <tbody>${items.map((item) => `<tr><td>${escapeHtml(String(item.changedAt).slice(0, 10))}</td><td>${escapeHtml(item.changedBy || "—")}</td><td>${pctShort(item.newAllowedMarginPct)}</td><td>${moneyShort(item.newTargetFillPrice)}</td><td>${moneyShort(item.newTargetClientPrice)}</td><td>${escapeHtml((DECISION_STATUS_META[item.newDecisionStatus] || DECI

@@ -1,8 +1,8 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_MODAL_TASK_HOTFIX_20260420A__) return;
-  window.__ALTEA_DASHBOARD_MODAL_TASK_HOTFIX_20260420A__ = true;
+  if (window.__ALTEA_DASHBOARD_MODAL_TASK_HOTFIX_20260420B__) return;
+  window.__ALTEA_DASHBOARD_MODAL_TASK_HOTFIX_20260420B__ = true;
 
-  const STYLE_ID = 'portalDashboardModalTaskHotfixStyles20260420a';
+  const STYLE_ID = 'portalDashboardModalTaskHotfixStyles20260420b';
   const TEXT = {
     panelTitle: 'Поставить задачу из этого окна',
     panelBody: 'Выберите SKU, заполните что сделать, назначьте owner и срок. Задача сразу появится во вкладке «Задачи».',
@@ -261,6 +261,13 @@
     });
   }
 
+  function shouldEnhanceModal(modal, preset) {
+    const issueCount = modal.querySelectorAll('.portal-exec-issue-row').length;
+    if (issueCount > 0) return true;
+    const rawTitle = String(preset?.label || '').toLowerCase();
+    return /риск|проблем|внимани/.test(rawTitle);
+  }
+
   function renderPanel(rows) {
     if (!rows.length) return '';
     const first = rows[0];
@@ -403,6 +410,10 @@
     if (modal.dataset.portalTaskSignature === signature && modal.querySelector('[data-portal-task-form]')) return;
     modal.querySelector('.portal-exec-task-panel')?.remove();
     modal.querySelectorAll('[data-portal-task-pick]').forEach((button) => button.remove());
+    if (!shouldEnhanceModal(modal, preset)) {
+      modal.dataset.portalTaskSignature = signature;
+      return;
+    }
     appendIssueButtons(modal);
     const rows = uniqueRows([...issueRows(modal, preset), ...tableRows(modal, preset)]);
     if (!rows.length) return;

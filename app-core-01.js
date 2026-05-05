@@ -804,11 +804,6 @@ function mergeWorkbenchTimelineWithOverlay(series, overlayRow = {}) {
   const valueDate = String(overlayRow?.valueDate || overlayRow?.historyFreshnessDate || '').trim();
   if (!valueDate) return nextSeries;
 
-  for (let index = nextSeries.length - 1; index >= 0; index -= 1) {
-    const currentDate = String(nextSeries[index]?.date || '').trim();
-    if (currentDate && currentDate > valueDate) nextSeries.splice(index, 1);
-  }
-
   const pointsByDate = new Map();
   nextSeries.forEach((item) => {
     const date = String(item?.date || '').trim();
@@ -1530,13 +1525,75 @@ function normalizeOwnerPlatformKey(platform = '') {
   return normalized;
 }
 
+const OWNER_OVERRIDE_PLATFORM_KEYS = new Set(['wb', 'ozon', 'ym', 'letu', 'ga', 'mm']);
+const OWNER_OVERRIDE_NOTE_RE = /\[\[ownerByPlatform:([A-Za-z0-9%._~-]+)\]\]/g;
+
+function normalizeOwnerOverridePlatformKey(platform = '') {
+  const raw = String(platform || '').trim().toLowerCase();
+  if (!raw) return '';
+  if (raw === 'wb' || raw === 'wildberries' || raw === 'вб') return 'wb';
+  if (raw === 'ozon' || raw === 'oz' || raw === 'озон') return 'ozon';
+  if (raw === 'ym' || raw === 'ya' || raw === 'yandex' || raw === 'yandex_market' || raw === 'market' || raw === 'ям' || raw === 'яндекс') return 'ym';
+  if (raw === 'letu' || raw === 'letual' || raw === 'лэтуаль' || raw === 'летуаль') return 'letu';
+  if (raw === 'ga' || raw === 'goldenapple' || raw === 'зя' || raw === 'зя') return 'ga';
+  if (raw === 'mm' || raw === 'magnit' || raw === 'магнит') return 'mm';
+  return normalizeOwnerPlatformKey(raw);
+}
+
+function normalizeOwnerOverridePlatforms(platforms = {}) {
+  const result = {};
+  if (!platforms || typeof platforms !== 'object') return result;
+  for (const [rawKey, rawValue] of Object.entries(platforms)) {
+    const key = normalizeOwnerOverridePlatformKey(rawKey);
+    if (!key || !OWNER_OVERRIDE_PLATFORM_KEYS.has(key)) continue;
+    const value = canonicalOwnerName(rawValue || '');
+    if (!value) continue;
+    result[key] = value;
+  }
+  return result;
+}
+
+function parseOwnerOverrideNote(noteValue = '') {
+  const raw = String(noteValue || '').trim();
+  if (!raw) return { note: '', ownerByPlatform: {} };
+  let ownerByPlatform = {};
+  const note = raw
+    .replace(OWNER_OVERRIDE_NOTE_RE, (_match, payload) => {
+      try {
+        const decoded = decodeURIComponent(String(payload || '').trim());
+        const parsed = JSON.parse(decoded);
+        ownerByPlatform = {
+          ...ownerByPlatform,
+          ...normalizeOwnerOverridePlatforms(parsed)
+        };
+      } catch {}
+      return '';
+    })
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  return { note, ownerByPlatform };
+}
+
+function composeOwnerOverrideNote(noteValue = '', ownerByPlatform = {}) {
+  const note = String(noteValue || '').trim();
+  const normalizedOwners = normalizeOwnerOverridePlatforms(ownerByPlatform);
+  if (!Object.keys(normalizedOwners).length) return note;
+  try {
+    const payload = encodeURIComponent(JSON.stringify(normalizedOwners));
+    const marker = `[[ownerByPlatform:${payload}]]`;
+    return note ? `${note}\n${marker}` : marker;
+  } catch {
+    return note;
+  }
+}
+
 function platformOwnerName(sku, platform = '') {
   const key = normalizeOwnerPlatformKey(platform);
   if (!sku || !key) return '';
 
   const sources = [
-    sku?.ownersByPlatform,
-    sku?.owner?.byPlatform
+    sku?.owner?.byPlatform,
+    sku?.ownersByPlatform
   ];
 
   for (const source of sources) {
@@ -1566,11 +1623,22 @@ function normalizeDecision(item = {}) {
 }
 
 function normalizeOwnerOverride(item = {}) {
+  const parsedNote = parseOwnerOverrideNote(item.note || '');
+  const explicitOwnerByPlatform = normalizeOwnerOverridePlatforms(
+    item.ownerByPlatform
+    || item.ownersByPlatform
+    || item.byPlatform
+    || {}
+  );
+  const ownerByPlatform = Object.keys(explicitOwnerByPlatform).length
+    ? explicitOwnerByPlatform
+    : parsedNote.ownerByPlatform;
   return {
     articleKey: item.articleKey || '',
     ownerName: canonicalOwnerName(item.ownerName || item.owner || ''),
     ownerRole: String(item.ownerRole || '').trim(),
-    note: String(item.note || '').trim(),
+    ownerByPlatform,
+    note: parsedNote.note,
     updatedAt: item.updatedAt || new Date().toISOString(),
     assignedBy: String(item.assignedBy || state.team.member.name || 'Команда').trim() || 'Команда'
   };

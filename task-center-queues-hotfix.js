@@ -1,4 +1,5 @@
 (function () {
+  if (window.__ALTEA_CONTROL_CENTER_V2__) return;
   if (window.__ALTEA_TASK_CENTER_QUEUES_HOTFIX_20260417__) return;
   window.__ALTEA_TASK_CENTER_QUEUES_HOTFIX_20260417__ = true;
 
@@ -155,7 +156,7 @@
       activeCount: active.length,
       overdueCount: active.filter(isTaskOverdue).length,
       criticalCount: active.filter((task) => task.priority === 'critical').length,
-      waitingCount: active.filter((task) => task.status === 'waiting_decision').length,
+      waitingCount: active.filter((task) => task.status === 'waiting_decision' || task.status === 'waiting_rop').length,
       ownerPreview: owners,
       typeCount: new Set(active.map((task) => task.type)).size
     };
@@ -173,6 +174,7 @@
       const urgent = isTaskOverdue(task)
         || task.priority === 'critical'
         || task.status === 'waiting_decision'
+        || task.status === 'waiting_rop'
         || (task.due && task.due <= plusDays(2));
       if (urgent && focus.length < 4) {
         focus.push(task);
@@ -414,7 +416,7 @@
       active: tasks.filter(isTaskActive).length,
       overdue: tasks.filter(isTaskOverdue).length,
       noOwner: tasks.filter((task) => isTaskActive(task) && !task.owner).length,
-      waiting: tasks.filter((task) => task.status === 'waiting_decision').length,
+      waiting: tasks.filter((task) => task.status === 'waiting_decision' || task.status === 'waiting_rop').length,
       critical: tasks.filter((task) => isTaskActive(task) && task.priority === 'critical').length,
       auto: tasks.filter((task) => task.source === 'auto' && isTaskActive(task)).length
     };

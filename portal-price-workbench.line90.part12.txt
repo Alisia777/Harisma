@@ -1,90 +1,148 @@
-  async function handleSubmit(event) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const key = form.dataset.priceForm;
-    const row = getCurrentRowByKey(key);
-    if (!row) return;
-    const previous = mergeEntryLayers().get(key);
-    const entry = upsertLocalEntry({
-      id: row.decisionId,
-      marketplace: row.marketplace,
-      articleKey: row.articleKey,
-      decisionStatus: form.elements.decisionStatus.value,
-      targetFillPrice: form.elements.targetFillPrice.value,
-      targetClientPrice: form.elements.targetClientPrice.value,
-      allowedMarginManualPct: parseNum(form.elements.allowedMarginManualPct.value) == null ? null : parseNum(form.elements.allowedMarginManualPct.value) / 100,
-      reason: form.elements.reason.value,
-      owner: form.elements.owner.value,
-      dueDate: form.elements.dueDate.value,
-      needsTask: form.elements.needsTask.checked,
-      escalation: form.elements.escalation.value,
-      comment: form.elements.comment.value,
-      updatedBy: state.team.member?.name || "Команда",
-      updatedAt: new Date().toISOString(),
-      createdAt: previous?.createdAt || row.createdAt || new Date().toISOString(),
-    });
-    const history = addHistoryRow(entry, previous);
-    if (entry.needsTask || entry.decisionStatus === "review" || entry.escalation !== "none") ensurePriceTask(row, entry);
-    if (state.team.client && !state.priceWorkbench.remoteDisabled) {
-      try {
-        await upsertRemoteEntries([entry]);
-        try {
-          await insertRemoteHistory([history]);
-          history.synced = true;
-          saveLocalState();
-        } catch (historyError) {
-          console.error(historyError);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    state.team.note = "Решение по цене сохранено";
-    updateSyncBadge();
-    renderPriceWorkbench();
-    const fresh = getCurrentRowByKey(key);
-    if (fresh) renderPriceModal(fresh);
+function priceSignalMarkup(row) {
+    const items = signalsForRow(row);
+    if (!items.length) return badge("Стабильно", "ok");
+    return items.map((item) => badge(item.label, item.kind)).join("");
   }
 
-  function handleCreateTask(event) {
-    const key = event.currentTarget.dataset.priceTask;
-    const row = getCurrentRowByKey(key);
-    if (!row) return;
-    const entry = normalizeEntry({
-      id: row.decisionId,
-      marketplace: row.marketplace,
-      articleKey: row.articleKey,
-      decisionStatus: row.decisionStatus,
-      targetFillPrice: row.targetFillPrice,
-      targetClientPrice: row.targetClientPrice,
-      allowedMarginManualPct: row.allowedMarginManualPct,
-      reason: row.reason,
-      owner: row.owner,
-      dueDate: row.dueDate,
-      needsTask: true,
-      escalation: row.escalation,
-      comment: row.comment,
-      createdAt: row.createdAt,
-      updatedAt: new Date().toISOString(),
-    });
-    upsertLocalEntry(entry);
-    ensurePriceTask(row, entry);
-    state.team.note = "Задача по цене создана / обновлена";
-    saveLocalState();
-    saveLocalStorage();
-    updateSyncBadge();
-    renderPriceWorkbench();
-    const fresh = getCurrentRowByKey(key);
-    if (fresh) renderPriceModal(fresh);
+  function pricePriorityRows(rows, limit = 6) {
+    return rows
+      .slice()
+      .sort((left, right) => {
+        return pricePriorityScore(right) - pricePriorityScore(left)
+          || riskScore(right) - riskScore(left)
+          || (Number(right.turnoverDisplay) || 0) - (Number(left.turnoverDisplay) || 0)
+          || (Number(left.completionPctSelected) || 0) - (Number(right.completionPctSelected) || 0);
+      })
+      .slice(0, limit);
   }
 
-  function renderPriceWorkbench() {
-    const root = document.getElementById("view-prices");
-    if (!root) return;
-    ensureStyles();
-    ensureBranding();
-    if (state.priceWorkbench.loading && !state.priceWorkbench.seed) {
-      root.innerHTML = `<div class="card"><div class="price-empty">Загружаю контур цен…</div></div>`;
-      return;
-    }
-    if (state.priceWorkbench.issue && !state.priceWorkbench.seed) {
+  function renderPriorityQueue(rows) {
+    const focusRows = pricePriorityRows(rows, 6);
+    if (!focusRows.length) return "";
+    return `
+      <section class="price-priority-section">
+        <div class="price-section-head">
+          <div>
+            <h3>Приоритетные артикулы на сейчас</h3>
+            <p>Это верх очереди для РОПа: позиции с сочетанием риска по марже, плана, оборачиваемости и уже зафиксированных решений. Нажатие открывает рабочую карточку SKU.</p>
+          </div>
+        </div>
+        <div class="price-priority-grid">
+          ${focusRows.map((row, index) => {
+            const key = workbenchKey(row.marketplace, row.articleKey);
+            const tasks = relatedTasks(row);
+            const selected = key === state.priceWorkbench.selectedKey;
+            return `
+              <button type="button" class="price-priority-card ${selected ? "is-selected" : ""}" data-price-open="${escapeHtml(key)}">
+                <div class="price-priority-top">
+                  <div>
+                    <div class="price-sku-title">${escapeHtml(row.articleKey)}</div>
+                    <div class="price-sku-note">${escapeHtml((row.name || "").slice(0, 140))}</div>
+                    <div class="price-inline-meta">${escapeHtml([row.owner || "Без owner", row.segment || "—", row.abc || "—"].join(" · "))}</div>
+                  </div>
+                  <div class="price-priority-rank">#${index + 1}</div>
+                </div>
+                  <div class="price-signal-stack">
+                    ${decisionBadge(row)}
+                    ${row.escalation !== "none" ? badge((ESCALATION_META[row.escalation] || ESCALATION_META.none).label, (ESCALATION_META[row.escalation] || ESCALATION_META.none).kind) : ""}
+                    ${productStatusBadges(row).join("")}
+                    ${priceSignalMarkup(row)}
+                  </div>
+                <div class="price-priority-kpis">
+                  <div class="price-priority-kpi"><span>Маржа / доп. 3м</span><strong>${pctShort(row.marginTotalPct)} / ${pctShort(row.effectiveAllowedMarginPct)}</strong></div>
+                  <div class="price-priority-kpi"><span>Оборот / план</span><strong>${row.turnoverDisplay == null ? "—" : `${fmt.num(row.turnoverDisplay, 1)} дн.`} / ${row.completionPctSelected == null ? "—" : pctShort(row.completionPctSelected)}</strong></div>
+                  <div class="price-priority-kpi"><span>Цена MP / клиент</span><strong>${moneyShort(row.currentFillPriceDisplay)} / ${moneyShort(row.currentClientPriceDisplay)}</strong></div>
+                  <div class="price-priority-kpi"><span>Smart / решение</span><strong>${moneyShort(row.seedTargetFillPrice)} / ${moneyShort(row.targetFillPrice)}</strong></div>
+                </div>
+                <div class="price-priority-action">${escapeHtml(pricePrimaryAction(row))}</div>
+                <div class="price-bullet-list">
+                  ${priceActionBullets(row).map((item) => `<div>${escapeHtml(item)}</div>`).join("")}
+                </div>
+                ${tasks.length ? renderTaskSummary(tasks) : `<div class="price-inline-meta">Задача по позиции пока не заведена.</div>`}
+              </button>
+            `;
+          }).join("")}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderSummary(rows) {
+    const totals = aggregateMetrics(rows);
+    const belowMargin = rows.filter((row) => row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && row.marginTotalPct < row.effectiveAllowedMarginPct).length;
+    const underPlan = rows.filter((row) => row.completionPctSelected != null && row.completionPctSelected < 0.8).length;
+    const tasks = rows.filter((row) => row.needsTask || relatedTasks(row).length).length;
+    const dailyReady = rows.filter((row) => row.historyHasDailyFact).length;
+    const priceOnly = rows.filter((row) => row.historyMode === "price_only").length;
+    const priority = rows.filter((row) => pricePriorityScore(row) >= 18).length;
+    const avgTurnover = meanOrNull(rows.map((row) => row.turnoverDisplay));
+    return `
+      <div class="price-summary-grid">
+        <div class="price-summary-card"><span class="label">В контуре</span><strong>${fmt.int(rows.length)}</strong><small>Артикулы выбранной площадки и периода, по которым можно принимать решение.</small></div>
+        <div class="price-summary-card"><span class="label">Приоритет сегодня</span><strong>${fmt.int(priority)}</strong><small>Позиции, где уже совпали несколько сигналов риска и их стоит разбирать первыми.</small></div>
+        <div class="price-summary-card"><span class="label">Ниже допустимой маржи</span><strong>${fmt.int(belowMargin)}</strong><small>Сравнение идет с допустимой маржой, которую берем как среднюю за 3 месяца, если она есть в поддерживающих файлах.</small></div>
+        <div class="price-summary-card"><span class="label">Под риском по плану</span><strong>${fmt.int(underPlan)}</strong><small>${totals.planUnits == null ? "План по SKU еще не загружен для выбранного диапазона." : `Суммарный план по видимым SKU ${fmt.int(totals.planUnits)} шт.`}</small></div>
+        <div class="price-summary-card"><span class="label">Выручка / средний чек</span><strong>${moneyShort(totals.periodRevenue)}</strong><small>${totals.avgCheck == null ? "Средний чек появится там, где есть дневной факт." : `Средний чек ${moneyShort(totals.avgCheck)}.`}</small></div>
+        <div class="price-summary-card"><span class="label">Средняя оборачиваемость</span><strong>${avgTurnover == null ? "—" : `${fmt.num(avgTurnover, 1)} дн.`}</strong><small>Показываем средний уровень по видимому списку, чтобы быстро понять скорость оборота площадки.</small></div>
+        <div class="price-summary-card"><span class="label">История по дням</span><strong>${fmt.int(dailyReady)}</strong><small>${priceOnly ? `Еще у ${fmt.int(priceOnly)} SKU история только по цене и оборачиваемости.` : "По всем видимым позициям история доступна на уровне дня."}</small></div>
+        <div class="price-summary-card"><span class="label">Задачи и решения</span><strong>${fmt.int(tasks)}</strong><small>Позиции, где уже есть задача, согласование или ручное решение по цене.</small></div>
+      </div>
+    `;
+  }
+
+  function renderTable(rows) {
+    if (!rows.length) return `<div class="price-empty">По текущим фильтрам ничего не найдено.</div>`;
+    return `
+      <div class="card price-table-card">
+        <div class="price-table-head">
+          <div>
+            <h3>Рабочий список по артикулам</h3>
+            <p>Таблица ниже нужна не для просмотра ради просмотра, а для быстрого ответа на три вопроса: где риск, какой ценовой коридор допустим и что уже решено по позиции.</p>
+          </div>
+        </div>
+        <div class="price-table-wrap">
+          <table class="price-table price-management-table">
+            <thead>
+              <tr>
+                <th>Артикул</th>
+                <th>Что происходит</th>
+                <th>KPI периода</th>
+                <th>Текущие цены</th>
+                <th>Маржа и коридор</th>
+                <th>Решение и задача</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map((row) => {
+                const key = workbenchKey(row.marketplace, row.articleKey);
+                const selected = key === state.priceWorkbench.selectedKey;
+                const tasks = relatedTasks(row);
+                const marginDanger = row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && row.marginTotalPct < row.effectiveAllowedMarginPct;
+                return `
+                  <tr data-price-open="${escapeHtml(key)}" class="${selected ? "is-selected" : ""} ${riskScore(row) >= 3 ? "is-risk" : ""}">
+                    <td>
+                      <div class="price-sku-title">${escapeHtml(row.articleKey)}</div>
+                      <div class="price-sku-note">${escapeHtml((row.name || "").slice(0, 140))}</div>
+                      <div class="price-inline-meta">${escapeHtml([row.owner || "Без owner", row.segment || "—", row.abc || "—"].join(" · "))}</div>
+                      ${productStatusValue(row) ? `<div class="price-inline-meta">${escapeHtml(productStatusValue(row))}</div>` : ""}
+                    </td>
+                    <td>
+                      <div class="price-signal-stack">${productStatusBadges(row).join("")}${priceSignalMarkup(row)}</div>
+                      <div class="price-inline-meta">${escapeHtml(pricePrimaryAction(row))}</div>
+                      ${productStatusNote(row) ? `<div class="price-inline-meta">${escapeHtml(productStatusNote(row))}</div>` : ""}
+                      ${compactHistoryNote(row) ? `<div class="price-inline-meta">${escapeHtml(compactHistoryNote(row))}</div>` : ""}
+                    </td>
+                    <td>
+                      <div class="price-stat-stack">
+                        <div class="price-stat-row"><strong>Оборот</strong><span>${row.turnoverDisplay == null ? "—" : `${fmt.num(row.turnoverDisplay, 1)} дн.`}</span></div>
+                        <div class="price-stat-row"><strong>Факт</strong><span>${row.actualUnitsSelected == null ? "—" : `${fmt.int(row.actualUnitsSelected)} шт.`}</span></div>
+                        <div class="price-stat-row"><strong>План</strong><span>${row.planUnitsSelected == null ? "—" : `${fmt.int(row.planUnitsSelected)} шт. · ${pctShort(row.completionPctSelected)}`}</span></div>
+                        <div class="price-stat-row"><strong>Выручка</strong><span>${moneyShort(row.periodRevenueSelected)}</span></div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="price-stat-stack">
+                        <div class="price-stat-row"><strong>MP</strong><span>${moneyShort(row.currentFillPriceDisplay)}</span></div>
+                        <div class="price-stat-row"><strong>Клиент</strong><span>${moneyShort(row.currentClientPriceDisplay)}</span></div>
+                        <div class="price-stat-row"><strong>СПП</strong><span>${pctShort(row.currentSppDisplay)}</span></div>
+                       

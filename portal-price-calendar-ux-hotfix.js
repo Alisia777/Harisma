@@ -1,4 +1,5 @@
 (function () {
+  if (window.__ALTEA_PRICE_SIMPLE_RUNTIME_MODE__) return;
   if (window.__ALTEA_PRICE_CALENDAR_UX_HOTFIX_20260425I__) return;
   window.__ALTEA_PRICE_CALENDAR_UX_HOTFIX_20260425I__ = true;
 

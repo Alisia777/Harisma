@@ -1,90 +1,133 @@
-      updatedAt: merged.updatedAt,
-      createdAt: merged.createdAt,
-      planUnitsSelected: plan.planUnitsSelected,
-      actualUnitsSelected: plan.actualUnitsSelected,
-      completionPctSelected: plan.completionPct,
-      selectedDays: plan.selectedDays,
-    };
+SION_STATUS_META.draft).label)}</td></tr>`).join("")}</tbody>
+        </table>
+      </div>
+    `;
   }
 
-  function signalsForRow(row) {
-    const items = [];
-    if (row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && Number(row.marginTotalPct) < Number(row.effectiveAllowedMarginPct)) items.push({ label: "Маржа ниже допустимой", kind: "danger" });
-    if (row.turnoverDisplay != null && Number(row.turnoverDisplay) >= 60) items.push({ label: "Высокая оборачиваемость", kind: "danger" });
-    else if (row.turnoverDisplay != null && Number(row.turnoverDisplay) >= 40) items.push({ label: "Оборачиваемость требует внимания", kind: "warn" });
-    if (row.completionPctSelected != null && Number(row.completionPctSelected) < 0.8) items.push({ label: "Отстаёт от плана", kind: "warn" });
-    if (row.targetFillPrice != null && row.hardMinPrice != null && Number(row.targetFillPrice) < Number(row.hardMinPrice)) items.push({ label: "Новая цена ниже жёсткого минимума", kind: "danger" });
-    if (row.needsTask) items.push({ label: "Есть задача", kind: "info" });
-    if (row.historyNote) items.push({ label: "Проверь свежесть факта", kind: "info" });
-    return items;
+  function renderPeriodHistory(row) {
+    const dailyPlan = row.planUnitsSelected && row.selectedDays ? row.planUnitsSelected / row.selectedDays : (row.planMonthUnits && row.planMonthDays ? row.planMonthUnits / row.planMonthDays : null);
+    if (!(row.monthlyFiltered || []).length) return `<div class="price-empty">За выбранный период нет истории.</div>`;
+    return `
+      <div class="price-history-wrap">
+        <table class="price-history-table">
+          <thead><tr><th>Дата</th><th>Заказы</th><th>Доставлено</th><th>Обор.</th><th>Цена MP</th><th>Цена клиента</th><th>СПП</th><th>Выручка</th><th>% плана / день</th></tr></thead>
+          <tbody>${row.monthlyFiltered.map((item) => {
+            const actual = parseNum(item.ordersUnits) ?? parseNum(item.deliveredUnits);
+            const dayCompletion = actual != null && dailyPlan ? actual / dailyPlan : null;
+            return `<tr><td>${escapeHtml(String(item.date).slice(0, 10))}</td><td>${item.ordersUnits == null ? "—" : fmt.int(item.ordersUnits)}</td><td>${item.deliveredUnits == null ? "—" : fmt.int(item.deliveredUnits)}</td><td>${item.turnoverDays == null ? "—" : `${fmt.num(item.turnoverDays, 1)} дн.`}</td><td>${moneyShort(item.price)}</td><td>${moneyShort(item.clientPrice)}</td><td>${pctShort(item.sppPct)}</td><td>${moneyShort(item.revenue)}</td><td>${dayCompletion == null ? "—" : pctShort(dayCompletion)}</td></tr>`;
+          }).join("")}</tbody>
+        </table>
+      </div>
+    `;
   }
 
-  function riskScore(row) {
-    return signalsForRow(row).reduce((sum, item) => sum + (item.kind === "danger" ? 3 : item.kind === "warn" ? 2 : 1), 0);
+  function ensurePriceTask(row, entry) {
+    const autoCode = `price|${entry.marketplace}|${entry.articleKey}`;
+    const existing = (state.storage.tasks || []).find((task) => task.autoCode === autoCode);
+    const task = normalizeTask({
+      id: existing?.id || stableId("task", autoCode),
+      source: "manual",
+      articleKey: entry.articleKey,
+      title: `Цена ${marketLabel(entry.marketplace)} · ${entry.articleKey}`,
+      nextAction: entry.reason || row.seedReason || "Проверить ценовое решение и внедрить на площадке",
+      reason: entry.comment || entry.reason || "",
+      owner: entry.owner || row.owner || ownerName(getSku(entry.articleKey)) || "",
+      due: entry.dueDate || plusDaysLocal(2),
+      status: existing?.status || "new",
+      type: "price_margin",
+      priority: entry.escalation === "me_ksenia" ? "critical" : (entry.decisionStatus === "review" ? "high" : "medium"),
+      platform: entry.marketplace,
+      createdAt: existing?.createdAt || new Date().toISOString(),
+      entityLabel: row.name || entry.articleKey,
+      autoCode,
+    }, "manual");
+    state.storage.tasks = [...(state.storage.tasks || []).filter((item) => item.autoCode !== autoCode), task];
+    saveLocalStorage();
   }
 
-  function effectiveRows() {
-    const market = state.priceWorkbench.filters.market || "wb";
-    const decisions = mergeEntryLayers();
-    return baseRowsForMarket(market).map((row) => applyEntry(row, decisions.get(workbenchKey(market, row.articleKey))));
-  }
-
-  function filteredRows() {
-    const search = String(state.priceWorkbench.filters.search || "").trim().toLowerCase();
-    const ownerFilter = state.priceWorkbench.filters.owner || "all";
-    const statusFilter = state.priceWorkbench.filters.status || "all";
-    const sortMode = state.priceWorkbench.filters.sort || "risk";
-    const riskOnly = Boolean(state.priceWorkbench.filters.riskOnly);
-    const rows = effectiveRows().filter((row) => {
-      if (search) {
-        const haystack = [row.articleKey, row.name, row.owner, row.reason, row.seedReason, row.segment, row.abc].filter(Boolean).join(" ").toLowerCase();
-        if (!haystack.includes(search)) return false;
-      }
-      if (ownerFilter !== "all" && (row.owner || "Без owner") !== ownerFilter) return false;
-      if (statusFilter !== "all" && row.decisionStatus !== statusFilter) return false;
-      if (riskOnly && riskScore(row) < 3) return false;
-      return true;
+  function addHistoryRow(entry, previous) {
+    const historyRow = normalizeHistory({
+      marketplace: entry.marketplace,
+      articleKey: entry.articleKey,
+      eventType: previous ? "update" : "save",
+      oldTargetFillPrice: previous?.targetFillPrice,
+      newTargetFillPrice: entry.targetFillPrice,
+      oldTargetClientPrice: previous?.targetClientPrice,
+      newTargetClientPrice: entry.targetClientPrice,
+      oldAllowedMarginPct: previous?.allowedMarginManualPct,
+      newAllowedMarginPct: entry.allowedMarginManualPct,
+      oldDecisionStatus: previous?.decisionStatus,
+      newDecisionStatus: entry.decisionStatus,
+      reason: entry.reason,
+      comment: entry.comment,
+      changedBy: state.team.member?.name || "Команда",
+      changedAt: new Date().toISOString(),
+      synced: false,
     });
-    rows.sort((a, b) => {
-      if (sortMode === "turnover") return (Number(b.turnoverDisplay) || 0) - (Number(a.turnoverDisplay) || 0);
-      if (sortMode === "margin") return (Number(a.marginTotalPct) || 0) - (Number(b.marginTotalPct) || 0);
-      if (sortMode === "plan") return (Number(a.completionPctSelected) || 0) - (Number(b.completionPctSelected) || 0);
-      return riskScore(b) - riskScore(a) || (Number(b.turnoverDisplay) || 0) - (Number(a.turnoverDisplay) || 0);
-    });
-    return rows;
+    state.priceWorkbench.localHistory = [historyRow, ...(state.priceWorkbench.localHistory || [])];
+    saveLocalState();
+    return historyRow;
   }
 
-  function selectedRow(rows) {
-    if (!rows.length) return null;
-    const found = rows.find((row) => workbenchKey(row.marketplace, row.articleKey) === state.priceWorkbench.selectedKey);
-    if (found) return found;
-    state.priceWorkbench.selectedKey = workbenchKey(rows[0].marketplace, rows[0].articleKey);
-    return rows[0];
+  function upsertLocalEntry(entry) {
+    const normalized = normalizeEntry(entry);
+    const key = workbenchKey(normalized.marketplace, normalized.articleKey);
+    state.priceWorkbench.localEntries = [
+      ...(state.priceWorkbench.localEntries || []).filter((item) => workbenchKey(item.marketplace, item.articleKey) !== key),
+      normalized,
+    ];
+    saveLocalState();
+    return normalized;
   }
 
-  function ownerList(rows) {
-    return Array.from(new Set(rows.map((row) => row.owner).filter(Boolean))).sort((a, b) => a.localeCompare(b, "ru"));
+  function getCurrentRowByKey(key) {
+    return filteredRows().find((row) => workbenchKey(row.marketplace, row.articleKey) === key) || effectiveRows().find((row) => workbenchKey(row.marketplace, row.articleKey) === key) || null;
   }
 
-  function dataFreshnessLabel(rows) {
-    const dates = Array.from(new Set(rows.map((row) => isoDate(row.historyFreshnessDate)).filter(Boolean))).sort();
-    if (!dates.length) return "Свежесть факта не отмечена";
-    if (dates.length === 1) return `Факт в пакете до ${dates[0]}`;
-    return `Факт в пакете: ${dates[0]} – ${dates[dates.length - 1]}`;
-  }
-
-  function seedSourceLabel() {
-    if (state.priceWorkbench.seedSource === "snapshot") return "Источник: Supabase snapshot";
-    if (state.priceWorkbench.seedSource === "local") return "Источник: локальный JSON";
-    return "Источник данных уточняется";
-  }
-
-  function marketWarnings(rows) {
-    const notes = Array.from(new Set(rows.map((row) => String(row.historyNote || "").trim()).filter(Boolean)));
-    if ((state.priceWorkbench.filters.market || "wb") === "wb") {
-      notes.push("WB: перед внедрением решения перепроверьте, не является ли цена клиента ценой со СПП из файла.");
-    }
-    return Array.from(new Set(notes)).slice(0, 3);
-  }
-
-  function aggregateMetrics(rows) {
+  function renderPriceModal(row) {
+    const modal = document.getElementById("skuModal");
+    const body = document.getElementById("skuModalBody");
+    if (!modal || !body || !row) return;
+    const tasks = relatedTasks(row);
+    const periodRevenue = parseNum(row.periodRevenueSelected);
+    const totalSupply = [row.stock, row.stockRepricer, row.stockInSupplyRequest, row.stockInTransit]
+      .map((value) => parseNum(value))
+      .filter((value) => value != null)
+      .reduce((sum, value) => sum + value, 0);
+    const badges = [
+      badge(marketLabel(row.marketplace), "info"),
+      decisionBadge(row),
+      row.escalation !== "none" ? badge((ESCALATION_META[row.escalation] || ESCALATION_META.none).label, (ESCALATION_META[row.escalation] || ESCALATION_META.none).kind) : "",
+      ...signalsForRow(row).map((item) => badge(item.label, item.kind)),
+    ].filter(Boolean).join("");
+    body.innerHTML = `
+      <div class="price-modal-card">
+        <div class="price-modal-head">
+          <div class="price-modal-title">
+            <div class="price-inline-meta">${escapeHtml(row.segment || "—")} · ${escapeHtml(row.abc || "—")} · ${escapeHtml(row.owner || "Без owner")}</div>
+            <h2>${escapeHtml(row.articleKey)}</h2>
+            <p>${escapeHtml(row.name || "")}</p>
+            <div class="price-modal-badges">${badges}</div>
+          </div>
+          <button class="btn ghost" data-close-modal>Закрыть</button>
+        </div>
+        <div class="price-modal-grid">
+          <div class="price-modal-kpi"><span class="label">Цена MP сейчас</span><strong>${moneyShort(row.currentFillPriceDisplay)}</strong><small>Под выбранный диапазон и площадку.</small></div>
+          <div class="price-modal-kpi"><span class="label">Цена клиента</span><strong>${moneyShort(row.currentClientPriceDisplay)}</strong><small>Отдельно, чтобы не путать MP и клиентскую цену.</small></div>
+          <div class="price-modal-kpi"><span class="label">СПП сейчас</span><strong>${pctShort(row.currentSppDisplay)}</strong><small>${row.marketplace === "wb" ? "Проверьте, не пришла ли цена клиента уже со СПП из файла WB." : "Отдельно показываем скидку клиента, чтобы не путать с MP."}</small></div>
+          <div class="price-modal-kpi"><span class="label">Текущее решение</span><strong>${moneyShort(row.targetFillPrice)}</strong><small>${row.seedTargetFillPrice != null && row.targetFillPrice != null && Math.abs(Number(row.targetFillPrice) - Number(row.seedTargetFillPrice)) > 0.009 ? `Smart ${moneyShort(row.seedTargetFillPrice)} · решение уже изменено вручную.` : "Если решение не меняли, оно совпадает с файлом Smart."}</small></div>
+          <div class="price-modal-kpi"><span class="label">Допустимая маржа 3м</span><strong>${pctShort(row.effectiveAllowedMarginPct)}</strong><small>Средняя допустимая маржа за последние 3 месяца.</small></div>
+          <div class="price-modal-kpi"><span class="label">Текущая маржа</span><strong>${pctShort(row.marginTotalPct)}</strong><small>Текущий операционный уровень по площадке.</small></div>
+          <div class="price-modal-kpi"><span class="label">Оборачиваемость</span><strong>${row.turnoverDisplay == null ? "—" : `${fmt.num(row.turnoverDisplay, 1)} дн.`}</strong><small>Под выбранный период.</small></div>
+          <div class="price-modal-kpi"><span class="label">Факт за период</span><strong>${row.actualUnitsSelected == null ? "—" : `${fmt.int(row.actualUnitsSelected)} шт.`}</strong><small>${row.actualSource === "daily" ? `daily-факт по диапазону · план ${row.planUnitsSelected == null ? "—" : `${fmt.int(row.planUnitsSelected)} шт.`}` : row.actualSource === "monthly" ? "Факт собран из помесячного файла, потому что daily по SKU в пакете нет." : "По этому диапазону факт по SKU не опубликован."}</small></div>
+          <div class="price-modal-kpi"><span class="label">Выручка за период</span><strong>${periodRevenue != null && periodRevenue > 0 ? moneyShort(periodRevenue) : "—"}</strong><small>${row.actualSource === "monthly" ? "Выручка взята из помесячного файла факта." : "Сумма выручки по выбранному диапазону."}</small></div>
+          <div class="price-modal-kpi"><span class="label">% выполнения плана</span><strong>${row.completionPctSelected == null ? "—" : pctShort(row.completionPctSelected)}</strong><small>${row.planUnitsSelected == null ? "На выбранный диапазон пока нет помесячного плана по SKU." : row.actualUnitsSelected == null ? `План ${fmt.int(row.planUnitsSelected)} шт., но факта по SKU в источнике нет.` : `Факт ${fmt.int(row.actualUnitsSelected)} шт. против плана ${fmt.int(row.planUnitsSelected)} шт.`}</small></div>
+          <div class="price-modal-kpi"><span class="label">Остаток</span><strong>${row.stock == null ? "—" : fmt.int(row.stock)}</strong><small>${escapeHtml(row.supportRow?.summary?.interpretation || row.supportRow?.sellerSummary?.interpretation || row.historyNote || "Смотри историю, задачи и коридор цены ниже.")}</small></div>
+        </div>
+        <div class="price-modal-projections">
+          <div class="price-modal-kpi"><span class="label">Из файла Smart</span><strong>${moneyShort(row.seedTargetFillPrice)}</strong><small>${escapeHtml(row.seedReason || "Целевая цена из рабочего пакета данных.")}</small></div>
+          <div class="price-modal-kpi"><span class="label">Жёсткий минимум</span><strong>${moneyShort(row.hardMinPrice || row.minPrice)}</strong><small>Ниже этой цены опускаться нельзя.</small></div>
+          <div class="price-modal-kpi"><span class="label">Рабочая зона</span><strong>${row.workingZoneFrom == null && row.workingZoneTo == null ? "—" : `${moneyShort(row.workingZoneFrom)} – ${moneyShort(row.workingZoneTo)}`}</strong><small>Коридор, в котором товар можно держать безопасно.</small></div>
+          <div class="price-modal-kpi"><span class="label">Нужно для рентаб.</span><strong>${moneyShort(row.requiredPriceForProfitability)}</strong><small>Минимум для безубыточности.</small></div>
+          <div class="price-modal-kpi"><span class="label">Нужно для маржи</span><strong>${moneyShort(row.requiredPriceForMargin)}</strong><small>Цена для выхода на допустимую маржу.</small></div>
+          <div class="price-modal-kpi"><span class="label">План месяца</span><strong>${row.planMonthUnits == null ? "—" : `${fmt.int(row.planMonthUnits)} шт.`}</strong><small>${row.planMonthRevenue == null

@@ -1,5 +1,6 @@
 (function () {
-if (window.__ALTEA_RUNTIME_OPTIMIZER_20260503D__) return;
+if (window.__ALTEA_RUNTIME_OPTIMIZER_20260505A__) return;
+window.__ALTEA_RUNTIME_OPTIMIZER_20260505A__ = true;
 window.__ALTEA_RUNTIME_OPTIMIZER_20260503D__ = true;
 window.__ALTEA_RUNTIME_OPTIMIZER_20260503C__ = true;
 window.__ALTEA_RUNTIME_OPTIMIZER_20260503B__ = true;
@@ -24,7 +25,7 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
     order: ['portal-order-logistics-hotfix.js?v=20260428b'],
     prices: [
       'portal-price-local-fetch-bypass-hotfix.js?v=20260428a',
-      'portal-price-workbench-runtime-loader.js?v=20260503d',
+      'portal-price-workbench-runtime-loader.js?v=20260505a',
       'portal-team-reconnect-hotfix.js?v=20260420a'
     ]
   };
@@ -97,7 +98,7 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
   const deferredPathMap = Object.fromEntries(
     Object.entries(DEFERRED_DATA).map(([key, config]) => [config.path, { key, fallback: config.fallback }])
   );
-  const JSON_REQUEST_VERSION = String(window.__ALTEA_JSON_VERSION__ || '20260503f').trim() || '20260503f';
+  const JSON_REQUEST_VERSION = String(window.__ALTEA_JSON_VERSION__ || '20260505a').trim() || '20260505a';
   window.__ALTEA_JSON_VERSION__ = JSON_REQUEST_VERSION;
   const deferredReady = Object.fromEntries(Object.keys(DEFERRED_DATA).map((key) => [key, false]));
   const deferredLoads = new Map();

@@ -36,7 +36,7 @@
 
   function cfg() {
     var fallback = {
-      brand: "103b42354f",
+      brand: "Алтея",
       supabase: {
         url: "https://iyckwryrucqrxwlowxow.supabase.co",
         anonKey: "sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw"
@@ -96,7 +96,7 @@
     var baseUrl = String(active.supabase.url || "").replace(/\/+$/, "");
     var url = new URL(baseUrl + "/rest/v1/" + SNAPSHOT_TABLE);
     url.searchParams.set("select", selectValue);
-    url.searchParams.set("brand", "eq." + String(active.brand || "103b42354f"));
+    url.searchParams.set("brand", "eq." + String(active.brand || "Алтея"));
     url.searchParams.set("snapshot_key", filterValue);
     url.searchParams.set("order", "snapshot_key.asc");
     if (limitValue != null) url.searchParams.set("limit", String(limitValue));

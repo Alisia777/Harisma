@@ -1,5 +1,9 @@
 (function () {
-  if (window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260502A__) return;
+  if (window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260505A__) return;
+  window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260505A__ = true;
+  window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260503C__ = true;
+  window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260503B__ = true;
+  window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260503A__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260502A__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260429B__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260429A__ = true;
@@ -7,8 +11,13 @@
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260428B__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260428A__ = true;
 
-  const SCRIPT_ID = 'portalPriceWorkbenchSimpleLive20260502a';
-  const SRC = 'portal-price-workbench-simple-live.js?v=20260502a';
+  const SCRIPT_ID = 'portalPriceWorkbenchSimpleLive20260505a';
+  const SRC = 'portal-price-workbench-simple-live.js?v=20260505a';
+
+  function isPricesViewActive() {
+    if (window.state && window.state.activeView) return window.state.activeView === 'prices';
+    return Boolean(document.querySelector('#view-prices.view.active'));
+  }
 
   function rerender() {
     if (typeof window.renderPriceWorkbench !== 'function') return;
@@ -20,28 +29,39 @@
   }
 
   function ensureLoaded() {
-    if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260502A__ || window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429B__ || window.__ALTEA_PRICE_SIMPLE_RENDERER_20260429A__ || window.__ALTEA_PRICE_SIMPLE_RENDERER_20260428C__) {
-      rerender();
+    if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260505A__) {
+      if (isPricesViewActive()) rerender();
       return;
     }
+
     const existing = document.getElementById(SCRIPT_ID);
-    if (existing) {
-      return;
-    }
+    if (existing) return;
+
     const script = document.createElement('script');
     script.id = SCRIPT_ID;
     script.defer = true;
     script.src = SRC;
-    script.onload = rerender;
+    script.onload = () => {
+      if (isPricesViewActive()) rerender();
+    };
     script.onerror = (error) => console.warn('[price-runtime-loader] load', error);
     (document.head || document.body || document.documentElement).appendChild(script);
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => window.setTimeout(ensureLoaded, 120), { once: true });
-  } else {
-    window.setTimeout(ensureLoaded, 120);
+  function maybeLoadForView(view) {
+    if (view && view !== 'prices') return;
+    if (!view && !isPricesViewActive()) return;
+    ensureLoaded();
   }
-  window.addEventListener('load', () => window.setTimeout(ensureLoaded, 120), { once: true });
-  window.setTimeout(ensureLoaded, 1200);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => maybeLoadForView(), { once: true });
+  } else {
+    maybeLoadForView();
+  }
+
+  window.addEventListener('load', () => maybeLoadForView(), { once: true });
+  window.addEventListener('altea:viewchange', (event) => {
+    maybeLoadForView(event?.detail?.view);
+  });
 })();

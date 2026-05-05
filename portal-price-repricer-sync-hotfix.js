@@ -1,4 +1,5 @@
 (function () {
+  if (window.__ALTEA_PRICE_SIMPLE_RUNTIME_MODE__) return;
   if (window.__ALTEA_PRICE_REPRICER_SYNC_HOTFIX_20260425C__) return;
   window.__ALTEA_PRICE_REPRICER_SYNC_HOTFIX_20260425C__ = true;
 

@@ -1,90 +1,116 @@
-      root.innerHTML = `<div class="card"><div class="price-empty">Не удалось загрузить блок цен: ${escapeHtml(state.priceWorkbench.issue)}</div></div>`;
-      return;
-    }
-    if (!state.priceWorkbench.seed) {
-      root.innerHTML = `<div class="card"><div class="price-empty">Ценовой контур ещё не загружен.</div></div>`;
-      return;
-    }
-    ensureDateRange();
-    const rows = filteredRows();
-    selectedRow(rows);
-    root.innerHTML = `
-      <div class="price-workbench-shell">
-        ${renderToolbar()}
-        ${renderSummary(rows)}
-        <div class="price-note">Календарь, площадка и период влияют на таблицу, план-факт, историю по дням и карточку артикула. Для Ozon факт по дням есть до 16 апреля 2026, по WB после 31 марта 2026 сейчас используется текущий срез без daily-продаж.</div>
-        ${renderTable(rows)}
+ <div class="price-inline-meta">Δ MP ${row.periodPriceDeltaPct == null ? "—" : pctShort(row.periodPriceDeltaPct)} · Δ клиент ${row.periodClientDeltaPct == null ? "—" : pctShort(row.periodClientDeltaPct)}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="price-stat-stack">
+                        <div class="price-stat-row ${marginDanger ? "is-danger" : ""}"><strong>Маржа</strong><span>${pctShort(row.marginTotalPct)}</span></div>
+                        <div class="price-stat-row"><strong>Доп. 3м</strong><span>${pctShort(row.effectiveAllowedMarginPct)} · ${escapeHtml(allowedMarginSourceCopy(row))}</span></div>
+                        <div class="price-stat-row"><strong>Smart</strong><span>${moneyShort(row.seedTargetFillPrice)}</span></div>
+                        <div class="price-stat-row"><strong>Решение</strong><span>${moneyShort(row.targetFillPrice)}</span></div>
+                        <div class="price-inline-meta">Для маржи ${moneyShort(row.requiredPriceForMargin)} · жесткий минимум ${moneyShort(row.hardMinPrice || row.minPrice)} · зона ${row.workingZoneFrom == null && row.workingZoneTo == null ? "—" : `${moneyShort(row.workingZoneFrom)} – ${moneyShort(row.workingZoneTo)}`}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="price-signal-stack">
+                        ${decisionBadge(row)}
+                        ${row.escalation !== "none" ? badge((ESCALATION_META[row.escalation] || ESCALATION_META.none).label, (ESCALATION_META[row.escalation] || ESCALATION_META.none).kind) : ""}
+                      </div>
+                      ${tasks.length ? renderTaskSummary(tasks) : `<div class="price-inline-meta">Задачи пока нет.</div>`}
+                      <div class="price-inline-meta">${escapeHtml(row.owner || "Без owner")}${row.dueDate ? ` · срок ${escapeHtml(row.dueDate)}` : ""}</div>
+                      <div class="price-inline-meta">${escapeHtml(String(row.reason || row.comment || "Решение по артикулу еще не зафиксировано.").slice(0, 180))}</div>
+                    </td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
       </div>
     `;
-    const bind = (selector, eventName, handler) => {
-      const node = root.querySelector(selector);
-      if (node) node.addEventListener(eventName, handler);
-    };
-    bind("#priceSearch", "input", (event) => { state.priceWorkbench.filters.search = event.target.value; renderPriceWorkbench(); });
-    bind("#priceOwnerFilter", "change", (event) => { state.priceWorkbench.filters.owner = event.target.value; renderPriceWorkbench(); });
-    bind("#priceStatusFilter", "change", (event) => { state.priceWorkbench.filters.status = event.target.value; renderPriceWorkbench(); });
-    bind("#priceSortMode", "change", (event) => { state.priceWorkbench.filters.sort = event.target.value; renderPriceWorkbench(); });
-    bind("#priceRiskOnly", "change", (event) => { state.priceWorkbench.filters.riskOnly = event.target.checked; renderPriceWorkbench(); });
-    bind("#priceDateFrom", "change", (event) => { state.priceWorkbench.filters.dateFrom = event.target.value; state.priceWorkbench.filters.preset = "custom"; renderPriceWorkbench(); });
-    bind("#priceDateTo", "change", (event) => { state.priceWorkbench.filters.dateTo = event.target.value; state.priceWorkbench.filters.preset = "custom"; renderPriceWorkbench(); });
-    root.querySelectorAll("[data-price-preset]").forEach((button) => button.addEventListener("click", () => applyPreset(button.dataset.pricePreset)));
-    root.querySelectorAll("[data-price-market]").forEach((button) => button.addEventListener("click", () => {
-      state.priceWorkbench.filters.market = button.dataset.priceMarket;
-      state.priceWorkbench.selectedKey = "";
-      const range = presetRange(state.priceWorkbench.filters.preset || "month", state.priceWorkbench.filters.market);
-      state.priceWorkbench.filters.dateFrom = range.dateFrom;
-      state.priceWorkbench.filters.dateTo = range.dateTo;
-      renderPriceWorkbench();
-    }));
-    root.querySelectorAll("[data-price-open]").forEach((rowNode) => rowNode.addEventListener("click", () => {
-      state.priceWorkbench.selectedKey = rowNode.dataset.priceOpen;
-      const row = getCurrentRowByKey(rowNode.dataset.priceOpen);
-      renderPriceWorkbench();
-      if (row) renderPriceModal(row);
-    }));
   }
 
-  window.renderPriceWorkbench = renderPriceWorkbench;
-  window.ensurePriceWorkbenchSeedLoaded = ensureSeedLoaded;
-
-  const prevPullRemoteState = pullRemoteState;
-  pullRemoteState = async function (rerender = true) {
-    await prevPullRemoteState(false);
-    state.priceWorkbench.remoteReady = false;
-    state.priceWorkbench.remoteDisabled = false;
-    await ensureRemoteLoaded();
-    if (rerender) rerenderCurrentView();
-  };
-
-  const prevPushStateToRemote = pushStateToRemote;
-  pushStateToRemote = async function () {
-    await prevPushStateToRemote();
-    if (state.team.client && !state.priceWorkbench.remoteDisabled && state.priceWorkbench.localEntries?.length) {
-      try {
-        await upsertRemoteEntries(state.priceWorkbench.localEntries);
-        const unsynced = (state.priceWorkbench.localHistory || []).filter((item) => !item.synced);
-        if (unsynced.length) {
-          try {
-            await insertRemoteHistory(unsynced);
-            unsynced.forEach((item) => { item.synced = true; });
-            saveLocalState();
-          } catch (historyError) {
-            console.error(historyError);
-          }
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    rerenderCurrentView();
-  };
-
-  const prevRerenderCurrentView = rerenderCurrentView;
-  rerenderCurrentView = function () {
-    prevRerenderCurrentView();
-    ensureBranding();
-    if ((state.activeView || "dashboard") === "prices") {
-      renderPriceWorkbench();
-      ensureSeedLoaded();
-      ensureRemoteLoaded();
-    }
+  function renderPriceModal(row) {
+    const modal = document.getElementById("skuModal");
+    const body = document.getElementById("skuModalBody");
+    if (!modal || !body || !row) return;
+    const tasks = relatedTasks(row);
+    const periodRevenue = parseNum(row.periodRevenueSelected);
+    const totalSupply = [row.stock, row.stockRepricer, row.stockInSupplyRequest, row.stockInTransit]
+      .map((value) => parseNum(value))
+      .filter((value) => value != null)
+      .reduce((sum, value) => sum + value, 0);
+    const badges = [
+      badge(marketLabel(row.marketplace), "info"),
+      decisionBadge(row),
+      row.escalation !== "none" ? badge((ESCALATION_META[row.escalation] || ESCALATION_META.none).label, (ESCALATION_META[row.escalation] || ESCALATION_META.none).kind) : "",
+      ...productStatusBadges(row),
+      ...signalsForRow(row).map((item) => badge(item.label, item.kind)),
+    ].filter(Boolean).join("");
+    const corridorCards = [
+      { label: "Smart target", value: moneyShort(row.seedTargetFillPrice), note: row.seedReason || "Целевая цена из загруженного файла." },
+      { label: "Решение сейчас", value: moneyShort(row.targetFillPrice), note: "Цена, с которой сейчас работает команда по этому артикулу." },
+      { label: "Для маржи", value: moneyShort(row.requiredPriceForMargin), note: "Ориентир цены, который выводит SKU к допустимой марже." },
+      { label: "Для рентаб.", value: moneyShort(row.requiredPriceForProfitability), note: "Минимум для безубыточности по расчету." },
+      { label: "Жесткий минимум", value: moneyShort(row.hardMinPrice || row.minPrice), note: "Ниже этой границы решение согласовывать нельзя." },
+      { label: "Рабочая зона", value: row.workingZoneFrom == null && row.workingZoneTo == null ? "—" : `${moneyShort(row.workingZoneFrom)} – ${moneyShort(row.workingZoneTo)}`, note: "Диапазон, в котором можно искать рабочее решение." },
+    ];
+    const sourceBridgeNote = row.actualSource === "daily"
+      ? "Daily-факт и план-факт подхватываются из daily bridge Google Sheets, который обновляется около 09:00 МСК."
+      : "Если daily-факт еще не доехал из daily bridge Google Sheets 09:00 МСК, ниже все равно видна цена по дням и отдельно отмечен источник факта.";
+    body.innerHTML = `
+      <div class="price-modal-card">
+        <div class="price-modal-head">
+          <div class="price-modal-title">
+            <div class="price-inline-meta">${escapeHtml(row.segment || "—")} · ${escapeHtml(row.abc || "—")} · ${escapeHtml(row.owner || "Без owner")}</div>
+            <h2>${escapeHtml(row.articleKey)}</h2>
+            <p>${escapeHtml(row.name || "")}</p>
+            <div class="price-modal-badges">${badges}</div>
+            <div class="price-helper-copy">${escapeHtml(modalRangeCopy(row))}<br>${escapeHtml(sourceBridgeNote)}${row.historyNoteDisplay ? `<br>${escapeHtml(row.historyNoteDisplay)}` : ""}</div>
+          </div>
+          <button class="btn ghost" data-close-modal>Закрыть</button>
+        </div>
+        <div class="price-modal-section">
+          <div class="price-manager-grid">
+            <div class="price-manager-panel">
+              <h3 class="price-section-title">Что решить по SKU сейчас</h3>
+              <div class="price-next-step">${escapeHtml(pricePrimaryAction(row))}</div>
+              <div class="price-bullet-list">
+                ${priceActionBullets(row).map((item) => `<div>${escapeHtml(item)}</div>`).join("")}
+              </div>
+            </div>
+            <div class="price-manager-panel">
+              <h3 class="price-section-title">Ценовой коридор для решения</h3>
+              <div class="price-corridor-grid">
+                ${corridorCards.map((card) => `
+                  <div class="price-corridor-card">
+                    <span>${escapeHtml(card.label)}</span>
+                    <strong>${card.value}</strong>
+                    <small>${escapeHtml(card.note)}</small>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="price-modal-grid">
+          <div class="price-modal-kpi"><span class="label">Цена MP сейчас</span><strong>${moneyShort(row.currentFillPriceDisplay)}</strong><small>Берем последнюю цену в выбранном диапазоне.</small></div>
+          <div class="price-modal-kpi"><span class="label">Цена клиента</span><strong>${moneyShort(row.currentClientPriceDisplay)}</strong><small>Показываем отдельно, чтобы не путать цену продавца и покупателя.</small></div>
+          <div class="price-modal-kpi"><span class="label">СПП / скидка</span><strong>${pctShort(row.currentSppDisplay)}</strong><small>${row.marketplace === "wb" ? "Для WB проверьте, не пришла ли клиентская цена уже с учетом СПП." : "Скидка покупателя вынесена отдельно от цены продавца."}</small></div>
+          <div class="price-modal-kpi"><span class="label">Текущая маржа</span><strong>${pctShort(row.marginTotalPct)}</strong><small>Операционный уровень по выбранной площадке.</small></div>
+          <div class="price-modal-kpi"><span class="label">Допустимая маржа 3м</span><strong>${pctShort(row.effectiveAllowedMarginPct)}</strong><small>${escapeHtml(row.allowedMarginManualPct != null ? "Значение переопределено вручную." : row.allowedMarginNote || "Средняя допустимая маржа за последние 3 месяца.")}</small></div>
+          <div class="price-modal-kpi"><span class="label">Статус товара</span><strong>${escapeHtml(productStatusValue(row) || "—")}</strong><small>${escapeHtml(productStatusNote(row) || "Статус из рабочих файлов пока не заполнен.")}</small></div>
+          <div class="price-modal-kpi"><span class="label">Оборачиваемость</span><strong>${row.turnoverDisplay == null ? "—" : `${fmt.num(row.turnoverDisplay, 1)} дн.`}</strong><small>Средняя по выбранному периоду.</small></div>
+          <div class="price-modal-kpi"><span class="label">Факт за период</span><strong>${row.actualUnitsSelected == null ? "—" : `${fmt.int(row.actualUnitsSelected)} шт.`}</strong><small>${row.actualSource === "daily" ? `Daily-факт по диапазону · план ${row.planUnitsSelected == null ? "—" : `${fmt.int(row.planUnitsSelected)} шт.`}` : row.actualSource === "monthly" ? "Факт собран из помесячного файла, потому что daily по SKU в пакете нет." : "По этому диапазону факт по SKU не опубликован."}</small></div>
+          <div class="price-modal-kpi"><span class="label">% выполнения плана</span><strong>${row.completionPctSelected == null ? "—" : pctShort(row.completionPctSelected)}</strong><small>${row.planUnitsSelected == null ? "План по SKU в диапазоне не загружен." : `Факт ${row.actualUnitsSelected == null ? "—" : fmt.int(row.actualUnitsSelected)} шт. против плана ${fmt.int(row.planUnitsSelected)} шт.`}</small></div>
+          <div class="price-modal-kpi"><span class="label">Выручка за период</span><strong>${periodRevenue != null && periodRevenue > 0 ? moneyShort(periodRevenue) : "—"}</strong><small>${row.actualSource === "monthly" ? "Выручка взята из помесячного файла факта." : "Сумма выручки по выбранному диапазону."}</small></div>
+          <div class="price-modal-kpi"><span class="label">Остаток</span><strong>${row.stock == null ? "—" : fmt.int(row.stock)}</strong><small>${escapeHtml(row.supportRow?.summary?.interpretation || row.supportRow?.sellerSummary?.interpretation || row.historyNote || "Ниже можно сверить историю, решение и задачи по позиции.")}</small></div>
+          <div class="price-modal-kpi"><span class="label">План месяца</span><strong>${row.planMonthUnits == null ? "—" : `${fmt.int(row.planMonthUnits)} шт.`}</strong><small>${row.planMonthRevenue == null ? "—" : `Выручка ${moneyShort(row.planMonthRevenue)} · чек ${moneyShort(row.planMonthCheck)}`}</small></div>
+          <div class="price-modal-kpi"><span class="label">Запасы в контуре</span><strong>${totalSupply > 0 ? fmt.int(totalSupply) : "—"}</strong><small>${escapeHtml([
+            row.stock != null ? `на остатке ${fmt.int(row.stock)}` : "",
+            row.stockRepricer != null ? `repricer ${fmt.int(row.stockRepricer)}` : "",
+            row.stockInSupplyRequest != null ? `в заявке ${fmt.int(row.stockInSupplyRequest)}` : "",
+            row.stockInTransit != null ? `в пути ${fmt.int(row.stockInTransit)}` : ""
+          ].filter(Boolean).join(" · ") || "Разбивки по запасам в файле нет.")}</small></div>
+        </div>
+        <div class="price-modal-section">
+          <div class="price-inline-meta">Из этой карточк

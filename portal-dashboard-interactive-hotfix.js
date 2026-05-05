@@ -3273,35 +3273,6 @@
     if (!focusDays.length) {
       focusDays = detailTailRows(turnoverFreshnessSeries(platformKey), 14);
     }
-    const rangeEnd = executive?.range?.effectiveEnd instanceof Date ? cleanDate(executive.range.effectiveEnd) : null;
-    const focusEnd = focusDays.length ? parseDate(focusDays[focusDays.length - 1]?.date) : null;
-    const normalizedFocusEnd = focusEnd instanceof Date && !Number.isNaN(focusEnd.getTime()) ? cleanDate(focusEnd) : null;
-    if (rangeEnd && (!normalizedFocusEnd || normalizedFocusEnd < rangeEnd)) {
-      const liveTurnoverRows = (Array.isArray(stockMetric.rows) ? stockMetric.rows : [])
-        .map((row) => Number(row?.turnoverDays))
-        .filter((value) => Number.isFinite(value));
-      if (liveTurnoverRows.length) {
-        const focusMap = new Map();
-        focusDays.forEach((row) => {
-          const key = iso(parseDate(row?.date));
-          if (key) focusMap.set(key, row);
-        });
-        focusMap.set(iso(rangeEnd), {
-          date: rangeEnd,
-          avgTurnover: avg(liveTurnoverRows),
-          skuCount: liveTurnoverRows.length,
-          fromLiveSnapshot: true
-        });
-        focusDays = detailTailRows(
-          [...focusMap.values()].sort((left, right) => {
-            const leftDate = parseDate(left?.date);
-            const rightDate = parseDate(right?.date);
-            return (leftDate?.getTime() || 0) - (rightDate?.getTime() || 0);
-          }),
-          14
-        );
-      }
-    }
     const publishedStart = focusDays[0]?.date || null;
     const publishedEnd = focusDays[focusDays.length - 1]?.date || null;
     const priceSeriesRange = (stockMetric.turnoverHistoryScope === 'published' || stockMetric.turnoverHistoryScope === 'freshness') && publishedStart && publishedEnd
@@ -4239,39 +4210,7 @@
     const turnoverRows = articleRowsForPlatform(platformKey, executive.range)
       .sort((left, right) => num(right.avgTurnoverDays) - num(left.avgTurnoverDays) || right.stock - left.stock)
       .slice(0, 18);
-    let focusDays = detailTailRows(stockMetric.turnoverPublishedSeries, 14);
-    if (!focusDays.length) {
-      focusDays = detailTailRows(turnoverFreshnessSeries(platformKey), 14);
-    }
-    const rangeEnd = executive?.range?.effectiveEnd instanceof Date ? cleanDate(executive.range.effectiveEnd) : null;
-    const focusEnd = focusDays.length ? parseDate(focusDays[focusDays.length - 1]?.date) : null;
-    const normalizedFocusEnd = focusEnd instanceof Date && !Number.isNaN(focusEnd.getTime()) ? cleanDate(focusEnd) : null;
-    if (rangeEnd && (!normalizedFocusEnd || normalizedFocusEnd < rangeEnd)) {
-      const liveTurnoverRows = (Array.isArray(stockMetric.rows) ? stockMetric.rows : [])
-        .map((row) => Number(row?.turnoverDays))
-        .filter((value) => Number.isFinite(value));
-      if (liveTurnoverRows.length) {
-        const focusMap = new Map();
-        focusDays.forEach((row) => {
-          const key = iso(parseDate(row?.date));
-          if (key) focusMap.set(key, row);
-        });
-        focusMap.set(iso(rangeEnd), {
-          date: rangeEnd,
-          avgTurnover: avg(liveTurnoverRows),
-          skuCount: liveTurnoverRows.length,
-          fromLiveSnapshot: true
-        });
-        focusDays = detailTailRows(
-          [...focusMap.values()].sort((left, right) => {
-            const leftDate = parseDate(left?.date);
-            const rightDate = parseDate(right?.date);
-            return (leftDate?.getTime() || 0) - (rightDate?.getTime() || 0);
-          }),
-          14
-        );
-      }
-    }
+    const focusDays = detailTailRows(stockMetric.turnoverPublishedSeries, 14);
     const publishedStart = focusDays[0]?.date || null;
     const publishedEnd = focusDays[focusDays.length - 1]?.date || null;
     const priceSeriesRange = (stockMetric.turnoverHistoryScope === 'published' || stockMetric.turnoverHistoryScope === 'freshness') && publishedStart && publishedEnd
@@ -4381,7 +4320,7 @@
   }
 
   function dashboardTaskIsActive(task) {
-    return ['new', 'in_progress', 'waiting_team', 'waiting_decision'].includes(String(task?.status || 'new'));
+    return ['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision'].includes(String(task?.status || 'new'));
   }
 
   function dashboardTaskIsOverdue(task) {
@@ -4391,11 +4330,12 @@
   function dashboardTaskTone(task) {
     if (dashboardTaskIsOverdue(task)) return 'danger';
     if (task?.priority === 'critical') return 'danger';
-    if (task?.status === 'waiting_decision' || task?.priority === 'high') return 'warn';
+    if (task?.status === 'waiting_decision' || task?.status === 'waiting_rop' || task?.priority === 'high') return 'warn';
     return 'ok';
   }
 
-  function dashboardTaskStatusChip(task) {
+function dashboardTaskStatusChip(task) {
+  if (task?.status === 'waiting_rop') return badgeHtml('\u041d\u0430 \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u0438\u0438 \u0443 \u0420\u041e\u041f\u0430', 'info');
     if (dashboardTaskIsOverdue(task)) return badgeHtml('Просрочено', 'danger');
     if (task?.status === 'waiting_decision') return badgeHtml('Ждет решения', 'info');
     if (task?.status === 'in_progress') return badgeHtml('В работе', 'warn');
@@ -4424,7 +4364,8 @@
     const priorityRank = { critical: 4, high: 3, medium: 2, low: 1 };
     const priorityDelta = (priorityRank[right?.priority] || 0) - (priorityRank[left?.priority] || 0);
     if (priorityDelta) return priorityDelta;
-    const waitingDelta = Number(right?.status === 'waiting_decision') - Number(left?.status === 'waiting_decision');
+        const waitingStatuses = ['waiting_rop', 'waiting_decision'];
+        const waitingDelta = Number(waitingStatuses.includes(right?.status)) - Number(waitingStatuses.includes(left?.status));
     if (waitingDelta) return waitingDelta;
     const dueDelta = String(left?.due || '9999-12-31').localeCompare(String(right?.due || '9999-12-31'));
     if (dueDelta) return dueDelta;
@@ -6001,35 +5942,6 @@
     let focusDays = detailTailRows(stockMetric.turnoverPublishedSeries, 14);
     if (!focusDays.length) {
       focusDays = detailTailRows(turnoverFreshnessSeries(platformKey), 14);
-    }
-    const rangeEnd = executive?.range?.effectiveEnd instanceof Date ? cleanDate(executive.range.effectiveEnd) : null;
-    const focusEnd = focusDays.length ? parseDate(focusDays[focusDays.length - 1]?.date) : null;
-    const normalizedFocusEnd = focusEnd instanceof Date && !Number.isNaN(focusEnd.getTime()) ? cleanDate(focusEnd) : null;
-    if (rangeEnd && (!normalizedFocusEnd || normalizedFocusEnd < rangeEnd)) {
-      const liveTurnoverRows = (Array.isArray(stockMetric.rows) ? stockMetric.rows : [])
-        .map((row) => Number(row?.turnoverDays))
-        .filter((value) => Number.isFinite(value));
-      if (liveTurnoverRows.length) {
-        const focusMap = new Map();
-        focusDays.forEach((row) => {
-          const key = iso(parseDate(row?.date));
-          if (key) focusMap.set(key, row);
-        });
-        focusMap.set(iso(rangeEnd), {
-          date: rangeEnd,
-          avgTurnover: avg(liveTurnoverRows),
-          skuCount: liveTurnoverRows.length,
-          fromLiveSnapshot: true
-        });
-        focusDays = detailTailRows(
-          [...focusMap.values()].sort((left, right) => {
-            const leftDate = parseDate(left?.date);
-            const rightDate = parseDate(right?.date);
-            return (leftDate?.getTime() || 0) - (rightDate?.getTime() || 0);
-          }),
-          14
-        );
-      }
     }
     const publishedStart = focusDays[0]?.date || null;
     const publishedEnd = focusDays[focusDays.length - 1]?.date || null;

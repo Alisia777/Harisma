@@ -1,4 +1,5 @@
 (function () {
+  if (window.__ALTEA_PRICE_SIMPLE_RUNTIME_MODE__) return;
   if (window.__ALTEA_PRICE_OVERLAY_BRIDGE_20260425E__) return;
   window.__ALTEA_PRICE_OVERLAY_BRIDGE_20260425E__ = true;
 

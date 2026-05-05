@@ -1,6 +1,15 @@
 (function () {
   if (window.__ALTEA_LAUNCH_CONTROL_HOTFIX_20260421E__) return;
   window.__ALTEA_LAUNCH_CONTROL_HOTFIX_20260421E__ = true;
+  if (
+    window.__ALTEA_MODERN_LAUNCH_PORTAL__
+    || (
+      typeof downloadLaunchWorkbookTemplate === 'function'
+      && typeof importLaunchWorkbookFile === 'function'
+      && typeof ensureLaunchEditorModal === 'function'
+      && typeof bindLaunchItemActions === 'function'
+    )
+  ) return;
 
   const STYLE_ID = 'altea-launch-control-hotfix-20260421e';
 
@@ -319,8 +328,6 @@
     injectStyles();
     window.renderLaunches = renderLaunchesHotfix;
     window.renderLaunchControl = renderLaunchControlHotfix;
-    renderLaunchesHotfix();
-    renderLaunchControlHotfix();
   }
 
   function wrapRerender() {
@@ -347,8 +354,13 @@
     }
     wrapRerender();
     applyHotfix();
-    setTimeout(applyHotfix, 600);
-    setTimeout(applyHotfix, 1800);
+    if (state.activeView === 'launches' || state.activeView === 'launch-control') {
+      try {
+        rerenderCurrentView();
+      } catch (error) {
+        console.error('[launch-control-hotfix] boot rerender', error);
+      }
+    }
   }
 
   boot();

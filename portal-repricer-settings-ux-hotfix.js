@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_REPRICER_SETTINGS_UX_HOTFIX_20260429C__) return;
+  if (window.__ALTEA_REPRICER_SETTINGS_UX_HOTFIX_20260502B__) return;
+  window.__ALTEA_REPRICER_SETTINGS_UX_HOTFIX_20260502B__ = true;
   window.__ALTEA_REPRICER_SETTINGS_UX_HOTFIX_20260429C__ = true;
 
   const STORAGE_KEY = 'altea-repricer-ux-state-v1';
@@ -203,6 +204,18 @@
     if (name === 'stretchMultiplier') return 'Stretch';
     if (name === 'elasticityDefault') return 'Elasticity';
     if (name === 'allowVolumePush') return 'Volume push';
+    if (name === 'hardFloor') return 'Жёсткий MIN, ₽';
+    if (name === 'b2bFloor') return 'B2B MIN, ₽';
+    if (name === 'basePrice') return 'База, ₽';
+    if (name === 'stretchCap') return 'MAX, ₽';
+    if (name === 'promoFloor') return 'Promo MIN, ₽';
+    if (name === 'elasticity') return 'Эластичность';
+    if (name === 'floorPrice') return 'Ручной MIN, ₽';
+    if (name === 'capPrice') return 'Ручной MAX, ₽';
+    if (name === 'forcePrice') return 'Фикс-цена, ₽';
+    if (name === 'promoPrice') return 'Акционная цена, ₽';
+    if (name === 'promoFrom') return 'Начало акции';
+    if (name === 'promoTo') return 'Конец акции';
     if (name === 'commissionPct') return 'Комиссия, %';
     if (name === 'logisticsRub') return 'Логистика, ₽';
     if (name === 'storageRub') return 'Хранение, ₽';
@@ -741,6 +754,104 @@
     });
   }
 
+  function normalizeVisibleLabels(root) {
+    const buttonMap = new Map([
+      ['Audit Excel', 'Аудит Excel'],
+      ['WB загрузка', 'WB цены'],
+      ['Ozon загрузка', 'Ozon цены'],
+      ['WB promo загрузка', 'WB акции'],
+      ['Ozon promo загрузка', 'Ozon акции'],
+      ['Сохранить override', 'Сохранить ручное решение'],
+      ['Сбросить override', 'Сбросить ручное решение']
+    ]);
+    root.querySelectorAll('button').forEach((button) => {
+      const current = normalizedText(button.textContent);
+      if (buttonMap.has(current)) button.textContent = buttonMap.get(current);
+    });
+
+    const badgeReplacements = [
+      [/^floor /i, 'min '],
+      [/^econ /i, 'экон '],
+      [/^cap /i, 'max '],
+      [/^pre /i, 'до align '],
+      [/^capped /i, 'после cap '],
+      [/^action /i, 'действие '],
+      [/^reason /i, 'причина '],
+      [/^vs live /i, 'к live '],
+      [/^auto on$/i, 'авто вкл'],
+      [/^auto off$/i, 'авто выкл'],
+      [/^launch on$/i, 'launch вкл'],
+      [/^launch off$/i, 'launch выкл'],
+      [/^volume push$/i, 'объёмный push'],
+      [/^margin guard$/i, 'защита маржи'],
+      [/^align on$/i, 'align вкл'],
+      [/^align off$/i, 'align выкл'],
+      [/^override$/i, 'ручное решение'],
+      [/^corridor$/i, 'коридор'],
+      [/^offer drives price$/i, 'акция ведёт цену']
+    ];
+    root.querySelectorAll('.repricer-side .badge-stack > *').forEach((node) => {
+      const original = normalizedText(node.textContent);
+      if (!original) return;
+      let next = original;
+      badgeReplacements.forEach(([pattern, replacement]) => {
+        if (typeof pattern === 'string') {
+          if (next === pattern) next = replacement;
+          return;
+        }
+        if (pattern.test(next)) next = next.replace(pattern, replacement);
+      });
+      if (next !== original) node.textContent = next;
+    });
+  }
+
+  function ensureCompactWorkflow(root) {
+    if (root.querySelector('[data-repricer-ux-compact-workflow]')) return;
+    const anchor = root.querySelector('.section-title');
+    if (!anchor) return;
+    const note = document.createElement('div');
+    note.className = 'repricer-ux-inline-note';
+    note.dataset.repricerUxCompactWorkflow = 'true';
+    note.innerHTML = '<strong>Как работать с этим экраном</strong><div class=\"muted small\">1. MIN/MAX на вкладке «Цены» задают границы для репрайсера. 2. Фикс-цена и промо в репрайсере ставят точечное ручное решение. 3. Верхний блок нужен только для массовых правил по бренду, статусу и роли.</div>';
+    anchor.insertAdjacentElement('afterend', note);
+  }
+
+  function ensureQuickModeButtons(root) {
+    const filters = root.querySelector('.filters.repricer-filters');
+    if (!filters || root.querySelector('[data-repricer-ux-quick-modes]')) return;
+    const activeMode = window.state?.repricerFilters?.mode || 'changes';
+    const row = document.createElement('div');
+    row.className = 'quick-actions';
+    row.dataset.repricerUxQuickModes = 'true';
+    row.style.marginTop = '10px';
+    [
+      ['changes', 'Требует решения'],
+      ['manual', 'Ручные'],
+      ['below_min', 'Ниже MIN'],
+      ['promo', 'Промо'],
+      ['all', 'Показать всё']
+    ].forEach(([mode, label]) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `quick-chip ${activeMode === mode ? 'active' : ''}`.trim();
+      button.textContent = label;
+      button.addEventListener('click', () => {
+        if (!window.state?.repricerFilters) return;
+        window.state.repricerFilters.mode = mode;
+        if (typeof window.renderRepricer === 'function') window.renderRepricer();
+      });
+      row.appendChild(button);
+    });
+    filters.insertAdjacentElement('afterend', row);
+
+    const counter = document.createElement('div');
+    counter.className = 'muted small';
+    counter.dataset.repricerUxQuickCount = 'true';
+    counter.style.marginTop = '8px';
+    counter.textContent = `Сейчас в списке ${root.querySelectorAll('.repricer-card').length} SKU по выбранным фильтрам.`;
+    row.insertAdjacentElement('afterend', counter);
+  }
+
   let enhanceTimer = null;
   function enhance() {
     window.clearTimeout(enhanceTimer);
@@ -755,6 +866,9 @@
         enhanceTopActionGuide(root);
         enhancePlatformForms(root);
         enhanceActionTitles(root);
+        normalizeVisibleLabels(root);
+        ensureCompactWorkflow(root);
+        ensureQuickModeButtons(root);
         normalizeBrandChips(root);
       } catch (error) {
         console.warn('[repricer-settings-ux] enhance failed', error);

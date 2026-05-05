@@ -1,4 +1,5 @@
 (function () {
+  if (window.__ALTEA_PRICE_SIMPLE_RUNTIME_MODE__) return;
   if (window.__ALTEA_PRICE_WORKBENCH_LIVEFIX_20260420A__) return;
   window.__ALTEA_PRICE_WORKBENCH_LIVEFIX_20260420A__ = true;
 

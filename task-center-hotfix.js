@@ -1,4 +1,5 @@
 (function () {
+  if (window.__ALTEA_CONTROL_CENTER_V2__) return;
   if (window.__ALTEA_TASK_CENTER_HOTFIX_20260417__) return;
   window.__ALTEA_TASK_CENTER_HOTFIX_20260417__ = true;
 
@@ -37,6 +38,15 @@
 
   const WORKSTREAM_ORDER = ['ozon', 'wb', 'retail', 'cross'];
   const FILTER_ORDER = ['all', ...WORKSTREAM_ORDER];
+  const TYPE_FILTER_ORDER = ['all', 'price_margin', 'supply', 'content', 'traffic', 'launch', 'returns', 'assignment', 'general'];
+
+  function taskTypeKind(type) {
+    if (type === 'price_margin') return 'danger';
+    if (type === 'supply' || type === 'assignment') return 'warn';
+    if (type === 'content' || type === 'traffic' || type === 'launch') return 'info';
+    if (type === 'returns') return 'ok';
+    return '';
+  }
 
   function normalizeTaskPlatform(value, contextText) {
     const raw = String(value || '').trim().toLowerCase();
@@ -106,10 +116,11 @@
       if (filters.owner !== 'all' && (task.owner || 'Без owner') !== filters.owner) return false;
       if (filters.status === 'active' && !isTaskActive(task)) return false;
       if (filters.status !== 'active' && filters.status !== 'all' && task.status !== filters.status) return false;
-      if (filters.type !== 'all' && task.type !== filters.type) return false;
+      if (!settings.ignoreType && filters.type !== 'all' && task.type !== filters.type) return false;
       if (!settings.ignorePlatform && selectedWorkstream !== 'all' && workstreamKey(task, sku) !== selectedWorkstream) return false;
       if (filters.source === 'manual' && task.source === 'auto') return false;
       if (filters.source === 'auto' && task.source !== 'auto') return false;
+      if (!settings.ignorePriority && filters.priority === 'critical' && task.priority !== 'critical') return false;
       if (filters.horizon === 'overdue' && !isTaskOverdue(task)) return false;
       if (filters.horizon === 'today' && task.due !== todayIso()) return false;
       if (filters.horizon === 'week' && (!task.due || task.due > plusDays(7))) return false;
@@ -131,10 +142,84 @@
       activeCount: active.length,
       overdueCount: active.filter(isTaskOverdue).length,
       criticalCount: active.filter((task) => task.priority === 'critical').length,
-      waitingCount: active.filter((task) => task.status === 'waiting_decision').length,
+      waitingCount: active.filter((task) => task.status === 'waiting_decision' || task.status === 'waiting_rop').length,
       ownerPreview: owners,
       typeCount: new Set(active.map((task) => task.type)).size
     };
+  }
+
+  function buildTypeSummaries(tasks) {
+    const activeTasks = tasks.filter(isTaskActive);
+    return TYPE_FILTER_ORDER.map((type) => {
+      if (type === 'all') {
+        return {
+          key: 'all',
+          label: 'Все типы',
+          count: activeTasks.length,
+          kind: ''
+        };
+      }
+      return {
+        key: type,
+        label: TASK_TYPE_META[type] || TASK_TYPE_META.general,
+        count: activeTasks.filter((task) => task.type === type).length,
+        kind: taskTypeKind(type)
+      };
+    });
+  }
+
+  function splitWorkstreamQueues(summary) {
+    const activePool = summary.tasks.filter(isTaskActive);
+    const pool = sortTasks(activePool.length ? activePool : summary.tasks);
+    const focus = [];
+    let manual = [];
+    let auto = [];
+    const focusIds = new Set();
+
+    pool.forEach((task) => {
+      const urgent = isTaskOverdue(task)
+        || task.priority === 'critical'
+        || task.status === 'waiting_decision'
+        || task.status === 'waiting_rop'
+        || (task.due && task.due <= plusDays(2));
+      if (urgent && focus.length < 4) {
+        focus.push(task);
+        focusIds.add(task.id);
+      }
+    });
+
+    manual = pool.filter((task) => !focusIds.has(task.id) && task.source !== 'auto');
+    auto = pool.filter((task) => !focusIds.has(task.id) && task.source === 'auto');
+
+    if (!focus.length) {
+      const fallback = [...manual, ...auto].slice(0, 4);
+      fallback.forEach((task) => focusIds.add(task.id));
+      focus.push(...fallback);
+      manual = manual.filter((task) => !focusIds.has(task.id));
+      auto = auto.filter((task) => !focusIds.has(task.id));
+    }
+
+    return { focus, manual, auto };
+  }
+
+  function renderQueuePanel(title, tasks, emptyText, kind) {
+    const visible = tasks.slice(0, 4);
+    const hiddenCount = Math.max(0, tasks.length - visible.length);
+    return `
+      <div class="card" style="background:rgba(255,255,255,0.015);padding:14px">
+        <div class="section-subhead">
+          <div>
+            <h4 style="margin:0">${escapeHtml(title)}</h4>
+            <p class="small muted" style="margin-top:4px">${escapeHtml(emptyText)}</p>
+          </div>
+          ${badge(`${fmt.int(tasks.length)} шт.`, kind)}
+        </div>
+        <div class="stack" style="margin-top:12px">
+          ${visible.length ? visible.map(renderMiniTask).join('') : '<div class="empty">Пусто в этой очереди</div>'}
+        </div>
+        ${hiddenCount ? `<div class="muted small" style="margin-top:10px">Ещё ${fmt.int(hiddenCount)} задач под этот контур и фильтр.</div>` : ''}
+      </div>
+    `;
   }
 
   function renderWorkstreamCard(summary, selectedKey) {
@@ -163,10 +248,12 @@
   }
 
   function renderWorkstreamSection(summary) {
-    const pool = summary.tasks.filter(isTaskActive).length ? summary.tasks.filter(isTaskActive) : summary.tasks;
-    const tasksHtml = pool.length
-      ? pool.slice(0, 10).map(renderTaskCard).join('')
-      : '<div class="empty">Нет задач под текущий срез</div>';
+    const queues = splitWorkstreamQueues(summary);
+    const typeSummary = buildTypeSummaries(summary.tasks)
+      .filter((item) => item.key === 'all' || item.count)
+      .slice(1)
+      .map((item) => badge(`${item.label}: ${fmt.int(item.count)}`, item.kind))
+      .join('');
     const ownerLine = summary.ownerPreview.length
       ? `Ключевые owner: ${summary.ownerPreview.join(' · ')}`
       : 'Owner пока не закреплены или контур заполнен только авто-сигналами.';
@@ -185,7 +272,12 @@
           </div>
         </div>
         <div class="muted small" style="margin-top:6px">${escapeHtml(ownerLine)}</div>
-        <div class="stack" style="margin-top:12px">${tasksHtml}</div>
+        <div class="badge-stack" style="margin-top:10px;flex-wrap:wrap">${typeSummary || badge('Нет активных типов')}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:14px">
+          ${renderQueuePanel('Сегодня в фокусе', queues.focus, 'Просроченное, критичное и то, что нужно дожать сейчас.', 'warn')}
+          ${renderQueuePanel('Ручной контур', queues.manual, 'Ручные задачи и реальные договорённости команды.', 'ok')}
+          ${renderQueuePanel('Авто-сигналы', queues.auto, 'Сигналы портала, которые ещё не переведены в ручную работу.', 'info')}
+        </div>
       </div>
     `;
   }
@@ -305,8 +397,10 @@
   renderControlCenter = function patchedRenderControlCenter() {
     const root = document.getElementById('view-control');
     state.controlFilters.platform = normalizeControlWorkstreamFilter(state.controlFilters.platform);
+    state.controlFilters.priority = state.controlFilters.priority || 'all';
     const tasks = buildFilteredTasks();
     const baseTasks = buildFilteredTasks({ ignorePlatform: true });
+    const typeScopeTasks = buildFilteredTasks({ ignoreType: true, ignorePriority: false });
     const selectedWorkstream = state.controlFilters.platform;
     const owners = [...new Set(getAllTasks().map((task) => task.owner || 'Без owner'))].sort((a, b) => a.localeCompare(b, 'ru'));
     const ownerSuggestions = ownerOptions();
@@ -323,6 +417,28 @@
       ? WORKSTREAM_ORDER.filter((key) => workstreamSummaries.find((item) => item.key === key)?.tasks.length)
       : [selectedWorkstream];
     const workstreamCards = workstreamSummaries.map((summary) => renderWorkstreamCard(summary, selectedWorkstream)).join('');
+    const activePreset = state.controlFilters.priority === 'critical'
+      ? 'critical'
+      : state.controlFilters.horizon === 'overdue'
+        ? 'overdue'
+        : state.controlFilters.horizon === 'no_owner'
+          ? 'no_owner'
+          : 'active';
+    const typeChips = buildTypeSummaries(typeScopeTasks)
+      .filter((item) => item.key === 'all' || item.count || state.controlFilters.type === item.key)
+      .map((item) => {
+        const isSelected = state.controlFilters.type === item.key || (item.key === 'all' && state.controlFilters.type === 'all');
+        return `
+          <button
+            type="button"
+            class="quick-chip"
+            data-control-type="${escapeHtml(item.key)}"
+            style="${isSelected ? 'box-shadow: inset 0 0 0 1px rgba(212, 164, 74, 0.46);border-color: rgba(212, 164, 74, 0.42);' : ''}"
+          >
+            ${escapeHtml(item.label)} · ${fmt.int(item.count)}
+          </button>
+        `;
+      }).join('');
     const board = sectionKeys.length
       ? sectionKeys.map((key) => renderWorkstreamSection(workstreamSummaries.find((item) => item.key === key))).join('')
       : `<div class="card" style="margin-top:14px"><div class="empty">Нет задач под текущий фильтр.</div></div>`;
@@ -331,7 +447,7 @@
       active: tasks.filter(isTaskActive).length,
       overdue: tasks.filter(isTaskOverdue).length,
       noOwner: tasks.filter((task) => isTaskActive(task) && !task.owner).length,
-      waiting: tasks.filter((task) => task.status === 'waiting_decision').length,
+      waiting: tasks.filter((task) => task.status === 'waiting_decision' || task.status === 'waiting_rop').length,
       critical: tasks.filter((task) => isTaskActive(task) && task.priority === 'critical').length,
       auto: tasks.filter((task) => task.source === 'auto' && isTaskActive(task)).length
     };
@@ -376,13 +492,13 @@
       <div class="section-title">
         <div>
           <h2>Контур задач по РОПам</h2>
-          <p>Разбиваем рабочий слой на Ozon, WB, ЯМ / сети и общий межкомандный контур, чтобы weekly был ближе к реальной ответственности.</p>
+          <p>Разбиваем рабочий слой на Ozon, WB, ЯМ / сети и общий межкомандный контур. Внутри каждого РОПа очереди уже разложены на фокус дня, ручную работу и авто-сигналы.</p>
         </div>
         <div class="quick-actions">
-          <button class="quick-chip" data-control-preset="active">Активные</button>
-          <button class="quick-chip" data-control-preset="overdue">Просроченные</button>
-          <button class="quick-chip" data-control-preset="critical">Критичные</button>
-          <button class="quick-chip" data-control-preset="no_owner">Без owner</button>
+          <button class="quick-chip" data-control-preset="active" style="${activePreset === 'active' ? 'box-shadow: inset 0 0 0 1px rgba(212, 164, 74, 0.46);border-color: rgba(212, 164, 74, 0.42);' : ''}">Активные</button>
+          <button class="quick-chip" data-control-preset="overdue" style="${activePreset === 'overdue' ? 'box-shadow: inset 0 0 0 1px rgba(212, 164, 74, 0.46);border-color: rgba(212, 164, 74, 0.42);' : ''}">Просроченные</button>
+          <button class="quick-chip" data-control-preset="critical" style="${activePreset === 'critical' ? 'box-shadow: inset 0 0 0 1px rgba(212, 164, 74, 0.46);border-color: rgba(212, 164, 74, 0.42);' : ''}">Критичные</button>
+          <button class="quick-chip" data-control-preset="no_owner" style="${activePreset === 'no_owner' ? 'box-shadow: inset 0 0 0 1px rgba(212, 164, 74, 0.46);border-color: rgba(212, 164, 74, 0.42);' : ''}">Без owner</button>
         </div>
       </div>
 
@@ -432,6 +548,7 @@
           <option value="auto" ${state.controlFilters.source === 'auto' ? 'selected' : ''}>Только авто-сигналы</option>
         </select>
       </div>
+      <div class="badge-stack" style="margin-top:12px;flex-wrap:wrap">${typeChips}</div>
 
       ${renderTaskComposer()}
       ${board}
@@ -481,16 +598,30 @@
     `;
 
     bindTaskComposer(root);
+    root.querySelectorAll('[data-control-preset]').forEach((button) => button.addEventListener('click', () => {
+      const preset = button.dataset.controlPreset || 'active';
+      state.controlFilters.status = 'active';
+      state.controlFilters.priority = 'all';
+      state.controlFilters.horizon = 'all';
+      if (preset === 'overdue') state.controlFilters.horizon = 'overdue';
+      if (preset === 'critical') state.controlFilters.priority = 'critical';
+      if (preset === 'no_owner') state.controlFilters.horizon = 'no_owner';
+      renderControlCenter();
+    }));
     root.querySelectorAll('[data-control-workstream]').forEach((button) => button.addEventListener('click', () => {
       state.controlFilters.platform = button.dataset.controlWorkstream;
+      renderControlCenter();
+    }));
+    root.querySelectorAll('[data-control-type]').forEach((button) => button.addEventListener('click', () => {
+      state.controlFilters.type = button.dataset.controlType || 'all';
       renderControlCenter();
     }));
     document.getElementById('controlSearchInput').addEventListener('input', (event) => { state.controlFilters.search = event.target.value; renderControlCenter(); });
     document.getElementById('controlPlatformFilter').addEventListener('change', (event) => { state.controlFilters.platform = event.target.value; renderControlCenter(); });
     document.getElementById('controlOwnerFilter').addEventListener('change', (event) => { state.controlFilters.owner = event.target.value; renderControlCenter(); });
-    document.getElementById('controlStatusFilter').addEventListener('change', (event) => { state.controlFilters.status = event.target.value; renderControlCenter(); });
+    document.getElementById('controlStatusFilter').addEventListener('change', (event) => { state.controlFilters.status = event.target.value; if (event.target.value !== 'active') state.controlFilters.priority = 'all'; renderControlCenter(); });
     document.getElementById('controlTypeFilter').addEventListener('change', (event) => { state.controlFilters.type = event.target.value; renderControlCenter(); });
-    document.getElementById('controlHorizonFilter').addEventListener('change', (event) => { state.controlFilters.horizon = event.target.value; renderControlCenter(); });
+    document.getElementById('controlHorizonFilter').addEventListener('change', (event) => { state.controlFilters.horizon = event.target.value; if (event.target.value !== 'overdue' && event.target.value !== 'no_owner') state.controlFilters.priority = state.controlFilters.priority === 'critical' ? 'critical' : 'all'; renderControlCenter(); });
     document.getElementById('controlSourceFilter').addEventListener('change', (event) => { state.controlFilters.source = event.target.value; renderControlCenter(); });
 
     root.querySelectorAll('[data-save-owner]').forEach((button) => button.addEventListener('click', async () => {

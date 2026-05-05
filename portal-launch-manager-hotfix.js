@@ -1,6 +1,15 @@
 (function () {
   if (window.__ALTEA_LAUNCH_MANAGER_HOTFIX_20260422C__) return;
   window.__ALTEA_LAUNCH_MANAGER_HOTFIX_20260422C__ = true;
+  if (
+    window.__ALTEA_MODERN_LAUNCH_PORTAL__
+    || (
+      typeof downloadLaunchWorkbookTemplate === 'function'
+      && typeof importLaunchWorkbookFile === 'function'
+      && typeof ensureLaunchEditorModal === 'function'
+      && typeof bindLaunchItemActions === 'function'
+    )
+  ) return;
 
   if (window.__ALTEA_LAUNCH_MONTH_FILTER_HOTFIX_20260422C__) return;
 

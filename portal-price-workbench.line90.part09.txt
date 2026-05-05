@@ -1,3 +1,59 @@
+Workbench.filters.dateTo = range.dateTo;
+      renderPriceWorkbench();
+    }));
+    root.querySelectorAll("[data-price-open]").forEach((rowNode) => rowNode.addEventListener("click", () => {
+      state.priceWorkbench.selectedKey = rowNode.dataset.priceOpen;
+      const row = getCurrentRowByKey(rowNode.dataset.priceOpen);
+      renderPriceWorkbench();
+      if (row) renderPriceModal(row);
+    }));
+  }
+
+  function renderTaskSummary(tasks) {
+    if (!tasks.length) return "";
+    const counters = tasks.reduce((acc, task) => {
+      const status = String(task.status || "new");
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
+    const chips = Object.entries(counters)
+      .sort((left, right) => right[1] - left[1])
+      .map(([status, count]) => {
+        const meta = TASK_STATUS_META[status] || { label: status, kind: "" };
+        return badge(`${meta.label}: ${fmt.int(count)}`, meta.kind || "");
+      })
+      .join("");
+    return chips ? `<div class="price-data-note">${chips}</div>` : "";
+  }
+
+  function renderSummary(rows) {
+    const totals = aggregateMetrics(rows);
+    const belowMargin = rows.filter((row) => row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && row.marginTotalPct < row.effectiveAllowedMarginPct).length;
+    const underPlan = rows.filter((row) => row.completionPctSelected != null && row.completionPctSelected < 0.8).length;
+    const tasks = rows.filter((row) => row.needsTask).length;
+    const avgPrice = meanOrNull(rows.map((row) => row.currentFillPriceDisplay));
+    const dailyReady = rows.filter((row) => row.historyHasDailyFact).length;
+    const priceOnly = rows.filter((row) => row.historyMode === "price_only").length;
+    return `
+      <div class="price-summary-grid">
+        <div class="price-summary-card"><span class="label">В работе</span><strong>${fmt.int(rows.length)}</strong><small>SKU в текущем срезе по выбранной площадке.</small></div>
+        <div class="price-summary-card"><span class="label">Продажи за период</span><strong>${totals.actualUnits == null ? "—" : fmt.int(totals.actualUnits)}</strong><small>${totals.periodOrders == null ? `Daily-факт есть для ${fmt.int(dailyReady)} из ${fmt.int(rows.length)} SKU.` : `Заказы ${fmt.int(totals.periodOrders)} шт. · daily-факт по ${fmt.int(dailyReady)} SKU.`}</small></div>
+        <div class="price-summary-card"><span class="label">Выручка за период</span><strong>${moneyShort(totals.periodRevenue)}</strong><small>${totals.avgCheck == null ? "Средний чек посчитается, когда есть daily-факт." : `Средний чек ${moneyShort(totals.avgCheck)}.`}</small></div>
+        <div class="price-summary-card"><span class="label">Ниже допустимой маржи</span><strong>${fmt.int(belowMargin)}</strong><small>Допустимая маржа считается как средняя за 3 месяца, ручная правка перекрывает источник.</small></div>
+        <div class="price-summary-card"><span class="label">Под риском по плану</span><strong>${fmt.int(underPlan)}</strong><small>${totals.planUnits == null ? "План по артикулу ещё не приехал." : `План в диапазоне ${fmt.int(totals.planUnits)} шт.`}</small></div>
+        <div class="price-summary-card"><span class="label">Средняя цена MP</span><strong>${moneyShort(avgPrice)}</strong><small>${priceOnly ? `У ${fmt.int(priceOnly)} SKU история только по цене и оборачиваемости.` : "Пересчитывается от площадки и диапазона дат."}</small></div>
+        <div class="price-summary-card"><span class="label">Остатки в срезе</span><strong>${totals.stock == null ? "—" : fmt.int(totals.stock)}</strong><small>Сумма текущих остатков по выбранной площадке.</small></div>
+        <div class="price-summary-card"><span class="label">Нужны действия</span><strong>${fmt.int(tasks)}</strong><small>Артикулы, где уже зафиксировано решение или нужна задача.</small></div>
+      </div>
+    `;
+  }
+
+  function renderTable(rows) {
+    if (!rows.length) return `<div class="price-empty">По текущим фильтрам ничего не найдено.</div>`;
+    return `
+      <div class="card price-table-card">
+        <div class="price-table-wrap">
+          <table class="price-table">
             <thead>
               <tr>
                 <th>SKU</th>
@@ -19,24 +75,26 @@
               ${rows.map((row) => {
                 const key = workbenchKey(row.marketplace, row.articleKey);
                 const selected = key === state.priceWorkbench.selectedKey;
-                const periodRevenue = (row.monthlyFiltered || [])
-                  .map((item) => parseNum(item.revenue))
-                  .filter((value) => value != null)
-                  .reduce((sum, value) => sum + value, 0);
+                const periodRevenue = parseNum(row.periodRevenueSelected);
+                const smartTarget = row.seedTargetFillPrice ?? row.targetFillPrice;
+                const decisionTarget = row.targetFillPrice ?? smartTarget;
+                const smartVsDecisionChanged = smartTarget != null
+                  && decisionTarget != null
+                  && Math.abs(Number(decisionTarget) - Number(smartTarget)) > 0.009;
                 return `
                   <tr data-price-open="${escapeHtml(key)}" class="${selected ? "is-selected" : ""} ${riskScore(row) >= 3 ? "is-risk" : ""}">
-                    <td><div class="price-sku-title">${escapeHtml(row.articleKey)}</div><div class="price-sku-note">${escapeHtml((row.name || "").slice(0, 120))}</div></td>
+                    <td><div class="price-sku-title">${escapeHtml(row.articleKey)}</div><div class="price-sku-note">${escapeHtml((row.name || "").slice(0, 120))}</div>${compactHistoryNote(row) ? `<div class="price-inline-meta">${escapeHtml(compactHistoryNote(row))}</div>` : ""}</td>
                     <td>${escapeHtml(row.owner || "—")}</td>
                     <td class="${row.marginTotalPct != null && row.effectiveAllowedMarginPct != null && row.marginTotalPct < row.effectiveAllowedMarginPct ? "price-danger-text" : ""}">${pctShort(row.marginTotalPct)}</td>
-                    <td>${pctShort(row.effectiveAllowedMarginPct)}</td>
+                    <td>${pctShort(row.effectiveAllowedMarginPct)}<div class="price-inline-meta">${escapeHtml(allowedMarginSourceCopy(row))}</div></td>
                     <td>${row.turnoverDisplay == null ? "—" : `${fmt.num(row.turnoverDisplay, 1)} дн.`}</td>
-                    <td>${row.actualUnitsSelected == null ? "—" : fmt.int(row.actualUnitsSelected)}</td>
-                    <td>${periodRevenue > 0 ? moneyShort(periodRevenue) : "—"}</td>
-                    <td>${row.completionPctSelected == null ? "—" : pctShort(row.completionPctSelected)}</td>
-                    <td>${moneyShort(row.currentFillPriceDisplay)}</td>
-                    <td>${moneyShort(row.currentClientPriceDisplay)}</td>
+                    <td>${row.actualUnitsSelected == null ? "—" : fmt.int(row.actualUnitsSelected)}<div class="price-inline-meta">${escapeHtml(row.actualSource === "daily" ? "daily-факт" : row.actualSource === "monthly" ? "помесячный факт" : "факт не опубликован")} · ${escapeHtml(historySourceCopy(row))}</div></td>
+                    <td>${periodRevenue != null && periodRevenue > 0 ? moneyShort(periodRevenue) : "—"}</td>
+                    <td class="${row.completionPctSelected != null && row.completionPctSelected < 0.8 ? "price-danger-text" : ""}">${row.completionPctSelected == null ? "—" : pctShort(row.completionPctSelected)}<div class="price-inline-meta">${row.planUnitsSelected == null ? "без плана" : `план ${fmt.int(row.planUnitsSelected)} шт.`}</div></td>
+                    <td>${moneyShort(row.currentFillPriceDisplay)}<div class="price-inline-meta">${row.periodPriceDeltaPct == null ? `ср. ${moneyShort(row.periodAvgFillPriceDisplay)}` : `Δ ${pctShort(row.periodPriceDeltaPct)}`}${row.valueDate ? ` · ${escapeHtml(row.valueDate)}` : ""}</div></td>
+                    <td>${moneyShort(row.currentClientPriceDisplay)}<div class="price-inline-meta">${row.periodClientDeltaPct == null ? `ср. ${moneyShort(row.periodAvgClientPriceDisplay)}` : `Δ ${pctShort(row.periodClientDeltaPct)}`}${row.clientDiscountPct != null ? ` · скидка ${pctShort(row.clientDiscountPct)}` : ""}</div></td>
                     <td>${pctShort(row.currentSppDisplay)}</td>
-                    <td>${moneyShort(row.targetFillPrice)}</td>
+                    <td>${moneyShort(smartTarget)}<div class="price-inline-meta">${smartVsDecisionChanged ? `решение ${moneyShort(decisionTarget)}` : "из smart"}</div></td>
                     <td>${decisionBadge(row)}</td>
                   </tr>
                 `;
@@ -48,43 +106,35 @@
     `;
   }
 
-  function relatedTasks(row) {
-    return (state.storage.tasks || []).filter((task) => task.articleKey === row.articleKey && (task.type === "price_margin" || String(task.autoCode || "").startsWith("price|")));
-  }
-
-  function renderTaskList(tasks) {
-    if (!tasks.length) return `<div class="price-empty">По этому артикулу задач по цене пока нет.</div>`;
-    if (typeof renderTaskCard === "function") {
-      return `<div class="price-task-list">${tasks.map(renderTaskCard).join("")}</div>`;
-    }
-    return `<div class="price-task-list">${tasks.map((task) => `<div class="price-task-item"><strong>${escapeHtml(task.title || "Задача")}</strong><div class="price-inline-meta">${escapeHtml(task.nextAction || "—")}</div><div class="price-inline-meta">${escapeHtml(task.owner || "Без owner")} · ${escapeHtml(task.due || "без срока")}</div></div>`).join("")}</div>`;
-  }
-
-  function filteredDecisionHistory(row) {
-    const all = [...(state.priceWorkbench.remoteHistory || []), ...(state.priceWorkbench.localHistory || [])]
-      .filter((item) => item.articleKey === row.articleKey && item.marketplace === row.marketplace)
-      .sort((a, b) => String(b.changedAt).localeCompare(String(a.changedAt)));
-    const seen = new Set();
-    return all.filter((item) => {
-      const key = `${item.id}|${item.changedAt}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return withinRange(item.changedAt);
-    });
-  }
-
   function renderDecisionHistory(row) {
     const items = filteredDecisionHistory(row);
     if (!items.length) return `<div class="price-empty">История решений по выбранному диапазону пока пуста.</div>`;
     return `
       <div class="price-history-wrap">
         <table class="price-history-table">
-          <thead><tr><th>Дата</th><th>Кто</th><th>Допустимая маржа</th><th>Цена MP</th><th>Цена клиента</th><th>Статус</th></tr></thead>
-          <tbody>${items.map((item) => `<tr><td>${escapeHtml(String(item.changedAt).slice(0, 10))}</td><td>${escapeHtml(item.changedBy || "—")}</td><td>${pctShort(item.newAllowedMarginPct)}</td><td>${moneyShort(item.newTargetFillPrice)}</td><td>${moneyShort(item.newTargetClientPrice)}</td><td>${escapeHtml((DECISION_STATUS_META[item.newDecisionStatus] || DECISION_STATUS_META.draft).label)}</td></tr>`).join("")}</tbody>
+          <thead><tr><th>Дата</th><th>Кто</th><th>Допустимая маржа</th><th>Цена MP</th><th>Цена клиента</th><th>Статус</th><th>Логика / коммент.</th></tr></thead>
+          <tbody>${items.map((item) => `<tr><td>${escapeHtml(String(item.changedAt).slice(0, 10))}</td><td>${escapeHtml(item.changedBy || "—")}</td><td>${pctShort(item.newAllowedMarginPct)}</td><td>${moneyShort(item.newTargetFillPrice)}</td><td>${moneyShort(item.newTargetClientPrice)}</td><td>${escapeHtml((DECISION_STATUS_META[item.newDecisionStatus] || DECISION_STATUS_META.draft).label)}</td><td>${escapeHtml(item.reason || item.comment || "—")}</td></tr>`).join("")}</tbody>
         </table>
       </div>
     `;
   }
 
   function renderPeriodHistory(row) {
-    const dailyPlan = row.planMonthUnits && row.planMonthDays ? row.planMonthUnits / row.planMonthDays : null;
+    const dailyPlan = row.planUnitsSelected && row.selectedDays ? row.planUnitsSelected / row.selectedDays : (row.planMonthUnits && row.planMonthDays ? row.planMonthUnits / row.planMonthDays : null);
+    if (!(row.monthlyFiltered || []).length) return `<div class="price-empty">За выбранный период нет истории.</div>`;
+    return `
+      <div class="price-history-wrap">
+        <table class="price-history-table">
+          <thead><tr><th>Дата</th><th>Заказы</th><th>Доставлено</th><th>Обор.</th><th>Цена MP</th><th>Δ MP</th><th>Цена клиента</th><th>Δ клиент</th><th>СПП</th><th>Выручка</th><th>% плана / день</th><th>Источник</th></tr></thead>
+          <tbody>${row.monthlyFiltered.map((item, index, items) => {
+            const actual = parseNum(item.ordersUnits) ?? parseNum(item.deliveredUnits);
+            const dayCompletion = actual != null && dailyPlan ? actual / dailyPlan : null;
+            const prev = index > 0 ? items[index - 1] : null;
+            const prevPrice = parseNum(prev?.price);
+            const prevClient = parseNum(prev?.clientPrice);
+            const price = parseNum(item.price);
+            const clientPrice = parseNum(item.clientPrice);
+            const priceDelta = prevPrice != null && price != null && prevPrice > 0 ? (price - prevPrice) / prevPrice : null;
+            const clientDelta = prevClient != null && clientPrice != null && prevClient > 0 ? (clientPrice - prevClient) / prevClient : null;
+            const historySource = actual != null || parseNum(item.revenue) != null ? "daily-факт" : "цена / оборач.";
+            return `<tr><td>${escapeHtml(String(item.date).slice(0, 10))}</td><

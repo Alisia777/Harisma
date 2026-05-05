@@ -1,3 +1,180 @@
+и можно зафиксировать решение по цене, назначить owner и срок, а затем сразу создать или обновить задачу по выбранному артикулу.</div>
+          <form class="price-modal-form" data-price-form="${escapeHtml(workbenchKey(row.marketplace, row.articleKey))}">
+            <div class="price-modal-form-grid">
+              <label><span>Статус</span><select name="decisionStatus">${Object.entries(DECISION_STATUS_META).map(([key, meta]) => `<option value="${key}" ${row.decisionStatus === key ? "selected" : ""}>${escapeHtml(meta.label)}</option>`).join("")}</select></label>
+              <label><span>Owner</span><input name="owner" value="${escapeHtml(row.owner || "")}" list="priceWorkbenchOwners"></label>
+              <label><span>Срок</span><input type="date" name="dueDate" value="${escapeHtml(row.dueDate || "")}"></label>
+              <label><span>Эскалация</span><select name="escalation">${Object.entries(ESCALATION_META).map(([key, meta]) => `<option value="${key}" ${row.escalation === key ? "selected" : ""}>${escapeHtml(meta.label)}</option>`).join("")}</select></label>
+              <label><span>Новая цена MP</span><input type="number" step="0.01" name="targetFillPrice" value="${row.targetFillPrice ?? ""}"></label>
+              <label><span>Новая цена клиента</span><input type="number" step="0.01" name="targetClientPrice" value="${row.targetClientPrice ?? ""}"></label>
+              <label><span>Допустимая маржа, %</span><input type="number" step="0.1" name="allowedMarginManualPct" value="${row.allowedMarginManualPct != null ? (row.allowedMarginManualPct * 100).toFixed(1) : ""}" placeholder="Например 18.0"></label>
+              <label class="price-toggle" style="align-self:end;"><input type="checkbox" name="needsTask" ${row.needsTask ? "checked" : ""}> Нужна задача</label>
+              <label class="wide"><span>Логика решения</span><textarea name="reason" rows="3">${escapeHtml(row.reason || "")}</textarea></label>
+              <label class="wide"><span>Комментарий</span><textarea name="comment" rows="3">${escapeHtml(row.comment || "")}</textarea></label>
+            </div>
+            <div class="price-modal-actions">
+              <button type="submit" class="btn">Сохранить решение</button>
+              <button type="button" class="btn ghost" data-price-task="${escapeHtml(workbenchKey(row.marketplace, row.articleKey))}">Создать / обновить задачу</button>
+            </div>
+          </form>
+          <datalist id="priceWorkbenchOwners">${ownerOptions().map((name) => `<option value="${escapeHtml(name)}"></option>`).join("")}</datalist>
+        </div>
+        <div class="price-modal-section">
+          <h3 class="price-section-title">История периода</h3>
+          <div class="price-section-subtitle">Здесь по дням видны цена MP, цена клиента, СПП, оборачиваемость, выручка, процент к плану и дневное изменение цены по выбранному диапазону.</div>
+          ${renderPeriodHistory(row)}
+        </div>
+        <div class="price-modal-section">
+          <h3 class="price-section-title">История решений и допустимой маржи</h3>
+          <div class="price-section-subtitle">Видно, кто и когда менял допустимую маржу, целевую цену, статус и логику решения по артикулу.</div>
+          ${renderDecisionHistory(row)}
+        </div>
+        <div class="price-modal-section">
+          <h3 class="price-section-title">Задачи по артикулу</h3>
+          <div class="price-section-subtitle">Внизу оставляем текущие задачи, их статусы и следующий шаг по выбранной позиции.</div>
+          ${renderTaskSummary(tasks)}
+          ${renderTaskList(tasks)}
+        </div>
+      </div>
+    `;
+    modal.classList.add("open");
+    const closeModal = (event) => {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      modal.classList.remove("open");
+    };
+    body.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", closeModal));
+    if (modal.__priceWorkbenchCloseHandler) modal.removeEventListener("click", modal.__priceWorkbenchCloseHandler);
+    modal.__priceWorkbenchCloseHandler = (event) => {
+      if (event.target === modal) closeModal(event);
+    };
+    modal.addEventListener("click", modal.__priceWorkbenchCloseHandler);
+    const form = body.querySelector("[data-price-form]");
+    if (form) form.addEventListener("submit", handleSubmit);
+    body.querySelectorAll("[data-price-task]").forEach((button) => button.addEventListener("click", handleCreateTask));
+  }
+
+  function renderPriceWorkbench() {
+    const root = document.getElementById("view-prices");
+    if (!root) return;
+    ensureStyles();
+    ensurePriceManagementStyles();
+    ensureBranding();
+    if (state.priceWorkbench.loading && !state.priceWorkbench.seed) {
+      root.innerHTML = `<div class="card"><div class="price-empty">Загружаю контур цен…</div></div>`;
+      return;
+    }
+    if (state.priceWorkbench.issue && !state.priceWorkbench.seed) {
+      root.innerHTML = `<div class="card"><div class="price-empty">Не удалось загрузить блок цен: ${escapeHtml(state.priceWorkbench.issue)}</div></div>`;
+      return;
+    }
+    if (!state.priceWorkbench.seed) {
+      root.innerHTML = `<div class="card"><div class="price-empty">Ценовой контур еще не загружен.</div></div>`;
+      return;
+    }
+    ensureDateRange();
+    const rows = filteredRows();
+    selectedRow(rows);
+    root.innerHTML = `
+      <div class="price-workbench-shell">
+        ${renderToolbar()}
+        ${renderSummary(rows)}
+        ${renderPriorityQueue(rows)}
+        <div class="price-note">Площадка и календарь влияют на рабочий список, план-факт, историю по дням и карточку артикула. Daily-факт приходит через bridge из Google Sheets, который обновляется около 09:00 МСК. По Ozon дневной факт в текущем пакете до 16 апреля 2026, по WB после 31 марта 2026 часть SKU пока идет без daily-продаж, поэтому это отдельно подсвечено в таблице и карточке.</div>
+        ${renderTable(rows)}
+      </div>
+    `;
+    const bind = (selector, eventName, handler) => {
+      const node = root.querySelector(selector);
+      if (node) node.addEventListener(eventName, handler);
+    };
+    bind("#priceSearch", "input", (event) => { state.priceWorkbench.filters.search = event.target.value; renderPriceWorkbench(); });
+    bind("#priceOwnerFilter", "change", (event) => { state.priceWorkbench.filters.owner = event.target.value; renderPriceWorkbench(); });
+    bind("#priceStatusFilter", "change", (event) => { state.priceWorkbench.filters.status = event.target.value; renderPriceWorkbench(); });
+    bind("#priceSortMode", "change", (event) => { state.priceWorkbench.filters.sort = event.target.value; renderPriceWorkbench(); });
+    bind("#priceRiskOnly", "change", (event) => { state.priceWorkbench.filters.riskOnly = event.target.checked; renderPriceWorkbench(); });
+    bind("#priceDateFrom", "change", (event) => { state.priceWorkbench.filters.dateFrom = event.target.value; state.priceWorkbench.filters.preset = "custom"; renderPriceWorkbench(); });
+    bind("#priceDateTo", "change", (event) => { state.priceWorkbench.filters.dateTo = event.target.value; state.priceWorkbench.filters.preset = "custom"; renderPriceWorkbench(); });
+    root.querySelectorAll("[data-price-preset]").forEach((button) => button.addEventListener("click", () => applyPreset(button.dataset.pricePreset)));
+    root.querySelectorAll("[data-price-market]").forEach((button) => button.addEventListener("click", () => {
+      state.priceWorkbench.filters.market = button.dataset.priceMarket;
+      state.priceWorkbench.selectedKey = "";
+      const range = presetRange(state.priceWorkbench.filters.preset || "month", state.priceWorkbench.filters.market);
+      state.priceWorkbench.filters.dateFrom = range.dateFrom;
+      state.priceWorkbench.filters.dateTo = range.dateTo;
+      renderPriceWorkbench();
+    }));
+    root.querySelectorAll("[data-price-open]").forEach((rowNode) => rowNode.addEventListener("click", () => {
+      state.priceWorkbench.selectedKey = rowNode.dataset.priceOpen;
+      const row = getCurrentRowByKey(rowNode.dataset.priceOpen);
+      renderPriceWorkbench();
+      if (row) renderPriceModal(row);
+    }));
+  }
+
+  async function openPriceWorkbenchArticle(options) {
+    const articleKey = String(options?.articleKey || "").trim();
+    if (!articleKey) return;
+    const market = normalizeWorkbenchMarket(options?.marketplace || state.priceWorkbench.filters.market || "wb");
+    await ensureSeedLoaded();
+    state.priceWorkbench.filters.market = market;
+    if (options?.dateFrom) state.priceWorkbench.filters.dateFrom = isoDate(options.dateFrom);
+    if (options?.dateTo) state.priceWorkbench.filters.dateTo = isoDate(options.dateTo);
+    if (options?.dateFrom || options?.dateTo) state.priceWorkbench.filters.preset = "custom";
+    state.priceWorkbench.selectedKey = workbenchKey(market, articleKey);
+    if (typeof setView === "function") setView("prices");
+    else renderPriceWorkbench();
+    const row = getCurrentRowByKey(state.priceWorkbench.selectedKey);
+    if (row) renderPriceModal(row);
+  }
+
+  window.renderPriceWorkbench = renderPriceWorkbench;
+  window.ensurePriceWorkbenchSeedLoaded = ensureSeedLoaded;
+  window.openPriceWorkbenchArticle = openPriceWorkbenchArticle;
+
+  const prevPullRemoteState = pullRemoteState;
+  pullRemoteState = async function (rerender = true) {
+    await prevPullRemoteState(false);
+    state.priceWorkbench.remoteReady = false;
+    state.priceWorkbench.remoteDisabled = false;
+    await ensureRemoteLoaded();
+    if (rerender) rerenderCurrentView();
+  };
+
+  const prevPushStateToRemote = pushStateToRemote;
+  pushStateToRemote = async function () {
+    await prevPushStateToRemote();
+    if (state.team.client && !state.priceWorkbench.remoteDisabled && state.priceWorkbench.localEntries?.length) {
+      try {
+        await upsertRemoteEntries(state.priceWorkbench.localEntries);
+        const unsynced = (state.priceWorkbench.localHistory || []).filter((item) => !item.synced);
+        if (unsynced.length) {
+          try {
+            await insertRemoteHistory(unsynced);
+            unsynced.forEach((item) => { item.synced = true; });
+            saveLocalState();
+          } catch (historyError) {
+            console.error(historyError);
+          }
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    rerenderCurrentView();
+  };
+
+  const prevRerenderCurrentView = rerenderCurrentView;
+  rerenderCurrentView = function () {
+    prevRerenderCurrentView();
+    ensureBranding();
+    if ((state.activeView || "dashboard") === "prices") {
+      renderPriceWorkbench();
+      ensureSeedLoaded();
+      ensureRemoteLoaded();
+    }
   };
 
   loadLocalState();

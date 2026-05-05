@@ -1,10 +1,10 @@
-const state = {
+﻿const state = {
   dashboard: { cards: [], generatedAt: '' },
   skus: [],
   launches: [],
   meetings: [],
   documents: { groups: [] },
-  repricer: { items: [] },
+  repricer: { generatedAt: '', summary: {}, rows: [] },
   storage: { comments: [], tasks: [], decisions: [], ownerOverrides: [] },
   filters: {
     search: '',
@@ -45,11 +45,25 @@ const state = {
     packSize: '1',
     moq: '0'
   },
+  orderProcurement: {
+    platform: 'wb',
+    days: 30
+  },
   activeView: 'dashboard',
   activeSku: null,
+  activeTaskId: null,
 
   boot: {
-    dataReady: false
+    dataReady: false,
+    listenersAttached: false,
+    dataWarnings: [],
+    lazyReady: {
+      launches: false,
+      meetings: false,
+      documents: false,
+      repricer: false
+    },
+    lazyLoads: {}
   },
   team: {
     mode: 'local',
@@ -58,17 +72,43 @@ const state = {
     note: 'Подключаем командную базу…',
     member: { name: '', role: 'Команда' },
     lastSyncAt: '',
-    userId: ''
+    userId: '',
+    accessToken: ''
   }
 };
 
+window.__ALTEA_CONTROL_CENTER_V2__ = true;
+window.__ALTEA_ORDER_PROCUREMENT_ENABLED__ = true;
+window.__ALTEA_OPTIMIZED_RENDER__ = true;
+
 const STORAGE_KEY = 'brand-portal-local-v1';
-const ACTIVE_TASK_STATUSES = new Set(['new', 'in_progress', 'waiting_team', 'waiting_decision']);
+const ACTIVE_TASK_STATUSES = new Set(['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision']);
+const VIEW_TITLES = {
+  dashboard: 'Дашборд',
+  documents: 'Документы',
+  repricer: 'Репрайсер',
+  prices: 'Цены',
+  order: 'Логистика и заказ',
+  control: 'Задачи',
+  skus: 'Реестр SKU',
+  launches: 'Продукт / Ксения',
+  'launch-control': 'Запуск новинок',
+  meetings: 'Ритм работы',
+  executive: 'Руководителю'
+};
+const VIEW_DATA_REQUIREMENTS = {
+  launches: 'launches',
+  'launch-control': 'launches',
+  meetings: 'meetings',
+  documents: 'documents',
+  repricer: 'repricer'
+};
 
 const TASK_STATUS_META = {
   new: { label: 'Новая', kind: 'warn' },
   in_progress: { label: 'В работе', kind: 'info' },
   waiting_team: { label: 'Ждёт другого отдела', kind: 'warn' },
+  waiting_rop: { label: 'На согласовании у РОПа', kind: 'warn' },
   waiting_decision: { label: 'Ждёт решения', kind: 'danger' },
   done: { label: 'Сделано', kind: 'ok' },
   cancelled: { label: 'Отменено', kind: '' }
@@ -91,6 +131,50 @@ const PRIORITY_META = {
   medium: { label: 'Средний', kind: 'info', rank: 2 },
   low: { label: 'Низкий', kind: '', rank: 1 }
 };
+
+const TASK_LOG_META = {
+  created: { label: 'Создана', tone: 'info' },
+  updated: { label: 'Изменена', tone: 'warn' },
+  comment: { label: 'Комментарий', tone: 'ok' },
+  status: { label: 'Статус', tone: 'info' },
+  report: { label: 'Отчёт', tone: 'ok' }
+};
+
+const CONTROL_WORKSTREAM_META = {
+  all: {
+    label: 'Все задачи',
+    chip: 'Все контуры',
+    description: 'Полный срез задачника без разбиения по командам.',
+    kind: ''
+  },
+  ozon: {
+    label: 'РОП Ozon',
+    chip: 'Ozon РОП',
+    description: 'Отдельный операционный контур по Ozon.',
+    kind: 'info'
+  },
+  wb: {
+    label: 'РОП WB',
+    chip: 'WB РОП',
+    description: 'Отдельный контур по Wildberries.',
+    kind: 'warn'
+  },
+  retail: {
+    label: 'ЯМ / Летуаль / Магнит / ЗЯ',
+    chip: 'ЯМ / сети',
+    description: 'Яндекс Маркет, Летуаль, Магнит и Золотое Яблоко одним РОПом.',
+    kind: 'ok'
+  },
+  cross: {
+    label: 'Общий контур',
+    chip: 'Общий контур',
+    description: 'Сквозные вопросы по owner, решениям и межплощадочным задачам.',
+    kind: ''
+  }
+};
+
+const CONTROL_WORKSTREAM_ORDER = ['ozon', 'wb', 'retail', 'cross'];
+const CONTROL_WORKSTREAM_FILTER_ORDER = ['all', ...CONTROL_WORKSTREAM_ORDER];
 
 const DEFAULT_APP_CONFIG = {
   brand: 'Алтея',
@@ -120,6 +204,24 @@ const TEAM_TABLES = {
   comments: 'portal_comments',
   decisions: 'portal_decisions',
   owners: 'portal_owner_assignments'
+};
+
+const PORTAL_SNAPSHOT_TABLE = 'portal_data_snapshots';
+const PORTAL_SNAPSHOT_PATH_MAP = {
+  'data/dashboard.json': 'dashboard',
+  'data/skus.json': 'skus',
+  'data/platform_trends.json': 'platform_trends',
+  'data/logistics.json': 'logistics',
+  'data/ads_summary.json': 'ads_summary',
+  'data/platform_plan.json': 'platform_plan',
+  'data/prices.json': 'prices',
+  'data/smart_price_workbench.json': 'smart_price_workbench'
+};
+const portalSnapshotState = {
+  client: null,
+  promise: null,
+  rows: {},
+  brand: ''
 };
 
 const fmt = {
@@ -173,6 +275,269 @@ function currentConfig() {
 function currentBrand() {
   return currentConfig().brand || 'Алтея';
 }
+
+function normalizeSnapshotPath(path = '') {
+  return String(path || '').replaceAll('\\', '/').split('?')[0];
+}
+
+function snapshotKeyFromPath(path = '') {
+  return PORTAL_SNAPSHOT_PATH_MAP[normalizeSnapshotPath(path)] || null;
+}
+
+function parseFreshStamp(value) {
+  if (!value) return 0;
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? 0 : value.getTime();
+  const raw = String(value || '').trim();
+  if (!raw) return 0;
+  const normalized = /^\d{4}-\d{2}$/.test(raw)
+    ? `${raw}-01T00:00:00Z`
+    : /^\d{4}-\d{2}-\d{2}$/.test(raw)
+      ? `${raw}T00:00:00Z`
+      : raw;
+  const stamp = Date.parse(normalized);
+  return Number.isFinite(stamp) ? stamp : 0;
+}
+
+function bumpFreshness(score, value) {
+  return Math.max(score, parseFreshStamp(value));
+}
+
+function payloadFreshnessScore(snapshotKey, payload) {
+  if (payload === null || payload === undefined) return 0;
+  let score = 0;
+  score = bumpFreshness(score, payload.generatedAt);
+  score = bumpFreshness(score, payload.updatedAt);
+  score = bumpFreshness(score, payload.updated_at);
+  score = bumpFreshness(score, payload.asOfDate);
+  score = bumpFreshness(score, payload.dataFreshness?.asOfDate);
+
+  if (snapshotKey === 'dashboard') {
+    score = bumpFreshness(score, payload.generatedAt);
+    score = bumpFreshness(score, payload.dataFreshness?.asOfDate);
+    return score;
+  }
+
+  if (snapshotKey === 'platform_trends') {
+    (payload.platforms || []).forEach((platform) => {
+      (platform?.series || []).forEach((item) => {
+        score = bumpFreshness(score, item?.date || item?.label);
+      });
+    });
+    return score;
+  }
+
+  if (snapshotKey === 'ads_summary') {
+    score = bumpFreshness(score, payload.asOfDate);
+    (payload.platforms || []).forEach((platform) => {
+      (platform?.series || []).forEach((item) => {
+        score = bumpFreshness(score, item?.date || item?.label);
+      });
+    });
+    return score;
+  }
+
+  if (snapshotKey === 'platform_plan') {
+    Object.keys(payload.months || {}).forEach((monthKey) => {
+      score = bumpFreshness(score, `${monthKey}-01`);
+    });
+    return score;
+  }
+
+  if (snapshotKey === 'prices') {
+    score = bumpFreshness(score, payload.month?.key ? `${payload.month.key}-01` : '');
+    (payload.dates || []).forEach((item) => {
+      score = bumpFreshness(score, item?.date || item?.label);
+    });
+    return score;
+  }
+
+  if (snapshotKey === 'smart_price_workbench') {
+    Object.values(payload.platforms || {}).forEach((platform) => {
+      Object.values(platform?.rows || {}).forEach((row) => {
+        (row?.daily || []).forEach((item) => {
+          score = bumpFreshness(score, item?.date);
+        });
+      });
+    });
+    return score;
+  }
+
+  if (snapshotKey === 'skus' && Array.isArray(payload)) {
+    payload.forEach((item) => {
+      score = bumpFreshness(score, item?.updatedAt || item?.updated_at || item?.createdAt);
+    });
+    return score;
+  }
+
+  return score;
+}
+
+function chooseFreshestPayload(snapshotKey, snapshotPayload, localPayload) {
+  const snapshotReady = snapshotPayloadLooksUsable(snapshotKey, snapshotPayload) ? snapshotPayload : null;
+  const localReady = localPayload !== null && localPayload !== undefined ? localPayload : null;
+  if (snapshotReady && localReady) {
+    return payloadFreshnessScore(snapshotKey, localReady) >= payloadFreshnessScore(snapshotKey, snapshotReady)
+      ? { payload: localReady, source: 'local' }
+      : { payload: snapshotReady, source: 'snapshot' };
+  }
+  if (localReady) return { payload: localReady, source: 'local' };
+  if (snapshotReady) return { payload: snapshotReady, source: 'snapshot' };
+  return null;
+}
+
+function cloneJsonValue(value) {
+  if (value === null || value === undefined) return value;
+  return JSON.parse(JSON.stringify(value));
+}
+
+function snapshotPayloadLooksUsable(snapshotKey, payload) {
+  if (payload === null || payload === undefined) return false;
+  if (snapshotKey === 'skus') return Array.isArray(payload) && payload.length > 0;
+  if (snapshotKey === 'platform_trends') return Array.isArray(payload?.platforms) && payload.platforms.length > 0;
+  if (snapshotKey === 'ads_summary') return Array.isArray(payload?.platforms) && payload.platforms.length > 0;
+  if (snapshotKey === 'platform_plan') return typeof payload?.months === 'object' && payload.months !== null && Object.keys(payload.months).length > 0;
+  if (snapshotKey === 'smart_price_workbench') {
+    return typeof payload?.platforms === 'object' && payload.platforms !== null && Object.keys(payload.platforms).length > 0;
+  }
+  if (snapshotKey === 'prices') {
+    return Array.isArray(payload?.dates) && payload.dates.length > 0
+      && typeof payload?.platforms === 'object' && payload.platforms !== null
+      && Object.keys(payload.platforms).length > 0;
+  }
+  if (snapshotKey === 'logistics') {
+    return Array.isArray(payload?.allRows) && payload.allRows.length > 0
+      || Array.isArray(payload?.ozonClusters) && payload.ozonClusters.length > 0
+      || Array.isArray(payload?.wbWarehouses) && payload.wbWarehouses.length > 0;
+  }
+  if (snapshotKey === 'dashboard') {
+    return Array.isArray(payload?.cards) && payload.cards.length > 0
+      || Array.isArray(payload?.brandSummary) && payload.brandSummary.length > 0;
+  }
+  return typeof payload === 'object' && payload !== null && Object.keys(payload).length > 0;
+}
+
+function resetPortalSnapshotState() {
+  portalSnapshotState.client = null;
+  portalSnapshotState.promise = null;
+  portalSnapshotState.rows = {};
+  portalSnapshotState.brand = '';
+}
+
+function getPortalSnapshotRequestConfig() {
+  const cfg = currentConfig();
+  if (!cfg.supabase?.url || !cfg.supabase?.anonKey || typeof fetch !== 'function') return null;
+  if (state.team?.mode === 'pending') return null;
+  const brand = currentBrand();
+  portalSnapshotState.brand = brand;
+  const baseUrl = String(cfg.supabase.url || '').replace(/\/+$/, '');
+  const url = new URL(`${baseUrl}/rest/v1/${PORTAL_SNAPSHOT_TABLE}`);
+  url.searchParams.set('select', 'snapshot_key,payload,generated_at,updated_at,payload_hash');
+  url.searchParams.set('brand', `eq.${brand}`);
+  return {
+    brand,
+    url: url.toString(),
+    headers: {
+      apikey: cfg.supabase.anonKey,
+      Authorization: `Bearer ${cfg.supabase.anonKey}`,
+      Accept: 'application/json'
+    }
+  };
+}
+
+function parseChunkedSnapshotKey(snapshotKey = '') {
+  const match = String(snapshotKey || '').match(/^(.*)__part__(\d{4})$/);
+  if (!match) return null;
+  return {
+    baseKey: match[1],
+    index: Number(match[2])
+  };
+}
+
+function decodeChunkedPortalSnapshots(data) {
+  const rows = {};
+  const chunkGroups = new Map();
+
+  for (const row of data || []) {
+    const snapshotKey = String(row?.snapshot_key || '').trim();
+    if (!snapshotKey) continue;
+    const chunkMeta = parseChunkedSnapshotKey(snapshotKey);
+    if (!chunkMeta) {
+      rows[snapshotKey] = row?.payload;
+      continue;
+    }
+    if (!chunkGroups.has(chunkMeta.baseKey)) chunkGroups.set(chunkMeta.baseKey, []);
+    chunkGroups.get(chunkMeta.baseKey).push({
+      index: chunkMeta.index,
+      payload: row?.payload
+    });
+  }
+
+  for (const [baseKey, parts] of chunkGroups.entries()) {
+    const meta = rows[baseKey];
+    if (meta && meta.chunked !== true) continue;
+    const expectedCount = Number(meta?.chunk_count || meta?.chunkCount || 0);
+    const chunkCount = expectedCount > 0 ? expectedCount : parts.length;
+    const ordered = parts
+      .filter((part) => part.index >= 1 && part.index <= chunkCount)
+      .sort((left, right) => left.index - right.index);
+    if (!ordered.length || ordered.length !== chunkCount) continue;
+    const text = ordered
+      .map((part) => {
+        if (typeof part.payload === 'string') return part.payload;
+        if (typeof part.payload?.data === 'string') return part.payload.data;
+        return '';
+      })
+      .join('');
+    if (!text) continue;
+    try {
+      rows[baseKey] = JSON.parse(text);
+    } catch (error) {
+      console.warn(`[portal-snapshots] failed to decode chunked snapshot ${baseKey}`, error);
+    }
+  }
+
+  return rows;
+}
+
+async function loadPortalSnapshotRows() {
+  const brand = currentBrand();
+  if (portalSnapshotState.promise && portalSnapshotState.brand === brand) return portalSnapshotState.promise;
+  const requestConfig = getPortalSnapshotRequestConfig();
+  if (!requestConfig) return {};
+
+  portalSnapshotState.promise = withTimeout(
+    fetch(requestConfig.url, { headers: requestConfig.headers }),
+    5000,
+    'Загрузка витрины из Supabase'
+  )
+    .then((response) => {
+      if (!response?.ok) throw new Error(`Supabase snapshots ${response?.status || 'request failed'}`);
+      return withTimeout(response.json(), 5000, 'Чтение витрины из Supabase');
+    })
+    .then((data) => {
+      const rows = decodeChunkedPortalSnapshots(data);
+      portalSnapshotState.rows = rows;
+      return rows;
+    })
+    .catch((error) => {
+      console.warn('[portal-snapshots]', error);
+      portalSnapshotState.rows = {};
+      return {};
+    });
+
+  return portalSnapshotState.promise;
+}
+
+async function loadPortalSnapshotPayload(path) {
+  const snapshotKey = snapshotKeyFromPath(path);
+  if (!snapshotKey) return null;
+  const rows = await loadPortalSnapshotRows();
+  const payload = rows[snapshotKey];
+  if (!snapshotPayloadLooksUsable(snapshotKey, payload)) return null;
+  return cloneJsonValue(payload);
+}
+
+window.__alteaLoadPortalSnapshot = loadPortalSnapshotPayload;
 
 function defaultStorage() {
   return { comments: [], tasks: [], decisions: [], ownerOverrides: [] };
@@ -257,7 +622,181 @@ async function loadJson(path) {
   const resolvedPath = path.includes("?") ? path : `${path}?v=20260416b`;
   const response = await fetch(resolvedPath, { cache: "no-store" });
   if (!response.ok) throw new Error(`Не удалось загрузить ${path}`);
-  return response.json();
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    const sanitized = sanitizeLooseJson(text);
+    if (sanitized === text) throw error;
+    console.warn(`JSON sanitized for ${path}: invalid numeric tokens were replaced with null.`);
+    registerDataWarning(`Файл ${path} был загружен с исправлениями из-за невалидных чисел.`);
+    return JSON.parse(sanitized);
+  }
+}
+
+function isLooseJsonTokenBoundary(char) {
+  return char === undefined || /[\s,\]\[}{:]/.test(char);
+}
+
+function sanitizeLooseJson(text) {
+  if (!text || typeof text !== 'string') return text;
+  const replacements = [
+    ['-Infinity', 'null'],
+    ['Infinity', 'null'],
+    ['NaN', 'null'],
+    ['undefined', 'null']
+  ];
+  let result = '';
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+    if (inString) {
+      result += char;
+      if (escaped) escaped = false;
+      else if (char === '\\') escaped = true;
+      else if (char === '"') inString = false;
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+      result += char;
+      continue;
+    }
+
+    let matched = false;
+    for (const [token, replacement] of replacements) {
+      if (
+        text.startsWith(token, i) &&
+        isLooseJsonTokenBoundary(text[i - 1]) &&
+        isLooseJsonTokenBoundary(text[i + token.length])
+      ) {
+        result += replacement;
+        i += token.length - 1;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) result += char;
+  }
+
+  return result;
+}
+
+function cloneFallback(value) {
+  if (value === null || value === undefined) return value;
+  return JSON.parse(JSON.stringify(value));
+}
+
+function registerDataWarning(message) {
+  if (!message) return;
+  if (!Array.isArray(state.boot.dataWarnings)) state.boot.dataWarnings = [];
+  if (!state.boot.dataWarnings.includes(message)) state.boot.dataWarnings.push(message);
+}
+
+async function loadJsonOrFallback(path, fallback, label = path) {
+  const snapshotKey = snapshotKeyFromPath(path);
+  if (snapshotKey) {
+    const [snapshotResult, localResult] = await Promise.allSettled([
+      loadPortalSnapshotPayload(path),
+      loadJson(path)
+    ]);
+    if (snapshotResult.status === 'rejected') {
+      console.warn(`[portal-snapshots] ${snapshotKey}`, snapshotResult.reason);
+    }
+    const chosen = chooseFreshestPayload(
+      snapshotKey,
+      snapshotResult.status === 'fulfilled' ? snapshotResult.value : null,
+      localResult.status === 'fulfilled' ? localResult.value : null
+    );
+    if (chosen) return chosen.payload;
+    if (localResult.status === 'rejected') {
+      console.error(localResult.reason);
+      registerDataWarning(`${label}: ${localResult.reason?.message || 'Не удалось загрузить данные'}`);
+    }
+    return cloneFallback(fallback);
+  }
+  try {
+    return await loadJson(path);
+  } catch (error) {
+    console.error(error);
+    registerDataWarning(`${label}: ${error.message}`);
+    return cloneFallback(fallback);
+  }
+}
+
+const LAZY_DATA_LOADERS = {
+  launches: async () => {
+    const launches = await loadJsonOrFallback('data/launches.json', [], 'Продукт / Ксения');
+    state.launches = Array.isArray(launches) ? launches : [];
+  },
+  meetings: async () => {
+    const meetings = await loadJsonOrFallback('data/meetings.json', [], 'Ритм работы');
+    state.meetings = Array.isArray(meetings) ? meetings : [];
+  },
+  documents: async () => {
+    const documents = await loadJsonOrFallback('data/documents.json', { groups: [] }, 'Документы');
+    state.documents = documents || { groups: [] };
+  },
+  repricer: async () => {
+    const repricer = await loadJsonOrFallback('data/repricer.json', { generatedAt: '', summary: {}, rows: [] }, 'Репрайсер');
+    state.repricer = repricer || { generatedAt: '', summary: {}, rows: [] };
+  }
+};
+
+function renderViewLoading(rootId, title) {
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  root.innerHTML = `
+    <div class="card">
+      <div class="head">
+        <div>
+          <h3>${escapeHtml(title)}</h3>
+          <div class="muted small">Подгружаем данные только для этого раздела, чтобы портал открывался быстрее.</div>
+        </div>
+        ${badge('загрузка', 'info')}
+      </div>
+    </div>
+  `;
+}
+
+async function ensureViewData(view) {
+  const key = VIEW_DATA_REQUIREMENTS[view];
+  if (!key) return;
+  if (state.boot.lazyReady?.[key]) return;
+  if (state.boot.lazyLoads?.[key]) return state.boot.lazyLoads[key];
+
+  const loader = LAZY_DATA_LOADERS[key];
+  if (!loader) return;
+
+  const pending = Promise.resolve()
+    .then(() => loader())
+    .then(() => {
+      state.boot.lazyReady[key] = true;
+    })
+    .finally(() => {
+      delete state.boot.lazyLoads[key];
+    });
+
+  state.boot.lazyLoads[key] = pending;
+  return pending;
+}
+
+function withTimeout(promise, ms, label) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${label} превысил ${Math.round(ms / 1000)} сек.`)), ms);
+    Promise.resolve(promise)
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+  });
 }
 
 function uid(prefix = 'item') {
@@ -350,7 +889,7 @@ function ownerOptions() {
 function ownerCell(sku) {
   const owner = ownerName(sku);
   if (!owner) return `<div class="owner-cell"><strong>Не закреплён</strong><div class="muted small">Нужно назначить owner</div></div>`;
-  return `<div class="owner-cell"><strong>${escapeHtml(owner)}</strong><div class="muted small">${escapeHtml(sku?.owner?.registryStatus || sku?.status || '—')}</div></div>`;
+  return `<div class="owner-cell"><strong>${escapeHtml(owner)}</strong><div class="muted small">${escapeHtml(skuOperationalStatusMeta(sku).label || '—')}</div></div>`;
 }
 
 function trafficBadges(sku, emptyLabel = 'нет') {
@@ -360,9 +899,41 @@ function trafficBadges(sku, emptyLabel = 'нет') {
   return chips.length ? `<div class="badge-stack traffic-inline">${chips.join('')}</div>` : `<span class="muted small">${escapeHtml(emptyLabel)}</span>`;
 }
 
+function parseTaskLogComment(comment) {
+  const match = String(comment?.text || '').match(/^\[\[task:([^\]]+)\]\]\s*\[\[kind:([^\]]+)\]\]\s*/i);
+  if (!match) return null;
+  return {
+    taskId: match[1],
+    kind: match[2],
+    text: String(comment?.text || '').replace(match[0], '').trim()
+  };
+}
+
+function getTaskHistory(taskId) {
+  return (state.storage.comments || [])
+    .map((comment) => {
+      const parsed = parseTaskLogComment(comment);
+      return parsed && parsed.taskId === taskId ? { ...comment, kind: parsed.kind, text: parsed.text } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+}
+
+function getRecentTaskHistory(tasks, limit = 6) {
+  const taskIds = new Set((tasks || []).map((task) => task.id).filter(Boolean));
+  return (state.storage.comments || [])
+    .map((comment) => {
+      const parsed = parseTaskLogComment(comment);
+      return parsed && taskIds.has(parsed.taskId) ? { ...comment, taskId: parsed.taskId, kind: parsed.kind, text: parsed.text } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+    .slice(0, limit);
+}
+
 function getSkuComments(articleKey) {
   return (state.storage.comments || [])
-    .filter((comment) => comment.articleKey === articleKey)
+    .filter((comment) => comment.articleKey === articleKey && !parseTaskLogComment(comment))
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 }
 
@@ -445,6 +1016,7 @@ function mapTaskStatus(status) {
   if (['open', 'new'].includes(raw)) return 'new';
   if (['in_progress', 'in progress', 'progress', 'doing', 'work', 'в работе'].includes(raw)) return 'in_progress';
   if (['waiting_team', 'waiting-team', 'wait_team'].includes(raw)) return 'waiting_team';
+  if (['waiting_rop', 'rop_approval', 'waiting_approval', 'approval_rop', 'on_rop_approval'].includes(raw)) return 'waiting_rop';
   if (['blocked', 'waiting_decision', 'wait_decision', 'decision', 'waiting', 'ждёт', 'ждет'].includes(raw)) return 'waiting_decision';
   if (['done', 'complete', 'completed', 'сделано'].includes(raw)) return 'done';
   if (['cancelled', 'canceled', 'отменено'].includes(raw)) return 'cancelled';
@@ -463,9 +1035,53 @@ function inferTaskType(text = '') {
   return 'general';
 }
 
+function normalizeTaskPlatform(value, contextText = '') {
+  const raw = String(value || '').trim().toLowerCase();
+  const text = `${raw} ${String(contextText || '').trim().toLowerCase()}`;
+
+  if (raw === 'all') return 'all';
+  if (['cross', 'common', 'shared', 'general'].includes(raw)) return 'cross';
+  if (['wb', 'wildberries', 'вб'].includes(raw)) return 'wb';
+  if (['ozon', 'озон'].includes(raw)) return 'ozon';
+  if (['wb+ozon', 'wb + ozon', 'wb_ozon', 'wb-ozon'].includes(raw)) return 'wb+ozon';
+  if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return 'retail';
+
+  if (/яндекс|я[.\s-]?маркет|yandex|letu?al|л[еэ]туал|л[еэ]туаль|магнит|golden apple|золот[а-я\s-]*яблок/.test(text)) return 'retail';
+  if (/(^|\W)wb($|\W)|wildberries|вб/.test(text)) return 'wb';
+  if (/ozon|озон/.test(text)) return 'ozon';
+  return 'all';
+}
+
+function normalizeControlWorkstreamFilter(value) {
+  const raw = String(value || 'all').trim().toLowerCase();
+  if (raw === 'all') return 'all';
+  const normalized = normalizeTaskPlatform(raw);
+  if (normalized === 'wb+ozon') return 'cross';
+  return CONTROL_WORKSTREAM_ORDER.includes(normalized) ? normalized : 'all';
+}
+
+function controlWorkstreamMeta(key) {
+  return CONTROL_WORKSTREAM_META[key] || CONTROL_WORKSTREAM_META.cross;
+}
+
+function controlWorkstreamKey(task, sku = null) {
+  const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''} ${task?.entityLabel || ''}`;
+  const platform = normalizeTaskPlatform(task?.platform, text);
+
+  if (platform === 'wb') return 'wb';
+  if (platform === 'ozon') return 'ozon';
+  if (platform === 'retail') return 'retail';
+  if (platform === 'wb+ozon' || platform === 'cross' || platform === 'all') return 'cross';
+
+  if (sku?.flags?.toWorkWB && !sku?.flags?.toWorkOzon) return 'wb';
+  if (sku?.flags?.toWorkOzon && !sku?.flags?.toWorkWB) return 'ozon';
+  return 'cross';
+}
+
 function detectTaskPlatform(task, sku) {
-  if (task?.platform) return task.platform;
-  const text = `${task?.title || ''} ${task?.nextAction || ''}`.toLowerCase();
+  const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''}`.toLowerCase();
+  if (task?.platform) return normalizeTaskPlatform(task.platform, text);
+  if (/яндекс|я[.\s-]?маркет|yandex|letu?al|л[еэ]туал|л[еэ]туаль|магнит|golden apple|золот[а-я\s-]*яблок/.test(text)) return 'retail';
   if (text.includes('wb') && text.includes('ozon')) return 'wb+ozon';
   if (text.includes('wb')) return 'wb';
   if (text.includes('ozon')) return 'ozon';
@@ -537,10 +1153,8 @@ function taskSourceBadge(task) {
 }
 
 function taskPlatformBadge(task) {
-  if (task?.platform === 'wb') return badge('WB');
-  if (task?.platform === 'ozon') return badge('Ozon');
-  if (task?.platform === 'wb+ozon') return badge('WB + Ozon');
-  return badge('Все площадки');
+  const meta = controlWorkstreamMeta(controlWorkstreamKey(task, getSku(task.articleKey)));
+  return badge(meta.chip, meta.kind);
 }
 
 function taskSortKey(task) {
@@ -563,6 +1177,51 @@ function sortTasks(tasks) {
       || ka[3].localeCompare(kb[3])
       || ka[4].localeCompare(kb[4], 'ru');
   });
+}
+
+function getTask(taskId) {
+  return getAllTasks().find((task) => task.id === taskId) || null;
+}
+
+function taskHeadline(task) {
+  return task?.title || task?.entityLabel || 'Задача';
+}
+
+function taskEntityLine(task, sku) {
+  if (sku) return linkToSku(sku.articleKey, sku.article || sku.articleKey);
+  return badge(task?.entityLabel || 'Общая задача', 'info');
+}
+
+function taskHistoryBadge(kind) {
+  const meta = TASK_LOG_META[kind] || TASK_LOG_META.comment;
+  return badge(meta.label, meta.tone);
+}
+
+function renderTaskHistoryItem(item) {
+  return `
+    <div class="comment-item">
+      <div class="head">
+        <strong>${escapeHtml(item.author || 'Команда')}</strong>
+        <div class="badge-stack">${taskHistoryBadge(item.kind)}${badge(item.team || 'Команда')}</div>
+      </div>
+      <div class="muted small">${fmt.date(item.createdAt)}</div>
+      <p>${escapeHtml(item.text || '—')}</p>
+    </div>
+  `;
+}
+
+function ensureTaskModal() {
+  let modal = document.getElementById('taskModal');
+  if (modal) return modal;
+  modal = document.createElement('div');
+  modal.id = 'taskModal';
+  modal.className = 'modal';
+  modal.innerHTML = '<div class="modal-card task-modal-card" id="taskModalBody"></div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (event) => {
+    if (event.target.id === 'taskModal') closeTaskModal();
+  });
+  return modal;
 }
 
 function storedTaskKeys() {
@@ -739,33 +1398,16 @@ async function initTeamStore() {
   const cfg = currentConfig();
   state.team.member = { ...DEFAULT_APP_CONFIG.teamMember, ...(cfg.teamMember || {}) };
   state.team.error = '';
+  state.team.accessToken = '';
+  state.team.client = null;
+  state.team.userId = '';
   const wantsRemote = cfg.teamMode === 'supabase' && cfg.supabase?.url && cfg.supabase?.anonKey;
   state.team.note = wantsRemote ? 'Подключаем командную базу…' : 'Локальный режим';
   state.team.mode = wantsRemote ? 'pending' : 'local';
   state.team.ready = false;
   updateSyncBadge();
 
-  if (cfg.teamMode === 'supabase' && cfg.supabase?.url && cfg.supabase?.anonKey && !window.supabase?.createClient) {
-    state.team.mode = 'pending';
-    state.team.note = 'Ждём модуль командной базы…';
-    updateSyncBadge();
-    for (let i = 0; i < 20; i += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 150));
-      if (window.supabase?.createClient) break;
-    }
-  }
   if (cfg.teamMode !== 'supabase' || !cfg.supabase?.url || !cfg.supabase?.anonKey) {
-    applyOwnerOverridesToSkus();
-    updateSyncBadge();
-    return;
-  }
-
-  for (let i = 0; i < 20 && !window.supabase?.createClient; i += 1) {
-    await new Promise((resolve) => setTimeout(resolve, 150));
-  }
-  if (!window.supabase?.createClient) {
-    state.team.error = 'Supabase client не загрузился';
-    state.team.note = 'Ошибка Supabase — работаем локально';
     applyOwnerOverridesToSkus();
     updateSyncBadge();
     return;
@@ -776,19 +1418,25 @@ async function initTeamStore() {
     state.team.note = 'Подключаем командную базу…';
     updateSyncBadge();
 
-    const client = window.supabase.createClient(cfg.supabase.url, cfg.supabase.anonKey, {
-      auth: { persistSession: true, autoRefreshToken: true }
-    });
-    state.team.client = client;
-
     if ((cfg.supabase.auth || 'anonymous') === 'anonymous') {
-      const currentSession = await client.auth.getSession();
-      if (!currentSession?.data?.session) {
-        const signIn = await client.auth.signInAnonymously();
-        if (signIn.error) throw signIn.error;
+      const signIn = await signInTeamAnonymously();
+      state.team.accessToken = signIn?.access_token || '';
+      state.team.userId = signIn?.user?.id || '';
+      if (!state.team.accessToken) throw new Error('Supabase не вернул access token');
+      state.team.client = createRestTeamClient();
+    } else {
+      if (!window.supabase?.createClient) {
+        throw new Error('Supabase client не загрузился');
       }
-      const session = await client.auth.getSession();
-      state.team.userId = session?.data?.session?.user?.id || '';
+      const client = window.supabase.createClient(cfg.supabase.url, cfg.supabase.anonKey, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+          detectSessionInUrl: false,
+          storageKey: 'altea-team-store'
+        }
+      });
+      state.team.client = client;
     }
 
     state.team.mode = 'ready';
@@ -924,20 +1572,220 @@ function fromRemoteOwner(row) {
   });
 }
 
+function teamRestConfig() {
+  const cfg = currentConfig();
+  if (!cfg.supabase?.url || !cfg.supabase?.anonKey || typeof fetch !== 'function') return null;
+  const baseUrl = String(cfg.supabase.url || '').replace(/\/+$/, '');
+  return {
+    baseUrl,
+    anonKey: cfg.supabase.anonKey,
+    accessToken: state.team.accessToken || '',
+    brand: currentBrand()
+  };
+}
+
+async function readSupabaseJson(response, label) {
+  const bodyText = await response.text();
+  if (!response.ok) {
+    throw new Error(`${label}: ${bodyText || response.status || 'request failed'}`);
+  }
+  return bodyText ? JSON.parse(bodyText) : [];
+}
+
+async function signInTeamViaRest() {
+  const cfg = teamRestConfig();
+  if (!cfg) throw new Error('Supabase REST недоступен');
+  const response = await fetch(`${cfg.baseUrl}/auth/v1/signup`, {
+    method: 'POST',
+    headers: {
+      apikey: cfg.anonKey,
+      Authorization: `Bearer ${cfg.anonKey}`,
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: '{}'
+  });
+  return readSupabaseJson(response, 'Анонимный вход Supabase');
+}
+
+async function signInTeamAnonymously() {
+  const cfg = currentConfig();
+  if (window.supabase?.createClient) {
+    const client = window.supabase.createClient(cfg.supabase.url, cfg.supabase.anonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+        storageKey: 'altea-team-store'
+      }
+    });
+    const response = await client.auth.signInAnonymously();
+    if (response?.error) throw response.error;
+    return {
+      access_token: response?.data?.session?.access_token || '',
+      user: response?.data?.user || null
+    };
+  }
+  return signInTeamViaRest();
+}
+
+function createRestTeamClient() {
+  const build = (table) => ({
+    table,
+    method: 'GET',
+    filters: [],
+    selectValue: '*',
+    orderValue: '',
+    limitValue: null,
+    body: null,
+    onConflict: '',
+    prefer: '',
+    select(columns) {
+      this.selectValue = columns || '*';
+      return this;
+    },
+    eq(column, value) {
+      this.filters.push([column, `eq.${String(value ?? '')}`]);
+      return this;
+    },
+    in(column, values) {
+      const list = Array.isArray(values) ? values.map((item) => String(item)).join(',') : String(values || '');
+      this.filters.push([column, `in.(${list})`]);
+      return this;
+    },
+    order(column, options = {}) {
+      const ascending = options?.ascending !== false;
+      this.orderValue = `${column}.${ascending ? 'asc' : 'desc'}`;
+      return this;
+    },
+    limit(value) {
+      this.limitValue = Number(value) || null;
+      return this;
+    },
+    upsert(rows, options = {}) {
+      this.method = 'POST';
+      this.body = rows;
+      this.onConflict = options?.onConflict || '';
+      this.prefer = 'resolution=merge-duplicates,return=representation';
+      return this;
+    },
+    insert(rows) {
+      this.method = 'POST';
+      this.body = rows;
+      this.prefer = 'return=representation';
+      return this;
+    },
+    delete() {
+      this.method = 'DELETE';
+      this.prefer = 'return=representation';
+      return this;
+    },
+    async execute() {
+      const cfg = teamRestConfig();
+      if (!cfg?.baseUrl || !cfg?.anonKey || !cfg?.accessToken) {
+        return { data: null, error: { message: 'Командная база недоступна' } };
+      }
+      const url = new URL(`${cfg.baseUrl}/rest/v1/${this.table}`);
+      if (this.method === 'GET') url.searchParams.set('select', this.selectValue);
+      if (this.onConflict) url.searchParams.set('on_conflict', this.onConflict);
+      if (this.orderValue) url.searchParams.set('order', this.orderValue);
+      if (this.limitValue) url.searchParams.set('limit', String(this.limitValue));
+      for (const [column, value] of this.filters) url.searchParams.set(column, value);
+      try {
+        const response = await fetch(url.toString(), {
+          method: this.method,
+          headers: {
+            apikey: cfg.anonKey,
+            Authorization: `Bearer ${cfg.accessToken}`,
+            Accept: 'application/json',
+            ...(this.body !== null ? { 'Content-Type': 'application/json' } : {}),
+            ...(this.prefer ? { Prefer: this.prefer } : {})
+          },
+          ...(this.body !== null ? { body: JSON.stringify(this.body) } : {})
+        });
+        const data = await readSupabaseJson(response, `${this.method} ${this.table}`);
+        return { data, error: null };
+      } catch (error) {
+        return { data: null, error: { message: error?.message || String(error) } };
+      }
+    },
+    then(resolve, reject) {
+      return this.execute().then(resolve, reject);
+    }
+  });
+
+  return {
+    from(table) {
+      return build(table);
+    }
+  };
+}
+
 function hasRemoteStore() {
-  return Boolean(state.team.ready && state.team.client);
+  return Boolean(state.team.ready && (state.team.client || state.team.accessToken));
 }
 
 async function queryRemote(table) {
   if (!hasRemoteStore()) return [];
-  const response = await state.team.client.from(table).select('*').eq('brand', currentBrand());
+  const isTaskTable = table === TEAM_TABLES.tasks;
+  if (state.team.accessToken) {
+    const cfg = teamRestConfig();
+    if (!cfg) return [];
+    const url = new URL(`${cfg.baseUrl}/rest/v1/${table}`);
+    url.searchParams.set('brand', `eq.${cfg.brand}`);
+    if (isTaskTable) {
+      url.searchParams.set('select', 'id,article_key,title,next_action,reason,owner,due,status,type,priority,platform,source,entity_label,auto_code,created_at,updated_at');
+      url.searchParams.set('status', 'in.(new,in_progress,waiting_team,waiting_rop,waiting_decision)');
+    } else {
+      url.searchParams.set('select', '*');
+    }
+    const response = await withTimeout(fetch(url.toString(), {
+      headers: {
+        apikey: cfg.anonKey,
+        Authorization: `Bearer ${cfg.accessToken}`,
+        Accept: 'application/json'
+      }
+    }), 8000, `Запрос ${table}`);
+    return readSupabaseJson(response, `Запрос ${table}`);
+  }
+  const query = isTaskTable
+    ? state.team.client
+        .from(table)
+        .select('id,article_key,title,next_action,reason,owner,due,status,type,priority,platform,source,entity_label,auto_code,created_at,updated_at')
+        .eq('brand', currentBrand())
+        .in('status', ['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision'])
+    : state.team.client.from(table).select('*').eq('brand', currentBrand());
+  const response = await withTimeout(query, 8000, `Запрос ${table}`);
   if (response.error) throw response.error;
   return response.data || [];
 }
 
 async function upsertRemote(table, rows, onConflict) {
   if (!hasRemoteStore() || !rows.length) return;
-  const response = await state.team.client.from(table).upsert(rows, { onConflict });
+  if (state.team.accessToken) {
+    const cfg = teamRestConfig();
+    if (!cfg) return;
+    const url = new URL(`${cfg.baseUrl}/rest/v1/${table}`);
+    url.searchParams.set('on_conflict', onConflict);
+    const response = await withTimeout(fetch(url.toString(), {
+      method: 'POST',
+      headers: {
+        apikey: cfg.anonKey,
+        Authorization: `Bearer ${cfg.accessToken}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=representation'
+      },
+      body: JSON.stringify(rows)
+    }), 8000, `Синхронизация ${table}`);
+    await readSupabaseJson(response, `Синхронизация ${table}`);
+    return;
+  }
+  const response = await withTimeout(
+    state.team.client.from(table).upsert(rows, { onConflict }),
+    8000,
+    `Синхронизация ${table}`
+  );
   if (response.error) throw response.error;
 }
 
@@ -947,12 +1795,19 @@ async function pullRemoteState(rerender = true) {
     state.team.mode = 'pending';
     state.team.note = 'Загружаем командные данные…';
     updateSyncBadge();
-    const [taskRows, commentRows, decisionRows, ownerRows] = await Promise.all([
-      queryRemote(TEAM_TABLES.tasks),
+    const taskRows = await queryRemote(TEAM_TABLES.tasks);
+    const [commentResult, decisionResult, ownerResult] = await Promise.allSettled([
       queryRemote(TEAM_TABLES.comments),
       queryRemote(TEAM_TABLES.decisions),
       queryRemote(TEAM_TABLES.owners)
     ]);
+    const commentRows = commentResult.status === 'fulfilled' ? (commentResult.value || []) : [];
+    const decisionRows = decisionResult.status === 'fulfilled' ? (decisionResult.value || []) : [];
+    const ownerRows = ownerResult.status === 'fulfilled' ? (ownerResult.value || []) : [];
+    const softErrors = [commentResult, decisionResult, ownerResult]
+      .filter((result) => result.status !== 'fulfilled')
+      .map((result) => result.reason?.message || String(result.reason || 'Неизвестная ошибка'))
+      .filter(Boolean);
     const remoteEmpty = !taskRows.length && !commentRows.length && !decisionRows.length && !ownerRows.length;
     if (!remoteEmpty) {
       state.storage.tasks = normalizeStorageTasks(taskRows.map(fromRemoteTask), 'manual');
@@ -964,9 +1819,12 @@ async function pullRemoteState(rerender = true) {
     }
     state.team.mode = 'ready';
     state.team.lastSyncAt = new Date().toISOString();
+    state.team.error = softErrors.join(' | ');
     state.team.note = remoteEmpty
       ? 'Командная база пока пустая — локальные данные сохранены'
-      : `Командная база синхронизирована · ${fmt.date(state.team.lastSyncAt)}`;
+      : softErrors.length
+        ? `Командная база подключена частично · ${fmt.date(state.team.lastSyncAt)}`
+        : `Командная база синхронизирована · ${fmt.date(state.team.lastSyncAt)}`;
     updateSyncBadge();
     if (rerender) {
       rerenderCurrentView();
@@ -1062,19 +1920,22 @@ function updateSyncBadge() {
   if (pushBtn) pushBtn.disabled = !hasRemoteStore();
 }
 
-function filteredControlTasks() {
+function filteredControlTasks(options = {}) {
   const f = state.controlFilters;
   const search = String(f.search || '').trim().toLowerCase();
+  const selectedWorkstream = normalizeControlWorkstreamFilter(f.platform);
+  const ignorePlatform = Boolean(options.ignorePlatform);
 
   return getAllTasks().filter((task) => {
     const sku = getSku(task.articleKey);
-    const hay = [task.title, task.nextAction, task.reason, task.owner, task.articleKey, sku?.article, sku?.name, sku?.category].filter(Boolean).join(' ').toLowerCase();
+    const workstream = controlWorkstreamMeta(controlWorkstreamKey(task, sku));
+    const hay = [task.title, task.nextAction, task.reason, task.owner, task.articleKey, sku?.article, sku?.name, sku?.category, workstream.label, workstream.chip].filter(Boolean).join(' ').toLowerCase();
     if (search && !hay.includes(search)) return false;
     if (f.owner !== 'all' && (task.owner || 'Без owner') !== f.owner) return false;
     if (f.status === 'active' && !isTaskActive(task)) return false;
     if (f.status !== 'active' && f.status !== 'all' && task.status !== f.status) return false;
     if (f.type !== 'all' && task.type !== f.type) return false;
-    if (f.platform !== 'all' && task.platform !== f.platform) return false;
+    if (!ignorePlatform && selectedWorkstream !== 'all' && controlWorkstreamKey(task, sku) !== selectedWorkstream) return false;
     if (f.source === 'manual' && task.source === 'auto') return false;
     if (f.source === 'auto' && task.source !== 'auto') return false;
     if (f.horizon === 'overdue' && !isTaskOverdue(task)) return false;
@@ -1087,10 +1948,13 @@ function filteredControlTasks() {
 
 function renderTaskCard(task) {
   const sku = getSku(task.articleKey);
-  const skuLabel = sku ? linkToSku(sku.articleKey, sku.article || sku.articleKey) : badge(task.articleKey || task.entityLabel || 'SKU');
+  const skuLabel = taskEntityLine(task, sku);
   const controls = task.source === 'auto'
-    ? `<button class="btn small-btn" data-take-task="${escapeHtml(task.id)}">Взять в работу</button>`
-    : `<select class="inline-select task-status-select" data-task-id="${escapeHtml(task.id)}">${Object.entries(TASK_STATUS_META).map(([value, meta]) => `<option value="${value}" ${task.status === value ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}</select>`;
+    ? `
+      <button class="btn small-btn" data-take-task="${escapeHtml(task.id)}">Взять в работу</button>
+      <button class="btn ghost small-btn" data-open-task="${escapeHtml(task.id)}">Открыть</button>
+    `
+    : `<button class="btn ghost small-btn" data-open-task="${escapeHtml(task.id)}">Открыть задачу</button>`;
 
   return `
     <div class="task-card ${isTaskOverdue(task) ? 'overdue' : ''}">
@@ -1115,7 +1979,7 @@ function renderTaskCard(task) {
 function renderMiniTask(task) {
   const sku = getSku(task.articleKey);
   return `
-    <div class="task-mini ${isTaskOverdue(task) ? 'overdue' : ''}">
+    <div class="task-mini ${isTaskOverdue(task) ? 'overdue' : ''}" data-open-task="${escapeHtml(task.id)}" style="cursor:pointer">
       <div class="left">
         <strong>${escapeHtml(task.title)}</strong>
         <div class="muted small">${escapeHtml(sku?.article || task.articleKey || task.entityLabel || '—')} · ${escapeHtml(task.owner || 'Без owner')} · ${escapeHtml(task.due || '—')}</div>
@@ -1142,18 +2006,104 @@ function renderOwnerRow(row, max) {
   `;
 }
 
-function skuOperationalStatus(sku) {
-  if (String(sku?.status || '').toLowerCase().includes('вывод')) return badge('Вывод');
-  if (sku?.flags?.toWorkWB && sku?.flags?.toWorkOzon) return badge('В работу WB + Ozon', 'danger');
-  if (sku?.flags?.toWorkWB) return badge('В работу WB', 'danger');
-  if (sku?.flags?.toWorkOzon) return badge('В работу Ozon', 'danger');
-  if (sku?.flags?.toWork) return badge('В работу', 'danger');
-  if ((sku?.focusScore || 0) >= 4) return badge('Наблюдать', 'warn');
-  return badge('Ок', 'ok');
+function buildControlWorkstreamSummary(tasks, key) {
+  const grouped = key === 'all'
+    ? sortTasks(tasks)
+    : sortTasks(tasks.filter((task) => controlWorkstreamKey(task, getSku(task.articleKey)) === key));
+  const active = grouped.filter(isTaskActive);
+  const owners = [...new Set(active.map((task) => task.owner || 'Без owner'))].slice(0, 3);
+  const meta = controlWorkstreamMeta(key);
+  return {
+    key,
+    meta,
+    tasks: grouped,
+    activeCount: active.length,
+    overdueCount: active.filter(isTaskOverdue).length,
+    criticalCount: active.filter((task) => task.priority === 'critical').length,
+    waitingCount: active.filter((task) => task.status === 'waiting_decision').length,
+    ownerPreview: owners,
+    typeCount: new Set(active.map((task) => task.type)).size
+  };
 }
 
-function renderSkuTaskSummary(sku) {
-  const task = nextTaskForSku(sku.articleKey);
+function renderControlWorkstreamCard(summary, selectedKey) {
+  const isSelected = selectedKey === summary.key;
+  const hint = summary.ownerPreview.length
+    ? `${summary.ownerPreview.join(' · ')} · ${fmt.int(summary.typeCount)} типов задач`
+    : summary.meta.description;
+  return `
+    <button
+      type="button"
+      class="card kpi"
+      data-control-workstream="${escapeHtml(summary.key)}"
+      style="text-align:left;cursor:pointer;${isSelected ? 'box-shadow: inset 0 0 0 1px rgba(212, 164, 74, 0.46);border-color: rgba(212, 164, 74, 0.38);' : ''}"
+    >
+      <div class="label">${escapeHtml(summary.meta.label)}</div>
+      <div class="value">${fmt.int(summary.activeCount)}</div>
+      <div class="hint">${escapeHtml(hint)}</div>
+      <div class="badge-stack" style="margin-top:10px">
+        ${badge(`${fmt.int(summary.overdueCount)} проср.`, summary.overdueCount ? 'danger' : '')}
+        ${badge(`${fmt.int(summary.criticalCount)} крит.`, summary.criticalCount ? 'warn' : '')}
+        ${summary.waitingCount ? badge(`${fmt.int(summary.waitingCount)} ждут решения`, 'info') : badge('в контуре')}
+      </div>
+    </button>
+  `;
+}
+
+function renderControlWorkstreamSection(summary) {
+  const pool = summary.tasks.filter(isTaskActive).length ? summary.tasks.filter(isTaskActive) : summary.tasks;
+  const tasksHtml = pool.length
+    ? pool.slice(0, 10).map(renderTaskCard).join('')
+    : '<div class="empty">Нет задач под текущий срез</div>';
+  const ownerLine = summary.ownerPreview.length
+    ? `Ключевые owner: ${summary.ownerPreview.join(' · ')}`
+    : 'Owner пока не закреплены или контур заполнен только авто-сигналами.';
+  return `
+    <div class="card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>${escapeHtml(summary.meta.label)}</h3>
+          <p class="small muted">${escapeHtml(summary.meta.description)}</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(summary.activeCount)} активн.`, summary.activeCount ? summary.meta.kind : '')}
+          ${summary.overdueCount ? badge(`${fmt.int(summary.overdueCount)} проср.`, 'danger') : ''}
+          ${summary.criticalCount ? badge(`${fmt.int(summary.criticalCount)} крит.`, 'warn') : ''}
+        </div>
+      </div>
+      <div class="muted small" style="margin-top:6px">${escapeHtml(ownerLine)}</div>
+      <div class="stack" style="margin-top:12px">${tasksHtml}</div>
+    </div>
+  `;
+}
+
+function skuOperationalStatusMeta(sku) {
+  const rawStatus = String(sku?.status || '').toLowerCase();
+  const registryStatus = String(sku?.owner?.registryStatus || '').toLowerCase();
+
+  if (rawStatus.includes('вывод') || registryStatus.includes('вывод')) return { label: 'На вывод', tone: '' };
+  if (rawStatus.includes('нов') || registryStatus.includes('нов')) return { label: 'Новинка', tone: 'info' };
+  if (rawStatus.includes('вопрос') || registryStatus.includes('вопрос')) return { label: 'Под вопросом', tone: 'warn' };
+  if (rawStatus.includes('специф') || registryStatus.includes('специф')) return { label: 'Нет в спецификации', tone: 'warn' };
+  if (!sku?.flags?.assigned) return { label: 'Без owner', tone: 'warn' };
+  if (sku?.flags?.toWorkWB && sku?.flags?.toWorkOzon) return { label: 'В работу WB + Ozon', tone: 'danger' };
+  if (sku?.flags?.toWorkWB) return { label: 'В работу WB', tone: 'danger' };
+  if (sku?.flags?.toWorkOzon) return { label: 'В работу Ozon', tone: 'danger' };
+  if (sku?.flags?.negativeMargin) return { label: 'Маржа в риске', tone: 'danger' };
+  if (sku?.flags?.lowStock) return { label: 'Низкий остаток', tone: 'warn' };
+  if (sku?.flags?.underPlan) return { label: 'Ниже плана', tone: 'warn' };
+  if ((sku?.focusScore || 0) >= 4) return { label: 'Наблюдать', tone: 'warn' };
+  if (registryStatus) return { label: sku.owner.registryStatus, tone: 'ok' };
+  if (sku?.status) return { label: sku.status, tone: 'ok' };
+  return { label: 'Актуальный', tone: 'ok' };
+}
+
+function skuOperationalStatus(sku) {
+  const meta = skuOperationalStatusMeta(sku);
+  return badge(meta.label, meta.tone);
+}
+
+function renderSkuTaskSummary(sku, task = nextTaskForSku(sku.articleKey)) {
   if (!task) return `<div class="muted small">Нет активной задачи</div>`;
   return `
     <div><strong>${escapeHtml(task.title)}</strong></div>
@@ -1522,7 +2472,11 @@ function renderDashboard() {
 
 function renderControlCenter() {
   const root = document.getElementById('view-control');
+  state.controlFilters.platform = normalizeControlWorkstreamFilter(state.controlFilters.platform);
   const tasks = filteredControlTasks();
+  const baseTasks = filteredControlTasks({ ignorePlatform: true });
+  const selectedWorkstream = state.controlFilters.platform;
+  const selectedSummary = buildControlWorkstreamSummary(baseTasks, selectedWorkstream);
   const owners = [...new Set(getAllTasks().map((task) => task.owner || 'Без owner'))].sort((a, b) => a.localeCompare(b, 'ru'));
   const ownerSuggestions = ownerOptions();
   const unassignedSkus = [...state.skus]
@@ -1533,13 +2487,14 @@ function renderControlCenter() {
     .filter((decision) => decision.status === 'waiting_decision' || decision.status === 'new')
     .sort((a, b) => (a.due || '9999-12-31').localeCompare(b.due || '9999-12-31'))
     .slice(0, 8);
-  const columns = [
-    ['new', 'Новые'],
-    ['in_progress', 'В работе'],
-    ['waiting_team', 'Ждёт другого отдела'],
-    ['waiting_decision', 'Ждёт решения'],
-    ['done', 'Сделано']
-  ];
+  const workstreamSummaries = CONTROL_WORKSTREAM_FILTER_ORDER.map((key) => buildControlWorkstreamSummary(baseTasks, key));
+  const sectionKeys = selectedWorkstream === 'all'
+    ? CONTROL_WORKSTREAM_ORDER.filter((key) => workstreamSummaries.find((item) => item.key === key)?.tasks.length)
+    : [selectedWorkstream];
+  const workstreamCards = workstreamSummaries.map((summary) => renderControlWorkstreamCard(summary, selectedWorkstream)).join('');
+  const board = sectionKeys.length
+    ? sectionKeys.map((key) => renderControlWorkstreamSection(workstreamSummaries.find((item) => item.key === key))).join('')
+    : `<div class="card" style="margin-top:14px"><div class="empty">Нет задач под текущий фильтр.</div></div>`;
 
   const counts = {
     active: tasks.filter(isTaskActive).length,
@@ -1549,16 +2504,8 @@ function renderControlCenter() {
     critical: tasks.filter((task) => isTaskActive(task) && task.priority === 'critical').length,
     auto: tasks.filter((task) => task.source === 'auto' && isTaskActive(task)).length
   };
-
-  const board = columns.map(([status, label]) => {
-    const columnTasks = tasks.filter((task) => task.status === status);
-    return `
-      <div class="board-col">
-        <h3>${escapeHtml(label)} <span class="muted">· ${fmt.int(columnTasks.length)}</span></h3>
-        <div class="stack">${columnTasks.length ? columnTasks.map(renderTaskCard).join('') : '<div class="empty">Пусто</div>'}</div>
-      </div>
-    `;
-  }).join('');
+  const spotlightTasks = tasks.slice(0, 4);
+  const recentHistory = getRecentTaskHistory(tasks, 8);
 
   const assignHtml = unassignedSkus.length ? unassignedSkus.map((sku) => `
     <div class="assign-row">
@@ -1594,12 +2541,30 @@ function renderControlCenter() {
       </div>
     `;
   }).join('') : '<div class="empty">Нет решений в ожидании</div>';
+  const recentHistoryHtml = recentHistory.length
+    ? recentHistory.map((item) => {
+      const task = getTask(item.taskId);
+      return `
+        <div class="decision-item">
+          <div class="head">
+            <div>
+              <strong>${escapeHtml(taskHeadline(task))}</strong>
+              <div class="muted small">${task ? taskEntityLine(task, getSku(task.articleKey)) : escapeHtml(item.taskId)}</div>
+            </div>
+            <div class="badge-stack">${taskHistoryBadge(item.kind)}${item.team ? badge(item.team, 'info') : ''}</div>
+          </div>
+          <div class="muted small">${escapeHtml(item.text || '—')}</div>
+          <div class="meta-line" style="margin-top:8px"><span class="muted small">${fmt.date(item.createdAt)}</span><span class="muted small">${escapeHtml(item.author || 'Команда')}</span></div>
+        </div>
+      `;
+    }).join('')
+    : '<div class="empty">История появится после первых апдейтов по задачам</div>';
 
   root.innerHTML = `
     <div class="section-title">
       <div>
-        <h2>Контроль задач и визуальный чек</h2>
-        <p>Один слой для weekly-задач, сигналов по марже, закрепления owner и решений по SKU.</p>
+        <h2>Контур задач по РОПам</h2>
+        <p>Сверху держим общую картину по выбранной площадке, ниже работаем уже по конкретным задачам, комментариям и развилкам.</p>
       </div>
       <div class="quick-actions">
         <button class="quick-chip" data-control-preset="active">Активные</button>
@@ -1618,8 +2583,81 @@ function renderControlCenter() {
       <div class="mini-kpi"><span>Авто-сигналы</span><strong>${fmt.int(counts.auto)}</strong></div>
     </div>
 
+    <div class="two-col" style="margin-top:14px">
+      <div class="card">
+        <div class="section-subhead">
+          <div>
+            <h3>${escapeHtml(controlWorkstreamMeta(selectedSummary.key).label)}</h3>
+            <p class="small muted">${escapeHtml(controlWorkstreamMeta(selectedSummary.key).description)}</p>
+          </div>
+          <div class="badge-stack">
+            ${badge(`${fmt.int(selectedSummary.activeCount)} активн.`, selectedSummary.activeCount ? controlWorkstreamMeta(selectedSummary.key).kind : '')}
+            ${selectedSummary.overdueCount ? badge(`${fmt.int(selectedSummary.overdueCount)} проср.`, 'danger') : badge('без просрочек', 'ok')}
+            ${selectedSummary.waitingCount ? badge(`${fmt.int(selectedSummary.waitingCount)} ждут решения`, 'warn') : badge('решения не висят', 'ok')}
+          </div>
+        </div>
+        <div class="task-mini-grid">
+          <div class="task-mini">
+            <div class="left"><strong>Ключевые owner</strong><div class="muted small">${escapeHtml(selectedSummary.ownerPreview.length ? selectedSummary.ownerPreview.join(' · ') : 'Пока без явных owner')}</div></div>
+            <div class="badge-stack">${badge(`${fmt.int(selectedSummary.typeCount)} типов задач`)}</div>
+          </div>
+          <div class="task-mini">
+            <div class="left"><strong>Фокус по контуру</strong><div class="muted small">${escapeHtml(selectedSummary.criticalCount ? 'Сначала критичные и блокирующие задачи' : 'Можно идти по плановой очереди')}</div></div>
+            <div class="badge-stack">${badge(`${fmt.int(selectedSummary.criticalCount)} крит.`, selectedSummary.criticalCount ? 'danger' : 'ok')}</div>
+          </div>
+          <div class="task-mini">
+            <div class="left"><strong>Что делать менеджеру</strong><div class="muted small">${escapeHtml(selectedSummary.waitingCount ? 'Разобрать задачи, которые зависли на согласовании' : 'Открывать задачу, обновлять шаг и фиксировать комментарий')}</div></div>
+            <div class="badge-stack">${badge('drilldown → комментарий → отчёт', 'info')}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-subhead">
+          <div>
+            <h3>Поставить общую задачу</h3>
+            <p class="small muted">Для межкомандных задач без привязки к одному SKU: weekly, запуск, маркетинг, согласование, правки.</p>
+          </div>
+          ${badge('общий контур', 'info')}
+        </div>
+        <form id="generalTaskForm" class="form-grid compact">
+          <input name="title" placeholder="Что нужно сделать" required>
+          <input name="entityLabel" placeholder="Проект / тема / блок" value="${selectedWorkstream !== 'all' ? controlWorkstreamMeta(selectedWorkstream).label : ''}">
+          <select name="platform">
+            <option value="cross" ${selectedWorkstream === 'cross' || selectedWorkstream === 'all' ? 'selected' : ''}>Общий контур</option>
+            <option value="wb" ${selectedWorkstream === 'wb' ? 'selected' : ''}>РОП WB</option>
+            <option value="ozon" ${selectedWorkstream === 'ozon' ? 'selected' : ''}>РОП Ozon</option>
+            <option value="retail" ${selectedWorkstream === 'retail' ? 'selected' : ''}>ЯМ / Летуаль / Магнит / ЗЯ</option>
+          </select>
+          <select name="type">
+            <option value="general">Общее</option>
+            <option value="launch">Новинка / запуск</option>
+            <option value="traffic">Трафик / продвижение</option>
+            <option value="content">Контент / карточка</option>
+            <option value="assignment">Закрепление</option>
+          </select>
+          <select name="priority">
+            ${Object.entries(PRIORITY_META).map(([value, meta]) => `<option value="${value}" ${value === 'high' ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}
+          </select>
+          <input name="owner" list="ownerOptionsList" placeholder="Кто ведёт задачу">
+          <input name="due" type="date" value="${plusDays(2)}">
+          <textarea name="nextAction" rows="3" placeholder="Что считаем первым шагом и как поймём, что задача сделана" required></textarea>
+          <button class="btn primary" type="submit">Поставить задачу</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="grid cards" style="margin-top:14px">${workstreamCards}</div>
+
     <div class="control-filters">
-      <input id="controlSearchInput" placeholder="Поиск по SKU, названию, owner, действию…" value="${escapeHtml(state.controlFilters.search)}">
+      <input id="controlSearchInput" placeholder="Поиск по SKU, задаче, owner, контуру…" value="${escapeHtml(state.controlFilters.search)}">
+      <select id="controlPlatformFilter">
+        <option value="all" ${selectedWorkstream === 'all' ? 'selected' : ''}>Все контуры</option>
+        <option value="ozon" ${selectedWorkstream === 'ozon' ? 'selected' : ''}>РОП Ozon</option>
+        <option value="wb" ${selectedWorkstream === 'wb' ? 'selected' : ''}>РОП WB</option>
+        <option value="retail" ${selectedWorkstream === 'retail' ? 'selected' : ''}>ЯМ / Летуаль / Магнит / ЗЯ</option>
+        <option value="cross" ${selectedWorkstream === 'cross' ? 'selected' : ''}>Общий контур</option>
+      </select>
       <select id="controlOwnerFilter">
         <option value="all">Все owner</option>
         ${owners.map((owner) => `<option value="${escapeHtml(owner)}" ${state.controlFilters.owner === owner ? 'selected' : ''}>${escapeHtml(owner)}</option>`).join('')}
@@ -1632,12 +2670,6 @@ function renderControlCenter() {
       <select id="controlTypeFilter">
         <option value="all">Все типы</option>
         ${Object.entries(TASK_TYPE_META).map(([value, label]) => `<option value="${value}" ${state.controlFilters.type === value ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}
-      </select>
-      <select id="controlPlatformFilter">
-        <option value="all">Все площадки</option>
-        <option value="wb" ${state.controlFilters.platform === 'wb' ? 'selected' : ''}>WB</option>
-        <option value="ozon" ${state.controlFilters.platform === 'ozon' ? 'selected' : ''}>Ozon</option>
-        <option value="wb+ozon" ${state.controlFilters.platform === 'wb+ozon' ? 'selected' : ''}>WB + Ozon</option>
       </select>
       <select id="controlHorizonFilter">
         <option value="all">Весь горизонт</option>
@@ -1653,7 +2685,20 @@ function renderControlCenter() {
       </select>
     </div>
 
+    ${board}
+
     <div class="team-strip">
+      <div class="card">
+        <div class="section-subhead">
+          <div>
+            <h3>Последние апдейты по задачам</h3>
+            <p class="small muted">Это лента истории: кто обновил задачу, что поменялось и где уже есть отчёт по результату.</p>
+          </div>
+          ${badge(`${fmt.int(recentHistory.length)} записей`, recentHistory.length ? 'info' : 'ok')}
+        </div>
+        <div class="decision-list">${recentHistoryHtml}</div>
+      </div>
+
       <div class="card">
         <div class="section-subhead">
           <div>
@@ -1666,6 +2711,9 @@ function renderControlCenter() {
         <datalist id="ownerOptionsList">${ownerSuggestions.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
         <div class="assign-list" style="margin-top:12px">${assignHtml}</div>
       </div>
+    </div>
+
+    <div class="check-grid" style="margin:14px 0">
       <div class="card">
         <div class="section-subhead">
           <div>
@@ -1676,36 +2724,53 @@ function renderControlCenter() {
         </div>
         <div class="decision-list">${decisionsHtml}</div>
       </div>
-    </div>
 
-    <div class="check-grid" style="margin-bottom:14px">
       <div class="card">
         <h3>Чек-лист контроля</h3>
         <div class="check-list">
           <div class="check-item"><strong>1.</strong><span>Закрыть просрочки и перенести сроки, если реально ждём другой отдел.</span></div>
           <div class="check-item"><strong>2.</strong><span>Проверить все задачи без owner и закрепить их.</span></div>
-          <div class="check-item"><strong>3.</strong><span>Отдельно посмотреть критичные задачи по марже и цене.</span></div>
-          <div class="check-item"><strong>4.</strong><span>Пробежать новинки без внешнего трафика и задачи по запуску.</span></div>
+          <div class="check-item"><strong>3.</strong><span>Открывать задачу через карточку, а не только менять статус в списке.</span></div>
+          <div class="check-item"><strong>4.</strong><span>При закрытии просить короткий отчёт: что сделали, какой результат, где артефакт.</span></div>
         </div>
       </div>
       <div class="card">
         <h3>Что здесь уже контролируем</h3>
         <div class="task-mini-grid">
-          ${getControlSnapshot().todayList.slice(0, 4).map(renderMiniTask).join('') || '<div class="empty">Нет задач для экспресс-чека</div>'}
+          ${spotlightTasks.length ? spotlightTasks.map(renderMiniTask).join('') : '<div class="empty">Нет задач для экспресс-чека</div>'}
         </div>
       </div>
     </div>
-
-    <div class="board-columns">${board}</div>
   `;
 
   document.getElementById('controlSearchInput').addEventListener('input', (e) => { state.controlFilters.search = e.target.value; renderControlCenter(); });
+  root.querySelectorAll('[data-control-workstream]').forEach((btn) => btn.addEventListener('click', () => {
+    state.controlFilters.platform = btn.dataset.controlWorkstream;
+    renderControlCenter();
+  }));
   document.getElementById('controlOwnerFilter').addEventListener('change', (e) => { state.controlFilters.owner = e.target.value; renderControlCenter(); });
   document.getElementById('controlStatusFilter').addEventListener('change', (e) => { state.controlFilters.status = e.target.value; renderControlCenter(); });
   document.getElementById('controlTypeFilter').addEventListener('change', (e) => { state.controlFilters.type = e.target.value; renderControlCenter(); });
   document.getElementById('controlPlatformFilter').addEventListener('change', (e) => { state.controlFilters.platform = e.target.value; renderControlCenter(); });
   document.getElementById('controlHorizonFilter').addEventListener('change', (e) => { state.controlFilters.horizon = e.target.value; renderControlCenter(); });
   document.getElementById('controlSourceFilter').addEventListener('change', (e) => { state.controlFilters.source = e.target.value; renderControlCenter(); });
+  document.getElementById('generalTaskForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const task = await createManualTask({
+      articleKey: '',
+      entityLabel: form.get('entityLabel'),
+      title: form.get('title'),
+      type: form.get('type'),
+      priority: form.get('priority'),
+      platform: form.get('platform'),
+      owner: form.get('owner'),
+      due: form.get('due'),
+      nextAction: form.get('nextAction')
+    });
+    renderControlCenter();
+    if (task?.id) openTaskModal(task.id);
+  });
 
   root.querySelectorAll('[data-save-owner]').forEach((btn) => btn.addEventListener('click', async () => {
     const articleKey = btn.dataset.saveOwner;
@@ -1723,6 +2788,167 @@ function renderControlCenter() {
   }));
 }
 
+function closeTaskModal() {
+  document.getElementById('taskModal')?.classList.remove('open');
+  state.activeTaskId = null;
+}
+
+function openTaskModal(taskId) {
+  renderTaskModal(taskId);
+}
+
+function renderTaskModal(taskId) {
+  const task = getTask(taskId);
+  if (!task) return;
+
+  state.activeTaskId = taskId;
+  const sku = getSku(task.articleKey);
+  const modal = ensureTaskModal();
+  const body = document.getElementById('taskModalBody');
+  const owners = ownerOptions();
+  const history = getTaskHistory(taskId);
+  const historyHtml = history.length
+    ? history.map(renderTaskHistoryItem).join('')
+    : `<div class="comment-item"><div class="head"><strong>Портал</strong>${taskHistoryBadge('created')}</div><div class="muted small">${fmt.date(task.createdAt)}</div><p>Задача уже есть в контуре. Дальше все апдейты и отчёты будут появляться здесь.</p></div>`;
+
+  body.innerHTML = `
+    <div class="modal-head">
+      <div>
+        <div class="muted small">${escapeHtml(controlWorkstreamMeta(controlWorkstreamKey(task, sku)).label)} · ${escapeHtml(task.entityLabel || taskHeadline(task))}</div>
+        <h2>${escapeHtml(taskHeadline(task))}</h2>
+        <div class="badge-stack">${taskStatusBadge(task)}${taskPriorityBadge(task)}${taskTypeBadge(task)}${taskPlatformBadge(task)}${taskSourceBadge(task)}</div>
+      </div>
+      <div class="badge-stack">
+        ${sku ? `<button class="btn ghost" type="button" data-open-sku="${escapeHtml(sku.articleKey)}">Открыть SKU</button>` : ''}
+        <button class="btn ghost" type="button" data-close-task-modal>Закрыть</button>
+      </div>
+    </div>
+
+    <div class="kv-3">
+      <div class="card subtle">
+        <h3>Контекст</h3>
+        ${metricRow('Owner', escapeHtml(task.owner || 'Не назначен'))}
+        ${metricRow('Срок', escapeHtml(task.due || '—'))}
+        ${metricRow('Источник', escapeHtml(task.source || 'manual'))}
+        ${metricRow('SKU / тема', sku ? escapeHtml(sku.article || sku.articleKey) : escapeHtml(task.entityLabel || 'Общая задача'))}
+      </div>
+      <div class="card subtle">
+        <h3>Что делаем сейчас</h3>
+        <div class="note-box">${escapeHtml(task.nextAction || 'Нужно описать следующий шаг')}</div>
+        <div class="muted small" style="margin-top:10px">${escapeHtml(task.reason || 'Причина / контекст пока не заполнены')}</div>
+      </div>
+      <div class="card subtle">
+        <h3>Как закрывать</h3>
+        <div class="note-box">Маркетолог закрывает задачу не просто сменой статуса, а коротким отчётом: что сделал, какой результат получил и где лежит артефакт / ссылка.</div>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-top:14px">
+      <div class="card">
+        <div class="modal-section-title">
+          <div>
+            <h3>Редактировать задачу</h3>
+            <p class="small muted">Из карточки можно менять owner, сроки, следующий шаг, приоритет и статус.</p>
+          </div>
+          ${task.articleKey ? taskEntityLine(task, sku) : badge('Общая задача', 'info')}
+        </div>
+        <datalist id="taskOwnerList">${owners.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
+        <form id="taskEditForm" class="form-grid compact">
+          <input name="title" value="${escapeHtml(task.title || '')}" required>
+          <input name="entityLabel" value="${escapeHtml(task.entityLabel || '')}" placeholder="Проект / тема">
+          <input name="owner" list="taskOwnerList" value="${escapeHtml(task.owner || '')}" placeholder="Кто ведёт">
+          <input name="due" type="date" value="${escapeHtml(task.due || '')}">
+          <select name="status">${Object.entries(TASK_STATUS_META).map(([value, meta]) => `<option value="${value}" ${task.status === value ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}</select>
+          <select name="priority">${Object.entries(PRIORITY_META).map(([value, meta]) => `<option value="${value}" ${task.priority === value ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}</select>
+          <select name="type">${Object.entries(TASK_TYPE_META).map(([value, label]) => `<option value="${value}" ${task.type === value ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select>
+          <select name="platform">
+            <option value="cross" ${task.platform === 'cross' ? 'selected' : ''}>Общий контур</option>
+            <option value="wb" ${task.platform === 'wb' ? 'selected' : ''}>РОП WB</option>
+            <option value="ozon" ${task.platform === 'ozon' ? 'selected' : ''}>РОП Ozon</option>
+            <option value="retail" ${task.platform === 'retail' ? 'selected' : ''}>ЯМ / Летуаль / Магнит / ЗЯ</option>
+            <option value="wb+ozon" ${task.platform === 'wb+ozon' ? 'selected' : ''}>WB + Ozon</option>
+          </select>
+          <textarea name="nextAction" rows="4" placeholder="Следующее действие">${escapeHtml(task.nextAction || '')}</textarea>
+          <textarea name="reason" rows="4" placeholder="Контекст / почему задача возникла">${escapeHtml(task.reason || '')}</textarea>
+          <button class="btn primary" type="submit">Сохранить изменения</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="modal-section-title">
+          <div>
+            <h3>Комментарии и история</h3>
+            <p class="small muted">Видно все апдейты по задаче: изменения, обсуждение и отчёты по закрытию.</p>
+          </div>
+          ${badge(`${fmt.int(history.length)} записей`, history.length ? 'info' : 'ok')}
+        </div>
+        <div class="list">${historyHtml}</div>
+        <form id="taskCommentForm" class="form-grid compact" style="margin-top:12px">
+          <input name="author" value="${escapeHtml(state.team.member.name || task.owner || 'Команда')}" placeholder="Кто пишет" required>
+          <textarea name="text" rows="4" placeholder="Апдейт по задаче: что сделано, что мешает, что нужно от других" required></textarea>
+          <button class="btn" type="submit">Добавить комментарий</button>
+        </form>
+      </div>
+    </div>
+
+    ${!['done', 'cancelled'].includes(task.status) ? `
+      <div class="card" style="margin-top:14px">
+        <div class="section-subhead">
+          <div>
+            <h3>Закрыть задачу с отчётом</h3>
+            <p class="small muted">Когда маркетолог завершил работу, здесь фиксируется результат. Без отчёта задача не считается закрытой по смыслу.</p>
+          </div>
+          ${badge('обязателен короткий отчёт', 'warn')}
+        </div>
+        <form id="taskCloseForm" class="form-grid compact">
+          <textarea name="report" rows="5" placeholder="Что сделали, какой результат получили, где лежит артефакт / ссылка" required></textarea>
+          <button class="btn primary" type="submit">Закрыть задачу</button>
+        </form>
+      </div>
+    ` : ''}
+  `;
+
+  modal.classList.add('open');
+
+  body.querySelector('[data-close-task-modal]')?.addEventListener('click', closeTaskModal);
+  body.querySelector('#taskEditForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    await updateTaskRecord(taskId, {
+      title: form.get('title'),
+      entityLabel: form.get('entityLabel'),
+      owner: form.get('owner'),
+      due: form.get('due'),
+      status: form.get('status'),
+      priority: form.get('priority'),
+      type: form.get('type'),
+      platform: form.get('platform'),
+      nextAction: form.get('nextAction'),
+      reason: form.get('reason')
+    });
+    renderTaskModal(taskId);
+  });
+
+  body.querySelector('#taskCommentForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    await createTaskHistoryEntry(taskId, 'comment', form.get('text'), {
+      author: form.get('author'),
+      team: teamMemberLabel()
+    });
+    renderTaskModal(taskId);
+  });
+
+  body.querySelector('#taskCloseForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const report = String(form.get('report') || '').trim();
+    if (!report) return;
+    await closeTaskWithReport(taskId, report);
+    renderTaskModal(taskId);
+  });
+}
+
 function filterSkuByMarket(sku) {
   if (state.filters.market === 'wb') return sku?.flags?.hasWB;
   if (state.filters.market === 'ozon') return sku?.flags?.hasOzon;
@@ -1735,7 +2961,17 @@ function filterSkuByWorkLogic(sku) {
   return sku?.flags?.toWork;
 }
 
-function getFilteredSkus() {
+function buildSkuRegistryTaskMap() {
+  const map = new Map();
+  for (const task of getAllTasks()) {
+    const key = String(task?.articleKey || '').trim();
+    if (!key || map.has(key)) continue;
+    map.set(key, task);
+  }
+  return map;
+}
+
+function getFilteredSkus(taskMap = buildSkuRegistryTaskMap()) {
   const q = String(state.filters.search || '').trim().toLowerCase();
   return state.skus.filter((sku) => {
     if (!filterSkuByMarket(sku)) return false;
@@ -1775,8 +3011,8 @@ function getFilteredSkus() {
         return true;
     }
   }).sort((a, b) => {
-    const aTask = nextTaskForSku(a.articleKey);
-    const bTask = nextTaskForSku(b.articleKey);
+    const aTask = taskMap.get(String(a.articleKey || '').trim()) || null;
+    const bTask = taskMap.get(String(b.articleKey || '').trim()) || null;
     return Number(filterSkuByWorkLogic(b)) - Number(filterSkuByWorkLogic(a))
       || Number((b.focusScore || 0)) - Number((a.focusScore || 0))
       || Number(isTaskOverdue(bTask)) - Number(isTaskOverdue(aTask))
@@ -1786,7 +3022,8 @@ function getFilteredSkus() {
 
 function renderSkuRegistry() {
   const root = document.getElementById('view-skus');
-  const items = getFilteredSkus();
+  const skuTaskMap = buildSkuRegistryTaskMap();
+  const items = getFilteredSkus(skuTaskMap);
   const owners = [...new Set(state.skus.map((sku) => ownerName(sku)).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
   const segments = [...new Set(state.skus.map((sku) => sku.segment).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
   const assignedCount = items.filter((sku) => sku?.flags?.assigned).length;
@@ -1794,17 +3031,20 @@ function renderSkuRegistry() {
   const kzCount = items.filter((sku) => sku?.flags?.hasKZ).length;
   const vkCount = items.filter((sku) => sku?.flags?.hasVK).length;
 
-  const rows = items.map((sku) => `
+  const rows = items.map((sku) => {
+    const task = skuTaskMap.get(String(sku.articleKey || '').trim()) || null;
+    return `
     <tr>
       <td>${linkToSku(sku.articleKey, sku.article || sku.articleKey)}</td>
       <td><div><strong>${escapeHtml(sku.name || 'Без названия')}</strong></div><div class="muted small">${escapeHtml(sku.category || sku.segment || '—')}</div></td>
       <td>${skuOperationalStatus(sku)}</td>
       <td>${ownerCell(sku)}</td>
       <td>${trafficBadges(sku, 'нет')}</td>
-      <td>${renderSkuTaskSummary(sku)}</td>
-      <td>${nextTaskForSku(sku.articleKey)?.due ? escapeHtml(nextTaskForSku(sku.articleKey).due) : '—'}</td>
+      <td>${renderSkuTaskSummary(sku, task)}</td>
+      <td>${task?.due ? escapeHtml(task.due) : '—'}</td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 
   root.innerHTML = `
     <div class="section-title">
@@ -1958,10 +3198,10 @@ function renderSkuModal(articleKey) {
           <select name="type">${Object.entries(TASK_TYPE_META).map(([value, label]) => `<option value="${value}">${escapeHtml(label)}</option>`).join('')}</select>
           <select name="priority">${Object.entries(PRIORITY_META).map(([value, meta]) => `<option value="${value}">${escapeHtml(meta.label)}</option>`).join('')}</select>
           <select name="platform">
-            <option value="all">Все площадки</option>
-            <option value="wb">WB</option>
-            <option value="ozon">Ozon</option>
-            <option value="wb+ozon">WB + Ozon</option>
+            <option value="cross">Общий контур</option>
+            <option value="wb">РОП WB</option>
+            <option value="ozon">РОП Ozon</option>
+            <option value="retail">ЯМ / Летуаль / Магнит / ЗЯ</option>
           </select>
           <input name="owner" placeholder="Owner" value="${escapeHtml(ownerName(sku) || '')}">
           <input name="due" type="date" value="${plusDays(3)}">
@@ -2116,20 +3356,105 @@ function renderSkuModal(articleKey) {
   });
 }
 
+function deriveLaunchStatus(sku) {
+  if (!ownerName(sku)) return 'Нужен owner';
+  if (sku?.flags?.negativeMargin || sku?.flags?.toWork) return 'Нужна корректировка экономики';
+  if (totalSkuStock(sku) <= 0) return 'Ждём поставку';
+  if (!sku?.flags?.hasExternalTraffic) return 'Готовим трафик';
+  return 'В работе';
+}
+
+function deriveLaunchPhase(sku) {
+  if (!ownerName(sku)) return 'owner';
+  if (totalSkuStock(sku) <= 0) return 'supply';
+  if (!sku?.flags?.hasExternalTraffic) return 'content';
+  if (sku?.flags?.negativeMargin || sku?.flags?.toWork) return 'economy';
+  return 'scale';
+}
+
+function launchPhaseMeta(phase) {
+  const map = {
+    owner: { label: 'Нужен owner', tone: 'warn' },
+    supply: { label: 'Поставка', tone: 'warn' },
+    content: { label: 'Контент / трафик', tone: 'info' },
+    economy: { label: 'Экономика', tone: 'danger' },
+    scale: { label: 'Масштабирование', tone: 'ok' }
+  };
+  return map[phase] || map.content;
+}
+
+function normalizeLaunchItem(item = {}) {
+  return {
+    id: item.id || stableId('launch', item.articleKey || item.name || item.title || ''),
+    articleKey: item.articleKey || '',
+    name: item.name || item.title || 'Новинка',
+    reportGroup: item.reportGroup || item.segment || 'Продукт',
+    subCategory: item.subCategory || item.category || '—',
+    launchMonth: item.launchMonth || state.dashboard?.dataFreshness?.launchPlanHorizon || 'Текущий фокус',
+    status: item.status || 'Статус не указан',
+    phase: item.phase || 'content',
+    owner: item.owner || '',
+    production: item.production || '',
+    plannedRevenue: numberOrZero(item.plannedRevenue),
+    targetCost: numberOrZero(item.targetCost),
+    externalTraffic: item.externalTraffic || 'без внешнего трафика',
+    activeTasks: numberOrZero(item.activeTasks),
+    blockers: Array.isArray(item.blockers) ? item.blockers.filter(Boolean) : []
+  };
+}
+
+function buildLaunchItemsFromSkus() {
+  return state.skus
+    .filter((sku) => String(sku?.segment || '').toUpperCase() === 'GROWTH' || String(sku?.status || '').toLowerCase().includes('нов'))
+    .map((sku) => {
+      const phase = deriveLaunchPhase(sku);
+      const blockers = [];
+      if (!ownerName(sku)) blockers.push('не назначен owner');
+      if (totalSkuStock(sku) <= 0) blockers.push('нет остатка');
+      if (!sku?.flags?.hasExternalTraffic) blockers.push('нет внешнего трафика');
+      if (sku?.flags?.negativeMargin) blockers.push('маржа в риске');
+      if (sku?.flags?.highReturn) blockers.push('высокие возвраты');
+      return normalizeLaunchItem({
+        articleKey: sku.articleKey,
+        name: sku.name || sku.article || sku.articleKey,
+        reportGroup: sku.segment || 'GROWTH',
+        subCategory: sku.category || '—',
+        launchMonth: state.dashboard?.dataFreshness?.launchPlanHorizon || 'Текущий фокус',
+        status: deriveLaunchStatus(sku),
+        phase,
+        owner: ownerName(sku),
+        production: totalSkuStock(sku) > 0 ? `Остаток ${fmt.int(totalSkuStock(sku))}` : 'Без остатка',
+        plannedRevenue: monthRevenue(sku),
+        targetCost: 0,
+        externalTraffic: externalTrafficLabel(sku),
+        activeTasks: getSkuControlTasks(sku.articleKey).filter(isTaskActive).length,
+        blockers
+      });
+    })
+    .sort((a, b) => b.activeTasks - a.activeTasks || b.plannedRevenue - a.plannedRevenue || a.name.localeCompare(b.name, 'ru'));
+}
+
+function getLaunchItems() {
+  const source = Array.isArray(state.launches) && state.launches.length ? state.launches.map(normalizeLaunchItem) : buildLaunchItemsFromSkus();
+  return source.slice(0, 24);
+}
+
 function renderLaunches() {
   const root = document.getElementById('view-launches');
-  const rows = (state.launches || []).map((item) => `
+  const items = getLaunchItems();
+  const rows = items.map((item) => `
     <div class="list-item">
       <div class="head">
         <div>
-          <strong>${escapeHtml(item.name || 'Новинка')}</strong>
+          <strong>${item.articleKey ? linkToSku(item.articleKey, item.name || 'Новинка') : escapeHtml(item.name || 'Новинка')}</strong>
           <div class="muted small">${escapeHtml(item.reportGroup || '—')} · ${escapeHtml(item.subCategory || '—')}</div>
         </div>
         ${badge(item.launchMonth || '—', 'info')}
       </div>
-      <div class="badge-stack">${badge(item.tag || 'новинка')}${item.production ? badge(item.production) : ''}</div>
+      <div class="badge-stack">${badge(launchPhaseMeta(item.phase).label, launchPhaseMeta(item.phase).tone)}${item.production ? badge(item.production) : ''}${item.owner ? badge(item.owner, 'info') : badge('Без owner', 'warn')}</div>
       <div class="muted small" style="margin-top:8px">${escapeHtml(item.status || 'Статус не указан')}</div>
-      <div class="muted small" style="margin-top:8px">План выручки: ${fmt.money(item.plannedRevenue)} · Целевая себестоимость: ${fmt.money(item.targetCost)}</div>
+      <div class="muted small" style="margin-top:8px">План выручки: ${fmt.money(item.plannedRevenue)} · Трафик: ${escapeHtml(item.externalTraffic || '—')}</div>
+      <div class="badge-stack" style="margin-top:8px">${badge(`${fmt.int(item.activeTasks || 0)} активн. задач`, item.activeTasks ? 'warn' : 'ok')}${(item.blockers || []).slice(0, 2).map((text) => badge(text, 'warn')).join('')}</div>
     </div>
   `).join('');
 
@@ -2137,15 +3462,81 @@ function renderLaunches() {
     <div class="section-title">
       <div>
         <h2>Новинки и pipeline</h2>
-        <p>Отдельный слой под запуск, чтобы не терять связку карточка → контент → внешний трафик.</p>
+        <p>Собрала product-layer по SKU роста и новинкам: карточка, owner, экономика, трафик и текущие блокеры в одном месте.</p>
       </div>
+      <div class="badge-stack">${badge(`${fmt.int(items.length)} SKU в запуске`, items.length ? 'info' : 'warn')}${badge(`${fmt.int(items.filter((item) => !item.owner).length)} без owner`, items.filter((item) => !item.owner).length ? 'warn' : 'ok')}${badge(`${fmt.int(items.filter((item) => item.activeTasks).length)} с активными задачами`, items.filter((item) => item.activeTasks).length ? 'warn' : 'ok')}</div>
     </div>
     <div class="card">
       <div class="pipeline-strip">
-        <span>Идея</span><span>PMR</span><span>Дизайн</span><span>Тест</span><span>Поставка</span><span>Карточка</span><span>Контент</span><span>Трафик</span>
+        <span>Owner</span><span>Поставка</span><span>Контент</span><span>Трафик</span><span>Экономика</span><span>Масштаб</span>
       </div>
       <div class="list" style="margin-top:14px">${rows || '<div class="empty">Нет новинок в текущем срезе</div>'}</div>
     </div>
+  `;
+}
+
+function renderLaunchControl() {
+  const root = document.getElementById('view-launch-control');
+  const items = getLaunchItems();
+  const phaseOrder = ['owner', 'supply', 'content', 'economy', 'scale'];
+  const groups = phaseOrder
+    .map((key) => ({ key, meta: launchPhaseMeta(key), items: items.filter((item) => item.phase === key) }))
+    .filter((group) => group.items.length);
+
+  root.innerHTML = `
+    <div class="section-title">
+      <div>
+        <h2>Запуск новинок</h2>
+        <p>Отдельный экран запуска: сверху видно, где именно сейчас блокируется запуск, а ниже можно пройтись по SKU как по чек-листу.</p>
+      </div>
+      <div class="badge-stack">
+        ${badge(`${fmt.int(items.length)} в запуске`, items.length ? 'info' : 'warn')}
+        ${badge(`${fmt.int(items.filter((item) => item.phase === 'owner').length)} ждут owner`, items.filter((item) => item.phase === 'owner').length ? 'warn' : 'ok')}
+        ${badge(`${fmt.int(items.filter((item) => item.phase === 'content').length)} ждут трафик`, items.filter((item) => item.phase === 'content').length ? 'warn' : 'ok')}
+      </div>
+    </div>
+
+    <div class="grid cards" style="margin-top:14px">
+      ${groups.map((group) => `
+        <div class="card kpi">
+          <div class="label">${escapeHtml(group.meta.label)}</div>
+          <div class="value">${fmt.int(group.items.length)}</div>
+          <div class="hint">SKU в этой фазе запуска</div>
+          <div class="badge-stack" style="margin-top:10px">${group.items.slice(0, 3).map((item) => badge(item.owner || item.name, item.owner ? '' : 'warn')).join('')}</div>
+        </div>
+      `).join('') || '<div class="card"><div class="empty">Нет SKU в запуске</div></div>'}
+    </div>
+
+    ${groups.map((group) => `
+      <div class="card" style="margin-top:14px">
+        <div class="section-subhead">
+          <div>
+            <h3>${escapeHtml(group.meta.label)}</h3>
+            <p class="small muted">Что надо закрыть на этом этапе, чтобы SKU не зависал между отделами.</p>
+          </div>
+          ${badge(`${fmt.int(group.items.length)} SKU`, group.meta.tone)}
+        </div>
+        <div class="list">
+          ${group.items.map((item) => `
+            <div class="list-item">
+              <div class="head">
+                <div>
+                  <strong>${item.articleKey ? linkToSku(item.articleKey, item.name || 'Новинка') : escapeHtml(item.name || 'Новинка')}</strong>
+                  <div class="muted small">${escapeHtml(item.subCategory || '—')}</div>
+                </div>
+                <div class="badge-stack">${item.owner ? badge(item.owner, 'info') : badge('Без owner', 'warn')}${badge(`${fmt.int(item.activeTasks || 0)} задач`, item.activeTasks ? 'warn' : 'ok')}</div>
+              </div>
+              <div class="check-list">
+                <div class="check-item"><strong>1.</strong><span>${ownerName(getSku(item.articleKey)) ? 'Owner назначен' : 'Назначить owner и зону ответственности'}</span></div>
+                <div class="check-item"><strong>2.</strong><span>${totalSkuStock(getSku(item.articleKey)) > 0 ? `Остаток есть: ${fmt.int(totalSkuStock(getSku(item.articleKey)))}` : 'Проверить поставку и доступность SKU'}</span></div>
+                <div class="check-item"><strong>3.</strong><span>${getSku(item.articleKey)?.flags?.hasExternalTraffic ? `Трафик есть: ${escapeHtml(item.externalTraffic)}` : 'Подготовить запуск трафика / контента'}</span></div>
+                <div class="check-item"><strong>4.</strong><span>${(item.blockers || []).length ? `Блокеры: ${escapeHtml(item.blockers.join(', '))}` : 'Критичных блокеров не видно'}</span></div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('')}
   `;
 }
 
@@ -2369,7 +3760,7 @@ function renderRepricer() {
     </div>
 
     <div class="repricer-stack">
-      ${rows.slice(0, 24).map((row) => `
+      ${rows.map((row) => `
         <div class="card repricer-card">
           <div class="head">
             <div>
@@ -2385,7 +3776,6 @@ function renderRepricer() {
         </div>
       `).join('') || '<div class="empty">По выбранным фильтрам репрайсер ничего не показал.</div>'}
     </div>
-    ${rows.length > 24 ? `<div class="footer-note">Показаны первые 24 SKU из ${fmt.int(rows.length)}. Остальные доступны по фильтрам и поиску.</div>` : ''}
   `;
 
   document.getElementById('repricerSearchInput').addEventListener('input', (event) => {
@@ -2460,134 +3850,964 @@ function getOrderCalcBase() {
 
 function renderOrderCalculator() {
   const root = document.getElementById('view-order');
-  const base = getOrderCalcBase();
-  if (!base) {
-    root.innerHTML = '<div class="empty">Нет SKU для расчёта заказа.</div>';
-    return;
-  }
-  root.innerHTML = `
-    <div class="section-title">
-      <div>
-        <h2>Форма расчёта заказа товара</h2>
-        <p>Здесь можно быстро прикинуть, сколько дозаказывать по SKU, чтобы дожить до следующего пополнения и ещё оставить целевой запас после прихода.</p>
-      </div>
-      <div class="badge-stack">${badge('формула = скорость × горизонт − наличие − входящие', 'info')}</div>
-    </div>
+  if (!root) return;
+  injectOrderProcurementStyles();
+  const renderToken = ++ORDER_PROCUREMENT_RUNTIME.renderToken;
 
-    <div class="two-col order-layout">
-      <div class="card">
-        <h3>Параметры расчёта</h3>
-        <form id="orderCalcForm" class="form-grid order-form">
-          <label>
-            <span>SKU</span>
-            <select name="articleKey">
-              ${state.skus.map((sku) => `<option value="${escapeHtml(sku.articleKey)}" ${base.sku.articleKey === sku.articleKey ? 'selected' : ''}>${escapeHtml(sku.article || sku.articleKey)} · ${escapeHtml((sku.name || '').slice(0, 80))}</option>`).join('')}
-            </select>
-          </label>
-          <label>
-            <span>Контур расчёта</span>
-            <select name="scope">
-              <option value="all" ${base.scope === 'all' ? 'selected' : ''}>Оба MP вместе</option>
-              <option value="wb" ${base.scope === 'wb' ? 'selected' : ''}>Только WB shelf</option>
-              <option value="ozon" ${base.scope === 'ozon' ? 'selected' : ''}>Только Ozon shelf</option>
-            </select>
-          </label>
-          <label>
-            <span>Источник скорости продаж</span>
-            <select name="salesSource">
-              <option value="hybrid" ${state.orderCalc.salesSource === 'hybrid' ? 'selected' : ''}>Авто = max(order rate, plan rate)</option>
-              <option value="orders" ${state.orderCalc.salesSource === 'orders' ? 'selected' : ''}>Только заказы</option>
-              <option value="plan" ${state.orderCalc.salesSource === 'plan' ? 'selected' : ''}>Только план</option>
-              <option value="manual" ${state.orderCalc.salesSource === 'manual' ? 'selected' : ''}>Ввести вручную</option>
-            </select>
-          </label>
-          <label>
-            <span>Ручная скорость, шт./день</span>
-            <input type="number" step="0.1" name="manualDailySales" value="${escapeHtml(state.orderCalc.manualDailySales)}" placeholder="Напр. 18.5">
-          </label>
-          <label>
-            <span>Дней до следующего прихода</span>
-            <input type="number" step="1" name="daysToNextReceipt" value="${escapeHtml(state.orderCalc.daysToNextReceipt)}" placeholder="По умолчанию lead time SKU">
-          </label>
-          <label>
-            <span>Целевой запас после прихода, дней</span>
-            <input type="number" step="1" name="targetCoverAfter" value="${escapeHtml(state.orderCalc.targetCoverAfter)}">
-          </label>
-          <label>
-            <span>Safety stock, дней</span>
-            <input type="number" step="1" name="safetyDays" value="${escapeHtml(state.orderCalc.safetyDays)}">
-          </label>
-          <label>
-            <span>Входящий запас, шт.</span>
-            <input type="number" step="1" name="inboundManual" value="${escapeHtml(state.orderCalc.inboundManual)}" placeholder="Пусто = подставить авто ${fmt.int(base.autoInTransit)}">
-          </label>
-          <label>
-            <span>MOQ, шт.</span>
-            <input type="number" step="1" name="moq" value="${escapeHtml(state.orderCalc.moq)}">
-          </label>
-          <label>
-            <span>Кратность упаковки</span>
-            <input type="number" step="1" name="packSize" value="${escapeHtml(state.orderCalc.packSize)}">
-          </label>
-          <button class="btn primary" type="submit">Пересчитать</button>
-        </form>
-        <div class="note-box">В этой версии скорость продаж считается по SKU в целом. Когда подключим раздельные daily sales WB/Ozon из рабочих файлов, добавим полноценный platform-level расчёт.</div>
-      </div>
-
-      <div class="card order-result-card">
-        <h3>Результат</h3>
-        <div class="order-result-grid">
-          <div class="mini-kpi ${base.stockoutRisk ? 'danger' : ''}"><span>Наличие сейчас</span><strong>${fmt.int(base.availableNow)}</strong><span>WB ${fmt.int(base.wbStock)} · Ozon ${fmt.int(base.ozonStock)}</span></div>
-          <div class="mini-kpi"><span>Скорость продаж</span><strong>${fmt.num(base.dailySales, 1)}</strong><span>шт./день</span></div>
-          <div class="mini-kpi"><span>Горизонт</span><strong>${fmt.int(base.totalHorizon)}</strong><span>дней = приход + запас + safety</span></div>
-          <div class="mini-kpi warn"><span>Рекомендованный заказ</span><strong>${fmt.int(base.finalQty)}</strong><span>шт. после MOQ и кратности</span></div>
-        </div>
-        <div class="metric-list" style="margin-top:14px">
-          <div class="metric-row"><span>Order rate</span><strong>${fmt.num(base.ordersDaily, 1)} шт./день</strong></div>
-          <div class="metric-row"><span>Plan rate</span><strong>${fmt.num(base.planDaily, 1)} шт./день</strong></div>
-          <div class="metric-row"><span>Дней покрытия сейчас</span><strong>${base.coverageNowDays == null ? '—' : `${fmt.num(base.coverageNowDays, 1)} дн.`}</strong></div>
-          <div class="metric-row"><span>Авто входящий запас</span><strong>${fmt.int(base.autoInTransit)} шт.</strong></div>
-          <div class="metric-row"><span>Спрос на горизонт</span><strong>${fmt.int(base.demandUnits)} шт.</strong></div>
-          <div class="metric-row"><span>Raw до округления</span><strong>${fmt.int(base.rawOrderQty)} шт.</strong></div>
-        </div>
-        <div class="note-box ${base.stockoutRisk ? 'warning-box' : ''}">${base.stockoutRisk ? 'Есть риск OOS до следующего прихода — текущего покрытия меньше, чем дней до пополнения.' : 'С текущими настройками SKU доживает до следующего прихода без явного OOS-риска.'}</div>
-        <div class="copy-box">
-          <strong>Короткое резюме:</strong>
-          <div id="orderSummaryText" class="muted small" style="margin-top:6px">${escapeHtml(base.summaryText)}</div>
-          <button class="btn small-btn" type="button" id="copyOrderSummaryBtn">Скопировать расчёт</button>
-        </div>
-      </div>
-    </div>
-  `;
-
-  const form = document.getElementById('orderCalcForm');
-  const sync = () => {
-    const data = new FormData(form);
-    state.orderCalc = {
-      ...state.orderCalc,
-      articleKey: String(data.get('articleKey') || ''),
-      scope: String(data.get('scope') || 'all'),
-      salesSource: String(data.get('salesSource') || 'hybrid'),
-      manualDailySales: String(data.get('manualDailySales') || ''),
-      daysToNextReceipt: String(data.get('daysToNextReceipt') || ''),
-      targetCoverAfter: String(data.get('targetCoverAfter') || '30'),
-      safetyDays: String(data.get('safetyDays') || '7'),
-      inboundManual: String(data.get('inboundManual') || ''),
-      packSize: String(data.get('packSize') || '1'),
-      moq: String(data.get('moq') || '0')
-    };
-  };
-  form.addEventListener('change', () => { sync(); renderOrderCalculator(); });
-  form.addEventListener('submit', (event) => { event.preventDefault(); sync(); renderOrderCalculator(); });
-  document.getElementById('copyOrderSummaryBtn').addEventListener('click', async () => {
+  if (orderProcurementHasReadyData()) {
     try {
-      await navigator.clipboard.writeText(base.summaryText);
-      setAppError('Расчёт заказа скопирован в буфер обмена.');
-      setTimeout(() => setAppError(''), 1600);
-    } catch {
-      setAppError('Не удалось скопировать расчёт. Скопируй текст вручную из блока резюме.');
+      orderProcurementRenderInto(root);
+    } catch (error) {
+      console.error('[order-procurement] sync render', error);
+    }
+  } else {
+    root.innerHTML = renderOrderProcurementLoading();
+  }
+
+  const platform = ensureOrderProcurementState().platform;
+  ensureOrderProcurementSources(platform)
+    .then(() => {
+      if (renderToken !== ORDER_PROCUREMENT_RUNTIME.renderToken) return;
+      orderProcurementRenderInto(root);
+    })
+    .catch((error) => {
+      if (renderToken !== ORDER_PROCUREMENT_RUNTIME.renderToken) return;
+      console.error('[order-procurement] render', error);
+      root.innerHTML = renderOrderProcurementError();
+    });
+}
+
+const ORDER_PROCUREMENT_VERSION = '20260421d';
+const ORDER_PROCUREMENT_STYLE_ID = `altea-order-procurement-${ORDER_PROCUREMENT_VERSION}`;
+const ORDER_PROCUREMENT_RUNTIME = {
+  renderToken: 0,
+  cache: {
+    skus: null,
+    warehouse: null,
+    combined: null,
+    wb: null,
+    ozon: null
+  },
+  pending: new Map()
+};
+
+function ensureOrderProcurementState() {
+  state.orderProcurement = state.orderProcurement || {};
+  state.orderProcurement.platform = state.orderProcurement.platform === 'ozon' ? 'ozon' : 'wb';
+  state.orderProcurement.days = clampOrderProcurementDays(state.orderProcurement.days);
+  return state.orderProcurement;
+}
+
+function clampOrderProcurementDays(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return 30;
+  return Math.max(1, Math.min(180, Math.round(parsed)));
+}
+
+function orderProcurementNumber(value) {
+  if (value === null || value === undefined || value === '') return 0;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function orderProcurementEscape(value) {
+  return escapeHtml(value == null ? '' : String(value));
+}
+
+function orderProcurementNormalizeKey(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^\p{L}\p{N}_-]+/gu, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function orderProcurementUnique(values) {
+  return [...new Set((values || []).filter(Boolean))];
+}
+
+function orderProcurementBadge(text, tone = '') {
+  return badge(text, tone);
+}
+
+function orderProcurementTurnoverTone(value) {
+  if (!Number.isFinite(Number(value))) return 'info';
+  if (Number(value) < 7) return 'danger';
+  if (Number(value) < 14) return 'warn';
+  return 'ok';
+}
+
+function orderProcurementTurnoverBadge(value) {
+  if (!Number.isFinite(Number(value))) return orderProcurementBadge('n/a', 'info');
+  return orderProcurementBadge(`${fmt.num(value, 1)} дн.`, orderProcurementTurnoverTone(value));
+}
+
+function orderProcurementFormatDateTime(value) {
+  if (!value) return 'последний доступный срез';
+  try {
+    return new Date(value).toLocaleString('ru-RU', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    });
+  } catch {
+    return String(value);
+  }
+}
+
+function orderProcurementResolvedPath(path) {
+  return path.includes('?') ? path : `${path}?v=${ORDER_PROCUREMENT_VERSION}`;
+}
+
+async function orderProcurementParseResponse(response, path) {
+  if (!response.ok) throw new Error(`Не удалось загрузить ${path}`);
+
+  const contentType = String(response.headers.get('content-type') || '').toLowerCase();
+  const isGzip =
+    path.endsWith('.gz') ||
+    contentType.includes('application/gzip') ||
+    contentType.includes('application/x-gzip') ||
+    contentType.includes('gzip');
+
+  let text = '';
+  if (isGzip) {
+    if (typeof DecompressionStream !== 'function') {
+      throw new Error(`Браузер не поддерживает распаковку gzip для ${path}`);
+    }
+    const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
+    text = await new Response(stream).text();
+  } else {
+    text = await response.text();
+  }
+
+  return JSON.parse(sanitizeLooseJson(text));
+}
+
+async function orderProcurementFetchJson(paths) {
+  let lastError = null;
+  for (const path of paths) {
+    try {
+      const response = await fetch(orderProcurementResolvedPath(path), { cache: 'no-store' });
+      return await orderProcurementParseResponse(response, path);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error('Не удалось загрузить order-файлы.');
+}
+
+function orderProcurementLoadCached(key, loader) {
+  if (ORDER_PROCUREMENT_RUNTIME.cache[key]) {
+    return Promise.resolve(ORDER_PROCUREMENT_RUNTIME.cache[key]);
+  }
+  if (ORDER_PROCUREMENT_RUNTIME.pending.has(key)) {
+    return ORDER_PROCUREMENT_RUNTIME.pending.get(key);
+  }
+
+  const promise = Promise.resolve()
+    .then(loader)
+    .then((data) => {
+      ORDER_PROCUREMENT_RUNTIME.cache[key] = data;
+      return data;
+    })
+    .finally(() => {
+      ORDER_PROCUREMENT_RUNTIME.pending.delete(key);
+    });
+
+  ORDER_PROCUREMENT_RUNTIME.pending.set(key, promise);
+  return promise;
+}
+
+async function ensureOrderProcurementSources(platform = 'wb') {
+  const normalizedPlatform = platform === 'ozon' ? 'ozon' : 'wb';
+
+  if (Array.isArray(state.skus) && state.skus.length) {
+    ORDER_PROCUREMENT_RUNTIME.cache.skus = state.skus;
+  } else {
+    await orderProcurementLoadCached('skus', () => loadJson('data/skus.json'));
+  }
+
+  await orderProcurementLoadCached('warehouse', async () => {
+    try {
+      return await orderProcurementFetchJson(['data/warehouse_stock_overlay.json', 'data/warehouse_stock_overlay.json.gz']);
+    } catch (error) {
+      console.warn('[order-procurement] warehouse overlay', error);
+      return { generatedAt: '', rows: [] };
     }
   });
+
+  if (!ORDER_PROCUREMENT_RUNTIME.cache.combined) {
+    try {
+      await orderProcurementLoadCached('combined', () => orderProcurementFetchJson(['data/order_procurement.json', 'data/order_procurement.json.gz']));
+    } catch (combinedError) {
+      if (normalizedPlatform === 'wb' && !ORDER_PROCUREMENT_RUNTIME.cache.wb) {
+        await orderProcurementLoadCached('wb', () => orderProcurementFetchJson(['data/order_procurement_wb.json', 'data/order_procurement_wb.json.gz']));
+      }
+      if (normalizedPlatform === 'ozon' && !ORDER_PROCUREMENT_RUNTIME.cache.ozon) {
+        await orderProcurementLoadCached('ozon', () => orderProcurementFetchJson(['data/order_procurement_ozon.json', 'data/order_procurement_ozon.json.gz']));
+      }
+      if (!ORDER_PROCUREMENT_RUNTIME.cache.wb && !ORDER_PROCUREMENT_RUNTIME.cache.ozon) {
+        throw combinedError;
+      }
+    }
+  }
+}
+
+function orderProcurementCurrentPayload(platform) {
+  if (ORDER_PROCUREMENT_RUNTIME.cache.combined && Array.isArray(ORDER_PROCUREMENT_RUNTIME.cache.combined.rows)) {
+    const target = platform === 'ozon' ? 'ozon' : 'wb';
+    return {
+      ...ORDER_PROCUREMENT_RUNTIME.cache.combined,
+      platform: target.toUpperCase(),
+      rows: ORDER_PROCUREMENT_RUNTIME.cache.combined.rows.filter((row) => orderProcurementNormalizeKey(row?.platform) === target)
+    };
+  }
+  return platform === 'ozon' ? ORDER_PROCUREMENT_RUNTIME.cache.ozon : ORDER_PROCUREMENT_RUNTIME.cache.wb;
+}
+
+function orderProcurementHasReadyData() {
+  const platform = ensureOrderProcurementState().platform;
+  const payload = orderProcurementCurrentPayload(platform);
+  const hasRows = Array.isArray(payload?.rows) && payload.rows.length > 0;
+  const hasSkus =
+    (Array.isArray(state.skus) && state.skus.length > 0) ||
+    (Array.isArray(ORDER_PROCUREMENT_RUNTIME.cache.skus) && ORDER_PROCUREMENT_RUNTIME.cache.skus.length > 0);
+  return hasRows && hasSkus;
+}
+
+function orderProcurementBuildSkuLookup() {
+  const rows = Array.isArray(state.skus) && state.skus.length
+    ? state.skus
+    : (Array.isArray(ORDER_PROCUREMENT_RUNTIME.cache.skus) ? ORDER_PROCUREMENT_RUNTIME.cache.skus : []);
+  const lookup = new Map();
+
+  rows.forEach((row) => {
+    orderProcurementUnique([
+      orderProcurementNormalizeKey(row?.articleKey),
+      orderProcurementNormalizeKey(row?.article),
+      orderProcurementNormalizeKey(row?.sku)
+    ]).forEach((key) => {
+      if (key && !lookup.has(key)) lookup.set(key, row);
+    });
+  });
+
+  return lookup;
+}
+
+function orderProcurementBuildWarehouseMap() {
+  const rows = Array.isArray(ORDER_PROCUREMENT_RUNTIME.cache.warehouse?.rows) ? ORDER_PROCUREMENT_RUNTIME.cache.warehouse.rows : [];
+  const lookup = new Map();
+
+  rows.forEach((row) => {
+    const key = orderProcurementNormalizeKey(row?.articleKey || row?.article);
+    if (!key) return;
+    lookup.set(key, {
+      stockWarehouse: orderProcurementNumber(row?.stockWarehouse),
+      inboundWarehouse: 0,
+      accepted: orderProcurementNumber(row?.accepted),
+      shippedWB: orderProcurementNumber(row?.shippedWB),
+      shippedOzon: orderProcurementNumber(row?.shippedOzon)
+    });
+  });
+
+  return lookup;
+}
+
+function orderProcurementReadMetric(row, days, keys) {
+  const key = keys[days] || null;
+  if (!key) return null;
+  const value = Math.ceil(orderProcurementNumber(row?.[key]));
+  return value > 0 ? value : 0;
+}
+
+function orderProcurementOrdersForDays(row, days) {
+  const direct = orderProcurementReadMetric(row, days, {
+    7: 'sales7',
+    14: 'sales14',
+    28: 'sales28'
+  });
+  if (direct !== null) return direct;
+  return Math.ceil(Math.max(0, orderProcurementNumber(row?.avgDaily) * days));
+}
+
+function orderProcurementNeedForDays(row, days) {
+  const direct = orderProcurementReadMetric(row, days, {
+    7: 'targetNeed7',
+    14: 'targetNeed14',
+    28: 'targetNeed28'
+  });
+  if (direct !== null && direct >= 0) return direct;
+
+  const orders = orderProcurementOrdersForDays(row, days);
+  const stock = orderProcurementNumber(row?.inStock);
+  const inFlight = orderProcurementNumber(row?.inTransit) + orderProcurementNumber(row?.inRequest);
+  return Math.max(0, Math.ceil(orders - stock - inFlight));
+}
+
+function orderProcurementSafeTurnover(row) {
+  if (row?.turnoverDays !== null && row?.turnoverDays !== undefined && row?.turnoverDays !== '') {
+    const value = Number(row.turnoverDays);
+    return Number.isFinite(value) ? value : null;
+  }
+  const avgDaily = orderProcurementNumber(row?.avgDaily);
+  if (avgDaily <= 0) return null;
+  return orderProcurementNumber(row?.inStock) / avgDaily;
+}
+
+function buildOrderProcurementModel() {
+  const orderState = ensureOrderProcurementState();
+  const platform = orderState.platform === 'ozon' ? 'ozon' : 'wb';
+  const days = clampOrderProcurementDays(orderState.days);
+  const payload = orderProcurementCurrentPayload(platform) || { rows: [] };
+  const rows = Array.isArray(payload.rows) ? payload.rows : [];
+  const skuLookup = orderProcurementBuildSkuLookup();
+  const warehouseLookup = orderProcurementBuildWarehouseMap();
+  const rowMap = new Map();
+  const placeOrder = [];
+  const placeSeen = new Set();
+  const clusterTotalsMap = new Map();
+
+  rows.forEach((row) => {
+    const article = String(row?.article || '').trim();
+    const articleKey = orderProcurementNormalizeKey(row?.articleKey || article);
+    if (!articleKey) return;
+
+    const place = String(row?.place || '').trim() || 'Без кластера';
+    if (!placeSeen.has(place)) {
+      placeSeen.add(place);
+      placeOrder.push(place);
+    }
+
+    const sku = skuLookup.get(articleKey) || skuLookup.get(orderProcurementNormalizeKey(article)) || {};
+    const warehouse = warehouseLookup.get(articleKey) || warehouseLookup.get(orderProcurementNormalizeKey(article)) || {};
+    const current = rowMap.get(articleKey) || {
+      article,
+      articleKey,
+      name: sku?.name || row?.name || article,
+      owner: sku?.owner?.name || row?.owner || '',
+      warehouseStock: orderProcurementNumber(warehouse.stockWarehouse),
+      inboundWarehouse: orderProcurementNumber(warehouse.inboundWarehouse),
+      totalNeed: 0,
+      totalOrders: 0,
+      clusters: {}
+    };
+
+    const clusterOrders = orderProcurementOrdersForDays(row, days);
+    const clusterNeed = orderProcurementNeedForDays(row, days);
+    const cluster = {
+      mpStock: orderProcurementNumber(row?.inStock),
+      orders: clusterOrders,
+      turnover: orderProcurementSafeTurnover(row),
+      need: clusterNeed
+    };
+
+    current.totalNeed += clusterNeed;
+    current.totalOrders += clusterOrders;
+    current.clusters[place] = cluster;
+    rowMap.set(articleKey, current);
+
+    const clusterTotal = clusterTotalsMap.get(place) || { mpStock: 0, orders: 0, need: 0 };
+    clusterTotal.mpStock += cluster.mpStock;
+    clusterTotal.orders += cluster.orders;
+    clusterTotal.need += cluster.need;
+    clusterTotalsMap.set(place, clusterTotal);
+  });
+
+  const list = [...rowMap.values()].sort((left, right) => {
+    if (right.totalNeed !== left.totalNeed) return right.totalNeed - left.totalNeed;
+    if (right.totalOrders !== left.totalOrders) return right.totalOrders - left.totalOrders;
+    return String(left.article).localeCompare(String(right.article), 'ru');
+  });
+
+  const totals = list.reduce((acc, row) => {
+    acc.warehouseStock += orderProcurementNumber(row.warehouseStock);
+    acc.inboundWarehouse += orderProcurementNumber(row.inboundWarehouse);
+    acc.totalNeed += orderProcurementNumber(row.totalNeed);
+    return acc;
+  }, { warehouseStock: 0, inboundWarehouse: 0, totalNeed: 0 });
+
+  return {
+    platform,
+    platformLabel: platform === 'ozon' ? 'OZ' : 'WB',
+    days,
+    generatedAt: payload.generatedAt || ORDER_PROCUREMENT_RUNTIME.cache.warehouse?.generatedAt || null,
+    window: payload.window || null,
+    places: placeOrder,
+    rows: list,
+    totals,
+    clusterTotals: placeOrder.map((place) => ({
+      place,
+      ...(clusterTotalsMap.get(place) || { mpStock: 0, orders: 0, need: 0 })
+    }))
+  };
+}
+
+function exportOrderProcurementCell(value) {
+  return `"${String(value == null ? '' : value).replace(/"/g, '""')}"`;
+}
+
+function exportOrderProcurementModel(model) {
+  const headers = [
+    'SKU / Номенклатура',
+    'Артикул',
+    'Остатки мой склад',
+    'В пути на склад',
+    'Итого заказ товара'
+  ];
+
+  model.places.forEach((place) => {
+    headers.push(
+      `${place} · Остаток MP`,
+      `${place} · Заказы`,
+      `${place} · Оборачиваемость`,
+      `${place} · Рек. к заказу`
+    );
+  });
+
+  const lines = [headers.map(exportOrderProcurementCell).join(';')];
+  model.rows.forEach((row) => {
+    const cells = [
+      row.name,
+      row.article,
+      row.warehouseStock,
+      row.inboundWarehouse,
+      row.totalNeed
+    ];
+
+    model.places.forEach((place) => {
+      const cluster = row.clusters[place] || {};
+      cells.push(
+        cluster.mpStock || 0,
+        cluster.orders || 0,
+        cluster.turnover == null ? '' : Number(cluster.turnover).toFixed(1),
+        cluster.need || 0
+      );
+    });
+
+    lines.push(cells.map(exportOrderProcurementCell).join(';'));
+  });
+
+  const blob = new Blob([`\uFEFF${lines.join('\r\n')}`], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `zakaz-tovara-${model.platform}-${model.days}d-${todayIso()}.csv`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function renderOrderProcurementClusterSummary(model) {
+  if (!model.clusterTotals.length) return '';
+  return `
+    <div class="altea-order-procurement__cluster-strip">
+      ${model.clusterTotals.map((cluster) => `
+        <div class="altea-order-procurement__cluster-card">
+          <span>${orderProcurementEscape(cluster.place)}</span>
+          <strong>${fmt.int(cluster.need)}</strong>
+          <small>к заказу · ${fmt.int(cluster.mpStock)} на MP</small>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderOrderProcurementTable(model) {
+  const headGroups = model.places
+    .map((place) => `<th colspan="4" class="altea-order-procurement__cluster-head">${orderProcurementEscape(place)}</th>`)
+    .join('');
+
+  const headMetrics = model.places
+    .map(() => `
+      <th>Остаток MP</th>
+      <th>Заказы</th>
+      <th>Оборачиваемость</th>
+      <th>Рек. к заказу</th>
+    `)
+    .join('');
+
+  const columnCount = 5 + (model.places.length * 4);
+  const body = model.rows.length
+    ? model.rows.map((row) => {
+        const clusterCells = model.places.map((place) => {
+          const cluster = row.clusters[place] || {};
+          return `
+            <td class="altea-order-procurement__num">${fmt.int(cluster.mpStock)}</td>
+            <td class="altea-order-procurement__num">${fmt.int(cluster.orders)}</td>
+            <td>${orderProcurementTurnoverBadge(cluster.turnover)}</td>
+            <td>${orderProcurementBadge(fmt.int(cluster.need), cluster.need > 0 ? 'warn' : 'ok')}</td>
+          `;
+        }).join('');
+
+        const articleLabel = row.article || row.articleKey;
+        const skuLink = typeof linkToSku === 'function'
+          ? linkToSku(row.articleKey || articleLabel, articleLabel)
+          : orderProcurementEscape(articleLabel);
+
+        return `
+          <tr>
+            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--sku">
+              <strong>${orderProcurementEscape(row.name || articleLabel)}</strong>
+              <div class="altea-order-procurement__meta">${orderProcurementEscape(row.owner || 'Без owner')}</div>
+            </td>
+            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--article">${skuLink}</td>
+            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--warehouse altea-order-procurement__num">${fmt.int(row.warehouseStock)}</td>
+            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--inbound altea-order-procurement__num">${fmt.int(row.inboundWarehouse)}</td>
+            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--total">${orderProcurementBadge(fmt.int(row.totalNeed), row.totalNeed > 0 ? 'warn' : 'ok')}</td>
+            ${clusterCells}
+          </tr>
+        `;
+      }).join('')
+    : `
+      <tr>
+        <td colspan="${columnCount}" class="altea-order-procurement__empty">По выбранной площадке строки не загрузились.</td>
+      </tr>
+    `;
+
+  return `
+    <div class="altea-order-procurement__table-wrap imperial-table-wrap">
+      <table class="altea-order-procurement__table">
+        <thead>
+          <tr>
+            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--sku">SKU / Номенклатура</th>
+            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--article">Артикул</th>
+            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--warehouse">Остатки мой склад</th>
+            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--inbound">В пути на склад</th>
+            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--total">Итого заказ товара</th>
+            ${headGroups}
+          </tr>
+          <tr>${headMetrics}</tr>
+        </thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderOrderProcurement(model) {
+  const range = model.window?.from && model.window?.to
+    ? `${orderProcurementEscape(model.window.from)} - ${orderProcurementEscape(model.window.to)}`
+    : 'последний доступный срез';
+
+  return `
+    <section class="imperial-section altea-order-procurement" data-altea-order-procurement>
+      <div class="card">
+        <div class="section-title">
+          <div>
+            <h2>Заказ товара по кластерам</h2>
+            <p>Рабочая форма закупщика: слева центральный склад, справа кластеры площадки, ниже готовая рекомендация по заказу на каждый кластер.</p>
+          </div>
+          <div class="badge-stack">
+            ${orderProcurementBadge(`Площадка: ${model.platformLabel}`, model.platform === 'wb' ? 'ok' : 'info')}
+            ${orderProcurementBadge(`Оборачиваемость: ${model.days} дн.`, 'info')}
+            ${orderProcurementBadge(`Срез: ${range}`, 'info')}
+          </div>
+        </div>
+
+        <div class="altea-order-procurement__toolbar">
+          <label class="altea-order-procurement__field">
+            <span>Оборачиваемость, дней</span>
+            <input id="alteaOrderTargetDays" type="number" min="1" max="180" step="1" value="${orderProcurementEscape(model.days)}">
+          </label>
+
+          <div class="altea-order-procurement__field">
+            <span>Площадка</span>
+            <div class="altea-order-procurement__platforms">
+              <button type="button" class="altea-order-procurement__platform-btn ${model.platform === 'wb' ? 'is-active' : ''}" data-altea-order-platform="wb">WB</button>
+              <button type="button" class="altea-order-procurement__platform-btn ${model.platform === 'ozon' ? 'is-active' : ''}" data-altea-order-platform="ozon">OZ</button>
+            </div>
+          </div>
+
+          <div class="badge-stack">
+            ${orderProcurementBadge(`SKU: ${fmt.int(model.rows.length)}`, model.rows.length ? 'ok' : 'warn')}
+            ${orderProcurementBadge(`Кластеры: ${fmt.int(model.places.length)}`, model.places.length ? 'ok' : 'warn')}
+            ${orderProcurementBadge(`Обновлено: ${orderProcurementFormatDateTime(model.generatedAt)}`, 'info')}
+          </div>
+
+          <div class="altea-order-procurement__actions">
+            <button type="button" class="btn" data-altea-order-export>Выгрузить в Excel</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="altea-order-procurement__summary">
+        <div class="mini-kpi">
+          <span>SKU в расчёте</span>
+          <strong>${fmt.int(model.rows.length)}</strong>
+          <span>${model.platformLabel}</span>
+        </div>
+        <div class="mini-kpi">
+          <span>Остаток мой склад</span>
+          <strong>${fmt.int(model.totals.warehouseStock)}</strong>
+          <span>из файла реальных остатков</span>
+        </div>
+        <div class="mini-kpi">
+          <span>В пути на склад</span>
+          <strong>${fmt.int(model.totals.inboundWarehouse)}</strong>
+          <span>источник пока не подключён</span>
+        </div>
+        <div class="mini-kpi warn">
+          <span>Итого к заказу</span>
+          <strong>${fmt.int(model.totals.totalNeed)}</strong>
+          <span>сумма по всем кластерам</span>
+        </div>
+      </div>
+
+      ${renderOrderProcurementClusterSummary(model)}
+
+      <div class="card altea-order-procurement__table-card">
+        <div class="section-subhead">
+          <div>
+            <h3>Таблица заказа</h3>
+            <p class="small muted">Слева фиксированные колонки по SKU и складу, справа блоки кластеров выбранной площадки: остатки MP, заказы, оборачиваемость и рекомендованный заказ.</p>
+          </div>
+          <div class="badge-stack">
+            ${orderProcurementBadge(`Период расчёта: ${model.days} дн.`, 'info')}
+            ${orderProcurementBadge('Колонка "В пути" пока = 0', 'warn')}
+          </div>
+        </div>
+
+        ${renderOrderProcurementTable(model)}
+
+        <div class="altea-order-procurement__caption">
+          Колонка "Остатки мой склад" уже берётся из файла реальных остатков. Колонку "В пути на склад" оставили отдельной, но пока не заполняем, потому что источник ещё не подключён.
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderOrderProcurementLoading() {
+  return `
+    <section class="imperial-section altea-order-procurement">
+      <div class="card">
+        <h2>Заказ товара по кластерам</h2>
+        <p class="small muted">Подтягиваю данные по складу и кластерам, чтобы собрать рабочую форму закупщика.</p>
+      </div>
+    </section>
+  `;
+}
+
+function renderOrderProcurementError() {
+  return `
+    <section class="imperial-section altea-order-procurement">
+      <div class="card">
+        <h3>Заказ товара пока не загрузился</h3>
+        <p class="small muted">Не удалось прочитать order-файлы. Проверьте, что доступны <code>data/order_procurement.json</code> и <code>data/warehouse_stock_overlay.json</code>.</p>
+      </div>
+    </section>
+  `;
+}
+
+function orderProcurementRenderInto(root) {
+  const model = buildOrderProcurementModel();
+  root.innerHTML = renderOrderProcurement(model);
+  bindOrderProcurement(root);
+}
+
+function bindOrderProcurement(root) {
+  root.querySelectorAll('[data-altea-order-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      ensureOrderProcurementState().platform = button.dataset.alteaOrderPlatform === 'ozon' ? 'ozon' : 'wb';
+      renderOrderCalculator();
+    });
+  });
+
+  root.querySelector('#alteaOrderTargetDays')?.addEventListener('change', (event) => {
+    ensureOrderProcurementState().days = clampOrderProcurementDays(event.target.value);
+    renderOrderCalculator();
+  });
+
+  root.querySelector('[data-altea-order-export]')?.addEventListener('click', () => {
+    try {
+      exportOrderProcurementModel(buildOrderProcurementModel());
+      setAppError('Выгрузка заказа подготовлена.');
+      window.setTimeout(() => setAppError(''), 1600);
+    } catch (error) {
+      console.error('[order-procurement] export', error);
+      setAppError('Не удалось выгрузить таблицу заказа. Попробуйте ещё раз.');
+    }
+  });
+}
+
+function injectOrderProcurementStyles() {
+  if (document.getElementById(ORDER_PROCUREMENT_STYLE_ID)) return;
+
+  const style = document.createElement('style');
+  style.id = ORDER_PROCUREMENT_STYLE_ID;
+  style.textContent = `
+    .altea-order-procurement {
+      --col-sku: 320px;
+      --col-article: 170px;
+      --col-warehouse: 150px;
+      --col-inbound: 150px;
+      --col-total: 170px;
+      display: grid;
+      gap: 14px;
+      width: 100%;
+      margin-top: 18px;
+    }
+
+    .altea-order-procurement__toolbar {
+      display: grid;
+      grid-template-columns: minmax(180px, 220px) auto 1fr auto;
+      gap: 12px;
+      align-items: end;
+      margin-top: 12px;
+    }
+
+    .altea-order-procurement__field span {
+      display: block;
+      margin-bottom: 6px;
+      color: rgba(255, 244, 229, 0.64);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .altea-order-procurement__field input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(212, 164, 74, 0.18);
+      background: rgba(17, 14, 11, 0.96);
+      color: #fff1dd;
+    }
+
+    .altea-order-procurement__platforms,
+    .altea-order-procurement__actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .altea-order-procurement__actions {
+      justify-content: flex-end;
+    }
+
+    .altea-order-procurement__platform-btn {
+      min-width: 70px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(212, 164, 74, 0.22);
+      background: rgba(18, 14, 10, 0.92);
+      color: #fff1dd;
+      font: inherit;
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+    }
+
+    .altea-order-procurement__platform-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(212, 164, 74, 0.44);
+    }
+
+    .altea-order-procurement__platform-btn.is-active {
+      background: linear-gradient(135deg, rgba(212, 164, 74, 0.30), rgba(101, 67, 33, 0.56));
+      border-color: rgba(240, 196, 101, 0.60);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+    }
+
+    .altea-order-procurement__summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .altea-order-procurement__cluster-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .altea-order-procurement__cluster-card {
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(212, 164, 74, 0.14);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
+        rgba(17, 14, 11, 0.96);
+    }
+
+    .altea-order-procurement__cluster-card span,
+    .altea-order-procurement__cluster-card small {
+      display: block;
+    }
+
+    .altea-order-procurement__cluster-card span {
+      color: rgba(255, 244, 229, 0.72);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .altea-order-procurement__cluster-card strong {
+      display: block;
+      margin: 8px 0 4px;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .altea-order-procurement__cluster-card small {
+      color: rgba(255, 244, 229, 0.56);
+    }
+
+    .altea-order-procurement__table-card {
+      overflow: hidden;
+    }
+
+    .altea-order-procurement__table-wrap {
+      margin-top: 14px;
+      overflow: auto;
+      max-width: 100%;
+    }
+
+    .altea-order-procurement__table {
+      width: max-content;
+      min-width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .altea-order-procurement__table th,
+    .altea-order-procurement__table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(212, 164, 74, 0.10);
+      vertical-align: top;
+    }
+
+    .altea-order-procurement__table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(18, 14, 11, 0.98);
+      white-space: nowrap;
+    }
+
+    .altea-order-procurement__table thead tr:nth-child(2) th {
+      top: 49px;
+      z-index: 6;
+    }
+
+    .altea-order-procurement__cluster-head {
+      text-align: center;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    .altea-order-procurement__sticky-head,
+    .altea-order-procurement__sticky-cell {
+      position: sticky;
+      z-index: 7;
+      background: rgba(17, 14, 11, 0.985);
+      box-shadow: 1px 0 0 rgba(212, 164, 74, 0.08);
+    }
+
+    .altea-order-procurement__sticky-head {
+      z-index: 8;
+    }
+
+    .altea-order-procurement__sticky-head--sku,
+    .altea-order-procurement__sticky-cell--sku {
+      left: 0;
+      min-width: var(--col-sku);
+      width: var(--col-sku);
+    }
+
+    .altea-order-procurement__sticky-head--article,
+    .altea-order-procurement__sticky-cell--article {
+      left: var(--col-sku);
+      min-width: var(--col-article);
+      width: var(--col-article);
+    }
+
+    .altea-order-procurement__sticky-head--warehouse,
+    .altea-order-procurement__sticky-cell--warehouse {
+      left: calc(var(--col-sku) + var(--col-article));
+      min-width: var(--col-warehouse);
+      width: var(--col-warehouse);
+    }
+
+    .altea-order-procurement__sticky-head--inbound,
+    .altea-order-procurement__sticky-cell--inbound {
+      left: calc(var(--col-sku) + var(--col-article) + var(--col-warehouse));
+      min-width: var(--col-inbound);
+      width: var(--col-inbound);
+    }
+
+    .altea-order-procurement__sticky-head--total,
+    .altea-order-procurement__sticky-cell--total {
+      left: calc(var(--col-sku) + var(--col-article) + var(--col-warehouse) + var(--col-inbound));
+      min-width: var(--col-total);
+      width: var(--col-total);
+    }
+
+    .altea-order-procurement__sticky-cell strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .altea-order-procurement__meta {
+      color: rgba(255, 244, 229, 0.58);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .altea-order-procurement__num {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .altea-order-procurement__table tbody tr:hover td {
+      background: rgba(255, 244, 229, 0.03);
+    }
+
+    .altea-order-procurement__table tbody tr:hover .altea-order-procurement__sticky-cell {
+      background: rgba(28, 22, 16, 0.98);
+    }
+
+    .altea-order-procurement__empty {
+      padding: 22px 14px;
+      text-align: center;
+      color: rgba(255, 244, 229, 0.64);
+    }
+
+    .altea-order-procurement__caption {
+      margin-top: 10px;
+      color: rgba(255, 244, 229, 0.58);
+      font-size: 12px;
+    }
+
+    @media (max-width: 1400px) {
+      .altea-order-procurement__toolbar,
+      .altea-order-procurement__summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .altea-order-procurement__actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .altea-order-procurement {
+        --col-sku: 240px;
+        --col-article: 140px;
+        --col-warehouse: 120px;
+        --col-inbound: 120px;
+        --col-total: 140px;
+      }
+
+      .altea-order-procurement__toolbar,
+      .altea-order-procurement__summary {
+        grid-template-columns: 1fr;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
 }
 
 function buildExecutiveModel() {
@@ -2597,7 +4817,7 @@ function buildExecutiveModel() {
   const waiting = control.waitingDecision;
   const critical = active.filter((task) => task.priority === 'critical');
   const noOwnerTasks = active.filter((task) => !task.owner);
-  const launchFocus = (state.launches || []).slice(0, 6);
+  const launchFocus = getLaunchItems().slice(0, 6);
   const unassignedSkus = state.skus.filter((sku) => !sku?.flags?.assigned).slice(0, 8);
   const categories = [
     { title: 'Цена / маржа', items: sortTasks(active.filter((task) => task.type === 'price_margin')).slice(0, 5), tone: 'danger' },
@@ -2724,6 +4944,33 @@ async function createComment(payload) {
   }
 }
 
+async function createTaskHistoryEntry(taskId, kind, text, payload = {}) {
+  const task = getTask(taskId);
+  if (!task || !String(text || '').trim()) return;
+  await createComment({
+    articleKey: task.articleKey || '',
+    author: payload.author || state.team.member.name || task.owner || 'Команда',
+    team: payload.team || teamMemberLabel(),
+    type: 'task_log',
+    text: `[[task:${taskId}]] [[kind:${kind}]] ${String(text || '').trim()}`
+  });
+}
+
+function buildTaskUpdateMessage(before, after) {
+  const changes = [];
+  if (before.title !== after.title) changes.push(`заголовок → ${after.title}`);
+  if ((before.owner || '') !== (after.owner || '')) changes.push(`owner → ${after.owner || 'Без owner'}`);
+  if ((before.due || '') !== (after.due || '')) changes.push(`срок → ${after.due || '—'}`);
+  if (before.status !== after.status) changes.push(`статус → ${(TASK_STATUS_META[after.status] || TASK_STATUS_META.new).label}`);
+  if (before.priority !== after.priority) changes.push(`приоритет → ${(PRIORITY_META[after.priority] || PRIORITY_META.medium).label}`);
+  if (before.type !== after.type) changes.push(`тип → ${TASK_TYPE_META[after.type] || TASK_TYPE_META.general}`);
+  if (before.platform !== after.platform) changes.push(`контур → ${controlWorkstreamMeta(controlWorkstreamKey(after, getSku(after.articleKey))).label}`);
+  if ((before.nextAction || '') !== (after.nextAction || '')) changes.push('обновлён следующий шаг');
+  if ((before.reason || '') !== (after.reason || '')) changes.push('обновлён контекст');
+  if ((before.entityLabel || '') !== (after.entityLabel || '')) changes.push(`тема → ${after.entityLabel || '—'}`);
+  return changes.length ? `Изменения по задаче: ${changes.join('; ')}.` : '';
+}
+
 async function upsertOwnerAssignment(payload) {
   const override = normalizeOwnerOverride({
     articleKey: payload.articleKey,
@@ -2771,6 +5018,7 @@ async function createManualTask(payload) {
     id: uid('task'),
     source: 'manual',
     articleKey: payload.articleKey,
+    entityLabel: payload.entityLabel,
     title: String(payload.title || '').trim() || 'Новая задача',
     type: payload.type,
     priority: payload.priority,
@@ -2778,7 +5026,8 @@ async function createManualTask(payload) {
     owner: String(payload.owner || '').trim(),
     due: payload.due || plusDays(3),
     status: 'new',
-    nextAction: String(payload.nextAction || '').trim()
+    nextAction: String(payload.nextAction || '').trim(),
+    reason: String(payload.reason || '').trim()
   }, 'manual');
   state.storage.tasks.unshift(task);
   saveLocalStorage();
@@ -2787,6 +5036,10 @@ async function createManualTask(payload) {
   } catch (error) {
     console.error(error);
   }
+  await createTaskHistoryEntry(task.id, 'created', `Задача создана${task.owner ? ` · owner ${task.owner}` : ''}${task.due ? ` · срок ${task.due}` : ''}.`);
+  rerenderCurrentView();
+  if (state.activeSku === task.articleKey) renderSkuModal(task.articleKey);
+  return task;
 }
 
 async function takeAutoTask(taskId) {
@@ -2806,22 +5059,51 @@ async function takeAutoTask(taskId) {
   } catch (error) {
     console.error(error);
   }
+  await createTaskHistoryEntry(manual.id, 'created', 'Авто-сигнал взят в ручную работу и переведён в контур команды.');
   rerenderCurrentView();
   if (state.activeSku === task.articleKey) renderSkuModal(task.articleKey);
+  openTaskModal(manual.id);
 }
 
-async function updateTaskStatus(taskId, status) {
-  const task = state.storage.tasks.find((item) => item.id === taskId);
-  if (!task) return;
-  task.status = mapTaskStatus(status);
+async function updateTaskRecord(taskId, patch = {}) {
+  const current = state.storage.tasks.find((item) => item.id === taskId);
+  if (!current) return null;
+
+  const before = { ...current };
+  const updated = normalizeTask({
+    ...current,
+    ...patch,
+    id: current.id,
+    source: current.source,
+    createdAt: current.createdAt,
+    articleKey: patch.articleKey !== undefined ? patch.articleKey : current.articleKey
+  }, current.source || 'manual');
+
+  Object.assign(current, updated);
   saveLocalStorage();
   try {
-    await persistTask(task);
+    await persistTask(current);
   } catch (error) {
     console.error(error);
   }
+
+  const historyMessage = buildTaskUpdateMessage(before, current);
+  if (historyMessage) await createTaskHistoryEntry(taskId, current.status !== before.status ? 'status' : 'updated', historyMessage);
+
   rerenderCurrentView();
-  if (state.activeSku === task.articleKey) renderSkuModal(task.articleKey);
+  if (state.activeSku === current.articleKey) renderSkuModal(current.articleKey);
+  return current;
+}
+
+async function updateTaskStatus(taskId, status) {
+  return updateTaskRecord(taskId, { status });
+}
+
+async function closeTaskWithReport(taskId, report) {
+  const task = await updateTaskRecord(taskId, { status: 'done' });
+  if (!task) return null;
+  await createTaskHistoryEntry(taskId, 'report', `Задача закрыта с отчётом: ${report}`);
+  return task;
 }
 
 function exportStorage() {
@@ -2870,6 +5152,31 @@ function setView(view) {
   state.activeView = view;
   document.querySelectorAll('.nav-btn').forEach((btn) => btn.classList.toggle('active', btn.dataset.view === view));
   document.querySelectorAll('.view').forEach((section) => section.classList.toggle('active', section.id === `view-${view}`));
+  window.dispatchEvent(new CustomEvent('altea:viewchange', { detail: { view } }));
+  void prepareView(view);
+}
+
+async function prepareView(view) {
+  if (!state.boot.dataReady) {
+    rerenderCurrentView();
+    return;
+  }
+
+  const lazyKey = VIEW_DATA_REQUIREMENTS[view];
+  if (lazyKey && !state.boot.lazyReady?.[lazyKey]) {
+    renderViewLoading(`view-${view}`, VIEW_TITLES[view] || 'Экран');
+  }
+
+  try {
+    await ensureViewData(view);
+  } catch (error) {
+    console.error(error);
+    renderViewFailure(`view-${view}`, VIEW_TITLES[view] || 'Экран', error);
+    setAppError(`Портал не смог подгрузить ${VIEW_TITLES[view] || 'экран'}: ${error.message}`);
+    return;
+  }
+
+  if (state.activeView !== view) return;
   rerenderCurrentView();
 }
 
@@ -2897,15 +5204,20 @@ function rerenderCurrentView() {
     ['view-dashboard', 'Дашборд', renderDashboard],
     ['view-documents', 'Документы', renderDocuments],
     ['view-repricer', 'Репрайсер', renderRepricer],
+    ['view-prices', 'Цены', () => { if (typeof window.renderPriceWorkbench === 'function') window.renderPriceWorkbench(); }],
     ['view-order', 'Логистика и заказ', renderOrderCalculator],
     ['view-control', 'Задачи', renderControlCenter],
     ['view-skus', 'Реестр SKU', renderSkuRegistry],
     ['view-launches', 'Продукт / Ксения', renderLaunches],
+    ['view-launch-control', 'Запуск новинок', renderLaunchControl],
     ['view-meetings', 'Ритм работы', renderMeetings],
     ['view-executive', 'Руководителю', renderExecutive]
   ];
   const errors = [];
-  for (const [rootId, title, renderer] of renderPlan) {
+  const activeRootId = `view-${state.activeView || 'dashboard'}`;
+  const activeEntry = renderPlan.find(([rootId]) => rootId === activeRootId) || renderPlan[0];
+  if (activeEntry) {
+    const [rootId, title, renderer] = activeEntry;
     try {
       renderer();
     } catch (error) {
@@ -2932,12 +5244,22 @@ function setAppError(message = '') {
 }
 
 function attachGlobalListeners() {
+  if (state.boot.listenersAttached) return;
+  state.boot.listenersAttached = true;
+  ensureTaskModal();
   document.querySelectorAll('.nav-btn').forEach((btn) => btn.addEventListener('click', () => setView(btn.dataset.view)));
 
   document.body.addEventListener('click', (event) => {
     const openBtn = event.target.closest('[data-open-sku]');
     if (openBtn) {
+      if (document.getElementById('taskModal')?.classList.contains('open')) closeTaskModal();
       openSkuModal(openBtn.dataset.openSku);
+      return;
+    }
+
+    const openTaskBtn = event.target.closest('[data-open-task]');
+    if (openTaskBtn) {
+      openTaskModal(openTaskBtn.dataset.openTask);
       return;
     }
 
@@ -2967,13 +5289,7 @@ function attachGlobalListeners() {
     const takeBtn = event.target.closest('[data-take-task]');
     if (takeBtn) {
       takeAutoTask(takeBtn.dataset.takeTask);
-    }
-  });
-
-  document.body.addEventListener('change', (event) => {
-    const statusSelect = event.target.closest('.task-status-select');
-    if (statusSelect) {
-      updateTaskStatus(statusSelect.dataset.taskId, statusSelect.value);
+      return;
     }
   });
 
@@ -2995,6 +5311,9 @@ function attachGlobalListeners() {
 }
 
 async function init() {
+  attachGlobalListeners();
+  state.boot.dataWarnings = [];
+  window.__ALTEA_PRIMARY_INIT_PENDING__ = true;
   // Критично: попытка подключения к Supabase не должна зависеть от первого рендера.
   // Иначе любой сбой данных/экрана создает ложное ощущение, что портал даже не пытался подключиться.
   const teamInitPromise = initTeamStore()
@@ -3015,22 +5334,18 @@ async function init() {
 
   try {
     const local = loadLocalStorage();
-    const [dashboard, skus, launches, meetings, documents, repricer, seed] = await Promise.all([
-      loadJson('data/dashboard.json'),
-      loadJson('data/skus.json'),
-      loadJson('data/launches.json'),
-      loadJson('data/meetings.json'),
-      loadJson('data/documents.json'),
-      loadJson('data/repricer.json'),
-      loadJson('data/seed_comments.json')
+    const [dashboard, skus, seed] = await Promise.all([
+      loadJsonOrFallback('data/dashboard.json', { cards: [], generatedAt: '' }, 'Дашборд'),
+      loadJsonOrFallback('data/skus.json', [], 'SKU'),
+      loadJsonOrFallback('data/seed_comments.json', { comments: [], tasks: [] }, 'Seed comments')
     ]);
 
     state.dashboard = dashboard || { cards: [] };
     state.skus = Array.isArray(skus) ? skus : [];
-    state.launches = Array.isArray(launches) ? launches : [];
-    state.meetings = Array.isArray(meetings) ? meetings : [];
-    state.documents = documents || { groups: [] };
-    state.repricer = repricer || { items: [] };
+    state.launches = [];
+    state.meetings = [];
+    state.documents = { groups: [] };
+    state.repricer = { generatedAt: '', summary: {}, rows: [] };
     if (!state.orderCalc.articleKey) state.orderCalc.articleKey = state.skus[0]?.articleKey || '';
     if (!state.orderCalc.daysToNextReceipt) state.orderCalc.daysToNextReceipt = String(Math.round(numberOrZero(state.skus[0]?.leadTimeDays) || 30));
     state.storage = {
@@ -3041,15 +5356,17 @@ async function init() {
     };
     applyOwnerOverridesToSkus();
     mergeSeedStorage(seed || {});
-
-    attachGlobalListeners();
     state.boot.dataReady = true;
     rerenderCurrentView();
     setView('dashboard');
-    setAppError('');
+    if (state.boot.dataWarnings.length) setAppError(`Часть данных загружена с исправлениями: ${state.boot.dataWarnings[0]}`);
+    else setAppError('');
   } catch (error) {
     console.error(error);
     setAppError(`Портал не смог загрузить данные: ${error.message}`);
+  } finally {
+    window.__ALTEA_PRIMARY_INIT_PENDING__ = false;
+    window.__ALTEA_PRIMARY_INIT_FINISHED__ = true;
   }
 
   return teamInitPromise;

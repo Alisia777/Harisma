@@ -1495,7 +1495,23 @@
       const freshnessEnd = freshnessTail[freshnessTail.length - 1]?.date || freshnessSeries[freshnessSeries.length - 1]?.date || null;
       const publishedEndDate = publishedTurnoverSeries[publishedTurnoverSeries.length - 1]?.date || null;
       if (!publishedTurnoverSeries.length || !(publishedEndDate instanceof Date) || (freshnessEnd instanceof Date && freshnessEnd > publishedEndDate)) {
-        publishedTurnoverSeries = freshnessTail;
+        if (publishedTurnoverSeries.length && freshnessTail.length) {
+          const byDate = new Map();
+          [...publishedTurnoverSeries, ...freshnessTail].forEach((point) => {
+            const key = iso(point?.date);
+            if (!key) return;
+            const existing = byDate.get(key);
+            if (!existing || num(point?.skuCount) >= num(existing?.skuCount)) {
+              byDate.set(key, point);
+            }
+          });
+          publishedTurnoverSeries = detailTailRows(
+            [...byDate.values()].sort((left, right) => left.date - right.date),
+            14
+          );
+        } else {
+          publishedTurnoverSeries = freshnessTail;
+        }
         publishedFromFreshness = true;
       }
     }

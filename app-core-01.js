@@ -162,9 +162,10 @@ const VIEW_DATA_REQUIREMENTS = {
   documents: 'documents',
   repricer: 'repricer'
 };
-const DISABLED_VIEWS = new Set(['meetings']);
+const DISABLED_VIEWS = new Set(['meetings', 'documents']);
 const VIEW_REDIRECTS = {
-  meetings: 'dashboard'
+  meetings: 'dashboard',
+  documents: 'dashboard'
 };
 
 function normalizePortalView(view = 'dashboard') {

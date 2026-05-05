@@ -1475,32 +1475,35 @@
   function buildTurnoverMetric(platformKey, range) {
     const stockMetric = buildStockMetric(platformKey);
     const turnoverSeries = turnoverMatrixSeries(platformKey, range);
-    let publishedTurnoverSeries = turnoverSeries;
+    let publishedTurnoverSeries = [];
     let publishedFromFreshness = false;
-    if (!publishedTurnoverSeries.length) {
-      const bounds = turnoverPublishedBounds(platformKey);
-      if (bounds?.maxDate instanceof Date) {
-        const end = cleanDate(bounds.maxDate);
-        const rawStart = addDays(end, -13);
-        const start = bounds?.minDate instanceof Date && rawStart < bounds.minDate ? cleanDate(bounds.minDate) : rawStart;
-        publishedTurnoverSeries = turnoverMatrixSeries(platformKey, {
-          effectiveStart: start,
-          effectiveEnd: end
-        });
+
+    const bounds = turnoverPublishedBounds(platformKey);
+    if (bounds?.maxDate instanceof Date) {
+      const end = cleanDate(bounds.maxDate);
+      const rawStart = addDays(end, -13);
+      const start = bounds?.minDate instanceof Date && rawStart < bounds.minDate ? cleanDate(bounds.minDate) : rawStart;
+      publishedTurnoverSeries = turnoverMatrixSeries(platformKey, {
+        effectiveStart: start,
+        effectiveEnd: end
+      });
+    }
+
+    const freshnessSeries = turnoverFreshnessSeries(platformKey);
+    if (freshnessSeries.length) {
+      const freshnessTail = detailTailRows(freshnessSeries, 14);
+      const freshnessEnd = freshnessTail[freshnessTail.length - 1]?.date || freshnessSeries[freshnessSeries.length - 1]?.date || null;
+      const publishedEndDate = publishedTurnoverSeries[publishedTurnoverSeries.length - 1]?.date || null;
+      if (!publishedTurnoverSeries.length || !(publishedEndDate instanceof Date) || (freshnessEnd instanceof Date && freshnessEnd > publishedEndDate)) {
+        publishedTurnoverSeries = freshnessTail;
+        publishedFromFreshness = true;
       }
     }
-    if (!turnoverSeries.length) {
-      const freshnessSeries = turnoverFreshnessSeries(platformKey);
-      if (freshnessSeries.length) {
-        const freshnessTail = detailTailRows(freshnessSeries, 14);
-        const freshnessEnd = freshnessTail[freshnessTail.length - 1]?.date || freshnessSeries[freshnessSeries.length - 1]?.date || null;
-        const publishedEndDate = publishedTurnoverSeries[publishedTurnoverSeries.length - 1]?.date || null;
-        if (!publishedTurnoverSeries.length || !(publishedEndDate instanceof Date) || (freshnessEnd instanceof Date && freshnessEnd > publishedEndDate)) {
-          publishedTurnoverSeries = freshnessTail;
-          publishedFromFreshness = true;
-        }
-      }
+
+    if (!publishedTurnoverSeries.length && turnoverSeries.length) {
+      publishedTurnoverSeries = detailTailRows(turnoverSeries, 14);
     }
+
     if (!publishedTurnoverSeries.length) {
       publishedTurnoverSeries = turnoverMatrixSeries(platformKey, {
         effectiveStart: range?.min || range?.effectiveStart,
@@ -1510,16 +1513,26 @@
     const fallbackTurnover = stockMetric.rows
       .map((row) => row.turnoverDays)
       .filter((value) => value !== null);
+    const turnoverStart = turnoverSeries.length ? turnoverSeries[0].date : null;
+    const turnoverEnd = turnoverSeries.length ? turnoverSeries[turnoverSeries.length - 1].date : null;
     const publishedStart = publishedTurnoverSeries.length ? publishedTurnoverSeries[0].date : null;
     const publishedEnd = publishedTurnoverSeries.length ? publishedTurnoverSeries[publishedTurnoverSeries.length - 1].date : null;
-    const latestPublishedDate = publishedEnd || null;
+    const sameRangeAsRequested = (
+      turnoverStart instanceof Date
+      && turnoverEnd instanceof Date
+      && publishedStart instanceof Date
+      && publishedEnd instanceof Date
+      && turnoverStart.getTime() === publishedStart.getTime()
+      && turnoverEnd.getTime() === publishedEnd.getTime()
+    );
+    const latestPublishedDate = publishedEnd || turnoverEnd || null;
     return {
       ...stockMetric,
       turnoverSeries,
       turnoverPublishedSeries: publishedTurnoverSeries,
-      turnoverHistoryScope: turnoverSeries.length
-        ? 'range'
-        : (publishedTurnoverSeries.length ? (publishedFromFreshness ? 'freshness' : 'published') : 'none'),
+      turnoverHistoryScope: publishedTurnoverSeries.length
+        ? (publishedFromFreshness ? 'freshness' : (sameRangeAsRequested ? 'range' : 'published'))
+        : (turnoverSeries.length ? 'range' : 'none'),
       turnoverPublishedLabel: publishedStart && publishedEnd ? rangeLabel(publishedStart, publishedEnd) : '',
       turnoverLatestPublishedDate: latestPublishedDate,
       avgTurnoverDays: turnoverSeries.length

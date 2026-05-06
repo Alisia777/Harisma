@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-05T07:00:30.183Z",
+  "generatedAt": "2026-05-06T15:31:07.815Z",
   "dataFreshness": {
     "planFactMonth": "Апрель 2026 · Smart = Altea",
     "ordersSnapshot": "orders (40).csv",
@@ -12,7 +12,7 @@
       "Для Анны (2).xlsx",
       "Рабочий _ Спецификации v2.xlsx"
     ],
-    "asOfDate": "2026-05-04",
+    "asOfDate": "2026-05-05",
     "googleSheetsMonth": "2026-05",
     "googleSheetsBridge": "scripts/portal-google-sheet-sync.js",
     "googleSheetsSourceUrl": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
@@ -69,8 +69,8 @@
     },
     {
       "label": "Остатки MP, шт.",
-      "value": 355271,
-      "hint": "WB + Ozon по срезу Google Sheets на 2026-05-04"
+      "value": 357625,
+      "hint": "WB + Ozon по срезу Google Sheets на 2026-05-05"
     },
     {
       "label": "Факт на 21.04, ₽",
@@ -128,22 +128,22 @@
       "hint": "Линейный план месяца по SKU рабочего контура."
     },
     {
-      "label": "Факт 01-04.05, шт.",
-      "value": 22138,
-      "hint": "Факт по данным Google Sheets на 2026-05-04."
+      "label": "Факт 01-05.05, шт.",
+      "value": 28606,
+      "hint": "Факт по данным Google Sheets на 2026-05-05."
     },
     {
       "label": "Выполнение к плану на дату",
-      "value": 0.9908,
+      "value": 1.0242,
       "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 0.9908
+      "valuePct": 1.0242
     }
   ],
   "brandSummary": [
     {
       "brand": "Алтея",
       "sku_count": 89,
-      "total_stock": 355271,
+      "total_stock": 357625,
       "orders_value": 161631197.21,
       "feb_plan_units": 127838,
       "feb_fact_units": 48829,
@@ -157,9 +157,9 @@
       "google_sheets_plan_field": "planApr26Units",
       "google_sheets_month_key": "2026-05",
       "plan_units": 173171,
-      "fact_units_to_date": 22138,
-      "fact_revenue_to_date": 26683836,
-      "plan_completion_to_date_pct": 0.9908,
+      "fact_units_to_date": 28606,
+      "fact_revenue_to_date": 33976244,
+      "plan_completion_to_date_pct": 1.0242,
       "apr_plan_units": 173171,
       "apr_fact_units_to_date": 152328,
       "asOfDate": "2026-04-21",
@@ -172,9 +172,9 @@
       "apr_plan_completion_to_date_pct": 0.8796,
       "apr_forecast_pct": 0.6840931159013511,
       "may_plan_units": 173171,
-      "may_fact_units_to_date": 22138,
-      "may_fact_revenue_to_date": 26683836,
-      "may_plan_completion_to_date_pct": 0.9908
+      "may_fact_units_to_date": 28606,
+      "may_fact_revenue_to_date": 33976244,
+      "may_plan_completion_to_date_pct": 1.0242
     }
   ],
   "focusTop": [

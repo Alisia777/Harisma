@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-05T07:00:30.192Z",
+  "generatedAt": "2026-05-06T15:31:07.824Z",
   "note": "Последние ежедневные факты площадок пересчитаны из Google Sheets.",
   "googleSheetsSourceUrl": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
   "googleSheetsSourceGid": "2003059667",
   "googleSheetsRefreshTimeLocal": "09:00 Europe/Moscow",
   "portalRefreshTimeLocal": "10:00 Europe/Moscow",
-  "latestMarketplaceDate": "2026-05-04",
+  "latestMarketplaceDate": "2026-05-05",
   "platforms": [
     {
       "key": "wb",
@@ -13,101 +13,101 @@
       "series": [
         {
           "dayOffset": 13,
-          "label": "2026-04-21",
-          "units": 3430,
-          "revenue": 4063609,
-          "estimatedMargin": 2006449.9508
-        },
-        {
-          "dayOffset": 12,
           "label": "2026-04-22",
           "units": 3235,
           "revenue": 3832320,
           "estimatedMargin": 1862561.3551
         },
         {
-          "dayOffset": 11,
+          "dayOffset": 12,
           "label": "2026-04-23",
           "units": 3252,
           "revenue": 3977951,
           "estimatedMargin": 1967030.8739
         },
         {
-          "dayOffset": 10,
+          "dayOffset": 11,
           "label": "2026-04-24",
           "units": 3217,
           "revenue": 3985248,
           "estimatedMargin": 1942857.8206
         },
         {
-          "dayOffset": 9,
+          "dayOffset": 10,
           "label": "2026-04-25",
           "units": 3552,
           "revenue": 4443696,
           "estimatedMargin": 2202589.601
         },
         {
-          "dayOffset": 8,
+          "dayOffset": 9,
           "label": "2026-04-26",
           "units": 4087,
           "revenue": 5112404,
           "estimatedMargin": 2538350.5961
         },
         {
-          "dayOffset": 7,
+          "dayOffset": 8,
           "label": "2026-04-27",
           "units": 3554,
           "revenue": 4386345,
           "estimatedMargin": 2166624.0796
         },
         {
-          "dayOffset": 6,
+          "dayOffset": 7,
           "label": "2026-04-28",
           "units": 3583,
           "revenue": 4299523,
           "estimatedMargin": 2120011.1711
         },
         {
-          "dayOffset": 5,
+          "dayOffset": 6,
           "label": "2026-04-29",
           "units": 3710,
           "revenue": 4471391,
           "estimatedMargin": 2184820.3522
         },
         {
-          "dayOffset": 4,
+          "dayOffset": 5,
           "label": "2026-04-30",
           "units": 4036,
           "revenue": 4810756,
           "estimatedMargin": 2383928.8218
         },
         {
-          "dayOffset": 3,
+          "dayOffset": 4,
           "label": "2026-05-01",
           "units": 4603,
           "revenue": 5518878,
           "estimatedMargin": 2774687.2814
         },
         {
-          "dayOffset": 2,
+          "dayOffset": 3,
           "label": "2026-05-02",
-          "units": 4664,
-          "revenue": 5644654,
-          "estimatedMargin": 2858200.8116
+          "units": 4665,
+          "revenue": 5645666,
+          "estimatedMargin": 2858728.8732
+        },
+        {
+          "dayOffset": 2,
+          "label": "2026-05-03",
+          "units": 4744,
+          "revenue": 5705408,
+          "estimatedMargin": 2871641.6889
         },
         {
           "dayOffset": 1,
-          "label": "2026-05-03",
-          "units": 4742,
-          "revenue": 5702995,
-          "estimatedMargin": 2870292.3455
+          "label": "2026-05-04",
+          "units": 4154,
+          "revenue": 5075447,
+          "estimatedMargin": 2517836.417
         },
         {
           "dayOffset": 0,
-          "label": "2026-05-04",
-          "units": 4140,
-          "revenue": 5058251,
-          "estimatedMargin": 2508391.9014
+          "label": "2026-05-05",
+          "units": 4286,
+          "revenue": 5145583,
+          "estimatedMargin": 2556697.2705
         }
       ]
     },
@@ -117,101 +117,101 @@
       "series": [
         {
           "dayOffset": 13,
-          "label": "2026-04-21",
-          "units": 1445,
-          "revenue": 1889023,
-          "estimatedMargin": 498213.6961
-        },
-        {
-          "dayOffset": 12,
           "label": "2026-04-22",
           "units": 1506,
           "revenue": 1975865,
           "estimatedMargin": 510626.9551
         },
         {
-          "dayOffset": 11,
+          "dayOffset": 12,
           "label": "2026-04-23",
           "units": 1498,
           "revenue": 1963467,
           "estimatedMargin": 512598.2891
         },
         {
-          "dayOffset": 10,
+          "dayOffset": 11,
           "label": "2026-04-24",
           "units": 1476,
           "revenue": 1990490,
           "estimatedMargin": 517887.3557
         },
         {
-          "dayOffset": 9,
+          "dayOffset": 10,
           "label": "2026-04-25",
           "units": 1637,
           "revenue": 2105959,
           "estimatedMargin": 548454.614
         },
         {
-          "dayOffset": 8,
+          "dayOffset": 9,
           "label": "2026-04-26",
           "units": 1654,
           "revenue": 2253479,
           "estimatedMargin": 604458.4188
         },
         {
-          "dayOffset": 7,
+          "dayOffset": 8,
           "label": "2026-04-27",
           "units": 1395,
           "revenue": 1901250,
           "estimatedMargin": 505658.5893
         },
         {
-          "dayOffset": 6,
+          "dayOffset": 7,
           "label": "2026-04-28",
           "units": 1851,
           "revenue": 2479534,
           "estimatedMargin": 656093.5787
         },
         {
-          "dayOffset": 5,
+          "dayOffset": 6,
           "label": "2026-04-29",
           "units": 1699,
           "revenue": 2261564,
           "estimatedMargin": 595009.2839
         },
         {
-          "dayOffset": 4,
+          "dayOffset": 5,
           "label": "2026-04-30",
           "units": 729,
           "revenue": 904519,
           "estimatedMargin": 232689.9288
         },
         {
-          "dayOffset": 3,
+          "dayOffset": 4,
           "label": "2026-05-01",
           "units": 715,
           "revenue": 934286,
           "estimatedMargin": 240221.4053
         },
         {
-          "dayOffset": 2,
+          "dayOffset": 3,
           "label": "2026-05-02",
           "units": 763,
           "revenue": 978417,
           "estimatedMargin": 253905.258
         },
         {
-          "dayOffset": 1,
+          "dayOffset": 2,
           "label": "2026-05-03",
           "units": 750,
           "revenue": 998380,
           "estimatedMargin": 253153.7298
         },
         {
-          "dayOffset": 0,
+          "dayOffset": 1,
           "label": "2026-05-04",
           "units": 1333,
           "revenue": 1479907,
           "estimatedMargin": 400257.4803
+        },
+        {
+          "dayOffset": 0,
+          "label": "2026-05-05",
+          "units": 1921,
+          "revenue": 1913926,
+          "estimatedMargin": 512661.6826
         }
       ]
     },
@@ -221,100 +221,100 @@
       "series": [
         {
           "dayOffset": 13,
-          "label": "2026-04-21",
-          "units": 188,
-          "revenue": 182084,
-          "estimatedMargin": 0
-        },
-        {
-          "dayOffset": 12,
           "label": "2026-04-22",
           "units": 106,
           "revenue": 92244,
           "estimatedMargin": 0
         },
         {
-          "dayOffset": 11,
+          "dayOffset": 12,
           "label": "2026-04-23",
           "units": 164,
           "revenue": 123776,
           "estimatedMargin": 0
         },
         {
-          "dayOffset": 10,
+          "dayOffset": 11,
           "label": "2026-04-24",
           "units": 118,
           "revenue": 108334,
           "estimatedMargin": 0
         },
         {
-          "dayOffset": 9,
+          "dayOffset": 10,
           "label": "2026-04-25",
           "units": 80,
           "revenue": 70246,
           "estimatedMargin": 0
         },
         {
-          "dayOffset": 8,
+          "dayOffset": 9,
           "label": "2026-04-26",
           "units": 114,
           "revenue": 112430,
           "estimatedMargin": 0
         },
         {
-          "dayOffset": 7,
+          "dayOffset": 8,
           "label": "2026-04-27",
           "units": 110,
           "revenue": 97344,
           "estimatedMargin": 0
         },
         {
-          "dayOffset": 6,
+          "dayOffset": 7,
           "label": "2026-04-28",
           "units": 82,
           "revenue": 69202,
           "estimatedMargin": 0
         },
         {
-          "dayOffset": 5,
+          "dayOffset": 6,
           "label": "2026-04-29",
           "units": 130,
           "revenue": 114308,
           "estimatedMargin": 0
         },
         {
-          "dayOffset": 4,
+          "dayOffset": 5,
           "label": "2026-04-30",
           "units": 178,
           "revenue": 153808,
           "estimatedMargin": 0
         },
         {
-          "dayOffset": 3,
+          "dayOffset": 4,
           "label": "2026-05-01",
           "units": 132,
           "revenue": 114654,
           "estimatedMargin": 0
         },
         {
-          "dayOffset": 2,
+          "dayOffset": 3,
           "label": "2026-05-02",
           "units": 134,
           "revenue": 112914,
           "estimatedMargin": 0
         },
         {
-          "dayOffset": 1,
+          "dayOffset": 2,
           "label": "2026-05-03",
-          "units": 152,
-          "revenue": 130540,
+          "units": 158,
+          "revenue": 135818,
+          "estimatedMargin": 0
+        },
+        {
+          "dayOffset": 1,
+          "label": "2026-05-04",
+          "units": 122,
+          "revenue": 107020,
           "estimatedMargin": 0
         },
         {
           "dayOffset": 0,
-          "label": "2026-05-04",
-          "units": 10,
-          "revenue": 9960,
+          "label": "2026-05-05",
+          "units": 126,
+          "revenue": 109940,
           "estimatedMargin": 0
         }
       ]
@@ -325,101 +325,101 @@
       "series": [
         {
           "dayOffset": 13,
-          "label": "2026-04-21",
-          "units": 5063,
-          "revenue": 6134716,
-          "estimatedMargin": 2504663.6469
-        },
-        {
-          "dayOffset": 12,
           "label": "2026-04-22",
           "units": 4847,
           "revenue": 5900429,
           "estimatedMargin": 2373188.3102
         },
         {
-          "dayOffset": 11,
+          "dayOffset": 12,
           "label": "2026-04-23",
           "units": 4914,
           "revenue": 6065194,
           "estimatedMargin": 2479629.163
         },
         {
-          "dayOffset": 10,
+          "dayOffset": 11,
           "label": "2026-04-24",
           "units": 4811,
           "revenue": 6084072,
           "estimatedMargin": 2460745.1763
         },
         {
-          "dayOffset": 9,
+          "dayOffset": 10,
           "label": "2026-04-25",
           "units": 5269,
           "revenue": 6619901,
           "estimatedMargin": 2751044.215
         },
         {
-          "dayOffset": 8,
+          "dayOffset": 9,
           "label": "2026-04-26",
           "units": 5855,
           "revenue": 7478313,
           "estimatedMargin": 3142809.0149
         },
         {
-          "dayOffset": 7,
+          "dayOffset": 8,
           "label": "2026-04-27",
           "units": 5059,
           "revenue": 6384939,
           "estimatedMargin": 2672282.6689
         },
         {
-          "dayOffset": 6,
+          "dayOffset": 7,
           "label": "2026-04-28",
           "units": 5516,
           "revenue": 6848259,
           "estimatedMargin": 2776104.7498
         },
         {
-          "dayOffset": 5,
+          "dayOffset": 6,
           "label": "2026-04-29",
           "units": 5539,
           "revenue": 6847263,
           "estimatedMargin": 2779829.6361
         },
         {
-          "dayOffset": 4,
+          "dayOffset": 5,
           "label": "2026-04-30",
           "units": 4943,
           "revenue": 5869083,
           "estimatedMargin": 2616618.7506
         },
         {
-          "dayOffset": 3,
+          "dayOffset": 4,
           "label": "2026-05-01",
           "units": 5450,
           "revenue": 6567818,
           "estimatedMargin": 3014908.6867
         },
         {
-          "dayOffset": 2,
+          "dayOffset": 3,
           "label": "2026-05-02",
-          "units": 5561,
-          "revenue": 6735985,
-          "estimatedMargin": 3112106.0696
+          "units": 5562,
+          "revenue": 6736997,
+          "estimatedMargin": 3112634.1312
+        },
+        {
+          "dayOffset": 2,
+          "label": "2026-05-03",
+          "units": 5652,
+          "revenue": 6839606,
+          "estimatedMargin": 3124795.4187
         },
         {
           "dayOffset": 1,
-          "label": "2026-05-03",
-          "units": 5644,
-          "revenue": 6831915,
-          "estimatedMargin": 3123446.0753
+          "label": "2026-05-04",
+          "units": 5609,
+          "revenue": 6662374,
+          "estimatedMargin": 2918093.8973
         },
         {
           "dayOffset": 0,
-          "label": "2026-05-04",
-          "units": 5483,
-          "revenue": 6548118,
-          "estimatedMargin": 2908649.3817
+          "label": "2026-05-05",
+          "units": 6333,
+          "revenue": 7169449,
+          "estimatedMargin": 3069358.9531
         }
       ]
     }

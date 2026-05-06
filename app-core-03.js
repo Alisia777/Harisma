@@ -751,11 +751,16 @@ async function pullRemoteState(rerender = true) {
     ]);
     const manualTaskRows = taskRows.filter((row) => row?.source !== 'auto');
     const staleAutoTaskRows = taskRows.filter((row) => row?.source === 'auto');
-    const commentRows = commentResult.status === 'fulfilled' ? (commentResult.value || []) : [];
-    const decisionRows = decisionResult.status === 'fulfilled' ? (decisionResult.value || []) : [];
-    const ownerRows = ownerResult.status === 'fulfilled' ? (ownerResult.value || []) : [];
-    const attachmentRows = attachmentResult.status === 'fulfilled' ? (attachmentResult.value || []) : [];
-    const repricerControls = repricerControlsResult.status === 'fulfilled' ? (repricerControlsResult.value || null) : null;
+    const commentsLoaded = commentResult.status === 'fulfilled';
+    const decisionsLoaded = decisionResult.status === 'fulfilled';
+    const ownersLoaded = ownerResult.status === 'fulfilled';
+    const attachmentsLoaded = attachmentResult.status === 'fulfilled';
+    const repricerControlsLoaded = repricerControlsResult.status === 'fulfilled';
+    const commentRows = commentsLoaded ? (commentResult.value || []) : null;
+    const decisionRows = decisionsLoaded ? (decisionResult.value || []) : null;
+    const ownerRows = ownersLoaded ? (ownerResult.value || []) : null;
+    const attachmentRows = attachmentsLoaded ? (attachmentResult.value || []) : null;
+    const repricerControls = repricerControlsLoaded ? (repricerControlsResult.value || null) : null;
     const softErrors = [commentResult, decisionResult, ownerResult, attachmentResult, repricerControlsResult]
       .filter((result) => result.status !== 'fulfilled')
       .map((result) => result.reason?.message || String(result.reason || 'Неизвестная ошибка'))
@@ -768,13 +773,19 @@ async function pullRemoteState(rerender = true) {
         softErrors.push(error?.message || String(error));
       }
     }
-    const remoteEmpty = !manualTaskRows.length && !commentRows.length && !decisionRows.length && !ownerRows.length && !attachmentRows.length && !repricerControls;
+    const hasKnownRemoteData = Boolean(manualTaskRows.length)
+      || (commentsLoaded && Boolean(commentRows?.length))
+      || (decisionsLoaded && Boolean(decisionRows?.length))
+      || (ownersLoaded && Boolean(ownerRows?.length))
+      || (attachmentsLoaded && Boolean(attachmentRows?.length))
+      || (repricerControlsLoaded && Boolean(repricerControls));
+    const remoteEmpty = !hasKnownRemoteData;
     if (!remoteEmpty) {
       state.storage.tasks = normalizeStorageTasks(manualTaskRows.map(fromRemoteTask), 'manual');
-      state.storage.comments = commentRows.map(fromRemoteComment);
-      state.storage.decisions = decisionRows.map(fromRemoteDecision);
-      state.storage.ownerOverrides = ownerRows.map(fromRemoteOwner);
-      state.storage.taskAttachments = attachmentRows.map(fromRemoteTaskAttachment).filter((item) => item.taskId && item.objectPath);
+      if (commentsLoaded) state.storage.comments = commentRows.map(fromRemoteComment);
+      if (decisionsLoaded) state.storage.decisions = decisionRows.map(fromRemoteDecision);
+      if (ownersLoaded) state.storage.ownerOverrides = ownerRows.map(fromRemoteOwner);
+      if (attachmentsLoaded) state.storage.taskAttachments = attachmentRows.map(fromRemoteTaskAttachment).filter((item) => item.taskId && item.objectPath);
       if (repricerControls) applyRepricerControlsPayload(repricerControls);
       applyOwnerOverridesToSkus();
       saveLocalStorage();

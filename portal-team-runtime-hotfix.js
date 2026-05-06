@@ -278,6 +278,43 @@
     }
   }
 
+  const AUTO_PULL_INTERVAL_MS = 15000;
+  let autoPullTimer = 0;
+  let autoPullInFlight = false;
+
+  async function autoPullRemoteStateHotfix(reason = 'auto') {
+    const app = appState();
+    if (!app?.team || !canUseRemote() || !hasRemoteStoreHotfix()) return;
+    if (app.team.mode === 'pending') return;
+    if (autoPullInFlight) return;
+    autoPullInFlight = true;
+    try {
+      await pullRemoteStateHotfix(true);
+    } catch (error) {
+      console.warn('[portal-team-runtime-hotfix:auto-pull]', reason, error);
+    } finally {
+      autoPullInFlight = false;
+    }
+  }
+
+  function bindAutoPullHotfix() {
+    if (autoPullTimer) return;
+    autoPullTimer = window.setInterval(() => {
+      if (document.hidden) return;
+      autoPullRemoteStateHotfix('interval');
+    }, AUTO_PULL_INTERVAL_MS);
+
+    window.addEventListener('focus', () => {
+      autoPullRemoteStateHotfix('focus');
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) autoPullRemoteStateHotfix('visible');
+    });
+    window.addEventListener('altea:viewchange', () => {
+      autoPullRemoteStateHotfix('viewchange');
+    });
+  }
+
   function assignGlobal(name, value) {
     window[name] = value;
     try {
@@ -295,6 +332,7 @@
   assignGlobal('upsertRemote', upsertRemoteHotfix);
   assignGlobal('pullRemoteState', pullRemoteStateHotfix);
   assignGlobal('initTeamStore', initTeamStoreHotfix);
+  bindAutoPullHotfix();
 
   window.setTimeout(() => {
     const app = appState();

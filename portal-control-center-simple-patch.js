@@ -932,6 +932,164 @@
     renderGeneralTaskEnhancements(root);
   }
 
+  // Hardening shared workflow sync: status transition is accepted only when history entry
+  // is visible in the shared layer as well. This prevents "status moved, comment lost" drift.
+  async function appendTaskHistorySafe(taskId, kind, text, payload = {}) {
+    const message = String(text || '').trim();
+    if (!message) return false;
+    const writer = typeof window.createTaskHistoryEntry === 'function'
+      ? window.createTaskHistoryEntry
+      : (typeof createTaskHistoryEntry === 'function' ? createTaskHistoryEntry : null);
+    let writerError = null;
+    try {
+      if (typeof writer === 'function') {
+        await writer(taskId, kind, message, payload);
+      }
+    } catch (error) {
+      writerError = error;
+      console.error(error);
+    }
+
+    let recentEntry = getTaskHistoryLocal(taskId).find((item) => (
+      String(item?.kind || '') === String(kind || '')
+      && String(item?.text || '').trim() === message
+    ));
+
+    if (!recentEntry) {
+      const task = getTaskLocal(taskId);
+      if (!task || typeof createComment !== 'function') return false;
+      try {
+        await createComment({
+          articleKey: task.articleKey || '',
+          author: payload.author || state?.team?.member?.name || task.owner || 'Команда',
+          team: payload.team || (typeof teamMemberLabel === 'function' ? teamMemberLabel() : 'Команда'),
+          type: 'task_log',
+          text: `[[task:${taskId}]] [[kind:${kind}]] ${message}`
+        });
+      } catch (error) {
+        console.error(error);
+        return false;
+      }
+      recentEntry = getTaskHistoryLocal(taskId).find((item) => (
+        String(item?.kind || '') === String(kind || '')
+        && String(item?.text || '').trim() === message
+      ));
+    }
+    if (!recentEntry) return false;
+
+    const remoteEnabled = typeof hasRemoteStore === 'function'
+      ? hasRemoteStore()
+      : Boolean(state?.team?.ready && (state?.team?.accessToken || state?.team?.client));
+    if (remoteEnabled && typeof pullRemoteState === 'function') {
+      try {
+        await pullRemoteState(false);
+      } catch (error) {
+        console.error(error);
+        return false;
+      }
+      const syncedEntry = getTaskHistoryLocal(taskId).find((item) => String(item?.id || '') === String(recentEntry?.id || ''));
+      if (!syncedEntry) {
+        if (writerError) console.error(writerError);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  async function transitionTaskWithHistory(taskId, nextStatus, historyKind, historyText) {
+    const previousStatus = String(getTaskLocal(taskId)?.status || '').trim() || null;
+    const task = await updateTaskRecordSafe(taskId, { status: nextStatus });
+    if (!task) return null;
+
+    const saved = await appendTaskHistorySafe(taskId, historyKind, historyText, {
+      team: typeof teamMemberLabel === 'function' ? teamMemberLabel() : 'Команда'
+    });
+    if (saved) return task;
+
+    if (previousStatus && previousStatus !== nextStatus) {
+      await updateTaskRecordSafe(taskId, { status: previousStatus });
+    }
+    return null;
+  }
+
+  async function submitTaskForRopApproval(taskId, report) {
+    return transitionTaskWithHistory(
+      taskId,
+      'waiting_rop',
+      'report',
+      `Исполнитель сдал результат и передал задачу РОПу на согласование: ${report}`
+    );
+  }
+
+  async function approveTaskByRop(taskId, comment) {
+    const note = String(comment || '').trim();
+    return transitionTaskWithHistory(
+      taskId,
+      'waiting_decision',
+      'status',
+      note
+        ? `РОП согласовал результат и передал задачу руководителю: ${note}`
+        : 'РОП согласовал результат и передал задачу руководителю на финальное закрытие.'
+    );
+  }
+
+  async function returnTaskToWork(taskId, comment) {
+    const note = String(comment || '').trim();
+    return transitionTaskWithHistory(
+      taskId,
+      'in_progress',
+      'comment',
+      note ? `РОП вернул задачу в работу: ${note}` : 'РОП вернул задачу в работу.'
+    );
+  }
+
+  async function finalCloseTaskWithReport(taskId, report) {
+    return transitionTaskWithHistory(
+      taskId,
+      'done',
+      'report',
+      `Руководитель финально закрыл задачу: ${report}`
+    );
+  }
+
+  // Final override: keep status transition only when it is visible in shared layer too.
+  async function transitionTaskWithHistory(taskId, nextStatus, historyKind, historyText) {
+    const previousStatus = String(getTaskLocal(taskId)?.status || '').trim() || null;
+    const task = await updateTaskRecordSafe(taskId, { status: nextStatus });
+    if (!task) return null;
+
+    const remoteEnabled = typeof hasRemoteStore === 'function'
+      ? hasRemoteStore()
+      : Boolean(state?.team?.ready && (state?.team?.accessToken || state?.team?.client));
+    if (remoteEnabled && typeof pullRemoteState === 'function') {
+      try {
+        await pullRemoteState(false);
+      } catch (error) {
+        console.error(error);
+      }
+      const syncedStatus = String(getTaskLocal(taskId)?.status || '').trim();
+      if (syncedStatus !== String(nextStatus || '').trim()) {
+        if (previousStatus && previousStatus !== syncedStatus) {
+          await updateTaskRecordSafe(taskId, { status: previousStatus });
+        }
+        return null;
+      }
+    }
+
+    const saved = await appendTaskHistorySafe(taskId, historyKind, historyText, {
+      team: typeof teamMemberLabel === 'function' ? teamMemberLabel() : 'Team'
+    });
+    if (saved) return task;
+
+    if (previousStatus && previousStatus !== nextStatus) {
+      await updateTaskRecordSafe(taskId, { status: previousStatus });
+      if (remoteEnabled && typeof pullRemoteState === 'function') {
+        try { await pullRemoteState(false); } catch (error) { console.error(error); }
+      }
+    }
+    return null;
+  }
+
   window.parseTaskLogComment = parseTaskLogCommentLocal;
   window.getTaskHistory = getTaskHistoryLocal;
   window.getRecentTaskHistory = getRecentTaskHistoryLocal;

@@ -350,27 +350,249 @@
     body.querySelector('#taskRopApproveForm')?.addEventListener('submit', async (event) => {
       event.preventDefault();
       const form = new FormData(event.currentTarget);
-      await approveTaskByRop(taskId, String(form.get('comment') || '').trim());
-      renderTaskModal(taskId);
+      try {
+        const updatedTask = await approveTaskByRop(taskId, String(form.get('comment') || '').trim());
+        if (!updatedTask) {
+          alert('Не удалось согласовать задачу: комментарий/статус не синхронизировались. Повторите после обновления.');
+          return;
+        }
+        renderTaskModal(taskId);
+      } catch (error) {
+        console.error(error);
+        alert(error?.message || 'Ошибка согласования у РОПа. Повторите после обновления.');
+      }
     });
     body.querySelector('[data-task-return-to-work]')?.addEventListener('click', async () => {
       const comment = String(body.querySelector('#taskRopApproveForm textarea[name="comment"]')?.value || '').trim();
-      await returnTaskToWork(taskId, comment);
-      renderTaskModal(taskId);
+      try {
+        const updatedTask = await returnTaskToWork(taskId, comment);
+        if (!updatedTask) {
+          alert('Не удалось вернуть задачу: комментарий/статус не синхронизировались. Повторите после обновления.');
+          return;
+        }
+        renderTaskModal(taskId);
+      } catch (error) {
+        console.error(error);
+        alert(error?.message || 'Ошибка возврата задачи в работу. Повторите после обновления.');
+      }
     });
     body.querySelector('#taskFinalCloseForm')?.addEventListener('submit', async (event) => {
       event.preventDefault();
       const form = new FormData(event.currentTarget);
       const report = String(form.get('report') || '').trim();
       if (!report) return;
-      await closeTaskWithReport(taskId, report);
-      renderTaskModal(taskId);
+      try {
+        const updatedTask = await closeTaskWithReport(taskId, report);
+        if (!updatedTask) {
+          alert('Не удалось финально закрыть задачу: отчёт/статус не синхронизировались. Повторите после обновления.');
+          return;
+        }
+        renderTaskModal(taskId);
+      } catch (error) {
+        console.error(error);
+        alert(error?.message || 'Ошибка финального закрытия. Повторите после обновления.');
+      }
     });
   }
 
-  function taskModalRefined(taskId) {
+  function bindTaskModal(taskId, body) {
+    const bindOnce = (element, flag, handler) => {
+      if (!element) return;
+      if (element.dataset?.[flag] === '1') return;
+      if (element.dataset) element.dataset[flag] = '1';
+      element.addEventListener('submit', handler);
+    };
+
+    const editForm = body.querySelector('#taskEditForm');
+    bindOnce(editForm, 'boundEditRefine', async (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const updateFn = typeof window.updateTaskRecordSafe === 'function'
+        ? window.updateTaskRecordSafe
+        : (typeof updateTaskRecord === 'function' ? updateTaskRecord : null);
+      if (!updateFn) {
+        alert('Task save function is unavailable. Refresh the page.');
+        return;
+      }
+      const updatedTask = await updateFn(taskId, {
+        title: form.get('title'),
+        entityLabel: form.get('entityLabel'),
+        owner: form.get('owner'),
+        due: form.get('due'),
+        status: form.get('status'),
+        priority: form.get('priority'),
+        type: form.get('type'),
+        platform: form.get('platform'),
+        nextAction: form.get('nextAction'),
+        reason: form.get('reason')
+      });
+      if (!updatedTask) {
+        alert('Task was not saved. Refresh and retry.');
+        return;
+      }
+      if (typeof pullRemoteState === 'function') {
+        try { await pullRemoteState(false); } catch (error) { console.error(error); }
+      }
+      renderTaskModal(taskId);
+    });
+
+    const commentForm = body.querySelector('#taskCommentForm');
+    bindOnce(commentForm, 'boundCommentRefine', async (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const text = String(form.get('text') || '').trim();
+      if (!text) return;
+      const historyFn = typeof window.appendTaskHistorySafe === 'function'
+        ? window.appendTaskHistorySafe
+        : (typeof createTaskHistoryEntry === 'function' ? createTaskHistoryEntry : null);
+      if (!historyFn) {
+        alert('Comment save function is unavailable. Refresh the page.');
+        return;
+      }
+      const saved = await historyFn(taskId, 'comment', text, {
+        team: typeof teamMemberLabel === 'function' ? teamMemberLabel() : 'Team'
+      });
+      if (!saved) {
+        alert('Comment was not synced. Refresh and retry.');
+        return;
+      }
+      if (typeof pullRemoteState === 'function') {
+        try { await pullRemoteState(false); } catch (error) { console.error(error); }
+      }
+      renderTaskModal(taskId);
+    });
+
+    const submitToRopForm = body.querySelector('#taskSubmitToRopForm') || body.querySelector('#taskCloseForm');
+    if (submitToRopForm && submitToRopForm.dataset.ropSubmitBound !== '1') {
+      submitToRopForm.dataset.ropSubmitBound = '1';
+      submitToRopForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (submitToRopForm.dataset.sending === '1') return;
+        const form = new FormData(event.currentTarget);
+        const report = String(form.get('report') || '').trim();
+        if (!report) {
+          event.currentTarget.querySelector('textarea[name="report"]')?.focus();
+          return;
+        }
+        const submitButton = event.currentTarget.querySelector('button[type="submit"]');
+        const initialText = submitButton?.textContent || '';
+        try {
+          submitToRopForm.dataset.sending = '1';
+          if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Saving...';
+          }
+          const submitFn = typeof window.submitTaskForRopApproval === 'function'
+            ? window.submitTaskForRopApproval
+            : (typeof submitTaskForRopApproval === 'function' ? submitTaskForRopApproval : null);
+          if (typeof submitFn !== 'function') throw new Error('Submit function is unavailable.');
+          const updatedTask = await submitFn(taskId, report);
+          if (!updatedTask) throw new Error('Task state was not synced.');
+          if (typeof pullRemoteState === 'function') {
+            try { await pullRemoteState(false); } catch (error) { console.error(error); }
+          }
+          renderTaskModal(taskId);
+        } catch (error) {
+          console.error(error);
+          alert(error?.message || 'Failed to send task to ROP.');
+        } finally {
+          submitToRopForm.dataset.sending = '0';
+          if (submitButton && submitButton.isConnected) {
+            submitButton.disabled = false;
+            submitButton.textContent = initialText || 'Отправить РОПу';
+          }
+        }
+      });
+    }
+
+    const ropApproveForm = body.querySelector('#taskRopApproveForm');
+    bindOnce(ropApproveForm, 'boundRopApproveRefine', async (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      try {
+        const approveFn = typeof window.approveTaskByRop === 'function'
+          ? window.approveTaskByRop
+          : (typeof approveTaskByRop === 'function' ? approveTaskByRop : null);
+        if (typeof approveFn !== 'function') throw new Error('Approve function is unavailable.');
+        const updatedTask = await approveFn(taskId, String(form.get('comment') || '').trim());
+        if (!updatedTask) {
+          alert('Status was not synced. Refresh and retry.');
+          return;
+        }
+        if (typeof pullRemoteState === 'function') {
+          try { await pullRemoteState(false); } catch (error) { console.error(error); }
+        }
+        renderTaskModal(taskId);
+      } catch (error) {
+        console.error(error);
+        alert(error?.message || 'Approval failed. Refresh and retry.');
+      }
+    });
+
+    const returnButton = body.querySelector('[data-task-return-to-work]');
+    if (returnButton && returnButton.dataset.boundReturnRefine !== '1') {
+      returnButton.dataset.boundReturnRefine = '1';
+      returnButton.addEventListener('click', async () => {
+        const comment = String(body.querySelector('#taskRopApproveForm textarea[name="comment"]')?.value || '').trim();
+        try {
+          const returnFn = typeof window.returnTaskToWork === 'function'
+            ? window.returnTaskToWork
+            : (typeof returnTaskToWork === 'function' ? returnTaskToWork : null);
+          if (typeof returnFn !== 'function') throw new Error('Return function is unavailable.');
+          const updatedTask = await returnFn(taskId, comment);
+          if (!updatedTask) {
+            alert('Task was not returned in shared layer. Refresh and retry.');
+            return;
+          }
+          if (typeof pullRemoteState === 'function') {
+            try { await pullRemoteState(false); } catch (error) { console.error(error); }
+          }
+          renderTaskModal(taskId);
+        } catch (error) {
+          console.error(error);
+          alert(error?.message || 'Failed to return task to work.');
+        }
+      });
+    }
+
+    const finalCloseForm = body.querySelector('#taskFinalCloseForm');
+    bindOnce(finalCloseForm, 'boundFinalRefine', async (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const report = String(form.get('report') || '').trim();
+      if (!report) return;
+      try {
+        const closeFn = typeof window.closeTaskWithReport === 'function'
+          ? window.closeTaskWithReport
+          : (typeof closeTaskWithReport === 'function' ? closeTaskWithReport : null);
+        if (typeof closeFn !== 'function') throw new Error('Final close function is unavailable.');
+        const updatedTask = await closeFn(taskId, report);
+        if (!updatedTask) {
+          alert('Task was not closed in shared layer. Refresh and retry.');
+          return;
+        }
+        if (typeof pullRemoteState === 'function') {
+          try { await pullRemoteState(false); } catch (error) { console.error(error); }
+        }
+        renderTaskModal(taskId);
+      } catch (error) {
+        console.error(error);
+        alert(error?.message || 'Final close failed. Refresh and retry.');
+      }
+    });
+  }
+
+  function taskModalRefined(taskId, skipRemoteSync = false) {
     if (!baseTaskModal) return;
     baseTaskModal(taskId);
+    if (!skipRemoteSync && typeof hasRemoteStore === 'function' && hasRemoteStore() && typeof pullRemoteState === 'function') {
+      Promise.resolve()
+        .then(() => pullRemoteState(false))
+        .then(() => {
+          if (state?.activeTaskId === taskId) taskModalRefined(taskId, true);
+        })
+        .catch((error) => console.error(error));
+    }
     const taskItem = task(taskId);
     const body = document.getElementById('taskModalBody');
     if (!taskItem || !body) return;

@@ -68,6 +68,138 @@
     return result;
   }
 
+  const TASK_LINK_TASK_PARAM = 'task';
+  const TASK_LINK_VIEW_PARAM = 'view';
+  const deepLinkState = { handled: false };
+
+  function currentViewForTaskLink() {
+    const raw = String(state?.activeView || 'control').trim();
+    if (!raw) return 'control';
+    if (typeof normalizePortalView === 'function') {
+      try {
+        return normalizePortalView(raw);
+      } catch {}
+    }
+    return raw;
+  }
+
+  function buildTaskShareUrl(taskId) {
+    const url = new URL(window.location.href);
+    url.searchParams.set(TASK_LINK_TASK_PARAM, String(taskId || ''));
+    url.searchParams.set(TASK_LINK_VIEW_PARAM, currentViewForTaskLink());
+    return url.toString();
+  }
+
+  async function copyTaskShareUrl(taskId) {
+    const link = buildTaskShareUrl(taskId);
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(link);
+      return link;
+    }
+    const textarea = document.createElement('textarea');
+    textarea.value = link;
+    textarea.setAttribute('readonly', 'readonly');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    textarea.style.pointerEvents = 'none';
+    document.body.appendChild(textarea);
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+    const copied = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    if (!copied) throw new Error('Copy command failed');
+    return link;
+  }
+
+  function ensureTaskShareButton(taskId, body) {
+    const actions = body.querySelector('.modal-head .badge-stack');
+    if (!actions) return;
+    let button = actions.querySelector('[data-copy-task-link]');
+    if (!button) {
+      button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'btn ghost';
+      button.setAttribute('data-copy-task-link', '1');
+      button.textContent = 'Копировать ссылку';
+      const closeButton = actions.querySelector('[data-close-task-modal]');
+      if (closeButton) actions.insertBefore(button, closeButton);
+      else actions.appendChild(button);
+    }
+    if (button.dataset.boundCopyTask === '1') return;
+    button.dataset.boundCopyTask = '1';
+    button.addEventListener('click', async () => {
+      const originalLabel = button.textContent || 'Копировать ссылку';
+      button.disabled = true;
+      try {
+        await copyTaskShareUrl(taskId);
+        button.textContent = 'Ссылка скопирована';
+      } catch (error) {
+        console.error(error);
+        button.textContent = 'Ошибка копирования';
+      } finally {
+        window.setTimeout(() => {
+          if (!button.isConnected) return;
+          button.disabled = false;
+          button.textContent = originalLabel;
+        }, 1200);
+      }
+    });
+  }
+
+  function readTaskDeepLink() {
+    try {
+      const url = new URL(window.location.href);
+      const taskId = String(url.searchParams.get(TASK_LINK_TASK_PARAM) || '').trim();
+      const rawView = String(url.searchParams.get(TASK_LINK_VIEW_PARAM) || '').trim();
+      const view = rawView
+        ? (typeof normalizePortalView === 'function' ? normalizePortalView(rawView) : rawView)
+        : 'control';
+      return { taskId, view };
+    } catch (error) {
+      console.error(error);
+      return { taskId: '', view: 'control' };
+    }
+  }
+
+  function hasTaskById(taskId) {
+    if (!taskId) return false;
+    if (typeof getTask === 'function') return Boolean(getTask(taskId));
+    if (typeof getAllTasks === 'function') {
+      return (getAllTasks() || []).some((item) => String(item?.id || '') === String(taskId));
+    }
+    return false;
+  }
+
+  function tryOpenTaskFromLink(taskId) {
+    const openFn = typeof window.openTaskModal === 'function'
+      ? window.openTaskModal
+      : (typeof openTaskModal === 'function' ? openTaskModal : null);
+    if (typeof openFn !== 'function') return false;
+    if (!hasTaskById(taskId)) return false;
+    openFn(taskId);
+    return true;
+  }
+
+  function applyTaskDeepLink() {
+    if (deepLinkState.handled) return;
+    const { taskId, view } = readTaskDeepLink();
+    if (!taskId) return;
+    if (typeof window.setView === 'function' && view) {
+      try { window.setView(view); } catch (error) { console.error(error); }
+    }
+    let attempts = 0;
+    const maxAttempts = 30;
+    const tick = () => {
+      attempts += 1;
+      if (tryOpenTaskFromLink(taskId)) {
+        deepLinkState.handled = true;
+        return;
+      }
+      if (attempts < maxAttempts) window.setTimeout(tick, 500);
+    };
+    window.setTimeout(tick, 120);
+  }
+
   function steps(status) {
     const cur = stage(status);
     const items = [
@@ -596,6 +728,7 @@
     const taskItem = task(taskId);
     const body = document.getElementById('taskModalBody');
     if (!taskItem || !body) return;
+    ensureTaskShareButton(taskId, body);
     const cardsRoot = body.querySelector('.two-col');
     const cards = cardsRoot ? Array.from(cardsRoot.children).filter((node) => node.classList?.contains('card')) : [];
     const closeCard = body.querySelector('#taskCloseForm')?.closest('.card');
@@ -734,4 +867,6 @@
   if (state?.activeView === 'control') controlRefined();
   if (state?.activeView === 'executive') executiveRefined();
   if (state?.activeTaskId) taskModalRefined(state.activeTaskId);
+  applyTaskDeepLink();
+  window.addEventListener('altea:viewchange', () => applyTaskDeepLink());
 })();

@@ -67,10 +67,62 @@
     meetings: "dashboard",
     documents: "dashboard"
   };
+  var LAST_VIEW_STORAGE_KEY = "altea:last-view";
+  var viewRestored = false;
 
   function normalizeView(view) {
     var raw = String(view || "dashboard").trim() || "dashboard";
     return REDIRECTS[raw] || raw;
+  }
+
+  function readUrlView() {
+    try {
+      var url = new URL(window.location.href);
+      var raw = String(url.searchParams.get("view") || "").trim();
+      return raw ? normalizeView(raw) : "";
+    } catch (error) {
+      console.warn("[sidebar-hotfix] readUrlView", error);
+      return "";
+    }
+  }
+
+  function saveLastView(view) {
+    var normalized = normalizeView(view);
+    if (!normalized) return;
+    try {
+      window.localStorage.setItem(LAST_VIEW_STORAGE_KEY, normalized);
+    } catch (error) {
+      console.warn("[sidebar-hotfix] saveLastView", error);
+    }
+  }
+
+  function readLastView() {
+    try {
+      var raw = String(window.localStorage.getItem(LAST_VIEW_STORAGE_KEY) || "").trim();
+      return raw ? normalizeView(raw) : "";
+    } catch (error) {
+      console.warn("[sidebar-hotfix] readLastView", error);
+      return "";
+    }
+  }
+
+  function restoreLastView() {
+    if (viewRestored) return;
+    if (typeof window.setView !== "function") return;
+    var preferred = readUrlView() || readLastView();
+    if (!preferred) return;
+    var current = normalizeView(state && state.activeView ? state.activeView : "dashboard");
+    if (current === preferred) {
+      viewRestored = true;
+      return;
+    }
+    viewRestored = true;
+    try {
+      window.setView(preferred);
+    } catch (error) {
+      console.warn("[sidebar-hotfix] restoreLastView", error);
+      viewRestored = false;
+    }
   }
 
   function setText(el, value) {
@@ -104,7 +156,9 @@
     if (typeof window.setView === "function" && !window.setView.__alteaSidebarPatched) {
       var originalSetView = window.setView;
       var wrappedSetView = function (view) {
-        return originalSetView.call(this, normalizeView(view));
+        var normalized = normalizeView(view);
+        saveLastView(normalized);
+        return originalSetView.call(this, normalized);
       };
       wrappedSetView.__alteaSidebarPatched = true;
       window.setView = wrappedSetView;
@@ -182,6 +236,7 @@
     syncStaticCopy();
     syncSidebar();
     enforceActiveView();
+    restoreLastView();
   }
 
   if (document.readyState === "loading") {
@@ -191,5 +246,9 @@
   }
 
   window.addEventListener("load", run);
-  window.addEventListener("altea:viewchange", run);
+  window.addEventListener("altea:viewchange", function (event) {
+    var view = event && event.detail ? event.detail.view : (state && state.activeView);
+    if (view) saveLastView(view);
+    run();
+  });
 })();

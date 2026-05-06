@@ -317,6 +317,24 @@
     return collect(platformKey, platformKey);
   }
 
+  function seriesLastDate(series) {
+    if (!Array.isArray(series) || !series.length) return null;
+    let latest = null;
+    series.forEach((point) => {
+      const date = parseDate(point?.date || point?.day || point?.dt || point?.label);
+      if (!(date instanceof Date) || Number.isNaN(date.getTime())) return;
+      if (!latest || date > latest) latest = date;
+    });
+    return latest;
+  }
+
+  function rowFreshnessInfo(row) {
+    if (!row || typeof row !== 'object') return { date: null, raw: '' };
+    const raw = row.historyFreshnessDate || row.historyDate || row.historyAsOfDate || row.historyUpdatedAt || '';
+    const parsed = parseDate(raw);
+    return { date: parsed instanceof Date && !Number.isNaN(parsed.getTime()) ? parsed : null, raw: raw || '' };
+  }
+
   function mergeDashboardPriceRow(priceRow = {}, workbenchRow = {}) {
     const next = {
       ...(priceRow || {}),
@@ -348,10 +366,31 @@
       next.currentTurnoverDays = currentTurnoverDays;
       if (!Number.isFinite(Number(next.turnoverDays))) next.turnoverDays = currentTurnoverDays;
     }
-    if (Array.isArray(workbenchRow?.daily) && workbenchRow.daily.length) next.daily = cloneJson(workbenchRow.daily);
-    else if (Array.isArray(priceRow?.daily) && priceRow.daily.length) next.daily = cloneJson(priceRow.daily);
-    if (Array.isArray(workbenchRow?.monthly) && workbenchRow.monthly.length) next.monthly = cloneJson(workbenchRow.monthly);
-    else if (Array.isArray(priceRow?.monthly) && priceRow.monthly.length) next.monthly = cloneJson(priceRow.monthly);
+    const workbenchDaily = Array.isArray(workbenchRow?.daily) ? workbenchRow.daily : [];
+    const priceDaily = Array.isArray(priceRow?.daily) ? priceRow.daily : [];
+    const workbenchDailyMax = seriesLastDate(workbenchDaily);
+    const priceDailyMax = seriesLastDate(priceDaily);
+    if (workbenchDaily.length || priceDaily.length) {
+      if (priceDaily.length && priceDailyMax && (!workbenchDailyMax || priceDailyMax > workbenchDailyMax)) {
+        next.daily = cloneJson(priceDaily);
+      } else if (workbenchDaily.length) {
+        next.daily = cloneJson(workbenchDaily);
+      } else {
+        next.daily = cloneJson(priceDaily);
+      }
+    }
+
+    const workbenchMonthly = Array.isArray(workbenchRow?.monthly) ? workbenchRow.monthly : [];
+    const priceMonthly = Array.isArray(priceRow?.monthly) ? priceRow.monthly : [];
+    if (workbenchMonthly.length) next.monthly = cloneJson(workbenchMonthly);
+    else if (priceMonthly.length) next.monthly = cloneJson(priceMonthly);
+
+    const workbenchFreshness = rowFreshnessInfo(workbenchRow);
+    const priceFreshness = rowFreshnessInfo(priceRow);
+    if (priceFreshness.date && (!workbenchFreshness.date || priceFreshness.date > workbenchFreshness.date)) {
+      next.historyFreshnessDate = priceFreshness.raw || next.historyFreshnessDate;
+      if (!next.historyDate) next.historyDate = priceFreshness.raw;
+    }
     next.platformKey = workbenchRow?.platformKey || priceRow?.platformKey || next.platformKey;
     next.platformLabel = workbenchRow?.platformLabel || priceRow?.platformLabel || next.platformLabel;
     return next;
@@ -361,22 +400,28 @@
     const priceRows = rowsForPlatform(current('prices'), platformKey);
     const workbenchRows = rowsForPlatform(current('smartPriceWorkbench'), platformKey);
     if (!workbenchRows.length) return priceRows;
+    const mergeKey = (row) => {
+      const articleKey = normalizeKey(row?.articleKey || row?.article);
+      const sourceKey = normalizeKey(row?.platformKey || platformKey);
+      if (!articleKey) return '';
+      return `${sourceKey}:${articleKey}`;
+    };
     const priceMap = new Map();
     priceRows.forEach((row) => {
-      const key = normalizeKey(row?.articleKey || row?.article);
+      const key = mergeKey(row);
       if (!key || priceMap.has(key)) return;
       priceMap.set(key, row);
     });
     const mergedRows = [];
     const used = new Set();
     workbenchRows.forEach((row) => {
-      const key = normalizeKey(row?.articleKey || row?.article);
+      const key = mergeKey(row);
       const priceRow = key ? priceMap.get(key) : null;
       if (key) used.add(key);
       mergedRows.push(mergeDashboardPriceRow(priceRow, row));
     });
     priceRows.forEach((row) => {
-      const key = normalizeKey(row?.articleKey || row?.article);
+      const key = mergeKey(row);
       if (key && used.has(key)) return;
       mergedRows.push(row);
     });
@@ -1494,7 +1539,14 @@
       const freshnessTail = detailTailRows(freshnessSeries, 14);
       const freshnessEnd = freshnessTail[freshnessTail.length - 1]?.date || freshnessSeries[freshnessSeries.length - 1]?.date || null;
       const publishedEndDate = publishedTurnoverSeries[publishedTurnoverSeries.length - 1]?.date || null;
-      if (!publishedTurnoverSeries.length || !(publishedEndDate instanceof Date) || (freshnessEnd instanceof Date && freshnessEnd > publishedEndDate)) {
+      const sparsePublishedThreshold = Math.min(7, Math.max(0, freshnessTail.length - 1));
+      const publishedTooSparse = sparsePublishedThreshold > 0 && publishedTurnoverSeries.length < sparsePublishedThreshold;
+      if (
+        !publishedTurnoverSeries.length
+        || !(publishedEndDate instanceof Date)
+        || (freshnessEnd instanceof Date && freshnessEnd > publishedEndDate)
+        || publishedTooSparse
+      ) {
         if (publishedTurnoverSeries.length && freshnessTail.length) {
           const byDate = new Map();
           [...publishedTurnoverSeries, ...freshnessTail].forEach((point) => {

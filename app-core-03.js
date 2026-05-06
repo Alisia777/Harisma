@@ -50,6 +50,14 @@ async function initTeamStore() {
   } catch (error) {
     console.error(error);
     state.team.mode = 'error';
+    state.team.lastPullCoverage = {
+      tasks: false,
+      comments: false,
+      decisions: false,
+      owners: false,
+      attachments: false,
+      repricerControls: false
+    };
     state.team.ready = false;
     state.team.error = error.message || 'Ошибка подключения';
     state.team.note = 'Ошибка Supabase — работаем локально';
@@ -765,6 +773,14 @@ async function pullRemoteState(rerender = true) {
       .filter((result) => result.status !== 'fulfilled')
       .map((result) => result.reason?.message || String(result.reason || 'Неизвестная ошибка'))
       .filter(Boolean);
+    state.team.lastPullCoverage = {
+      tasks: true,
+      comments: commentsLoaded,
+      decisions: decisionsLoaded,
+      owners: ownersLoaded,
+      attachments: attachmentsLoaded,
+      repricerControls: repricerControlsLoaded
+    };
     let autoCleanupCount = 0;
     if (staleAutoTaskRows.length) {
       try {
@@ -807,6 +823,14 @@ async function pullRemoteState(rerender = true) {
   } catch (error) {
     console.error(error);
     state.team.mode = 'error';
+    state.team.lastPullCoverage = {
+      tasks: false,
+      comments: false,
+      decisions: false,
+      owners: false,
+      attachments: false,
+      repricerControls: false
+    };
     state.team.error = error.message || 'Не удалось загрузить данные';
     state.team.note = 'Ошибка загрузки из Supabase';
     updateSyncBadge();

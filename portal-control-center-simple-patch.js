@@ -762,6 +762,10 @@
         alert('Task save failed. Refresh the page and try again.');
         return;
       }
+      if (false) {
+        alert('Не удалось сохранить апдейт: комментарий не синхронизирован. Текст остался в поле, повторите отправку.');
+        return;
+      }
       patchedRenderTaskModal(taskId);
     });
 
@@ -771,6 +775,10 @@
       const saved = await appendTaskHistorySafe(taskId, 'comment', String(form.get('text') || '').trim(), {
         team: typeof teamMemberLabel === 'function' ? teamMemberLabel() : 'Команда'
       });
+      if (!saved) {
+        alert('Не удалось сохранить апдейт: комментарий не синхронизирован. Текст остался в поле, повторите отправку.');
+        return;
+      }
       patchedRenderTaskModal(taskId);
     });
 
@@ -987,6 +995,8 @@
         console.error(error);
         return false;
       }
+      const commentSliceReady = state?.team?.lastPullCoverage?.comments;
+      if (commentSliceReady === false) return false;
       const syncedEntry = getTaskHistoryLocal(taskId).find((item) => String(item?.id || '') === String(recentEntry?.id || ''));
       if (!syncedEntry) {
         if (writerError) console.error(writerError);
@@ -1099,6 +1109,7 @@
   window.taskStatusBadge = patchedTaskStatusBadge;
   window.taskPlatformBadge = patchedTaskPlatformBadge;
   window.getControlSnapshot = patchedGetControlSnapshot;
+  window.appendTaskHistorySafe = appendTaskHistorySafe;
   window.submitTaskForRopApproval = submitTaskForRopApproval;
   window.approveTaskByRop = approveTaskByRop;
   window.returnTaskToWork = returnTaskToWork;

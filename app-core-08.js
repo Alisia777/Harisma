@@ -3152,7 +3152,7 @@ function renderOrderCalculator() {
     });
 }
 
-const ORDER_PROCUREMENT_VERSION = '20260507e';
+const ORDER_PROCUREMENT_VERSION = '20260507f';
 const ORDER_PROCUREMENT_STYLE_ID = `altea-order-procurement-${ORDER_PROCUREMENT_VERSION}`;
 const ORDER_PROCUREMENT_RUNTIME = {
   renderToken: 0,
@@ -3174,6 +3174,16 @@ function ensureOrderProcurementState() {
   state.orderProcurement.days = clampOrderProcurementDays(state.orderProcurement.days);
   state.orderProcurement.search = String(state.orderProcurement.search || '').trim();
   state.orderProcurement.place = String(state.orderProcurement.place || 'all').trim() || 'all';
+  state.orderProcurement.clusterFilter = [
+    'all',
+    'risk',
+    'turnover_lt',
+    'low_stock',
+    'need',
+    'no_stock',
+    'in_motion'
+  ].includes(state.orderProcurement.clusterFilter) ? state.orderProcurement.clusterFilter : 'all';
+  state.orderProcurement.clusterDays = clampOrderProcurementDays(state.orderProcurement.clusterDays || 30);
   state.orderProcurement.mode = [
     'all',
     'recommended',
@@ -3391,6 +3401,8 @@ function orderProcurementBuildRenderSignature() {
     orderState.days,
     orderState.search || '',
     orderState.place || 'all',
+    orderState.clusterFilter || 'all',
+    orderState.clusterDays || 30,
     orderState.mode || 'all',
     orderState.sort || 'recommended_desc',
     payloadRows,

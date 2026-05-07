@@ -45,6 +45,66 @@ function orderProcurementAverage(values) {
   return clean.reduce((acc, value) => acc + value, 0) / clean.length;
 }
 
+function orderProcurementClusterFlags(cluster, thresholdDays) {
+  const threshold = clampOrderProcurementDays(thresholdDays || 30);
+  const turnover = Number(cluster?.turnover);
+  const hasTurnover = Number.isFinite(turnover) && turnover > 0;
+  const mpStock = orderProcurementNumber(cluster?.mpStock);
+  const orders = orderProcurementNumber(cluster?.orders);
+  const need = orderProcurementNumber(cluster?.need);
+  const inTransit = orderProcurementNumber(cluster?.inTransit);
+  const inRequest = orderProcurementNumber(cluster?.inRequest);
+  const noStock = mpStock <= 0 && (orders > 0 || need > 0);
+  const shortTurnover = hasTurnover && turnover < threshold;
+  const nearEmpty = mpStock > 0 && orders > 0 && mpStock <= orders;
+  const lowStock = noStock || nearEmpty || shortTurnover;
+  const hasNeed = need > 0;
+  const inMotion = inTransit > 0 || inRequest > 0;
+
+  return {
+    threshold,
+    noStock,
+    shortTurnover,
+    nearEmpty,
+    lowStock,
+    need: hasNeed,
+    inMotion,
+    risk: noStock || lowStock || hasNeed,
+    label: noStock
+      ? 'нет остатка'
+      : (hasNeed ? 'к заказу' : (shortTurnover ? `< ${threshold} дн.` : (inMotion ? 'едет' : 'ок')))
+  };
+}
+
+function orderProcurementClusterMatchesFilter(cluster, filter, thresholdDays) {
+  const flags = cluster?.flags || orderProcurementClusterFlags(cluster, thresholdDays);
+  switch (filter) {
+    case 'risk':
+      return flags.risk;
+    case 'turnover_lt':
+      return flags.shortTurnover;
+    case 'low_stock':
+      return flags.lowStock;
+    case 'need':
+      return flags.need;
+    case 'no_stock':
+      return flags.noStock;
+    case 'in_motion':
+      return flags.inMotion;
+    case 'all':
+    default:
+      return true;
+  }
+}
+
+function orderProcurementClusterTone(cluster, clusterFilter = 'all') {
+  const flags = cluster?.flags || orderProcurementClusterFlags(cluster, 30);
+  if (flags.noStock) return 'danger';
+  if (flags.need || flags.lowStock || flags.shortTurnover) return 'warn';
+  if (clusterFilter !== 'all' && flags.inMotion) return 'info';
+  return '';
+}
+
 function orderProcurementOwnerForPlatform(sku, row, platform) {
   const platformOwner = typeof platformOwnerName === 'function'
     ? platformOwnerName(sku, platform)
@@ -187,6 +247,8 @@ function buildOrderProcurementModel() {
   const searchQuery = String(orderState.search || '').trim().toLowerCase();
   const mode = String(orderState.mode || 'all');
   const sort = String(orderState.sort || 'recommended_desc');
+  const clusterFilter = String(orderState.clusterFilter || 'all');
+  const clusterDays = clampOrderProcurementDays(orderState.clusterDays || 30);
   const payload = orderProcurementCurrentPayload(platform) || { rows: [] };
   const rows = Array.isArray(payload.rows) ? payload.rows : [];
   const skuLookup = orderProcurementBuildSkuLookup();
@@ -246,6 +308,8 @@ function buildOrderProcurementModel() {
       inTransit: clusterInTransit,
       inRequest: clusterInRequest
     };
+    cluster.flags = orderProcurementClusterFlags(cluster, clusterDays);
+    cluster.matchesClusterFilter = orderProcurementClusterMatchesFilter(cluster, clusterFilter, clusterDays);
 
     current.totalNeed += clusterNeed;
     current.totalOrders += clusterOrders;
@@ -254,19 +318,39 @@ function buildOrderProcurementModel() {
     current.clusters[place] = cluster;
     rowMap.set(articleKey, current);
 
-    const clusterTotal = clusterTotalsMap.get(place) || { mpStock: 0, orders: 0, need: 0 };
+    const clusterTotal = clusterTotalsMap.get(place) || {
+      mpStock: 0,
+      orders: 0,
+      need: 0,
+      risk: 0,
+      shortTurnover: 0,
+      noStock: 0,
+      inMotion: 0,
+      matched: 0
+    };
     clusterTotal.mpStock += cluster.mpStock;
     clusterTotal.orders += cluster.orders;
     clusterTotal.need += cluster.need;
+    if (cluster.flags.risk) clusterTotal.risk += 1;
+    if (cluster.flags.shortTurnover) clusterTotal.shortTurnover += 1;
+    if (cluster.flags.noStock) clusterTotal.noStock += 1;
+    if (cluster.flags.inMotion) clusterTotal.inMotion += 1;
+    if (cluster.matchesClusterFilter) clusterTotal.matched += 1;
     clusterTotalsMap.set(place, clusterTotal);
   });
 
   const requestedPlace = String(orderState.place || 'all').trim() || 'all';
   const selectedPlace = requestedPlace !== 'all' && placeSeen.has(requestedPlace) ? requestedPlace : 'all';
   if (selectedPlace !== requestedPlace) ensureOrderProcurementState().place = 'all';
-  const visiblePlaces = selectedPlace === 'all' ? placeOrder : [selectedPlace];
+  const visiblePlaces = selectedPlace === 'all'
+    ? placeOrder.filter((place) => {
+        if (clusterFilter === 'all') return true;
+        return orderProcurementNumber(clusterTotalsMap.get(place)?.matched) > 0;
+      })
+    : [selectedPlace];
   const rowsWithMetrics = [...rowMap.values()].map((row) => {
     const activeClusters = visiblePlaces.map((place) => row.clusters[place]).filter(Boolean);
+    const matchingClusters = activeClusters.filter((cluster) => orderProcurementClusterMatchesFilter(cluster, clusterFilter, clusterDays));
     const displayNeed = activeClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.need), 0);
     const displayOrders = activeClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.orders), 0);
     const displayMpStock = activeClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.mpStock), 0);
@@ -281,6 +365,7 @@ function buildOrderProcurementModel() {
       displayInTransit,
       displayInRequest,
       displayTurnover,
+      clusterMatchCount: matchingClusters.length,
       hasSelectedPlace: selectedPlace === 'all' || activeClusters.length > 0
     };
   });
@@ -310,6 +395,10 @@ function buildOrderProcurementModel() {
       }
       if (mode === 'signals') return Array.isArray(row.signals) && row.signals.length > 0;
       return true;
+    })
+    .filter((row) => {
+      if (clusterFilter === 'all') return true;
+      return orderProcurementNumber(row.clusterMatchCount) > 0;
     });
   const list = orderProcurementSortRows(filteredRows, sort);
   const hasInboundWarehouse = allRows.some((row) => Boolean(row.hasInboundWarehouse));
@@ -341,6 +430,8 @@ function buildOrderProcurementModel() {
     searchQuery,
     mode,
     sort,
+    clusterFilter,
+    clusterDays,
     selectedPlace,
     generatedAt: payload.generatedAt || ORDER_PROCUREMENT_RUNTIME.cache.warehouse?.generatedAt || null,
     window: payload.window || null,
@@ -353,7 +444,7 @@ function buildOrderProcurementModel() {
     totals,
     clusterTotals: visiblePlaces.map((place) => ({
       place,
-      ...(clusterTotalsMap.get(place) || { mpStock: 0, orders: 0, need: 0 })
+      ...(clusterTotalsMap.get(place) || { mpStock: 0, orders: 0, need: 0, risk: 0, shortTurnover: 0, noStock: 0, inMotion: 0, matched: 0 })
     }))
   };
 }
@@ -445,6 +536,16 @@ const ORDER_PROCUREMENT_SORT_OPTIONS = [
   ['sku_asc', 'SKU: А-Я']
 ];
 
+const ORDER_PROCUREMENT_CLUSTER_FILTER_OPTIONS = [
+  ['all', 'Все кластеры'],
+  ['risk', 'Проблемные кластеры'],
+  ['turnover_lt', 'Оборачиваемость ниже порога'],
+  ['low_stock', 'Товар заканчивается'],
+  ['need', 'Есть рек. к заказу'],
+  ['no_stock', 'Остаток MP = 0'],
+  ['in_motion', 'Едет / уже заказано']
+];
+
 function renderOrderProcurementOptions(options, selected) {
   return options.map(([value, label]) => (
     `<option value="${orderProcurementEscape(value)}" ${String(value) === String(selected) ? 'selected' : ''}>${orderProcurementEscape(label)}</option>`
@@ -464,10 +565,15 @@ function renderOrderProcurementClusterSummary(model) {
   return `
     <div class="altea-order-procurement__cluster-strip">
       ${model.clusterTotals.map((cluster) => `
-        <div class="altea-order-procurement__cluster-card">
+        <div class="altea-order-procurement__cluster-card ${cluster.matched > 0 && model.clusterFilter !== 'all' ? 'is-match' : ''} ${cluster.noStock > 0 ? 'is-danger' : (cluster.risk > 0 ? 'is-warn' : '')}">
           <span>${orderProcurementEscape(cluster.place)}</span>
           <strong>${fmt.int(cluster.need)}</strong>
           <small>к заказу · ${fmt.int(cluster.mpStock)} на MP</small>
+          <div class="altea-order-procurement__cluster-signals">
+            ${cluster.risk ? orderProcurementBadge(`${fmt.int(cluster.risk)} проблем`, cluster.noStock ? 'danger' : 'warn') : orderProcurementBadge('без критики', 'ok')}
+            ${cluster.shortTurnover ? orderProcurementBadge(`< ${fmt.int(model.clusterDays)} дн.: ${fmt.int(cluster.shortTurnover)}`, 'warn') : ''}
+            ${cluster.inMotion ? orderProcurementBadge(`едет: ${fmt.int(cluster.inMotion)}`, 'info') : ''}
+          </div>
         </div>
       `).join('')}
     </div>
@@ -476,7 +582,12 @@ function renderOrderProcurementClusterSummary(model) {
 
 function renderOrderProcurementTable(model) {
   const headGroups = model.places
-    .map((place) => `<th colspan="4" class="altea-order-procurement__cluster-head">${orderProcurementEscape(place)}</th>`)
+    .map((place) => {
+      const stats = (model.clusterTotals || []).find((cluster) => cluster.place === place) || {};
+      const headClass = stats.matched > 0 && model.clusterFilter !== 'all' ? ' is-match' : (stats.risk > 0 ? ' is-warn' : '');
+      const hint = model.clusterFilter !== 'all' && stats.matched > 0 ? ` · ${fmt.int(stats.matched)} совп.` : '';
+      return `<th colspan="4" class="altea-order-procurement__cluster-head${headClass}">${orderProcurementEscape(place)}${hint}</th>`;
+    })
     .join('');
 
   const headMetrics = model.places
@@ -493,11 +604,19 @@ function renderOrderProcurementTable(model) {
     ? model.rows.map((row) => {
         const clusterCells = model.places.map((place) => {
           const cluster = row.clusters[place] || {};
+          const isMatch = model.clusterFilter === 'all' || orderProcurementClusterMatchesFilter(cluster, model.clusterFilter, model.clusterDays);
+          const tone = orderProcurementClusterTone(cluster, model.clusterFilter);
+          const cellClass = [
+            'altea-order-procurement__cluster-cell',
+            tone ? `is-${tone}` : '',
+            isMatch && model.clusterFilter !== 'all' ? 'is-match' : '',
+            !isMatch && model.clusterFilter !== 'all' ? 'is-muted' : ''
+          ].filter(Boolean).join(' ');
           return `
-            <td class="altea-order-procurement__num">${fmt.int(cluster.mpStock)}</td>
-            <td class="altea-order-procurement__num">${fmt.int(cluster.orders)}</td>
-            <td>${orderProcurementTurnoverBadge(cluster.turnover)}</td>
-            <td>${orderProcurementBadge(fmt.int(cluster.need), cluster.need > 0 ? 'warn' : 'ok')}</td>
+            <td class="${cellClass} altea-order-procurement__num">${fmt.int(cluster.mpStock)}</td>
+            <td class="${cellClass} altea-order-procurement__num">${fmt.int(cluster.orders)}</td>
+            <td class="${cellClass}">${orderProcurementTurnoverBadge(cluster.turnover)}${cluster?.flags?.label ? `<div class="altea-order-procurement__cluster-note">${orderProcurementEscape(cluster.flags.label)}</div>` : ''}</td>
+            <td class="${cellClass}">${orderProcurementBadge(fmt.int(cluster.need), cluster.need > 0 ? 'warn' : 'ok')}</td>
           `;
         }).join('');
 
@@ -570,7 +689,7 @@ function renderOrderProcurementTable(model) {
 }
 
 function renderOrderProcurement(model) {
-  const buildLabel = `ORDER BUILD ${window.__ALTEA_PORTAL_BUILD__ || '20260507e'}`;
+  const buildLabel = `ORDER BUILD ${window.__ALTEA_PORTAL_BUILD__ || '20260507f'}`;
   const range = model.window?.from && model.window?.to
     ? `${orderProcurementEscape(model.window.from)} - ${orderProcurementEscape(model.window.to)}`
     : 'последний доступный срез';
@@ -595,6 +714,10 @@ function renderOrderProcurement(model) {
     : 'Во входящем слое склада сейчас нет отдельного inbound-поля, поэтому таблица показывает остаток центрального склада и расчёт потребности по кластерам.';
   const activeModeLabel = (ORDER_PROCUREMENT_MODE_OPTIONS.find(([value]) => value === model.mode) || ORDER_PROCUREMENT_MODE_OPTIONS[0])[1];
   const activeSortLabel = (ORDER_PROCUREMENT_SORT_OPTIONS.find(([value]) => value === model.sort) || ORDER_PROCUREMENT_SORT_OPTIONS[0])[1];
+  const activeClusterFilterLabel = (ORDER_PROCUREMENT_CLUSTER_FILTER_OPTIONS.find(([value]) => value === model.clusterFilter) || ORDER_PROCUREMENT_CLUSTER_FILTER_OPTIONS[0])[1];
+  const clusterRiskCount = model.clusterTotals.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.risk), 0);
+  const clusterMatchCount = model.clusterTotals.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.matched), 0);
+  const visibleClusterSignalCount = model.clusterFilter === 'all' ? clusterRiskCount : clusterMatchCount;
   const activePlaceLabel = model.selectedPlace === 'all' ? 'Все склады' : model.selectedPlace;
 
   return `
@@ -642,9 +765,20 @@ function renderOrderProcurement(model) {
             <select id="alteaOrderSort">${renderOrderProcurementOptions(ORDER_PROCUREMENT_SORT_OPTIONS, model.sort)}</select>
           </label>
 
+          <label class="altea-order-procurement__field">
+            <span>Проблема по кластеру</span>
+            <select id="alteaOrderClusterFilter">${renderOrderProcurementOptions(ORDER_PROCUREMENT_CLUSTER_FILTER_OPTIONS, model.clusterFilter)}</select>
+          </label>
+
+          <label class="altea-order-procurement__field">
+            <span>Порог, дней</span>
+            <input id="alteaOrderClusterDays" type="number" min="1" max="180" step="1" value="${orderProcurementEscape(model.clusterDays)}">
+          </label>
+
           <div class="badge-stack">
             ${orderProcurementBadge(`SKU: ${fmt.int(model.rows.length)}`, model.rows.length ? 'ok' : 'warn')}
             ${orderProcurementBadge(`Кластеры: ${fmt.int(model.places.length)}`, model.places.length ? 'ok' : 'warn')}
+            ${orderProcurementBadge(`сигналы: ${fmt.int(visibleClusterSignalCount)}`, visibleClusterSignalCount ? 'warn' : 'info')}
             ${orderProcurementBadge(`Обновлено: ${orderProcurementFormatDateTime(model.generatedAt)}`, 'info')}
           </div>
 
@@ -667,6 +801,7 @@ function renderOrderProcurement(model) {
             ${orderProcurementBadge(activePlaceLabel, 'info')}
             ${orderProcurementBadge(activeModeLabel, 'info')}
             ${orderProcurementBadge(activeSortLabel, 'info')}
+            ${orderProcurementBadge(`${activeClusterFilterLabel} · ${fmt.int(model.clusterDays)} дн.`, model.clusterFilter === 'all' ? 'info' : 'warn')}
           </span>
         </summary>
 
@@ -701,6 +836,11 @@ function renderOrderProcurement(model) {
             <span>Комментарии</span>
             <strong>${fmt.int(model.commentsCount)}</strong>
             <span>по текущему фильтру</span>
+          </div>
+          <div class="mini-kpi ${clusterRiskCount ? 'warn' : ''}">
+            <span>Проблемы по кластерам</span>
+            <strong>${fmt.int(clusterRiskCount)}</strong>
+            <span>${model.clusterFilter === 'all' ? 'все сигнальные ячейки' : `совпало с фильтром: ${fmt.int(clusterMatchCount)}`}</span>
           </div>
           <div class="mini-kpi warn">
             <span>Итого к заказу</span>
@@ -790,6 +930,16 @@ function bindOrderProcurement(root) {
     renderOrderCalculator();
   });
 
+  root.querySelector('#alteaOrderClusterFilter')?.addEventListener('change', (event) => {
+    ensureOrderProcurementState().clusterFilter = String(event.target.value || 'all');
+    renderOrderCalculator();
+  });
+
+  root.querySelector('#alteaOrderClusterDays')?.addEventListener('change', (event) => {
+    ensureOrderProcurementState().clusterDays = clampOrderProcurementDays(event.target.value || 30);
+    renderOrderCalculator();
+  });
+
   root.querySelector('#alteaOrderSearch')?.addEventListener('input', (event) => {
     ensureOrderProcurementState().search = String(event.target.value || '').trim();
     if (ORDER_PROCUREMENT_RUNTIME.searchDebounceTimer) {
@@ -807,6 +957,8 @@ function bindOrderProcurement(root) {
     orderState.place = 'all';
     orderState.mode = 'all';
     orderState.sort = 'recommended_desc';
+    orderState.clusterFilter = 'all';
+    orderState.clusterDays = 30;
     renderOrderCalculator();
   });
 
@@ -879,7 +1031,7 @@ function injectOrderProcurementStyles() {
 
     .altea-order-procurement__toolbar {
       display: grid;
-      grid-template-columns: minmax(130px, 170px) auto minmax(190px, 1fr) minmax(190px, 1fr) minmax(220px, 1.2fr) minmax(220px, 1.2fr) auto;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 12px;
       align-items: end;
       margin-top: 12px;
@@ -1011,6 +1163,21 @@ function injectOrderProcurementStyles() {
         rgba(17, 14, 11, 0.96);
     }
 
+    .altea-order-procurement__cluster-card.is-match,
+    .altea-order-procurement__cluster-card.is-warn {
+      border-color: rgba(240, 196, 101, 0.46);
+      background:
+        radial-gradient(circle at top right, rgba(240, 196, 101, 0.16), transparent 46%),
+        rgba(25, 19, 12, 0.98);
+    }
+
+    .altea-order-procurement__cluster-card.is-danger {
+      border-color: rgba(255, 104, 89, 0.50);
+      background:
+        radial-gradient(circle at top right, rgba(255, 104, 89, 0.16), transparent 46%),
+        rgba(25, 14, 12, 0.98);
+    }
+
     .altea-order-procurement__cluster-card span,
     .altea-order-procurement__cluster-card small {
       display: block;
@@ -1031,6 +1198,13 @@ function injectOrderProcurementStyles() {
 
     .altea-order-procurement__cluster-card small {
       color: rgba(255, 244, 229, 0.56);
+    }
+
+    .altea-order-procurement__cluster-signals {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
     }
 
     .altea-order-procurement__table-card {
@@ -1074,6 +1248,12 @@ function injectOrderProcurementStyles() {
       text-align: center;
       font-size: 12px;
       letter-spacing: 0.04em;
+    }
+
+    .altea-order-procurement__cluster-head.is-match,
+    .altea-order-procurement__cluster-head.is-warn {
+      color: #ffe2a4;
+      box-shadow: inset 0 -2px 0 rgba(240, 196, 101, 0.45);
     }
 
     .altea-order-procurement__sticky-head,
@@ -1161,6 +1341,33 @@ function injectOrderProcurementStyles() {
     .altea-order-procurement__num {
       text-align: right;
       white-space: nowrap;
+    }
+
+    .altea-order-procurement__cluster-cell {
+      min-width: 112px;
+      transition: background 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+    }
+
+    .altea-order-procurement__cluster-cell.is-warn,
+    .altea-order-procurement__cluster-cell.is-match {
+      background: rgba(240, 196, 101, 0.08);
+      box-shadow: inset 0 0 0 1px rgba(240, 196, 101, 0.13);
+    }
+
+    .altea-order-procurement__cluster-cell.is-danger {
+      background: rgba(255, 104, 89, 0.10);
+      box-shadow: inset 0 0 0 1px rgba(255, 104, 89, 0.18);
+    }
+
+    .altea-order-procurement__cluster-cell.is-muted {
+      opacity: 0.42;
+    }
+
+    .altea-order-procurement__cluster-note {
+      margin-top: 5px;
+      color: rgba(255, 244, 229, 0.58);
+      font-size: 11px;
+      line-height: 1.25;
     }
 
     .altea-order-procurement__table tbody tr:hover td {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-07T12:34:02.494Z",
+  "generatedAt": "2026-05-07T13:19:19.573Z",
   "asOfDate": "2026-05-06",
   "source": {
     "iuPlanGeneratedAt": "2026-05-07T12:22:57.823Z",
@@ -74,7 +74,7 @@
     "spendDeltaOzonPct": -0.614196,
     "spendDeltaIu": -2880480.59,
     "spendDeltaIuPct": -0.435366,
-    "ozonAdsFactMode": "modeled_from_revenue_20pct",
+    "ozonAdsFactMode": "modeled_from_revenue_20pct_no_ozon_ads_api",
     "planPct": 0.08,
     "externalAdsExcludedFromDrr": true,
     "channels": {
@@ -181,7 +181,7 @@
       "spendDeltaOzonPct": -0.614196,
       "spendDeltaIu": -2880480.59,
       "spendDeltaIuPct": -0.435366,
-      "ozonAdsFactMode": "modeled_from_revenue_20pct",
+      "ozonAdsFactMode": "modeled_from_revenue_20pct_no_ozon_ads_api",
       "planPct": 0.08,
       "externalAdsExcludedFromDrr": true,
       "channels": {
@@ -299,7 +299,7 @@
       "factPctOzon": 0.2,
       "spendDeltaOzon": -480288.85,
       "spendDeltaOzonPct": -0.719916,
-      "ozonAdsFactMode": "modeled_from_revenue_20pct",
+      "ozonAdsFactMode": "modeled_from_revenue_20pct_no_ozon_ads_api",
       "revenueTotalIu": 6453164,
       "unitsWb": 4603,
       "unitsOzon": 715,
@@ -351,7 +351,7 @@
       "factPctOzon": 0.2,
       "spendDeltaOzon": -471462.65,
       "spendDeltaOzonPct": -0.706686,
-      "ozonAdsFactMode": "modeled_from_revenue_20pct",
+      "ozonAdsFactMode": "modeled_from_revenue_20pct_no_ozon_ads_api",
       "revenueTotalIu": 6625291,
       "unitsWb": 4666,
       "unitsOzon": 763,
@@ -403,7 +403,7 @@
       "factPctOzon": 0.2,
       "spendDeltaOzon": -467470.05,
       "spendDeltaOzonPct": -0.700701,
-      "ozonAdsFactMode": "modeled_from_revenue_20pct",
+      "ozonAdsFactMode": "modeled_from_revenue_20pct_no_ozon_ads_api",
       "revenueTotalIu": 6703788,
       "unitsWb": 4744,
       "unitsOzon": 750,
@@ -455,7 +455,7 @@
       "factPctOzon": 0.2,
       "spendDeltaOzon": -371164.65,
       "spendDeltaOzonPct": -0.556347,
-      "ozonAdsFactMode": "modeled_from_revenue_20pct",
+      "ozonAdsFactMode": "modeled_from_revenue_20pct_no_ozon_ads_api",
       "revenueTotalIu": 6556563,
       "unitsWb": 4155,
       "unitsOzon": 1333,
@@ -507,7 +507,7 @@
       "factPctOzon": 0.2,
       "spendDeltaOzon": -284360.85,
       "spendDeltaOzonPct": -0.426235,
-      "ozonAdsFactMode": "modeled_from_revenue_20pct",
+      "ozonAdsFactMode": "modeled_from_revenue_20pct_no_ozon_ads_api",
       "revenueTotalIu": 7075021,
       "unitsWb": 4298,
       "unitsOzon": 1921,
@@ -559,7 +559,7 @@
       "factPctOzon": 0.2,
       "spendDeltaOzon": -383804.65,
       "spendDeltaOzonPct": -0.575293,
-      "ozonAdsFactMode": "modeled_from_revenue_20pct",
+      "ozonAdsFactMode": "modeled_from_revenue_20pct_no_ozon_ads_api",
       "revenueTotalIu": 6974630,
       "unitsWb": 4632,
       "unitsOzon": 1344,
@@ -1318,6 +1318,7 @@
       }
     ],
     "notes": [
+      "Ozon ad spend is modeled as revenue * planPctOzon; actual Ozon Ads API spend is not connected yet.",
       "ИУ по обороту считается по WB + Ozon.",
       "ДРР и каналы рекламы считаются по WB.",
       "Каналы без источника показываются нулем до подключения отдельного источника."

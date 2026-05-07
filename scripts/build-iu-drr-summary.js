@@ -311,7 +311,7 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, options) {
       factPctOzon: revenueOzon > 0 ? roundRate(spendFactOzon / revenueOzon) : null,
       spendDeltaOzon: roundMoney(spendDeltaOzon),
       spendDeltaOzonPct: planSpendOzon > 0 ? roundRate(spendDeltaOzon / planSpendOzon) : null,
-      ozonAdsFactMode: 'modeled_from_revenue_20pct',
+      ozonAdsFactMode: 'modeled_from_revenue_20pct_no_ozon_ads_api',
       revenueTotalIu: roundMoney(numberOrZero(wb.revenue) + revenueOzon),
       unitsWb: Math.round(numberOrZero(wb.units)),
       unitsOzon: Math.round(numberOrZero(ozon.units)),
@@ -435,7 +435,7 @@ function buildMonthRows(dailyRows, iuPlan) {
       spendDeltaOzonPct: planSpendOzon > 0 ? roundRate(spendDeltaOzon / planSpendOzon) : null,
       spendDeltaIu: roundMoney(spendDeltaIu),
       spendDeltaIuPct: planSpendWb + planSpendOzon > 0 ? roundRate(spendDeltaIu / (planSpendWb + planSpendOzon)) : null,
-      ozonAdsFactMode: 'modeled_from_revenue_20pct',
+      ozonAdsFactMode: 'modeled_from_revenue_20pct_no_ozon_ads_api',
       planPct: roundRate(planPctForMonth(iuPlan, month)),
       externalAdsExcludedFromDrr: true,
       channels: Object.fromEntries(CHANNEL_KEYS.map(([key, label]) => [key, {
@@ -499,6 +499,7 @@ function buildPayload(options) {
       noSourceChannels,
       unmatchedNmIds: adsSummary.diagnostics?.unmatchedNmIds || [],
       notes: [
+        'Ozon ad spend is modeled as revenue * planPctOzon; actual Ozon Ads API spend is not connected yet.',
         'ИУ по обороту считается по WB + Ozon.',
         'ДРР и каналы рекламы считаются по WB.',
         'Каналы без источника показываются нулем до подключения отдельного источника.'

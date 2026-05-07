@@ -2934,7 +2934,7 @@ function iuDrrPlatformMeta(model) {
     adsCompletion: isOzon ? month.iuAdsCompletionOzonToDate : month.iuAdsCompletionToDate,
     adsDelta: isOzon ? month.spendDeltaOzon : month.spendDelta,
     adsDeltaPct: isOzon ? month.spendDeltaOzonPct : month.spendDeltaPct,
-    adsFactSource: isOzon ? 'расчет: факт оборота Ozon × 20%' : 'WB Promotion API без Внешки'
+    adsFactSource: isOzon ? 'расчет: оборот Ozon × 20%; API-факт Ozon Ads не подключен' : 'WB Promotion API без Внешки'
   };
 }
 
@@ -3039,11 +3039,11 @@ function downloadIuDrrExcel(model) {
       ['completion_pct', 'Выполнение Ozon, %'],
       ['plan_ads_pct_ozon', 'Реклама Ozon. План в %'],
       ['plan_spend_ozon', 'План расхода Ozon'],
-      ['spend_fact_ozon', 'Реклама Ozon. Фактические затраты'],
-      ['fact_drr_ozon_pct', 'Реклама Ozon. Факт в %'],
-      ['spend_delta_ozon', 'Дельта расхода Ozon'],
-      ['spend_delta_ozon_pct', 'Дельта расхода Ozon, %'],
-      ['ozon_ads_source', 'Источник факта рекламы Ozon']
+      ['spend_fact_ozon', 'Реклама Ozon. Расчетный расход 20%'],
+      ['fact_drr_ozon_pct', 'Реклама Ozon. Расчетная ставка, %'],
+      ['spend_delta_ozon', 'Дельта расчетного расхода Ozon'],
+      ['spend_delta_ozon_pct', 'Дельта расчетного расхода Ozon, %'],
+      ['ozon_ads_source', 'Источник/модель рекламы Ozon']
     ], rows, `iu-drr-ozon-${model.selectedMonth || todayIso()}.xls`);
     return;
   }
@@ -3108,8 +3108,9 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       <div class="mini-kpi ${platformIuTone}"><span>ИУ Ozon</span><strong>${fmt.pct(platformMeta.completion)}</strong><span>${fmt.money(platformMeta.fact)} / ${fmt.money(platformMeta.planToDate)}</span></div>
       <div class="mini-kpi ${revenueDeltaTone}"><span>Целевой Ozon</span><strong>${fmt.money(platformMeta.targetRevenue)}</strong><span>разница ${fmt.money(platformMeta.revenueDelta)}</span></div>
       <div class="mini-kpi ok"><span>Реклама Ozon план</span><strong>${fmt.pct(platformMeta.adsPlanPct)}</strong><span>${fmt.money(platformMeta.adsPlan)}</span></div>
-      <div class="mini-kpi ${platformMeta.adsFactPct <= platformMeta.adsPlanPct ? 'ok' : 'warn'}"><span>Реклама Ozon факт</span><strong>${fmt.money(platformMeta.adsFact)}</strong><span>${fmt.pct(platformMeta.adsFactPct)} · расчет 20%</span></div>
-      <div class="mini-kpi ${ozonAdsDeltaTone}"><span>Дельта рекламы Ozon</span><strong>${fmt.money(platformMeta.adsDelta)}</strong><span>факт - план расхода</span></div>
+      <div class="mini-kpi ${platformMeta.adsFactPct <= platformMeta.adsPlanPct ? 'ok' : 'warn'}"><span>Расчетный расход Ozon</span><strong>${fmt.money(platformMeta.adsFact)}</strong><span>${fmt.pct(platformMeta.adsFactPct)} · нет API-факта</span></div>
+      <div class="mini-kpi warn"><span>Источник Ozon Ads</span><strong>модель</strong><span>оборот × 20%</span></div>
+      <div class="mini-kpi ${ozonAdsDeltaTone}"><span>Дельта расчетного расхода</span><strong>${fmt.money(platformMeta.adsDelta)}</strong><span>расчет - план расхода</span></div>
     </div>
   ` : `
     <div class="kpi-strip" style="margin-top:14px">
@@ -3139,7 +3140,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       </div>
       <div class="card">
         <div class="section-subhead">
-          <div><h3>Реклама Ozon факт</h3><p class="small muted">расчетно: 20% от фактического оборота</p></div>
+          <div><h3>Расчетный расход Ozon</h3><p class="small muted">20% от фактического оборота; не API-факт</p></div>
           ${badge(fmt.money(platformMeta.adsFact), ozonAdsDeltaTone)}
         </div>
         ${iuDrrSparkline(model.dailyRows, 'spendFactOzon', ozonAdsDeltaTone)}
@@ -3198,9 +3199,9 @@ function renderIuDrr(rootId = 'view-iu-drr') {
               <th>Выполнение</th>
               <th>Реклама. План в %</th>
               <th>План расхода Ozon</th>
-              <th>Реклама. Фактические затраты</th>
-              <th>Реклама. Факт в %</th>
-              <th>Дельта расхода Ozon</th>
+              <th>Реклама. Расчетный расход 20%</th>
+              <th>Расчетная ставка</th>
+              <th>Дельта расчетного расхода</th>
             </tr>
           </thead>
           <tbody>
@@ -3282,7 +3283,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     <div class="section-title">
       <div>
         <h2>${escapeHtml(platformMeta.title)}</h2>
-        <p>${isOzonView ? 'Ozon: оборот, план рекламы и расчетный факт расхода 20% от фактического оборота.' : 'WB: выполнение ИУ, ДРР без Внешки и дневная детализация каналов рекламы.'}</p>
+        <p>${isOzonView ? 'Ozon: оборот, план рекламы и расчетный расход 20%; фактические затраты из Ozon Ads пока не подключены.' : 'WB: выполнение ИУ, ДРР без Внешки и дневная детализация каналов рекламы.'}</p>
       </div>
       <div class="badge-stack">
         ${isOzonView ? badge('Ozon', 'info') : iuDrrSourceBadge(model)}

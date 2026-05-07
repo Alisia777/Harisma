@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260429C__) return;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260507I__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260507I__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429C__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429A__ = true;
@@ -9,8 +10,8 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260429c';
-  const STYLE_ID = 'altea-dashboard-interactive-20260429c';
+  const VERSION = '20260507i';
+  const STYLE_ID = 'altea-dashboard-interactive-20260507i';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
@@ -6280,6 +6281,23 @@ function dashboardTaskStatusChip(task) {
     const existing = current(key);
     const hasUsablePayload = (payload) => {
       if (!payload || typeof payload !== 'object') return false;
+      if (key === 'dashboard') return Boolean(payload.generatedAt) || (Array.isArray(payload.cards) && payload.cards.length > 0);
+      if (key === 'platformTrends') return Array.isArray(payload.platforms) && payload.platforms.length > 0;
+      if (key === 'platformPlan' || key === 'iuPlan') {
+        return Boolean(payload.months && typeof payload.months === 'object' && Object.keys(payload.months).length > 0);
+      }
+      if (key === 'adsSummary') {
+        return Boolean(payload.generatedAt)
+          || (Array.isArray(payload.platforms) && payload.platforms.length > 0)
+          || (Array.isArray(payload.itemSeries) && payload.itemSeries.length > 0);
+      }
+      if (key === 'iuDrrSummary') {
+        return Boolean(payload.generatedAt)
+          || (Array.isArray(payload.daily) && payload.daily.length > 0)
+          || (Array.isArray(payload.months) && payload.months.length > 0);
+      }
+      if (key === 'productLeaderboard') return Boolean(payload.generatedAt) || (Array.isArray(payload.items) && payload.items.length > 0);
+      if (key === 'orderProcurement') return Boolean(payload.generatedAt) || (Array.isArray(payload.rows) && payload.rows.length > 0) || Boolean(payload.platforms);
       if (key === 'prices') {
         const platforms = payload.platforms && typeof payload.platforms === 'object' ? Object.keys(payload.platforms) : [];
         return Boolean(payload.generatedAt) || platforms.length > 0;
@@ -6388,6 +6406,12 @@ function dashboardTaskStatusChip(task) {
 
     const app = stateRef();
     if (app) {
+      app.dashboard = dashboard;
+      app.platformTrends = platformTrends;
+      app.platformPlan = platformPlan;
+      app.iuPlan = iuPlan;
+      app.adsSummary = adsSummary || app.adsSummary || { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
+      app.skus = skus;
       app.prices = prices;
       app.productLeaderboard = normalizedProductLeaderboard;
       app.iuDrrSummary = iuDrrSummary || app.iuDrrSummary || { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };

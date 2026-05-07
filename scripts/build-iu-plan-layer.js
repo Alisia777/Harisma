@@ -6,7 +6,7 @@ const ROOT = path.resolve(__dirname, '..');
 const DATA_DIR = path.join(ROOT, 'data');
 const PLATFORM_TRENDS_PATH = path.join(DATA_DIR, 'platform_trends.json');
 const OUT_PATH = path.join(DATA_DIR, 'iu_plan.json');
-const OZON_IU_ADS_RATE = 0.20;
+const OZON_IU_ADS_RATE = 0.25;
 
 function num(value) {
   const parsed = Number(value);
@@ -109,7 +109,7 @@ function buildPayload(workbookPath) {
     sourceWorkbook: path.basename(workbookPath),
     sourceSheet: sheetName,
     planYear: year,
-    note: 'IU WB+Ozon revenue plan from Plan workbook. Ozon IU ad plan is fixed at 20% of Ozon revenue.',
+    note: 'IU WB+Ozon revenue plan from Plan workbook. Ozon IU ad plan is fixed at 25% of Ozon revenue.',
     assumptions: {
       ozonIuAdsRate: OZON_IU_ADS_RATE
     },

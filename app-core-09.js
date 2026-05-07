@@ -39,6 +39,12 @@ function orderProcurementSafeTurnover(row) {
   return orderProcurementNumber(row?.inStock) / avgDaily;
 }
 
+function orderProcurementAverage(values) {
+  const clean = (values || []).map(Number).filter(Number.isFinite);
+  if (!clean.length) return null;
+  return clean.reduce((acc, value) => acc + value, 0) / clean.length;
+}
+
 function orderProcurementOwnerForPlatform(sku, row, platform) {
   const platformOwner = typeof platformOwnerName === 'function'
     ? platformOwnerName(sku, platform)
@@ -71,6 +77,74 @@ function orderProcurementReadWarehouseInbound(row) {
   }
 
   return 0;
+}
+
+function orderProcurementBuildSkuSignals(sku, platform) {
+  const side = sku?.[platform] || {};
+  const channelText = Array.isArray(sku?.traffic?.channels) ? sku.traffic.channels.join(' ') : '';
+  const text = [
+    sku?.focusReasons,
+    side?.strategy,
+    side?.reason,
+    channelText
+  ].filter(Boolean).join(' ');
+  const signals = [];
+  const recPrice = orderProcurementNumber(side?.recPrice);
+  const currentPrice = orderProcurementNumber(side?.currentPrice);
+
+  if (sku?.traffic?.kz || sku?.flags?.hasKZ || /(^|\s|[,;])кз($|\s|[,;])/i.test(channelText)) {
+    signals.push({ code: 'kz', label: 'КЗ работает', tone: 'info' });
+  }
+  if (/акци|promo|промо|скид/i.test(text)) {
+    signals.push({ code: 'promo', label: 'Акция / скидка', tone: 'warn' });
+  }
+  if ((recPrice > 0 && currentPrice > 0 && recPrice < currentPrice) || /сниж|понижа|опуска/i.test(text)) {
+    signals.push({ code: 'price-down', label: 'Снижение цены', tone: 'danger' });
+  }
+
+  return signals;
+}
+
+function orderProcurementMetricValue(row, sortKey) {
+  switch (sortKey) {
+    case 'warehouse_desc':
+    case 'warehouse_asc':
+      return orderProcurementNumber(row.warehouseStock);
+    case 'turnover_asc':
+    case 'turnover_desc':
+      return Number.isFinite(Number(row.displayTurnover)) ? Number(row.displayTurnover) : null;
+    case 'local_desc':
+      return orderProcurementNumber(row.displayInRequest);
+    case 'supplier_desc':
+      return orderProcurementNumber(row.acceptedFromSupplier);
+    case 'inbound_desc':
+      return orderProcurementNumber(row.shippedFromWarehouse) + orderProcurementNumber(row.displayInTransit);
+    case 'sku_asc':
+      return String(row.article || row.articleKey || '');
+    case 'recommended_desc':
+    default:
+      return orderProcurementNumber(row.displayNeed);
+  }
+}
+
+function orderProcurementSortRows(rows, sortKey) {
+  const key = sortKey || 'recommended_desc';
+  const direction = key === 'warehouse_asc' || key === 'turnover_asc' || key === 'sku_asc' ? 1 : -1;
+
+  return [...rows].sort((left, right) => {
+    if (key === 'sku_asc') {
+      return String(orderProcurementMetricValue(left, key)).localeCompare(String(orderProcurementMetricValue(right, key)), 'ru');
+    }
+
+    const leftValue = orderProcurementMetricValue(left, key);
+    const rightValue = orderProcurementMetricValue(right, key);
+    const leftNumeric = Number.isFinite(Number(leftValue)) ? Number(leftValue) : (direction > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY);
+    const rightNumeric = Number.isFinite(Number(rightValue)) ? Number(rightValue) : (direction > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY);
+    if (rightNumeric !== leftNumeric) return direction * (leftNumeric - rightNumeric);
+    if (right.displayNeed !== left.displayNeed) return right.displayNeed - left.displayNeed;
+    if (right.displayOrders !== left.displayOrders) return right.displayOrders - left.displayOrders;
+    return String(left.article || left.articleKey).localeCompare(String(right.article || right.articleKey), 'ru');
+  });
 }
 
 function orderProcurementBuildCommentMap() {
@@ -111,6 +185,8 @@ function buildOrderProcurementModel() {
   const platform = orderState.platform === 'ozon' ? 'ozon' : 'wb';
   const days = clampOrderProcurementDays(orderState.days);
   const searchQuery = String(orderState.search || '').trim().toLowerCase();
+  const mode = String(orderState.mode || 'all');
+  const sort = String(orderState.sort || 'recommended_desc');
   const payload = orderProcurementCurrentPayload(platform) || { rows: [] };
   const rows = Array.isArray(payload.rows) ? payload.rows : [];
   const skuLookup = orderProcurementBuildSkuLookup();
@@ -142,26 +218,39 @@ function buildOrderProcurementModel() {
       owner: orderProcurementOwnerForPlatform(sku, row, platform),
       warehouseStock: orderProcurementNumber(warehouse.stockWarehouse),
       inboundWarehouse: orderProcurementNumber(warehouse.inboundWarehouse),
+      acceptedFromSupplier: orderProcurementNumber(warehouse.accepted),
+      shippedFromWarehouse: platform === 'ozon'
+        ? orderProcurementNumber(warehouse.shippedOzon)
+        : orderProcurementNumber(warehouse.shippedWB),
       hasInboundWarehouse: Boolean(warehouse.hasInboundWarehouse),
       totalNeed: 0,
       totalOrders: 0,
+      totalInTransit: 0,
+      totalInRequest: 0,
       commentCount: orderProcurementNumber(commentMeta.count),
       latestCommentPreview: String(commentMeta.latestText || '').slice(0, 180),
       latestCommentAuthor: String(commentMeta.latestAuthor || ''),
+      signals: orderProcurementBuildSkuSignals(sku, platform),
       clusters: {}
     };
 
     const clusterOrders = orderProcurementOrdersForDays(row, days);
     const clusterNeed = orderProcurementNeedForDays(row, days);
+    const clusterInTransit = orderProcurementNumber(row?.inTransit);
+    const clusterInRequest = orderProcurementNumber(row?.inRequest);
     const cluster = {
       mpStock: orderProcurementNumber(row?.inStock),
       orders: clusterOrders,
       turnover: orderProcurementSafeTurnover(row),
-      need: clusterNeed
+      need: clusterNeed,
+      inTransit: clusterInTransit,
+      inRequest: clusterInRequest
     };
 
     current.totalNeed += clusterNeed;
     current.totalOrders += clusterOrders;
+    current.totalInTransit += clusterInTransit;
+    current.totalInRequest += clusterInRequest;
     current.clusters[place] = cluster;
     rowMap.set(articleKey, current);
 
@@ -172,35 +261,77 @@ function buildOrderProcurementModel() {
     clusterTotalsMap.set(place, clusterTotal);
   });
 
-  const allRows = [...rowMap.values()].sort((left, right) => {
-    if (right.totalNeed !== left.totalNeed) return right.totalNeed - left.totalNeed;
-    if (right.totalOrders !== left.totalOrders) return right.totalOrders - left.totalOrders;
-    return String(left.article).localeCompare(String(right.article), 'ru');
+  const requestedPlace = String(orderState.place || 'all').trim() || 'all';
+  const selectedPlace = requestedPlace !== 'all' && placeSeen.has(requestedPlace) ? requestedPlace : 'all';
+  if (selectedPlace !== requestedPlace) ensureOrderProcurementState().place = 'all';
+  const visiblePlaces = selectedPlace === 'all' ? placeOrder : [selectedPlace];
+  const rowsWithMetrics = [...rowMap.values()].map((row) => {
+    const activeClusters = visiblePlaces.map((place) => row.clusters[place]).filter(Boolean);
+    const displayNeed = activeClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.need), 0);
+    const displayOrders = activeClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.orders), 0);
+    const displayMpStock = activeClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.mpStock), 0);
+    const displayInTransit = activeClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.inTransit), 0);
+    const displayInRequest = activeClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.inRequest), 0);
+    const displayTurnover = orderProcurementAverage(activeClusters.map((cluster) => cluster.turnover));
+    return {
+      ...row,
+      displayNeed,
+      displayOrders,
+      displayMpStock,
+      displayInTransit,
+      displayInRequest,
+      displayTurnover,
+      hasSelectedPlace: selectedPlace === 'all' || activeClusters.length > 0
+    };
   });
-  const list = searchQuery
-    ? allRows.filter((row) => {
+  const allRows = rowsWithMetrics.filter((row) => row.hasSelectedPlace);
+  const filteredRows = allRows
+    .filter((row) => {
       const searchIndex = [
         row.article,
         row.articleKey,
         row.name,
         row.owner,
         row.latestCommentPreview,
-        row.latestCommentAuthor
+        row.latestCommentAuthor,
+        ...(row.signals || []).map((item) => item.label)
       ]
         .filter(Boolean)
         .join(' ')
         .toLowerCase();
-      return searchIndex.includes(searchQuery);
+      return !searchQuery || searchIndex.includes(searchQuery);
     })
-    : allRows;
+    .filter((row) => {
+      if (mode === 'recommended') return orderProcurementNumber(row.displayNeed) > 0;
+      if (mode === 'local') return orderProcurementNumber(row.displayInRequest) > 0;
+      if (mode === 'supplier') return orderProcurementNumber(row.acceptedFromSupplier) > 0;
+      if (mode === 'warehouse') {
+        return orderProcurementNumber(row.shippedFromWarehouse) > 0 || orderProcurementNumber(row.displayInTransit) > 0;
+      }
+      if (mode === 'signals') return Array.isArray(row.signals) && row.signals.length > 0;
+      return true;
+    });
+  const list = orderProcurementSortRows(filteredRows, sort);
   const hasInboundWarehouse = allRows.some((row) => Boolean(row.hasInboundWarehouse));
 
   const totals = list.reduce((acc, row) => {
     acc.warehouseStock += orderProcurementNumber(row.warehouseStock);
     acc.inboundWarehouse += orderProcurementNumber(row.inboundWarehouse);
-    acc.totalNeed += orderProcurementNumber(row.totalNeed);
+    acc.acceptedFromSupplier += orderProcurementNumber(row.acceptedFromSupplier);
+    acc.shippedFromWarehouse += orderProcurementNumber(row.shippedFromWarehouse);
+    acc.displayInTransit += orderProcurementNumber(row.displayInTransit);
+    acc.displayInRequest += orderProcurementNumber(row.displayInRequest);
+    acc.totalNeed += orderProcurementNumber(row.displayNeed);
     return acc;
-  }, { warehouseStock: 0, inboundWarehouse: 0, totalNeed: 0 });
+  }, {
+    warehouseStock: 0,
+    inboundWarehouse: 0,
+    acceptedFromSupplier: 0,
+    shippedFromWarehouse: 0,
+    displayInTransit: 0,
+    displayInRequest: 0,
+    totalNeed: 0
+  });
   const commentsCount = list.reduce((acc, row) => acc + orderProcurementNumber(row.commentCount), 0);
 
   return {
@@ -208,15 +339,19 @@ function buildOrderProcurementModel() {
     platformLabel: platform === 'ozon' ? 'OZ' : 'WB',
     days,
     searchQuery,
+    mode,
+    sort,
+    selectedPlace,
     generatedAt: payload.generatedAt || ORDER_PROCUREMENT_RUNTIME.cache.warehouse?.generatedAt || null,
     window: payload.window || null,
-    places: placeOrder,
+    places: visiblePlaces,
+    allPlaces: placeOrder,
     rows: list,
     totalRows: allRows.length,
     commentsCount,
     hasInboundWarehouse,
     totals,
-    clusterTotals: placeOrder.map((place) => ({
+    clusterTotals: visiblePlaces.map((place) => ({
       place,
       ...(clusterTotalsMap.get(place) || { mpStock: 0, orders: 0, need: 0 })
     }))
@@ -229,12 +364,17 @@ function exportOrderProcurementCell(value) {
 
 function exportOrderProcurementModel(model) {
   const headers = [
-    'SKU / Номенклатура',
-    'Артикул',
+    'SKU',
     'Остатки мой склад'
   ];
   if (model.hasInboundWarehouse) headers.push('В пути на склад');
-  headers.push('Итого заказ товара');
+  headers.push(
+    'Итого заказ товара',
+    'Локальные заказы',
+    'Едет от поставщика',
+    'Едет от склада',
+    'Сигналы'
+  );
 
   model.places.forEach((place) => {
     headers.push(
@@ -248,12 +388,17 @@ function exportOrderProcurementModel(model) {
   const lines = [headers.map(exportOrderProcurementCell).join(';')];
   model.rows.forEach((row) => {
     const cells = [
-      row.name,
       row.article,
       row.warehouseStock
     ];
     if (model.hasInboundWarehouse) cells.push(row.inboundWarehouse);
-    cells.push(row.totalNeed);
+    cells.push(
+      row.displayNeed,
+      row.displayInRequest,
+      row.acceptedFromSupplier,
+      orderProcurementNumber(row.shippedFromWarehouse) + orderProcurementNumber(row.displayInTransit),
+      (row.signals || []).map((item) => item.label).join(', ')
+    );
 
     model.places.forEach((place) => {
       const cluster = row.clusters[place] || {};
@@ -277,6 +422,41 @@ function exportOrderProcurementModel(model) {
   anchor.click();
   anchor.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+const ORDER_PROCUREMENT_MODE_OPTIONS = [
+  ['all', 'Все строки'],
+  ['recommended', 'Только рекомендовано'],
+  ['local', 'Локальные заказы'],
+  ['supplier', 'Едет от поставщика'],
+  ['warehouse', 'Едет от склада'],
+  ['signals', 'КЗ / акция / снижение']
+];
+
+const ORDER_PROCUREMENT_SORT_OPTIONS = [
+  ['recommended_desc', 'Рекомендовано: больше сверху'],
+  ['warehouse_desc', 'Мой склад: больше сверху'],
+  ['warehouse_asc', 'Мой склад: меньше сверху'],
+  ['turnover_asc', 'Оборачиваемость: ниже сверху'],
+  ['turnover_desc', 'Оборачиваемость: выше сверху'],
+  ['local_desc', 'Локальные заказы: больше сверху'],
+  ['supplier_desc', 'Едет от поставщика: больше сверху'],
+  ['inbound_desc', 'Едет от склада: больше сверху'],
+  ['sku_asc', 'SKU: А-Я']
+];
+
+function renderOrderProcurementOptions(options, selected) {
+  return options.map(([value, label]) => (
+    `<option value="${orderProcurementEscape(value)}" ${String(value) === String(selected) ? 'selected' : ''}>${orderProcurementEscape(label)}</option>`
+  )).join('');
+}
+
+function renderOrderProcurementPlaceOptions(model) {
+  const places = Array.isArray(model.allPlaces) ? model.allPlaces : [];
+  return [
+    `<option value="all" ${model.selectedPlace === 'all' ? 'selected' : ''}>Все склады / кластеры</option>`,
+    ...places.map((place) => `<option value="${orderProcurementEscape(place)}" ${place === model.selectedPlace ? 'selected' : ''}>${orderProcurementEscape(place)}</option>`)
+  ].join('');
 }
 
 function renderOrderProcurementClusterSummary(model) {
@@ -308,7 +488,7 @@ function renderOrderProcurementTable(model) {
     `)
     .join('');
 
-  const columnCount = (model.hasInboundWarehouse ? 5 : 4) + (model.places.length * 4);
+  const columnCount = (model.hasInboundWarehouse ? 9 : 8) + (model.places.length * 4);
   const body = model.rows.length
     ? model.rows.map((row) => {
         const clusterCells = model.places.map((place) => {
@@ -331,11 +511,15 @@ function renderOrderProcurementTable(model) {
         const commentPreview = row.latestCommentPreview
           ? `${row.latestCommentAuthor ? `${row.latestCommentAuthor}: ` : ''}${row.latestCommentPreview}`
           : 'Комментариев пока нет';
+        const movementFromWarehouse = orderProcurementNumber(row.shippedFromWarehouse) + orderProcurementNumber(row.displayInTransit);
+        const signals = Array.isArray(row.signals) && row.signals.length
+          ? row.signals.map((item) => orderProcurementBadge(item.label, item.tone || 'info')).join('')
+          : orderProcurementBadge('нет', '');
 
         return `
           <tr>
             <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--sku">
-              <strong>${orderProcurementEscape(row.name || articleLabel)}</strong>
+              <strong>${skuLink}</strong>
               <div class="altea-order-procurement__meta">${orderProcurementEscape(row.owner || 'Без owner')}</div>
               <div class="altea-order-procurement__meta altea-order-procurement__comment-preview">${orderProcurementEscape(commentPreview)}</div>
               <div class="altea-order-procurement__row-actions">
@@ -343,10 +527,14 @@ function renderOrderProcurementTable(model) {
                 ${orderProcurementBadge(`C: ${fmt.int(row.commentCount)}`, row.commentCount ? 'info' : '')}
               </div>
             </td>
-            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--article">${skuLink}</td>
+            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--article">${orderProcurementEscape(row.owner || 'Без owner')}</td>
             <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--warehouse altea-order-procurement__num">${fmt.int(row.warehouseStock)}</td>
             ${inboundCell}
-            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--total">${orderProcurementBadge(fmt.int(row.totalNeed), row.totalNeed > 0 ? 'warn' : 'ok')}</td>
+            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--total">${orderProcurementBadge(fmt.int(row.displayNeed), row.displayNeed > 0 ? 'warn' : 'ok')}</td>
+            <td class="altea-order-procurement__num">${fmt.int(row.displayInRequest)}</td>
+            <td class="altea-order-procurement__num">${fmt.int(row.acceptedFromSupplier)}</td>
+            <td class="altea-order-procurement__num">${fmt.int(movementFromWarehouse)}</td>
+            <td class="altea-order-procurement__signals">${signals}</td>
             ${clusterCells}
           </tr>
         `;
@@ -362,11 +550,15 @@ function renderOrderProcurementTable(model) {
       <table class="altea-order-procurement__table">
         <thead>
           <tr>
-            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--sku">SKU / Номенклатура</th>
-            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--article">Артикул</th>
+            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--sku">SKU</th>
+            <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--article">Owner</th>
             <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--warehouse">Остатки мой склад</th>
             ${model.hasInboundWarehouse ? '<th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--inbound">В пути на склад</th>' : ''}
             <th rowspan="2" class="altea-order-procurement__sticky-head altea-order-procurement__sticky-head--total">Итого заказ товара</th>
+            <th rowspan="2">Локальные заказы</th>
+            <th rowspan="2">Едет от поставщика</th>
+            <th rowspan="2">Едет от склада</th>
+            <th rowspan="2">КЗ / акция / цена</th>
             ${headGroups}
           </tr>
           <tr>${headMetrics}</tr>
@@ -400,6 +592,9 @@ function renderOrderProcurement(model) {
   const inboundCaption = model.hasInboundWarehouse
     ? 'Колонка "В пути на склад" заполняется из входящего слоя склада.'
     : 'Во входящем слое склада сейчас нет отдельного inbound-поля, поэтому таблица показывает остаток центрального склада и расчёт потребности по кластерам.';
+  const activeModeLabel = (ORDER_PROCUREMENT_MODE_OPTIONS.find(([value]) => value === model.mode) || ORDER_PROCUREMENT_MODE_OPTIONS[0])[1];
+  const activeSortLabel = (ORDER_PROCUREMENT_SORT_OPTIONS.find(([value]) => value === model.sort) || ORDER_PROCUREMENT_SORT_OPTIONS[0])[1];
+  const activePlaceLabel = model.selectedPlace === 'all' ? 'Все склады' : model.selectedPlace;
 
   return `
     <section class="${sectionClass}" data-altea-order-procurement>
@@ -430,6 +625,21 @@ function renderOrderProcurement(model) {
             </div>
           </div>
 
+          <label class="altea-order-procurement__field">
+            <span>Склад / кластер</span>
+            <select id="alteaOrderPlace">${renderOrderProcurementPlaceOptions(model)}</select>
+          </label>
+
+          <label class="altea-order-procurement__field">
+            <span>Фильтр</span>
+            <select id="alteaOrderMode">${renderOrderProcurementOptions(ORDER_PROCUREMENT_MODE_OPTIONS, model.mode)}</select>
+          </label>
+
+          <label class="altea-order-procurement__field">
+            <span>Сортировка</span>
+            <select id="alteaOrderSort">${renderOrderProcurementOptions(ORDER_PROCUREMENT_SORT_OPTIONS, model.sort)}</select>
+          </label>
+
           <div class="badge-stack">
             ${orderProcurementBadge(`SKU: ${fmt.int(model.rows.length)}`, model.rows.length ? 'ok' : 'warn')}
             ${orderProcurementBadge(`Кластеры: ${fmt.int(model.places.length)}`, model.places.length ? 'ok' : 'warn')}
@@ -448,31 +658,57 @@ function renderOrderProcurement(model) {
         </div>
       </div>
 
-      <div class="altea-order-procurement__summary">
-        <div class="mini-kpi">
-          <span>SKU в расчёте</span>
-          <strong>${shownRows}</strong>
-          <span>${model.platformLabel}</span>
-        </div>
-        <div class="mini-kpi">
-          <span>Остаток мой склад</span>
-          <strong>${fmt.int(model.totals.warehouseStock)}</strong>
-          <span>из файла реальных остатков</span>
-        </div>
-        ${inboundSummary}
-        <div class="mini-kpi">
-          <span>Comments in view</span>
-          <strong>${fmt.int(model.commentsCount)}</strong>
-          <span>по текущему фильтру</span>
-        </div>
-        <div class="mini-kpi warn">
-          <span>Итого к заказу</span>
-          <strong>${fmt.int(model.totals.totalNeed)}</strong>
-          <span>сумма по всем кластерам</span>
-        </div>
-      </div>
+      <details class="card altea-order-procurement__collapse">
+        <summary>
+          <span>Сводка и склады</span>
+          <span class="badge-stack">
+            ${orderProcurementBadge(activePlaceLabel, 'info')}
+            ${orderProcurementBadge(activeModeLabel, 'info')}
+            ${orderProcurementBadge(activeSortLabel, 'info')}
+          </span>
+        </summary>
 
-      ${renderOrderProcurementClusterSummary(model)}
+        <div class="altea-order-procurement__summary">
+          <div class="mini-kpi">
+            <span>SKU в расчёте</span>
+            <strong>${shownRows}</strong>
+            <span>${model.platformLabel}</span>
+          </div>
+          <div class="mini-kpi">
+            <span>Остаток мой склад</span>
+            <strong>${fmt.int(model.totals.warehouseStock)}</strong>
+            <span>из файла реальных остатков</span>
+          </div>
+          ${inboundSummary}
+          <div class="mini-kpi">
+            <span>Локальные заказы</span>
+            <strong>${fmt.int(model.totals.displayInRequest)}</strong>
+            <span>по текущему фильтру</span>
+          </div>
+          <div class="mini-kpi">
+            <span>Едет от поставщика</span>
+            <strong>${fmt.int(model.totals.acceptedFromSupplier)}</strong>
+            <span>принято / в пути по складскому слою</span>
+          </div>
+          <div class="mini-kpi">
+            <span>Едет от склада</span>
+            <strong>${fmt.int(model.totals.shippedFromWarehouse + model.totals.displayInTransit)}</strong>
+            <span>по выбранной площадке</span>
+          </div>
+          <div class="mini-kpi">
+            <span>Комментарии</span>
+            <strong>${fmt.int(model.commentsCount)}</strong>
+            <span>по текущему фильтру</span>
+          </div>
+          <div class="mini-kpi warn">
+            <span>Итого к заказу</span>
+            <strong>${fmt.int(model.totals.totalNeed)}</strong>
+            <span>сумма по выбранному складу / всем кластерам</span>
+          </div>
+        </div>
+
+        ${renderOrderProcurementClusterSummary(model)}
+      </details>
 
       <div class="card altea-order-procurement__table-card">
         <div class="section-subhead">
@@ -537,6 +773,21 @@ function bindOrderProcurement(root) {
     renderOrderCalculator();
   });
 
+  root.querySelector('#alteaOrderPlace')?.addEventListener('change', (event) => {
+    ensureOrderProcurementState().place = String(event.target.value || 'all');
+    renderOrderCalculator();
+  });
+
+  root.querySelector('#alteaOrderMode')?.addEventListener('change', (event) => {
+    ensureOrderProcurementState().mode = String(event.target.value || 'all');
+    renderOrderCalculator();
+  });
+
+  root.querySelector('#alteaOrderSort')?.addEventListener('change', (event) => {
+    ensureOrderProcurementState().sort = String(event.target.value || 'recommended_desc');
+    renderOrderCalculator();
+  });
+
   root.querySelector('#alteaOrderSearch')?.addEventListener('input', (event) => {
     ensureOrderProcurementState().search = String(event.target.value || '').trim();
     if (ORDER_PROCUREMENT_RUNTIME.searchDebounceTimer) {
@@ -549,7 +800,11 @@ function bindOrderProcurement(root) {
   });
 
   root.querySelector('[data-altea-order-search-clear]')?.addEventListener('click', () => {
-    ensureOrderProcurementState().search = '';
+    const orderState = ensureOrderProcurementState();
+    orderState.search = '';
+    orderState.place = 'all';
+    orderState.mode = 'all';
+    orderState.sort = 'recommended_desc';
     renderOrderCalculator();
   });
 
@@ -622,7 +877,7 @@ function injectOrderProcurementStyles() {
 
     .altea-order-procurement__toolbar {
       display: grid;
-      grid-template-columns: minmax(180px, 220px) auto 1fr minmax(220px, 340px) auto;
+      grid-template-columns: minmax(130px, 170px) auto minmax(190px, 1fr) minmax(190px, 1fr) minmax(220px, 1.2fr) minmax(220px, 1.2fr) auto;
       gap: 12px;
       align-items: end;
       margin-top: 12px;
@@ -637,13 +892,19 @@ function injectOrderProcurementStyles() {
       letter-spacing: 0.08em;
     }
 
-    .altea-order-procurement__field input {
+    .altea-order-procurement__field input,
+    .altea-order-procurement__field select {
       width: 100%;
       padding: 10px 12px;
       border-radius: 14px;
       border: 1px solid rgba(212, 164, 74, 0.18);
       background: rgba(17, 14, 11, 0.96);
       color: #fff1dd;
+    }
+
+    .altea-order-procurement__field select {
+      min-height: 42px;
+      cursor: pointer;
     }
 
     .altea-order-procurement__field--search input {
@@ -689,6 +950,48 @@ function injectOrderProcurementStyles() {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 12px;
+    }
+
+    .altea-order-procurement__collapse {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .altea-order-procurement__collapse > summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      color: #fff1dd;
+      font-weight: 800;
+      list-style: none;
+    }
+
+    .altea-order-procurement__collapse > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .altea-order-procurement__collapse > summary::before {
+      content: '+';
+      display: inline-grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      margin-right: 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(212, 164, 74, 0.30);
+      color: #f0c465;
+    }
+
+    .altea-order-procurement__collapse[open] > summary::before {
+      content: '−';
+    }
+
+    .altea-order-procurement__collapse .altea-order-procurement__summary,
+    .altea-order-procurement__collapse .altea-order-procurement__cluster-strip {
+      margin: 0 16px 16px;
     }
 
     .altea-order-procurement__cluster-strip {
@@ -842,6 +1145,15 @@ function injectOrderProcurementStyles() {
       gap: 8px;
       margin-top: 6px;
       flex-wrap: wrap;
+    }
+
+    .altea-order-procurement__signals {
+      min-width: 150px;
+    }
+
+    .altea-order-procurement__signals .chip {
+      margin: 0 4px 4px 0;
+      white-space: nowrap;
     }
 
     .altea-order-procurement__num {

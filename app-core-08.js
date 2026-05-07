@@ -3152,7 +3152,7 @@ function renderOrderCalculator() {
     });
 }
 
-const ORDER_PROCUREMENT_VERSION = '20260429a';
+const ORDER_PROCUREMENT_VERSION = '20260507a';
 const ORDER_PROCUREMENT_STYLE_ID = `altea-order-procurement-${ORDER_PROCUREMENT_VERSION}`;
 const ORDER_PROCUREMENT_RUNTIME = {
   renderToken: 0,
@@ -3173,6 +3173,26 @@ function ensureOrderProcurementState() {
   state.orderProcurement.platform = state.orderProcurement.platform === 'ozon' ? 'ozon' : 'wb';
   state.orderProcurement.days = clampOrderProcurementDays(state.orderProcurement.days);
   state.orderProcurement.search = String(state.orderProcurement.search || '').trim();
+  state.orderProcurement.place = String(state.orderProcurement.place || 'all').trim() || 'all';
+  state.orderProcurement.mode = [
+    'all',
+    'recommended',
+    'local',
+    'supplier',
+    'warehouse',
+    'signals'
+  ].includes(state.orderProcurement.mode) ? state.orderProcurement.mode : 'all';
+  state.orderProcurement.sort = [
+    'recommended_desc',
+    'warehouse_desc',
+    'warehouse_asc',
+    'turnover_asc',
+    'turnover_desc',
+    'local_desc',
+    'supplier_desc',
+    'inbound_desc',
+    'sku_asc'
+  ].includes(state.orderProcurement.sort) ? state.orderProcurement.sort : 'recommended_desc';
   return state.orderProcurement;
 }
 
@@ -3370,6 +3390,9 @@ function orderProcurementBuildRenderSignature() {
     orderState.platform,
     orderState.days,
     orderState.search || '',
+    orderState.place || 'all',
+    orderState.mode || 'all',
+    orderState.sort || 'recommended_desc',
     payloadRows,
     payloadStamp,
     warehouseStamp,

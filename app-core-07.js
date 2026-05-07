@@ -2791,12 +2791,18 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
     ...row,
     date: String(row?.date || '').slice(0, 10),
     monthKey: String(row?.monthKey || row?.date || '').slice(0, 7),
+    targetRevenueWb: numberOrZero(row?.targetRevenueWb),
     revenueWb: numberOrZero(row?.revenueWb),
+    revenueWbDelta: numberOrZero(row?.revenueWbDelta),
+    revenueWbDeltaPct: Number.isFinite(Number(row?.revenueWbDeltaPct)) ? Number(row.revenueWbDeltaPct) : null,
+    revenueWbCompletionPct: Number.isFinite(Number(row?.revenueWbCompletionPct)) ? Number(row.revenueWbCompletionPct) : null,
     revenueOzon: numberOrZero(row?.revenueOzon),
     revenueTotalIu: numberOrZero(row?.revenueTotalIu),
     planPct: Number.isFinite(Number(row?.planPct)) ? Number(row.planPct) : 0,
     planSpendWb: numberOrZero(row?.planSpendWb),
     spendFact: numberOrZero(row?.spendFact),
+    spendFactDrr: numberOrZero(row?.spendFactDrr || row?.spendFact),
+    spendFactTotal: numberOrZero(row?.spendFactTotal || row?.spendFact),
     factPct: Number.isFinite(Number(row?.factPct)) ? Number(row.factPct) : null,
     wbPromotion: numberOrZero(row?.wbPromotion),
     wbMedia: numberOrZero(row?.wbMedia),
@@ -2807,6 +2813,7 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
     reviewPoints: numberOrZero(row?.reviewPoints),
     externalAds: numberOrZero(row?.externalAds),
     spendDelta: numberOrZero(row?.spendDelta),
+    spendDeltaPct: Number.isFinite(Number(row?.spendDeltaPct)) ? Number(row.spendDeltaPct) : null,
     adsViews: numberOrZero(row?.adsViews),
     adsClicks: numberOrZero(row?.adsClicks),
     adsOrders: numberOrZero(row?.adsOrders)
@@ -2875,6 +2882,12 @@ function iuDrrToneForDelta(value) {
   return numeric < 500000 ? 'warn' : 'danger';
 }
 
+function iuDrrToneForRevenueDelta(value) {
+  const numeric = numberOrZero(value);
+  if (numeric >= 0) return 'ok';
+  return Math.abs(numeric) < 500000 ? 'warn' : 'danger';
+}
+
 function iuDrrSourceBadge(model) {
   const mode = model.payload.source?.adsSourceMode || model.payload.diagnostics?.adsSourceMode || '';
   if (/wb-api/.test(mode)) return badge('WB API', 'ok');
@@ -2909,12 +2922,16 @@ function iuDrrExportRows(rows, model) {
     month: model.selectedMonth,
     date: row.date,
     period: row.period || row.date,
+    target_revenue_wb: row.targetRevenueWb,
     revenue_wb: row.revenueWb,
+    revenue_wb_delta: row.revenueWbDelta,
+    revenue_wb_delta_pct: row.revenueWbDeltaPct != null ? Math.round(Number(row.revenueWbDeltaPct) * 10000) / 100 : '',
     revenue_ozon: row.revenueOzon,
     revenue_iu_total: row.revenueTotalIu,
     plan_pct: row.planPct != null ? Math.round(Number(row.planPct) * 10000) / 100 : '',
     plan_spend_wb: row.planSpendWb,
     spend_fact: row.spendFact,
+    spend_fact_total: row.spendFactTotal,
     fact_drr_pct: row.factPct != null ? Math.round(Number(row.factPct) * 10000) / 100 : '',
     wb_promotion: row.wbPromotion,
     wb_media: row.wbMedia,
@@ -2925,6 +2942,7 @@ function iuDrrExportRows(rows, model) {
     review_points: row.reviewPoints,
     external_ads: row.externalAds,
     spend_delta: row.spendDelta,
+    spend_delta_pct: row.spendDeltaPct != null ? Math.round(Number(row.spendDeltaPct) * 10000) / 100 : '',
     views: row.adsViews,
     clicks: row.adsClicks,
     orders: row.adsOrders
@@ -2941,12 +2959,16 @@ function downloadIuDrrExcel(model) {
     ['month', 'Месяц'],
     ['date', 'Дата'],
     ['period', 'Период'],
+    ['target_revenue_wb', 'Целевой оборот WB'],
     ['revenue_wb', 'Продажи. Фактический оборот WB'],
+    ['revenue_wb_delta', 'Разница оборота WB'],
+    ['revenue_wb_delta_pct', 'Разница оборота WB, %'],
     ['revenue_ozon', 'Оборот Ozon'],
     ['revenue_iu_total', 'Оборот ИУ WB+Ozon'],
     ['plan_pct', 'Реклама. План в %'],
     ['plan_spend_wb', 'План расхода WB'],
-    ['spend_fact', 'Реклама. Фактические затраты'],
+    ['spend_fact', 'Реклама. Фактические затраты без Внешки'],
+    ['spend_fact_total', 'Расход всего с Внешкой'],
     ['fact_drr_pct', 'Реклама. Факт в %'],
     ['wb_promotion', 'ВБ Продвижение'],
     ['wb_media', 'ВБ Медиа'],
@@ -2957,6 +2979,7 @@ function downloadIuDrrExcel(model) {
     ['review_points', 'Отзывы за баллы'],
     ['external_ads', 'Внешка'],
     ['spend_delta', 'Дельта расхода по ИУ'],
+    ['spend_delta_pct', 'Дельта расхода по ИУ, %'],
     ['views', 'Показы'],
     ['clicks', 'Клики'],
     ['orders', 'Заказы']
@@ -2970,9 +2993,11 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   const month = model.monthSummary || {};
   const factDrr = month.drrWb != null ? month.drrWb : null;
   const deltaTone = iuDrrToneForDelta(month.spendDelta);
+  const revenueDeltaTone = iuDrrToneForRevenueDelta(month.revenueWbDelta);
   const totalIuTone = numberOrZero(month.iuRevenueCompletionToDate) >= 1 ? 'ok' : 'warn';
   const wbIuTone = numberOrZero(month.iuRevenueWbCompletionToDate) >= 1 ? 'ok' : 'warn';
   const ozonIuTone = numberOrZero(month.iuRevenueOzonCompletionToDate) >= 1 ? 'ok' : 'warn';
+  const externalSpend = numberOrZero(month.externalAds || month.channels?.externalAds?.spend);
   const sourceWarnings = [
     ...(model.payload.diagnostics?.noSourceChannels || []).map((item) => `${item}: нет источника`),
     ...(model.payload.diagnostics?.unmatchedNmIds || []).slice(0, 5).map((item) => `nmId ${item.nmId}: не сопоставлен`)
@@ -2981,7 +3006,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     <div class="section-title">
       <div>
         <h2>ИУ / ДРР WB</h2>
-        <p>Раздельное выполнение ИУ по WB и Ozon, расходы и ДРР по WB.</p>
+        <p>Раздельное выполнение ИУ по WB и Ozon; ДРР WB считается без Внешки, а Внешка показана отдельно.</p>
       </div>
       <div class="badge-stack">
         ${iuDrrSourceBadge(model)}
@@ -3001,8 +3026,10 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       <div class="mini-kpi ${wbIuTone}"><span>ИУ WB</span><strong>${fmt.pct(month.iuRevenueWbCompletionToDate)}</strong><span>${fmt.money(month.iuRevenueWbFactToDate || month.revenueWb)} / ${fmt.money(month.iuRevenueWbPlanToDate)}</span></div>
       <div class="mini-kpi ${ozonIuTone}"><span>ИУ Ozon</span><strong>${fmt.pct(month.iuRevenueOzonCompletionToDate)}</strong><span>${fmt.money(month.iuRevenueOzonFactToDate || month.revenueOzon)} / ${fmt.money(month.iuRevenueOzonPlanToDate)}</span></div>
       <div class="mini-kpi ${totalIuTone}"><span>ИУ всего</span><strong>${fmt.pct(month.iuRevenueCompletionToDate)}</strong><span>${fmt.money(month.iuRevenueFactToDate)} / ${fmt.money(month.iuRevenuePlanToDate)}</span></div>
+      <div class="mini-kpi ${revenueDeltaTone}"><span>Целевой WB</span><strong>${fmt.money(month.targetRevenueWb || month.iuRevenueWbPlanToDate)}</strong><span>разница ${fmt.money(month.revenueWbDelta)}</span></div>
       <div class="mini-kpi ${factDrr != null && factDrr <= numberOrZero(month.planPct) ? 'ok' : 'warn'}"><span>ДРР WB</span><strong>${factDrr != null ? fmt.pct(factDrr) : '—'}</strong><span>план ${fmt.pct(month.planPct)}</span></div>
-      <div class="mini-kpi"><span>Расход WB</span><strong>${fmt.money(month.spendFact)}</strong><span>план ${fmt.money(month.planSpendWb)}</span></div>
+      <div class="mini-kpi"><span>Расход ДРР WB</span><strong>${fmt.money(month.spendFact)}</strong><span>план ${fmt.money(month.planSpendWb)}</span></div>
+      <div class="mini-kpi warn"><span>Внешка</span><strong>${fmt.money(externalSpend)}</strong><span>не входит в ДРР</span></div>
       <div class="mini-kpi ${deltaTone}"><span>Дельта</span><strong>${fmt.money(month.spendDelta)}</strong><span>расход - план %</span></div>
     </div>
 
@@ -3023,7 +3050,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       </div>
       <div class="card">
         <div class="section-subhead">
-          <div><h3>Расход WB</h3><p class="small muted">факт против дневной нормы</p></div>
+          <div><h3>Расход ДРР WB</h3><p class="small muted">без Внешки, факт против дневной нормы</p></div>
           ${badge(fmt.money(month.spendFact), deltaTone)}
         </div>
         ${iuDrrSparkline(model.dailyRows, 'spendFact', deltaTone)}
@@ -3042,7 +3069,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
 
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
-        <div><h3>Дневная форма</h3><p class="small muted">WB и Ozon оборот отдельно, расходы и ДРР по WB.</p></div>
+        <div><h3>Дневная форма</h3><p class="small muted">Логика WB фиксированной ставки плюс детализация каналов; Внешка исключена из факта ДРР и дельты.</p></div>
         ${badge(model.hasRows ? 'готово' : 'нет строк', model.hasRows ? 'ok' : 'warn')}
       </div>
       <div class="table-wrap">
@@ -3050,34 +3077,48 @@ function renderIuDrr(rootId = 'view-iu-drr') {
           <thead>
             <tr>
               <th>Период</th>
-              <th>Оборот WB</th>
+              <th>Целевой оборот WB</th>
+              <th>Продажи. Фактический оборот</th>
+              <th>Разница оборота</th>
               <th>Оборот Ozon</th>
-              <th>План %</th>
-              <th>Факт расход</th>
-              <th>Факт %</th>
+              <th>Реклама. План в %</th>
+              <th>План расхода</th>
+              <th>Реклама. Фактические затраты</th>
+              <th>Реклама. Факт в %</th>
               <th>ВБ Продвижение</th>
               <th>ВБ Медиа</th>
-              <th>ПВЗ</th>
+              <th>ВБ Инфлюенс</th>
+              <th>Реклама в ПВЗ</th>
+              <th>Брендзона</th>
+              <th>Обзоры</th>
+              <th>Отзывы за баллы</th>
               <th>Внешка</th>
-              <th>Дельта</th>
+              <th>Дельта расхода по ИУ</th>
             </tr>
           </thead>
           <tbody>
             ${model.dailyRows.map((row) => `
               <tr>
                 <td><strong>${escapeHtml(row.period || row.date)}</strong><div class="muted small">${escapeHtml(row.date)}</div></td>
+                <td>${fmt.money(row.targetRevenueWb)}</td>
                 <td>${fmt.money(row.revenueWb)}</td>
+                <td>${badge(fmt.money(row.revenueWbDelta), iuDrrToneForRevenueDelta(row.revenueWbDelta))}</td>
                 <td>${fmt.money(row.revenueOzon)}</td>
                 <td>${fmt.pct(row.planPct)}</td>
+                <td>${fmt.money(row.planSpendWb)}</td>
                 <td>${fmt.money(row.spendFact)}</td>
                 <td>${row.factPct != null ? fmt.pct(row.factPct) : '—'}</td>
                 <td>${fmt.money(row.wbPromotion)}</td>
                 <td>${fmt.money(row.wbMedia)}</td>
+                <td>${fmt.money(row.wbInfluencer)}</td>
                 <td>${fmt.money(row.pvzAds)}</td>
+                <td>${fmt.money(row.brandZone)}</td>
+                <td>${fmt.money(row.overviews)}</td>
+                <td>${fmt.money(row.reviewPoints)}</td>
                 <td>${fmt.money(row.externalAds)}</td>
                 <td>${badge(fmt.money(row.spendDelta), iuDrrToneForDelta(row.spendDelta))}</td>
               </tr>
-            `).join('') || '<tr><td colspan="11">Нет данных по выбранному месяцу.</td></tr>'}
+            `).join('') || '<tr><td colspan="18">Нет данных по выбранному месяцу.</td></tr>'}
           </tbody>
         </table>
       </div>

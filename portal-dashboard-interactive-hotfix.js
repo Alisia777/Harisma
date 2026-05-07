@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260507J__) return;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_20260507J__ = true;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260507M__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260507M__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429C__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429A__ = true;
@@ -10,8 +10,8 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260507j';
-  const STYLE_ID = 'altea-dashboard-interactive-20260507j';
+  const VERSION = '20260507m';
+  const STYLE_ID = 'altea-dashboard-interactive-20260507m';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
@@ -292,6 +292,22 @@
       if (platformKey === 'ya') return raw.includes('market') || raw.includes('маркет') || raw === 'ya';
       return raw === 'all' || raw.includes('все');
     });
+    const iuDrrDaily = Array.isArray(current('iuDrrSummary')?.daily) ? current('iuDrrSummary').daily : [];
+    if ((platformKey === 'wb' || platformKey === 'all') && iuDrrDaily.length) {
+      const iuDrrRows = iuDrrDaily
+        .map((point) => ({
+          date: parseDate(point?.date),
+          views: num(point?.adsViews),
+          clicks: num(point?.adsClicks),
+          spend: num(point?.spendFact),
+          orders: num(point?.adsOrders),
+          revenue: num(point?.revenueWb)
+        }))
+        .filter((point) => point.date instanceof Date && !Number.isNaN(point.date.getTime()))
+        .sort((left, right) => left.date - right.date);
+      if (iuDrrRows.some((point) => point.views || point.clicks || point.spend || point.orders || point.revenue)) return iuDrrRows;
+    }
+
     const rows = (record?.series || [])
       .map((point) => ({
         date: resolveSeriesDate(point, anchor),
@@ -304,22 +320,6 @@
       .filter((point) => point.date instanceof Date && !Number.isNaN(point.date.getTime()))
       .sort((left, right) => left.date - right.date);
     if (rows.some((point) => point.views || point.clicks || point.spend || point.orders || point.revenue)) return rows;
-
-    const iuDrrDaily = Array.isArray(current('iuDrrSummary')?.daily) ? current('iuDrrSummary').daily : [];
-    if ((platformKey === 'wb' || platformKey === 'all') && iuDrrDaily.length) {
-      const fallbackRows = iuDrrDaily
-        .map((point) => ({
-          date: parseDate(point?.date),
-          views: num(point?.adsViews),
-          clicks: num(point?.adsClicks),
-          spend: num(point?.spendFact),
-          orders: num(point?.adsOrders),
-          revenue: num(point?.revenueWb)
-        }))
-        .filter((point) => point.date instanceof Date && !Number.isNaN(point.date.getTime()))
-        .sort((left, right) => left.date - right.date);
-      if (fallbackRows.some((point) => point.views || point.clicks || point.spend || point.orders || point.revenue)) return fallbackRows;
-    }
     return rows;
   }
 

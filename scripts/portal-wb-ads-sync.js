@@ -7,6 +7,8 @@ const XLSX = require('xlsx');
 const WB_API_BASE_URL = 'https://advert-api.wildberries.ru';
 const WB_PROMOTION_DOCS_URL = 'https://dev.wildberries.ru/en/docs/openapi/promotion';
 const DEFAULT_FIXTURE_XLSX = 'C:\\Users\\artiu\\Downloads\\Telegram Desktop\\ДРР ВБ (3).xlsx';
+const DEFAULT_EXTERNAL_ADS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1_WNHliH2-7E17H8J6BvYTSBWVD7cuDDBpn0GJ5Crxdg/edit?gid=349075746#gid=349075746';
+const DEFAULT_EXTERNAL_ADS_BRAND = 'АЛТЕЯ';
 const ACTIVE_CAMPAIGN_STATUSES = new Set([7, 9, 11]);
 const CHANNELS = {
   promotion: 'ВБ Продвижение',
@@ -37,6 +39,10 @@ function parseArgs(argv) {
     }
     if (token === '--no-fixture-fallback') {
       args.fixtureFallback = false;
+      continue;
+    }
+    if (token === '--no-external-ads') {
+      args.externalAds = false;
       continue;
     }
     const [rawKey, inlineValue] = token.split('=');
@@ -74,6 +80,25 @@ function writeJson(filePath, payload) {
 
 function numberOrZero(value) {
   const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function numberFromSheet(value) {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  let raw = String(value ?? '')
+    .replace(/\u00a0/g, ' ')
+    .replace(/\s+/g, '')
+    .replace(/[^\d,.-]/g, '');
+  if (!raw) return 0;
+  const lastComma = raw.lastIndexOf(',');
+  const lastDot = raw.lastIndexOf('.');
+  if (lastComma >= 0 && lastDot >= 0) {
+    raw = lastComma > lastDot ? raw.replace(/\./g, '').replace(',', '.') : raw.replace(/,/g, '');
+  } else if (lastComma >= 0) {
+    const decimals = raw.length - lastComma - 1;
+    raw = decimals > 0 && decimals <= 2 ? raw.replace(',', '.') : raw.replace(/,/g, '');
+  }
+  const parsed = Number(raw);
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
@@ -156,6 +181,14 @@ function resolveSupplierGoodsPath(args) {
     process.env.ALTEA_WB_SUPPLIER_GOODS_XLSX,
     findLatestFile(process.cwd(), /^supplier-goods-.*\.xlsx$/i),
     findLatestFile(process.cwd(), /^.*постав.*\.xlsx$/i)
+  ].filter(Boolean);
+  return candidates.find((candidate) => fs.existsSync(candidate)) || '';
+}
+
+function resolveExternalAdsXlsx(args) {
+  const candidates = [
+    args['external-ads-xlsx'],
+    process.env.ALTEA_EXTERNAL_ADS_XLSX
   ].filter(Boolean);
   return candidates.find((candidate) => fs.existsSync(candidate)) || '';
 }
@@ -260,6 +293,10 @@ function resolveOptions(args) {
     mirrorLocalFallback: asBool(args['mirror-local-fallback'], Boolean(args.mirrorLocalFallback)),
     fixtureFallback: args.fixtureFallback !== false,
     fixturePath: resolveFixturePath(args),
+    externalAdsEnabled: args.externalAds !== false,
+    externalAdsUrl: args['external-ads-url'] || process.env.ALTEA_EXTERNAL_ADS_SHEET_URL || DEFAULT_EXTERNAL_ADS_SHEET_URL,
+    externalAdsXlsx: resolveExternalAdsXlsx(args),
+    externalAdsBrand: args['external-ads-brand'] || process.env.ALTEA_EXTERNAL_ADS_BRAND || DEFAULT_EXTERNAL_ADS_BRAND,
     supplierGoodsPath: resolveSupplierGoodsPath(args),
     from,
     to,
@@ -274,7 +311,7 @@ async function sleep(ms) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function wbRequest(options, apiPath, requestOptions = {}) {
+async function wbRequest(options, apiPath, requestOptions = {}, attempt = 0) {
   const url = new URL(`${options.apiBaseUrl}${apiPath}`);
   Object.entries(requestOptions.query || {}).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value));
@@ -290,6 +327,12 @@ async function wbRequest(options, apiPath, requestOptions = {}) {
   });
   const text = await response.text();
   if (!response.ok) {
+    if (response.status === 429 && attempt < 4) {
+      const retryAfter = Number(response.headers.get('retry-after'));
+      const delayMs = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 65000;
+      await sleep(delayMs);
+      return wbRequest(options, apiPath, requestOptions, attempt + 1);
+    }
     throw new Error(`WB API ${method} ${apiPath} failed: HTTP ${response.status} ${text.slice(0, 500)}`);
   }
   if (!text.trim()) return null;
@@ -315,7 +358,7 @@ async function fetchCampaignDetails(options, campaignIds, diagnostics) {
   const details = new Map(campaignIds.map((id) => [String(id), { advertId: String(id) }]));
   for (const batch of chunk(campaignIds, 50)) {
     try {
-      const payload = await wbRequest(options, '/api/advert/v2/adverts', { method: 'POST', body: batch.map((id) => Number(id)) });
+      const payload = await wbRequest(options, '/api/advert/v2/adverts', { method: 'GET', query: { ids: batch.join(',') } });
       const rows = Array.isArray(payload) ? payload : Array.isArray(payload?.adverts) ? payload.adverts : [];
       for (const row of rows) {
         const id = String(Math.trunc(numberOrZero(row?.advertId || row?.advert_id || row?.id)));
@@ -611,7 +654,8 @@ function buildPlatformSeries(itemSeries, from, to) {
 }
 
 function buildAdsSummary(itemSeries, options, diagnostics, sourceMode, note = '') {
-  const series = buildPlatformSeries(itemSeries, options.from, options.to);
+  const scopedItemSeries = itemSeries.filter((row) => row.date >= options.from && row.date <= options.to);
+  const series = buildPlatformSeries(scopedItemSeries, options.from, options.to);
   const totals = series.reduce((acc, row) => {
     acc.views += row.views;
     acc.clicks += row.clicks;
@@ -641,8 +685,103 @@ function buildAdsSummary(itemSeries, options, diagnostics, sourceMode, note = ''
       platform,
       { ...platform, key: 'all', platformKey: 'all', label: 'Все площадки' }
     ],
-    itemSeries
+    itemSeries: scopedItemSeries
   };
+}
+
+function parseExternalSheetPeriod(sheetName) {
+  const match = String(sheetName || '').match(/(\d{1,2})\.(\d{1,2})\.(\d{4})\s*-\s*(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+  if (!match) return null;
+  const from = `${match[3]}-${String(Number(match[2])).padStart(2, '0')}-${String(Number(match[1])).padStart(2, '0')}`;
+  const to = `${match[6]}-${String(Number(match[5])).padStart(2, '0')}-${String(Number(match[4])).padStart(2, '0')}`;
+  return { from, to };
+}
+
+function exportUrlForSheet(sheetUrl) {
+  return String(sheetUrl || '').replace(/\/edit.*$/, '/export?format=xlsx');
+}
+
+async function loadExternalAdsWorkbook(options, diagnostics) {
+  if (!options.externalAdsEnabled) return null;
+  if (options.externalAdsXlsx) {
+    diagnostics.externalAds.source = 'xlsx-file';
+    diagnostics.externalAds.xlsxPath = options.externalAdsXlsx;
+    return XLSX.readFile(options.externalAdsXlsx);
+  }
+  if (!options.externalAdsUrl) return null;
+  const exportUrl = exportUrlForSheet(options.externalAdsUrl);
+  diagnostics.externalAds.source = 'google-sheet';
+  diagnostics.externalAds.sourceUrl = options.externalAdsUrl;
+  const response = await fetch(exportUrl, { redirect: 'follow' });
+  if (!response.ok) throw new Error(`external ads Google export failed with HTTP ${response.status}`);
+  const buffer = Buffer.from(await response.arrayBuffer());
+  diagnostics.externalAds.downloadedBytes = buffer.length;
+  return XLSX.read(buffer, { type: 'buffer' });
+}
+
+async function buildExternalAdsRows(options, diagnostics) {
+  diagnostics.externalAds = {
+    enabled: Boolean(options.externalAdsEnabled),
+    brand: options.externalAdsBrand || '',
+    sourceUrl: options.externalAdsUrl || '',
+    sheets: 0,
+    rows: 0,
+    matchedRows: 0,
+    spend: 0,
+    warnings: []
+  };
+  if (!options.externalAdsEnabled) return [];
+  try {
+    const workbook = await loadExternalAdsWorkbook(options, diagnostics);
+    if (!workbook) return [];
+    const targetBrand = normalizeKey(options.externalAdsBrand);
+    const rows = [];
+    for (const sheetName of workbook.SheetNames || []) {
+      const period = parseExternalSheetPeriod(sheetName);
+      if (!period) continue;
+      diagnostics.externalAds.sheets += 1;
+      const weekDates = enumerateDates(period.from, period.to);
+      const reportDates = weekDates.filter((date) => date >= options.from && date <= options.to);
+      if (!reportDates.length || !weekDates.length) continue;
+      const sheetRows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: '', raw: false });
+      diagnostics.externalAds.rows += sheetRows.length;
+      for (const row of sheetRows) {
+        const brand = normalizeText(row['Бренд']);
+        if (targetBrand && !normalizeKey(brand).includes(targetBrand)) continue;
+        const spend = numberFromSheet(row['Стоимость контента']);
+        if (spend <= 0) continue;
+        diagnostics.externalAds.matchedRows += 1;
+        diagnostics.externalAds.spend += spend * (reportDates.length / weekDates.length);
+        const articleKey = normalizeText(row['Буквенный артикул']) || `wb-nm-${String(Math.trunc(numberFromSheet(row['Артикул'])) || 'external')}`;
+        const nmId = String(Math.trunc(numberFromSheet(row['Артикул']))) || '';
+        for (const date of reportDates) {
+          rows.push({
+            date,
+            campaignId: `external-sheet:${sheetName}`,
+            campaignName: 'Google Sheets внешка',
+            channel: CHANNELS.external,
+            nmId,
+            articleKey,
+            article: articleKey,
+            name: normalizeText(row['Продукт']) || articleKey,
+            views: numberFromSheet(row['Охват']) / weekDates.length,
+            clicks: numberFromSheet(row['Клики']) / weekDates.length,
+            spend: spend / weekDates.length,
+            orders: numberFromSheet(row['Заказы']) / weekDates.length,
+            revenue: numberFromSheet(row['Выручка']) / weekDates.length
+          });
+        }
+      }
+    }
+    diagnostics.externalAds.spend = Math.round(diagnostics.externalAds.spend * 100) / 100;
+    diagnostics.externalAds.itemRows = rows.length;
+    diagnostics.externalAds.allocation = 'weekly rows allocated evenly by calendar day';
+    return rows;
+  } catch (error) {
+    diagnostics.warnings.push(`external ads were not loaded: ${error.message}`);
+    diagnostics.externalAds.warnings.push(error.message);
+    return [];
+  }
 }
 
 function parseFixtureDate(value, year) {
@@ -704,16 +843,17 @@ async function buildPayload(options) {
     supplierGoods: supplierDiagnostics,
     warnings: []
   };
+  const externalRows = await buildExternalAdsRows(options, diagnostics);
 
   if (!options.token) {
     diagnostics.warnings.push('ALTEA_WB_PROMOTION_TOKEN is not set; WB API request was skipped.');
     if (options.fixtureFallback && options.fixturePath) {
-      const itemSeries = buildFromFixture(options, diagnostics);
+      const itemSeries = aggregateRows([...buildFromFixture(options, diagnostics), ...externalRows]);
       return buildAdsSummary(
         itemSeries,
         options,
         diagnostics,
-        'excel-fixture-fallback',
+        externalRows.length ? 'excel-fixture-fallback+external-sheet' : 'excel-fixture-fallback',
         'WB Promotion token is missing; spend was seeded from the ДРР ВБ Excel fixture.'
       );
     }
@@ -734,17 +874,32 @@ async function buildPayload(options) {
 
   if (!campaignIds.length) {
     diagnostics.warnings.push('No active WB promotion campaigns were returned by /adv/v1/promotion/count.');
-    return buildAdsSummary([], options, diagnostics, 'wb-api', 'WB API returned no active campaigns for the selected window.');
+    const itemSeries = aggregateRows(attachSkuMeta(externalRows, nmMap, skus, diagnostics));
+    return buildAdsSummary(
+      itemSeries,
+      options,
+      diagnostics,
+      externalRows.length ? 'wb-api+external-sheet' : 'wb-api',
+      externalRows.length
+        ? 'WB API returned no active campaigns; external ads were loaded from Google Sheets.'
+        : 'WB API returned no active campaigns for the selected window.'
+    );
   }
 
   const campaignDetails = await fetchCampaignDetails(options, campaignIds, diagnostics);
   const fullstatRows = await fetchFullStats(options, campaignIds, campaignDetails, diagnostics);
   const updRows = await fetchUpdRows(options, diagnostics);
   const reconciledRows = reconcileWithUpd(fullstatRows, updRows, diagnostics);
-  const itemSeries = aggregateRows(attachSkuMeta(reconciledRows, nmMap, skus, diagnostics));
+  const itemSeries = aggregateRows(attachSkuMeta([...reconciledRows, ...externalRows], nmMap, skus, diagnostics));
   diagnostics.itemRows = itemSeries.length;
   diagnostics.spend = Math.round(itemSeries.reduce((sum, row) => sum + row.spend, 0) * 100) / 100;
-  return buildAdsSummary(itemSeries, options, diagnostics, 'wb-api', 'WB Promotion API daily facts.');
+  return buildAdsSummary(
+    itemSeries,
+    options,
+    diagnostics,
+    externalRows.length ? 'wb-api+external-sheet' : 'wb-api',
+    externalRows.length ? 'WB Promotion API daily facts plus external ads Google Sheet.' : 'WB Promotion API daily facts.'
+  );
 }
 
 function writeOutputs(payload, options) {

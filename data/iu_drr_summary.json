@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-07T08:53:49.512Z",
+  "generatedAt": "2026-05-07T10:07:36.772Z",
   "asOfDate": "2026-05-06",
   "source": {
     "iuPlanGeneratedAt": "2026-05-06T08:58:21.755Z",
     "platformTrendsGeneratedAt": "2026-05-07T07:00:40.551Z",
-    "adsSummaryGeneratedAt": "2026-05-07T08:53:45.843Z",
-    "adsSourceMode": "excel-fixture-fallback"
+    "adsSummaryGeneratedAt": "2026-05-07T10:07:36.656Z",
+    "adsSourceMode": "wb-api+external-sheet"
   },
   "window": {
     "from": "2026-05-01",
@@ -24,20 +24,20 @@
     "iuRevenueCompletionToDate": 0.737536,
     "iuAdsPlan": 40087824.87,
     "iuAdsPlanToDate": 7758933.85,
-    "iuAdsFactWbToDate": 1811620,
-    "iuAdsCompletionToDate": 0.233488,
+    "iuAdsFactWbToDate": 3715467.15,
+    "iuAdsCompletionToDate": 0.478863,
     "revenueWb": 32666834,
     "revenueOzon": 7721623,
-    "spendFact": 1811620,
+    "spendFact": 3715467.15,
     "planSpendWb": 2613346.72,
-    "drrWb": 0.055457,
-    "spendDelta": -801726.72,
+    "drrWb": 0.113738,
+    "spendDelta": 1102120.43,
     "planPct": 0.08,
     "channels": {
       "wbPromotion": {
         "key": "wbPromotion",
         "label": "ВБ Продвижение",
-        "spend": 1811620
+        "spend": 2191417.83
       },
       "wbMedia": {
         "key": "wbMedia",
@@ -72,7 +72,7 @@
       "externalAds": {
         "key": "externalAds",
         "label": "Внешка",
-        "spend": 0
+        "spend": 1524049.32
       }
     }
   },
@@ -88,20 +88,20 @@
       "iuRevenueCompletionToDate": 0.737536,
       "iuAdsPlan": 40087824.87,
       "iuAdsPlanToDate": 7758933.85,
-      "iuAdsFactWbToDate": 1811620,
-      "iuAdsCompletionToDate": 0.233488,
+      "iuAdsFactWbToDate": 3715467.15,
+      "iuAdsCompletionToDate": 0.478863,
       "revenueWb": 32666834,
       "revenueOzon": 7721623,
-      "spendFact": 1811620,
+      "spendFact": 3715467.15,
       "planSpendWb": 2613346.72,
-      "drrWb": 0.055457,
-      "spendDelta": -801726.72,
+      "drrWb": 0.113738,
+      "spendDelta": 1102120.43,
       "planPct": 0.08,
       "channels": {
         "wbPromotion": {
           "key": "wbPromotion",
           "label": "ВБ Продвижение",
-          "spend": 1811620
+          "spend": 2191417.83
         },
         "wbMedia": {
           "key": "wbMedia",
@@ -136,7 +136,7 @@
         "externalAds": {
           "key": "externalAds",
           "label": "Внешка",
-          "spend": 0
+          "spend": 1524049.32
         }
       }
     }
@@ -145,8 +145,14 @@
     {
       "key": "wbPromotion",
       "label": "ВБ Продвижение",
-      "spend": 1811620,
+      "spend": 2191417.83,
       "source": "WB Promotion API"
+    },
+    {
+      "key": "externalAds",
+      "label": "Внешка",
+      "spend": 1524049.32,
+      "source": "Google Sheets внешка"
     },
     {
       "key": "brandZone",
@@ -165,12 +171,6 @@
       "label": "ВБ Медиа",
       "spend": 0,
       "source": "WB Promotion API"
-    },
-    {
-      "key": "externalAds",
-      "label": "Внешка",
-      "spend": 0,
-      "source": "нет источника в v1"
     },
     {
       "key": "overviews",
@@ -203,22 +203,22 @@
       "unitsOzon": 715,
       "planPct": 0.08,
       "planSpendWb": 441510.24,
-      "spendFact": 313838,
-      "factPct": 0.056866,
-      "wbPromotion": 313838,
+      "spendFact": 824494,
+      "factPct": 0.149395,
+      "wbPromotion": 316477.56,
       "wbMedia": 0,
       "wbInfluencer": 0,
       "pvzAds": 0,
       "brandZone": 0,
       "overviews": 0,
       "reviewPoints": 0,
-      "externalAds": 0,
-      "spendDelta": -127672.24,
-      "adsViews": 0,
-      "adsClicks": 0,
-      "adsOrders": 0,
-      "adsRevenue": 3663625,
-      "sourceRows": 1
+      "externalAds": 508016.44,
+      "spendDelta": 382983.76,
+      "adsViews": 10608892,
+      "adsClicks": 51598,
+      "adsOrders": 4414,
+      "adsRevenue": 1921824,
+      "sourceRows": 1252
     },
     {
       "date": "2026-05-02",
@@ -231,22 +231,22 @@
       "unitsOzon": 763,
       "planPct": 0.08,
       "planSpendWb": 451749.92,
-      "spendFact": 399193,
-      "factPct": 0.070693,
-      "wbPromotion": 399193,
+      "spendFact": 908792.87,
+      "factPct": 0.160937,
+      "wbPromotion": 400776.43,
       "wbMedia": 0,
       "wbInfluencer": 0,
       "pvzAds": 0,
       "brandZone": 0,
       "overviews": 0,
       "reviewPoints": 0,
-      "externalAds": 0,
-      "spendDelta": -52556.92,
-      "adsViews": 0,
-      "adsClicks": 0,
-      "adsOrders": 0,
-      "adsRevenue": 3862113,
-      "sourceRows": 1
+      "externalAds": 508016.44,
+      "spendDelta": 457042.95,
+      "adsViews": 10999445,
+      "adsClicks": 55893,
+      "adsOrders": 4396,
+      "adsRevenue": 1676875,
+      "sourceRows": 1226
     },
     {
       "date": "2026-05-03",
@@ -259,22 +259,22 @@
       "unitsOzon": 750,
       "planPct": 0.08,
       "planSpendWb": 456432.64,
-      "spendFact": 408579,
-      "factPct": 0.071613,
-      "wbPromotion": 408579,
+      "spendFact": 916996.88,
+      "factPct": 0.160724,
+      "wbPromotion": 408980.44,
       "wbMedia": 0,
       "wbInfluencer": 0,
       "pvzAds": 0,
       "brandZone": 0,
       "overviews": 0,
       "reviewPoints": 0,
-      "externalAds": 0,
-      "spendDelta": -47853.64,
-      "adsViews": 0,
-      "adsClicks": 0,
-      "adsOrders": 0,
-      "adsRevenue": 4419749,
-      "sourceRows": 1
+      "externalAds": 508016.44,
+      "spendDelta": 460564.24,
+      "adsViews": 10987389,
+      "adsClicks": 56288,
+      "adsOrders": 4635,
+      "adsRevenue": 2124695,
+      "sourceRows": 1303
     },
     {
       "date": "2026-05-04",
@@ -287,9 +287,9 @@
       "unitsOzon": 1333,
       "planPct": 0.08,
       "planSpendWb": 406132.48,
-      "spendFact": 356394,
-      "factPct": 0.070203,
-      "wbPromotion": 356394,
+      "spendFact": 358100.29,
+      "factPct": 0.070539,
+      "wbPromotion": 358100.29,
       "wbMedia": 0,
       "wbInfluencer": 0,
       "pvzAds": 0,
@@ -297,12 +297,12 @@
       "overviews": 0,
       "reviewPoints": 0,
       "externalAds": 0,
-      "spendDelta": -49738.48,
-      "adsViews": 0,
-      "adsClicks": 0,
-      "adsOrders": 0,
-      "adsRevenue": 4461697,
-      "sourceRows": 1
+      "spendDelta": -48032.19,
+      "adsViews": 1238312,
+      "adsClicks": 19515,
+      "adsOrders": 2412,
+      "adsRevenue": 1946055,
+      "sourceRows": 1375
     },
     {
       "date": "2026-05-05",
@@ -315,9 +315,9 @@
       "unitsOzon": 1921,
       "planPct": 0.08,
       "planSpendWb": 412887.6,
-      "spendFact": 333616,
-      "factPct": 0.064641,
-      "wbPromotion": 333616,
+      "spendFact": 334902.23,
+      "factPct": 0.06489,
+      "wbPromotion": 334902.23,
       "wbMedia": 0,
       "wbInfluencer": 0,
       "pvzAds": 0,
@@ -325,12 +325,12 @@
       "overviews": 0,
       "reviewPoints": 0,
       "externalAds": 0,
-      "spendDelta": -79271.6,
-      "adsViews": 0,
-      "adsClicks": 0,
-      "adsOrders": 0,
-      "adsRevenue": 4538206,
-      "sourceRows": 1
+      "spendDelta": -77985.37,
+      "adsViews": 1199185,
+      "adsClicks": 17997,
+      "adsOrders": 2303,
+      "adsRevenue": 1750071,
+      "sourceRows": 1066
     },
     {
       "date": "2026-05-06",
@@ -343,9 +343,9 @@
       "unitsOzon": 1344,
       "planPct": 0.08,
       "planSpendWb": 444633.84,
-      "spendFact": 0,
-      "factPct": 0,
-      "wbPromotion": 0,
+      "spendFact": 372180.88,
+      "factPct": 0.066964,
+      "wbPromotion": 372180.88,
       "wbMedia": 0,
       "wbInfluencer": 0,
       "pvzAds": 0,
@@ -353,18 +353,18 @@
       "overviews": 0,
       "reviewPoints": 0,
       "externalAds": 0,
-      "spendDelta": -444633.84,
-      "adsViews": 0,
-      "adsClicks": 0,
-      "adsOrders": 0,
-      "adsRevenue": 0,
-      "sourceRows": 0
+      "spendDelta": -72452.96,
+      "adsViews": 1315980,
+      "adsClicks": 19924,
+      "adsOrders": 2301,
+      "adsRevenue": 1717041,
+      "sourceRows": 1045
     }
   ],
   "diagnostics": {
-    "adsSourceMode": "excel-fixture-fallback",
+    "adsSourceMode": "wb-api+external-sheet",
     "adsDiagnostics": {
-      "generatedAt": "2026-05-07T08:53:45.833Z",
+      "generatedAt": "2026-05-07T09:53:43.239Z",
       "docsUrl": "https://dev.wildberries.ru/en/docs/openapi/promotion",
       "sourceWindow": {
         "from": "2026-05-01",
@@ -378,20 +378,714 @@
         "errors": []
       },
       "warnings": [
-        "ALTEA_WB_PROMOTION_TOKEN is not set; WB API request was skipped."
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"c95f631347ef5395fb1cf7bf29634a80\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:45Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"9effe9200abbcdad38d6084069e2dceb\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:45Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"825100f84312aa1fb5556736ba1326c2\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:46Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"cc4109cd83d4790db44d2f5b1e0adeca\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:47Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"56be2aee56520e8dfe64158e516f9682\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:47Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"ccd46b955818511e7b6f18cef604c39f\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:48Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"5ced35676c3c19dd2ae110c807cd7d53\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:49Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"5669f54254c24cec0795e7a5e527452c\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:49Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"a5af653a0c11cfccf9ec5fa213f3943c\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:50Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"8bdebc40238f9a22c9e708ca5dfdd119\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:50Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"cf212007bc2bf5771f6b7962b1d8d3ff\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:51Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"2a17b7dbe7e5c3236c2258242e1ddc58\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:52Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"4bdf83f4f00dec5d69899e5e2e8146cc\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:52Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"564fd2b64b9e70a286cb4ee77ff89bc9\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:53Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"28e664f1ef41805a2dd921f8f646d63b\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:53Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"a9cacd22535c414a22e6222622301ae0\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:54Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"4315d1662dcd2c309026f29f5639929b\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:55Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"995a3eb268084d8b70141ff2f974bc94\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:55Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"213f6317b6fb1b1d27f8629f312410bb\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:56Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"90ffadab06693ce8c6924db9b77ee3b9\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:56Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"063561404599399b02e647d8b3c62c8d\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:57Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"45c1d329236f3d81f81096b60b6553f1\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:58Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"dc2268fd743ba04ea0a7ec8f0f86c200\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:58Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"00204cfafa956f7ab794bc30a1b89df4\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:59Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"c8680d448b329eab706680feb3fc938c\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:53:59Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (HEAD, GET); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"9052181308478c9b3107ea591bbefe45\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:54:00Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"30909758571df7029916e2ffc7f90517\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:54:01Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (HEAD, GET); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"d3f3ae0de4da6a52da2f624bebd23cdd\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:54:01Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"5deb3fb501c36ca3e0855c8762e52caa\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:54:02Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"9f939b3f11613f97ecdb774503ab940e\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:54:03Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"1f77b67240cee82fb3cf6738df744b7d\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:54:03Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"03ed69455046ccc7c249541a1e98dfdd\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:54:04Z\"\n}\r\n",
+        "campaign details were not loaded: WB API POST /api/advert/v2/adverts failed: HTTP 405 {\n    \"title\": \"method not allowed\",\n    \"detail\": \"allowed methods are listed in the Allow header (GET, HEAD); Please consult the https://dev.wildberries.ru/openapi/api-information\",\n    \"code\": \"9995b4770d66c 66f84d927906\",\n    \"requestId\": \"983d6c00d59d18a26bd1292497a5fdfb\",\n    \"origin\": \"s2s-api-auth-adv\",\n    \"status\": 405,\n    \"statusText\": \"Method Not Allowed\",\n    \"timestamp\": \"2026-05-07T09:54:04Z\"\n}\r\n"
       ],
-      "fixturePath": "C:\\Users\\artiu\\Downloads\\Telegram Desktop\\ДРР ВБ (3).xlsx",
-      "fixtureRows": 5
+      "externalAds": {
+        "enabled": true,
+        "brand": "АЛТЕЯ",
+        "sourceUrl": "https://docs.google.com/spreadsheets/d/1_WNHliH2-7E17H8J6BvYTSBWVD7cuDDBpn0GJ5Crxdg/edit?gid=349075746#gid=349075746",
+        "sheets": 5,
+        "rows": 124,
+        "matchedRows": 47,
+        "spend": 1524049.38,
+        "warnings": [],
+        "source": "google-sheet",
+        "downloadedBytes": 135770,
+        "itemRows": 141,
+        "allocation": "weekly rows allocated evenly by calendar day"
+      },
+      "campaigns": {
+        "sourceGroups": 7,
+        "activeIds": 1615
+      },
+      "fullstatsRequests": 33,
+      "updRows": 1265,
+      "financialAdjustments": 1,
+      "financialAdjustmentSpend": 1128,
+      "financialDaily": [
+        {
+          "date": "2026-05-07",
+          "channel": "ВБ Продвижение",
+          "spend": 1128
+        },
+        {
+          "date": "2026-05-06",
+          "channel": "ВБ Продвижение",
+          "spend": 371334
+        },
+        {
+          "date": "2026-05-05",
+          "channel": "ВБ Продвижение",
+          "spend": 334313
+        },
+        {
+          "date": "2026-05-04",
+          "channel": "ВБ Продвижение",
+          "spend": 357718
+        },
+        {
+          "date": "2026-05-03",
+          "channel": "ВБ Продвижение",
+          "spend": 406949
+        },
+        {
+          "date": "2026-05-02",
+          "channel": "ВБ Продвижение",
+          "spend": 400567
+        },
+        {
+          "date": "2026-05-01",
+          "channel": "ВБ Продвижение",
+          "spend": 314373
+        }
+      ],
+      "unmatchedNmIds": [
+        {
+          "nmId": "197804490",
+          "spend": 14744.86,
+          "revenue": 77872,
+          "rows": 66
+        },
+        {
+          "nmId": "151393048",
+          "spend": 9174.919999999998,
+          "revenue": 61124,
+          "rows": 72
+        },
+        {
+          "nmId": "40812096",
+          "spend": 7525.230000000001,
+          "revenue": 48167,
+          "rows": 73
+        },
+        {
+          "nmId": "312910723",
+          "spend": 6204.179999999999,
+          "revenue": 61776,
+          "rows": 28
+        },
+        {
+          "nmId": "109014186",
+          "spend": 4885.14,
+          "revenue": 16534,
+          "rows": 71
+        },
+        {
+          "nmId": "39234691",
+          "spend": 4829.489999999998,
+          "revenue": 17226,
+          "rows": 58
+        },
+        {
+          "nmId": "234150851",
+          "spend": 4729.64,
+          "revenue": 15077,
+          "rows": 52
+        },
+        {
+          "nmId": "34285227",
+          "spend": 4178.56,
+          "revenue": 24687,
+          "rows": 67
+        },
+        {
+          "nmId": "197568699",
+          "spend": 3831.4900000000002,
+          "revenue": 7703,
+          "rows": 46
+        },
+        {
+          "nmId": "17905393",
+          "spend": 3694.959999999999,
+          "revenue": 6851,
+          "rows": 77
+        },
+        {
+          "nmId": "260515862",
+          "spend": 3602.43,
+          "revenue": 11032,
+          "rows": 56
+        },
+        {
+          "nmId": "75182069",
+          "spend": 3371.800000000001,
+          "revenue": 4200,
+          "rows": 41
+        },
+        {
+          "nmId": "192909505",
+          "spend": 2660.6,
+          "revenue": 17955,
+          "rows": 55
+        },
+        {
+          "nmId": "223763365",
+          "spend": 2569.669999999999,
+          "revenue": 54600,
+          "rows": 75
+        },
+        {
+          "nmId": "222209699",
+          "spend": 2363.6600000000003,
+          "revenue": 16796,
+          "rows": 59
+        },
+        {
+          "nmId": "174464512",
+          "spend": 2011.7999999999995,
+          "revenue": 7700,
+          "rows": 48
+        },
+        {
+          "nmId": "234208976",
+          "spend": 1823.1100000000001,
+          "revenue": 10860,
+          "rows": 67
+        },
+        {
+          "nmId": "34282538",
+          "spend": 1748.9899999999998,
+          "revenue": 9612,
+          "rows": 47
+        },
+        {
+          "nmId": "192906679",
+          "spend": 1661.1799999999996,
+          "revenue": 6480,
+          "rows": 51
+        },
+        {
+          "nmId": "192907992",
+          "spend": 1627.76,
+          "revenue": 20413,
+          "rows": 64
+        },
+        {
+          "nmId": "18953630",
+          "spend": 1615.9799999999998,
+          "revenue": 1192,
+          "rows": 40
+        },
+        {
+          "nmId": "144854900",
+          "spend": 1485.87,
+          "revenue": 8512,
+          "rows": 26
+        },
+        {
+          "nmId": "234147545",
+          "spend": 1377.7299999999998,
+          "revenue": 2865,
+          "rows": 34
+        },
+        {
+          "nmId": "104628658",
+          "spend": 1329.4800000000002,
+          "revenue": 544,
+          "rows": 38
+        },
+        {
+          "nmId": "197567632",
+          "spend": 1248.7399999999998,
+          "revenue": 2537,
+          "rows": 37
+        },
+        {
+          "nmId": "172162756",
+          "spend": 1145.82,
+          "revenue": 19358,
+          "rows": 37
+        },
+        {
+          "nmId": "202337451",
+          "spend": 1125.7600000000002,
+          "revenue": 8560,
+          "rows": 39
+        },
+        {
+          "nmId": "176855721",
+          "spend": 1068.55,
+          "revenue": 4276,
+          "rows": 38
+        },
+        {
+          "nmId": "176859687",
+          "spend": 1060.7099999999998,
+          "revenue": 3676,
+          "rows": 39
+        },
+        {
+          "nmId": "44552189",
+          "spend": 820.2300000000001,
+          "revenue": 1890,
+          "rows": 42
+        },
+        {
+          "nmId": "176858863",
+          "spend": 799.0899999999999,
+          "revenue": 0,
+          "rows": 36
+        },
+        {
+          "nmId": "186794178",
+          "spend": 641.2,
+          "revenue": 2007,
+          "rows": 27
+        },
+        {
+          "nmId": "260523262",
+          "spend": 631.44,
+          "revenue": 677,
+          "rows": 52
+        },
+        {
+          "nmId": "136138948",
+          "spend": 337.56,
+          "revenue": 6330,
+          "rows": 27
+        },
+        {
+          "nmId": "176862987",
+          "spend": 279.72,
+          "revenue": 4600,
+          "rows": 23
+        },
+        {
+          "nmId": "234145577",
+          "spend": 253.50000000000003,
+          "revenue": 2755,
+          "rows": 46
+        },
+        {
+          "nmId": "17891620",
+          "spend": 185.56000000000003,
+          "revenue": 1378,
+          "rows": 36
+        },
+        {
+          "nmId": "312907312",
+          "spend": 135.81,
+          "revenue": 0,
+          "rows": 18
+        },
+        {
+          "nmId": "103709897",
+          "spend": 132.32,
+          "revenue": 1224,
+          "rows": 34
+        },
+        {
+          "nmId": "223155748",
+          "spend": 121.88000000000002,
+          "revenue": 1317,
+          "rows": 33
+        },
+        {
+          "nmId": "525496523",
+          "spend": 72.84,
+          "revenue": 4500,
+          "rows": 24
+        },
+        {
+          "nmId": "136537336",
+          "spend": 4.8,
+          "revenue": 0,
+          "rows": 15
+        },
+        {
+          "nmId": "172161336",
+          "spend": 0.75,
+          "revenue": 1165,
+          "rows": 7
+        },
+        {
+          "nmId": "17905705",
+          "spend": 0.32,
+          "revenue": 0,
+          "rows": 3
+        },
+        {
+          "nmId": "17903236",
+          "spend": 0.15,
+          "revenue": 0,
+          "rows": 1
+        },
+        {
+          "nmId": "847109323",
+          "spend": 0,
+          "revenue": 0,
+          "rows": 5
+        },
+        {
+          "nmId": "17904962",
+          "spend": 0,
+          "revenue": 1116,
+          "rows": 29
+        },
+        {
+          "nmId": "304495569",
+          "spend": 0,
+          "revenue": 8112,
+          "rows": 20
+        },
+        {
+          "nmId": "318415062",
+          "spend": 0,
+          "revenue": 2084,
+          "rows": 11
+        },
+        {
+          "nmId": "318414683",
+          "spend": 0,
+          "revenue": 2324,
+          "rows": 8
+        }
+      ],
+      "unmatchedNmIdCount": 53,
+      "itemRows": 7267,
+      "spend": 3715467.15
     },
     "noSourceChannels": [
       "Брендзона",
       "ВБ Инфлюенс",
-      "Внешка",
       "Обзоры",
       "Отзывы за баллы",
       "Реклама в ПВЗ"
     ],
-    "unmatchedNmIds": [],
+    "unmatchedNmIds": [
+      {
+        "nmId": "197804490",
+        "spend": 14744.86,
+        "revenue": 77872,
+        "rows": 66
+      },
+      {
+        "nmId": "151393048",
+        "spend": 9174.919999999998,
+        "revenue": 61124,
+        "rows": 72
+      },
+      {
+        "nmId": "40812096",
+        "spend": 7525.230000000001,
+        "revenue": 48167,
+        "rows": 73
+      },
+      {
+        "nmId": "312910723",
+        "spend": 6204.179999999999,
+        "revenue": 61776,
+        "rows": 28
+      },
+      {
+        "nmId": "109014186",
+        "spend": 4885.14,
+        "revenue": 16534,
+        "rows": 71
+      },
+      {
+        "nmId": "39234691",
+        "spend": 4829.489999999998,
+        "revenue": 17226,
+        "rows": 58
+      },
+      {
+        "nmId": "234150851",
+        "spend": 4729.64,
+        "revenue": 15077,
+        "rows": 52
+      },
+      {
+        "nmId": "34285227",
+        "spend": 4178.56,
+        "revenue": 24687,
+        "rows": 67
+      },
+      {
+        "nmId": "197568699",
+        "spend": 3831.4900000000002,
+        "revenue": 7703,
+        "rows": 46
+      },
+      {
+        "nmId": "17905393",
+        "spend": 3694.959999999999,
+        "revenue": 6851,
+        "rows": 77
+      },
+      {
+        "nmId": "260515862",
+        "spend": 3602.43,
+        "revenue": 11032,
+        "rows": 56
+      },
+      {
+        "nmId": "75182069",
+        "spend": 3371.800000000001,
+        "revenue": 4200,
+        "rows": 41
+      },
+      {
+        "nmId": "192909505",
+        "spend": 2660.6,
+        "revenue": 17955,
+        "rows": 55
+      },
+      {
+        "nmId": "223763365",
+        "spend": 2569.669999999999,
+        "revenue": 54600,
+        "rows": 75
+      },
+      {
+        "nmId": "222209699",
+        "spend": 2363.6600000000003,
+        "revenue": 16796,
+        "rows": 59
+      },
+      {
+        "nmId": "174464512",
+        "spend": 2011.7999999999995,
+        "revenue": 7700,
+        "rows": 48
+      },
+      {
+        "nmId": "234208976",
+        "spend": 1823.1100000000001,
+        "revenue": 10860,
+        "rows": 67
+      },
+      {
+        "nmId": "34282538",
+        "spend": 1748.9899999999998,
+        "revenue": 9612,
+        "rows": 47
+      },
+      {
+        "nmId": "192906679",
+        "spend": 1661.1799999999996,
+        "revenue": 6480,
+        "rows": 51
+      },
+      {
+        "nmId": "192907992",
+        "spend": 1627.76,
+        "revenue": 20413,
+        "rows": 64
+      },
+      {
+        "nmId": "18953630",
+        "spend": 1615.9799999999998,
+        "revenue": 1192,
+        "rows": 40
+      },
+      {
+        "nmId": "144854900",
+        "spend": 1485.87,
+        "revenue": 8512,
+        "rows": 26
+      },
+      {
+        "nmId": "234147545",
+        "spend": 1377.7299999999998,
+        "revenue": 2865,
+        "rows": 34
+      },
+      {
+        "nmId": "104628658",
+        "spend": 1329.4800000000002,
+        "revenue": 544,
+        "rows": 38
+      },
+      {
+        "nmId": "197567632",
+        "spend": 1248.7399999999998,
+        "revenue": 2537,
+        "rows": 37
+      },
+      {
+        "nmId": "172162756",
+        "spend": 1145.82,
+        "revenue": 19358,
+        "rows": 37
+      },
+      {
+        "nmId": "202337451",
+        "spend": 1125.7600000000002,
+        "revenue": 8560,
+        "rows": 39
+      },
+      {
+        "nmId": "176855721",
+        "spend": 1068.55,
+        "revenue": 4276,
+        "rows": 38
+      },
+      {
+        "nmId": "176859687",
+        "spend": 1060.7099999999998,
+        "revenue": 3676,
+        "rows": 39
+      },
+      {
+        "nmId": "44552189",
+        "spend": 820.2300000000001,
+        "revenue": 1890,
+        "rows": 42
+      },
+      {
+        "nmId": "176858863",
+        "spend": 799.0899999999999,
+        "revenue": 0,
+        "rows": 36
+      },
+      {
+        "nmId": "186794178",
+        "spend": 641.2,
+        "revenue": 2007,
+        "rows": 27
+      },
+      {
+        "nmId": "260523262",
+        "spend": 631.44,
+        "revenue": 677,
+        "rows": 52
+      },
+      {
+        "nmId": "136138948",
+        "spend": 337.56,
+        "revenue": 6330,
+        "rows": 27
+      },
+      {
+        "nmId": "176862987",
+        "spend": 279.72,
+        "revenue": 4600,
+        "rows": 23
+      },
+      {
+        "nmId": "234145577",
+        "spend": 253.50000000000003,
+        "revenue": 2755,
+        "rows": 46
+      },
+      {
+        "nmId": "17891620",
+        "spend": 185.56000000000003,
+        "revenue": 1378,
+        "rows": 36
+      },
+      {
+        "nmId": "312907312",
+        "spend": 135.81,
+        "revenue": 0,
+        "rows": 18
+      },
+      {
+        "nmId": "103709897",
+        "spend": 132.32,
+        "revenue": 1224,
+        "rows": 34
+      },
+      {
+        "nmId": "223155748",
+        "spend": 121.88000000000002,
+        "revenue": 1317,
+        "rows": 33
+      },
+      {
+        "nmId": "525496523",
+        "spend": 72.84,
+        "revenue": 4500,
+        "rows": 24
+      },
+      {
+        "nmId": "136537336",
+        "spend": 4.8,
+        "revenue": 0,
+        "rows": 15
+      },
+      {
+        "nmId": "172161336",
+        "spend": 0.75,
+        "revenue": 1165,
+        "rows": 7
+      },
+      {
+        "nmId": "17905705",
+        "spend": 0.32,
+        "revenue": 0,
+        "rows": 3
+      },
+      {
+        "nmId": "17903236",
+        "spend": 0.15,
+        "revenue": 0,
+        "rows": 1
+      },
+      {
+        "nmId": "847109323",
+        "spend": 0,
+        "revenue": 0,
+        "rows": 5
+      },
+      {
+        "nmId": "17904962",
+        "spend": 0,
+        "revenue": 1116,
+        "rows": 29
+      },
+      {
+        "nmId": "304495569",
+        "spend": 0,
+        "revenue": 8112,
+        "rows": 20
+      },
+      {
+        "nmId": "318415062",
+        "spend": 0,
+        "revenue": 2084,
+        "rows": 11
+      },
+      {
+        "nmId": "318414683",
+        "spend": 0,
+        "revenue": 2324,
+        "rows": 8
+      }
+    ],
     "notes": [
       "ИУ по обороту считается по WB + Ozon.",
       "ДРР и каналы рекламы считаются по WB.",

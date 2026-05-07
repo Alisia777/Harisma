@@ -116,6 +116,13 @@ if ($DryRun) {
   $wbAdsDryRunFlag = ""
 }
 
+if ([string]::IsNullOrWhiteSpace($env:ALTEA_WB_PROMOTION_TOKEN)) {
+  $userWbPromotionToken = [Environment]::GetEnvironmentVariable("ALTEA_WB_PROMOTION_TOKEN", "User")
+  if (-not [string]::IsNullOrWhiteSpace($userWbPromotionToken)) {
+    $env:ALTEA_WB_PROMOTION_TOKEN = $userWbPromotionToken
+  }
+}
+
 $wbAdsArguments = @(
   "scripts/portal-wb-ads-sync.js",
   "sync",

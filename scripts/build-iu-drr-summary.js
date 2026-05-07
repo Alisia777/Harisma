@@ -327,12 +327,17 @@ function buildMonthRows(dailyRows, iuPlan) {
   }).sort((left, right) => left.monthKey.localeCompare(right.monthKey));
 }
 
-function buildChannelRows(dailyRows) {
+function buildChannelRows(dailyRows, adsSummary = {}) {
+  const adsSourceMode = String(adsSummary.sourceMode || adsSummary.source || '');
   return CHANNEL_KEYS.map(([key, label]) => ({
     key,
     label,
     spend: roundMoney(sumRows(dailyRows, key)),
-    source: key === 'wbPromotion' || key === 'wbMedia' ? 'WB Promotion API' : 'нет источника в v1'
+    source: key === 'wbPromotion' || key === 'wbMedia'
+      ? 'WB Promotion API'
+      : key === 'externalAds' && (adsSourceMode.includes('external-sheet') || sumRows(dailyRows, key) > 0)
+        ? 'Google Sheets внешка'
+        : 'нет источника в v1'
   })).sort((left, right) => right.spend - left.spend || left.label.localeCompare(right.label, 'ru'));
 }
 
@@ -343,9 +348,11 @@ function buildPayload(options) {
   const dailyRows = buildDailyRows(platformTrends, iuPlan, adsSummary, options);
   const months = buildMonthRows(dailyRows, iuPlan);
   const currentMonth = months[months.length - 1] || null;
-  const channels = buildChannelRows(dailyRows);
+  const channels = buildChannelRows(dailyRows, adsSummary);
   const asOfDate = dailyRows.map((row) => row.date).filter(Boolean).sort().pop() || isoDate(platformTrends?.latestMarketplaceDate) || isoDate(adsSummary?.asOfDate) || '';
-  const noSourceChannels = channels.filter((channel) => channel.source !== 'WB Promotion API').map((channel) => channel.label);
+  const noSourceChannels = channels
+    .filter((channel) => !['WB Promotion API', 'Google Sheets внешка'].includes(channel.source))
+    .map((channel) => channel.label);
   return {
     generatedAt: new Date().toISOString(),
     asOfDate,

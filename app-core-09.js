@@ -570,6 +570,7 @@ function renderOrderProcurementTable(model) {
 }
 
 function renderOrderProcurement(model) {
+  const buildLabel = `ORDER BUILD ${window.__ALTEA_PORTAL_BUILD__ || '20260507e'}`;
   const range = model.window?.from && model.window?.to
     ? `${orderProcurementEscape(model.window.from)} - ${orderProcurementEscape(model.window.to)}`
     : 'последний доступный срез';
@@ -605,6 +606,7 @@ function renderOrderProcurement(model) {
             <p>Рабочая форма закупщика: слева центральный склад, справа кластеры площадки, ниже готовая рекомендация по заказу на каждый кластер.</p>
           </div>
           <div class="badge-stack">
+            ${orderProcurementBadge(buildLabel, 'ok')}
             ${orderProcurementBadge(`Площадка: ${model.platformLabel}`, model.platform === 'wb' ? 'ok' : 'info')}
             ${orderProcurementBadge(`Оборачиваемость: ${model.days} дн.`, 'info')}
             ${orderProcurementBadge(`Срез: ${range}`, 'info')}

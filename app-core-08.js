@@ -3329,6 +3329,11 @@ function orderProcurementLoadCached(key, loader) {
 
 async function ensureOrderProcurementSources(platform = 'wb') {
   const normalizedPlatform = platform === 'ozon' ? 'ozon' : 'wb';
+  const hasPlatformRows = (payload, targetPlatform) => {
+    const rows = Array.isArray(payload?.rows) ? payload.rows : [];
+    if (!rows.length) return false;
+    return rows.some((row) => orderProcurementNormalizeKey(row?.platform) === targetPlatform);
+  };
 
   if (Array.isArray(state.skus) && state.skus.length) {
     ORDER_PROCUREMENT_RUNTIME.cache.skus = state.skus;
@@ -3360,15 +3365,28 @@ async function ensureOrderProcurementSources(platform = 'wb') {
       }
     }
   }
+
+  if (!hasPlatformRows(ORDER_PROCUREMENT_RUNTIME.cache.combined, normalizedPlatform)) {
+    const cacheKey = normalizedPlatform === 'ozon' ? 'ozon' : 'wb';
+    const paths = normalizedPlatform === 'ozon'
+      ? ['data/order_procurement_ozon.json', 'data/order_procurement_ozon.json.gz']
+      : ['data/order_procurement_wb.json', 'data/order_procurement_wb.json.gz'];
+    if (!ORDER_PROCUREMENT_RUNTIME.cache[cacheKey]) {
+      await orderProcurementLoadCached(cacheKey, () => orderProcurementFetchJson(paths));
+    }
+  }
 }
 
 function orderProcurementCurrentPayload(platform) {
   if (ORDER_PROCUREMENT_RUNTIME.cache.combined && Array.isArray(ORDER_PROCUREMENT_RUNTIME.cache.combined.rows)) {
     const target = platform === 'ozon' ? 'ozon' : 'wb';
+    const platformPayload = target === 'ozon' ? ORDER_PROCUREMENT_RUNTIME.cache.ozon : ORDER_PROCUREMENT_RUNTIME.cache.wb;
+    const combinedRows = ORDER_PROCUREMENT_RUNTIME.cache.combined.rows.filter((row) => orderProcurementNormalizeKey(row?.platform) === target);
+    if (!combinedRows.length && Array.isArray(platformPayload?.rows) && platformPayload.rows.length) return platformPayload;
     return {
       ...ORDER_PROCUREMENT_RUNTIME.cache.combined,
       platform: target.toUpperCase(),
-      rows: ORDER_PROCUREMENT_RUNTIME.cache.combined.rows.filter((row) => orderProcurementNormalizeKey(row?.platform) === target)
+      rows: combinedRows
     };
   }
   return platform === 'ozon' ? ORDER_PROCUREMENT_RUNTIME.cache.ozon : ORDER_PROCUREMENT_RUNTIME.cache.wb;

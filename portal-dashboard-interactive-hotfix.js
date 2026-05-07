@@ -293,15 +293,23 @@
       return raw === 'all' || raw.includes('все');
     });
     const iuDrrDaily = Array.isArray(current('iuDrrSummary')?.daily) ? current('iuDrrSummary').daily : [];
-    if ((platformKey === 'wb' || platformKey === 'all') && iuDrrDaily.length) {
+    if ((platformKey === 'wb' || platformKey === 'ozon' || platformKey === 'all') && iuDrrDaily.length) {
       const iuDrrRows = iuDrrDaily
         .map((point) => ({
           date: parseDate(point?.date),
-          views: num(point?.adsViews),
-          clicks: num(point?.adsClicks),
-          spend: num(point?.spendFact),
-          orders: num(point?.adsOrders),
-          revenue: num(point?.revenueWb)
+          views: platformKey === 'ozon' ? 0 : num(point?.adsViews),
+          clicks: platformKey === 'ozon' ? 0 : num(point?.adsClicks),
+          spend: platformKey === 'ozon'
+            ? num(point?.spendFactOzon)
+            : platformKey === 'all'
+              ? num(point?.spendFact) + num(point?.spendFactOzon)
+              : num(point?.spendFact),
+          orders: platformKey === 'ozon' ? 0 : num(point?.adsOrders),
+          revenue: platformKey === 'ozon'
+            ? num(point?.revenueOzon)
+            : platformKey === 'all'
+              ? num(point?.revenueWb) + num(point?.revenueOzon)
+              : num(point?.revenueWb)
         }))
         .filter((point) => point.date instanceof Date && !Number.isNaN(point.date.getTime()))
         .sort((left, right) => left.date - right.date);

@@ -7,6 +7,7 @@
     'dashboard',
     'skus',
     'platform_trends',
+    'iu_plan',
     'logistics',
     'ads_summary',
     'iu_drr_summary',
@@ -20,6 +21,7 @@
     dashboard: 'dashboard',
     skus: 'skus',
     platform_trends: 'platformTrends',
+    iu_plan: 'iuPlan',
     logistics: 'logistics',
     ads_summary: 'adsSummary',
     iu_drr_summary: 'iuDrrSummary',
@@ -105,7 +107,7 @@
       return score;
     }
 
-    if (snapshotKey === 'platform_plan') {
+    if (snapshotKey === 'platform_plan' || snapshotKey === 'iu_plan') {
       Object.keys(payload.months || {}).forEach((monthKey) => {
         score = bumpFreshness(score, `${monthKey}-01`);
       });
@@ -146,7 +148,7 @@
     if (snapshotKey === 'iu_drr_summary') {
       return Array.isArray(payload.daily) && payload.daily.length > 0;
     }
-    if (snapshotKey === 'platform_plan') {
+    if (snapshotKey === 'platform_plan' || snapshotKey === 'iu_plan') {
       return typeof payload?.months === 'object' && payload.months !== null && Object.keys(payload.months).length > 0;
     }
     if (snapshotKey === 'prices') {

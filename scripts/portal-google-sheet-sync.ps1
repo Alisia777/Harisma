@@ -37,6 +37,7 @@ function Invoke-NodeStep {
 }
 
 $resolvedOutputDir = if ($OutputDir) { $OutputDir } else { ".altea-google-sheet-sync-output" }
+New-Item -ItemType Directory -Path $resolvedOutputDir -Force | Out-Null
 
 $buildArguments = @(
   "scripts/portal-google-sheet-sync.js",
@@ -109,6 +110,18 @@ if ($kzExitCode -ne 0) {
 } else {
   Write-Output "[sync] product leaderboard sync completed"
 }
+
+Write-Output "[sync] IU plan build phase started"
+& $nodeExe "scripts/build-iu-plan-layer.js"
+if ($LASTEXITCODE -ne 0) {
+  exit $LASTEXITCODE
+}
+
+$iuPlanPath = Join-Path "data" "iu_plan.json"
+if (Test-Path -LiteralPath $iuPlanPath) {
+  Copy-Item -LiteralPath $iuPlanPath -Destination (Join-Path $resolvedOutputDir "iu_plan.json") -Force
+}
+Write-Output "[sync] IU plan build phase completed"
 
 if ($DryRun) {
   $wbAdsDryRunFlag = "--dry-run"
@@ -195,7 +208,7 @@ Invoke-NodeStep -StepName "dashboard/skus/platform_trends upload" -Arguments @(
   "--input-dir",
   $resolvedOutputDir,
   "--snapshot",
-  "dashboard,skus,platform_trends,ads_summary,iu_drr_summary"
+  "dashboard,skus,platform_trends,ads_summary,iu_plan,iu_drr_summary"
 )
 
 Invoke-NodeStep -StepName "logistics upload" -Arguments @(

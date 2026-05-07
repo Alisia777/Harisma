@@ -8,6 +8,7 @@
     "data/dashboard.json": "dashboard",
     "data/skus.json": "skus",
     "data/platform_trends.json": "platform_trends",
+    "data/iu_plan.json": "iu_plan",
     "data/logistics.json": "logistics",
     "data/ads_summary.json": "ads_summary",
     "data/iu_drr_summary.json": "iu_drr_summary",
@@ -89,7 +90,7 @@
     if (snapshotKey === "iu_drr_summary") {
       return Array.isArray(payload && payload.daily) && payload.daily.length > 0;
     }
-    if (snapshotKey === "platform_plan") {
+    if (snapshotKey === "platform_plan" || snapshotKey === "iu_plan") {
       return payload && typeof payload.months === "object" && Object.keys(payload.months || {}).length > 0;
     }
     if (snapshotKey === "prices") {

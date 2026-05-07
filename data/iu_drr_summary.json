@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-07T12:10:54.078Z",
+  "generatedAt": "2026-05-07T12:27:30.273Z",
   "asOfDate": "2026-05-06",
   "source": {
-    "iuPlanGeneratedAt": "2026-05-07T12:10:53.985Z",
-    "platformTrendsGeneratedAt": "2026-05-07T07:00:40.551Z",
+    "iuPlanGeneratedAt": "2026-05-07T12:22:57.823Z",
+    "platformTrendsGeneratedAt": "2026-05-07T12:22:02.594Z",
     "adsSummaryGeneratedAt": "2026-05-07T10:07:36.656Z",
     "adsSourceMode": "wb-api+external-sheet"
   },

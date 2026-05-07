@@ -13,6 +13,7 @@ const SNAPSHOT_KEYS = [
   'dashboard',
   'skus',
   'platform_trends',
+  'iu_plan',
   'logistics',
   'smart_price_overlay',
   'product_leaderboard',

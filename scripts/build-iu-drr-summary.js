@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const DEFAULT_PLAN_PCT = 0.08;
+const DEFAULT_OZON_PLAN_PCT = 0.20;
 const CHANNEL_KEYS = [
   ['wbPromotion', 'ВБ Продвижение'],
   ['wbMedia', 'ВБ Медиа'],
@@ -204,6 +205,14 @@ function planPctForMonth(iuPlan, month) {
   return Number.isFinite(pct) && pct > 0 ? pct : DEFAULT_PLAN_PCT;
 }
 
+function ozonPlanPctForMonth(iuPlan, month) {
+  const source = iuPlan?.months?.[month] || {};
+  const pct = numberOrZero(source.iuAdsOzon) > 0 && numberOrZero(source.iuRevenueOzon) > 0
+    ? numberOrZero(source.iuAdsOzon) / numberOrZero(source.iuRevenueOzon)
+    : numberOrZero(iuPlan?.assumptions?.ozonIuAdsRate) || DEFAULT_OZON_PLAN_PCT;
+  return Number.isFinite(pct) && pct > 0 ? pct : DEFAULT_OZON_PLAN_PCT;
+}
+
 function monthPlan(iuPlan, month) {
   const source = iuPlan?.months?.[month] || {};
   const days = numberOrZero(source.days) || new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0).getDate();
@@ -260,6 +269,7 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, options) {
     const month = monthKey(date);
     const plan = monthPlan(iuPlan, month);
     const planPct = planPctForMonth(iuPlan, month);
+    const planPctOzon = ozonPlanPctForMonth(iuPlan, month);
     const wb = wbMap.get(date) || {};
     const ozon = ozonMap.get(date) || {};
     const ads = adsMaps.byDate.get(date) || {};
@@ -270,6 +280,7 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, options) {
     const revenueWbDelta = revenueWb - targetRevenueWb;
     const revenueOzonDelta = revenueOzon - targetRevenueOzon;
     const planSpendWb = revenueWb * planPct;
+    const planSpendOzon = targetRevenueOzon * planPctOzon;
     const channels = Object.fromEntries(CHANNEL_KEYS.map(([key]) => [key, 0]));
     for (const [key] of CHANNEL_KEYS) channels[key] = roundMoney(adsMaps.byDateChannel.get(`${date}|${key}`) || 0);
     const externalSpend = numberOrZero(channels.externalAds);
@@ -290,6 +301,8 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, options) {
       revenueOzonDelta: roundMoney(revenueOzonDelta),
       revenueOzonDeltaPct: targetRevenueOzon > 0 ? roundRate(revenueOzonDelta / targetRevenueOzon) : null,
       revenueOzonCompletionPct: targetRevenueOzon > 0 ? roundRate(revenueOzon / targetRevenueOzon) : null,
+      planPctOzon: roundRate(planPctOzon),
+      planSpendOzon: roundMoney(planSpendOzon),
       revenueTotalIu: roundMoney(numberOrZero(wb.revenue) + revenueOzon),
       unitsWb: Math.round(numberOrZero(wb.units)),
       unitsOzon: Math.round(numberOrZero(ozon.units)),
@@ -340,6 +353,7 @@ function buildMonthRows(dailyRows, iuPlan) {
     const plannedRevenueWbToDate = numberOrZero(plan.dailyIuRevenueWb) * rows.length;
     const plannedRevenueOzonToDate = numberOrZero(plan.dailyIuRevenueOzon) * rows.length;
     const plannedAdsWbToDate = numberOrZero(plan.dailyIuAdsWb) * rows.length;
+    const plannedAdsOzonToDate = numberOrZero(plan.dailyIuAdsOzon) * rows.length;
     const plannedAdsToDate = numberOrZero(plan.dailyIuAdsTotal) * rows.length;
     return {
       monthKey: month,
@@ -360,6 +374,8 @@ function buildMonthRows(dailyRows, iuPlan) {
       iuRevenueOzonCompletionToDate: plannedRevenueOzonToDate > 0 ? roundRate(revenueOzon / plannedRevenueOzonToDate) : null,
       iuAdsPlan: roundMoney(plan.iuAdsWb),
       iuAdsPlanToDate: roundMoney(plannedAdsWbToDate),
+      iuAdsOzonPlan: roundMoney(plan.iuAdsOzon),
+      iuAdsOzonPlanToDate: roundMoney(plannedAdsOzonToDate),
       iuAdsTotalPlan: roundMoney(plan.iuAdsTotal),
       iuAdsTotalPlanToDate: roundMoney(plannedAdsToDate),
       iuAdsFactWbToDate: roundMoney(spendFact),
@@ -373,6 +389,8 @@ function buildMonthRows(dailyRows, iuPlan) {
       revenueOzonDelta: roundMoney(revenueOzonDelta),
       revenueOzonDeltaPct: targetRevenueOzon > 0 ? roundRate(revenueOzonDelta / targetRevenueOzon) : null,
       revenueOzonCompletionPct: targetRevenueOzon > 0 ? roundRate(revenueOzon / targetRevenueOzon) : null,
+      planPctOzon: roundRate(ozonPlanPctForMonth(iuPlan, month)),
+      planSpendOzon: roundMoney(sumRows(rows, 'planSpendOzon')),
       revenueWb: roundMoney(revenueWb),
       revenueOzon: roundMoney(revenueOzon),
       spendFact: roundMoney(spendFact),
@@ -435,6 +453,7 @@ function buildPayload(options) {
       days: dailyRows.length
     },
     planPctDefault: DEFAULT_PLAN_PCT,
+    ozonPlanPctDefault: DEFAULT_OZON_PLAN_PCT,
     kpis: currentMonth,
     months,
     channels,

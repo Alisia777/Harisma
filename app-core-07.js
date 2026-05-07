@@ -2801,6 +2801,8 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
     revenueOzonDelta: numberOrZero(row?.revenueOzonDelta),
     revenueOzonDeltaPct: Number.isFinite(Number(row?.revenueOzonDeltaPct)) ? Number(row.revenueOzonDeltaPct) : null,
     revenueOzonCompletionPct: Number.isFinite(Number(row?.revenueOzonCompletionPct)) ? Number(row.revenueOzonCompletionPct) : null,
+    planPctOzon: Number.isFinite(Number(row?.planPctOzon)) ? Number(row.planPctOzon) : 0,
+    planSpendOzon: numberOrZero(row?.planSpendOzon),
     revenueTotalIu: numberOrZero(row?.revenueTotalIu),
     planPct: Number.isFinite(Number(row?.planPct)) ? Number(row.planPct) : 0,
     planSpendWb: numberOrZero(row?.planSpendWb),
@@ -2913,7 +2915,10 @@ function iuDrrPlatformMeta(model) {
     tableRevenueKey: isOzon ? 'revenueOzon' : 'revenueWb',
     tableDeltaKey: isOzon ? 'revenueOzonDelta' : 'revenueWbDelta',
     tableDeltaPctKey: isOzon ? 'revenueOzonDeltaPct' : 'revenueWbDeltaPct',
-    tableCompletionKey: isOzon ? 'revenueOzonCompletionPct' : 'revenueWbCompletionPct'
+    tableCompletionKey: isOzon ? 'revenueOzonCompletionPct' : 'revenueWbCompletionPct',
+    adsPlanPct: isOzon ? month.planPctOzon : month.planPct,
+    adsPlan: isOzon ? month.iuAdsOzonPlanToDate : month.iuAdsPlanToDate,
+    adsPlanMonth: isOzon ? month.iuAdsOzonPlan : month.iuAdsPlan
   };
 }
 
@@ -2957,7 +2962,9 @@ function iuDrrExportRows(rows, model) {
       revenue_ozon: row.revenueOzon,
       revenue_ozon_delta: row.revenueOzonDelta,
       revenue_ozon_delta_pct: row.revenueOzonDeltaPct != null ? Math.round(Number(row.revenueOzonDeltaPct) * 10000) / 100 : '',
-      completion_pct: row.revenueOzonCompletionPct != null ? Math.round(Number(row.revenueOzonCompletionPct) * 10000) / 100 : ''
+      completion_pct: row.revenueOzonCompletionPct != null ? Math.round(Number(row.revenueOzonCompletionPct) * 10000) / 100 : '',
+      plan_ads_pct_ozon: row.planPctOzon != null ? Math.round(Number(row.planPctOzon) * 10000) / 100 : '',
+      plan_spend_ozon: row.planSpendOzon
     }));
   }
   return rows.map((row) => ({
@@ -3008,7 +3015,9 @@ function downloadIuDrrExcel(model) {
       ['revenue_ozon', 'Продажи. Фактический оборот Ozon'],
       ['revenue_ozon_delta', 'Разница оборота Ozon'],
       ['revenue_ozon_delta_pct', 'Разница оборота Ozon, %'],
-      ['completion_pct', 'Выполнение Ozon, %']
+      ['completion_pct', 'Выполнение Ozon, %'],
+      ['plan_ads_pct_ozon', 'Реклама Ozon. План в %'],
+      ['plan_spend_ozon', 'План расхода Ozon']
     ], rows, `iu-drr-ozon-${model.selectedMonth || todayIso()}.xls`);
     return;
   }
@@ -3071,8 +3080,9 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     <div class="kpi-strip" style="margin-top:14px">
       <div class="mini-kpi ${platformIuTone}"><span>ИУ Ozon</span><strong>${fmt.pct(platformMeta.completion)}</strong><span>${fmt.money(platformMeta.fact)} / ${fmt.money(platformMeta.planToDate)}</span></div>
       <div class="mini-kpi ${revenueDeltaTone}"><span>Целевой Ozon</span><strong>${fmt.money(platformMeta.targetRevenue)}</strong><span>разница ${fmt.money(platformMeta.revenueDelta)}</span></div>
+      <div class="mini-kpi ok"><span>Реклама Ozon план</span><strong>${fmt.pct(platformMeta.adsPlanPct)}</strong><span>${fmt.money(platformMeta.adsPlan)}</span></div>
       <div class="mini-kpi"><span>Факт Ozon</span><strong>${fmt.money(platformMeta.fact)}</strong><span>за выбранный период</span></div>
-      <div class="mini-kpi warn"><span>ДРР Ozon</span><strong>—</strong><span>источник расходов не подключен</span></div>
+      <div class="mini-kpi warn"><span>Факт рекламы Ozon</span><strong>—</strong><span>источник расходов не подключен</span></div>
     </div>
   ` : `
     <div class="kpi-strip" style="margin-top:14px">
@@ -3102,10 +3112,10 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       </div>
       <div class="card">
         <div class="section-subhead">
-          <div><h3>Разница Ozon</h3><p class="small muted">факт минус целевой оборот</p></div>
-          ${badge(fmt.money(platformMeta.revenueDelta), revenueDeltaTone)}
+          <div><h3>План рекламы Ozon</h3><p class="small muted">20% от целевого оборота</p></div>
+          ${badge(fmt.money(platformMeta.adsPlan), 'ok')}
         </div>
-        ${iuDrrSparkline(model.dailyRows, 'revenueOzonDelta', revenueDeltaTone)}
+        ${iuDrrSparkline(model.dailyRows, 'planSpendOzon', 'ok')}
       </div>
     </div>
   ` : `
@@ -3159,6 +3169,8 @@ function renderIuDrr(rootId = 'view-iu-drr') {
               <th>Продажи. Фактический оборот Ozon</th>
               <th>Разница оборота</th>
               <th>Выполнение</th>
+              <th>Реклама. План в %</th>
+              <th>План расхода Ozon</th>
             </tr>
           </thead>
           <tbody>
@@ -3169,8 +3181,10 @@ function renderIuDrr(rootId = 'view-iu-drr') {
                 <td>${fmt.money(row.revenueOzon)}</td>
                 <td>${badge(fmt.money(row.revenueOzonDelta), iuDrrToneForRevenueDelta(row.revenueOzonDelta))}</td>
                 <td>${row.revenueOzonCompletionPct != null ? fmt.pct(row.revenueOzonCompletionPct) : '—'}</td>
+                <td>${fmt.pct(row.planPctOzon)}</td>
+                <td>${fmt.money(row.planSpendOzon)}</td>
               </tr>
-            `).join('') || '<tr><td colspan="5">Нет данных по выбранному месяцу.</td></tr>'}
+            `).join('') || '<tr><td colspan="7">Нет данных по выбранному месяцу.</td></tr>'}
           </tbody>
         </table>
       </div>

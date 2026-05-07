@@ -1,9 +1,12 @@
 {
-  "generatedAt": "2026-05-06T08:58:21.755Z",
+  "generatedAt": "2026-05-07T12:10:53.985Z",
   "sourceWorkbook": "План ф.xlsx",
   "sourceSheet": "01_ДДС_ИУ",
   "planYear": 2026,
-  "note": "IU WB+Ozon revenue plan and IU ad plan from Plan workbook",
+  "note": "IU WB+Ozon revenue plan from Plan workbook. Ozon IU ad plan is fixed at 20% of Ozon revenue.",
+  "assumptions": {
+    "ozonIuAdsRate": 0.2
+  },
   "months": {
     "2026-05": {
       "label": "Май 2026",
@@ -12,10 +15,14 @@
       "iuRevenueOzon": 103407637.512607,
       "iuRevenueTotal": 282933590.512607,
       "iuAdsWb": 14362076.24,
-      "iuAdsOzon": 25725748.628870793,
-      "iuAdsTotal": 40087824.868870795,
+      "iuAdsOzon": 20681527.5025214,
+      "iuAdsTotal": 35043603.7425214,
+      "dailyIuRevenueWb": 5791159.774193549,
+      "dailyIuRevenueOzon": 3335730.242342161,
       "dailyIuRevenueTotal": 9126890.016535709,
-      "dailyIuAdsTotal": 1293155.640931316
+      "dailyIuAdsWb": 463292.78193548386,
+      "dailyIuAdsOzon": 667146.0484684323,
+      "dailyIuAdsTotal": 1130438.830403916
     },
     "2026-06": {
       "label": "Июн 2026",
@@ -24,10 +31,14 @@
       "iuRevenueOzon": 102003858.797003,
       "iuRevenueTotal": 285393765.79700303,
       "iuAdsWb": 14671192.56,
-      "iuAdsOzon": 25376516.606586322,
-      "iuAdsTotal": 40047709.166586325,
+      "iuAdsOzon": 20400771.759400602,
+      "iuAdsTotal": 35071964.3194006,
+      "dailyIuRevenueWb": 6112996.9,
+      "dailyIuRevenueOzon": 3400128.6265667668,
       "dailyIuRevenueTotal": 9513125.526566768,
-      "dailyIuAdsTotal": 1334923.6388862107
+      "dailyIuAdsWb": 489039.75200000004,
+      "dailyIuAdsOzon": 680025.7253133535,
+      "dailyIuAdsTotal": 1169065.4773133534
     },
     "2026-07": {
       "label": "Июл 2026",
@@ -36,10 +47,14 @@
       "iuRevenueOzon": 105625550.474901,
       "iuRevenueTotal": 296776241.474901,
       "iuAdsWb": 15292055.280000001,
-      "iuAdsOzon": 26277520.942030292,
-      "iuAdsTotal": 41569576.2220303,
+      "iuAdsOzon": 21125110.094980203,
+      "iuAdsTotal": 36417165.374980204,
+      "dailyIuRevenueWb": 6166151.322580645,
+      "dailyIuRevenueOzon": 3407275.821771,
       "dailyIuRevenueTotal": 9573427.144351646,
-      "dailyIuAdsTotal": 1340954.0716783968
+      "dailyIuAdsWb": 493292.10580645164,
+      "dailyIuAdsOzon": 681455.1643542001,
+      "dailyIuAdsTotal": 1174747.2701606518
     },
     "2026-08": {
       "label": "Авг 2026",
@@ -48,10 +63,14 @@
       "iuRevenueOzon": 112322218.777206,
       "iuRevenueTotal": 313388589.777206,
       "iuAdsWb": 16085309.68,
-      "iuAdsOzon": 27943517.860053122,
-      "iuAdsTotal": 44028827.54005312,
+      "iuAdsOzon": 22464443.755441204,
+      "iuAdsTotal": 38549753.4354412,
+      "dailyIuRevenueWb": 6486011.9677419355,
+      "dailyIuRevenueOzon": 3623297.379909871,
       "dailyIuRevenueTotal": 10109309.347651806,
-      "dailyIuAdsTotal": 1420284.7593565523
+      "dailyIuAdsWb": 518880.9574193548,
+      "dailyIuAdsOzon": 724659.4759819743,
+      "dailyIuAdsTotal": 1243540.4334013292
     },
     "2026-09": {
       "label": "Сен 2026",
@@ -60,10 +79,14 @@
       "iuRevenueOzon": 131926900.701405,
       "iuRevenueTotal": 348077739.701405,
       "iuAdsWb": 17292067.12,
-      "iuAdsOzon": 32820769.97858666,
-      "iuAdsTotal": 50112837.09858666,
+      "iuAdsOzon": 26385380.140281003,
+      "iuAdsTotal": 43677447.260281004,
+      "dailyIuRevenueWb": 7205027.966666667,
+      "dailyIuRevenueOzon": 4397563.3567135,
       "dailyIuRevenueTotal": 11602591.323380167,
-      "dailyIuAdsTotal": 1670427.9032862221
+      "dailyIuAdsWb": 576402.2373333334,
+      "dailyIuAdsOzon": 879512.6713427001,
+      "dailyIuAdsTotal": 1455914.9086760334
     },
     "2026-10": {
       "label": "Окт 2026",
@@ -72,10 +95,14 @@
       "iuRevenueOzon": 129719435.371205,
       "iuRevenueTotal": 365250990.371205,
       "iuAdsWb": 18842524.400000002,
-      "iuAdsOzon": 32271596.826992813,
-      "iuAdsTotal": 51114121.226992816,
+      "iuAdsOzon": 25943887.074241,
+      "iuAdsTotal": 44786411.474241,
+      "dailyIuRevenueWb": 7597792.096774193,
+      "dailyIuRevenueOzon": 4184497.9152001613,
       "dailyIuRevenueTotal": 11782290.011974353,
-      "dailyIuAdsTotal": 1648842.6202255746
+      "dailyIuAdsWb": 607823.3677419355,
+      "dailyIuAdsOzon": 836899.5830400323,
+      "dailyIuAdsTotal": 1444722.950781968
     },
     "2026-11": {
       "label": "Ноя 2026",
@@ -84,10 +111,14 @@
       "iuRevenueOzon": 126917638.188604,
       "iuRevenueTotal": 386291258.188604,
       "iuAdsWb": 20749889.6,
-      "iuAdsOzon": 31574565.81688116,
-      "iuAdsTotal": 52324455.41688116,
+      "iuAdsOzon": 25383527.6377208,
+      "iuAdsTotal": 46133417.2377208,
+      "dailyIuRevenueWb": 8645787.333333334,
+      "dailyIuRevenueOzon": 4230587.9396201335,
       "dailyIuRevenueTotal": 12876375.272953467,
-      "dailyIuAdsTotal": 1744148.5138960385
+      "dailyIuAdsWb": 691662.9866666667,
+      "dailyIuAdsOzon": 846117.5879240267,
+      "dailyIuAdsTotal": 1537780.5745906935
     },
     "2026-12": {
       "label": "Дек 2026",
@@ -96,10 +127,14 @@
       "iuRevenueOzon": 143447038.351102,
       "iuRevenueTotal": 432458958.351102,
       "iuAdsWb": 23120953.6,
-      "iuAdsOzon": 35686749.44078996,
-      "iuAdsTotal": 58807703.04078996,
+      "iuAdsOzon": 28689407.6702204,
+      "iuAdsTotal": 51810361.2702204,
+      "dailyIuRevenueWb": 9322965.161290323,
+      "dailyIuRevenueOzon": 4627323.817777484,
       "dailyIuRevenueTotal": 13950288.979067806,
-      "dailyIuAdsTotal": 1897022.67873516
+      "dailyIuAdsWb": 745837.2129032259,
+      "dailyIuAdsOzon": 925464.7635554968,
+      "dailyIuAdsTotal": 1671301.9764587225
     }
   }
 }

@@ -10,6 +10,7 @@
   productLeaderboard: { generatedAt: '', items: [], summary: {} },
   productLeaderboardHistory: [],
   adsSummary: { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
+  iuDrrSummary: { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
   launches: [],
   meetings: [],
   documents: { groups: [] },
@@ -76,6 +77,9 @@
     sort: 'spend',
     sortDir: 'desc'
   },
+  iuDrrFilters: {
+    month: 'latest'
+  },
   repricerFilters: {
     search: '',
     platform: 'all',
@@ -111,6 +115,7 @@
       launches: false,
       productLeaderboard: false,
       adsFunnel: false,
+      iuDrr: false,
       meetings: false,
       documents: false,
       repricer: false
@@ -146,6 +151,7 @@ const VIEW_TITLES = {
   skus: 'Реестр СКЮ',
   launches: 'Продукт / Ксения',
   'ads-funnel': 'Рекламная воронка',
+  'iu-drr': 'ИУ / ДРР',
   'product-leaderboard': 'Продуктовый лидерборд',
   'launch-control': 'Запуск новинок',
   meetings: 'Ритм работы',
@@ -155,6 +161,7 @@ const VIEW_DATA_REQUIREMENTS = {
   control: 'launches',
   launches: 'launches',
   'ads-funnel': 'adsFunnel',
+  'iu-drr': 'iuDrr',
   'product-leaderboard': 'productLeaderboard',
   'launch-control': 'launches',
   executive: 'launches',
@@ -298,6 +305,7 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/platform_trends.json': 'platform_trends',
   'data/logistics.json': 'logistics',
   'data/ads_summary.json': 'ads_summary',
+  'data/iu_drr_summary.json': 'iu_drr_summary',
   'data/platform_plan.json': 'platform_plan',
   'data/prices.json': 'prices',
   'data/smart_price_workbench.json': 'smart_price_workbench',
@@ -420,6 +428,14 @@ function payloadFreshnessScore(snapshotKey, payload) {
       (platform?.series || []).forEach((item) => {
         score = bumpFreshness(score, item?.date || item?.label);
       });
+    });
+    return score;
+  }
+
+  if (snapshotKey === 'iu_drr_summary') {
+    score = bumpFreshness(score, payload.asOfDate);
+    (payload.daily || []).forEach((item) => {
+      score = bumpFreshness(score, item?.date);
     });
     return score;
   }
@@ -960,6 +976,7 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
   if (snapshotKey === 'skus') return Array.isArray(payload) && payload.length > 0;
   if (snapshotKey === 'platform_trends') return Array.isArray(payload?.platforms) && payload.platforms.length > 0;
   if (snapshotKey === 'ads_summary') return Array.isArray(payload?.platforms) && payload.platforms.length > 0;
+  if (snapshotKey === 'iu_drr_summary') return Array.isArray(payload?.daily) && payload.daily.length > 0;
   if (snapshotKey === 'platform_plan') return typeof payload?.months === 'object' && payload.months !== null && Object.keys(payload.months).length > 0;
   if (snapshotKey === 'smart_price_workbench') {
     return typeof payload?.platforms === 'object' && payload.platforms !== null && Object.keys(payload.platforms).length > 0;
@@ -1853,6 +1870,26 @@ const LAZY_DATA_LOADERS = {
     );
     state.adsSummary = payload && typeof payload === 'object'
       ? payload
+      : { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
+  },
+  iuDrr: async () => {
+    const [summary, adsPayload] = await Promise.all([
+      loadJsonOrFallback(
+        'data/iu_drr_summary.json',
+        { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
+        'ИУ / ДРР'
+      ),
+      loadJsonOrFallback(
+        'data/ads_summary.json',
+        { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
+        'Рекламная воронка'
+      )
+    ]);
+    state.iuDrrSummary = summary && typeof summary === 'object'
+      ? summary
+      : { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };
+    state.adsSummary = adsPayload && typeof adsPayload === 'object'
+      ? adsPayload
       : { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
   },
   productLeaderboard: async () => {

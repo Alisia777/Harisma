@@ -12,6 +12,7 @@
     "executive",
     "launches",
     "ads-funnel",
+    "iu-drr",
     "product-leaderboard",
     "launch-control",
     "skus"
@@ -53,6 +54,10 @@
     "ads-funnel": {
       title: "\u0420\u0435\u043a\u043b\u0430\u043c\u043d\u0430\u044f \u0432\u043e\u0440\u043e\u043d\u043a\u0430",
       subtitle: "\u0422\u0440\u0430\u0444\u0438\u043a \u00b7 \u043a\u043b\u0438\u043a\u0438 \u00b7 \u0437\u0430\u043a\u0430\u0437\u044b \u00b7 \u0414\u0420\u0420"
+    },
+    "iu-drr": {
+      title: "\u0418\u0423 / \u0414\u0420\u0420",
+      subtitle: "\u0418\u0423 \u00b7 WB+Ozon \u00b7 \u0440\u0430\u0441\u0445\u043e\u0434\u044b WB"
     },
     "product-leaderboard": {
       title: "\u041f\u0440\u043e\u0434\u0443\u043a\u0442\u043e\u0432\u044b\u0439 \u043b\u0438\u0434\u0435\u0440\u0431\u043e\u0440\u0434",

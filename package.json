@@ -2,7 +2,12 @@
   "scripts": {
     "portal:sheet-sync": "node scripts/portal-google-sheet-sync.js sync",
     "portal:sheet-auth": "node scripts/portal-google-sheet-sync.js --init-auth",
+    "portal:iu-plan-rebuild": "node scripts/build-iu-plan-layer.js",
+    "portal:wb-ads-sync": "node scripts/portal-wb-ads-sync.js sync",
+    "portal:iu-drr-rebuild": "node scripts/build-iu-drr-summary.js",
     "portal:kz-leaderboard-sync": "node scripts/portal-kz-product-leaderboard-sync.js sync",
+    "portal:launches-rebuild": "node scripts/build-launches-layer.js",
+    "portal:leaderboard-history-rebuild": "node scripts/build-product-leaderboard-history.js",
     "portal:smart-price-sync": "node scripts/portal-smart-price-overlay-sync.js sync",
     "portal:order-procurement-rebuild": "node scripts/build-order-procurement-layer.js",
     "portal:prices-rebuild": "node scripts/build-legacy-prices-layer.js",

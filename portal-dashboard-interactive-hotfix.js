@@ -21,6 +21,7 @@
     platformPlan: null,
     iuPlan: null,
     adsSummary: null,
+    iuDrrSummary: null,
     skus: null,
     prices: null,
     pricesFetched: null,
@@ -283,6 +284,21 @@
   }
 
   function adsSeries(platformKey, anchor) {
+    const iuDrrDaily = Array.isArray(current('iuDrrSummary')?.daily) ? current('iuDrrSummary').daily : [];
+    if ((platformKey === 'wb' || platformKey === 'all') && iuDrrDaily.length) {
+      const rows = iuDrrDaily
+        .map((point) => ({
+          date: parseDate(point?.date),
+          views: num(point?.adsViews),
+          clicks: num(point?.adsClicks),
+          spend: num(point?.spendFact),
+          orders: num(point?.adsOrders),
+          revenue: num(point?.revenueWb)
+        }))
+        .filter((point) => point.date instanceof Date && !Number.isNaN(point.date.getTime()))
+        .sort((left, right) => left.date - right.date);
+      if (rows.some((point) => point.views || point.clicks || point.spend || point.orders || point.revenue)) return rows;
+    }
     const record = (current('adsSummary')?.platforms || []).find((item) => {
       const raw = String(item?.key || item?.label || '').trim().toLowerCase();
       if (platformKey === 'wb') return raw.includes('wb') || raw.includes('wild');
@@ -6308,6 +6324,7 @@ function dashboardTaskStatusChip(task) {
       platformPlan,
       iuPlan,
       adsSummary,
+      iuDrrSummary,
       skus,
       prices,
       productLeaderboard,
@@ -6322,6 +6339,7 @@ function dashboardTaskStatusChip(task) {
       loadJson('platformPlan', 'data/platform_plan.json', false, forceRefresh),
       loadJson('iuPlan', 'data/iu_plan.json', false, forceRefresh),
       loadJson('adsSummary', 'data/ads_summary.json', false, forceRefresh),
+      loadJson('iuDrrSummary', 'data/iu_drr_summary.json', false, forceRefresh),
       loadJson('skus', 'data/skus.json', true, forceRefresh),
       loadJson('prices', 'data/prices.json', false, forceRefresh),
       loadJson('productLeaderboard', 'data/product_leaderboard.json', false, forceRefresh),
@@ -6356,6 +6374,7 @@ function dashboardTaskStatusChip(task) {
     cache.platformPlan = platformPlan;
     cache.iuPlan = iuPlan;
     cache.adsSummary = adsSummary;
+    cache.iuDrrSummary = iuDrrSummary;
     cache.skus = skus;
     cache.prices = prices;
     cache.pricesFetched = prices;
@@ -6371,6 +6390,7 @@ function dashboardTaskStatusChip(task) {
     if (app) {
       app.prices = prices;
       app.productLeaderboard = normalizedProductLeaderboard;
+      app.iuDrrSummary = iuDrrSummary || app.iuDrrSummary || { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };
       app.smartPriceWorkbenchBase = smartPriceWorkbench;
       app.smartPriceWorkbench = mergedWorkbench;
       app.smartPriceWorkbenchLive = smartPriceWorkbenchLive;

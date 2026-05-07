@@ -9,10 +9,15 @@
     dashboard: ['view-dashboard', 'Дашборд', () => typeof renderDashboard === 'function' && renderDashboard()],
     documents: ['view-documents', 'Документы', () => typeof renderDocuments === 'function' && renderDocuments()],
     repricer: ['view-repricer', 'Репрайсер', () => typeof renderRepricer === 'function' && renderRepricer()],
+    prices: ['view-prices', 'Цены', () => typeof window.renderPriceWorkbench === 'function' && window.renderPriceWorkbench()],
     order: ['view-order', 'Логистика и заказ', () => typeof renderOrderCalculator === 'function' && renderOrderCalculator()],
     control: ['view-control', 'Задачи', () => typeof renderControlCenter === 'function' && renderControlCenter()],
     skus: ['view-skus', 'Реестр SKU', () => typeof renderSkuRegistry === 'function' && renderSkuRegistry()],
     launches: ['view-launches', 'Продукт / Ксения', () => typeof renderLaunches === 'function' && renderLaunches()],
+    'ads-funnel': ['view-ads-funnel', 'Рекламная воронка', () => typeof renderAdsFunnel === 'function' && renderAdsFunnel('view-ads-funnel')],
+    'iu-drr': ['view-iu-drr', 'ИУ / ДРР', () => typeof renderIuDrr === 'function' && renderIuDrr('view-iu-drr')],
+    'product-leaderboard': ['view-product-leaderboard', 'Продуктовый лидерборд', () => typeof renderProductLeaderboard === 'function' && renderProductLeaderboard('view-product-leaderboard')],
+    'launch-control': ['view-launch-control', 'Запуск новинок', () => typeof renderLaunchControl === 'function' && renderLaunchControl()],
     meetings: ['view-meetings', 'Ритм работы', () => typeof renderMeetings === 'function' && renderMeetings()],
     executive: ['view-executive', 'Руководителю', () => typeof renderExecutive === 'function' && renderExecutive()]
   };

@@ -110,6 +110,57 @@ if ($kzExitCode -ne 0) {
   Write-Output "[sync] product leaderboard sync completed"
 }
 
+if ($DryRun) {
+  $wbAdsDryRunFlag = "--dry-run"
+} else {
+  $wbAdsDryRunFlag = ""
+}
+
+$wbAdsArguments = @(
+  "scripts/portal-wb-ads-sync.js",
+  "sync",
+  "--input-dir",
+  $resolvedOutputDir,
+  "--base-data-dir",
+  "data",
+  "--output-dir",
+  $resolvedOutputDir,
+  "--mirror-local-fallback"
+)
+
+if ($wbAdsDryRunFlag) {
+  $wbAdsArguments += $wbAdsDryRunFlag
+}
+
+Write-Output "[sync] WB ads build phase started"
+& $nodeExe @wbAdsArguments
+if ($LASTEXITCODE -ne 0) {
+  exit $LASTEXITCODE
+}
+Write-Output "[sync] WB ads build phase completed"
+
+$iuDrrArguments = @(
+  "scripts/build-iu-drr-summary.js",
+  "--input-dir",
+  $resolvedOutputDir,
+  "--base-data-dir",
+  "data",
+  "--output-dir",
+  $resolvedOutputDir,
+  "--mirror-local-fallback"
+)
+
+if ($DryRun) {
+  $iuDrrArguments += "--dry-run"
+}
+
+Write-Output "[sync] IU/DRR summary build phase started"
+& $nodeExe @iuDrrArguments
+if ($LASTEXITCODE -ne 0) {
+  exit $LASTEXITCODE
+}
+Write-Output "[sync] IU/DRR summary build phase completed"
+
 $metaPath = Join-Path $resolvedOutputDir "meta.json"
 if (Test-Path -LiteralPath $metaPath) {
   $meta = Get-Content -LiteralPath $metaPath -Raw | ConvertFrom-Json
@@ -137,7 +188,7 @@ Invoke-NodeStep -StepName "dashboard/skus/platform_trends upload" -Arguments @(
   "--input-dir",
   $resolvedOutputDir,
   "--snapshot",
-  "dashboard,skus,platform_trends"
+  "dashboard,skus,platform_trends,ads_summary,iu_drr_summary"
 )
 
 Invoke-NodeStep -StepName "logistics upload" -Arguments @(

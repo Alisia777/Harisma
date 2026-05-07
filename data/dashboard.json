@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-06T18:18:01.878Z",
+  "generatedAt": "2026-05-07T07:00:40.535Z",
   "dataFreshness": {
     "planFactMonth": "Апрель 2026 · Smart = Altea",
     "ordersSnapshot": "orders (40).csv",
@@ -12,17 +12,14 @@
       "Для Анны (2).xlsx",
       "Рабочий _ Спецификации v2.xlsx"
     ],
-    "asOfDate": "2026-05-05",
+    "asOfDate": "2026-05-06",
     "googleSheetsMonth": "2026-05",
     "googleSheetsBridge": "scripts/portal-google-sheet-sync.js",
     "googleSheetsSourceUrl": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
     "googleSheetsSourceGid": "2003059667",
     "googleSheetsRefreshTimeLocal": "09:00 Europe/Moscow",
-    "planFactSource": "Plan A.xlsx :: 00_????????_?????",
-    "portalRefreshTimeLocal": "10:00 Europe/Moscow",
-    "planWorkbook": "tmp-plan-a.xlsx",
-    "planWorkbookSheet": "00_Источник_плана",
-    "planWorkbookUpdatedAt": "2026-05-06T18:18:01.878Z"
+    "planFactSource": "Выполнение плана.xlsx :: Апрель 26 | Altea",
+    "portalRefreshTimeLocal": "10:00 Europe/Moscow"
   },
   "cards": [
     {
@@ -72,15 +69,81 @@
     },
     {
       "label": "Остатки MP, шт.",
-      "value": 357625,
-      "hint": "WB + Ozon по срезу Google Sheets на 2026-05-05"
+      "value": 358352,
+      "hint": "WB + Ozon по срезу Google Sheets на 2026-05-06"
+    },
+    {
+      "label": "Факт на 21.04, ₽",
+      "value": 152956664.96,
+      "format": "money",
+      "hint": "Smart = Altea · факт по файлу Выполнение плана.xlsx."
+    },
+    {
+      "label": "План апреля, ₽",
+      "value": 304896023,
+      "format": "money",
+      "hint": "Qharisma v5 план месяца для Smart = Altea."
+    },
+    {
+      "label": "Выполнение плана",
+      "value": 0.501668284994324,
+      "format": "pct",
+      "hint": "Факт / полный план месяца."
+    },
+    {
+      "label": "План к дате, ₽",
+      "value": 223590416.86666667,
+      "format": "money",
+      "hint": "Линейный план к 21.04 по файлу."
+    },
+    {
+      "label": "Прогноз / план",
+      "value": 0.6840931159013511,
+      "format": "pct",
+      "hint": "Базовый прогноз 208 577 270 ₽ к концу месяца."
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 83,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "Без owner",
+      "value": 6,
+      "hint": "Нужно дозакрепить вручную"
+    },
+    {
+      "label": "Остатки MP, шт.",
+      "value": 0,
+      "hint": "WB + Ozon по срезу Google Sheets на 2026-04-27"
+    },
+    {
+      "label": "План мая, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Факт 01-06.05, шт.",
+      "value": 34764,
+      "hint": "Факт по данным Google Sheets на 2026-05-06."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.0372,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.0372
     }
   ],
   "brandSummary": [
     {
       "brand": "Алтея",
       "sku_count": 89,
-      "total_stock": 357625,
+      "total_stock": 358352,
       "orders_value": 161631197.21,
       "feb_plan_units": 127838,
       "feb_fact_units": 48829,
@@ -91,49 +154,27 @@
       "to_work_sku": 7,
       "assigned_sku": 83,
       "external_any_sku": 36,
-      "google_sheets_plan_field": "planMay26Units",
+      "google_sheets_plan_field": "planApr26Units",
       "google_sheets_month_key": "2026-05",
-      "plan_units": 165573,
-      "fact_units_to_date": 28606,
-      "fact_revenue_to_date": 33976244,
-      "plan_completion_to_date_pct": 1.0242,
+      "plan_units": 173171,
+      "fact_units_to_date": 34764,
+      "fact_revenue_to_date": 41103033,
+      "plan_completion_to_date_pct": 1.0372,
       "apr_plan_units": 173171,
       "apr_fact_units_to_date": 152328,
-      "asOfDate": "2026-05-05",
-      "plan_source": "Plan A.xlsx :: 00_????????_?????",
-      "apr_plan_revenue": 291518548.512607,
-      "apr_fact_revenue_to_date": 33976244,
-      "apr_plan_to_date_revenue": 47019120.727839835,
-      "apr_forecast_revenue": 210652712.8,
-      "apr_plan_completion_month_pct": 0.11654916701991835,
-      "apr_plan_completion_to_date_pct": 0.7226048355234937,
-      "apr_forecast_pct": 0.7226048355234937,
-      "may_plan_units": 165573,
-      "may_fact_units_to_date": 28606,
-      "may_fact_revenue_to_date": 33976244,
-      "may_plan_completion_to_date_pct": 0.7226048355234937,
-      "jun_plan_units": 168439,
-      "jul_plan_units": 177080,
-      "aug_plan_units": 187709,
-      "sep_plan_units": 208700,
-      "oct_plan_units": 219835,
-      "nov_plan_units": 233331,
-      "dec_plan_units": 261192,
-      "may_plan_revenue": 291518548.512607,
-      "jun_plan_revenue": 296565392.79700303,
-      "jul_plan_revenue": 311778156.474901,
-      "aug_plan_revenue": 330493435.777206,
-      "sep_plan_revenue": 367451257.701405,
-      "oct_plan_revenue": 387055656.371205,
-      "nov_plan_revenue": 410817634.188604,
-      "dec_plan_revenue": 459872220.351102,
-      "month_plan_source_file": "tmp-plan-a.xlsx",
-      "month_plan_source_sheet": "00_Источник_плана",
-      "month_plan_updated_at": "2026-05-06T18:18:01.878Z",
-      "may_plan_to_date_revenue": 47019120.727839835,
-      "may_plan_completion_month_pct": 0.11654916701991835,
-      "may_forecast_revenue": 210652712.8,
-      "may_forecast_pct": 0.7226048355234937
+      "asOfDate": "2026-04-21",
+      "plan_source": "Выполнение плана.xlsx :: Апрель 26 | Altea",
+      "apr_plan_revenue": 304896023,
+      "apr_fact_revenue_to_date": 194577283,
+      "apr_plan_to_date_revenue": 223590416.86666667,
+      "apr_forecast_revenue": 208577270.4,
+      "apr_plan_completion_month_pct": 0.501668284994324,
+      "apr_plan_completion_to_date_pct": 0.8796,
+      "apr_forecast_pct": 0.6840931159013511,
+      "may_plan_units": 173171,
+      "may_fact_units_to_date": 34764,
+      "may_fact_revenue_to_date": 41103033,
+      "may_plan_completion_to_date_pct": 1.0372
     }
   ],
   "focusTop": [

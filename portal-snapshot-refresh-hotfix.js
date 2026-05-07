@@ -10,6 +10,7 @@
     "data/platform_trends.json": "platform_trends",
     "data/logistics.json": "logistics",
     "data/ads_summary.json": "ads_summary",
+    "data/iu_drr_summary.json": "iu_drr_summary",
     "data/platform_plan.json": "platform_plan",
     "data/prices.json": "prices",
     "data/smart_price_workbench.json": "smart_price_workbench",
@@ -84,6 +85,9 @@
     if (snapshotKey === "skus") return Array.isArray(payload) && payload.length > 0;
     if (snapshotKey === "platform_trends" || snapshotKey === "ads_summary") {
       return Array.isArray(payload && payload.platforms) && payload.platforms.length > 0;
+    }
+    if (snapshotKey === "iu_drr_summary") {
+      return Array.isArray(payload && payload.daily) && payload.daily.length > 0;
     }
     if (snapshotKey === "platform_plan") {
       return payload && typeof payload.months === "object" && Object.keys(payload.months || {}).length > 0;

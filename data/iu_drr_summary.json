@@ -1,0 +1,401 @@
+{
+  "generatedAt": "2026-05-07T08:53:49.512Z",
+  "asOfDate": "2026-05-06",
+  "source": {
+    "iuPlanGeneratedAt": "2026-05-06T08:58:21.755Z",
+    "platformTrendsGeneratedAt": "2026-05-07T07:00:40.551Z",
+    "adsSummaryGeneratedAt": "2026-05-07T08:53:45.843Z",
+    "adsSourceMode": "excel-fixture-fallback"
+  },
+  "window": {
+    "from": "2026-05-01",
+    "to": "2026-05-06",
+    "days": 6
+  },
+  "planPctDefault": 0.08,
+  "kpis": {
+    "monthKey": "2026-05",
+    "label": "Май 2026",
+    "daysInPlan": 31,
+    "daysInSummary": 6,
+    "iuRevenuePlan": 282933590.51,
+    "iuRevenuePlanToDate": 54761340.1,
+    "iuRevenueFactToDate": 40388457,
+    "iuRevenueCompletionToDate": 0.737536,
+    "iuAdsPlan": 40087824.87,
+    "iuAdsPlanToDate": 7758933.85,
+    "iuAdsFactWbToDate": 1811620,
+    "iuAdsCompletionToDate": 0.233488,
+    "revenueWb": 32666834,
+    "revenueOzon": 7721623,
+    "spendFact": 1811620,
+    "planSpendWb": 2613346.72,
+    "drrWb": 0.055457,
+    "spendDelta": -801726.72,
+    "planPct": 0.08,
+    "channels": {
+      "wbPromotion": {
+        "key": "wbPromotion",
+        "label": "ВБ Продвижение",
+        "spend": 1811620
+      },
+      "wbMedia": {
+        "key": "wbMedia",
+        "label": "ВБ Медиа",
+        "spend": 0
+      },
+      "wbInfluencer": {
+        "key": "wbInfluencer",
+        "label": "ВБ Инфлюенс",
+        "spend": 0
+      },
+      "pvzAds": {
+        "key": "pvzAds",
+        "label": "Реклама в ПВЗ",
+        "spend": 0
+      },
+      "brandZone": {
+        "key": "brandZone",
+        "label": "Брендзона",
+        "spend": 0
+      },
+      "overviews": {
+        "key": "overviews",
+        "label": "Обзоры",
+        "spend": 0
+      },
+      "reviewPoints": {
+        "key": "reviewPoints",
+        "label": "Отзывы за баллы",
+        "spend": 0
+      },
+      "externalAds": {
+        "key": "externalAds",
+        "label": "Внешка",
+        "spend": 0
+      }
+    }
+  },
+  "months": [
+    {
+      "monthKey": "2026-05",
+      "label": "Май 2026",
+      "daysInPlan": 31,
+      "daysInSummary": 6,
+      "iuRevenuePlan": 282933590.51,
+      "iuRevenuePlanToDate": 54761340.1,
+      "iuRevenueFactToDate": 40388457,
+      "iuRevenueCompletionToDate": 0.737536,
+      "iuAdsPlan": 40087824.87,
+      "iuAdsPlanToDate": 7758933.85,
+      "iuAdsFactWbToDate": 1811620,
+      "iuAdsCompletionToDate": 0.233488,
+      "revenueWb": 32666834,
+      "revenueOzon": 7721623,
+      "spendFact": 1811620,
+      "planSpendWb": 2613346.72,
+      "drrWb": 0.055457,
+      "spendDelta": -801726.72,
+      "planPct": 0.08,
+      "channels": {
+        "wbPromotion": {
+          "key": "wbPromotion",
+          "label": "ВБ Продвижение",
+          "spend": 1811620
+        },
+        "wbMedia": {
+          "key": "wbMedia",
+          "label": "ВБ Медиа",
+          "spend": 0
+        },
+        "wbInfluencer": {
+          "key": "wbInfluencer",
+          "label": "ВБ Инфлюенс",
+          "spend": 0
+        },
+        "pvzAds": {
+          "key": "pvzAds",
+          "label": "Реклама в ПВЗ",
+          "spend": 0
+        },
+        "brandZone": {
+          "key": "brandZone",
+          "label": "Брендзона",
+          "spend": 0
+        },
+        "overviews": {
+          "key": "overviews",
+          "label": "Обзоры",
+          "spend": 0
+        },
+        "reviewPoints": {
+          "key": "reviewPoints",
+          "label": "Отзывы за баллы",
+          "spend": 0
+        },
+        "externalAds": {
+          "key": "externalAds",
+          "label": "Внешка",
+          "spend": 0
+        }
+      }
+    }
+  ],
+  "channels": [
+    {
+      "key": "wbPromotion",
+      "label": "ВБ Продвижение",
+      "spend": 1811620,
+      "source": "WB Promotion API"
+    },
+    {
+      "key": "brandZone",
+      "label": "Брендзона",
+      "spend": 0,
+      "source": "нет источника в v1"
+    },
+    {
+      "key": "wbInfluencer",
+      "label": "ВБ Инфлюенс",
+      "spend": 0,
+      "source": "нет источника в v1"
+    },
+    {
+      "key": "wbMedia",
+      "label": "ВБ Медиа",
+      "spend": 0,
+      "source": "WB Promotion API"
+    },
+    {
+      "key": "externalAds",
+      "label": "Внешка",
+      "spend": 0,
+      "source": "нет источника в v1"
+    },
+    {
+      "key": "overviews",
+      "label": "Обзоры",
+      "spend": 0,
+      "source": "нет источника в v1"
+    },
+    {
+      "key": "reviewPoints",
+      "label": "Отзывы за баллы",
+      "spend": 0,
+      "source": "нет источника в v1"
+    },
+    {
+      "key": "pvzAds",
+      "label": "Реклама в ПВЗ",
+      "spend": 0,
+      "source": "нет источника в v1"
+    }
+  ],
+  "daily": [
+    {
+      "date": "2026-05-01",
+      "period": "01.05",
+      "monthKey": "2026-05",
+      "revenueWb": 5518878,
+      "revenueOzon": 934286,
+      "revenueTotalIu": 6453164,
+      "unitsWb": 4603,
+      "unitsOzon": 715,
+      "planPct": 0.08,
+      "planSpendWb": 441510.24,
+      "spendFact": 313838,
+      "factPct": 0.056866,
+      "wbPromotion": 313838,
+      "wbMedia": 0,
+      "wbInfluencer": 0,
+      "pvzAds": 0,
+      "brandZone": 0,
+      "overviews": 0,
+      "reviewPoints": 0,
+      "externalAds": 0,
+      "spendDelta": -127672.24,
+      "adsViews": 0,
+      "adsClicks": 0,
+      "adsOrders": 0,
+      "adsRevenue": 3663625,
+      "sourceRows": 1
+    },
+    {
+      "date": "2026-05-02",
+      "period": "02.05",
+      "monthKey": "2026-05",
+      "revenueWb": 5646874,
+      "revenueOzon": 978417,
+      "revenueTotalIu": 6625291,
+      "unitsWb": 4666,
+      "unitsOzon": 763,
+      "planPct": 0.08,
+      "planSpendWb": 451749.92,
+      "spendFact": 399193,
+      "factPct": 0.070693,
+      "wbPromotion": 399193,
+      "wbMedia": 0,
+      "wbInfluencer": 0,
+      "pvzAds": 0,
+      "brandZone": 0,
+      "overviews": 0,
+      "reviewPoints": 0,
+      "externalAds": 0,
+      "spendDelta": -52556.92,
+      "adsViews": 0,
+      "adsClicks": 0,
+      "adsOrders": 0,
+      "adsRevenue": 3862113,
+      "sourceRows": 1
+    },
+    {
+      "date": "2026-05-03",
+      "period": "03.05",
+      "monthKey": "2026-05",
+      "revenueWb": 5705408,
+      "revenueOzon": 998380,
+      "revenueTotalIu": 6703788,
+      "unitsWb": 4744,
+      "unitsOzon": 750,
+      "planPct": 0.08,
+      "planSpendWb": 456432.64,
+      "spendFact": 408579,
+      "factPct": 0.071613,
+      "wbPromotion": 408579,
+      "wbMedia": 0,
+      "wbInfluencer": 0,
+      "pvzAds": 0,
+      "brandZone": 0,
+      "overviews": 0,
+      "reviewPoints": 0,
+      "externalAds": 0,
+      "spendDelta": -47853.64,
+      "adsViews": 0,
+      "adsClicks": 0,
+      "adsOrders": 0,
+      "adsRevenue": 4419749,
+      "sourceRows": 1
+    },
+    {
+      "date": "2026-05-04",
+      "period": "04.05",
+      "monthKey": "2026-05",
+      "revenueWb": 5076656,
+      "revenueOzon": 1479907,
+      "revenueTotalIu": 6556563,
+      "unitsWb": 4155,
+      "unitsOzon": 1333,
+      "planPct": 0.08,
+      "planSpendWb": 406132.48,
+      "spendFact": 356394,
+      "factPct": 0.070203,
+      "wbPromotion": 356394,
+      "wbMedia": 0,
+      "wbInfluencer": 0,
+      "pvzAds": 0,
+      "brandZone": 0,
+      "overviews": 0,
+      "reviewPoints": 0,
+      "externalAds": 0,
+      "spendDelta": -49738.48,
+      "adsViews": 0,
+      "adsClicks": 0,
+      "adsOrders": 0,
+      "adsRevenue": 4461697,
+      "sourceRows": 1
+    },
+    {
+      "date": "2026-05-05",
+      "period": "05.05",
+      "monthKey": "2026-05",
+      "revenueWb": 5161095,
+      "revenueOzon": 1913926,
+      "revenueTotalIu": 7075021,
+      "unitsWb": 4298,
+      "unitsOzon": 1921,
+      "planPct": 0.08,
+      "planSpendWb": 412887.6,
+      "spendFact": 333616,
+      "factPct": 0.064641,
+      "wbPromotion": 333616,
+      "wbMedia": 0,
+      "wbInfluencer": 0,
+      "pvzAds": 0,
+      "brandZone": 0,
+      "overviews": 0,
+      "reviewPoints": 0,
+      "externalAds": 0,
+      "spendDelta": -79271.6,
+      "adsViews": 0,
+      "adsClicks": 0,
+      "adsOrders": 0,
+      "adsRevenue": 4538206,
+      "sourceRows": 1
+    },
+    {
+      "date": "2026-05-06",
+      "period": "06.05",
+      "monthKey": "2026-05",
+      "revenueWb": 5557923,
+      "revenueOzon": 1416707,
+      "revenueTotalIu": 6974630,
+      "unitsWb": 4632,
+      "unitsOzon": 1344,
+      "planPct": 0.08,
+      "planSpendWb": 444633.84,
+      "spendFact": 0,
+      "factPct": 0,
+      "wbPromotion": 0,
+      "wbMedia": 0,
+      "wbInfluencer": 0,
+      "pvzAds": 0,
+      "brandZone": 0,
+      "overviews": 0,
+      "reviewPoints": 0,
+      "externalAds": 0,
+      "spendDelta": -444633.84,
+      "adsViews": 0,
+      "adsClicks": 0,
+      "adsOrders": 0,
+      "adsRevenue": 0,
+      "sourceRows": 0
+    }
+  ],
+  "diagnostics": {
+    "adsSourceMode": "excel-fixture-fallback",
+    "adsDiagnostics": {
+      "generatedAt": "2026-05-07T08:53:45.833Z",
+      "docsUrl": "https://dev.wildberries.ru/en/docs/openapi/promotion",
+      "sourceWindow": {
+        "from": "2026-05-01",
+        "to": "2026-05-06"
+      },
+      "supplierGoods": {
+        "supplierGoodsPath": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\supplier-goods-109831-2026-01-01-2026-05-05-ynubxvgyi.XLSX",
+        "mappedNmIds": 81,
+        "sellerArticles": 183,
+        "unmatchedSellerArticles": 102,
+        "errors": []
+      },
+      "warnings": [
+        "ALTEA_WB_PROMOTION_TOKEN is not set; WB API request was skipped."
+      ],
+      "fixturePath": "C:\\Users\\artiu\\Downloads\\Telegram Desktop\\ДРР ВБ (3).xlsx",
+      "fixtureRows": 5
+    },
+    "noSourceChannels": [
+      "Брендзона",
+      "ВБ Инфлюенс",
+      "Внешка",
+      "Обзоры",
+      "Отзывы за баллы",
+      "Реклама в ПВЗ"
+    ],
+    "unmatchedNmIds": [],
+    "notes": [
+      "ИУ по обороту считается по WB + Ozon.",
+      "ДРР и каналы рекламы считаются по WB.",
+      "Каналы без источника показываются нулем до подключения отдельного источника."
+    ]
+  }
+}

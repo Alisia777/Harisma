@@ -9,6 +9,7 @@
     'platform_trends',
     'logistics',
     'ads_summary',
+    'iu_drr_summary',
     'platform_plan',
     'prices',
     'smart_price_workbench',
@@ -21,6 +22,7 @@
     platform_trends: 'platformTrends',
     logistics: 'logistics',
     ads_summary: 'adsSummary',
+    iu_drr_summary: 'iuDrrSummary',
     platform_plan: 'platformPlan',
     prices: 'prices',
     smart_price_workbench: 'smartPriceWorkbench',
@@ -96,6 +98,13 @@
       return score;
     }
 
+    if (snapshotKey === 'iu_drr_summary') {
+      (payload.daily || []).forEach((item) => {
+        score = bumpFreshness(score, item?.date);
+      });
+      return score;
+    }
+
     if (snapshotKey === 'platform_plan') {
       Object.keys(payload.months || {}).forEach((monthKey) => {
         score = bumpFreshness(score, `${monthKey}-01`);
@@ -133,6 +142,9 @@
     }
     if (snapshotKey === 'ads_summary') {
       return Array.isArray(payload.platforms) && payload.platforms.length > 0;
+    }
+    if (snapshotKey === 'iu_drr_summary') {
+      return Array.isArray(payload.daily) && payload.daily.length > 0;
     }
     if (snapshotKey === 'platform_plan') {
       return typeof payload?.months === 'object' && payload.months !== null && Object.keys(payload.months).length > 0;

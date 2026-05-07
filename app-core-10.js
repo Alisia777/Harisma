@@ -510,6 +510,7 @@ function rerenderCurrentView() {
   applyOwnerOverridesToSkus();
   const renderPlan = [
     ['view-ads-funnel', 'Рекламная воронка', () => renderAdsFunnel('view-ads-funnel')],
+    ['view-iu-drr', 'ИУ / ДРР', () => renderIuDrr('view-iu-drr')],
     ['view-dashboard', 'Дашборд', renderDashboardView],
     ['view-documents', 'Документы', renderDocuments],
     ['view-repricer', 'Репрайсер', renderRepricer],

@@ -10,19 +10,18 @@
   const tasks = getSkuControlTasks(articleKey);
   const activeTask = nextTaskForSku(articleKey);
   const owners = ownerOptions();
-  const monthMeta = dashboardMonthMeta();
-  const asOfLabel = dashboardAsOfLabel();
   const completion = currentCompletionSnapshot(sku);
-  const currentPlanUnits = firstPositiveObjectValue(sku?.planFact, dynamicPlanFieldCandidates(monthMeta));
-  const currentFactUnits = firstPositiveObjectValue(sku?.planFact, dynamicFactFieldCandidates(monthMeta));
-  const planLabel = monthMeta?.monthLabelGen ? `План ${monthMeta.monthLabelGen}` : 'План месяца';
-  const factLabel = asOfLabel ? `Факт на ${asOfLabel}` : 'Факт к дате';
+  const currentPlanUnits = firstFiniteValue(sku?.planFact?.planApr26Units);
+  const currentFactUnits = firstFiniteValue(
+    sku?.planFact?.factApr16Units,
+    sku?.planFact?.factAprToDateUnits
+  );
   const resultRows = [
     currentPlanUnits !== null
-      ? metricRow(planLabel, fmt.int(currentPlanUnits))
+      ? metricRow('План Apr 26', fmt.int(currentPlanUnits))
       : metricRow('План Feb 26', fmt.int(sku.planFact?.planFeb26Units)),
     currentFactUnits !== null
-      ? metricRow(factLabel, fmt.int(currentFactUnits))
+      ? metricRow('Факт Apr to date', fmt.int(currentFactUnits))
       : metricRow('Факт Feb 26', fmt.int(sku.planFact?.factFeb26Units))
   ];
 
@@ -2785,6 +2784,311 @@ function renderAdsFunnel(rootId = 'view-ads-funnel') {
   root.querySelector('[data-ads-export]')?.addEventListener('click', () => {
     downloadAdsFunnelExcel(model);
   });
+}
+
+function normalizeIuDrrSummaryPayload(payload = {}) {
+  const daily = Array.isArray(payload.daily) ? payload.daily.map((row) => ({
+    ...row,
+    date: String(row?.date || '').slice(0, 10),
+    monthKey: String(row?.monthKey || row?.date || '').slice(0, 7),
+    revenueWb: numberOrZero(row?.revenueWb),
+    revenueOzon: numberOrZero(row?.revenueOzon),
+    revenueTotalIu: numberOrZero(row?.revenueTotalIu),
+    planPct: Number.isFinite(Number(row?.planPct)) ? Number(row.planPct) : 0,
+    planSpendWb: numberOrZero(row?.planSpendWb),
+    spendFact: numberOrZero(row?.spendFact),
+    factPct: Number.isFinite(Number(row?.factPct)) ? Number(row.factPct) : null,
+    wbPromotion: numberOrZero(row?.wbPromotion),
+    wbMedia: numberOrZero(row?.wbMedia),
+    wbInfluencer: numberOrZero(row?.wbInfluencer),
+    pvzAds: numberOrZero(row?.pvzAds),
+    brandZone: numberOrZero(row?.brandZone),
+    overviews: numberOrZero(row?.overviews),
+    reviewPoints: numberOrZero(row?.reviewPoints),
+    externalAds: numberOrZero(row?.externalAds),
+    spendDelta: numberOrZero(row?.spendDelta),
+    adsViews: numberOrZero(row?.adsViews),
+    adsClicks: numberOrZero(row?.adsClicks),
+    adsOrders: numberOrZero(row?.adsOrders)
+  })).filter((row) => row.date) : [];
+  const months = Array.isArray(payload.months) ? payload.months : [];
+  const channels = Array.isArray(payload.channels) ? payload.channels : [];
+  return {
+    ...payload,
+    generatedAt: payload.generatedAt || '',
+    asOfDate: payload.asOfDate || daily.map((row) => row.date).sort().at(-1) || '',
+    daily,
+    months,
+    channels,
+    diagnostics: payload.diagnostics || {}
+  };
+}
+
+function getIuDrrFilters() {
+  state.iuDrrFilters = state.iuDrrFilters || {};
+  state.iuDrrFilters.month = state.iuDrrFilters.month || 'latest';
+  return state.iuDrrFilters;
+}
+
+function iuDrrMonthOptions(payload) {
+  const keys = new Set();
+  (payload.months || []).forEach((month) => month?.monthKey && keys.add(month.monthKey));
+  (payload.daily || []).forEach((row) => row?.monthKey && keys.add(row.monthKey));
+  return [...keys].sort().map((key) => {
+    const source = (payload.months || []).find((month) => month.monthKey === key);
+    return { key, label: source?.label || key };
+  });
+}
+
+function iuDrrLatestMonth(payload) {
+  const options = iuDrrMonthOptions(payload);
+  return options.at(-1)?.key || '';
+}
+
+function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
+  const normalized = normalizeIuDrrSummaryPayload(payload);
+  const filters = getIuDrrFilters();
+  const latestMonth = iuDrrLatestMonth(normalized);
+  const selectedMonth = filters.month === 'latest' || !filters.month ? latestMonth : filters.month;
+  const dailyRows = normalized.daily.filter((row) => row.monthKey === selectedMonth);
+  const monthSummary = (normalized.months || []).find((month) => month.monthKey === selectedMonth) || {};
+  const channelRows = (normalized.channels || []).map((channel) => ({
+    ...channel,
+    spend: numberOrZero(channel.spend)
+  })).filter((channel) => channel.spend > 0 || String(channel.source || '').includes('нет источника'));
+  return {
+    payload: normalized,
+    filters,
+    latestMonth,
+    selectedMonth,
+    monthOptions: iuDrrMonthOptions(normalized),
+    dailyRows,
+    monthSummary,
+    channelRows,
+    hasRows: dailyRows.length > 0
+  };
+}
+
+function iuDrrToneForDelta(value) {
+  const numeric = numberOrZero(value);
+  if (numeric <= 0) return 'ok';
+  return numeric < 500000 ? 'warn' : 'danger';
+}
+
+function iuDrrSourceBadge(model) {
+  const mode = model.payload.source?.adsSourceMode || model.payload.diagnostics?.adsSourceMode || '';
+  if (/wb-api/.test(mode)) return badge('WB API', 'ok');
+  if (/fixture/.test(mode)) return badge('Excel fixture', 'warn');
+  if (mode) return badge(mode, 'warn');
+  return badge('нет факта WB', 'danger');
+}
+
+function iuDrrSparkline(rows, key, tone = 'ok') {
+  const values = rows.map((row) => numberOrZero(row[key]));
+  if (!values.some((value) => value > 0 || value < 0)) return '<div class="empty">Нет точек</div>';
+  const width = 520;
+  const height = 120;
+  const min = Math.min(...values, 0);
+  const max = Math.max(...values, 1);
+  const range = Math.max(1, max - min);
+  const points = values.map((value, index) => {
+    const x = values.length === 1 ? width / 2 : (index / Math.max(1, values.length - 1)) * width;
+    const y = height - ((value - min) / range) * (height - 18) - 9;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const color = tone === 'danger' ? '#ef4444' : tone === 'warn' ? '#f59e0b' : '#22c55e';
+  return `
+    <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(key)}" style="width:100%;height:120px">
+      <polyline points="${points}" fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>
+    </svg>
+  `;
+}
+
+function iuDrrExportRows(rows, model) {
+  return rows.map((row) => ({
+    month: model.selectedMonth,
+    date: row.date,
+    period: row.period || row.date,
+    revenue_wb: row.revenueWb,
+    revenue_ozon: row.revenueOzon,
+    revenue_iu_total: row.revenueTotalIu,
+    plan_pct: row.planPct != null ? Math.round(Number(row.planPct) * 10000) / 100 : '',
+    plan_spend_wb: row.planSpendWb,
+    spend_fact: row.spendFact,
+    fact_drr_pct: row.factPct != null ? Math.round(Number(row.factPct) * 10000) / 100 : '',
+    wb_promotion: row.wbPromotion,
+    wb_media: row.wbMedia,
+    wb_influencer: row.wbInfluencer,
+    pvz_ads: row.pvzAds,
+    brand_zone: row.brandZone,
+    overviews: row.overviews,
+    review_points: row.reviewPoints,
+    external_ads: row.externalAds,
+    spend_delta: row.spendDelta,
+    views: row.adsViews,
+    clicks: row.adsClicks,
+    orders: row.adsOrders
+  }));
+}
+
+function downloadIuDrrExcel(model) {
+  const rows = iuDrrExportRows(model.dailyRows, model);
+  if (!rows.length) {
+    window.alert('По выбранному месяцу нет строк для выгрузки.');
+    return;
+  }
+  downloadLaunchesHtmlTable([
+    ['month', 'Месяц'],
+    ['date', 'Дата'],
+    ['period', 'Период'],
+    ['revenue_wb', 'Продажи. Фактический оборот WB'],
+    ['revenue_ozon', 'Оборот Ozon'],
+    ['revenue_iu_total', 'Оборот ИУ WB+Ozon'],
+    ['plan_pct', 'Реклама. План в %'],
+    ['plan_spend_wb', 'План расхода WB'],
+    ['spend_fact', 'Реклама. Фактические затраты'],
+    ['fact_drr_pct', 'Реклама. Факт в %'],
+    ['wb_promotion', 'ВБ Продвижение'],
+    ['wb_media', 'ВБ Медиа'],
+    ['wb_influencer', 'ВБ Инфлюенс'],
+    ['pvz_ads', 'Реклама в ПВЗ'],
+    ['brand_zone', 'Брендзона'],
+    ['overviews', 'Обзоры'],
+    ['review_points', 'Отзывы за баллы'],
+    ['external_ads', 'Внешка'],
+    ['spend_delta', 'Дельта расхода по ИУ'],
+    ['views', 'Показы'],
+    ['clicks', 'Клики'],
+    ['orders', 'Заказы']
+  ], rows, `iu-drr-${model.selectedMonth || todayIso()}.xls`);
+}
+
+function renderIuDrr(rootId = 'view-iu-drr') {
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  const model = iuDrrBuildModel(state.iuDrrSummary || {});
+  const month = model.monthSummary || {};
+  const factDrr = month.drrWb != null ? month.drrWb : null;
+  const deltaTone = iuDrrToneForDelta(month.spendDelta);
+  const sourceWarnings = [
+    ...(model.payload.diagnostics?.noSourceChannels || []).map((item) => `${item}: нет источника`),
+    ...(model.payload.diagnostics?.unmatchedNmIds || []).slice(0, 5).map((item) => `nmId ${item.nmId}: не сопоставлен`)
+  ];
+  root.innerHTML = `
+    <div class="section-title">
+      <div>
+        <h2>ИУ / ДРР WB</h2>
+        <p>Факт ИУ WB+Ozon и ежедневный ДРР WB по форме ДРР ВБ.</p>
+      </div>
+      <div class="badge-stack">
+        ${iuDrrSourceBadge(model)}
+        ${badge(model.payload.asOfDate ? `срез ${model.payload.asOfDate}` : 'нет даты', model.payload.asOfDate ? 'info' : 'warn')}
+      </div>
+    </div>
+
+    <div class="control-filters" style="margin-top:12px">
+      <select id="iuDrrMonth">
+        ${model.monthOptions.map((option) => `<option value="${escapeHtml(option.key)}" ${model.selectedMonth === option.key ? 'selected' : ''}>${escapeHtml(option.label)}</option>`).join('')}
+      </select>
+      <button class="quick-chip" type="button" data-iu-drr-export>Выгрузить в Excel</button>
+      <button class="quick-chip" type="button" data-iu-drr-ads>Рекламная воронка</button>
+    </div>
+
+    <div class="kpi-strip" style="margin-top:14px">
+      <div class="mini-kpi ${numberOrZero(month.iuRevenueCompletionToDate) >= 1 ? 'ok' : 'warn'}"><span>ИУ оборот</span><strong>${fmt.pct(month.iuRevenueCompletionToDate)}</strong><span>${fmt.money(month.iuRevenueFactToDate)} / ${fmt.money(month.iuRevenuePlanToDate)}</span></div>
+      <div class="mini-kpi"><span>Оборот WB</span><strong>${fmt.money(month.revenueWb)}</strong><span>Ozon ${fmt.money(month.revenueOzon)}</span></div>
+      <div class="mini-kpi ${factDrr != null && factDrr <= numberOrZero(month.planPct) ? 'ok' : 'warn'}"><span>ДРР WB</span><strong>${factDrr != null ? fmt.pct(factDrr) : '—'}</strong><span>план ${fmt.pct(month.planPct)}</span></div>
+      <div class="mini-kpi"><span>Расход WB</span><strong>${fmt.money(month.spendFact)}</strong><span>план ${fmt.money(month.planSpendWb)}</span></div>
+      <div class="mini-kpi ${deltaTone}"><span>Дельта</span><strong>${fmt.money(month.spendDelta)}</strong><span>расход - план %</span></div>
+    </div>
+
+    <div class="two-col" style="margin-top:14px">
+      <div class="card">
+        <div class="section-subhead">
+          <div><h3>ИУ оборот</h3><p class="small muted">${escapeHtml(model.selectedMonth || '—')}</p></div>
+          ${badge(`${fmt.int(model.dailyRows.length)} дн.`, 'info')}
+        </div>
+        ${iuDrrSparkline(model.dailyRows, 'revenueTotalIu', 'ok')}
+      </div>
+      <div class="card">
+        <div class="section-subhead">
+          <div><h3>Расход WB</h3><p class="small muted">факт против дневной нормы</p></div>
+          ${badge(fmt.money(month.spendFact), deltaTone)}
+        </div>
+        ${iuDrrSparkline(model.dailyRows, 'spendFact', deltaTone)}
+      </div>
+    </div>
+
+    <div class="dashboard-grid-4" style="margin-top:14px">
+      ${model.channelRows.map((channel) => `
+        <div class="mini-kpi ${channel.source === 'WB Promotion API' ? 'ok' : 'warn'}">
+          <span>${escapeHtml(channel.label)}</span>
+          <strong>${fmt.money(channel.spend)}</strong>
+          <span>${escapeHtml(channel.source || '')}</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div><h3>Дневная форма</h3><p class="small muted">WB оборот, факт расходов, ДРР и дельта.</p></div>
+        ${badge(model.hasRows ? 'готово' : 'нет строк', model.hasRows ? 'ok' : 'warn')}
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Период</th>
+              <th>Оборот WB</th>
+              <th>План %</th>
+              <th>Факт расход</th>
+              <th>Факт %</th>
+              <th>ВБ Продвижение</th>
+              <th>ВБ Медиа</th>
+              <th>ПВЗ</th>
+              <th>Внешка</th>
+              <th>Дельта</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${model.dailyRows.map((row) => `
+              <tr>
+                <td><strong>${escapeHtml(row.period || row.date)}</strong><div class="muted small">${escapeHtml(row.date)}</div></td>
+                <td>${fmt.money(row.revenueWb)}</td>
+                <td>${fmt.pct(row.planPct)}</td>
+                <td>${fmt.money(row.spendFact)}</td>
+                <td>${row.factPct != null ? fmt.pct(row.factPct) : '—'}</td>
+                <td>${fmt.money(row.wbPromotion)}</td>
+                <td>${fmt.money(row.wbMedia)}</td>
+                <td>${fmt.money(row.pvzAds)}</td>
+                <td>${fmt.money(row.externalAds)}</td>
+                <td>${badge(fmt.money(row.spendDelta), iuDrrToneForDelta(row.spendDelta))}</td>
+              </tr>
+            `).join('') || '<tr><td colspan="10">Нет данных по выбранному месяцу.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    ${sourceWarnings.length ? `
+      <div class="card" style="margin-top:14px">
+        <div class="section-subhead">
+          <div><h3>Диагностика</h3><p class="small muted">Источники и сопоставление WB nmId.</p></div>
+          ${badge(`${fmt.int(sourceWarnings.length)} сигналов`, 'warn')}
+        </div>
+        <div class="alert-stack">
+          ${sourceWarnings.map((item) => `<div class="alert-row"><strong>${escapeHtml(item)}</strong><span class="muted small">${escapeHtml(model.payload.source?.adsSourceMode || '')}</span></div>`).join('')}
+        </div>
+      </div>
+    ` : ''}
+  `;
+
+  root.querySelector('#iuDrrMonth')?.addEventListener('change', (event) => {
+    getIuDrrFilters().month = String(event.target.value || 'latest');
+    rerenderCurrentView();
+  });
+  root.querySelector('[data-iu-drr-export]')?.addEventListener('click', () => downloadIuDrrExcel(model));
+  root.querySelector('[data-iu-drr-ads]')?.addEventListener('click', () => setView('ads-funnel'));
 }
 
 function renderProductLeaderboard(rootId = 'view-product-leaderboard') {

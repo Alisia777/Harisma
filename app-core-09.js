@@ -689,7 +689,7 @@ function renderOrderProcurementTable(model) {
 }
 
 function renderOrderProcurement(model) {
-  const buildLabel = `ORDER BUILD ${window.__ALTEA_PORTAL_BUILD__ || '20260507f'}`;
+  const buildLabel = `ORDER BUILD ${window.__ALTEA_PORTAL_BUILD__ || '20260507g'}`;
   const range = model.window?.from && model.window?.to
     ? `${orderProcurementEscape(model.window.from)} - ${orderProcurementEscape(model.window.to)}`
     : 'последний доступный срез';
@@ -1014,11 +1014,11 @@ function injectOrderProcurementStyles() {
   style.id = ORDER_PROCUREMENT_STYLE_ID;
   style.textContent = `
     .altea-order-procurement {
-      --col-sku: 320px;
-      --col-article: 170px;
-      --col-warehouse: 150px;
-      --col-inbound: 150px;
-      --col-total: 170px;
+      --col-sku: 280px;
+      --col-article: 132px;
+      --col-warehouse: 132px;
+      --col-inbound: 132px;
+      --col-total: 148px;
       display: grid;
       gap: 14px;
       width: 100%;
@@ -1208,6 +1208,9 @@ function injectOrderProcurementStyles() {
     }
 
     .altea-order-procurement__table-card {
+      margin-left: -10px;
+      margin-right: -10px;
+      padding: 14px;
       overflow: hidden;
     }
 
@@ -1215,6 +1218,10 @@ function injectOrderProcurementStyles() {
       margin-top: 14px;
       overflow: auto;
       max-width: 100%;
+      min-height: min(620px, calc(100vh - 260px));
+      max-height: calc(100vh - 210px);
+      border-radius: 18px;
+      scrollbar-gutter: stable both-edges;
     }
 
     .altea-order-procurement__table {
@@ -1226,7 +1233,7 @@ function injectOrderProcurementStyles() {
 
     .altea-order-procurement__table th,
     .altea-order-procurement__table td {
-      padding: 12px 14px;
+      padding: 10px 11px;
       border-bottom: 1px solid rgba(212, 164, 74, 0.10);
       vertical-align: top;
     }
@@ -1403,11 +1410,11 @@ function injectOrderProcurementStyles() {
 
     @media (max-width: 900px) {
       .altea-order-procurement {
-        --col-sku: 240px;
-        --col-article: 140px;
-        --col-warehouse: 120px;
-        --col-inbound: 120px;
-        --col-total: 140px;
+        --col-sku: 230px;
+        --col-article: 118px;
+        --col-warehouse: 112px;
+        --col-inbound: 112px;
+        --col-total: 124px;
       }
 
       .altea-order-procurement__toolbar,

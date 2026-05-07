@@ -3152,7 +3152,7 @@ function renderOrderCalculator() {
     });
 }
 
-const ORDER_PROCUREMENT_VERSION = '20260507f';
+const ORDER_PROCUREMENT_VERSION = '20260507g';
 const ORDER_PROCUREMENT_STYLE_ID = `altea-order-procurement-${ORDER_PROCUREMENT_VERSION}`;
 const ORDER_PROCUREMENT_RUNTIME = {
   renderToken: 0,

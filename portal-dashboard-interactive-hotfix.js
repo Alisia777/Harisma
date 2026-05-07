@@ -6315,7 +6315,8 @@ function dashboardTaskStatusChip(task) {
       }
       return true;
     };
-    if (!forceRefresh && hasUsablePayload(existing)) return existing;
+    const shouldRefreshExisting = key === 'adsSummary' || key === 'iuDrrSummary';
+    if (!forceRefresh && !shouldRefreshExisting && hasUsablePayload(existing)) return existing;
     let response = null;
     try {
       response = await fetch(`${path}?v=${VERSION}`, { cache: 'no-store' });

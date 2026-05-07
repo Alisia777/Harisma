@@ -73,14 +73,49 @@ function orderProcurementReadWarehouseInbound(row) {
   return 0;
 }
 
+function orderProcurementBuildCommentMap() {
+  const comments = Array.isArray(state?.storage?.comments) ? state.storage.comments : [];
+  const map = new Map();
+
+  comments.forEach((entry) => {
+    const articleKey = orderProcurementNormalizeKey(entry?.articleKey || entry?.article || entry?.sku);
+    if (!articleKey) return;
+
+    const rawText = typeof entry?.text === 'string'
+      ? entry.text
+      : (typeof entry?.comment === 'string' ? entry.comment : '');
+    const text = rawText.replace(/\s+/g, ' ').trim();
+    const author = String(entry?.author || entry?.owner || '').trim();
+    const ts = Date.parse(entry?.updatedAt || entry?.createdAt || '') || 0;
+
+    const current = map.get(articleKey) || {
+      count: 0,
+      latestText: '',
+      latestAuthor: '',
+      latestTs: -1
+    };
+    current.count += 1;
+    if (ts >= current.latestTs || !current.latestText) {
+      current.latestText = text;
+      current.latestAuthor = author;
+      current.latestTs = ts;
+    }
+    map.set(articleKey, current);
+  });
+
+  return map;
+}
+
 function buildOrderProcurementModel() {
   const orderState = ensureOrderProcurementState();
   const platform = orderState.platform === 'ozon' ? 'ozon' : 'wb';
   const days = clampOrderProcurementDays(orderState.days);
+  const searchQuery = String(orderState.search || '').trim().toLowerCase();
   const payload = orderProcurementCurrentPayload(platform) || { rows: [] };
   const rows = Array.isArray(payload.rows) ? payload.rows : [];
   const skuLookup = orderProcurementBuildSkuLookup();
   const warehouseLookup = orderProcurementBuildWarehouseMap();
+  const commentMap = orderProcurementBuildCommentMap();
   const rowMap = new Map();
   const placeOrder = [];
   const placeSeen = new Set();
@@ -99,6 +134,7 @@ function buildOrderProcurementModel() {
 
     const sku = skuLookup.get(articleKey) || skuLookup.get(orderProcurementNormalizeKey(article)) || {};
     const warehouse = warehouseLookup.get(articleKey) || warehouseLookup.get(orderProcurementNormalizeKey(article)) || {};
+    const commentMeta = commentMap.get(articleKey) || { count: 0, latestText: '', latestAuthor: '' };
     const current = rowMap.get(articleKey) || {
       article,
       articleKey,
@@ -109,6 +145,9 @@ function buildOrderProcurementModel() {
       hasInboundWarehouse: Boolean(warehouse.hasInboundWarehouse),
       totalNeed: 0,
       totalOrders: 0,
+      commentCount: orderProcurementNumber(commentMeta.count),
+      latestCommentPreview: String(commentMeta.latestText || '').slice(0, 180),
+      latestCommentAuthor: String(commentMeta.latestAuthor || ''),
       clusters: {}
     };
 
@@ -133,12 +172,28 @@ function buildOrderProcurementModel() {
     clusterTotalsMap.set(place, clusterTotal);
   });
 
-  const list = [...rowMap.values()].sort((left, right) => {
+  const allRows = [...rowMap.values()].sort((left, right) => {
     if (right.totalNeed !== left.totalNeed) return right.totalNeed - left.totalNeed;
     if (right.totalOrders !== left.totalOrders) return right.totalOrders - left.totalOrders;
     return String(left.article).localeCompare(String(right.article), 'ru');
   });
-  const hasInboundWarehouse = list.some((row) => Boolean(row.hasInboundWarehouse));
+  const list = searchQuery
+    ? allRows.filter((row) => {
+      const searchIndex = [
+        row.article,
+        row.articleKey,
+        row.name,
+        row.owner,
+        row.latestCommentPreview,
+        row.latestCommentAuthor
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return searchIndex.includes(searchQuery);
+    })
+    : allRows;
+  const hasInboundWarehouse = allRows.some((row) => Boolean(row.hasInboundWarehouse));
 
   const totals = list.reduce((acc, row) => {
     acc.warehouseStock += orderProcurementNumber(row.warehouseStock);
@@ -146,15 +201,19 @@ function buildOrderProcurementModel() {
     acc.totalNeed += orderProcurementNumber(row.totalNeed);
     return acc;
   }, { warehouseStock: 0, inboundWarehouse: 0, totalNeed: 0 });
+  const commentsCount = list.reduce((acc, row) => acc + orderProcurementNumber(row.commentCount), 0);
 
   return {
     platform,
     platformLabel: platform === 'ozon' ? 'OZ' : 'WB',
     days,
+    searchQuery,
     generatedAt: payload.generatedAt || ORDER_PROCUREMENT_RUNTIME.cache.warehouse?.generatedAt || null,
     window: payload.window || null,
     places: placeOrder,
     rows: list,
+    totalRows: allRows.length,
+    commentsCount,
     hasInboundWarehouse,
     totals,
     clusterTotals: placeOrder.map((place) => ({
@@ -269,12 +328,20 @@ function renderOrderProcurementTable(model) {
         const inboundCell = model.hasInboundWarehouse
           ? `<td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--inbound altea-order-procurement__num">${fmt.int(row.inboundWarehouse)}</td>`
           : '';
+        const commentPreview = row.latestCommentPreview
+          ? `${row.latestCommentAuthor ? `${row.latestCommentAuthor}: ` : ''}${row.latestCommentPreview}`
+          : 'Комментариев пока нет';
 
         return `
           <tr>
             <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--sku">
               <strong>${orderProcurementEscape(row.name || articleLabel)}</strong>
               <div class="altea-order-procurement__meta">${orderProcurementEscape(row.owner || 'Без owner')}</div>
+              <div class="altea-order-procurement__meta altea-order-procurement__comment-preview">${orderProcurementEscape(commentPreview)}</div>
+              <div class="altea-order-procurement__row-actions">
+                <button type="button" class="quick-chip" data-altea-order-comment="${orderProcurementEscape(row.articleKey || articleLabel)}" data-altea-order-comment-title="${orderProcurementEscape(articleLabel)}">Комментарий</button>
+                ${orderProcurementBadge(`C: ${fmt.int(row.commentCount)}`, row.commentCount ? 'info' : '')}
+              </div>
             </td>
             <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--article">${skuLink}</td>
             <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--warehouse altea-order-procurement__num">${fmt.int(row.warehouseStock)}</td>
@@ -317,6 +384,9 @@ function renderOrderProcurement(model) {
   const sectionClass = model.hasInboundWarehouse
     ? 'imperial-section altea-order-procurement'
     : 'imperial-section altea-order-procurement altea-order-procurement--no-inbound';
+  const shownRows = model.totalRows > model.rows.length
+    ? `${fmt.int(model.rows.length)} / ${fmt.int(model.totalRows)}`
+    : `${fmt.int(model.rows.length)}`;
   const inboundSummary = model.hasInboundWarehouse ? `
         <div class="mini-kpi">
           <span>В пути на склад</span>
@@ -366,7 +436,13 @@ function renderOrderProcurement(model) {
             ${orderProcurementBadge(`Обновлено: ${orderProcurementFormatDateTime(model.generatedAt)}`, 'info')}
           </div>
 
+          <label class="altea-order-procurement__field altea-order-procurement__field--search">
+            <span>Поиск</span>
+            <input id="alteaOrderSearch" type="search" placeholder="SKU, артикул, owner, комментарий" value="${orderProcurementEscape(model.searchQuery || '')}">
+          </label>
+
           <div class="altea-order-procurement__actions">
+            <button type="button" class="quick-chip" data-altea-order-search-clear>Сброс</button>
             <button type="button" class="btn" data-altea-order-export>Выгрузить в Excel</button>
           </div>
         </div>
@@ -375,7 +451,7 @@ function renderOrderProcurement(model) {
       <div class="altea-order-procurement__summary">
         <div class="mini-kpi">
           <span>SKU в расчёте</span>
-          <strong>${fmt.int(model.rows.length)}</strong>
+          <strong>${shownRows}</strong>
           <span>${model.platformLabel}</span>
         </div>
         <div class="mini-kpi">
@@ -384,6 +460,11 @@ function renderOrderProcurement(model) {
           <span>из файла реальных остатков</span>
         </div>
         ${inboundSummary}
+        <div class="mini-kpi">
+          <span>Comments in view</span>
+          <strong>${fmt.int(model.commentsCount)}</strong>
+          <span>по текущему фильтру</span>
+        </div>
         <div class="mini-kpi warn">
           <span>Итого к заказу</span>
           <strong>${fmt.int(model.totals.totalNeed)}</strong>
@@ -456,6 +537,55 @@ function bindOrderProcurement(root) {
     renderOrderCalculator();
   });
 
+  root.querySelector('#alteaOrderSearch')?.addEventListener('input', (event) => {
+    ensureOrderProcurementState().search = String(event.target.value || '').trim();
+    if (ORDER_PROCUREMENT_RUNTIME.searchDebounceTimer) {
+      window.clearTimeout(ORDER_PROCUREMENT_RUNTIME.searchDebounceTimer);
+    }
+    ORDER_PROCUREMENT_RUNTIME.searchDebounceTimer = window.setTimeout(() => {
+      ORDER_PROCUREMENT_RUNTIME.searchDebounceTimer = 0;
+      renderOrderCalculator();
+    }, 130);
+  });
+
+  root.querySelector('[data-altea-order-search-clear]')?.addEventListener('click', () => {
+    ensureOrderProcurementState().search = '';
+    renderOrderCalculator();
+  });
+
+  root.querySelectorAll('[data-altea-order-comment]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const articleKeyRaw = String(button.dataset.alteaOrderComment || '').trim();
+      const articleTitle = String(button.dataset.alteaOrderCommentTitle || articleKeyRaw || '').trim();
+      const articleKey = orderProcurementNormalizeKey(articleKeyRaw);
+      if (!articleKey) return;
+
+      const text = window.prompt(`Комментарий по SKU: ${articleTitle}`, '');
+      if (!text || !String(text).trim()) return;
+      if (typeof createComment !== 'function') {
+        setAppError('Контур комментариев сейчас недоступен.');
+        window.setTimeout(() => setAppError(''), 1800);
+        return;
+      }
+
+      try {
+        await createComment({
+          articleKey,
+          author: state?.team?.member?.name || '',
+          team: typeof teamMemberLabel === 'function' ? teamMemberLabel() : '',
+          type: 'comment',
+          text: String(text).trim()
+        });
+        setAppError('Комментарий сохранен.');
+        window.setTimeout(() => setAppError(''), 1400);
+        renderOrderCalculator();
+      } catch (error) {
+        console.error('[order-procurement] comment', error);
+        setAppError('Не удалось сохранить комментарий.');
+      }
+    });
+  });
+
   root.querySelector('[data-altea-order-export]')?.addEventListener('click', () => {
     try {
       exportOrderProcurementModel(buildOrderProcurementModel());
@@ -492,7 +622,7 @@ function injectOrderProcurementStyles() {
 
     .altea-order-procurement__toolbar {
       display: grid;
-      grid-template-columns: minmax(180px, 220px) auto 1fr auto;
+      grid-template-columns: minmax(180px, 220px) auto 1fr minmax(220px, 340px) auto;
       gap: 12px;
       align-items: end;
       margin-top: 12px;
@@ -514,6 +644,10 @@ function injectOrderProcurementStyles() {
       border: 1px solid rgba(212, 164, 74, 0.18);
       background: rgba(17, 14, 11, 0.96);
       color: #fff1dd;
+    }
+
+    .altea-order-procurement__field--search input {
+      min-width: 220px;
     }
 
     .altea-order-procurement__platforms,
@@ -693,6 +827,21 @@ function injectOrderProcurementStyles() {
       color: rgba(255, 244, 229, 0.58);
       font-size: 12px;
       line-height: 1.4;
+    }
+
+    .altea-order-procurement__comment-preview {
+      max-width: 280px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .altea-order-procurement__row-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
     }
 
     .altea-order-procurement__num {

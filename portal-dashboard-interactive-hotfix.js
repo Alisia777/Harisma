@@ -19,6 +19,7 @@
     dashboard: null,
     platformTrends: null,
     platformPlan: null,
+    iuPlan: null,
     adsSummary: null,
     skus: null,
     prices: null,
@@ -926,6 +927,161 @@
     return totalDays > 0 ? planUnits / totalDays : 0;
   }
 
+  function iuPlanMonth(date) {
+    const key = monthKey(date);
+    const source = current('iuPlan')?.months?.[key];
+    if (!source || typeof source !== 'object') return null;
+    const days = num(source.days) || new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    const revenueWb = num(source.iuRevenueWb);
+    const revenueOzon = num(source.iuRevenueOzon);
+    const adsWb = num(source.iuAdsWb);
+    const adsOzon = num(source.iuAdsOzon);
+    const revenueTotal = num(source.iuRevenueTotal) || (revenueWb + revenueOzon);
+    const adsTotal = num(source.iuAdsTotal) || (adsWb + adsOzon);
+    const dailyRevenueTotal = num(source.dailyIuRevenueTotal) || (days > 0 ? revenueTotal / days : 0);
+    const dailyAdsTotal = num(source.dailyIuAdsTotal) || (days > 0 ? adsTotal / days : 0);
+    return {
+      key,
+      label: source.label || key,
+      days,
+      revenueWb,
+      revenueOzon,
+      revenueTotal,
+      adsWb,
+      adsOzon,
+      adsTotal,
+      dailyRevenueTotal,
+      dailyAdsTotal
+    };
+  }
+
+  function iuPlanDailyRevenue(date) {
+    const month = iuPlanMonth(date);
+    return month ? month.dailyRevenueTotal : 0;
+  }
+
+  function iuPlanDailyAds(date) {
+    const month = iuPlanMonth(date);
+    return month ? month.dailyAdsTotal : 0;
+  }
+
+  function monthScopeRange(rangeLike) {
+    const sourceEnd = cleanDate(
+      rangeLike?.effectiveEnd
+      || rangeLike?.requestedEnd
+      || rangeLike?.anchor
+      || new Date()
+    );
+    const start = new Date(sourceEnd.getFullYear(), sourceEnd.getMonth(), 1);
+    const end = new Date(sourceEnd.getFullYear(), sourceEnd.getMonth() + 1, 0);
+    return {
+      ...rangeLike,
+      requestedStart: start,
+      requestedEnd: end,
+      effectiveStart: start,
+      effectiveEnd: end,
+      requestedLabel: rangeLabel(start, end),
+      effectiveLabel: rangeLabel(start, end),
+      days: dayCount(start, end),
+      monthScoped: true,
+      monthKey: monthKey(sourceEnd)
+    };
+  }
+
+  function buildDailyValueMap(seriesList, valueKey) {
+    const map = new Map();
+    (seriesList || []).forEach((series) => {
+      (Array.isArray(series) ? series : []).forEach((point) => {
+        const date = point?.date instanceof Date && !Number.isNaN(point.date.getTime()) ? cleanDate(point.date) : null;
+        if (!date) return;
+        const key = iso(date);
+        if (!map.has(key)) map.set(key, { date, value: 0 });
+        map.get(key).value += num(point?.[valueKey]);
+      });
+    });
+    return map;
+  }
+
+  function computeIuPlanWindow(rangeLike, factMap, planDailyFn) {
+    const rows = enumerateDates(rangeLike.effectiveStart, rangeLike.effectiveEnd).map((date) => {
+      const key = iso(date);
+      const plan = Math.max(0, num(planDailyFn(date)));
+      const fact = Math.max(0, num(factMap.get(key)?.value));
+      return {
+        date,
+        plan,
+        fact,
+        completion: plan > 0 ? fact / plan : null
+      };
+    });
+
+    const plannedRows = rows.filter((row) => row.plan > 0);
+    const workRows = plannedRows.length ? plannedRows : rows;
+    const plan = plannedRows.reduce((sum, row) => sum + row.plan, 0);
+    const fact = workRows.reduce((sum, row) => sum + row.fact, 0);
+    const completion = plan > 0 ? fact / plan : 0;
+
+    const monthBuckets = new Map();
+    workRows.forEach((row) => {
+      const key = monthKey(row.date);
+      if (!monthBuckets.has(key)) {
+        const month = iuPlanMonth(row.date);
+        monthBuckets.set(key, {
+          monthKey: key,
+          label: month?.label || key,
+          plan: 0,
+          fact: 0
+        });
+      }
+      const bucket = monthBuckets.get(key);
+      bucket.plan += row.plan;
+      bucket.fact += row.fact;
+    });
+
+    const monthRows = [...monthBuckets.values()]
+      .map((bucket) => ({
+        ...bucket,
+        completion: bucket.plan > 0 ? bucket.fact / bucket.plan : null
+      }))
+      .sort((left, right) => String(left.monthKey).localeCompare(String(right.monthKey)));
+
+    return {
+      range: rangeLike,
+      rows,
+      workRows,
+      plannedRows,
+      monthRows,
+      plan,
+      fact,
+      completion,
+      avgPlanDaily: workRows.length ? plan / workRows.length : 0,
+      avgFactDaily: workRows.length ? fact / workRows.length : 0,
+      firstPlanDate: plannedRows[0]?.date || null,
+      lastPlanDate: plannedRows[plannedRows.length - 1]?.date || null,
+      sparkFact: sparkline(workRows.map((row) => row.fact)),
+      sparkPlan: sparkline(workRows.map((row) => row.plan))
+    };
+  }
+
+  function buildIuRevenuePlanMetric(executive, rangeOverride = null) {
+    const range = monthScopeRange(rangeOverride || executive.range);
+    const factMap = buildDailyValueMap([
+      platformSeries('wb', range.anchor),
+      platformSeries('ozon', range.anchor)
+    ], 'revenue');
+    return computeIuPlanWindow(range, factMap, iuPlanDailyRevenue);
+  }
+
+  function buildIuAdsPlanMetric(executive, rangeOverride = null) {
+    const range = monthScopeRange(rangeOverride || executive.range);
+    const adsAnchor = parseDate(current('adsSummary')?.asOfDate) || range.anchor;
+    const factMap = buildDailyValueMap([
+      adsSeries('wb', adsAnchor),
+      adsSeries('ozon', adsAnchor)
+    ], 'spend');
+    return computeIuPlanWindow(range, factMap, iuPlanDailyAds);
+  }
+
   function sparkline(values) {
     const clean = values.map(num).filter((value) => Number.isFinite(value));
     if (!clean.length) return null;
@@ -1539,14 +1695,7 @@
       const freshnessTail = detailTailRows(freshnessSeries, 14);
       const freshnessEnd = freshnessTail[freshnessTail.length - 1]?.date || freshnessSeries[freshnessSeries.length - 1]?.date || null;
       const publishedEndDate = publishedTurnoverSeries[publishedTurnoverSeries.length - 1]?.date || null;
-      const sparsePublishedThreshold = Math.min(7, Math.max(0, freshnessTail.length - 1));
-      const publishedTooSparse = sparsePublishedThreshold > 0 && publishedTurnoverSeries.length < sparsePublishedThreshold;
-      if (
-        !publishedTurnoverSeries.length
-        || !(publishedEndDate instanceof Date)
-        || (freshnessEnd instanceof Date && freshnessEnd > publishedEndDate)
-        || publishedTooSparse
-      ) {
+      if (!publishedTurnoverSeries.length || !(publishedEndDate instanceof Date) || (freshnessEnd instanceof Date && freshnessEnd > publishedEndDate)) {
         if (publishedTurnoverSeries.length && freshnessTail.length) {
           const byDate = new Map();
           [...publishedTurnoverSeries, ...freshnessTail].forEach((point) => {
@@ -1905,7 +2054,7 @@
       #view-dashboard .portal-exec-date-value { display: block; color: rgba(255,244,229,.72); font-size: 12px; line-height: 1.35; }
       #view-dashboard .portal-exec-grid, #view-dashboard .portal-exec-metric-strip, #view-dashboard .portal-exec-platform-grid, #view-dashboard .portal-exec-issue-grid, #view-dashboard .portal-exec-modal-metrics { display: grid; gap: 12px; }
       #view-dashboard .portal-exec-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-      #view-dashboard .portal-exec-metric-strip { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+#view-dashboard .portal-exec-metric-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); }
       #view-dashboard .portal-exec-platform-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       #view-dashboard .portal-exec-issue-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
       #view-dashboard .portal-exec-two-grids { display: grid; gap: 16px; }
@@ -2750,6 +2899,167 @@
     };
   }
 
+  function iuPlanCoverageHint(windowMetric, range) {
+    if (!windowMetric.plannedRows.length) return 'Плановые значения из файла пока не покрывают выбранный диапазон.';
+    const first = windowMetric.firstPlanDate;
+    const last = windowMetric.lastPlanDate;
+    if (!(first instanceof Date) || !(last instanceof Date)) return '';
+    if (first > range.effectiveStart || last < range.effectiveEnd) {
+      return `План в этом окне доступен только за ${rangeLabel(first, last)}.`;
+    }
+    return '';
+  }
+
+  function buildIuRevenuePlanDetail(executive) {
+    const currentWindow = buildIuRevenuePlanMetric(executive);
+    const compareWindow = executive.compareRange ? buildIuRevenuePlanMetric(executive, executive.compareRange) : null;
+    const completionDelta = percentagePointDelta(currentWindow.completion, compareWindow?.completion);
+    const factDelta = relativeDelta(currentWindow.fact, compareWindow?.fact);
+    const rows = detailTailRows(currentWindow.workRows.length ? currentWindow.workRows : currentWindow.rows, 31);
+    const scopeRange = currentWindow.range || executive.range;
+    const coverageHint = iuPlanCoverageHint(currentWindow, scopeRange);
+    return {
+      title: 'ИУ WB+Ozon · оборот к плану',
+      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчете: ${scopeRange.effectiveLabel}.${coverageHint ? ` ${coverageHint}` : ''}`,
+      body: `
+        <div class="portal-exec-modal-metrics">
+          ${modalSummaryCard('Факт периода', money(currentWindow.fact))}
+          ${modalSummaryCard('План периода', money(currentWindow.plan))}
+          ${modalSummaryCard('% к плану', pct(currentWindow.completion))}
+          ${modalSummaryCard('WoW факта', factDelta !== null ? pct(factDelta) : '—')}
+          ${modalSummaryCard('WoW плана, pp', completionDelta !== null ? `${completionDelta >= 0 ? '+' : ''}${(completionDelta * 100).toFixed(1)} pp` : '—')}
+          ${modalSummaryCard('План в день', currentWindow.avgPlanDaily > 0 ? money(currentWindow.avgPlanDaily) : '—')}
+          ${modalSummaryCard('Факт в день', currentWindow.avgFactDaily > 0 ? money(currentWindow.avgFactDaily) : '—')}
+        </div>
+        <div class="portal-exec-modal-grid">
+          <div class="portal-exec-modal-card">
+            <h4 class="portal-exec-table-title">Помесячно</h4>
+            <p class="portal-exec-table-sub">Месячный план и факт в том же контуре WB+Ozon, чтобы сразу видеть, где недобор по месяцу.</p>
+            <table class="portal-exec-modal-table">
+              <thead>
+                <tr>
+                  <th>Месяц</th>
+                  <th>План</th>
+                  <th>Факт</th>
+                  <th>% к плану</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${currentWindow.monthRows.length ? currentWindow.monthRows.map((row) => `
+                  <tr>
+                    <td>${esc(row.label)}</td>
+                    <td>${esc(money(row.plan))}</td>
+                    <td>${esc(money(row.fact))}</td>
+                    <td>${esc(row.completion !== null ? pct(row.completion) : '—')}</td>
+                  </tr>
+                `).join('') : '<tr><td colspan="4">Для выбранного диапазона нет доступного месячного плана.</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+          <div class="portal-exec-modal-card">
+            <h4 class="portal-exec-table-title">По дням</h4>
+            <p class="portal-exec-table-sub">Дневной план и факт в выбранном окне. Помогает увидеть, когда началось отклонение от плана.</p>
+            <table class="portal-exec-modal-table">
+              <thead>
+                <tr>
+                  <th>Дата</th>
+                  <th>План</th>
+                  <th>Факт</th>
+                  <th>% к плану</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.length ? rows.map((row) => `
+                  <tr>
+                    <td>${esc(shortDate(row.date))}</td>
+                    <td>${esc(row.plan > 0 ? money(row.plan) : '—')}</td>
+                    <td>${esc(money(row.fact))}</td>
+                    <td>${esc(row.completion !== null ? pct(row.completion) : '—')}</td>
+                  </tr>
+                `).join('') : '<tr><td colspan="4">Нет дневного ряда для выбранного диапазона.</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `
+    };
+  }
+
+  function buildIuAdsPlanDetail(executive) {
+    const currentWindow = buildIuAdsPlanMetric(executive);
+    const compareWindow = executive.compareRange ? buildIuAdsPlanMetric(executive, executive.compareRange) : null;
+    const completionDelta = percentagePointDelta(currentWindow.completion, compareWindow?.completion);
+    const factDelta = relativeDelta(currentWindow.fact, compareWindow?.fact);
+    const rows = detailTailRows(currentWindow.workRows.length ? currentWindow.workRows : currentWindow.rows, 31);
+    const scopeRange = currentWindow.range || executive.range;
+    const coverageHint = iuPlanCoverageHint(currentWindow, scopeRange);
+    return {
+      title: 'Реклама WB+Ozon · выполнение плана',
+      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчете: ${scopeRange.effectiveLabel}.${coverageHint ? ` ${coverageHint}` : ''}`,
+      body: `
+        <div class="portal-exec-modal-metrics">
+          ${modalSummaryCard('Факт расходов', money(currentWindow.fact))}
+          ${modalSummaryCard('План расходов', money(currentWindow.plan))}
+          ${modalSummaryCard('% выполнения', pct(currentWindow.completion))}
+          ${modalSummaryCard('WoW факта', factDelta !== null ? pct(factDelta) : '—')}
+          ${modalSummaryCard('WoW плана, pp', completionDelta !== null ? `${completionDelta >= 0 ? '+' : ''}${(completionDelta * 100).toFixed(1)} pp` : '—')}
+          ${modalSummaryCard('План в день', currentWindow.avgPlanDaily > 0 ? money(currentWindow.avgPlanDaily) : '—')}
+          ${modalSummaryCard('Факт в день', currentWindow.avgFactDaily > 0 ? money(currentWindow.avgFactDaily) : '—')}
+        </div>
+        <div class="portal-exec-modal-grid">
+          <div class="portal-exec-modal-card">
+            <h4 class="portal-exec-table-title">Помесячный контур рекламы</h4>
+            <p class="portal-exec-table-sub">Сверка месячного плана и факта рекламных расходов WB+Ozon.</p>
+            <table class="portal-exec-modal-table">
+              <thead>
+                <tr>
+                  <th>Месяц</th>
+                  <th>План</th>
+                  <th>Факт</th>
+                  <th>% к плану</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${currentWindow.monthRows.length ? currentWindow.monthRows.map((row) => `
+                  <tr>
+                    <td>${esc(row.label)}</td>
+                    <td>${esc(money(row.plan))}</td>
+                    <td>${esc(money(row.fact))}</td>
+                    <td>${esc(row.completion !== null ? pct(row.completion) : '—')}</td>
+                  </tr>
+                `).join('') : '<tr><td colspan="4">Для выбранного диапазона нет доступного месячного плана.</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+          <div class="portal-exec-modal-card">
+            <h4 class="portal-exec-table-title">По дням</h4>
+            <p class="portal-exec-table-sub">Дневной срез плана и факта рекламных расходов, чтобы видеть ритм расходования бюджета.</p>
+            <table class="portal-exec-modal-table">
+              <thead>
+                <tr>
+                  <th>Дата</th>
+                  <th>План</th>
+                  <th>Факт</th>
+                  <th>% к плану</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.length ? rows.map((row) => `
+                  <tr>
+                    <td>${esc(shortDate(row.date))}</td>
+                    <td>${esc(row.plan > 0 ? money(row.plan) : '—')}</td>
+                    <td>${esc(money(row.fact))}</td>
+                    <td>${esc(row.completion !== null ? pct(row.completion) : '—')}</td>
+                  </tr>
+                `).join('') : '<tr><td colspan="4">Нет дневного ряда для выбранного диапазона.</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `
+    };
+  }
+
   function buildContentSliceDetail() {
     const summary = contentSliceSummary();
     const periodLabel = summary.periods.length ? summary.periods.join(' · ') : 'последний доступный срез';
@@ -3433,28 +3743,24 @@
     const metric = executive.focusMetric || executive.overall;
     const previous = executive.compareByKey.get(metric.key);
     const turnover = buildTurnoverMetric(metric.key, executive.range);
+    const iuRevenue = buildIuRevenuePlanMetric(executive);
+    const iuAds = buildIuAdsPlanMetric(executive);
+    const iuRevenuePrev = executive.compareRange ? buildIuRevenuePlanMetric(executive, executive.compareRange) : null;
+    const iuAdsPrev = executive.compareRange ? buildIuAdsPlanMetric(executive, executive.compareRange) : null;
     const revenueDelta = relativeDelta(metric.revenue, previous?.revenue);
     const avgCheckDelta = relativeDelta(metric.avgCheck, previous?.avgCheck);
     const marginDelta = relativeDelta(metric.margin, previous?.margin);
     const turnoverDelta = relativeDelta(turnover.avgTurnoverDays, previous?.avgTurnoverDays);
     const completionDelta = percentagePointDelta(metric.completion, previous?.completion);
-    const iu = mergeWbOzonDays(executive, executive?.byKey);
-    const iuCompare = mergeWbOzonDays(executive, executive?.compareByKey);
-    const iuDelta = percentagePointDelta(iu.completion, iuCompare?.completion);
-    const adsMetric = iu;
-    const adsCompareMetric = iuCompare;
-    const adsDayCount = Math.max(1, adsMetric.days.length);
-    const adsCompareDayCount = Math.max(1, adsCompareMetric?.days?.length || 0);
-    const adsDailyPlan = adsCompareMetric?.adRevenue > 0 ? (adsCompareMetric.adRevenue / adsCompareDayCount) : (adsMetric.adRevenue / adsDayCount);
-    const adsPlanPeriod = adsDailyPlan * adsDayCount;
-    const adsCompletion = adsPlanPeriod > 0 ? adsMetric.adRevenue / adsPlanPeriod : 0;
-    const adsCompareCompletion = adsCompareMetric?.adRevenue > 0 ? adsCompareMetric.adRevenue / Math.max(1, adsCompareMetric.adRevenue) : null;
-    const adsDelta = percentagePointDelta(adsCompletion, adsCompareCompletion);
+    const iuRevenueDelta = percentagePointDelta(iuRevenue.completion, iuRevenuePrev?.completion);
+    const iuAdsDelta = percentagePointDelta(iuAds.completion, iuAdsPrev?.completion);
+    const iuRevenueTone = iuRevenue.plannedRows.length ? toneCompletion(iuRevenue.completion) : 'warn';
+    const iuAdsTone = iuAds.plannedRows.length ? toneCompletion(iuAds.completion) : 'warn';
     return `
       <section class="portal-exec-section">
         <div class="portal-exec-head">
           <div class="portal-exec-copy">
-            <h3>5 Рабочих Графиков</h3>
+            <h3>7 управленческих графиков</h3>
             <p>Верхний слой для РОПа: оборот, средний чек, маржа, оборачиваемость и план-факт. По клику каждая карточка открывает окно: слева артикула, справа динамика этой же метрики по дням.</p>
           </div>
           ${sectionMetaHtml(executive, [executive.compareRange ? badgeHtml(`LFL: ${executive.compareRange.label}`, executive.compareRange.clamped ? 'warn' : 'info') : badgeHtml('LFL: нет окна для сравнения', 'info')])}
@@ -3496,20 +3802,20 @@
             ${renderSparkline(metric.sparkUnits)}
             <div class="portal-exec-axis"><span>${esc(shortDate(executive.range.effectiveStart))}</span><span>${esc(shortDate(executive.range.effectiveEnd))}</span></div>
           </article>
-          <article class="portal-exec-card is-${toneCompletion(iu.completion)} is-clickable" data-portal-exec-open="iu-turnover" data-portal-exec-key="all">
-            <div class="portal-exec-card-head"><span class="portal-exec-card-label">ИУ WB+Ozon · оборот</span>${deltaBadge('LFL', iuDelta, false, 'pp')}</div>
-            <div class="portal-exec-card-value compact">${esc(pct(iu.completion))}</div>
-            <div class="portal-exec-sub">План ${esc(int(iu.plan))} · факт ${esc(int(iu.units))} · выручка ${esc(money(iu.revenue))}.</div>
-            <div class="portal-exec-progress is-${toneCompletion(iu.completion)}"><span style="width:${Math.max(6, Math.min(100, Math.round(num(iu.completion) * 100)))}%"></span></div>
-            ${renderSparkline(iu.sparkUnits)}
+          <article class="portal-exec-card is-${iuRevenueTone} is-clickable" data-portal-exec-open="iu-revenue-plan" data-portal-exec-key="${esc(metric.key)}">
+            <div class="portal-exec-card-head"><span class="portal-exec-card-label">ИУ WB+Ozon · оборот</span>${deltaBadge('LFL', iuRevenueDelta, false, 'pp')}</div>
+            <div class="portal-exec-card-value compact">${esc(pct(iuRevenue.completion))}</div>
+            <div class="portal-exec-sub">Факт ${esc(money(iuRevenue.fact))} · план ${esc(money(iuRevenue.plan))}. ${esc(iuRevenue.avgPlanDaily > 0 ? `План в день ${money(iuRevenue.avgPlanDaily)}.` : 'План на это окно не задан.')}</div>
+            <div class="portal-exec-progress is-${iuRevenueTone}"><span style="width:${Math.max(6, Math.min(100, Math.round(num(iuRevenue.completion) * 100)))}%"></span></div>
+            ${renderSparkline(iuRevenue.sparkFact || iuRevenue.sparkPlan)}
             <div class="portal-exec-axis"><span>${esc(shortDate(executive.range.effectiveStart))}</span><span>${esc(shortDate(executive.range.effectiveEnd))}</span></div>
           </article>
-          <article class="portal-exec-card is-${toneCompletion(adsCompletion)} is-clickable" data-portal-exec-open="ads-plan" data-portal-exec-key="all">
-            <div class="portal-exec-card-head"><span class="portal-exec-card-label">Реклама · план-факт</span>${deltaBadge('LFL', adsDelta, false, 'pp')}</div>
-            <div class="portal-exec-card-value compact">${esc(pct(adsCompletion))}</div>
-            <div class="portal-exec-sub">Факт ad revenue ${esc(money(adsMetric.adRevenue))} · план ${esc(money(adsPlanPeriod))} · ДРР ${esc(adsMetric.drr !== null ? pct(adsMetric.drr) : '—')}.</div>
-            <div class="portal-exec-progress is-${toneCompletion(adsCompletion)}"><span style="width:${Math.max(6, Math.min(100, Math.round(num(adsCompletion) * 100)))}%"></span></div>
-            ${renderSparkline(adsMetric.sparkAdRevenue)}
+          <article class="portal-exec-card is-${iuAdsTone} is-clickable" data-portal-exec-open="iu-ads-plan" data-portal-exec-key="${esc(metric.key)}">
+            <div class="portal-exec-card-head"><span class="portal-exec-card-label">Реклама WB+Ozon</span>${deltaBadge('LFL', iuAdsDelta, false, 'pp')}</div>
+            <div class="portal-exec-card-value compact">${esc(pct(iuAds.completion))}</div>
+            <div class="portal-exec-sub">Факт ${esc(money(iuAds.fact))} · план ${esc(money(iuAds.plan))}. ${esc(iuAds.avgPlanDaily > 0 ? `План в день ${money(iuAds.avgPlanDaily)}.` : 'План на это окно не задан.')}</div>
+            <div class="portal-exec-progress is-${iuAdsTone}"><span style="width:${Math.max(6, Math.min(100, Math.round(num(iuAds.completion) * 100)))}%"></span></div>
+            ${renderSparkline(iuAds.sparkFact || iuAds.sparkPlan)}
             <div class="portal-exec-axis"><span>${esc(shortDate(executive.range.effectiveStart))}</span><span>${esc(shortDate(executive.range.effectiveEnd))}</span></div>
           </article>
         </div>
@@ -3891,14 +4197,6 @@
       card.addEventListener('click', () => {
         const key = card.dataset.portalExecKey || 'all';
         const kind = card.dataset.portalExecOpen || 'platform';
-        if (kind === 'iu-turnover') {
-          openModal(buildIuTurnoverDetail(executive));
-          return;
-        }
-        if (kind === 'ads-plan') {
-          openModal(buildAdsPlanProgressDetail(executive));
-          return;
-        }
         const metric = executive.byKey.get(key) || executive.overall;
         if (!metric) return;
         if (kind === 'content-summary') {
@@ -3919,6 +4217,14 @@
         }
         if (kind === 'ads') {
           openModal(buildAdsDetail(metric, executive));
+          return;
+        }
+        if (kind === 'iu-revenue-plan') {
+          openModal(buildIuRevenuePlanDetail(executive));
+          return;
+        }
+        if (kind === 'iu-ads-plan') {
+          openModal(buildIuAdsPlanDetail(executive));
           return;
         }
         if (kind === 'revenue') {
@@ -5204,29 +5510,25 @@ function dashboardTaskStatusChip(task) {
     const metric = executive.focusMetric || executive.overall;
     const previous = executive.compareByKey.get(metric.key);
     const turnover = buildTurnoverMetric(metric.key, executive.range);
+    const iuRevenue = buildIuRevenuePlanMetric(executive);
+    const iuAds = buildIuAdsPlanMetric(executive);
+    const iuRevenuePrev = executive.compareRange ? buildIuRevenuePlanMetric(executive, executive.compareRange) : null;
+    const iuAdsPrev = executive.compareRange ? buildIuAdsPlanMetric(executive, executive.compareRange) : null;
     const revenueDelta = relativeDelta(metric.revenue, previous?.revenue);
     const avgCheckDelta = relativeDelta(metric.avgCheck, previous?.avgCheck);
     const marginDelta = relativeDelta(metric.margin, previous?.margin);
     const turnoverDelta = relativeDelta(turnover.avgTurnoverDays, previous?.avgTurnoverDays);
     const completionDelta = percentagePointDelta(metric.completion, previous?.completion);
-    const iu = mergeWbOzonDays(executive, executive?.byKey);
-    const iuCompare = mergeWbOzonDays(executive, executive?.compareByKey);
-    const iuDelta = percentagePointDelta(iu.completion, iuCompare?.completion);
-    const adsMetric = iu;
-    const adsCompareMetric = iuCompare;
-    const adsDayCount = Math.max(1, adsMetric.days.length);
-    const adsCompareDayCount = Math.max(1, adsCompareMetric?.days?.length || 0);
-    const adsDailyPlan = adsCompareMetric?.adRevenue > 0 ? (adsCompareMetric.adRevenue / adsCompareDayCount) : (adsMetric.adRevenue / adsDayCount);
-    const adsPlanPeriod = adsDailyPlan * adsDayCount;
-    const adsCompletion = adsPlanPeriod > 0 ? adsMetric.adRevenue / adsPlanPeriod : 0;
-    const adsCompareCompletion = adsCompareMetric?.adRevenue > 0 ? adsCompareMetric.adRevenue / Math.max(1, adsCompareMetric.adRevenue) : null;
-    const adsDelta = percentagePointDelta(adsCompletion, adsCompareCompletion);
+    const iuRevenueDelta = percentagePointDelta(iuRevenue.completion, iuRevenuePrev?.completion);
+    const iuAdsDelta = percentagePointDelta(iuAds.completion, iuAdsPrev?.completion);
+    const iuRevenueTone = iuRevenue.plannedRows.length ? toneCompletion(iuRevenue.completion) : 'warn';
+    const iuAdsTone = iuAds.plannedRows.length ? toneCompletion(iuAds.completion) : 'warn';
     return `
       <section class="portal-exec-section is-highlight">
         <div class="portal-exec-head">
           <div class="portal-exec-copy">
-            <h3>5 управленческих графиков</h3>
-            <p>Это главный слой для РОПа. Каждая карточка отвечает на один вопрос, а по клику открывает drilldown: слева артикула, справа последние 14 дней той же метрики.</p>
+            <h3>7 управленческих графиков</h3>
+            <p>Верхний слой РОПа: выручка, средний чек, маржа, оборачиваемость, план-факт и два новых графика ИУ (оборот WB+Ozon и реклама WB+Ozon).</p>
           </div>
           ${sectionMetaHtml(executive, [executive.compareRange ? badgeHtml(`LFL: ${executive.compareRange.label}`, executive.compareRange.clamped ? 'warn' : 'info') : badgeHtml('LFL: нет окна сравнения', 'info')])}
         </div>
@@ -5267,20 +5569,20 @@ function dashboardTaskStatusChip(task) {
             ${renderSparkline(metric.sparkUnits)}
             <div class="portal-exec-axis"><span>${esc(shortDate(executive.range.effectiveStart))}</span><span>${esc(shortDate(executive.range.effectiveEnd))}</span></div>
           </article>
-          <article class="portal-exec-card is-${toneCompletion(iu.completion)} is-clickable" data-portal-exec-open="iu-turnover" data-portal-exec-key="all">
-            <div class="portal-exec-card-head"><span class="portal-exec-card-label">ИУ WB+Ozon · оборот</span>${deltaBadge('LFL', iuDelta, false, 'pp')}</div>
-            <div class="portal-exec-card-value compact">${esc(pct(iu.completion))}</div>
-            <div class="portal-exec-sub">План ${esc(int(iu.plan))} · факт ${esc(int(iu.units))} · выручка ${esc(money(iu.revenue))}.</div>
-            <div class="portal-exec-progress is-${toneCompletion(iu.completion)}"><span style="width:${Math.max(6, Math.min(100, Math.round(num(iu.completion) * 100)))}%"></span></div>
-            ${renderSparkline(iu.sparkUnits)}
+          <article class="portal-exec-card is-${iuRevenueTone} is-clickable" data-portal-exec-open="iu-revenue-plan" data-portal-exec-key="${esc(metric.key)}">
+            <div class="portal-exec-card-head"><span class="portal-exec-card-label">ИУ WB+Ozon · оборот</span>${deltaBadge('LFL', iuRevenueDelta, false, 'pp')}</div>
+            <div class="portal-exec-card-value compact">${esc(pct(iuRevenue.completion))}</div>
+            <div class="portal-exec-sub">Факт ${esc(money(iuRevenue.fact))} · план ${esc(money(iuRevenue.plan))}. ${esc(iuRevenue.avgPlanDaily > 0 ? `План в день ${money(iuRevenue.avgPlanDaily)}.` : 'План на это окно не задан.')}</div>
+            <div class="portal-exec-progress is-${iuRevenueTone}"><span style="width:${Math.max(6, Math.min(100, Math.round(num(iuRevenue.completion) * 100)))}%"></span></div>
+            ${renderSparkline(iuRevenue.sparkFact || iuRevenue.sparkPlan)}
             <div class="portal-exec-axis"><span>${esc(shortDate(executive.range.effectiveStart))}</span><span>${esc(shortDate(executive.range.effectiveEnd))}</span></div>
           </article>
-          <article class="portal-exec-card is-${toneCompletion(adsCompletion)} is-clickable" data-portal-exec-open="ads-plan" data-portal-exec-key="all">
-            <div class="portal-exec-card-head"><span class="portal-exec-card-label">Реклама · план-факт</span>${deltaBadge('LFL', adsDelta, false, 'pp')}</div>
-            <div class="portal-exec-card-value compact">${esc(pct(adsCompletion))}</div>
-            <div class="portal-exec-sub">Факт ad revenue ${esc(money(adsMetric.adRevenue))} · план ${esc(money(adsPlanPeriod))} · ДРР ${esc(adsMetric.drr !== null ? pct(adsMetric.drr) : '—')}.</div>
-            <div class="portal-exec-progress is-${toneCompletion(adsCompletion)}"><span style="width:${Math.max(6, Math.min(100, Math.round(num(adsCompletion) * 100)))}%"></span></div>
-            ${renderSparkline(adsMetric.sparkAdRevenue)}
+          <article class="portal-exec-card is-${iuAdsTone} is-clickable" data-portal-exec-open="iu-ads-plan" data-portal-exec-key="${esc(metric.key)}">
+            <div class="portal-exec-card-head"><span class="portal-exec-card-label">Реклама WB+Ozon</span>${deltaBadge('LFL', iuAdsDelta, false, 'pp')}</div>
+            <div class="portal-exec-card-value compact">${esc(pct(iuAds.completion))}</div>
+            <div class="portal-exec-sub">Факт ${esc(money(iuAds.fact))} · план ${esc(money(iuAds.plan))}. ${esc(iuAds.avgPlanDaily > 0 ? `План в день ${money(iuAds.avgPlanDaily)}.` : 'План на это окно не задан.')}</div>
+            <div class="portal-exec-progress is-${iuAdsTone}"><span style="width:${Math.max(6, Math.min(100, Math.round(num(iuAds.completion) * 100)))}%"></span></div>
+            ${renderSparkline(iuAds.sparkFact || iuAds.sparkPlan)}
             <div class="portal-exec-axis"><span>${esc(shortDate(executive.range.effectiveStart))}</span><span>${esc(shortDate(executive.range.effectiveEnd))}</span></div>
           </article>
         </div>
@@ -5448,14 +5750,6 @@ function dashboardTaskStatusChip(task) {
       card.addEventListener('click', () => {
         const key = card.dataset.portalExecKey || 'all';
         const kind = card.dataset.portalExecOpen || 'platform';
-        if (kind === 'iu-turnover') {
-          openModal(buildIuTurnoverDetail(executive));
-          return;
-        }
-        if (kind === 'ads-plan') {
-          openModal(buildAdsPlanProgressDetail(executive));
-          return;
-        }
         const metric = executive.byKey.get(key) || executive.overall;
         if (!metric) return;
         if (kind === 'content-summary') {
@@ -5476,6 +5770,14 @@ function dashboardTaskStatusChip(task) {
         }
         if (kind === 'ads') {
           openModal(buildAdsDetail(metric, executive));
+          return;
+        }
+        if (kind === 'iu-revenue-plan') {
+          openModal(buildIuRevenuePlanDetail(executive));
+          return;
+        }
+        if (kind === 'iu-ads-plan') {
+          openModal(buildIuAdsPlanDetail(executive));
           return;
         }
         if (kind === 'revenue') {
@@ -6004,6 +6306,7 @@ function dashboardTaskStatusChip(task) {
       dashboard,
       platformTrends,
       platformPlan,
+      iuPlan,
       adsSummary,
       skus,
       prices,
@@ -6017,6 +6320,7 @@ function dashboardTaskStatusChip(task) {
       loadJson('dashboard', 'data/dashboard.json', true, forceRefresh),
       loadJson('platformTrends', 'data/platform_trends.json', true, forceRefresh),
       loadJson('platformPlan', 'data/platform_plan.json', false, forceRefresh),
+      loadJson('iuPlan', 'data/iu_plan.json', false, forceRefresh),
       loadJson('adsSummary', 'data/ads_summary.json', false, forceRefresh),
       loadJson('skus', 'data/skus.json', true, forceRefresh),
       loadJson('prices', 'data/prices.json', false, forceRefresh),
@@ -6050,6 +6354,7 @@ function dashboardTaskStatusChip(task) {
     cache.dashboard = dashboard;
     cache.platformTrends = platformTrends;
     cache.platformPlan = platformPlan;
+    cache.iuPlan = iuPlan;
     cache.adsSummary = adsSummary;
     cache.skus = skus;
     cache.prices = prices;
@@ -6175,280 +6480,6 @@ function dashboardTaskStatusChip(task) {
       `
     };
   }
-
-  function mergeWbOzonDays(executive, sourceMap) {
-    const map = sourceMap || executive?.byKey;
-    const metrics = ['wb', 'ozon']
-      .map((key) => map?.get?.(key))
-      .filter(Boolean);
-    const byDate = new Map();
-    metrics.forEach((metric) => {
-      (Array.isArray(metric?.days) ? metric.days : []).forEach((row) => {
-        const date = parseDate(row?.date);
-        if (!(date instanceof Date) || Number.isNaN(date.getTime())) return;
-        const key = iso(date);
-        if (!byDate.has(key)) {
-          byDate.set(key, {
-            date,
-            planUnits: 0,
-            factUnits: 0,
-            revenue: 0,
-            spend: 0,
-            adRevenue: 0,
-            views: 0,
-            clicks: 0,
-            orders: 0
-          });
-        }
-        const bucket = byDate.get(key);
-        bucket.planUnits += num(row?.planUnits);
-        bucket.factUnits += num(row?.factUnits);
-        bucket.revenue += num(row?.revenue);
-        bucket.spend += num(row?.spend);
-        bucket.adRevenue += num(row?.adRevenue);
-        bucket.views += num(row?.views);
-        bucket.clicks += num(row?.clicks);
-        bucket.orders += num(row?.orders);
-      });
-    });
-
-    const days = [...byDate.values()]
-      .sort((left, right) => left.date - right.date)
-      .map((row) => ({
-        ...row,
-        completion: row.planUnits > 0 ? row.factUnits / row.planUnits : 0,
-        drr: row.adRevenue > 0 ? row.spend / row.adRevenue : null
-      }));
-    const plan = days.reduce((sum, row) => sum + row.planUnits, 0);
-    const units = days.reduce((sum, row) => sum + row.factUnits, 0);
-    const revenue = days.reduce((sum, row) => sum + row.revenue, 0);
-    const spend = days.reduce((sum, row) => sum + row.spend, 0);
-    const adRevenue = days.reduce((sum, row) => sum + row.adRevenue, 0);
-    return {
-      days,
-      plan,
-      units,
-      revenue,
-      spend,
-      adRevenue,
-      completion: plan > 0 ? units / plan : 0,
-      drr: adRevenue > 0 ? spend / adRevenue : null,
-      sparkUnits: sparkline(days.map((row) => row.factUnits)),
-      sparkAdRevenue: sparkline(days.map((row) => row.adRevenue))
-    };
-  }
-
-  function monthRollupFromDays(days) {
-    const byMonth = new Map();
-    (Array.isArray(days) ? days : []).forEach((row) => {
-      const key = monthKey(row?.date);
-      if (!key) return;
-      if (!byMonth.has(key)) {
-        byMonth.set(key, {
-          key,
-          label: key,
-          days: 0,
-          planUnits: 0,
-          factUnits: 0,
-          revenue: 0,
-          spend: 0,
-          adRevenue: 0
-        });
-      }
-      const bucket = byMonth.get(key);
-      bucket.days += 1;
-      bucket.planUnits += num(row?.planUnits);
-      bucket.factUnits += num(row?.factUnits);
-      bucket.revenue += num(row?.revenue);
-      bucket.spend += num(row?.spend);
-      bucket.adRevenue += num(row?.adRevenue);
-    });
-    return [...byMonth.values()]
-      .sort((left, right) => String(left.key).localeCompare(String(right.key)))
-      .map((row) => ({
-        ...row,
-        completion: row.planUnits > 0 ? row.factUnits / row.planUnits : 0,
-        drr: row.adRevenue > 0 ? row.spend / row.adRevenue : null
-      }));
-  }
-
-  function buildIuTurnoverDetail(executive) {
-    const current = mergeWbOzonDays(executive, executive?.byKey);
-    const compare = mergeWbOzonDays(executive, executive?.compareByKey);
-    const completionDelta = percentagePointDelta(current.completion, compare?.completion);
-    const dailyRows = current.days;
-    const monthlyRows = monthRollupFromDays(dailyRows);
-    return {
-      title: 'ИУ WB + Ozon · оборот и выполнение плана',
-      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчёте: ${executive.range.effectiveLabel}.`,
-      body: `
-        <div class="portal-exec-modal-metrics">
-          ${modalSummaryCard('% к плану', pct(current.completion))}
-          ${modalSummaryCard('LFL', completionDelta !== null ? `${completionDelta >= 0 ? '+' : ''}${(completionDelta * 100).toFixed(1)} п.п.` : '—')}
-          ${modalSummaryCard('План периода', int(current.plan))}
-          ${modalSummaryCard('Факт периода', int(current.units))}
-          ${modalSummaryCard('Выручка', money(current.revenue))}
-          ${modalSummaryCard('Факт / день', int(current.units / Math.max(1, dailyRows.length)))}
-        </div>
-        <div class="portal-exec-modal-grid">
-          <div class="portal-exec-modal-card">
-            <h4 class="portal-exec-table-title">Подневно</h4>
-            <table class="portal-exec-modal-table">
-              <thead><tr><th>Дата</th><th>План</th><th>Факт</th><th>% к плану</th><th>Выручка</th></tr></thead>
-              <tbody>
-                ${dailyRows.length ? dailyRows.map((row) => `
-                  <tr>
-                    <td>${esc(shortDate(row.date))}</td>
-                    <td>${esc(int(row.planUnits))}</td>
-                    <td>${esc(int(row.factUnits))}</td>
-                    <td>${esc(pct(row.completion))}</td>
-                    <td>${esc(money(row.revenue))}</td>
-                  </tr>
-                `).join('') : '<tr><td colspan="5">Нет дневных данных по WB/Ozon.</td></tr>'}
-              </tbody>
-            </table>
-          </div>
-          <div class="portal-exec-modal-card">
-            <h4 class="portal-exec-table-title">Помесячно</h4>
-            <table class="portal-exec-modal-table">
-              <thead><tr><th>Месяц</th><th>План</th><th>Факт</th><th>% к плану</th><th>Выручка</th></tr></thead>
-              <tbody>
-                ${monthlyRows.length ? monthlyRows.map((row) => `
-                  <tr>
-                    <td>${esc(row.label)}</td>
-                    <td>${esc(int(row.planUnits))}</td>
-                    <td>${esc(int(row.factUnits))}</td>
-                    <td>${esc(pct(row.completion))}</td>
-                    <td>${esc(money(row.revenue))}</td>
-                  </tr>
-                `).join('') : '<tr><td colspan="5">Нет месячных данных.</td></tr>'}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      `
-    };
-  }
-
-  function buildAdsPlanProgressDetail(executive) {
-    const current = mergeWbOzonDays(executive, executive?.byKey);
-    const compare = mergeWbOzonDays(executive, executive?.compareByKey);
-    const dayCount = Math.max(1, current.days.length);
-    const compareDayCount = Math.max(1, compare?.days?.length || 0);
-    const dailyRevenuePlan = compare?.adRevenue > 0 ? (compare.adRevenue / compareDayCount) : (current.adRevenue / dayCount);
-    const monthlyRevenuePlan = dailyRevenuePlan * dayCount;
-    const revenueCompletion = monthlyRevenuePlan > 0 ? current.adRevenue / monthlyRevenuePlan : 0;
-    const compareCompletion = compare?.adRevenue > 0 ? compare.adRevenue / Math.max(1, compare.adRevenue) : null;
-    const completionDelta = percentagePointDelta(revenueCompletion, compareCompletion);
-    const dailyRows = current.days.map((row) => ({
-      ...row,
-      dayPlan: dailyRevenuePlan,
-      completion: dailyRevenuePlan > 0 ? row.adRevenue / dailyRevenuePlan : 0
-    }));
-    const monthlyRows = monthRollupFromDays(current.days).map((row) => {
-      const plan = dailyRevenuePlan * row.days;
-      return {
-        ...row,
-        planAdRevenue: plan,
-        completion: plan > 0 ? row.adRevenue / plan : 0
-      };
-    });
-    return {
-      title: 'Реклама · выполнение плана',
-      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчёте: ${executive.range.effectiveLabel}. План формируется от LFL-среднедневного значения WB+Ozon.`,
-      body: `
-        <div class="portal-exec-modal-metrics">
-          ${modalSummaryCard('% к плану ad revenue', pct(revenueCompletion))}
-          ${modalSummaryCard('LFL', completionDelta !== null ? `${completionDelta >= 0 ? '+' : ''}${(completionDelta * 100).toFixed(1)} п.п.` : '—')}
-          ${modalSummaryCard('Факт ad revenue', money(current.adRevenue))}
-          ${modalSummaryCard('План ad revenue', money(monthlyRevenuePlan))}
-          ${modalSummaryCard('Факт расход', money(current.spend))}
-          ${modalSummaryCard('ДРР', current.drr !== null ? pct(current.drr) : '—')}
-        </div>
-        <div class="portal-exec-modal-grid">
-          <div class="portal-exec-modal-card">
-            <h4 class="portal-exec-table-title">Подневно</h4>
-            <table class="portal-exec-modal-table">
-              <thead><tr><th>Дата</th><th>План ad revenue</th><th>Факт ad revenue</th><th>% к плану</th><th>Расход</th></tr></thead>
-              <tbody>
-                ${dailyRows.length ? dailyRows.map((row) => `
-                  <tr>
-                    <td>${esc(shortDate(row.date))}</td>
-                    <td>${esc(money(row.dayPlan))}</td>
-                    <td>${esc(money(row.adRevenue))}</td>
-                    <td>${esc(pct(row.completion))}</td>
-                    <td>${esc(money(row.spend))}</td>
-                  </tr>
-                `).join('') : '<tr><td colspan="5">Нет дневных рекламных данных.</td></tr>'}
-              </tbody>
-            </table>
-          </div>
-          <div class="portal-exec-modal-card">
-            <h4 class="portal-exec-table-title">Помесячно</h4>
-            <table class="portal-exec-modal-table">
-              <thead><tr><th>Месяц</th><th>План ad revenue</th><th>Факт ad revenue</th><th>% к плану</th><th>ДРР</th></tr></thead>
-              <tbody>
-                ${monthlyRows.length ? monthlyRows.map((row) => `
-                  <tr>
-                    <td>${esc(row.label)}</td>
-                    <td>${esc(money(row.planAdRevenue))}</td>
-                    <td>${esc(money(row.adRevenue))}</td>
-                    <td>${esc(pct(row.completion))}</td>
-                    <td>${esc(row.drr !== null ? pct(row.drr) : '—')}</td>
-                  </tr>
-                `).join('') : '<tr><td colspan="5">Нет месячной рекламной истории.</td></tr>'}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      `
-    };
-  }
-
-  const overviewSectionBaseWithIuAds = overviewSection;
-  overviewSection = function (executive) {
-    return overviewSectionBaseWithIuAds(executive);
-    const section = overviewSectionBaseWithIuAds(executive);
-    const iu = mergeWbOzonDays(executive, executive?.byKey);
-    const iuCompare = mergeWbOzonDays(executive, executive?.compareByKey);
-    const iuDelta = percentagePointDelta(iu.completion, iuCompare?.completion);
-    const ads = buildAdsPlanProgressDetail(executive);
-    const adsMetric = mergeWbOzonDays(executive, executive?.byKey);
-    const adsCompareMetric = mergeWbOzonDays(executive, executive?.compareByKey);
-    const adsDayCount = Math.max(1, adsMetric.days.length);
-    const adsCompareDayCount = Math.max(1, adsCompareMetric?.days?.length || 0);
-    const adsDailyPlan = adsCompareMetric?.adRevenue > 0 ? (adsCompareMetric.adRevenue / adsCompareDayCount) : (adsMetric.adRevenue / adsDayCount);
-    const adsPlanPeriod = adsDailyPlan * adsDayCount;
-    const adsCompletion = adsPlanPeriod > 0 ? adsMetric.adRevenue / adsPlanPeriod : 0;
-    const adsCompareCompletion = adsCompareMetric?.adRevenue > 0 ? adsCompareMetric.adRevenue / Math.max(1, adsCompareMetric.adRevenue) : null;
-    const adsDelta = percentagePointDelta(adsCompletion, adsCompareCompletion);
-    const extraCards = `
-          <article class="portal-exec-card is-${toneCompletion(iu.completion)} is-clickable" data-portal-exec-open="iu-turnover" data-portal-exec-key="all">
-            <div class="portal-exec-card-head"><span class="portal-exec-card-label">ИУ WB+Ozon · оборот</span>${deltaBadge('LFL', iuDelta, false, 'pp')}</div>
-            <div class="portal-exec-card-value compact">${esc(pct(iu.completion))}</div>
-            <div class="portal-exec-sub">План ${esc(int(iu.plan))} · факт ${esc(int(iu.units))} · выручка ${esc(money(iu.revenue))}.</div>
-            <div class="portal-exec-progress is-${toneCompletion(iu.completion)}"><span style="width:${Math.max(6, Math.min(100, Math.round(num(iu.completion) * 100)))}%"></span></div>
-            ${renderSparkline(iu.sparkUnits)}
-            <div class="portal-exec-axis"><span>${esc(shortDate(executive.range.effectiveStart))}</span><span>${esc(shortDate(executive.range.effectiveEnd))}</span></div>
-          </article>
-          <article class="portal-exec-card is-${toneCompletion(adsCompletion)} is-clickable" data-portal-exec-open="ads-plan" data-portal-exec-key="all">
-            <div class="portal-exec-card-head"><span class="portal-exec-card-label">Реклама · план-факт</span>${deltaBadge('LFL', adsDelta, false, 'pp')}</div>
-            <div class="portal-exec-card-value compact">${esc(pct(adsCompletion))}</div>
-            <div class="portal-exec-sub">Факт ad revenue ${esc(money(adsMetric.adRevenue))} · план ${esc(money(adsPlanPeriod))} · ДРР ${esc(adsMetric.drr !== null ? pct(adsMetric.drr) : '—')}.</div>
-            <div class="portal-exec-progress is-${toneCompletion(adsCompletion)}"><span style="width:${Math.max(6, Math.min(100, Math.round(num(adsCompletion) * 100)))}%"></span></div>
-            ${renderSparkline(adsMetric.sparkAdRevenue)}
-            <div class="portal-exec-axis"><span>${esc(shortDate(executive.range.effectiveStart))}</span><span>${esc(shortDate(executive.range.effectiveEnd))}</span></div>
-          </article>
-    `;
-    return section.replace(/<\/div>\s*<\/section>\s*$/, `${extraCards}</div></section>`);
-  };
-
-  const buildPlatformDetailIuAdsBase = buildPlatformDetail;
-  buildPlatformDetail = function (metric, executive, mode) {
-    if (mode === 'iu-turnover') return buildIuTurnoverDetail(executive);
-    if (mode === 'ads-plan') return buildAdsPlanProgressDetail(executive);
-    return buildPlatformDetailIuAdsBase(metric, executive, mode);
-  };
 
   function apply() {
     const dashboardRoot = document.getElementById('view-dashboard');

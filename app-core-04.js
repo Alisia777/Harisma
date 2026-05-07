@@ -139,38 +139,131 @@ function currentMonthDayCount() {
   return asOfDate ? Math.max(1, asOfDate.getDate()) : null;
 }
 
+const MONTH_PREFIX_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_LABEL_RU_GEN = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+
+function dashboardMonthMeta() {
+  const asOfDate = dashboardAsOfDate();
+  if (!asOfDate) return null;
+  const monthIndex = asOfDate.getMonth();
+  const fullYear = asOfDate.getFullYear();
+  const year2 = String(fullYear).slice(-2);
+  const prefix = MONTH_PREFIX_EN[monthIndex] || 'Apr';
+  const daysInMonth = new Date(fullYear, monthIndex + 1, 0).getDate();
+  return {
+    key: `${fullYear}-${String(monthIndex + 1).padStart(2, '0')}`,
+    monthIndex,
+    prefix,
+    year2,
+    day: asOfDate.getDate(),
+    daysInMonth,
+    monthLabelGen: MONTH_LABEL_RU_GEN[monthIndex] || ''
+  };
+}
+
+function firstPositiveObjectValue(source, keys) {
+  if (!source || !Array.isArray(keys)) return null;
+  for (const key of keys) {
+    if (!key) continue;
+    const parsed = firstPositiveValue(source[key]);
+    if (parsed !== null) return parsed;
+  }
+  return null;
+}
+
+function firstFiniteObjectValue(source, keys) {
+  if (!source || !Array.isArray(keys)) return null;
+  for (const key of keys) {
+    if (!key) continue;
+    const parsed = firstFiniteValue(source[key]);
+    if (parsed !== null) return parsed;
+  }
+  return null;
+}
+
+function dynamicPlanFieldCandidates(meta) {
+  const candidates = [];
+  const summary = dashboardBrandSummary();
+  const configured = String(summary?.google_sheets_plan_field || '').trim();
+  if (configured) candidates.push(configured);
+  if (meta) candidates.push(`plan${meta.prefix}${meta.year2}Units`);
+  candidates.push('planApr26Units', 'planMar26Units', 'planFeb26Units');
+  return [...new Set(candidates.filter(Boolean))];
+}
+
+function dynamicFactFieldCandidates(meta) {
+  const candidates = [];
+  if (meta) {
+    const dayToken = String(meta.day).padStart(2, '0');
+    candidates.push(`fact${meta.prefix}${meta.year2}Units`);
+    candidates.push(`fact${meta.prefix}ToDateUnits`);
+    candidates.push(`fact${meta.prefix}${dayToken}Units`);
+    candidates.push(`fact${meta.prefix}${meta.day}Units`);
+  }
+  candidates.push('factApr16Units', 'factAprToDateUnits', 'factFeb26Units');
+  return [...new Set(candidates.filter(Boolean))];
+}
+
+function dynamicMetricFieldCandidates(meta, metricSuffix) {
+  const candidates = [];
+  if (meta) {
+    const dayToken = String(meta.day).padStart(2, '0');
+    candidates.push(`fact${meta.prefix}${meta.year2}${metricSuffix}`);
+    candidates.push(`fact${meta.prefix}ToDate${metricSuffix}`);
+    candidates.push(`fact${meta.prefix}${dayToken}${metricSuffix}`);
+    candidates.push(`fact${meta.prefix}${meta.day}${metricSuffix}`);
+  }
+  return candidates.filter(Boolean);
+}
+
 function buildBrandPlanSnapshot() {
   const summary = dashboardBrandSummary();
+  const monthMeta = dashboardMonthMeta();
+  const monthPrefixLower = (monthMeta?.prefix || 'Apr').toLowerCase();
   const monthPlanRevenue = firstPositiveValue(
+    firstPositiveObjectValue(summary, [`${monthPrefixLower}_plan_revenue`]),
+    firstPositiveObjectValue(state.dashboard, [`${monthPrefixLower}_plan_revenue`]),
     summary?.apr_plan_revenue,
     state.dashboard?.apr_plan_revenue
   );
   const factRevenue = firstPositiveValue(
+    firstPositiveObjectValue(summary, [`${monthPrefixLower}_fact_revenue_to_date`]),
+    firstPositiveObjectValue(state.dashboard, [`${monthPrefixLower}_fact_revenue_to_date`]),
     summary?.apr_fact_revenue_to_date,
     state.dashboard?.apr_fact_revenue_to_date,
     summary?.fact_revenue_to_date,
     state.dashboard?.fact_revenue_to_date
   );
   const planToDateRevenue = firstPositiveValue(
+    firstPositiveObjectValue(summary, [`${monthPrefixLower}_plan_to_date_revenue`]),
+    firstPositiveObjectValue(state.dashboard, [`${monthPrefixLower}_plan_to_date_revenue`]),
     summary?.apr_plan_to_date_revenue,
     state.dashboard?.apr_plan_to_date_revenue
   );
   const forecastRevenue = firstPositiveValue(
+    firstPositiveObjectValue(summary, [`${monthPrefixLower}_forecast_revenue`]),
+    firstPositiveObjectValue(state.dashboard, [`${monthPrefixLower}_forecast_revenue`]),
     summary?.apr_forecast_revenue,
     state.dashboard?.apr_forecast_revenue
   );
 
   const monthCompletionRaw = firstFiniteValue(
+    firstFiniteObjectValue(summary, [`${monthPrefixLower}_plan_completion_month_pct`]),
+    firstFiniteObjectValue(state.dashboard, [`${monthPrefixLower}_plan_completion_month_pct`]),
     summary?.apr_plan_completion_month_pct,
     state.dashboard?.apr_plan_completion_month_pct
   );
   const toDateCompletionRaw = firstFiniteValue(
+    firstFiniteObjectValue(summary, [`${monthPrefixLower}_plan_completion_to_date_pct`]),
+    firstFiniteObjectValue(state.dashboard, [`${monthPrefixLower}_plan_completion_to_date_pct`]),
     summary?.apr_plan_completion_to_date_pct,
     state.dashboard?.apr_plan_completion_to_date_pct,
     summary?.plan_completion_to_date_pct,
     state.dashboard?.plan_completion_to_date_pct
   );
   const forecastPctRaw = firstFiniteValue(
+    firstFiniteObjectValue(summary, [`${monthPrefixLower}_forecast_pct`]),
+    firstFiniteObjectValue(state.dashboard, [`${monthPrefixLower}_forecast_pct`]),
     summary?.apr_forecast_pct,
     state.dashboard?.apr_forecast_pct,
     summary?.forecast_pct,
@@ -195,6 +288,7 @@ function buildBrandPlanSnapshot() {
     monthCompletionPct,
     toDateCompletionPct,
     forecastPct,
+    monthLabel: monthMeta?.monthLabelGen || '',
     asOfLabel: dashboardAsOfLabel(),
     hasWorkbookPlan: monthPlanRevenue !== null || monthCompletionPct !== null || toDateCompletionPct !== null
   };
@@ -207,6 +301,7 @@ function alignedDashboardCards() {
 
   const preservedCards = cards.slice(0, Math.min(cards.length, 10));
   const asOfLabel = brandPlan.asOfLabel || 'дату файла';
+  const monthLabel = brandPlan.monthLabel ? `План ${brandPlan.monthLabel}, ₽` : 'План месяца, ₽';
   const planCards = [
     {
       label: `Факт на ${asOfLabel}, ₽`,
@@ -241,6 +336,7 @@ function alignedDashboardCards() {
         : 'Прогноз по текущему темпу.'
     }
   ].filter((card) => card.value !== null && card.value !== undefined);
+  if (planCards[1]) planCards[1].label = monthLabel;
 
   return [...preservedCards, ...planCards];
 }
@@ -268,28 +364,35 @@ function currentCompletionPct(sku) {
 }
 
 function currentPlanDailyUnits(sku) {
-  const aprPlan = firstPositiveValue(sku?.planFact?.planApr26Units);
-  if (aprPlan !== null) return aprPlan / 30;
-  const marPlan = firstPositiveValue(sku?.planFact?.planMar26Units);
-  if (marPlan !== null) return marPlan / 31;
-  const febPlan = firstPositiveValue(sku?.planFact?.planFeb26Units);
-  if (febPlan !== null) return febPlan / 29;
+  const monthMeta = dashboardMonthMeta();
+  const planCandidates = dynamicPlanFieldCandidates(monthMeta);
+  const selectedPlan = firstPositiveObjectValue(sku?.planFact, planCandidates);
+  if (selectedPlan !== null) {
+    const daysInMonth = monthMeta?.daysInMonth || 30;
+    return selectedPlan / Math.max(1, daysInMonth);
+  }
   return 0;
 }
 
 function currentFactDailyUnits(sku) {
+  const monthMeta = dashboardMonthMeta();
   const currentMonthDays = currentMonthDayCount();
-  const aprFact = firstPositiveValue(
-    sku?.planFact?.factApr16Units,
-    sku?.planFact?.factAprToDateUnits
-  );
-  if (aprFact !== null && currentMonthDays) return aprFact / currentMonthDays;
-  const febFact = firstPositiveValue(sku?.planFact?.factFeb26Units);
-  return febFact !== null ? febFact / 29 : 0;
+  const factCandidates = dynamicFactFieldCandidates(monthMeta);
+  const selectedFact = firstPositiveObjectValue(sku?.planFact, factCandidates);
+  if (selectedFact !== null && currentMonthDays) return selectedFact / Math.max(1, currentMonthDays);
+  return 0;
 }
 
 function currentMarginPct(sku) {
-  const direct = sku?.planFact?.factApr16MarginPct ?? sku?.planFact?.factFeb26MarginPct;
+  const monthMeta = dashboardMonthMeta();
+  const direct = firstFiniteObjectValue(
+    sku?.planFact,
+    [
+      ...dynamicMetricFieldCandidates(monthMeta, 'MarginPct'),
+      'factApr16MarginPct',
+      'factFeb26MarginPct'
+    ]
+  );
   if (direct !== undefined && direct !== null && direct !== '') return numberOrZero(direct);
   const wb = sku?.wb?.marginPct;
   const oz = sku?.ozon?.marginPct;
@@ -298,29 +401,38 @@ function currentMarginPct(sku) {
 }
 
 function monthRevenue(sku) {
-  return numberOrZero(
-    sku?.planFact?.factApr16Revenue
-    ?? sku?.planFact?.factFeb26Revenue
-    ?? sku?.orders?.value
-    ?? sku?.planFact?.factTotalRevenue
+  const monthMeta = dashboardMonthMeta();
+  const directRevenue = firstPositiveObjectValue(
+    sku?.planFact,
+    [
+      ...dynamicMetricFieldCandidates(monthMeta, 'Revenue'),
+      'factApr16Revenue',
+      'factFeb26Revenue'
+    ]
   );
+  return numberOrZero(directRevenue ?? sku?.orders?.value ?? sku?.planFact?.factTotalRevenue);
 }
 
 function monthNetRevenue(sku) {
-  return numberOrZero(
-    sku?.planFact?.factApr16NetRevenue
-    ?? sku?.planFact?.factFeb26NetRevenue
-    ?? sku?.orders?.value
-    ?? sku?.planFact?.factApr16Revenue
+  const monthMeta = dashboardMonthMeta();
+  const directNetRevenue = firstPositiveObjectValue(
+    sku?.planFact,
+    [
+      ...dynamicMetricFieldCandidates(monthMeta, 'NetRevenue'),
+      'factApr16NetRevenue',
+      'factFeb26NetRevenue'
+    ]
   );
+  return numberOrZero(directNetRevenue ?? sku?.orders?.value ?? sku?.planFact?.factApr16Revenue);
 }
 
 function monthUnits(sku) {
-  return numberOrZero(
-    sku?.planFact?.factApr16Units
-    ?? sku?.planFact?.factFeb26Units
-    ?? sku?.orders?.units
+  const monthMeta = dashboardMonthMeta();
+  const directUnits = firstPositiveObjectValue(
+    sku?.planFact,
+    dynamicFactFieldCandidates(monthMeta)
   );
+  return numberOrZero(directUnits ?? sku?.orders?.units);
 }
 
 function externalTrafficLabel(sku) {

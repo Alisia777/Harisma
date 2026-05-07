@@ -1,6 +1,8 @@
 (function () {
   if (window.__ALTEA_PLAN_ALIGNMENT_HOTFIX_20260423A__) return;
   window.__ALTEA_PLAN_ALIGNMENT_HOTFIX_20260423A__ = true;
+  // Legacy April override is intentionally disabled: plan values now come from live snapshots.
+  return;
 
   const WORKBOOK_PLAN_SNAPSHOT = Object.freeze({
     generatedAt: '2026-04-23T12:00:00',

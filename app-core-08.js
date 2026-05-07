@@ -3119,14 +3119,22 @@ function renderOrderCalculator() {
   if (!root) return;
   injectOrderProcurementStyles();
   const renderToken = ++ORDER_PROCUREMENT_RUNTIME.renderToken;
+  const hasProcurementMounted = () => Boolean(root.querySelector('[data-altea-order-procurement]'));
+  const renderIfChanged = () => {
+    const signature = orderProcurementBuildRenderSignature();
+    if (hasProcurementMounted() && ORDER_PROCUREMENT_RUNTIME.lastRenderedSignature === signature) return false;
+    orderProcurementRenderInto(root);
+    ORDER_PROCUREMENT_RUNTIME.lastRenderedSignature = signature;
+    return true;
+  };
 
   if (orderProcurementHasReadyData()) {
     try {
-      orderProcurementRenderInto(root);
+      renderIfChanged();
     } catch (error) {
       console.error('[order-procurement] sync render', error);
     }
-  } else {
+  } else if (!hasProcurementMounted()) {
     root.innerHTML = renderOrderProcurementLoading();
   }
 
@@ -3134,11 +3142,12 @@ function renderOrderCalculator() {
   ensureOrderProcurementSources(platform)
     .then(() => {
       if (renderToken !== ORDER_PROCUREMENT_RUNTIME.renderToken) return;
-      orderProcurementRenderInto(root);
+      renderIfChanged();
     })
     .catch((error) => {
       if (renderToken !== ORDER_PROCUREMENT_RUNTIME.renderToken) return;
       console.error('[order-procurement] render', error);
+      ORDER_PROCUREMENT_RUNTIME.lastRenderedSignature = '';
       root.innerHTML = renderOrderProcurementError();
     });
 }
@@ -3154,13 +3163,16 @@ const ORDER_PROCUREMENT_RUNTIME = {
     wb: null,
     ozon: null
   },
-  pending: new Map()
+  pending: new Map(),
+  lastRenderedSignature: '',
+  searchDebounceTimer: 0
 };
 
 function ensureOrderProcurementState() {
   state.orderProcurement = state.orderProcurement || {};
   state.orderProcurement.platform = state.orderProcurement.platform === 'ozon' ? 'ozon' : 'wb';
   state.orderProcurement.days = clampOrderProcurementDays(state.orderProcurement.days);
+  state.orderProcurement.search = String(state.orderProcurement.search || '').trim();
   return state.orderProcurement;
 }
 
@@ -3340,6 +3352,31 @@ function orderProcurementHasReadyData() {
     (Array.isArray(state.skus) && state.skus.length > 0) ||
     (Array.isArray(ORDER_PROCUREMENT_RUNTIME.cache.skus) && ORDER_PROCUREMENT_RUNTIME.cache.skus.length > 0);
   return hasRows && hasSkus;
+}
+
+function orderProcurementBuildRenderSignature() {
+  const orderState = ensureOrderProcurementState();
+  const payload = orderProcurementCurrentPayload(orderState.platform) || {};
+  const payloadRows = Array.isArray(payload.rows) ? payload.rows.length : 0;
+  const payloadStamp = String(payload.generatedAt || payload.updatedAt || payload.asOfDate || payload.window?.to || '');
+  const warehouseStamp = String(ORDER_PROCUREMENT_RUNTIME.cache.warehouse?.generatedAt || '');
+  const skuCount = Array.isArray(state.skus) && state.skus.length
+    ? state.skus.length
+    : (Array.isArray(ORDER_PROCUREMENT_RUNTIME.cache.skus) ? ORDER_PROCUREMENT_RUNTIME.cache.skus.length : 0);
+  const comments = Array.isArray(state.storage?.comments) ? state.storage.comments : [];
+  const commentCount = comments.length;
+  const newestCommentId = String(comments[0]?.id || comments[0]?.createdAt || '');
+  return [
+    orderState.platform,
+    orderState.days,
+    orderState.search || '',
+    payloadRows,
+    payloadStamp,
+    warehouseStamp,
+    skuCount,
+    commentCount,
+    newestCommentId
+  ].join('|');
 }
 
 function orderProcurementBuildSkuLookup() {

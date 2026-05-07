@@ -1,4 +1,5 @@
 (function () {
+  if (window.__ALTEA_ORDER_PROCUREMENT_ENABLED__) return;
   if (window.__ALTEA_ORDER_LOGISTICS_HOTFIX_20260428B__) return;
   window.__ALTEA_ORDER_LOGISTICS_HOTFIX_20260428B__ = true;
   window.__ALTEA_ORDER_LOGISTICS_HOTFIX_20260425A__ = true;

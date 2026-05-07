@@ -10,18 +10,19 @@
   const tasks = getSkuControlTasks(articleKey);
   const activeTask = nextTaskForSku(articleKey);
   const owners = ownerOptions();
+  const monthMeta = dashboardMonthMeta();
+  const asOfLabel = dashboardAsOfLabel();
   const completion = currentCompletionSnapshot(sku);
-  const currentPlanUnits = firstFiniteValue(sku?.planFact?.planApr26Units);
-  const currentFactUnits = firstFiniteValue(
-    sku?.planFact?.factApr16Units,
-    sku?.planFact?.factAprToDateUnits
-  );
+  const currentPlanUnits = firstPositiveObjectValue(sku?.planFact, dynamicPlanFieldCandidates(monthMeta));
+  const currentFactUnits = firstPositiveObjectValue(sku?.planFact, dynamicFactFieldCandidates(monthMeta));
+  const planLabel = monthMeta?.monthLabelGen ? `План ${monthMeta.monthLabelGen}` : 'План месяца';
+  const factLabel = asOfLabel ? `Факт на ${asOfLabel}` : 'Факт к дате';
   const resultRows = [
     currentPlanUnits !== null
-      ? metricRow('План Apr 26', fmt.int(currentPlanUnits))
+      ? metricRow(planLabel, fmt.int(currentPlanUnits))
       : metricRow('План Feb 26', fmt.int(sku.planFact?.planFeb26Units)),
     currentFactUnits !== null
-      ? metricRow('Факт Apr to date', fmt.int(currentFactUnits))
+      ? metricRow(factLabel, fmt.int(currentFactUnits))
       : metricRow('Факт Feb 26', fmt.int(sku.planFact?.factFeb26Units))
   ];
 

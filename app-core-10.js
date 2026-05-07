@@ -394,9 +394,60 @@ function openSkuModal(articleKey) {
   renderSkuModal(articleKey);
 }
 
-function setView(view) {
-  view = typeof normalizePortalView === 'function' ? normalizePortalView(view) : view;
+const ACTIVE_VIEW_STORAGE_KEY = 'altea-portal-active-view-v1';
+
+function normalizeViewName(view) {
+  return typeof normalizePortalView === 'function' ? normalizePortalView(view) : view;
+}
+
+function readViewFromHash() {
+  const raw = String(window.location.hash || '').replace(/^#/, '').trim();
+  if (!raw) return '';
+  return normalizeViewName(raw);
+}
+
+function readPersistedView() {
+  try {
+    const raw = localStorage.getItem(ACTIVE_VIEW_STORAGE_KEY);
+    if (!raw) return '';
+    const parsed = JSON.parse(raw);
+    const candidate = typeof parsed === 'string' ? parsed : parsed?.activeView;
+    return candidate ? normalizeViewName(candidate) : '';
+  } catch (error) {
+    return '';
+  }
+}
+
+function persistActiveView(view) {
+  try {
+    localStorage.setItem(ACTIVE_VIEW_STORAGE_KEY, JSON.stringify({
+      activeView: view,
+      updatedAt: new Date().toISOString()
+    }));
+  } catch (error) {
+    // LocalStorage может быть недоступен в приватном режиме.
+  }
+}
+
+function syncHashWithView(view) {
+  if (!window?.history || !window?.location) return;
+  const targetHash = `#${view}`;
+  if (window.location.hash === targetHash) return;
+  const nextUrl = `${window.location.pathname}${window.location.search}${targetHash}`;
+  window.history.replaceState(window.history.state || null, '', nextUrl);
+}
+
+function resolveInitialView() {
+  return readViewFromHash() || readPersistedView() || normalizeViewName(state.activeView || 'dashboard');
+}
+
+function setView(view, options = {}) {
+  view = normalizeViewName(view);
+  const persist = options.persist !== false;
+  const syncHash = options.syncHash !== false;
   state.activeView = view;
+  if (persist) persistActiveView(view);
+  if (syncHash) syncHashWithView(view);
   document.querySelectorAll('.nav-btn').forEach((btn) => btn.classList.toggle('active', btn.dataset.view === view));
   document.querySelectorAll('.view').forEach((section) => section.classList.toggle('active', section.id === `view-${view}`));
   window.dispatchEvent(new CustomEvent('altea:viewchange', { detail: { view } }));
@@ -512,6 +563,11 @@ function attachGlobalListeners() {
   state.boot.listenersAttached = true;
   ensureTaskModal();
   document.querySelectorAll('.nav-btn').forEach((btn) => btn.addEventListener('click', () => setView(btn.dataset.view)));
+  window.addEventListener('hashchange', () => {
+    const hashView = readViewFromHash();
+    if (!hashView || hashView === state.activeView) return;
+    setView(hashView, { syncHash: false, persist: true });
+  });
 
   document.body.addEventListener('click', (event) => {
     const openBtn = event.target.closest('[data-open-sku]');
@@ -637,7 +693,7 @@ async function init() {
     mergeSeedStorage(seed || {});
     state.boot.dataReady = true;
     rerenderCurrentView();
-    setView('dashboard');
+    setView(resolveInitialView(), { persist: true, syncHash: true });
     if (state.boot.dataWarnings.length) setAppError(`Часть данных загружена с исправлениями: ${state.boot.dataWarnings[0]}`);
     else setAppError('');
   } catch (error) {

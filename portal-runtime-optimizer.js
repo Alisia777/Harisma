@@ -22,7 +22,7 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
   window.__ALTEA_PRICE_SIMPLE_RUNTIME_MODE__ = true;
 
   const BUNDLE_MAP = {
-    order: ['portal-order-logistics-hotfix.js?v=20260428b'],
+    order: [],
     prices: [
       'portal-price-local-fetch-bypass-hotfix.js?v=20260428a',
       'portal-price-workbench-runtime-loader.js?v=20260505a',

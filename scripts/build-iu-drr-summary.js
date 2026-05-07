@@ -206,15 +206,20 @@ function planPctForMonth(iuPlan, month) {
 
 function monthPlan(iuPlan, month) {
   const source = iuPlan?.months?.[month] || {};
+  const days = numberOrZero(source.days) || new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0).getDate();
+  const iuRevenueWb = numberOrZero(source.iuRevenueWb);
+  const iuRevenueOzon = numberOrZero(source.iuRevenueOzon);
   return {
     label: source.label || month,
-    days: numberOrZero(source.days) || new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0).getDate(),
-    iuRevenueWb: numberOrZero(source.iuRevenueWb),
-    iuRevenueOzon: numberOrZero(source.iuRevenueOzon),
+    days,
+    iuRevenueWb,
+    iuRevenueOzon,
     iuRevenueTotal: numberOrZero(source.iuRevenueTotal),
     iuAdsWb: numberOrZero(source.iuAdsWb),
     iuAdsOzon: numberOrZero(source.iuAdsOzon),
     iuAdsTotal: numberOrZero(source.iuAdsTotal),
+    dailyIuRevenueWb: numberOrZero(source.dailyIuRevenueWb) || (days > 0 ? iuRevenueWb / days : 0),
+    dailyIuRevenueOzon: numberOrZero(source.dailyIuRevenueOzon) || (days > 0 ? iuRevenueOzon / days : 0),
     dailyIuRevenueTotal: numberOrZero(source.dailyIuRevenueTotal),
     dailyIuAdsTotal: numberOrZero(source.dailyIuAdsTotal)
   };
@@ -297,6 +302,8 @@ function buildMonthRows(dailyRows, iuPlan) {
     const spendFact = sumRows(rows, 'spendFact');
     const planSpendWb = sumRows(rows, 'planSpendWb');
     const plannedRevenueToDate = numberOrZero(plan.dailyIuRevenueTotal) * rows.length;
+    const plannedRevenueWbToDate = numberOrZero(plan.dailyIuRevenueWb) * rows.length;
+    const plannedRevenueOzonToDate = numberOrZero(plan.dailyIuRevenueOzon) * rows.length;
     const plannedAdsToDate = numberOrZero(plan.dailyIuAdsTotal) * rows.length;
     return {
       monthKey: month,
@@ -307,6 +314,14 @@ function buildMonthRows(dailyRows, iuPlan) {
       iuRevenuePlanToDate: roundMoney(plannedRevenueToDate),
       iuRevenueFactToDate: roundMoney(revenueTotalIu),
       iuRevenueCompletionToDate: plannedRevenueToDate > 0 ? roundRate(revenueTotalIu / plannedRevenueToDate) : null,
+      iuRevenueWbPlan: roundMoney(plan.iuRevenueWb),
+      iuRevenueWbPlanToDate: roundMoney(plannedRevenueWbToDate),
+      iuRevenueWbFactToDate: roundMoney(revenueWb),
+      iuRevenueWbCompletionToDate: plannedRevenueWbToDate > 0 ? roundRate(revenueWb / plannedRevenueWbToDate) : null,
+      iuRevenueOzonPlan: roundMoney(plan.iuRevenueOzon),
+      iuRevenueOzonPlanToDate: roundMoney(plannedRevenueOzonToDate),
+      iuRevenueOzonFactToDate: roundMoney(revenueOzon),
+      iuRevenueOzonCompletionToDate: plannedRevenueOzonToDate > 0 ? roundRate(revenueOzon / plannedRevenueOzonToDate) : null,
       iuAdsPlan: roundMoney(plan.iuAdsTotal),
       iuAdsPlanToDate: roundMoney(plannedAdsToDate),
       iuAdsFactWbToDate: roundMoney(spendFact),

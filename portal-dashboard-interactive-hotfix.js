@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260507M__) return;
-  window.__ALTEA_DASHBOARD_INTERACTIVE_20260507M__ = true;
+  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260507N__) return;
+  window.__ALTEA_DASHBOARD_INTERACTIVE_20260507N__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429C__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429A__ = true;
@@ -10,8 +10,8 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260507m';
-  const STYLE_ID = 'altea-dashboard-interactive-20260507m';
+  const VERSION = '20260507n';
+  const STYLE_ID = 'altea-dashboard-interactive-20260507n';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
@@ -36,6 +36,7 @@
   };
   let applyTimer = 0;
   let dashboardBootPrimed = false;
+  let metricsCache = null;
 
   function syncChrome() {
     document.title = 'Дом бренда Алтея · v8.7.1 Imperial';
@@ -869,6 +870,12 @@
     return nextKey;
   }
 
+  function syncPlatformButtons(root, platformKey) {
+    root?.querySelectorAll('[data-portal-exec-platform]').forEach((button) => {
+      button.classList.toggle('active', button.dataset.portalExecPlatform === platformKey);
+    });
+  }
+
   function dateBounds() {
     const anchor = anchorDate();
     const dates = [];
@@ -953,6 +960,36 @@
     const planUnits = num(month?.platforms?.[platformKey]?.units);
     const totalDays = num(month?.days) || new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
     return totalDays > 0 ? planUnits / totalDays : 0;
+  }
+
+  function companyPlanMonthForDate(date) {
+    const key = monthKey(date);
+    const dashboard = current('dashboard') || {};
+    const direct = dashboard.companyPlan?.months?.[key];
+    if (direct && typeof direct === 'object') return direct;
+    const active = dashboard.companyPlan?.activeMonth;
+    if (active && active.monthKey === key) return active;
+    return null;
+  }
+
+  function companyPlanRevenueForPlatform(month, platformKey) {
+    if (!month || typeof month !== 'object') return 0;
+    const channels = month.channels || {};
+    if (platformKey === 'all') return num(month.revenue || month.planRevenueMonth);
+    if (platformKey === 'wb') return num(channels.wb?.revenue);
+    if (platformKey === 'ozon') return num(channels.ozon?.revenue);
+    if (platformKey === 'ya') {
+      return ['ya', 'goldapple', 'letu', 'magnit', 'd2c', 'b2b']
+        .reduce((sum, key) => sum + num(channels[key]?.revenue), 0);
+    }
+    return 0;
+  }
+
+  function companyPlanDailyRevenue(date, platformKey) {
+    const month = companyPlanMonthForDate(date);
+    const planRevenue = companyPlanRevenueForPlatform(month, platformKey);
+    const totalDays = num(month?.days) || new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    return totalDays > 0 ? planRevenue / totalDays : 0;
   }
 
   function iuPlanMonth(date) {
@@ -1349,6 +1386,7 @@
       const trend = trendMap.get(iso(date)) || {};
       const ads = adsMap.get(iso(date)) || {};
       const planUnits = planUnitsForDate(date, platformKey);
+      const planRevenue = companyPlanDailyRevenue(date, platformKey);
       const factUnits = num(trend.units);
       const revenue = num(trend.revenue);
       const margin = num(trend.margin);
@@ -1357,8 +1395,9 @@
       return {
         date,
         planUnits,
+        planRevenue,
         factUnits,
-        completion: planUnits > 0 ? factUnits / planUnits : 0,
+        completion: planRevenue > 0 ? revenue / planRevenue : planUnits > 0 ? factUnits / planUnits : 0,
         revenue,
         margin,
         marginPct: revenue > 0 ? margin / revenue : 0,
@@ -1370,7 +1409,13 @@
         drr: adRevenue > 0 ? spend / adRevenue : null
       };
     });
-    const plan = days.reduce((sum, row) => sum + row.planUnits, 0);
+    const planUnits = days.reduce((sum, row) => sum + row.planUnits, 0);
+    const planRevenue = days.reduce((sum, row) => sum + row.planRevenue, 0);
+    const usesCompanyPlan = planRevenue > 0;
+    const planFactDays = usesCompanyPlan ? days.filter((row) => row.planRevenue > 0) : days;
+    const planFactUnits = planFactDays.reduce((sum, row) => sum + row.factUnits, 0);
+    const planFactRevenue = planFactDays.reduce((sum, row) => sum + row.revenue, 0);
+    const plan = usesCompanyPlan ? planRevenue : planUnits;
     const units = days.reduce((sum, row) => sum + row.factUnits, 0);
     const revenue = days.reduce((sum, row) => sum + row.revenue, 0);
     const margin = days.reduce((sum, row) => sum + row.margin, 0);
@@ -1379,7 +1424,7 @@
     const orders = days.reduce((sum, row) => sum + row.orders, 0);
     const spend = days.reduce((sum, row) => sum + row.spend, 0);
     const adRevenue = days.reduce((sum, row) => sum + row.adRevenue, 0);
-    const completion = plan > 0 ? units / plan : 0;
+    const completion = plan > 0 ? (usesCompanyPlan ? planFactRevenue / plan : units / plan) : 0;
     const marginPct = revenue > 0 ? margin / revenue : 0;
     const avgCheck = units > 0 ? revenue / units : 0;
     const ctr = views > 0 ? clicks / views : null;
@@ -1401,6 +1446,11 @@
       label: shortPlatformLabel(platformKey),
       days,
       plan,
+      planUnits,
+      planRevenue,
+      planMode: usesCompanyPlan ? 'company_revenue' : 'units',
+      planFactUnits,
+      planFactRevenue,
       units,
       revenue,
       margin,
@@ -1436,30 +1486,89 @@
     };
   }
 
+  function metricUsesCompanyPlan(metric) {
+    return metric?.planMode === 'company_revenue';
+  }
+
+  function metricPlanDisplay(metric) {
+    return metricUsesCompanyPlan(metric) ? money(metric.planRevenue || metric.plan) : int(metric.plan);
+  }
+
+  function metricFactDisplay(metric) {
+    return metricUsesCompanyPlan(metric) ? money(metric.planFactRevenue || metric.revenue) : int(metric.units);
+  }
+
+  function dailyPlanDisplay(row, metric) {
+    const planUnits = row?.planUnits !== undefined ? row.planUnits : row?.plan;
+    return metricUsesCompanyPlan(metric) ? money(num(row?.planRevenue)) : int(planUnits);
+  }
+
+  function dailyFactDisplay(row, metric) {
+    const factUnits = row?.factUnits !== undefined ? row.factUnits : row?.units;
+    return metricUsesCompanyPlan(metric) ? money(num(row?.revenue)) : int(factUnits);
+  }
+
+  function dailyCompletion(row, metric) {
+    const planRevenue = num(row?.planRevenue);
+    const revenue = num(row?.revenue);
+    const planUnits = num(row?.planUnits !== undefined ? row.planUnits : row?.plan);
+    const factUnits = num(row?.factUnits !== undefined ? row.factUnits : row?.units);
+    if (metricUsesCompanyPlan(metric)) return planRevenue > 0 ? revenue / planRevenue : null;
+    return planUnits > 0 ? factUnits / planUnits : null;
+  }
+
   function buildPlatformMetrics() {
     const range = selectedRange();
     const compare = comparisonRange(range);
-    const issueMap = buildIssueMap();
     const adsAnchor = parseDate(current('adsSummary')?.asOfDate) || range.anchor;
-    const metrics = PLATFORM_KEYS.map((platformKey) => buildWindowMetric(platformKey, range, range.anchor, adsAnchor, issueMap));
-    const compareMetrics = compare
-      ? PLATFORM_KEYS.map((platformKey) => buildWindowMetric(platformKey, compare, range.anchor, adsAnchor, issueMap))
-      : [];
-    const byKey = new Map(metrics.map((item) => [item.key, item]));
-    const compareByKey = new Map(compareMetrics.map((item) => [item.key, item]));
+    const signature = [
+      iso(range.requestedStart),
+      iso(range.requestedEnd),
+      iso(range.effectiveStart),
+      iso(range.effectiveEnd),
+      compare ? iso(compare.effectiveStart) : '',
+      compare ? iso(compare.effectiveEnd) : '',
+      iso(adsAnchor),
+      current('dashboard')?.generatedAt || '',
+      current('platformTrends')?.generatedAt || '',
+      current('platformPlan')?.generatedAt || '',
+      current('iuPlan')?.generatedAt || '',
+      current('adsSummary')?.generatedAt || current('adsSummary')?.asOfDate || '',
+      current('iuDrrSummary')?.generatedAt || current('iuDrrSummary')?.asOfDate || '',
+      current('prices')?.generatedAt || '',
+      current('productLeaderboard')?.generatedAt || '',
+      current('smartPriceWorkbench')?.generatedAt || '',
+      current('smartPriceOverlay')?.generatedAt || '',
+      current('priceWorkbenchSupport')?.generatedAt || '',
+      current('orderProcurement')?.generatedAt || ''
+    ].join('|');
+    let base = metricsCache && metricsCache.signature === signature ? metricsCache.base : null;
+    if (!base) {
+      const issueMap = buildIssueMap();
+      const metrics = PLATFORM_KEYS.map((platformKey) => buildWindowMetric(platformKey, range, range.anchor, adsAnchor, issueMap));
+      const compareMetrics = compare
+        ? PLATFORM_KEYS.map((platformKey) => buildWindowMetric(platformKey, compare, range.anchor, adsAnchor, issueMap))
+        : [];
+      const byKey = new Map(metrics.map((item) => [item.key, item]));
+      const compareByKey = new Map(compareMetrics.map((item) => [item.key, item]));
+      base = {
+        range,
+        compareRange: compare,
+        metrics,
+        byKey,
+        compareByKey,
+        overall: byKey.get('all')
+      };
+      metricsCache = { signature, base };
+    }
     const selectedPlatform = ensurePlatformState();
     const scopedMetrics = selectedPlatform === 'all'
-      ? metrics.filter((item) => item.key !== 'all')
-      : metrics.filter((item) => item.key === selectedPlatform);
+      ? base.metrics.filter((item) => item.key !== 'all')
+      : base.metrics.filter((item) => item.key === selectedPlatform);
     return {
-      range,
-      compareRange: compare,
-      metrics,
-      byKey,
-      compareByKey,
-      overall: byKey.get('all'),
+      ...base,
       selectedPlatform,
-      focusMetric: byKey.get(selectedPlatform) || byKey.get('all'),
+      focusMetric: base.byKey.get(selectedPlatform) || base.byKey.get('all'),
       scopedMetrics
     };
   }
@@ -2279,7 +2388,6 @@
         return;
       } catch (_) {}
     }
-    input.click();
   }
 
   function buildPlatformDetail(metric, executive, mode) {
@@ -2290,9 +2398,9 @@
     const detailTable = metric.days.map((row) => `
       <tr>
         <td>${esc(shortDate(row.date))}</td>
-        <td>${esc(int(row.planUnits))}</td>
-        <td>${esc(int(row.factUnits))}</td>
-        <td>${esc(row.planUnits > 0 ? pct(row.factUnits / row.planUnits) : '—')}</td>
+        <td>${esc(dailyPlanDisplay(row, metric))}</td>
+        <td>${esc(dailyFactDisplay(row, metric))}</td>
+        <td>${esc(dailyCompletion(row, metric) !== null ? pct(dailyCompletion(row, metric)) : '—')}</td>
         <td>${esc(money(row.revenue))}</td>
         <td>${esc(row.factUnits > 0 ? money(row.revenue / row.factUnits) : '—')}</td>
         <td>${esc(money(row.margin))}</td>
@@ -2307,8 +2415,8 @@
       subtitle: `Запрос: ${executive.range.requestedLabel}. В расчёте: ${executive.range.effectiveLabel}.`,
       body: `
         <div class="portal-exec-modal-metrics">
-          ${modalSummaryCard('План периода', int(metric.plan))}
-          ${modalSummaryCard('Факт периода', int(metric.units))}
+          ${modalSummaryCard('План периода', metricPlanDisplay(metric))}
+          ${modalSummaryCard('Факт периода', metricFactDisplay(metric))}
           ${modalSummaryCard('% к плану', pct(metric.completion))}
           ${modalSummaryCard('Маржа', money(metric.margin))}
           ${modalSummaryCard('Маржинальность', pct(metric.marginPct))}
@@ -2369,8 +2477,8 @@
       body: `
         <div class="portal-exec-modal-metrics">
           ${modalSummaryCard('% выполнения', pct(metric.completion))}
-          ${modalSummaryCard('План периода', int(metric.plan))}
-          ${modalSummaryCard('Факт периода', int(metric.units))}
+          ${modalSummaryCard('План периода', metricPlanDisplay(metric))}
+          ${modalSummaryCard('Факт периода', metricFactDisplay(metric))}
           ${modalSummaryCard('Факт / день', int(metric.avgUnits))}
           ${modalSummaryCard('Выручка', money(metric.revenue))}
           ${modalSummaryCard('Средний чек', metric.avgCheck > 0 ? money(metric.avgCheck) : '—')}
@@ -2428,9 +2536,9 @@
                 ${metric.days.length ? metric.days.map((row) => `
                   <tr${priceWorkbenchOpenAttrs(row.platformKey, row.article, executive)}>
                     <td>${esc(shortDate(row.date))}</td>
-                    <td>${esc(int(row.planUnits))}</td>
-                    <td>${esc(int(row.factUnits))}</td>
-                    <td>${esc(row.planUnits > 0 ? pct(row.factUnits / row.planUnits) : '—')}</td>
+                    <td>${esc(dailyPlanDisplay(row, metric))}</td>
+                    <td>${esc(dailyFactDisplay(row, metric))}</td>
+                    <td>${esc(dailyCompletion(row, metric) !== null ? pct(dailyCompletion(row, metric)) : '—')}</td>
                     <td>${esc(money(row.revenue))}</td>
                   </tr>
                 `).join('') : `<tr><td colspan="5">Нет данных по дням в выбранном диапазоне.</td></tr>`}
@@ -2576,11 +2684,13 @@
       return {
         date: row.date,
         planUnits: row.planUnits,
+        planRevenue: row.planRevenue,
+        factUnits: row.factUnits,
         units: row.factUnits,
         revenue: row.revenue,
         avgCheck,
         avgPrice: priceMatrix?.avgPrice || 0,
-        completion: row.planUnits > 0 ? row.factUnits / row.planUnits : null
+        completion: dailyCompletion(row, metric)
       };
     });
     const skuRows = articleRowsForPlatform(metric.key, executive.range)
@@ -2593,7 +2703,7 @@
         <div class="portal-exec-modal-metrics">
           ${modalSummaryCard('Продажи', money(metric.revenue))}
           ${modalSummaryCard('Продано, шт.', int(metric.units))}
-          ${modalSummaryCard('План периода', int(metric.plan))}
+          ${modalSummaryCard('План периода', metricPlanDisplay(metric))}
           ${modalSummaryCard('% к плану', pct(metric.completion))}
           ${modalSummaryCard('Факт / день', int(metric.avgUnits))}
           ${modalSummaryCard('Средний чек', metric.avgCheck > 0 ? money(metric.avgCheck) : '—')}
@@ -2654,9 +2764,9 @@
                 ${dailyRows.length ? dailyRows.map((row) => `
                   <tr>
                     <td>${esc(shortDate(row.date))}</td>
-                    <td>${esc(int(row.planUnits))}</td>
-                    <td>${esc(int(row.units))}</td>
-                    <td>${esc(row.completion !== null ? pct(row.completion) : '—')}</td>
+                    <td>${esc(dailyPlanDisplay(row, metric))}</td>
+                    <td>${esc(dailyFactDisplay(row, metric))}</td>
+                    <td>${esc(dailyCompletion(row, metric) !== null ? pct(dailyCompletion(row, metric)) : '—')}</td>
                     <td>${esc(money(row.revenue))}</td>
                     <td>${esc(row.avgCheck ? money(row.avgCheck) : '—')}</td>
                     <td>${esc(row.avgPrice > 0 ? money(row.avgPrice) : '—')}</td>
@@ -3257,7 +3367,7 @@
               <label class="portal-exec-date-field ${selectedStart ? 'is-selected' : ''}">
                 <span>Дата начала</span>
                 <div class="portal-exec-date-shell">
-                  <input type="date" class="portal-exec-date-input ${executive.range.state.mode === 'custom' ? 'is-active' : ''}" data-portal-exec-start min="${esc(iso(executive.range.min))}" max="${esc(iso(executive.range.max))}" value="${esc(executive.range.state.start || '')}">
+                  <input type="date" class="portal-exec-date-input ${executive.range.state.mode === 'custom' ? 'is-active' : ''}" data-portal-exec-start data-portal-exec-min="${esc(iso(executive.range.min))}" data-portal-exec-max="${esc(iso(executive.range.max))}" value="${esc(executive.range.state.start || '')}">
                   <button type="button" class="portal-exec-date-trigger ${executive.range.state.mode === 'custom' ? 'active' : ''}" data-portal-exec-open-date="start">Календарь</button>
                 </div>
                 <small class="portal-exec-date-value">${esc(longDate(selectedStart))}</small>
@@ -3265,7 +3375,7 @@
               <label class="portal-exec-date-field ${selectedEnd ? 'is-selected' : ''}">
                 <span>Дата окончания</span>
                 <div class="portal-exec-date-shell">
-                  <input type="date" class="portal-exec-date-input ${executive.range.state.mode === 'custom' ? 'is-active' : ''}" data-portal-exec-end min="${esc(iso(executive.range.min))}" max="${esc(iso(executive.range.max))}" value="${esc(executive.range.state.end || '')}">
+                  <input type="date" class="portal-exec-date-input ${executive.range.state.mode === 'custom' ? 'is-active' : ''}" data-portal-exec-end data-portal-exec-min="${esc(iso(executive.range.min))}" data-portal-exec-max="${esc(iso(executive.range.max))}" value="${esc(executive.range.state.end || '')}">
                   <button type="button" class="portal-exec-date-trigger ${executive.range.state.mode === 'custom' ? 'active' : ''}" data-portal-exec-open-date="end">Календарь</button>
                 </div>
                 <small class="portal-exec-date-value">${esc(longDate(selectedEnd))}</small>
@@ -3313,8 +3423,8 @@
         <div class="portal-exec-modal-metrics">
           ${modalSummaryCard('% выполнения', pct(metric.completion))}
           ${modalSummaryCard('WoW', completionDelta !== null ? `${completionDelta >= 0 ? '+' : ''}${(completionDelta * 100).toFixed(1)} pp` : '—')}
-          ${modalSummaryCard('План периода', int(metric.plan))}
-          ${modalSummaryCard('Факт периода', int(metric.units))}
+          ${modalSummaryCard('План периода', metricPlanDisplay(metric))}
+          ${modalSummaryCard('Факт периода', metricFactDisplay(metric))}
           ${modalSummaryCard('Факт / день', int(metric.avgUnits))}
           ${modalSummaryCard('Выручка', money(metric.revenue))}
         </div>
@@ -3367,9 +3477,9 @@
                   ${focusDays.length ? focusDays.map((row) => `
                     <tr>
                       <td>${esc(shortDate(row.date))}</td>
-                      <td>${esc(int(row.planUnits))}</td>
-                      <td>${esc(int(row.factUnits))}</td>
-                      <td>${esc(row.planUnits > 0 ? pct(row.factUnits / row.planUnits) : '—')}</td>
+                      <td>${esc(dailyPlanDisplay(row, metric))}</td>
+                      <td>${esc(dailyFactDisplay(row, metric))}</td>
+                      <td>${esc(dailyCompletion(row, metric) !== null ? pct(dailyCompletion(row, metric)) : '—')}</td>
                       <td>${esc(money(row.revenue))}</td>
                     </tr>
                   `).join('') : `<tr><td colspan="5">Нет дневных данных по выбранному окну.</td></tr>`}
@@ -3495,8 +3605,9 @@
       return {
         date: row.date,
         planUnits: row.planUnits,
+        planRevenue: row.planRevenue,
         units: row.factUnits,
-        completion: row.planUnits > 0 ? row.factUnits / row.planUnits : null,
+        completion: row.planRevenue > 0 ? row.revenue / row.planRevenue : row.planUnits > 0 ? row.factUnits / row.planUnits : null,
         revenue: row.revenue,
         avgCheck,
         avgPrice: matrix?.avgPrice || 0
@@ -3513,7 +3624,7 @@
           ${modalSummaryCard('Выручка', money(metric.revenue))}
           ${modalSummaryCard('WoW', revenueDelta !== null ? pct(revenueDelta) : '—')}
           ${modalSummaryCard('Продано, шт.', int(metric.units))}
-          ${modalSummaryCard('План периода', int(metric.plan))}
+          ${modalSummaryCard('План периода', metricPlanDisplay(metric))}
           ${modalSummaryCard('% к плану', pct(metric.completion))}
           ${modalSummaryCard('Средний чек', metric.avgCheck > 0 ? money(metric.avgCheck) : '—')}
         </div>
@@ -3568,8 +3679,8 @@
                   ${focusDays.length ? focusDays.map((row) => `
                     <tr>
                       <td>${esc(shortDate(row.date))}</td>
-                      <td>${esc(int(row.planUnits))}</td>
-                      <td>${esc(int(row.units))}</td>
+                      <td>${esc(dailyPlanDisplay(row, metric))}</td>
+                      <td>${esc(dailyFactDisplay(row, metric))}</td>
                       <td>${esc(row.completion !== null ? pct(row.completion) : '—')}</td>
                       <td>${esc(money(row.revenue))}</td>
                       <td>${esc(row.avgCheck ? money(row.avgCheck) : '—')}</td>
@@ -3825,9 +3936,9 @@
           <article class="portal-exec-card is-${toneCompletion(metric.completion)} is-clickable" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}">
             <div class="portal-exec-card-head"><span class="portal-exec-card-label">План и выполнение</span>${deltaBadge('LFL', completionDelta, false, 'pp')}</div>
             <div class="portal-exec-card-value compact">${esc(pct(metric.completion))}</div>
-            <div class="portal-exec-sub">План ${esc(int(metric.plan))} · факт ${esc(int(metric.units))} · клик покажет план по артикулам</div>
+            <div class="portal-exec-sub">План ${esc(metricPlanDisplay(metric))} · факт ${esc(metricFactDisplay(metric))} · клик покажет план по артикулам</div>
             <div class="portal-exec-progress is-${toneCompletion(metric.completion)}"><span style="width:${Math.max(6, Math.min(100, Math.round(num(metric.completion) * 100)))}%"></span></div>
-            ${renderSparkline(metric.sparkUnits)}
+            ${renderSparkline(metricUsesCompanyPlan(metric) ? metric.sparkRevenue : metric.sparkUnits)}
             <div class="portal-exec-axis"><span>${esc(shortDate(executive.range.effectiveStart))}</span><span>${esc(shortDate(executive.range.effectiveEnd))}</span></div>
           </article>
           <article class="portal-exec-card is-${iuRevenueTone} is-clickable" data-portal-exec-open="iu-revenue-plan" data-portal-exec-key="${esc(metric.key)}">
@@ -3869,9 +3980,9 @@
               <article class="portal-exec-card is-${toneCompletion(metric.completion)} is-clickable" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}">
                 <div class="portal-exec-card-head"><span class="portal-exec-card-label">${esc(metric.label)}</span>${badgeHtml(pct(metric.completion), toneCompletion(metric.completion))}</div>
                 <div class="portal-exec-card-value compact">${esc(pct(metric.completion))}</div>
-                <div class="portal-exec-sub">План ${esc(int(metric.plan))} · факт ${esc(int(metric.units))} · выручка ${esc(money(metric.revenue))}</div>
+                <div class="portal-exec-sub">План ${esc(metricPlanDisplay(metric))} · факт ${esc(metricFactDisplay(metric))} · выручка ${esc(money(metric.revenue))}</div>
                 <div class="portal-exec-progress is-${toneCompletion(metric.completion)}"><span style="width:${Math.max(6, Math.min(100, Math.round(num(metric.completion) * 100)))}%"></span></div>
-                ${renderSparkline(metric.sparkUnits)}
+                ${renderSparkline(metricUsesCompanyPlan(metric) ? metric.sparkRevenue : metric.sparkUnits)}
                 <div class="portal-exec-axis"><span>${esc(shortDate(executive.range.effectiveStart))}</span><span>${esc(shortDate(executive.range.effectiveEnd))}</span></div>
                 <div class="portal-exec-metric-grid">
                   <div class="portal-exec-metric"><span>Факт / день</span><strong>${esc(int(metric.avgUnits))}</strong></div>
@@ -4171,26 +4282,25 @@
       button.addEventListener('click', () => {
         const stored = ensureRangeState();
         Object.assign(stored, presetRange(button.dataset.portalExecPreset || '7', cleanDate(selectedRange().max || new Date())));
-        scheduleApply();
+        scheduleLocalApply(160);
       });
     });
 
     root.querySelectorAll('[data-portal-exec-platform]').forEach((button) => {
       button.addEventListener('click', () => {
-        setPlatformState(button.dataset.portalExecPlatform || 'all');
-        scheduleApply();
+        const nextPlatform = setPlatformState(button.dataset.portalExecPlatform || 'all');
+        syncPlatformButtons(root, nextPlatform);
+        scheduleLocalApply(180);
       });
     });
 
     const bindDateInput = (input) => {
       if (!input || input.dataset.portalExecPickerBound) return;
       input.dataset.portalExecPickerBound = '1';
-      input.addEventListener('pointerdown', () => openDatePicker(input));
-      input.addEventListener('click', () => openDatePicker(input));
       input.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
+        if (event.key === 'Enter') {
           event.preventDefault();
-          openDatePicker(input);
+          input.blur();
         }
       });
     };
@@ -4209,16 +4319,20 @@
       const stored = ensureRangeState();
       stored.mode = 'custom';
       stored.active = '';
-      stored.start = event.target.value || stored.start;
-      scheduleApply();
+      const nextStart = event.target.value || stored.start;
+      stored.start = nextStart;
+      if (stored.end && nextStart && stored.end < nextStart) stored.end = nextStart;
+      scheduleLocalApply(180);
     });
 
     endInput?.addEventListener('change', (event) => {
       const stored = ensureRangeState();
       stored.mode = 'custom';
       stored.active = '';
-      stored.end = event.target.value || stored.end;
-      scheduleApply();
+      const nextEnd = event.target.value || stored.end;
+      stored.end = nextEnd;
+      if (stored.start && nextEnd && stored.start > nextEnd) stored.start = nextEnd;
+      scheduleLocalApply(180);
     });
 
     root.querySelectorAll('[data-portal-exec-open]').forEach((card) => {
@@ -4286,8 +4400,8 @@
         <div class="portal-exec-modal-metrics">
           ${modalSummaryCard('% выполнения', pct(metric.completion))}
           ${modalSummaryCard('WoW', completionDelta !== null ? `${completionDelta >= 0 ? '+' : ''}${(completionDelta * 100).toFixed(1)} pp` : '—')}
-          ${modalSummaryCard('План периода', int(metric.plan))}
-          ${modalSummaryCard('Факт периода', int(metric.units))}
+          ${modalSummaryCard('План периода', metricPlanDisplay(metric))}
+          ${modalSummaryCard('Факт периода', metricFactDisplay(metric))}
           ${modalSummaryCard('Факт / день', int(metric.avgUnits))}
           ${modalSummaryCard('Выручка', money(metric.revenue))}
         </div>
@@ -4340,9 +4454,9 @@
                   ${focusDays.length ? focusDays.map((row) => `
                     <tr>
                       <td>${esc(shortDate(row.date))}</td>
-                      <td>${esc(int(row.planUnits))}</td>
-                      <td>${esc(int(row.factUnits))}</td>
-                      <td>${esc(row.planUnits > 0 ? pct(row.factUnits / row.planUnits) : '—')}</td>
+                      <td>${esc(dailyPlanDisplay(row, metric))}</td>
+                      <td>${esc(dailyFactDisplay(row, metric))}</td>
+                      <td>${esc(dailyCompletion(row, metric) !== null ? pct(dailyCompletion(row, metric)) : '—')}</td>
                       <td>${esc(money(row.revenue))}</td>
                     </tr>
                   `).join('') : `<tr><td colspan="5">Нет дневных данных по выбранному окну.</td></tr>`}
@@ -4468,8 +4582,10 @@
       return {
         date: row.date,
         planUnits: row.planUnits,
+        planRevenue: row.planRevenue,
+        factUnits: row.factUnits,
         units: row.factUnits,
-        completion: row.planUnits > 0 ? row.factUnits / row.planUnits : null,
+        completion: dailyCompletion(row, metric),
         revenue: row.revenue,
         avgCheck,
         avgPrice: matrix?.avgPrice || 0
@@ -4486,7 +4602,7 @@
           ${modalSummaryCard('Выручка', money(metric.revenue))}
           ${modalSummaryCard('WoW', revenueDelta !== null ? pct(revenueDelta) : '—')}
           ${modalSummaryCard('Продано, шт.', int(metric.units))}
-          ${modalSummaryCard('План периода', int(metric.plan))}
+          ${modalSummaryCard('План периода', metricPlanDisplay(metric))}
           ${modalSummaryCard('% к плану', pct(metric.completion))}
           ${modalSummaryCard('Средний чек', metric.avgCheck > 0 ? money(metric.avgCheck) : '—')}
         </div>
@@ -4541,9 +4657,9 @@
                   ${focusDays.length ? focusDays.map((row) => `
                     <tr>
                       <td>${esc(shortDate(row.date))}</td>
-                      <td>${esc(int(row.planUnits))}</td>
-                      <td>${esc(int(row.units))}</td>
-                      <td>${esc(row.completion !== null ? pct(row.completion) : '—')}</td>
+                      <td>${esc(dailyPlanDisplay(row, metric))}</td>
+                      <td>${esc(dailyFactDisplay(row, metric))}</td>
+                      <td>${esc(dailyCompletion(row, metric) !== null ? pct(dailyCompletion(row, metric)) : '—')}</td>
                       <td>${esc(money(row.revenue))}</td>
                       <td>${esc(row.avgCheck ? money(row.avgCheck) : '—')}</td>
                       <td>${esc(row.avgPrice > 0 ? money(row.avgPrice) : '—')}</td>
@@ -5086,8 +5202,8 @@ function dashboardTaskStatusChip(task) {
         <div class="portal-exec-modal-metrics">
           ${modalSummaryCard('% выполнения', pct(metric.completion))}
           ${modalSummaryCard('WoW', completionDelta !== null ? `${completionDelta >= 0 ? '+' : ''}${(completionDelta * 100).toFixed(1)} pp` : '—')}
-          ${modalSummaryCard('План периода', int(metric.plan))}
-          ${modalSummaryCard('Факт периода', int(metric.units))}
+          ${modalSummaryCard('План периода', metricPlanDisplay(metric))}
+          ${modalSummaryCard('Факт периода', metricFactDisplay(metric))}
           ${modalSummaryCard('Факт / день', int(metric.avgUnits))}
           ${modalSummaryCard('Выручка', money(metric.revenue))}
         </div>
@@ -5140,9 +5256,9 @@ function dashboardTaskStatusChip(task) {
                   ${focusDays.length ? focusDays.map((row) => `
                     <tr>
                       <td>${esc(shortDate(row.date))}</td>
-                      <td>${esc(int(row.planUnits))}</td>
-                      <td>${esc(int(row.factUnits))}</td>
-                      <td>${esc(row.planUnits > 0 ? pct(row.factUnits / row.planUnits) : '—')}</td>
+                      <td>${esc(dailyPlanDisplay(row, metric))}</td>
+                      <td>${esc(dailyFactDisplay(row, metric))}</td>
+                      <td>${esc(dailyCompletion(row, metric) !== null ? pct(dailyCompletion(row, metric)) : '—')}</td>
                       <td>${esc(money(row.revenue))}</td>
                     </tr>
                   `).join('') : `<tr><td colspan="5">Нет дневных данных по выбранному окну.</td></tr>`}
@@ -5268,8 +5384,10 @@ function dashboardTaskStatusChip(task) {
       return {
         date: row.date,
         planUnits: row.planUnits,
+        planRevenue: row.planRevenue,
+        factUnits: row.factUnits,
         units: row.factUnits,
-        completion: row.planUnits > 0 ? row.factUnits / row.planUnits : null,
+        completion: dailyCompletion(row, metric),
         revenue: row.revenue,
         avgCheck,
         avgPrice: matrix?.avgPrice || 0
@@ -5286,7 +5404,7 @@ function dashboardTaskStatusChip(task) {
           ${modalSummaryCard('Выручка', money(metric.revenue))}
           ${modalSummaryCard('WoW', revenueDelta !== null ? pct(revenueDelta) : '—')}
           ${modalSummaryCard('Продано, шт.', int(metric.units))}
-          ${modalSummaryCard('План периода', int(metric.plan))}
+          ${modalSummaryCard('План периода', metricPlanDisplay(metric))}
           ${modalSummaryCard('% к плану', pct(metric.completion))}
           ${modalSummaryCard('Средний чек', metric.avgCheck > 0 ? money(metric.avgCheck) : '—')}
         </div>
@@ -5341,9 +5459,9 @@ function dashboardTaskStatusChip(task) {
                   ${focusDays.length ? focusDays.map((row) => `
                     <tr>
                       <td>${esc(shortDate(row.date))}</td>
-                      <td>${esc(int(row.planUnits))}</td>
-                      <td>${esc(int(row.units))}</td>
-                      <td>${esc(row.completion !== null ? pct(row.completion) : '—')}</td>
+                      <td>${esc(dailyPlanDisplay(row, metric))}</td>
+                      <td>${esc(dailyFactDisplay(row, metric))}</td>
+                      <td>${esc(dailyCompletion(row, metric) !== null ? pct(dailyCompletion(row, metric)) : '—')}</td>
                       <td>${esc(money(row.revenue))}</td>
                       <td>${esc(row.avgCheck ? money(row.avgCheck) : '—')}</td>
                       <td>${esc(row.avgPrice > 0 ? money(row.avgPrice) : '—')}</td>
@@ -5592,9 +5710,9 @@ function dashboardTaskStatusChip(task) {
           <article class="portal-exec-card is-${toneCompletion(metric.completion)} is-clickable" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}">
             <div class="portal-exec-card-head"><span class="portal-exec-card-label">План и выполнение</span>${deltaBadge('LFL', completionDelta, false, 'pp')}</div>
             <div class="portal-exec-card-value compact">${esc(pct(metric.completion))}</div>
-            <div class="portal-exec-sub">План ${esc(int(metric.plan))} · факт ${esc(int(metric.units))}. Клик покажет план по артикулам и 14 дней выполнения.</div>
+            <div class="portal-exec-sub">План ${esc(metricPlanDisplay(metric))} · факт ${esc(metricFactDisplay(metric))}. Клик покажет план по артикулам и 14 дней выполнения.</div>
             <div class="portal-exec-progress is-${toneCompletion(metric.completion)}"><span style="width:${Math.max(6, Math.min(100, Math.round(num(metric.completion) * 100)))}%"></span></div>
-            ${renderSparkline(metric.sparkUnits)}
+            ${renderSparkline(metricUsesCompanyPlan(metric) ? metric.sparkRevenue : metric.sparkUnits)}
             <div class="portal-exec-axis"><span>${esc(shortDate(executive.range.effectiveStart))}</span><span>${esc(shortDate(executive.range.effectiveEnd))}</span></div>
           </article>
           <article class="portal-exec-card is-${iuRevenueTone} is-clickable" data-portal-exec-open="iu-revenue-plan" data-portal-exec-key="${esc(metric.key)}">
@@ -5731,14 +5849,15 @@ function dashboardTaskStatusChip(task) {
       button.addEventListener('click', () => {
         const stored = ensureRangeState();
         Object.assign(stored, presetRange(button.dataset.portalExecPreset || '7', cleanDate(selectedRange().max || new Date())));
-        scheduleApply();
+        scheduleLocalApply(160);
       });
     });
 
     root.querySelectorAll('[data-portal-exec-platform]').forEach((button) => {
       button.addEventListener('click', () => {
-        setPlatformState(button.dataset.portalExecPlatform || 'all');
-        scheduleApply();
+        const nextPlatform = setPlatformState(button.dataset.portalExecPlatform || 'all');
+        syncPlatformButtons(root, nextPlatform);
+        scheduleLocalApply(180);
       });
     });
 
@@ -5748,8 +5867,12 @@ function dashboardTaskStatusChip(task) {
     [startInput, endInput].forEach((input) => {
       if (!input || input.dataset.portalExecPickerBound) return;
       input.dataset.portalExecPickerBound = '1';
-      input.addEventListener('click', () => openDatePicker(input));
-      input.addEventListener('focus', () => openDatePicker(input), { once: true });
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          input.blur();
+        }
+      });
     });
 
     root.querySelectorAll('[data-portal-exec-open-date]').forEach((button) => {
@@ -5762,16 +5885,20 @@ function dashboardTaskStatusChip(task) {
       const stored = ensureRangeState();
       stored.mode = 'custom';
       stored.active = '';
-      stored.start = event.target.value || stored.start;
-      scheduleApply();
+      const nextStart = event.target.value || stored.start;
+      stored.start = nextStart;
+      if (stored.end && nextStart && stored.end < nextStart) stored.end = nextStart;
+      scheduleLocalApply(180);
     });
 
     endInput?.addEventListener('change', (event) => {
       const stored = ensureRangeState();
       stored.mode = 'custom';
       stored.active = '';
-      stored.end = event.target.value || stored.end;
-      scheduleApply();
+      const nextEnd = event.target.value || stored.end;
+      stored.end = nextEnd;
+      if (stored.start && nextEnd && stored.start > nextEnd) stored.start = nextEnd;
+      scheduleLocalApply(180);
     });
 
     root.querySelectorAll('[data-portal-exec-open]').forEach((card) => {
@@ -6415,6 +6542,7 @@ function dashboardTaskStatusChip(task) {
     cache.smartPriceOverlay = smartPriceOverlay;
     cache.priceWorkbenchSupport = priceWorkbenchSupport;
     cache.orderProcurement = orderProcurement;
+    if (forceRefresh) metricsCache = null;
 
     const app = stateRef();
     if (app) {
@@ -6557,6 +6685,18 @@ function dashboardTaskStatusChip(task) {
       refreshData(forceRefresh)
         .then(apply)
         .catch((error) => console.warn('[portal-dashboard-interactive]', error));
+    }, delay);
+  }
+
+  function scheduleLocalApply(delay = 0) {
+    window.clearTimeout(applyTimer);
+    applyTimer = window.setTimeout(() => {
+      if (!isDashboardActive()) return;
+      try {
+        apply();
+      } catch (error) {
+        console.warn('[portal-dashboard-interactive]', error);
+      }
     }, delay);
   }
 

@@ -2967,6 +2967,291 @@ function iuDrrSparkline(rows, key, tone = 'ok') {
   `;
 }
 
+function wbFeedbacksPayload() {
+  const payload = state.wbFeedbacks && typeof state.wbFeedbacks === 'object' ? state.wbFeedbacks : {};
+  return {
+    generatedAt: payload.generatedAt || '',
+    window: payload.window || {},
+    currentMonth: payload.currentMonth || {},
+    last7Days: payload.last7Days || {},
+    summary: payload.summary || {},
+    reviewsForPoints: payload.reviewsForPoints || {},
+    ratingDynamics: payload.ratingDynamics || {},
+    daily: Array.isArray(payload.daily) ? payload.daily : [],
+    history: Array.isArray(payload.history) ? payload.history : [],
+    cards: Array.isArray(payload.cards) ? payload.cards : [],
+    recentFeedbacks: Array.isArray(payload.recentFeedbacks) ? payload.recentFeedbacks : [],
+    recentQuestions: Array.isArray(payload.recentQuestions) ? payload.recentQuestions : []
+  };
+}
+
+function wbFeedbackDeltaTone(value) {
+  if (value === null || value === undefined || value === '') return '';
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric === 0) return 'info';
+  return numeric > 0 ? 'ok' : 'danger';
+}
+
+function wbFeedbackDeltaLabel(value) {
+  if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return '—';
+  const numeric = Number(value);
+  const sign = numeric > 0 ? '+' : '';
+  return `${sign}${fmt.num(numeric, 2)}`;
+}
+
+function wbFeedbackRatingTone(value) {
+  if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return '';
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return '';
+  if (numeric < 4) return 'danger';
+  if (numeric < 4.5) return 'warn';
+  return 'ok';
+}
+
+function wbFeedbackRatingLabel(value) {
+  if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return '—';
+  return fmt.num(value, 2);
+}
+
+function wbFeedbackHistoryDateLabel(date) {
+  const text = String(date || '').trim();
+  return text.length >= 10 ? text.slice(5) : (text || '—');
+}
+
+function wbFeedbackRatingCell(point) {
+  const value = point?.cumulativeAvgRating;
+  const dailyRatings = numberOrZero(point?.ratingFeedbacks);
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return '<td><span class="muted">—</span></td>';
+  }
+  return `
+    <td>
+      ${badge(fmt.num(value, 2), wbFeedbackRatingTone(value))}
+      ${dailyRatings ? `<div class="muted small">+${fmt.int(dailyRatings)}</div>` : ''}
+    </td>
+  `;
+}
+
+function renderWbRatingDynamicsMatrix(payload) {
+  const dynamics = payload.ratingDynamics || {};
+  const dates = Array.isArray(dynamics.dates) ? dynamics.dates : [];
+  const rows = Array.isArray(dynamics.matrix) ? dynamics.matrix : [];
+  if (!rows.length || !dates.length) {
+    return `
+      <div class="section-subhead" style="margin-top:14px">
+        <div><h3>Динамика рейтинга карточек</h3><p class="small muted">История появится после обновления WB API.</p></div>
+        ${badge('нет матрицы', 'warn')}
+      </div>
+    `;
+  }
+  const sortedRows = rows.slice().sort((left, right) => {
+    const leftDelta = numberOrZero(left.ratingDelta);
+    const rightDelta = numberOrZero(right.ratingDelta);
+    const leftBucket = leftDelta < 0 ? 0 : (leftDelta > 0 ? 1 : 2);
+    const rightBucket = rightDelta < 0 ? 0 : (rightDelta > 0 ? 1 : 2);
+    if (leftBucket !== rightBucket) return leftBucket - rightBucket;
+    if (leftBucket === 0) return leftDelta - rightDelta;
+    if (leftBucket === 1) return rightDelta - leftDelta;
+    return numberOrZero(right.feedbackCount) - numberOrZero(left.feedbackCount);
+  }).slice(0, 30);
+  const topDrop = Array.isArray(dynamics.topDrops) && dynamics.topDrops.length ? dynamics.topDrops[0] : null;
+  const topGrowth = Array.isArray(dynamics.topGrowth) && dynamics.topGrowth.length ? dynamics.topGrowth[0] : null;
+  return `
+    <div class="section-subhead" style="margin-top:14px">
+      <div><h3>Динамика рейтинга карточек</h3><p class="small muted">Дневная матрица WB API по карточкам: рост и падение считаются по накопленной средней оценке новых отзывов.</p></div>
+      <div class="badge-stack">
+        ${badge(`${fmt.int(dynamics.historyDays || dates.length)} дней`, 'info')}
+        ${badge(`${fmt.int(dynamics.cardsObserved || rows.length)} карточек`, 'info')}
+      </div>
+    </div>
+    <div class="kpi-strip" style="margin-top:12px">
+      <div class="mini-kpi danger"><span>Падают</span><strong>${fmt.int(dynamics.cardsWithDrop)}</strong><span>${topDrop ? `${escapeHtml(topDrop.articleKey || topDrop.supplierArticle || topDrop.nmId || '')} ${wbFeedbackDeltaLabel(topDrop.ratingDelta)}` : 'нет падения'}</span></div>
+      <div class="mini-kpi ok"><span>Растут</span><strong>${fmt.int(dynamics.cardsWithGrowth)}</strong><span>${topGrowth ? `${escapeHtml(topGrowth.articleKey || topGrowth.supplierArticle || topGrowth.nmId || '')} ${wbFeedbackDeltaLabel(topGrowth.ratingDelta)}` : 'нет роста'}</span></div>
+      <div class="mini-kpi"><span>Без изменения</span><strong>${fmt.int(dynamics.cardsFlat)}</strong><span>дельта около нуля</span></div>
+      <div class="mini-kpi warn"><span>Оценки 1-3</span><strong>${fmt.int(rows.reduce((sum, row) => sum + numberOrZero(row.lowRatingCount), 0))}</strong><span>по карточкам в матрице</span></div>
+    </div>
+    <div class="table-wrap" style="margin-top:12px">
+      <table>
+        <thead>
+          <tr>
+            <th>Карточка</th>
+            <th>Старт</th>
+            <th>Сейчас</th>
+            <th>Динамика</th>
+            <th>За 7 дней</th>
+            <th>Отзывы</th>
+            <th>1-3</th>
+            <th>Отзывы за баллы</th>
+            ${dates.map((date) => `<th>${escapeHtml(wbFeedbackHistoryDateLabel(date))}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${sortedRows.map((row) => {
+            const historyByDate = new Map((Array.isArray(row.history) ? row.history : []).map((point) => [point.date, point]));
+            return `
+              <tr>
+                <td>
+                  <strong>${row.articleKey ? linkToSku(row.articleKey, row.articleKey) : escapeHtml(row.supplierArticle || row.nmId || '—')}</strong>
+                  <div class="muted small">${escapeHtml(row.productName || '')}</div>
+                </td>
+                <td>${badge(wbFeedbackRatingLabel(row.firstRating), wbFeedbackRatingTone(row.firstRating))}<div class="muted small">${escapeHtml(row.firstDate || '')}</div></td>
+                <td>${badge(wbFeedbackRatingLabel(row.latestRating), wbFeedbackRatingTone(row.latestRating))}<div class="muted small">${escapeHtml(row.latestDate || '')}</div></td>
+                <td>${badge(wbFeedbackDeltaLabel(row.ratingDelta), wbFeedbackDeltaTone(row.ratingDelta))}</td>
+                <td>${badge(wbFeedbackDeltaLabel(row.last7RatingDelta), wbFeedbackDeltaTone(row.last7RatingDelta))}</td>
+                <td>${fmt.int(row.feedbackCount)}<div class="muted small">${fmt.int(row.ratingCount)} оценок</div></td>
+                <td>${badge(fmt.int(row.lowRatingCount), numberOrZero(row.lowRatingCount) ? 'danger' : 'ok')}</td>
+                <td>${fmt.money(row.reviewPoints)}<div class="muted small">${fmt.int(row.reviewPointsFeedbackCount)} отзывов</div></td>
+                ${dates.map((date) => wbFeedbackRatingCell(historyByDate.get(date))).join('')}
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderWbFeedbacksIuDrrPanel() {
+  const payload = wbFeedbacksPayload();
+  if (!payload.cards.length) {
+    return `
+      <div class="card" style="margin-top:14px">
+        <div class="section-subhead">
+          <div><h3>WB отзывы и рейтинг карточек</h3><p class="small muted">Срез WB API пока не загружен.</p></div>
+          ${badge('нет данных', 'warn')}
+        </div>
+      </div>
+    `;
+  }
+  const monthFeedbacks = payload.currentMonth?.feedbacks || payload.summary?.feedbacks || {};
+  const monthQuestions = payload.currentMonth?.questions || payload.summary?.questions || {};
+  const counters = payload.summary?.counters || {};
+  const reviewsForPoints = payload.reviewsForPoints || {};
+  const reviewPointsMonth = numberOrZero(monthFeedbacks.reviewPoints) || numberOrZero(reviewsForPoints.spend);
+  const reviewPointsFeedbacks = numberOrZero(monthFeedbacks.reviewPointsFeedbacks) || numberOrZero(reviewsForPoints.feedbacks);
+  const cards = payload.cards.slice(0, 12);
+  const historyRows = (payload.history.length ? payload.history : payload.daily.map((row) => ({
+    date: row.date,
+    avgRating: row.avgRating,
+    feedbacks: row.feedbacks,
+    lowRatingFeedbacks: row.lowRatingFeedbacks,
+    unansweredFeedbacks: row.unansweredFeedbacks,
+    reviewPoints: row.reviewPoints,
+    reviewPointsFeedbacks: row.reviewPointsFeedbacks
+  }))).slice(-14);
+  const recentOpenFeedbacks = payload.recentFeedbacks.filter((item) => !item.answered).slice(0, 5);
+  const recentOpenQuestions = payload.recentQuestions.filter((item) => !item.answered).slice(0, 5);
+  const openSignals = [...recentOpenFeedbacks, ...recentOpenQuestions].slice(0, 6);
+  const windowLabel = payload.window?.from && payload.window?.to ? `${payload.window.from} — ${payload.window.to}` : 'последний срез';
+  const reviewPointsStatus = reviewsForPoints.apiAvailable
+    ? fmt.money(reviewPointsMonth)
+    : 'нет API';
+  const reviewPointsNote = reviewsForPoints.apiAvailable
+    ? `${fmt.int(reviewPointsFeedbacks)} отзывов`
+    : 'WB не отдает бюджет';
+  const ratingDynamicsHtml = renderWbRatingDynamicsMatrix(payload);
+  return `
+    <div class="card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div><h3>Рейтинг WB карточек, отзывы и вопросы</h3><p class="small muted">Срез ${escapeHtml(windowLabel)} · история хранится по ежедневным срезам.</p></div>
+        <div class="badge-stack">
+          ${badge(payload.generatedAt ? `API ${fmt.date(payload.generatedAt)}` : 'API', payload.generatedAt ? 'ok' : 'warn')}
+          ${badge(`${fmt.int(payload.cards.length)} карточек`, 'info')}
+        </div>
+      </div>
+
+      <div class="kpi-strip" style="margin-top:12px">
+        <div class="mini-kpi"><span>Отзывы WB за месяц</span><strong>${fmt.int(monthFeedbacks.count)}</strong><span>средняя ${fmt.num(monthFeedbacks.avgRating, 2)}</span></div>
+        <div class="mini-kpi ${numberOrZero(counters.feedbacksUnansweredNow) ? 'warn' : 'ok'}"><span>Не отвечено</span><strong>${fmt.int(counters.feedbacksUnansweredNow ?? monthFeedbacks.unanswered)}</strong><span>сегодня ${fmt.int(counters.feedbacksUnansweredToday)}</span></div>
+        <div class="mini-kpi ${numberOrZero(monthFeedbacks.lowRating) ? 'danger' : 'ok'}"><span>Оценки 1–3</span><strong>${fmt.int(monthFeedbacks.lowRating)}</strong><span>за текущий месяц</span></div>
+        <div class="mini-kpi ${numberOrZero(monthQuestions.unanswered) ? 'warn' : 'ok'}"><span>Вопросы WB</span><strong>${fmt.int(monthQuestions.count)}</strong><span>открыто ${fmt.int(monthQuestions.unanswered)}</span></div>
+        <div class="mini-kpi"><span>Рейтинг новых отзывов</span><strong>${fmt.num(monthFeedbacks.avgRating, 2)}</strong><span>по оценкам API</span></div>
+        <div class="mini-kpi warn"><span>Отзывы за баллы</span><strong>${reviewPointsStatus}</strong><span>${escapeHtml(reviewPointsNote)}</span></div>
+      </div>
+
+      ${ratingDynamicsHtml}
+
+      <div class="table-wrap" style="margin-top:12px">
+        <table>
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Рейтинг новых отзывов</th>
+              <th>Отзывы</th>
+              <th>Оценки 1–3</th>
+              <th>Не отвечено</th>
+              <th>Отзывы за баллы</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${historyRows.slice().reverse().map((row) => `
+              <tr>
+                <td><strong>${escapeHtml(row.date || '—')}</strong></td>
+                <td>${row.avgRating != null ? fmt.num(row.avgRating, 2) : '—'}</td>
+                <td>${fmt.int(row.feedbacks)}</td>
+                <td>${badge(fmt.int(row.lowRatingFeedbacks), numberOrZero(row.lowRatingFeedbacks) ? 'danger' : 'ok')}</td>
+                <td>${badge(fmt.int(row.unansweredFeedbacks), numberOrZero(row.unansweredFeedbacks) ? 'warn' : 'ok')}</td>
+                <td>${fmt.money(row.reviewPoints)}<div class="muted small">${fmt.int(row.reviewPointsFeedbacks)} отзывов</div></td>
+              </tr>
+            `).join('') || '<tr><td colspan="6">История появится после ежедневных срезов.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap" style="margin-top:12px">
+        <table>
+          <thead>
+            <tr>
+              <th>Карточка</th>
+              <th>Рейтинг новых</th>
+              <th>Рейтинг в портале</th>
+              <th>Динамика</th>
+              <th>Отзывы</th>
+              <th>1–3</th>
+              <th>Не отвечено</th>
+              <th>Вопросы</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${cards.map((card) => `
+              <tr>
+                <td>
+                  <strong>${card.articleKey ? linkToSku(card.articleKey, card.articleKey) : escapeHtml(card.supplierArticle || card.nmId || '—')}</strong>
+                  <div class="muted small">${escapeHtml(card.productName || '')}</div>
+                </td>
+                <td>${card.avgRating != null ? fmt.num(card.avgRating, 2) : '—'}</td>
+                <td>${card.portalRating != null ? fmt.num(card.portalRating, 2) : '—'}</td>
+                <td>${badge(wbFeedbackDeltaLabel(card.ratingDeltaVsPrevious), wbFeedbackDeltaTone(card.ratingDeltaVsPrevious))}</td>
+                <td>${fmt.int(card.feedbackCount)}</td>
+                <td>${badge(fmt.int(card.lowRatingCount), numberOrZero(card.lowRatingCount) ? 'danger' : 'ok')}</td>
+                <td>${badge(fmt.int(card.unansweredFeedbackCount), numberOrZero(card.unansweredFeedbackCount) ? 'warn' : 'ok')}</td>
+                <td>${fmt.int(card.questionCount)}</td>
+              </tr>
+            `).join('') || '<tr><td colspan="8">Нет карточек в срезе WB.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+
+      ${openSignals.length ? `
+        <div class="alert-stack" style="margin-top:12px">
+          ${openSignals.map((item) => `
+            <div class="alert-row">
+              <div>
+                <strong>${escapeHtml(item.articleKey || item.supplierArticle || item.nmId || 'WB')}</strong>
+                <div class="muted small">${escapeHtml(item.textSnippet || item.productName || '')}</div>
+              </div>
+              <div class="badge-stack">
+                ${item.valuation != null ? badge(`${fmt.num(item.valuation, 0)}★`, item.valuation <= 3 ? 'danger' : 'info') : badge('вопрос', 'warn')}
+                ${badge(item.date || '—')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function iuDrrExportRows(rows, model) {
   if (model.selectedPlatform === 'ozon') {
     return rows.map((row) => ({
@@ -3182,6 +3467,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       `).join('')}
     </div>
   `;
+  const wbFeedbacksHtml = isOzonView ? '' : renderWbFeedbacksIuDrrPanel();
   const dailyTableHtml = isOzonView ? `
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
@@ -3303,6 +3589,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     ${selectedKpisHtml}
     ${chartsHtml}
     ${channelRowsHtml}
+    ${wbFeedbacksHtml}
     ${dailyTableHtml}
 
     ${!isOzonView && sourceWarnings.length ? `

@@ -154,47 +154,82 @@ function channelKey(channel) {
   return 'wbPromotion';
 }
 
-function buildAdsDailyMaps(adsSummary) {
-  const byDate = new Map();
-  const byDateChannel = new Map();
-  for (const row of adsSummary?.itemSeries || []) {
-    if (normalizePlatformKey(row?.platformKey || row?.platform) !== 'wb') continue;
-    const date = isoDate(row.date || row.day || row.label);
-    if (!date) continue;
-    const current = byDate.get(date) || { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0, rows: 0 };
-    current.spend += numberOrZero(row.spend);
-    current.views += numberOrZero(row.views);
-    current.clicks += numberOrZero(row.clicks);
-    current.orders += numberOrZero(row.orders);
-    current.revenue += numberOrZero(row.revenue);
-    current.rows += 1;
-    byDate.set(date, current);
+function emptyAdsBucket() {
+  return { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0, rows: 0 };
+}
 
-    const key = `${date}|${channelKey(row.channel)}`;
-    const channelCurrent = byDateChannel.get(key) || 0;
-    byDateChannel.set(key, channelCurrent + numberOrZero(row.spend));
-  }
+function addAdsBucket(map, date, row) {
+  const current = map.get(date) || emptyAdsBucket();
+  current.spend += numberOrZero(row.spend);
+  current.views += numberOrZero(row.views);
+  current.clicks += numberOrZero(row.clicks);
+  current.orders += numberOrZero(row.orders);
+  current.revenue += numberOrZero(row.revenue);
+  current.rows += 1;
+  map.set(date, current);
+  return current;
+}
 
-  const wbPlatform = (adsSummary?.platforms || []).find((platform) => normalizePlatformKey(platform?.key || platform?.platformKey || platform?.label) === 'wb');
-  for (const point of wbPlatform?.series || []) {
+function mergePlatformAdsSeries(adsSummary, platformKey, targetMap, onSpendGap) {
+  const platform = (adsSummary?.platforms || []).find((item) =>
+    normalizePlatformKey(item?.key || item?.platformKey || item?.label) === platformKey
+  );
+  for (const point of platform?.series || []) {
     const date = isoDate(point.date || point.label);
     if (!date) continue;
     const platformSpend = numberOrZero(point.spend);
-    const current = byDate.get(date) || { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0, rows: 0 };
+    const current = targetMap.get(date) || emptyAdsBucket();
     if (platformSpend > current.spend + 1) {
       const gap = platformSpend - current.spend;
       current.spend += gap;
-      const key = `${date}|wbPromotion`;
-      byDateChannel.set(key, (byDateChannel.get(key) || 0) + gap);
+      if (typeof onSpendGap === 'function') onSpendGap(date, gap);
     }
     current.views = Math.max(current.views, numberOrZero(point.views));
     current.clicks = Math.max(current.clicks, numberOrZero(point.clicks));
     current.orders = Math.max(current.orders, numberOrZero(point.orders));
     current.revenue = Math.max(current.revenue, numberOrZero(point.revenue));
-    byDate.set(date, current);
+    targetMap.set(date, current);
+  }
+}
+
+function buildAdsDailyMaps(adsSummary) {
+  const byDate = new Map();
+  const byDateChannel = new Map();
+  const ozonByDate = new Map();
+  for (const row of adsSummary?.itemSeries || []) {
+    const platformKey = normalizePlatformKey(row?.platformKey || row?.platform || row?.marketplace || row?.data_source);
+    if (!['wb', 'ozon'].includes(platformKey)) continue;
+    const date = isoDate(row.date || row.day || row.label);
+    if (!date) continue;
+    const targetMap = platformKey === 'ozon' ? ozonByDate : byDate;
+    addAdsBucket(targetMap, date, row);
+
+    if (platformKey !== 'wb') continue;
+    const key = `${date}|${channelKey(row.channel)}`;
+    const channelCurrent = byDateChannel.get(key) || 0;
+    byDateChannel.set(key, channelCurrent + numberOrZero(row.spend));
   }
 
-  return { byDate, byDateChannel };
+  mergePlatformAdsSeries(adsSummary, 'wb', byDate, (date, gap) => {
+    const key = `${date}|wbPromotion`;
+    byDateChannel.set(key, (byDateChannel.get(key) || 0) + gap);
+  });
+  mergePlatformAdsSeries(adsSummary, 'ozon', ozonByDate);
+
+  return { byDate, byDateChannel, ozonByDate };
+}
+
+function buildReviewPointsMap(wbFeedbacksSummary) {
+  const map = new Map();
+  for (const row of wbFeedbacksSummary?.reviewsForPoints?.daily || []) {
+    const date = isoDate(row.date);
+    if (!date) continue;
+    const current = map.get(date) || { spend: 0, feedbacks: 0 };
+    current.spend += numberOrZero(row.spend ?? row.points);
+    current.feedbacks += numberOrZero(row.feedbacks);
+    map.set(date, current);
+  }
+  return map;
 }
 
 function planPctForMonth(iuPlan, month) {
@@ -260,10 +295,11 @@ function dateRange(platformTrends, adsSummary, explicitFrom, explicitTo) {
   return { from, to };
 }
 
-function buildDailyRows(platformTrends, iuPlan, adsSummary, options) {
+function buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, options) {
   const wbMap = buildPlatformDateMap(platformTrends, 'wb');
   const ozonMap = buildPlatformDateMap(platformTrends, 'ozon');
   const adsMaps = buildAdsDailyMaps(adsSummary);
+  const reviewPointsMap = buildReviewPointsMap(wbFeedbacksSummary);
   const range = dateRange(platformTrends, adsSummary, options.from, options.to);
   return enumerateDates(range.from, range.to).map((date) => {
     const month = monthKey(date);
@@ -273,6 +309,8 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, options) {
     const wb = wbMap.get(date) || {};
     const ozon = ozonMap.get(date) || {};
     const ads = adsMaps.byDate.get(date) || {};
+    const ozonAds = adsMaps.ozonByDate.get(date) || {};
+    const hasOzonAdsFact = adsMaps.ozonByDate.has(date);
     const revenueWb = numberOrZero(wb.revenue);
     const revenueOzon = numberOrZero(ozon.revenue);
     const targetRevenueWb = numberOrZero(plan.dailyIuRevenueWb);
@@ -281,11 +319,21 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, options) {
     const revenueOzonDelta = revenueOzon - targetRevenueOzon;
     const planSpendWb = revenueWb * planPct;
     const planSpendOzon = targetRevenueOzon * planPctOzon;
-    const spendFactOzon = revenueOzon * planPctOzon;
+    const spendFactOzon = hasOzonAdsFact ? numberOrZero(ozonAds.spend) : revenueOzon * planPctOzon;
+    const ozonAdsFactMode = hasOzonAdsFact
+      ? 'google_sheets_fact_ads_daily_sku'
+      : 'modeled_from_revenue_25pct_no_ozon_ads_fact';
     const channels = Object.fromEntries(CHANNEL_KEYS.map(([key]) => [key, 0]));
     for (const [key] of CHANNEL_KEYS) channels[key] = roundMoney(adsMaps.byDateChannel.get(`${date}|${key}`) || 0);
+    const feedbackReviewPoints = reviewPointsMap.get(date) || { spend: 0, feedbacks: 0 };
+    const reviewPointsFromFeedbacks = roundMoney(feedbackReviewPoints.spend);
+    let reviewPointsAddedToSpend = 0;
+    if (reviewPointsFromFeedbacks > 0 && numberOrZero(channels.reviewPoints) <= 0) {
+      channels.reviewPoints = reviewPointsFromFeedbacks;
+      reviewPointsAddedToSpend = reviewPointsFromFeedbacks;
+    }
     const externalSpend = numberOrZero(channels.externalAds);
-    const spendFactTotal = numberOrZero(ads.spend);
+    const spendFactTotal = numberOrZero(ads.spend) + reviewPointsAddedToSpend;
     const spendFact = Math.max(0, spendFactTotal - externalSpend);
     const spendFactIu = spendFact + spendFactOzon;
     const spendDelta = spendFact - planSpendWb;
@@ -311,7 +359,7 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, options) {
       factPctOzon: revenueOzon > 0 ? roundRate(spendFactOzon / revenueOzon) : null,
       spendDeltaOzon: roundMoney(spendDeltaOzon),
       spendDeltaOzonPct: planSpendOzon > 0 ? roundRate(spendDeltaOzon / planSpendOzon) : null,
-      ozonAdsFactMode: 'modeled_from_revenue_25pct_no_ozon_ads_api',
+      ozonAdsFactMode,
       revenueTotalIu: roundMoney(numberOrZero(wb.revenue) + revenueOzon),
       unitsWb: Math.round(numberOrZero(wb.units)),
       unitsOzon: Math.round(numberOrZero(ozon.units)),
@@ -325,6 +373,8 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, options) {
       factPct: revenueWb > 0 ? roundRate(spendFact / revenueWb) : null,
       factPctIu: revenueWb + revenueOzon > 0 ? roundRate(spendFactIu / (revenueWb + revenueOzon)) : null,
       ...channels,
+      reviewPointsSource: reviewPointsFromFeedbacks > 0 ? 'wb_feedbacks_api_supplierFeedbackValuation' : '',
+      reviewPointsFeedbacks: Math.round(numberOrZero(feedbackReviewPoints.feedbacks)),
       spendDelta: roundMoney(spendDelta),
       spendDeltaPct: planSpendWb > 0 ? roundRate(spendDelta / planSpendWb) : null,
       spendDeltaIu: roundMoney(spendDeltaIu),
@@ -334,7 +384,12 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, options) {
       adsClicks: Math.round(numberOrZero(ads.clicks)),
       adsOrders: Math.round(numberOrZero(ads.orders)),
       adsRevenue: roundMoney(numberOrZero(ads.revenue)),
-      sourceRows: Math.round(numberOrZero(ads.rows))
+      sourceRows: Math.round(numberOrZero(ads.rows)),
+      ozonAdsViews: Math.round(numberOrZero(ozonAds.views)),
+      ozonAdsClicks: Math.round(numberOrZero(ozonAds.clicks)),
+      ozonAdsOrders: Math.round(numberOrZero(ozonAds.orders)),
+      ozonAdsRevenue: roundMoney(numberOrZero(ozonAds.revenue)),
+      ozonAdsSourceRows: Math.round(numberOrZero(ozonAds.rows))
     };
   });
 }
@@ -369,6 +424,7 @@ function buildMonthRows(dailyRows, iuPlan) {
     const revenueOzonDelta = sumRows(rows, 'revenueOzonDelta');
     const spendDeltaOzon = sumRows(rows, 'spendDeltaOzon');
     const spendDeltaIu = sumRows(rows, 'spendDeltaIu');
+    const ozonAdsFactModes = Array.from(new Set(rows.map((row) => row.ozonAdsFactMode).filter(Boolean)));
     const plannedRevenueToDate = numberOrZero(plan.dailyIuRevenueTotal) * rows.length;
     const plannedRevenueWbToDate = numberOrZero(plan.dailyIuRevenueWb) * rows.length;
     const plannedRevenueOzonToDate = numberOrZero(plan.dailyIuRevenueOzon) * rows.length;
@@ -435,26 +491,40 @@ function buildMonthRows(dailyRows, iuPlan) {
       spendDeltaOzonPct: planSpendOzon > 0 ? roundRate(spendDeltaOzon / planSpendOzon) : null,
       spendDeltaIu: roundMoney(spendDeltaIu),
       spendDeltaIuPct: planSpendWb + planSpendOzon > 0 ? roundRate(spendDeltaIu / (planSpendWb + planSpendOzon)) : null,
-      ozonAdsFactMode: 'modeled_from_revenue_25pct_no_ozon_ads_api',
+      ozonAdsFactMode: ozonAdsFactModes.length === 1 ? ozonAdsFactModes[0] : ozonAdsFactModes.join('+'),
       planPct: roundRate(planPctForMonth(iuPlan, month)),
       externalAdsExcludedFromDrr: true,
+      ozonAdsViews: sumRows(rows, 'ozonAdsViews'),
+      ozonAdsClicks: sumRows(rows, 'ozonAdsClicks'),
+      ozonAdsOrders: sumRows(rows, 'ozonAdsOrders'),
+      ozonAdsRevenue: roundMoney(sumRows(rows, 'ozonAdsRevenue')),
+      ozonAdsSourceRows: sumRows(rows, 'ozonAdsSourceRows'),
       channels: Object.fromEntries(CHANNEL_KEYS.map(([key, label]) => [key, {
         key,
         label,
         spend: roundMoney(sumRows(rows, key))
-      }]))
+      }])),
+      reviewPointsFeedbacks: sumRows(rows, 'reviewPointsFeedbacks')
     };
   }).sort((left, right) => left.monthKey.localeCompare(right.monthKey));
 }
 
-function buildChannelRows(dailyRows, adsSummary = {}) {
+function buildChannelRows(dailyRows, adsSummary = {}, wbFeedbacksSummary = {}) {
   const adsSourceMode = String(adsSummary.sourceMode || adsSummary.source || '');
+  const wbAdsSource = adsSourceMode.includes('google-sheets-fact-ads')
+    ? 'Google Sheets fact_ads_daily_sku'
+    : 'WB Promotion API';
+  const reviewPointsSource = numberOrZero(wbFeedbacksSummary?.reviewsForPoints?.spend) > 0
+    ? 'WB Feedbacks API'
+    : '';
   return CHANNEL_KEYS.map(([key, label]) => ({
     key,
     label,
     spend: roundMoney(sumRows(dailyRows, key)),
     source: key === 'wbPromotion' || key === 'wbMedia'
-      ? 'WB Promotion API'
+      ? wbAdsSource
+      : key === 'reviewPoints' && (reviewPointsSource || sumRows(dailyRows, key) > 0)
+        ? (reviewPointsSource || 'WB ads source')
       : key === 'externalAds' && (adsSourceMode.includes('external-sheet') || sumRows(dailyRows, key) > 0)
         ? 'Google Sheets внешка'
         : 'нет источника в v1'
@@ -465,13 +535,15 @@ function buildPayload(options) {
   const platformTrends = readLayer(options, 'platform_trends.json', { platforms: [] });
   const iuPlan = readLayer(options, 'iu_plan.json', { months: {} });
   const adsSummary = readLayer(options, 'ads_summary.json', { platforms: [], itemSeries: [] });
-  const dailyRows = buildDailyRows(platformTrends, iuPlan, adsSummary, options);
+  const wbFeedbacksSummary = readLayer(options, 'wb_feedbacks_summary.json', { reviewsForPoints: {}, daily: [], cards: [] });
+  const dailyRows = buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, options);
   const months = buildMonthRows(dailyRows, iuPlan);
   const currentMonth = months[months.length - 1] || null;
-  const channels = buildChannelRows(dailyRows, adsSummary);
+  const channels = buildChannelRows(dailyRows, adsSummary, wbFeedbacksSummary);
   const asOfDate = dailyRows.map((row) => row.date).filter(Boolean).sort().pop() || isoDate(platformTrends?.latestMarketplaceDate) || isoDate(adsSummary?.asOfDate) || '';
   const noSourceChannels = channels
-    .filter((channel) => !['WB Promotion API', 'Google Sheets внешка'].includes(channel.source))
+    .filter((channel) => channel.source !== 'Google Sheets fact_ads_daily_sku')
+    .filter((channel) => !['WB Promotion API', 'WB Feedbacks API', 'Google Sheets внешка'].includes(channel.source))
     .map((channel) => channel.label);
   return {
     generatedAt: new Date().toISOString(),
@@ -480,6 +552,7 @@ function buildPayload(options) {
       iuPlanGeneratedAt: iuPlan.generatedAt || '',
       platformTrendsGeneratedAt: platformTrends.generatedAt || '',
       adsSummaryGeneratedAt: adsSummary.generatedAt || '',
+      wbFeedbacksGeneratedAt: wbFeedbacksSummary.generatedAt || '',
       adsSourceMode: adsSummary.sourceMode || adsSummary.source || ''
     },
     window: {
@@ -496,10 +569,13 @@ function buildPayload(options) {
     diagnostics: {
       adsSourceMode: adsSummary.sourceMode || adsSummary.source || '',
       adsDiagnostics: adsSummary.diagnostics || {},
+      wbFeedbacksDiagnostics: wbFeedbacksSummary.diagnostics || {},
+      reviewPointsSource: wbFeedbacksSummary?.reviewsForPoints?.sourceStatus || '',
       noSourceChannels,
       unmatchedNmIds: adsSummary.diagnostics?.unmatchedNmIds || [],
       notes: [
-        'Ozon ad spend is modeled as revenue * planPctOzon (25% in the current plan); actual Ozon Ads API spend is not connected yet.',
+        'Ozon ad spend comes from Google Sheets fact_ads_daily_sku when present; planPctOzon remains the plan benchmark.',
+        'Review points are filled from WB Feedbacks API supplierFeedbackValuation when present.',
         'ИУ по обороту считается по WB + Ozon.',
         'ДРР и каналы рекламы считаются по WB.',
         'Каналы без источника показываются нулем до подключения отдельного источника.'

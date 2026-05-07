@@ -12,6 +12,7 @@
     "data/logistics.json": "logistics",
     "data/ads_summary.json": "ads_summary",
     "data/iu_drr_summary.json": "iu_drr_summary",
+    "data/wb_feedbacks_summary.json": "wb_feedbacks_summary",
     "data/platform_plan.json": "platform_plan",
     "data/prices.json": "prices",
     "data/smart_price_workbench.json": "smart_price_workbench",
@@ -89,6 +90,9 @@
     }
     if (snapshotKey === "iu_drr_summary") {
       return Array.isArray(payload && payload.daily) && payload.daily.length > 0;
+    }
+    if (snapshotKey === "wb_feedbacks_summary") {
+      return Array.isArray(payload && payload.cards) && payload.cards.length > 0;
     }
     if (snapshotKey === "platform_plan" || snapshotKey === "iu_plan") {
       return payload && typeof payload.months === "object" && Object.keys(payload.months || {}).length > 0;
@@ -211,7 +215,7 @@
     cache.brand = "";
   }
 
-  async function fetchSnapshotRows(force) {
+  async function fetchSnapshotRows(force, requestedKey) {
     if (force) {
       resetLocalCache();
       if (originalResetSnapshot) {
@@ -225,14 +229,16 @@
     }
 
     var brand = currentPortalBrand();
-    if (cache.promise && cache.brand === brand) return cache.promise;
+    var cacheKey = brand + "|" + String(requestedKey || "all");
+    if (cache.promise && cache.brand === cacheKey) return cache.promise;
 
     var baseUrl = String(cfg.supabase.url || "").replace(/\/+$/, "");
     var url = new URL(baseUrl + "/rest/v1/" + SNAPSHOT_TABLE);
     url.searchParams.set("select", "snapshot_key,payload,generated_at,updated_at,payload_hash");
     url.searchParams.set("brand", "eq." + brand);
+    if (requestedKey) url.searchParams.set("snapshot_key", "eq." + requestedKey);
 
-    cache.brand = brand;
+    cache.brand = cacheKey;
     cache.promise = fetch(url.toString(), {
       headers: {
         apikey: cfg.supabase.anonKey,
@@ -321,7 +327,7 @@
     var snapshotKey = snapshotKeyFromPath(path);
     var snapshotPayload = null;
     if (snapshotKey) {
-      var rows = await fetchSnapshotRows(force);
+      var rows = await fetchSnapshotRows(force, snapshotKey);
       var payload = rows[snapshotKey];
       if (payloadLooksUsable(snapshotKey, payload)) snapshotPayload = clone(payload);
     } else if (originalLoadSnapshot) {
@@ -351,7 +357,7 @@
     if (!snapshotKey) {
       return originalLoadSnapshot ? originalLoadSnapshot(path) : null;
     }
-    var rows = await fetchSnapshotRows(Boolean(options && options.force));
+    var rows = await fetchSnapshotRows(Boolean(options && options.force), snapshotKey);
     var payload = rows[snapshotKey];
     return payloadLooksUsable(snapshotKey, payload) ? clone(payload) : null;
   };

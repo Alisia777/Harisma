@@ -11,6 +11,7 @@
   productLeaderboardHistory: [],
   adsSummary: { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
   iuDrrSummary: { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
+  wbFeedbacks: { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] },
   launches: [],
   meetings: [],
   documents: { groups: [] },
@@ -306,6 +307,7 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/logistics.json': 'logistics',
   'data/ads_summary.json': 'ads_summary',
   'data/iu_drr_summary.json': 'iu_drr_summary',
+  'data/wb_feedbacks_summary.json': 'wb_feedbacks_summary',
   'data/platform_plan.json': 'platform_plan',
   'data/prices.json': 'prices',
   'data/smart_price_workbench.json': 'smart_price_workbench',
@@ -316,6 +318,7 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
 const portalSnapshotState = {
   client: null,
   promise: null,
+  promises: {},
   rows: {},
   brand: ''
 };
@@ -434,6 +437,14 @@ function payloadFreshnessScore(snapshotKey, payload) {
 
   if (snapshotKey === 'iu_drr_summary') {
     score = bumpFreshness(score, payload.asOfDate);
+    (payload.daily || []).forEach((item) => {
+      score = bumpFreshness(score, item?.date);
+    });
+    return score;
+  }
+
+  if (snapshotKey === 'wb_feedbacks_summary') {
+    score = bumpFreshness(score, payload.window?.to);
     (payload.daily || []).forEach((item) => {
       score = bumpFreshness(score, item?.date);
     });
@@ -977,6 +988,7 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
   if (snapshotKey === 'platform_trends') return Array.isArray(payload?.platforms) && payload.platforms.length > 0;
   if (snapshotKey === 'ads_summary') return Array.isArray(payload?.platforms) && payload.platforms.length > 0;
   if (snapshotKey === 'iu_drr_summary') return Array.isArray(payload?.daily) && payload.daily.length > 0;
+  if (snapshotKey === 'wb_feedbacks_summary') return Array.isArray(payload?.cards) && payload.cards.length > 0;
   if (snapshotKey === 'platform_plan') return typeof payload?.months === 'object' && payload.months !== null && Object.keys(payload.months).length > 0;
   if (snapshotKey === 'smart_price_workbench') {
     return typeof payload?.platforms === 'object' && payload.platforms !== null && Object.keys(payload.platforms).length > 0;
@@ -1007,6 +1019,7 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
 function resetPortalSnapshotState() {
   portalSnapshotState.client = null;
   portalSnapshotState.promise = null;
+  portalSnapshotState.promises = {};
   portalSnapshotState.rows = {};
   portalSnapshotState.brand = '';
 }
@@ -1116,11 +1129,84 @@ async function loadPortalSnapshotRows() {
   return portalSnapshotState.promise;
 }
 
+function portalSnapshotRequestBaseUrl() {
+  const cfg = currentConfig();
+  if (!cfg.supabase?.url || !cfg.supabase?.anonKey || typeof fetch !== 'function') return null;
+  if (state.team?.mode === 'pending') return null;
+  const brand = currentBrand();
+  const baseUrl = String(cfg.supabase.url || '').replace(/\/+$/, '');
+  return {
+    brand,
+    url: `${baseUrl}/rest/v1/${PORTAL_SNAPSHOT_TABLE}`,
+    headers: {
+      apikey: cfg.supabase.anonKey,
+      Authorization: `Bearer ${cfg.supabase.anonKey}`,
+      Accept: 'application/json'
+    }
+  };
+}
+
+async function fetchPortalSnapshotRowsByKeys(snapshotKeys) {
+  const requestConfig = portalSnapshotRequestBaseUrl();
+  if (!requestConfig || !Array.isArray(snapshotKeys) || !snapshotKeys.length) return [];
+  const rows = [];
+  const chunks = [];
+  for (let index = 0; index < snapshotKeys.length; index += 80) chunks.push(snapshotKeys.slice(index, index + 80));
+  for (const batch of chunks) {
+    const url = new URL(requestConfig.url);
+    url.searchParams.set('select', 'snapshot_key,payload,generated_at,updated_at,payload_hash');
+    url.searchParams.set('brand', `eq.${requestConfig.brand}`);
+    url.searchParams.set('snapshot_key', batch.length === 1 ? `eq.${batch[0]}` : `in.(${batch.join(',')})`);
+    const response = await withTimeout(
+      fetch(url.toString(), { headers: requestConfig.headers }),
+      5000,
+      'Загрузка витрины из Supabase'
+    );
+    if (!response?.ok) throw new Error(`Supabase snapshots ${response?.status || 'request failed'}`);
+    rows.push(...await withTimeout(response.json(), 5000, 'Чтение витрины из Supabase'));
+  }
+  return rows;
+}
+
+function snapshotPartKeys(snapshotKey, count) {
+  const total = Math.max(0, Math.trunc(Number(count) || 0));
+  const result = [];
+  for (let index = 1; index <= total; index += 1) {
+    result.push(`${snapshotKey}__part__${String(index).padStart(4, '0')}`);
+  }
+  return result;
+}
+
+async function loadPortalSnapshotPayloadByKey(snapshotKey) {
+  const requestConfig = portalSnapshotRequestBaseUrl();
+  if (!requestConfig || !snapshotKey) return null;
+  const cacheKey = `${requestConfig.brand}|${snapshotKey}`;
+  if (portalSnapshotState.promises?.[cacheKey]) return portalSnapshotState.promises[cacheKey];
+  portalSnapshotState.promises[cacheKey] = (async () => {
+    try {
+      const baseRows = await fetchPortalSnapshotRowsByKeys([snapshotKey]);
+      const basePayload = baseRows.find((row) => row?.snapshot_key === snapshotKey)?.payload;
+      let rows = baseRows;
+      if (basePayload?.chunked === true) {
+        const partKeys = snapshotPartKeys(snapshotKey, basePayload.chunk_count || basePayload.chunkCount);
+        rows = rows.concat(await fetchPortalSnapshotRowsByKeys(partKeys));
+      }
+      const decoded = decodeChunkedPortalSnapshots(rows);
+      const payload = decoded[snapshotKey];
+      if (payload !== undefined) portalSnapshotState.rows[snapshotKey] = payload;
+      return payload !== undefined ? cloneJsonValue(payload) : null;
+    } catch (error) {
+      console.warn(`[portal-snapshots] ${snapshotKey}`, error);
+      return null;
+    }
+  })();
+  return portalSnapshotState.promises[cacheKey];
+}
+
 async function loadPortalSnapshotPayload(path) {
   const snapshotKey = snapshotKeyFromPath(path);
   if (!snapshotKey) return null;
-  const rows = await loadPortalSnapshotRows();
-  const payload = rows[snapshotKey];
+  const payload = await loadPortalSnapshotPayloadByKey(snapshotKey);
   if (!snapshotPayloadLooksUsable(snapshotKey, payload)) return null;
   return cloneJsonValue(payload);
 }
@@ -1873,7 +1959,7 @@ const LAZY_DATA_LOADERS = {
       : { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
   },
   iuDrr: async () => {
-    const [summary, adsPayload] = await Promise.all([
+    const [summary, adsPayload, wbFeedbacks] = await Promise.all([
       loadJsonOrFallback(
         'data/iu_drr_summary.json',
         { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
@@ -1883,6 +1969,11 @@ const LAZY_DATA_LOADERS = {
         'data/ads_summary.json',
         { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
         'Рекламная воронка'
+      ),
+      loadJsonOrFallback(
+        'data/wb_feedbacks_summary.json',
+        { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] },
+        'WB отзывы и вопросы'
       )
     ]);
     state.iuDrrSummary = summary && typeof summary === 'object'
@@ -1891,6 +1982,9 @@ const LAZY_DATA_LOADERS = {
     state.adsSummary = adsPayload && typeof adsPayload === 'object'
       ? adsPayload
       : { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
+    state.wbFeedbacks = wbFeedbacks && typeof wbFeedbacks === 'object'
+      ? wbFeedbacks
+      : { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] };
   },
   productLeaderboard: async () => {
     const [payload, history] = await Promise.all([

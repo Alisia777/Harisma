@@ -11,6 +11,7 @@
     'logistics',
     'ads_summary',
     'iu_drr_summary',
+    'wb_feedbacks_summary',
     'platform_plan',
     'prices',
     'smart_price_workbench',
@@ -25,6 +26,7 @@
     logistics: 'logistics',
     ads_summary: 'adsSummary',
     iu_drr_summary: 'iuDrrSummary',
+    wb_feedbacks_summary: 'wbFeedbacks',
     platform_plan: 'platformPlan',
     prices: 'prices',
     smart_price_workbench: 'smartPriceWorkbench',
@@ -107,6 +109,14 @@
       return score;
     }
 
+    if (snapshotKey === 'wb_feedbacks_summary') {
+      score = bumpFreshness(score, payload.window?.to);
+      (payload.daily || []).forEach((item) => {
+        score = bumpFreshness(score, item?.date);
+      });
+      return score;
+    }
+
     if (snapshotKey === 'platform_plan' || snapshotKey === 'iu_plan') {
       Object.keys(payload.months || {}).forEach((monthKey) => {
         score = bumpFreshness(score, `${monthKey}-01`);
@@ -147,6 +157,9 @@
     }
     if (snapshotKey === 'iu_drr_summary') {
       return Array.isArray(payload.daily) && payload.daily.length > 0;
+    }
+    if (snapshotKey === 'wb_feedbacks_summary') {
+      return Array.isArray(payload.cards) && payload.cards.length > 0;
     }
     if (snapshotKey === 'platform_plan' || snapshotKey === 'iu_plan') {
       return typeof payload?.months === 'object' && payload.months !== null && Object.keys(payload.months).length > 0;

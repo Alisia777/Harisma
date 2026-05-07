@@ -264,8 +264,11 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, options) {
     const ozon = ozonMap.get(date) || {};
     const ads = adsMaps.byDate.get(date) || {};
     const revenueWb = numberOrZero(wb.revenue);
+    const revenueOzon = numberOrZero(ozon.revenue);
     const targetRevenueWb = numberOrZero(plan.dailyIuRevenueWb);
+    const targetRevenueOzon = numberOrZero(plan.dailyIuRevenueOzon);
     const revenueWbDelta = revenueWb - targetRevenueWb;
+    const revenueOzonDelta = revenueOzon - targetRevenueOzon;
     const planSpendWb = revenueWb * planPct;
     const channels = Object.fromEntries(CHANNEL_KEYS.map(([key]) => [key, 0]));
     for (const [key] of CHANNEL_KEYS) channels[key] = roundMoney(adsMaps.byDateChannel.get(`${date}|${key}`) || 0);
@@ -282,8 +285,12 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, options) {
       revenueWbDelta: roundMoney(revenueWbDelta),
       revenueWbDeltaPct: targetRevenueWb > 0 ? roundRate(revenueWbDelta / targetRevenueWb) : null,
       revenueWbCompletionPct: targetRevenueWb > 0 ? roundRate(revenueWb / targetRevenueWb) : null,
-      revenueOzon: roundMoney(ozon.revenue),
-      revenueTotalIu: roundMoney(numberOrZero(wb.revenue) + numberOrZero(ozon.revenue)),
+      targetRevenueOzon: roundMoney(targetRevenueOzon),
+      revenueOzon: roundMoney(revenueOzon),
+      revenueOzonDelta: roundMoney(revenueOzonDelta),
+      revenueOzonDeltaPct: targetRevenueOzon > 0 ? roundRate(revenueOzonDelta / targetRevenueOzon) : null,
+      revenueOzonCompletionPct: targetRevenueOzon > 0 ? roundRate(revenueOzon / targetRevenueOzon) : null,
+      revenueTotalIu: roundMoney(numberOrZero(wb.revenue) + revenueOzon),
       unitsWb: Math.round(numberOrZero(wb.units)),
       unitsOzon: Math.round(numberOrZero(ozon.units)),
       planPct: roundRate(planPct),
@@ -326,7 +333,9 @@ function buildMonthRows(dailyRows, iuPlan) {
     const externalAds = sumRows(rows, 'externalAds');
     const planSpendWb = sumRows(rows, 'planSpendWb');
     const targetRevenueWb = sumRows(rows, 'targetRevenueWb');
+    const targetRevenueOzon = sumRows(rows, 'targetRevenueOzon');
     const revenueWbDelta = sumRows(rows, 'revenueWbDelta');
+    const revenueOzonDelta = sumRows(rows, 'revenueOzonDelta');
     const plannedRevenueToDate = numberOrZero(plan.dailyIuRevenueTotal) * rows.length;
     const plannedRevenueWbToDate = numberOrZero(plan.dailyIuRevenueWb) * rows.length;
     const plannedRevenueOzonToDate = numberOrZero(plan.dailyIuRevenueOzon) * rows.length;
@@ -360,6 +369,10 @@ function buildMonthRows(dailyRows, iuPlan) {
       revenueWbDelta: roundMoney(revenueWbDelta),
       revenueWbDeltaPct: targetRevenueWb > 0 ? roundRate(revenueWbDelta / targetRevenueWb) : null,
       revenueWbCompletionPct: targetRevenueWb > 0 ? roundRate(revenueWb / targetRevenueWb) : null,
+      targetRevenueOzon: roundMoney(targetRevenueOzon),
+      revenueOzonDelta: roundMoney(revenueOzonDelta),
+      revenueOzonDeltaPct: targetRevenueOzon > 0 ? roundRate(revenueOzonDelta / targetRevenueOzon) : null,
+      revenueOzonCompletionPct: targetRevenueOzon > 0 ? roundRate(revenueOzon / targetRevenueOzon) : null,
       revenueWb: roundMoney(revenueWb),
       revenueOzon: roundMoney(revenueOzon),
       spendFact: roundMoney(spendFact),

@@ -87,7 +87,9 @@
     status: 'active',
     platform: 'all',
     month: 'latest',
-    sort: 'gap'
+    date: '',
+    sort: 'gap',
+    sortDir: 'asc'
   },
   repricerFilters: {
     search: '',

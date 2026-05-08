@@ -289,7 +289,8 @@
     if (autoPullInFlight) return;
     autoPullInFlight = true;
     try {
-      await pullRemoteStateHotfix(true);
+      const activeView = String(app.activeView || '').trim();
+      await pullRemoteStateHotfix(activeView !== 'sku-plan-fact');
     } catch (error) {
       console.warn('[portal-team-runtime-hotfix:auto-pull]', reason, error);
     } finally {

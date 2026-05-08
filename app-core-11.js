@@ -1,5 +1,6 @@
 const SKU_PLAN_FACT_PLATFORMS = ['wb', 'ozon'];
 const SKU_PLAN_FACT_PLATFORM_LABELS = { wb: 'WB', ozon: 'Ozon' };
+let skuPlanFactSearchTimer = 0;
 
 function skuPlanFactFilters() {
   state.skuPlanFactFilters = {
@@ -8,10 +9,20 @@ function skuPlanFactFilters() {
     status: 'active',
     platform: 'all',
     month: 'latest',
+    date: '',
     sort: 'gap',
+    sortDir: 'asc',
     ...(state.skuPlanFactFilters || {})
   };
+  if (!['asc', 'desc'].includes(state.skuPlanFactFilters.sortDir)) {
+    state.skuPlanFactFilters.sortDir = skuPlanFactDefaultSortDir(state.skuPlanFactFilters.sort);
+  }
   return state.skuPlanFactFilters;
+}
+
+function skuPlanFactDateKey(value = '') {
+  const raw = String(value || '').slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : '';
 }
 
 function skuPlanFactMonthLabel(monthKey = '') {
@@ -114,27 +125,58 @@ function skuPlanFactLatestMonth(months = []) {
 
 function skuPlanFactSelectedMonth(months = []) {
   const filters = skuPlanFactFilters();
+  const dateMonth = skuPlanFactMonthFromDate(filters.date);
+  if (dateMonth && (!months.length || months.includes(dateMonth))) return dateMonth;
   if (filters.month && filters.month !== 'latest' && months.includes(filters.month)) return filters.month;
   return skuPlanFactLatestMonth(months);
 }
 
-function skuPlanFactMaxFactDate(indexes, monthKey) {
+function skuPlanFactLatestActualDate(indexes, monthKey = '') {
   let maxDate = '';
   SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
     [indexes.overlay?.[platform], indexes.smart?.[platform]].forEach((map) => {
       (map ? [...map.values()].flat() : []).forEach((row) => {
         (row.daily || row.monthly || []).forEach((item) => {
           const date = String(item?.date || '').slice(0, 10);
-          if (date.slice(0, 7) === monthKey && date > maxDate) maxDate = date;
+          if ((!monthKey || date.slice(0, 7) === monthKey) && date > maxDate) maxDate = date;
         });
       });
     });
   });
   (state.adsSummary?.itemSeries || []).forEach((item) => {
     const date = String(item?.date || '').slice(0, 10);
-    if (date.slice(0, 7) === monthKey && date > maxDate) maxDate = date;
+    if ((!monthKey || date.slice(0, 7) === monthKey) && date > maxDate) maxDate = date;
   });
+  return maxDate;
+}
+
+function skuPlanFactMaxFactDate(indexes, monthKey) {
+  const maxDate = skuPlanFactLatestActualDate(indexes, monthKey);
   return maxDate || `${monthKey}-${String(skuPlanFactMonthDays(monthKey)).padStart(2, '0')}`;
+}
+
+function skuPlanFactDateBounds(indexes, months = []) {
+  const safeMonths = months.length ? months : [todayIso().slice(0, 7)];
+  const minMonth = safeMonths[safeMonths.length - 1];
+  const maxDate = skuPlanFactLatestActualDate(indexes) || skuPlanFactMaxFactDate(indexes, safeMonths[0]);
+  return {
+    min: minMonth ? `${minMonth}-01` : '',
+    max: maxDate
+  };
+}
+
+function skuPlanFactSelectedDate(indexes, monthKey, maxFactDate = '') {
+  const filters = skuPlanFactFilters();
+  const maxDate = maxFactDate || skuPlanFactMaxFactDate(indexes, monthKey);
+  const selected = skuPlanFactDateKey(filters.date);
+  const monthStart = monthKey ? `${monthKey}-01` : '';
+  if (selected && skuPlanFactMonthFromDate(selected) === monthKey) {
+    if (monthStart && selected < monthStart) return monthStart;
+    if (maxDate && selected > maxDate) return maxDate;
+    return selected;
+  }
+  filters.date = maxDate;
+  return maxDate;
 }
 
 function skuPlanFactElapsedDays(monthKey, maxFactDate) {
@@ -170,14 +212,17 @@ function skuPlanFactPlanFromRows(rows = [], monthKey = '') {
   return result;
 }
 
-function skuPlanFactFactFromRows(rows = [], monthKey = '') {
+function skuPlanFactFactFromRows(rows = [], monthKey = '', maxFactDate = '') {
   const result = { units: 0, revenue: 0, avgCheck: null, source: '' };
   const seenDaily = new Set();
+  const monthEnd = `${monthKey}-${String(skuPlanFactMonthDays(monthKey)).padStart(2, '0')}`;
+  const allowMonthlyFallback = !maxFactDate || maxFactDate >= monthEnd;
   rows.forEach((row, rowIndex) => {
     const daily = [...(row.daily || []), ...(row.monthly || [])];
     daily.forEach((item, itemIndex) => {
       const date = String(item?.date || '').slice(0, 10);
       if (date.slice(0, 7) !== monthKey) return;
+      if (maxFactDate && date > maxFactDate) return;
       const dedupeKey = `${row.articleKey || row.article || rowIndex}|${date}|${itemIndex}|${item.revenue}|${item.ordersUnits}`;
       if (seenDaily.has(dedupeKey)) return;
       seenDaily.add(dedupeKey);
@@ -188,6 +233,7 @@ function skuPlanFactFactFromRows(rows = [], monthKey = '') {
     });
     (row.actualMonths || []).forEach((item) => {
       if (String(item?.monthKey || '').slice(0, 7) !== monthKey) return;
+      if (!allowMonthlyFallback) return;
       if (result.revenue > 0 || result.units > 0) return;
       result.units += numberOrZero(item.units);
       result.revenue += numberOrZero(item.revenue);
@@ -223,10 +269,12 @@ function skuPlanFactLatestMetric(rows = [], fieldNames = []) {
   return null;
 }
 
-function skuPlanFactAdIndex(monthKey) {
+function skuPlanFactAdIndex(monthKey, maxFactDate = '') {
   const map = new Map();
   (state.adsSummary?.itemSeries || []).forEach((item) => {
-    if (skuPlanFactMonthFromDate(item?.date) !== monthKey) return;
+    const date = String(item?.date || '').slice(0, 10);
+    if (skuPlanFactMonthFromDate(date) !== monthKey) return;
+    if (maxFactDate && date > maxFactDate) return;
     const platform = String(item.platformKey || item.platform || 'wb').toLowerCase();
     const token = skuPlanFactArticleToken(item);
     if (!token) return;
@@ -242,7 +290,7 @@ function skuPlanFactAdIndex(monthKey) {
   return map;
 }
 
-function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, elapsedDays) {
+function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, elapsedDays, maxFactDate = '') {
   const token = skuPlanFactArticleToken(sku);
   const smartRows = indexes.smart?.[platform]?.get(token) || [];
   const overlayRows = indexes.overlay?.[platform]?.get(token) || [];
@@ -253,7 +301,7 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
     ? overlayRows
     : (skuPlanFactRowsHaveFact(smartRows, monthKey) ? smartRows : supportRows);
   const plan = skuPlanFactPlanFromRows(planRows, monthKey);
-  const fact = skuPlanFactFactFromRows(factRows, monthKey);
+  const fact = skuPlanFactFactFromRows(factRows, monthKey, maxFactDate);
   const ad = adIndex.get(`${platform}|${token}`) || { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0 };
   const planToDateRevenue = plan.revenue > 0 ? plan.revenue * elapsedDays / Math.max(1, plan.days) : 0;
   const planToDateUnits = plan.units > 0 ? plan.units * elapsedDays / Math.max(1, plan.days) : 0;
@@ -292,9 +340,9 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
   };
 }
 
-function skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays) {
-  const wb = skuPlanFactPlatformMetrics(sku, 'wb', monthKey, indexes, adIndex, elapsedDays);
-  const ozon = skuPlanFactPlatformMetrics(sku, 'ozon', monthKey, indexes, adIndex, elapsedDays);
+function skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, maxFactDate = '') {
+  const wb = skuPlanFactPlatformMetrics(sku, 'wb', monthKey, indexes, adIndex, elapsedDays, maxFactDate);
+  const ozon = skuPlanFactPlatformMetrics(sku, 'ozon', monthKey, indexes, adIndex, elapsedDays, maxFactDate);
   const planRevenue = wb.planRevenue + ozon.planRevenue;
   const planUnits = wb.planUnits + ozon.planUnits;
   const planToDateRevenue = wb.planToDateRevenue + ozon.planToDateRevenue;
@@ -325,27 +373,62 @@ function skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays) {
   };
 }
 
-function skuPlanFactSortRows(rows, sort) {
-  const sorters = {
-    gap: (a, b) => a.gapToDate - b.gapToDate,
-    completion: (a, b) => numberOrZero(a.completionToDate ?? 9) - numberOrZero(b.completionToDate ?? 9),
-    fact: (a, b) => b.factRevenue - a.factRevenue,
-    plan: (a, b) => b.planRevenue - a.planRevenue,
-    drr: (a, b) => numberOrZero(b.drr) - numberOrZero(a.drr),
-    article: (a, b) => String(a.article).localeCompare(String(b.article), 'ru')
-  };
-  return [...rows].sort(sorters[sort] || sorters.gap);
+function skuPlanFactDefaultSortDir(sort = '') {
+  return ['fact', 'plan', 'drr', 'wb', 'ozon', 'avgCheck', 'ad'].includes(sort) ? 'desc' : 'asc';
+}
+
+function skuPlanFactSortValue(row, sort = '') {
+  if (sort === 'article') return row.article || row.articleKey || '';
+  if (sort === 'owner') return row.owner || '';
+  if (sort === 'completion') return row.completionToDate;
+  if (sort === 'fact') return row.factRevenue;
+  if (sort === 'plan') return row.planRevenue;
+  if (sort === 'drr') return row.drr;
+  if (sort === 'wb') return row.wb?.factRevenue;
+  if (sort === 'ozon') return row.ozon?.factRevenue;
+  if (sort === 'avgCheck') return row.factUnits > 0 ? row.factRevenue / row.factUnits : null;
+  if (sort === 'turnover') {
+    const values = [row.wb?.turnoverDays, row.ozon?.turnoverDays].filter((value) => Number.isFinite(Number(value)));
+    return values.length ? values.reduce((sum, value) => sum + Number(value), 0) / values.length : null;
+  }
+  if (sort === 'ad') return row.adSpend;
+  return row.gapToDate;
+}
+
+function skuPlanFactCompareValues(leftValue, rightValue) {
+  const leftEmpty = leftValue === null || leftValue === undefined || leftValue === '';
+  const rightEmpty = rightValue === null || rightValue === undefined || rightValue === '';
+  if (leftEmpty && rightEmpty) return 0;
+  if (leftEmpty) return 1;
+  if (rightEmpty) return -1;
+
+  const leftNumber = Number(leftValue);
+  const rightNumber = Number(rightValue);
+  if (Number.isFinite(leftNumber) && Number.isFinite(rightNumber)) return leftNumber - rightNumber;
+
+  return String(leftValue).localeCompare(String(rightValue), 'ru', { numeric: true, sensitivity: 'base' });
+}
+
+function skuPlanFactSortRows(rows, sort, sortDir) {
+  const key = sort || 'gap';
+  const direction = sortDir || skuPlanFactDefaultSortDir(key);
+  return [...rows].sort((left, right) => {
+    const result = skuPlanFactCompareValues(skuPlanFactSortValue(left, key), skuPlanFactSortValue(right, key));
+    return direction === 'desc' ? -result : result;
+  });
 }
 
 function skuPlanFactBuildModel() {
   const filters = skuPlanFactFilters();
   const indexes = skuPlanFactBuildIndexes();
   const months = skuPlanFactAvailableMonths(indexes);
+  const dateBounds = skuPlanFactDateBounds(indexes, months);
   const monthKey = skuPlanFactSelectedMonth(months);
-  const maxFactDate = skuPlanFactMaxFactDate(indexes, monthKey);
-  const elapsedDays = skuPlanFactElapsedDays(monthKey, maxFactDate);
-  const adIndex = skuPlanFactAdIndex(monthKey);
-  const rows = (state.skus || []).map((sku) => skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays));
+  const maxAvailableDate = skuPlanFactMaxFactDate(indexes, monthKey);
+  const selectedDate = skuPlanFactSelectedDate(indexes, monthKey, maxAvailableDate);
+  const elapsedDays = skuPlanFactElapsedDays(monthKey, selectedDate);
+  const adIndex = skuPlanFactAdIndex(monthKey, selectedDate);
+  const rows = (state.skus || []).map((sku) => skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, selectedDate));
   const owners = [...new Set(rows.map((row) => row.owner).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
   const search = String(filters.search || '').trim().toLowerCase();
   const filteredRows = rows.filter((row) => {
@@ -363,7 +446,7 @@ function skuPlanFactBuildModel() {
       .toLowerCase()
       .includes(search);
   });
-  const sortedRows = skuPlanFactSortRows(filteredRows, filters.sort);
+  const sortedRows = skuPlanFactSortRows(filteredRows, filters.sort, filters.sortDir);
   const totals = sortedRows.reduce((acc, row) => {
     acc.planRevenue += row.planRevenue;
     acc.planToDateRevenue += row.planToDateRevenue;
@@ -385,7 +468,11 @@ function skuPlanFactBuildModel() {
     months,
     monthKey,
     monthLabel: skuPlanFactMonthLabel(monthKey),
-    maxFactDate,
+    maxFactDate: selectedDate,
+    selectedDate,
+    maxAvailableDate,
+    dateMin: dateBounds.min,
+    dateMax: dateBounds.max,
     elapsedDays,
     rows: sortedRows,
     allRows: rows,
@@ -549,14 +636,111 @@ function downloadSkuPlanFactExcel(model) {
   ], skuPlanFactExportRows(model.rows, model), `sku-plan-fact-${model.monthKey}.xls`);
 }
 
-function renderSkuPlanFact(rootId = 'view-sku-plan-fact') {
+function skuPlanFactFocusState(target) {
+  if (!target?.id) return null;
+  const focusState = { id: target.id };
+  if (typeof target.selectionStart === 'number') {
+    focusState.start = target.selectionStart;
+    focusState.end = target.selectionEnd;
+  }
+  return focusState;
+}
+
+function skuPlanFactRestoreFocus(focusState) {
+  if (!focusState?.id) return;
+  window.requestAnimationFrame(() => {
+    const input = document.getElementById(focusState.id);
+    if (!input) return;
+    input.focus({ preventScroll: true });
+    if (typeof focusState.start === 'number' && typeof input.setSelectionRange === 'function') {
+      input.setSelectionRange(focusState.start, focusState.end ?? focusState.start);
+    }
+  });
+}
+
+function skuPlanFactSetFilter(rootId, key, value, options = {}) {
+  const filters = skuPlanFactFilters();
+  let nextValue = value;
+  if (key === 'date') {
+    nextValue = skuPlanFactDateKey(value);
+    filters.month = nextValue ? nextValue.slice(0, 7) : 'latest';
+  }
+  if (key === 'sort') {
+    filters.sortDir = skuPlanFactDefaultSortDir(nextValue);
+  }
+  if (filters[key] === nextValue && !options.force) return;
+  filters[key] = nextValue;
+
+  const render = () => renderSkuPlanFact(rootId, { focusState: options.focusState || null });
+  window.clearTimeout(skuPlanFactSearchTimer);
+  if (options.debounce) {
+    skuPlanFactSearchTimer = window.setTimeout(render, options.debounce);
+  } else {
+    render();
+  }
+}
+
+function skuPlanFactToggleSort(rootId, sortKey) {
+  const filters = skuPlanFactFilters();
+  if (filters.sort === sortKey) {
+    filters.sortDir = filters.sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    filters.sort = sortKey;
+    filters.sortDir = skuPlanFactDefaultSortDir(sortKey);
+  }
+  renderSkuPlanFact(rootId);
+}
+
+function skuPlanFactSortHeader(key, label) {
+  const filters = skuPlanFactFilters();
+  const active = filters.sort === key;
+  const mark = active ? (filters.sortDir === 'asc' ? '↑' : '↓') : '';
+  const ariaSort = active ? (filters.sortDir === 'asc' ? 'ascending' : 'descending') : 'none';
+  return `
+    <th class="${active ? 'is-sorted' : ''}" aria-sort="${ariaSort}">
+      <button class="table-sort-btn" type="button" data-sku-plan-fact-sort="${escapeHtml(key)}">
+        <span>${escapeHtml(label)}</span><span class="sort-mark">${mark}</span>
+      </button>
+    </th>
+  `;
+}
+
+async function refreshSkuPlanFactData(button = null, rootId = 'view-sku-plan-fact') {
+  const originalText = button?.textContent || '';
+  try {
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Обновляем...';
+    }
+    if (typeof window.__alteaResetPortalSnapshotState === 'function') window.__alteaResetPortalSnapshotState();
+    if (state.boot?.lazyReady) state.boot.lazyReady.skuPlanFact = false;
+    if (state.boot?.lazyLoads) delete state.boot.lazyLoads.skuPlanFact;
+    if (typeof ensureViewData === 'function') await ensureViewData('sku-plan-fact');
+    else if (LAZY_DATA_LOADERS?.skuPlanFact) await LAZY_DATA_LOADERS.skuPlanFact();
+    renderSkuPlanFact(rootId);
+    if (typeof updateSyncBadge === 'function') updateSyncBadge();
+  } catch (error) {
+    console.warn('[sku-plan-fact-refresh]', error);
+    if (typeof setAppError === 'function') setAppError(`План-факт SKU не смог обновить данные: ${error.message}`);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText || 'Обновить данные';
+    }
+  }
+}
+
+function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
   const root = document.getElementById(rootId);
   if (!root) return;
   const model = skuPlanFactBuildModel();
   const filters = model.filters;
   const totals = model.totals;
-  const monthOptions = model.months.map((monthKey) => `<option value="${escapeHtml(monthKey)}" ${filters.month === monthKey ? 'selected' : ''}>${escapeHtml(skuPlanFactMonthLabel(monthKey))}</option>`).join('');
   const ownerOptions = model.owners.map((owner) => `<option value="${escapeHtml(owner)}" ${filters.owner === owner ? 'selected' : ''}>${escapeHtml(owner)}</option>`).join('');
+  const dateAttrs = [
+    model.dateMin ? `min="${escapeHtml(model.dateMin)}"` : '',
+    model.dateMax ? `max="${escapeHtml(model.dateMax)}"` : ''
+  ].filter(Boolean).join(' ');
   const rowsHtml = model.rows.length
     ? model.rows.map((row) => skuPlanFactRowHtml(row, model)).join('')
     : '<tr><td colspan="8"><div class="empty">По текущим фильтрам нет SKU.</div></td></tr>';
@@ -582,22 +766,20 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact') {
       ${skuPlanFactMetricHtml('Реклама / ДРР', `${fmt.money(totals.adSpend)} · ${fmt.pct(totals.drr)}`, 'по SKU из ads_summary')}
     </div>
 
-    <div class="card" style="margin-top:14px">
+    <div class="card sku-plan-fact-card" style="margin-top:14px">
       <div class="section-subhead">
         <div>
           <h3>Таблица по позициям</h3>
           <p class="small muted">План берём из ценового планового слоя, факт WB/Ozon из ежедневного marketplace-среза, рекламу из API/таблицы рекламы.</p>
         </div>
         <div class="badge-stack">
+          <button class="quick-chip" type="button" data-sku-plan-fact-refresh>Обновить данные</button>
           <button class="quick-chip" type="button" data-sku-plan-fact-export>Выгрузить в Excel</button>
         </div>
       </div>
       <div class="control-filters sku-plan-fact-filters">
         <input id="skuPlanFactSearch" placeholder="Поиск по SKU, названию, owner…" value="${escapeHtml(filters.search)}">
-        <select id="skuPlanFactMonth">
-          <option value="latest" ${filters.month === 'latest' ? 'selected' : ''}>Текущий месяц: ${escapeHtml(model.monthLabel)}</option>
-          ${monthOptions}
-        </select>
+        <input id="skuPlanFactDate" type="date" title="Дата план-факта" aria-label="Дата план-факта" value="${escapeHtml(model.selectedDate || '')}" ${dateAttrs}>
         <select id="skuPlanFactOwner">
           <option value="all" ${filters.owner === 'all' ? 'selected' : ''}>Все owner</option>
           ${ownerOptions}
@@ -620,21 +802,27 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact') {
           <option value="fact" ${filters.sort === 'fact' ? 'selected' : ''}>Сортировка: факт оборота</option>
           <option value="plan" ${filters.sort === 'plan' ? 'selected' : ''}>Сортировка: план</option>
           <option value="drr" ${filters.sort === 'drr' ? 'selected' : ''}>Сортировка: ДРР</option>
+          <option value="wb" ${filters.sort === 'wb' ? 'selected' : ''}>Сортировка: WB факт</option>
+          <option value="ozon" ${filters.sort === 'ozon' ? 'selected' : ''}>Сортировка: Ozon факт</option>
+          <option value="avgCheck" ${filters.sort === 'avgCheck' ? 'selected' : ''}>Сортировка: средний чек</option>
+          <option value="turnover" ${filters.sort === 'turnover' ? 'selected' : ''}>Сортировка: оборачиваемость</option>
+          <option value="ad" ${filters.sort === 'ad' ? 'selected' : ''}>Сортировка: реклама</option>
           <option value="article" ${filters.sort === 'article' ? 'selected' : ''}>Сортировка: артикул</option>
+          <option value="owner" ${filters.sort === 'owner' ? 'selected' : ''}>Сортировка: owner</option>
         </select>
       </div>
       <div class="table-wrap sku-plan-fact-table">
         <table>
           <thead>
             <tr>
-              <th>SKU</th>
-              <th>Owner</th>
-              <th>WB факт / план</th>
-              <th>Ozon факт / план</th>
-              <th>Итого</th>
-              <th>Средний чек</th>
-              <th>Оборачиваемость</th>
-              <th>Реклама / ДРР</th>
+              ${skuPlanFactSortHeader('article', 'SKU')}
+              ${skuPlanFactSortHeader('owner', 'Owner')}
+              ${skuPlanFactSortHeader('wb', 'WB факт / план')}
+              ${skuPlanFactSortHeader('ozon', 'Ozon факт / план')}
+              ${skuPlanFactSortHeader('gap', 'Итого')}
+              ${skuPlanFactSortHeader('avgCheck', 'Средний чек')}
+              ${skuPlanFactSortHeader('turnover', 'Оборачиваемость')}
+              ${skuPlanFactSortHeader('ad', 'Реклама / ДРР')}
             </tr>
           </thead>
           <tbody>${rowsHtml}</tbody>
@@ -644,13 +832,20 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact') {
     </div>
   `;
 
-  root.querySelector('#skuPlanFactSearch')?.addEventListener('input', (event) => { filters.search = event.target.value; renderSkuPlanFact(rootId); });
-  root.querySelector('#skuPlanFactMonth')?.addEventListener('change', (event) => { filters.month = event.target.value; renderSkuPlanFact(rootId); });
-  root.querySelector('#skuPlanFactOwner')?.addEventListener('change', (event) => { filters.owner = event.target.value; renderSkuPlanFact(rootId); });
-  root.querySelector('#skuPlanFactStatus')?.addEventListener('change', (event) => { filters.status = event.target.value; renderSkuPlanFact(rootId); });
-  root.querySelector('#skuPlanFactPlatform')?.addEventListener('change', (event) => { filters.platform = event.target.value; renderSkuPlanFact(rootId); });
-  root.querySelector('#skuPlanFactSort')?.addEventListener('change', (event) => { filters.sort = event.target.value; renderSkuPlanFact(rootId); });
+  root.querySelector('#skuPlanFactSearch')?.addEventListener('input', (event) => {
+    skuPlanFactSetFilter(rootId, 'search', event.target.value, { debounce: 140, focusState: skuPlanFactFocusState(event.target) });
+  });
+  root.querySelector('#skuPlanFactDate')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'date', event.target.value); });
+  root.querySelector('#skuPlanFactOwner')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'owner', event.target.value); });
+  root.querySelector('#skuPlanFactStatus')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'status', event.target.value); });
+  root.querySelector('#skuPlanFactPlatform')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'platform', event.target.value); });
+  root.querySelector('#skuPlanFactSort')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'sort', event.target.value); });
+  root.querySelectorAll('[data-sku-plan-fact-sort]').forEach((button) => {
+    button.addEventListener('click', () => skuPlanFactToggleSort(rootId, button.dataset.skuPlanFactSort));
+  });
+  root.querySelector('[data-sku-plan-fact-refresh]')?.addEventListener('click', (event) => { refreshSkuPlanFactData(event.currentTarget, rootId); });
   root.querySelector('[data-sku-plan-fact-export]')?.addEventListener('click', () => downloadSkuPlanFactExcel(model));
+  skuPlanFactRestoreFocus(options.focusState);
 }
 
 window.renderSkuPlanFact = renderSkuPlanFact;

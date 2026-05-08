@@ -100,8 +100,12 @@ body{min-height:100vh}
 table{width:100%;border-collapse:collapse;min-width:860px}
 th,td{padding:14px 12px;border-bottom:1px solid var(--line);vertical-align:top}
 th{text-align:left;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;background:rgba(255,255,255,.02);position:sticky;top:0}
+th.is-sorted{color:var(--text);background:rgba(212,164,92,.08)}
 tr:last-child td{border-bottom:none}
 .text-center{text-align:center}
+.table-sort-btn{display:inline-flex;align-items:center;gap:6px;width:100%;border:0;background:transparent;color:inherit;padding:0;font:inherit;text-transform:inherit;letter-spacing:inherit;text-align:left;cursor:pointer}
+.table-sort-btn:hover{color:var(--text)}
+.sort-mark{min-width:12px;color:var(--accent)}
 
 .muted{color:var(--muted)}
 .small{font-size:12px}
@@ -125,7 +129,9 @@ textarea{resize:vertical;min-height:84px}
 .sku-pill:hover{background:#f4f7ff;color:#0f172a}
 .sku-registry-row{cursor:pointer}
 .sku-registry-row:hover td{background:rgba(255,255,255,.035)}
+.sku-plan-fact-card{min-width:0;max-width:100%;overflow:hidden}
 .sku-plan-fact-filters{grid-template-columns:1.5fr repeat(5,minmax(0,180px))}
+.sku-plan-fact-card .sku-plan-fact-table{width:100%;max-width:100%}
 .sku-plan-fact-table table{min-width:1680px}
 .sku-plan-fact-row{cursor:pointer}
 .sku-plan-fact-row:hover td{background:rgba(255,255,255,.035)}

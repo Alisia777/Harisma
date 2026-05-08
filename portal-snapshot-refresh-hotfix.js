@@ -236,7 +236,6 @@
     var url = new URL(baseUrl + "/rest/v1/" + SNAPSHOT_TABLE);
     url.searchParams.set("select", "snapshot_key,payload,generated_at,updated_at,payload_hash");
     url.searchParams.set("brand", "eq." + brand);
-    if (requestedKey) url.searchParams.set("snapshot_key", "eq." + requestedKey);
 
     cache.brand = cacheKey;
     cache.promise = fetch(url.toString(), {

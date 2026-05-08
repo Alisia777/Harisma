@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-05-07T21:12:14.172Z",
+  "generatedAt": "2026-05-08T05:46:10.954Z",
   "asOfDate": "2026-05-06",
   "source": {
     "iuPlanGeneratedAt": "2026-05-07T13:23:55.957Z",
     "platformTrendsGeneratedAt": "2026-05-07T14:10:42.828Z",
     "adsSummaryGeneratedAt": "2026-05-07T14:10:42.954Z",
-    "wbFeedbacksGeneratedAt": "2026-05-07T21:12:08.537Z",
+    "wbFeedbacksGeneratedAt": "2026-05-08T05:46:03.681Z",
     "adsSourceMode": "google-sheets-fact-ads-daily-sku"
   },
   "window": {
@@ -653,10 +653,10 @@
     "wbFeedbacksDiagnostics": {
       "requests": 6,
       "warnings": [
-        "seller rating: WB API GET /api/common/v1/rating failed: HTTP 403 {\n    \"title\": \"forbidden\",\n    \"detail\": \"personal token is not allowed\",\n    \"code\": \"personal token is not allowed for this path\",\n    \"requestId\": \"29e0c60a80449d394c6b6887dafe2625\",\n    \"origin\": \"s2s-api-auth-feedbacks\",\n    \"status\": 403,\n    \"statusText\": \"Forbidden\",\n    \"timestamp\": \"2026-05-07T21:11:48Z\"\n}\r\n"
+        "seller rating: WB API GET /api/common/v1/rating failed: HTTP 403 {\n    \"title\": \"forbidden\",\n    \"detail\": \"personal token is not allowed\",\n    \"code\": \"personal token is not allowed for this path\",\n    \"requestId\": \"7f89e571f9e6f48b885632603166ccdc\",\n    \"origin\": \"s2s-api-auth-feedbacks\",\n    \"status\": 403,\n    \"statusText\": \"Forbidden\",\n    \"timestamp\": \"2026-05-08T05:45:47Z\"\n}\r\n"
       ],
-      "feedbackRows": 13287,
-      "questionRows": 574,
+      "feedbackRows": 13393,
+      "questionRows": 577,
       "matchedCards": 165,
       "previousSnapshotDate": "2026-05-07"
     },

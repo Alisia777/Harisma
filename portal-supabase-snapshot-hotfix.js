@@ -184,6 +184,55 @@
     if (typeof updateSyncBadge === 'function') updateSyncBadge();
   }
 
+  function parseChunkedSnapshotKey(snapshotKey = '') {
+    const match = String(snapshotKey || '').match(/^(.*)__part__(\d{4})$/);
+    return match ? { baseKey: match[1], index: Number(match[2]) } : null;
+  }
+
+  function decodeChunkedSnapshotRows(rows) {
+    const decodedRows = [];
+    const metaByKey = new Map();
+    const partsByKey = new Map();
+
+    for (const row of Array.isArray(rows) ? rows : []) {
+      const snapshotKey = String(row?.snapshot_key || '').trim();
+      if (!snapshotKey) continue;
+      const chunkMeta = parseChunkedSnapshotKey(snapshotKey);
+      if (chunkMeta) {
+        if (!partsByKey.has(chunkMeta.baseKey)) partsByKey.set(chunkMeta.baseKey, []);
+        partsByKey.get(chunkMeta.baseKey).push({ index: chunkMeta.index, payload: row.payload, updated_at: row.updated_at });
+        continue;
+      }
+      if (row?.payload?.chunked) {
+        metaByKey.set(snapshotKey, row);
+        continue;
+      }
+      decodedRows.push(row);
+    }
+
+    for (const [baseKey, metaRow] of metaByKey.entries()) {
+      const parts = (partsByKey.get(baseKey) || []).sort((left, right) => left.index - right.index);
+      const expectedCount = Number(metaRow?.payload?.chunk_count || metaRow?.payload?.chunkCount || 0);
+      if (!parts.length || (expectedCount > 0 && parts.length < expectedCount)) continue;
+      const text = parts
+        .slice(0, expectedCount > 0 ? expectedCount : parts.length)
+        .map((part) => typeof part.payload === 'string' ? part.payload : String(part.payload?.data || ''))
+        .join('');
+      if (!text) continue;
+      try {
+        decodedRows.push({
+          ...metaRow,
+          payload: JSON.parse(text),
+          updated_at: metaRow.updated_at || parts[parts.length - 1]?.updated_at
+        });
+      } catch (error) {
+        console.warn('[portal-supabase-snapshot-hotfix] failed to decode chunked snapshot', baseKey, error);
+      }
+    }
+
+    return decodedRows;
+  }
+
   async function fetchSnapshots() {
     const activeCfg = cfg();
     if (!activeCfg.supabase?.url || !activeCfg.supabase?.anonKey || typeof fetch !== 'function') return;
@@ -191,7 +240,6 @@
     const url = new URL(`${baseUrl}/rest/v1/${SNAPSHOT_TABLE}`);
     url.searchParams.set('select', 'snapshot_key,payload,updated_at');
     url.searchParams.set('brand', `eq.${brand()}`);
-    url.searchParams.set('snapshot_key', `in.(${SNAPSHOT_KEYS.join(',')})`);
     url.searchParams.set('order', 'updated_at.desc');
     const request = fetch(url.toString(), {
       cache: 'no-store',
@@ -205,9 +253,10 @@
       ? await withTimeout(request, SNAPSHOT_TIMEOUT_MS, 'Витрина Supabase')
       : await request;
     if (!response?.ok) throw new Error(`Supabase snapshots ${response?.status || 'request failed'}`);
-    return typeof withTimeout === 'function'
+    const rows = typeof withTimeout === 'function'
       ? await withTimeout(response.json(), SNAPSHOT_TIMEOUT_MS, 'Чтение витрины Supabase')
       : await response.json();
+    return decodeChunkedSnapshotRows(rows);
   }
 
   function applySnapshots(rows) {

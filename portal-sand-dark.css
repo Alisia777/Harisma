@@ -770,6 +770,14 @@ body.v87-imperial.theme-sand-dark #view-repricer .repricer-side-grid {
   gap: 12px;
 }
 
+body.v87-imperial.theme-sand-dark #view-repricer .repricer-card,
+body.v87-imperial.theme-sand-dark #view-repricer .repricer-guide-card,
+body.v87-imperial.theme-sand-dark #view-repricer .repricer-side,
+body.v87-imperial.theme-sand-dark #view-repricer .repricer-settings-card {
+  content-visibility: visible !important;
+  contain-intrinsic-size: none !important;
+}
+
 body.v87-imperial.theme-sand-dark #view-launches .launch-card,
 body.v87-imperial.theme-sand-dark #view-launch-control .launch-card,
 body.v87-imperial.theme-sand-dark #view-launches .launch-audit-card,

@@ -472,6 +472,24 @@
     return Object.values(rows).find((row) => normalizeKey(row?.articleKey || row?.article) === target) || null;
   }
 
+  function supportRowsForPlatform(platformKey) {
+    if (platformKey === 'all') return ['wb', 'ozon', 'ya'].flatMap((key) => supportRowsForPlatform(key));
+    const supportKey = supportPlatformKey(platformKey);
+    const rows = current('priceWorkbenchSupport')?.platforms?.[supportKey]?.rows;
+    if (!rows || typeof rows !== 'object') return [];
+    const sourceKey = platformKey === 'ym' ? 'ya' : platformKey;
+    return Object.entries(rows)
+      .filter(([article]) => article && article !== '0')
+      .map(([article, row]) => ({
+        ...(row || {}),
+        articleKey: row?.articleKey || row?.article || article,
+        article: row?.article || row?.articleKey || article,
+        platformKey: sourceKey,
+        platformLabel: shortPlatformLabel(sourceKey),
+        supportOnly: true
+      }));
+  }
+
   function workbenchRowsForPlatform(platformKey) {
     return rowsForPlatform(current('smartPriceWorkbench'), platformKey);
   }
@@ -608,15 +626,25 @@
     return (num(row?.planMonth) / daysInMonth) * days;
   }
 
-  function articleWindowFacts(platformKey, article, range) {
+  function articleWindowFacts(platformKey, article, range, sourceRow = null) {
     const support = supportRowForArticle(platformKey, article);
     const workbench = workbenchRowForArticle(platformKey, article);
     const procurementRows = procurementRowsForArticle(platformKey, article);
     const days = dayCount(range.effectiveStart, range.effectiveEnd);
-    const dailyRows = (Array.isArray(workbench?.monthly) ? workbench.monthly : [])
+    const dailySource = [
+      sourceRow?.daily,
+      sourceRow?.monthly,
+      workbench?.daily,
+      workbench?.monthly
+    ].find((items) => Array.isArray(items) && items.length) || [];
+    const dailyRows = dailySource
       .map((item) => ({
         date: parseDate(item?.date),
-        units: Number.isFinite(Number(item?.deliveredUnits)) ? Number(item.deliveredUnits) : Number.isFinite(Number(item?.ordersUnits)) ? Number(item.ordersUnits) : null,
+        units: item?.deliveredUnits !== null && item?.deliveredUnits !== undefined && item?.deliveredUnits !== '' && Number.isFinite(Number(item.deliveredUnits))
+          ? Number(item.deliveredUnits)
+          : item?.ordersUnits !== null && item?.ordersUnits !== undefined && item?.ordersUnits !== '' && Number.isFinite(Number(item.ordersUnits))
+            ? Number(item.ordersUnits)
+            : null,
         revenue: Number.isFinite(Number(item?.revenue)) ? Number(item.revenue) : null
       }))
       .filter((item) => item.date instanceof Date && !Number.isNaN(item.date.getTime()))
@@ -639,20 +667,23 @@
     const procurementPlanUnits = procurementRows.length
       ? procurementRows.reduce((sum, row) => sum + (procurementPlanForRange(row, range) ?? 0), 0)
       : null;
+    const planUnits = monthlyPlan?.units ?? fallbackPlan ?? procurementPlanUnits;
+    const hasPlanForWindow = Number.isFinite(Number(planUnits)) && Number(planUnits) > 0;
     const actualUnits = dailyUnits.length
       ? dailyUnits.reduce((sum, value) => sum + value, 0)
-      : monthlyActual?.units ?? procurementActualUnits;
+      : monthlyActual?.units ?? procurementActualUnits ?? (hasPlanForWindow ? 0 : null);
     const actualRevenue = dailyRevenue.length
       ? dailyRevenue.reduce((sum, value) => sum + value, 0)
-      : monthlyActual?.revenue ?? procurementActualRevenue;
-    const planUnits = monthlyPlan?.units ?? fallbackPlan ?? procurementPlanUnits;
+      : monthlyActual?.revenue ?? procurementActualRevenue ?? (hasPlanForWindow ? 0 : null);
     const factSource = dailyUnits.length
       ? 'daily'
       : monthlyActual?.units != null
         ? 'monthly'
         : procurementActualUnits !== null
           ? 'procurement'
-          : '';
+          : hasPlanForWindow
+            ? 'plan-only'
+            : '';
     return {
       planUnits,
       actualUnits,
@@ -955,7 +986,27 @@
     return dates;
   }
 
+  function supportPlanUnitsForDate(date, platformKey) {
+    if (platformKey !== 'ya') return null;
+    const key = monthKey(date);
+    const rows = supportRowsForPlatform(platformKey);
+    if (!rows.length) return null;
+    let totalUnits = 0;
+    let totalDays = 0;
+    rows.forEach((row) => {
+      if (isDashboardExcludedArticle(row?.article || row?.articleKey, row, null)) return;
+      const planMonth = (Array.isArray(row?.planMonths) ? row.planMonths : []).find((item) => item?.monthKey === key);
+      if (!planMonth) return;
+      totalUnits += num(planMonth?.units);
+      totalDays = Math.max(totalDays, num(planMonth?.days));
+    });
+    const days = totalDays || new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    return totalUnits > 0 && days > 0 ? totalUnits / days : null;
+  }
+
   function planUnitsForDate(date, platformKey) {
+    const supportPlanUnits = supportPlanUnitsForDate(date, platformKey);
+    if (supportPlanUnits !== null) return supportPlanUnits;
     const month = current('platformPlan')?.months?.[monthKey(date)];
     const planUnits = num(month?.platforms?.[platformKey]?.units);
     const totalDays = num(month?.days) || new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -1392,12 +1443,13 @@
       const margin = num(trend.margin);
       const spend = num(ads.spend);
       const adRevenue = num(ads.revenue);
+      const useCompanyPlanForDay = platformKey !== 'ya' && planRevenue > 0;
       return {
         date,
         planUnits,
         planRevenue,
         factUnits,
-        completion: planRevenue > 0 ? revenue / planRevenue : planUnits > 0 ? factUnits / planUnits : 0,
+        completion: useCompanyPlanForDay ? revenue / planRevenue : planUnits > 0 ? factUnits / planUnits : 0,
         revenue,
         margin,
         marginPct: revenue > 0 ? margin / revenue : 0,
@@ -1411,7 +1463,7 @@
     });
     const planUnits = days.reduce((sum, row) => sum + row.planUnits, 0);
     const planRevenue = days.reduce((sum, row) => sum + row.planRevenue, 0);
-    const usesCompanyPlan = planRevenue > 0;
+    const usesCompanyPlan = platformKey !== 'ya' && planRevenue > 0;
     const planFactDays = usesCompanyPlan ? days.filter((row) => row.planRevenue > 0) : days;
     const planFactUnits = planFactDays.reduce((sum, row) => sum + row.factUnits, 0);
     const planFactRevenue = planFactDays.reduce((sum, row) => sum + row.revenue, 0);
@@ -1948,14 +2000,28 @@
     const skuMap = new Map(
       (current('skus') || []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku])
     );
-    return priceRowsForPlatform(platformKey)
+    const baseRows = priceRowsForPlatform(platformKey);
+    const seenRows = new Set(
+      baseRows.map((row) => `${row?.platformKey || platformKey}:${normalizeKey(row?.articleKey || row?.article)}`)
+    );
+    const planOnlyRows = supportRowsForPlatform(platformKey)
+      .filter((row) => {
+        const article = row?.article || row?.articleKey;
+        const key = `${row?.platformKey || platformKey}:${normalizeKey(article)}`;
+        if (!article || seenRows.has(key)) return false;
+        const facts = articleWindowFacts(row?.platformKey || platformKey, article, range, row);
+        return Number.isFinite(Number(facts.planUnits)) && Number(facts.planUnits) > 0;
+      });
+    return baseRows.concat(planOnlyRows)
       .map((row) => {
+        const rowPlatformKey = row?.platformKey || platformKey;
         const article = row?.article || row?.articleKey || '—';
         const sku = skuMap.get(normalizeKey(article));
         if (isDashboardExcludedArticle(article, row, sku)) return { article: '—' };
-        const side = row.platformKey === 'wb'
+        if (rowPlatformKey === 'ya' && !supportRowForArticle(rowPlatformKey, article)) return { article: '' };
+        const side = rowPlatformKey === 'wb'
           ? sku?.wb
-          : row.platformKey === 'ozon'
+          : rowPlatformKey === 'ozon'
             ? sku?.ozon
             : sku?.ym || sku?.ya || null;
         const pricePoints = pricePointsForRow(row, range.effectiveStart, range.effectiveEnd);
@@ -1977,14 +2043,15 @@
           ? avg(turnoverPoints.map((point) => point.turnoverDays))
           : turnoverDays;
         const marginSource = side?.marginPct ?? row?.avgMargin7dPct;
-        const periodFacts = articleWindowFacts(row?.platformKey || platformKey, article, range);
+        const periodFacts = articleWindowFacts(rowPlatformKey, article, range, row);
+        if (rowPlatformKey === 'ya' && num(periodFacts.planUnits) <= 0 && num(periodFacts.actualUnits) <= 0) return { article: '' };
         const completionSource = periodFacts.completionPct ?? sku?.planFact?.completionApr26Pct ?? sku?.planFact?.completionMar26Pct ?? sku?.planFact?.completionFeb26Pct;
         return {
           article,
           name: row?.name || sku?.name || article,
-          platformKey: row?.platformKey || platformKey,
-          platformLabel: row?.platformLabel || shortPlatformLabel(row?.platformKey || platformKey),
-          owner: platformOwnerName(sku, row?.platformKey || platformKey, row?.owner),
+          platformKey: rowPlatformKey,
+          platformLabel: row?.platformLabel || shortPlatformLabel(rowPlatformKey),
+          owner: platformOwnerName(sku, rowPlatformKey, row?.owner),
           startPrice,
           endPrice,
           avgPrice,
@@ -6642,6 +6709,8 @@ function dashboardTaskStatusChip(task) {
       app.smartPriceWorkbench = mergedWorkbench;
       app.smartPriceWorkbenchLive = smartPriceWorkbenchLive;
       app.smartPriceOverlay = smartPriceOverlay;
+      app.priceWorkbenchSupport = priceWorkbenchSupport;
+      app.orderProcurement = orderProcurement;
     }
   }
 

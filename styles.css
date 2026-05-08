@@ -125,6 +125,10 @@ textarea{resize:vertical;min-height:84px}
 .sku-pill:hover{background:#f4f7ff;color:#0f172a}
 .sku-registry-row{cursor:pointer}
 .sku-registry-row:hover td{background:rgba(255,255,255,.035)}
+.sku-plan-fact-filters{grid-template-columns:1.5fr repeat(5,minmax(0,180px))}
+.sku-plan-fact-table table{min-width:1680px}
+.sku-plan-fact-row{cursor:pointer}
+.sku-plan-fact-row:hover td{background:rgba(255,255,255,.035)}
 .owner-cell strong{display:block}
 .traffic-inline{gap:6px}
 
@@ -166,6 +170,7 @@ textarea{resize:vertical;min-height:84px}
 .portal-exec-focus-card p{white-space:pre-line}
 .danger-text{color:#ff8f8f}
 .warn-text{color:#f6c25d}
+.ok-text{color:#8ee6ad}
 
 .form-grid{display:grid;gap:10px}
 .form-grid.compact{grid-template-columns:1fr 1fr}

@@ -81,6 +81,14 @@
   iuDrrFilters: {
     month: 'latest'
   },
+  skuPlanFactFilters: {
+    search: '',
+    owner: 'all',
+    status: 'active',
+    platform: 'all',
+    month: 'latest',
+    sort: 'gap'
+  },
   repricerFilters: {
     search: '',
     platform: 'all',
@@ -117,6 +125,7 @@
       productLeaderboard: false,
       adsFunnel: false,
       iuDrr: false,
+      skuPlanFact: false,
       meetings: false,
       documents: false,
       repricer: false
@@ -153,6 +162,7 @@ const VIEW_TITLES = {
   launches: 'Продукт / Ксения',
   'ads-funnel': 'Рекламная воронка',
   'iu-drr': 'ИУ / ДРР',
+  'sku-plan-fact': 'План-факт SKU',
   'wb-rating': 'Рейтинг карточек',
   'product-leaderboard': 'Продуктовый лидерборд',
   'launch-control': 'Запуск новинок',
@@ -164,6 +174,7 @@ const VIEW_DATA_REQUIREMENTS = {
   launches: 'launches',
   'ads-funnel': 'adsFunnel',
   'iu-drr': 'iuDrr',
+  'sku-plan-fact': 'skuPlanFact',
   'wb-rating': 'iuDrr',
   'product-leaderboard': 'productLeaderboard',
   'launch-control': 'launches',
@@ -2073,6 +2084,43 @@ const LAZY_DATA_LOADERS = {
     state.wbFeedbacks = wbFeedbacks && typeof wbFeedbacks === 'object'
       ? wbFeedbacks
       : { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] };
+  },
+  skuPlanFact: async () => {
+    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, adsPayload, summary] = await Promise.all([
+      loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
+      loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU'),
+      loadJsonOrFallback('data/price_workbench_support.dashboard-compact.json', { generatedAt: '', platforms: {} }, 'План SKU'),
+      loadJsonOrFallback(
+        'data/ads_summary.json',
+        { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
+        'Рекламные расходы по SKU'
+      ),
+      loadJsonOrFallback(
+        'data/iu_drr_summary.json',
+        { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
+        'ИУ / ДРР'
+      )
+    ]);
+    state.smartPriceOverlay = smartPriceOverlay && typeof smartPriceOverlay === 'object'
+      ? smartPriceOverlay
+      : { generatedAt: '', platforms: {} };
+    state.priceWorkbenchSupport = priceWorkbenchSupport && typeof priceWorkbenchSupport === 'object'
+      ? priceWorkbenchSupport
+      : { generatedAt: '', platforms: {} };
+    state.smartPriceWorkbenchBase = mergeSmartWorkbenchPayload(
+      smartPriceWorkbench || { generatedAt: '', platforms: {} },
+      state.smartPriceWorkbenchLive || null
+    );
+    state.smartPriceWorkbench = mergeSmartWorkbenchPriceOverlay(
+      state.smartPriceWorkbenchBase,
+      state.smartPriceOverlay || null
+    );
+    state.adsSummary = adsPayload && typeof adsPayload === 'object'
+      ? adsPayload
+      : { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
+    state.iuDrrSummary = summary && typeof summary === 'object'
+      ? summary
+      : { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };
   },
   productLeaderboard: async () => {
     const [payload, history] = await Promise.all([

@@ -530,6 +530,7 @@ function renderDashboardView() {
 function rerenderCurrentView() {
   applyOwnerOverridesToSkus();
   const renderPlan = [
+    ['view-sku-plan-fact', 'План-факт SKU', () => renderSkuPlanFact('view-sku-plan-fact')],
     ['view-wb-rating', 'Рейтинг карточек', () => renderWbCardRating('view-wb-rating')],
     ['view-ads-funnel', 'Рекламная воронка', () => renderAdsFunnel('view-ads-funnel')],
     ['view-iu-drr', 'ИУ / ДРР', () => renderIuDrr('view-iu-drr')],

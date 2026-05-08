@@ -199,10 +199,12 @@
       if (!snapshotKey) continue;
       const chunkMeta = parseChunkedSnapshotKey(snapshotKey);
       if (chunkMeta) {
+        if (!SNAPSHOT_TO_STATE[chunkMeta.baseKey]) continue;
         if (!partsByKey.has(chunkMeta.baseKey)) partsByKey.set(chunkMeta.baseKey, []);
         partsByKey.get(chunkMeta.baseKey).push({ index: chunkMeta.index, payload: row.payload, updated_at: row.updated_at });
         continue;
       }
+      if (!SNAPSHOT_TO_STATE[snapshotKey]) continue;
       if (row?.payload?.chunked) {
         metaByKey.set(snapshotKey, row);
         continue;

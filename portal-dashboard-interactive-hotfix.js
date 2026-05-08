@@ -1931,6 +1931,19 @@
     return rows;
   }
 
+  function isDashboardExcludedArticle(article, row, sku) {
+    const fields = [
+      article,
+      row?.article,
+      row?.articleKey,
+      sku?.article,
+      sku?.articleKey,
+      sku?.brand,
+      sku?.name
+    ];
+    return fields.some((value) => String(value || '').trim().toLowerCase().startsWith('qeep'));
+  }
+
   function articleRowsForPlatform(platformKey, range) {
     const skuMap = new Map(
       (current('skus') || []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku])
@@ -1939,6 +1952,7 @@
       .map((row) => {
         const article = row?.article || row?.articleKey || '—';
         const sku = skuMap.get(normalizeKey(article));
+        if (isDashboardExcludedArticle(article, row, sku)) return { article: '—' };
         const side = row.platformKey === 'wb'
           ? sku?.wb
           : row.platformKey === 'ozon'
@@ -3409,13 +3423,64 @@
     `;
   }
 
+  function completionDetailArticleSummary(metric, skuRows, range) {
+    const rows = Array.isArray(skuRows) ? skuRows : [];
+    const hasFactUnits = rows.some((row) => row.actualUnitsSelected !== null && Number.isFinite(Number(row.actualUnitsSelected)));
+    const hasFactRevenue = rows.some((row) => row.actualRevenueSelected !== null && Number.isFinite(Number(row.actualRevenueSelected)));
+    const hasPlanUnits = rows.some((row) => row.planUnitsSelected !== null && Number.isFinite(Number(row.planUnitsSelected)));
+    const factUnits = hasFactUnits
+      ? rows.reduce((sum, row) => sum + num(row.actualUnitsSelected), 0)
+      : num(metric?.units);
+    const factRevenue = hasFactRevenue
+      ? rows.reduce((sum, row) => sum + num(row.actualRevenueSelected), 0)
+      : num(metric?.planFactRevenue || metric?.revenue);
+    const planUnits = hasPlanUnits
+      ? rows.reduce((sum, row) => sum + num(row.planUnitsSelected), 0)
+      : num(metric?.planUnits || metric?.plan);
+    const planRevenue = metricUsesCompanyPlan(metric)
+      ? num(metric?.planRevenue || metric?.plan)
+      : 0;
+    const plan = metricUsesCompanyPlan(metric) ? planRevenue : planUnits;
+    const factForCompletion = metricUsesCompanyPlan(metric) ? factRevenue : factUnits;
+    const days = Math.max(1, num(range?.days) || rows.length || 1);
+    return {
+      plan,
+      planUnits,
+      planRevenue,
+      factUnits,
+      factRevenue,
+      completion: plan > 0 ? factForCompletion / plan : num(metric?.completion),
+      avgUnits: factUnits / days,
+      revenue: factRevenue,
+      articleCount: rows.length
+    };
+  }
+
   function buildCompletionDetail(metric, executive) {
-    const skuRows = articleRowsForPlatform(metric.key, executive.range)
+    const allSkuRows = articleRowsForPlatform(metric.key, executive.range);
+    const skuRows = allSkuRows
       .sort((left, right) => num(left.completionPct) - num(right.completionPct) || num(right.planUnitsSelected) - num(left.planUnitsSelected) || num(right.salesValue) - num(left.salesValue))
       .slice(0, 18);
+    const summary = completionDetailArticleSummary(metric, allSkuRows, executive.range);
+    const previousRows = executive.compareRange
+      ? articleRowsForPlatform(metric.key, executive.compareRange)
+      : [];
     const focusDays = detailTailRows(metric.days, 14);
     const previous = executive.compareByKey.get(metric.key);
-    const completionDelta = percentagePointDelta(metric.completion, previous?.completion);
+    const previousSummary = previous ? completionDetailArticleSummary(previous, previousRows, executive.compareRange || executive.range) : null;
+    const completionDelta = percentagePointDelta(summary.completion, previousSummary?.completion ?? previous?.completion);
+    metric = {
+      ...metric,
+      completion: summary.completion,
+      plan: summary.plan || metric.plan,
+      planUnits: summary.planUnits || metric.planUnits,
+      planRevenue: summary.planRevenue || metric.planRevenue,
+      planFactUnits: summary.factUnits,
+      planFactRevenue: summary.factRevenue,
+      units: summary.factUnits,
+      revenue: summary.revenue,
+      avgUnits: summary.avgUnits
+    };
     return {
       title: `${metric.label} · план-факт по артикулам`,
       subtitle: `Запрос: ${executive.range.requestedLabel}. В расчете: ${executive.range.effectiveLabel}. Справа всегда последние 14 дней доступного факта.`,
@@ -5189,12 +5254,30 @@ function dashboardTaskStatusChip(task) {
   }
 
   function buildCompletionDetail(metric, executive) {
-    const skuRows = articleRowsForPlatform(metric.key, executive.range)
+    const allSkuRows = articleRowsForPlatform(metric.key, executive.range);
+    const skuRows = allSkuRows
       .sort((left, right) => num(left.completionPct) - num(right.completionPct) || num(right.planUnitsSelected) - num(left.planUnitsSelected) || num(right.salesValue) - num(left.salesValue))
       .slice(0, 18);
+    const summary = completionDetailArticleSummary(metric, allSkuRows, executive.range);
+    const previousRows = executive.compareRange
+      ? articleRowsForPlatform(metric.key, executive.compareRange)
+      : [];
     const focusDays = detailTailRows(metric.days, 14);
     const previous = executive.compareByKey.get(metric.key);
-    const completionDelta = percentagePointDelta(metric.completion, previous?.completion);
+    const previousSummary = previous ? completionDetailArticleSummary(previous, previousRows, executive.compareRange || executive.range) : null;
+    const completionDelta = percentagePointDelta(summary.completion, previousSummary?.completion ?? previous?.completion);
+    metric = {
+      ...metric,
+      completion: summary.completion,
+      plan: summary.plan || metric.plan,
+      planUnits: summary.planUnits || metric.planUnits,
+      planRevenue: summary.planRevenue || metric.planRevenue,
+      planFactUnits: summary.factUnits,
+      planFactRevenue: summary.factRevenue,
+      units: summary.factUnits,
+      revenue: summary.revenue,
+      avgUnits: summary.avgUnits
+    };
     return {
       title: `${metric.label} · план-факт по артикулу`,
       subtitle: `Запрос: ${executive.range.requestedLabel}. В расчёте: ${executive.range.effectiveLabel}. Справа всегда последние 14 дней доступного факта.`,

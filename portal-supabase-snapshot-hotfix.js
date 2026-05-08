@@ -11,11 +11,13 @@
     'logistics',
     'ads_summary',
     'iu_drr_summary',
-    'wb_feedbacks_summary',
     'platform_plan',
     'prices',
     'smart_price_workbench',
     'price_workbench_support'
+  ];
+  const LAZY_SNAPSHOT_KEYS = [
+    'wb_feedbacks_summary'
   ];
   const SNAPSHOT_TIMEOUT_MS = 20000;
   const SNAPSHOT_TO_STATE = {
@@ -54,6 +56,23 @@
   function brand() {
     if (typeof currentBrand === 'function') return currentBrand();
     return cfg().brand || FALLBACK_CONFIG.brand;
+  }
+
+  function activeViewKey() {
+    if (typeof state === 'object' && state?.activeView) return String(state.activeView);
+    const active = document.querySelector('.view.active[id^="view-"]');
+    return active ? String(active.id || '').replace(/^view-/, '') : '';
+  }
+
+  function keysForRefresh() {
+    const keys = SNAPSHOT_KEYS.slice();
+    const view = activeViewKey();
+    if (view === 'iu-drr' || view === 'wb-rating') {
+      for (const key of LAZY_SNAPSHOT_KEYS) {
+        if (!keys.includes(key)) keys.push(key);
+      }
+    }
+    return keys;
   }
 
   function clone(value) {
@@ -235,6 +254,55 @@
     return decodedRows;
   }
 
+  function buildSnapshotUrl(activeCfg) {
+    const baseUrl = String(activeCfg.supabase.url || '').replace(/\/+$/, '');
+    const url = new URL(`${baseUrl}/rest/v1/${SNAPSHOT_TABLE}`);
+    url.searchParams.set('select', 'snapshot_key,payload,updated_at');
+    url.searchParams.set('brand', `eq.${brand()}`);
+    url.searchParams.set('order', 'updated_at.desc');
+    return url;
+  }
+
+  function rowIsChunkMeta(row) {
+    return Boolean(row?.payload?.chunked);
+  }
+
+  async function requestSnapshotRows(activeCfg, url) {
+    const request = fetch(url.toString(), {
+      cache: 'no-store',
+      headers: {
+        apikey: activeCfg.supabase.anonKey,
+        Authorization: `Bearer ${activeCfg.supabase.anonKey}`,
+        Accept: 'application/json'
+      }
+    });
+    const response = typeof withTimeout === 'function'
+      ? await withTimeout(request, SNAPSHOT_TIMEOUT_MS, 'Supabase snapshots')
+      : await request;
+    if (!response?.ok) throw new Error(`Supabase snapshots ${response?.status || 'request failed'}`);
+    return typeof withTimeout === 'function'
+      ? await withTimeout(response.json(), SNAPSHOT_TIMEOUT_MS, 'Supabase snapshot JSON')
+      : await response.json();
+  }
+
+  async function fetchRowsForKeys(activeCfg, keys) {
+    if (!Array.isArray(keys) || !keys.length) return [];
+    const metaUrl = buildSnapshotUrl(activeCfg);
+    metaUrl.searchParams.set('snapshot_key', `in.(${keys.join(',')})`);
+    const rows = await requestSnapshotRows(activeCfg, metaUrl);
+    const chunkedKeys = rows
+      .filter(rowIsChunkMeta)
+      .map((row) => String(row?.snapshot_key || '').trim())
+      .filter((key) => SNAPSHOT_TO_STATE[key]);
+    if (!chunkedKeys.length) return rows;
+    const partGroups = await Promise.all(chunkedKeys.map((key) => {
+      const partUrl = buildSnapshotUrl(activeCfg);
+      partUrl.searchParams.set('snapshot_key', `like.${key}__part__*`);
+      return requestSnapshotRows(activeCfg, partUrl);
+    }));
+    return rows.concat(...partGroups);
+  }
+
   async function fetchSnapshots() {
     const activeCfg = cfg();
     if (!activeCfg.supabase?.url || !activeCfg.supabase?.anonKey || typeof fetch !== 'function') return;
@@ -260,6 +328,13 @@
       : await response.json();
     return decodeChunkedSnapshotRows(rows);
   }
+
+  fetchSnapshots = async function fetchSnapshotsSelective() {
+    const activeCfg = cfg();
+    if (!activeCfg.supabase?.url || !activeCfg.supabase?.anonKey || typeof fetch !== 'function') return;
+    const rows = await fetchRowsForKeys(activeCfg, keysForRefresh());
+    return decodeChunkedSnapshotRows(rows);
+  };
 
   function applySnapshots(rows) {
     if (typeof state !== 'object' || !state || !Array.isArray(rows) || !rows.length) return false;

@@ -215,6 +215,61 @@
     cache.brand = "";
   }
 
+  function buildSnapshotUrl(baseUrl, brand) {
+    var url = new URL(baseUrl + "/rest/v1/" + SNAPSHOT_TABLE);
+    url.searchParams.set("select", "snapshot_key,payload,generated_at,updated_at,payload_hash");
+    url.searchParams.set("brand", "eq." + brand);
+    return url;
+  }
+
+  function rowIsChunkMeta(row) {
+    return Boolean(row && row.payload && typeof row.payload === "object" && row.payload.chunked);
+  }
+
+  async function requestSnapshotRows(url, cfg) {
+    var response = await fetch(url.toString(), {
+      cache: "no-store",
+      headers: {
+        apikey: cfg.supabase.anonKey,
+        Authorization: "Bearer " + cfg.supabase.anonKey,
+        Accept: "application/json"
+      }
+    });
+    if (!response || !response.ok) {
+      throw new Error("Supabase snapshots " + (response && response.status || "request failed"));
+    }
+    return response.json();
+  }
+
+  async function fetchRowsForKey(cfg, baseUrl, brand, snapshotKey) {
+    if (!isAllowedSnapshotKey(snapshotKey)) return [];
+    var metaUrl = buildSnapshotUrl(baseUrl, brand);
+    metaUrl.searchParams.set("snapshot_key", "eq." + snapshotKey);
+    var rows = await requestSnapshotRows(metaUrl, cfg);
+    if (!rows.some(rowIsChunkMeta)) return rows;
+    var partsUrl = buildSnapshotUrl(baseUrl, brand);
+    partsUrl.searchParams.set("snapshot_key", "like." + snapshotKey + "__part__*");
+    var parts = await requestSnapshotRows(partsUrl, cfg);
+    return rows.concat(parts);
+  }
+
+  async function fetchRowsForAllowedKeys(cfg, baseUrl, brand) {
+    var metaUrl = buildSnapshotUrl(baseUrl, brand);
+    metaUrl.searchParams.set("snapshot_key", "in.(" + ALLOWED_SNAPSHOT_KEYS.join(",") + ")");
+    var rows = await requestSnapshotRows(metaUrl, cfg);
+    var chunkedKeys = rows
+      .filter(rowIsChunkMeta)
+      .map(function (row) { return String(row && row.snapshot_key || "").trim(); })
+      .filter(isAllowedSnapshotKey);
+    if (!chunkedKeys.length) return rows;
+    var partGroups = await Promise.all(chunkedKeys.map(function (snapshotKey) {
+      var partsUrl = buildSnapshotUrl(baseUrl, brand);
+      partsUrl.searchParams.set("snapshot_key", "like." + snapshotKey + "__part__*");
+      return requestSnapshotRows(partsUrl, cfg);
+    }));
+    return rows.concat.apply(rows, partGroups);
+  }
+
   async function fetchSnapshotRows(force, requestedKey) {
     if (force) {
       resetLocalCache();
@@ -233,23 +288,13 @@
     if (cache.promise && cache.brand === cacheKey) return cache.promise;
 
     var baseUrl = String(cfg.supabase.url || "").replace(/\/+$/, "");
-    var url = new URL(baseUrl + "/rest/v1/" + SNAPSHOT_TABLE);
-    url.searchParams.set("select", "snapshot_key,payload,generated_at,updated_at,payload_hash");
-    url.searchParams.set("brand", "eq." + brand);
 
     cache.brand = cacheKey;
-    cache.promise = fetch(url.toString(), {
-      headers: {
-        apikey: cfg.supabase.anonKey,
-        Authorization: "Bearer " + cfg.supabase.anonKey,
-        Accept: "application/json"
-      }
-    })
-      .then(function (response) {
-        if (!response || !response.ok) {
-          throw new Error("Supabase snapshots " + (response && response.status || "request failed"));
-        }
-        return response.json();
+    cache.promise = Promise.resolve()
+      .then(function () {
+        return requestedKey
+          ? fetchRowsForKey(cfg, baseUrl, brand, requestedKey)
+          : fetchRowsForAllowedKeys(cfg, baseUrl, brand);
       })
       .then(function (rows) {
         cache.rows = decodeChunkedRows(rows);

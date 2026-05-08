@@ -1682,6 +1682,7 @@ function ensureRepricerUiState() {
   if (!state.repricerUi || typeof state.repricerUi !== 'object') state.repricerUi = {};
   if (!state.repricerUi.sections || typeof state.repricerUi.sections !== 'object') state.repricerUi.sections = {};
   if (!state.repricerUi.history || typeof state.repricerUi.history !== 'object') state.repricerUi.history = {};
+  if (!state.repricerUi.controls || typeof state.repricerUi.controls !== 'object') state.repricerUi.controls = {};
   return state.repricerUi;
 }
 
@@ -1752,7 +1753,21 @@ function renderRepricerSettingsCard(settings, brandNames, statuses, roles, feePl
   const settingsSavedAt = state.storage?.repricerSettingsUpdatedAt || '';
   const syncScope = hasRemoteStore() ? 'локально и в командной базе' : 'локально в браузере';
   const updatedLabel = settingsSavedAt ? fmt.date(settingsSavedAt) : 'ещё не сохранялись';
-  const isOpen = repricerUiToggleOpen('sections', 'settingsCard', false);
+  const isOpen = repricerUiToggleOpen('sections', 'settingsCardV2', false);
+  if (!isOpen) {
+    return `
+      <details class="card repricer-settings-card" data-repricer-section="settingsCardV2" style="margin-top:14px">
+        <summary class="section-subhead" style="cursor:pointer; list-style:none">
+          <div>
+            <h3>Массовые правила репрайсера</h3>
+            <p class="small muted">Это общие правила расчёта для всего контура. Для одной SKU лучше работать ниже через MIN/MAX, corridor или ручное решение.</p>
+          </div>
+          <div class="badge-stack">${badge('автосохранение', 'ok')}${badge(syncScope, hasRemoteStore() ? 'ok' : 'info')}${badge(`сохранено ${updatedLabel}`, settingsSavedAt ? 'ok' : 'info')}</div>
+        </summary>
+        <div class="muted small" style="margin-top:10px">Блок не строит тяжёлые формы до открытия, чтобы репрайсер быстрее загружал рабочий список SKU.</div>
+      </details>
+    `;
+  }
   const globalSection = renderRepricerSettingsSection(
     'globalRules',
     'Общие правила',
@@ -1831,7 +1846,7 @@ function renderRepricerSettingsCard(settings, brandNames, statuses, roles, feePl
     `
   );
   return `
-    <details class="card repricer-settings-card" data-repricer-section="settingsCard" ${isOpen ? 'open' : ''} style="margin-top:14px">
+    <details class="card repricer-settings-card" data-repricer-section="settingsCardV2" ${isOpen ? 'open' : ''} style="margin-top:14px">
       <summary class="section-subhead" style="cursor:pointer; list-style:none">
         <div>
           <h3>Массовые правила репрайсера</h3>
@@ -2045,6 +2060,8 @@ function renderRepricerSide(title, side) {
     side.promoConfigured ? badge(side.promoActive ? (side.promoAdjustedToFloor ? `${side.promoSource === 'promo_offer' ? 'акция' : 'промо'} + floor guard` : `${side.promoSource === 'promo_offer' ? 'акция' : 'промо'} fixed`) : repricerPromoWindowLabel({ status: side.promoWindowStatus }, side.promoSource === 'promo_offer' ? 'offer' : 'promo'), side.promoSource === 'promo_offer' ? 'info' : (side.promoActive ? 'warn' : 'info')) : '',
     side.liveDeltaPct == null ? '' : badge(`к live ${side.liveDeltaPct > 0 ? '+' : ''}${fmt.pct(side.liveDeltaPct)}`, side.liveDrift ? 'warn' : 'ok')
   ].filter(Boolean).join('');
+  const controlsKey = `${String(side.articleKey || '').trim()}::${String(side.platform || '').trim()}`;
+  const controlsOpen = repricerUiToggleOpen('controls', controlsKey, false);
   return `
     <div class="repricer-side ${side.changed ? 'changed' : ''}">
       <div class="repricer-side-head">${escapeHtml(title)} <span class="badge-stack">${badge(repricerModeLabel(side.mode), repricerModeTone(side.mode))}${side.manualPromoConfigured ? badge(repricerPromoWindowLabel({ status: side.manualPromoWindowStatus }), side.manualPromoActive ? 'warn' : 'info') : ''}${side.promoOfferConfigured ? badge(repricerPromoWindowLabel({ status: side.promoOfferWindowStatus }, 'offer'), side.promoSource === 'promo_offer' && side.promoActive ? 'info' : 'warn') : ''}${side.promoSource === 'promo_offer' ? badge('акция ведёт цену', 'info') : ''}${side.hasOverride ? badge('ручное решение', 'warn') : ''}${side.hasCorridor ? badge('коридор', 'info') : ''}${side.alignmentApplied ? badge('выравнивание', 'info') : ''}</span></div>
@@ -2066,8 +2083,9 @@ function renderRepricerSide(title, side) {
       <div class="muted small" style="margin-top:8px"><strong>${escapeHtml(side.strategy || 'Стратегия не определена')}</strong></div>
       <div class="muted small" style="margin-top:6px">${escapeHtml(side.reason || 'Причина не указана')}</div>
       ${renderRepricerHistoryBlock(side)}
-      <details style="margin-top:10px">
+      <details data-repricer-controls="${escapeHtml(controlsKey)}" ${controlsOpen ? 'open' : ''} style="margin-top:10px">
         <summary class="small muted" style="cursor:pointer">Управление площадкой</summary>
+        ${controlsOpen ? `
         <div class="muted small" style="margin-top:10px">MIN/MAX из вкладки «Цены» попадают сюда автоматически как ручные границы. Здесь уже управляем точечным решением по этой площадке.</div>
         <div class="muted small" style="margin-top:8px">Engine: ${escapeHtml(side.engineModeCode || 'AUTO')} · Gate: ${escapeHtml(side.criticalGate || 'OK')} · Stock flag: ${escapeHtml(side.oosFlag || '—')} · Sales7d: ${fmt.num(side.sales7d, 1)} · buyer factor: ${fmt.num(side.buyerDiscountFactor, 3)}</div>
         <div class="badge-stack" style="margin-top:8px">${techBadges}</div>
@@ -2123,6 +2141,7 @@ function renderRepricerSide(title, side) {
             <button type="button" class="quick-chip" data-repricer-reset data-article-key="${escapeHtml(side.articleKey)}" data-platform="${escapeHtml(side.platform)}">Сбросить ручное решение</button>
           </div>
         </form>
+        ` : '<div class="muted small" style="margin-top:10px">Откройте, если нужно вручную задать коридор, промо или фикс-цену.</div>'}
       </details>
     </div>
   `;
@@ -2706,9 +2725,9 @@ function downloadRepricerPromoTemplateExcel(platform) {
 }
 
 function repricerListSizeLimit(mode = 'focus') {
-  if (mode === 'expanded') return 80;
+  if (mode === 'expanded') return 60;
   if (mode === 'all') return Number.POSITIVE_INFINITY;
-  return 40;
+  return 20;
 }
 
 function repricerEconomicSourceLabel(source = 'all') {
@@ -2791,12 +2810,23 @@ function attachRepricerEvents(root) {
   });
   root.querySelectorAll('[data-repricer-section]').forEach((details) => {
     details.addEventListener('toggle', () => {
-      repricerSetUiToggleOpen('sections', details.getAttribute('data-repricer-section') || '', details.open);
+      const sectionKey = details.getAttribute('data-repricer-section') || '';
+      const needsLazyRender = sectionKey === 'settingsCardV2' && details.open && !root.querySelector('#repricerSettingsForm');
+      repricerSetUiToggleOpen('sections', sectionKey, details.open);
+      if (needsLazyRender) setTimeout(renderRepricer, 0);
     });
   });
   root.querySelectorAll('[data-repricer-history]').forEach((details) => {
     details.addEventListener('toggle', () => {
       repricerSetUiToggleOpen('history', details.getAttribute('data-repricer-history') || '', details.open);
+    });
+  });
+  root.querySelectorAll('[data-repricer-controls]').forEach((details) => {
+    details.addEventListener('toggle', () => {
+      const controlsKey = details.getAttribute('data-repricer-controls') || '';
+      const needsLazyRender = details.open && !details.querySelector('.repricer-corridor-form');
+      repricerSetUiToggleOpen('controls', controlsKey, details.open);
+      if (needsLazyRender) setTimeout(renderRepricer, 0);
     });
   });
   root.querySelectorAll('.repricer-sku-form').forEach((form) => {
@@ -3023,8 +3053,8 @@ function renderRepricer() {
         <option value="snapshot_fallback" ${state.repricerFilters.economicSource === 'snapshot_fallback' ? 'selected' : ''}>Без себестоимости (fallback)</option>
       </select>
       <select id="repricerListSizeFilter">
-        <option value="focus" ${listSize === 'focus' ? 'selected' : ''}>Первые 40 SKU</option>
-        <option value="expanded" ${listSize === 'expanded' ? 'selected' : ''}>Первые 80 SKU</option>
+        <option value="focus" ${listSize === 'focus' ? 'selected' : ''}>Первые 20 SKU</option>
+        <option value="expanded" ${listSize === 'expanded' ? 'selected' : ''}>Первые 60 SKU</option>
         <option value="all" ${listSize === 'all' ? 'selected' : ''}>Все SKU</option>
       </select>
     </div>
@@ -3036,8 +3066,8 @@ function renderRepricer() {
       <button type="button" class="quick-chip ${state.repricerFilters.mode === 'all' ? 'active' : ''}" data-repricer-quick-mode="all">Все SKU</button>
     </div>
     <div class="quick-actions" style="margin-top:10px">
-      <button type="button" class="quick-chip ${listSize === 'focus' ? 'active' : ''}" data-repricer-list-size="focus">40 SKU</button>
-      <button type="button" class="quick-chip ${listSize === 'expanded' ? 'active' : ''}" data-repricer-list-size="expanded">80 SKU</button>
+      <button type="button" class="quick-chip ${listSize === 'focus' ? 'active' : ''}" data-repricer-list-size="focus">20 SKU</button>
+      <button type="button" class="quick-chip ${listSize === 'expanded' ? 'active' : ''}" data-repricer-list-size="expanded">60 SKU</button>
       <button type="button" class="quick-chip ${listSize === 'all' ? 'active' : ''}" data-repricer-list-size="all">Все SKU</button>
     </div>
     <div class="muted small" style="margin-top:8px">По фильтрам найдено ${fmt.int(rows.length)} SKU. На экране показываем ${fmt.int(visibleRows.length)}${visibleHidden ? `, ещё ${fmt.int(visibleHidden)} остаются в полной Excel-выгрузке` : ''}. Фильтр экономики: ${escapeHtml(repricerEconomicSourceLabel(state.repricerFilters.economicSource))}.</div>

@@ -36,6 +36,10 @@ function parseArgs(argv) {
       args['allow-stale-week'] = true;
       continue;
     }
+    if (token === '--single-sheet') {
+      args['single-sheet'] = true;
+      continue;
+    }
     const [rawKey, inlineValue] = token.split('=');
     const key = rawKey.replace(/^--/, '');
     if (inlineValue !== undefined) {
@@ -65,15 +69,54 @@ function normalizeKey(value) {
   return normalizeText(value).toLowerCase();
 }
 
+function parseNumberValue(value) {
+  if (typeof value !== 'string') return Number(value);
+  let normalized = value
+    .replace(/\s+/g, '')
+    .replace(/[^\d,.\-+]/g, '')
+    .replace(/^[,.]+|[,.]+$/g, '')
+    .trim();
+  if (!normalized) return NaN;
+
+  const commaCount = (normalized.match(/,/g) || []).length;
+  const dotCount = (normalized.match(/\./g) || []).length;
+  const lastComma = normalized.lastIndexOf(',');
+  const lastDot = normalized.lastIndexOf('.');
+
+  if (commaCount && dotCount) {
+    if (lastDot > lastComma) {
+      normalized = normalized.replace(/,/g, '');
+    } else {
+      normalized = normalized.replace(/\./g, '').replace(',', '.');
+    }
+  } else if (commaCount > 1) {
+    const last = normalized.lastIndexOf(',');
+    normalized = `${normalized.slice(0, last).replace(/,/g, '')}.${normalized.slice(last + 1)}`;
+  } else if (dotCount > 1) {
+    const last = normalized.lastIndexOf('.');
+    normalized = `${normalized.slice(0, last).replace(/\./g, '')}.${normalized.slice(last + 1)}`;
+  } else if (commaCount === 1) {
+    const [integerPart, fractionalPart = ''] = normalized.split(',');
+    normalized = fractionalPart.length === 3 && integerPart.length > 1
+      ? `${integerPart}${fractionalPart}`
+      : `${integerPart}.${fractionalPart}`;
+  } else if (dotCount === 1) {
+    const [integerPart, fractionalPart = ''] = normalized.split('.');
+    normalized = fractionalPart.length === 3 && integerPart.length > 1
+      ? `${integerPart}${fractionalPart}`
+      : normalized;
+  }
+
+  return Number(normalized);
+}
+
 function numberOrZero(value) {
-  const normalized = typeof value === 'string' ? value.replace(/\s+/g, '').replace(',', '.').trim() : value;
-  const parsed = Number(normalized);
+  const parsed = parseNumberValue(value);
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function numberOrNull(value) {
-  const normalized = typeof value === 'string' ? value.replace(/\s+/g, '').replace(',', '.').trim() : value;
-  const parsed = Number(normalized);
+  const parsed = parseNumberValue(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
 
@@ -402,6 +445,43 @@ function resolveSkuTraffic(sku) {
   return channels.join(', ');
 }
 
+function parseSheetDateRange(sheetName) {
+  const match = String(sheetName || '').match(/(\d{2})\.(\d{2})\.(\d{4})\s*[-–—]\s*(\d{2})\.(\d{2})\.(\d{4})/);
+  if (!match) return null;
+  const [, startDay, startMonth, startYear, endDay, endMonth, endYear] = match;
+  const start = `${startYear}-${startMonth}-${startDay}`;
+  const end = `${endYear}-${endMonth}-${endDay}`;
+  const startStamp = Date.parse(`${start}T00:00:00Z`);
+  const endStamp = Date.parse(`${end}T00:00:00Z`);
+  if (!Number.isFinite(startStamp) || !Number.isFinite(endStamp)) return null;
+  return { start, end, startStamp, endStamp };
+}
+
+function selectWorkbookSheet(workbook, options) {
+  const sheetNames = Array.isArray(workbook?.SheetNames) ? workbook.SheetNames : [];
+  if (!sheetNames.length) throw new Error('KZ leaderboard workbook has no sheets.');
+
+  const requestedSheet = normalizeText(options.sheetName);
+  if (requestedSheet) {
+    if (!sheetNames.includes(requestedSheet)) {
+      throw new Error(`Sheet not found: ${requestedSheet}. Available sheets: ${sheetNames.join(', ')}`);
+    }
+    return { sheetName: requestedSheet, dateRange: parseSheetDateRange(requestedSheet), selectionMode: 'explicit' };
+  }
+
+  const datedSheets = sheetNames
+    .map((sheetName, index) => ({ sheetName, index, dateRange: parseSheetDateRange(sheetName) }))
+    .filter((item) => item.dateRange)
+    .sort((left, right) =>
+      right.dateRange.endStamp - left.dateRange.endStamp
+      || right.dateRange.startStamp - left.dateRange.startStamp
+      || right.index - left.index
+    );
+
+  if (datedSheets.length) return { ...datedSheets[0], selectionMode: 'latest-date-range' };
+  return { sheetName: sheetNames[0], dateRange: null, selectionMode: 'first-sheet-fallback' };
+}
+
 async function fetchWorkbookBuffer(options) {
   const browser = await chromium.launchPersistentContext(options.profileDir, {
     headless: true,
@@ -575,7 +655,11 @@ function buildPayload(rows, skus, options) {
     sourceFile: options.sourceUrl,
     sourceGid: options.sourceGid,
     sourceSheetName: options.sheetName,
+    sourceSheetSelectionMode: options.sheetSelectionMode,
+    sourceWorkbookSheets: options.workbookSheetNames || [],
     weekLabel: options.sheetName,
+    weekStart: options.sheetDateRange?.start || '',
+    weekEnd: options.sheetDateRange?.end || '',
     brandFilter: options.brandFilter,
     header: {
       brandKey,
@@ -621,22 +705,32 @@ async function main() {
   const options = {
     sourceUrl: args['source-url'] || process.env.ALTEA_KZ_LEADERBOARD_SHEET_URL || DEFAULT_SOURCE_URL,
     sourceGid: args.gid || process.env.ALTEA_KZ_LEADERBOARD_SHEET_GID || DEFAULT_SOURCE_GID,
+    sheetName: args['sheet-name'] || process.env.ALTEA_KZ_LEADERBOARD_SHEET_NAME || '',
     brandFilter: args['brand-filter'] || process.env.ALTEA_KZ_LEADERBOARD_BRAND || DEFAULT_BRAND_FILTER,
     outputDir: path.resolve(args['output-dir'] || cwdJoin(DEFAULT_OUTPUT_DIR)),
     profileDir: path.resolve(args['profile-dir'] || cwdJoin(DEFAULT_PROFILE_DIR)),
     dryRun: Boolean(args.dryRun),
     mirrorLocalFallback: Boolean(args.mirrorLocalFallback)
   };
-  options.exportUrl = `https://docs.google.com/spreadsheets/d/${options.sourceUrl.match(/\/d\/([^/]+)/)?.[1] || ''}/export?format=xlsx&gid=${options.sourceGid}`;
+  const spreadsheetId = options.sourceUrl.match(/\/d\/([^/]+)/)?.[1] || '';
+  options.exportUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=xlsx`;
+  if (args['single-sheet']) options.exportUrl += `&gid=${options.sourceGid}`;
   if (!/\/d\/[^/]+/.test(options.sourceUrl)) {
     throw new Error(`Не удалось извлечь spreadsheet id из ${options.sourceUrl}`);
   }
 
   const workbook = XLSX.read(await fetchWorkbookBuffer(options), { type: 'buffer' });
-  const sheetName = workbook.SheetNames[0];
+  const selectedSheet = selectWorkbookSheet(workbook, options);
+  const sheetName = selectedSheet.sheetName;
   const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: null, raw: false });
   const skus = readJson(cwdJoin('data', 'skus.json'));
-  const payload = buildPayload(rows, skus, { ...options, sheetName });
+  const payload = buildPayload(rows, skus, {
+    ...options,
+    sheetName,
+    sheetDateRange: selectedSheet.dateRange,
+    sheetSelectionMode: selectedSheet.selectionMode,
+    workbookSheetNames: workbook.SheetNames.slice()
+  });
   const outputFiles = writeSnapshot(options.outputDir, payload, options);
 
   console.log(JSON.stringify({
@@ -644,6 +738,8 @@ async function main() {
     sourceUrl: options.sourceUrl,
     sourceGid: options.sourceGid,
     sheetName,
+    sheetSelectionMode: selectedSheet.selectionMode,
+    workbookSheetNames: workbook.SheetNames,
     brandFilter: options.brandFilter,
     outputFiles,
     summary: {

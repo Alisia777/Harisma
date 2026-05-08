@@ -208,7 +208,7 @@ Invoke-NodeStep -StepName "dashboard/skus/platform_trends upload" -Arguments @(
   "--input-dir",
   $resolvedOutputDir,
   "--snapshot",
-  "dashboard,skus,platform_trends,ads_summary,iu_plan,iu_drr_summary"
+  "dashboard,skus,platform_trends,ads_summary,iu_plan,iu_drr_summary,loyalty_system"
 )
 
 Invoke-NodeStep -StepName "logistics upload" -Arguments @(

@@ -1,0 +1,40 @@
+{
+  "generatedAt": "2026-05-08T12:00:44.210Z",
+  "asOfDate": "",
+  "source": {
+    "sheetName": "",
+    "gid": "",
+    "googleSheetsSourceUrl": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
+    "googleSheetsSourceGid": "2003059667",
+    "googleSheetsRefreshTimeLocal": "09:00 Europe/Moscow",
+    "portalRefreshTimeLocal": "10:00 Europe/Moscow"
+  },
+  "summary": {
+    "rows": 0,
+    "spend": 0,
+    "points": 0,
+    "orders": 0,
+    "revenue": 0,
+    "customers": 0,
+    "programs": 0,
+    "platforms": 0
+  },
+  "months": [],
+  "daily": [],
+  "byProgram": [],
+  "byPlatform": [],
+  "rows": [],
+  "diagnostics": {
+    "sheetFound": false,
+    "rowsRead": 0,
+    "normalizedRows": 0,
+    "expectedSheetNames": [
+      "loyalty_system",
+      "fact_loyalty_daily_sku",
+      "loyalty_daily",
+      "system_loyalty",
+      "loyalty",
+      "bonus_program"
+    ]
+  }
+}

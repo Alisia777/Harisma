@@ -16,13 +16,26 @@ const DEFAULT_SUPABASE_URL = 'https://iyckwryrucqrxwlowxow.supabase.co';
 const DEFAULT_SUPABASE_KEY = 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw';
 const SNAPSHOT_TABLE = 'portal_data_snapshots';
 const SNAPSHOT_SOURCE = 'google-sheets-bridge';
-const SNAPSHOT_KEYS = ['dashboard', 'skus', 'platform_trends', 'logistics', 'ads_summary'];
+const SNAPSHOT_KEYS = ['dashboard', 'skus', 'platform_trends', 'logistics', 'ads_summary', 'loyalty_system'];
 const REQUIRED_SOURCE_SHEETS = {
   dimSku: ['dim_sku'],
   factMarketplace: ['fact_marketplace_daily_sku'],
   factAds: ['fact_ads_daily_sku'],
   factLogistics: ['fact_logistics_daily_cluster_warehouse_sku', 'fact_logistics_daily_cluster_wa'],
-  dimWarehouse: ['dim_warehouse']
+  dimWarehouse: ['dim_warehouse'],
+  loyaltySystem: [
+    'loyalty_system',
+    'fact_loyalty_daily_sku',
+    'loyalty_daily',
+    'system_loyalty',
+    'loyalty',
+    'bonus_program',
+    '\u0421\u0438\u0441\u0442\u0435\u043c\u0430 \u043b\u043e\u044f\u043b\u044c\u043d\u043e\u0441\u0442\u0438',
+    '\u041b\u043e\u044f\u043b\u044c\u043d\u043e\u0441\u0442\u044c',
+    '\u041b\u043e\u044f\u043b\u044c\u043d\u043e\u0441\u0442\u044c WB',
+    '\u0411\u043e\u043d\u0443\u0441\u044b',
+    '\u0411\u0430\u043b\u043b\u044b'
+  ]
 };
 const PLATFORM_ORDER = ['wb', 'ozon', 'ya', 'all'];
 const PLATFORM_LABELS = {
@@ -369,14 +382,34 @@ function requiredSheetRows(workbook, sheetName) {
   return XLSX.utils.sheet_to_json(sheet, { defval: null, raw: false });
 }
 
+function optionalSheetRows(workbook, sheetName) {
+  const candidates = Array.isArray(sheetName) ? sheetName : [sheetName];
+  const resolvedName = candidates.find((name) => workbook.Sheets[name]);
+  const sheet = resolvedName ? workbook.Sheets[resolvedName] : null;
+  if (!sheet) return { name: '', rows: [] };
+  return {
+    name: resolvedName,
+    rows: XLSX.utils.sheet_to_json(sheet, { defval: null, raw: false })
+  };
+}
+
 function parseWorkbook(buffer) {
   const workbook = XLSX.read(buffer, { type: 'buffer' });
+  const loyaltySystemSource = optionalSheetRows(workbook, REQUIRED_SOURCE_SHEETS.loyaltySystem);
   return {
     dimSku: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.dimSku),
     factMarketplace: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.factMarketplace),
     factAds: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.factAds),
     factLogistics: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.factLogistics),
-    dimWarehouse: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.dimWarehouse)
+    dimWarehouse: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.dimWarehouse),
+    loyaltySystem: loyaltySystemSource.rows,
+    loyaltySystemSource,
+    sourceMeta: {
+      sheetNames: {
+        loyalty_system: loyaltySystemSource.name
+      },
+      warnings: loyaltySystemSource.name ? [] : ['loyalty_system sheet is optional and was not found in the workbook export']
+    }
   };
 }
 
@@ -553,13 +586,31 @@ async function fetchSheetRowsViaBrowserAuth(options) {
       return { ...target, rows: parseCsvRows(csvText) };
     }
 
+    async function fetchOptionalCsvRows(candidates) {
+      const names = Array.isArray(candidates) ? candidates : [candidates];
+      const resolvedName = names.find((name) => gidMap.has(name));
+      if (!resolvedName) return { name: '', gid: '', rows: [] };
+      const gid = gidMap.get(resolvedName);
+      const response = await browser.request.get(
+        `${baseExportUrl}/export?format=csv&gid=${encodeURIComponent(gid)}`,
+        { failOnStatusCode: false, timeout: 120000 }
+      );
+      if (!response.ok()) return { name: resolvedName, gid, rows: [] };
+      const csvText = await response.text();
+      return { name: resolvedName, gid, rows: parseCsvRows(csvText) };
+    }
+
     const dimSkuSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.dimSku, 'dim_sku');
     const factMarketplaceSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.factMarketplace, 'fact_marketplace_daily_sku');
     const factAdsSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.factAds, 'fact_ads_daily_sku');
     const factLogisticsSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.factLogistics, 'fact_logistics_daily_cluster_warehouse_sku');
     const dimWarehouseSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.dimWarehouse, 'dim_warehouse');
+    const loyaltySystemSource = await fetchOptionalCsvRows(REQUIRED_SOURCE_SHEETS.loyaltySystem);
 
     const warnings = [];
+    if (!loyaltySystemSource.name) {
+      warnings.push('loyalty_system sheet is optional and was not found in the Google workbook');
+    }
     let dimSkuRows = dimSkuSource.rows;
     if (looksBrokenDimSkuRows(dimSkuRows)) {
       warnings.push('dim_sku returned #REF! in Google export; keeping local skus.json overlay for owners and contour metadata');
@@ -572,6 +623,8 @@ async function fetchSheetRowsViaBrowserAuth(options) {
       factAds: factAdsSource.rows,
       factLogistics: factLogisticsSource.rows,
       dimWarehouse: dimWarehouseSource.rows,
+      loyaltySystem: loyaltySystemSource.rows,
+      loyaltySystemSource,
       sourceMeta: {
         mode: 'google-csv-tabs',
         gids: {
@@ -579,7 +632,11 @@ async function fetchSheetRowsViaBrowserAuth(options) {
           fact_marketplace_daily_sku: factMarketplaceSource.gid,
           fact_ads_daily_sku: factAdsSource.gid,
           fact_logistics_daily_cluster_warehouse_sku: factLogisticsSource.gid,
-          dim_warehouse: dimWarehouseSource.gid
+          dim_warehouse: dimWarehouseSource.gid,
+          loyalty_system: loyaltySystemSource.gid
+        },
+        sheetNames: {
+          loyalty_system: loyaltySystemSource.name
         },
         warnings
       }
@@ -1241,6 +1298,181 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options) {
   return next;
 }
 
+function normalizeLoyaltyColumnName(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/["'`]/g, '')
+    .replace(/[\s.\-\/]+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function loyaltyRowValue(row, aliases) {
+  const entries = Object.entries(row || {});
+  const normalizedEntries = entries.map(([key, value]) => [normalizeLoyaltyColumnName(key), value]);
+  for (const alias of aliases) {
+    const normalizedAlias = normalizeLoyaltyColumnName(alias);
+    const exact = normalizedEntries.find(([key]) => key === normalizedAlias);
+    if (exact && exact[1] !== null && exact[1] !== undefined && exact[1] !== '') return exact[1];
+  }
+  for (const alias of aliases) {
+    const normalizedAlias = normalizeLoyaltyColumnName(alias);
+    const loose = normalizedEntries.find(([key]) => key.includes(normalizedAlias) || normalizedAlias.includes(key));
+    if (loose && loose[1] !== null && loose[1] !== undefined && loose[1] !== '') return loose[1];
+  }
+  return '';
+}
+
+function loyaltyNumber(value) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  const cleaned = String(value ?? '')
+    .replace(/\s+/g, '')
+    .replace(',', '.')
+    .replace(/[^\d.+-]/g, '');
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function loyaltyCompactRaw(row) {
+  return Object.fromEntries(
+    Object.entries(row || {})
+      .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== '')
+      .slice(0, 18)
+  );
+}
+
+const LOYALTY_ALIASES = {
+  date: ['date', 'day', 'period', 'operation_date', 'created_at', '\u0434\u0430\u0442\u0430', '\u0434\u0435\u043d\u044c', '\u043f\u0435\u0440\u0438\u043e\u0434'],
+  article: ['article', 'item_code', 'offer_id', 'sku', 'supplier_article', '\u0430\u0440\u0442\u0438\u043a\u0443\u043b', '\u0442\u043e\u0432\u0430\u0440'],
+  platform: ['platform', 'marketplace', 'mp', '\u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0430', '\u043c\u0430\u0440\u043a\u0435\u0442\u043f\u043b\u0435\u0439\u0441'],
+  program: ['program', 'campaign', 'campaign_name', 'loyalty_program', 'source', 'type', '\u043f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u0430', '\u043a\u0430\u043c\u043f\u0430\u043d\u0438\u044f', '\u0430\u043a\u0446\u0438\u044f', '\u0442\u0438\u043f'],
+  spend: ['spend', 'cost', 'expense', 'amount', 'budget', 'points_spent', 'bonus_spend', '\u0440\u0430\u0441\u0445\u043e\u0434', '\u0437\u0430\u0442\u0440\u0430\u0442\u044b', '\u0441\u0443\u043c\u043c\u0430', '\u0431\u044e\u0434\u0436\u0435\u0442'],
+  points: ['points', 'bonus', 'bonuses', 'points_count', '\u0431\u0430\u043b\u043b\u044b', '\u0431\u043e\u043d\u0443\u0441\u044b', '\u0431\u0430\u043b\u043b\u043e\u0432'],
+  orders: ['orders', 'orders_count', 'qty', 'quantity', '\u0437\u0430\u043a\u0430\u0437\u044b', '\u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e'],
+  revenue: ['revenue', 'sales', 'turnover', 'orders_sum', '\u0432\u044b\u0440\u0443\u0447\u043a\u0430', '\u043e\u0431\u043e\u0440\u043e\u0442', '\u043f\u0440\u043e\u0434\u0430\u0436\u0438'],
+  customers: ['customers', 'clients', 'buyers', '\u043a\u043b\u0438\u0435\u043d\u0442\u044b', '\u043f\u043e\u043a\u0443\u043f\u0430\u0442\u0435\u043b\u0438']
+};
+
+function normalizeLoyaltyRows(rawRows) {
+  return (Array.isArray(rawRows) ? rawRows : [])
+    .map((row, index) => {
+      const date = isoDate(loyaltyRowValue(row, LOYALTY_ALIASES.date));
+      const articleKey = normalizeText(loyaltyRowValue(row, LOYALTY_ALIASES.article));
+      const platform = normalizeText(loyaltyRowValue(row, LOYALTY_ALIASES.platform));
+      const program = normalizeText(loyaltyRowValue(row, LOYALTY_ALIASES.program)) || '\u0421\u0438\u0441\u0442\u0435\u043c\u0430 \u043b\u043e\u044f\u043b\u044c\u043d\u043e\u0441\u0442\u0438';
+      const spend = loyaltyNumber(loyaltyRowValue(row, LOYALTY_ALIASES.spend));
+      const points = loyaltyNumber(loyaltyRowValue(row, LOYALTY_ALIASES.points));
+      const orders = loyaltyNumber(loyaltyRowValue(row, LOYALTY_ALIASES.orders));
+      const revenue = loyaltyNumber(loyaltyRowValue(row, LOYALTY_ALIASES.revenue));
+      const customers = loyaltyNumber(loyaltyRowValue(row, LOYALTY_ALIASES.customers));
+      return {
+        rowIndex: index + 2,
+        date,
+        month: date ? date.slice(0, 7) : '',
+        articleKey,
+        platform,
+        program,
+        spend: Number(spend.toFixed(2)),
+        points: Number(points.toFixed(2)),
+        orders: Number(orders.toFixed(4)),
+        revenue: Number(revenue.toFixed(2)),
+        customers: Number(customers.toFixed(4)),
+        raw: loyaltyCompactRaw(row)
+      };
+    })
+    .filter((row) =>
+      row.date
+      || row.articleKey
+      || row.platform
+      || row.program
+      || row.spend
+      || row.points
+      || row.orders
+      || row.revenue
+      || row.customers
+    );
+}
+
+function loyaltyAggregateRows(rows, keySelector) {
+  const buckets = new Map();
+  for (const row of rows) {
+    const key = keySelector(row) || '';
+    if (!key) continue;
+    const current = buckets.get(key) || {
+      key,
+      label: key,
+      rows: 0,
+      spend: 0,
+      points: 0,
+      orders: 0,
+      revenue: 0,
+      customers: 0
+    };
+    current.rows += 1;
+    current.spend += numberOrZero(row.spend);
+    current.points += numberOrZero(row.points);
+    current.orders += numberOrZero(row.orders);
+    current.revenue += numberOrZero(row.revenue);
+    current.customers += numberOrZero(row.customers);
+    buckets.set(key, current);
+  }
+  return Array.from(buckets.values())
+    .map((item) => ({
+      ...item,
+      spend: Number(item.spend.toFixed(2)),
+      points: Number(item.points.toFixed(2)),
+      orders: Number(item.orders.toFixed(4)),
+      revenue: Number(item.revenue.toFixed(2)),
+      customers: Number(item.customers.toFixed(4))
+    }))
+    .sort((left, right) => right.spend - left.spend || right.revenue - left.revenue || String(left.label).localeCompare(String(right.label)));
+}
+
+function buildLoyaltySystem(rawRows, source, options) {
+  const rows = normalizeLoyaltyRows(rawRows);
+  const dates = rows.map((row) => row.date).filter(Boolean).sort();
+  const asOfDate = dates[dates.length - 1] || '';
+  const byProgram = loyaltyAggregateRows(rows, (row) => row.program);
+  const byPlatform = loyaltyAggregateRows(rows, (row) => row.platform || 'all');
+  const daily = loyaltyAggregateRows(rows, (row) => row.date).sort((left, right) => String(left.key).localeCompare(String(right.key)));
+  const months = loyaltyAggregateRows(rows, (row) => row.month).sort((left, right) => String(right.key).localeCompare(String(left.key)));
+  const summary = {
+    rows: rows.length,
+    spend: Number(sum(rows.map((row) => row.spend)).toFixed(2)),
+    points: Number(sum(rows.map((row) => row.points)).toFixed(2)),
+    orders: Number(sum(rows.map((row) => row.orders)).toFixed(4)),
+    revenue: Number(sum(rows.map((row) => row.revenue)).toFixed(2)),
+    customers: Number(sum(rows.map((row) => row.customers)).toFixed(4)),
+    programs: byProgram.length,
+    platforms: byPlatform.filter((item) => item.key !== 'all').length
+  };
+  return {
+    generatedAt: new Date().toISOString(),
+    asOfDate,
+    source: {
+      sheetName: source?.name || '',
+      gid: source?.gid || '',
+      googleSheetsSourceUrl: options.sourceUrl,
+      googleSheetsSourceGid: options.sourceGid,
+      googleSheetsRefreshTimeLocal: options.sourceRefreshTimeLocal,
+      portalRefreshTimeLocal: options.portalRefreshTimeLocal
+    },
+    summary,
+    months,
+    daily,
+    byProgram,
+    byPlatform,
+    rows,
+    diagnostics: {
+      sheetFound: Boolean(source?.name),
+      rowsRead: Array.isArray(rawRows) ? rawRows.length : 0,
+      normalizedRows: rows.length,
+      expectedSheetNames: REQUIRED_SOURCE_SHEETS.loyaltySystem.filter((name) => /^[\x00-\x7F]+$/.test(name))
+    }
+  };
+}
+
 function buildSnapshots(rows, options) {
   const baseDir = options.baseDataDir;
   const baseDashboard = readJson(path.join(baseDir, 'dashboard.json'));
@@ -1251,13 +1483,15 @@ function buildSnapshots(rows, options) {
   const platformTrends = buildPlatformTrends(skus, rows.factMarketplace, options);
   const adsSummary = buildAdsSummary(skus, rows.factAds, options);
   const logistics = buildLogistics(baseLogistics, skus, rows.factLogistics, options);
+  const loyaltySystem = buildLoyaltySystem(rows.loyaltySystem, rows.loyaltySystemSource, options);
   return {
     snapshots: {
       dashboard,
       skus,
       platform_trends: platformTrends,
       logistics,
-      ads_summary: adsSummary
+      ads_summary: adsSummary,
+      loyalty_system: loyaltySystem
     },
     meta: {
       generatedAt: new Date().toISOString(),
@@ -1289,6 +1523,12 @@ function buildSnapshots(rows, options) {
           )
         ).length,
         item_rows: adsSummary.itemSeries?.length || 0
+      },
+      loyaltySystem: {
+        sheet_name: loyaltySystem.source?.sheetName || '',
+        latest_date: loyaltySystem.asOfDate || '',
+        rows: loyaltySystem.summary?.rows || 0,
+        spend: loyaltySystem.summary?.spend || 0
       },
       logistics: {
         latest_logistics_date: logistics.window?.to || '',

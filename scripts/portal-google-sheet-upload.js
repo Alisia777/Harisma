@@ -19,6 +19,7 @@ const SNAPSHOT_KEYS = [
   'product_leaderboard',
   'ads_summary',
   'iu_drr_summary',
+  'loyalty_system',
   'wb_feedbacks_summary',
   'order_procurement',
   'order_procurement_wb',

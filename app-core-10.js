@@ -509,6 +509,7 @@ function renderDashboardView() {
 function rerenderCurrentView() {
   applyOwnerOverridesToSkus();
   const renderPlan = [
+    ['view-wb-rating', 'Рейтинг карточек', () => renderWbCardRating('view-wb-rating')],
     ['view-ads-funnel', 'Рекламная воронка', () => renderAdsFunnel('view-ads-funnel')],
     ['view-iu-drr', 'ИУ / ДРР', () => renderIuDrr('view-iu-drr')],
     ['view-dashboard', 'Дашборд', renderDashboardView],

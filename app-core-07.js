@@ -3252,6 +3252,30 @@ function renderWbFeedbacksIuDrrPanel() {
   `;
 }
 
+function renderWbCardRating(rootId = 'view-wb-rating') {
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  const payload = wbFeedbacksPayload();
+  const dynamics = payload.ratingDynamics || {};
+  const windowLabel = payload.window?.from && payload.window?.to ? `${payload.window.from} — ${payload.window.to}` : 'последний срез';
+  root.innerHTML = `
+    <div class="section-title">
+      <div>
+        <h2>Рейтинг карточек WB</h2>
+        <p>Отзывы, вопросы, отзывы за баллы и динамика рейтинга карточек по WB API.</p>
+      </div>
+      <div class="badge-stack">
+        ${badge(payload.generatedAt ? `API ${fmt.date(payload.generatedAt)}` : 'API', payload.generatedAt ? 'ok' : 'warn')}
+        ${badge(`${fmt.int(payload.cards.length)} карточек`, 'info')}
+        ${badge(`${fmt.int(dynamics.cardsWithDrop)} падают`, numberOrZero(dynamics.cardsWithDrop) ? 'danger' : 'ok')}
+        ${badge(`${fmt.int(dynamics.cardsWithGrowth)} растут`, numberOrZero(dynamics.cardsWithGrowth) ? 'ok' : 'info')}
+        ${badge(windowLabel, 'info')}
+      </div>
+    </div>
+    ${renderWbFeedbacksIuDrrPanel()}
+  `;
+}
+
 function iuDrrExportRows(rows, model) {
   if (model.selectedPlatform === 'ozon') {
     return rows.map((row) => ({
@@ -3467,7 +3491,6 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       `).join('')}
     </div>
   `;
-  const wbFeedbacksHtml = isOzonView ? '' : renderWbFeedbacksIuDrrPanel();
   const dailyTableHtml = isOzonView ? `
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
@@ -3589,7 +3612,6 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     ${selectedKpisHtml}
     ${chartsHtml}
     ${channelRowsHtml}
-    ${wbFeedbacksHtml}
     ${dailyTableHtml}
 
     ${!isOzonView && sourceWarnings.length ? `

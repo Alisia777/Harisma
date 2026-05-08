@@ -1,14 +1,15 @@
 ﻿function renderSkuModal(articleKey) {
   const sku = getSku(articleKey);
   if (!sku) return;
-  state.activeSku = articleKey;
+  const resolvedArticleKey = skuPrimaryKey(sku, articleKey);
+  state.activeSku = resolvedArticleKey;
 
   const body = document.getElementById('skuModalBody');
   const modal = document.getElementById('skuModal');
-  const comments = getSkuComments(articleKey);
-  const decisions = getSkuDecisions(articleKey);
-  const tasks = getSkuControlTasks(articleKey);
-  const activeTask = nextTaskForSku(articleKey);
+  const comments = getSkuComments(resolvedArticleKey);
+  const decisions = getSkuDecisions(resolvedArticleKey);
+  const tasks = getSkuControlTasks(resolvedArticleKey);
+  const activeTask = nextTaskForSku(resolvedArticleKey);
   const owners = ownerOptions();
   const completion = currentCompletionSnapshot(sku);
   const currentPlanUnits = firstFiniteValue(sku?.planFact?.planApr26Units);
@@ -78,7 +79,7 @@
       <div class="card">
         <h3>Добавить задачу</h3>
         <form id="manualTaskForm" class="form-grid compact">
-          <input type="hidden" name="articleKey" value="${escapeHtml(articleKey)}">
+          <input type="hidden" name="articleKey" value="${escapeHtml(resolvedArticleKey)}">
           <input name="title" placeholder="Что делаем" required>
           <select name="type">${Object.entries(TASK_TYPE_META).map(([value, label]) => `<option value="${value}">${escapeHtml(label)}</option>`).join('')}</select>
           <select name="priority">${Object.entries(PRIORITY_META).map(([value, meta]) => `<option value="${value}">${escapeHtml(meta.label)}</option>`).join('')}</select>
@@ -168,7 +169,7 @@
       <div class="card">
         <h3>Добавить апдейт</h3>
         <form id="commentForm" class="form-grid compact">
-          <input type="hidden" name="articleKey" value="${escapeHtml(articleKey)}">
+          <input type="hidden" name="articleKey" value="${escapeHtml(resolvedArticleKey)}">
           <input name="author" placeholder="Кто пишет" value="${escapeHtml(state.team.member.name || ownerName(sku) || 'Команда')}" required>
           <select name="type">
             <option value="signal">Сигнал</option>
@@ -190,7 +191,7 @@
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     await createManualTask({
-      articleKey,
+      articleKey: resolvedArticleKey,
       title: form.get('title'),
       type: form.get('type'),
       priority: form.get('priority'),
@@ -199,7 +200,7 @@
       due: form.get('due'),
       nextAction: form.get('nextAction')
     });
-    renderSkuModal(articleKey);
+    renderSkuModal(resolvedArticleKey);
     rerenderCurrentView();
   });
 
@@ -207,18 +208,18 @@
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     await upsertOwnerAssignment({
-      articleKey,
+      articleKey: resolvedArticleKey,
       ownerName: form.get('ownerName'),
       ownerRole: form.get('ownerRole'),
       note: form.get('note')
     });
-    renderSkuModal(articleKey);
+    renderSkuModal(resolvedArticleKey);
     rerenderCurrentView();
   });
 
   body.querySelector('#clearOwnerBtn')?.addEventListener('click', async () => {
-    await removeOwnerAssignment(articleKey);
-    renderSkuModal(articleKey);
+    await removeOwnerAssignment(resolvedArticleKey);
+    renderSkuModal(resolvedArticleKey);
     rerenderCurrentView();
   });
 
@@ -226,14 +227,14 @@
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     await createDecision({
-      articleKey,
+      articleKey: resolvedArticleKey,
       title: form.get('title'),
       decision: form.get('decision'),
       owner: form.get('owner'),
       status: form.get('status'),
       due: form.get('due')
     });
-    renderSkuModal(articleKey);
+    renderSkuModal(resolvedArticleKey);
     rerenderCurrentView();
   });
 
@@ -241,13 +242,13 @@
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     await createComment({
-      articleKey,
+      articleKey: resolvedArticleKey,
       author: form.get('author'),
       team: teamMemberLabel(),
       type: form.get('type'),
       text: form.get('text')
     });
-    renderSkuModal(articleKey);
+    renderSkuModal(resolvedArticleKey);
   });
 }
 

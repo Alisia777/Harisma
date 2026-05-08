@@ -209,8 +209,42 @@ function applyOwnerOverridesToSkus() {
   }
 }
 
+function skuLookupToken(value = '') {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .replaceAll('ё', 'е')
+    .replace(/[^a-zа-я0-9]+/gi, '');
+}
+
+function skuLookupValues(sku = {}) {
+  return [
+    sku.articleKey,
+    sku.article,
+    sku.sku,
+    sku.vendorCode,
+    sku.supplierArticle,
+    sku.nmId,
+    sku.nmID,
+    sku.barcode
+  ].filter((value) => String(value ?? '').trim());
+}
+
+function skuPrimaryKey(sku, fallback = '') {
+  return String(sku?.articleKey || sku?.article || fallback || '').trim();
+}
+
 function getSku(articleKey) {
-  return state.skus.find((sku) => sku.articleKey === articleKey || sku.article === articleKey) || null;
+  const rawKey = String(articleKey ?? '').trim();
+  if (!rawKey) return null;
+
+  const exact = state.skus.find((sku) => skuLookupValues(sku).some((value) => String(value ?? '').trim() === rawKey));
+  if (exact) return exact;
+
+  const lookupKey = skuLookupToken(rawKey);
+  if (!lookupKey) return null;
+
+  return state.skus.find((sku) => skuLookupValues(sku).some((value) => skuLookupToken(value) === lookupKey)) || null;
 }
 
 function ownerName(sku) {

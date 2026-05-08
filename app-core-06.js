@@ -245,7 +245,7 @@ function renderSkuRegistry() {
   const rows = items.map((sku) => {
     const task = skuTaskMap.get(String(sku.articleKey || '').trim()) || null;
     return `
-    <tr>
+    <tr class="sku-registry-row" data-open-sku="${escapeHtml(sku.articleKey)}">
       <td>${linkToSku(sku.articleKey, sku.article || sku.articleKey)}</td>
       <td><div><strong>${escapeHtml(sku.name || 'Без названия')}</strong></div><div class="muted small">${escapeHtml(sku.category || sku.segment || '—')}</div></td>
       <td>${skuOperationalStatus(sku)}</td>

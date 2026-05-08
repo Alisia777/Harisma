@@ -1866,6 +1866,10 @@ function escapeHtmlMultiline(value) {
   return escapeHtml(value).replace(/\r\n|\r|\n/g, '<br>');
 }
 
+function safeUiMarkup(value) {
+  return String(value ?? '');
+}
+
 function badge(text, kind = '') {
   return `<span class="chip ${kind}">${escapeHtml(text)}</span>`;
 }

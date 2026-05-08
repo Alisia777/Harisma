@@ -123,6 +123,8 @@ textarea{resize:vertical;min-height:84px}
 .link-btn:hover{color:#fff}
 .sku-pill{padding:8px 10px;border-radius:10px;border:1px solid rgba(15,23,48,.18);background:#fff;color:#0f172a;text-decoration:none;display:inline-flex;max-width:100%;white-space:nowrap}
 .sku-pill:hover{background:#f4f7ff;color:#0f172a}
+.sku-registry-row{cursor:pointer}
+.sku-registry-row:hover td{background:rgba(255,255,255,.035)}
 .owner-cell strong{display:block}
 .traffic-inline{gap:6px}
 

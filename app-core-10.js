@@ -391,7 +391,28 @@ function closeSkuModal() {
 }
 
 function openSkuModal(articleKey) {
-  renderSkuModal(articleKey);
+  const rawKey = String(articleKey ?? '').trim();
+  const sku = getSku(rawKey);
+
+  if (!sku) {
+    if (rawKey) {
+      state.filters.search = rawKey;
+      state.filters.market = 'all';
+      state.filters.focus = 'all';
+      state.filters.assignment = 'all';
+      setView('skus');
+    }
+    setAppError(rawKey
+      ? `SKU ${rawKey} не найден в реестре. Открыла Реестр SKU и поставила поиск по артикулу.`
+      : 'Не удалось открыть SKU: в кнопке нет артикула.');
+    window.setTimeout(() => {
+      if (!(state.runtimeErrors || []).length) setAppError('');
+    }, 2400);
+    return false;
+  }
+
+  renderSkuModal(skuPrimaryKey(sku, rawKey));
+  return true;
 }
 
 const ACTIVE_VIEW_STORAGE_KEY = 'altea-portal-active-view-v1';
@@ -574,8 +595,10 @@ function attachGlobalListeners() {
   document.body.addEventListener('click', (event) => {
     const openBtn = event.target.closest('[data-open-sku]');
     if (openBtn) {
-      if (document.getElementById('taskModal')?.classList.contains('open')) closeTaskModal();
-      openSkuModal(openBtn.dataset.openSku);
+      event.preventDefault();
+      event.stopPropagation();
+      const opened = openSkuModal(openBtn.dataset.openSku || openBtn.getAttribute('data-open-sku'));
+      if (opened && document.getElementById('taskModal')?.classList.contains('open')) closeTaskModal();
       return;
     }
 

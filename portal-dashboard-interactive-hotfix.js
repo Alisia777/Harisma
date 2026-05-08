@@ -1983,6 +1983,8 @@
     return rows;
   }
 
+  const DASHBOARD_EXCLUDED_ARTICLE_PREFIXES = ['qeep', 'harly', 'harley', 'харли'];
+
   function isDashboardExcludedArticle(article, row, sku) {
     const fields = [
       article,
@@ -1993,7 +1995,10 @@
       sku?.brand,
       sku?.name
     ];
-    return fields.some((value) => String(value || '').trim().toLowerCase().startsWith('qeep'));
+    return fields.some((value) => {
+      const normalized = String(value || '').trim().toLowerCase();
+      return DASHBOARD_EXCLUDED_ARTICLE_PREFIXES.some((prefix) => normalized.startsWith(prefix));
+    });
   }
 
   function articleRowsForPlatform(platformKey, range) {

@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_SKU_PLAN_FACT_STABILITY_20260508A__) return;
-  window.__ALTEA_SKU_PLAN_FACT_STABILITY_20260508A__ = true;
+  if (window.__ALTEA_SKU_PLAN_FACT_STABILITY_20260508B__) return;
+  window.__ALTEA_SKU_PLAN_FACT_STABILITY_20260508B__ = true;
 
   const ROOT_ID = 'view-sku-plan-fact';
   const SORT_KEYS = ['article', 'owner', 'wb', 'ozon', 'gap', 'avgCheck', 'turnover', 'ad'];
@@ -257,7 +257,6 @@
   }
 
   function bindControls(host) {
-    const current = filters();
     const search = replaceWithoutListeners(host.querySelector('#skuPlanFactSearch'));
     const date = replaceWithoutListeners(host.querySelector('#skuPlanFactDate'));
     const owner = replaceWithoutListeners(host.querySelector('#skuPlanFactOwner'));
@@ -268,8 +267,10 @@
     const refreshButton = replaceWithoutListeners(host.querySelector('[data-sku-plan-fact-refresh]'));
 
     if (search) {
-      search.value = current.search || '';
+      const currentSearch = filters();
+      search.value = currentSearch.search || '';
       search.addEventListener('input', (event) => {
+        const current = filters();
         current.search = event.target.value;
         window.clearTimeout(searchTimer);
         searchTimer = window.setTimeout(() => {
@@ -285,6 +286,7 @@
     }
     if (date) {
       date.addEventListener('change', (event) => {
+        const current = filters();
         const next = dateKey(event.target.value);
         if (!next) return;
         current.date = next;
@@ -292,11 +294,12 @@
         forceBaseRender();
       });
     }
-    if (owner) owner.addEventListener('change', (event) => { current.owner = event.target.value; renderStableBody(); });
-    if (status) status.addEventListener('change', (event) => { current.status = event.target.value; renderStableBody(); });
-    if (platform) platform.addEventListener('change', (event) => { current.platform = event.target.value; renderStableBody(); });
+    if (owner) owner.addEventListener('change', (event) => { filters().owner = event.target.value; renderStableBody(); });
+    if (status) status.addEventListener('change', (event) => { filters().status = event.target.value; renderStableBody(); });
+    if (platform) platform.addEventListener('change', (event) => { filters().platform = event.target.value; renderStableBody(); });
     if (sort) {
       sort.addEventListener('change', (event) => {
+        const current = filters();
         current.sort = event.target.value;
         current.sortDir = defaultSortDir(current.sort);
         renderStableBody();
@@ -313,6 +316,7 @@
 
     host.querySelectorAll('[data-sku-stable-sort]').forEach((button) => {
       button.addEventListener('click', () => {
+        const current = filters();
         const key = button.dataset.skuStableSort;
         if (current.sort === key) current.sortDir = current.sortDir === 'asc' ? 'desc' : 'asc';
         else {

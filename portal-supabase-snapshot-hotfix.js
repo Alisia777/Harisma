@@ -8,17 +8,17 @@
     'skus',
     'platform_trends',
     'iu_plan',
-    'logistics',
     'ads_summary',
     'iu_drr_summary',
-    'platform_plan',
-    'prices',
-    'smart_price_workbench',
-    'price_workbench_support'
+    'platform_plan'
   ];
-  const LAZY_SNAPSHOT_KEYS = [
-    'wb_feedbacks_summary'
-  ];
+  const VIEW_SNAPSHOT_KEYS = {
+    prices: ['prices', 'smart_price_workbench', 'price_workbench_support'],
+    repricer: ['prices', 'smart_price_workbench', 'price_workbench_support'],
+    order: ['logistics'],
+    'iu-drr': ['wb_feedbacks_summary'],
+    'wb-rating': ['wb_feedbacks_summary']
+  };
   const SNAPSHOT_TIMEOUT_MS = 20000;
   const SNAPSHOT_TO_STATE = {
     dashboard: 'dashboard',
@@ -67,10 +67,8 @@
   function keysForRefresh() {
     const keys = SNAPSHOT_KEYS.slice();
     const view = activeViewKey();
-    if (view === 'iu-drr' || view === 'wb-rating') {
-      for (const key of LAZY_SNAPSHOT_KEYS) {
-        if (!keys.includes(key)) keys.push(key);
-      }
+    for (const key of VIEW_SNAPSHOT_KEYS[view] || []) {
+      if (!keys.includes(key)) keys.push(key);
     }
     return keys;
   }

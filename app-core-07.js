@@ -3018,6 +3018,14 @@ function wbFeedbackHistoryDateLabel(date) {
   return text.length >= 10 ? text.slice(5) : (text || '—');
 }
 
+function wbFeedbackAddDays(dateKey, delta) {
+  const raw = String(dateKey || '').slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return '';
+  const date = new Date(`${raw}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + delta);
+  return date.toISOString().slice(0, 10);
+}
+
 function wbFeedbackRatingCell(point) {
   const value = point?.cumulativeAvgRating;
   const dailyRatings = numberOrZero(point?.ratingFeedbacks);
@@ -3029,6 +3037,106 @@ function wbFeedbackRatingCell(point) {
       ${badge(fmt.num(value, 2), wbFeedbackRatingTone(value))}
       ${dailyRatings ? `<div class="muted small">+${fmt.int(dailyRatings)}</div>` : ''}
     </td>
+  `;
+}
+
+function wbFeedbackRatingAggregateSeries(payload) {
+  const dynamics = payload.ratingDynamics || {};
+  const dates = Array.isArray(dynamics.dates) ? dynamics.dates : [];
+  const rows = Array.isArray(dynamics.matrix) ? dynamics.matrix : [];
+  return dates.map((date) => {
+    let ratingSum = 0;
+    let ratingCount = 0;
+    let feedbacks = 0;
+    let lowRatingCount = 0;
+    let reviewPoints = 0;
+    rows.forEach((row) => {
+      const point = (Array.isArray(row.history) ? row.history : []).find((item) => item.date === date);
+      const rating = Number(point?.cumulativeAvgRating);
+      if (Number.isFinite(rating)) {
+        ratingSum += rating;
+        ratingCount += 1;
+      }
+      feedbacks += numberOrZero(point?.feedbacks);
+      lowRatingCount += numberOrZero(point?.lowRatingFeedbacks);
+      reviewPoints += numberOrZero(point?.reviewPoints);
+    });
+    return {
+      date,
+      avgRating: ratingCount ? ratingSum / ratingCount : null,
+      cards: ratingCount,
+      feedbacks,
+      lowRatingCount,
+      reviewPoints
+    };
+  }).filter((point) => point.avgRating !== null);
+}
+
+function wbFeedbackRatingSparkline(series) {
+  const points = (Array.isArray(series) ? series : []).filter((point) => point.avgRating !== null);
+  if (points.length < 2) return '<div class="empty">Недостаточно точек для графика.</div>';
+  const width = 760;
+  const height = 190;
+  const values = points.map((point) => Number(point.avgRating)).filter(Number.isFinite);
+  const rawMin = Math.min(...values);
+  const rawMax = Math.max(...values);
+  const padding = Math.max(0.03, (rawMax - rawMin) * 0.18);
+  const min = Math.max(1, rawMin - padding);
+  const max = Math.min(5, rawMax + padding);
+  const range = Math.max(0.1, max - min);
+  const coords = points.map((point, index) => {
+    const x = points.length === 1 ? width / 2 : (index / Math.max(1, points.length - 1)) * width;
+    const y = height - ((Number(point.avgRating) - min) / range) * (height - 34) - 17;
+    return {
+      x,
+      y,
+      point
+    };
+  });
+  const path = coords.map((item) => `${item.x.toFixed(1)},${item.y.toFixed(1)}`).join(' ');
+  const first = coords[0];
+  const last = coords[coords.length - 1];
+  const mid = coords[Math.floor(coords.length / 2)];
+  const labels = [first, mid, last].filter(Boolean);
+  return `
+    <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Динамика среднего рейтинга карточек" style="width:100%;height:190px;display:block">
+      <line x1="0" y1="${height - 17}" x2="${width}" y2="${height - 17}" stroke="rgba(255,255,255,.14)" stroke-width="1"></line>
+      <line x1="0" y1="17" x2="${width}" y2="17" stroke="rgba(255,255,255,.10)" stroke-width="1"></line>
+      <polyline points="${path}" fill="none" stroke="#22c55e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>
+      ${coords.map((item, index) => index === 0 || index === coords.length - 1 || index % 5 === 0
+        ? `<circle cx="${item.x.toFixed(1)}" cy="${item.y.toFixed(1)}" r="${index === coords.length - 1 ? 5 : 3}" fill="${index === coords.length - 1 ? '#fde68a' : '#22c55e'}"></circle>`
+        : '').join('')}
+      ${labels.map((item, index) => `
+        <text x="${Math.min(width - 80, Math.max(8, item.x - 34)).toFixed(1)}" y="${height - 2}" fill="rgba(245,230,199,.72)" font-size="15">${escapeHtml(wbFeedbackHistoryDateLabel(item.point.date))}</text>
+        ${index === labels.length - 1 ? `<text x="${Math.min(width - 84, Math.max(8, item.x - 38)).toFixed(1)}" y="${Math.max(26, item.y - 12).toFixed(1)}" fill="#fde68a" font-size="17">${escapeHtml(fmt.num(item.point.avgRating, 2))}</text>` : ''}
+      `).join('')}
+    </svg>
+  `;
+}
+
+function renderWbRatingDynamicsChart(payload) {
+  const series = wbFeedbackRatingAggregateSeries(payload);
+  const latest = series[series.length - 1] || null;
+  const prev7 = latest ? series.find((point) => point.date >= wbFeedbackAddDays(latest.date, -7)) : null;
+  const delta7 = latest && prev7 ? latest.avgRating - prev7.avgRating : null;
+  const latestTone = latest?.avgRating < 4 ? 'danger' : (latest?.avgRating < 4.5 ? 'warn' : 'ok');
+  return `
+    <div class="card" style="margin-top:12px">
+      <div class="section-subhead">
+        <div><h3>График среднего рейтинга</h3><p class="small muted">Агрегировано по карточкам из дневной матрицы WB API.</p></div>
+        <div class="badge-stack">
+          ${badge(latest?.date ? `до ${escapeHtml(latest.date)}` : 'нет даты', latest?.date ? 'ok' : 'warn')}
+          ${badge(`${fmt.int(series.length)} точек`, 'info')}
+        </div>
+      </div>
+      <div class="kpi-strip" style="margin-top:12px">
+        <div class="mini-kpi ${latestTone}"><span>Средний рейтинг</span><strong>${latest ? fmt.num(latest.avgRating, 2) : '—'}</strong><span>${latest ? `${fmt.int(latest.cards)} карточек` : 'нет точки'}</span></div>
+        <div class="mini-kpi ${wbFeedbackDeltaTone(delta7)}"><span>За 7 дней</span><strong>${wbFeedbackDeltaLabel(delta7)}</strong><span>${prev7?.date || 'нет базы'}</span></div>
+        <div class="mini-kpi warn"><span>Оценки 1–3 в последний день</span><strong>${fmt.int(latest?.lowRatingCount)}</strong><span>${fmt.int(latest?.feedbacks)} отзывов</span></div>
+        <div class="mini-kpi"><span>Отзывы за баллы</span><strong>${fmt.money(latest?.reviewPoints)}</strong><span>последний день</span></div>
+      </div>
+      ${wbFeedbackRatingSparkline(series)}
+    </div>
   `;
 }
 
@@ -3070,6 +3178,7 @@ function renderWbRatingDynamicsMatrix(payload) {
       <div class="mini-kpi"><span>Без изменения</span><strong>${fmt.int(dynamics.cardsFlat)}</strong><span>дельта около нуля</span></div>
       <div class="mini-kpi warn"><span>Оценки 1-3</span><strong>${fmt.int(rows.reduce((sum, row) => sum + numberOrZero(row.lowRatingCount), 0))}</strong><span>по карточкам в матрице</span></div>
     </div>
+    ${renderWbRatingDynamicsChart(payload)}
     <div class="table-wrap" style="margin-top:12px">
       <table>
         <thead>

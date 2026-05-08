@@ -18,7 +18,12 @@ const SNAPSHOT_KEYS = [
   'smart_price_overlay',
   'product_leaderboard',
   'ads_summary',
-  'iu_drr_summary'
+  'iu_drr_summary',
+  'wb_feedbacks_summary',
+  'order_procurement',
+  'order_procurement_wb',
+  'order_procurement_ozon',
+  'warehouse_stock_overlay'
 ];
 const INLINE_BODY_LIMIT = 18000;
 const DEFAULT_CHUNK_SIZE = 12000;

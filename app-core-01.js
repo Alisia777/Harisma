@@ -315,7 +315,11 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/smart_price_workbench.json': 'smart_price_workbench',
   'data/smart_price_overlay.json': 'smart_price_overlay',
   'data/product_leaderboard.json': 'product_leaderboard',
-  'data/product_leaderboard_history.json': 'product_leaderboard_history'
+  'data/product_leaderboard_history.json': 'product_leaderboard_history',
+  'data/order_procurement.json': 'order_procurement',
+  'data/order_procurement_wb.json': 'order_procurement_wb',
+  'data/order_procurement_ozon.json': 'order_procurement_ozon',
+  'data/warehouse_stock_overlay.json': 'warehouse_stock_overlay'
 };
 const portalSnapshotState = {
   client: null,
@@ -493,6 +497,18 @@ function payloadFreshnessScore(snapshotKey, payload) {
     return score;
   }
 
+  if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon') {
+    score = bumpFreshness(score, payload.window?.to);
+    return score;
+  }
+
+  if (snapshotKey === 'warehouse_stock_overlay') {
+    (payload.rows || []).forEach((item) => {
+      score = bumpFreshness(score, item?.updatedAt || item?.updated_at || payload.generatedAt);
+    });
+    return score;
+  }
+
   return score;
 }
 
@@ -543,6 +559,10 @@ function payloadDataFreshnessScore(snapshotKey, payload) {
       score = bumpFreshness(score, item?.date || item?.label);
     });
     return score;
+  }
+
+  if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon') {
+    return bumpFreshness(score, payload.window?.to);
   }
 
   return score;
@@ -1064,6 +1084,9 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
   }
   if (snapshotKey === 'product_leaderboard_history') {
     return Array.isArray(payload) && payload.length > 0;
+  }
+  if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon' || snapshotKey === 'warehouse_stock_overlay') {
+    return Array.isArray(payload?.rows) && payload.rows.length > 0;
   }
   if (snapshotKey === 'logistics') {
     return Array.isArray(payload?.allRows) && payload.allRows.length > 0

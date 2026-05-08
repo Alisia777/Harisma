@@ -3152,7 +3152,7 @@ function renderOrderCalculator() {
     });
 }
 
-const ORDER_PROCUREMENT_VERSION = '20260507g';
+const ORDER_PROCUREMENT_VERSION = '20260508order1';
 const ORDER_PROCUREMENT_STYLE_ID = `altea-order-procurement-${ORDER_PROCUREMENT_VERSION}`;
 const ORDER_PROCUREMENT_RUNTIME = {
   renderToken: 0,
@@ -3268,6 +3268,52 @@ function orderProcurementResolvedPath(path) {
   return path.includes('?') ? path : `${path}?v=${ORDER_PROCUREMENT_VERSION}`;
 }
 
+function orderProcurementSnapshotPayloadUsable(path, payload) {
+  if (!payload || typeof payload !== 'object') return false;
+  const normalizedPath = String(path || '').replace(/\\/g, '/').split('?')[0];
+  if (normalizedPath.endsWith('.gz')) return false;
+  if (normalizedPath.includes('warehouse_stock_overlay')) return Array.isArray(payload.rows) && payload.rows.length > 0;
+  if (normalizedPath.includes('order_procurement')) return Array.isArray(payload.rows) && payload.rows.length > 0;
+  return false;
+}
+
+function orderProcurementFreshnessScore(payload) {
+  if (!payload || typeof payload !== 'object') return 0;
+  const stamps = [
+    payload.generatedAt,
+    payload.updatedAt,
+    payload.updated_at,
+    payload.asOfDate,
+    payload.window?.to,
+    payload.dataFreshness?.asOfDate
+  ];
+  return stamps.reduce((score, value) => {
+    if (!value) return score;
+    const raw = String(value || '').trim();
+    const normalized = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T00:00:00Z` : raw;
+    const stamp = Date.parse(normalized);
+    return Number.isFinite(stamp) ? Math.max(score, stamp) : score;
+  }, 0);
+}
+
+function orderProcurementTodayFreshnessScore() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today.getTime();
+}
+
+async function orderProcurementFetchSnapshot(path) {
+  if (typeof window.__alteaLoadPortalSnapshot !== 'function') return null;
+  if (String(path || '').replace(/\\/g, '/').split('?')[0].endsWith('.gz')) return null;
+  try {
+    const payload = await window.__alteaLoadPortalSnapshot(path);
+    return orderProcurementSnapshotPayloadUsable(path, payload) ? payload : null;
+  } catch (error) {
+    console.warn('[order-procurement] snapshot', path, error);
+    return null;
+  }
+}
+
 async function orderProcurementParseResponse(response, path) {
   if (!response.ok) throw new Error(`РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ ${path}`);
 
@@ -3296,8 +3342,19 @@ async function orderProcurementFetchJson(paths) {
   let lastError = null;
   for (const path of paths) {
     try {
+      const snapshotPromise = orderProcurementFetchSnapshot(path);
       const response = await fetch(orderProcurementResolvedPath(path), { cache: 'no-store' });
-      return await orderProcurementParseResponse(response, path);
+      const localPayload = await orderProcurementParseResponse(response, path);
+      const localFreshness = orderProcurementFreshnessScore(localPayload);
+      if (localFreshness >= orderProcurementTodayFreshnessScore()) return localPayload;
+      const snapshotPayload = await snapshotPromise;
+      if (
+        orderProcurementSnapshotPayloadUsable(path, snapshotPayload)
+        && orderProcurementFreshnessScore(snapshotPayload) > localFreshness
+      ) {
+        return snapshotPayload;
+      }
+      return localPayload;
     } catch (error) {
       lastError = error;
     }

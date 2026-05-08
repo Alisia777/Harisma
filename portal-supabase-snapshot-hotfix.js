@@ -15,7 +15,7 @@
   const VIEW_SNAPSHOT_KEYS = {
     prices: ['prices', 'smart_price_workbench', 'price_workbench_support'],
     repricer: ['prices', 'smart_price_workbench', 'price_workbench_support'],
-    order: ['logistics'],
+    order: ['logistics', 'order_procurement', 'order_procurement_wb', 'order_procurement_ozon', 'warehouse_stock_overlay'],
     'iu-drr': ['wb_feedbacks_summary'],
     'wb-rating': ['wb_feedbacks_summary']
   };

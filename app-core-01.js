@@ -496,10 +496,69 @@ function payloadFreshnessScore(snapshotKey, payload) {
   return score;
 }
 
+function payloadDataFreshnessScore(snapshotKey, payload) {
+  if (payload === null || payload === undefined) return 0;
+  let score = 0;
+  score = bumpFreshness(score, payload.asOfDate);
+  score = bumpFreshness(score, payload.dataFreshness?.asOfDate);
+
+  if (snapshotKey === 'dashboard') {
+    return bumpFreshness(score, payload.dataFreshness?.asOfDate);
+  }
+
+  if (snapshotKey === 'platform_trends' || snapshotKey === 'ads_summary') {
+    (payload.platforms || []).forEach((platform) => {
+      (platform?.series || []).forEach((item) => {
+        score = bumpFreshness(score, item?.date || item?.label);
+      });
+    });
+    return score;
+  }
+
+  if (snapshotKey === 'iu_drr_summary') {
+    (payload.daily || []).forEach((item) => {
+      score = bumpFreshness(score, item?.date);
+    });
+    return score;
+  }
+
+  if (snapshotKey === 'wb_feedbacks_summary') {
+    score = bumpFreshness(score, payload.window?.to);
+    (payload.daily || []).forEach((item) => {
+      score = bumpFreshness(score, item?.date);
+    });
+    return score;
+  }
+
+  if (snapshotKey === 'platform_plan' || snapshotKey === 'iu_plan') {
+    Object.keys(payload.months || {}).forEach((monthKey) => {
+      score = bumpFreshness(score, `${monthKey}-01`);
+    });
+    return score;
+  }
+
+  if (snapshotKey === 'prices') {
+    score = bumpFreshness(score, payload.month?.key ? `${payload.month.key}-01` : '');
+    (payload.dates || []).forEach((item) => {
+      score = bumpFreshness(score, item?.date || item?.label);
+    });
+    return score;
+  }
+
+  return score;
+}
+
 function chooseFreshestPayload(snapshotKey, snapshotPayload, localPayload) {
   const snapshotReady = snapshotPayloadLooksUsable(snapshotKey, snapshotPayload) ? snapshotPayload : null;
   const localReady = localPayload !== null && localPayload !== undefined ? localPayload : null;
   if (snapshotReady && localReady) {
+    const localDataScore = payloadDataFreshnessScore(snapshotKey, localReady);
+    const snapshotDataScore = payloadDataFreshnessScore(snapshotKey, snapshotReady);
+    if (localDataScore !== snapshotDataScore) {
+      return localDataScore > snapshotDataScore
+        ? { payload: localReady, source: 'local' }
+        : { payload: snapshotReady, source: 'snapshot' };
+    }
     return payloadFreshnessScore(snapshotKey, localReady) >= payloadFreshnessScore(snapshotKey, snapshotReady)
       ? { payload: localReady, source: 'local' }
       : { payload: snapshotReady, source: 'snapshot' };

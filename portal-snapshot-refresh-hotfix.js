@@ -82,6 +82,49 @@
     );
   }
 
+  function dataFreshnessOfPayload(snapshotKey, payload) {
+    if (!payload || typeof payload !== "object") return 0;
+    var score = Math.max(
+      parseFreshStamp(payload.asOfDate),
+      parseFreshStamp(payload.dataFreshness && payload.dataFreshness.asOfDate)
+    );
+    if (snapshotKey === "platform_trends" || snapshotKey === "ads_summary") {
+      (payload.platforms || []).forEach(function (platform) {
+        (platform && platform.series || []).forEach(function (item) {
+          score = Math.max(score, parseFreshStamp(item && (item.date || item.label)));
+        });
+      });
+      return score;
+    }
+    if (snapshotKey === "iu_drr_summary") {
+      (payload.daily || []).forEach(function (item) {
+        score = Math.max(score, parseFreshStamp(item && item.date));
+      });
+      return score;
+    }
+    if (snapshotKey === "wb_feedbacks_summary") {
+      score = Math.max(score, parseFreshStamp(payload.window && payload.window.to));
+      (payload.daily || []).forEach(function (item) {
+        score = Math.max(score, parseFreshStamp(item && item.date));
+      });
+      return score;
+    }
+    if (snapshotKey === "platform_plan" || snapshotKey === "iu_plan") {
+      Object.keys(payload.months || {}).forEach(function (monthKey) {
+        score = Math.max(score, parseFreshStamp(monthKey + "-01"));
+      });
+      return score;
+    }
+    if (snapshotKey === "prices") {
+      score = Math.max(score, parseFreshStamp(payload.month && payload.month.key ? payload.month.key + "-01" : ""));
+      (payload.dates || []).forEach(function (item) {
+        score = Math.max(score, parseFreshStamp(item && (item.date || item.label)));
+      });
+      return score;
+    }
+    return score;
+  }
+
   function payloadLooksUsable(snapshotKey, payload) {
     if (!payload) return false;
     if (snapshotKey === "skus") return Array.isArray(payload) && payload.length > 0;
@@ -320,8 +363,13 @@
     return JSON.parse(text);
   }
 
-  function chooseFreshestPayload(snapshotPayload, localPayload) {
+  function chooseFreshestPayload(snapshotKey, snapshotPayload, localPayload) {
     if (snapshotPayload && localPayload) {
+      var snapshotDataFreshness = dataFreshnessOfPayload(snapshotKey, snapshotPayload);
+      var localDataFreshness = dataFreshnessOfPayload(snapshotKey, localPayload);
+      if (snapshotDataFreshness !== localDataFreshness) {
+        return snapshotDataFreshness > localDataFreshness ? snapshotPayload : localPayload;
+      }
       return freshnessOfPayload(snapshotPayload) >= freshnessOfPayload(localPayload)
         ? snapshotPayload
         : localPayload;
@@ -386,7 +434,7 @@
       console.warn("[portal-snapshot-refresh-hotfix] local", path, error);
     }
 
-    return chooseFreshestPayload(snapshotPayload, localPayload) || clone(fallback);
+    return chooseFreshestPayload(snapshotKey, snapshotPayload, localPayload) || clone(fallback);
   }
 
   window.__alteaResetPortalSnapshotState = function resetSnapshotState() {

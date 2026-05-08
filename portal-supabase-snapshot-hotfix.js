@@ -159,6 +159,58 @@
     return score;
   }
 
+  function payloadDataFreshnessScore(snapshotKey, payload) {
+    if (payload === null || payload === undefined) return 0;
+    let score = 0;
+    score = bumpFreshness(score, payload.asOfDate);
+    score = bumpFreshness(score, payload.dataFreshness?.asOfDate);
+
+    if (snapshotKey === 'dashboard') {
+      return bumpFreshness(score, payload.dataFreshness?.asOfDate);
+    }
+
+    if (snapshotKey === 'platform_trends' || snapshotKey === 'ads_summary') {
+      (payload.platforms || []).forEach((platform) => {
+        (platform?.series || []).forEach((item) => {
+          score = bumpFreshness(score, item?.date || item?.label);
+        });
+      });
+      return score;
+    }
+
+    if (snapshotKey === 'iu_drr_summary') {
+      (payload.daily || []).forEach((item) => {
+        score = bumpFreshness(score, item?.date);
+      });
+      return score;
+    }
+
+    if (snapshotKey === 'wb_feedbacks_summary') {
+      score = bumpFreshness(score, payload.window?.to);
+      (payload.daily || []).forEach((item) => {
+        score = bumpFreshness(score, item?.date);
+      });
+      return score;
+    }
+
+    if (snapshotKey === 'platform_plan' || snapshotKey === 'iu_plan') {
+      Object.keys(payload.months || {}).forEach((monthKey) => {
+        score = bumpFreshness(score, `${monthKey}-01`);
+      });
+      return score;
+    }
+
+    if (snapshotKey === 'prices') {
+      score = bumpFreshness(score, payload.month?.key ? `${payload.month.key}-01` : '');
+      (payload.dates || []).forEach((item) => {
+        score = bumpFreshness(score, item?.date || item?.label);
+      });
+      return score;
+    }
+
+    return score;
+  }
+
   function payloadLooksUsable(snapshotKey, payload) {
     if (payload === null || payload === undefined) return false;
     if (snapshotKey === 'skus') return Array.isArray(payload) && payload.length > 0;
@@ -344,7 +396,14 @@
       const currentUsable = payloadLooksUsable(row.snapshot_key, currentPayload);
       const incomingFreshness = payloadFreshnessScore(row.snapshot_key, row.payload, row?.updated_at);
       const currentFreshness = payloadFreshnessScore(row.snapshot_key, currentPayload);
-      if (currentUsable && currentFreshness >= incomingFreshness) continue;
+      const incomingDataFreshness = payloadDataFreshnessScore(row.snapshot_key, row.payload);
+      const currentDataFreshness = payloadDataFreshnessScore(row.snapshot_key, currentPayload);
+      if (currentUsable && (incomingDataFreshness || currentDataFreshness)) {
+        if (currentDataFreshness > incomingDataFreshness) continue;
+        if (currentDataFreshness === incomingDataFreshness && currentFreshness >= incomingFreshness) continue;
+      } else if (currentUsable && currentFreshness >= incomingFreshness) {
+        continue;
+      }
       state[target] = clone(row.payload);
       applied = true;
     }

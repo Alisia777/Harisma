@@ -3148,6 +3148,7 @@ function renderOrderCalculator() {
   const root = document.getElementById('view-order');
   if (!root) return;
   injectOrderProcurementStyles();
+  orderProcurementPrimeCacheFromState();
   const renderToken = ++ORDER_PROCUREMENT_RUNTIME.renderToken;
   const hasProcurementMounted = () => Boolean(root.querySelector('[data-altea-order-procurement]'));
   const renderIfChanged = () => {
@@ -3178,6 +3179,10 @@ function renderOrderCalculator() {
       if (renderToken !== ORDER_PROCUREMENT_RUNTIME.renderToken) return;
       console.error('[order-procurement] render', error);
       ORDER_PROCUREMENT_RUNTIME.lastRenderedSignature = '';
+      if (orderProcurementHasReadyData()) {
+        renderIfChanged();
+        return;
+      }
       root.innerHTML = renderOrderProcurementError();
     });
 }
@@ -3198,13 +3203,64 @@ const ORDER_PROCUREMENT_RUNTIME = {
   searchDebounceTimer: 0
 };
 
+function orderProcurementPayloadLooksUsable(payload) {
+  return Boolean(payload && typeof payload === 'object' && Array.isArray(payload.rows) && payload.rows.length > 0);
+}
+
+function orderProcurementLooksLikeDataPayload(value) {
+  return Boolean(value && typeof value === 'object' && (
+    Array.isArray(value.rows) ||
+    Boolean(value.window && typeof value.window === 'object') ||
+    Boolean(value.generatedAt || value.updatedAt || value.updated_at || value.asOfDate)
+  ));
+}
+
+function orderProcurementPrimeCacheSlot(slot, payload) {
+  if (!orderProcurementPayloadLooksUsable(payload)) return false;
+  const current = ORDER_PROCUREMENT_RUNTIME.cache[slot];
+  if (
+    !orderProcurementPayloadLooksUsable(current) ||
+    orderProcurementFreshnessScore(payload) > orderProcurementFreshnessScore(current)
+  ) {
+    ORDER_PROCUREMENT_RUNTIME.cache[slot] = payload;
+    return true;
+  }
+  return false;
+}
+
+function orderProcurementPrimeCacheFromState() {
+  if (typeof state !== 'object' || !state) return;
+  if (Array.isArray(state.skus) && state.skus.length) {
+    ORDER_PROCUREMENT_RUNTIME.cache.skus = state.skus;
+  }
+  orderProcurementPrimeCacheSlot('warehouse', state.warehouseStockOverlay || state.warehouse_stock_overlay);
+  orderProcurementPrimeCacheSlot(
+    'combined',
+    state.orderProcurementSnapshot ||
+      state.orderProcurementData ||
+      state.orderProcurementCombined ||
+      state.order_procurement ||
+      state.orderProcurement
+  );
+  orderProcurementPrimeCacheSlot('wb', state.orderProcurementWb || state.orderProcurementWB || state.order_procurement_wb);
+  orderProcurementPrimeCacheSlot('ozon', state.orderProcurementOzon || state.orderProcurementOZON || state.order_procurement_ozon);
+}
+
 function ensureOrderProcurementState() {
-  state.orderProcurement = state.orderProcurement || {};
-  state.orderProcurement.platform = state.orderProcurement.platform === 'ozon' ? 'ozon' : 'wb';
-  state.orderProcurement.days = clampOrderProcurementDays(state.orderProcurement.days);
-  state.orderProcurement.search = String(state.orderProcurement.search || '').trim();
-  state.orderProcurement.place = String(state.orderProcurement.place || 'all').trim() || 'all';
-  state.orderProcurement.clusterFilter = [
+  const existingUi = state.orderProcurementUi && typeof state.orderProcurementUi === 'object' && !orderProcurementLooksLikeDataPayload(state.orderProcurementUi)
+    ? state.orderProcurementUi
+    : {};
+  const legacyUi = state.orderProcurement && typeof state.orderProcurement === 'object' && !orderProcurementLooksLikeDataPayload(state.orderProcurement)
+    ? state.orderProcurement
+    : {};
+  const orderState = { ...legacyUi, ...existingUi };
+  state.orderProcurementUi = orderState;
+  state.orderProcurementFilters = orderState;
+  orderState.platform = orderState.platform === 'ozon' ? 'ozon' : 'wb';
+  orderState.days = clampOrderProcurementDays(orderState.days);
+  orderState.search = String(orderState.search || '').trim();
+  orderState.place = String(orderState.place || 'all').trim() || 'all';
+  orderState.clusterFilter = [
     'all',
     'risk',
     'turnover_lt',
@@ -3212,17 +3268,17 @@ function ensureOrderProcurementState() {
     'need',
     'no_stock',
     'in_motion'
-  ].includes(state.orderProcurement.clusterFilter) ? state.orderProcurement.clusterFilter : 'all';
-  state.orderProcurement.clusterDays = clampOrderProcurementDays(state.orderProcurement.clusterDays || 30);
-  state.orderProcurement.mode = [
+  ].includes(orderState.clusterFilter) ? orderState.clusterFilter : 'all';
+  orderState.clusterDays = clampOrderProcurementDays(orderState.clusterDays || 30);
+  orderState.mode = [
     'all',
     'recommended',
     'local',
     'supplier',
     'warehouse',
     'signals'
-  ].includes(state.orderProcurement.mode) ? state.orderProcurement.mode : 'all';
-  state.orderProcurement.sort = [
+  ].includes(orderState.mode) ? orderState.mode : 'all';
+  orderState.sort = [
     'recommended_desc',
     'warehouse_desc',
     'warehouse_asc',
@@ -3232,8 +3288,8 @@ function ensureOrderProcurementState() {
     'supplier_desc',
     'inbound_desc',
     'sku_asc'
-  ].includes(state.orderProcurement.sort) ? state.orderProcurement.sort : 'recommended_desc';
-  return state.orderProcurement;
+  ].includes(orderState.sort) ? orderState.sort : 'recommended_desc';
+  return orderState;
 }
 
 function clampOrderProcurementDays(value) {
@@ -3415,6 +3471,7 @@ function orderProcurementLoadCached(key, loader) {
 }
 
 async function ensureOrderProcurementSources(platform = 'wb') {
+  orderProcurementPrimeCacheFromState();
   const normalizedPlatform = platform === 'ozon' ? 'ozon' : 'wb';
   const hasPlatformRows = (payload, targetPlatform) => {
     const rows = Array.isArray(payload?.rows) ? payload.rows : [];
@@ -3465,6 +3522,7 @@ async function ensureOrderProcurementSources(platform = 'wb') {
 }
 
 function orderProcurementCurrentPayload(platform) {
+  orderProcurementPrimeCacheFromState();
   if (ORDER_PROCUREMENT_RUNTIME.cache.combined && Array.isArray(ORDER_PROCUREMENT_RUNTIME.cache.combined.rows)) {
     const target = platform === 'ozon' ? 'ozon' : 'wb';
     const platformPayload = target === 'ozon' ? ORDER_PROCUREMENT_RUNTIME.cache.ozon : ORDER_PROCUREMENT_RUNTIME.cache.wb;

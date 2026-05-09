@@ -51,8 +51,15 @@
   }
 
   const stateRef = () => (typeof state === 'object' && state ? state : null);
+  const isOrderProcurementPayload = (payload) => Boolean(payload && typeof payload === 'object' && Array.isArray(payload.rows));
   const current = (key) => {
     const app = stateRef();
+    if (key === 'orderProcurement') {
+      if (isOrderProcurementPayload(app?.orderProcurementData)) return app.orderProcurementData;
+      if (isOrderProcurementPayload(app?.orderProcurementSnapshot)) return app.orderProcurementSnapshot;
+      if (isOrderProcurementPayload(app?.orderProcurement)) return app.orderProcurement;
+      return cache.orderProcurement || null;
+    }
     return (app && app[key]) || cache[key] || null;
   };
   const cloneJson = (value) => {
@@ -6625,7 +6632,12 @@ function dashboardTaskStatusChip(task) {
     const payload = JSON.parse(text);
     cache[key] = payload;
     const app = stateRef();
-    if (app && !app[key]) app[key] = payload;
+    if (app && key === 'orderProcurement') {
+      app.orderProcurementData = payload;
+      app.orderProcurementSnapshot = payload;
+    } else if (app && !app[key]) {
+      app[key] = payload;
+    }
     return payload;
   }
 
@@ -6715,7 +6727,8 @@ function dashboardTaskStatusChip(task) {
       app.smartPriceWorkbenchLive = smartPriceWorkbenchLive;
       app.smartPriceOverlay = smartPriceOverlay;
       app.priceWorkbenchSupport = priceWorkbenchSupport;
-      app.orderProcurement = orderProcurement;
+      app.orderProcurementData = orderProcurement;
+      app.orderProcurementSnapshot = orderProcurement;
     }
   }
 

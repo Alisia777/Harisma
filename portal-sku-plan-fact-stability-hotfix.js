@@ -57,6 +57,14 @@
     return dateKey(model?.selectedDate) || dateKey(model?.maxFactDate) || new Date().toISOString().slice(0, 10);
   }
 
+  function resetAutoDate() {
+    const current = filters();
+    if (current.dateMode === 'manual') return;
+    current.date = '';
+    current.month = 'latest';
+    current.dateMode = 'latest';
+  }
+
   function buildModel() {
     if (typeof skuPlanFactBuildModel !== 'function') return null;
     return skuPlanFactBuildModel();
@@ -191,6 +199,7 @@
       const app = appState();
       if (app?.boot?.lazyReady) app.boot.lazyReady.skuPlanFact = false;
       if (app?.boot?.lazyLoads) delete app.boot.lazyLoads.skuPlanFact;
+      resetAutoDate();
       if (typeof ensureViewData === 'function') await ensureViewData('sku-plan-fact');
       forceBaseRender();
       if (typeof updateSyncBadge === 'function') updateSyncBadge();
@@ -208,7 +217,21 @@
   function ensureDateControl(host, model) {
     const current = filters();
     const oldMonth = host.querySelector('#skuPlanFactMonth');
-    if (!oldMonth && host.querySelector('#skuPlanFactDate')) return;
+    const existingDate = host.querySelector('#skuPlanFactDate');
+    if (!oldMonth && existingDate) {
+      if (current.dateMode !== 'manual') {
+        current.dateMode = 'latest';
+        const latest = latestDateFromModel(model);
+        if (latest) {
+          existingDate.value = latest;
+          current.date = latest;
+          current.month = latest.slice(0, 7);
+        }
+        if (model?.months?.length) existingDate.min = `${model.months[model.months.length - 1]}-01`;
+        if (dateKey(model?.maxFactDate)) existingDate.max = dateKey(model.maxFactDate);
+      }
+      return;
+    }
     const input = document.createElement('input');
     input.id = 'skuPlanFactDate';
     input.type = 'date';
@@ -218,6 +241,7 @@
     if (model?.months?.length) input.min = `${model.months[model.months.length - 1]}-01`;
     if (dateKey(model?.maxFactDate)) input.max = dateKey(model.maxFactDate);
     current.date = input.value;
+    current.dateMode = current.dateMode === 'manual' ? 'manual' : 'latest';
     if (oldMonth) oldMonth.replaceWith(input);
   }
 
@@ -291,6 +315,7 @@
         if (!next) return;
         current.date = next;
         current.month = next.slice(0, 7);
+        current.dateMode = 'manual';
         forceBaseRender();
       });
     }
@@ -358,6 +383,8 @@
       const wrappedRerender = function wrappedRerenderCurrentView() {
         const host = root();
         if (!forceRender && activeSkuPlanFact() && host?.querySelector('#skuPlanFactSearch')) {
+          resetAutoDate();
+          renderStableBody();
           enhance();
           return;
         }

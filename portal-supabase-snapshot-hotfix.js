@@ -13,11 +13,12 @@
     'platform_plan'
   ];
   const VIEW_SNAPSHOT_KEYS = {
-    prices: ['prices', 'smart_price_workbench', 'price_workbench_support'],
-    repricer: ['prices', 'smart_price_workbench', 'price_workbench_support'],
+    prices: ['prices', 'smart_price_workbench', 'smart_price_overlay', 'price_workbench_support'],
+    repricer: ['prices', 'smart_price_workbench', 'smart_price_overlay', 'price_workbench_support'],
     order: ['logistics', 'order_procurement', 'order_procurement_wb', 'order_procurement_ozon', 'warehouse_stock_overlay'],
-    'iu-drr': ['wb_feedbacks_summary'],
-    'wb-rating': ['wb_feedbacks_summary']
+    'sku-plan-fact': ['smart_price_workbench', 'smart_price_overlay', 'price_workbench_support', 'ads_summary', 'iu_drr_summary'],
+    'iu-drr': ['iu_drr_summary', 'ads_summary', 'wb_feedbacks_summary'],
+    'wb-rating': ['wb_feedbacks_summary', 'iu_drr_summary']
   };
   const SNAPSHOT_TIMEOUT_MS = 20000;
   const SNAPSHOT_TO_STATE = {
@@ -32,6 +33,7 @@
     platform_plan: 'platformPlan',
     prices: 'prices',
     smart_price_workbench: 'smartPriceWorkbench',
+    smart_price_overlay: 'smartPriceOverlay',
     price_workbench_support: 'priceWorkbenchSupport'
   };
   const FALLBACK_CONFIG = {
@@ -238,7 +240,7 @@
         && typeof payload?.platforms === 'object' && payload.platforms !== null
         && Object.keys(payload.platforms).length > 0;
     }
-    if (snapshotKey === 'smart_price_workbench' || snapshotKey === 'price_workbench_support') {
+    if (snapshotKey === 'smart_price_workbench' || snapshotKey === 'smart_price_overlay' || snapshotKey === 'price_workbench_support') {
       return typeof payload?.platforms === 'object' && payload.platforms !== null
         && Object.keys(payload.platforms).length > 0;
     }

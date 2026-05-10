@@ -2344,10 +2344,105 @@ function adsFunnelRate(numerator, denominator) {
   return top / bottom;
 }
 
+function adsFunnelOverlayRows(platformKey = 'ozon') {
+  const payload = state.smartPriceOverlay || {};
+  const bucket = payload?.platforms?.[platformKey] || payload?.[platformKey];
+  if (Array.isArray(bucket?.rows)) return bucket.rows;
+  if (Array.isArray(bucket)) return bucket;
+  return [];
+}
+
+function adsFunnelSkuByArticleKey() {
+  const map = new Map();
+  (state.skus || []).forEach((sku) => {
+    const key = String(sku?.articleKey || sku?.article || '').trim().toLowerCase();
+    if (key) map.set(key, sku);
+  });
+  return map;
+}
+
+function adsFunnelOzonPlanPct(dateKey = '') {
+  const monthKey = String(dateKey || '').slice(0, 7);
+  const daily = (state.iuDrrSummary?.daily || []).find((row) => String(row?.date || '').slice(0, 10) === dateKey) || {};
+  const month = (state.iuDrrSummary?.months || []).find((row) => {
+    const key = String(row?.monthKey || row?.month || row?.date || '').slice(0, 7);
+    return key && key === monthKey;
+  }) || {};
+  const candidates = [
+    daily.planPctOzon,
+    month.planPctOzon,
+    state.iuDrrSummary?.ozonPlanPctDefault,
+    0.25
+  ];
+  const pct = candidates.map(Number).find((value) => Number.isFinite(value) && value > 0);
+  return pct || 0.25;
+}
+
+function adsFunnelModeledOzonRows(existingItems = []) {
+  const existingKeys = new Set(
+    existingItems
+      .filter((item) => adsFunnelNormalizePlatformKey(item?.platformKey || item?.platform || item?.channel || item?.market) === 'ozon')
+      .map((item) => {
+        const date = String(item?.date || item?.day || item?.label || '').slice(0, 10);
+        const articleKey = String(item?.articleKey || item?.offer_id || item?.offerId || item?.article || item?.sku || '').trim().toLowerCase();
+        return `${date}::${articleKey}`;
+      })
+      .filter((key) => !key.endsWith('::'))
+  );
+  const skuMap = adsFunnelSkuByArticleKey();
+  const rows = [];
+  adsFunnelOverlayRows('ozon').forEach((sourceRow, rowIndex) => {
+    const articleKey = String(sourceRow?.articleKey || sourceRow?.article || '').trim();
+    if (!articleKey) return;
+    const sku = skuMap.get(articleKey.toLowerCase()) || {};
+    const owner = sourceRow?.owner || sku?.ownersByPlatform?.ozon || sku?.owner?.byPlatform?.ozon || sku?.owner?.name || '';
+    const dailyRows = Array.isArray(sourceRow?.daily) ? sourceRow.daily : [];
+    dailyRows.forEach((point, pointIndex) => {
+      const date = String(point?.date || point?.day || point?.label || '').slice(0, 10);
+      if (!date) return;
+      const key = `${date}::${articleKey.toLowerCase()}`;
+      if (existingKeys.has(key)) return;
+      const revenue = numberOrZero(point?.revenue);
+      const orders = numberOrZero(point?.ordersUnits ?? point?.deliveredUnits ?? point?.units);
+      if (revenue <= 0 && orders <= 0) return;
+      const planPct = adsFunnelOzonPlanPct(date);
+      rows.push({
+        date,
+        platformKey: 'ozon',
+        articleKey,
+        article: sourceRow?.article || articleKey,
+        offerId: articleKey,
+        name: sourceRow?.name || sku?.name || sourceRow?.article || articleKey,
+        owner,
+        views: 0,
+        clicks: 0,
+        spend: revenue * planPct,
+        orders,
+        revenue,
+        channel: 'Ozon modeled ads',
+        sourceMode: 'modeled_from_ozon_marketplace_revenue',
+        modelRate: planPct,
+        rowKey: `ozon-modeled-${rowIndex}-${pointIndex}`
+      });
+    });
+  });
+  return rows;
+}
+
+function adsFunnelLatestDate(items = [], fallback = '') {
+  const dates = items
+    .map((item) => String(item?.date || item?.day || item?.label || '').slice(0, 10))
+    .filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date));
+  if (fallback) dates.push(String(fallback).slice(0, 10));
+  return dates.sort().pop() || fallback || '';
+}
+
 function normalizeAdsSummaryPayload(payload = {}) {
   const rawPlatforms = Array.isArray(payload.platforms)
     ? payload.platforms
     : Object.values(payload.platforms || {});
+  const rawItems = Array.isArray(payload.itemSeries) ? payload.itemSeries : [];
+  const modeledOzonRows = adsFunnelModeledOzonRows(rawItems);
   const platforms = rawPlatforms.map((platform) => {
     const key = adsFunnelNormalizePlatformKey(platform?.platformKey || platform?.platform || platform?.key || platform?.id || platform?.label);
     const series = Array.isArray(platform?.series)
@@ -2372,7 +2467,7 @@ function normalizeAdsSummaryPayload(payload = {}) {
       series
     };
   });
-  const itemSeries = Array.isArray(payload.itemSeries) ? payload.itemSeries.map((item) => {
+  const itemSeries = [...rawItems, ...modeledOzonRows].map((item) => {
     const dateKey = item?.date || item?.day || item?.label || '';
     const platformKey = adsFunnelNormalizePlatformKey(item?.platformKey || item?.platform || item?.channel || item?.market);
     return {
@@ -2389,13 +2484,18 @@ function normalizeAdsSummaryPayload(payload = {}) {
       orders: numberOrZero(item?.orders),
       revenue: numberOrZero(item?.revenue)
     };
-  }) : [];
+  });
+  const noteParts = [payload.note || ''];
+  if (modeledOzonRows.length) {
+    noteParts.push('Ozon восстановлен расчетно из Ozon-продаж по SKU: расход = оборот Ozon × плановый ДРР Ozon.');
+  }
   return {
     generatedAt: payload.generatedAt || '',
-    asOfDate: payload.asOfDate || '',
-    note: payload.note || '',
+    asOfDate: adsFunnelLatestDate(itemSeries, payload.asOfDate || ''),
+    note: noteParts.filter(Boolean).join(' '),
     platforms,
-    itemSeries
+    itemSeries,
+    modeledOzonRows: modeledOzonRows.length
   };
 }
 

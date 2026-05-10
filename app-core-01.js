@@ -2050,14 +2050,28 @@ const LAZY_DATA_LOADERS = {
     state.launches = Array.isArray(launches) ? launches : [];
   },
   adsFunnel: async () => {
-    const payload = await loadJsonOrFallback(
-      'data/ads_summary.json',
-      { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
-      'Рекламная воронка'
-    );
+    const [payload, smartPriceOverlay, summary] = await Promise.all([
+      loadJsonOrFallback(
+        'data/ads_summary.json',
+        { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
+        'Рекламная воронка'
+      ),
+      loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU'),
+      loadJsonOrFallback(
+        'data/iu_drr_summary.json',
+        { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
+        'ИУ / ДРР'
+      )
+    ]);
     state.adsSummary = payload && typeof payload === 'object'
       ? payload
       : { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
+    state.smartPriceOverlay = smartPriceOverlay && typeof smartPriceOverlay === 'object'
+      ? smartPriceOverlay
+      : { generatedAt: '', platforms: {} };
+    state.iuDrrSummary = summary && typeof summary === 'object'
+      ? summary
+      : { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };
   },
   iuDrr: async () => {
     const [summary, adsPayload, wbFeedbacks] = await Promise.all([

@@ -16,6 +16,7 @@
     prices: ['prices', 'smart_price_workbench', 'smart_price_overlay', 'price_workbench_support'],
     repricer: ['prices', 'smart_price_workbench', 'smart_price_overlay', 'price_workbench_support'],
     order: ['logistics', 'order_procurement', 'order_procurement_wb', 'order_procurement_ozon', 'warehouse_stock_overlay'],
+    'ads-funnel': ['ads_summary', 'smart_price_overlay', 'iu_drr_summary'],
     'sku-plan-fact': ['smart_price_workbench', 'smart_price_overlay', 'price_workbench_support', 'ads_summary', 'iu_drr_summary'],
     'iu-drr': ['iu_drr_summary', 'ads_summary', 'wb_feedbacks_summary'],
     'wb-rating': ['wb_feedbacks_summary', 'iu_drr_summary']

@@ -289,8 +289,20 @@ function dateRange(platformTrends, adsSummary, explicitFrom, explicitTo) {
     const date = isoDate(row.date || row.day || row.label);
     if (date) dates.push(date);
   }
+  const platformLatestDate = (key) => (
+    (platformTrends?.platforms || [])
+      .find((platform) => String(platform?.key || '').trim().toLowerCase() === key)
+      ?.series
+      ?.map((point) => isoDate(point.date || point.label))
+      ?.filter(Boolean) || []
+  ).sort().pop() || '';
+  const wbLatestDate = platformLatestDate('wb');
+  const ozonLatestDate = platformLatestDate('ozon');
+  const latestCompleteMarketplaceDate = wbLatestDate && ozonLatestDate
+    ? (wbLatestDate < ozonLatestDate ? wbLatestDate : ozonLatestDate)
+    : '';
   const sorted = dates.sort();
-  const to = explicitTo || sorted[sorted.length - 1] || isoDate(platformTrends?.latestMarketplaceDate) || isoDate(adsSummary?.asOfDate) || new Date().toISOString().slice(0, 10);
+  const to = explicitTo || latestCompleteMarketplaceDate || sorted[sorted.length - 1] || isoDate(platformTrends?.latestMarketplaceDate) || isoDate(adsSummary?.asOfDate) || new Date().toISOString().slice(0, 10);
   const from = explicitFrom || `${to.slice(0, 7)}-01`;
   return { from, to };
 }

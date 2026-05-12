@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-05-07T07:00:40.535Z",
+  "generatedAt": "2026-05-12T15:47:46.355Z",
   "dataFreshness": {
-    "planFactMonth": "Апрель 2026 · Smart = Altea",
+    "planFactMonth": "май 2026 - общий план компании",
     "ordersSnapshot": "orders (40).csv",
     "contentPeriods": [
       "09.03.2026 - 15.03.2026",
@@ -12,14 +12,18 @@
       "Для Анны (2).xlsx",
       "Рабочий _ Спецификации v2.xlsx"
     ],
-    "asOfDate": "2026-05-06",
+    "asOfDate": "2026-05-12",
     "googleSheetsMonth": "2026-05",
     "googleSheetsBridge": "scripts/portal-google-sheet-sync.js",
     "googleSheetsSourceUrl": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
     "googleSheetsSourceGid": "2003059667",
     "googleSheetsRefreshTimeLocal": "09:00 Europe/Moscow",
-    "planFactSource": "Выполнение плана.xlsx :: Апрель 26 | Altea",
-    "portalRefreshTimeLocal": "10:00 Europe/Moscow"
+    "planFactSource": "План А.xlsx :: 00_Источник_плана | общий план компании",
+    "portalRefreshTimeLocal": "10:00 Europe/Moscow",
+    "companyPlanSource": "План А.xlsx :: 00_Источник_плана | общий план компании",
+    "companyPlanWorkbook": "План А.xlsx",
+    "companyPlanSheet": "00_Источник_плана",
+    "marketplaceFactSource": "platform_trends.json (API-backed)"
   },
   "cards": [
     {
@@ -49,12 +53,12 @@
     },
     {
       "label": "Закреплено за owner",
-      "value": 83,
+      "value": 89,
       "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
     },
     {
       "label": "Р‘РµР· owner",
-      "value": 10,
+      "value": 0,
       "hint": "Нужно дозакрепить вручную"
     },
     {
@@ -68,41 +72,6 @@
       "hint": "По факту/плану/реестрам"
     },
     {
-      "label": "Остатки MP, шт.",
-      "value": 358352,
-      "hint": "WB + Ozon по срезу Google Sheets на 2026-05-06"
-    },
-    {
-      "label": "Факт на 21.04, ₽",
-      "value": 152956664.96,
-      "format": "money",
-      "hint": "Smart = Altea · факт по файлу Выполнение плана.xlsx."
-    },
-    {
-      "label": "План апреля, ₽",
-      "value": 304896023,
-      "format": "money",
-      "hint": "Qharisma v5 план месяца для Smart = Altea."
-    },
-    {
-      "label": "Выполнение плана",
-      "value": 0.501668284994324,
-      "format": "pct",
-      "hint": "Факт / полный план месяца."
-    },
-    {
-      "label": "План к дате, ₽",
-      "value": 223590416.86666667,
-      "format": "money",
-      "hint": "Линейный план к 21.04 по файлу."
-    },
-    {
-      "label": "Прогноз / план",
-      "value": 0.6840931159013511,
-      "format": "pct",
-      "hint": "Базовый прогноз 208 577 270 ₽ к концу месяца."
-    },
-    {
       "label": "SKU в базе",
       "value": 89,
       "hint": "В портал попал только бренд Алтея"
@@ -114,13 +83,34 @@
     },
     {
       "label": "Без owner",
-      "value": 6,
+      "value": 0,
       "hint": "Нужно дозакрепить вручную"
     },
     {
-      "label": "Остатки MP, шт.",
-      "value": 0,
-      "hint": "WB + Ozon по срезу Google Sheets на 2026-04-27"
+      "label": "План май 2026, ₽",
+      "value": 291518548.512607,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx. ИУ WB/Ozon считаются отдельно."
+    },
+    {
+      "label": "План к 06.05, ₽",
+      "value": 56422944.873407796,
+      "format": "money",
+      "hint": "Линейный общий план компании с 01.05 по 06.05."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.1438,
+      "valuePct": 1.1438,
+      "format": "pct",
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату."
+    },
+    {
+      "label": "Прогноз / план",
+      "value": 0.7284808173734991,
+      "valuePct": 0.7284808173734991,
+      "format": "pct",
+      "hint": "Базовый прогноз 212 365 671 ₽ к концу месяца."
     },
     {
       "label": "План мая, шт.",
@@ -128,22 +118,280 @@
       "hint": "Линейный план месяца по SKU рабочего контура."
     },
     {
-      "label": "Факт 01-06.05, шт.",
-      "value": 34764,
-      "hint": "Факт по данным Google Sheets на 2026-05-06."
+      "label": "План компании май 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-11.05, ₽",
+      "value": 81168463,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.7847,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.7847
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
     },
     {
       "label": "Выполнение к плану на дату",
-      "value": 1.0372,
+      "value": 0.9784,
       "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.0372
+      "valuePct": 0.9784
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-12.05, ₽",
+      "value": 56600448.77,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.5016,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.5016
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 0.9799,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 0.9799
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-12.05, ₽",
+      "value": 56682867.98,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.5023,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.5023
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 0.935,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 0.935
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-12.05, ₽",
+      "value": 108552937,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.962,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.962
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 0.935,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 0.935
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-12.05, ₽",
+      "value": 108552937,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.962,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.962
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 0.8241,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 0.8241
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-12.05, ₽",
+      "value": 102417987.37,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.9076,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.9076
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "Остатки MP, шт.",
+      "value": 1034609,
+      "hint": "WB + Ozon по API-�резу platform_trends на 2026-05-12"
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Факт 01-12.05, шт.",
+      "value": 55308,
+      "hint": "Факт по API-�резу platform_trends на 2026-05-12."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 0.8251,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 0.8251
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-12.05, ₽",
+      "value": 102547712.37,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.9087,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.9087
     }
   ],
   "brandSummary": [
     {
       "brand": "Алтея",
       "sku_count": 89,
-      "total_stock": 358352,
+      "total_stock": 1034609,
       "orders_value": 161631197.21,
       "feb_plan_units": 127838,
       "feb_fact_units": 48829,
@@ -152,29 +400,47 @@
       "avg_romi": 93.9518,
       "negative_margin_sku": 16,
       "to_work_sku": 7,
-      "assigned_sku": 83,
+      "assigned_sku": 89,
       "external_any_sku": 36,
       "google_sheets_plan_field": "planApr26Units",
       "google_sheets_month_key": "2026-05",
       "plan_units": 173171,
-      "fact_units_to_date": 34764,
-      "fact_revenue_to_date": 41103033,
-      "plan_completion_to_date_pct": 1.0372,
+      "fact_units_to_date": 55308,
+      "fact_revenue_to_date": 102547712.37,
+      "plan_completion_to_date_pct": 0.8251,
       "apr_plan_units": 173171,
       "apr_fact_units_to_date": 152328,
-      "asOfDate": "2026-04-21",
-      "plan_source": "Выполнение плана.xlsx :: Апрель 26 | Altea",
-      "apr_plan_revenue": 304896023,
-      "apr_fact_revenue_to_date": 194577283,
-      "apr_plan_to_date_revenue": 223590416.86666667,
-      "apr_forecast_revenue": 208577270.4,
-      "apr_plan_completion_month_pct": 0.501668284994324,
-      "apr_plan_completion_to_date_pct": 0.8796,
-      "apr_forecast_pct": 0.6840931159013511,
+      "asOfDate": "2026-05-12",
+      "plan_source": "План А.xlsx :: 00_Источник_плана | общий план компании",
+      "apr_plan_revenue": 291518548.512607,
+      "apr_fact_revenue_to_date": 41103033,
+      "apr_plan_to_date_revenue": 56422944.873407796,
+      "apr_forecast_revenue": 212365670.5,
+      "apr_plan_completion_month_pct": 0.1409962872335805,
+      "apr_plan_completion_to_date_pct": 0.7284808173734992,
+      "apr_forecast_pct": 0.7284808173734991,
       "may_plan_units": 173171,
-      "may_fact_units_to_date": 34764,
-      "may_fact_revenue_to_date": 41103033,
-      "may_plan_completion_to_date_pct": 1.0372
+      "may_fact_units_to_date": 55308,
+      "may_fact_revenue_to_date": 102547712.37,
+      "may_plan_completion_to_date_pct": 0.8251,
+      "company_plan_month_key": "2026-05",
+      "company_plan_month_label": "май 2026",
+      "company_plan_revenue": 291518548.51,
+      "company_fact_revenue_to_date": 102547712.37,
+      "company_plan_to_date_revenue": 112845889.75,
+      "company_plan_completion_month_pct": 0.3518,
+      "company_plan_completion_to_date_pct": 0.9087,
+      "company_forecast_revenue": 264914923.62,
+      "company_forecast_pct": 0.9087,
+      "company_plan_source": "План А.xlsx :: 00_Источник_плана",
+      "may_company_plan_revenue": 291518548.51,
+      "may_company_fact_revenue_to_date": 102547712.37,
+      "may_company_plan_to_date_revenue": 112845889.75,
+      "may_company_plan_completion_month_pct": 0.3518,
+      "may_company_plan_completion_to_date_pct": 0.9087,
+      "may_company_forecast_revenue": 264914923.62,
+      "may_company_forecast_pct": 0.9087,
+      "google_sheets_company_plan_field": "company_revenue_plan"
     }
   ],
   "focusTop": [
@@ -1094,13 +1360,474 @@
       "ozon_margin_pct": 0.2158
     }
   ],
-  "asOfDate": "2026-04-21",
-  "apr_plan_revenue": 304896023,
-  "apr_fact_revenue_to_date": 152956664.96,
-  "apr_plan_to_date_revenue": 223590416.86666667,
-  "apr_forecast_revenue": 208577270.4,
-  "apr_plan_completion_month_pct": 0.501668284994324,
-  "apr_plan_completion_to_date_pct": 0.6840931159013511,
-  "apr_forecast_pct": 0.6840931159013511,
-  "planFactSource": "Выполнение плана.xlsx :: Апрель 26 | Altea"
+  "asOfDate": "2026-05-12",
+  "apr_plan_revenue": 291518548.512607,
+  "apr_fact_revenue_to_date": 41103033,
+  "apr_plan_to_date_revenue": 56422944.873407796,
+  "apr_forecast_revenue": 212365670.5,
+  "apr_plan_completion_month_pct": 0.1409962872335805,
+  "apr_plan_completion_to_date_pct": 0.7284808173734992,
+  "apr_forecast_pct": 0.7284808173734991,
+  "planFactSource": "План А.xlsx :: 00_Источник_плана | общий план компании",
+  "companyPlan": {
+    "generatedAt": "2026-05-07T13:19:17.679Z",
+    "sourceWorkbook": "План А.xlsx",
+    "sourceSheet": "00_Источник_плана",
+    "sourcePath": "C:\\Users\\artiu\\Downloads\\Telegram Desktop\\План А.xlsx",
+    "planType": "company_revenue",
+    "activeMonthKey": "2026-05",
+    "activeMonth": {
+      "monthKey": "2026-05",
+      "label": "май 2026",
+      "days": 31,
+      "dayOfMonth": 12,
+      "planRevenueMonth": 291518548.51,
+      "planRevenueToDate": 112845889.75,
+      "factRevenueToDate": 102547712.37,
+      "completionMonthPct": 0.3518,
+      "completionToDatePct": 0.9087,
+      "forecastRevenue": 264914923.62,
+      "forecastPct": 0.9087,
+      "channels": {
+        "wb": {
+          "label": "WB",
+          "revenue": 179525953,
+          "dailyRevenue": 5791159.77
+        },
+        "ozon": {
+          "label": "Ozon",
+          "revenue": 103407637.512607,
+          "dailyRevenue": 3335730.24
+        },
+        "ya": {
+          "label": "Яндекс Маркет",
+          "revenue": 2444312,
+          "dailyRevenue": 78848.77
+        },
+        "goldapple": {
+          "label": "Золотое Яблоко online",
+          "revenue": 2138494,
+          "dailyRevenue": 68983.68
+        },
+        "letu": {
+          "label": "Летуаль online",
+          "revenue": 2336071,
+          "dailyRevenue": 75357.13
+        },
+        "magnit": {
+          "label": "Магнит Маркет",
+          "revenue": 166081,
+          "dailyRevenue": 5357.45
+        },
+        "d2c": {
+          "label": "Сайт / D2C",
+          "revenue": 1500000,
+          "dailyRevenue": 48387.1
+        },
+        "b2b": {
+          "label": "B2B / опт",
+          "revenue": 0,
+          "dailyRevenue": 0
+        }
+      }
+    },
+    "months": {
+      "2026-05": {
+        "label": "май 2026",
+        "days": 31,
+        "revenue": 291518548.512607,
+        "dailyRevenue": 9403824.15,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 179525953,
+            "dailyRevenue": 5791159.77
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 103407637.512607,
+            "dailyRevenue": 3335730.24
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 2444312,
+            "dailyRevenue": 78848.77
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 2138494,
+            "dailyRevenue": 68983.68
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 2336071,
+            "dailyRevenue": 75357.13
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 166081,
+            "dailyRevenue": 5357.45
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 1500000,
+            "dailyRevenue": 48387.1
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 0,
+            "dailyRevenue": 0
+          }
+        }
+      },
+      "2026-06": {
+        "label": "июнь 2026",
+        "days": 30,
+        "revenue": 296565392.79700303,
+        "dailyRevenue": 9885513.09,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 183389907,
+            "dailyRevenue": 6112996.9
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 102003858.797003,
+            "dailyRevenue": 3400128.63
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 3416649,
+            "dailyRevenue": 113888.3
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 2905642,
+            "dailyRevenue": 96854.73
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 2382807,
+            "dailyRevenue": 79426.9
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 166529,
+            "dailyRevenue": 5550.97
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 1800000,
+            "dailyRevenue": 60000
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 500000,
+            "dailyRevenue": 16666.67
+          }
+        }
+      },
+      "2026-07": {
+        "label": "июль 2026",
+        "days": 31,
+        "revenue": 311778156.474901,
+        "dailyRevenue": 10057359.89,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 191150691,
+            "dailyRevenue": 6166151.32
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 105625550.474901,
+            "dailyRevenue": 3407275.82
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 5270660,
+            "dailyRevenue": 170021.29
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 4009784,
+            "dailyRevenue": 129347.87
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 2920925,
+            "dailyRevenue": 94223.39
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 200546,
+            "dailyRevenue": 6469.23
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 2000000,
+            "dailyRevenue": 64516.13
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 600000,
+            "dailyRevenue": 19354.84
+          }
+        }
+      },
+      "2026-08": {
+        "label": "август 2026",
+        "days": 31,
+        "revenue": 330493435.777206,
+        "dailyRevenue": 10661078.57,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 201066371,
+            "dailyRevenue": 6486011.97
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 112322218.777206,
+            "dailyRevenue": 3623297.38
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 6441334,
+            "dailyRevenue": 207784.97
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 4611252,
+            "dailyRevenue": 148750.06
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 3000631,
+            "dailyRevenue": 96794.55
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 201629,
+            "dailyRevenue": 6504.16
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 2100000,
+            "dailyRevenue": 67741.94
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 750000,
+            "dailyRevenue": 24193.55
+          }
+        }
+      },
+      "2026-09": {
+        "label": "сентябрь 2026",
+        "days": 30,
+        "revenue": 367451257.701405,
+        "dailyRevenue": 12248375.26,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 216150839,
+            "dailyRevenue": 7205027.97
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 131926900.701405,
+            "dailyRevenue": 4397563.36
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 7612015,
+            "dailyRevenue": 253733.83
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 5302940,
+            "dailyRevenue": 176764.67
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 3105228,
+            "dailyRevenue": 103507.6
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 203335,
+            "dailyRevenue": 6777.83
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 2300000,
+            "dailyRevenue": 76666.67
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 850000,
+            "dailyRevenue": 28333.33
+          }
+        }
+      },
+      "2026-10": {
+        "label": "октябрь 2026",
+        "days": 31,
+        "revenue": 387055656.371205,
+        "dailyRevenue": 12485666.33,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 235531555,
+            "dailyRevenue": 7597792.1
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 129719435.371205,
+            "dailyRevenue": 4184497.92
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 8782698,
+            "dailyRevenue": 283312.84
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 6098382,
+            "dailyRevenue": 196722
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 3218044,
+            "dailyRevenue": 103807.87
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 205542,
+            "dailyRevenue": 6630.39
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 2500000,
+            "dailyRevenue": 80645.16
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 1000000,
+            "dailyRevenue": 32258.06
+          }
+        }
+      },
+      "2026-11": {
+        "label": "ноябрь 2026",
+        "days": 30,
+        "revenue": 410817634.188604,
+        "dailyRevenue": 13693921.14,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 259373620,
+            "dailyRevenue": 8645787.33
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 126917638.188604,
+            "dailyRevenue": 4230587.94
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 9953377,
+            "dailyRevenue": 331779.23
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 7013139,
+            "dailyRevenue": 233771.3
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 3350815,
+            "dailyRevenue": 111693.83
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 209045,
+            "dailyRevenue": 6968.17
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 2800000,
+            "dailyRevenue": 93333.33
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 1200000,
+            "dailyRevenue": 40000
+          }
+        }
+      },
+      "2026-12": {
+        "label": "декабрь 2026",
+        "days": 31,
+        "revenue": 459872220.351102,
+        "dailyRevenue": 14834587.75,
+        "channels": {
+          "wb": {
+            "label": "WB",
+            "revenue": 289011920,
+            "dailyRevenue": 9322965.16
+          },
+          "ozon": {
+            "label": "Ozon",
+            "revenue": 143447038.351102,
+            "dailyRevenue": 4627323.82
+          },
+          "ya": {
+            "label": "Яндекс Маркет",
+            "revenue": 11124048,
+            "dailyRevenue": 358840.26
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "revenue": 8065112,
+            "dailyRevenue": 260164.9
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "revenue": 3509365,
+            "dailyRevenue": 113205.32
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "revenue": 214737,
+            "dailyRevenue": 6927
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "revenue": 3000000,
+            "dailyRevenue": 96774.19
+          },
+          "b2b": {
+            "label": "B2B / опт",
+            "revenue": 1500000,
+            "dailyRevenue": 48387.1
+          }
+        }
+      }
+    }
+  },
+  "company_plan_month_key": "2026-05",
+  "company_plan_month_label": "май 2026",
+  "company_plan_revenue": 291518548.51,
+  "company_fact_revenue_to_date": 102547712.37,
+  "company_plan_to_date_revenue": 112845889.75,
+  "company_plan_completion_month_pct": 0.3518,
+  "company_plan_completion_to_date_pct": 0.9087,
+  "company_forecast_revenue": 264914923.62,
+  "company_forecast_pct": 0.9087,
+  "company_plan_source": "План А.xlsx :: 00_Источник_плана",
+  "latestMarketplaceDate": "2026-05-12",
+  "marketplaceFactSource": "platform_trends.json (API-backed)"
 }

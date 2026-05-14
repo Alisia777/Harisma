@@ -1,6 +1,40 @@
-const SKU_PLAN_FACT_PLATFORMS = ['wb', 'ozon'];
-const SKU_PLAN_FACT_PLATFORM_LABELS = { wb: 'WB', ozon: 'Ozon' };
+const SKU_PLAN_FACT_PLATFORMS = ['wb', 'ozon', 'ya', 'magnit', 'letu', 'goldapple'];
+const SKU_PLAN_FACT_PLATFORM_LABELS = {
+  wb: 'WB',
+  ozon: 'Ozon',
+  ya: 'ЯМ',
+  magnit: 'Магнит',
+  letu: 'Летуаль',
+  goldapple: 'ЗЯ'
+};
+const SKU_PLAN_FACT_PLATFORM_ALIASES = {
+  ya: ['ya', 'ym'],
+  magnit: ['magnit', 'mm'],
+  letu: ['letu'],
+  goldapple: ['goldapple', 'ga']
+};
+window.SKU_PLAN_FACT_PLATFORMS = SKU_PLAN_FACT_PLATFORMS;
+window.SKU_PLAN_FACT_PLATFORM_LABELS = SKU_PLAN_FACT_PLATFORM_LABELS;
 let skuPlanFactSearchTimer = 0;
+
+function skuPlanFactCanonicalPlatform(platform = '') {
+  const raw = String(platform || '').trim().toLowerCase();
+  if (raw === 'ym' || raw === 'yam' || raw === 'yandex' || raw === 'yandex_market') return 'ya';
+  if (raw === 'mm' || raw === 'magnit_market' || raw === 'magnitmarket') return 'magnit';
+  if (raw === 'ga' || raw === 'zya' || raw === 'goldapple' || raw === 'goldenapple') return 'goldapple';
+  if (raw === 'letual') return 'letu';
+  return raw;
+}
+
+function skuPlanFactPlatformAliases(platform = '') {
+  const key = skuPlanFactCanonicalPlatform(platform);
+  return SKU_PLAN_FACT_PLATFORM_ALIASES[key] || [key];
+}
+
+function skuPlanFactOwnerKey(platform = '') {
+  const key = skuPlanFactCanonicalPlatform(platform);
+  return ({ ya: 'ym', magnit: 'mm', goldapple: 'ga' })[key] || key;
+}
 
 function skuPlanFactFilters() {
   state.skuPlanFactFilters = {
@@ -43,16 +77,31 @@ function skuPlanFactMonthFromDate(value = '') {
 }
 
 function skuPlanFactRowsForPlatform(payload = {}, platform = '') {
-  const rawRows = payload?.platforms?.[platform]?.rows;
-  if (Array.isArray(rawRows)) return rawRows;
-  if (rawRows && typeof rawRows === 'object') {
-    return Object.entries(rawRows).map(([key, row]) => ({
-      articleKey: row?.articleKey || key,
-      article: row?.article || key,
-      ...(row || {})
-    }));
-  }
-  return [];
+  const result = [];
+  const seen = new Set();
+  skuPlanFactPlatformAliases(platform).forEach((platformKey) => {
+    const rawRows = payload?.platforms?.[platformKey]?.rows;
+    const rows = Array.isArray(rawRows)
+      ? rawRows
+      : rawRows && typeof rawRows === 'object'
+        ? Object.entries(rawRows).map(([key, row]) => ({
+          articleKey: row?.articleKey || key,
+          article: row?.article || key,
+          ...(row || {})
+        }))
+        : [];
+    rows.forEach((row) => {
+      const token = `${skuPlanFactCanonicalPlatform(platform)}|${skuPlanFactArticleToken(row) || row.articleKey || row.article}`;
+      if (seen.has(token)) return;
+      seen.add(token);
+      result.push({
+        ...row,
+        platformKey: skuPlanFactCanonicalPlatform(platform),
+        platformLabel: SKU_PLAN_FACT_PLATFORM_LABELS[skuPlanFactCanonicalPlatform(platform)] || platform
+      });
+    });
+  });
+  return result;
 }
 
 function skuPlanFactToken(value = '') {
@@ -341,14 +390,19 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
 }
 
 function skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, maxFactDate = '') {
-  const wb = skuPlanFactPlatformMetrics(sku, 'wb', monthKey, indexes, adIndex, elapsedDays, maxFactDate);
-  const ozon = skuPlanFactPlatformMetrics(sku, 'ozon', monthKey, indexes, adIndex, elapsedDays, maxFactDate);
-  const planRevenue = wb.planRevenue + ozon.planRevenue;
-  const planUnits = wb.planUnits + ozon.planUnits;
-  const planToDateRevenue = wb.planToDateRevenue + ozon.planToDateRevenue;
-  const factRevenue = wb.factRevenue + ozon.factRevenue;
-  const factUnits = wb.factUnits + ozon.factUnits;
-  const adSpend = wb.adSpend + ozon.adSpend;
+  const platforms = {};
+  SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
+    platforms[platform] = skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, elapsedDays, maxFactDate);
+  });
+  const platformMetrics = Object.values(platforms);
+  const wb = platforms.wb || skuPlanFactPlatformMetrics(sku, 'wb', monthKey, indexes, adIndex, elapsedDays, maxFactDate);
+  const ozon = platforms.ozon || skuPlanFactPlatformMetrics(sku, 'ozon', monthKey, indexes, adIndex, elapsedDays, maxFactDate);
+  const planRevenue = platformMetrics.reduce((sum, item) => sum + item.planRevenue, 0);
+  const planUnits = platformMetrics.reduce((sum, item) => sum + item.planUnits, 0);
+  const planToDateRevenue = platformMetrics.reduce((sum, item) => sum + item.planToDateRevenue, 0);
+  const factRevenue = platformMetrics.reduce((sum, item) => sum + item.factRevenue, 0);
+  const factUnits = platformMetrics.reduce((sum, item) => sum + item.factUnits, 0);
+  const adSpend = platformMetrics.reduce((sum, item) => sum + item.adSpend, 0);
   return {
     sku,
     articleKey: skuPrimaryKey(sku),
@@ -356,6 +410,7 @@ function skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, maxFa
     name: sku.name || '',
     owner: ownerName(sku) || 'Без owner',
     status: skuOperationalStatusMeta(sku).label,
+    platforms,
     wb,
     ozon,
     planUnits,
@@ -369,12 +424,40 @@ function skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, maxFa
     gapToDate: factRevenue - planToDateRevenue,
     adSpend,
     drr: factRevenue > 0 ? adSpend / factRevenue : null,
-    hasPlanOrFact: planRevenue > 0 || factRevenue > 0 || wb.adSpend > 0 || ozon.adSpend > 0
+    hasPlanOrFact: planRevenue > 0 || factRevenue > 0 || platformMetrics.some((item) => item.adSpend > 0)
   };
 }
 
+function skuPlanFactSyntheticSkus(indexes) {
+  const existing = new Set((state.skus || []).map((sku) => skuPlanFactArticleToken(sku)).filter(Boolean));
+  const synthetic = [];
+  const seen = new Set(existing);
+  SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
+    [indexes.overlay?.[platform], indexes.smart?.[platform], indexes.support?.[platform]].forEach((map) => {
+      (map ? [...map.values()].flat() : []).forEach((row) => {
+        const token = skuPlanFactArticleToken(row);
+        if (!token || token === '0' || seen.has(token)) return;
+        seen.add(token);
+        const article = row.articleKey || row.article || row.sku || token;
+        const owner = row.owner || row.ownerName || row.responsible || '';
+        const ownerKey = skuPlanFactOwnerKey(platform);
+        synthetic.push({
+          articleKey: article,
+          article,
+          name: row.name || row.productName || row.offerName || article,
+          owner: { name: owner },
+          ownersByPlatform: owner ? { [ownerKey]: owner } : {},
+          flags: {},
+          syntheticMarketplaceSku: true
+        });
+      });
+    });
+  });
+  return synthetic;
+}
+
 function skuPlanFactDefaultSortDir(sort = '') {
-  return ['fact', 'plan', 'drr', 'wb', 'ozon', 'avgCheck', 'ad'].includes(sort) ? 'desc' : 'asc';
+  return ['fact', 'plan', 'drr', 'avgCheck', 'ad', ...SKU_PLAN_FACT_PLATFORMS].includes(sort) ? 'desc' : 'asc';
 }
 
 function skuPlanFactSortValue(row, sort = '') {
@@ -384,11 +467,10 @@ function skuPlanFactSortValue(row, sort = '') {
   if (sort === 'fact') return row.factRevenue;
   if (sort === 'plan') return row.planRevenue;
   if (sort === 'drr') return row.drr;
-  if (sort === 'wb') return row.wb?.factRevenue;
-  if (sort === 'ozon') return row.ozon?.factRevenue;
+  if (SKU_PLAN_FACT_PLATFORMS.includes(sort)) return row.platforms?.[sort]?.factRevenue ?? row?.[sort]?.factRevenue;
   if (sort === 'avgCheck') return row.factUnits > 0 ? row.factRevenue / row.factUnits : null;
   if (sort === 'turnover') {
-    const values = [row.wb?.turnoverDays, row.ozon?.turnoverDays].filter((value) => Number.isFinite(Number(value)));
+    const values = SKU_PLAN_FACT_PLATFORMS.map((platform) => row.platforms?.[platform]?.turnoverDays).filter((value) => Number.isFinite(Number(value)));
     return values.length ? values.reduce((sum, value) => sum + Number(value), 0) / values.length : null;
   }
   if (sort === 'ad') return row.adSpend;
@@ -428,7 +510,8 @@ function skuPlanFactBuildModel() {
   const selectedDate = skuPlanFactSelectedDate(indexes, monthKey, maxAvailableDate);
   const elapsedDays = skuPlanFactElapsedDays(monthKey, selectedDate);
   const adIndex = skuPlanFactAdIndex(monthKey, selectedDate);
-  const rows = (state.skus || []).map((sku) => skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, selectedDate));
+  const skuRows = [...(state.skus || []), ...skuPlanFactSyntheticSkus(indexes)];
+  const rows = skuRows.map((sku) => skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, selectedDate));
   const owners = [...new Set(rows.map((row) => row.owner).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
   const search = String(filters.search || '').trim().toLowerCase();
   const filteredRows = rows.filter((row) => {
@@ -437,8 +520,10 @@ function skuPlanFactBuildModel() {
     if (filters.status === 'with_plan' && row.planRevenue <= 0) return false;
     if (filters.status === 'under_plan' && !(row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue)) return false;
     if (filters.status === 'no_fact' && !(row.planRevenue > 0 && row.factRevenue <= 0)) return false;
-    if (filters.platform === 'wb' && !(row.wb.planRevenue > 0 || row.wb.factRevenue > 0 || row.wb.adSpend > 0)) return false;
-    if (filters.platform === 'ozon' && !(row.ozon.planRevenue > 0 || row.ozon.factRevenue > 0 || row.ozon.adSpend > 0)) return false;
+    if (filters.platform !== 'all') {
+      const metric = row.platforms?.[skuPlanFactCanonicalPlatform(filters.platform)];
+      if (!(metric?.planRevenue > 0 || metric?.factRevenue > 0 || metric?.adSpend > 0)) return false;
+    }
     if (!search) return true;
     return [row.articleKey, row.article, row.name, row.owner, row.status]
       .filter(Boolean)
@@ -479,7 +564,11 @@ function skuPlanFactBuildModel() {
     owners,
     totals,
     planDrrWb: Number.isFinite(Number(state.iuDrrSummary?.planPctDefault)) ? Number(state.iuDrrSummary.planPctDefault) : 0.08,
-    planDrrOzon: Number.isFinite(Number(state.iuDrrSummary?.ozonPlanPctDefault)) ? Number(state.iuDrrSummary.ozonPlanPctDefault) : 0.25
+    planDrrOzon: Number.isFinite(Number(state.iuDrrSummary?.ozonPlanPctDefault)) ? Number(state.iuDrrSummary.ozonPlanPctDefault) : 0.25,
+    planDrrByPlatform: {
+      wb: Number.isFinite(Number(state.iuDrrSummary?.planPctDefault)) ? Number(state.iuDrrSummary.planPctDefault) : 0.08,
+      ozon: Number.isFinite(Number(state.iuDrrSummary?.ozonPlanPctDefault)) ? Number(state.iuDrrSummary.ozonPlanPctDefault) : 0.25
+    }
   };
 }
 
@@ -507,6 +596,7 @@ function skuPlanFactMetricHtml(label, value, hint = '', tone = '') {
 }
 
 function skuPlanFactPlatformCell(metric, planDrr = null) {
+  metric = metric || {};
   const drrTone = metric.drr !== null && planDrr !== null && metric.drr > planDrr ? 'danger-text' : '';
   return `
     <div><strong>${fmt.money(metric.factRevenue)}</strong> <span class="muted small">/ ${fmt.money(metric.planToDateRevenue)}</span></div>
@@ -520,28 +610,35 @@ function skuPlanFactPlatformCell(metric, planDrr = null) {
 
 function skuPlanFactRowHtml(row, model) {
   const totalTone = skuPlanFactTone(row.completionToDate);
+  const platformCells = SKU_PLAN_FACT_PLATFORMS
+    .map((platform) => skuPlanFactPlatformCell(row.platforms?.[platform] || row?.[platform] || {}, model.planDrrByPlatform?.[platform] ?? null))
+    .map((cell) => `<td>${cell}</td>`)
+    .join('');
   return `
     <tr class="sku-plan-fact-row" data-open-sku="${escapeHtml(row.articleKey)}">
       <td>${linkToSku(row.articleKey, row.article || row.articleKey)}<div class="muted small">${escapeHtml(row.name)}</div></td>
       <td><strong>${escapeHtml(row.owner)}</strong><div class="muted small">${escapeHtml(row.status)}</div></td>
-      <td>${skuPlanFactPlatformCell(row.wb, model.planDrrWb)}</td>
-      <td>${skuPlanFactPlatformCell(row.ozon, model.planDrrOzon)}</td>
+      ${platformCells}
       <td>
         <strong>${fmt.money(row.factRevenue)}</strong>
         <div class="muted small">план к дате ${fmt.money(row.planToDateRevenue)}</div>
         <div class="badge-stack" style="margin-top:6px">${badge(fmt.pct(row.completionToDate), totalTone)}<span class="chip ${row.gapToDate < 0 ? 'danger' : 'ok'}">${fmt.money(row.gapToDate)}</span></div>
       </td>
       <td>
-        <div>WB: <strong>${fmt.money(row.wb.factAvgCheck)}</strong> <span class="muted small">план ${fmt.money(row.wb.planAvgCheck)}</span></div>
-        <div>Ozon: <strong>${fmt.money(row.ozon.factAvgCheck)}</strong> <span class="muted small">план ${fmt.money(row.ozon.planAvgCheck)}</span></div>
+        ${SKU_PLAN_FACT_PLATFORMS.map((platform) => {
+          const metric = row.platforms?.[platform] || {};
+          return `<div>${escapeHtml(SKU_PLAN_FACT_PLATFORM_LABELS[platform] || platform)}: <strong>${fmt.money(metric.factAvgCheck)}</strong> <span class="muted small">план ${fmt.money(metric.planAvgCheck)}</span></div>`;
+        }).join('')}
       </td>
       <td>
-        <div>WB: <strong>${fmt.num(row.wb.turnoverDays, 1)}</strong> дн. <span class="muted small">${fmt.int(row.wb.stock)} шт.</span></div>
-        <div>Ozon: <strong>${fmt.num(row.ozon.turnoverDays, 1)}</strong> дн. <span class="muted small">${fmt.int(row.ozon.stock)} шт.</span></div>
+        ${SKU_PLAN_FACT_PLATFORMS.map((platform) => {
+          const metric = row.platforms?.[platform] || {};
+          return `<div>${escapeHtml(SKU_PLAN_FACT_PLATFORM_LABELS[platform] || platform)}: <strong>${fmt.num(metric.turnoverDays, 1)}</strong> дн. <span class="muted small">${fmt.int(metric.stock)} шт.</span></div>`;
+        }).join('')}
       </td>
       <td>
         <strong>${fmt.money(row.adSpend)}</strong>
-        <div class="muted small">WB ${fmt.money(row.wb.adSpend)} · Ozon ${fmt.money(row.ozon.adSpend)}</div>
+        <div class="muted small">${SKU_PLAN_FACT_PLATFORMS.map((platform) => `${escapeHtml(SKU_PLAN_FACT_PLATFORM_LABELS[platform] || platform)} ${fmt.money(row.platforms?.[platform]?.adSpend || 0)}`).join(' · ')}</div>
         <div class="${row.drr !== null && row.drr > model.planDrrWb ? 'danger-text' : ''}">ДРР total ${fmt.pct(row.drr)}</div>
       </td>
     </tr>
@@ -549,45 +646,41 @@ function skuPlanFactRowHtml(row, model) {
 }
 
 function skuPlanFactExportRows(rows, model) {
-  return rows.map((row) => ({
-    month: model.monthKey,
-    fact_to: model.maxFactDate,
-    article_key: row.articleKey,
-    article: row.article,
-    name: row.name,
-    owner: row.owner,
-    status: row.status,
-    plan_wb_revenue: Math.round(row.wb.planRevenue),
-    plan_wb_to_date_revenue: Math.round(row.wb.planToDateRevenue),
-    fact_wb_revenue: Math.round(row.wb.factRevenue),
-    plan_wb_units: Math.round(row.wb.planUnits),
-    fact_wb_units: Math.round(row.wb.factUnits),
-    completion_wb_to_date_pct: row.wb.completionToDate === null ? '' : row.wb.completionToDate,
-    avg_check_wb_fact: row.wb.factAvgCheck === null ? '' : Math.round(row.wb.factAvgCheck),
-    avg_check_wb_plan: row.wb.planAvgCheck === null ? '' : Math.round(row.wb.planAvgCheck),
-    drr_wb: row.wb.drr === null ? '' : row.wb.drr,
-    ad_spend_wb: Math.round(row.wb.adSpend),
-    turnover_wb_days: row.wb.turnoverDays === null ? '' : row.wb.turnoverDays,
-    stock_wb: row.wb.stock === null ? '' : Math.round(row.wb.stock),
-    plan_ozon_revenue: Math.round(row.ozon.planRevenue),
-    plan_ozon_to_date_revenue: Math.round(row.ozon.planToDateRevenue),
-    fact_ozon_revenue: Math.round(row.ozon.factRevenue),
-    plan_ozon_units: Math.round(row.ozon.planUnits),
-    fact_ozon_units: Math.round(row.ozon.factUnits),
-    completion_ozon_to_date_pct: row.ozon.completionToDate === null ? '' : row.ozon.completionToDate,
-    avg_check_ozon_fact: row.ozon.factAvgCheck === null ? '' : Math.round(row.ozon.factAvgCheck),
-    avg_check_ozon_plan: row.ozon.planAvgCheck === null ? '' : Math.round(row.ozon.planAvgCheck),
-    drr_ozon: row.ozon.drr === null ? '' : row.ozon.drr,
-    ad_spend_ozon: Math.round(row.ozon.adSpend),
-    turnover_ozon_days: row.ozon.turnoverDays === null ? '' : row.ozon.turnoverDays,
-    stock_ozon: row.ozon.stock === null ? '' : Math.round(row.ozon.stock),
-    plan_total_revenue: Math.round(row.planRevenue),
-    plan_total_to_date_revenue: Math.round(row.planToDateRevenue),
-    fact_total_revenue: Math.round(row.factRevenue),
-    completion_total_to_date_pct: row.completionToDate === null ? '' : row.completionToDate,
-    gap_total_to_date: Math.round(row.gapToDate),
-    drr_total: row.drr === null ? '' : row.drr
-  }));
+  return rows.map((row) => {
+    const exportRow = {
+      month: model.monthKey,
+      fact_to: model.maxFactDate,
+      article_key: row.articleKey,
+      article: row.article,
+      name: row.name,
+      owner: row.owner,
+      status: row.status
+    };
+    SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
+      const metric = row.platforms?.[platform] || row?.[platform] || {};
+      exportRow[`plan_${platform}_revenue`] = Math.round(metric.planRevenue || 0);
+      exportRow[`plan_${platform}_to_date_revenue`] = Math.round(metric.planToDateRevenue || 0);
+      exportRow[`fact_${platform}_revenue`] = Math.round(metric.factRevenue || 0);
+      exportRow[`plan_${platform}_units`] = Math.round(metric.planUnits || 0);
+      exportRow[`fact_${platform}_units`] = Math.round(metric.factUnits || 0);
+      exportRow[`completion_${platform}_to_date_pct`] = metric.completionToDate === null || metric.completionToDate === undefined ? '' : metric.completionToDate;
+      exportRow[`avg_check_${platform}_fact`] = metric.factAvgCheck === null || metric.factAvgCheck === undefined ? '' : Math.round(metric.factAvgCheck);
+      exportRow[`avg_check_${platform}_plan`] = metric.planAvgCheck === null || metric.planAvgCheck === undefined ? '' : Math.round(metric.planAvgCheck);
+      exportRow[`drr_${platform}`] = metric.drr === null || metric.drr === undefined ? '' : metric.drr;
+      exportRow[`ad_spend_${platform}`] = Math.round(metric.adSpend || 0);
+      exportRow[`turnover_${platform}_days`] = metric.turnoverDays === null || metric.turnoverDays === undefined ? '' : metric.turnoverDays;
+      exportRow[`stock_${platform}`] = metric.stock === null || metric.stock === undefined ? '' : Math.round(metric.stock || 0);
+    });
+    return {
+      ...exportRow,
+      plan_total_revenue: Math.round(row.planRevenue),
+      plan_total_to_date_revenue: Math.round(row.planToDateRevenue),
+      fact_total_revenue: Math.round(row.factRevenue),
+      completion_total_to_date_pct: row.completionToDate === null ? '' : row.completionToDate,
+      gap_total_to_date: Math.round(row.gapToDate),
+      drr_total: row.drr === null ? '' : row.drr
+    };
+  });
 }
 
 function downloadSkuPlanFactExcel(model) {
@@ -595,6 +688,23 @@ function downloadSkuPlanFactExcel(model) {
     window.alert('По текущим фильтрам нет строк для выгрузки.');
     return;
   }
+  const platformColumns = SKU_PLAN_FACT_PLATFORMS.flatMap((platform) => {
+    const label = SKU_PLAN_FACT_PLATFORM_LABELS[platform] || platform;
+    return [
+      [`plan_${platform}_revenue`, `План ${label}, ₽`],
+      [`plan_${platform}_to_date_revenue`, `План ${label} к дате, ₽`],
+      [`fact_${platform}_revenue`, `Факт ${label}, ₽`],
+      [`plan_${platform}_units`, `План ${label}, шт`],
+      [`fact_${platform}_units`, `Факт ${label}, шт`],
+      [`completion_${platform}_to_date_pct`, `Выполнение ${label} к дате, %`],
+      [`avg_check_${platform}_fact`, `Средний чек ${label} факт`],
+      [`avg_check_${platform}_plan`, `Средний чек ${label} план`],
+      [`drr_${platform}`, `ДРР ${label}`],
+      [`ad_spend_${platform}`, `Реклама ${label}, ₽`],
+      [`turnover_${platform}_days`, `Оборачиваемость ${label}, дн`],
+      [`stock_${platform}`, `Остаток ${label}`]
+    ];
+  });
   downloadLaunchesHtmlTable([
     ['month', 'Месяц'],
     ['fact_to', 'Факт по дату'],
@@ -603,30 +713,7 @@ function downloadSkuPlanFactExcel(model) {
     ['name', 'Товар'],
     ['owner', 'Owner'],
     ['status', 'Статус'],
-    ['plan_wb_revenue', 'План WB, ₽'],
-    ['plan_wb_to_date_revenue', 'План WB к дате, ₽'],
-    ['fact_wb_revenue', 'Факт WB, ₽'],
-    ['plan_wb_units', 'План WB, шт'],
-    ['fact_wb_units', 'Факт WB, шт'],
-    ['completion_wb_to_date_pct', 'Выполнение WB к дате, %'],
-    ['avg_check_wb_fact', 'Средний чек WB факт'],
-    ['avg_check_wb_plan', 'Средний чек WB план'],
-    ['drr_wb', 'ДРР WB'],
-    ['ad_spend_wb', 'Реклама WB, ₽'],
-    ['turnover_wb_days', 'Оборачиваемость WB, дн'],
-    ['stock_wb', 'Остаток WB'],
-    ['plan_ozon_revenue', 'План Ozon, ₽'],
-    ['plan_ozon_to_date_revenue', 'План Ozon к дате, ₽'],
-    ['fact_ozon_revenue', 'Факт Ozon, ₽'],
-    ['plan_ozon_units', 'План Ozon, шт'],
-    ['fact_ozon_units', 'Факт Ozon, шт'],
-    ['completion_ozon_to_date_pct', 'Выполнение Ozon к дате, %'],
-    ['avg_check_ozon_fact', 'Средний чек Ozon факт'],
-    ['avg_check_ozon_plan', 'Средний чек Ozon план'],
-    ['drr_ozon', 'ДРР Ozon'],
-    ['ad_spend_ozon', 'Реклама Ozon, ₽'],
-    ['turnover_ozon_days', 'Оборачиваемость Ozon, дн'],
-    ['stock_ozon', 'Остаток Ozon'],
+    ...platformColumns,
     ['plan_total_revenue', 'План всего, ₽'],
     ['plan_total_to_date_revenue', 'План всего к дате, ₽'],
     ['fact_total_revenue', 'Факт всего, ₽'],
@@ -741,15 +828,26 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
     model.dateMin ? `min="${escapeHtml(model.dateMin)}"` : '',
     model.dateMax ? `max="${escapeHtml(model.dateMax)}"` : ''
   ].filter(Boolean).join(' ');
+  const platformColumnCount = SKU_PLAN_FACT_PLATFORMS.length + 6;
+  const platformOptionsHtml = [
+    `<option value="all" ${filters.platform === 'all' ? 'selected' : ''}>Все площадки</option>`,
+    ...SKU_PLAN_FACT_PLATFORMS.map((platform) => `<option value="${platform}" ${filters.platform === platform ? 'selected' : ''}>${escapeHtml(SKU_PLAN_FACT_PLATFORM_LABELS[platform] || platform)}</option>`)
+  ].join('');
+  const platformSortOptionsHtml = SKU_PLAN_FACT_PLATFORMS
+    .map((platform) => `<option value="${platform}" ${filters.sort === platform ? 'selected' : ''}>Сортировка: ${escapeHtml(SKU_PLAN_FACT_PLATFORM_LABELS[platform] || platform)} факт</option>`)
+    .join('');
+  const platformHeadersHtml = SKU_PLAN_FACT_PLATFORMS
+    .map((platform) => skuPlanFactSortHeader(platform, `${SKU_PLAN_FACT_PLATFORM_LABELS[platform] || platform} факт / план`))
+    .join('');
   const rowsHtml = model.rows.length
     ? model.rows.map((row) => skuPlanFactRowHtml(row, model)).join('')
-    : '<tr><td colspan="8"><div class="empty">По текущим фильтрам нет SKU.</div></td></tr>';
+    : `<tr><td colspan="${platformColumnCount}"><div class="empty">По текущим фильтрам нет SKU.</div></td></tr>`;
 
   root.innerHTML = `
     <div class="section-title">
       <div>
         <h2>План-факт SKU</h2>
-        <p>Все позиции в одном разрезе: план, факт, средний чек WB/Ozon, оборачиваемость, реклама и ДРР.</p>
+        <p>Все позиции в одном разрезе: план, факт, средний чек по подключенным площадкам, оборачиваемость, реклама и ДРР.</p>
       </div>
       <div class="badge-stack">
         ${badge(`${fmt.int(model.rows.length)} SKU`, 'info')}
@@ -770,7 +868,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
       <div class="section-subhead">
         <div>
           <h3>Таблица по позициям</h3>
-          <p class="small muted">План берём из ценового планового слоя, факт WB/Ozon из ежедневного marketplace-среза, рекламу из API/таблицы рекламы.</p>
+          <p class="small muted">План берём из ценового планового слоя, факт из ежедневного marketplace-среза, рекламу из API/таблицы рекламы.</p>
         </div>
         <div class="badge-stack">
           <button class="quick-chip" type="button" data-sku-plan-fact-refresh>Обновить данные</button>
@@ -792,9 +890,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
           <option value="no_fact" ${filters.status === 'no_fact' ? 'selected' : ''}>План есть, факта нет</option>
         </select>
         <select id="skuPlanFactPlatform">
-          <option value="all" ${filters.platform === 'all' ? 'selected' : ''}>WB + Ozon</option>
-          <option value="wb" ${filters.platform === 'wb' ? 'selected' : ''}>Только WB</option>
-          <option value="ozon" ${filters.platform === 'ozon' ? 'selected' : ''}>Только Ozon</option>
+          ${platformOptionsHtml}
         </select>
         <select id="skuPlanFactSort">
           <option value="gap" ${filters.sort === 'gap' ? 'selected' : ''}>Сортировка: провал к плану</option>
@@ -802,8 +898,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
           <option value="fact" ${filters.sort === 'fact' ? 'selected' : ''}>Сортировка: факт оборота</option>
           <option value="plan" ${filters.sort === 'plan' ? 'selected' : ''}>Сортировка: план</option>
           <option value="drr" ${filters.sort === 'drr' ? 'selected' : ''}>Сортировка: ДРР</option>
-          <option value="wb" ${filters.sort === 'wb' ? 'selected' : ''}>Сортировка: WB факт</option>
-          <option value="ozon" ${filters.sort === 'ozon' ? 'selected' : ''}>Сортировка: Ozon факт</option>
+          ${platformSortOptionsHtml}
           <option value="avgCheck" ${filters.sort === 'avgCheck' ? 'selected' : ''}>Сортировка: средний чек</option>
           <option value="turnover" ${filters.sort === 'turnover' ? 'selected' : ''}>Сортировка: оборачиваемость</option>
           <option value="ad" ${filters.sort === 'ad' ? 'selected' : ''}>Сортировка: реклама</option>
@@ -817,8 +912,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
             <tr>
               ${skuPlanFactSortHeader('article', 'SKU')}
               ${skuPlanFactSortHeader('owner', 'Owner')}
-              ${skuPlanFactSortHeader('wb', 'WB факт / план')}
-              ${skuPlanFactSortHeader('ozon', 'Ozon факт / план')}
+              ${platformHeadersHtml}
               ${skuPlanFactSortHeader('gap', 'Итого')}
               ${skuPlanFactSortHeader('avgCheck', 'Средний чек')}
               ${skuPlanFactSortHeader('turnover', 'Оборачиваемость')}

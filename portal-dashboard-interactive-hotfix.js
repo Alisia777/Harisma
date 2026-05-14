@@ -5566,6 +5566,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260513market4';
 
   function dashboardControlPlatformKey(platformKey) {
     const key = canonicalDashboardPlatformKey(platformKey);
+    if (['ya', 'goldapple', 'letu', 'magnit', 'wb', 'ozon', 'all'].includes(key)) return key;
     return 'all';
   }
 

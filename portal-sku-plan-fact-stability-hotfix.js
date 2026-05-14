@@ -3,7 +3,8 @@
   window.__ALTEA_SKU_PLAN_FACT_STABILITY_20260508B__ = true;
 
   const ROOT_ID = 'view-sku-plan-fact';
-  const SORT_KEYS = ['article', 'owner', 'wb', 'ozon', 'gap', 'avgCheck', 'turnover', 'ad'];
+  const BASE_SORT_KEYS = ['article', 'owner'];
+  const TAIL_SORT_KEYS = ['gap', 'avgCheck', 'turnover', 'ad'];
   let baseRenderSkuPlanFact = null;
   let baseRerenderCurrentView = null;
   let searchTimer = 0;
@@ -48,7 +49,21 @@
   }
 
   function defaultSortDir(sort) {
-    return ['fact', 'plan', 'drr', 'wb', 'ozon', 'avgCheck', 'ad'].includes(sort) ? 'desc' : 'asc';
+    return ['fact', 'plan', 'drr', 'avgCheck', 'ad', ...planFactPlatforms()].includes(sort) ? 'desc' : 'asc';
+  }
+
+  function planFactPlatforms() {
+    return Array.isArray(window.SKU_PLAN_FACT_PLATFORMS) && window.SKU_PLAN_FACT_PLATFORMS.length
+      ? window.SKU_PLAN_FACT_PLATFORMS
+      : ['wb', 'ozon'];
+  }
+
+  function planFactPlatformLabels() {
+    return window.SKU_PLAN_FACT_PLATFORM_LABELS || { wb: 'WB', ozon: 'Ozon' };
+  }
+
+  function sortKeys() {
+    return [...BASE_SORT_KEYS, ...planFactPlatforms(), ...TAIL_SORT_KEYS];
   }
 
   function latestDateFromModel(model) {
@@ -77,11 +92,10 @@
     if (key === 'fact') return row.factRevenue;
     if (key === 'plan') return row.planRevenue;
     if (key === 'drr') return row.drr;
-    if (key === 'wb') return row.wb?.factRevenue;
-    if (key === 'ozon') return row.ozon?.factRevenue;
+    if (planFactPlatforms().includes(key)) return row.platforms?.[key]?.factRevenue ?? row?.[key]?.factRevenue;
     if (key === 'avgCheck') return row.factUnits > 0 ? row.factRevenue / row.factUnits : null;
     if (key === 'turnover') {
-      const values = [row.wb?.turnoverDays, row.ozon?.turnoverDays].filter((value) => Number.isFinite(Number(value)));
+      const values = planFactPlatforms().map((platform) => row.platforms?.[platform]?.turnoverDays).filter((value) => Number.isFinite(Number(value)));
       return values.length ? values.reduce((sum, value) => sum + Number(value), 0) / values.length : null;
     }
     if (key === 'ad') return row.adSpend;
@@ -149,7 +163,7 @@
     if (body && typeof skuPlanFactRowHtml === 'function') {
       body.innerHTML = rows.length
         ? rows.map((row) => skuPlanFactRowHtml(row, model)).join('')
-        : '<tr><td colspan="8"><div class="empty">По текущим фильтрам нет SKU.</div></td></tr>';
+        : `<tr><td colspan="${planFactPlatforms().length + 6}"><div class="empty">По текущим фильтрам нет SKU.</div></td></tr>`;
     }
 
     const cards = host.querySelector('.grid.cards');
@@ -257,9 +271,19 @@
   }
 
   function ensureSortHeaders(host) {
-    const labels = ['SKU', 'Owner', 'WB факт / план', 'Ozon факт / план', 'Итого', 'Средний чек', 'Оборачиваемость', 'Реклама / ДРР'];
+    const platformLabels = planFactPlatformLabels();
+    const keys = sortKeys();
+    const labels = [
+      'SKU',
+      'Owner',
+      ...planFactPlatforms().map((platform) => `${platformLabels[platform] || platform} факт / план`),
+      'Итого',
+      'Средний чек',
+      'Оборачиваемость',
+      'Реклама / ДРР'
+    ];
     host.querySelectorAll('.sku-plan-fact-table thead th').forEach((th, index) => {
-      const key = SORT_KEYS[index];
+      const key = keys[index];
       if (!key || th.querySelector('[data-sku-stable-sort]')) return;
       th.innerHTML = `<button class="table-sort-btn" type="button" data-sku-stable-sort="${key}"><span>${labels[index]}</span><span class="sort-mark"></span></button>`;
     });

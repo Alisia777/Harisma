@@ -253,7 +253,7 @@ const CONTROL_WORKSTREAM_META = {
   },
   retail: {
     label: 'ЯМ / Летуаль / Магнит / ЗЯ',
-    chip: 'ЯМ / сети',
+    chip: 'Сети',
     description: 'Яндекс Маркет, Летуаль, Магнит и Золотое Яблоко одним РОПом.',
     kind: 'ok'
   },

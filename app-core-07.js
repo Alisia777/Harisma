@@ -824,9 +824,11 @@ function launchMarketplaceLabelsFromSku(sku) {
   const labels = [];
   if (sku?.flags?.hasWB) labels.push('WB');
   if (sku?.flags?.hasOzon) labels.push('Ozon');
-  if (sku?.ownersByPlatform?.ym) labels.push('Я.Маркет');
-  if (sku?.ownersByPlatform?.letu) labels.push('Летуаль');
-  if (sku?.ownersByPlatform?.ga) labels.push('ЗЯ');
+  const platformOwners = sku?.ownersByPlatform || sku?.owner?.byPlatform || {};
+  if (platformOwners?.ym || platformOwners?.ya) labels.push('Я.Маркет');
+  if (platformOwners?.mm || platformOwners?.magnit) labels.push('Магнит');
+  if (platformOwners?.letu || platformOwners?.letual) labels.push('Летуаль');
+  if (platformOwners?.ga || platformOwners?.goldapple || platformOwners?.goldenapple) labels.push('ЗЯ');
   return [...new Set(labels)].join(', ');
 }
 
@@ -2322,6 +2324,9 @@ function adsFunnelNormalizePlatformKey(value = '') {
   if (['wb', 'wildberries', 'вб'].includes(raw)) return 'wb';
   if (['ozon', 'озон'].includes(raw)) return 'ozon';
   if (['ya', 'yam', 'yandex', 'yandex_market', 'yandexmarket', 'ya_market', 'ям', 'я.маркет', 'яндекс'].includes(raw)) return 'ya';
+  if (['mm', 'magnit', 'magnit_market', 'magnitmarket', 'магнит', 'магнит маркет'].includes(raw)) return 'magnit';
+  if (['letu', 'letual', 'летуаль', 'лэтуаль'].includes(raw)) return 'letu';
+  if (['ga', 'zya', 'goldapple', 'goldenapple', 'golden_apple', 'золотое яблоко', 'золотое', 'зя'].includes(raw)) return 'goldapple';
   if (['all', 'total', 'overall', 'итого'].includes(raw)) return 'all';
   return raw;
 }
@@ -2332,7 +2337,10 @@ function adsFunnelPlatformLabel(platformKey = 'all') {
     all: 'Все площадки',
     wb: 'WB',
     ozon: 'Ozon',
-    ya: 'Я.Маркет'
+    ya: 'Я.Маркет',
+    magnit: 'Магнит',
+    letu: 'Летуаль',
+    goldapple: 'ЗЯ'
   };
   return map[key] || key.toUpperCase();
 }

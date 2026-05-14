@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-14T13:26:39.635Z",
+  "generatedAt": "2026-05-14T21:12:59.710Z",
   "asOfDate": "2026-05-13",
   "source": {
     "iuPlanGeneratedAt": "2026-05-13T08:43:54.749Z",
@@ -156,6 +156,64 @@
       }
     },
     "reviewPointsFeedbacks": 348
+  },
+  "wbQuarter": {
+    "status": "ok",
+    "from": "2026-03-01",
+    "to": "2026-05-13",
+    "label": "01.03–13.05",
+    "days": 74,
+    "targetRevenueWb": 367708157.86,
+    "revenueWb": 302539302,
+    "ordersRevenueWb": 360256894,
+    "revenueDelta": -65168855.86,
+    "revenueDeltaPct": -0.17723,
+    "revenueCompletionPct": 0.82277,
+    "planPct": 0.08,
+    "planSpendWb": 24203144.16,
+    "spendFact": 21051826.54,
+    "factPct": 0.069584,
+    "ordersAdPct": 0.058436,
+    "spendDelta": -3151317.62,
+    "spendDeltaPct": -0.130203,
+    "source": {
+      "reportPath": "C:\\Users\\artiu\\Downloads\\report 2026-5-13.xlsx",
+      "drrPath": "C:\\Users\\artiu\\Downloads\\Telegram Desktop\\ДРР ВБ.xlsx",
+      "reportRows": 74,
+      "drrRows": 61,
+      "mergedRows": 74
+    },
+    "sourceLabel": "report 2026-5-13.xlsx + ДРР ВБ.xlsx + iu_drr_summary.json",
+    "sourceWarnings": []
+  },
+  "quarterSummary": {
+    "status": "ok",
+    "from": "2026-03-01",
+    "to": "2026-05-13",
+    "label": "01.03–13.05",
+    "days": 74,
+    "targetRevenueWb": 367708157.86,
+    "revenueWb": 302539302,
+    "ordersRevenueWb": 360256894,
+    "revenueDelta": -65168855.86,
+    "revenueDeltaPct": -0.17723,
+    "revenueCompletionPct": 0.82277,
+    "planPct": 0.08,
+    "planSpendWb": 24203144.16,
+    "spendFact": 21051826.54,
+    "factPct": 0.069584,
+    "ordersAdPct": 0.058436,
+    "spendDelta": -3151317.62,
+    "spendDeltaPct": -0.130203,
+    "source": {
+      "reportPath": "C:\\Users\\artiu\\Downloads\\report 2026-5-13.xlsx",
+      "drrPath": "C:\\Users\\artiu\\Downloads\\Telegram Desktop\\ДРР ВБ.xlsx",
+      "reportRows": 74,
+      "drrRows": 61,
+      "mergedRows": 74
+    },
+    "sourceLabel": "report 2026-5-13.xlsx + ДРР ВБ.xlsx + iu_drr_summary.json",
+    "sourceWarnings": []
   },
   "contractPeriods": [
     {
@@ -1989,6 +2047,7 @@
       "Review points are filled from WB Feedbacks API supplierFeedbackValuation when present.",
       "WB contract logic: factual turnover is sales minus returns, without WB deductions; it maps to revenueWb / finance turnover.",
       "WB marketing plan is 8% of factual turnover. ordersRevenueWb is retained as a report-control field, not as the contract DRR denominator.",
+      "WB quarter summary combines report workbook sales/orders with March-April DRR rows and the current May daily IU/DRR layer. DRR by contract uses sales/buyouts; the control advertising percentage uses orders revenue.",
       "ИУ по обороту в workbook сверяется по WB; Ozon ведётся отдельным контуром.",
       "ДРР и каналы рекламы считаются по WB.",
       "Каналы без источника показываются нулем до подключения отдельного источника."

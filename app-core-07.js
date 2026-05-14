@@ -2895,6 +2895,35 @@ function renderAdsFunnel(rootId = 'view-ads-funnel') {
   });
 }
 
+function normalizeIuQuarterSummaryPayload(quarter = {}) {
+  return quarter && typeof quarter === 'object'
+    ? {
+        ...quarter,
+        status: String(quarter.status || ''),
+        from: String(quarter.from || '').slice(0, 10),
+        to: String(quarter.to || '').slice(0, 10),
+        label: String(quarter.label || ''),
+        days: Math.round(numberOrZero(quarter.days)),
+        targetRevenueWb: numberOrZero(quarter.targetRevenueWb),
+        revenueWb: numberOrZero(quarter.revenueWb),
+        ordersRevenueWb: numberOrZero(quarter.ordersRevenueWb),
+        revenueDelta: numberOrZero(quarter.revenueDelta),
+        revenueDeltaPct: Number.isFinite(Number(quarter.revenueDeltaPct)) ? Number(quarter.revenueDeltaPct) : null,
+        revenueCompletionPct: Number.isFinite(Number(quarter.revenueCompletionPct)) ? Number(quarter.revenueCompletionPct) : null,
+        planPct: Number.isFinite(Number(quarter.planPct)) ? Number(quarter.planPct) : 0,
+        planSpendWb: numberOrZero(quarter.planSpendWb),
+        spendFact: numberOrZero(quarter.spendFact),
+        factPct: Number.isFinite(Number(quarter.factPct)) ? Number(quarter.factPct) : null,
+        ordersAdPct: Number.isFinite(Number(quarter.ordersAdPct)) ? Number(quarter.ordersAdPct) : null,
+        spendDelta: numberOrZero(quarter.spendDelta),
+        spendDeltaPct: Number.isFinite(Number(quarter.spendDeltaPct)) ? Number(quarter.spendDeltaPct) : null,
+        source: quarter.source || {},
+        sourceLabel: String(quarter.sourceLabel || ''),
+        sourceWarnings: Array.isArray(quarter.sourceWarnings) ? quarter.sourceWarnings : []
+      }
+    : {};
+}
+
 function normalizeIuDrrSummaryPayload(payload = {}) {
   const daily = Array.isArray(payload.daily) ? payload.daily.map((row) => ({
     ...row,
@@ -2948,6 +2977,7 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
   })).filter((row) => row.date) : [];
   const months = Array.isArray(payload.months) ? payload.months : [];
   const channels = Array.isArray(payload.channels) ? payload.channels : [];
+  const quarterSummary = normalizeIuQuarterSummaryPayload(payload.quarterSummary || payload.wbQuarter || {});
   return {
     ...payload,
     generatedAt: payload.generatedAt || '',
@@ -2955,6 +2985,8 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
     daily,
     months,
     channels,
+    quarterSummary,
+    wbQuarter: quarterSummary,
     diagnostics: payload.diagnostics || {}
   };
 }
@@ -2987,6 +3019,7 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
   const latestMonth = iuDrrLatestMonth(normalized);
   const selectedMonth = filters.month === 'latest' || !filters.month ? latestMonth : filters.month;
   const selectedPlatform = filters.platform === 'ozon' ? 'ozon' : 'wb';
+  const quarterSummary = normalized.quarterSummary || normalized.wbQuarter || {};
   const dailyRows = normalized.daily.filter((row) => row.monthKey === selectedMonth);
   const monthSummary = (normalized.months || []).find((month) => month.monthKey === selectedMonth) || {};
   const channelRows = (normalized.channels || []).map((channel) => ({
@@ -2999,6 +3032,7 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
     latestMonth,
     selectedMonth,
     selectedPlatform,
+    quarterSummary,
     monthOptions: iuDrrMonthOptions(normalized),
     dailyRows,
     monthSummary,
@@ -3639,6 +3673,39 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       <button class="quick-chip ${model.selectedPlatform === 'ozon' ? 'active' : ''}" type="button" data-iu-drr-platform="ozon" aria-pressed="${model.selectedPlatform === 'ozon'}">ОЗ</button>
     </div>
   `;
+  const quarter = model.quarterSummary || {};
+  const quarterAvailable = numberOrZero(quarter.days) > 0 || numberOrZero(quarter.revenueWb) > 0 || numberOrZero(quarter.spendFact) > 0;
+  const quarterCompletionTone = numberOrZero(quarter.revenueCompletionPct) >= 1 ? 'ok' : 'warn';
+  const quarterDrrTone = quarter.factPct != null && quarter.planPct != null && quarter.factPct <= quarter.planPct ? 'ok' : 'warn';
+  const quarterRevenueTone = iuDrrToneForRevenueDelta(quarter.revenueDelta);
+  const quarterSpendTone = iuDrrToneForDelta(quarter.spendDelta);
+  const quarterLabel = quarter.label || `${String(quarter.from || '').slice(8, 10)}.${String(quarter.from || '').slice(5, 7)}–${String(quarter.to || '').slice(8, 10)}.${String(quarter.to || '').slice(5, 7)}`;
+  const quarterSummaryHtml = quarterAvailable ? `
+    <div class="card subtle" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Накопительно с 01.03</h3>
+          <p class="small muted">Выручка считается по выкупам, ДРР по договору делим на выручку, а рекламный % для контроля делим на заказы.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(quarterLabel, 'info')}
+          ${badge(quarter.status === 'partial' ? 'частично' : 'готово', quarter.status === 'partial' ? 'warn' : 'ok')}
+          ${badge(`${fmt.int(quarter.days || 0)} дн.`, 'info')}
+          ${badge(`План ${fmt.money(quarter.planSpendWb)}`, 'info')}
+          ${badge(`Δ ${fmt.money(quarter.spendDelta)}`, quarterSpendTone)}
+        </div>
+      </div>
+      <div class="kpi-strip" style="margin-top:12px">
+        <div class="mini-kpi ${quarterRevenueTone}"><span>Целевой оборот</span><strong>${fmt.money(quarter.targetRevenueWb)}</strong><span>накопительно</span></div>
+        <div class="mini-kpi ${quarterRevenueTone}"><span>Факт выкупов</span><strong>${fmt.money(quarter.revenueWb)}</strong><span>выкупы / sales</span></div>
+        <div class="mini-kpi ${quarterCompletionTone}"><span>Выполнение</span><strong>${fmt.pct(quarter.revenueCompletionPct)}</strong><span>${fmt.money(quarter.revenueDelta)}</span></div>
+        <div class="mini-kpi ${quarterSpendTone}"><span>Рекламный расход</span><strong>${fmt.money(quarter.spendFact)}</strong><span>без Внешки</span></div>
+        <div class="mini-kpi ${quarterDrrTone}"><span>ДРР по договору</span><strong>${fmt.pct(quarter.factPct)}</strong><span>${fmt.money(quarter.planSpendWb)}</span></div>
+        <div class="mini-kpi ${quarterSpendTone}"><span>% рекламный от заказов</span><strong>${fmt.pct(quarter.ordersAdPct)}</strong><span>${fmt.money(quarter.ordersRevenueWb)}</span></div>
+      </div>
+      ${quarter.sourceLabel ? `<div class="muted small" style="margin-top:10px">${escapeHtml(quarter.sourceLabel)}</div>` : ''}
+    </div>
+  ` : '';
   const selectedKpisHtml = isOzonView ? `
     <div class="kpi-strip" style="margin-top:14px">
       <div class="mini-kpi ${platformIuTone}"><span>ИУ Ozon</span><strong>${fmt.pct(platformMeta.completion)}</strong><span>${fmt.money(platformMeta.fact)} / ${fmt.money(platformMeta.planToDate)}</span></div>
@@ -3836,6 +3903,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       ${isOzonView ? '' : '<button class="quick-chip" type="button" data-iu-drr-ads>Рекламная воронка</button>'}
     </div>
 
+    ${!isOzonView ? quarterSummaryHtml : ''}
     ${selectedKpisHtml}
     ${chartsHtml}
     ${channelRowsHtml}

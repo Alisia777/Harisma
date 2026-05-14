@@ -11,6 +11,9 @@
   const tasks = getSkuControlTasks(resolvedArticleKey);
   const activeTask = nextTaskForSku(resolvedArticleKey);
   const owners = ownerOptions();
+  const currentOwner = ownerName(sku);
+  const ownerSelectOptions = [...new Set([currentOwner, ...owners].filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'ru'));
   const completion = currentCompletionSnapshot(sku);
   const currentPlanUnits = firstFiniteValue(sku?.planFact?.planApr26Units);
   const currentFactUnits = firstFiniteValue(
@@ -106,10 +109,13 @@
           </div>
           <span class="owner-badge">${escapeHtml(ownerName(sku) || 'Не закреплён')}</span>
         </div>
-        <datalist id="skuOwnerList">${owners.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
         <form id="ownerForm" class="form-grid compact">
-          <input name="ownerName" list="skuOwnerList" placeholder="Кто owner" value="${escapeHtml(ownerName(sku) || '')}">
-          <input name="ownerRole" placeholder="Роль / зона" value="${escapeHtml(sku?.owner?.registryStatus || 'Owner SKU')}">
+          <select name="ownerName" aria-label="Кто owner">
+            <option value="" ${currentOwner ? '' : 'selected'}>Не закреплён</option>
+            ${ownerSelectOptions.map((name) => `<option value="${escapeHtml(name)}" ${currentOwner === name ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}
+          </select>
+          <input name="ownerNameCustom" autocomplete="off" spellcheck="false" placeholder="Другой owner (если нет в списке)">
+          <input name="ownerRole" autocomplete="off" spellcheck="false" placeholder="Роль / зона" value="${escapeHtml(sku?.owner?.name ? (sku?.owner?.registryStatus || 'Owner SKU') : (sku?.owner?.registryStatus || ''))}">
           <textarea name="note" rows="3" placeholder="Что важно по закреплению / передаче SKU"></textarea>
           <div class="quick-actions">
             <button class="btn" type="submit">Сохранить owner</button>
@@ -207,9 +213,10 @@
   body.querySelector('#ownerForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    const ownerNameCustom = String(form.get('ownerNameCustom') || '').trim();
     await upsertOwnerAssignment({
       articleKey: resolvedArticleKey,
-      ownerName: form.get('ownerName'),
+      ownerName: ownerNameCustom || form.get('ownerName'),
       ownerRole: form.get('ownerRole'),
       note: form.get('note')
     });

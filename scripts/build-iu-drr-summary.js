@@ -5,6 +5,19 @@ const path = require('path');
 
 const DEFAULT_PLAN_PCT = 0.08;
 const DEFAULT_OZON_PLAN_PCT = 0.25;
+const WB_CONTRACT = {
+  seller: 'ООО "СМАРТ-СЭЙЛ"',
+  source: '2_Соглашение_по_Программе_сотрудничества_2026_на_год_СМАРТ_01_03.docx',
+  salesPeriodStart: '2026-03-01',
+  salesPeriodEnd: '2026-12-31',
+  marketingRate: 0.08,
+  thresholdRate: 0.9,
+  stornoCancelRate: 0.98,
+  halfYears: [
+    { key: '2026-H1', from: '2026-01-01', to: '2026-06-30', targetRevenue: 899394278 },
+    { key: '2026-H2', from: '2026-07-01', to: '2026-12-31', targetRevenue: 2397395634 }
+  ]
+};
 const CHANNEL_KEYS = [
   ['wbPromotion', 'ВБ Продвижение'],
   ['wbMedia', 'ВБ Медиа'],
@@ -91,6 +104,61 @@ function enumerateDates(from, to) {
   return dates;
 }
 
+function daysInclusive(from, to) {
+  if (!from || !to || from > to) return 0;
+  const start = Date.parse(`${from}T00:00:00Z`);
+  const end = Date.parse(`${to}T00:00:00Z`);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return 0;
+  return Math.floor((end - start) / 86400000) + 1;
+}
+
+function maxDate(left, right) {
+  if (!left) return right || '';
+  if (!right) return left || '';
+  return left > right ? left : right;
+}
+
+function minDate(left, right) {
+  if (!left) return right || '';
+  if (!right) return left || '';
+  return left < right ? left : right;
+}
+
+function contractHalfYearForDate(dateKey) {
+  return WB_CONTRACT.halfYears.find((period) => dateKey >= period.from && dateKey <= period.to) || null;
+}
+
+function contractDailyTargetRevenueWb(dateKey) {
+  if (!dateKey || dateKey < WB_CONTRACT.salesPeriodStart || dateKey > WB_CONTRACT.salesPeriodEnd) return 0;
+  const halfYear = contractHalfYearForDate(dateKey);
+  if (!halfYear) return 0;
+  const days = daysInclusive(halfYear.from, halfYear.to);
+  return days > 0 ? numberOrZero(halfYear.targetRevenue) / days : 0;
+}
+
+function contractTargetRevenueWbForRange(from, to) {
+  if (!from || !to || from > to) return 0;
+  let total = 0;
+  for (const halfYear of WB_CONTRACT.halfYears) {
+    const start = maxDate(from, maxDate(WB_CONTRACT.salesPeriodStart, halfYear.from));
+    const end = minDate(to, minDate(WB_CONTRACT.salesPeriodEnd, halfYear.to));
+    const activeDays = daysInclusive(start, end);
+    const halfYearDays = daysInclusive(halfYear.from, halfYear.to);
+    if (activeDays > 0 && halfYearDays > 0) {
+      total += numberOrZero(halfYear.targetRevenue) * activeDays / halfYearDays;
+    }
+  }
+  return total;
+}
+
+function contractMonthTargetRevenueWb(month) {
+  const year = Number(String(month || '').slice(0, 4));
+  const monthNumber = Number(String(month || '').slice(5, 7));
+  if (!year || !monthNumber) return 0;
+  const days = new Date(year, monthNumber, 0).getDate();
+  return contractTargetRevenueWbForRange(`${month}-01`, `${month}-${String(days).padStart(2, '0')}`);
+}
+
 function monthKey(dateKey) {
   return String(dateKey || '').slice(0, 7);
 }
@@ -152,9 +220,16 @@ function buildPlatformDateMap(platformTrends, platformKey) {
         || sellerSummary.payForGoods
       )
       : 0;
+    const wbOrdersRevenue = platformKey === 'wb'
+      ? numberOrZero(
+        point?.wbSellerSummaryReferenceRevenue
+        || sellerSummary.ordersRevenue
+        || point?.revenue
+      )
+      : numberOrZero(point.revenue);
     map.set(date, {
       units: numberOrZero(point.units),
-      ordersRevenue: numberOrZero(point.revenue),
+      ordersRevenue: wbOrdersRevenue,
       revenue: wbFinanceTurnover > 0 ? wbFinanceTurnover : numberOrZero(point.revenue),
       margin: wbFinancialResult > 0 ? wbFinancialResult : numberOrZero(point.estimatedMargin || point.margin),
       source: wbFinanceTurnover > 0 ? 'wb-seller-summary-finance-turnover' : 'platform-trends-orders'
@@ -258,7 +333,8 @@ function planPctForMonth(iuPlan, month) {
   const pct = numberOrZero(source.iuAdsWb) > 0 && numberOrZero(source.iuRevenueWb) > 0
     ? numberOrZero(source.iuAdsWb) / numberOrZero(source.iuRevenueWb)
     : DEFAULT_PLAN_PCT;
-  return Number.isFinite(pct) && pct > 0 ? pct : DEFAULT_PLAN_PCT;
+  const workbookRate = Number.isFinite(pct) && pct > 0 ? pct : DEFAULT_PLAN_PCT;
+  return numberOrZero(WB_CONTRACT.marketingRate) || workbookRate;
 }
 
 function ozonPlanPctForMonth(iuPlan, month) {
@@ -339,18 +415,26 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, 
     const plan = monthPlan(iuPlan, month);
     const planPct = planPctForMonth(iuPlan, month);
     const planPctOzon = ozonPlanPctForMonth(iuPlan, month);
+    const contractHalfYear = contractHalfYearForDate(date);
     const wb = wbMap.get(date) || {};
     const ozon = ozonMap.get(date) || {};
     const ads = adsMaps.byDate.get(date) || {};
     const ozonAds = adsMaps.ozonByDate.get(date) || {};
     const hasOzonAdsFact = adsMaps.ozonByDate.has(date);
     const revenueWb = numberOrZero(wb.revenue);
+    const ordersRevenueWb = numberOrZero(wb.ordersRevenue) || revenueWb;
     const revenueOzon = numberOrZero(ozon.revenue);
-    const targetRevenueWb = numberOrZero(plan.dailyIuRevenueWb);
+    const adsPctBaseWb = revenueWb;
+    const adsPctBaseIu = adsPctBaseWb + revenueOzon;
+    const managementTargetRevenueWb = numberOrZero(plan.dailyIuRevenueWb);
+    const contractTargetRevenueWb = contractDailyTargetRevenueWb(date);
+    const targetRevenueWb = contractTargetRevenueWb || managementTargetRevenueWb;
     const targetRevenueOzon = numberOrZero(plan.dailyIuRevenueOzon);
     const revenueWbDelta = revenueWb - targetRevenueWb;
     const revenueOzonDelta = revenueOzon - targetRevenueOzon;
-    const planSpendWb = numberOrZero(plan.dailyIuAdsWb) || (targetRevenueWb * planPct);
+    const managementPlanSpendWb = numberOrZero(plan.dailyIuAdsWb) || (targetRevenueWb * planPct);
+    const contractMarketingPlanWb = revenueWb * planPct;
+    const planSpendWb = contractMarketingPlanWb || managementPlanSpendWb;
     const planSpendOzon = numberOrZero(plan.dailyIuAdsOzon) || (targetRevenueOzon * planPctOzon);
     const spendFactOzon = hasOzonAdsFact ? numberOrZero(ozonAds.spend) : revenueOzon * planPctOzon;
     const ozonAdsFactMode = hasOzonAdsFact
@@ -376,8 +460,13 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, 
       date,
       period: periodLabel(date),
       monthKey: month,
+      contractPeriodKey: contractHalfYear?.key || '',
       targetRevenueWb: roundMoney(targetRevenueWb),
+      contractTargetRevenueWb: roundMoney(contractTargetRevenueWb),
+      managementTargetRevenueWb: roundMoney(managementTargetRevenueWb),
       revenueWb: roundMoney(revenueWb),
+      ordersRevenueWb: roundMoney(ordersRevenueWb),
+      adsPctBaseWb: roundMoney(adsPctBaseWb),
       revenueWbDelta: roundMoney(revenueWbDelta),
       revenueWbDeltaPct: targetRevenueWb > 0 ? roundRate(revenueWbDelta / targetRevenueWb) : null,
       revenueWbCompletionPct: targetRevenueWb > 0 ? roundRate(revenueWb / targetRevenueWb) : null,
@@ -399,13 +488,16 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, 
       unitsOzon: Math.round(numberOrZero(ozon.units)),
       planPct: roundRate(planPct),
       planSpendWb: roundMoney(planSpendWb),
+      contractMarketingPlanWb: roundMoney(contractMarketingPlanWb),
+      managementPlanSpendWb: roundMoney(managementPlanSpendWb),
       spendFact: roundMoney(spendFact),
       spendFactDrr: roundMoney(spendFact),
       spendFactTotal: roundMoney(spendFactTotal),
       spendFactIu: roundMoney(spendFactIu),
       spendFactTotalIu: roundMoney(spendFactTotal + spendFactOzon),
-      factPct: revenueWb > 0 ? roundRate(spendFact / revenueWb) : null,
-      factPctIu: revenueWb + revenueOzon > 0 ? roundRate(spendFactIu / (revenueWb + revenueOzon)) : null,
+      factPct: adsPctBaseWb > 0 ? roundRate(spendFact / adsPctBaseWb) : null,
+      factPctIu: adsPctBaseIu > 0 ? roundRate(spendFactIu / adsPctBaseIu) : null,
+      ordersAdPct: ordersRevenueWb > 0 ? roundRate(spendFact / ordersRevenueWb) : null,
       ...channels,
       reviewPointsSource: reviewPointsFromFeedbacks > 0 ? 'wb_feedbacks_api_supplierFeedbackValuation' : '',
       reviewPointsFeedbacks: Math.round(numberOrZero(feedbackReviewPoints.feedbacks)),
@@ -442,8 +534,11 @@ function buildMonthRows(dailyRows, iuPlan) {
   return [...groups.entries()].map(([month, rows]) => {
     const plan = monthPlan(iuPlan, month);
     const revenueWb = sumRows(rows, 'revenueWb');
+    const ordersRevenueWb = sumRows(rows, 'ordersRevenueWb');
+    const adsPctBaseWb = sumRows(rows, 'adsPctBaseWb') || revenueWb;
     const revenueOzon = sumRows(rows, 'revenueOzon');
     const revenueTotalIu = sumRows(rows, 'revenueTotalIu');
+    const adsPctBaseIu = adsPctBaseWb + revenueOzon;
     const spendFact = sumRows(rows, 'spendFact');
     const spendFactOzon = sumRows(rows, 'spendFactOzon');
     const spendFactIu = sumRows(rows, 'spendFactIu');
@@ -451,6 +546,8 @@ function buildMonthRows(dailyRows, iuPlan) {
     const spendFactTotalIu = sumRows(rows, 'spendFactTotalIu');
     const externalAds = sumRows(rows, 'externalAds');
     const planSpendWb = sumRows(rows, 'planSpendWb');
+    const contractMarketingPlanWb = sumRows(rows, 'contractMarketingPlanWb');
+    const managementPlanSpendWb = sumRows(rows, 'managementPlanSpendWb');
     const planSpendOzon = sumRows(rows, 'planSpendOzon');
     const targetRevenueWb = sumRows(rows, 'targetRevenueWb');
     const targetRevenueOzon = sumRows(rows, 'targetRevenueOzon');
@@ -460,11 +557,12 @@ function buildMonthRows(dailyRows, iuPlan) {
     const spendDeltaIu = sumRows(rows, 'spendDeltaIu');
     const ozonAdsFactModes = Array.from(new Set(rows.map((row) => row.ozonAdsFactMode).filter(Boolean)));
     const plannedRevenueToDate = numberOrZero(plan.dailyIuRevenueTotal) * rows.length;
-    const plannedRevenueWbToDate = numberOrZero(plan.dailyIuRevenueWb) * rows.length;
+    const contractMonthTargetWb = contractMonthTargetRevenueWb(month);
+    const plannedRevenueWbToDate = targetRevenueWb;
     const plannedRevenueOzonToDate = numberOrZero(plan.dailyIuRevenueOzon) * rows.length;
-    const plannedAdsWbToDate = numberOrZero(plan.dailyIuAdsWb) * rows.length;
+    const plannedAdsWbToDate = planSpendWb;
     const plannedAdsOzonToDate = numberOrZero(plan.dailyIuAdsOzon) * rows.length;
-    const plannedAdsToDate = numberOrZero(plan.dailyIuAdsTotal) * rows.length;
+    const plannedAdsToDate = plannedAdsWbToDate + plannedAdsOzonToDate;
     return {
       monthKey: month,
       label: plan.label,
@@ -474,7 +572,7 @@ function buildMonthRows(dailyRows, iuPlan) {
       iuRevenuePlanToDate: roundMoney(plannedRevenueToDate),
       iuRevenueFactToDate: roundMoney(revenueTotalIu),
       iuRevenueCompletionToDate: plannedRevenueToDate > 0 ? roundRate(revenueTotalIu / plannedRevenueToDate) : null,
-      iuRevenueWbPlan: roundMoney(plan.iuRevenueWb),
+      iuRevenueWbPlan: roundMoney(contractMonthTargetWb || plan.iuRevenueWb),
       iuRevenueWbPlanToDate: roundMoney(plannedRevenueWbToDate),
       iuRevenueWbFactToDate: roundMoney(revenueWb),
       iuRevenueWbCompletionToDate: plannedRevenueWbToDate > 0 ? roundRate(revenueWb / plannedRevenueWbToDate) : null,
@@ -482,7 +580,7 @@ function buildMonthRows(dailyRows, iuPlan) {
       iuRevenueOzonPlanToDate: roundMoney(plannedRevenueOzonToDate),
       iuRevenueOzonFactToDate: roundMoney(revenueOzon),
       iuRevenueOzonCompletionToDate: plannedRevenueOzonToDate > 0 ? roundRate(revenueOzon / plannedRevenueOzonToDate) : null,
-      iuAdsPlan: roundMoney(plan.iuAdsWb),
+      iuAdsPlan: roundMoney((contractMonthTargetWb || plan.iuRevenueWb) * planPctForMonth(iuPlan, month)),
       iuAdsPlanToDate: roundMoney(plannedAdsWbToDate),
       iuAdsOzonPlan: roundMoney(plan.iuAdsOzon),
       iuAdsOzonPlanToDate: roundMoney(plannedAdsOzonToDate),
@@ -507,6 +605,8 @@ function buildMonthRows(dailyRows, iuPlan) {
       planPctOzon: roundRate(ozonPlanPctForMonth(iuPlan, month)),
       planSpendOzon: roundMoney(planSpendOzon),
       revenueWb: roundMoney(revenueWb),
+      ordersRevenueWb: roundMoney(ordersRevenueWb),
+      adsPctBaseWb: roundMoney(adsPctBaseWb),
       revenueOzon: roundMoney(revenueOzon),
       spendFact: roundMoney(spendFact),
       spendFactDrr: roundMoney(spendFact),
@@ -516,11 +616,14 @@ function buildMonthRows(dailyRows, iuPlan) {
       spendFactTotalIu: roundMoney(spendFactTotalIu),
       externalAds: roundMoney(externalAds),
       planSpendWb: roundMoney(planSpendWb),
-      drrWb: revenueWb > 0 ? roundRate(spendFact / revenueWb) : null,
+      contractMarketingPlanWb: roundMoney(contractMarketingPlanWb),
+      managementPlanSpendWb: roundMoney(managementPlanSpendWb),
+      drrWb: adsPctBaseWb > 0 ? roundRate(spendFact / adsPctBaseWb) : null,
       drrOzon: revenueOzon > 0 ? roundRate(spendFactOzon / revenueOzon) : null,
-      drrIu: revenueTotalIu > 0 ? roundRate(spendFactIu / revenueTotalIu) : null,
+      drrIu: adsPctBaseIu > 0 ? roundRate(spendFactIu / adsPctBaseIu) : null,
       spendDelta: roundMoney(spendFact - planSpendWb),
       spendDeltaPct: planSpendWb > 0 ? roundRate((spendFact - planSpendWb) / planSpendWb) : null,
+      ordersAdPct: ordersRevenueWb > 0 ? roundRate(spendFact / ordersRevenueWb) : null,
       spendDeltaOzon: roundMoney(spendDeltaOzon),
       spendDeltaOzonPct: planSpendOzon > 0 ? roundRate(spendDeltaOzon / planSpendOzon) : null,
       spendDeltaIu: roundMoney(spendDeltaIu),
@@ -541,6 +644,42 @@ function buildMonthRows(dailyRows, iuPlan) {
       reviewPointsFeedbacks: sumRows(rows, 'reviewPointsFeedbacks')
     };
   }).sort((left, right) => left.monthKey.localeCompare(right.monthKey));
+}
+
+function buildContractPeriodRows(dailyRows) {
+  return WB_CONTRACT.halfYears.map((period) => {
+    const from = maxDate(period.from, WB_CONTRACT.salesPeriodStart);
+    const to = minDate(period.to, WB_CONTRACT.salesPeriodEnd);
+    const rows = dailyRows.filter((row) => row.date >= from && row.date <= to);
+    const targetRevenue = contractTargetRevenueWbForRange(from, to);
+    const loadedTargetRevenue = sumRows(rows, 'targetRevenueWb');
+    const factRevenue = sumRows(rows, 'revenueWb');
+    const ordersRevenue = sumRows(rows, 'ordersRevenueWb');
+    const marketingPlan = factRevenue * numberOrZero(WB_CONTRACT.marketingRate);
+    const marketingSpend = sumRows(rows, 'spendFact');
+    return {
+      key: period.key,
+      from,
+      to,
+      loadedFrom: rows[0]?.date || '',
+      loadedTo: rows[rows.length - 1]?.date || '',
+      loadedDays: rows.length,
+      targetRevenue: roundMoney(targetRevenue),
+      thresholdRevenue: roundMoney(targetRevenue * numberOrZero(WB_CONTRACT.thresholdRate)),
+      stornoCancelRevenue: roundMoney(targetRevenue * numberOrZero(WB_CONTRACT.stornoCancelRate)),
+      loadedTargetRevenue: roundMoney(loadedTargetRevenue),
+      factRevenue: roundMoney(factRevenue),
+      ordersRevenue: roundMoney(ordersRevenue),
+      revenueCompletionToLoadedTarget: loadedTargetRevenue > 0 ? roundRate(factRevenue / loadedTargetRevenue) : null,
+      revenueCompletionToPeriodTarget: targetRevenue > 0 ? roundRate(factRevenue / targetRevenue) : null,
+      marketingRate: roundRate(WB_CONTRACT.marketingRate),
+      marketingPlan: roundMoney(marketingPlan),
+      marketingSpend: roundMoney(marketingSpend),
+      marketingCompletion: marketingPlan > 0 ? roundRate(marketingSpend / marketingPlan) : null,
+      drrWb: factRevenue > 0 ? roundRate(marketingSpend / factRevenue) : null,
+      ordersAdPct: ordersRevenue > 0 ? roundRate(marketingSpend / ordersRevenue) : null
+    };
+  });
 }
 
 function buildChannelRows(dailyRows, adsSummary = {}, wbFeedbacksSummary = {}) {
@@ -572,6 +711,7 @@ function buildPayload(options) {
   const wbFeedbacksSummary = readLayer(options, 'wb_feedbacks_summary.json', { reviewsForPoints: {}, daily: [], cards: [] });
   const dailyRows = buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, options);
   const months = buildMonthRows(dailyRows, iuPlan);
+  const contractPeriods = buildContractPeriodRows(dailyRows);
   const currentMonth = months[months.length - 1] || null;
   const channels = buildChannelRows(dailyRows, adsSummary, wbFeedbacksSummary);
   const asOfDate = dailyRows.map((row) => row.date).filter(Boolean).sort().pop() || isoDate(platformTrends?.latestMarketplaceDate) || isoDate(adsSummary?.asOfDate) || '';
@@ -594,9 +734,18 @@ function buildPayload(options) {
       to: dailyRows[dailyRows.length - 1]?.date || '',
       days: dailyRows.length
     },
+    contract: {
+      ...WB_CONTRACT,
+      activeTargetRevenue: roundMoney(contractTargetRevenueWbForRange(WB_CONTRACT.salesPeriodStart, WB_CONTRACT.salesPeriodEnd)),
+      activeMarketingPlanAtTarget: roundMoney(
+        contractTargetRevenueWbForRange(WB_CONTRACT.salesPeriodStart, WB_CONTRACT.salesPeriodEnd)
+        * numberOrZero(WB_CONTRACT.marketingRate)
+      )
+    },
     planPctDefault: DEFAULT_PLAN_PCT,
     ozonPlanPctDefault: DEFAULT_OZON_PLAN_PCT,
     kpis: currentMonth,
+    contractPeriods,
     months,
     channels,
     daily: dailyRows,
@@ -610,6 +759,8 @@ function buildPayload(options) {
       notes: [
         'Ozon ad spend comes from Google Sheets fact_ads_daily_sku when present; planPctOzon remains the plan benchmark.',
         'Review points are filled from WB Feedbacks API supplierFeedbackValuation when present.',
+        'WB contract logic: factual turnover is sales minus returns, without WB deductions; it maps to revenueWb / finance turnover.',
+        'WB marketing plan is 8% of factual turnover. ordersRevenueWb is retained as a report-control field, not as the contract DRR denominator.',
         'ИУ по обороту в workbook сверяется по WB; Ozon ведётся отдельным контуром.',
         'ДРР и каналы рекламы считаются по WB.',
         'Каналы без источника показываются нулем до подключения отдельного источника.'

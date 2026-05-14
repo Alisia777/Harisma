@@ -2902,6 +2902,8 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
     monthKey: String(row?.monthKey || row?.date || '').slice(0, 7),
     targetRevenueWb: numberOrZero(row?.targetRevenueWb),
     revenueWb: numberOrZero(row?.revenueWb),
+    ordersRevenueWb: numberOrZero(row?.ordersRevenueWb),
+    adsPctBaseWb: numberOrZero(row?.adsPctBaseWb || row?.revenueWb),
     revenueWbDelta: numberOrZero(row?.revenueWbDelta),
     revenueWbDeltaPct: Number.isFinite(Number(row?.revenueWbDeltaPct)) ? Number(row.revenueWbDeltaPct) : null,
     revenueWbCompletionPct: Number.isFinite(Number(row?.revenueWbCompletionPct)) ? Number(row.revenueWbCompletionPct) : null,
@@ -2927,6 +2929,7 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
     spendFactTotalIu: numberOrZero(row?.spendFactTotalIu),
     factPct: Number.isFinite(Number(row?.factPct)) ? Number(row.factPct) : null,
     factPctIu: Number.isFinite(Number(row?.factPctIu)) ? Number(row.factPctIu) : null,
+    ordersAdPct: Number.isFinite(Number(row?.ordersAdPct)) ? Number(row.ordersAdPct) : null,
     wbPromotion: numberOrZero(row?.wbPromotion),
     wbMedia: numberOrZero(row?.wbMedia),
     wbInfluencer: numberOrZero(row?.wbInfluencer),
@@ -3522,6 +3525,8 @@ function iuDrrExportRows(rows, model) {
     period: row.period || row.date,
     target_revenue_wb: row.targetRevenueWb,
     revenue_wb: row.revenueWb,
+    orders_revenue_wb: row.ordersRevenueWb,
+    ads_pct_base_wb: row.adsPctBaseWb || row.revenueWb,
     revenue_wb_delta: row.revenueWbDelta,
     revenue_wb_delta_pct: row.revenueWbDeltaPct != null ? Math.round(Number(row.revenueWbDeltaPct) * 10000) / 100 : '',
     revenue_ozon: row.revenueOzon,
@@ -3531,6 +3536,7 @@ function iuDrrExportRows(rows, model) {
     spend_fact: row.spendFact,
     spend_fact_total: row.spendFactTotal,
     fact_drr_pct: row.factPct != null ? Math.round(Number(row.factPct) * 10000) / 100 : '',
+    orders_ad_pct: row.ordersAdPct != null ? Math.round(Number(row.ordersAdPct) * 10000) / 100 : '',
     wb_promotion: row.wbPromotion,
     wb_media: row.wbMedia,
     wb_influencer: row.wbInfluencer,
@@ -3581,6 +3587,8 @@ function downloadIuDrrExcel(model) {
     ['period', 'Период'],
     ['target_revenue_wb', 'Целевой оборот WB'],
     ['revenue_wb', 'Продажи. Фактический оборот WB'],
+    ['orders_revenue_wb', 'Заказы WB. База рекламного %'],
+    ['ads_pct_base_wb', 'База расчета рекламы WB по договору'],
     ['revenue_wb_delta', 'Разница оборота WB'],
     ['revenue_wb_delta_pct', 'Разница оборота WB, %'],
     ['revenue_ozon', 'Оборот Ozon'],
@@ -3589,7 +3597,8 @@ function downloadIuDrrExcel(model) {
     ['plan_spend_wb', 'План расхода WB'],
     ['spend_fact', 'Реклама. Фактические затраты без Внешки'],
     ['spend_fact_total', 'Расход всего с Внешкой'],
-    ['fact_drr_pct', 'Реклама. Факт в %'],
+    ['fact_drr_pct', 'Реклама. Факт в % по договору'],
+    ['orders_ad_pct', 'Реклама. Факт в % от заказов'],
     ['wb_promotion', 'ВБ Продвижение'],
     ['wb_media', 'ВБ Медиа'],
     ['wb_influencer', 'ВБ Инфлюенс'],
@@ -3767,7 +3776,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
               <th>Реклама. План в %</th>
               <th>План расхода</th>
               <th>Реклама. Фактические затраты</th>
-              <th>Реклама. Факт в %</th>
+              <th>Реклама. Факт в % по договору</th>
               <th>ВБ Продвижение</th>
               <th>ВБ Медиа</th>
               <th>ВБ Инфлюенс</th>

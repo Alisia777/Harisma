@@ -182,10 +182,16 @@ function summarizePlatform(platformTrends, platformKey, from, to) {
 
 function summarizeIuDrr(iuDrr, from, to) {
   const selected = (iuDrr?.daily || []).filter((row) => isoDate(row?.date) >= from && isoDate(row?.date) <= to);
+  const ordersRevenueWb = selected.reduce((sum, row) => sum + numberOrZero(row?.ordersRevenueWb), 0);
+  const adPctBaseWb = selected.reduce((sum, row) => sum + numberOrZero(row?.adsPctBaseWb || row?.revenueWb), 0);
+  const spendFact = selected.reduce((sum, row) => sum + numberOrZero(row?.spendFact), 0);
   return {
     days: selected.length,
     revenueWb: round(selected.reduce((sum, row) => sum + numberOrZero(row?.revenueWb), 0)),
-    spendFact: round(selected.reduce((sum, row) => sum + numberOrZero(row?.spendFact), 0), 2)
+    ordersRevenueWb: round(ordersRevenueWb),
+    adPctBaseWb: round(adPctBaseWb),
+    spendFact: round(spendFact, 2),
+    drrWb: adPctBaseWb > 0 ? round(spendFact / adPctBaseWb, 6) : null
   };
 }
 
@@ -227,6 +233,8 @@ function main() {
   addCheck(checks, 'WB total pay', wb.totalPay, report.totalPay);
   addCheck(checks, 'WB turnover days avg', wb.turnoverDaysAvg, report.turnoverDaysAvg, 0.05);
   addCheck(checks, 'IU/DRR revenueWb', iu.revenueWb, report.salesRevenue);
+  addCheck(checks, 'IU/DRR contract ad pct base', iu.adPctBaseWb, report.salesRevenue);
+  addCheck(checks, 'IU/DRR ordersRevenueWb control', iu.ordersRevenueWb, report.ordersRevenue);
   addCheck(checks, 'WB estimatedMargin normalized', wb.estimatedMargin, report.payForGoods);
 
   const payload = {

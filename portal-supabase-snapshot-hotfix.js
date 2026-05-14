@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260419J__) return;
-  window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260419J__ = true;
+  if (window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260514IUDRR2__) return;
+  window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260514IUDRR2__ = true;
 
   const SNAPSHOT_TABLE = 'portal_data_snapshots';
   const SNAPSHOT_KEYS = [
@@ -436,6 +436,20 @@
       const rows = await fetchSnapshots();
       if (applySnapshots(rows)) {
         window.__ALTEA_SUPABASE_SNAPSHOT_READY__ = true;
+        if (typeof window.__alteaInvalidateDeferredData === 'function') {
+          try {
+            window.__alteaInvalidateDeferredData();
+          } catch (error) {
+            console.warn('[portal-supabase-snapshot-hotfix] invalidate deferred cache', error);
+          }
+        }
+        if (typeof window.__alteaResetPortalSnapshotState === 'function') {
+          try {
+            window.__alteaResetPortalSnapshotState();
+          } catch (error) {
+            console.warn('[portal-supabase-snapshot-hotfix] reset snapshot cache', error);
+          }
+        }
       }
     } catch (error) {
       const message = String(error?.message || error || '');

@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260508_PRICECACHE1__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260514_MARKETPLACES1__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260514_MARKETPLACES1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260508_PRICECACHE1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260505A__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260503C__ = true;
@@ -30,6 +31,17 @@
     "brand-portal-price-workbench-v20260419-entries",
     "portal_price_workbench_entries"
   ];
+  var PRICE_MARKETS = ["all", "wb", "ozon", "ym", "goldapple", "letu", "magnit"];
+  var PRICE_MARKET_LABELS = {
+    all: "Все",
+    wb: "WB",
+    ozon: "Ozon",
+    ym: "Я.Маркет",
+    ya: "Я.Маркет",
+    goldapple: "Золотое яблоко",
+    letu: "Л'Этуаль",
+    magnit: "Магнит Маркет"
+  };
 
   var state = {
     loading: false,
@@ -56,7 +68,8 @@
     latestTimelineDate: "",
     earliestTimelineDate: "",
     dataLagDays: 0,
-    loadNonce: 0
+    loadNonce: 0,
+    availableMarkets: PRICE_MARKETS.slice()
   };
   window.__alteaPriceWorkbenchState = state;
   var derived = {
@@ -132,6 +145,30 @@
       .replace(/[^a-z\u0430-\u044f0-9_-]+/gi, "");
   }
 
+  function canonicalPriceMarket(value) {
+    var raw = String(value || "").trim().toLowerCase();
+    var normalized = norm(raw);
+    if (!normalized) return "";
+    if (normalized === "all" || normalized === "wb" || normalized === "ozon") return normalized;
+    if (normalized === "ym" || normalized === "ya" || normalized.indexOf("yandex") >= 0 || normalized.indexOf("яндекс") >= 0) return "ym";
+    if (normalized === "goldapple" || normalized === "goldenapple" || normalized === "ga" || normalized === "zya" || normalized.indexOf("золот") >= 0 || normalized.indexOf("яблок") >= 0) return "goldapple";
+    if (normalized === "letu" || normalized === "letual" || normalized === "letoile" || normalized.indexOf("лету") >= 0 || normalized.indexOf("лэту") >= 0) return "letu";
+    if (normalized === "magnit" || normalized === "magnitmarket" || normalized === "mm" || normalized.indexOf("магнит") >= 0) return "magnit";
+    return raw;
+  }
+
+  function priceMarketLabel(market) {
+    var key = canonicalPriceMarket(market);
+    return PRICE_MARKET_LABELS[key] || String(market || "").toUpperCase();
+  }
+
+  function ensureMarketBucket(maps, market) {
+    var key = canonicalPriceMarket(market);
+    if (!key) return null;
+    if (!maps[key]) maps[key] = Object.create(null);
+    return maps[key];
+  }
+
   function pad2(value) {
     return String(value).padStart(2, "0");
   }
@@ -180,17 +217,54 @@
   }
 
   function buildOverlayMaps(payload) {
-    var maps = { wb: Object.create(null), ozon: Object.create(null), ym: Object.create(null), all: Object.create(null) };
+    var maps = { all: Object.create(null) };
+    PRICE_MARKETS.forEach(function (market) {
+      if (market !== "all") maps[market] = Object.create(null);
+    });
     Object.keys((payload && payload.platforms) || {}).forEach(function (platform) {
-      var target = platform === "ya" ? "ym" : platform;
+      var target = canonicalPriceMarket(platform);
+      var bucket = ensureMarketBucket(maps, target);
+      if (!bucket) return;
       var rows = normalizeRows(((((payload || {}).platforms || {})[platform] || {}).rows));
       rows.forEach(function (row) {
         var key = norm(row && (row.articleKey || row.article || row.sku));
-        if (!key || maps[target][key]) return;
-        maps[target][key] = row;
+        if (!key || bucket[key]) return;
+        bucket[key] = row;
       });
     });
     return maps;
+  }
+
+  function buildSourceRowsByMarket() {
+    var maps = Object.create(null);
+    function ingest(payload, shouldReplace) {
+      Object.keys((payload && payload.platforms) || {}).forEach(function (platform) {
+        var market = canonicalPriceMarket(platform);
+        if (!market || market === "all") return;
+        var bucket = ensureMarketBucket(maps, market);
+        if (!bucket) return;
+        normalizeRows(((((payload || {}).platforms || {})[platform] || {}).rows)).forEach(function (row) {
+          var key = norm(row && (row.articleKey || row.article || row.sku));
+          if (!key) return;
+          if (shouldReplace || !bucket[key]) bucket[key] = row;
+        });
+      });
+    }
+    for (var index = 0; index < arguments.length; index += 1) {
+      ingest(arguments[index], index === 0);
+    }
+    return maps;
+  }
+
+  function availableMarketsForRows(rows) {
+    var seen = Object.create(null);
+    (Array.isArray(rows) ? rows : []).forEach(function (row) {
+      var market = canonicalPriceMarket(row && row.market);
+      if (market) seen[market] = true;
+    });
+    return PRICE_MARKETS.filter(function (market) {
+      return market === "all" || seen[market];
+    });
   }
 
   function readJsonSafe(key, fallback) {
@@ -1627,17 +1701,27 @@
       var pricesMaps = buildOverlayMaps(pricesPayload || {});
       var liveMaps = buildOverlayMaps(livePayload || {});
       var maxDate = isoDate((overlayPayload && (overlayPayload.asOfDate || overlayPayload.generatedAt)) || payload.generatedAt);
+      var sourceRowsByMarket = buildSourceRowsByMarket(payload, overlayPayload || {}, pricesPayload || {}, livePayload || {});
       var rows = [];
-      Object.keys(payload.platforms || {}).forEach(function (market) {
-        normalizeRows((payload.platforms[market] || {}).rows).forEach(function (item) {
-          var overlayRow = overlayMaps[market] && overlayMaps[market][norm(item.articleKey || item.article || item.sku)];
-          var priceRow = pricesMaps[market] && pricesMaps[market][norm(item.articleKey || item.article || item.sku)];
-          var liveRow = liveMaps[market] && liveMaps[market][norm(item.articleKey || item.article || item.sku)];
-          var orderProcurementRow = orderProcurementLookup.maps[market] && orderProcurementLookup.maps[market][norm(item.articleKey || item.article || item.sku)];
-          rows.push(buildRow(item, market, manualMap, overlayRow || null, priceRow || null, liveRow || null, livePayload && livePayload.generatedAt, maxDate, skuMetaMap, orderProcurementRow || null));
+      Object.keys(sourceRowsByMarket).sort(function (left, right) {
+        var leftIndex = PRICE_MARKETS.indexOf(left);
+        var rightIndex = PRICE_MARKETS.indexOf(right);
+        return (leftIndex < 0 ? 999 : leftIndex) - (rightIndex < 0 ? 999 : rightIndex) || left.localeCompare(right);
+      }).forEach(function (market) {
+        var marketKey = canonicalPriceMarket(market);
+        Object.keys(sourceRowsByMarket[market] || {}).forEach(function (sourceKey) {
+          var item = sourceRowsByMarket[market][sourceKey];
+          var rowKey = norm(item && (item.articleKey || item.article || item.sku));
+          var overlayRow = overlayMaps[marketKey] && overlayMaps[marketKey][rowKey];
+          var priceRow = pricesMaps[marketKey] && pricesMaps[marketKey][rowKey];
+          var liveRow = liveMaps[marketKey] && liveMaps[marketKey][rowKey];
+          var orderProcurementRow = orderProcurementLookup.maps[marketKey] && orderProcurementLookup.maps[marketKey][rowKey];
+          rows.push(buildRow(item, marketKey, manualMap, overlayRow || null, priceRow || null, liveRow || null, livePayload && livePayload.generatedAt, maxDate, skuMetaMap, orderProcurementRow || null));
         });
       });
       state.rows = rows;
+      state.availableMarkets = availableMarketsForRows(rows);
+      if (state.availableMarkets.indexOf(state.market) < 0) state.market = "all";
       state.liveGeneratedAt = livePayload && livePayload.generatedAt ? livePayload.generatedAt : "";
       state.overlayGeneratedAt = overlayPayload && overlayPayload.generatedAt ? overlayPayload.generatedAt : "";
       state.orderProcurementGeneratedAt = orderProcurementLookup.generatedAt || "";
@@ -2014,7 +2098,7 @@
   function priceSummaryExportRows(rows) {
     return sortedVisiblePriceRows(rows).map(function (row) {
       return {
-        marketplace: row.market === "ym" ? "Я.Маркет" : String(row.market || "").toUpperCase(),
+        marketplace: priceMarketLabel(row.market),
         article_key: row.articleKey || "",
         name: row.name || "",
         owner: row.owner || "",
@@ -2054,7 +2138,7 @@
     return sortedVisiblePriceRows(rows).flatMap(function (row) {
       return historyItemsForRow(row).map(function (item) {
         return {
-          marketplace: row.market === "ym" ? "Я.Маркет" : String(row.market || "").toUpperCase(),
+          marketplace: priceMarketLabel(row.market),
           article_key: row.articleKey || "",
           name: row.name || "",
           owner: row.owner || "",
@@ -2591,9 +2675,8 @@ function downloadPriceSummaryExcel(rows) {
       '<div class="pw-card">',
       '<div class="pw-label">\u041f\u043b\u043e\u0449\u0430\u0434\u043a\u0430 \u0438 \u043f\u0435\u0440\u0438\u043e\u0434</div>',
       '<div class="pw-chip-row">',
-      ['all','wb','ozon','ym'].map(function (market) {
-        var labels = { all: '\u0412\u0441\u0435', wb: 'WB', ozon: 'Ozon', ym: '\u042f.\u041c\u0430\u0440\u043a\u0435\u0442' };
-        return '<button type="button" class="pw-chip ' + (state.market === market ? 'active' : '') + '" data-price-market="' + market + '">' + labels[market] + '</button>';
+      (state.availableMarkets && state.availableMarkets.length ? state.availableMarkets : PRICE_MARKETS).map(function (market) {
+        return '<button type="button" class="pw-chip ' + (state.market === market ? 'active' : '') + '" data-price-market="' + esc(market) + '">' + esc(priceMarketLabel(market)) + '</button>';
       }).join(""),
       '</div>',
       '<div class="pw-chip-row">',

@@ -7,7 +7,8 @@ const { randomUUID } = require('crypto');
 const { execFileSync } = require('child_process');
 
 const FINANCE_API_BASE_URL = 'https://finance-api.wildberries.ru';
-const FINANCE_PATH = '/api/finance/v1/sales-reports/list';
+const FINANCE_LIST_PATH = '/api/finance/v1/sales-reports/list';
+const FINANCE_DETAILED_PATH = '/api/finance/v1/sales-reports/detailed';
 const SALES_API_BASE_URL = 'https://statistics-api.wildberries.ru';
 const ORDERS_PATH = '/api/v1/supplier/orders';
 const WB_ANALYTICS_API_BASE_URL = 'https://seller-analytics-api.wildberries.ru';
@@ -449,18 +450,20 @@ function applyWbSellerSummaryReference(series, referenceMap) {
     const date = isoDate(point?.label || point?.date);
     const reference = referenceMap.get(date);
     if (!reference) return point;
+    const officialRevenue = firstNumber(reference.revenue, point?.revenue);
+    const officialUnits = firstNumber(reference.units, point?.units);
     const officialMargin = reference.payForGoods > 0
       ? reference.payForGoods
       : firstNumber(point?.financialResult, point?.estimatedMargin);
     return {
       ...point,
-      units: reference.units || point.units,
-      revenue: reference.revenue,
+      units: officialUnits || point.units,
+      revenue: officialRevenue,
       legacyEstimatedMargin: point.legacyEstimatedMargin || point.estimatedMargin || null,
       estimatedMargin: officialMargin,
       wbSellerSummary: reference.sellerSummary || point.wbSellerSummary || null,
-      wbSellerSummaryReferenceRevenue: reference.revenue,
-      wbSellerSummaryReferenceUnits: reference.units || null,
+      wbSellerSummaryReferenceRevenue: reference.revenue || point.wbSellerSummaryReferenceRevenue || null,
+      wbSellerSummaryReferenceUnits: reference.units || point.wbSellerSummaryReferenceUnits || null,
       wbSellerSummaryFinanceTurnover: reference.financeTurnover || point.wbSellerSummaryFinanceTurnover || null,
       wbSellerSummarySalesRevenue: reference.salesRevenue || point.wbSellerSummarySalesRevenue || null,
       wbSellerSummaryPayForGoods: reference.payForGoods || point.wbSellerSummaryPayForGoods || null,
@@ -535,8 +538,8 @@ async function wbRequest(options, query) {
   throw new Error(`WB orders API ${ORDERS_PATH} failed after retries`);
 }
 
-async function wbFinanceRequest(options, body) {
-  const url = new URL(`${options.financeApiBaseUrl}${FINANCE_PATH}`);
+async function wbFinanceRequest(options, endpoint, body) {
+  const url = new URL(`${options.financeApiBaseUrl}${endpoint}`);
 
   for (let attempt = 1; attempt <= 6; attempt += 1) {
     let response;
@@ -581,19 +584,19 @@ async function wbFinanceRequest(options, body) {
         ? (waitSeconds + 1) * 1000
         : attempt * 60000;
       if (attempt === 6) {
-        throw new Error(`WB finance API ${FINANCE_PATH} rate-limited after retries: HTTP 429 ${text.slice(0, 500)}`);
+        throw new Error(`WB finance API ${endpoint} rate-limited after retries: HTTP 429 ${text.slice(0, 500)}`);
       }
       await sleep(waitMs);
       continue;
     }
 
     if (attempt === 6) {
-      throw new Error(`WB finance API ${FINANCE_PATH} failed: HTTP ${response.status} ${text.slice(0, 500)}`);
+      throw new Error(`WB finance API ${endpoint} failed: HTTP ${response.status} ${text.slice(0, 500)}`);
     }
     await sleep(attempt * 2000);
   }
 
-  throw new Error(`WB finance API ${FINANCE_PATH} failed after retries`);
+  throw new Error(`WB finance API ${endpoint} failed after retries`);
 }
 
 async function fetchWbAnalyticsRows(options) {
@@ -663,7 +666,7 @@ async function fetchWbRows(options) {
 }
 
 async function fetchWbFinanceRows(options) {
-  const result = await wbFinanceRequest(options, {
+  const result = await wbFinanceRequest(options, FINANCE_LIST_PATH, {
     dateFrom: options.from,
     dateTo: options.to,
     period: 'daily',
@@ -681,6 +684,61 @@ async function fetchWbFinanceRows(options) {
   };
 }
 
+async function fetchWbFinanceDetailedRows(options) {
+  const rows = [];
+  const warnings = [];
+  let rrdId = 0;
+  let pageCount = 0;
+  const limit = 100000;
+
+  for (;;) {
+    const result = await wbFinanceRequest(options, FINANCE_DETAILED_PATH, {
+      dateFrom: options.from,
+      dateTo: options.to,
+      period: 'daily',
+      limit,
+      rrdId,
+      fields: [
+        'rrdId',
+        'dateFrom',
+        'dateTo',
+        'docTypeName',
+        'sellerOperName',
+        'quantity',
+        'retailPriceWithDisc',
+        'forPay',
+        'deliveryService',
+        'paidStorage',
+        'penalty',
+        'additionalPayment',
+        'paidAcceptance',
+        'rrDate'
+      ]
+    });
+    const page = Array.isArray(result.rows) ? result.rows : [];
+    if (!page.length) break;
+    pageCount += 1;
+    rows.push(...page);
+
+    const nextRrdId = page.reduce((max, row) => Math.max(max, Math.trunc(numberOrZero(row?.rrdId))), rrdId);
+    if (!(nextRrdId > rrdId)) {
+      warnings.push(`WB finance detailed API repeated rrdId ${rrdId}, stopping pagination`);
+      break;
+    }
+    rrdId = nextRrdId;
+    if (page.length < limit) break;
+  }
+
+  return {
+    rows,
+    diagnostics: {
+      pageCount,
+      fetchedRows: rows.length,
+      warnings
+    }
+  };
+}
+
 function buildFinanceRevenueMap(rows) {
   const byDate = new Map();
   for (const row of Array.isArray(rows) ? rows : []) {
@@ -691,6 +749,127 @@ function buildFinanceRevenueMap(rows) {
     byDate.set(date, numberOrZero(byDate.get(date)) + revenue);
   }
   return byDate;
+}
+
+function operationSign(row) {
+  const raw = normalizeKey(`${row?.docTypeName || ''} ${row?.sellerOperName || ''}`);
+  if (raw.includes('возврат') || raw.includes('return')) return -1;
+  return 1;
+}
+
+function buildFinanceTurnoverMap(rows) {
+  const byDate = new Map();
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const date = isoDate(row?.rrDate || row?.dateFrom || row?.dateTo);
+    if (!date) continue;
+    const retailPriceWithDisc = numberOrZero(row?.retailPriceWithDisc);
+    if (!(retailPriceWithDisc > 0)) continue;
+    byDate.set(date, numberOrZero(byDate.get(date)) + (retailPriceWithDisc * operationSign(row)));
+  }
+  return byDate;
+}
+
+function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
+  const turnoverByDate = buildFinanceTurnoverMap(detailedRows);
+  const byDate = new Map();
+  for (const row of Array.isArray(summaryRows) ? summaryRows : []) {
+    const date = isoDate(row?.dateFrom || row?.dateTo || row?.createDate);
+    if (!date) continue;
+    const current = byDate.get(date) || {
+      payForGoods: 0,
+      logistics: 0,
+      storage: 0,
+      fines: 0,
+      additionalPayments: 0,
+      acceptanceOperations: 0
+    };
+    current.payForGoods += numberOrZero(row?.forPaySum);
+    current.logistics += numberOrZero(row?.deliveryServiceSum);
+    current.storage += numberOrZero(row?.paidStorageSum);
+    current.fines += numberOrZero(row?.penaltySum);
+    current.additionalPayments += numberOrZero(row?.additionalPaymentSum);
+    current.acceptanceOperations += numberOrZero(row?.paidAcceptanceSum);
+    byDate.set(date, current);
+  }
+
+  const result = new Map();
+  const dates = new Set([...byDate.keys(), ...turnoverByDate.keys()]);
+  for (const date of dates) {
+    const summary = byDate.get(date) || {};
+    const salesRevenue = Math.round(numberOrZero(turnoverByDate.get(date)));
+    const payForGoods = Math.round(numberOrZero(summary.payForGoods));
+    if (!(salesRevenue > 0 || payForGoods > 0)) continue;
+    const logistics = Math.round(numberOrZero(summary.logistics));
+    const storage = Math.round(numberOrZero(summary.storage));
+    const fines = Math.round(numberOrZero(summary.fines));
+    const additionalPayments = Math.round(numberOrZero(summary.additionalPayments));
+    const acceptanceOperations = Math.round(numberOrZero(summary.acceptanceOperations));
+    const totalPay = payForGoods
+      ? payForGoods - logistics - storage - fines - acceptanceOperations + additionalPayments
+      : 0;
+    const sellerSummary = {
+      source: 'wb-finance-api',
+      salesRevenue,
+      financeTurnover: salesRevenue,
+      payForGoods,
+      financialResult: payForGoods,
+      logistics,
+      storage,
+      fines,
+      additionalPayments,
+      acceptanceOperations,
+      totalPay
+    };
+    result.set(date, {
+      sellerSummary,
+      financeTurnover: salesRevenue,
+      salesRevenue,
+      payForGoods,
+      totalPay,
+      source: 'wb-finance-api',
+      revenueField: 'finance sales-reports/detailed + sales-reports/list'
+    });
+  }
+  return result;
+}
+
+async function fetchWbFinanceReferenceMap(options) {
+  const warnings = [];
+  let summaryRows = [];
+  let detailedRows = [];
+  let summaryDiagnostics = { pageCount: 0, fetchedRows: 0, warnings: [] };
+  let detailedDiagnostics = { pageCount: 0, fetchedRows: 0, warnings: [] };
+
+  try {
+    const result = await fetchWbFinanceRows(options);
+    summaryRows = result.rows;
+    summaryDiagnostics = result.diagnostics;
+  } catch (error) {
+    warnings.push(error?.message || String(error));
+  }
+
+  try {
+    const result = await fetchWbFinanceDetailedRows(options);
+    detailedRows = result.rows;
+    detailedDiagnostics = result.diagnostics;
+  } catch (error) {
+    warnings.push(error?.message || String(error));
+  }
+
+  return {
+    referenceMap: buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows),
+    diagnostics: {
+      listPageCount: summaryDiagnostics.pageCount,
+      listFetchedRows: summaryDiagnostics.fetchedRows,
+      detailedPageCount: detailedDiagnostics.pageCount,
+      detailedFetchedRows: detailedDiagnostics.fetchedRows,
+      warnings: [
+        ...warnings,
+        ...(summaryDiagnostics.warnings || []),
+        ...(detailedDiagnostics.warnings || [])
+      ]
+    }
+  };
 }
 
 function buildWbSeries(rows, skus, options) {
@@ -759,7 +938,11 @@ async function main() {
   const platforms = platformMap(existing);
   const existingWbPlatform = platforms.get('wb') || null;
   const stagedWbPlatform = platformMap(stagedExisting).get('wb') || null;
-  const wbReferenceMap = wbSellerSummaryReferenceMap(existing, stagedExisting);
+  const financeReference = await fetchWbFinanceReferenceMap(options);
+  const wbReferenceMap = new Map([
+    ...financeReference.referenceMap,
+    ...wbSellerSummaryReferenceMap(existing, stagedExisting)
+  ]);
   const marginFallbackSeries = seriesHasPositiveMargin(existingWbPlatform?.series)
     ? existingWbPlatform.series
     : (stagedWbPlatform?.series || existingWbPlatform?.series || []);
@@ -802,8 +985,10 @@ async function main() {
       reportType: 'GROUPED_HISTORY_REPORT',
       from: options.from,
       to: options.to,
-      financePageCount: 0,
-      financeFetchedRows: 0,
+      financePageCount: financeReference.diagnostics.listPageCount,
+      financeFetchedRows: financeReference.diagnostics.listFetchedRows,
+      financeDetailedPageCount: financeReference.diagnostics.detailedPageCount,
+      financeDetailedFetchedRows: financeReference.diagnostics.detailedFetchedRows,
       pageCount: wbReport.diagnostics.pageCount,
       fetchedRows: wbReport.diagnostics.fetchedRows,
       revenueField: 'ordersSumRub',
@@ -817,6 +1002,7 @@ async function main() {
     payload.wbApiDirect.revenueField = 'ordersSumRub / seller-summary-reference';
     payload.wbApiDirect.revenueSource = 'seller-analytics-api:GROUPED_HISTORY_REPORT + wb seller summary reconciliation';
     payload.wbApiDirect.referenceDaysApplied = wbReferenceMap.size;
+    payload.wbApiDirect.financeReferenceDaysApplied = financeReference.referenceMap.size;
   }
 
   if (!hasFreshWbData && wbReport.diagnostics.fetchedRows === 0) {
@@ -830,6 +1016,13 @@ async function main() {
     payload.wbApiDirect.warnings = [
       ...(payload.wbApiDirect.warnings || []),
       ...wbReport.diagnostics.warnings
+    ];
+  }
+
+  if (financeReference.diagnostics.warnings.length) {
+    payload.wbApiDirect.warnings = [
+      ...(payload.wbApiDirect.warnings || []),
+      ...financeReference.diagnostics.warnings
     ];
   }
 

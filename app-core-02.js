@@ -257,6 +257,9 @@ function ownerOptions() {
     const normalized = canonicalOwnerName(value || '');
     if (normalized) pool.add(normalized);
   };
+  if (typeof OWNER_CANONICAL_NAMES !== 'undefined') {
+    for (const name of OWNER_CANONICAL_NAMES.values()) addOwner(name);
+  }
   for (const sku of state.skus) {
     addOwner(ownerName(sku));
     if (sku?.ownersByPlatform && typeof sku.ownersByPlatform === 'object') {

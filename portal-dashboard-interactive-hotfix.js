@@ -10,7 +10,7 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260507n';
+  const VERSION = '20260514iudrr1';
   const STYLE_ID = 'altea-dashboard-interactive-20260507n';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
@@ -181,6 +181,33 @@
     if (!match) return null;
     const result = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
     return Number.isNaN(result.getTime()) ? null : result;
+  };
+  const parseFreshStamp = (value) => {
+    if (!value) return 0;
+    const raw = String(value || '').trim();
+    if (!raw) return 0;
+    const normalized = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T00:00:00Z` : raw;
+    const stamp = Date.parse(normalized);
+    return Number.isFinite(stamp) ? stamp : 0;
+  };
+  const iuDrrDataFreshness = (payload) => {
+    let score = parseFreshStamp(payload?.asOfDate || payload?.window?.to || '');
+    (payload?.daily || []).forEach((row) => {
+      score = Math.max(score, parseFreshStamp(row?.date));
+    });
+    return score;
+  };
+  const iuDrrPayloadFreshness = (payload) => Math.max(
+    iuDrrDataFreshness(payload),
+    parseFreshStamp(payload?.generatedAt || payload?.updatedAt || payload?.updated_at || '')
+  );
+  const preferExistingIuDrrPayload = (existing, incoming) => {
+    if (!existing || !incoming) return incoming || existing || null;
+    const existingData = iuDrrDataFreshness(existing);
+    const incomingData = iuDrrDataFreshness(incoming);
+    if (existingData > incomingData) return existing;
+    if (existingData < incomingData) return incoming;
+    return iuDrrPayloadFreshness(existing) >= iuDrrPayloadFreshness(incoming) ? existing : incoming;
   };
   const cleanDate = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const addDays = (date, offset) => {
@@ -6629,7 +6656,13 @@ function dashboardTaskStatusChip(task) {
     }
     let text = await response.text();
     if (typeof sanitizeLooseJson === 'function') text = sanitizeLooseJson(text);
-    const payload = JSON.parse(text);
+    let payload = JSON.parse(text);
+    if (key === 'iuDrrSummary') {
+      const existingPayload = current(key);
+      if (hasUsablePayload(existingPayload) && hasUsablePayload(payload)) {
+        payload = preferExistingIuDrrPayload(existingPayload, payload);
+      }
+    }
     cache[key] = payload;
     const app = stateRef();
     if (app && key === 'orderProcurement') {

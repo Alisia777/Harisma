@@ -16,7 +16,8 @@
     "portal:prices-rebuild": "node scripts/build-legacy-prices-layer.js",
     "portal:repricer-rebuild": "node scripts/build-legacy-repricer-layer.js",
     "portal:price-audit": "node scripts/audit-price-contour.js",
-    "portal:metric-audit": "node scripts/audit-portal-metrics.js"
+    "portal:metric-audit": "node scripts/audit-portal-metrics.js",
+    "portal:wb-audit": "node scripts/audit-wb-report-reconciliation.js"
   },
   "dependencies": {
     "playwright": "^1.59.1",

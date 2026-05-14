@@ -152,10 +152,15 @@ function readReferenceRows(xlsxPath) {
 
 function withReferenceFields(point, reference) {
   const sellerSummary = reference.sellerSummary || {};
+  const officialMargin = sellerSummary.payForGoods > 0
+    ? sellerSummary.payForGoods
+    : numberOrZero(point.financialResult || point.estimatedMargin);
   return {
     ...point,
     units: reference.units || point.units,
     revenue: reference.revenue,
+    legacyEstimatedMargin: point.legacyEstimatedMargin || point.estimatedMargin || null,
+    estimatedMargin: officialMargin,
     wbSellerSummary: sellerSummary,
     wbSellerSummaryReferenceRevenue: reference.revenue,
     wbSellerSummaryReferenceUnits: reference.units || null,
@@ -168,6 +173,83 @@ function withReferenceFields(point, reference) {
     financeTurnover: sellerSummary.financeTurnover || point.financeTurnover || null,
     financialResult: sellerSummary.financialResult || point.financialResult || null
   };
+}
+
+function officialFinanceTurnoverForPoint(point) {
+  const sellerSummary = point?.wbSellerSummary && typeof point.wbSellerSummary === 'object'
+    ? point.wbSellerSummary
+    : {};
+  return numberOrZero(
+    point?.wbSellerSummaryFinanceTurnover
+    || point?.financeTurnover
+    || sellerSummary.financeTurnover
+    || sellerSummary.salesRevenue
+    || point?.revenue
+  );
+}
+
+function officialMarginForPoint(point) {
+  const sellerSummary = point?.wbSellerSummary && typeof point.wbSellerSummary === 'object'
+    ? point.wbSellerSummary
+    : {};
+  return numberOrZero(
+    point?.wbSellerSummaryPayForGoods
+    || point?.financialResult
+    || sellerSummary.financialResult
+    || sellerSummary.payForGoods
+    || point?.estimatedMargin
+  );
+}
+
+function rebuildAllSeries(platformTrends) {
+  const platforms = Array.isArray(platformTrends.platforms) ? platformTrends.platforms : [];
+  const byKey = new Map(platforms.map((platform) => [String(platform?.key || '').toLowerCase(), platform]));
+  const sourceKeys = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+  const byDate = new Map();
+  for (const key of sourceKeys) {
+    for (const point of byKey.get(key)?.series || []) {
+      const date = isoFromExcelDate(point?.date || point?.label);
+      if (!date) continue;
+      const current = byDate.get(date) || {
+        date,
+        label: date,
+        units: 0,
+        revenue: 0,
+        financeTurnover: 0,
+        financialResult: 0,
+        estimatedMargin: 0
+      };
+      current.units += numberOrZero(point.units);
+      current.revenue += numberOrZero(point.revenue);
+      const financeTurnover = key === 'wb'
+        ? officialFinanceTurnoverForPoint(point)
+        : numberOrZero(point.financeTurnover || point.revenue);
+      const financialResult = key === 'wb'
+        ? officialMarginForPoint(point)
+        : numberOrZero(point.financialResult || point.estimatedMargin);
+      current.financeTurnover += financeTurnover;
+      current.financialResult += financialResult;
+      current.estimatedMargin += financialResult;
+      byDate.set(date, current);
+    }
+  }
+  const series = [...byDate.values()]
+    .sort((left, right) => left.date.localeCompare(right.date))
+    .map((point, index, rows) => ({
+      ...point,
+      dayOffset: rows.length - 1 - index,
+      units: Number(point.units.toFixed(4)),
+      revenue: Number(point.revenue.toFixed(4)),
+      financeTurnover: Number(point.financeTurnover.toFixed(4)),
+      financialResult: Number(point.financialResult.toFixed(4)),
+      estimatedMargin: Number(point.estimatedMargin.toFixed(4))
+    }));
+  if (!series.length) return;
+  const allPlatform = byKey.get('all') || { key: 'all', label: 'Все площадки' };
+  allPlatform.key = 'all';
+  allPlatform.label = allPlatform.label || 'Все площадки';
+  allPlatform.series = series;
+  if (!byKey.has('all')) platforms.push(allPlatform);
 }
 
 function applyReference(platformTrends, referenceRows) {
@@ -208,6 +290,7 @@ function applyReference(platformTrends, referenceRows) {
     platformTrends.wbApiDirect.revenueSource = 'seller-analytics-api:GROUPED_HISTORY_REPORT + wb seller summary reconciliation';
   }
 
+  rebuildAllSeries(platformTrends);
   return changed;
 }
 

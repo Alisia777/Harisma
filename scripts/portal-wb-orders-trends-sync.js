@@ -318,6 +318,36 @@ function platformMap(platformTrends) {
 }
 
 function mergeAllSeries(platforms) {
+  const officialFinanceTurnoverForPoint = (key, point) => {
+    const sellerSummary = point?.wbSellerSummary && typeof point.wbSellerSummary === 'object'
+      ? point.wbSellerSummary
+      : {};
+    if (key === 'wb') {
+      return firstNumber(
+        point?.wbSellerSummaryFinanceTurnover,
+        point?.financeTurnover,
+        sellerSummary.financeTurnover,
+        sellerSummary.salesRevenue,
+        point?.revenue
+      );
+    }
+    return firstNumber(point?.financeTurnover, point?.revenue);
+  };
+  const officialMarginForPoint = (key, point) => {
+    const sellerSummary = point?.wbSellerSummary && typeof point.wbSellerSummary === 'object'
+      ? point.wbSellerSummary
+      : {};
+    if (key === 'wb') {
+      return firstNumber(
+        point?.wbSellerSummaryPayForGoods,
+        point?.financialResult,
+        sellerSummary.financialResult,
+        sellerSummary.payForGoods,
+        point?.estimatedMargin
+      );
+    }
+    return firstNumber(point?.financialResult, point?.estimatedMargin);
+  };
   const dateSet = new Set();
   for (const key of ['wb', 'ozon', 'ya']) {
     for (const point of platforms.get(key)?.series || []) {
@@ -328,19 +358,25 @@ function mergeAllSeries(platforms) {
   const dates = Array.from(dateSet).sort();
   const latestIndex = dates.length - 1;
   return dates.map((date, index) => {
-    const total = { units: 0, revenue: 0, estimatedMargin: 0 };
+    const total = { units: 0, revenue: 0, financeTurnover: 0, financialResult: 0, estimatedMargin: 0 };
     for (const key of ['wb', 'ozon', 'ya']) {
       const point = (platforms.get(key)?.series || []).find((item) => isoDate(item?.label || item?.date) === date);
       if (!point) continue;
       total.units += numberOrZero(point.units);
       total.revenue += numberOrZero(point.revenue);
-      total.estimatedMargin += numberOrZero(point.estimatedMargin);
+      const financeTurnover = officialFinanceTurnoverForPoint(key, point);
+      const financialResult = officialMarginForPoint(key, point);
+      total.financeTurnover += financeTurnover;
+      total.financialResult += financialResult;
+      total.estimatedMargin += financialResult;
     }
     return {
       dayOffset: latestIndex - index,
       label: date,
       units: Number(total.units.toFixed(4)),
       revenue: Number(total.revenue.toFixed(4)),
+      financeTurnover: Number(total.financeTurnover.toFixed(4)),
+      financialResult: Number(total.financialResult.toFixed(4)),
       estimatedMargin: Number(total.estimatedMargin.toFixed(4))
     };
   });
@@ -413,10 +449,15 @@ function applyWbSellerSummaryReference(series, referenceMap) {
     const date = isoDate(point?.label || point?.date);
     const reference = referenceMap.get(date);
     if (!reference) return point;
+    const officialMargin = reference.payForGoods > 0
+      ? reference.payForGoods
+      : firstNumber(point?.financialResult, point?.estimatedMargin);
     return {
       ...point,
       units: reference.units || point.units,
       revenue: reference.revenue,
+      legacyEstimatedMargin: point.legacyEstimatedMargin || point.estimatedMargin || null,
+      estimatedMargin: officialMargin,
       wbSellerSummary: reference.sellerSummary || point.wbSellerSummary || null,
       wbSellerSummaryReferenceRevenue: reference.revenue,
       wbSellerSummaryReferenceUnits: reference.units || null,
@@ -426,7 +467,7 @@ function applyWbSellerSummaryReference(series, referenceMap) {
       wbSellerSummaryTotalPay: reference.totalPay || point.wbSellerSummaryTotalPay || null,
       wbSellerSummaryTurnoverDays: reference.turnoverDays,
       financeTurnover: reference.financeTurnover || point.financeTurnover || null,
-      financialResult: reference.payForGoods || point.financialResult || null
+      financialResult: officialMargin || point.financialResult || null
     };
   });
 }

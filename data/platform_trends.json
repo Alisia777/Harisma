@@ -281156,7 +281156,7 @@
           "label": "2026-05-01",
           "units": 4855,
           "revenue": 5701453,
-          "estimatedMargin": 3881961.6583,
+          "estimatedMargin": 2394472,
           "wbSellerSummaryReferenceRevenue": 5701453,
           "wbSellerSummaryReferenceUnits": 4855,
           "wbSellerSummary": {
@@ -281188,14 +281188,15 @@
           "wbSellerSummaryTotalPay": 2394472,
           "wbSellerSummaryTurnoverDays": 65,
           "financeTurnover": 3663625,
-          "financialResult": 2394472
+          "financialResult": 2394472,
+          "legacyEstimatedMargin": 3881961.6583
         },
         {
           "dayOffset": 11,
           "label": "2026-05-02",
           "units": 4980,
           "revenue": 5865239,
-          "estimatedMargin": 4165480.9122,
+          "estimatedMargin": 2523034,
           "wbSellerSummaryReferenceRevenue": 5865239,
           "wbSellerSummaryReferenceUnits": 4980,
           "wbSellerSummary": {
@@ -281227,14 +281228,15 @@
           "wbSellerSummaryTotalPay": 2523034,
           "wbSellerSummaryTurnoverDays": 60,
           "financeTurnover": 3862113,
-          "financialResult": 2523034
+          "financialResult": 2523034,
+          "legacyEstimatedMargin": 4165480.9122
         },
         {
           "dayOffset": 10,
           "label": "2026-05-03",
           "units": 5039,
           "revenue": 5913945,
-          "estimatedMargin": 4048145.7353,
+          "estimatedMargin": 2882682,
           "wbSellerSummaryReferenceRevenue": 5913945,
           "wbSellerSummaryReferenceUnits": 5039,
           "wbSellerSummary": {
@@ -281266,14 +281268,15 @@
           "wbSellerSummaryTotalPay": 2775666,
           "wbSellerSummaryTurnoverDays": 64,
           "financeTurnover": 4419749,
-          "financialResult": 2882682
+          "financialResult": 2882682,
+          "legacyEstimatedMargin": 4048145.7353
         },
         {
           "dayOffset": 9,
           "label": "2026-05-04",
           "units": 4466,
           "revenue": 5291181,
-          "estimatedMargin": 3772491.8821,
+          "estimatedMargin": 2911337,
           "wbSellerSummaryReferenceRevenue": 5291181,
           "wbSellerSummaryReferenceUnits": 4466,
           "wbSellerSummary": {
@@ -281305,14 +281308,15 @@
           "wbSellerSummaryTotalPay": 2881447,
           "wbSellerSummaryTurnoverDays": 70,
           "financeTurnover": 4461697,
-          "financialResult": 2911337
+          "financialResult": 2911337,
+          "legacyEstimatedMargin": 3772491.8821
         },
         {
           "dayOffset": 8,
           "label": "2026-05-05",
           "units": 4589,
           "revenue": 5361308,
-          "estimatedMargin": 3924863.7994,
+          "estimatedMargin": 2963238,
           "wbSellerSummaryReferenceRevenue": 5361308,
           "wbSellerSummaryReferenceUnits": 4589,
           "wbSellerSummary": {
@@ -281344,14 +281348,15 @@
           "wbSellerSummaryTotalPay": 2962355,
           "wbSellerSummaryTurnoverDays": 78,
           "financeTurnover": 4538206,
-          "financialResult": 2963238
+          "financialResult": 2963238,
+          "legacyEstimatedMargin": 3924863.7994
         },
         {
           "dayOffset": 7,
           "label": "2026-05-06",
           "units": 4946,
           "revenue": 5770602,
-          "estimatedMargin": 4413637.5452,
+          "estimatedMargin": 3077200,
           "wbSellerSummaryReferenceRevenue": 5770602,
           "wbSellerSummaryReferenceUnits": 4946,
           "wbSellerSummary": {
@@ -281383,14 +281388,15 @@
           "wbSellerSummaryTotalPay": 3085025,
           "wbSellerSummaryTurnoverDays": 65,
           "financeTurnover": 4715769,
-          "financialResult": 3077200
+          "financialResult": 3077200,
+          "legacyEstimatedMargin": 4413637.5452
         },
         {
           "dayOffset": 6,
           "label": "2026-05-07",
           "units": 4870,
           "revenue": 5636034,
-          "estimatedMargin": 4204494.056,
+          "estimatedMargin": 2920589,
           "wbSellerSummaryReferenceRevenue": 5636034,
           "wbSellerSummaryReferenceUnits": 4870,
           "wbSellerSummary": {
@@ -281422,14 +281428,15 @@
           "wbSellerSummaryTotalPay": 2829453,
           "wbSellerSummaryTurnoverDays": 65,
           "financeTurnover": 4473540,
-          "financialResult": 2920589
+          "financialResult": 2920589,
+          "legacyEstimatedMargin": 4204494.056
         },
         {
           "dayOffset": 5,
           "label": "2026-05-08",
           "units": 4927,
           "revenue": 5742057,
-          "estimatedMargin": 4518689.1429,
+          "estimatedMargin": 3347512,
           "wbSellerSummaryReferenceRevenue": 5742057,
           "wbSellerSummaryReferenceUnits": 4927,
           "wbSellerSummary": {
@@ -281461,14 +281468,15 @@
           "wbSellerSummaryTotalPay": 3347512,
           "wbSellerSummaryTurnoverDays": 47,
           "financeTurnover": 5129300,
-          "financialResult": 3347512
+          "financialResult": 3347512,
+          "legacyEstimatedMargin": 4518689.1429
         },
         {
           "dayOffset": 4,
           "label": "2026-05-09",
           "units": 5182,
           "revenue": 5999184,
-          "estimatedMargin": 4432710.7945,
+          "estimatedMargin": 2555821,
           "wbSellerSummaryReferenceRevenue": 5999184,
           "wbSellerSummaryReferenceUnits": 5182,
           "wbSellerSummary": {
@@ -281500,14 +281508,15 @@
           "wbSellerSummaryTotalPay": 2555821,
           "wbSellerSummaryTurnoverDays": 58,
           "financeTurnover": 3914132,
-          "financialResult": 2555821
+          "financialResult": 2555821,
+          "legacyEstimatedMargin": 4432710.7945
         },
         {
           "dayOffset": 3,
           "label": "2026-05-10",
           "units": 6811,
           "revenue": 7645197,
-          "estimatedMargin": 5650579.3645,
+          "estimatedMargin": 2906948,
           "wbSellerSummaryReferenceRevenue": 7645197,
           "wbSellerSummaryReferenceUnits": 6811,
           "wbSellerSummary": {
@@ -281539,14 +281548,15 @@
           "wbSellerSummaryTotalPay": 2906948,
           "wbSellerSummaryTurnoverDays": 45,
           "financeTurnover": 4446232,
-          "financialResult": 2906948
+          "financialResult": 2906948,
+          "legacyEstimatedMargin": 5650579.3645
         },
         {
           "dayOffset": 2,
           "label": "2026-05-11",
           "units": 5707,
           "revenue": 6591224,
-          "estimatedMargin": 5410005.7106,
+          "estimatedMargin": 3744169,
           "wbSellerSummaryReferenceRevenue": 6591224,
           "wbSellerSummaryReferenceUnits": 5707,
           "wbSellerSummary": {
@@ -281578,14 +281588,15 @@
           "wbSellerSummaryTotalPay": 3742869,
           "wbSellerSummaryTurnoverDays": 54,
           "financeTurnover": 5733440,
-          "financialResult": 3744169
+          "financialResult": 3744169,
+          "legacyEstimatedMargin": 5410005.7106
         },
         {
           "dayOffset": 1,
           "label": "2026-05-12",
           "units": 4792,
           "revenue": 5508147,
-          "estimatedMargin": 4739317.4175,
+          "estimatedMargin": 3773860,
           "wbSellerSummaryReferenceRevenue": 5508147,
           "wbSellerSummaryReferenceUnits": 4792,
           "wbSellerSummary": {
@@ -281617,14 +281628,15 @@
           "wbSellerSummaryTotalPay": 3490987,
           "wbSellerSummaryTurnoverDays": 44,
           "financeTurnover": 5774485,
-          "financialResult": 3773860
+          "financialResult": 3773860,
+          "legacyEstimatedMargin": 4739317.4175
         },
         {
           "dayOffset": 0,
           "label": "2026-05-13",
           "units": 4544,
           "revenue": 5217572,
-          "estimatedMargin": 4938702.0627,
+          "estimatedMargin": 3053149,
           "wbSellerSummaryReferenceRevenue": 5217572,
           "wbSellerSummaryReferenceUnits": 4544,
           "wbSellerSummary": {
@@ -281656,7 +281668,8 @@
           "wbSellerSummaryTotalPay": 3060761,
           "wbSellerSummaryTurnoverDays": 0,
           "financeTurnover": 4670364,
-          "financialResult": 3053149
+          "financialResult": 3053149,
+          "legacyEstimatedMargin": 4938702.0627
         }
       ]
     },
@@ -281868,1787 +281881,2552 @@
         {
           "date": "2025-09-01",
           "label": "2025-09-01",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 254
         },
         {
           "date": "2025-09-02",
           "label": "2025-09-02",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 253
         },
         {
           "date": "2025-09-03",
           "label": "2025-09-03",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 252
         },
         {
           "date": "2025-09-04",
           "label": "2025-09-04",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 251
         },
         {
           "date": "2025-09-05",
           "label": "2025-09-05",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 250
         },
         {
           "date": "2025-09-06",
           "label": "2025-09-06",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 249
         },
         {
           "date": "2025-09-07",
           "label": "2025-09-07",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 248
         },
         {
           "date": "2025-09-08",
           "label": "2025-09-08",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 247
         },
         {
           "date": "2025-09-09",
           "label": "2025-09-09",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 246
         },
         {
           "date": "2025-09-10",
           "label": "2025-09-10",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 245
         },
         {
           "date": "2025-09-11",
           "label": "2025-09-11",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 244
         },
         {
           "date": "2025-09-12",
           "label": "2025-09-12",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 243
         },
         {
           "date": "2025-09-13",
           "label": "2025-09-13",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 242
         },
         {
           "date": "2025-09-14",
           "label": "2025-09-14",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 241
         },
         {
           "date": "2025-09-15",
           "label": "2025-09-15",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 240
         },
         {
           "date": "2025-09-16",
           "label": "2025-09-16",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 239
         },
         {
           "date": "2025-09-17",
           "label": "2025-09-17",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 238
         },
         {
           "date": "2025-09-18",
           "label": "2025-09-18",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 237
         },
         {
           "date": "2025-09-19",
           "label": "2025-09-19",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 236
         },
         {
           "date": "2025-09-20",
           "label": "2025-09-20",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 235
         },
         {
           "date": "2025-09-21",
           "label": "2025-09-21",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 234
         },
         {
           "date": "2025-09-22",
           "label": "2025-09-22",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 233
         },
         {
           "date": "2025-09-23",
           "label": "2025-09-23",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 232
         },
         {
           "date": "2025-09-24",
           "label": "2025-09-24",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 231
         },
         {
           "date": "2025-09-25",
           "label": "2025-09-25",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 230
         },
         {
           "date": "2025-09-26",
           "label": "2025-09-26",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 229
         },
         {
           "date": "2025-09-27",
           "label": "2025-09-27",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 228
         },
         {
           "date": "2025-09-28",
           "label": "2025-09-28",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 227
         },
         {
           "date": "2025-09-29",
           "label": "2025-09-29",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 226
         },
         {
           "date": "2025-09-30",
           "label": "2025-09-30",
-          "units": 24.833333333333332,
-          "revenue": 11686.29667738934,
-          "estimatedMargin": 15.686304264952135
+          "units": 24.8333,
+          "revenue": 11686.2967,
+          "financeTurnover": 11686.2967,
+          "financialResult": 15.6863,
+          "estimatedMargin": 15.6863,
+          "dayOffset": 225
         },
         {
           "date": "2025-10-01",
           "label": "2025-10-01",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 224
         },
         {
           "date": "2025-10-02",
           "label": "2025-10-02",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 223
         },
         {
           "date": "2025-10-03",
           "label": "2025-10-03",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 222
         },
         {
           "date": "2025-10-04",
           "label": "2025-10-04",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 221
         },
         {
           "date": "2025-10-05",
           "label": "2025-10-05",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 220
         },
         {
           "date": "2025-10-06",
           "label": "2025-10-06",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 219
         },
         {
           "date": "2025-10-07",
           "label": "2025-10-07",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 218
         },
         {
           "date": "2025-10-08",
           "label": "2025-10-08",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 217
         },
         {
           "date": "2025-10-09",
           "label": "2025-10-09",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 216
         },
         {
           "date": "2025-10-10",
           "label": "2025-10-10",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 215
         },
         {
           "date": "2025-10-11",
           "label": "2025-10-11",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 214
         },
         {
           "date": "2025-10-12",
           "label": "2025-10-12",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 213
         },
         {
           "date": "2025-10-13",
           "label": "2025-10-13",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 212
         },
         {
           "date": "2025-10-14",
           "label": "2025-10-14",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 211
         },
         {
           "date": "2025-10-15",
           "label": "2025-10-15",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 210
         },
         {
           "date": "2025-10-16",
           "label": "2025-10-16",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 209
         },
         {
           "date": "2025-10-17",
           "label": "2025-10-17",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 208
         },
         {
           "date": "2025-10-18",
           "label": "2025-10-18",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 207
         },
         {
           "date": "2025-10-19",
           "label": "2025-10-19",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 206
         },
         {
           "date": "2025-10-20",
           "label": "2025-10-20",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 205
         },
         {
           "date": "2025-10-21",
           "label": "2025-10-21",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 204
         },
         {
           "date": "2025-10-22",
           "label": "2025-10-22",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 203
         },
         {
           "date": "2025-10-23",
           "label": "2025-10-23",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 202
         },
         {
           "date": "2025-10-24",
           "label": "2025-10-24",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 201
         },
         {
           "date": "2025-10-25",
           "label": "2025-10-25",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 200
         },
         {
           "date": "2025-10-26",
           "label": "2025-10-26",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 199
         },
         {
           "date": "2025-10-27",
           "label": "2025-10-27",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 198
         },
         {
           "date": "2025-10-28",
           "label": "2025-10-28",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 197
         },
         {
           "date": "2025-10-29",
           "label": "2025-10-29",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 196
         },
         {
           "date": "2025-10-30",
           "label": "2025-10-30",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 195
         },
         {
           "date": "2025-10-31",
           "label": "2025-10-31",
-          "units": 57.45161290322581,
-          "revenue": 26393.191654981314,
-          "estimatedMargin": 14.819310305997368
+          "units": 57.4516,
+          "revenue": 26393.1917,
+          "financeTurnover": 26393.1917,
+          "financialResult": 14.8193,
+          "estimatedMargin": 14.8193,
+          "dayOffset": 194
         },
         {
           "date": "2025-11-01",
           "label": "2025-11-01",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 193
         },
         {
           "date": "2025-11-02",
           "label": "2025-11-02",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 192
         },
         {
           "date": "2025-11-03",
           "label": "2025-11-03",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 191
         },
         {
           "date": "2025-11-04",
           "label": "2025-11-04",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 190
         },
         {
           "date": "2025-11-05",
           "label": "2025-11-05",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 189
         },
         {
           "date": "2025-11-06",
           "label": "2025-11-06",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 188
         },
         {
           "date": "2025-11-07",
           "label": "2025-11-07",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 187
         },
         {
           "date": "2025-11-08",
           "label": "2025-11-08",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 186
         },
         {
           "date": "2025-11-09",
           "label": "2025-11-09",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 185
         },
         {
           "date": "2025-11-10",
           "label": "2025-11-10",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 184
         },
         {
           "date": "2025-11-11",
           "label": "2025-11-11",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 183
         },
         {
           "date": "2025-11-12",
           "label": "2025-11-12",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 182
         },
         {
           "date": "2025-11-13",
           "label": "2025-11-13",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 181
         },
         {
           "date": "2025-11-14",
           "label": "2025-11-14",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 180
         },
         {
           "date": "2025-11-15",
           "label": "2025-11-15",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 179
         },
         {
           "date": "2025-11-16",
           "label": "2025-11-16",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 178
         },
         {
           "date": "2025-11-17",
           "label": "2025-11-17",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 177
         },
         {
           "date": "2025-11-18",
           "label": "2025-11-18",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 176
         },
         {
           "date": "2025-11-19",
           "label": "2025-11-19",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 175
         },
         {
           "date": "2025-11-20",
           "label": "2025-11-20",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 174
         },
         {
           "date": "2025-11-21",
           "label": "2025-11-21",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 173
         },
         {
           "date": "2025-11-22",
           "label": "2025-11-22",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 172
         },
         {
           "date": "2025-11-23",
           "label": "2025-11-23",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 171
         },
         {
           "date": "2025-11-24",
           "label": "2025-11-24",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 170
         },
         {
           "date": "2025-11-25",
           "label": "2025-11-25",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 169
         },
         {
           "date": "2025-11-26",
           "label": "2025-11-26",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 168
         },
         {
           "date": "2025-11-27",
           "label": "2025-11-27",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 167
         },
         {
           "date": "2025-11-28",
           "label": "2025-11-28",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 166
         },
         {
           "date": "2025-11-29",
           "label": "2025-11-29",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 165
         },
         {
           "date": "2025-11-30",
           "label": "2025-11-30",
-          "units": 74.23333333333333,
-          "revenue": 35371.68800424834,
-          "estimatedMargin": 15.88311091344784
+          "units": 74.2333,
+          "revenue": 35371.688,
+          "financeTurnover": 35371.688,
+          "financialResult": 15.8831,
+          "estimatedMargin": 15.8831,
+          "dayOffset": 164
         },
         {
           "date": "2025-12-01",
           "label": "2025-12-01",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 163
         },
         {
           "date": "2025-12-02",
           "label": "2025-12-02",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 162
         },
         {
           "date": "2025-12-03",
           "label": "2025-12-03",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 161
         },
         {
           "date": "2025-12-04",
           "label": "2025-12-04",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 160
         },
         {
           "date": "2025-12-05",
           "label": "2025-12-05",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 159
         },
         {
           "date": "2025-12-06",
           "label": "2025-12-06",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 158
         },
         {
           "date": "2025-12-07",
           "label": "2025-12-07",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 157
         },
         {
           "date": "2025-12-08",
           "label": "2025-12-08",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 156
         },
         {
           "date": "2025-12-09",
           "label": "2025-12-09",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 155
         },
         {
           "date": "2025-12-10",
           "label": "2025-12-10",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 154
         },
         {
           "date": "2025-12-11",
           "label": "2025-12-11",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 153
         },
         {
           "date": "2025-12-12",
           "label": "2025-12-12",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 152
         },
         {
           "date": "2025-12-13",
           "label": "2025-12-13",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 151
         },
         {
           "date": "2025-12-14",
           "label": "2025-12-14",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 150
         },
         {
           "date": "2025-12-15",
           "label": "2025-12-15",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 149
         },
         {
           "date": "2025-12-16",
           "label": "2025-12-16",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 148
         },
         {
           "date": "2025-12-17",
           "label": "2025-12-17",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 147
         },
         {
           "date": "2025-12-18",
           "label": "2025-12-18",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 146
         },
         {
           "date": "2025-12-19",
           "label": "2025-12-19",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 145
         },
         {
           "date": "2025-12-20",
           "label": "2025-12-20",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 144
         },
         {
           "date": "2025-12-21",
           "label": "2025-12-21",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 143
         },
         {
           "date": "2025-12-22",
           "label": "2025-12-22",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 142
         },
         {
           "date": "2025-12-23",
           "label": "2025-12-23",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 141
         },
         {
           "date": "2025-12-24",
           "label": "2025-12-24",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 140
         },
         {
           "date": "2025-12-25",
           "label": "2025-12-25",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 139
         },
         {
           "date": "2025-12-26",
           "label": "2025-12-26",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 138
         },
         {
           "date": "2025-12-27",
           "label": "2025-12-27",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 137
         },
         {
           "date": "2025-12-28",
           "label": "2025-12-28",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 136
         },
         {
           "date": "2025-12-29",
           "label": "2025-12-29",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 135
         },
         {
           "date": "2025-12-30",
           "label": "2025-12-30",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 134
         },
         {
           "date": "2025-12-31",
           "label": "2025-12-31",
-          "units": 80.03225806451613,
-          "revenue": 40718.894636904406,
-          "estimatedMargin": 16.412291268401617
+          "units": 80.0323,
+          "revenue": 40718.8946,
+          "financeTurnover": 40718.8946,
+          "financialResult": 16.4123,
+          "estimatedMargin": 16.4123,
+          "dayOffset": 133
         },
         {
           "date": "2026-01-01",
           "label": "2026-01-01",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 132
         },
         {
           "date": "2026-01-02",
           "label": "2026-01-02",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 131
         },
         {
           "date": "2026-01-03",
           "label": "2026-01-03",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 130
         },
         {
           "date": "2026-01-04",
           "label": "2026-01-04",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 129
         },
         {
           "date": "2026-01-05",
           "label": "2026-01-05",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 128
         },
         {
           "date": "2026-01-06",
           "label": "2026-01-06",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 127
         },
         {
           "date": "2026-01-07",
           "label": "2026-01-07",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 126
         },
         {
           "date": "2026-01-08",
           "label": "2026-01-08",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 125
         },
         {
           "date": "2026-01-09",
           "label": "2026-01-09",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 124
         },
         {
           "date": "2026-01-10",
           "label": "2026-01-10",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 123
         },
         {
           "date": "2026-01-11",
           "label": "2026-01-11",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 122
         },
         {
           "date": "2026-01-12",
           "label": "2026-01-12",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 121
         },
         {
           "date": "2026-01-13",
           "label": "2026-01-13",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 120
         },
         {
           "date": "2026-01-14",
           "label": "2026-01-14",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 119
         },
         {
           "date": "2026-01-15",
           "label": "2026-01-15",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 118
         },
         {
           "date": "2026-01-16",
           "label": "2026-01-16",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 117
         },
         {
           "date": "2026-01-17",
           "label": "2026-01-17",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 116
         },
         {
           "date": "2026-01-18",
           "label": "2026-01-18",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 115
         },
         {
           "date": "2026-01-19",
           "label": "2026-01-19",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 114
         },
         {
           "date": "2026-01-20",
           "label": "2026-01-20",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 113
         },
         {
           "date": "2026-01-21",
           "label": "2026-01-21",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 112
         },
         {
           "date": "2026-01-22",
           "label": "2026-01-22",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 111
         },
         {
           "date": "2026-01-23",
           "label": "2026-01-23",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 110
         },
         {
           "date": "2026-01-24",
           "label": "2026-01-24",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 109
         },
         {
           "date": "2026-01-25",
           "label": "2026-01-25",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 108
         },
         {
           "date": "2026-01-26",
           "label": "2026-01-26",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 107
         },
         {
           "date": "2026-01-27",
           "label": "2026-01-27",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 106
         },
         {
           "date": "2026-01-28",
           "label": "2026-01-28",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 105
         },
         {
           "date": "2026-01-29",
           "label": "2026-01-29",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 104
         },
         {
           "date": "2026-01-30",
           "label": "2026-01-30",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 103
         },
         {
           "date": "2026-01-31",
           "label": "2026-01-31",
-          "units": 132.19354838709677,
-          "revenue": 78338.9411791914,
-          "estimatedMargin": 1108.4712613550114
+          "units": 132.1935,
+          "revenue": 78338.9412,
+          "financeTurnover": 78338.9412,
+          "financialResult": 1108.4713,
+          "estimatedMargin": 1108.4713,
+          "dayOffset": 102
         },
         {
           "date": "2026-02-01",
           "label": "2026-02-01",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 101
         },
         {
           "date": "2026-02-02",
           "label": "2026-02-02",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 100
         },
         {
           "date": "2026-02-03",
           "label": "2026-02-03",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 99
         },
         {
           "date": "2026-02-04",
           "label": "2026-02-04",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 98
         },
         {
           "date": "2026-02-05",
           "label": "2026-02-05",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 97
         },
         {
           "date": "2026-02-06",
           "label": "2026-02-06",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 96
         },
         {
           "date": "2026-02-07",
           "label": "2026-02-07",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 95
         },
         {
           "date": "2026-02-08",
           "label": "2026-02-08",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 94
         },
         {
           "date": "2026-02-09",
           "label": "2026-02-09",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 93
         },
         {
           "date": "2026-02-10",
           "label": "2026-02-10",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 92
         },
         {
           "date": "2026-02-11",
           "label": "2026-02-11",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 91
         },
         {
           "date": "2026-02-12",
           "label": "2026-02-12",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 90
         },
         {
           "date": "2026-02-13",
           "label": "2026-02-13",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 89
         },
         {
           "date": "2026-02-14",
           "label": "2026-02-14",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 88
         },
         {
           "date": "2026-02-15",
           "label": "2026-02-15",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 87
         },
         {
           "date": "2026-02-16",
           "label": "2026-02-16",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 86
         },
         {
           "date": "2026-02-17",
           "label": "2026-02-17",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 85
         },
         {
           "date": "2026-02-18",
           "label": "2026-02-18",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 84
         },
         {
           "date": "2026-02-19",
           "label": "2026-02-19",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 83
         },
         {
           "date": "2026-02-20",
           "label": "2026-02-20",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 82
         },
         {
           "date": "2026-02-21",
           "label": "2026-02-21",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 81
         },
         {
           "date": "2026-02-22",
           "label": "2026-02-22",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 80
         },
         {
           "date": "2026-02-23",
           "label": "2026-02-23",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 79
         },
         {
           "date": "2026-02-24",
           "label": "2026-02-24",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 78
         },
         {
           "date": "2026-02-25",
           "label": "2026-02-25",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 77
         },
         {
           "date": "2026-02-26",
           "label": "2026-02-26",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 76
         },
         {
           "date": "2026-02-27",
           "label": "2026-02-27",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 75
         },
         {
           "date": "2026-02-28",
           "label": "2026-02-28",
-          "units": 217.07142857142858,
-          "revenue": 125136.74104956708,
-          "estimatedMargin": 2688.8343619758007
+          "units": 217.0714,
+          "revenue": 125136.741,
+          "financeTurnover": 125136.741,
+          "financialResult": 2688.8344,
+          "estimatedMargin": 2688.8344,
+          "dayOffset": 74
         },
         {
           "date": "2026-03-01",
           "label": "2026-03-01",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 73
         },
         {
           "date": "2026-03-02",
           "label": "2026-03-02",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 72
         },
         {
           "date": "2026-03-03",
           "label": "2026-03-03",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 71
         },
         {
           "date": "2026-03-04",
           "label": "2026-03-04",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 70
         },
         {
           "date": "2026-03-05",
           "label": "2026-03-05",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 69
         },
         {
           "date": "2026-03-06",
           "label": "2026-03-06",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 68
         },
         {
           "date": "2026-03-07",
           "label": "2026-03-07",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 67
         },
         {
           "date": "2026-03-08",
           "label": "2026-03-08",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 66
         },
         {
           "date": "2026-03-09",
           "label": "2026-03-09",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 65
         },
         {
           "date": "2026-03-10",
           "label": "2026-03-10",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 64
         },
         {
           "date": "2026-03-11",
           "label": "2026-03-11",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 63
         },
         {
           "date": "2026-03-12",
           "label": "2026-03-12",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 62
         },
         {
           "date": "2026-03-13",
           "label": "2026-03-13",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 61
         },
         {
           "date": "2026-03-14",
           "label": "2026-03-14",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 60
         },
         {
           "date": "2026-03-15",
           "label": "2026-03-15",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 59
         },
         {
           "date": "2026-03-16",
           "label": "2026-03-16",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 58
         },
         {
           "date": "2026-03-17",
           "label": "2026-03-17",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 57
         },
         {
           "date": "2026-03-18",
           "label": "2026-03-18",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 56
         },
         {
           "date": "2026-03-19",
           "label": "2026-03-19",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 55
         },
         {
           "date": "2026-03-20",
           "label": "2026-03-20",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 54
         },
         {
           "date": "2026-03-21",
           "label": "2026-03-21",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 53
         },
         {
           "date": "2026-03-22",
           "label": "2026-03-22",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 52
         },
         {
           "date": "2026-03-23",
           "label": "2026-03-23",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 51
         },
         {
           "date": "2026-03-24",
           "label": "2026-03-24",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 50
         },
         {
           "date": "2026-03-25",
           "label": "2026-03-25",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 49
         },
         {
           "date": "2026-03-26",
           "label": "2026-03-26",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 48
         },
         {
           "date": "2026-03-27",
           "label": "2026-03-27",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 47
         },
         {
           "date": "2026-03-28",
           "label": "2026-03-28",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 46
         },
         {
           "date": "2026-03-29",
           "label": "2026-03-29",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 45
         },
         {
           "date": "2026-03-30",
           "label": "2026-03-30",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 44
         },
         {
           "date": "2026-03-31",
           "label": "2026-03-31",
           "units": 200,
-          "revenue": 122997.2840703661,
-          "estimatedMargin": 3043.818627792968
+          "revenue": 122997.2841,
+          "financeTurnover": 122997.2841,
+          "financialResult": 3043.8186,
+          "estimatedMargin": 3043.8186,
+          "dayOffset": 43
         },
         {
           "date": "2026-04-01",
           "label": "2026-04-01",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 42
         },
         {
           "date": "2026-04-02",
           "label": "2026-04-02",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 41
         },
         {
           "date": "2026-04-03",
           "label": "2026-04-03",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 40
         },
         {
           "date": "2026-04-04",
           "label": "2026-04-04",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 39
         },
         {
           "date": "2026-04-05",
           "label": "2026-04-05",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 38
         },
         {
           "date": "2026-04-06",
           "label": "2026-04-06",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 37
         },
         {
           "date": "2026-04-07",
           "label": "2026-04-07",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 36
         },
         {
           "date": "2026-04-08",
           "label": "2026-04-08",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 35
         },
         {
           "date": "2026-04-09",
           "label": "2026-04-09",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 34
         },
         {
           "date": "2026-04-10",
           "label": "2026-04-10",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 33
         },
         {
           "date": "2026-04-11",
           "label": "2026-04-11",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 32
         },
         {
           "date": "2026-04-12",
           "label": "2026-04-12",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 31
         },
         {
           "date": "2026-04-13",
           "label": "2026-04-13",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 30
         },
         {
           "date": "2026-04-14",
           "label": "2026-04-14",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 29
         },
         {
           "date": "2026-04-15",
           "label": "2026-04-15",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 28
         },
         {
           "date": "2026-04-16",
           "label": "2026-04-16",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 27
         },
         {
           "date": "2026-04-17",
           "label": "2026-04-17",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 26
         },
         {
           "date": "2026-04-18",
           "label": "2026-04-18",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 25
         },
         {
           "date": "2026-04-19",
           "label": "2026-04-19",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 24
         },
         {
           "date": "2026-04-20",
           "label": "2026-04-20",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 23
         },
         {
           "date": "2026-04-21",
           "label": "2026-04-21",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 22
         },
         {
           "date": "2026-04-22",
           "label": "2026-04-22",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 21
         },
         {
           "date": "2026-04-23",
           "label": "2026-04-23",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 20
         },
         {
           "date": "2026-04-24",
           "label": "2026-04-24",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 19
         },
         {
           "date": "2026-04-25",
           "label": "2026-04-25",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 18
         },
         {
           "date": "2026-04-26",
           "label": "2026-04-26",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 17
         },
         {
           "date": "2026-04-27",
           "label": "2026-04-27",
-          "units": 66.10000000000001,
-          "revenue": 44408.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 66.1,
+          "revenue": 44408.7816,
+          "financeTurnover": 44408.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 16
         },
         {
           "date": "2026-04-28",
           "label": "2026-04-28",
           "units": 148.1,
-          "revenue": 113610.78156602435,
-          "estimatedMargin": 985.911144113803
+          "revenue": 113610.7816,
+          "financeTurnover": 113610.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 15
         },
         {
           "date": "2026-04-29",
           "label": "2026-04-29",
-          "units": 196.10000000000002,
-          "revenue": 158716.78156602435,
-          "estimatedMargin": 985.911144113803
+          "units": 196.1,
+          "revenue": 158716.7816,
+          "financeTurnover": 158716.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 14
         },
         {
           "date": "2026-04-30",
           "label": "2026-04-30",
-          "units": 244.10000000000002,
-          "revenue": 198216.78156602432,
-          "estimatedMargin": 985.911144113803
+          "units": 244.1,
+          "revenue": 198216.7816,
+          "financeTurnover": 198216.7816,
+          "financialResult": 985.9111,
+          "estimatedMargin": 985.9111,
+          "dayOffset": 13
         },
         {
           "date": "2026-05-01",
           "label": "2026-05-01",
-          "units": 6296.2307692307695,
-          "revenue": 7013700.57923077,
-          "estimatedMargin": 4036110.5901544243
+          "units": 6296.2308,
+          "revenue": 7013700.5792,
+          "financeTurnover": 4975872.5792,
+          "financialResult": 2548620.9319,
+          "estimatedMargin": 2548620.9319,
+          "dayOffset": 12
         },
         {
           "date": "2026-05-02",
           "label": "2026-05-02",
-          "units": 6433.2307692307695,
-          "revenue": 7161813.539230769,
-          "estimatedMargin": 4321940.677054425
+          "units": 6433.2308,
+          "revenue": 7161813.5392,
+          "financeTurnover": 5158687.5392,
+          "financialResult": 2679493.7649,
+          "estimatedMargin": 2679493.7649,
+          "dayOffset": 11
         },
         {
           "date": "2026-05-03",
           "label": "2026-05-03",
-          "units": 6537.2307692307695,
-          "revenue": 7270031.539230769,
-          "estimatedMargin": 4199012.993154424
+          "units": 6537.2308,
+          "revenue": 7270031.5392,
+          "financeTurnover": 5775835.5392,
+          "financialResult": 3033549.2579,
+          "estimatedMargin": 3033549.2579,
+          "dayOffset": 10
         },
         {
           "date": "2026-05-04",
           "label": "2026-05-04",
-          "units": 6409.2307692307695,
-          "revenue": 6957003.539230769,
-          "estimatedMargin": 3998018.031154425
+          "units": 6409.2308,
+          "revenue": 6957003.5392,
+          "financeTurnover": 6127519.5392,
+          "financialResult": 3136863.1491,
+          "estimatedMargin": 3136863.1491,
+          "dayOffset": 9
         },
         {
           "date": "2026-05-05",
           "label": "2026-05-05",
-          "units": 6822.2307692307695,
-          "revenue": 7184444.529230769,
-          "estimatedMargin": 4173643.1657544244
+          "units": 6822.2308,
+          "revenue": 7184444.5292,
+          "financeTurnover": 6361342.5292,
+          "financialResult": 3212017.3664,
+          "estimatedMargin": 3212017.3664,
+          "dayOffset": 8
         },
         {
           "date": "2026-05-06",
           "label": "2026-05-06",
-          "units": 6988.2307692307695,
-          "revenue": 7468591.509230769,
-          "estimatedMargin": 4642034.580354424
+          "units": 6988.2308,
+          "revenue": 7468591.5092,
+          "financeTurnover": 6413758.5092,
+          "financialResult": 3305597.0352,
+          "estimatedMargin": 3305597.0352,
+          "dayOffset": 7
         },
         {
           "date": "2026-05-07",
           "label": "2026-05-07",
-          "units": 6967.2307692307695,
-          "revenue": 7370826.549230769,
-          "estimatedMargin": 4429436.035854424
+          "units": 6967.2308,
+          "revenue": 7370826.5492,
+          "financeTurnover": 6208332.5492,
+          "financialResult": 3145530.9799,
+          "estimatedMargin": 3145530.9799,
+          "dayOffset": 6
         },
         {
           "date": "2026-05-08",
           "label": "2026-05-08",
-          "units": 7080.2307692307695,
-          "revenue": 7555643.869230769,
-          "estimatedMargin": 4765547.379954425
+          "units": 7080.2308,
+          "revenue": 7555643.8692,
+          "financeTurnover": 6942886.8692,
+          "financialResult": 3594370.2371,
+          "estimatedMargin": 3594370.2371,
+          "dayOffset": 5
         },
         {
           "date": "2026-05-09",
           "label": "2026-05-09",
-          "units": 7081.2307692307695,
-          "revenue": 7587971.929230769,
-          "estimatedMargin": 4669111.643954424
+          "units": 7081.2308,
+          "revenue": 7587971.9292,
+          "financeTurnover": 5502919.9292,
+          "financialResult": 2792221.8495,
+          "estimatedMargin": 2792221.8495,
+          "dayOffset": 4
         },
         {
           "date": "2026-05-10",
           "label": "2026-05-10",
-          "units": 9287.23076923077,
-          "revenue": 9779930.539230768,
-          "estimatedMargin": 5977447.094554425
+          "units": 9287.2308,
+          "revenue": 9779930.5392,
+          "financeTurnover": 6580965.5392,
+          "financialResult": 3233815.7301,
+          "estimatedMargin": 3233815.7301,
+          "dayOffset": 3
         },
         {
           "date": "2026-05-11",
           "label": "2026-05-11",
-          "units": 9006.23076923077,
-          "revenue": 9083756.369230768,
-          "estimatedMargin": 5764211.173454424
+          "units": 9006.2308,
+          "revenue": 9083756.3692,
+          "financeTurnover": 8225972.3692,
+          "financialResult": 4098374.4629,
+          "estimatedMargin": 4098374.4629,
+          "dayOffset": 2
         },
         {
           "date": "2026-05-12",
           "label": "2026-05-12",
-          "units": 7400.2307692307695,
-          "revenue": 7571763.559230769,
-          "estimatedMargin": 5016592.952054425
+          "units": 7400.2308,
+          "revenue": 7571763.5592,
+          "financeTurnover": 7838101.5592,
+          "financialResult": 4051135.5346,
+          "estimatedMargin": 4051135.5346,
+          "dayOffset": 1
         },
         {
           "date": "2026-05-13",
           "label": "2026-05-13",
-          "units": 5357.2307692307695,
-          "revenue": 5872321.519230769,
-          "estimatedMargin": 5021847.599854425
+          "units": 5357.2308,
+          "revenue": 5872321.5192,
+          "financeTurnover": 5325113.5192,
+          "financialResult": 3136294.5372,
+          "estimatedMargin": 3136294.5372,
+          "dayOffset": 0
         }
       ]
     }
@@ -561277,7 +562055,7 @@
     "financeTurnoverField": "Сумма продаж по розничным ценам с учётом согласованной скидки, руб.",
     "financialResultField": "К перечислению за товар, руб.",
     "turnoverDaysField": "Оборачиваемость, дней",
-    "appliedAt": "2026-05-14T11:05:44.682Z",
+    "appliedAt": "2026-05-14T12:09:04.397Z",
     "matchedDays": 13,
     "changedDays": 0,
     "dates": [

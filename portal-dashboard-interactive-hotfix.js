@@ -1,6 +1,6 @@
 (function () {
-if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260513D__) return;
-window.__ALTEA_DASHBOARD_INTERACTIVE_20260513D__ = true;
+if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__) return;
+window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260507N__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429C__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429B__ = true;
@@ -11,8 +11,8 @@ window.__ALTEA_DASHBOARD_INTERACTIVE_20260513D__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260513market3';
-const STYLE_ID = 'altea-dashboard-interactive-20260513market4';
+  const VERSION = '20260514wb2';
+const STYLE_ID = 'altea-dashboard-interactive-20260514wb2';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
@@ -7140,12 +7140,41 @@ function dashboardTaskStatusChip(task) {
     window[name] = wrapped;
   }
 
+  function platformTrendsHasWbOfficialFields(payload) {
+    const wb = (payload?.platforms || []).find((platform) => String(platform?.key || '').toLowerCase() === 'wb');
+    const series = Array.isArray(wb?.series) ? wb.series : [];
+    const latest = [...series]
+      .reverse()
+      .find((point) => num(point?.revenue) > 0 || num(point?.units) > 0);
+    if (!latest) return series.length > 0;
+    const sellerSummary = latest?.wbSellerSummary && typeof latest.wbSellerSummary === 'object'
+      ? latest.wbSellerSummary
+      : {};
+    const financeTurnover = firstPositive(
+      latest?.wbSellerSummaryFinanceTurnover,
+      latest?.financeTurnover,
+      sellerSummary.financeTurnover,
+      sellerSummary.salesRevenue
+    );
+    const financialResult = firstPositive(
+      latest?.wbSellerSummaryPayForGoods,
+      latest?.financialResult,
+      sellerSummary.financialResult,
+      sellerSummary.payForGoods
+    );
+    return financeTurnover > 0 && financialResult > 0;
+  }
+
   async function loadJson(key, path, required, forceRefresh = false) {
     const existing = current(key);
     const hasUsablePayload = (payload) => {
       if (!payload || typeof payload !== 'object') return false;
       if (key === 'dashboard') return Boolean(payload.generatedAt) || (Array.isArray(payload.cards) && payload.cards.length > 0);
-      if (key === 'platformTrends') return Array.isArray(payload.platforms) && payload.platforms.length > 0;
+      if (key === 'platformTrends') {
+        return Array.isArray(payload.platforms)
+          && payload.platforms.length > 0
+          && platformTrendsHasWbOfficialFields(payload);
+      }
       if (key === 'platformPlan' || key === 'iuPlan') {
         return Boolean(payload.months && typeof payload.months === 'object' && Object.keys(payload.months).length > 0);
       }

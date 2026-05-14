@@ -103,6 +103,14 @@ function numberOrZero(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function firstNumber(...values) {
+  for (const value of values) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return 0;
+}
+
 function normalizeText(value) {
   return String(value || '').trim();
 }
@@ -728,19 +736,70 @@ function buildPlatformSeriesFromMonthly(monthlyTotals, asOfDate) {
 }
 
 function buildAllSeries(platformSeriesMap) {
+  const officialFinanceTurnoverForPoint = (key, point) => {
+    const sellerSummary = point?.wbSellerSummary && typeof point.wbSellerSummary === 'object'
+      ? point.wbSellerSummary
+      : {};
+    if (canonicalPlatformKey(key) === 'wb') {
+      return firstNumber(
+        point?.wbSellerSummaryFinanceTurnover,
+        point?.financeTurnover,
+        sellerSummary.financeTurnover,
+        sellerSummary.salesRevenue,
+        point?.revenue
+      );
+    }
+    return firstNumber(point?.financeTurnover, point?.revenue);
+  };
+  const officialMarginForPoint = (key, point) => {
+    const sellerSummary = point?.wbSellerSummary && typeof point.wbSellerSummary === 'object'
+      ? point.wbSellerSummary
+      : {};
+    if (canonicalPlatformKey(key) === 'wb') {
+      return firstNumber(
+        point?.wbSellerSummaryPayForGoods,
+        point?.financialResult,
+        sellerSummary.financialResult,
+        sellerSummary.payForGoods,
+        point?.estimatedMargin
+      );
+    }
+    return firstNumber(point?.financialResult, point?.estimatedMargin);
+  };
   const byDate = new Map();
-  for (const series of platformSeriesMap.values()) {
+  for (const [key, series] of platformSeriesMap.entries()) {
     for (const point of Array.isArray(series) ? series : []) {
       const date = isoDate(point?.date || point?.label);
       if (!date) continue;
-      const current = byDate.get(date) || { date, label: date, units: 0, revenue: 0, estimatedMargin: 0 };
+      const current = byDate.get(date) || {
+        date,
+        label: date,
+        units: 0,
+        revenue: 0,
+        financeTurnover: 0,
+        financialResult: 0,
+        estimatedMargin: 0
+      };
       current.units += numberOrZero(point.units);
       current.revenue += numberOrZero(point.revenue);
-      current.estimatedMargin += numberOrZero(point.estimatedMargin);
+      const financeTurnover = officialFinanceTurnoverForPoint(key, point);
+      const financialResult = officialMarginForPoint(key, point);
+      current.financeTurnover += financeTurnover;
+      current.financialResult += financialResult;
+      current.estimatedMargin += financialResult;
       byDate.set(date, current);
     }
   }
-  return [...byDate.values()].sort((left, right) => left.date.localeCompare(right.date));
+  return [...byDate.values()]
+    .sort((left, right) => left.date.localeCompare(right.date))
+    .map((point) => ({
+      ...point,
+      units: Number(point.units.toFixed(4)),
+      revenue: Number(point.revenue.toFixed(4)),
+      financeTurnover: Number(point.financeTurnover.toFixed(4)),
+      financialResult: Number(point.financialResult.toFixed(4)),
+      estimatedMargin: Number(point.estimatedMargin.toFixed(4))
+    }));
 }
 
 function buildAdsPlatformSeries(monthlyTotals, asOfDate) {

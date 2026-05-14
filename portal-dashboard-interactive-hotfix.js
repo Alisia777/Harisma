@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260507N__) return;
+if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260513D__) return;
+window.__ALTEA_DASHBOARD_INTERACTIVE_20260513D__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260507N__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429C__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429B__ = true;
@@ -10,11 +11,11 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260514iudrr1';
-  const STYLE_ID = 'altea-dashboard-interactive-20260507n';
+  const VERSION = '20260513market3';
+const STYLE_ID = 'altea-dashboard-interactive-20260513market4';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
-  const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
+  const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
   const PRESET_KEYS = ['yesterday', '7', 'prevweek', '14', '30'];
   const cache = {
     dashboard: null,
@@ -169,45 +170,33 @@
     if (typeof badge === 'function') return badge(text, tone);
     return `<span class="portal-exec-chip ${tone}">${esc(text)}</span>`;
   };
+  function canonicalDashboardPlatformKey(value) {
+    const raw = normalizeKey(value);
+    if (!raw) return 'all';
+    if (raw === 'ya' || raw === 'ym' || raw.includes('yandex')) return 'ya';
+    if (raw === 'goldapple' || raw === 'ga' || raw === 'zya' || raw.includes('золот')) return 'goldapple';
+    if (raw === 'letu' || raw.includes('лету')) return 'letu';
+    if (raw === 'magnit' || raw === 'mm' || raw.includes('магнит')) return 'magnit';
+    if (raw === 'retail') return 'ya';
+    if (raw === 'all' || raw === 'wb' || raw === 'ozon') return raw;
+    return raw;
+  }
+
   const shortPlatformLabel = (key) => ({
     all: 'Все площадки',
     wb: 'WB',
     ozon: 'Ozon',
-    ya: 'ЯМ / сети'
-  })[key] || key.toUpperCase();
+    ya: 'Я.Маркет',
+    goldapple: 'Золотое яблоко',
+    letu: "Л'Этуаль",
+    magnit: 'Магнит Маркет'
+  })[canonicalDashboardPlatformKey(key)] || String(key || '').toUpperCase();
   const parseDate = (value) => {
     if (!value) return null;
     const match = String(value).slice(0, 10).match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (!match) return null;
     const result = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
     return Number.isNaN(result.getTime()) ? null : result;
-  };
-  const parseFreshStamp = (value) => {
-    if (!value) return 0;
-    const raw = String(value || '').trim();
-    if (!raw) return 0;
-    const normalized = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T00:00:00Z` : raw;
-    const stamp = Date.parse(normalized);
-    return Number.isFinite(stamp) ? stamp : 0;
-  };
-  const iuDrrDataFreshness = (payload) => {
-    let score = parseFreshStamp(payload?.asOfDate || payload?.window?.to || '');
-    (payload?.daily || []).forEach((row) => {
-      score = Math.max(score, parseFreshStamp(row?.date));
-    });
-    return score;
-  };
-  const iuDrrPayloadFreshness = (payload) => Math.max(
-    iuDrrDataFreshness(payload),
-    parseFreshStamp(payload?.generatedAt || payload?.updatedAt || payload?.updated_at || '')
-  );
-  const preferExistingIuDrrPayload = (existing, incoming) => {
-    if (!existing || !incoming) return incoming || existing || null;
-    const existingData = iuDrrDataFreshness(existing);
-    const incomingData = iuDrrDataFreshness(incoming);
-    if (existingData > incomingData) return existing;
-    if (existingData < incomingData) return incoming;
-    return iuDrrPayloadFreshness(existing) >= iuDrrPayloadFreshness(incoming) ? existing : incoming;
   };
   const cleanDate = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const addDays = (date, offset) => {
@@ -309,12 +298,35 @@
   function platformSeries(platformKey, anchor) {
     const record = (current('platformTrends')?.platforms || []).find((item) => item.key === platformKey);
     return (record?.series || [])
-      .map((point) => ({
-        date: resolveSeriesDate(point, anchor),
-        units: num(point?.units),
-        revenue: num(point?.revenue),
-        margin: num(point?.estimatedMargin)
-      }))
+      .map((point) => {
+        const sellerSummary = point?.wbSellerSummary && typeof point.wbSellerSummary === 'object'
+          ? point.wbSellerSummary
+          : {};
+        const financeTurnover = firstPositive(
+          point?.wbSellerSummaryFinanceTurnover,
+          point?.financeTurnover,
+          sellerSummary.financeTurnover,
+          sellerSummary.salesRevenue
+        );
+        const financialResult = firstPositive(
+          point?.wbSellerSummaryPayForGoods,
+          point?.financialResult,
+          sellerSummary.financialResult,
+          sellerSummary.payForGoods
+        );
+        const sellerTurnoverRaw = point?.wbSellerSummaryTurnoverDays ?? sellerSummary.turnoverDays;
+        const sellerTurnoverDays = Number.isFinite(Number(sellerTurnoverRaw)) ? Number(sellerTurnoverRaw) : null;
+        return {
+          date: resolveSeriesDate(point, anchor),
+          units: num(point?.units),
+          revenue: num(point?.revenue),
+          ordersRevenue: num(point?.revenue),
+          financeTurnover,
+          financialResult,
+          sellerTurnoverDays,
+          margin: financialResult > 0 ? financialResult : num(point?.estimatedMargin)
+        };
+      })
       .filter((point) => point.date instanceof Date && !Number.isNaN(point.date.getTime()))
       .sort((left, right) => left.date - right.date);
   }
@@ -327,6 +339,19 @@
       if (platformKey === 'ya') return raw.includes('market') || raw.includes('маркет') || raw === 'ya';
       return raw === 'all' || raw.includes('все');
     });
+    const rows = (record?.series || [])
+      .map((point) => ({
+        date: resolveSeriesDate(point, anchor),
+        views: num(point?.views),
+        clicks: num(point?.clicks),
+        spend: num(point?.spend),
+        orders: num(point?.orders),
+        revenue: num(point?.revenue)
+      }))
+      .filter((point) => point.date instanceof Date && !Number.isNaN(point.date.getTime()))
+      .sort((left, right) => left.date - right.date);
+    if (rows.some((point) => point.views || point.clicks || point.spend || point.orders || point.revenue)) return rows;
+
     const iuDrrDaily = Array.isArray(current('iuDrrSummary')?.daily) ? current('iuDrrSummary').daily : [];
     if ((platformKey === 'wb' || platformKey === 'ozon' || platformKey === 'all') && iuDrrDaily.length) {
       const iuDrrRows = iuDrrDaily
@@ -350,35 +375,49 @@
         .sort((left, right) => left.date - right.date);
       if (iuDrrRows.some((point) => point.views || point.clicks || point.spend || point.orders || point.revenue)) return iuDrrRows;
     }
-
-    const rows = (record?.series || [])
-      .map((point) => ({
-        date: resolveSeriesDate(point, anchor),
-        views: num(point?.views),
-        clicks: num(point?.clicks),
-        spend: num(point?.spend),
-        orders: num(point?.orders),
-        revenue: num(point?.revenue)
-      }))
-      .filter((point) => point.date instanceof Date && !Number.isNaN(point.date.getTime()))
-      .sort((left, right) => left.date - right.date);
-    if (rows.some((point) => point.views || point.clicks || point.spend || point.orders || point.revenue)) return rows;
     return rows;
   }
 
   function rowsForPlatform(payload, platformKey) {
     const platforms = payload?.platforms || {};
-    const collect = (key, sourceKey = key) => {
-      const rows = Array.isArray(platforms[key]?.rows) ? platforms[key].rows : [];
-      return rows.map((row) => ({
-        ...row,
-        platformKey: sourceKey,
-        platformLabel: shortPlatformLabel(sourceKey)
-      }));
+    const extraMarketplace = payload?.extraMarketplace?.platforms || {};
+    const sourceKeysForPlatform = (key) => {
+      const canonicalKey = canonicalDashboardPlatformKey(key);
+      if (canonicalKey === 'all') return ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+      if (canonicalKey === 'ya') return ['ym', 'ya'];
+      if (canonicalKey === 'goldapple') return ['goldapple', 'ga', 'zya'];
+      if (canonicalKey === 'letu') return ['letu'];
+      if (canonicalKey === 'magnit') return ['magnit', 'mm', 'magnitmarket'];
+      return [canonicalKey];
     };
-    if (platformKey === 'all') return ['wb', 'ozon', 'ym'].flatMap((key) => collect(key, key === 'ym' ? 'ya' : key));
-    if (platformKey === 'ya') return collect('ym', 'ya');
-    return collect(platformKey, platformKey);
+    const targetKeys = canonicalDashboardPlatformKey(platformKey) === 'all'
+      ? ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit']
+      : [canonicalDashboardPlatformKey(platformKey)];
+    const rows = [];
+    const seen = new Set();
+    targetKeys.forEach((targetKey) => {
+      sourceKeysForPlatform(targetKey).forEach((candidateKey) => {
+        [
+          platforms[candidateKey]?.rows,
+          platforms[candidateKey]?.articles,
+          extraMarketplace[candidateKey]?.articles,
+          extraMarketplace[candidateKey]?.rows
+        ].forEach((items) => {
+          (Array.isArray(items) ? items : []).forEach((row) => {
+            const articleKey = normalizeKey(row?.articleKey || row?.article || row?.sku || row?.vendorCode || row?.id);
+            const dedupeKey = `${targetKey}:${articleKey}`;
+            if (!articleKey || seen.has(dedupeKey)) return;
+            seen.add(dedupeKey);
+            rows.push({
+              ...row,
+              platformKey: targetKey,
+              platformLabel: targetKey === 'all' ? shortPlatformLabel(row?.platformKey || candidateKey) : shortPlatformLabel(targetKey)
+            });
+          });
+        });
+      });
+    });
+    return rows;
   }
 
   function seriesLastDate(series) {
@@ -463,7 +502,8 @@
   function priceRowsForPlatform(platformKey) {
     const priceRows = rowsForPlatform(current('prices'), platformKey);
     const workbenchRows = rowsForPlatform(current('smartPriceWorkbench'), platformKey);
-    if (!workbenchRows.length) return priceRows;
+    const marketplaceRows = rowsForPlatform(current('platformTrends'), platformKey);
+    if (!workbenchRows.length && !marketplaceRows.length) return priceRows;
     const mergeKey = (row) => {
       const articleKey = normalizeKey(row?.articleKey || row?.article);
       const sourceKey = normalizeKey(row?.platformKey || platformKey);
@@ -476,11 +516,34 @@
       if (!key || priceMap.has(key)) return;
       priceMap.set(key, row);
     });
+    if (!workbenchRows.length && marketplaceRows.length) {
+      const mergedRows = [];
+      const used = new Set();
+      marketplaceRows.forEach((row) => {
+        const key = mergeKey(row);
+        const priceRow = key ? priceMap.get(key) : null;
+        if (key) used.add(key);
+        mergedRows.push(mergeDashboardPriceRow(priceRow, row));
+      });
+      priceRows.forEach((row) => {
+        const key = mergeKey(row);
+        if (key && used.has(key)) return;
+        mergedRows.push(row);
+      });
+      return mergedRows;
+    }
     const mergedRows = [];
     const used = new Set();
     workbenchRows.forEach((row) => {
       const key = mergeKey(row);
       const priceRow = key ? priceMap.get(key) : null;
+      if (key) used.add(key);
+      mergedRows.push(mergeDashboardPriceRow(priceRow, row));
+    });
+    marketplaceRows.forEach((row) => {
+      const key = mergeKey(row);
+      const priceRow = key ? priceMap.get(key) : null;
+      if (key && used.has(key)) return;
       if (key) used.add(key);
       mergedRows.push(mergeDashboardPriceRow(priceRow, row));
     });
@@ -493,7 +556,12 @@
   }
 
   function supportPlatformKey(platformKey) {
-    return platformKey === 'ya' ? 'ym' : platformKey;
+    const canonicalKey = canonicalDashboardPlatformKey(platformKey);
+    if (canonicalKey === 'ya') return 'ym';
+    if (canonicalKey === 'goldapple') return 'ga';
+    if (canonicalKey === 'letu') return 'letu';
+    if (canonicalKey === 'magnit') return 'mm';
+    return canonicalKey;
   }
 
   function supportRowForArticle(platformKey, article) {
@@ -507,21 +575,25 @@
   }
 
   function supportRowsForPlatform(platformKey) {
-    if (platformKey === 'all') return ['wb', 'ozon', 'ya'].flatMap((key) => supportRowsForPlatform(key));
-    const supportKey = supportPlatformKey(platformKey);
-    const rows = current('priceWorkbenchSupport')?.platforms?.[supportKey]?.rows;
-    if (!rows || typeof rows !== 'object') return [];
-    const sourceKey = platformKey === 'ym' ? 'ya' : platformKey;
-    return Object.entries(rows)
-      .filter(([article]) => article && article !== '0')
-      .map(([article, row]) => ({
-        ...(row || {}),
-        articleKey: row?.articleKey || row?.article || article,
-        article: row?.article || row?.articleKey || article,
-        platformKey: sourceKey,
-        platformLabel: shortPlatformLabel(sourceKey),
-        supportOnly: true
-      }));
+    const targetKeys = canonicalDashboardPlatformKey(platformKey) === 'all'
+      ? ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit']
+      : [canonicalDashboardPlatformKey(platformKey)];
+    return targetKeys.flatMap((targetKey) => {
+      const supportKey = supportPlatformKey(targetKey);
+      const rows = current('priceWorkbenchSupport')?.platforms?.[supportKey]?.rows;
+      if (!rows || typeof rows !== 'object') return [];
+      const sourceKey = canonicalDashboardPlatformKey(targetKey);
+      return Object.entries(rows)
+        .filter(([article]) => article && article !== '0')
+        .map(([article, row]) => ({
+          ...(row || {}),
+          articleKey: row?.articleKey || row?.article || article,
+          article: row?.article || row?.articleKey || article,
+          platformKey: sourceKey,
+          platformLabel: shortPlatformLabel(sourceKey),
+          supportOnly: true
+        }));
+    });
   }
 
   function workbenchRowsForPlatform(platformKey) {
@@ -570,8 +642,10 @@
       const daysInMonth = dayCount(bounds.start, bounds.end);
       const ratio = daysInMonth > 0 ? overlap / daysInMonth : 0;
       acc.used = true;
-      acc.units += num(item?.units) * ratio;
-      acc.revenue += num(item?.revenue) * ratio;
+      const unitsValue = item?.units ?? item?.ordersUnits ?? item?.deliveredUnits ?? item?.buyoutUnits;
+      const revenueValue = item?.revenue ?? item?.ordersRevenue ?? item?.deliveredRevenue ?? item?.buyoutRevenue;
+      acc.units += num(unitsValue) * ratio;
+      acc.revenue += num(revenueValue) * ratio;
       return acc;
     }, { used: false, units: 0, revenue: 0 });
     return result.used ? result : null;
@@ -596,7 +670,7 @@
     return null;
   }
 
-  function resolveArticleUnitPrice(support, workbench, range) {
+  function resolveArticleUnitPrice(support, workbench, range, sourceRow = null) {
     const actualRangePrice = monthlyAveragePrice(support?.actualMonths, range.effectiveStart, range.effectiveEnd);
     if (actualRangePrice) return actualRangePrice;
     const planRangePrice = monthlyAveragePrice(support?.planMonths, range.effectiveStart, range.effectiveEnd);
@@ -605,7 +679,17 @@
     if (latestActualPrice) return latestActualPrice;
     const latestPlanPrice = latestAveragePrice(support?.planMonths);
     if (latestPlanPrice) return latestPlanPrice;
+    const sourceRangePrice = monthlyAveragePrice(sourceRow?.monthly, range.effectiveStart, range.effectiveEnd);
+    if (sourceRangePrice) return sourceRangePrice;
+    const sourceLatestPrice = latestAveragePrice(sourceRow?.monthly);
+    if (sourceLatestPrice) return sourceLatestPrice;
+    const sourceDailyPrice = monthlyAveragePrice(sourceRow?.daily, range.effectiveStart, range.effectiveEnd);
+    if (sourceDailyPrice) return sourceDailyPrice;
+    const sourceDailyLatest = latestAveragePrice(sourceRow?.daily);
+    if (sourceDailyLatest) return sourceDailyLatest;
     const fallback = [
+      sourceRow?.currentPrice,
+      sourceRow?.currentFillPrice,
       workbench?.currentClientPrice,
       workbench?.currentFillPrice,
       workbench?.basePrice,
@@ -694,7 +778,7 @@
     const procurementActualUnits = procurementRows.length
       ? procurementRows.reduce((sum, row) => sum + procurementUnitsForDays(row, days), 0)
       : null;
-    const procurementPrice = resolveArticleUnitPrice(support, workbench, range);
+    const procurementPrice = resolveArticleUnitPrice(support, workbench, range, sourceRow);
     const procurementActualRevenue = procurementActualUnits !== null
       ? (procurementPrice > 0 ? procurementActualUnits * procurementPrice : 0)
       : null;
@@ -911,9 +995,38 @@
     app.uiHotfix = app.uiHotfix || {};
     app.uiHotfix.dashboardRange = app.uiHotfix.dashboardRange || {};
     const stored = app.uiHotfix.dashboardRange;
+    if ((!stored.start && !stored.end) || !stored.mode || !stored.active) {
+      try {
+        const raw = window.localStorage?.getItem('altea.portal.dashboardRange.v1');
+        if (raw) {
+          const persisted = JSON.parse(raw);
+          if (persisted && typeof persisted === 'object') {
+            if (typeof persisted.mode === 'string' && persisted.mode) stored.mode = persisted.mode;
+            if (typeof persisted.active === 'string' && persisted.active) stored.active = persisted.active;
+            if (typeof persisted.start === 'string' && persisted.start) stored.start = persisted.start;
+            if (typeof persisted.end === 'string' && persisted.end) stored.end = persisted.end;
+          }
+        }
+      } catch (error) {
+        console.warn('[portal-dashboard-interactive] range restore failed', error);
+      }
+    }
     if (!stored.mode) stored.mode = 'preset';
     if (!stored.active) stored.active = '7';
     return stored;
+  }
+
+  function persistRangeState(stored) {
+    try {
+      window.localStorage?.setItem('altea.portal.dashboardRange.v1', JSON.stringify({
+        mode: stored?.mode === 'custom' ? 'custom' : 'preset',
+        active: typeof stored?.active === 'string' && stored.active ? stored.active : '7',
+        start: typeof stored?.start === 'string' ? stored.start : '',
+        end: typeof stored?.end === 'string' ? stored.end : ''
+      }));
+    } catch (error) {
+      console.warn('[portal-dashboard-interactive] range save failed', error);
+    }
   }
 
   function ensurePlatformState() {
@@ -1063,10 +1176,10 @@
     if (platformKey === 'all') return num(month.revenue || month.planRevenueMonth);
     if (platformKey === 'wb') return num(channels.wb?.revenue);
     if (platformKey === 'ozon') return num(channels.ozon?.revenue);
-    if (platformKey === 'ya') {
-      return ['ya', 'goldapple', 'letu', 'magnit', 'd2c', 'b2b']
-        .reduce((sum, key) => sum + num(channels[key]?.revenue), 0);
-    }
+    if (platformKey === 'ya') return num(channels.ya?.revenue);
+    if (platformKey === 'goldapple') return num(channels.goldapple?.revenue);
+    if (platformKey === 'letu') return num(channels.letu?.revenue);
+    if (platformKey === 'magnit') return num(channels.magnit?.revenue);
     return 0;
   }
 
@@ -1214,16 +1327,22 @@
   }
 
   function buildIuRevenuePlanMetric(executive, rangeOverride = null) {
-    const range = monthScopeRange(rangeOverride || executive.range);
+    const range = rangeOverride || executive.range;
     const factMap = buildDailyValueMap([
-      platformSeries('wb', range.anchor),
-      platformSeries('ozon', range.anchor)
-    ], 'revenue');
+      platformSeries('wb', range.anchor).map((point) => ({
+        ...point,
+        iuFactRevenue: point.financeTurnover > 0 ? point.financeTurnover : point.revenue
+      })),
+      platformSeries('ozon', range.anchor).map((point) => ({
+        ...point,
+        iuFactRevenue: point.financeTurnover > 0 ? point.financeTurnover : point.revenue
+      }))
+    ], 'iuFactRevenue');
     return computeIuPlanWindow(range, factMap, iuPlanDailyRevenue);
   }
 
   function buildIuAdsPlanMetric(executive, rangeOverride = null) {
-    const range = monthScopeRange(rangeOverride || executive.range);
+    const range = rangeOverride || executive.range;
     const adsAnchor = parseDate(current('adsSummary')?.asOfDate) || range.anchor;
     const factMap = buildDailyValueMap([
       adsSeries('wb', adsAnchor),
@@ -1255,23 +1374,14 @@
 
   function platformHasPresence(sku, platformKey) {
     if (!sku) return false;
-    if (platformKey === 'all') return true;
-    if (platformKey === 'wb') return Boolean(sku?.flags?.hasWB);
-    if (platformKey === 'ozon') return Boolean(sku?.flags?.hasOzon);
-    if (platformKey === 'ya') {
-      return Boolean(
-        sku?.ownersByPlatform?.ym
-        || sku?.ownersByPlatform?.ya
-        || sku?.ownersByPlatform?.ga
-        || sku?.ownersByPlatform?.letu
-        || sku?.ownersByPlatform?.mm
-        || sku?.categoriesByPlatform?.ym
-        || sku?.categoriesByPlatform?.ya
-        || sku?.categoriesByPlatform?.ga
-        || sku?.categoriesByPlatform?.letu
-        || sku?.categoriesByPlatform?.mm
-      );
-    }
+    const key = canonicalDashboardPlatformKey(platformKey);
+    if (key === 'all') return true;
+    if (key === 'wb') return Boolean(sku?.flags?.hasWB || sku?.wb);
+    if (key === 'ozon') return Boolean(sku?.flags?.hasOzon || sku?.ozon);
+    if (key === 'ya') return Boolean(sku?.ownersByPlatform?.ym || sku?.ownersByPlatform?.ya || sku?.categoriesByPlatform?.ym || sku?.categoriesByPlatform?.ya);
+    if (key === 'goldapple') return Boolean(sku?.ownersByPlatform?.ga || sku?.categoriesByPlatform?.ga);
+    if (key === 'letu') return Boolean(sku?.ownersByPlatform?.letu || sku?.categoriesByPlatform?.letu);
+    if (key === 'magnit') return Boolean(sku?.ownersByPlatform?.mm || sku?.categoriesByPlatform?.mm);
     return false;
   }
 
@@ -1324,28 +1434,29 @@
   }
 
   function issueCountersForSku(sku, platformKey) {
+    const key = canonicalDashboardPlatformKey(platformKey);
     const assigned = Boolean(sku?.flags?.assigned);
-    const lowStock = Boolean(sku?.flags?.lowStock) && platformHasPresence(sku, platformKey);
-    const underPlan = Boolean(sku?.flags?.underPlan) && platformHasPresence(sku, platformKey);
-    const negativeMargin = platformKey === 'wb'
+    const lowStock = Boolean(sku?.flags?.lowStock) && platformHasPresence(sku, key);
+    const underPlan = Boolean(sku?.flags?.underPlan) && platformHasPresence(sku, key);
+    const negativeMargin = key === 'wb'
       ? Boolean(sku?.flags?.wbNegativeMargin)
-      : platformKey === 'ozon'
+      : key === 'ozon'
         ? Boolean(sku?.flags?.ozonNegativeMargin)
-        : platformKey === 'all'
+        : key === 'all'
           ? Boolean(sku?.flags?.negativeMargin)
-          : false;
-    const toWork = platformKey === 'wb'
+          : Boolean(sku?.flags?.negativeMargin);
+    const toWork = key === 'wb'
       ? Boolean(sku?.flags?.toWorkWB)
-      : platformKey === 'ozon'
+      : key === 'ozon'
         ? Boolean(sku?.flags?.toWorkOzon)
-        : platformKey === 'all'
+        : key === 'all'
           ? Boolean(sku?.flags?.toWork)
-          : false;
-    const belowMin = platformKey === 'wb'
+          : Boolean(sku?.flags?.toWork);
+    const belowMin = key === 'wb'
       ? Boolean(sku?.wb?.belowMin)
-      : platformKey === 'ozon'
+      : key === 'ozon'
         ? Boolean(sku?.ozon?.belowMin)
-        : platformKey === 'all'
+        : key === 'all'
           ? Boolean(sku?.wb?.belowMin || sku?.ozon?.belowMin)
           : false;
     return {
@@ -1474,19 +1585,22 @@
       const planRevenue = companyPlanDailyRevenue(date, platformKey);
       const factUnits = num(trend.units);
       const revenue = num(trend.revenue);
+      const financeTurnover = num(trend.financeTurnover);
       const margin = num(trend.margin);
       const spend = num(ads.spend);
       const adRevenue = num(ads.revenue);
+      const marginBase = financeTurnover > 0 ? financeTurnover : revenue;
       const useCompanyPlanForDay = platformKey !== 'ya' && planRevenue > 0;
       return {
         date,
         planUnits,
         planRevenue,
         factUnits,
+        financeTurnover,
         completion: useCompanyPlanForDay ? revenue / planRevenue : planUnits > 0 ? factUnits / planUnits : 0,
         revenue,
         margin,
-        marginPct: revenue > 0 ? margin / revenue : 0,
+        marginPct: marginBase > 0 ? margin / marginBase : 0,
         views: num(ads.views),
         clicks: num(ads.clicks),
         orders: num(ads.orders),
@@ -1504,6 +1618,7 @@
     const plan = usesCompanyPlan ? planRevenue : planUnits;
     const units = days.reduce((sum, row) => sum + row.factUnits, 0);
     const revenue = days.reduce((sum, row) => sum + row.revenue, 0);
+    const financeTurnover = days.reduce((sum, row) => sum + row.financeTurnover, 0);
     const margin = days.reduce((sum, row) => sum + row.margin, 0);
     const views = days.reduce((sum, row) => sum + row.views, 0);
     const clicks = days.reduce((sum, row) => sum + row.clicks, 0);
@@ -1511,7 +1626,8 @@
     const spend = days.reduce((sum, row) => sum + row.spend, 0);
     const adRevenue = days.reduce((sum, row) => sum + row.adRevenue, 0);
     const completion = plan > 0 ? (usesCompanyPlan ? planFactRevenue / plan : units / plan) : 0;
-    const marginPct = revenue > 0 ? margin / revenue : 0;
+    const marginBase = financeTurnover > 0 ? financeTurnover : revenue;
+    const marginPct = marginBase > 0 ? margin / marginBase : 0;
     const avgCheck = units > 0 ? revenue / units : 0;
     const ctr = views > 0 ? clicks / views : null;
     const drr = adRevenue > 0 ? spend / adRevenue : null;
@@ -1539,6 +1655,7 @@
       planFactRevenue,
       units,
       revenue,
+      financeTurnover,
       margin,
       completion,
       avgUnits: units / Math.max(1, rangeLike.days),
@@ -1744,59 +1861,24 @@
   }
 
   function contentSliceRowsFallback() {
-    const topContent = current('dashboard')?.topContent || [];
-    const skuMap = new Map(
-      (current('skus') || []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku])
-    );
-    return topContent
-      .map((item) => {
-        const article = String(item?.article || '').trim();
-        const sku = skuMap.get(normalizeKey(article));
-        const content = sku?.content || {};
-        const revenue = num(item?.content_revenue ?? content.revenue);
-        const income = num(item?.content_income ?? content.income);
-        const romi = item?.content_romi ?? content.romi;
-        return {
-          article: article || sku?.articleKey || sku?.article || '—',
-          name: item?.product_name_final || sku?.name || article || '—',
-          owner: platformOwnerName(sku, 'ozon', item?.owner_name),
-          posts: num(item?.content_posts ?? content.posts),
-          clicks: num(item?.content_clicks ?? content.clicks),
-          orders: num(content.orders),
-          revenue,
-          income,
-          spend: deriveContentSpend(revenue, income, romi),
-          romi: normalizeContentRomiValue(romi),
-          channels: Array.isArray(sku?.traffic?.channels) ? sku.traffic.channels : []
-        };
-      })
-      .filter((item) => item.posts > 0 || item.clicks > 0 || item.orders > 0 || item.revenue > 0)
-      .sort((left, right) => right.revenue - left.revenue || right.clicks - left.clicks);
+    return [];
   }
 
   function contentSliceRows() {
-    const leaderboardRows = contentSliceRowsFromProductLeaderboard();
-    if (leaderboardRows.length) return leaderboardRows;
-    return contentSliceRowsFallback();
+    return contentSliceRowsFromProductLeaderboard();
   }
 
   function contentSliceSummary() {
     const rows = contentSliceRows();
-    const leaderboard = currentProductLeaderboard();
-    const leaderboardRows = contentSliceRowsFromProductLeaderboard();
-    const usingLeaderboard = leaderboardRows.length > 0;
-    const periods = usingLeaderboard
-      ? [leaderboard.weekLabel || leaderboard.sourceSheetName || 'weekly КЗ-срез'].filter(Boolean)
-      : (current('dashboard')?.dataFreshness?.contentPeriods || []);
-    const posts = usingLeaderboard ? num(leaderboard.summary?.posts) : rows.reduce((sum, row) => sum + row.posts, 0);
-    const clicks = usingLeaderboard ? num(leaderboard.summary?.clicks) : rows.reduce((sum, row) => sum + row.clicks, 0);
-    const orders = usingLeaderboard ? num(leaderboard.summary?.orders) : rows.reduce((sum, row) => sum + row.orders, 0);
-    const spend = usingLeaderboard ? num(leaderboard.summary?.contentCost) : rows.reduce((sum, row) => sum + row.spend, 0);
-    const revenue = usingLeaderboard ? num(leaderboard.summary?.revenue) : rows.reduce((sum, row) => sum + row.revenue, 0);
-    const income = usingLeaderboard ? num(leaderboard.summary?.income) : rows.reduce((sum, row) => sum + row.income, 0);
-    const romi = usingLeaderboard
-      ? normalizeContentRomiValue(leaderboard.summary?.romiPct)
-      : (spend > 0 ? income / spend : null);
+    const leaderboard = currentProductLeaderboard() || {};
+    const periods = [leaderboard.weekLabel || leaderboard.sourceSheetName || 'weekly КЗ-срез'].filter(Boolean);
+    const posts = rows.length ? num(leaderboard.summary?.posts) : 0;
+    const clicks = rows.length ? num(leaderboard.summary?.clicks) : 0;
+    const orders = rows.length ? num(leaderboard.summary?.orders) : 0;
+    const spend = rows.length ? num(leaderboard.summary?.contentCost) : 0;
+    const revenue = rows.length ? num(leaderboard.summary?.revenue) : 0;
+    const income = rows.length ? num(leaderboard.summary?.income) : 0;
+    const romi = rows.length ? normalizeContentRomiValue(leaderboard.summary?.romiPct) : 0;
     return {
       rows,
       periods,
@@ -1807,11 +1889,11 @@
       revenue,
       income,
       romi,
-      generatedAt: usingLeaderboard ? (leaderboard.generatedAt || '') : (current('dashboard')?.generatedAt || ''),
-      sourceLabel: usingLeaderboard ? 'product_leaderboard.json' : 'dashboard.topContent + skus.content',
-      sourceSheetName: usingLeaderboard ? (leaderboard.sourceSheetName || leaderboard.weekLabel || '') : '',
-      modeLabel: usingLeaderboard ? 'weekly КЗ лидерборд' : 'аварийный fallback',
-      usingLeaderboard,
+      generatedAt: leaderboard.generatedAt || '',
+      sourceLabel: 'product_leaderboard.json',
+      sourceSheetName: leaderboard.sourceSheetName || leaderboard.weekLabel || '',
+      modeLabel: 'weekly КЗ лидерборд',
+      usingLeaderboard: rows.length > 0,
       topRow: rows[0] || null
     };
   }
@@ -1896,13 +1978,30 @@
     };
   }
 
+  function sellerSummaryTurnoverSeries(platformKey, range) {
+    if (canonicalDashboardPlatformKey(platformKey) !== 'wb') return [];
+    const start = range?.effectiveStart;
+    const end = range?.effectiveEnd;
+    if (!(start instanceof Date) || !(end instanceof Date)) return [];
+    return platformSeries('wb', range?.anchor || anchorDate())
+      .filter((point) => point.date >= start && point.date <= end)
+      .filter((point) => Number.isFinite(Number(point.sellerTurnoverDays)) && Number(point.sellerTurnoverDays) > 0)
+      .map((point) => ({
+        date: point.date,
+        avgTurnover: Number(point.sellerTurnoverDays),
+        skuCount: 1,
+        source: 'wb-seller-summary'
+      }));
+  }
+
   function buildTurnoverMetric(platformKey, range) {
     const stockMetric = buildStockMetric(platformKey);
-    const turnoverSeries = turnoverMatrixSeries(platformKey, range);
+    const officialTurnoverSeries = sellerSummaryTurnoverSeries(platformKey, range);
+    const turnoverSeries = officialTurnoverSeries.length ? officialTurnoverSeries : turnoverMatrixSeries(platformKey, range);
     let publishedTurnoverSeries = [];
-    let publishedFromFreshness = false;
+    let publishedFromFreshness = officialTurnoverSeries.length > 0;
 
-    const bounds = turnoverPublishedBounds(platformKey);
+    const bounds = officialTurnoverSeries.length ? null : turnoverPublishedBounds(platformKey);
     if (bounds?.maxDate instanceof Date) {
       const end = cleanDate(bounds.maxDate);
       const rawStart = addDays(end, -13);
@@ -1940,6 +2039,10 @@
       }
     }
 
+    if (officialTurnoverSeries.length) {
+      publishedTurnoverSeries = detailTailRows(officialTurnoverSeries, 14);
+    }
+
     if (!publishedTurnoverSeries.length && turnoverSeries.length) {
       publishedTurnoverSeries = detailTailRows(turnoverSeries, 14);
     }
@@ -1971,7 +2074,7 @@
       turnoverSeries,
       turnoverPublishedSeries: publishedTurnoverSeries,
       turnoverHistoryScope: publishedTurnoverSeries.length
-        ? (publishedFromFreshness ? 'freshness' : (sameRangeAsRequested ? 'range' : 'published'))
+        ? (officialTurnoverSeries.length ? 'wb-seller-summary' : (publishedFromFreshness ? 'freshness' : (sameRangeAsRequested ? 'range' : 'published')))
         : (turnoverSeries.length ? 'range' : 'none'),
       turnoverPublishedLabel: publishedStart && publishedEnd ? rangeLabel(publishedStart, publishedEnd) : '',
       turnoverLatestPublishedDate: latestPublishedDate,
@@ -3320,14 +3423,12 @@
 
   function buildContentSliceDetail() {
     const summary = contentSliceSummary();
-    const periodLabel = summary.periods.length ? summary.periods.join(' · ') : 'последний доступный срез';
-    const subtitle = summary.usingLeaderboard
+    const periodLabel = summary.periods.length ? summary.periods.join(' · ') : 'weekly КЗ-срез';
+    const subtitle = summary.rows.length
       ? `${periodLabel}. Источник: продуктовый лидерборд, обновлено ${fmt.date(summary.generatedAt)}.`
-      : `${periodLabel}. Этот блок пока не управляется календарём и нужен как временная витрина, пока daily ads_summary не опубликован.`;
+      : `${periodLabel}. Старый content fallback отключён, ждём публикацию weekly КЗ-лидерборда.`;
     return {
-      title: summary.usingLeaderboard
-        ? 'Контент и окупаемость (ROMI) · продуктовый лидерборд'
-        : 'Контент и окупаемость (ROMI) · последний доступный срез',
+      title: 'Контент и окупаемость (ROMI) · продуктовый лидерборд',
       subtitle,
       body: `
         <div class="portal-exec-modal-metrics">
@@ -3434,9 +3535,7 @@
         adsReady
           ? 'Реклама подключена'
           : contentReady
-            ? contentSummary.usingLeaderboard
-              ? 'Контент из лидерборда подключен'
-              : 'Daily-реклама ждёт публикации, fallback доступен'
+            ? 'Контент из weekly КЗ-лидерборда подключен'
             : 'Реклама пока без факта',
         adsReady ? 'ok' : 'warn'
       )
@@ -3470,9 +3569,10 @@
                 <div class="portal-exec-filter-chips">
                   ${[
                     { key: 'all', label: 'Все' },
-                    { key: 'wb', label: 'WB' },
-                    { key: 'ozon', label: 'Ozon' },
-                    { key: 'ya', label: 'ЯМ / сети' }
+                    ...PLATFORM_KEYS.filter((key) => key !== 'all').map((key) => ({
+                      key,
+                      label: shortPlatformLabel(key)
+                    }))
                   ].map((platform) => `
                     <button
                       type="button"
@@ -4252,7 +4352,9 @@
   }
 
   function stockSection(executive) {
-    const platforms = executive.selectedPlatform === 'all' ? ['wb', 'ozon'] : [executive.selectedPlatform];
+    const platforms = executive.selectedPlatform === 'all'
+      ? ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit']
+      : [executive.selectedPlatform];
     return `
       <section class="portal-exec-section">
         <div class="portal-exec-head">
@@ -4326,12 +4428,8 @@
     if (!readyCards.length) {
       const content = contentSliceSummary();
       if (content.rows.length) {
-        const sectionTitle = content.usingLeaderboard
-          ? 'Контент и окупаемость (ROMI) · продуктовый лидерборд'
-          : 'Контент и окупаемость (ROMI) · последний срез';
-        const sectionDescription = content.usingLeaderboard
-          ? 'На главной показываем weekly КЗ-срез из продуктового лидерборда: клики, заказы, выручка, затраты на контент и ROMI берём из одного источника, без старого fallback-слоя.'
-          : 'В daily-рекламной витрине для выбранного окна нет опубликованного факта, поэтому блок собран по последнему доступному контент-срезу. Он даёт базовую картину по кликам, заказам, выручке и окупаемости без дневной детализации.';
+        const sectionTitle = 'Контент и окупаемость (ROMI) · продуктовый лидерборд';
+        const sectionDescription = 'На главной показываем только weekly КЗ-срез из product_leaderboard.json. Старый content fallback отключён.';
         return `
           <section class="portal-exec-section">
             <div class="portal-exec-head">
@@ -4340,14 +4438,14 @@
                 <p>${sectionDescription}</p>
               </div>
               <div class="portal-exec-chip-stack">
-                ${badgeHtml(content.usingLeaderboard ? 'Продуктовый лидерборд' : 'Последний контент-срез', content.usingLeaderboard ? 'ok' : 'warn')}
-                ${badgeHtml(content.periods.length ? content.periods.join(' · ') : 'последний срез', 'info')}
+                ${badgeHtml(content.rows.length ? 'Продуктовый лидерборд' : 'Лидерборд не опубликован', content.rows.length ? 'ok' : 'warn')}
+                ${badgeHtml(content.periods.length ? content.periods.join(' · ') : 'weekly КЗ-срез', 'info')}
                 ${content.generatedAt ? badgeHtml(`Обновлено ${fmt.date(content.generatedAt)}`, 'info') : ''}
               </div>
             </div>
             <div class="portal-exec-grid">
-                <article class="portal-exec-card ${content.usingLeaderboard ? 'is-ok' : 'is-warn'} is-clickable" data-portal-exec-open="content-summary">
-                  <div class="portal-exec-card-head"><span class="portal-exec-card-label">Контент / ROMI</span>${badgeHtml(content.usingLeaderboard ? 'weekly КЗ' : 'контент-срез', content.usingLeaderboard ? 'ok' : 'warn')}</div>
+                <article class="portal-exec-card ${content.rows.length ? 'is-ok' : 'is-warn'} is-clickable" data-portal-exec-open="content-summary">
+                  <div class="portal-exec-card-head"><span class="portal-exec-card-label">Контент / ROMI</span>${badgeHtml(content.rows.length ? 'weekly КЗ' : 'ожидаем weekly КЗ', content.rows.length ? 'ok' : 'warn')}</div>
                   <div class="portal-exec-card-value compact">${esc(money(content.revenue))}</div>
                   <div class="portal-exec-sub">Клики ${esc(int(content.clicks))} · заказы ${esc(int(content.orders))} · контент ${esc(money(content.spend))} · ROMI ${esc(content.romi !== null ? pct(content.romi) : '—')}</div>
                   <div class="portal-exec-card-foot"><span>Посты ${esc(int(content.posts))}</span><span>SKU ${esc(int(content.rows.length))}</span></div>
@@ -4369,11 +4467,11 @@
           <div class="portal-exec-head">
             <div class="portal-exec-copy">
               <h3>Рекламная воронка</h3>
-              <p>Для выбранного диапазона не найден опубликованный рекламный факт и нет резервного контент-среза, поэтому блок остаётся пустым без подстановки случайных чисел.</p>
+              <p>Для выбранного диапазона не найден опубликованный рекламный факт, а weekly КЗ-лидерборд ещё не опубликован, поэтому блок остаётся пустым без подстановки случайных чисел.</p>
             </div>
             <div class="portal-exec-chip-stack">${badgeHtml('Нет рекламного факта', 'warn')}${badgeHtml('ads_summary пуст', 'info')}</div>
           </div>
-          <div class="portal-exec-empty">В этом диапазоне <code>ads_summary</code> не содержит рабочего факта, и резервный контент-срез тоже не найден.</div>
+          <div class="portal-exec-empty">В этом диапазоне <code>ads_summary</code> не содержит рабочего факта, а weekly КЗ-лидерборд не даёт подстановки, потому что старый content fallback отключён.</div>
         </section>
       `;
     }
@@ -4453,6 +4551,7 @@
       button.addEventListener('click', () => {
         const stored = ensureRangeState();
         Object.assign(stored, presetRange(button.dataset.portalExecPreset || '7', cleanDate(selectedRange().max || new Date())));
+        persistRangeState(stored);
         scheduleLocalApply(160);
       });
     });
@@ -4493,6 +4592,7 @@
       const nextStart = event.target.value || stored.start;
       stored.start = nextStart;
       if (stored.end && nextStart && stored.end < nextStart) stored.end = nextStart;
+      persistRangeState(stored);
       scheduleLocalApply(180);
     });
 
@@ -4503,6 +4603,7 @@
       const nextEnd = event.target.value || stored.end;
       stored.end = nextEnd;
       if (stored.start && nextEnd && stored.start > nextEnd) stored.start = nextEnd;
+      persistRangeState(stored);
       scheduleLocalApply(180);
     });
 
@@ -5027,13 +5128,444 @@
     if (['wb+ozon', 'wb + ozon', 'cross', 'common', 'shared', 'general', 'all'].includes(raw)) return 'cross';
     if (/(^|\\W)wb($|\\W)|wildberries|вб/.test(text)) return 'wb';
     if (/ozon|озон/.test(text)) return 'ozon';
-    if (/retail|market|яндекс|я\\.маркет|ям|letu|лету|магнит|golden apple|золот/.test(text)) return 'retail';
+    const marketplace = dashboardMarketplaceKeyFromText(text) || (raw === 'retail' ? 'ya' : '');
+    if (marketplace) return marketplace;
     return 'cross';
   }
 
   function dashboardControlPlatformKey(platformKey) {
-    if (platformKey === 'ya') return 'retail';
-    if (platformKey === 'wb' || platformKey === 'ozon') return platformKey;
+    const key = canonicalDashboardPlatformKey(platformKey);
+    if (['ya', 'goldapple', 'letu', 'magnit', 'wb', 'ozon', 'all'].includes(key)) return key;
+    return 'all';
+  }
+
+  function adsSeriesFromRecord(record, anchor) {
+    return (record?.series || [])
+      .map((point) => ({
+        date: resolveSeriesDate(point, anchor),
+        views: num(point?.views),
+        clicks: num(point?.clicks),
+        spend: num(point?.spend),
+        orders: num(point?.orders),
+        revenue: num(point?.revenue)
+      }))
+      .filter((point) => point.date instanceof Date && !Number.isNaN(point.date.getTime()))
+      .sort((left, right) => left.date - right.date);
+  }
+
+  function adsSeriesHasValues(rows) {
+    return Array.isArray(rows) && rows.some((point) => point.views || point.clicks || point.spend || point.orders || point.revenue);
+  }
+
+  function adsSeriesForPlatform(platformKey, anchor) {
+    const resolvedKey = canonicalDashboardPlatformKey(platformKey);
+    const records = Array.isArray(current('adsSummary')?.platforms) ? current('adsSummary').platforms : [];
+    const record = records.find((item) => canonicalDashboardPlatformKey(item?.key || item?.platformKey || item?.label) === resolvedKey) || null;
+    const rows = adsSeriesFromRecord(record, anchor);
+    if (adsSeriesHasValues(rows)) return rows;
+    if (resolvedKey === 'ozon') {
+      const iuDrrDaily = Array.isArray(current('iuDrrSummary')?.daily) ? current('iuDrrSummary').daily : [];
+      const fallbackRows = iuDrrDaily
+        .map((point) => ({
+          date: parseDate(point?.date),
+          views: 0,
+          clicks: 0,
+          spend: num(point?.spendFactOzon),
+          orders: 0,
+          revenue: num(point?.revenueOzon)
+        }))
+        .filter((point) => point.date instanceof Date && !Number.isNaN(point.date.getTime()))
+        .sort((left, right) => left.date - right.date);
+      if (adsSeriesHasValues(fallbackRows)) return fallbackRows;
+    }
+    return rows;
+  }
+
+  function adsSeries(platformKey, anchor) {
+    const resolvedKey = canonicalDashboardPlatformKey(platformKey);
+    if (resolvedKey === 'all') {
+      const allRowsMap = new Map();
+      PLATFORM_KEYS.filter((key) => key !== 'all').forEach((key) => {
+        adsSeriesForPlatform(key, anchor).forEach((point) => {
+          const date = iso(point.date);
+          if (!date) return;
+          const current = allRowsMap.get(date) || { date: point.date, views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
+          current.views += num(point.views);
+          current.clicks += num(point.clicks);
+          current.spend += num(point.spend);
+          current.orders += num(point.orders);
+          current.revenue += num(point.revenue);
+          allRowsMap.set(date, current);
+        });
+      });
+      const combinedRows = [...allRowsMap.values()].sort((left, right) => left.date - right.date);
+      if (adsSeriesHasValues(combinedRows)) return combinedRows;
+      const directAll = adsSeriesFromRecord(
+        (current('adsSummary')?.platforms || []).find((item) => canonicalDashboardPlatformKey(item?.key || item?.platformKey || item?.label) === 'all') || null,
+        anchor
+      );
+      if (adsSeriesHasValues(directAll)) return directAll;
+      return combinedRows;
+    }
+    return adsSeriesForPlatform(resolvedKey, anchor);
+  }
+
+  function focusRowsForPlatform(platformKey) {
+    const key = canonicalDashboardPlatformKey(platformKey);
+    const focus = current('dashboard')?.focusTop || [];
+    const skuMap = new Map(
+      (current('skus') || []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku])
+    );
+    const rows = [];
+    const seen = new Set();
+    const platformMatchers = {
+      wb: ['wb', 'wildberries', 'вб'],
+      ozon: ['ozon', 'озон'],
+      ya: ['яндекс', 'market', 'ym', 'я.м', 'ям'],
+      goldapple: ['золот', 'goldapple', 'ga', 'zya', 'зя'],
+      letu: ['лету', 'l\'этуаль', "л'этуаль", 'letu'],
+      magnit: ['магнит', 'magnit', 'mm']
+    };
+    const matchesPlatform = (text) => {
+      if (key === 'all') return true;
+      const lowered = repairBrokenUtf8Cp1251String(String(text || '')).toLowerCase();
+      return (platformMatchers[key] || []).some((pattern) => lowered.includes(pattern));
+    };
+
+    focus.forEach((item) => {
+      if (!matchesPlatform(item?.focus_reasons)) return;
+      const article = String(item?.article || item?.article_key || '').trim();
+      if (!article || seen.has(article)) return;
+      const sku = skuMap.get(normalizeKey(article));
+      seen.add(article);
+      rows.push({
+        article,
+        name: item?.product_name_final || item?.name || article,
+        owner: platformOwnerName(sku, key, item?.owner_name),
+        reasons: item?.focus_reasons || 'Нужна ручная оценка',
+        score: num(item?.focus_score),
+        completion: num(item?.plan_completion_feb26_pct)
+      });
+    });
+
+    (current('skus') || []).forEach((sku) => {
+      const article = String(sku?.articleKey || sku?.article || '').trim();
+      if (!article || seen.has(article) || !platformHasPresence(sku, key)) return;
+      const counters = issueCountersForSku(sku, key);
+      if (!Object.values(counters).some(Boolean)) return;
+      seen.add(article);
+      rows.push({
+        article,
+        name: sku?.name || article,
+        owner: platformOwnerName(sku, key),
+        reasons: sku?.focusReasons || 'Есть риск по площадке',
+        score: num(sku?.focusScore),
+        completion: num(sku?.planFact?.completionFeb26Pct)
+      });
+    });
+
+    return rows
+      .sort((left, right) => right.score - left.score || right.completion - left.completion)
+      .slice(0, 12);
+  }
+
+  function marginRowsForPlatform(platformKey) {
+    const key = canonicalDashboardPlatformKey(platformKey);
+    const skuMap = new Map(
+      (current('skus') || []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku])
+    );
+    const rows = [];
+    const seen = new Set();
+    const pushRow = (row, sku) => {
+      const article = String(row?.articleKey || row?.article || '').trim();
+      if (!article) return;
+      const rowKey = `${canonicalDashboardPlatformKey(row?.platformKey || key)}:${normalizeKey(article)}`;
+      if (seen.has(rowKey)) return;
+      const rowPlatformKey = canonicalDashboardPlatformKey(row?.platformKey || key);
+      const source = rowPlatformKey === 'wb'
+        ? sku?.wb
+        : rowPlatformKey === 'ozon'
+          ? sku?.ozon
+          : row;
+      const marginPct = Number.isFinite(Number(row?.marginPct)) ? Number(row.marginPct) : Number(source?.marginPct);
+      if (!Number.isFinite(marginPct)) return;
+      seen.add(rowKey);
+      rows.push({
+        platformKey: rowPlatformKey,
+        platformLabel: row?.platformLabel || shortPlatformLabel(rowPlatformKey),
+        article,
+        name: row?.name || sku?.name || article,
+        owner: platformOwnerName(sku, rowPlatformKey, row?.owner),
+        marginPct,
+        stock: num(source?.stock),
+        turnoverDays: Number.isFinite(Number(row?.turnoverDays)) ? Number(row.turnoverDays) : (Number.isFinite(Number(source?.turnoverDays)) ? Number(source.turnoverDays) : null),
+        currentPrice: num(row?.currentPrice) || num(source?.currentPrice),
+        minPrice: num(row?.minPrice) || num(source?.minPrice),
+        recPrice: repricerResolvedPrice(article, rowPlatformKey, row?.recPrice),
+        toWork: rowPlatformKey === 'wb'
+          ? Boolean(sku?.flags?.toWorkWB)
+          : rowPlatformKey === 'ozon'
+            ? Boolean(sku?.flags?.toWorkOzon)
+            : Boolean(sku?.flags?.toWork),
+        belowMin: Boolean(row?.belowMin || source?.belowMin)
+      });
+    };
+
+    priceRowsForPlatform(key).forEach((row) => pushRow(row, skuMap.get(normalizeKey(row?.articleKey || row?.article))));
+    if (key === 'all' || key === 'wb' || key === 'ozon') {
+      (current('skus') || []).forEach((sku) => {
+        if (!platformHasPresence(sku, key)) return;
+        const source = key === 'wb' ? sku?.wb : key === 'ozon' ? sku?.ozon : null;
+        if (!source) return;
+        pushRow({
+          platformKey: key,
+          platformLabel: shortPlatformLabel(key),
+          articleKey: sku?.articleKey || sku?.article,
+          article: sku?.articleKey || sku?.article,
+          name: sku?.name || sku?.articleKey || sku?.article,
+          owner: platformOwnerName(sku, key),
+          marginPct: source?.marginPct,
+          stock: source?.stock,
+          turnoverDays: source?.turnoverDays,
+          currentPrice: source?.currentPrice,
+          minPrice: source?.minPrice,
+          recPrice: source?.recPrice,
+          belowMin: source?.belowMin
+        }, sku);
+      });
+    }
+    return rows;
+  }
+
+  function articleRowsForPlatform(platformKey, range) {
+    const key = canonicalDashboardPlatformKey(platformKey);
+    const skuMap = new Map(
+      (current('skus') || []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku])
+    );
+    const baseRows = priceRowsForPlatform(key);
+    const seenRows = new Set(
+      baseRows.map((row) => `${canonicalDashboardPlatformKey(row?.platformKey || key)}:${normalizeKey(row?.articleKey || row?.article)}`)
+    );
+    const planOnlyRows = supportRowsForPlatform(key)
+      .filter((row) => {
+        const article = row?.article || row?.articleKey;
+        const rowPlatformKey = canonicalDashboardPlatformKey(row?.platformKey || key);
+        const dedupeKey = `${rowPlatformKey}:${normalizeKey(article)}`;
+        if (!article || seenRows.has(dedupeKey)) return false;
+        const facts = articleWindowFacts(rowPlatformKey, article, range, row);
+        return Number.isFinite(Number(facts.planUnits)) && Number(facts.planUnits) > 0;
+      });
+    return baseRows.concat(planOnlyRows)
+      .map((row) => {
+        const rowPlatformKey = canonicalDashboardPlatformKey(row?.platformKey || key);
+        const article = row?.article || row?.articleKey || '—';
+        const sku = skuMap.get(normalizeKey(article));
+        if (isDashboardExcludedArticle(article, row, sku)) return { article: '—' };
+        const side = rowPlatformKey === 'wb'
+          ? sku?.wb
+          : rowPlatformKey === 'ozon'
+            ? sku?.ozon
+            : row;
+        const pricePoints = pricePointsForRow(row, range.effectiveStart, range.effectiveEnd);
+        const turnoverPoints = turnoverPointsForRow(row, range.effectiveStart, range.effectiveEnd);
+        const startPrice = pricePoints[0]?.price || num(row?.currentPrice) || num(side?.currentPrice);
+        const endPrice = pricePoints[pricePoints.length - 1]?.price || num(row?.currentPrice) || num(side?.currentPrice);
+        const avgPrice = pricePoints.length
+          ? avg(pricePoints.map((point) => point.price))
+          : (num(row?.currentPrice) || num(side?.currentPrice));
+        const latestTurnoverDays = turnoverPoints[turnoverPoints.length - 1]?.turnoverDays;
+        const turnoverDays = latestTurnoverDays !== undefined
+          ? latestTurnoverDays
+          : Number.isFinite(Number(row?.currentTurnoverDays))
+            ? Number(row.currentTurnoverDays)
+            : Number.isFinite(Number(side?.turnoverDays))
+              ? Number(side.turnoverDays)
+              : null;
+        const avgTurnoverDays = turnoverPoints.length
+          ? avg(turnoverPoints.map((point) => point.turnoverDays))
+          : turnoverDays;
+        const marginSource = side?.marginPct ?? row?.avgMargin7dPct;
+        const periodFacts = articleWindowFacts(rowPlatformKey, article, range, row);
+        const completionSource = periodFacts.completionPct ?? sku?.planFact?.completionApr26Pct ?? sku?.planFact?.completionMar26Pct ?? sku?.planFact?.completionFeb26Pct;
+        return {
+          article,
+          name: row?.name || sku?.name || article,
+          platformKey: rowPlatformKey,
+          platformLabel: row?.platformLabel || shortPlatformLabel(rowPlatformKey),
+          owner: platformOwnerName(sku, rowPlatformKey, row?.owner),
+          startPrice,
+          endPrice,
+          avgPrice,
+          currentPrice: num(row?.currentPrice) || num(side?.currentPrice),
+          minPrice: num(row?.minPrice) || num(side?.minPrice),
+          stock: num(side?.stock),
+          inTransit: num(side?.stockInTransit) + num(side?.stockInSupplyRequest),
+          marginPct: Number.isFinite(Number(marginSource)) ? Number(marginSource) : null,
+          turnoverDays,
+          avgTurnoverDays,
+          completionPct: Number.isFinite(Number(completionSource)) ? Number(completionSource) : null,
+          planUnitsSelected: Number.isFinite(Number(periodFacts.planUnits)) ? Number(periodFacts.planUnits) : null,
+          actualUnitsSelected: Number.isFinite(Number(periodFacts.actualUnits)) ? Number(periodFacts.actualUnits) : null,
+          actualRevenueSelected: Number.isFinite(Number(periodFacts.actualRevenue)) ? Number(periodFacts.actualRevenue) : null,
+          periodAvgCheck: periodFacts.actualUnits > 0 && periodFacts.actualRevenue > 0 ? periodFacts.actualRevenue / periodFacts.actualUnits : null,
+          factSource: periodFacts.factSource || '',
+          salesValue: Number.isFinite(Number(periodFacts.actualRevenue)) ? Number(periodFacts.actualRevenue) : num(sku?.planFact?.factTotalRevenue || sku?.orders?.value)
+        };
+      })
+      .filter((row) => row.article && row.article !== '—');
+  }
+
+  function buildWindowMetric(platformKey, rangeLike, anchor, adsAnchor, issueMap) {
+    const trendMap = new Map(platformSeries(platformKey, anchor).map((point) => [iso(point.date), point]));
+    const adsMap = new Map(adsSeries(platformKey, adsAnchor).map((point) => [iso(point.date), point]));
+    const days = enumerateDates(rangeLike.effectiveStart, rangeLike.effectiveEnd).map((date) => {
+      const trend = trendMap.get(iso(date)) || {};
+      const ads = adsMap.get(iso(date)) || {};
+      const planUnits = planUnitsForDate(date, platformKey);
+      const planRevenue = companyPlanDailyRevenue(date, platformKey);
+      const factUnits = num(trend.units);
+      const revenue = num(trend.revenue);
+      const financeTurnover = num(trend.financeTurnover);
+      const margin = num(trend.margin);
+      const spend = num(ads.spend);
+      const adRevenue = num(ads.revenue);
+      const marginBase = financeTurnover > 0 ? financeTurnover : revenue;
+      const useCompanyPlanForDay = planRevenue > 0;
+      return {
+        date,
+        planUnits,
+        planRevenue,
+        factUnits,
+        financeTurnover,
+        completion: useCompanyPlanForDay ? revenue / planRevenue : planUnits > 0 ? factUnits / planUnits : 0,
+        revenue,
+        margin,
+        marginPct: marginBase > 0 ? margin / marginBase : 0,
+        views: num(ads.views),
+        clicks: num(ads.clicks),
+        orders: num(ads.orders),
+        spend,
+        adRevenue,
+        drr: adRevenue > 0 ? spend / adRevenue : null
+      };
+    });
+    const planUnits = days.reduce((sum, row) => sum + row.planUnits, 0);
+    const planRevenue = days.reduce((sum, row) => sum + row.planRevenue, 0);
+    const usesCompanyPlan = planRevenue > 0;
+    const planFactDays = usesCompanyPlan ? days.filter((row) => row.planRevenue > 0) : days;
+    const planFactUnits = planFactDays.reduce((sum, row) => sum + row.factUnits, 0);
+    const planFactRevenue = planFactDays.reduce((sum, row) => sum + row.revenue, 0);
+    const plan = usesCompanyPlan ? planRevenue : planUnits;
+    const units = days.reduce((sum, row) => sum + row.factUnits, 0);
+    const revenue = days.reduce((sum, row) => sum + row.revenue, 0);
+    const financeTurnover = days.reduce((sum, row) => sum + row.financeTurnover, 0);
+    const margin = days.reduce((sum, row) => sum + row.margin, 0);
+    const views = days.reduce((sum, row) => sum + row.views, 0);
+    const clicks = days.reduce((sum, row) => sum + row.clicks, 0);
+    const orders = days.reduce((sum, row) => sum + row.orders, 0);
+    const spend = days.reduce((sum, row) => sum + row.spend, 0);
+    const adRevenue = days.reduce((sum, row) => sum + row.adRevenue, 0);
+    const completion = plan > 0 ? (usesCompanyPlan ? planFactRevenue / plan : units / plan) : 0;
+    const marginBase = financeTurnover > 0 ? financeTurnover : revenue;
+    const marginPct = marginBase > 0 ? margin / marginBase : 0;
+    const avgCheck = units > 0 ? revenue / units : 0;
+    const ctr = views > 0 ? clicks / views : null;
+    const drr = adRevenue > 0 ? spend / adRevenue : null;
+    const issues = issueMap.get(canonicalDashboardPlatformKey(platformKey));
+    const priceSeries = priceMatrixSeries(platformKey, rangeLike);
+    const turnoverSeries = turnoverMatrixSeries(platformKey, rangeLike);
+    const turnoverFallback = priceRowsForPlatform(platformKey)
+      .map((row) => Number(row?.currentTurnoverDays))
+      .filter((value) => Number.isFinite(value));
+    const priceStart = priceSeries[0]?.avgPrice || 0;
+    const priceEnd = priceSeries[priceSeries.length - 1]?.avgPrice || 0;
+    const priceDeltaPct = priceStart > 0 && priceEnd > 0 ? (priceEnd - priceStart) / priceStart : null;
+    const avgTurnoverDays = turnoverSeries.length
+      ? avg(turnoverSeries.map((row) => row.avgTurnover))
+      : (turnoverFallback.length ? avg(turnoverFallback) : null);
+    return {
+      key: canonicalDashboardPlatformKey(platformKey),
+      label: shortPlatformLabel(platformKey),
+      days,
+      plan,
+      planUnits,
+      planRevenue,
+      planMode: usesCompanyPlan ? 'company_revenue' : 'units',
+      planFactUnits,
+      planFactRevenue,
+      units,
+      revenue,
+      financeTurnover,
+      margin,
+      completion,
+      avgUnits: units / Math.max(1, rangeLike.days),
+      avgPlan: plan / Math.max(1, rangeLike.days),
+      marginPct,
+      views,
+      clicks,
+      orders,
+      spend,
+      adRevenue,
+      ctr,
+      drr,
+      avgCheck,
+      adsReady: views > 0 || clicks > 0 || orders > 0 || spend > 0 || adRevenue > 0,
+      issues,
+      sparkUnits: sparkline(days.map((row) => row.factUnits)),
+      sparkRevenue: sparkline(days.map((row) => row.revenue)),
+      sparkMargin: sparkline(days.map((row) => row.margin)),
+      sparkSpend: sparkline(days.map((row) => row.spend)),
+      sparkAvgCheck: sparkline(days.map((row) => (row.factUnits > 0 ? row.revenue / row.factUnits : 0))),
+      sparkAvgPrice: sparkline(priceSeries.map((row) => row.avgPrice)),
+      sparkTurnover: sparkline(turnoverSeries.length ? turnoverSeries.map((row) => row.avgTurnover) : turnoverFallback),
+      priceMatrixSeries: priceSeries,
+      priceMatrixAvg: avg(priceSeries.map((row) => row.avgPrice)),
+      priceMatrixStart: priceStart,
+      priceMatrixEnd: priceEnd,
+      priceMatrixDeltaPct: priceDeltaPct,
+      turnoverSeries,
+      avgTurnoverDays,
+      topIssue: issues?.rows?.[0] || null
+    };
+  }
+
+  function dashboardExportPlatformKeys(executive) {
+    if (executive?.selectedPlatform && executive.selectedPlatform !== 'all') return [executive.selectedPlatform];
+    return PLATFORM_KEYS.filter((key) => key !== 'all');
+  }
+
+  function priceWorkbenchOpenAttrs(platformKey, article, executive) {
+    const articleKey = String(article || '').trim();
+    if (!articleKey) return '';
+    const market = supportPlatformKey(platformKey);
+    const dateFrom = executive?.range?.effectiveStart ? iso(executive.range.effectiveStart) : '';
+    const dateTo = executive?.range?.effectiveEnd ? iso(executive.range.effectiveEnd) : '';
+    return ` data-open-price-article="${esc(articleKey)}" data-open-price-market="${esc(market)}"${dateFrom ? ` data-open-price-from="${esc(dateFrom)}"` : ''}${dateTo ? ` data-open-price-to="${esc(dateTo)}"` : ''}`;
+  }
+
+  function dashboardMarketplaceKeyFromText(text = '') {
+    const raw = String(text || '').toLowerCase();
+    if (!raw) return '';
+    if (raw.includes('золотое яблоко') || raw.includes('goldapple') || raw.includes('gold apple') || raw.includes('золот') || raw.includes('зя')) return 'goldapple';
+    if (raw.includes("л'этуаль") || raw.includes('летуаль') || raw.includes('letual') || raw.includes('letu')) return 'letu';
+    if (raw.includes('магнит маркет') || raw.includes('магнитмаркет') || raw.includes('магнит') || raw.includes('magnit') || raw.includes('mm')) return 'magnit';
+    if (raw.includes('яндекс') || raw.includes('я.маркет') || raw.includes('я маркет') || raw.includes('ям') || raw.includes('ym') || raw.includes('yandex')) return 'ya';
+    return '';
+  }
+
+  function dashboardTaskWorkstreamKey(task) {
+    const raw = String(task?.platform || '').trim().toLowerCase();
+    const text = `${raw} ${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''} ${task?.entityLabel || ''}`.toLowerCase();
+    if (['wb+ozon', 'wb + ozon', 'cross', 'common', 'shared', 'general', 'all'].includes(raw)) return 'cross';
+    if (/(^|\W)wb($|\W)|wildberries|вб/.test(text)) return 'wb';
+    if (/ozon|озон/.test(text)) return 'ozon';
+    const marketplace = dashboardMarketplaceKeyFromText(text) || (raw === 'retail' ? 'ya' : '');
+    if (marketplace) return marketplace;
+    return 'cross';
+  }
+
+  function dashboardControlPlatformKey(platformKey) {
+    const key = canonicalDashboardPlatformKey(platformKey);
     return 'all';
   }
 
@@ -5079,7 +5611,10 @@ function dashboardTaskStatusChip(task) {
     const key = dashboardTaskWorkstreamKey(task);
     if (key === 'wb') return badgeHtml('WB', 'warn');
     if (key === 'ozon') return badgeHtml('Ozon', 'info');
-    if (key === 'retail') return badgeHtml('ЯМ / сети', 'ok');
+    if (key === 'ya') return badgeHtml('Я.Маркет', 'ok');
+    if (key === 'goldapple') return badgeHtml('Золотое яблоко', 'ok');
+    if (key === 'letu') return badgeHtml("Л'Этуаль", 'ok');
+    if (key === 'magnit') return badgeHtml('Магнит Маркет', 'ok');
     return badgeHtml('Общий контур', '');
   }
 
@@ -5243,7 +5778,7 @@ function dashboardTaskStatusChip(task) {
       overviewSection(executive),
       executive.selectedPlatform === 'all' ? platformSection(executive) : '',
       issuesSection(executive),
-      `<div class="portal-exec-section-foot">Источник факта: ${esc(executive.range.availableLabel)} · daily bridge из Google Sheets в 09:00 МСК · актуально на ${esc(longDate(executive.range.max))}.</div>`
+      `<div class="portal-exec-section-foot">Источник факта: ${esc(executive.range.availableLabel)} · API-срез platform_trends · актуально на ${esc(longDate(executive.range.max))}.</div>`
     ].join('');
     root.insertAdjacentElement('afterbegin', container);
     bindDashboard(root, executive);
@@ -5268,7 +5803,7 @@ function dashboardTaskStatusChip(task) {
       stockSection(executive),
       adsSection(executive),
       issuesSection(executive),
-      `<div class="portal-exec-section-foot">Источник факта: ${esc(executive.range.availableLabel)} · daily bridge из Google Sheets в 09:00 МСК · актуально на ${esc(longDate(executive.range.max))}.</div>`
+      `<div class="portal-exec-section-foot">Источник факта: ${esc(executive.range.availableLabel)} · API-срез platform_trends · актуально на ${esc(longDate(executive.range.max))}.</div>`
     ].join('');
     root.insertAdjacentElement('afterbegin', container);
     bindDashboard(root, executive);
@@ -6255,7 +6790,7 @@ function dashboardTaskStatusChip(task) {
       platformSection(executive),
       adsSection(executive),
       issuesSection(executive),
-      `<div class="portal-exec-section-foot">Источник факта: ${esc(executive.range.availableLabel)} · daily bridge из Google Sheets в 09:00 МСК · актуально на ${esc(longDate(executive.range.max))}.</div>`
+      `<div class="portal-exec-section-foot">Источник факта: ${esc(executive.range.availableLabel)} · API-срез platform_trends · актуально на ${esc(longDate(executive.range.max))}.</div>`
     ].join('');
     root.insertAdjacentElement('afterbegin', container);
     bindDashboard(root, executive);
@@ -6656,19 +7191,14 @@ function dashboardTaskStatusChip(task) {
     }
     let text = await response.text();
     if (typeof sanitizeLooseJson === 'function') text = sanitizeLooseJson(text);
-    let payload = JSON.parse(text);
-    if (key === 'iuDrrSummary') {
-      const existingPayload = current(key);
-      if (hasUsablePayload(existingPayload) && hasUsablePayload(payload)) {
-        payload = preferExistingIuDrrPayload(existingPayload, payload);
-      }
-    }
+    const payload = JSON.parse(text);
     cache[key] = payload;
     const app = stateRef();
     if (app && key === 'orderProcurement') {
       app.orderProcurementData = payload;
       app.orderProcurementSnapshot = payload;
-    } else if (app && !app[key]) {
+      app.orderProcurement = payload;
+    } else if (app) {
       app[key] = payload;
     }
     return payload;

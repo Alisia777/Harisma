@@ -217,6 +217,17 @@ function buildOzonFinanceRows(daily) {
   }));
 }
 
+function splitPendingTrailingDays(daily) {
+  const effectiveDaily = Array.isArray(daily) ? daily.slice() : [];
+  const pendingDaily = [];
+  while (effectiveDaily.length) {
+    const last = effectiveDaily[effectiveDaily.length - 1];
+    if (numberOrZero(last?.spend) !== 0 || numberOrZero(last?.sourceRows) !== 0) break;
+    pendingDaily.unshift(effectiveDaily.pop());
+  }
+  return { effectiveDaily, pendingDaily };
+}
+
 function platformTotals(series) {
   return series.reduce((acc, row) => {
     acc.views += numberOrZero(row.views);
@@ -292,7 +303,7 @@ function buildAllPlatform(platforms) {
   };
 }
 
-function patchPayload(payload, options, daily) {
+function patchPayload(payload, options, daily, pendingDaily = []) {
   const financeRows = buildOzonFinanceRows(daily);
   const itemSeries = Array.isArray(payload.itemSeries) ? payload.itemSeries : [];
   const preservedItemSeries = itemSeries.filter((row) => {
@@ -336,7 +347,11 @@ function patchPayload(payload, options, daily) {
       ozonAdsFinance: {
         source: 'Ozon Seller API /v3/finance/transaction/list',
         from: options.from,
-        to: options.to,
+        to: daily[daily.length - 1]?.date || '',
+        requestedTo: options.to,
+        effectiveTo: daily[daily.length - 1]?.date || '',
+        pendingDates: pendingDaily.map((day) => day.date).filter(Boolean),
+        pendingDaily,
         operationTypes: [...options.operationTypes],
         days: daily.length,
         sourceRows,
@@ -372,7 +387,8 @@ async function main() {
       daily.push({ date: dateKey, spend: 0, sourceRows: 0, sourceOperations: 0, breakdown: {} });
     }
   }
-  const patched = patchPayload(payload, options, daily);
+  const { effectiveDaily, pendingDaily } = splitPendingTrailingDays(daily);
+  const patched = patchPayload(payload, options, effectiveDaily, pendingDaily);
   if (warnings.length) patched.diagnostics.ozonAdsFinance.warnings = warnings;
   if (!options.dryRun) {
     writeJson(options.outputPath, patched);
@@ -387,7 +403,9 @@ async function main() {
     mirrorPath: options.mirrorPath,
     from: options.from,
     to: options.to,
-    days: daily.length,
+    effectiveTo: patched.diagnostics.ozonAdsFinance.effectiveTo,
+    days: effectiveDaily.length,
+    pendingDates: pendingDaily.map((day) => day.date).filter(Boolean),
     sourceRows: patched.diagnostics.ozonAdsFinance.sourceRows,
     spend: patched.diagnostics.ozonAdsFinance.spend,
     warnings

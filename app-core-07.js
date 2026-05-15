@@ -3143,6 +3143,14 @@ function iuDrrPlatformMeta(model) {
   };
 }
 
+function iuDrrOzonAdsSourceLabel(mode, planPct) {
+  const raw = String(mode || '');
+  if (raw.includes('pending_ozon_seller_finance_api')) return `ожидаем API, временно оборот x ${fmt.pct(planPct)}`;
+  if (raw.includes('ozon_seller_finance_api')) return 'Ozon Seller Finance API';
+  if (raw.includes('modeled_from_revenue')) return `модель: оборот x ${fmt.pct(planPct)}`;
+  return raw || 'ads_summary';
+}
+
 function iuDrrSourceBadge(model) {
   const mode = model.payload.source?.adsSourceMode || model.payload.diagnostics?.adsSourceMode || '';
   if (/wb-api/.test(mode)) return badge('WB API', 'ok');
@@ -3782,7 +3790,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       <div class="mini-kpi ${revenueDeltaTone}"><span>Целевой Ozon</span><strong>${fmt.money(platformMeta.targetRevenue)}</strong><span>разница ${fmt.money(platformMeta.revenueDelta)}</span></div>
       <div class="mini-kpi ok"><span>Реклама Ozon план</span><strong>${fmt.pct(platformMeta.adsPlanPct)}</strong><span>${fmt.money(platformMeta.adsPlan)}</span></div>
       <div class="mini-kpi ${platformMeta.adsFactPct <= platformMeta.adsPlanPct ? 'ok' : 'warn'}"><span>Реклама Ozon факт</span><strong>${fmt.money(platformMeta.adsFact)}</strong><span>${fmt.pct(platformMeta.adsFactPct)} · ads_summary</span></div>
-      <div class="mini-kpi"><span>Источник Ozon Ads</span><strong>факт</strong><span>${escapeHtml(month.ozonAdsFactMode || 'ads_summary')}</span></div>
+      <div class="mini-kpi"><span>Источник Ozon Ads</span><strong>${String(month.ozonAdsFactMode || '').includes('pending_') ? 'ожидаем' : 'факт'}</strong><span>${escapeHtml(iuDrrOzonAdsSourceLabel(month.ozonAdsFactMode, platformMeta.adsPlanPct))}</span></div>
       <div class="mini-kpi ${ozonAdsDeltaTone}"><span>Дельта расхода</span><strong>${fmt.money(platformMeta.adsDelta)}</strong><span>факт - план расхода</span></div>
     </div>
   ` : `

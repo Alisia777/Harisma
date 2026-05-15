@@ -620,6 +620,11 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, 
   const ozonMap = buildPlatformDateMap(platformTrends, 'ozon');
   const adsMaps = buildAdsDailyMaps(adsSummary);
   const reviewPointsMap = buildReviewPointsMap(wbFeedbacksSummary);
+  const ozonPendingAdsDates = new Set(
+    (adsSummary?.diagnostics?.ozonAdsFinance?.pendingDates || [])
+      .map(isoDate)
+      .filter(Boolean)
+  );
   const range = dateRange(platformTrends, adsSummary, options.from, options.to);
   return enumerateDates(range.from, range.to).map((date) => {
     const month = monthKey(date);
@@ -632,6 +637,7 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, 
     const ads = adsMaps.byDate.get(date) || {};
     const ozonAds = adsMaps.ozonByDate.get(date) || {};
     const hasOzonAdsFact = adsMaps.ozonByDate.has(date);
+    const hasOzonAdsPending = ozonPendingAdsDates.has(date);
     const revenueWb = numberOrZero(wb.revenue);
     const ordersRevenueWb = numberOrZero(wb.ordersRevenue) || revenueWb;
     const revenueOzon = numberOrZero(ozon.revenue);
@@ -653,6 +659,8 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, 
       ? (ozonAdsSourceModes.includes('ozon_seller_finance_api')
         ? 'ozon_seller_finance_api'
         : (ozonAdsSourceModes.join('+') || 'ads_summary_fact'))
+      : hasOzonAdsPending
+        ? 'pending_ozon_seller_finance_api_modeled_from_revenue_25pct'
       : 'modeled_from_revenue_25pct_no_ozon_ads_fact';
     const channels = Object.fromEntries(CHANNEL_KEYS.map(([key]) => [key, 0]));
     for (const [key] of CHANNEL_KEYS) channels[key] = roundMoney(adsMaps.byDateChannel.get(`${date}|${key}`) || 0);

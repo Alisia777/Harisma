@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-15T11:19:58.018Z",
+  "generatedAt": "2026-05-15T11:40:11.947Z",
   "asOfDate": "2026-05-15",
   "source": "wb-api+external-sheet",
   "sourceUrl": "https://dev.wildberries.ru/en/docs/openapi/promotion",
@@ -9,7 +9,7 @@
     "to": "2026-05-15",
     "days": 15
   },
-  "note": "WB Promotion API daily facts plus marketplace workbook extras. Ozon ad spend replaced by daily Seller Finance API advertising operations.",
+  "note": "WB Promotion API daily facts plus marketplace workbook extras. Ozon ad spend replaced by daily Seller Finance API advertising operations. Ozon ad spend replaced by daily Seller Finance API advertising operations.",
   "diagnostics": {
     "generatedAt": "2026-05-15T07:20:09.010Z",
     "docsUrl": "https://dev.wildberries.ru/en/docs/openapi/promotion",
@@ -430,15 +430,29 @@
     "ozonAdsFinance": {
       "source": "Ozon Seller API /v3/finance/transaction/list",
       "from": "2026-05-01",
-      "to": "2026-05-15",
+      "to": "2026-05-14",
+      "requestedTo": "2026-05-15",
+      "effectiveTo": "2026-05-14",
+      "pendingDates": [
+        "2026-05-15"
+      ],
+      "pendingDaily": [
+        {
+          "date": "2026-05-15",
+          "spend": 0,
+          "sourceRows": 0,
+          "sourceOperations": 2247,
+          "breakdown": {}
+        }
+      ],
       "operationTypes": [
         "OperationMarketplaceCostPerClick",
         "OperationPromotionWithCostPerOrder",
         "OperationMarketplaceInternetSiteAdvertising"
       ],
-      "days": 15,
+      "days": 14,
       "sourceRows": 4701,
-      "sourceOperations": 108512,
+      "sourceOperations": 106449,
       "spend": 8935959.01,
       "daily": [
         {
@@ -588,19 +602,12 @@
           "date": "2026-05-14",
           "spend": 354650.01,
           "sourceRows": 180,
-          "sourceOperations": 7246,
+          "sourceOperations": 7338,
           "breakdown": {
             "OperationMarketplaceCostPerClick": 286367.87,
             "OperationPromotionWithCostPerOrder": 68270.12,
             "OperationMarketplaceInternetSiteAdvertising": 12.02
           }
-        },
-        {
-          "date": "2026-05-15",
-          "spend": 0,
-          "sourceRows": 0,
-          "sourceOperations": 2155,
-          "breakdown": {}
         }
       ]
     }
@@ -764,7 +771,7 @@
       "revenue": 0,
       "series": [
         {
-          "dayOffset": 14,
+          "dayOffset": 13,
           "label": "2026-05-01",
           "date": "2026-05-01",
           "views": 0,
@@ -776,7 +783,7 @@
           "sourceRows": 349
         },
         {
-          "dayOffset": 13,
+          "dayOffset": 12,
           "label": "2026-05-02",
           "date": "2026-05-02",
           "views": 0,
@@ -788,7 +795,7 @@
           "sourceRows": 345
         },
         {
-          "dayOffset": 12,
+          "dayOffset": 11,
           "label": "2026-05-03",
           "date": "2026-05-03",
           "views": 0,
@@ -800,7 +807,7 @@
           "sourceRows": 345
         },
         {
-          "dayOffset": 11,
+          "dayOffset": 10,
           "label": "2026-05-04",
           "date": "2026-05-04",
           "views": 0,
@@ -812,7 +819,7 @@
           "sourceRows": 343
         },
         {
-          "dayOffset": 10,
+          "dayOffset": 9,
           "label": "2026-05-05",
           "date": "2026-05-05",
           "views": 0,
@@ -824,7 +831,7 @@
           "sourceRows": 336
         },
         {
-          "dayOffset": 9,
+          "dayOffset": 8,
           "label": "2026-05-06",
           "date": "2026-05-06",
           "views": 0,
@@ -836,7 +843,7 @@
           "sourceRows": 342
         },
         {
-          "dayOffset": 8,
+          "dayOffset": 7,
           "label": "2026-05-07",
           "date": "2026-05-07",
           "views": 0,
@@ -848,7 +855,7 @@
           "sourceRows": 347
         },
         {
-          "dayOffset": 7,
+          "dayOffset": 6,
           "label": "2026-05-08",
           "date": "2026-05-08",
           "views": 0,
@@ -860,7 +867,7 @@
           "sourceRows": 344
         },
         {
-          "dayOffset": 6,
+          "dayOffset": 5,
           "label": "2026-05-09",
           "date": "2026-05-09",
           "views": 0,
@@ -872,7 +879,7 @@
           "sourceRows": 344
         },
         {
-          "dayOffset": 5,
+          "dayOffset": 4,
           "label": "2026-05-10",
           "date": "2026-05-10",
           "views": 0,
@@ -884,7 +891,7 @@
           "sourceRows": 345
         },
         {
-          "dayOffset": 4,
+          "dayOffset": 3,
           "label": "2026-05-11",
           "date": "2026-05-11",
           "views": 0,
@@ -896,7 +903,7 @@
           "sourceRows": 357
         },
         {
-          "dayOffset": 3,
+          "dayOffset": 2,
           "label": "2026-05-12",
           "date": "2026-05-12",
           "views": 0,
@@ -908,7 +915,7 @@
           "sourceRows": 364
         },
         {
-          "dayOffset": 2,
+          "dayOffset": 1,
           "label": "2026-05-13",
           "date": "2026-05-13",
           "views": 0,
@@ -920,7 +927,7 @@
           "sourceRows": 360
         },
         {
-          "dayOffset": 1,
+          "dayOffset": 0,
           "label": "2026-05-14",
           "date": "2026-05-14",
           "views": 0,
@@ -930,18 +937,6 @@
           "revenue": 0,
           "sourceMode": "ozon_seller_finance_api",
           "sourceRows": 180
-        },
-        {
-          "dayOffset": 0,
-          "label": "2026-05-15",
-          "date": "2026-05-15",
-          "views": 0,
-          "clicks": 0,
-          "spend": 0,
-          "orders": 0,
-          "revenue": 0,
-          "sourceMode": "ozon_seller_finance_api",
-          "sourceRows": 0
         }
       ]
     },
@@ -93086,32 +93081,12 @@
       "source": "Ozon Seller API /v3/finance/transaction/list",
       "sourceMode": "ozon_seller_finance_api",
       "sourceRows": 180,
-      "sourceOperations": 7246,
+      "sourceOperations": 7338,
       "operationBreakdown": {
         "OperationMarketplaceCostPerClick": 286367.87,
         "OperationPromotionWithCostPerOrder": 68270.12,
         "OperationMarketplaceInternetSiteAdvertising": 12.02
       }
-    },
-    {
-      "date": "2026-05-15",
-      "platformKey": "ozon",
-      "articleKey": "ozon-finance-ads-total",
-      "article": "Ozon ads finance total",
-      "name": "Ozon Seller Finance API advertising operations",
-      "views": 0,
-      "clicks": 0,
-      "spend": 0,
-      "orders": 0,
-      "revenue": 0,
-      "campaignId": "ozon-seller-finance-api",
-      "campaignName": "Ozon Seller Finance API advertising operations",
-      "channel": "ozon_ads_finance",
-      "source": "Ozon Seller API /v3/finance/transaction/list",
-      "sourceMode": "ozon_seller_finance_api",
-      "sourceRows": 0,
-      "sourceOperations": 2155,
-      "operationBreakdown": {}
     }
   ],
   "extraMarketplace": {

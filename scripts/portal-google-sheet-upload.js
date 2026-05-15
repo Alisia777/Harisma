@@ -24,7 +24,8 @@ const SNAPSHOT_KEYS = [
   'order_procurement',
   'order_procurement_wb',
   'order_procurement_ozon',
-  'warehouse_stock_overlay'
+  'warehouse_stock_overlay',
+  'portal_data_quality'
 ];
 const INLINE_BODY_LIMIT = 18000;
 const DEFAULT_CHUNK_SIZE = 12000;

@@ -415,6 +415,25 @@ if ($wbFeedbackRefreshSucceeded) {
   Write-Warning "[sync] IU/DRR summary rebuild with WB feedbacks skipped because WB feedbacks/questions sync did not refresh."
 }
 
+$dataQualityArguments = @(
+  "scripts/build-portal-data-quality-report.js",
+  "--input-dir",
+  $resolvedOutputDir,
+  "--base-data-dir",
+  "data",
+  "--output-dir",
+  $resolvedOutputDir,
+  "--mirror-local-fallback"
+)
+
+Write-Output "[sync] data quality report build started"
+try {
+  Invoke-NodeStep -StepName "data quality report build" -Arguments $dataQualityArguments -Attempts 2 -RetryDelaySeconds 20
+  Write-Output "[sync] data quality report build completed"
+} catch {
+  Write-Warning "[sync] data quality report build failed, but the portal sync will continue: $($_.Exception.Message)"
+}
+
 $metaPath = Join-Path $resolvedOutputDir "meta.json"
 if (Test-Path -LiteralPath $metaPath) {
   $meta = Get-Content -LiteralPath $metaPath -Raw | ConvertFrom-Json
@@ -462,6 +481,12 @@ foreach ($optionalSnapshot in @("iu_drr_summary", "wb_feedbacks_summary")) {
   } else {
     Write-Warning "[sync] optional snapshot $optionalSnapshot is absent and will not be uploaded."
   }
+}
+
+if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_data_quality.json")) {
+  $snapshotNames += "portal_data_quality"
+} else {
+  Write-Warning "[sync] optional snapshot portal_data_quality is absent and will not be uploaded."
 }
 
 $snapshotList = ($snapshotNames | Select-Object -Unique) -join ","

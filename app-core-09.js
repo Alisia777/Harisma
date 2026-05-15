@@ -474,6 +474,7 @@ function buildOrderProcurementModel() {
     window: payload.window || null,
     places: displayPlaces,
     allPlaces: placeOrder,
+    hiddenPlaceCount: Math.max(0, placeOrder.length - displayPlaces.length),
     selectedPlaces,
     rows: list,
     totalRows: allRows.length,
@@ -582,10 +583,39 @@ const ORDER_PROCUREMENT_CLUSTER_FILTER_OPTIONS = [
   ['in_motion', 'Едет / уже заказано']
 ];
 
+const ORDER_PROCUREMENT_FILTER_PRESETS = [
+  { id: 'all', label: 'Все склады', filter: 'all', days: 30, mode: 'all' },
+  { id: 'risk10', label: 'Проблемные до 10 дн.', filter: 'risk', days: 10, mode: 'all' },
+  { id: 'low10', label: 'Закончится до 10 дн.', filter: 'low_stock', days: 10, mode: 'all' },
+  { id: 'need', label: 'Есть заказ', filter: 'need', days: 30, mode: 'recommended' },
+  { id: 'zero', label: 'Остаток MP = 0', filter: 'no_stock', days: 30, mode: 'all' }
+];
+
 function renderOrderProcurementOptions(options, selected) {
   return options.map(([value, label]) => (
     `<option value="${orderProcurementEscape(value)}" ${String(value) === String(selected) ? 'selected' : ''}>${orderProcurementEscape(label)}</option>`
   )).join('');
+}
+
+function orderProcurementActivePreset(model) {
+  return ORDER_PROCUREMENT_FILTER_PRESETS.find((preset) => (
+    String(preset.filter) === String(model.clusterFilter || 'all')
+    && Number(preset.days) === Number(model.clusterDays || 30)
+    && (preset.mode === undefined || String(preset.mode) === String(model.mode || 'all'))
+  ))?.id || '';
+}
+
+function renderOrderProcurementFilterPresets(model) {
+  const active = orderProcurementActivePreset(model);
+  return `
+    <div class="altea-order-procurement__preset-row" aria-label="Быстрые фильтры складов">
+      ${ORDER_PROCUREMENT_FILTER_PRESETS.map((preset) => `
+        <button type="button" class="altea-order-procurement__preset ${active === preset.id ? 'is-active' : ''}" data-altea-order-preset="${orderProcurementEscape(preset.id)}">
+          ${orderProcurementEscape(preset.label)}
+        </button>
+      `).join('')}
+    </div>
+  `;
 }
 
 function renderOrderProcurementPlaceOptions(model) {
@@ -856,10 +886,13 @@ function renderOrderProcurement(model) {
             <input id="alteaOrderClusterDays" type="number" min="1" max="180" step="1" value="${orderProcurementEscape(model.clusterDays)}">
           </label>
 
+          ${renderOrderProcurementFilterPresets(model)}
+
           <div class="badge-stack">
             ${orderProcurementBadge(`SKU: ${fmt.int(model.rows.length)}`, model.rows.length ? 'ok' : 'warn')}
             ${orderProcurementBadge(`Кластеры: ${fmt.int(model.places.length)}`, model.places.length ? 'ok' : 'warn')}
             ${orderProcurementBadge(`сигналы: ${fmt.int(visibleClusterSignalCount)}`, visibleClusterSignalCount ? 'warn' : 'info')}
+            ${model.hiddenPlaceCount ? orderProcurementBadge(`скрыто складов: ${fmt.int(model.hiddenPlaceCount)}`, 'warn') : ''}
             ${orderProcurementBadge(`Обновлено: ${orderProcurementFormatDateTime(model.generatedAt)}`, 'info')}
           </div>
 
@@ -1037,6 +1070,18 @@ function bindOrderProcurement(root) {
     renderOrderCalculator();
   });
 
+  root.querySelectorAll('[data-altea-order-preset]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const preset = ORDER_PROCUREMENT_FILTER_PRESETS.find((item) => item.id === String(button.dataset.alteaOrderPreset || ''));
+      if (!preset) return;
+      const orderState = ensureOrderProcurementState();
+      orderState.clusterFilter = preset.filter || 'all';
+      orderState.clusterDays = clampOrderProcurementDays(preset.days || 30);
+      if (preset.mode) orderState.mode = preset.mode;
+      renderOrderCalculator();
+    });
+  });
+
   root.querySelector('#alteaOrderClusterFilter')?.addEventListener('change', (event) => {
     ensureOrderProcurementState().clusterFilter = String(event.target.value || 'all');
     renderOrderCalculator();
@@ -1171,6 +1216,37 @@ function injectOrderProcurementStyles() {
 
     .altea-order-procurement__field--search input {
       min-width: 220px;
+    }
+
+    .altea-order-procurement__preset-row {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .altea-order-procurement__preset {
+      min-height: 34px;
+      padding: 8px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(212, 164, 74, 0.18);
+      background: rgba(18, 14, 10, 0.82);
+      color: #fff1dd;
+      font: inherit;
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+    }
+
+    .altea-order-procurement__preset:hover {
+      transform: translateY(-1px);
+      border-color: rgba(240, 196, 101, 0.46);
+    }
+
+    .altea-order-procurement__preset.is-active {
+      border-color: rgba(240, 196, 101, 0.68);
+      background: rgba(94, 68, 27, 0.74);
+      box-shadow: inset 0 0 0 1px rgba(240, 196, 101, 0.14);
     }
 
     .altea-order-procurement__place-filter {

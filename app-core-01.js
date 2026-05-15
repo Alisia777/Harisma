@@ -352,7 +352,8 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/order_procurement.json': 'order_procurement',
   'data/order_procurement_wb.json': 'order_procurement_wb',
   'data/order_procurement_ozon.json': 'order_procurement_ozon',
-  'data/warehouse_stock_overlay.json': 'warehouse_stock_overlay'
+  'data/warehouse_stock_overlay.json': 'warehouse_stock_overlay',
+  'data/portal_data_quality.json': 'portal_data_quality'
 };
 const portalSnapshotState = {
   client: null,
@@ -542,6 +543,11 @@ function payloadFreshnessScore(snapshotKey, payload) {
     return score;
   }
 
+  if (snapshotKey === 'portal_data_quality') {
+    score = bumpFreshness(score, payload.summary?.maxDate);
+    return score;
+  }
+
   return score;
 }
 
@@ -596,6 +602,10 @@ function payloadDataFreshnessScore(snapshotKey, payload) {
 
   if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon') {
     return bumpFreshness(score, payload.window?.to);
+  }
+
+  if (snapshotKey === 'portal_data_quality') {
+    return bumpFreshness(score, payload.summary?.maxDate || payload.generatedAt);
   }
 
   return score;
@@ -1120,6 +1130,9 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
   }
   if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon' || snapshotKey === 'warehouse_stock_overlay') {
     return Array.isArray(payload?.rows) && payload.rows.length > 0;
+  }
+  if (snapshotKey === 'portal_data_quality') {
+    return typeof payload?.summary === 'object' && payload.summary !== null;
   }
   if (snapshotKey === 'logistics') {
     return Array.isArray(payload?.allRows) && payload.allRows.length > 0

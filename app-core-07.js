@@ -3139,7 +3139,7 @@ function iuDrrPlatformMeta(model) {
     adsCompletion: isOzon ? month.iuAdsCompletionOzonToDate : month.iuAdsCompletionToDate,
     adsDelta: isOzon ? month.spendDeltaOzon : month.spendDelta,
     adsDeltaPct: isOzon ? month.spendDeltaOzonPct : month.spendDeltaPct,
-    adsFactSource: isOzon ? 'расчетная реклама Ozon; API-факт Ozon Ads не подключен' : 'WB Promotion API без Внешки'
+    adsFactSource: isOzon ? 'Ozon Seller Finance API из ads_summary' : 'WB Promotion API без Внешки'
   };
 }
 
@@ -3665,10 +3665,10 @@ function downloadIuDrrExcel(model) {
       ['completion_pct', 'Выполнение Ozon, %'],
       ['plan_ads_pct_ozon', 'Реклама Ozon. План в %'],
       ['plan_spend_ozon', 'План расхода Ozon'],
-      ['spend_fact_ozon', 'Реклама Ozon. Расчетный расход'],
-      ['fact_drr_ozon_pct', 'Реклама Ozon. Расчетная ставка, %'],
-      ['spend_delta_ozon', 'Дельта расчетного расхода Ozon'],
-      ['spend_delta_ozon_pct', 'Дельта расчетного расхода Ozon, %'],
+      ['spend_fact_ozon', 'Реклама Ozon. Фактический расход'],
+      ['fact_drr_ozon_pct', 'Реклама Ozon. Факт ДРР, %'],
+      ['spend_delta_ozon', 'Дельта фактического расхода Ozon'],
+      ['spend_delta_ozon_pct', 'Дельта фактического расхода Ozon, %'],
       ['ozon_ads_source', 'Источник/модель рекламы Ozon']
     ], rows, `iu-drr-ozon-${model.selectedMonth || todayIso()}.xls`);
     return;
@@ -3783,7 +3783,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       <div class="mini-kpi ok"><span>Реклама Ozon план</span><strong>${fmt.pct(platformMeta.adsPlanPct)}</strong><span>${fmt.money(platformMeta.adsPlan)}</span></div>
       <div class="mini-kpi ${platformMeta.adsFactPct <= platformMeta.adsPlanPct ? 'ok' : 'warn'}"><span>Реклама Ozon факт</span><strong>${fmt.money(platformMeta.adsFact)}</strong><span>${fmt.pct(platformMeta.adsFactPct)} · ads_summary</span></div>
       <div class="mini-kpi"><span>Источник Ozon Ads</span><strong>факт</strong><span>${escapeHtml(month.ozonAdsFactMode || 'ads_summary')}</span></div>
-      <div class="mini-kpi ${ozonAdsDeltaTone}"><span>Дельта расчетного расхода</span><strong>${fmt.money(platformMeta.adsDelta)}</strong><span>расчет - план расхода</span></div>
+      <div class="mini-kpi ${ozonAdsDeltaTone}"><span>Дельта расхода</span><strong>${fmt.money(platformMeta.adsDelta)}</strong><span>факт - план расхода</span></div>
     </div>
   ` : `
     <div class="kpi-strip" style="margin-top:14px">
@@ -3813,7 +3813,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       </div>
       <div class="card">
         <div class="section-subhead">
-          <div><h3>Реклама Ozon расчет</h3><p class="small muted">${fmt.pct(platformMeta.adsPlanPct)} от фактического оборота; не API-факт</p></div>
+          <div><h3>Реклама Ozon факт</h3><p class="small muted">Ozon Seller Finance API; план ${fmt.pct(platformMeta.adsPlanPct)} остаётся контрольной нормой</p></div>
           ${badge(fmt.money(platformMeta.adsFact), ozonAdsDeltaTone)}
         </div>
         ${iuDrrSparkline(model.dailyRows, 'spendFactOzon', ozonAdsDeltaTone)}
@@ -3858,7 +3858,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   const dailyTableHtml = isOzonView ? `
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
-        <div><h3>Дневная форма Ozon</h3><p class="small muted">Отдельный план-факт оборота Ozon по дням.</p></div>
+        <div><h3>Дневная форма Ozon</h3><p class="small muted">Отдельный план-факт оборота Ozon и рекламного расхода из Ozon Seller Finance API.</p></div>
         ${badge(model.hasRows ? 'готово' : 'нет строк', model.hasRows ? 'ok' : 'warn')}
       </div>
       <div class="table-wrap">
@@ -3872,9 +3872,9 @@ function renderIuDrr(rootId = 'view-iu-drr') {
               <th>Выполнение</th>
               <th>Реклама. План в %</th>
               <th>План расхода Ozon</th>
-              <th>Реклама. Расчетный расход ${fmt.pct(platformMeta.adsPlanPct)}</th>
-              <th>Расчетная ставка</th>
-              <th>Дельта расчетного расхода</th>
+              <th>Реклама. Фактический расход Ozon API</th>
+              <th>Факт ДРР</th>
+              <th>Дельта фактического расхода</th>
             </tr>
           </thead>
           <tbody>

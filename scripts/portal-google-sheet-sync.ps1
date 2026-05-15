@@ -327,6 +327,29 @@ try {
   Write-Warning "[sync] WB ads build failed, but the portal sync will continue so price/repricer/order layers can still be uploaded: $($_.Exception.Message)"
 }
 
+$ozonAdsFinanceArguments = @(
+  "scripts/portal-ozon-ads-finance-sync.js",
+  "sync",
+  "--input-file",
+  (Join-Path $resolvedOutputDir "ads_summary.json"),
+  "--output-file",
+  (Join-Path $resolvedOutputDir "ads_summary.json"),
+  "--mirror-file",
+  (Join-Path "data" "ads_summary.json")
+)
+
+if ($DryRun) {
+  $ozonAdsFinanceArguments += "--dry-run"
+}
+
+Write-Output "[sync] Ozon ads finance refresh started"
+try {
+  Invoke-NodeStep -StepName "Ozon ads finance refresh" -Arguments $ozonAdsFinanceArguments -Attempts 2 -RetryDelaySeconds 30
+  Write-Output "[sync] Ozon ads finance refresh completed"
+} catch {
+  Write-Warning "[sync] Ozon ads finance refresh failed, IU/DRR will use the last ads_summary layer: $($_.Exception.Message)"
+}
+
 $iuDrrArguments = @(
   "scripts/build-iu-drr-summary.js",
   "--input-dir",

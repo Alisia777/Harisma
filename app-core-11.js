@@ -146,6 +146,51 @@ function skuPlanFactRowsFromIndexMap(map = null) {
   return map ? [...map.values()].flat() : [];
 }
 
+function skuPlanFactSkuLookupTokens(sku = {}, platform = '') {
+  const values = typeof skuLookupValues === 'function'
+    ? skuLookupValues(sku)
+    : [sku?.articleKey, sku?.article, sku?.sku, sku?.vendorCode, sku?.barcode, sku?.nmId];
+  const platformAliases = sku?.platformAliases || {};
+  const supportKey = skuPlanFactPlatformSupportKey(platform);
+  [platform, supportKey, platform === 'ya' ? 'ym' : '', platform === 'ym' ? 'ya' : '']
+    .filter(Boolean)
+    .forEach((key) => {
+      const aliases = platformAliases[key];
+      if (Array.isArray(aliases)) values.push(...aliases);
+      else if (aliases) values.push(aliases);
+    });
+  const tokens = [];
+  const seen = new Set();
+  values.forEach((value) => {
+    const token = skuPlanFactToken(value);
+    if (!token || seen.has(token)) return;
+    seen.add(token);
+    tokens.push(token);
+  });
+  return tokens;
+}
+
+function skuPlanFactRowsForSkuIndex(map = null, sku = {}, platform = '') {
+  if (!map) return [];
+  const rows = [];
+  const seen = new Set();
+  skuPlanFactSkuLookupTokens(sku, platform).forEach((token) => {
+    (map.get(token) || []).forEach((row, index) => {
+      const key = `${token}|${index}|${row?.articleKey || row?.article || ''}|${row?.sourceMode || row?.source || ''}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      rows.push(row);
+    });
+  });
+  return rows;
+}
+
+function skuPlanFactRowsForSkuArray(rows = [], sku = {}, platform = '') {
+  const tokens = new Set(skuPlanFactSkuLookupTokens(sku, platform));
+  if (!tokens.size) return [];
+  return rows.filter((row) => tokens.has(skuPlanFactArticleToken(row)));
+}
+
 function skuPlanFactKnownSkuTokens() {
   const tokens = new Set();
   (state.skus || []).forEach((sku) => {
@@ -622,6 +667,20 @@ function skuPlanFactAdIndex(monthKey, maxFactDate = '') {
   return map;
 }
 
+function skuPlanFactAdForSku(adIndex, platform = '', sku = {}) {
+  const result = { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0 };
+  skuPlanFactSkuLookupTokens(sku, platform).forEach((token) => {
+    const item = adIndex.get(`${platform}|${token}`);
+    if (!item) return;
+    result.spend += numberOrZero(item.spend);
+    result.views += numberOrZero(item.views);
+    result.clicks += numberOrZero(item.clicks);
+    result.orders += numberOrZero(item.orders);
+    result.revenue += numberOrZero(item.revenue);
+  });
+  return result;
+}
+
 function skuPlanFactPlatformPriceProxy(metric = {}) {
   const values = [
     metric.planAvgCheck,
@@ -747,14 +806,13 @@ function skuPlanFactAllocatePlatformPlan(rows = [], monthKey = '', platform = ''
 }
 
 function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, elapsedDays, maxFactDate = '') {
-  const token = skuPlanFactArticleToken(sku);
-  const smartRows = skuPlanFactRowsFromIndexMap(indexes.smart?.[platform]).filter((row) => skuPlanFactArticleToken(row) === token);
-  const overlayRows = skuPlanFactRowsFromIndexMap(indexes.overlay?.[platform]).filter((row) => skuPlanFactArticleToken(row) === token);
-  const supportRows = skuPlanFactRowsFromIndexMap(indexes.support?.[platform]).filter((row) => skuPlanFactArticleToken(row) === token);
-  const pricesRows = skuPlanFactRowsFromIndexMap(indexes.prices?.[platform]).filter((row) => skuPlanFactArticleToken(row) === token);
-  const extraRows = skuPlanFactRowsFromIndexMap(indexes.extra?.[platform]).filter((row) => skuPlanFactArticleToken(row) === token);
-  const sourceRows = skuPlanFactPlatformSourceRows(indexes, platform).filter((row) => skuPlanFactArticleToken(row) === token);
-  const planRows = skuPlanFactPlatformPlanRows(indexes, platform, monthKey).filter((row) => skuPlanFactArticleToken(row) === token);
+  const smartRows = skuPlanFactRowsForSkuIndex(indexes.smart?.[platform], sku, platform);
+  const overlayRows = skuPlanFactRowsForSkuIndex(indexes.overlay?.[platform], sku, platform);
+  const supportRows = skuPlanFactRowsForSkuIndex(indexes.support?.[platform], sku, platform);
+  const pricesRows = skuPlanFactRowsForSkuIndex(indexes.prices?.[platform], sku, platform);
+  const extraRows = skuPlanFactRowsForSkuIndex(indexes.extra?.[platform], sku, platform);
+  const sourceRows = skuPlanFactRowsForSkuArray(skuPlanFactPlatformSourceRows(indexes, platform), sku, platform);
+  const planRows = skuPlanFactRowsForSkuArray(skuPlanFactPlatformPlanRows(indexes, platform, monthKey), sku, platform);
   const hasDirectApiFact = skuPlanFactPlatformHasDirectApiFact(indexes, platform);
   const apiFactRows = hasDirectApiFact ? extraRows : [];
   const factRows = hasDirectApiFact ? apiFactRows : (sourceRows.length ? sourceRows : (overlayRows.length ? overlayRows : (smartRows.length ? smartRows : (pricesRows.length ? pricesRows : extraRows))));
@@ -762,7 +820,7 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
     ? skuPlanFactPlanFromRows(planRows, monthKey)
     : { units: 0, revenue: 0, avgCheck: null, days: skuPlanFactMonthDays(monthKey), source: '' };
   const fact = skuPlanFactFactFromRows(factRows, monthKey, maxFactDate);
-  const ad = adIndex.get(`${platform}|${token}`) || { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0 };
+  const ad = skuPlanFactAdForSku(adIndex, platform, sku);
   const planToDateRevenue = plan.revenue > 0 ? plan.revenue * elapsedDays / Math.max(1, plan.days) : 0;
   const planToDateUnits = plan.units > 0 ? plan.units * elapsedDays / Math.max(1, plan.days) : 0;
   const fallbackSide = sku?.[platform] || {};
@@ -961,6 +1019,7 @@ function skuPlanFactBuildModel() {
   const sortedRows = skuPlanFactSortRows(filteredRows, filters.sort, filters.sortDir);
   const unmappedRows = rows.filter((row) => row.syntheticUnmapped);
   const unmappedRevenue = unmappedRows.reduce((sum, row) => sum + numberOrZero(row.factRevenue), 0);
+  const quality = skuPlanFactBuildDataQuality(rows, reconciliation, monthKey, selectedDate);
   const totals = sortedRows.reduce((acc, row) => {
     acc.planRevenue += row.planRevenue;
     acc.planToDateRevenue += row.planToDateRevenue;
@@ -996,6 +1055,7 @@ function skuPlanFactBuildModel() {
     reconciliation,
     unmappedCount: unmappedRows.length,
     unmappedRevenue,
+    quality,
     planDrrByPlatform: {
       wb: Number.isFinite(Number(state.iuDrrSummary?.planPctDefault)) ? Number(state.iuDrrSummary.planPctDefault) : 0.08,
       ozon: Number.isFinite(Number(state.iuDrrSummary?.ozonPlanPctDefault)) ? Number(state.iuDrrSummary.ozonPlanPctDefault) : 0.25,
@@ -1029,6 +1089,150 @@ function skuPlanFactMetricHtml(label, value, hint = '', tone = '') {
       <div class="label">${escapeHtml(label)}</div>
       <div class="value ${tone}">${value}</div>
       <div class="hint">${escapeHtml(hint)}</div>
+    </div>
+  `;
+}
+
+function skuPlanFactBuildDataQuality(rows = [], reconciliation = [], monthKey = '', maxFactDate = '') {
+  const issues = [];
+  const addIssue = (issue) => {
+    const revenue = numberOrZero(issue.revenue);
+    issues.push({
+      severity: issue.severity || (revenue >= 100000 ? 'danger' : 'warn'),
+      type: issue.type || '',
+      platform: issue.platform || '',
+      articleKey: issue.articleKey || '',
+      name: issue.name || '',
+      revenue,
+      units: numberOrZero(issue.units),
+      action: issue.action || '',
+      monthKey,
+      factTo: maxFactDate
+    });
+  };
+
+  rows.filter((row) => row.syntheticUnallocated).forEach((row) => {
+    const platform = SKU_PLAN_FACT_PLATFORMS.find((key) => numberOrZero(row.platforms?.[key]?.factRevenue) > 0) || '';
+    addIssue({
+      severity: 'danger',
+      type: 'Агрегат без SKU',
+      platform: skuPlanFactPlatformLabel(platform),
+      articleKey: row.articleKey,
+      name: row.name,
+      revenue: row.factRevenue,
+      units: row.factUnits,
+      action: 'Проверить API-детализацию и добавить недостающие SKU/алиасы'
+    });
+  });
+
+  rows.filter((row) => row.syntheticUnmapped && !row.syntheticUnallocated).forEach((row) => {
+    const platformList = SKU_PLAN_FACT_PLATFORMS
+      .filter((key) => numberOrZero(row.platforms?.[key]?.factRevenue) > 0 || numberOrZero(row.platforms?.[key]?.factUnits) > 0)
+      .map((key) => skuPlanFactPlatformLabel(key))
+      .join(', ');
+    addIssue({
+      type: 'API SKU без пары',
+      platform: platformList,
+      articleKey: row.articleKey,
+      name: row.name,
+      revenue: row.factRevenue,
+      units: row.factUnits,
+      action: 'Добавить строку в dim_sku_aliases или завести SKU в реестре'
+    });
+  });
+
+  (reconciliation || []).forEach((item) => {
+    addIssue({
+      severity: 'warn',
+      type: 'SKU выше агрегата',
+      platform: item.label || '',
+      articleKey: '',
+      name: 'Сверка суммы SKU с итогом площадки',
+      revenue: Math.max(0, numberOrZero(item.rawRevenue) - numberOrZero(item.aggregateRevenue)),
+      units: Math.max(0, numberOrZero(item.rawUnits) - numberOrZero(item.aggregateUnits)),
+      action: 'Проверить дубли в источнике SKU-факта'
+    });
+  });
+
+  const noOwnerRows = rows.filter((row) => !row.syntheticUnmapped && (!row.owner || row.owner === 'Без owner'));
+  noOwnerRows.slice(0, 20).forEach((row) => {
+    addIssue({
+      severity: numberOrZero(row.factRevenue) > 0 ? 'warn' : 'info',
+      type: 'Нет owner',
+      platform: '',
+      articleKey: row.articleKey,
+      name: row.name,
+      revenue: row.factRevenue,
+      units: row.factUnits,
+      action: 'Заполнить owner в dim_sku'
+    });
+  });
+
+  const sorted = issues.sort((left, right) => {
+    const severityWeight = { danger: 3, warn: 2, info: 1 };
+    return (severityWeight[right.severity] || 0) - (severityWeight[left.severity] || 0)
+      || numberOrZero(right.revenue) - numberOrZero(left.revenue);
+  });
+  return {
+    issues: sorted,
+    topIssues: sorted.slice(0, 10),
+    issueCount: sorted.length,
+    dangerCount: sorted.filter((item) => item.severity === 'danger').length,
+    warnCount: sorted.filter((item) => item.severity === 'warn').length,
+    unmappedCount: rows.filter((row) => row.syntheticUnmapped && !row.syntheticUnallocated).length,
+    unallocatedCount: rows.filter((row) => row.syntheticUnallocated).length,
+    noOwnerCount: noOwnerRows.length,
+    unresolvedRevenue: sorted.reduce((sum, item) => sum + numberOrZero(item.revenue), 0)
+  };
+}
+
+function skuPlanFactDataQualityHtml(model) {
+  const quality = model.quality || {};
+  const issues = quality.topIssues || [];
+  if (!quality.issueCount) {
+    return `
+      <div class="notice ok" style="margin-top:14px">
+        <strong>Контроль данных:</strong> критичных расхождений по текущему месяцу не найдено.
+      </div>
+    `;
+  }
+  const rowsHtml = issues.map((issue) => `
+    <tr>
+      <td>${badge(issue.severity === 'danger' ? 'Критично' : issue.severity === 'warn' ? 'Проверить' : 'Инфо', issue.severity === 'danger' ? 'danger' : issue.severity === 'warn' ? 'warn' : 'info')}</td>
+      <td><strong>${escapeHtml(issue.type)}</strong><div class="muted small">${escapeHtml(issue.action)}</div></td>
+      <td>${escapeHtml(issue.platform || 'Все')}</td>
+      <td>${escapeHtml(issue.articleKey || '—')}<div class="muted small">${escapeHtml(issue.name || '')}</div></td>
+      <td><strong>${fmt.money(issue.revenue)}</strong><div class="muted small">${fmt.int(issue.units)} шт.</div></td>
+    </tr>
+  `).join('');
+  return `
+    <div class="card sku-plan-fact-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Контроль данных</h3>
+          <p class="small muted">Очередь расхождений, которые мешают план-факту полностью разложиться по SKU и owner.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(quality.unmappedCount || 0)} API SKU`, quality.unmappedCount ? 'warn' : 'ok')}
+          ${badge(`${fmt.int(quality.unallocatedCount || 0)} агрегат`, quality.unallocatedCount ? 'danger' : 'ok')}
+          ${badge(fmt.money(quality.unresolvedRevenue || 0), quality.dangerCount ? 'danger' : 'warn')}
+          <button class="quick-chip" type="button" data-sku-plan-fact-quality-export>Выгрузить проблемы</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table compact">
+          <thead>
+            <tr>
+              <th>Уровень</th>
+              <th>Проблема</th>
+              <th>Площадка</th>
+              <th>SKU/API</th>
+              <th>Сумма</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
     </div>
   `;
 }
@@ -1190,6 +1394,45 @@ function downloadSkuPlanFactExcel(model) {
   downloadLaunchesHtmlTable(skuPlanFactExportColumns(), skuPlanFactExportRows(model.rows, model), `sku-plan-fact-${model.monthKey}.xls`);
 }
 
+function skuPlanFactQualityExportColumns() {
+  return [
+    ['month', 'Месяц'],
+    ['fact_to', 'Факт до'],
+    ['severity', 'Уровень'],
+    ['type', 'Проблема'],
+    ['platform', 'Площадка'],
+    ['article_key', 'SKU/API'],
+    ['name', 'Название'],
+    ['revenue', 'Сумма'],
+    ['units', 'Шт'],
+    ['action', 'Что сделать']
+  ];
+}
+
+function skuPlanFactQualityExportRows(model) {
+  return (model.quality?.issues || []).map((issue) => ({
+    month: model.monthKey,
+    fact_to: model.maxFactDate,
+    severity: issue.severity,
+    type: issue.type,
+    platform: issue.platform,
+    article_key: issue.articleKey,
+    name: issue.name,
+    revenue: Math.round(issue.revenue || 0),
+    units: Math.round(issue.units || 0),
+    action: issue.action
+  }));
+}
+
+function downloadSkuPlanFactQualityExcel(model) {
+  const rows = skuPlanFactQualityExportRows(model);
+  if (!rows.length) {
+    window.alert('Проблем качества данных по текущему срезу нет.');
+    return;
+  }
+  downloadLaunchesHtmlTable(skuPlanFactQualityExportColumns(), rows, `sku-plan-fact-data-quality-${model.monthKey}.xls`);
+}
+
 function skuPlanFactFocusState(target) {
   if (!target?.id) return null;
   const focusState = { id: target.id };
@@ -1333,6 +1576,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
       ${skuPlanFactMetricHtml('Реклама / ДРР', `${fmt.money(totals.adSpend)} · ${fmt.pct(totals.drr)}`, 'по SKU из ads_summary')}
     </div>
     ${skuPlanFactReconciliationHtml(model.reconciliation || [])}
+    ${skuPlanFactDataQualityHtml(model)}
 
     <div class="card sku-plan-fact-card" style="margin-top:14px">
       <div class="section-subhead">
@@ -1411,6 +1655,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
   });
   root.querySelector('[data-sku-plan-fact-refresh]')?.addEventListener('click', (event) => { refreshSkuPlanFactData(event.currentTarget, rootId); });
   root.querySelector('[data-sku-plan-fact-export]')?.addEventListener('click', () => downloadSkuPlanFactExcel(model));
+  root.querySelector('[data-sku-plan-fact-quality-export]')?.addEventListener('click', () => downloadSkuPlanFactQualityExcel(model));
   skuPlanFactRestoreFocus(options.focusState);
 }
 
@@ -1418,6 +1663,8 @@ window.renderSkuPlanFact = renderSkuPlanFact;
 window.skuPlanFactBuildModel = skuPlanFactBuildModel;
 window.skuPlanFactExportRows = skuPlanFactExportRows;
 window.skuPlanFactExportColumns = skuPlanFactExportColumns;
+window.skuPlanFactQualityExportRows = skuPlanFactQualityExportRows;
+window.skuPlanFactQualityExportColumns = skuPlanFactQualityExportColumns;
 window.SKU_PLAN_FACT_PLATFORMS = SKU_PLAN_FACT_PLATFORMS;
 window.SKU_PLAN_FACT_PLATFORM_LABELS = SKU_PLAN_FACT_PLATFORM_LABELS;
 window.SKU_PLAN_FACT_PLATFORM_SUPPORT_KEYS = SKU_PLAN_FACT_PLATFORM_SUPPORT_KEYS;

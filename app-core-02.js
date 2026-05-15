@@ -222,6 +222,17 @@ function skuLookupToken(value = '') {
 }
 
 function skuLookupValues(sku = {}) {
+  const aliasValues = [];
+  if (Array.isArray(sku.aliases)) {
+    sku.aliases.forEach((alias) => {
+      if (typeof alias === 'string') aliasValues.push(alias);
+      else aliasValues.push(alias?.value, alias?.alias, alias?.sku, alias?.article, alias?.articleKey, alias?.offerId, alias?.vendorCode, alias?.nmId);
+    });
+  }
+  Object.values(sku.platformAliases || {}).forEach((values) => {
+    if (Array.isArray(values)) aliasValues.push(...values);
+    else aliasValues.push(values);
+  });
   return [
     sku.articleKey,
     sku.article,
@@ -230,7 +241,8 @@ function skuLookupValues(sku = {}) {
     sku.supplierArticle,
     sku.nmId,
     sku.nmID,
-    sku.barcode
+    sku.barcode,
+    ...aliasValues
   ].filter((value) => String(value ?? '').trim());
 }
 

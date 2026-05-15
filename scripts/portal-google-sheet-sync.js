@@ -29,6 +29,8 @@ const SNAPSHOT_KEYS = [
 ];
 const REQUIRED_SOURCE_SHEETS = {
   dimSku: ['dim_sku'],
+  skuAliases: ['dim_sku_aliases', 'sku_aliases', 'api_sku_aliases', 'sku_api_aliases'],
+  factMarketplace: ['fact_marketplace_daily_sku'],
   factAds: ['fact_ads_daily_sku'],
   factLogistics: ['fact_logistics_daily_cluster_warehouse_sku', 'fact_logistics_daily_cluster_wa'],
   dimWarehouse: ['dim_warehouse'],
@@ -407,7 +409,7 @@ function requiredSheetRows(workbook, sheetName) {
   const candidates = Array.isArray(sheetName) ? sheetName : [sheetName];
   const resolvedName = candidates.find((name) => workbook.Sheets[name]);
   const sheet = resolvedName ? workbook.Sheets[resolvedName] : null;
-  if (!sheet) throw new Error(`В workbook нет листа ${sheetName}`);
+  if (!sheet) throw new Error(`В workbook нет листа ${(candidates.filter(Boolean).join(' / ') || 'unknown')}`);
   return XLSX.utils.sheet_to_json(sheet, { defval: null, raw: false });
 }
 
@@ -433,8 +435,11 @@ function loyaltySheetCandidates(options = {}) {
 function parseWorkbook(buffer, options = {}) {
   const workbook = XLSX.read(buffer, { type: 'buffer' });
   const loyaltySystemSource = optionalSheetRows(workbook, loyaltySheetCandidates(options));
+  const skuAliasesSource = optionalSheetRows(workbook, REQUIRED_SOURCE_SHEETS.skuAliases);
   return {
     dimSku: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.dimSku),
+    skuAliases: skuAliasesSource.rows,
+    skuAliasesSource,
     factMarketplace: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.factMarketplace),
     factAds: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.factAds),
     factLogistics: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.factLogistics),
@@ -443,7 +448,8 @@ function parseWorkbook(buffer, options = {}) {
     loyaltySystemSource,
     sourceMeta: {
       sheetNames: {
-        loyalty_system: loyaltySystemSource.name
+        loyalty_system: loyaltySystemSource.name,
+        dim_sku_aliases: skuAliasesSource.name
       },
       warnings: loyaltySystemSource.name ? [] : ['loyalty_system sheet is optional and was not found in the workbook export']
     }
@@ -636,6 +642,7 @@ async function fetchSheetRowsViaBrowserAuth(options) {
     const dimSkuSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.dimSku, 'dim_sku');
     const factLogisticsSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.factLogistics, 'fact_logistics_daily_cluster_warehouse_sku');
     const dimWarehouseSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.dimWarehouse, 'dim_warehouse');
+    const skuAliasesSource = await fetchOptionalCsvRows(REQUIRED_SOURCE_SHEETS.skuAliases);
     const loyaltySystemSource = await fetchOptionalCsvRows(loyaltySheetCandidates(options), {
       gid: options.loyaltySheetGid,
       name: options.loyaltySheetName
@@ -653,6 +660,8 @@ async function fetchSheetRowsViaBrowserAuth(options) {
 
     return {
       dimSku: dimSkuRows,
+      skuAliases: skuAliasesSource.rows,
+      skuAliasesSource,
       factLogistics: factLogisticsSource.rows,
       dimWarehouse: dimWarehouseSource.rows,
       loyaltySystem: loyaltySystemSource.rows,
@@ -661,11 +670,13 @@ async function fetchSheetRowsViaBrowserAuth(options) {
         mode: 'google-csv-tabs',
         gids: {
           dim_sku: dimSkuSource.gid,
+          dim_sku_aliases: skuAliasesSource.gid,
           fact_logistics_daily_cluster_warehouse_sku: factLogisticsSource.gid,
           dim_warehouse: dimWarehouseSource.gid,
           loyalty_system: loyaltySystemSource.gid
         },
         sheetNames: {
+          dim_sku_aliases: skuAliasesSource.name,
           loyalty_system: loyaltySystemSource.name
         },
         warnings
@@ -685,6 +696,193 @@ function resolveInputBuffer(options) {
     return { kind: 'xlsx', buffer: fs.readFileSync(options.inputXlsx) };
   }
   return null;
+}
+
+function looseRowValue(row = {}, aliases = []) {
+  const entries = Object.entries(row || {});
+  const normalizedAliases = aliases.map((alias) => normalizeKey(alias)).filter(Boolean);
+  for (const [key, value] of entries) {
+    if (normalizedAliases.includes(normalizeKey(key)) && hasText(value)) return normalizeText(value);
+  }
+  for (const [key, value] of entries) {
+    const normalizedKey = normalizeKey(key);
+    if (hasText(value) && normalizedAliases.some((alias) => normalizedKey.includes(alias) || alias.includes(normalizedKey))) {
+      return normalizeText(value);
+    }
+  }
+  return '';
+}
+
+function strictRowValue(row = {}, aliases = []) {
+  const entries = Object.entries(row || {});
+  const normalizedAliases = aliases.map((alias) => normalizeKey(alias)).filter(Boolean);
+  for (const [key, value] of entries) {
+    if (normalizedAliases.includes(normalizeKey(key)) && hasText(value)) return normalizeText(value);
+  }
+  return '';
+}
+
+function normalizeSkuAliasPlatform(value = '') {
+  const normalized = normalizeKey(value)
+    .replaceAll('.', '')
+    .replaceAll('_', '')
+    .replaceAll('-', '');
+  if (['wb', 'wildberries', 'wildberry'].includes(normalized)) return 'wb';
+  if (['oz', 'ozon'].includes(normalized)) return 'ozon';
+  if (['ya', 'ym', 'yandex', 'yandexmarket'].includes(normalized)) return 'ym';
+  if (['ga', 'goldapple', 'zolotoeyabloko', 'zy'].includes(normalized)) return 'ga';
+  if (['letu', 'letual', 'letoile'].includes(normalized)) return 'letu';
+  if (['mm', 'magnit', 'magnitmarket'].includes(normalized)) return 'mm';
+  return normalized || 'all';
+}
+
+function splitSkuAliases(value = '') {
+  return normalizeText(value)
+    .split(/[\n;,|]+/g)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function readSkuAliasRows(options = {}) {
+  const payload = readOptionalJson(options.skuAliasJson);
+  if (!payload) return [];
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.aliases)) return payload.aliases;
+  if (payload.aliases && typeof payload.aliases === 'object') {
+    return Object.entries(payload.aliases).flatMap(([targetSku, aliases]) => {
+      if (Array.isArray(aliases)) return aliases.map((alias) => ({ targetSku, ...(typeof alias === 'object' ? alias : { alias }) }));
+      if (aliases && typeof aliases === 'object') return Object.entries(aliases).map(([platform, alias]) => ({ targetSku, platform, alias }));
+      return [{ targetSku, alias: aliases }];
+    });
+  }
+  return [];
+}
+
+function normalizeSkuAliasRows(sheetRows = [], localRows = []) {
+  const result = [];
+  const seen = new Set();
+  const addAlias = (row, source, platformHint = '', aliasValue = '') => {
+    const status = looseRowValue(row, ['status', 'enabled', 'active', 'is_active']);
+    if (/^(0|false|no|нет|off|disabled|ignore|skip)$/i.test(status)) return;
+    const targetSku = looseRowValue(row, [
+      'target_sku',
+      'target',
+      'portal_sku',
+      'main_sku',
+      'our_sku',
+      'article_key',
+      'articlekey',
+      'sku'
+    ]);
+    const platform = normalizeSkuAliasPlatform(platformHint || looseRowValue(row, ['platform', 'marketplace', 'source_platform']));
+    const aliases = splitSkuAliases(aliasValue || strictRowValue(row, [
+      'api_sku',
+      'api_article',
+      'alias',
+      'source_sku',
+      'marketplace_sku',
+      'external_sku',
+      'offer_id',
+      'offerid',
+      'vendor_code',
+      'vendorcode',
+      'nm_id',
+      'nmid'
+    ]));
+    if (!targetSku || !aliases.length) return;
+    aliases.forEach((alias) => {
+      const key = `${normalizeKey(targetSku)}|${platform}|${normalizeKey(alias)}`;
+      if (!normalizeKey(alias) || seen.has(key)) return;
+      seen.add(key);
+      result.push({
+        targetSku,
+        alias,
+        platform,
+        source,
+        note: looseRowValue(row, ['note', 'comment', 'name', 'title'])
+      });
+    });
+  };
+
+  const columnAliases = [
+    ['wb', ['api_wb', 'wb_alias', 'wb_sku', 'wildberries_sku', 'wildberries_alias']],
+    ['ozon', ['api_ozon', 'ozon_alias', 'ozon_sku', 'ozon_offer_id']],
+    ['ym', ['api_ym', 'api_ya', 'ym_alias', 'ya_alias', 'yandex_alias', 'yandex_market_sku']],
+    ['ga', ['api_ga', 'goldapple_alias', 'goldapple_sku', 'ga_sku']],
+    ['letu', ['api_letu', 'letu_alias', 'letual_alias', 'letu_sku']],
+    ['mm', ['api_mm', 'magnit_alias', 'magnit_market_sku', 'mm_sku']]
+  ];
+
+  [
+    ...(Array.isArray(sheetRows) ? sheetRows.map((row) => ({ row, source: 'dim_sku_aliases' })) : []),
+    ...(Array.isArray(localRows) ? localRows.map((row) => ({ row, source: 'sku_aliases.json' })) : [])
+  ].forEach(({ row, source }) => {
+    addAlias(row, source);
+    columnAliases.forEach(([platform, aliases]) => {
+      const value = strictRowValue(row, aliases);
+      if (value) addAlias(row, source, platform, value);
+    });
+  });
+
+  return result;
+}
+
+function applySkuAliases(skus = [], aliasRows = []) {
+  const skuByToken = new Map();
+  skus.forEach((sku, index) => {
+    [sku.articleKey, sku.article, sku.sku, sku.vendorCode, sku.supplierArticle, sku.nmId, sku.nmID, sku.barcode]
+      .forEach((value) => {
+        const token = normalizeKey(value);
+        if (token && !skuByToken.has(token)) skuByToken.set(token, index);
+      });
+  });
+
+  const diagnostics = {
+    sourceRows: aliasRows.length,
+    appliedRows: 0,
+    unmatchedTargetRows: 0,
+    unmatchedTargets: []
+  };
+  const nextSkus = skus.map((sku) => deepClone(sku));
+
+  aliasRows.forEach((aliasRow) => {
+    const targetToken = normalizeKey(aliasRow.targetSku);
+    const aliasToken = normalizeKey(aliasRow.alias);
+    const skuIndex = skuByToken.get(targetToken);
+    if (skuIndex === undefined || !aliasToken) {
+      diagnostics.unmatchedTargetRows += 1;
+      if (diagnostics.unmatchedTargets.length < 50) diagnostics.unmatchedTargets.push(aliasRow);
+      return;
+    }
+
+    const sku = nextSkus[skuIndex];
+    const platform = aliasRow.platform || 'all';
+    const aliasPayload = {
+      value: aliasRow.alias,
+      platform,
+      source: aliasRow.source || '',
+      note: aliasRow.note || ''
+    };
+    const aliasKey = `${platform}|${aliasToken}`;
+    sku.aliases = Array.isArray(sku.aliases) ? sku.aliases : [];
+    const existingAliasKeys = new Set(sku.aliases.map((item) => {
+      if (typeof item === 'string') return `all|${normalizeKey(item)}`;
+      return `${item?.platform || 'all'}|${normalizeKey(item?.value || item?.alias || item?.sku || '')}`;
+    }));
+    if (!existingAliasKeys.has(aliasKey)) {
+      sku.aliases.push(aliasPayload);
+      diagnostics.appliedRows += 1;
+    }
+    if (platform !== 'all') {
+      sku.platformAliases = sku.platformAliases || {};
+      sku.platformAliases[platform] = Array.isArray(sku.platformAliases[platform]) ? sku.platformAliases[platform] : [];
+      if (!sku.platformAliases[platform].some((value) => normalizeKey(value) === aliasToken)) {
+        sku.platformAliases[platform].push(aliasRow.alias);
+      }
+    }
+  });
+
+  return { skus: nextSkus, diagnostics };
 }
 
 function buildSkuOverlay(baseSkus, dimSkuRows) {
@@ -1872,7 +2070,12 @@ function buildSnapshots(rows, options) {
   const adsSummary = readOptionalJson(path.join(baseDir, 'ads_summary.json'));
   const iuDrrSummary = readOptionalJson(path.join(baseDir, 'iu_drr_summary.json'));
   const wbFeedbacksSummary = readOptionalJson(path.join(baseDir, 'wb_feedbacks_summary.json'));
-  const { skus, updatedCount } = buildSkuOverlay(baseSkus, rows.dimSku);
+  const localSkuAliasRows = readSkuAliasRows(options);
+  const skuAliasRows = normalizeSkuAliasRows(rows.skuAliases, localSkuAliasRows);
+  const overlayResult = buildSkuOverlay(baseSkus, rows.dimSku);
+  const aliasResult = applySkuAliases(overlayResult.skus, skuAliasRows);
+  const skus = aliasResult.skus;
+  const updatedCount = overlayResult.updatedCount;
   const platformTrends = refreshPlatformTrendsSnapshot(basePlatformTrends, options);
   const dashboard = buildDashboardFromPlatformTrends(baseDashboard, skus, rows.factLogistics, options, platformTrends);
   const logistics = buildLogistics(baseLogistics, skus, rows.factLogistics, options, warehouseStockOverlay);
@@ -1915,6 +2118,14 @@ function buildSnapshots(rows, options) {
       sourceGids: rows?.sourceMeta?.gids || {},
       sourceWarnings: rows?.sourceMeta?.warnings || [],
       updatedSkus: updatedCount,
+      skuAliases: {
+        sheetRows: Array.isArray(rows.skuAliases) ? rows.skuAliases.length : 0,
+        localRows: localSkuAliasRows.length,
+        normalizedRows: skuAliasRows.length,
+        appliedRows: aliasResult.diagnostics.appliedRows,
+        unmatchedTargetRows: aliasResult.diagnostics.unmatchedTargetRows,
+        unmatchedTargets: aliasResult.diagnostics.unmatchedTargets
+      },
       dashboard: {
         latest_marketplace_date: dashboard.dataFreshness?.asOfDate || '',
         month_plan_units: dashboard.brandSummary?.[0]?.plan_units || 0,
@@ -2264,6 +2475,7 @@ function resolveOptions(args) {
     inputXlsx: args['input-xlsx'] ? path.resolve(args['input-xlsx']) : '',
     inputJson: args['input-json'] ? path.resolve(args['input-json']) : '',
     companyPlanJson: path.resolve(args['company-plan-json'] || process.env.ALTEA_COMPANY_PLAN_JSON || path.join(baseDataDir, 'company_plan.json')),
+    skuAliasJson: path.resolve(args['sku-alias-json'] || process.env.ALTEA_SKU_ALIAS_JSON || path.join(baseDataDir, 'sku_aliases.json')),
     supabaseUrl: process.env.ALTEA_SUPABASE_URL || DEFAULT_SUPABASE_URL,
     supabaseKey: process.env.ALTEA_SUPABASE_KEY || DEFAULT_SUPABASE_KEY,
     skipUpload: resolveBooleanOption(args['skip-upload'] ?? args.skipUpload, false),

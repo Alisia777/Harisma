@@ -1,4 +1,4 @@
-﻿function renderSkuModal(articleKey) {
+function renderSkuModal(articleKey) {
   const sku = getSku(articleKey);
   if (!sku) return;
   const resolvedArticleKey = skuPrimaryKey(sku, articleKey);
@@ -11,6 +11,11 @@
   const tasks = getSkuControlTasks(resolvedArticleKey);
   const activeTask = nextTaskForSku(resolvedArticleKey);
   const owners = ownerOptions();
+  const currentOwner = ownerName(sku);
+  const currentOwnerOverride = (state.storage.ownerOverrides || [])
+    .find((item) => item.articleKey === resolvedArticleKey) || {};
+  const ownerSelectOptions = [...new Set([currentOwner, ...owners].filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'ru'));
   const completion = currentCompletionSnapshot(sku);
   const currentPlanUnits = firstFiniteValue(sku?.planFact?.planApr26Units);
   const currentFactUnits = firstFiniteValue(
@@ -87,7 +92,10 @@
             <option value="cross">Общий контур</option>
             <option value="wb">РОП WB</option>
             <option value="ozon">РОП Ozon</option>
-            <option value="retail">ЯМ / Летуаль / Магнит / ЗЯ</option>
+            <option value="ya">Я.Маркет</option>
+            <option value="goldapple">Золотое яблоко</option>
+            <option value="letu">Л'Этуаль</option>
+            <option value="magnit">Магнит Маркет</option>
           </select>
           <input name="owner" placeholder="Owner" value="${escapeHtml(ownerName(sku) || '')}">
           <input name="due" type="date" value="${plusDays(3)}">
@@ -106,11 +114,11 @@
           </div>
           <span class="owner-badge">${escapeHtml(ownerName(sku) || 'Не закреплён')}</span>
         </div>
-        <datalist id="skuOwnerList">${owners.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
+        <datalist id="skuOwnerList">${ownerSelectOptions.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
         <form id="ownerForm" class="form-grid compact">
-          <input name="ownerName" list="skuOwnerList" placeholder="Кто owner" value="${escapeHtml(ownerName(sku) || '')}">
-          <input name="ownerRole" placeholder="Роль / зона" value="${escapeHtml(sku?.owner?.registryStatus || 'Owner SKU')}">
-          <textarea name="note" rows="3" placeholder="Что важно по закреплению / передаче SKU"></textarea>
+          <input name="ownerName" list="skuOwnerList" autocomplete="off" spellcheck="false" placeholder="Кто owner" value="${escapeHtml(currentOwner || '')}">
+          <input name="ownerRole" autocomplete="off" spellcheck="false" placeholder="Роль / зона" value="${escapeHtml(currentOwnerOverride.ownerRole || (sku?.owner?.name ? (sku?.owner?.registryStatus || 'Owner SKU') : (sku?.owner?.registryStatus || '')))}">
+          <textarea name="note" rows="3" placeholder="Что важно по закреплению / передаче SKU">${escapeHtml(currentOwnerOverride.note || '')}</textarea>
           <div class="quick-actions">
             <button class="btn" type="submit">Сохранить owner</button>
             <button class="btn ghost" type="button" id="clearOwnerBtn">Снять owner</button>
@@ -824,11 +832,9 @@ function launchMarketplaceLabelsFromSku(sku) {
   const labels = [];
   if (sku?.flags?.hasWB) labels.push('WB');
   if (sku?.flags?.hasOzon) labels.push('Ozon');
-  const platformOwners = sku?.ownersByPlatform || sku?.owner?.byPlatform || {};
-  if (platformOwners?.ym || platformOwners?.ya) labels.push('Я.Маркет');
-  if (platformOwners?.mm || platformOwners?.magnit) labels.push('Магнит');
-  if (platformOwners?.letu || platformOwners?.letual) labels.push('Летуаль');
-  if (platformOwners?.ga || platformOwners?.goldapple || platformOwners?.goldenapple) labels.push('ЗЯ');
+  if (sku?.ownersByPlatform?.ym) labels.push('Я.Маркет');
+  if (sku?.ownersByPlatform?.letu) labels.push('Летуаль');
+  if (sku?.ownersByPlatform?.ga) labels.push('ЗЯ');
   return [...new Set(labels)].join(', ');
 }
 
@@ -2206,7 +2212,7 @@ function productLeaderboardFreshnessMeta(payload = {}) {
     ? `Файл пересобирали ${fmt.date(payload.generatedAt)}, но контент остался из этой недели.`
     : (payload.generatedAt ? `Техническая выгрузка: ${fmt.date(payload.generatedAt)}.` : '');
   const actionLine = weekRange
-    ? `Перед решениями по КЗ сверяйте weekly sheet и gid ${payload.sourceGid || 'источника'}, если нужна неделя после ${productLeaderboardDateLabel(weekRange.endKey)}.`
+    ? `Перед решениями по КЗ сверяйте weekly workbook и вкладку-источник, если нужна неделя после ${productLeaderboardDateLabel(weekRange.endKey)}.`
     : 'Если лидерборд должен быть операционным, источнику нужна читаемая недельная подпись.';
   return {
     status,
@@ -2324,9 +2330,6 @@ function adsFunnelNormalizePlatformKey(value = '') {
   if (['wb', 'wildberries', 'вб'].includes(raw)) return 'wb';
   if (['ozon', 'озон'].includes(raw)) return 'ozon';
   if (['ya', 'yam', 'yandex', 'yandex_market', 'yandexmarket', 'ya_market', 'ям', 'я.маркет', 'яндекс'].includes(raw)) return 'ya';
-  if (['mm', 'magnit', 'magnit_market', 'magnitmarket', 'магнит', 'магнит маркет'].includes(raw)) return 'magnit';
-  if (['letu', 'letual', 'летуаль', 'лэтуаль'].includes(raw)) return 'letu';
-  if (['ga', 'zya', 'goldapple', 'goldenapple', 'golden_apple', 'золотое яблоко', 'золотое', 'зя'].includes(raw)) return 'goldapple';
   if (['all', 'total', 'overall', 'итого'].includes(raw)) return 'all';
   return raw;
 }
@@ -2337,10 +2340,7 @@ function adsFunnelPlatformLabel(platformKey = 'all') {
     all: 'Все площадки',
     wb: 'WB',
     ozon: 'Ozon',
-    ya: 'Я.Маркет',
-    magnit: 'Магнит',
-    letu: 'Летуаль',
-    goldapple: 'ЗЯ'
+    ya: 'Я.Маркет'
   };
   return map[key] || key.toUpperCase();
 }
@@ -2917,6 +2917,17 @@ function normalizeIuQuarterSummaryPayload(quarter = {}) {
         ordersAdPct: Number.isFinite(Number(quarter.ordersAdPct)) ? Number(quarter.ordersAdPct) : null,
         spendDelta: numberOrZero(quarter.spendDelta),
         spendDeltaPct: Number.isFinite(Number(quarter.spendDeltaPct)) ? Number(quarter.spendDeltaPct) : null,
+        targetRevenueOzon: numberOrZero(quarter.targetRevenueOzon),
+        revenueOzon: numberOrZero(quarter.revenueOzon),
+        revenueDeltaOzon: numberOrZero(quarter.revenueDeltaOzon),
+        revenueDeltaPctOzon: Number.isFinite(Number(quarter.revenueDeltaPctOzon)) ? Number(quarter.revenueDeltaPctOzon) : null,
+        revenueCompletionPctOzon: Number.isFinite(Number(quarter.revenueCompletionPctOzon)) ? Number(quarter.revenueCompletionPctOzon) : null,
+        planPctOzon: Number.isFinite(Number(quarter.planPctOzon)) ? Number(quarter.planPctOzon) : null,
+        planSpendOzon: numberOrZero(quarter.planSpendOzon),
+        spendFactOzon: numberOrZero(quarter.spendFactOzon),
+        factPctOzon: Number.isFinite(Number(quarter.factPctOzon)) ? Number(quarter.factPctOzon) : null,
+        spendDeltaOzon: numberOrZero(quarter.spendDeltaOzon),
+        spendDeltaPctOzon: Number.isFinite(Number(quarter.spendDeltaPctOzon)) ? Number(quarter.spendDeltaPctOzon) : null,
         source: quarter.source || {},
         sourceLabel: String(quarter.sourceLabel || ''),
         sourceWarnings: Array.isArray(quarter.sourceWarnings) ? quarter.sourceWarnings : []
@@ -2930,6 +2941,8 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
     date: String(row?.date || '').slice(0, 10),
     monthKey: String(row?.monthKey || row?.date || '').slice(0, 7),
     targetRevenueWb: numberOrZero(row?.targetRevenueWb),
+    managementTargetRevenueWb: numberOrZero(row?.managementTargetRevenueWb),
+    managementPlanSpendWb: numberOrZero(row?.managementPlanSpendWb),
     revenueWb: numberOrZero(row?.revenueWb),
     ordersRevenueWb: numberOrZero(row?.ordersRevenueWb),
     adsPctBaseWb: numberOrZero(row?.adsPctBaseWb || row?.revenueWb),
@@ -2974,10 +2987,29 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
     adsViews: numberOrZero(row?.adsViews),
     adsClicks: numberOrZero(row?.adsClicks),
     adsOrders: numberOrZero(row?.adsOrders)
-  })).filter((row) => row.date) : [];
+  })).map((row) => {
+    const wbTarget = numberOrZero(row.managementTargetRevenueWb || row.targetRevenueWb);
+    const wbFactOrders = numberOrZero(row.ordersRevenueWb || row.revenueWb);
+    const wbPlanPct = Number.isFinite(Number(row.planPct)) ? Number(row.planPct) : 0;
+    const wbPlanSpendByOrders = wbFactOrders * wbPlanPct;
+    const wbSpendFact = numberOrZero(row.spendFact);
+    return {
+      ...row,
+      iuTargetRevenueWb: wbTarget,
+      iuOrdersRevenueWb: wbFactOrders,
+      iuRevenueWbDelta: wbFactOrders - wbTarget,
+      iuRevenueWbDeltaPct: wbTarget > 0 ? (wbFactOrders - wbTarget) / wbTarget : null,
+      iuRevenueWbCompletionPct: wbTarget > 0 ? wbFactOrders / wbTarget : null,
+      iuPlanSpendWb: wbPlanSpendByOrders,
+      iuFactPct: wbFactOrders > 0 ? wbSpendFact / wbFactOrders : null,
+      iuSpendDelta: wbSpendFact - wbPlanSpendByOrders,
+      iuSpendDeltaPct: wbPlanSpendByOrders > 0 ? (wbSpendFact - wbPlanSpendByOrders) / wbPlanSpendByOrders : null
+    };
+  }).filter((row) => row.date) : [];
   const months = Array.isArray(payload.months) ? payload.months : [];
   const channels = Array.isArray(payload.channels) ? payload.channels : [];
   const quarterSummary = normalizeIuQuarterSummaryPayload(payload.quarterSummary || payload.wbQuarter || {});
+  const ozonQuarter = normalizeIuQuarterSummaryPayload(payload.ozonQuarter || {});
   return {
     ...payload,
     generatedAt: payload.generatedAt || '',
@@ -2986,6 +3018,7 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
     months,
     channels,
     quarterSummary,
+    ozonQuarter,
     wbQuarter: quarterSummary,
     diagnostics: payload.diagnostics || {}
   };
@@ -3020,8 +3053,33 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
   const selectedMonth = filters.month === 'latest' || !filters.month ? latestMonth : filters.month;
   const selectedPlatform = filters.platform === 'ozon' ? 'ozon' : 'wb';
   const quarterSummary = normalized.quarterSummary || normalized.wbQuarter || {};
+  const ozonQuarter = normalized.ozonQuarter || {};
   const dailyRows = normalized.daily.filter((row) => row.monthKey === selectedMonth);
-  const monthSummary = (normalized.months || []).find((month) => month.monthKey === selectedMonth) || {};
+  const rawMonthSummary = (normalized.months || []).find((month) => month.monthKey === selectedMonth) || {};
+  const wbOrdersFactToDate = dailyRows.reduce((sum, row) => sum + numberOrZero(row.iuOrdersRevenueWb), 0);
+  const wbTargetToDate = dailyRows.reduce((sum, row) => sum + numberOrZero(row.iuTargetRevenueWb), 0);
+  const wbPlanSpendToDate = dailyRows.reduce((sum, row) => sum + numberOrZero(row.iuPlanSpendWb), 0);
+  const wbSpendFactToDate = dailyRows.reduce((sum, row) => sum + numberOrZero(row.spendFact), 0);
+  const wbRevenueDeltaToDate = wbOrdersFactToDate - wbTargetToDate;
+  const wbSpendDeltaToDate = wbSpendFactToDate - wbPlanSpendToDate;
+  const monthSummary = {
+    ...rawMonthSummary,
+    iuRevenueWbPlanToDate: wbTargetToDate || rawMonthSummary.iuRevenueWbPlanToDate,
+    targetRevenueWb: wbTargetToDate || rawMonthSummary.targetRevenueWb,
+    iuRevenueWbFactToDate: wbOrdersFactToDate || rawMonthSummary.iuRevenueWbFactToDate,
+    revenueWb: wbOrdersFactToDate || rawMonthSummary.revenueWb,
+    ordersRevenueWb: wbOrdersFactToDate || rawMonthSummary.ordersRevenueWb,
+    revenueWbDelta: wbOrdersFactToDate ? wbRevenueDeltaToDate : rawMonthSummary.revenueWbDelta,
+    revenueWbDeltaPct: wbTargetToDate > 0 ? wbRevenueDeltaToDate / wbTargetToDate : rawMonthSummary.revenueWbDeltaPct,
+    revenueWbCompletionPct: wbTargetToDate > 0 ? wbOrdersFactToDate / wbTargetToDate : rawMonthSummary.revenueWbCompletionPct,
+    iuRevenueWbCompletionToDate: wbTargetToDate > 0 ? wbOrdersFactToDate / wbTargetToDate : rawMonthSummary.iuRevenueWbCompletionToDate,
+    iuAdsPlanToDate: wbPlanSpendToDate || rawMonthSummary.iuAdsPlanToDate,
+    planSpendWb: wbPlanSpendToDate || rawMonthSummary.planSpendWb,
+    spendDelta: wbOrdersFactToDate ? wbSpendDeltaToDate : rawMonthSummary.spendDelta,
+    spendDeltaPct: wbPlanSpendToDate > 0 ? wbSpendDeltaToDate / wbPlanSpendToDate : rawMonthSummary.spendDeltaPct,
+    drrWb: wbOrdersFactToDate > 0 ? wbSpendFactToDate / wbOrdersFactToDate : rawMonthSummary.drrWb,
+    ordersAdPct: wbOrdersFactToDate > 0 ? wbSpendFactToDate / wbOrdersFactToDate : rawMonthSummary.ordersAdPct
+  };
   const channelRows = (normalized.channels || []).map((channel) => ({
     ...channel,
     spend: numberOrZero(channel.spend)
@@ -3033,6 +3091,7 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
     selectedMonth,
     selectedPlatform,
     quarterSummary,
+    ozonQuarter,
     monthOptions: iuDrrMonthOptions(normalized),
     dailyRows,
     monthSummary,
@@ -3066,12 +3125,12 @@ function iuDrrPlatformMeta(model) {
     targetRevenue: isOzon ? (month.targetRevenueOzon || month.iuRevenueOzonPlanToDate) : (month.targetRevenueWb || month.iuRevenueWbPlanToDate),
     revenueDelta: isOzon ? month.revenueOzonDelta : month.revenueWbDelta,
     revenueDeltaPct: isOzon ? month.revenueOzonDeltaPct : month.revenueWbDeltaPct,
-    sparkKey: isOzon ? 'revenueOzon' : 'revenueWb',
-    tableTargetKey: isOzon ? 'targetRevenueOzon' : 'targetRevenueWb',
-    tableRevenueKey: isOzon ? 'revenueOzon' : 'revenueWb',
-    tableDeltaKey: isOzon ? 'revenueOzonDelta' : 'revenueWbDelta',
-    tableDeltaPctKey: isOzon ? 'revenueOzonDeltaPct' : 'revenueWbDeltaPct',
-    tableCompletionKey: isOzon ? 'revenueOzonCompletionPct' : 'revenueWbCompletionPct',
+    sparkKey: isOzon ? 'revenueOzon' : 'iuOrdersRevenueWb',
+    tableTargetKey: isOzon ? 'targetRevenueOzon' : 'iuTargetRevenueWb',
+    tableRevenueKey: isOzon ? 'revenueOzon' : 'iuOrdersRevenueWb',
+    tableDeltaKey: isOzon ? 'revenueOzonDelta' : 'iuRevenueWbDelta',
+    tableDeltaPctKey: isOzon ? 'revenueOzonDeltaPct' : 'iuRevenueWbDeltaPct',
+    tableCompletionKey: isOzon ? 'revenueOzonCompletionPct' : 'iuRevenueWbCompletionPct',
     adsPlanPct: isOzon ? month.planPctOzon : month.planPct,
     adsPlan: isOzon ? month.iuAdsOzonPlanToDate : month.iuAdsPlanToDate,
     adsPlanMonth: isOzon ? month.iuAdsOzonPlan : month.iuAdsPlan,
@@ -3557,19 +3616,19 @@ function iuDrrExportRows(rows, model) {
     platform: 'WB',
     date: row.date,
     period: row.period || row.date,
-    target_revenue_wb: row.targetRevenueWb,
-    revenue_wb: row.revenueWb,
+    target_revenue_wb: row.iuTargetRevenueWb || row.targetRevenueWb,
+    revenue_wb: row.iuOrdersRevenueWb || row.ordersRevenueWb || row.revenueWb,
     orders_revenue_wb: row.ordersRevenueWb,
-    ads_pct_base_wb: row.adsPctBaseWb || row.revenueWb,
-    revenue_wb_delta: row.revenueWbDelta,
-    revenue_wb_delta_pct: row.revenueWbDeltaPct != null ? Math.round(Number(row.revenueWbDeltaPct) * 10000) / 100 : '',
+    ads_pct_base_wb: row.iuOrdersRevenueWb || row.ordersRevenueWb || row.adsPctBaseWb || row.revenueWb,
+    revenue_wb_delta: row.iuRevenueWbDelta,
+    revenue_wb_delta_pct: row.iuRevenueWbDeltaPct != null ? Math.round(Number(row.iuRevenueWbDeltaPct) * 10000) / 100 : '',
     revenue_ozon: row.revenueOzon,
     revenue_iu_total: row.revenueTotalIu,
     plan_pct: row.planPct != null ? Math.round(Number(row.planPct) * 10000) / 100 : '',
-    plan_spend_wb: row.planSpendWb,
+    plan_spend_wb: row.iuPlanSpendWb || row.planSpendWb,
     spend_fact: row.spendFact,
     spend_fact_total: row.spendFactTotal,
-    fact_drr_pct: row.factPct != null ? Math.round(Number(row.factPct) * 10000) / 100 : '',
+    fact_drr_pct: row.iuFactPct != null ? Math.round(Number(row.iuFactPct) * 10000) / 100 : '',
     orders_ad_pct: row.ordersAdPct != null ? Math.round(Number(row.ordersAdPct) * 10000) / 100 : '',
     wb_promotion: row.wbPromotion,
     wb_media: row.wbMedia,
@@ -3579,8 +3638,8 @@ function iuDrrExportRows(rows, model) {
     overviews: row.overviews,
     review_points: row.reviewPoints,
     external_ads: row.externalAds,
-    spend_delta: row.spendDelta,
-    spend_delta_pct: row.spendDeltaPct != null ? Math.round(Number(row.spendDeltaPct) * 10000) / 100 : '',
+    spend_delta: row.iuSpendDelta,
+    spend_delta_pct: row.iuSpendDeltaPct != null ? Math.round(Number(row.iuSpendDeltaPct) * 10000) / 100 : '',
     views: row.adsViews,
     clicks: row.adsClicks,
     orders: row.adsOrders
@@ -3620,8 +3679,8 @@ function downloadIuDrrExcel(model) {
     ['date', 'Дата'],
     ['period', 'Период'],
     ['target_revenue_wb', 'Целевой оборот WB'],
-    ['revenue_wb', 'Продажи. Фактический оборот WB'],
-    ['orders_revenue_wb', 'Заказы WB. База рекламного %'],
+    ['revenue_wb', 'Заказы WB. Фактический оборот по розничным ценам'],
+    ['orders_revenue_wb', 'Заказы WB. Сверка с отчетом WB'],
     ['ads_pct_base_wb', 'База расчета рекламы WB по договору'],
     ['revenue_wb_delta', 'Разница оборота WB'],
     ['revenue_wb_delta_pct', 'Разница оборота WB, %'],
@@ -3673,35 +3732,46 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       <button class="quick-chip ${model.selectedPlatform === 'ozon' ? 'active' : ''}" type="button" data-iu-drr-platform="ozon" aria-pressed="${model.selectedPlatform === 'ozon'}">ОЗ</button>
     </div>
   `;
-  const quarter = model.quarterSummary || {};
-  const quarterAvailable = numberOrZero(quarter.days) > 0 || numberOrZero(quarter.revenueWb) > 0 || numberOrZero(quarter.spendFact) > 0;
-  const quarterCompletionTone = numberOrZero(quarter.revenueCompletionPct) >= 1 ? 'ok' : 'warn';
-  const quarterDrrTone = quarter.factPct != null && quarter.planPct != null && quarter.factPct <= quarter.planPct ? 'ok' : 'warn';
-  const quarterRevenueTone = iuDrrToneForRevenueDelta(quarter.revenueDelta);
-  const quarterSpendTone = iuDrrToneForDelta(quarter.spendDelta);
-  const quarterLabel = quarter.label || `${String(quarter.from || '').slice(8, 10)}.${String(quarter.from || '').slice(5, 7)}–${String(quarter.to || '').slice(8, 10)}.${String(quarter.to || '').slice(5, 7)}`;
+  const quarter = isOzonView ? (model.ozonQuarter || {}) : (model.quarterSummary || {});
+  const quarterTarget = isOzonView ? numberOrZero(quarter.targetRevenueOzon) : numberOrZero(quarter.targetRevenueWb);
+  const quarterFact = isOzonView ? numberOrZero(quarter.revenueOzon) : numberOrZero(quarter.ordersRevenueWb || quarter.revenueWb);
+  const quarterRevenueDeltaDisplay = isOzonView ? numberOrZero(quarter.revenueDeltaOzon) : quarterFact - quarterTarget;
+  const quarterRevenueCompletionDisplay = isOzonView
+    ? quarter.revenueCompletionPctOzon
+    : (quarterTarget > 0 ? quarterFact / quarterTarget : quarter.revenueCompletionPct);
+  const quarterPlanPct = isOzonView ? quarter.planPctOzon : quarter.planPct;
+  const quarterPlanSpend = isOzonView ? quarter.planSpendOzon : quarter.planSpendWb;
+  const quarterSpendFact = isOzonView ? quarter.spendFactOzon : quarter.spendFact;
+  const quarterFactPct = isOzonView ? quarter.factPctOzon : quarter.factPct;
+  const quarterBaseForPct = isOzonView ? quarter.revenueOzon : quarter.ordersRevenueWb;
+  const quarterSpendDelta = isOzonView ? quarter.spendDeltaOzon : quarter.spendDelta;
+  const quarterAvailable = numberOrZero(quarter.days) > 0 || quarterFact > 0 || numberOrZero(quarterSpendFact) > 0;
+  const quarterCompletionTone = numberOrZero(quarterRevenueCompletionDisplay) >= 1 ? 'ok' : 'warn';
+  const quarterDrrTone = quarterFactPct != null && quarterPlanPct != null && quarterFactPct <= quarterPlanPct ? 'ok' : 'warn';
+  const quarterRevenueTone = iuDrrToneForRevenueDelta(quarterRevenueDeltaDisplay);
+  const quarterSpendTone = iuDrrToneForDelta(quarterSpendDelta);
   const quarterSummaryHtml = quarterAvailable ? `
     <div class="card subtle" style="margin-top:14px">
       <div class="section-subhead">
         <div>
           <h3>Накопительно с 01.03</h3>
-          <p class="small muted">Выручка считается по выкупам, ДРР по договору делим на выручку, а рекламный % для контроля делим на заказы.</p>
+          <p class="small muted">${isOzonView ? 'Факт ИУ Ozon сверяем с Ozon Analytics API; план GMV DR и AR берем из файла ИУ Смарт-Сейл.' : 'Факт ИУ WB сверяем с заказами по розничным ценам из отчета WB; рекламный % считаем от этих заказов.'}</p>
         </div>
         <div class="badge-stack">
-          ${badge(quarterLabel, 'info')}
+          ${badge(quarter.label || `${String(quarter.from || '').slice(8, 10)}.${String(quarter.from || '').slice(5, 7)}–${String(quarter.to || '').slice(8, 10)}.${String(quarter.to || '').slice(5, 7)}`, 'info')}
           ${badge(quarter.status === 'partial' ? 'частично' : 'готово', quarter.status === 'partial' ? 'warn' : 'ok')}
           ${badge(`${fmt.int(quarter.days || 0)} дн.`, 'info')}
-          ${badge(`План ${fmt.money(quarter.planSpendWb)}`, 'info')}
-          ${badge(`Δ ${fmt.money(quarter.spendDelta)}`, quarterSpendTone)}
+          ${badge(`План ${fmt.money(quarterPlanSpend)}`, 'info')}
+          ${badge(`Δ ${fmt.money(quarterSpendDelta)}`, quarterSpendTone)}
         </div>
       </div>
       <div class="kpi-strip" style="margin-top:12px">
-        <div class="mini-kpi ${quarterRevenueTone}"><span>Целевой оборот</span><strong>${fmt.money(quarter.targetRevenueWb)}</strong><span>накопительно</span></div>
-        <div class="mini-kpi ${quarterRevenueTone}"><span>Факт выкупов</span><strong>${fmt.money(quarter.revenueWb)}</strong><span>выкупы / sales</span></div>
-        <div class="mini-kpi ${quarterCompletionTone}"><span>Выполнение</span><strong>${fmt.pct(quarter.revenueCompletionPct)}</strong><span>${fmt.money(quarter.revenueDelta)}</span></div>
-        <div class="mini-kpi ${quarterSpendTone}"><span>Рекламный расход</span><strong>${fmt.money(quarter.spendFact)}</strong><span>без Внешки</span></div>
-        <div class="mini-kpi ${quarterDrrTone}"><span>ДРР по договору</span><strong>${fmt.pct(quarter.factPct)}</strong><span>${fmt.money(quarter.planSpendWb)}</span></div>
-        <div class="mini-kpi ${quarterSpendTone}"><span>% рекламный от заказов</span><strong>${fmt.pct(quarter.ordersAdPct)}</strong><span>${fmt.money(quarter.ordersRevenueWb)}</span></div>
+        <div class="mini-kpi ${quarterRevenueTone}"><span>Целевой оборот</span><strong>${fmt.money(quarterTarget)}</strong><span>накопительно</span></div>
+        <div class="mini-kpi ${quarterRevenueTone}"><span>${isOzonView ? 'Факт Ozon' : 'Факт заказов'}</span><strong>${fmt.money(quarterFact)}</strong><span>${isOzonView ? 'Ozon orders' : 'WB orders'}</span></div>
+        <div class="mini-kpi ${quarterCompletionTone}"><span>Выполнение</span><strong>${fmt.pct(quarterRevenueCompletionDisplay)}</strong><span>${fmt.money(quarterRevenueDeltaDisplay)}</span></div>
+        <div class="mini-kpi ${quarterSpendTone}"><span>Рекламный расход</span><strong>${fmt.money(quarterSpendFact)}</strong><span>${isOzonView ? 'Ozon Ads' : 'без Внешки'}</span></div>
+        <div class="mini-kpi ${quarterDrrTone}"><span>ДРР по договору</span><strong>${fmt.pct(quarterFactPct)}</strong><span>${fmt.money(quarterPlanSpend)}</span></div>
+        <div class="mini-kpi ${quarterSpendTone}"><span>${isOzonView ? 'ДРР Ozon факт' : '% рекламный от заказов'}</span><strong>${fmt.pct(quarterFactPct)}</strong><span>${fmt.money(quarterBaseForPct)}</span></div>
       </div>
       ${quarter.sourceLabel ? `<div class="muted small" style="margin-top:10px">${escapeHtml(quarter.sourceLabel)}</div>` : ''}
     </div>
@@ -3711,8 +3781,8 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       <div class="mini-kpi ${platformIuTone}"><span>ИУ Ozon</span><strong>${fmt.pct(platformMeta.completion)}</strong><span>${fmt.money(platformMeta.fact)} / ${fmt.money(platformMeta.planToDate)}</span></div>
       <div class="mini-kpi ${revenueDeltaTone}"><span>Целевой Ozon</span><strong>${fmt.money(platformMeta.targetRevenue)}</strong><span>разница ${fmt.money(platformMeta.revenueDelta)}</span></div>
       <div class="mini-kpi ok"><span>Реклама Ozon план</span><strong>${fmt.pct(platformMeta.adsPlanPct)}</strong><span>${fmt.money(platformMeta.adsPlan)}</span></div>
-      <div class="mini-kpi ${platformMeta.adsFactPct <= platformMeta.adsPlanPct ? 'ok' : 'warn'}"><span>Реклама Ozon расчет</span><strong>${fmt.money(platformMeta.adsFact)}</strong><span>${fmt.pct(platformMeta.adsFactPct)} · нет API-факта</span></div>
-      <div class="mini-kpi warn"><span>Источник Ozon Ads</span><strong>модель</strong><span>оборот × ${fmt.pct(platformMeta.adsPlanPct)}</span></div>
+      <div class="mini-kpi ${platformMeta.adsFactPct <= platformMeta.adsPlanPct ? 'ok' : 'warn'}"><span>Реклама Ozon факт</span><strong>${fmt.money(platformMeta.adsFact)}</strong><span>${fmt.pct(platformMeta.adsFactPct)} · ads_summary</span></div>
+      <div class="mini-kpi"><span>Источник Ozon Ads</span><strong>факт</strong><span>${escapeHtml(month.ozonAdsFactMode || 'ads_summary')}</span></div>
       <div class="mini-kpi ${ozonAdsDeltaTone}"><span>Дельта расчетного расхода</span><strong>${fmt.money(platformMeta.adsDelta)}</strong><span>расчет - план расхода</span></div>
     </div>
   ` : `
@@ -3756,7 +3826,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
           <div><h3>WB оборот</h3><p class="small muted">факт против плана ИУ</p></div>
           ${badge(fmt.pct(platformMeta.completion), platformIuTone)}
         </div>
-        ${iuDrrSparkline(model.dailyRows, 'revenueWb', platformIuTone)}
+        ${iuDrrSparkline(model.dailyRows, 'iuOrdersRevenueWb', platformIuTone)}
       </div>
       <div class="card">
         <div class="section-subhead">
@@ -3838,12 +3908,12 @@ function renderIuDrr(rootId = 'view-iu-drr') {
             <tr>
               <th>Период</th>
               <th>Целевой оборот WB</th>
-              <th>Продажи. Фактический оборот WB</th>
+              <th>Заказы. Фактический оборот WB</th>
               <th>Разница оборота</th>
               <th>Реклама. План в %</th>
               <th>План расхода</th>
               <th>Реклама. Фактические затраты</th>
-              <th>Реклама. Факт в % по договору</th>
+              <th>Реклама. Факт в % от заказов</th>
               <th>ВБ Продвижение</th>
               <th>ВБ Медиа</th>
               <th>ВБ Инфлюенс</th>
@@ -3859,13 +3929,13 @@ function renderIuDrr(rootId = 'view-iu-drr') {
             ${model.dailyRows.map((row) => `
               <tr>
                 <td><strong>${escapeHtml(row.period || row.date)}</strong><div class="muted small">${escapeHtml(row.date)}</div></td>
-                <td>${fmt.money(row.targetRevenueWb)}</td>
-                <td>${fmt.money(row.revenueWb)}</td>
-                <td>${badge(fmt.money(row.revenueWbDelta), iuDrrToneForRevenueDelta(row.revenueWbDelta))}</td>
+                <td>${fmt.money(row.iuTargetRevenueWb || row.targetRevenueWb)}</td>
+                <td>${fmt.money(row.iuOrdersRevenueWb || row.ordersRevenueWb || row.revenueWb)}</td>
+                <td>${badge(fmt.money(row.iuRevenueWbDelta), iuDrrToneForRevenueDelta(row.iuRevenueWbDelta))}</td>
                 <td>${fmt.pct(row.planPct)}</td>
-                <td>${fmt.money(row.planSpendWb)}</td>
+                <td>${fmt.money(row.iuPlanSpendWb || row.planSpendWb)}</td>
                 <td>${fmt.money(row.spendFact)}</td>
-                <td>${row.factPct != null ? fmt.pct(row.factPct) : '—'}</td>
+                <td>${row.iuFactPct != null ? fmt.pct(row.iuFactPct) : '—'}</td>
                 <td>${fmt.money(row.wbPromotion)}</td>
                 <td>${fmt.money(row.wbMedia)}</td>
                 <td>${fmt.money(row.wbInfluencer)}</td>
@@ -3874,7 +3944,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
                 <td>${fmt.money(row.overviews)}</td>
                 <td>${fmt.money(row.reviewPoints)}</td>
                 <td>${fmt.money(row.externalAds)}</td>
-                <td>${badge(fmt.money(row.spendDelta), iuDrrToneForDelta(row.spendDelta))}</td>
+                <td>${badge(fmt.money(row.iuSpendDelta), iuDrrToneForDelta(row.iuSpendDelta))}</td>
               </tr>
             `).join('') || '<tr><td colspan="17">Нет данных по выбранному месяцу.</td></tr>'}
           </tbody>
@@ -3886,13 +3956,15 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     <div class="section-title">
       <div>
         <h2>${escapeHtml(platformMeta.title)}</h2>
-        <p>${isOzonView ? `Ozon: оборот, план рекламы и расчетный расход ${fmt.pct(platformMeta.adsPlanPct)}; фактические затраты из Ozon Ads пока не подключены.` : 'WB: выполнение ИУ, ДРР без Внешки и дневная детализация каналов рекламы.'}</p>
+        <p>${isOzonView ? `Ozon: оборот, план рекламы ${fmt.pct(platformMeta.adsPlanPct)} и факт рекламных затрат из ads_summary.` : 'WB: выполнение ИУ, ДРР без Внешки и дневная детализация каналов рекламы.'}</p>
       </div>
       <div class="badge-stack">
         ${isOzonView ? badge('Ozon', 'info') : iuDrrSourceBadge(model)}
         ${badge(model.payload.asOfDate ? `срез ${model.payload.asOfDate}` : 'нет даты', model.payload.asOfDate ? 'info' : 'warn')}
       </div>
     </div>
+
+    ${quarterSummaryHtml}
 
     <div class="control-filters" style="margin-top:12px">
       <select id="iuDrrMonth">
@@ -3903,7 +3975,6 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       ${isOzonView ? '' : '<button class="quick-chip" type="button" data-iu-drr-ads>Рекламная воронка</button>'}
     </div>
 
-    ${!isOzonView ? quarterSummaryHtml : ''}
     ${selectedKpisHtml}
     ${chartsHtml}
     ${channelRowsHtml}

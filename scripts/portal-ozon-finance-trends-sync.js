@@ -199,7 +199,8 @@ function platformMap(platformTrends) {
 
 function mergeAllSeries(platforms) {
   const dateSet = new Set();
-  for (const key of ['wb', 'ozon', 'ya']) {
+  const sourceKeys = Array.from(platforms.keys()).filter((key) => key && key !== 'all');
+  for (const key of sourceKeys) {
     for (const point of platforms.get(key)?.series || []) {
       const date = isoDate(point?.label || point?.date);
       if (date) dateSet.add(date);
@@ -209,7 +210,7 @@ function mergeAllSeries(platforms) {
   const latestIndex = dates.length - 1;
   return dates.map((date, index) => {
     const total = { units: 0, ordersUnits: 0, deliveredUnits: 0, revenue: 0, ordersRevenue: 0, estimatedMargin: 0 };
-    for (const key of ['wb', 'ozon', 'ya']) {
+    for (const key of sourceKeys) {
       const point = (platforms.get(key)?.series || []).find((item) => isoDate(item?.label || item?.date) === date);
       if (!point) continue;
       const ordersUnits = numberOrZero(point.ordersUnits ?? point.units);
@@ -446,12 +447,33 @@ async function main() {
       estimatedMargin: Number(point.estimatedMargin.toFixed(4))
     };
   });
+  const mergedOzonByDate = new Map(existingOzonSeries);
+  for (const point of series) {
+    const date = isoDate(point?.label || point?.date);
+    if (date) mergedOzonByDate.set(date, clonePoint(point));
+  }
+  const ozonSeries = Array.from(mergedOzonByDate.entries())
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([date, point], index, items) => ({
+      dayOffset: items.length - 1 - index,
+      label: date,
+      units: Number(numberOrZero(point.units).toFixed(4)),
+      ordersUnits: Number(numberOrZero(point.ordersUnits ?? point.units).toFixed(4)),
+      deliveredUnits: Number(numberOrZero(point.deliveredUnits).toFixed(4)),
+      revenue: Number(numberOrZero(point.revenue).toFixed(4)),
+      ordersRevenue: Number(numberOrZero(point.ordersRevenue ?? point.revenue).toFixed(4)),
+      estimatedMargin: Number(numberOrZero(point.estimatedMargin).toFixed(4))
+    }));
 
-  const latestMarketplaceDate = series.map((item) => item.label).filter(Boolean).sort().pop() || existing.latestMarketplaceDate || '';
-  const platforms = ['wb', 'ozon', 'ya', 'all']
-    .map((key) => existingPlatforms.get(key) || { key, label: key, series: [] });
+  const latestMarketplaceDate = ozonSeries.map((item) => item.label).filter(Boolean).sort().pop() || existing.latestMarketplaceDate || '';
+  const platforms = (Array.isArray(existing?.platforms) ? existing.platforms : [])
+    .filter((platform) => String(platform?.key || '').trim() !== 'all');
+  for (const key of ['wb', 'ozon', 'ya']) {
+    if (!platforms.some((platform) => String(platform?.key || '').trim() === key)) {
+      platforms.push(existingPlatforms.get(key) || { key, label: key, series: [] });
+    }
+  }
   const ozonIndex = platforms.findIndex((platform) => String(platform?.key || '').trim() === 'ozon');
-  const ozonSeries = series;
   if (ozonIndex >= 0) {
     platforms[ozonIndex] = {
       key: 'ozon',
@@ -473,8 +495,16 @@ async function main() {
     series: mergeAllSeries(platformMapNext)
   });
 
-  const ordered = ['wb', 'ozon', 'ya', 'all']
-    .map((key) => platformMapNext.get(key) || { key, label: key, series: [] });
+  const seenKeys = new Set();
+  const ordered = [];
+  for (const platform of platforms) {
+    const key = String(platform?.key || '').trim();
+    if (!key || seenKeys.has(key)) continue;
+    const nextPlatform = platformMapNext.get(key);
+    if (nextPlatform) ordered.push(nextPlatform);
+    seenKeys.add(key);
+  }
+  ordered.push(platformMapNext.get('all') || { key: 'all', label: 'all', series: [] });
 
   const payload = {
     ...existing,

@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const XLSX = require('xlsx');
 
 const DEFAULT_PLAN_PCT = 0.08;
 const DEFAULT_OZON_PLAN_PCT = 0.25;
@@ -27,6 +28,24 @@ const CHANNEL_KEYS = [
   ['overviews', 'Обзоры'],
   ['reviewPoints', 'Отзывы за баллы'],
   ['externalAds', 'Внешка']
+];
+const DOWNLOADS_ROOT = path.resolve(process.env.USERPROFILE || process.cwd(), 'Downloads');
+const QUARTER_REPORT_CANDIDATES = [
+  path.join(DOWNLOADS_ROOT, 'report 2026-5-13.xlsx'),
+  path.join(DOWNLOADS_ROOT, 'report 2026-05-13.xlsx'),
+  path.join(DOWNLOADS_ROOT, 'Telegram Desktop', 'report 2026-5-13.xlsx'),
+  path.join(DOWNLOADS_ROOT, 'Telegram Desktop', 'report 2026-05-13.xlsx')
+];
+const QUARTER_DRR_CANDIDATES = [
+  path.join(DOWNLOADS_ROOT, 'Telegram Desktop', 'ДРР ВБ.xlsx'),
+  path.join(DOWNLOADS_ROOT, 'Telegram Desktop', 'ДРР ВБ (3).xlsx'),
+  path.join(DOWNLOADS_ROOT, 'Telegram Desktop', 'ДРР ВБ (2).xlsx'),
+  path.join(DOWNLOADS_ROOT, 'Telegram Desktop', 'ДРР ВБ (1).xlsx'),
+  path.join(DOWNLOADS_ROOT, 'ДРР ВБ.xlsx'),
+  path.join(DOWNLOADS_ROOT, 'iu-drr-wb-2026-05.xls'),
+  path.join(DOWNLOADS_ROOT, 'iu-drr-wb-2026-05 (1).xls'),
+  path.join(DOWNLOADS_ROOT, 'iu-drr-wb-2026-05 (2).xls'),
+  path.join(DOWNLOADS_ROOT, 'iu-drr-wb-2026-05 (3).xls')
 ];
 
 function parseArgs(argv) {
@@ -80,10 +99,46 @@ function roundRate(value) {
 }
 
 function isoDate(value) {
-  if (!value) return '';
+  if (!value && value !== 0) return '';
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+  if (typeof value === 'number') {
+    const parsed = XLSX.SSF.parse_date_code(value);
+    if (parsed) {
+      return `${String(parsed.y).padStart(4, '0')}-${String(parsed.m).padStart(2, '0')}-${String(parsed.d).padStart(2, '0')}`;
+    }
+  }
   const raw = String(value).trim();
   const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (match) return `${match[1]}-${match[2]}-${match[3]}`;
+  const stamp = Date.parse(raw);
+  return Number.isFinite(stamp) ? new Date(stamp).toISOString().slice(0, 10) : '';
+}
+
+function dateFromCell(value, yearHint = '') {
+  if (!value && value !== 0) return '';
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+  if (typeof value === 'number') {
+    const parsed = XLSX.SSF.parse_date_code(value);
+    if (parsed) {
+      return `${String(parsed.y).padStart(4, '0')}-${String(parsed.m).padStart(2, '0')}-${String(parsed.d).padStart(2, '0')}`;
+    }
+  }
+  const raw = String(value).trim();
+  if (!raw) return '';
+  let match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return `${match[1]}-${match[2]}-${match[3]}`;
+  match = raw.match(/^(\d{1,2})[./](\d{1,2})(?:[./](\d{2,4}))?$/);
+  if (match) {
+    const year = match[3]
+      ? (match[3].length === 2 ? `20${match[3]}` : match[3])
+      : String(yearHint || '').trim();
+    if (!year) return '';
+    return `${year}-${match[2].padStart(2, '0')}-${match[1].padStart(2, '0')}`;
+  }
   const stamp = Date.parse(raw);
   return Number.isFinite(stamp) ? new Date(stamp).toISOString().slice(0, 10) : '';
 }
@@ -165,6 +220,155 @@ function monthKey(dateKey) {
 
 function periodLabel(dateKey) {
   return String(dateKey || '').slice(8, 10) + '.' + String(dateKey || '').slice(5, 7);
+}
+
+function findExistingPath(candidates = []) {
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const resolved = path.resolve(candidate);
+    if (fs.existsSync(resolved)) return resolved;
+  }
+  return '';
+}
+
+function readWorkbookRows(filePath) {
+  if (!filePath || !fs.existsSync(filePath)) return [];
+  const workbook = XLSX.readFile(filePath, { cellDates: false });
+  const sheetName = workbook.SheetNames[0];
+  if (!sheetName) return [];
+  return XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: null, raw: true });
+}
+
+function readQuarterReportRows(filePath, from, to) {
+  const rows = readWorkbookRows(filePath);
+  const selected = [];
+  for (const row of rows.slice(1)) {
+    const date = dateFromCell(row?.[2]);
+    if (!date || date < from || date > to) continue;
+    const ordersRevenueWb = roundMoney(row?.[3]);
+    const revenueWb = roundMoney(row?.[6]);
+    if (ordersRevenueWb <= 0 && revenueWb <= 0) continue;
+    selected.push({
+      date,
+      ordersRevenueWb,
+      revenueWb
+    });
+  }
+  return selected;
+}
+
+function readQuarterDrrRows(filePath, from, to, yearHint) {
+  const rows = readWorkbookRows(filePath);
+  const selected = [];
+  for (const row of rows.slice(1)) {
+    const date = dateFromCell(row?.[0], yearHint);
+    if (!date || date < from || date > to) continue;
+    const spendFact = roundMoney(row?.[3]);
+    if (spendFact <= 0) continue;
+    selected.push({
+      date,
+      spendFact
+    });
+  }
+  return selected;
+}
+
+function mergeQuarterRows(reportRows, drrRows, dailyRows, from, to) {
+  const rows = new Map();
+  const merge = (row, fields = []) => {
+    if (!row?.date || row.date < from || row.date > to) return;
+    const current = rows.get(row.date) || { date: row.date };
+    for (const field of fields) {
+      if (row[field] !== undefined && row[field] !== null) {
+        const value = numberOrZero(row[field]);
+        if (value !== 0 || current[field] === undefined) current[field] = value;
+      }
+    }
+    rows.set(row.date, current);
+  };
+  for (const row of reportRows || []) {
+    merge(row, ['ordersRevenueWb', 'revenueWb']);
+  }
+  for (const row of drrRows || []) {
+    merge(row, ['spendFact']);
+  }
+  for (const row of dailyRows || []) {
+    merge(row, ['ordersRevenueWb', 'revenueWb', 'spendFact']);
+  }
+  return [...rows.values()].sort((left, right) => left.date.localeCompare(right.date));
+}
+
+function buildQuarterSummary(dailyRows, asOfDate) {
+  const from = WB_CONTRACT.salesPeriodStart;
+  const to = asOfDate || dailyRows[dailyRows.length - 1]?.date || '';
+  if (!from || !to || from > to) {
+    return {
+      status: 'empty',
+      from,
+      to,
+      label: '',
+      days: 0,
+      targetRevenueWb: 0,
+      revenueWb: 0,
+      ordersRevenueWb: 0,
+      planPct: roundRate(WB_CONTRACT.marketingRate),
+      planSpendWb: 0,
+      spendFact: 0,
+      factPct: null,
+      ordersAdPct: null,
+      revenueDelta: 0,
+      spendDelta: 0
+    };
+  }
+  const reportPath = findExistingPath(QUARTER_REPORT_CANDIDATES);
+  const drrPath = findExistingPath(QUARTER_DRR_CANDIDATES);
+  const yearHint = Number(String(to).slice(0, 4)) || new Date().getFullYear();
+  const reportRows = reportPath ? readQuarterReportRows(reportPath, from, to) : [];
+  const drrRows = drrPath ? readQuarterDrrRows(drrPath, from, minDate(to, `${String(yearHint)}-04-30`), String(yearHint)) : [];
+  const mergedRows = mergeQuarterRows(reportRows, drrRows, dailyRows, from, to);
+  const revenueWb = roundMoney(sumRows(mergedRows, 'revenueWb'));
+  const ordersRevenueWb = roundMoney(sumRows(mergedRows, 'ordersRevenueWb'));
+  const spendFact = roundMoney(sumRows(mergedRows, 'spendFact'));
+  const targetRevenueWb = roundMoney(contractTargetRevenueWbForRange(from, to));
+  const planSpendWb = roundMoney(revenueWb * numberOrZero(WB_CONTRACT.marketingRate));
+  const revenueDelta = roundMoney(revenueWb - targetRevenueWb);
+  const spendDelta = roundMoney(spendFact - planSpendWb);
+  const sourceParts = [];
+  if (reportPath) sourceParts.push(path.basename(reportPath));
+  if (drrPath) sourceParts.push(path.basename(drrPath));
+  sourceParts.push('iu_drr_summary.json');
+  return {
+    status: reportPath && drrPath ? 'ok' : 'partial',
+    from,
+    to,
+    label: `${String(from).slice(8, 10)}.${String(from).slice(5, 7)}–${String(to).slice(8, 10)}.${String(to).slice(5, 7)}`,
+    days: mergedRows.length,
+    targetRevenueWb,
+    revenueWb,
+    ordersRevenueWb,
+    revenueDelta,
+    revenueDeltaPct: targetRevenueWb > 0 ? roundRate(revenueDelta / targetRevenueWb) : null,
+    revenueCompletionPct: targetRevenueWb > 0 ? roundRate(revenueWb / targetRevenueWb) : null,
+    planPct: roundRate(WB_CONTRACT.marketingRate),
+    planSpendWb,
+    spendFact,
+    factPct: revenueWb > 0 ? roundRate(spendFact / revenueWb) : null,
+    ordersAdPct: ordersRevenueWb > 0 ? roundRate(spendFact / ordersRevenueWb) : null,
+    spendDelta,
+    spendDeltaPct: planSpendWb > 0 ? roundRate(spendDelta / planSpendWb) : null,
+    source: {
+      reportPath: reportPath || '',
+      drrPath: drrPath || '',
+      reportRows: reportRows.length,
+      drrRows: drrRows.length,
+      mergedRows: mergedRows.length
+    },
+    sourceLabel: sourceParts.join(' + '),
+    sourceWarnings: [
+      ...(!reportPath ? ['report workbook not found'] : []),
+      ...(!drrPath ? ['WB DRR workbook not found'] : [])
+    ]
+  };
 }
 
 function resolveOptions(args) {
@@ -682,6 +886,54 @@ function buildContractPeriodRows(dailyRows) {
   });
 }
 
+function buildOzonQuarterSummary(dailyRows) {
+  const from = WB_CONTRACT.salesPeriodStart;
+  const to = dailyRows.map((row) => row.date).filter(Boolean).sort().pop() || '';
+  if (!from || !to || from > to) {
+    return {
+      status: 'empty',
+      from,
+      to,
+      label: '',
+      days: 0,
+      targetRevenueOzon: 0,
+      revenueOzon: 0,
+      revenueDeltaOzon: 0,
+      planPctOzon: roundRate(DEFAULT_OZON_PLAN_PCT),
+      planSpendOzon: 0,
+      spendFactOzon: 0,
+      factPctOzon: null,
+      spendDeltaOzon: 0
+    };
+  }
+  const rows = dailyRows.filter((row) => row.date >= from && row.date <= to);
+  const targetRevenueOzon = roundMoney(sumRows(rows, 'targetRevenueOzon'));
+  const revenueOzon = roundMoney(sumRows(rows, 'revenueOzon'));
+  const planSpendOzon = roundMoney(sumRows(rows, 'planSpendOzon'));
+  const spendFactOzon = roundMoney(sumRows(rows, 'spendFactOzon'));
+  const revenueDeltaOzon = roundMoney(revenueOzon - targetRevenueOzon);
+  const spendDeltaOzon = roundMoney(spendFactOzon - planSpendOzon);
+  return {
+    status: rows.length ? 'ok' : 'empty',
+    from,
+    to,
+    label: `${String(from).slice(8, 10)}.${String(from).slice(5, 7)}-${String(to).slice(8, 10)}.${String(to).slice(5, 7)}`,
+    days: rows.length,
+    targetRevenueOzon,
+    revenueOzon,
+    revenueDeltaOzon,
+    revenueDeltaPctOzon: targetRevenueOzon > 0 ? roundRate(revenueDeltaOzon / targetRevenueOzon) : null,
+    revenueCompletionPctOzon: targetRevenueOzon > 0 ? roundRate(revenueOzon / targetRevenueOzon) : null,
+    planPctOzon: targetRevenueOzon > 0 ? roundRate(planSpendOzon / targetRevenueOzon) : roundRate(DEFAULT_OZON_PLAN_PCT),
+    planSpendOzon,
+    spendFactOzon,
+    factPctOzon: revenueOzon > 0 ? roundRate(spendFactOzon / revenueOzon) : null,
+    spendDeltaOzon,
+    spendDeltaPctOzon: planSpendOzon > 0 ? roundRate(spendDeltaOzon / planSpendOzon) : null,
+    sourceLabel: 'Ozon Analytics API + iu_plan.json + ads_summary.json'
+  };
+}
+
 function buildChannelRows(dailyRows, adsSummary = {}, wbFeedbacksSummary = {}) {
   const adsSourceMode = String(adsSummary.sourceMode || adsSummary.source || '');
   const wbAdsSource = adsSourceMode.includes('google-sheets-fact-ads')
@@ -715,6 +967,8 @@ function buildPayload(options) {
   const currentMonth = months[months.length - 1] || null;
   const channels = buildChannelRows(dailyRows, adsSummary, wbFeedbacksSummary);
   const asOfDate = dailyRows.map((row) => row.date).filter(Boolean).sort().pop() || isoDate(platformTrends?.latestMarketplaceDate) || isoDate(adsSummary?.asOfDate) || '';
+  const wbQuarter = buildQuarterSummary(dailyRows, asOfDate);
+  const ozonQuarter = buildOzonQuarterSummary(dailyRows);
   const noSourceChannels = channels
     .filter((channel) => channel.source !== 'Google Sheets fact_ads_daily_sku')
     .filter((channel) => !['WB Promotion API', 'WB Feedbacks API', 'Google Sheets внешка'].includes(channel.source))
@@ -745,6 +999,9 @@ function buildPayload(options) {
     planPctDefault: DEFAULT_PLAN_PCT,
     ozonPlanPctDefault: DEFAULT_OZON_PLAN_PCT,
     kpis: currentMonth,
+    wbQuarter,
+    ozonQuarter,
+    quarterSummary: wbQuarter,
     contractPeriods,
     months,
     channels,
@@ -761,6 +1018,7 @@ function buildPayload(options) {
         'Review points are filled from WB Feedbacks API supplierFeedbackValuation when present.',
         'WB contract logic: factual turnover is sales minus returns, without WB deductions; it maps to revenueWb / finance turnover.',
         'WB marketing plan is 8% of factual turnover. ordersRevenueWb is retained as a report-control field, not as the contract DRR denominator.',
+        'WB quarter summary combines report workbook sales/orders with March-April DRR rows and the current May daily IU/DRR layer. DRR by contract uses sales/buyouts; the control advertising percentage uses orders revenue.',
         'ИУ по обороту в workbook сверяется по WB; Ozon ведётся отдельным контуром.',
         'ДРР и каналы рекламы считаются по WB.',
         'Каналы без источника показываются нулем до подключения отдельного источника.'

@@ -16,10 +16,9 @@ const DEFAULT_SUPABASE_URL = 'https://iyckwryrucqrxwlowxow.supabase.co';
 const DEFAULT_SUPABASE_KEY = 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw';
 const SNAPSHOT_TABLE = 'portal_data_snapshots';
 const SNAPSHOT_SOURCE = 'google-sheets-bridge';
-const SNAPSHOT_KEYS = ['dashboard', 'skus', 'platform_trends', 'logistics', 'ads_summary', 'loyalty_system'];
+const SNAPSHOT_KEYS = ['dashboard', 'skus', 'platform_trends', 'logistics', 'loyalty_system'];
 const REQUIRED_SOURCE_SHEETS = {
   dimSku: ['dim_sku'],
-  factMarketplace: ['fact_marketplace_daily_sku'],
   factAds: ['fact_ads_daily_sku'],
   factLogistics: ['fact_logistics_daily_cluster_warehouse_sku', 'fact_logistics_daily_cluster_wa'],
   dimWarehouse: ['dim_warehouse'],
@@ -92,8 +91,9 @@ function parseArgs(argv) {
     }
     const [rawKey, inlineValue] = token.split('=');
     const key = rawKey.replace(/^--/, '');
-    const nextValue = inlineValue !== undefined ? inlineValue : argv[index + 1];
-    if (inlineValue === undefined) index += 1;
+    const hasSeparateValue = inlineValue === undefined && argv[index + 1] && !String(argv[index + 1]).startsWith('--');
+    const nextValue = inlineValue !== undefined ? inlineValue : hasSeparateValue ? argv[index + 1] : true;
+    if (hasSeparateValue) index += 1;
     args[key] = nextValue;
   }
   return args;
@@ -109,6 +109,25 @@ function deepClone(value) {
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function readOptionalJson(filePath) {
+  if (!filePath) return null;
+  try {
+    return fs.existsSync(filePath) ? readJson(filePath) : null;
+  } catch (error) {
+    console.warn(`Optional JSON skipped: ${filePath}: ${error.message}`);
+    return null;
+  }
+}
+
+function readOptionalSnapshotJson(filePath) {
+  try {
+    return filePath && fs.existsSync(filePath) ? readJson(filePath) : null;
+  } catch (error) {
+    console.warn(`Snapshot fallback skipped: ${filePath}: ${error.message}`);
+    return null;
+  }
 }
 
 function countRussianLetters(value) {
@@ -393,9 +412,17 @@ function optionalSheetRows(workbook, sheetName) {
   };
 }
 
-function parseWorkbook(buffer) {
+function loyaltySheetCandidates(options = {}) {
+  const configuredName = normalizeText(options.loyaltySheetName || '');
+  return [
+    configuredName,
+    ...REQUIRED_SOURCE_SHEETS.loyaltySystem
+  ].filter(Boolean);
+}
+
+function parseWorkbook(buffer, options = {}) {
   const workbook = XLSX.read(buffer, { type: 'buffer' });
-  const loyaltySystemSource = optionalSheetRows(workbook, REQUIRED_SOURCE_SHEETS.loyaltySystem);
+  const loyaltySystemSource = optionalSheetRows(workbook, loyaltySheetCandidates(options));
   return {
     dimSku: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.dimSku),
     factMarketplace: requiredSheetRows(workbook, REQUIRED_SOURCE_SHEETS.factMarketplace),
@@ -497,29 +524,11 @@ async function initAuthSession(options) {
   await browser.waitForEvent('close');
 }
 
-function shouldRetryWithVisibleChrome(error) {
-  const message = String(error?.message || error || '');
-  return /Browser\.getWindowForTarget/i.test(message) || /Browser window not found/i.test(message);
-}
-
-async function launchSyncProfileContext(options) {
-  try {
-    return await chromium.launchPersistentContext(options.profileDir, {
-      headless: true,
-      channel: 'chrome'
-    });
-  } catch (error) {
-    if (!shouldRetryWithVisibleChrome(error)) throw error;
-    console.log('Headless Chrome profile launch failed. Retrying with visible Chrome window.');
-    return chromium.launchPersistentContext(options.profileDir, {
-      headless: false,
-      channel: 'chrome'
-    });
-  }
-}
-
 async function fetchWorkbookViaBrowserAuth(options) {
-  const browser = await launchSyncProfileContext(options);
+  const browser = await chromium.launchPersistentContext(options.profileDir, {
+    headless: true,
+    channel: 'chrome'
+  });
   const page = await browser.newPage();
   try {
     await page.goto(options.sheetUrl, { waitUntil: 'domcontentloaded', timeout: 120000 });
@@ -542,7 +551,10 @@ async function fetchWorkbookViaBrowserAuth(options) {
 }
 
 async function fetchSheetRowsViaBrowserAuth(options) {
-  const browser = await launchSyncProfileContext(options);
+  const browser = await chromium.launchPersistentContext(options.profileDir, {
+    headless: true,
+    channel: 'chrome'
+  });
   const page = await browser.newPage();
   try {
     await page.goto(options.sheetUrl, { waitUntil: 'domcontentloaded', timeout: 120000 });
@@ -586,8 +598,19 @@ async function fetchSheetRowsViaBrowserAuth(options) {
       return { ...target, rows: parseCsvRows(csvText) };
     }
 
-    async function fetchOptionalCsvRows(candidates) {
+    async function fetchOptionalCsvRows(candidates, targetOptions = {}) {
       const names = Array.isArray(candidates) ? candidates : [candidates];
+      const explicitGid = normalizeText(targetOptions.gid || '');
+      if (explicitGid) {
+        const resolvedName = names.find((name) => gidMap.get(name) === explicitGid) || normalizeText(targetOptions.name || '') || `gid:${explicitGid}`;
+        const response = await browser.request.get(
+          `${baseExportUrl}/export?format=csv&gid=${encodeURIComponent(explicitGid)}`,
+          { failOnStatusCode: false, timeout: 120000 }
+        );
+        if (!response.ok()) return { name: resolvedName, gid: explicitGid, rows: [] };
+        const csvText = await response.text();
+        return { name: resolvedName, gid: explicitGid, rows: parseCsvRows(csvText) };
+      }
       const resolvedName = names.find((name) => gidMap.has(name));
       if (!resolvedName) return { name: '', gid: '', rows: [] };
       const gid = gidMap.get(resolvedName);
@@ -601,11 +624,12 @@ async function fetchSheetRowsViaBrowserAuth(options) {
     }
 
     const dimSkuSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.dimSku, 'dim_sku');
-    const factMarketplaceSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.factMarketplace, 'fact_marketplace_daily_sku');
-    const factAdsSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.factAds, 'fact_ads_daily_sku');
     const factLogisticsSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.factLogistics, 'fact_logistics_daily_cluster_warehouse_sku');
     const dimWarehouseSource = await fetchCsvRows(REQUIRED_SOURCE_SHEETS.dimWarehouse, 'dim_warehouse');
-    const loyaltySystemSource = await fetchOptionalCsvRows(REQUIRED_SOURCE_SHEETS.loyaltySystem);
+    const loyaltySystemSource = await fetchOptionalCsvRows(loyaltySheetCandidates(options), {
+      gid: options.loyaltySheetGid,
+      name: options.loyaltySheetName
+    });
 
     const warnings = [];
     if (!loyaltySystemSource.name) {
@@ -619,8 +643,6 @@ async function fetchSheetRowsViaBrowserAuth(options) {
 
     return {
       dimSku: dimSkuRows,
-      factMarketplace: factMarketplaceSource.rows,
-      factAds: factAdsSource.rows,
       factLogistics: factLogisticsSource.rows,
       dimWarehouse: dimWarehouseSource.rows,
       loyaltySystem: loyaltySystemSource.rows,
@@ -629,8 +651,6 @@ async function fetchSheetRowsViaBrowserAuth(options) {
         mode: 'google-csv-tabs',
         gids: {
           dim_sku: dimSkuSource.gid,
-          fact_marketplace_daily_sku: factMarketplaceSource.gid,
-          fact_ads_daily_sku: factAdsSource.gid,
           fact_logistics_daily_cluster_warehouse_sku: factLogisticsSource.gid,
           dim_warehouse: dimWarehouseSource.gid,
           loyalty_system: loyaltySystemSource.gid
@@ -777,109 +797,253 @@ function buildPlatformTrends(baseSkus, factRows, options) {
   };
 }
 
-function buildAdsSummary(baseSkus, factAdsRows, options) {
-  const skuByKey = new Map(baseSkus.map((item) => [normalizeKey(item.articleKey || item.article), item]));
-  const relevantSkuKeys = portalSkuKeySet(baseSkus);
-  const seriesBuckets = new Map();
-  const itemBuckets = new Map();
+function refreshPlatformTrendsSnapshot(basePlatformTrends, options) {
+  const next = deepClone(basePlatformTrends || {});
+  const platforms = Array.isArray(next.platforms) ? next.platforms : [];
+  const seriesDates = platforms.flatMap((platform) => (
+    Array.isArray(platform?.series)
+      ? platform.series.map((point) => isoDate(point?.label || point?.date)).filter(Boolean)
+      : []
+  ));
+  const latestMarketplaceDate = normalizeText(next.latestMarketplaceDate || latestDateOf(seriesDates) || '');
+  next.generatedAt = new Date().toISOString();
+  next.portalRefreshTimeLocal = options.portalRefreshTimeLocal;
+  if (latestMarketplaceDate) {
+    next.latestMarketplaceDate = latestMarketplaceDate;
+  }
+  next.note = 'Marketplace facts refreshed from API-backed platform_trends.json.';
+  return next;
+}
 
-  for (const row of factAdsRows || []) {
-    const date = isoDate(row.date);
-    const platform = normalizeMarketplace(row.platform || row.marketplace || row.data_source);
-    const articleKey = normalizeKey(row.offer_id || row.offerId || row.sku);
-    if (!date || !platform || !articleKey || !relevantSkuKeys.has(articleKey)) continue;
-    const mapKey = `${platform}::${date}`;
-    const bucket = seriesBuckets.get(mapKey) || { platform, date, views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
-    bucket.views += numberOrZero(row.views_orders);
-    bucket.clicks += numberOrZero(row.clicks_orders);
-    bucket.spend += numberOrZero(row.spend_orders);
-    bucket.orders += numberOrZero(row.orders_count_orders);
-    bucket.revenue += numberOrZero(row.orders_sum_orders);
-    seriesBuckets.set(mapKey, bucket);
+function marketplaceFactsFromPlatformTrends(platformTrends) {
+  const platforms = Array.isArray(platformTrends?.platforms) ? platformTrends.platforms : [];
+  const platformMap = new Map(platforms.map((platform) => [normalizeKey(platform?.key), platform]));
+  let series = Array.isArray(platformMap.get('all')?.series) ? platformMap.get('all').series : [];
 
-    const itemKey = `${platform}::${articleKey}::${date}`;
-    const sku = skuByKey.get(articleKey) || null;
-    const itemBucket = itemBuckets.get(itemKey) || {
-      date,
-      platformKey: platform,
-      articleKey: sku?.articleKey || normalizeText(row.offer_id || row.offerId || row.sku),
-      offerId: normalizeText(row.offer_id || row.offerId || row.sku),
-      name: sku?.name || normalizeText(row.offer_id || row.offerId || row.sku) || 'SKU',
-      views: 0,
-      clicks: 0,
-      spend: 0,
-      orders: 0,
-      revenue: 0
-    };
-    itemBucket.views += numberOrZero(row.views_orders);
-    itemBucket.clicks += numberOrZero(row.clicks_orders);
-    itemBucket.spend += numberOrZero(row.spend_orders);
-    itemBucket.orders += numberOrZero(row.orders_count_orders);
-    itemBucket.revenue += numberOrZero(row.orders_sum_orders);
-    itemBuckets.set(itemKey, itemBucket);
+  if (series.length) {
+    series = series
+      .map((point) => ({
+        label: isoDate(point?.label || point?.date) || normalizeText(point?.label || point?.date),
+        units: numberOrZero(point?.units),
+        revenue: numberOrZero(point?.revenue)
+      }))
+      .filter((point) => Boolean(point.label));
+  } else {
+    const byDate = new Map();
+    for (const platformKey of ['wb', 'ozon', 'ya']) {
+      for (const point of platformMap.get(platformKey)?.series || []) {
+        const label = isoDate(point?.label || point?.date);
+        if (!label) continue;
+        const current = byDate.get(label) || { label, units: 0, revenue: 0 };
+        current.units += numberOrZero(point?.units);
+        current.revenue += numberOrZero(point?.revenue);
+        byDate.set(label, current);
+      }
+    }
+    series = Array.from(byDate.values()).sort((left, right) => left.label.localeCompare(right.label));
   }
 
-  const dates = Array.from(new Set(Array.from(seriesBuckets.values()).map((item) => item.date))).sort();
-  const latestDate = dates[dates.length - 1] || '';
-  const latestIndex = dates.length - 1;
-
-  const aggregateSeries = (platformKey, date) => {
-    if (platformKey === 'all') {
-      return ['wb', 'ozon', 'ya'].reduce((acc, key) => {
-        const source = seriesBuckets.get(`${key}::${date}`);
-        if (!source) return acc;
-        acc.views += source.views;
-        acc.clicks += source.clicks;
-        acc.spend += source.spend;
-        acc.orders += source.orders;
-        acc.revenue += source.revenue;
-        return acc;
-      }, { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 });
-    }
-    return seriesBuckets.get(`${platformKey}::${date}`) || { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
-  };
-
-  const platforms = PLATFORM_ORDER.map((platformKey) => ({
-    key: platformKey,
-    label: PLATFORM_LABELS[platformKey],
-    series: dates.map((date, index) => {
-      const bucket = aggregateSeries(platformKey, date);
-      return {
-        dayOffset: latestIndex - index,
-        label: date,
-        views: Number(bucket.views.toFixed(4)),
-        clicks: Number(bucket.clicks.toFixed(4)),
-        spend: Number(bucket.spend.toFixed(4)),
-        orders: Number(bucket.orders.toFixed(4)),
-        revenue: Number(bucket.revenue.toFixed(4))
-      };
-    })
-  }));
+  const latestMarketplaceDate = normalizeText(platformTrends?.latestMarketplaceDate || series[series.length - 1]?.label || '');
+  const monthKey = monthKeyFromDate(latestMarketplaceDate);
+  const monthSeries = monthKey
+    ? series.filter((point) => isoDate(point?.label || point?.date).startsWith(monthKey))
+    : series;
 
   return {
-    generatedAt: new Date().toISOString(),
-    asOfDate: latestDate || null,
-    note: 'Рекламная витрина daily bridge пересчитана из fact_ads_daily_sku Google Sheets. Сейчас факт есть для WB и Ozon; retail-канал в исходном листе не опубликован.',
+    latestMarketplaceDate,
+    monthKey,
+    factUnits: sum(monthSeries.map((point) => point?.units)),
+    factRevenue: sum(monthSeries.map((point) => point?.revenue)),
+    source: 'platform_trends.json (API-backed)'
+  };
+}
+
+function buildDashboardFromPlatformTrends(baseDashboard, skus, logisticsRows, options, platformTrendsSource = null) {
+  const next = deepClone(baseDashboard);
+  const relevantLogisticsRows = logisticsRows.filter((row) => normalizeKey(row.article) && row.article);
+  const marketplaceFacts = marketplaceFactsFromPlatformTrends(platformTrendsSource);
+  const latestLogisticsDate = latestDateOf(relevantLogisticsRows.map((row) => row.date));
+  const latestMarketplaceDate = marketplaceFacts.latestMarketplaceDate || latestLogisticsDate || '';
+  const monthKey = marketplaceFacts.monthKey || monthKeyFromDate(latestMarketplaceDate);
+  const monthLabel = monthLabelRu(latestMarketplaceDate);
+  const monthPrefix = monthPrefixForDate(latestMarketplaceDate);
+  const latestDateObject = latestMarketplaceDate ? new Date(`${latestMarketplaceDate}T00:00:00Z`) : null;
+  const currentYear = latestMarketplaceDate ? latestMarketplaceDate.slice(2, 4) : '';
+  const dynamicPlanField = monthPrefix && currentYear ? `plan${monthPrefix[0].toUpperCase()}${monthPrefix.slice(1)}${currentYear}Units` : '';
+  const configuredPlanField = next.brandSummary?.[0]?.google_sheets_plan_field || dynamicPlanField;
+  const planField = [configuredPlanField, dynamicPlanField].find((field) => skus.some((item) => item?.planFact && field in item.planFact)) || configuredPlanField;
+  const factUnits = marketplaceFacts.factUnits;
+  const factRevenue = marketplaceFacts.factRevenue;
+  const totalStock = sum(relevantLogisticsRows
+    .filter((row) => isoDate(row.date) === latestLogisticsDate)
+    .map((row) => numberOrZero(row.wb_stock) + numberOrZero(row.ozon_stock) + numberOrZero(row.yandex_stock)));
+  const assignedSku = countAssignedSkus(skus);
+  const planUnits = planField
+    ? sum(skus.map((item) => item?.planFact?.[planField]))
+    : numberOrZero(next.brandSummary?.[0]?.plan_units);
+  const dayOfMonth = latestDateObject ? latestDateObject.getUTCDate() : 0;
+  const daysInMonth = latestDateObject
+    ? new Date(Date.UTC(latestDateObject.getUTCFullYear(), latestDateObject.getUTCMonth() + 1, 0)).getUTCDate()
+    : 0;
+  const linearPlanToDate = planUnits > 0 && dayOfMonth > 0 && daysInMonth > 0
+    ? (planUnits / daysInMonth) * dayOfMonth
+    : planUnits;
+  const completion = linearPlanToDate > 0 ? factUnits / linearPlanToDate : 0;
+  const companyPlanSlice = buildCompanyPlanSlice(options.companyPlan, monthKey, latestDateObject, factRevenue);
+
+  next.generatedAt = new Date().toISOString();
+  next.dataFreshness = {
+    ...(next.dataFreshness || {}),
+    asOfDate: latestMarketplaceDate,
+    googleSheetsMonth: monthKey,
     googleSheetsSourceUrl: options.sourceUrl,
     googleSheetsSourceGid: options.sourceGid,
+    googleSheetsBridge: 'scripts/portal-google-sheet-sync.js',
     googleSheetsRefreshTimeLocal: options.sourceRefreshTimeLocal,
     portalRefreshTimeLocal: options.portalRefreshTimeLocal,
-    platforms,
-    itemSeries: Array.from(itemBuckets.values())
-      .map((item) => ({
-        ...item,
-        views: Number(item.views.toFixed(4)),
-        clicks: Number(item.clicks.toFixed(4)),
-        spend: Number(item.spend.toFixed(4)),
-        orders: Number(item.orders.toFixed(4)),
-        revenue: Number(item.revenue.toFixed(4))
-      }))
-      .sort((left, right) =>
-        String(left.date).localeCompare(String(right.date))
-        || String(left.platformKey).localeCompare(String(right.platformKey))
-        || String(left.articleKey).localeCompare(String(right.articleKey))
-      )
+    marketplaceFactSource: marketplaceFacts.source
   };
+  next.asOfDate = latestMarketplaceDate;
+  next.latestMarketplaceDate = latestMarketplaceDate;
+  next.marketplaceFactSource = next.dataFreshness.marketplaceFactSource;
+
+  const cards = Array.isArray(next.cards) ? next.cards.filter((card) => {
+    const label = String(card?.label || '');
+    const hint = String(card?.hint || '');
+    const marketplaceLabel = label.includes('MP') || label.startsWith('Факт') || label.startsWith('План') || label.startsWith('Выполнение');
+    const marketplaceHint = hint.includes('Google Sheets') || hint.includes('API');
+    return !(marketplaceLabel && marketplaceHint);
+  }) : [];
+  replaceCard(cards, (card) => card.label === 'SKU РІ Р±Р°Р·Рµ', {
+    label: 'SKU РІ Р±Р°Р·Рµ',
+    value: skus.length,
+    hint: 'Р’ РїРѕСЂС‚Р°Р» РїРѕРїР°Р» С‚РѕР»СЊРєРѕ Р±СЂРµРЅРґ РђР»С‚РµСЏ'
+  });
+  replaceCard(cards, (card) => card.label === 'Р—Р°РєСЂРµРїР»РµРЅРѕ Р·Р° owner', {
+    label: 'Р—Р°РєСЂРµРїР»РµРЅРѕ Р·Р° owner',
+    value: assignedSku,
+    hint: 'РќР°С€Р»Рё Р·Р°РєСЂРµРїР»РµРЅРёРµ РІ СЂР°Р±РѕС‡РёС… СЂРµРµСЃС‚СЂР°С… Рё РµР¶РµРґРЅРµРІРЅРѕРј Google Sheets.'
+  });
+  replaceCard(cards, (card) => card.label === 'Р‘РµР· owner', {
+    label: 'Р‘РµР· owner',
+    value: Math.max(0, skus.length - assignedSku),
+    hint: 'РќСѓР¶РЅРѕ РґРѕР·Р°РєСЂРµРїРёС‚СЊ РІСЂСѓС‡РЅСѓСЋ'
+  });
+  replaceCard(cards, (card) => card.label === 'РћСЃС‚Р°С‚РєРё MP, С€С‚.', {
+    label: 'РћСЃС‚Р°С‚РєРё MP, С€С‚.',
+    value: totalStock,
+    hint: `WB + Ozon РїРѕ API-сСЂРµР·Сѓ platform_trends РЅР° ${latestMarketplaceDate || 'РїРѕСЃР»РµРґРЅСЋСЋ РґРѕСЃС‚СѓРїРЅСѓСЋ РґР°С‚Сѓ'}`
+  });
+  replaceCard(cards, (card) => card.label === 'РџР»Р°РЅ РјРµСЃСЏС†Р°, С€С‚.' || String(card.label || '').startsWith('РџР»Р°РЅ '), {
+    label: monthLabel ? `РџР»Р°РЅ ${monthLabel}, С€С‚.` : 'РџР»Р°РЅ РјРµСЃСЏС†Р°, С€С‚.',
+    value: planUnits,
+    hint: 'Р›РёРЅРµР№РЅС‹Р№ РїР»Р°РЅ РјРµСЃСЏС†Р° РїРѕ SKU СЂР°Р±РѕС‡РµРіРѕ РєРѕРЅС‚СѓСЂР°.'
+  });
+  replaceCard(cards, (card) => String(card.hint || '').startsWith('Р¤Р°РєС‚ РїРѕ РґР°РЅРЅС‹Рј Google Sheets'), {
+    label: formatFactCardLabel(latestMarketplaceDate),
+    value: factUnits,
+    hint: `Р¤Р°РєС‚ РїРѕ API-сСЂРµР·Сѓ platform_trends РЅР° ${latestMarketplaceDate || 'РїРѕСЃР»РµРґРЅСЋСЋ РґРѕСЃС‚СѓРїРЅСѓСЋ РґР°С‚Сѓ'}.`
+  });
+  replaceCard(cards, (card) => card.label === 'Р’С‹РїРѕР»РЅРµРЅРёРµ Рє РїР»Р°РЅСѓ РЅР° РґР°С‚Сѓ', {
+    label: 'Р’С‹РїРѕР»РЅРµРЅРёРµ Рє РїР»Р°РЅСѓ РЅР° РґР°С‚Сѓ',
+    value: Number(completion.toFixed(4)),
+    hint: 'Р¤Р°РєС‚ Рє Р»РёРЅРµР№РЅРѕРјСѓ РїР»Р°РЅСѓ РјРµСЃСЏС†Р° РЅР° РїРѕСЃР»РµРґРЅСЋСЋ РґРѕСЃС‚СѓРїРЅСѓСЋ РґР°С‚Сѓ.',
+    valuePct: Number(completion.toFixed(4))
+  });
+  if (companyPlanSlice) {
+    replaceCard(cards, (card) => String(card.label || '').startsWith('РџР»Р°РЅ РєРѕРјРїР°РЅРёРё') || card.hint === 'РћР±С‰РёР№ РїР»Р°РЅ РєРѕРјРїР°РЅРёРё РёР· РџР»Р°РЅ Рђ.xlsx.', {
+      label: `РџР»Р°РЅ РєРѕРјРїР°РЅРёРё ${companyPlanSlice.label}, в‚Ѕ`,
+      value: companyPlanSlice.planRevenueMonth,
+      format: 'money',
+      hint: 'РћР±С‰РёР№ РїР»Р°РЅ РєРѕРјРїР°РЅРёРё РёР· РџР»Р°РЅ Рђ.xlsx.'
+    });
+    replaceCard(cards, (card) => String(card.label || '').startsWith('Р¤Р°РєС‚ РєРѕРјРїР°РЅРёРё') || card.hint === 'Р¤Р°РєС‚ РІС‹СЂСѓС‡РєРё Рє РѕР±С‰РµРјСѓ РїР»Р°РЅСѓ РєРѕРјРїР°РЅРёРё.', {
+      label: `Р¤Р°РєС‚ РєРѕРјРїР°РЅРёРё 01-${String(dayOfMonth).padStart(2, '0')}.${String(latestDateObject.getUTCMonth() + 1).padStart(2, '0')}, в‚Ѕ`,
+      value: companyPlanSlice.factRevenueToDate,
+      format: 'money',
+      hint: 'Р¤Р°РєС‚ РІС‹СЂСѓС‡РєРё Рє РѕР±С‰РµРјСѓ РїР»Р°РЅСѓ РєРѕРјРїР°РЅРёРё.'
+    });
+    replaceCard(cards, (card) => String(card.label || '') === 'Р’С‹РїРѕР»РЅРµРЅРёРµ РєРѕРјРїР°РЅРёРё Рє РїР»Р°РЅСѓ', {
+      label: 'Р’С‹РїРѕР»РЅРµРЅРёРµ РєРѕРјРїР°РЅРёРё Рє РїР»Р°РЅСѓ',
+      value: companyPlanSlice.completionToDatePct,
+      format: 'pct',
+      hint: 'Р¤Р°РєС‚ РІС‹СЂСѓС‡РєРё / Р»РёРЅРµР№РЅС‹Р№ РѕР±С‰РёР№ РїР»Р°РЅ РєРѕРјРїР°РЅРёРё РЅР° РґР°С‚Сѓ.',
+      valuePct: companyPlanSlice.completionToDatePct
+    });
+  }
+  next.cards = cards;
+  if (companyPlanSlice) {
+    next.companyPlan = {
+      generatedAt: options.companyPlan?.generatedAt || '',
+      sourceWorkbook: options.companyPlan?.sourceWorkbook || '',
+      sourceSheet: options.companyPlan?.sourceSheet || '',
+      sourcePath: options.companyPlan?.sourcePath || '',
+      planType: options.companyPlan?.planType || 'company_revenue',
+      activeMonthKey: companyPlanSlice.monthKey,
+      activeMonth: companyPlanSlice,
+      months: options.companyPlan?.months || {}
+    };
+    next.company_plan_month_key = companyPlanSlice.monthKey;
+    next.company_plan_month_label = companyPlanSlice.label;
+    next.company_plan_revenue = companyPlanSlice.planRevenueMonth;
+    next.company_fact_revenue_to_date = companyPlanSlice.factRevenueToDate;
+    next.company_plan_to_date_revenue = companyPlanSlice.planRevenueToDate;
+    next.company_plan_completion_month_pct = companyPlanSlice.completionMonthPct;
+    next.company_plan_completion_to_date_pct = companyPlanSlice.completionToDatePct;
+    next.company_forecast_revenue = companyPlanSlice.forecastRevenue;
+    next.company_forecast_pct = companyPlanSlice.forecastPct;
+    next.company_plan_source = `${options.companyPlan?.sourceWorkbook || 'company_plan.json'} :: ${options.companyPlan?.sourceSheet || 'company_plan'}`;
+  }
+
+  if (!Array.isArray(next.brandSummary) || !next.brandSummary.length) {
+    next.brandSummary = [{ brand: options.brand }];
+  }
+  const summary = {
+    ...next.brandSummary[0],
+    brand: options.brand,
+    sku_count: skus.length,
+    total_stock: totalStock,
+    assigned_sku: assignedSku,
+    google_sheets_plan_field: planField,
+    google_sheets_month_key: monthKey,
+    asOfDate: latestMarketplaceDate,
+    latestMarketplaceDate,
+    plan_units: planUnits,
+    fact_units_to_date: factUnits,
+    fact_revenue_to_date: factRevenue,
+    plan_completion_to_date_pct: Number(completion.toFixed(4))
+  };
+  if (monthPrefix) {
+    summary[`${monthPrefix}_plan_units`] = planUnits;
+    summary[`${monthPrefix}_fact_units_to_date`] = factUnits;
+    summary[`${monthPrefix}_fact_revenue_to_date`] = factRevenue;
+    summary[`${monthPrefix}_plan_completion_to_date_pct`] = Number(completion.toFixed(4));
+  }
+  if (companyPlanSlice) {
+    Object.assign(summary, {
+      company_plan_month_key: companyPlanSlice.monthKey,
+      company_plan_month_label: companyPlanSlice.label,
+      company_plan_revenue: companyPlanSlice.planRevenueMonth,
+      company_fact_revenue_to_date: companyPlanSlice.factRevenueToDate,
+      company_plan_to_date_revenue: companyPlanSlice.planRevenueToDate,
+      company_plan_completion_month_pct: companyPlanSlice.completionMonthPct,
+      company_plan_completion_to_date_pct: companyPlanSlice.completionToDatePct,
+      company_forecast_revenue: companyPlanSlice.forecastRevenue,
+      company_forecast_pct: companyPlanSlice.forecastPct,
+      company_plan_source: next.company_plan_source
+    });
+    if (monthPrefix) {
+      summary[`${monthPrefix}_company_plan_revenue`] = companyPlanSlice.planRevenueMonth;
+      summary[`${monthPrefix}_company_fact_revenue_to_date`] = companyPlanSlice.factRevenueToDate;
+      summary[`${monthPrefix}_company_plan_to_date_revenue`] = companyPlanSlice.planRevenueToDate;
+      summary[`${monthPrefix}_company_plan_completion_month_pct`] = companyPlanSlice.completionMonthPct;
+      summary[`${monthPrefix}_company_plan_completion_to_date_pct`] = companyPlanSlice.completionToDatePct;
+      summary[`${monthPrefix}_company_forecast_revenue`] = companyPlanSlice.forecastRevenue;
+      summary[`${monthPrefix}_company_forecast_pct`] = companyPlanSlice.forecastPct;
+    }
+  }
+  next.brandSummary[0] = summary;
+  return next;
 }
 
 function replaceCard(cards, matcher, nextCard) {
@@ -898,12 +1062,98 @@ function countAssignedSkus(skus) {
   }).length;
 }
 
-function buildDashboard(baseDashboard, skus, factRows, logisticsRows, options) {
+function companyPlanMonth(companyPlan, monthKey) {
+  const month = companyPlan?.months?.[monthKey];
+  return month && typeof month === 'object' ? month : null;
+}
+
+function buildCompanyPlanSlice(companyPlan, monthKey, latestDateObject, factRevenue) {
+  const month = companyPlanMonth(companyPlan, monthKey);
+  if (!month || !(numberOrZero(month.revenue) > 0)) return null;
+  const dayOfMonth = latestDateObject ? latestDateObject.getUTCDate() : 0;
+  const daysInMonth = numberOrZero(month.days)
+    || (latestDateObject ? new Date(Date.UTC(latestDateObject.getUTCFullYear(), latestDateObject.getUTCMonth() + 1, 0)).getUTCDate() : 0);
+  const planRevenueMonth = numberOrZero(month.revenue);
+  const planRevenueToDate = planRevenueMonth > 0 && dayOfMonth > 0 && daysInMonth > 0
+    ? (planRevenueMonth / daysInMonth) * dayOfMonth
+    : planRevenueMonth;
+  const forecastRevenue = factRevenue > 0 && dayOfMonth > 0 && daysInMonth > 0
+    ? (factRevenue / dayOfMonth) * daysInMonth
+    : factRevenue;
+  const completionMonthPct = planRevenueMonth > 0 ? factRevenue / planRevenueMonth : 0;
+  const completionToDatePct = planRevenueToDate > 0 ? factRevenue / planRevenueToDate : 0;
+  const forecastPct = planRevenueMonth > 0 ? forecastRevenue / planRevenueMonth : 0;
+  return {
+    monthKey,
+    label: month.label || monthKey,
+    days: daysInMonth,
+    dayOfMonth,
+    planRevenueMonth: Number(planRevenueMonth.toFixed(2)),
+    planRevenueToDate: Number(planRevenueToDate.toFixed(2)),
+    factRevenueToDate: Number(factRevenue.toFixed(2)),
+    completionMonthPct: Number(completionMonthPct.toFixed(4)),
+    completionToDatePct: Number(completionToDatePct.toFixed(4)),
+    forecastRevenue: Number(forecastRevenue.toFixed(2)),
+    forecastPct: Number(forecastPct.toFixed(4)),
+    channels: month.channels || {}
+  };
+}
+
+function platformTrendsMarketplaceFallback(platformTrends) {
+  const latestMarketplaceDate = normalizeText(platformTrends?.latestMarketplaceDate || '');
+  const platforms = Array.isArray(platformTrends?.platforms) ? platformTrends.platforms : [];
+  if (!latestMarketplaceDate || !platforms.length) return null;
+
+  const monthKey = monthKeyFromDate(latestMarketplaceDate);
+  const allPlatform = platforms.find((platform) => normalizeKey(platform?.key) === 'all');
+
+  let series = Array.isArray(allPlatform?.series) && allPlatform.series.length
+    ? allPlatform.series
+    : null;
+
+  if (!series) {
+    const byDate = new Map();
+    for (const platform of platforms) {
+      if (!Array.isArray(platform?.series)) continue;
+      for (const point of platform.series) {
+        const date = isoDate(point?.label || point?.date);
+        if (!date) continue;
+        const current = byDate.get(date) || { units: 0, revenue: 0 };
+        current.units += numberOrZero(point?.units);
+        current.revenue += numberOrZero(point?.revenue);
+        byDate.set(date, current);
+      }
+    }
+    if (!byDate.size) return null;
+    series = Array.from(byDate.entries())
+      .sort((left, right) => left[0].localeCompare(right[0]))
+      .map(([label, values]) => ({
+        label,
+        units: values.units,
+        revenue: values.revenue
+      }));
+  }
+
+  const monthSeries = monthKey
+    ? series.filter((point) => isoDate(point?.label || point?.date).startsWith(monthKey))
+    : series;
+
+  return {
+    latestMarketplaceDate,
+    monthKey,
+    factUnits: sum(monthSeries.map((point) => point?.units)),
+    factRevenue: sum(monthSeries.map((point) => point?.revenue)),
+    source: 'platform_trends fallback after WB API refresh'
+  };
+}
+
+function buildDashboard(baseDashboard, skus, factRows, logisticsRows, options, platformTrendsFallback = null) {
   const next = deepClone(baseDashboard);
   const relevantSkuKeys = portalSkuKeySet(skus);
   const relevantFactRows = factRows.filter((row) => relevantSkuKeys.has(normalizeKey(row.item_code)));
   const relevantLogisticsRows = logisticsRows.filter((row) => relevantSkuKeys.has(normalizeKey(row.article)));
-  const latestMarketplaceDate = latestDateOf(relevantFactRows.map((row) => row.date));
+  const fallbackMarketplace = platformTrendsMarketplaceFallback(platformTrendsFallback);
+  const latestMarketplaceDate = latestDateOf(relevantFactRows.map((row) => row.date)) || fallbackMarketplace?.latestMarketplaceDate || '';
   const latestLogisticsDate = latestDateOf(relevantLogisticsRows.map((row) => row.date));
   const monthKey = monthKeyFromDate(latestMarketplaceDate);
   const monthLabel = monthLabelRu(latestMarketplaceDate);
@@ -914,8 +1164,12 @@ function buildDashboard(baseDashboard, skus, factRows, logisticsRows, options) {
   const configuredPlanField = next.brandSummary?.[0]?.google_sheets_plan_field || dynamicPlanField;
   const planField = [configuredPlanField, dynamicPlanField].find((field) => skus.some((item) => item?.planFact && field in item.planFact)) || configuredPlanField;
   const monthFactRows = relevantFactRows.filter((row) => isoDate(row.date).startsWith(monthKey));
-  const factUnits = sum(monthFactRows.map((row) => row.sales_qty));
-  const factRevenue = sum(monthFactRows.map((row) => row.revenue));
+  const factUnits = monthFactRows.length
+    ? sum(monthFactRows.map((row) => row.sales_qty))
+    : numberOrZero(fallbackMarketplace?.factUnits);
+  const factRevenue = monthFactRows.length
+    ? sum(monthFactRows.map((row) => row.revenue))
+    : numberOrZero(fallbackMarketplace?.factRevenue);
   const totalStock = sum(relevantLogisticsRows
     .filter((row) => isoDate(row.date) === latestLogisticsDate)
     .map((row) => numberOrZero(row.wb_stock) + numberOrZero(row.ozon_stock) + numberOrZero(row.yandex_stock)));
@@ -931,6 +1185,7 @@ function buildDashboard(baseDashboard, skus, factRows, logisticsRows, options) {
     ? (planUnits / daysInMonth) * dayOfMonth
     : planUnits;
   const completion = linearPlanToDate > 0 ? factUnits / linearPlanToDate : 0;
+  const companyPlanSlice = buildCompanyPlanSlice(options.companyPlan, monthKey, latestDateObject, factRevenue);
 
   next.generatedAt = new Date().toISOString();
   next.dataFreshness = {
@@ -941,8 +1196,12 @@ function buildDashboard(baseDashboard, skus, factRows, logisticsRows, options) {
     googleSheetsSourceGid: options.sourceGid,
     googleSheetsBridge: 'scripts/portal-google-sheet-sync.js',
     googleSheetsRefreshTimeLocal: options.sourceRefreshTimeLocal,
-    portalRefreshTimeLocal: options.portalRefreshTimeLocal
+    portalRefreshTimeLocal: options.portalRefreshTimeLocal,
+    marketplaceFactSource: monthFactRows.length ? 'fact_marketplace_daily_sku' : (fallbackMarketplace?.source || 'fact_marketplace_daily_sku')
   };
+  next.asOfDate = latestMarketplaceDate;
+  next.latestMarketplaceDate = latestMarketplaceDate;
+  next.marketplaceFactSource = next.dataFreshness.marketplaceFactSource;
 
   const cards = Array.isArray(next.cards) ? next.cards : [];
   replaceCard(cards, (card) => card.label === 'SKU в базе', {
@@ -981,7 +1240,50 @@ function buildDashboard(baseDashboard, skus, factRows, logisticsRows, options) {
     hint: 'Факт к линейному плану месяца на последнюю доступную дату.',
     valuePct: Number(completion.toFixed(4))
   });
+  if (companyPlanSlice) {
+    replaceCard(cards, (card) => String(card.label || '').startsWith('План компании') || card.hint === 'Общий план компании из План А.xlsx.', {
+      label: `План компании ${companyPlanSlice.label}, ₽`,
+      value: companyPlanSlice.planRevenueMonth,
+      format: 'money',
+      hint: 'Общий план компании из План А.xlsx.'
+    });
+    replaceCard(cards, (card) => String(card.label || '').startsWith('Факт компании') || card.hint === 'Факт выручки к общему плану компании.', {
+      label: `Факт компании 01-${String(dayOfMonth).padStart(2, '0')}.${String(latestDateObject.getUTCMonth() + 1).padStart(2, '0')}, ₽`,
+      value: companyPlanSlice.factRevenueToDate,
+      format: 'money',
+      hint: 'Факт выручки к общему плану компании.'
+    });
+    replaceCard(cards, (card) => String(card.label || '') === 'Выполнение компании к плану', {
+      label: 'Выполнение компании к плану',
+      value: companyPlanSlice.completionToDatePct,
+      format: 'pct',
+      hint: 'Факт выручки / линейный общий план компании на дату.',
+      valuePct: companyPlanSlice.completionToDatePct
+    });
+  }
   next.cards = cards;
+  if (companyPlanSlice) {
+    next.companyPlan = {
+      generatedAt: options.companyPlan?.generatedAt || '',
+      sourceWorkbook: options.companyPlan?.sourceWorkbook || '',
+      sourceSheet: options.companyPlan?.sourceSheet || '',
+      sourcePath: options.companyPlan?.sourcePath || '',
+      planType: options.companyPlan?.planType || 'company_revenue',
+      activeMonthKey: companyPlanSlice.monthKey,
+      activeMonth: companyPlanSlice,
+      months: options.companyPlan?.months || {}
+    };
+    next.company_plan_month_key = companyPlanSlice.monthKey;
+    next.company_plan_month_label = companyPlanSlice.label;
+    next.company_plan_revenue = companyPlanSlice.planRevenueMonth;
+    next.company_fact_revenue_to_date = companyPlanSlice.factRevenueToDate;
+    next.company_plan_to_date_revenue = companyPlanSlice.planRevenueToDate;
+    next.company_plan_completion_month_pct = companyPlanSlice.completionMonthPct;
+    next.company_plan_completion_to_date_pct = companyPlanSlice.completionToDatePct;
+    next.company_forecast_revenue = companyPlanSlice.forecastRevenue;
+    next.company_forecast_pct = companyPlanSlice.forecastPct;
+    next.company_plan_source = `${options.companyPlan?.sourceWorkbook || 'company_plan.json'} :: ${options.companyPlan?.sourceSheet || 'company_plan'}`;
+  }
 
   if (!Array.isArray(next.brandSummary) || !next.brandSummary.length) {
     next.brandSummary = [{ brand: options.brand }];
@@ -994,6 +1296,8 @@ function buildDashboard(baseDashboard, skus, factRows, logisticsRows, options) {
     assigned_sku: assignedSku,
     google_sheets_plan_field: planField,
     google_sheets_month_key: monthKey,
+    asOfDate: latestMarketplaceDate,
+    latestMarketplaceDate,
     plan_units: planUnits,
     fact_units_to_date: factUnits,
     fact_revenue_to_date: factRevenue,
@@ -1005,11 +1309,34 @@ function buildDashboard(baseDashboard, skus, factRows, logisticsRows, options) {
     summary[`${monthPrefix}_fact_revenue_to_date`] = factRevenue;
     summary[`${monthPrefix}_plan_completion_to_date_pct`] = Number(completion.toFixed(4));
   }
+  if (companyPlanSlice) {
+    Object.assign(summary, {
+      company_plan_month_key: companyPlanSlice.monthKey,
+      company_plan_month_label: companyPlanSlice.label,
+      company_plan_revenue: companyPlanSlice.planRevenueMonth,
+      company_fact_revenue_to_date: companyPlanSlice.factRevenueToDate,
+      company_plan_to_date_revenue: companyPlanSlice.planRevenueToDate,
+      company_plan_completion_month_pct: companyPlanSlice.completionMonthPct,
+      company_plan_completion_to_date_pct: companyPlanSlice.completionToDatePct,
+      company_forecast_revenue: companyPlanSlice.forecastRevenue,
+      company_forecast_pct: companyPlanSlice.forecastPct,
+      company_plan_source: next.company_plan_source
+    });
+    if (monthPrefix) {
+      summary[`${monthPrefix}_company_plan_revenue`] = companyPlanSlice.planRevenueMonth;
+      summary[`${monthPrefix}_company_fact_revenue_to_date`] = companyPlanSlice.factRevenueToDate;
+      summary[`${monthPrefix}_company_plan_to_date_revenue`] = companyPlanSlice.planRevenueToDate;
+      summary[`${monthPrefix}_company_plan_completion_month_pct`] = companyPlanSlice.completionMonthPct;
+      summary[`${monthPrefix}_company_plan_completion_to_date_pct`] = companyPlanSlice.completionToDatePct;
+      summary[`${monthPrefix}_company_forecast_revenue`] = companyPlanSlice.forecastRevenue;
+      summary[`${monthPrefix}_company_forecast_pct`] = companyPlanSlice.forecastPct;
+    }
+  }
   next.brandSummary[0] = summary;
   return next;
 }
 
-function buildLogistics(baseLogistics, skus, factLogisticsRows, options) {
+function buildLogistics(baseLogistics, skus, factLogisticsRows, options, warehouseStockOverlay) {
   const next = deepClone(baseLogistics);
   const skuByKey = new Map(skus.map((item) => [normalizeKey(item.articleKey || item.article), item]));
   const planMonthField = `plan${String(options?.monthKey || '').replace('-', '')}Units`;
@@ -1022,6 +1349,35 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options) {
     const skuKey = normalizeKey(row.article);
     return skuByKey.has(skuKey) && isoDate(row.date) === latestLogisticsDate;
   });
+  const warehouseOverlayRows = Array.isArray(warehouseStockOverlay?.rows)
+    ? warehouseStockOverlay.rows
+    : [];
+  const centralRows = latestRows.filter((row) => /балаших|central/i.test(normalizeText(row.warehouse_name)));
+
+  const centralRowsSummary = centralRows.length
+    ? {
+        stock: sum(centralRows.map((row) => numberOrZero(row.wb_stock) + numberOrZero(row.ozon_stock) + numberOrZero(row.yandex_stock))),
+        skuCount: centralRows.length
+      }
+    : null;
+
+  const overlayRowsSummary = warehouseOverlayRows.length
+    ? warehouseOverlayRows.reduce((acc, row) => {
+        acc.accepted += numberOrZero(row.accepted);
+        acc.shippedOzon += numberOrZero(row.shippedOzon);
+        acc.shippedWB += numberOrZero(row.shippedWB);
+        acc.stock += numberOrZero(row.stockWarehouse);
+        return acc;
+      }, {
+        accepted: 0,
+        shippedOzon: 0,
+        shippedWB: 0,
+        stock: 0,
+        skuCount: warehouseOverlayRows.length
+      })
+    : null;
+
+  const centralSummary = overlayRowsSummary || centralRowsSummary;
 
   const ozonClusterMap = new Map();
   const ozonWarehouseMap = new Map();
@@ -1269,10 +1625,13 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options) {
     `Последний логистический срез: ${latestLogisticsDate || 'не найден'}.`,
     'Скорости продаж и value сохраняются из текущего портального слоя, пока в Sheets нет отдельного cluster-level sales факта.'
   ];
+  if (warehouseOverlayRows.length) {
+    next.notes.unshift('Остатки центрального склада обновлены из отдельного листа Склад Балашиха.');
+  }
   next.ozonClusters = ozonClusters;
   next.ozonWarehouses = ozonWarehouses;
   next.wbWarehouses = wbWarehouses;
-    next.allRows = allRows;
+  next.allRows = allRows;
   next.riskRows = riskRows;
 
   const summaryCards = Array.isArray(next.summaryCards) ? next.summaryCards : [];
@@ -1286,12 +1645,32 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options) {
     value: wbWarehouses.filter((item) => Number.isFinite(item.coverageDays) && item.coverageDays < 14).length,
     hint: 'Свежий риск по Google Sheets.'
   });
+  if (centralSummary) {
+    replaceCard(summaryCards, (card) => card.label === 'Центральный склад, шт.', {
+      label: 'Центральный склад, шт.',
+      value: Math.round(numberOrZero(centralSummary.stock)),
+      hint: warehouseOverlayRows.length
+        ? `Склад Балашиха · ${warehouseOverlayRows.length} SKU`
+        : 'Остаток в Балашихе'
+    });
+  }
   next.summaryCards = summaryCards;
 
   if (next.centralWarehouse && typeof next.centralWarehouse === 'object') {
-    const centralRows = latestRows.filter((row) => /балаших|central/i.test(normalizeText(row.warehouse_name)));
-    if (centralRows.length) {
-      next.centralWarehouse.stock = sum(centralRows.map((row) => numberOrZero(row.wb_stock) + numberOrZero(row.ozon_stock) + numberOrZero(row.yandex_stock)));
+    if (centralSummary) {
+      if (overlayRowsSummary) {
+        next.centralWarehouse.accepted = Math.round(numberOrZero(overlayRowsSummary.accepted));
+        next.centralWarehouse.shippedOzon = Math.round(numberOrZero(overlayRowsSummary.shippedOzon));
+        next.centralWarehouse.shippedWB = Math.round(numberOrZero(overlayRowsSummary.shippedWB));
+      }
+      next.centralWarehouse.stock = Math.round(numberOrZero(centralSummary.stock));
+      next.centralWarehouse.skuCount = numberOrZero(centralSummary.skuCount || next.centralWarehouse.skuCount || 0);
+      if (warehouseOverlayRows.length) {
+        next.centralWarehouse.source = 'warehouse_stock_overlay';
+        next.centralWarehouse.sourceWorkbook = warehouseStockOverlay?.sourceWorkbook || '';
+        next.centralWarehouse.sourceSheet = warehouseStockOverlay?.sourceSheet || '';
+        next.centralWarehouse.generatedAt = warehouseStockOverlay?.generatedAt || next.generatedAt;
+      }
     }
   }
 
@@ -1477,12 +1856,13 @@ function buildSnapshots(rows, options) {
   const baseDir = options.baseDataDir;
   const baseDashboard = readJson(path.join(baseDir, 'dashboard.json'));
   const baseSkus = readJson(path.join(baseDir, 'skus.json'));
+  const basePlatformTrends = readJson(path.join(baseDir, 'platform_trends.json'));
   const baseLogistics = readJson(path.join(baseDir, 'logistics.json'));
+  const warehouseStockOverlay = readOptionalJson(path.join(baseDir, 'warehouse_stock_overlay.json'));
   const { skus, updatedCount } = buildSkuOverlay(baseSkus, rows.dimSku);
-  const dashboard = buildDashboard(baseDashboard, skus, rows.factMarketplace, rows.factLogistics, options);
-  const platformTrends = buildPlatformTrends(skus, rows.factMarketplace, options);
-  const adsSummary = buildAdsSummary(skus, rows.factAds, options);
-  const logistics = buildLogistics(baseLogistics, skus, rows.factLogistics, options);
+  const platformTrends = refreshPlatformTrendsSnapshot(basePlatformTrends, options);
+  const dashboard = buildDashboardFromPlatformTrends(baseDashboard, skus, rows.factLogistics, options, platformTrends);
+  const logistics = buildLogistics(baseLogistics, skus, rows.factLogistics, options, warehouseStockOverlay);
   const loyaltySystem = buildLoyaltySystem(rows.loyaltySystem, rows.loyaltySystemSource, options);
   return {
     snapshots: {
@@ -1490,8 +1870,27 @@ function buildSnapshots(rows, options) {
       skus,
       platform_trends: platformTrends,
       logistics,
-      ads_summary: adsSummary,
-      loyalty_system: loyaltySystem
+      loyalty_system: loyaltySystem,
+      warehouse_stock_overlay: warehouseStockOverlay || {
+        generatedAt: new Date().toISOString(),
+        sourceWorkbook: '',
+        sourceSheet: '',
+        sourceUrl: '',
+        sourceFormat: 'google-csv-export',
+        sheetName: '',
+        matchField: 'Наименование как в ЛК -> article/articleKey',
+        sheetRowCount: 0,
+        matchedRowCount: 0,
+        matchedSkuCount: 0,
+        unmatchedSourceKeys: [],
+        summary: {
+          stockWarehouse: 0,
+          accepted: 0,
+          shippedOzon: 0,
+          shippedWB: 0
+        },
+        rows: []
+      }
     },
     meta: {
       generatedAt: new Date().toISOString(),
@@ -1505,24 +1904,14 @@ function buildSnapshots(rows, options) {
         month_plan_units: dashboard.brandSummary?.[0]?.plan_units || 0,
         month_fact_units: dashboard.brandSummary?.[0]?.fact_units_to_date || 0,
         month_fact_revenue: dashboard.brandSummary?.[0]?.fact_revenue_to_date || 0,
-        completion_to_date_pct: dashboard.brandSummary?.[0]?.plan_completion_to_date_pct || 0
+        completion_to_date_pct: dashboard.brandSummary?.[0]?.plan_completion_to_date_pct || 0,
+        company_plan_revenue: dashboard.brandSummary?.[0]?.company_plan_revenue || 0,
+        company_plan_to_date_revenue: dashboard.brandSummary?.[0]?.company_plan_to_date_revenue || 0,
+        company_completion_to_date_pct: dashboard.brandSummary?.[0]?.company_plan_completion_to_date_pct || 0
       },
       platformTrends: {
         latest_marketplace_date: platformTrends.latestMarketplaceDate || '',
         points: platformTrends.platforms?.[0]?.series?.length || 0
-      },
-      adsSummary: {
-        latest_ads_date: adsSummary.asOfDate || '',
-        platforms_with_ads: (adsSummary.platforms || []).filter((platform) =>
-          Array.isArray(platform?.series) && platform.series.some((item) =>
-            numberOrZero(item?.views) > 0
-            || numberOrZero(item?.clicks) > 0
-            || numberOrZero(item?.orders) > 0
-            || numberOrZero(item?.spend) > 0
-            || numberOrZero(item?.revenue) > 0
-          )
-        ).length,
-        item_rows: adsSummary.itemSeries?.length || 0
       },
       loyaltySystem: {
         sheet_name: loyaltySystem.source?.sheetName || '',
@@ -1534,10 +1923,190 @@ function buildSnapshots(rows, options) {
         latest_logistics_date: logistics.window?.to || '',
         ozon_cluster_count: logistics.ozonClusters?.length || 0,
         ozon_warehouse_count: logistics.ozonWarehouses?.length || 0,
-        wb_warehouse_count: logistics.wbWarehouses?.length || 0
+        wb_warehouse_count: logistics.wbWarehouses?.length || 0,
+        central_warehouse_stock: logistics.centralWarehouse?.stock || 0,
+        warehouse_stock_overlay_rows: warehouseStockOverlay?.rows?.length || 0
       }
     }
   };
+}
+
+function dashboardSnapshotHasMarketplaceFacts(payload) {
+  const summary = payload?.brandSummary?.[0] || {};
+  return Boolean(
+    normalizeText(payload?.dataFreshness?.asOfDate)
+    && (
+      numberOrZero(summary.fact_units_to_date) > 0
+      || numberOrZero(summary.fact_revenue_to_date) > 0
+    )
+  );
+}
+
+function normalizeDashboardMarketplaceAsOf(payload) {
+  if (!payload || typeof payload !== 'object') return payload;
+  const asOfDate = normalizeText(payload?.dataFreshness?.asOfDate || '');
+  if (!asOfDate) return payload;
+  const next = deepClone(payload);
+  next.asOfDate = asOfDate;
+  next.latestMarketplaceDate = asOfDate;
+  if (Array.isArray(next.brandSummary) && next.brandSummary[0]) {
+    next.brandSummary[0] = {
+      ...next.brandSummary[0],
+      asOfDate,
+      latestMarketplaceDate: asOfDate
+    };
+  }
+  return next;
+}
+
+function platformTrendsSnapshotHasMarketplaceFacts(payload) {
+  const platforms = Array.isArray(payload?.platforms) ? payload.platforms : [];
+  return Boolean(
+    normalizeText(payload?.latestMarketplaceDate)
+    && platforms.some((platform) => Array.isArray(platform?.series) && platform.series.length > 0)
+  );
+}
+
+function collectSnapshotFallbackFiles(snapshotKey, options = {}) {
+  const result = [];
+  const seen = new Set();
+
+  function addFile(filePath) {
+    if (!filePath) return;
+    const resolved = path.resolve(filePath);
+    if (seen.has(resolved)) return;
+    seen.add(resolved);
+    try {
+      if (!fs.existsSync(resolved)) return;
+      const stat = fs.statSync(resolved);
+      if (!stat.isFile()) return;
+      result.push({ filePath: resolved, mtimeMs: stat.mtimeMs });
+    } catch (_error) {
+      // Keep fallback discovery best-effort; bad files should not stop sync.
+    }
+  }
+
+  function walk(dir, depth = 0) {
+    if (!dir || depth > 4) return;
+    let entries = [];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch (_error) {
+      return;
+    }
+    for (const entry of entries) {
+      const entryPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(entryPath, depth + 1);
+      } else if (entry.isFile() && entry.name === `${snapshotKey}.json`) {
+        addFile(entryPath);
+      }
+    }
+  }
+
+  for (const dir of [options.mirrorDataDir, options.baseDataDir, options.outputDir]) {
+    if (dir) addFile(path.join(dir, `${snapshotKey}.json`));
+  }
+  if (options.outputDir) walk(path.join(options.outputDir, 'history'));
+
+  return result.sort((a, b) => b.mtimeMs - a.mtimeMs);
+}
+
+function findUsableSnapshotFallback(snapshotKey, options, predicate) {
+  for (const candidate of collectSnapshotFallbackFiles(snapshotKey, options)) {
+    const payload = readOptionalSnapshotJson(candidate.filePath);
+    if (payload && predicate(payload)) {
+      return { payload, filePath: candidate.filePath };
+    }
+  }
+  return null;
+}
+
+function dashboardMetaFromSnapshot(dashboard) {
+  const summary = dashboard?.brandSummary?.[0] || {};
+  return {
+    latest_marketplace_date: dashboard?.dataFreshness?.asOfDate || '',
+    month_plan_units: summary.plan_units || 0,
+    month_fact_units: summary.fact_units_to_date || 0,
+    month_fact_revenue: summary.fact_revenue_to_date || 0,
+    completion_to_date_pct: summary.plan_completion_to_date_pct || 0,
+    company_plan_revenue: summary.company_plan_revenue || 0,
+    company_plan_to_date_revenue: summary.company_plan_to_date_revenue || 0,
+    company_completion_to_date_pct: summary.company_plan_completion_to_date_pct || 0
+  };
+}
+
+function platformTrendsMetaFromSnapshot(platformTrends) {
+  return {
+    latest_marketplace_date: platformTrends?.latestMarketplaceDate || '',
+    points: platformTrends?.platforms?.[0]?.series?.length || 0
+  };
+}
+
+function refreshMarketplaceFactMeta(meta, snapshots) {
+  return {
+    ...meta,
+    dashboard: dashboardMetaFromSnapshot(snapshots.dashboard),
+    platformTrends: platformTrendsMetaFromSnapshot(snapshots.platform_trends)
+  };
+}
+
+function applyMarketplaceFactFallback(rows, buildResult, options) {
+  const snapshots = { ...(buildResult.snapshots || {}) };
+  let meta = { ...(buildResult.meta || {}) };
+  const dashboardOk = dashboardSnapshotHasMarketplaceFacts(snapshots.dashboard);
+  const platformTrendsOk = platformTrendsSnapshotHasMarketplaceFacts(snapshots.platform_trends);
+  if (dashboardOk && platformTrendsOk) return buildResult;
+
+  const sourceRows = Array.isArray(rows?.factMarketplace) ? rows.factMarketplace.length : 0;
+  const reason = sourceRows > 0
+    ? 'fact_marketplace_daily_sku has rows, but none matched portal SKU keys'
+    : 'fact_marketplace_daily_sku returned 0 rows';
+  const fallback = {};
+
+  if (!dashboardOk) {
+    const dashboardFallback = findUsableSnapshotFallback(
+      'dashboard',
+      options,
+      dashboardSnapshotHasMarketplaceFacts
+    );
+    if (dashboardFallback) {
+      snapshots.dashboard = normalizeDashboardMarketplaceAsOf(dashboardFallback.payload);
+      fallback.dashboard = dashboardFallback.filePath;
+    }
+  }
+
+  if (!platformTrendsOk) {
+    const trendsFallback = findUsableSnapshotFallback(
+      'platform_trends',
+      options,
+      platformTrendsSnapshotHasMarketplaceFacts
+    );
+    if (trendsFallback) {
+      snapshots.platform_trends = trendsFallback.payload;
+      fallback.platform_trends = trendsFallback.filePath;
+    }
+  }
+
+  const missing = [];
+  if (!dashboardSnapshotHasMarketplaceFacts(snapshots.dashboard)) missing.push('dashboard');
+  if (!platformTrendsSnapshotHasMarketplaceFacts(snapshots.platform_trends)) missing.push('platform_trends');
+  if (missing.length) {
+    throw new Error(`${reason}; no usable fallback found for ${missing.join(', ')}`);
+  }
+
+  meta = refreshMarketplaceFactMeta(meta, snapshots);
+  meta.sourceWarnings = [
+    ...(Array.isArray(meta.sourceWarnings) ? meta.sourceWarnings : []),
+    `${reason}; used last usable marketplace fallback snapshots instead of writing zeros`
+  ];
+  meta.marketplaceFactFallback = {
+    reason,
+    sourceRows,
+    snapshots: fallback
+  };
+
+  return { ...buildResult, snapshots, meta };
 }
 
 function writeSnapshotSet(targetDir, snapshots, meta, options = {}) {
@@ -1647,6 +2216,8 @@ async function uploadSnapshot(snapshotKey, payload, options) {
 function resolveOptions(args) {
   const sourceUrl = args['source-url'] || process.env.ALTEA_GOOGLE_SHEET_URL || DEFAULT_SOURCE_URL;
   const sourceGid = args.gid || process.env.ALTEA_GOOGLE_SHEET_GID || DEFAULT_SOURCE_GID;
+  const loyaltySheetName = normalizeText(args['loyalty-sheet-name'] || process.env.ALTEA_LOYALTY_SHEET_NAME || '');
+  const loyaltySheetGid = normalizeText(args['loyalty-sheet-gid'] || process.env.ALTEA_LOYALTY_SHEET_GID || '');
   const profileDir = path.resolve(args['profile-dir'] || process.env.ALTEA_GOOGLE_SHEET_PROFILE_DIR || cwdJoin('.altea-google-sheets-profile'));
   const baseDataDir = path.resolve(args['base-data-dir'] || cwdJoin('data'));
   const outputDir = args['output-dir'] ? path.resolve(args['output-dir']) : '';
@@ -1655,6 +2226,8 @@ function resolveOptions(args) {
     brand: args.brand || process.env.ALTEA_PORTAL_BRAND || DEFAULT_BRAND,
     sourceUrl,
     sourceGid,
+    loyaltySheetName,
+    loyaltySheetGid,
     sheetUrl: sourceUrl,
     exportUrl: sourceUrl.replace(/\/edit.*$/, '/export?format=xlsx'),
     sourceRefreshTimeLocal: process.env.ALTEA_GOOGLE_SHEET_REFRESH_AT || DEFAULT_SOURCE_REFRESH,
@@ -1666,9 +2239,10 @@ function resolveOptions(args) {
     mirrorLocalFallback: resolveBooleanOption(args['mirror-local-fallback'], !Boolean(args.dryRun)),
     inputXlsx: args['input-xlsx'] ? path.resolve(args['input-xlsx']) : '',
     inputJson: args['input-json'] ? path.resolve(args['input-json']) : '',
+    companyPlanJson: path.resolve(args['company-plan-json'] || process.env.ALTEA_COMPANY_PLAN_JSON || path.join(baseDataDir, 'company_plan.json')),
     supabaseUrl: process.env.ALTEA_SUPABASE_URL || DEFAULT_SUPABASE_URL,
     supabaseKey: process.env.ALTEA_SUPABASE_KEY || DEFAULT_SUPABASE_KEY,
-    skipUpload: resolveBooleanOption(args['skip-upload'], false),
+    skipUpload: resolveBooleanOption(args['skip-upload'] ?? args.skipUpload, false),
     dryRun: Boolean(args.dryRun)
   };
 }
@@ -1676,6 +2250,7 @@ function resolveOptions(args) {
 async function main() {
   const args = parseArgs(process.argv);
   const options = resolveOptions(args);
+  options.companyPlan = readOptionalJson(options.companyPlanJson);
 
   if (args.initAuth) {
     await initAuthSession(options);
@@ -1705,7 +2280,7 @@ async function main() {
         }
       }
     }
-    if (!rows) rows = parseWorkbook(workbookBuffer);
+    if (!rows) rows = parseWorkbook(workbookBuffer, options);
   }
 
   const { snapshots, meta } = buildSnapshots(rows, options);
@@ -1722,22 +2297,10 @@ async function main() {
     mirroredFiles = writeSnapshotSet(options.mirrorDataDir, snapshots, meta, { metaFileName: 'google_sheet_sync_meta.json' });
   }
 
-  if (options.dryRun) {
+  if (options.dryRun || options.skipUpload) {
     console.log(JSON.stringify({
-      dryRun: true,
-      meta,
-      outputDir: options.outputDir || '',
-      outputFiles,
-      mirrorLocalFallback: options.mirrorLocalFallback,
-      mirrorDataDir: options.mirrorDataDir || '',
-      mirroredFiles
-    }, null, 2));
-    return;
-  }
-
-  if (options.skipUpload) {
-    console.log(JSON.stringify({
-      skippedUpload: true,
+      dryRun: options.dryRun,
+      skipUpload: options.skipUpload,
       meta,
       outputDir: options.outputDir || '',
       outputFiles,

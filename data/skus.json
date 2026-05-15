@@ -23,10 +23,10 @@
       "byPlatform": {
         "wb": "Кирилл",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -72,15 +72,7 @@
       "factFeb26Revenue": 32157,
       "factFeb26NetRevenue": 4199,
       "factFeb26MarginPct": 0.81,
-      "factTotalRevenue": 324002,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 324002
     },
     "orders": {
       "count": 145,
@@ -126,10 +118,10 @@
     "ownersByPlatform": {
       "wb": "Кирилл",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Гели для бровей",
@@ -165,11 +157,11 @@
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Олеся",
-        "ozon": "",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Даша",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -215,15 +207,7 @@
       "factFeb26Revenue": null,
       "factFeb26NetRevenue": null,
       "factFeb26MarginPct": null,
-      "factTotalRevenue": null,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": null
     },
     "orders": {
       "count": null,
@@ -268,11 +252,11 @@
     },
     "ownersByPlatform": {
       "wb": "Олеся",
-      "ozon": "",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Даша",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Сыворотки",
@@ -309,10 +293,10 @@
       "byPlatform": {
         "wb": "Светлана",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -358,15 +342,7 @@
       "factFeb26Revenue": 63688,
       "factFeb26NetRevenue": 3482,
       "factFeb26MarginPct": 0.706,
-      "factTotalRevenue": 1331958,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 1331958
     },
     "orders": {
       "count": 250,
@@ -412,10 +388,10 @@
     "ownersByPlatform": {
       "wb": "Светлана",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "БАДы",
@@ -451,11 +427,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Кирилл",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -501,15 +477,7 @@
       "factFeb26Revenue": 204096,
       "factFeb26NetRevenue": 33540,
       "factFeb26MarginPct": 0.825,
-      "factTotalRevenue": 1838980,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 1838980
     },
     "orders": {
       "count": 1551,
@@ -554,11 +522,11 @@
     },
     "ownersByPlatform": {
       "wb": "Кирилл",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Комплексные пищевые добавки",
@@ -595,10 +563,10 @@
       "byPlatform": {
         "wb": "Светлана",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -646,15 +614,7 @@
       "factFeb26Revenue": 97287,
       "factFeb26NetRevenue": 2503,
       "factFeb26MarginPct": 0.502,
-      "factTotalRevenue": 915966,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 915966
     },
     "orders": {
       "count": 460,
@@ -700,10 +660,10 @@
     "ownersByPlatform": {
       "wb": "Светлана",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Жиросжигатели",
@@ -739,11 +699,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Олеся",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -791,15 +751,7 @@
       "factFeb26Revenue": 1528585,
       "factFeb26NetRevenue": 862808,
       "factFeb26MarginPct": 0.929,
-      "factTotalRevenue": 15948078,
-      "planMay26Units": 1845,
-      "planJun26Units": 1877,
-      "planJul26Units": 1974,
-      "planAug26Units": 2092,
-      "planSep26Units": 2326,
-      "planOct26Units": 2450,
-      "planNov26Units": 2600,
-      "planDec26Units": 2911
+      "factTotalRevenue": 15948078
     },
     "orders": {
       "count": 4071,
@@ -844,11 +796,11 @@
     },
     "ownersByPlatform": {
       "wb": "Олеся",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -884,11 +836,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Кирилл",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -934,15 +886,7 @@
       "factFeb26Revenue": 93836,
       "factFeb26NetRevenue": -6543,
       "factFeb26MarginPct": 0.844,
-      "factTotalRevenue": 510808,
-      "planMay26Units": 621,
-      "planJun26Units": 632,
-      "planJul26Units": 665,
-      "planAug26Units": 705,
-      "planSep26Units": 783,
-      "planOct26Units": 825,
-      "planNov26Units": 876,
-      "planDec26Units": 980
+      "factTotalRevenue": 510808
     },
     "orders": {
       "count": 733,
@@ -987,11 +931,11 @@
     },
     "ownersByPlatform": {
       "wb": "Кирилл",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Бустеры тестостерона",
@@ -1028,10 +972,10 @@
       "byPlatform": {
         "wb": "Мария",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -1077,15 +1021,7 @@
       "factFeb26Revenue": 745,
       "factFeb26NetRevenue": 914,
       "factFeb26MarginPct": 0.846,
-      "factTotalRevenue": 1649832,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 1649832
     },
     "orders": {
       "count": 7,
@@ -1131,10 +1067,10 @@
     "ownersByPlatform": {
       "wb": "Мария",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Пудры",
@@ -1171,10 +1107,10 @@
       "byPlatform": {
         "wb": "Мария",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -1222,15 +1158,7 @@
       "factFeb26Revenue": 133885,
       "factFeb26NetRevenue": -8216,
       "factFeb26MarginPct": 0.925,
-      "factTotalRevenue": 4306241,
-      "planMay26Units": 205,
-      "planJun26Units": 208,
-      "planJul26Units": 219,
-      "planAug26Units": 232,
-      "planSep26Units": 258,
-      "planOct26Units": 272,
-      "planNov26Units": 288,
-      "planDec26Units": 323
+      "factTotalRevenue": 4306241
     },
     "orders": {
       "count": 867,
@@ -1276,10 +1204,10 @@
     "ownersByPlatform": {
       "wb": "Мария",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Пудры",
@@ -1316,10 +1244,10 @@
       "byPlatform": {
         "wb": "Светлана",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -1367,15 +1295,7 @@
       "factFeb26Revenue": 112768,
       "factFeb26NetRevenue": 2583,
       "factFeb26MarginPct": 0.724,
-      "factTotalRevenue": 692156,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 692156
     },
     "orders": {
       "count": 606,
@@ -1421,10 +1341,10 @@
     "ownersByPlatform": {
       "wb": "Светлана",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "БАДы",
@@ -1461,10 +1381,10 @@
       "byPlatform": {
         "wb": "Светлана",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -1510,15 +1430,7 @@
       "factFeb26Revenue": 56512,
       "factFeb26NetRevenue": 6385,
       "factFeb26MarginPct": 0.724,
-      "factTotalRevenue": 276311,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 276311
     },
     "orders": {
       "count": 342,
@@ -1564,10 +1476,10 @@
     "ownersByPlatform": {
       "wb": "Светлана",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "БАДы",
@@ -1604,10 +1516,10 @@
       "byPlatform": {
         "wb": "Кирилл",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -1655,15 +1567,7 @@
       "factFeb26Revenue": 43774,
       "factFeb26NetRevenue": 11171,
       "factFeb26MarginPct": 0.866,
-      "factTotalRevenue": 335163,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 335163
     },
     "orders": {
       "count": 6,
@@ -1709,10 +1613,10 @@
     "ownersByPlatform": {
       "wb": "Кирилл",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Гели",
@@ -1749,10 +1653,10 @@
       "byPlatform": {
         "wb": "Кирилл",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -1800,15 +1704,7 @@
       "factFeb26Revenue": 945669,
       "factFeb26NetRevenue": 229411,
       "factFeb26MarginPct": 0.882,
-      "factTotalRevenue": 5347504,
-      "planMay26Units": 6956,
-      "planJun26Units": 7076,
-      "planJul26Units": 7439,
-      "planAug26Units": 7886,
-      "planSep26Units": 8768,
-      "planOct26Units": 9235,
-      "planNov26Units": 9802,
-      "planDec26Units": 10973
+      "factTotalRevenue": 5347504
     },
     "orders": {
       "count": 2547,
@@ -1854,10 +1750,10 @@
     "ownersByPlatform": {
       "wb": "Кирилл",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Гели",
@@ -1894,10 +1790,10 @@
       "byPlatform": {
         "wb": "Кирилл",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -1943,15 +1839,7 @@
       "factFeb26Revenue": 48873,
       "factFeb26NetRevenue": -9938,
       "factFeb26MarginPct": 0.91,
-      "factTotalRevenue": 440850,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 440850
     },
     "orders": {
       "count": 426,
@@ -1997,10 +1885,10 @@
     "ownersByPlatform": {
       "wb": "Кирилл",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Гели для бровей",
@@ -2036,11 +1924,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Кирилл",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -2086,15 +1974,7 @@
       "factFeb26Revenue": 291607,
       "factFeb26NetRevenue": -12583,
       "factFeb26MarginPct": 0.879,
-      "factTotalRevenue": 2494667,
-      "planMay26Units": 1613,
-      "planJun26Units": 1641,
-      "planJul26Units": 1725,
-      "planAug26Units": 1829,
-      "planSep26Units": 2033,
-      "planOct26Units": 2142,
-      "planNov26Units": 2273,
-      "planDec26Units": 2544
+      "factTotalRevenue": 2494667
     },
     "orders": {
       "count": 1272,
@@ -2139,11 +2019,11 @@
     },
     "ownersByPlatform": {
       "wb": "Кирилл",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Гели",
@@ -2180,10 +2060,10 @@
       "byPlatform": {
         "wb": "Кирилл",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -2229,15 +2109,7 @@
       "factFeb26Revenue": 259783,
       "factFeb26NetRevenue": -11139,
       "factFeb26MarginPct": 0.87,
-      "factTotalRevenue": 1262886,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 1262886
     },
     "orders": {
       "count": 3088,
@@ -2283,10 +2155,10 @@
     "ownersByPlatform": {
       "wb": "Кирилл",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Гели для бровей",
@@ -2322,11 +2194,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Кирилл",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -2372,15 +2244,7 @@
       "factFeb26Revenue": 133086,
       "factFeb26NetRevenue": -864,
       "factFeb26MarginPct": 0.87,
-      "factTotalRevenue": 554229,
-      "planMay26Units": 828,
-      "planJun26Units": 842,
-      "planJul26Units": 886,
-      "planAug26Units": 939,
-      "planSep26Units": 1044,
-      "planOct26Units": 1099,
-      "planNov26Units": 1167,
-      "planDec26Units": 1306
+      "factTotalRevenue": 554229
     },
     "orders": {
       "count": 650,
@@ -2425,11 +2289,11 @@
     },
     "ownersByPlatform": {
       "wb": "Кирилл",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Гели",
@@ -2466,10 +2330,10 @@
       "byPlatform": {
         "wb": "Кирилл",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -2515,15 +2379,7 @@
       "factFeb26Revenue": 34251,
       "factFeb26NetRevenue": -5330,
       "factFeb26MarginPct": 0.86,
-      "factTotalRevenue": 593244,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 593244
     },
     "orders": {
       "count": 423,
@@ -2569,10 +2425,10 @@
     "ownersByPlatform": {
       "wb": "Кирилл",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Гели",
@@ -2658,15 +2514,7 @@
       "factFeb26Revenue": 32646,
       "factFeb26NetRevenue": -8745,
       "factFeb26MarginPct": 0.662,
-      "factTotalRevenue": 270455,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 270455
     },
     "orders": {
       "count": 154,
@@ -2720,7 +2568,7 @@
     "categoriesByPlatform": {
       "wb": "Гидрофильные масла",
       "ozon": "Средство для умывания",
-      "ym": "",
+      "ym": "Средства для умывания",
       "ga": "",
       "letu": "",
       "mm": ""
@@ -2751,11 +2599,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Светлана",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -2801,15 +2649,7 @@
       "factFeb26Revenue": 40373,
       "factFeb26NetRevenue": 5006,
       "factFeb26MarginPct": 0.822,
-      "factTotalRevenue": 418777,
-      "planMay26Units": 156,
-      "planJun26Units": 158,
-      "planJul26Units": 167,
-      "planAug26Units": 177,
-      "planSep26Units": 196,
-      "planOct26Units": 207,
-      "planNov26Units": 220,
-      "planDec26Units": 246
+      "factTotalRevenue": 418777
     },
     "orders": {
       "count": 93,
@@ -2854,11 +2694,11 @@
     },
     "ownersByPlatform": {
       "wb": "Светлана",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "БАДы",
@@ -2894,11 +2734,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Светлана",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -2944,15 +2784,7 @@
       "factFeb26Revenue": 69395,
       "factFeb26NetRevenue": -4950,
       "factFeb26MarginPct": 0.669,
-      "factTotalRevenue": 859149,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 859149
     },
     "orders": {
       "count": 919,
@@ -2997,11 +2829,11 @@
     },
     "ownersByPlatform": {
       "wb": "Светлана",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Бустеры тестостерона",
@@ -3037,11 +2869,11 @@
       "registryStatus": "Под вопросом",
       "byPlatform": {
         "wb": "Светлана",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -3087,15 +2919,7 @@
       "factFeb26Revenue": 115663,
       "factFeb26NetRevenue": 3709,
       "factFeb26MarginPct": 0.815,
-      "factTotalRevenue": 2019902,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 2019902
     },
     "orders": {
       "count": 1327,
@@ -3140,11 +2964,11 @@
     },
     "ownersByPlatform": {
       "wb": "Светлана",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "БАДы",
@@ -3180,11 +3004,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Кирилл",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -3230,15 +3054,7 @@
       "factFeb26Revenue": 364818,
       "factFeb26NetRevenue": 167616,
       "factFeb26MarginPct": 0.848,
-      "factTotalRevenue": 3989810,
-      "planMay26Units": 937,
-      "planJun26Units": 953,
-      "planJul26Units": 1002,
-      "planAug26Units": 1062,
-      "planSep26Units": 1181,
-      "planOct26Units": 1244,
-      "planNov26Units": 1320,
-      "planDec26Units": 1478
+      "factTotalRevenue": 3989810
     },
     "orders": {
       "count": 1026,
@@ -3283,11 +3099,11 @@
     },
     "ownersByPlatform": {
       "wb": "Кирилл",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Комплексные пищевые добавки",
@@ -3324,10 +3140,10 @@
       "byPlatform": {
         "wb": "Кирилл",
         "ozon": "",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -3373,15 +3189,7 @@
       "factFeb26Revenue": 24124,
       "factFeb26NetRevenue": -1694,
       "factFeb26MarginPct": 0.768,
-      "factTotalRevenue": 187787,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 187787
     },
     "orders": {
       "count": null,
@@ -3427,10 +3235,10 @@
     "ownersByPlatform": {
       "wb": "Кирилл",
       "ozon": "",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Гели",
@@ -3466,11 +3274,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Кирилл",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -3516,15 +3324,7 @@
       "factFeb26Revenue": 101588,
       "factFeb26NetRevenue": -19620,
       "factFeb26MarginPct": 0.883,
-      "factTotalRevenue": 754724,
-      "planMay26Units": 455,
-      "planJun26Units": 463,
-      "planJul26Units": 487,
-      "planAug26Units": 516,
-      "planSep26Units": 574,
-      "planOct26Units": 604,
-      "planNov26Units": 641,
-      "planDec26Units": 718
+      "factTotalRevenue": 754724
     },
     "orders": {
       "count": 473,
@@ -3569,11 +3369,11 @@
     },
     "ownersByPlatform": {
       "wb": "Кирилл",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Гели",
@@ -3610,10 +3410,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -3659,15 +3459,7 @@
       "factFeb26Revenue": 50436,
       "factFeb26NetRevenue": -3711,
       "factFeb26MarginPct": 0.836,
-      "factTotalRevenue": 165510,
-      "planMay26Units": 126,
-      "planJun26Units": 128,
-      "planJul26Units": 135,
-      "planAug26Units": 143,
-      "planSep26Units": 159,
-      "planOct26Units": 168,
-      "planNov26Units": 178,
-      "planDec26Units": 199
+      "factTotalRevenue": 165510
     },
     "orders": {
       "count": 233,
@@ -3713,14 +3505,14 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "",
-      "ozon": "",
+      "ozon": "Крем для ухода за кожей",
       "ym": "",
       "ga": "",
       "letu": "Уход за лицом >> Крем для лица >> Уход за лицом",
@@ -3753,10 +3545,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -3804,15 +3596,7 @@
       "factFeb26Revenue": 452121,
       "factFeb26NetRevenue": 81204,
       "factFeb26MarginPct": 0.858,
-      "factTotalRevenue": 3404021,
-      "planMay26Units": 1686,
-      "planJun26Units": 1715,
-      "planJul26Units": 1803,
-      "planAug26Units": 1911,
-      "planSep26Units": 2125,
-      "planOct26Units": 2238,
-      "planNov26Units": 2375,
-      "planDec26Units": 2659
+      "factTotalRevenue": 3404021
     },
     "orders": {
       "count": 768,
@@ -3858,10 +3642,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -3898,10 +3682,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -3947,15 +3731,7 @@
       "factFeb26Revenue": 381401,
       "factFeb26NetRevenue": 107402,
       "factFeb26MarginPct": 0.898,
-      "factTotalRevenue": 3356907,
-      "planMay26Units": 1451,
-      "planJun26Units": 1476,
-      "planJul26Units": 1552,
-      "planAug26Units": 1645,
-      "planSep26Units": 1829,
-      "planOct26Units": 1927,
-      "planNov26Units": 2045,
-      "planDec26Units": 2290
+      "factTotalRevenue": 3356907
     },
     "orders": {
       "count": 3246,
@@ -4001,10 +3777,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -4041,10 +3817,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -4092,15 +3868,7 @@
       "factFeb26Revenue": 307483,
       "factFeb26NetRevenue": 24369,
       "factFeb26MarginPct": 0.746,
-      "factTotalRevenue": 1990335,
-      "planMay26Units": 3360,
-      "planJun26Units": 3418,
-      "planJul26Units": 3593,
-      "planAug26Units": 3809,
-      "planSep26Units": 4235,
-      "planOct26Units": 4461,
-      "planNov26Units": 4735,
-      "planDec26Units": 5300
+      "factTotalRevenue": 1990335
     },
     "orders": {
       "count": 1184,
@@ -4146,10 +3914,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -4186,10 +3954,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -4237,15 +4005,7 @@
       "factFeb26Revenue": 861367,
       "factFeb26NetRevenue": 219235,
       "factFeb26MarginPct": 0.871,
-      "factTotalRevenue": 7326792,
-      "planMay26Units": 2868,
-      "planJun26Units": 2918,
-      "planJul26Units": 3068,
-      "planAug26Units": 3252,
-      "planSep26Units": 3615,
-      "planOct26Units": 3808,
-      "planNov26Units": 4042,
-      "planDec26Units": 4525
+      "factTotalRevenue": 7326792
     },
     "orders": {
       "count": 1764,
@@ -4291,10 +4051,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -4331,10 +4091,10 @@
       "byPlatform": {
         "wb": "",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -4382,15 +4142,7 @@
       "factFeb26Revenue": 577769,
       "factFeb26NetRevenue": 125119,
       "factFeb26MarginPct": 0.918,
-      "factTotalRevenue": 2094580,
-      "planMay26Units": 1918,
-      "planJun26Units": 1951,
-      "planJul26Units": 2051,
-      "planAug26Units": 2174,
-      "planSep26Units": 2418,
-      "planOct26Units": 2547,
-      "planNov26Units": 2703,
-      "planDec26Units": 3026
+      "factTotalRevenue": 2094580
     },
     "orders": {
       "count": 4600,
@@ -4436,18 +4188,18 @@
     "ownersByPlatform": {
       "wb": "",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
       "ozon": "База под макияж увлажняющая с SPF 50 для лица Крем солнцезащитный, крем-флюид, Алтея, 50 мл",
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за лицом / загар и защита от солнца",
-      "ga": "",
-      "letu": "",
-      "mm": ""
+      "ga": "Уход для лица",
+      "letu": "Солнцезащитный крем для лица",
+      "mm": "Солнцезащитные средства"
     },
     "costPrice": null,
     "sheetStatus": "Актуальный"
@@ -4476,10 +4228,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -4527,15 +4279,7 @@
       "factFeb26Revenue": 747925,
       "factFeb26NetRevenue": 472905,
       "factFeb26MarginPct": 0.912,
-      "factTotalRevenue": 7494622,
-      "planMay26Units": 2779,
-      "planJun26Units": 2828,
-      "planJul26Units": 2973,
-      "planAug26Units": 3151,
-      "planSep26Units": 3503,
-      "planOct26Units": 3690,
-      "planNov26Units": 3917,
-      "planDec26Units": 4385
+      "factTotalRevenue": 7494622
     },
     "orders": {
       "count": 1595,
@@ -4581,10 +4325,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -4592,7 +4336,7 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за телом / уход за ногами",
       "ga": "Уход для тела",
       "letu": "Уход за телом >> Крем для тела >> Уход за телом",
-      "mm": ""
+      "mm": "Кремы для тела"
     },
     "costPrice": null,
     "sheetStatus": "Актуальный"
@@ -4621,10 +4365,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -4672,15 +4416,7 @@
       "factFeb26Revenue": 2236426,
       "factFeb26NetRevenue": 506930,
       "factFeb26MarginPct": 0.895,
-      "factTotalRevenue": 17405005,
-      "planMay26Units": 6201,
-      "planJun26Units": 6309,
-      "planJul26Units": 6632,
-      "planAug26Units": 7030,
-      "planSep26Units": 7817,
-      "planOct26Units": 8234,
-      "planNov26Units": 8739,
-      "planDec26Units": 9783
+      "factTotalRevenue": 17405005
     },
     "orders": {
       "count": 5901,
@@ -4726,10 +4462,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Пилинг",
@@ -4765,11 +4501,11 @@
       "registryStatus": "Под вопросом",
       "byPlatform": {
         "wb": "Светлана",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -4817,15 +4553,7 @@
       "factFeb26Revenue": 835920,
       "factFeb26NetRevenue": 208386,
       "factFeb26MarginPct": 0.872,
-      "factTotalRevenue": 2711841,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 2711841
     },
     "orders": {
       "count": 1697,
@@ -4870,11 +4598,11 @@
     },
     "ownersByPlatform": {
       "wb": "Светлана",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "БАДы",
@@ -4910,11 +4638,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Олеся",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -4962,15 +4690,7 @@
       "factFeb26Revenue": 247276,
       "factFeb26NetRevenue": 48422,
       "factFeb26MarginPct": 0.89,
-      "factTotalRevenue": 2671904,
-      "planMay26Units": 679,
-      "planJun26Units": 691,
-      "planJul26Units": 726,
-      "planAug26Units": 770,
-      "planSep26Units": 856,
-      "planOct26Units": 901,
-      "planNov26Units": 957,
-      "planDec26Units": 1071
+      "factTotalRevenue": 2671904
     },
     "orders": {
       "count": 699,
@@ -5015,11 +4735,11 @@
     },
     "ownersByPlatform": {
       "wb": "Олеся",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Маски косметические",
@@ -5050,16 +4770,16 @@
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Есть внешний трафик КЗ; Owner не закреплён",
     "owner": {
-      "name": null,
+      "name": "",
       "source": "Рабочий спецификации · Реестр",
       "registryStatus": "Новинка",
       "byPlatform": {
         "wb": "",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -5107,15 +4827,7 @@
       "factFeb26Revenue": 311485,
       "factFeb26NetRevenue": 72372,
       "factFeb26MarginPct": 0.909,
-      "factTotalRevenue": 578665,
-      "planMay26Units": 974,
-      "planJun26Units": 991,
-      "planJul26Units": 1042,
-      "planAug26Units": 1104,
-      "planSep26Units": 1228,
-      "planOct26Units": 1294,
-      "planNov26Units": 1373,
-      "planDec26Units": 1537
+      "factTotalRevenue": 578665
     },
     "orders": {
       "count": 759,
@@ -5160,11 +4872,11 @@
     },
     "ownersByPlatform": {
       "wb": "",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Маски косметические",
@@ -5200,11 +4912,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Олеся",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -5252,15 +4964,7 @@
       "factFeb26Revenue": 560033,
       "factFeb26NetRevenue": 148049,
       "factFeb26MarginPct": 0.883,
-      "factTotalRevenue": 5197341,
-      "planMay26Units": 1295,
-      "planJun26Units": 1317,
-      "planJul26Units": 1385,
-      "planAug26Units": 1468,
-      "planSep26Units": 1632,
-      "planOct26Units": 1719,
-      "planNov26Units": 1824,
-      "planDec26Units": 2042
+      "factTotalRevenue": 5197341
     },
     "orders": {
       "count": 1512,
@@ -5305,11 +5009,11 @@
     },
     "ownersByPlatform": {
       "wb": "Олеся",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Маски косметические",
@@ -5346,10 +5050,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -5397,15 +5101,7 @@
       "factFeb26Revenue": 3890345,
       "factFeb26NetRevenue": 1101514,
       "factFeb26MarginPct": 0.893,
-      "factTotalRevenue": 11524515,
-      "planMay26Units": 22821,
-      "planJun26Units": 23216,
-      "planJul26Units": 24407,
-      "planAug26Units": 25872,
-      "planSep26Units": 28765,
-      "planOct26Units": 30300,
-      "planNov26Units": 32160,
-      "planDec26Units": 36000
+      "factTotalRevenue": 11524515
     },
     "orders": {
       "count": 3223,
@@ -5451,10 +5147,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Маски косметические",
@@ -5490,11 +5186,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Мария",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -5540,15 +5236,7 @@
       "factFeb26Revenue": 310423,
       "factFeb26NetRevenue": -31945,
       "factFeb26MarginPct": 0.851,
-      "factTotalRevenue": 2351722,
-      "planMay26Units": 1265,
-      "planJun26Units": 1287,
-      "planJul26Units": 1353,
-      "planAug26Units": 1434,
-      "planSep26Units": 1594,
-      "planOct26Units": 1679,
-      "planNov26Units": 1783,
-      "planDec26Units": 1995
+      "factTotalRevenue": 2351722
     },
     "orders": {
       "count": 943,
@@ -5593,11 +5281,11 @@
     },
     "ownersByPlatform": {
       "wb": "Мария",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Масла",
@@ -5634,10 +5322,10 @@
       "byPlatform": {
         "wb": "Мария",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -5683,15 +5371,7 @@
       "factFeb26Revenue": null,
       "factFeb26NetRevenue": null,
       "factFeb26MarginPct": null,
-      "factTotalRevenue": 29947,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 29947
     },
     "orders": {
       "count": null,
@@ -5737,10 +5417,10 @@
     "ownersByPlatform": {
       "wb": "Мария",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Масла",
@@ -5776,11 +5456,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Мария",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -5826,15 +5506,7 @@
       "factFeb26Revenue": 51473,
       "factFeb26NetRevenue": -2533,
       "factFeb26MarginPct": 0.817,
-      "factTotalRevenue": 392549,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 392549
     },
     "orders": {
       "count": 631,
@@ -5879,11 +5551,11 @@
     },
     "ownersByPlatform": {
       "wb": "Мария",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Масла",
@@ -5919,11 +5591,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Кирилл",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -5969,15 +5641,7 @@
       "factFeb26Revenue": 184387,
       "factFeb26NetRevenue": -6319,
       "factFeb26MarginPct": 0.896,
-      "factTotalRevenue": 2070641,
-      "planMay26Units": 885,
-      "planJun26Units": 901,
-      "planJul26Units": 947,
-      "planAug26Units": 1004,
-      "planSep26Units": 1116,
-      "planOct26Units": 1175,
-      "planNov26Units": 1248,
-      "planDec26Units": 1397
+      "factTotalRevenue": 2070641
     },
     "orders": {
       "count": 649,
@@ -6022,11 +5686,11 @@
     },
     "ownersByPlatform": {
       "wb": "Кирилл",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Воски для волос",
@@ -6062,11 +5726,11 @@
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Светлана",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -6112,15 +5776,7 @@
       "factFeb26Revenue": 72512,
       "factFeb26NetRevenue": 16833,
       "factFeb26MarginPct": 0.829,
-      "factTotalRevenue": 857351,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 857351
     },
     "orders": {
       "count": 408,
@@ -6165,11 +5821,11 @@
     },
     "ownersByPlatform": {
       "wb": "Светлана",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "БАДы",
@@ -6206,10 +5862,10 @@
       "byPlatform": {
         "wb": "",
         "ozon": "",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -6255,15 +5911,7 @@
       "factFeb26Revenue": null,
       "factFeb26NetRevenue": null,
       "factFeb26MarginPct": null,
-      "factTotalRevenue": null,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": null
     },
     "orders": {
       "count": null,
@@ -6309,10 +5957,10 @@
     "ownersByPlatform": {
       "wb": "",
       "ozon": "",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "",
@@ -6349,10 +5997,10 @@
       "byPlatform": {
         "wb": "Кирилл",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -6398,15 +6046,7 @@
       "factFeb26Revenue": 150197,
       "factFeb26NetRevenue": 26718,
       "factFeb26MarginPct": 0.92,
-      "factTotalRevenue": 1587580,
-      "planMay26Units": 358,
-      "planJun26Units": 364,
-      "planJul26Units": 382,
-      "planAug26Units": 405,
-      "planSep26Units": 451,
-      "planOct26Units": 475,
-      "planNov26Units": 504,
-      "planDec26Units": 564
+      "factTotalRevenue": 1587580
     },
     "orders": {
       "count": 634,
@@ -6452,10 +6092,10 @@
     "ownersByPlatform": {
       "wb": "Кирилл",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Пенки",
@@ -6491,11 +6131,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Мария",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -6541,15 +6181,7 @@
       "factFeb26Revenue": 178482,
       "factFeb26NetRevenue": -14135,
       "factFeb26MarginPct": 0.913,
-      "factTotalRevenue": 1577260,
-      "planMay26Units": 1529,
-      "planJun26Units": 1555,
-      "planJul26Units": 1635,
-      "planAug26Units": 1733,
-      "planSep26Units": 1927,
-      "planOct26Units": 2030,
-      "planNov26Units": 2154,
-      "planDec26Units": 2412
+      "factTotalRevenue": 1577260
     },
     "orders": {
       "count": 1726,
@@ -6594,11 +6226,11 @@
     },
     "ownersByPlatform": {
       "wb": "Мария",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Средства для удаления кутикулы",
@@ -6635,10 +6267,10 @@
       "byPlatform": {
         "wb": "Мария",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -6684,15 +6316,7 @@
       "factFeb26Revenue": 16430,
       "factFeb26NetRevenue": 5053,
       "factFeb26MarginPct": 0.849,
-      "factTotalRevenue": 1113250,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 1113250
     },
     "orders": {
       "count": 316,
@@ -6738,10 +6362,10 @@
     "ownersByPlatform": {
       "wb": "Мария",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Средства для удаления кутикулы",
@@ -6778,10 +6402,10 @@
       "byPlatform": {
         "wb": "Мария",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -6827,15 +6451,7 @@
       "factFeb26Revenue": 766982,
       "factFeb26NetRevenue": 158315,
       "factFeb26MarginPct": 0.905,
-      "factTotalRevenue": 6133460,
-      "planMay26Units": 2105,
-      "planJun26Units": 2142,
-      "planJul26Units": 2252,
-      "planAug26Units": 2387,
-      "planSep26Units": 2654,
-      "planOct26Units": 2795,
-      "planNov26Units": 2967,
-      "planDec26Units": 3321
+      "factTotalRevenue": 6133460
     },
     "orders": {
       "count": 5788,
@@ -6881,10 +6497,10 @@
     "ownersByPlatform": {
       "wb": "Мария",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Средства для снятия ресниц",
@@ -6921,10 +6537,10 @@
       "byPlatform": {
         "wb": "Кирилл",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -6972,15 +6588,7 @@
       "factFeb26Revenue": 161407,
       "factFeb26NetRevenue": 10865,
       "factFeb26MarginPct": 0.826,
-      "factTotalRevenue": 706406,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 706406
     },
     "orders": {
       "count": 528,
@@ -7026,10 +6634,10 @@
     "ownersByPlatform": {
       "wb": "Кирилл",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Пенки",
@@ -7065,11 +6673,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Олеся",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -7117,15 +6725,7 @@
       "factFeb26Revenue": 3039554,
       "factFeb26NetRevenue": 1093304,
       "factFeb26MarginPct": 0.882,
-      "factTotalRevenue": 11518558,
-      "planMay26Units": 12612,
-      "planJun26Units": 12831,
-      "planJul26Units": 13489,
-      "planAug26Units": 14298,
-      "planSep26Units": 15897,
-      "planOct26Units": 16746,
-      "planNov26Units": 17774,
-      "planDec26Units": 19896
+      "factTotalRevenue": 11518558
     },
     "orders": {
       "count": 1739,
@@ -7170,11 +6770,11 @@
     },
     "ownersByPlatform": {
       "wb": "Олеся",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Сыворотки",
@@ -7211,10 +6811,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -7260,15 +6860,7 @@
       "factFeb26Revenue": 454,
       "factFeb26NetRevenue": 78,
       "factFeb26MarginPct": 0.545,
-      "factTotalRevenue": 762653,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 762653
     },
     "orders": {
       "count": 153,
@@ -7314,10 +6906,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Пилинг",
@@ -7354,10 +6946,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -7405,15 +6997,7 @@
       "factFeb26Revenue": 346329,
       "factFeb26NetRevenue": 56244,
       "factFeb26MarginPct": 0.86,
-      "factTotalRevenue": 2621129,
-      "planMay26Units": 1071,
-      "planJun26Units": 1089,
-      "planJul26Units": 1145,
-      "planAug26Units": 1214,
-      "planSep26Units": 1350,
-      "planOct26Units": 1422,
-      "planNov26Units": 1509,
-      "planDec26Units": 1689
+      "factTotalRevenue": 2621129
     },
     "orders": {
       "count": 875,
@@ -7459,10 +7043,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -7499,10 +7083,10 @@
       "byPlatform": {
         "wb": "Светлана",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -7548,15 +7132,7 @@
       "factFeb26Revenue": null,
       "factFeb26NetRevenue": null,
       "factFeb26MarginPct": null,
-      "factTotalRevenue": 24345,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 24345
     },
     "orders": {
       "count": null,
@@ -7602,10 +7178,10 @@
     "ownersByPlatform": {
       "wb": "Светлана",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Травяные сборы",
@@ -7642,10 +7218,10 @@
       "byPlatform": {
         "wb": "Кирилл",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -7693,15 +7269,7 @@
       "factFeb26Revenue": 225064,
       "factFeb26NetRevenue": 80364,
       "factFeb26MarginPct": 0.683,
-      "factTotalRevenue": 2404036,
-      "planMay26Units": 986,
-      "planJun26Units": 1003,
-      "planJul26Units": 1054,
-      "planAug26Units": 1118,
-      "planSep26Units": 1243,
-      "planOct26Units": 1309,
-      "planNov26Units": 1389,
-      "planDec26Units": 1555
+      "factTotalRevenue": 2404036
     },
     "orders": {
       "count": 576,
@@ -7747,10 +7315,10 @@
     "ownersByPlatform": {
       "wb": "Кирилл",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Комплексные пищевые добавки",
@@ -7781,16 +7349,16 @@
     "focusScore": 3,
     "focusReasons": "Низкий остаток; WB ниже min price; Ozon ниже min price; Owner не закреплён",
     "owner": {
-      "name": null,
+      "name": "",
       "source": null,
       "registryStatus": null,
       "byPlatform": {
         "wb": "",
-        "ozon": "",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -7836,15 +7404,7 @@
       "factFeb26Revenue": null,
       "factFeb26NetRevenue": null,
       "factFeb26MarginPct": null,
-      "factTotalRevenue": null,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": null
     },
     "orders": {
       "count": null,
@@ -7889,11 +7449,11 @@
     },
     "ownersByPlatform": {
       "wb": "",
-      "ozon": "",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "",
@@ -7930,10 +7490,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -7981,15 +7541,7 @@
       "factFeb26Revenue": 17104864,
       "factFeb26NetRevenue": 7789127,
       "factFeb26MarginPct": 0.941,
-      "factTotalRevenue": 145130986,
-      "planMay26Units": 30742,
-      "planJun26Units": 31274,
-      "planJul26Units": 32879,
-      "planAug26Units": 34852,
-      "planSep26Units": 38750,
-      "planOct26Units": 40817,
-      "planNov26Units": 43323,
-      "planDec26Units": 48496
+      "factTotalRevenue": 145130986
     },
     "orders": {
       "count": 10473,
@@ -8035,10 +7587,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -8074,11 +7626,11 @@
       "registryStatus": "Новинка",
       "byPlatform": {
         "wb": "Олеся",
-        "ozon": "",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Даша",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -8126,15 +7678,7 @@
       "factFeb26Revenue": 484326,
       "factFeb26NetRevenue": 187559,
       "factFeb26MarginPct": 0.952,
-      "factTotalRevenue": 3235066,
-      "planMay26Units": 557,
-      "planJun26Units": 567,
-      "planJul26Units": 596,
-      "planAug26Units": 632,
-      "planSep26Units": 703,
-      "planOct26Units": 740,
-      "planNov26Units": 786,
-      "planDec26Units": 879
+      "factTotalRevenue": 3235066
     },
     "orders": {
       "count": 524,
@@ -8179,11 +7723,11 @@
     },
     "ownersByPlatform": {
       "wb": "Олеся",
-      "ozon": "",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Даша",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -8220,10 +7764,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -8272,15 +7816,7 @@
       "factFeb26Revenue": 1625505,
       "factFeb26NetRevenue": 662021,
       "factFeb26MarginPct": 0.95,
-      "factTotalRevenue": 15757994,
-      "planMay26Units": 2724,
-      "planJun26Units": 2771,
-      "planJul26Units": 2913,
-      "planAug26Units": 3088,
-      "planSep26Units": 3433,
-      "planOct26Units": 3617,
-      "planNov26Units": 3839,
-      "planDec26Units": 4297
+      "factTotalRevenue": 15757994
     },
     "orders": {
       "count": 1259,
@@ -8326,10 +7862,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -8366,10 +7902,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -8418,15 +7954,7 @@
       "factFeb26Revenue": 2334330,
       "factFeb26NetRevenue": 711207,
       "factFeb26MarginPct": 0.94,
-      "factTotalRevenue": 16897529,
-      "planMay26Units": 4598,
-      "planJun26Units": 4678,
-      "planJul26Units": 4918,
-      "planAug26Units": 5213,
-      "planSep26Units": 5796,
-      "planOct26Units": 6105,
-      "planNov26Units": 6480,
-      "planDec26Units": 7253
+      "factTotalRevenue": 16897529
     },
     "orders": {
       "count": 2192,
@@ -8472,10 +8000,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -8512,10 +8040,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -8564,15 +8092,7 @@
       "factFeb26Revenue": 3640253,
       "factFeb26NetRevenue": 1473800,
       "factFeb26MarginPct": 0.96,
-      "factTotalRevenue": 44771070,
-      "planMay26Units": 2866,
-      "planJun26Units": 2915,
-      "planJul26Units": 3065,
-      "planAug26Units": 3249,
-      "planSep26Units": 3612,
-      "planOct26Units": 3805,
-      "planNov26Units": 4038,
-      "planDec26Units": 4520
+      "factTotalRevenue": 44771070
     },
     "orders": {
       "count": 2529,
@@ -8618,10 +8138,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -8629,7 +8149,7 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за лицом / кремы и сыворотки / средства для ухода за лицом",
       "ga": "Уход для лица",
       "letu": "Уход за лицом >> Крем для лица >> Уход за лицом",
-      "mm": ""
+      "mm": "Кремы для лица"
     },
     "costPrice": null,
     "sheetStatus": "Актуальный"
@@ -8658,10 +8178,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -8709,15 +8229,7 @@
       "factFeb26Revenue": 6699736,
       "factFeb26NetRevenue": 2236001,
       "factFeb26MarginPct": 0.945,
-      "factTotalRevenue": 9429469,
-      "planMay26Units": 15565,
-      "planJun26Units": 15834,
-      "planJul26Units": 16646,
-      "planAug26Units": 17646,
-      "planSep26Units": 19619,
-      "planOct26Units": 20666,
-      "planNov26Units": 21934,
-      "planDec26Units": 24553
+      "factTotalRevenue": 9429469
     },
     "orders": {
       "count": 4783,
@@ -8763,10 +8275,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -8774,7 +8286,7 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за лицом / кремы и сыворотки / средства для ухода за лицом",
       "ga": "",
       "letu": "Крем для лица",
-      "mm": ""
+      "mm": "Кремы для лица"
     },
     "costPrice": null,
     "sheetStatus": "Актуальный"
@@ -8797,12 +8309,12 @@
     "focusScore": 2,
     "focusReasons": "Отрицательная маржа Ozon; Owner не закреплён",
     "owner": {
-      "name": null,
+      "name": "",
       "source": null,
       "registryStatus": null,
       "byPlatform": {
         "wb": "",
-        "ozon": "",
+        "ozon": "Даша",
         "ym": "",
         "ga": "",
         "letu": "",
@@ -8852,15 +8364,7 @@
       "factFeb26Revenue": null,
       "factFeb26NetRevenue": null,
       "factFeb26MarginPct": null,
-      "factTotalRevenue": null,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": null
     },
     "orders": {
       "count": 161,
@@ -8905,7 +8409,7 @@
     },
     "ownersByPlatform": {
       "wb": "",
-      "ozon": "",
+      "ozon": "Даша",
       "ym": "",
       "ga": "",
       "letu": "",
@@ -8940,7 +8444,7 @@
     "focusScore": 0,
     "focusReasons": "Owner не закреплён",
     "owner": {
-      "name": null,
+      "name": "",
       "source": null,
       "registryStatus": null,
       "byPlatform": {
@@ -8995,15 +8499,7 @@
       "factFeb26Revenue": null,
       "factFeb26NetRevenue": null,
       "factFeb26MarginPct": null,
-      "factTotalRevenue": null,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": null
     },
     "orders": {
       "count": 259,
@@ -9089,10 +8585,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -9140,15 +8636,7 @@
       "factFeb26Revenue": 2101543,
       "factFeb26NetRevenue": 741420,
       "factFeb26MarginPct": 0.913,
-      "factTotalRevenue": 14108652,
-      "planMay26Units": 4453,
-      "planJun26Units": 4530,
-      "planJul26Units": 4762,
-      "planAug26Units": 5048,
-      "planSep26Units": 5612,
-      "planOct26Units": 5912,
-      "planNov26Units": 6275,
-      "planDec26Units": 7024
+      "factTotalRevenue": 14108652
     },
     "orders": {
       "count": 1409,
@@ -9194,10 +8682,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Сыворотки",
@@ -9283,15 +8771,7 @@
       "factFeb26Revenue": null,
       "factFeb26NetRevenue": null,
       "factFeb26MarginPct": null,
-      "factTotalRevenue": null,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": null
     },
     "orders": {
       "count": 2407,
@@ -9371,12 +8851,12 @@
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": null,
+      "name": "",
       "source": null,
       "registryStatus": null,
       "byPlatform": {
         "wb": "",
-        "ozon": "",
+        "ozon": "Даша",
         "ym": "",
         "ga": "",
         "letu": "",
@@ -9426,15 +8906,7 @@
       "factFeb26Revenue": null,
       "factFeb26NetRevenue": null,
       "factFeb26MarginPct": null,
-      "factTotalRevenue": null,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": null
     },
     "orders": {
       "count": null,
@@ -9479,7 +8951,7 @@
     },
     "ownersByPlatform": {
       "wb": "",
-      "ozon": "",
+      "ozon": "Даша",
       "ym": "",
       "ga": "",
       "letu": "",
@@ -9489,9 +8961,9 @@
       "wb": "Кремы",
       "ozon": "Крем для ухода за кожей",
       "ym": "Косметические наборы",
-      "ga": "",
-      "letu": "",
-      "mm": ""
+      "ga": "Наборы уход",
+      "letu": "Набор средств для лица",
+      "mm": "Наборы средств для лица"
     },
     "costPrice": null,
     "sheetStatus": "Актуальный"
@@ -9519,7 +8991,7 @@
       "registryStatus": "Новинка",
       "byPlatform": {
         "wb": "",
-        "ozon": "",
+        "ozon": "Даша",
         "ym": "",
         "ga": "",
         "letu": "",
@@ -9569,15 +9041,7 @@
       "factFeb26Revenue": null,
       "factFeb26NetRevenue": null,
       "factFeb26MarginPct": null,
-      "factTotalRevenue": null,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": null
     },
     "orders": {
       "count": null,
@@ -9622,7 +9086,7 @@
     },
     "ownersByPlatform": {
       "wb": "",
-      "ozon": "",
+      "ozon": "Даша",
       "ym": "",
       "ga": "",
       "letu": "",
@@ -9632,9 +9096,9 @@
       "wb": "Кремы",
       "ozon": "Крем для ухода за кожей",
       "ym": "Косметические наборы",
-      "ga": "",
-      "letu": "",
-      "mm": ""
+      "ga": "Наборы уход",
+      "letu": "Набор средств для лица",
+      "mm": "Наборы средств для лица"
     },
     "costPrice": null,
     "sheetStatus": "Актуальный"
@@ -9662,11 +9126,11 @@
       "registryStatus": "На вывод",
       "byPlatform": {
         "wb": "Светлана",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -9712,15 +9176,7 @@
       "factFeb26Revenue": 104379,
       "factFeb26NetRevenue": 307,
       "factFeb26MarginPct": 0.765,
-      "factTotalRevenue": 2259018,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 2259018
     },
     "orders": {
       "count": 602,
@@ -9765,11 +9221,11 @@
     },
     "ownersByPlatform": {
       "wb": "Светлана",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "БАДы",
@@ -9805,11 +9261,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Олеся",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -9857,15 +9313,7 @@
       "factFeb26Revenue": 794117,
       "factFeb26NetRevenue": 103785,
       "factFeb26MarginPct": 0.895,
-      "factTotalRevenue": 4614546,
-      "planMay26Units": 3410,
-      "planJun26Units": 3469,
-      "planJul26Units": 3646,
-      "planAug26Units": 3865,
-      "planSep26Units": 4298,
-      "planOct26Units": 4527,
-      "planNov26Units": 4805,
-      "planDec26Units": 5379
+      "factTotalRevenue": 4614546
     },
     "orders": {
       "count": 3854,
@@ -9910,11 +9358,11 @@
     },
     "ownersByPlatform": {
       "wb": "Олеся",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Шампуни",
@@ -9950,11 +9398,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Олеся",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -10002,15 +9450,7 @@
       "factFeb26Revenue": 390473,
       "factFeb26NetRevenue": 71028,
       "factFeb26MarginPct": 0.903,
-      "factTotalRevenue": 2549505,
-      "planMay26Units": 1692,
-      "planJun26Units": 1722,
-      "planJul26Units": 1810,
-      "planAug26Units": 1919,
-      "planSep26Units": 2133,
-      "planOct26Units": 2247,
-      "planNov26Units": 2385,
-      "planDec26Units": 2670
+      "factTotalRevenue": 2549505
     },
     "orders": {
       "count": 1516,
@@ -10055,11 +9495,11 @@
     },
     "ownersByPlatform": {
       "wb": "Олеся",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Шампуни",
@@ -10095,11 +9535,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Олеся",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -10147,15 +9587,7 @@
       "factFeb26Revenue": 681347,
       "factFeb26NetRevenue": 57577,
       "factFeb26MarginPct": 0.87,
-      "factTotalRevenue": 4454477,
-      "planMay26Units": 3291,
-      "planJun26Units": 3348,
-      "planJul26Units": 3520,
-      "planAug26Units": 3731,
-      "planSep26Units": 4148,
-      "planOct26Units": 4369,
-      "planNov26Units": 4638,
-      "planDec26Units": 5192
+      "factTotalRevenue": 4454477
     },
     "orders": {
       "count": 1481,
@@ -10200,11 +9632,11 @@
     },
     "ownersByPlatform": {
       "wb": "Олеся",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -10240,11 +9672,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Кирилл",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -10292,15 +9724,7 @@
       "factFeb26Revenue": 146949,
       "factFeb26NetRevenue": -7342,
       "factFeb26MarginPct": 0.855,
-      "factTotalRevenue": 801764,
-      "planMay26Units": 1166,
-      "planJun26Units": 1186,
-      "planJul26Units": 1246,
-      "planAug26Units": 1321,
-      "planSep26Units": 1469,
-      "planOct26Units": 1547,
-      "planNov26Units": 1642,
-      "planDec26Units": 1839
+      "factTotalRevenue": 801764
     },
     "orders": {
       "count": 306,
@@ -10345,11 +9769,11 @@
     },
     "ownersByPlatform": {
       "wb": "Кирилл",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Скрабы",
@@ -10385,11 +9809,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Мария",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -10437,15 +9861,7 @@
       "factFeb26Revenue": 395722,
       "factFeb26NetRevenue": 21746,
       "factFeb26MarginPct": 0.895,
-      "factTotalRevenue": 3958588,
-      "planMay26Units": 1357,
-      "planJun26Units": 1380,
-      "planJul26Units": 1451,
-      "planAug26Units": 1538,
-      "planSep26Units": 1710,
-      "planOct26Units": 1801,
-      "planNov26Units": 1912,
-      "planDec26Units": 2140
+      "factTotalRevenue": 3958588
     },
     "orders": {
       "count": 1236,
@@ -10490,11 +9906,11 @@
     },
     "ownersByPlatform": {
       "wb": "Мария",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Спреи",
@@ -10525,12 +9941,12 @@
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": null,
+      "name": "",
       "source": null,
       "registryStatus": null,
       "byPlatform": {
         "wb": "",
-        "ozon": "",
+        "ozon": "Даша",
         "ym": "",
         "ga": "",
         "letu": "",
@@ -10580,15 +9996,7 @@
       "factFeb26Revenue": null,
       "factFeb26NetRevenue": null,
       "factFeb26MarginPct": null,
-      "factTotalRevenue": null,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": null
     },
     "orders": {
       "count": null,
@@ -10633,7 +10041,7 @@
     },
     "ownersByPlatform": {
       "wb": "",
-      "ozon": "",
+      "ozon": "Даша",
       "ym": "",
       "ga": "",
       "letu": "",
@@ -10643,9 +10051,9 @@
       "wb": "Маски косметические",
       "ozon": "Маска косметическая",
       "ym": "Маски для лица",
-      "ga": "",
-      "letu": "",
-      "mm": ""
+      "ga": "Уход для лица",
+      "letu": "Маска для лица",
+      "mm": "Маски"
     },
     "costPrice": 0,
     "sheetStatus": "Новинка"
@@ -10668,12 +10076,12 @@
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": null,
+      "name": "",
       "source": null,
       "registryStatus": null,
       "byPlatform": {
         "wb": "",
-        "ozon": "",
+        "ozon": "Даша",
         "ym": "",
         "ga": "",
         "letu": "",
@@ -10723,15 +10131,7 @@
       "factFeb26Revenue": null,
       "factFeb26NetRevenue": null,
       "factFeb26MarginPct": null,
-      "factTotalRevenue": null,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": null
     },
     "orders": {
       "count": null,
@@ -10776,7 +10176,7 @@
     },
     "ownersByPlatform": {
       "wb": "",
-      "ozon": "",
+      "ozon": "Даша",
       "ym": "",
       "ga": "",
       "letu": "",
@@ -10786,8 +10186,8 @@
       "wb": "Сыворотки",
       "ozon": "Сыворотка для ухода за кожей",
       "ym": "Средства для ухода за лицом",
-      "ga": "",
-      "letu": "",
+      "ga": "Уход для лица",
+      "letu": "Сыворотка для лица",
       "mm": "Сыворотки"
     },
     "costPrice": null,
@@ -10816,11 +10216,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Мария",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -10868,15 +10268,7 @@
       "factFeb26Revenue": 726420,
       "factFeb26NetRevenue": 142473,
       "factFeb26MarginPct": 0.892,
-      "factTotalRevenue": 4717237,
-      "planMay26Units": 3758,
-      "planJun26Units": 3823,
-      "planJul26Units": 4019,
-      "planAug26Units": 4260,
-      "planSep26Units": 4736,
-      "planOct26Units": 4989,
-      "planNov26Units": 5295,
-      "planDec26Units": 5928
+      "factTotalRevenue": 4717237
     },
     "orders": {
       "count": 2110,
@@ -10921,11 +10313,11 @@
     },
     "ownersByPlatform": {
       "wb": "Мария",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Спреи",
@@ -10962,10 +10354,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -11011,15 +10403,7 @@
       "factFeb26Revenue": 16288,
       "factFeb26NetRevenue": 242,
       "factFeb26MarginPct": 0.576,
-      "factTotalRevenue": 396300,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 396300
     },
     "orders": {
       "count": 374,
@@ -11065,10 +10449,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -11099,12 +10483,12 @@
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": null,
+      "name": "",
       "source": null,
       "registryStatus": null,
       "byPlatform": {
         "wb": "",
-        "ozon": "",
+        "ozon": "Александр Озон",
         "ym": "",
         "ga": "",
         "letu": "",
@@ -11154,15 +10538,7 @@
       "factFeb26Revenue": null,
       "factFeb26NetRevenue": null,
       "factFeb26MarginPct": null,
-      "factTotalRevenue": null,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": null
     },
     "orders": {
       "count": null,
@@ -11207,7 +10583,7 @@
     },
     "ownersByPlatform": {
       "wb": "",
-      "ozon": "",
+      "ozon": "Александр Озон",
       "ym": "",
       "ga": "",
       "letu": "",
@@ -11248,10 +10624,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -11299,15 +10675,7 @@
       "factFeb26Revenue": 1916439,
       "factFeb26NetRevenue": 941344,
       "factFeb26MarginPct": 0.911,
-      "factTotalRevenue": 19008012,
-      "planMay26Units": 3173,
-      "planJun26Units": 3228,
-      "planJul26Units": 3394,
-      "planAug26Units": 3598,
-      "planSep26Units": 4000,
-      "planOct26Units": 4213,
-      "planNov26Units": 4472,
-      "planDec26Units": 5006
+      "factTotalRevenue": 19008012
     },
     "orders": {
       "count": 2270,
@@ -11353,10 +10721,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Сыворотки",
@@ -11393,10 +10761,10 @@
       "byPlatform": {
         "wb": "",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -11442,15 +10810,7 @@
       "factFeb26Revenue": 496038,
       "factFeb26NetRevenue": 141421,
       "factFeb26MarginPct": 0.919,
-      "factTotalRevenue": 875287,
-      "planMay26Units": 1588,
-      "planJun26Units": 1616,
-      "planJul26Units": 1698,
-      "planAug26Units": 1800,
-      "planSep26Units": 2002,
-      "planOct26Units": 2109,
-      "planNov26Units": 2238,
-      "planDec26Units": 2505
+      "factTotalRevenue": 875287
     },
     "orders": {
       "count": 2047,
@@ -11496,18 +10856,18 @@
     "ownersByPlatform": {
       "wb": "",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "",
       "ozon": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
       "ym": "Средства для ухода за лицом",
-      "ga": "",
-      "letu": "",
-      "mm": ""
+      "ga": "Уход для лица",
+      "letu": "Сыворотка для лица",
+      "mm": "Сыворотки"
     },
     "costPrice": null,
     "sheetStatus": "Актуальный"
@@ -11536,10 +10896,10 @@
       "byPlatform": {
         "wb": "Кирилл",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -11585,15 +10945,7 @@
       "factFeb26Revenue": 67602,
       "factFeb26NetRevenue": 14266,
       "factFeb26MarginPct": 0.876,
-      "factTotalRevenue": 710181,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 710181
     },
     "orders": {
       "count": 1239,
@@ -11639,10 +10991,10 @@
     "ownersByPlatform": {
       "wb": "Кирилл",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Средства для роста бровей и ресниц",
@@ -11679,10 +11031,10 @@
       "byPlatform": {
         "wb": "Кирилл",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -11728,15 +11080,7 @@
       "factFeb26Revenue": 103015,
       "factFeb26NetRevenue": 25566,
       "factFeb26MarginPct": 0.976,
-      "factTotalRevenue": 1308026,
-      "planMay26Units": 175,
-      "planJun26Units": 178,
-      "planJul26Units": 187,
-      "planAug26Units": 198,
-      "planSep26Units": 221,
-      "planOct26Units": 232,
-      "planNov26Units": 247,
-      "planDec26Units": 276
+      "factTotalRevenue": 1308026
     },
     "orders": {
       "count": 1201,
@@ -11782,10 +11126,10 @@
     "ownersByPlatform": {
       "wb": "Кирилл",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Средства для роста бровей и ресниц",
@@ -11822,10 +11166,10 @@
       "byPlatform": {
         "wb": "Олеся",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -11871,15 +11215,7 @@
       "factFeb26Revenue": 160545,
       "factFeb26NetRevenue": 24268,
       "factFeb26MarginPct": 0.933,
-      "factTotalRevenue": 1543576,
-      "planMay26Units": 425,
-      "planJun26Units": 433,
-      "planJul26Units": 455,
-      "planAug26Units": 482,
-      "planSep26Units": 536,
-      "planOct26Units": 565,
-      "planNov26Units": 600,
-      "planDec26Units": 671
+      "factTotalRevenue": 1543576
     },
     "orders": {
       "count": 643,
@@ -11925,10 +11261,10 @@
     "ownersByPlatform": {
       "wb": "Олеся",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Сыворотки",
@@ -11959,12 +11295,12 @@
     "focusScore": 0,
     "focusReasons": "Owner не закреплён",
     "owner": {
-      "name": null,
+      "name": "",
       "source": null,
       "registryStatus": null,
       "byPlatform": {
         "wb": "",
-        "ozon": "",
+        "ozon": "Даша",
         "ym": "",
         "ga": "",
         "letu": "",
@@ -12014,15 +11350,7 @@
       "factFeb26Revenue": null,
       "factFeb26NetRevenue": null,
       "factFeb26MarginPct": null,
-      "factTotalRevenue": null,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": null
     },
     "orders": {
       "count": 801,
@@ -12067,7 +11395,7 @@
     },
     "ownersByPlatform": {
       "wb": "",
-      "ozon": "",
+      "ozon": "Даша",
       "ym": "",
       "ga": "",
       "letu": "",
@@ -12108,10 +11436,10 @@
       "byPlatform": {
         "wb": "Светлана",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -12157,15 +11485,7 @@
       "factFeb26Revenue": 291399,
       "factFeb26NetRevenue": 40795,
       "factFeb26MarginPct": 0.765,
-      "factTotalRevenue": 1957790,
-      "planMay26Units": 510,
-      "planJun26Units": 518,
-      "planJul26Units": 545,
-      "planAug26Units": 578,
-      "planSep26Units": 642,
-      "planOct26Units": 677,
-      "planNov26Units": 718,
-      "planDec26Units": 804
+      "factTotalRevenue": 1957790
     },
     "orders": {
       "count": 557,
@@ -12211,10 +11531,10 @@
     "ownersByPlatform": {
       "wb": "Светлана",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Специализированное питание",
@@ -12250,11 +11570,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Мария",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -12300,15 +11620,7 @@
       "factFeb26Revenue": 109543,
       "factFeb26NetRevenue": -27214,
       "factFeb26MarginPct": 0.856,
-      "factTotalRevenue": 838688,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 838688
     },
     "orders": {
       "count": 207,
@@ -12353,11 +11665,11 @@
     },
     "ownersByPlatform": {
       "wb": "Мария",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Спреи",
@@ -12394,10 +11706,10 @@
       "byPlatform": {
         "wb": "Кирилл",
         "ozon": "Даша",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -12443,15 +11755,7 @@
       "factFeb26Revenue": 147013,
       "factFeb26NetRevenue": -2938,
       "factFeb26MarginPct": 0.821,
-      "factTotalRevenue": 580524,
-      "planMay26Units": 2938,
-      "planJun26Units": 2989,
-      "planJul26Units": 3142,
-      "planAug26Units": 3331,
-      "planSep26Units": 3703,
-      "planOct26Units": 3901,
-      "planNov26Units": 4141,
-      "planDec26Units": 4635
+      "factTotalRevenue": 580524
     },
     "orders": {
       "count": 902,
@@ -12497,10 +11801,10 @@
     "ownersByPlatform": {
       "wb": "Кирилл",
       "ozon": "Даша",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Тоники",
@@ -12536,11 +11840,11 @@
       "registryStatus": "Новинка",
       "byPlatform": {
         "wb": "Кирилл",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -12588,15 +11892,7 @@
       "factFeb26Revenue": 152880,
       "factFeb26NetRevenue": 13480,
       "factFeb26MarginPct": 0.932,
-      "factTotalRevenue": 192032,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 192032
     },
     "orders": {
       "count": 766,
@@ -12641,11 +11937,11 @@
     },
     "ownersByPlatform": {
       "wb": "Кирилл",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "Воски для волос",
@@ -12681,11 +11977,11 @@
       "registryStatus": "Актуально",
       "byPlatform": {
         "wb": "Светлана",
-        "ozon": "Артем",
-        "ym": "Анна Пирогова",
-        "ga": "Екатерина Доброжирова",
-        "letu": "Екатерина Доброжирова",
-        "mm": "Екатерина Доброжирова"
+        "ozon": "Александр Озон",
+        "ym": "Анна",
+        "ga": "Екатерина",
+        "letu": "Екатерина",
+        "mm": "Екатерина"
       }
     },
     "traffic": {
@@ -12731,15 +12027,7 @@
       "factFeb26Revenue": 16383,
       "factFeb26NetRevenue": 2574,
       "factFeb26MarginPct": 0.674,
-      "factTotalRevenue": 802312,
-      "planMay26Units": 0,
-      "planJun26Units": 0,
-      "planJul26Units": 0,
-      "planAug26Units": 0,
-      "planSep26Units": 0,
-      "planOct26Units": 0,
-      "planNov26Units": 0,
-      "planDec26Units": 0
+      "factTotalRevenue": 802312
     },
     "orders": {
       "count": 222,
@@ -12784,11 +12072,11 @@
     },
     "ownersByPlatform": {
       "wb": "Светлана",
-      "ozon": "Артем",
-      "ym": "Анна Пирогова",
-      "ga": "Екатерина Доброжирова",
-      "letu": "Екатерина Доброжирова",
-      "mm": "Екатерина Доброжирова"
+      "ozon": "Александр Озон",
+      "ym": "Анна",
+      "ga": "Екатерина",
+      "letu": "Екатерина",
+      "mm": "Екатерина"
     },
     "categoriesByPlatform": {
       "wb": "БАДы",

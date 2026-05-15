@@ -266,16 +266,6 @@ function renderSkuRegistry() {
   const unassignedCount = items.length - assignedCount;
   const kzCount = items.filter((sku) => sku?.flags?.hasKZ).length;
   const vkCount = items.filter((sku) => sku?.flags?.hasVK).length;
-  const registryLiveNote = `
-    <div class="card subtle" style="margin:12px 0 14px;">
-      <strong>Реестр живой.</strong>
-      <div class="muted small" style="margin-top:6px">
-        Берём snapshot-backed <code>data/skus.json</code>. После кнопки "Обновить командные данные" перечитываем реестр и,
-        если карточка SKU уже открыта, перерисовываем и её тоже.
-      </div>
-    </div>
-  `;
-
   const rows = items.map((sku) => {
     const task = skuTaskMap.get(String(sku.articleKey || '').trim()) || null;
     return `
@@ -295,7 +285,6 @@ function renderSkuRegistry() {
     <div class="section-title">
       <div>
         <h2>Реестр SKU · Алтея</h2>
-        <p>Сократила строку до операционного минимума: статус, owner, внешний трафик, следующее действие и срок.</p>
       </div>
       <div class="badge-stack">
         ${badge(`${fmt.int(items.length)} SKU`)}
@@ -305,8 +294,6 @@ function renderSkuRegistry() {
         ${badge(`📣 VK ${fmt.int(vkCount)}`, vkCount ? 'info' : '')}
       </div>
     </div>
-
-    ${registryLiveNote}
 
     <div class="market-tabs">
       ${REGISTRY_MARKET_TABS.map((market) => `<button class="market-tab ${state.filters.market === market.key ? 'active' : ''}" data-market-filter="${escapeHtml(market.key)}">${escapeHtml(market.label)}</button>`).join('')}
@@ -364,7 +351,6 @@ function renderSkuRegistry() {
       </table>
     </div>
 
-    <div class="footer-note">Белый бейдж артикулов оставила. Главная строка теперь читается как рабочий список, а не как длинный аналитический отчёт.</div>
   `;
 
   document.getElementById('skuSearchInput').addEventListener('input', (e) => { state.filters.search = e.target.value; renderSkuRegistry(); });

@@ -3050,7 +3050,6 @@ function renderSkuRegistry() {
     <div class="section-title">
       <div>
         <h2>Реестр SKU · Алтея</h2>
-        <p>Сократила строку до операционного минимума: статус, owner, внешний трафик, следующее действие и срок.</p>
       </div>
       <div class="badge-stack">
         ${badge(`${fmt.int(items.length)} SKU`)}
@@ -3119,7 +3118,6 @@ function renderSkuRegistry() {
       </table>
     </div>
 
-    <div class="footer-note">Белый бейдж артикулов оставила. Главная строка теперь читается как рабочий список, а не как длинный аналитический отчёт.</div>
   `;
 
   document.getElementById('skuSearchInput').addEventListener('input', (e) => { state.filters.search = e.target.value; renderSkuRegistry(); });

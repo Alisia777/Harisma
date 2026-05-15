@@ -36,8 +36,125 @@ function Invoke-NodeStep {
   }
 }
 
+function Set-ProcessEnvFallback {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Name,
+    [string]$FallbackPath = ""
+  )
+
+  $current = [Environment]::GetEnvironmentVariable($Name, "Process")
+  if (-not [string]::IsNullOrWhiteSpace($current)) {
+    return
+  }
+
+  $userValue = [Environment]::GetEnvironmentVariable($Name, "User")
+  if (-not [string]::IsNullOrWhiteSpace($userValue)) {
+    [Environment]::SetEnvironmentVariable($Name, $userValue, "Process")
+    Set-Item -Path ("Env:" + $Name) -Value $userValue
+    return
+  }
+
+  if (-not [string]::IsNullOrWhiteSpace($FallbackPath) -and (Test-Path -LiteralPath $FallbackPath)) {
+    [Environment]::SetEnvironmentVariable($Name, $FallbackPath, "Process")
+    Set-Item -Path ("Env:" + $Name) -Value $FallbackPath
+  }
+}
+
 $resolvedOutputDir = if ($OutputDir) { $OutputDir } else { ".altea-google-sheet-sync-output" }
 New-Item -ItemType Directory -Path $resolvedOutputDir -Force | Out-Null
+
+if ([string]::IsNullOrWhiteSpace($env:ALTEA_WB_API_TOKEN)) {
+  $userWbApiToken = [Environment]::GetEnvironmentVariable("ALTEA_WB_API_TOKEN", "User")
+  if ([string]::IsNullOrWhiteSpace($userWbApiToken)) {
+    $userWbApiToken = [Environment]::GetEnvironmentVariable("ALTEA_WB_PROMOTION_TOKEN", "User")
+  }
+  if (-not [string]::IsNullOrWhiteSpace($userWbApiToken)) {
+    $env:ALTEA_WB_API_TOKEN = $userWbApiToken
+  }
+}
+
+Write-Output "[sync] WB analytics CSV refresh started"
+Invoke-NodeStep -StepName "WB analytics CSV refresh" -Arguments @(
+  "scripts/portal-wb-orders-trends-sync.js",
+  "sync"
+) -Attempts 3 -RetryDelaySeconds 20
+Write-Output "[sync] WB analytics CSV refresh completed"
+
+$envOzonClientId = $env:ALTEA_OZON_CLIENT_ID
+if ([string]::IsNullOrWhiteSpace($envOzonClientId)) {
+  $envOzonClientId = [Environment]::GetEnvironmentVariable("ALTEA_OZON_CLIENT_ID", "User")
+  if (-not [string]::IsNullOrWhiteSpace($envOzonClientId)) {
+    $env:ALTEA_OZON_CLIENT_ID = $envOzonClientId
+  }
+}
+
+$envOzonApiKey = $env:ALTEA_OZON_API_KEY
+if ([string]::IsNullOrWhiteSpace($envOzonApiKey)) {
+  $envOzonApiKey = [Environment]::GetEnvironmentVariable("ALTEA_OZON_API_KEY", "User")
+  if (-not [string]::IsNullOrWhiteSpace($envOzonApiKey)) {
+    $env:ALTEA_OZON_API_KEY = $envOzonApiKey
+  }
+}
+
+Set-ProcessEnvFallback -Name "ALTEA_YM_API_KEY"
+Set-ProcessEnvFallback -Name "ALTEA_YM_CAMPAIGN_ID"
+Set-ProcessEnvFallback -Name "ALTEA_YM_BUSINESS_ID"
+Set-ProcessEnvFallback -Name "ALTEA_LETUAL_API_TOKEN"
+Set-ProcessEnvFallback -Name "ALTEA_LETUAL_API_BASE_URL"
+Set-ProcessEnvFallback -Name "ALTEA_LETUAL_SALES_PATH"
+Set-ProcessEnvFallback -Name "ALTEA_LETUAL_CLIENT_ID"
+Set-ProcessEnvFallback -Name "ALTEA_LETUAL_LOCAL_EXPORT_XLSX"
+Set-ProcessEnvFallback -Name "ALTEA_LETUAL_PLAN_XLSX"
+Set-ProcessEnvFallback -Name "ALTEA_ZYA_SALES_ZIP" (Join-Path $env:LOCALAPPDATA "Temp\zya_sales.zip")
+Set-ProcessEnvFallback -Name "ALTEA_ZYA_ADS_XLSX" (Join-Path $env:LOCALAPPDATA "Temp\zya_ads.xlsx")
+Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_SALES_CSV" (Join-Path $env:LOCALAPPDATA "Temp\magnit_sales.csv")
+Set-ProcessEnvFallback -Name "ALTEA_MAGNIT_SERVICES_CSV" (Join-Path $env:LOCALAPPDATA "Temp\magnit_services.csv")
+
+Write-Output "[sync] Ozon marketplace analytics refresh started"
+Invoke-NodeStep -StepName "Ozon marketplace analytics refresh" -Arguments @(
+  "scripts/portal-ozon-finance-trends-sync.js",
+  "sync"
+) -Attempts 3 -RetryDelaySeconds 20
+Write-Output "[sync] Ozon marketplace analytics refresh completed"
+Write-Output "[sync] waiting 30 sec before the next Ozon-backed step"
+Start-Sleep -Seconds 30
+
+Write-Output "[sync] warehouse stock overlay refresh started"
+Invoke-NodeStep -StepName "warehouse stock overlay refresh" -Arguments @(
+  "scripts/portal-warehouse-stock-sync.js",
+  "sync",
+  "--output-dir",
+  $resolvedOutputDir
+) -Attempts 3 -RetryDelaySeconds 20
+Write-Output "[sync] warehouse stock overlay refresh completed"
+
+Write-Output "[sync] marketplace workbook build started"
+Invoke-NodeStep -StepName "marketplace workbook build" -Arguments @(
+  "scripts/build-altea-funnel-workbook.js",
+  "build",
+  "--output",
+  "exports/altea_max_funnel_2025_2026.xlsx"
+) -Attempts 4 -RetryDelaySeconds 90
+Write-Output "[sync] marketplace workbook build completed"
+
+$extraMarketplaceMergeArguments = @(
+  "scripts/portal-extra-marketplace-trends-sync.js",
+  "sync",
+  "--workbook",
+  "exports/altea_max_funnel_2025_2026.xlsx",
+  "--output-dir",
+  $resolvedOutputDir,
+  "--mirror-local-fallback"
+)
+
+Write-Output "[sync] extra marketplace merge started"
+try {
+  Invoke-NodeStep -StepName "extra marketplace merge" -Arguments $extraMarketplaceMergeArguments -Attempts 3 -RetryDelaySeconds 20
+  Write-Output "[sync] extra marketplace merge completed"
+} catch {
+  Write-Warning "[sync] extra marketplace merge failed, but the portal sync will continue: $($_.Exception.Message)"
+}
 
 $buildArguments = @(
   "scripts/portal-google-sheet-sync.js",
@@ -67,6 +184,25 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Output "[sync] build phase completed"
 
+Write-Output "[sync] order procurement build phase started"
+& $nodeExe "scripts/build-order-procurement-layer.js"
+if ($LASTEXITCODE -ne 0) {
+  exit $LASTEXITCODE
+}
+
+$orderProcurementFiles = @(
+  "order_procurement.json",
+  "order_procurement_wb.json",
+  "order_procurement_ozon.json"
+)
+foreach ($fileName in $orderProcurementFiles) {
+  $sourcePath = Join-Path "data" $fileName
+  if (Test-Path -LiteralPath $sourcePath) {
+    Copy-Item -LiteralPath $sourcePath -Destination (Join-Path $resolvedOutputDir $fileName) -Force
+  }
+}
+Write-Output "[sync] order procurement build phase completed"
+
 $priceArguments = @(
   "scripts/portal-smart-price-overlay-sync.js",
   "sync",
@@ -82,11 +218,35 @@ if ($ProfileDir) {
 $priceArguments += "--dry-run"
 
 Write-Output "[sync] smart_price_overlay build phase started"
-& $nodeExe @priceArguments
-if ($LASTEXITCODE -ne 0) {
-  exit $LASTEXITCODE
+try {
+  & $nodeExe @priceArguments
+  $priceExitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
+  if ($priceExitCode -ne 0) {
+    throw "smart_price_overlay build failed with exit code $priceExitCode"
+  }
+  Write-Output "[sync] smart_price_overlay build phase completed"
+  $priceRefreshSucceeded = $true
+} catch {
+  $priceRefreshSucceeded = $false
+  Write-Warning "[sync] smart_price_overlay build failed, but the portal sync will continue: $($_.Exception.Message)"
 }
-Write-Output "[sync] smart_price_overlay build phase completed"
+
+if ($priceRefreshSucceeded) {
+  $priceLayerFiles = @(
+    "prices.json",
+    "repricer.json",
+    "smart_price_overlay.json"
+  )
+  foreach ($fileName in $priceLayerFiles) {
+    $sourcePath = Join-Path "data" $fileName
+    if (Test-Path -LiteralPath $sourcePath) {
+      Copy-Item -LiteralPath $sourcePath -Destination (Join-Path $resolvedOutputDir $fileName) -Force
+    }
+  }
+  Write-Output "[sync] price/repricer layer files staged"
+} else {
+  Write-Warning "[sync] price/repricer layer files were not refreshed and will not be re-uploaded."
+}
 
 $kzSyncScript = Join-Path $PSScriptRoot "portal-kz-product-leaderboard-sync.ps1"
 $kzParams = @{
@@ -111,6 +271,18 @@ if ($kzExitCode -ne 0) {
   Write-Output "[sync] product leaderboard sync completed"
 }
 
+Write-Output "[sync] product leaderboard history build phase started"
+& $nodeExe "scripts/build-product-leaderboard-history.js"
+if ($LASTEXITCODE -ne 0) {
+  exit $LASTEXITCODE
+}
+
+$leaderboardHistoryPath = Join-Path "data" "product_leaderboard_history.json"
+if (Test-Path -LiteralPath $leaderboardHistoryPath) {
+  Copy-Item -LiteralPath $leaderboardHistoryPath -Destination (Join-Path $resolvedOutputDir "product_leaderboard_history.json") -Force
+}
+Write-Output "[sync] product leaderboard history build phase completed"
+
 Write-Output "[sync] IU plan build phase started"
 & $nodeExe "scripts/build-iu-plan-layer.js"
 if ($LASTEXITCODE -ne 0) {
@@ -131,6 +303,9 @@ if ($DryRun) {
 
 if ([string]::IsNullOrWhiteSpace($env:ALTEA_WB_PROMOTION_TOKEN)) {
   $userWbPromotionToken = [Environment]::GetEnvironmentVariable("ALTEA_WB_PROMOTION_TOKEN", "User")
+  if ([string]::IsNullOrWhiteSpace($userWbPromotionToken)) {
+    $userWbPromotionToken = [Environment]::GetEnvironmentVariable("ALTEA_WB_API_TOKEN", "User")
+  }
   if (-not [string]::IsNullOrWhiteSpace($userWbPromotionToken)) {
     $env:ALTEA_WB_PROMOTION_TOKEN = $userWbPromotionToken
   }
@@ -181,6 +356,42 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Output "[sync] IU/DRR summary build phase completed"
 
+if ([string]::IsNullOrWhiteSpace($env:ALTEA_WB_FEEDBACKS_TOKEN)) {
+  $userWbFeedbacksToken = [Environment]::GetEnvironmentVariable("ALTEA_WB_FEEDBACKS_TOKEN", "User")
+  if ([string]::IsNullOrWhiteSpace($userWbFeedbacksToken)) {
+    $userWbFeedbacksToken = [Environment]::GetEnvironmentVariable("ALTEA_WB_API_TOKEN", "User")
+  }
+  if (-not [string]::IsNullOrWhiteSpace($userWbFeedbacksToken)) {
+    $env:ALTEA_WB_FEEDBACKS_TOKEN = $userWbFeedbacksToken
+  }
+}
+
+$wbFeedbackArguments = @(
+  "scripts/portal-wb-feedback-sync.js",
+  "sync",
+  "--input-dir",
+  $resolvedOutputDir,
+  "--base-data-dir",
+  "data",
+  "--output-dir",
+  $resolvedOutputDir,
+  "--mirror-local-fallback"
+)
+
+Write-Output "[sync] WB feedbacks/questions sync started"
+& $nodeExe @wbFeedbackArguments
+if ($LASTEXITCODE -ne 0) {
+  exit $LASTEXITCODE
+}
+Write-Output "[sync] WB feedbacks/questions sync completed"
+
+Write-Output "[sync] IU/DRR summary rebuild with WB feedbacks started"
+& $nodeExe @iuDrrArguments
+if ($LASTEXITCODE -ne 0) {
+  exit $LASTEXITCODE
+}
+Write-Output "[sync] IU/DRR summary rebuild with WB feedbacks completed"
+
 $metaPath = Join-Path $resolvedOutputDir "meta.json"
 if (Test-Path -LiteralPath $metaPath) {
   $meta = Get-Content -LiteralPath $metaPath -Raw | ConvertFrom-Json
@@ -203,12 +414,18 @@ if ($DryRun) {
   exit 0
 }
 
+if ($priceRefreshSucceeded) {
+  $snapshotList = "dashboard,skus,platform_trends,ads_summary,iu_plan,iu_drr_summary,wb_feedbacks_summary,warehouse_stock_overlay,loyalty_system,prices,repricer,smart_price_overlay,product_leaderboard,product_leaderboard_history,order_procurement,order_procurement_wb,order_procurement_ozon"
+} else {
+  $snapshotList = "dashboard,skus,platform_trends,ads_summary,iu_plan,iu_drr_summary,wb_feedbacks_summary,warehouse_stock_overlay,loyalty_system,product_leaderboard,product_leaderboard_history,order_procurement,order_procurement_wb,order_procurement_ozon"
+}
+
 Invoke-NodeStep -StepName "dashboard/skus/platform_trends upload" -Arguments @(
   "scripts/portal-google-sheet-upload.js",
   "--input-dir",
   $resolvedOutputDir,
   "--snapshot",
-  "dashboard,skus,platform_trends,ads_summary,iu_plan,iu_drr_summary,loyalty_system"
+  $snapshotList
 )
 
 Invoke-NodeStep -StepName "logistics upload" -Arguments @(
@@ -216,13 +433,5 @@ Invoke-NodeStep -StepName "logistics upload" -Arguments @(
   "--input-dir",
   $resolvedOutputDir
 ) -Attempts 3 -RetryDelaySeconds 30
-
-Invoke-NodeStep -StepName "smart_price_overlay upload" -Arguments @(
-  "scripts/portal-google-sheet-upload.js",
-  "--input-dir",
-  $resolvedOutputDir,
-  "--snapshot",
-  "smart_price_overlay"
-)
 
 Write-Output "[sync] full portal sync completed"

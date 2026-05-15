@@ -318,8 +318,14 @@ if ($wbAdsDryRunFlag) {
 }
 
 Write-Output "[sync] WB ads build phase started"
-Invoke-NodeStep -StepName "WB ads build" -Arguments $wbAdsArguments -Attempts 2 -RetryDelaySeconds 60
-Write-Output "[sync] WB ads build phase completed"
+$wbAdsRefreshSucceeded = $false
+try {
+  Invoke-NodeStep -StepName "WB ads build" -Arguments $wbAdsArguments -Attempts 2 -RetryDelaySeconds 60
+  $wbAdsRefreshSucceeded = $true
+  Write-Output "[sync] WB ads build phase completed"
+} catch {
+  Write-Warning "[sync] WB ads build failed, but the portal sync will continue so price/repricer/order layers can still be uploaded: $($_.Exception.Message)"
+}
 
 $iuDrrArguments = @(
   "scripts/build-iu-drr-summary.js",
@@ -337,8 +343,14 @@ if ($DryRun) {
 }
 
 Write-Output "[sync] IU/DRR summary build phase started"
-Invoke-NodeStep -StepName "IU/DRR summary build" -Arguments $iuDrrArguments -Attempts 2 -RetryDelaySeconds 30
-Write-Output "[sync] IU/DRR summary build phase completed"
+$iuDrrRefreshSucceeded = $false
+try {
+  Invoke-NodeStep -StepName "IU/DRR summary build" -Arguments $iuDrrArguments -Attempts 2 -RetryDelaySeconds 30
+  $iuDrrRefreshSucceeded = $true
+  Write-Output "[sync] IU/DRR summary build phase completed"
+} catch {
+  Write-Warning "[sync] IU/DRR summary build failed, but the portal sync will continue with the last usable summary if present: $($_.Exception.Message)"
+}
 
 if ([string]::IsNullOrWhiteSpace($env:ALTEA_WB_FEEDBACKS_TOKEN)) {
   $userWbFeedbacksToken = [Environment]::GetEnvironmentVariable("ALTEA_WB_FEEDBACKS_TOKEN", "User")
@@ -363,12 +375,27 @@ $wbFeedbackArguments = @(
 )
 
 Write-Output "[sync] WB feedbacks/questions sync started"
-Invoke-NodeStep -StepName "WB feedbacks/questions sync" -Arguments $wbFeedbackArguments -Attempts 2 -RetryDelaySeconds 60
-Write-Output "[sync] WB feedbacks/questions sync completed"
+$wbFeedbackRefreshSucceeded = $false
+try {
+  Invoke-NodeStep -StepName "WB feedbacks/questions sync" -Arguments $wbFeedbackArguments -Attempts 2 -RetryDelaySeconds 60
+  $wbFeedbackRefreshSucceeded = $true
+  Write-Output "[sync] WB feedbacks/questions sync completed"
+} catch {
+  Write-Warning "[sync] WB feedbacks/questions sync failed, but the portal sync will continue with the last usable feedback layer if present: $($_.Exception.Message)"
+}
 
-Write-Output "[sync] IU/DRR summary rebuild with WB feedbacks started"
-Invoke-NodeStep -StepName "IU/DRR summary rebuild with WB feedbacks" -Arguments $iuDrrArguments -Attempts 2 -RetryDelaySeconds 30
-Write-Output "[sync] IU/DRR summary rebuild with WB feedbacks completed"
+if ($wbFeedbackRefreshSucceeded) {
+  Write-Output "[sync] IU/DRR summary rebuild with WB feedbacks started"
+  try {
+    Invoke-NodeStep -StepName "IU/DRR summary rebuild with WB feedbacks" -Arguments $iuDrrArguments -Attempts 2 -RetryDelaySeconds 30
+    $iuDrrRefreshSucceeded = $true
+    Write-Output "[sync] IU/DRR summary rebuild with WB feedbacks completed"
+  } catch {
+    Write-Warning "[sync] IU/DRR summary rebuild with WB feedbacks failed, but the portal sync will continue with the last usable summary if present: $($_.Exception.Message)"
+  }
+} else {
+  Write-Warning "[sync] IU/DRR summary rebuild with WB feedbacks skipped because WB feedbacks/questions sync did not refresh."
+}
 
 $metaPath = Join-Path $resolvedOutputDir "meta.json"
 if (Test-Path -LiteralPath $metaPath) {
@@ -392,11 +419,34 @@ if ($DryRun) {
   exit 0
 }
 
+$snapshotNames = @(
+  "dashboard",
+  "skus",
+  "platform_trends",
+  "ads_summary",
+  "iu_plan",
+  "warehouse_stock_overlay",
+  "loyalty_system",
+  "product_leaderboard",
+  "product_leaderboard_history",
+  "order_procurement",
+  "order_procurement_wb",
+  "order_procurement_ozon"
+)
+
 if ($priceRefreshSucceeded) {
-  $snapshotList = "dashboard,skus,platform_trends,ads_summary,iu_plan,iu_drr_summary,wb_feedbacks_summary,warehouse_stock_overlay,loyalty_system,prices,repricer,smart_price_overlay,product_leaderboard,product_leaderboard_history,order_procurement,order_procurement_wb,order_procurement_ozon"
-} else {
-  $snapshotList = "dashboard,skus,platform_trends,ads_summary,iu_plan,iu_drr_summary,wb_feedbacks_summary,warehouse_stock_overlay,loyalty_system,product_leaderboard,product_leaderboard_history,order_procurement,order_procurement_wb,order_procurement_ozon"
+  $snapshotNames += @("prices", "repricer", "smart_price_overlay")
 }
+
+foreach ($optionalSnapshot in @("iu_drr_summary", "wb_feedbacks_summary")) {
+  if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir ($optionalSnapshot + ".json"))) {
+    $snapshotNames += $optionalSnapshot
+  } else {
+    Write-Warning "[sync] optional snapshot $optionalSnapshot is absent and will not be uploaded."
+  }
+}
+
+$snapshotList = ($snapshotNames | Select-Object -Unique) -join ","
 
 Invoke-NodeStep -StepName "dashboard/skus/platform_trends upload" -Arguments @(
   "scripts/portal-google-sheet-upload.js",

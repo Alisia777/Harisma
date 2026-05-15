@@ -74,6 +74,7 @@ function resolveOptions(args) {
     workbenchPath: path.resolve(args['workbench-file'] || process.env.ALTEA_WORKBENCH_JSON_PATH || cwdJoin('data', 'smart_price_workbench.json')),
     livePath: path.resolve(args['live-file'] || process.env.ALTEA_WORKBENCH_LIVE_JSON_PATH || cwdJoin('tmp-smart_price_workbench-live.json')),
     liveRepricerPath: path.resolve(args['live-repricer-file'] || process.env.ALTEA_LIVE_REPRICER_JSON_PATH || cwdJoin('tmp-live-repricer.json')),
+    liveRepricerMaxAgeDays: Number(args['live-repricer-max-age-days'] || process.env.ALTEA_LIVE_REPRICER_MAX_AGE_DAYS || 7),
     supportPath: path.resolve(args['support-file'] || process.env.ALTEA_PRICE_SUPPORT_JSON_PATH || cwdJoin('data', 'price_workbench_support.json')),
     overlayOutputPath: path.resolve(args['overlay-output-file'] || process.env.ALTEA_OVERLAY_JSON_PATH || cwdJoin('data', 'smart_price_overlay.json')),
     pricesOutputPath: path.resolve(args['prices-output-file'] || process.env.ALTEA_PRICES_JSON_PATH || cwdJoin('data', 'prices.json')),
@@ -304,6 +305,7 @@ async function main() {
     overlayPath: options.overlayOutputPath,
     liveWorkbenchPath: options.livePath,
     liveRepricerPath: options.liveRepricerPath,
+    liveRepricerMaxAgeDays: options.liveRepricerMaxAgeDays,
     supportPath: options.supportPath,
     pricesPath: options.pricesOutputPath,
     outputPath: options.repricerOutputPath

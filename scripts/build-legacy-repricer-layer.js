@@ -34,6 +34,7 @@ function resolveOptions(args = {}) {
     overlayPath: path.resolve(args['overlay-file'] || path.join(ROOT, 'data', 'smart_price_overlay.json')),
     liveWorkbenchPath: path.resolve(args['live-file'] || path.join(ROOT, 'tmp-smart_price_workbench-live.json')),
     liveRepricerPath: path.resolve(args['live-repricer-file'] || path.join(ROOT, 'tmp-live-repricer.json')),
+    liveRepricerMaxAgeDays: numberOption(args['live-repricer-max-age-days'] || process.env.ALTEA_LIVE_REPRICER_MAX_AGE_DAYS, 7),
     supportPath: path.resolve(args['support-file'] || path.join(ROOT, 'data', 'price_workbench_support.json')),
     pricesPath: path.resolve(args['prices-file'] || path.join(ROOT, 'data', 'prices.json')),
     outputPath: path.resolve(args['output-file'] || path.join(ROOT, 'data', 'repricer.json'))
@@ -99,6 +100,45 @@ function safeReadLooseJson(filePath, fallback = null) {
   }
 }
 
+function numberOption(value, fallback) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+function fileMtimeIso(filePath) {
+  try {
+    return fs.statSync(filePath).mtime.toISOString();
+  } catch {
+    return '';
+  }
+}
+
+function liveSourceStatus(sourceGeneratedAt, anchorGeneratedAt, maxAgeDays) {
+  const sourceStamp = parseFreshStamp(sourceGeneratedAt || '');
+  const anchorStamp = parseFreshStamp(anchorGeneratedAt || '');
+  if (!sourceStamp) {
+    return {
+      usable: false,
+      status: 'missing-generatedAt',
+      ageDays: null
+    };
+  }
+  if (!anchorStamp) {
+    return {
+      usable: true,
+      status: 'usable-no-anchor',
+      ageDays: null
+    };
+  }
+  const ageDays = Number(((anchorStamp - sourceStamp) / 86400000).toFixed(2));
+  const usable = ageDays <= maxAgeDays;
+  return {
+    usable,
+    status: usable ? 'usable' : 'stale-ignored',
+    ageDays
+  };
+}
+
 function platformRows(payload = {}, platform = '') {
   return Array.isArray(payload?.platforms?.[platform]?.rows) ? payload.platforms[platform].rows : [];
 }
@@ -149,8 +189,8 @@ function normalizeTag(hasWb, hasOzon) {
 
 function defaultTargetTurnoverDays(status = '', platform = '') {
   const raw = String(status || '').toLowerCase();
-  if (raw.includes('\u043d\u043e\u0432')) return 45;
-  if (raw.includes('\u0432\u044b\u0432\u043e\u0434')) return 999;
+  if (raw.includes('нов')) return 45;
+  if (raw.includes('вывод')) return 999;
   if (platform === 'ozon') return 60;
   return 95;
 }
@@ -182,13 +222,13 @@ function inferReason({
     return liveReason;
   }
   if ((stock || 0) <= 0) return 'stock_total <= 0';
-  if (currentPrice > 0 && minPrice > 0 && currentPrice + 0.001 < minPrice) return '\u0442\u0435\u043a\u0443\u0449\u0430\u044f \u0446\u0435\u043d\u0430 \u043d\u0438\u0436\u0435 \u0440\u0430\u0431\u043e\u0447\u0435\u0433\u043e floor';
-  if (strategy === 'UP') return 'seed target \u0432\u044b\u0448\u0435 \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u0446\u0435\u043d\u044b';
-  if (strategy === 'DOWN') return 'seed target \u043d\u0438\u0436\u0435 \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u0446\u0435\u043d\u044b';
+  if (currentPrice > 0 && minPrice > 0 && currentPrice + 0.001 < minPrice) return 'текущая цена ниже рабочего floor';
+  if (strategy === 'UP') return 'seed target выше текущей цены';
+  if (strategy === 'DOWN') return 'seed target ниже текущей цены';
   if (textValue(sourceRow?.historyNote)) return textValue(sourceRow.historyNote);
-  if (textValue(priceRow?.historyFreshnessDate)) return `\u0444\u0430\u043a\u0442 \u0446\u0435\u043d\u044b \u0434\u043e ${priceRow.historyFreshnessDate}`;
+  if (textValue(priceRow?.historyFreshnessDate)) return `факт цены до ${priceRow.historyFreshnessDate}`;
   if (textValue(supportRow?.summary?.interpretation)) return textValue(supportRow.summary.interpretation);
-  return '\u0431\u0435\u0437 \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f';
+  return 'без изменения';
 }
 
 function estimateNewBuyerPrice(currentBuyerPrice, currentPrice, recPrice, seedTargetClientPrice, liveNewBuyerPrice) {
@@ -203,7 +243,7 @@ function estimateNewBuyerPrice(currentBuyerPrice, currentPrice, recPrice, seedTa
 function formatRub(value) {
   const amount = numberValue(value);
   if (amount === null) return '';
-  return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(amount)} \u20bd`;
+  return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(amount)} ₽`;
 }
 
 function resolveUpperCap(sourceRow, supportRow) {
@@ -325,13 +365,13 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
   let reason = inferredReason;
   if (recGuard.capApplied) {
     const capSourceLabel = sourceRow?.workingZoneTo
-      ? '\u0432\u0435\u0440\u0445\u043d\u0435\u0439 \u0433\u0440\u0430\u043d\u0438\u0446\u0435\u0439 \u0440\u0430\u0431\u043e\u0447\u0435\u0433\u043e \u043a\u043e\u0440\u0438\u0434\u043e\u0440\u0430'
+      ? 'верхней границей рабочего коридора'
       : (supportRow?.workingZoneTo
-        ? '\u0432\u0435\u0440\u0445\u043d\u0435\u0439 \u0433\u0440\u0430\u043d\u0438\u0446\u0435\u0439 support-\u043a\u043e\u0440\u0438\u0434\u043e\u0440\u0430'
+        ? 'верхней границей support-коридора'
         : (supportRow?.maxPrice ? 'support max price' : 'historical max price'));
-    reason = `\u0420\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u0430\u0446\u0438\u044f \u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0430 ${capSourceLabel} ${formatRub(upperCap)}. \u0418\u0441\u0445\u043e\u0434\u043d\u044b\u0439 target ${formatRub(seedRecPrice)} \u0431\u044b\u043b \u0432\u044b\u0448\u0435 \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u043e\u0433\u043e \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0430.`;
+    reason = `Рекомендация ограничена ${capSourceLabel} ${formatRub(upperCap)}. Исходный target ${formatRub(seedRecPrice)} был выше допустимого диапазона.`;
   } else if (recGuard.capBlockedByFloor && upperCap > 0 && minPrice > 0) {
-    reason = `\u0412\u0435\u0440\u0445\u043d\u0438\u0439 cap ${formatRub(upperCap)} \u0438\u0433\u043d\u043e\u0440\u0438\u0440\u043e\u0432\u0430\u043d, \u043f\u043e\u0442\u043e\u043c\u0443 \u0447\u0442\u043e \u043e\u043d \u043d\u0438\u0436\u0435 floor ${formatRub(minPrice)}. ${inferredReason}`;
+    reason = `Верхний cap ${formatRub(upperCap)} игнорирован, потому что он ниже floor ${formatRub(minPrice)}. ${inferredReason}`;
   }
   const newBuyerPrice = estimateNewBuyerPrice(
     currentBuyerPrice,
@@ -416,7 +456,7 @@ function buildSummary(rows = []) {
       }
       const strategy = String(side.strategy || '').toUpperCase();
       const reason = String(side.reason || '').toLowerCase();
-      if (strategy.includes('ALIGN') || reason.includes('equalize') || reason.includes('align') || reason.includes('\u0432\u044b\u0440\u0430\u0432')) {
+      if (strategy.includes('ALIGN') || reason.includes('equalize') || reason.includes('align') || reason.includes('вырав')) {
         summary[`${prefix}EqualizeCount`] += 1;
       }
     });
@@ -434,7 +474,12 @@ function buildLegacyRepricerLayer(options = {}) {
   const liveRepricer = safeReadLooseJson(options.liveRepricerPath, { generatedAt: '', rows: [] });
 
   const merged = mergeSmartPriceContour(workbench || {}, overlay || {}, liveWorkbench || {});
-  const liveRepricerRows = Array.isArray(liveRepricer?.rows) ? liveRepricer.rows : [];
+  const liveRepricerFreshness = liveSourceStatus(
+    liveRepricer?.generatedAt || '',
+    merged?.generatedAt || prices?.generatedAt || overlay?.generatedAt || '',
+    numberOption(options.liveRepricerMaxAgeDays, 7)
+  );
+  const liveRepricerRows = liveRepricerFreshness.usable && Array.isArray(liveRepricer?.rows) ? liveRepricer.rows : [];
   const liveRepricerMap = buildMap(liveRepricerRows);
   const supportMaps = Object.fromEntries(PLATFORM_KEYS.map((platform) => [platform, buildMap(supportRows(support, platform))]));
   const pricesMaps = Object.fromEntries(PLATFORM_KEYS.map((platform) => [platform, buildMap(platformRows(prices, platform))]));
@@ -500,6 +545,11 @@ function buildLegacyRepricerLayer(options = {}) {
       overlay: overlay?.generatedAt || '',
       liveWorkbench: liveWorkbench?.generatedAt || '',
       liveRepricer: liveRepricer?.generatedAt || '',
+      liveRepricerFileMtime: fileMtimeIso(options.liveRepricerPath),
+      liveRepricerStatus: liveRepricerFreshness.status,
+      liveRepricerAgeDays: liveRepricerFreshness.ageDays,
+      liveRepricerMaxAgeDays: numberOption(options.liveRepricerMaxAgeDays, 7),
+      liveRepricerRowsUsed: liveRepricerRows.length,
       support: support?.generatedAt || '',
       prices: prices?.generatedAt || '',
       merged: merged?.generatedAt || ''

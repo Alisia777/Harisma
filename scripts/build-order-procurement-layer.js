@@ -44,6 +44,23 @@ function writeGzip(filePath, payload) {
   fs.writeFileSync(filePath, zlib.gzipSync(buffer));
 }
 
+function fileMeta(filePath) {
+  try {
+    const stat = fs.statSync(filePath);
+    return {
+      filePath,
+      mtime: stat.mtime.toISOString(),
+      size: stat.size
+    };
+  } catch {
+    return {
+      filePath,
+      mtime: '',
+      size: 0
+    };
+  }
+}
+
 function normalizeKey(value) {
   return String(value || '')
     .trim()
@@ -162,8 +179,12 @@ function buildRow(sourceRow, sku, monthField) {
 function main() {
   const rootDir = path.resolve(__dirname, '..');
   const dataDir = path.join(rootDir, 'data');
-  const logistics = readJson(path.join(dataDir, 'logistics.json'));
-  const skus = readJson(path.join(dataDir, 'skus.json'));
+  const logisticsPath = path.join(dataDir, 'logistics.json');
+  const skusPath = path.join(dataDir, 'skus.json');
+  const logistics = readJson(logisticsPath);
+  const skus = readJson(skusPath);
+  const logisticsMeta = fileMeta(logisticsPath);
+  const skusMeta = fileMeta(skusPath);
   const skuMap = new Map(
     (Array.isArray(skus) ? skus : [])
       .map((item) => [normalizeKey(item?.articleKey || item?.article), item])
@@ -180,6 +201,15 @@ function main() {
 
   const combinedPayload = {
     generatedAt: logistics?.generatedAt || new Date().toISOString(),
+    sourceFreshness: {
+      logistics: logistics?.generatedAt || '',
+      logisticsFileMtime: logisticsMeta.mtime,
+      logisticsFileSize: logisticsMeta.size,
+      logisticsRows: Array.isArray(logistics?.allRows) ? logistics.allRows.length : 0,
+      skusFileMtime: skusMeta.mtime,
+      skusFileSize: skusMeta.size,
+      skuRows: Array.isArray(skus) ? skus.length : 0
+    },
     window: logistics?.window && typeof logistics.window === 'object'
       ? {
           from: normalizeText(logistics.window.from),
@@ -191,6 +221,7 @@ function main() {
 
   const wbPayload = {
     generatedAt: combinedPayload.generatedAt,
+    sourceFreshness: combinedPayload.sourceFreshness,
     window: combinedPayload.window,
     platform: 'WB',
     rows: rows.filter((row) => normalizePlatform(row.platform) === 'wb')
@@ -198,6 +229,7 @@ function main() {
 
   const ozonPayload = {
     generatedAt: combinedPayload.generatedAt,
+    sourceFreshness: combinedPayload.sourceFreshness,
     window: combinedPayload.window,
     platform: 'Ozon',
     rows: rows.filter((row) => normalizePlatform(row.platform) === 'ozon')

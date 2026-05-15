@@ -69,3 +69,25 @@ if ($LASTEXITCODE -ne 0) {
   exit $LASTEXITCODE
 }
 Write-Output "[kz-leaderboard] snapshot upload completed"
+
+Write-Output "[kz-leaderboard] history build started"
+& $nodeExe @(
+  "scripts/build-product-leaderboard-history.js"
+)
+if ($LASTEXITCODE -ne 0) {
+  exit $LASTEXITCODE
+}
+Write-Output "[kz-leaderboard] history build completed"
+
+Write-Output "[kz-leaderboard] history upload started"
+& $nodeExe @(
+  "scripts/portal-google-sheet-upload.js",
+  "--input-dir",
+  "data",
+  "--snapshot",
+  "product_leaderboard_history"
+)
+if ($LASTEXITCODE -ne 0) {
+  exit $LASTEXITCODE
+}
+Write-Output "[kz-leaderboard] history upload completed"

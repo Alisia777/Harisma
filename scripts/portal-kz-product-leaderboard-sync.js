@@ -407,6 +407,15 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function readJsonSafe(filePath) {
+  try {
+    if (!fs.existsSync(filePath)) return null;
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(value, null, 2), 'utf8');
@@ -455,6 +464,14 @@ function parseSheetDateRange(sheetName) {
   const endStamp = Date.parse(`${end}T00:00:00Z`);
   if (!Number.isFinite(startStamp) || !Number.isFinite(endStamp)) return null;
   return { start, end, startStamp, endStamp };
+}
+
+function payloadWeekEndStamp(payload) {
+  if (!payload || typeof payload !== 'object') return 0;
+  const direct = Date.parse(`${String(payload.weekEnd || '').slice(0, 10)}T00:00:00Z`);
+  if (Number.isFinite(direct)) return direct;
+  const parsed = parseSheetDateRange(payload.weekLabel || payload.sourceSheetName || '');
+  return parsed?.endStamp || 0;
 }
 
 function selectWorkbookSheet(workbook, options) {
@@ -731,7 +748,14 @@ async function main() {
     sheetSelectionMode: selectedSheet.selectionMode,
     workbookSheetNames: workbook.SheetNames.slice()
   });
-  const outputFiles = writeSnapshot(options.outputDir, payload, options);
+  const currentPayload = readJsonSafe(cwdJoin('data', 'product_leaderboard.json'));
+  const currentWeekEnd = payloadWeekEndStamp(currentPayload);
+  const nextWeekEnd = payloadWeekEndStamp(payload);
+  const skippedStaleWeek = !args['allow-stale-week']
+    && currentPayload
+    && currentWeekEnd > nextWeekEnd;
+  const finalPayload = skippedStaleWeek ? currentPayload : payload;
+  const outputFiles = writeSnapshot(options.outputDir, finalPayload, options);
 
   console.log(JSON.stringify({
     dryRun: options.dryRun,
@@ -740,16 +764,19 @@ async function main() {
     sheetName,
     sheetSelectionMode: selectedSheet.selectionMode,
     workbookSheetNames: workbook.SheetNames,
+    skippedStaleWeek,
+    preservedWeekLabel: skippedStaleWeek ? (currentPayload.weekLabel || currentPayload.sourceSheetName || '') : '',
+    selectedWeekLabel: payload.weekLabel || payload.sourceSheetName || '',
     brandFilter: options.brandFilter,
     outputFiles,
     summary: {
-      sourceRows: payload.totals.sourceRows,
-      brandRows: payload.totals.brandRows,
-      matchedRows: payload.totals.matchedRows,
-      unmatchedRows: payload.totals.unmatchedRows,
-      buys: payload.summary.buys,
-      revenue: payload.summary.revenue,
-      income: payload.summary.income
+      sourceRows: finalPayload.totals.sourceRows,
+      brandRows: finalPayload.totals.brandRows,
+      matchedRows: finalPayload.totals.matchedRows,
+      unmatchedRows: finalPayload.totals.unmatchedRows,
+      buys: finalPayload.summary.buys,
+      revenue: finalPayload.summary.revenue,
+      income: finalPayload.summary.income
     }
   }, null, 2));
 }

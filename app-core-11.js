@@ -127,6 +127,58 @@ function skuPlanFactToken(value = '') {
   return String(value ?? '').trim().toLowerCase().replaceAll('ё', 'е').replace(/[^a-zа-я0-9]+/gi, '');
 }
 
+function skuPlanFactNormalizePlatform(value = '') {
+  const raw = skuPlanFactToken(value);
+  if (!raw || raw === 'all' || raw === 'все') return 'all';
+  if (['wb', 'wildberries'].includes(raw)) return 'wb';
+  if (['oz', 'ozon'].includes(raw)) return 'ozon';
+  if (['ya', 'ym', 'yandex', 'yandexmarket', 'ямаркет'].includes(raw)) return 'ya';
+  if (['ga', 'goldapple', 'зя', 'золотоеяблоко'].includes(raw)) return 'goldapple';
+  if (['letu', 'letual', 'летуаль'].includes(raw)) return 'letu';
+  if (['mm', 'magnit', 'magnitmarket', 'магнитмаркет'].includes(raw)) return 'magnit';
+  return raw;
+}
+
+function skuPlanFactIgnoreRows() {
+  const payload = state.skuAliasIgnore || {};
+  return skuPlanFactIgnorePayloadRows(payload);
+}
+
+function skuPlanFactIgnorePayloadRows(payload = {}) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.ignored)) return payload.ignored;
+  if (Array.isArray(payload.ignores)) return payload.ignores;
+  if (Array.isArray(payload.rows)) return payload.rows;
+  return [];
+}
+
+function skuPlanFactIgnoreKey(platform = '', apiSku = '') {
+  return `${skuPlanFactNormalizePlatform(platform) || 'all'}|${skuPlanFactToken(apiSku)}`;
+}
+
+function skuPlanFactIgnoredSet() {
+  const set = new Set();
+  skuPlanFactIgnoreRows().forEach((row) => {
+    const status = skuPlanFactToken(row?.status ?? row?.active ?? 'active');
+    if (['0', 'false', 'no', 'off', 'disabled', 'inactive', 'deleted', 'remove'].includes(status)) return;
+    const apiSku = row?.api_sku ?? row?.apiSku ?? row?.api ?? row?.articleKey ?? row?.article ?? row?.source_sku ?? row?.marketplace_sku ?? '';
+    const token = skuPlanFactToken(apiSku);
+    if (!token) return;
+    const platform = skuPlanFactNormalizePlatform(row?.platform ?? row?.marketplace ?? row?.source_platform ?? 'all') || 'all';
+    set.add(skuPlanFactIgnoreKey(platform, token));
+  });
+  return set;
+}
+
+function skuPlanFactIsIgnored(platform = '', apiSku = '', ignored = null) {
+  const token = skuPlanFactToken(apiSku);
+  if (!token) return false;
+  const set = ignored || skuPlanFactIgnoredSet();
+  const normalizedPlatform = skuPlanFactNormalizePlatform(platform) || 'all';
+  return set.has(skuPlanFactIgnoreKey(normalizedPlatform, token))
+    || set.has(skuPlanFactIgnoreKey('all', token));
+}
+
 function skuPlanFactArticleToken(item = {}) {
   return skuPlanFactToken(item.articleKey || item.article || item.sku || item.vendorCode || '');
 }
@@ -242,11 +294,13 @@ function skuPlanFactUnmappedSkuFromRow(row = {}, token = '') {
 
 function skuPlanFactUnmappedSkus(indexes = {}, monthKey = '', maxFactDate = '') {
   const knownTokens = skuPlanFactKnownSkuTokens();
+  const ignoredTokens = skuPlanFactIgnoredSet();
   const result = new Map();
   SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
     skuPlanFactRowsFromIndexMap(indexes.extra?.[platform]).forEach((row) => {
       const token = skuPlanFactArticleToken(row);
       if (!token || knownTokens.has(token) || result.has(token)) return;
+      if (skuPlanFactIsIgnored(platform, row.articleKey || row.article || token, ignoredTokens)) return;
       const fact = skuPlanFactFactFromRows([row], monthKey, maxFactDate);
       if (!(numberOrZero(fact.revenue) > 0 || numberOrZero(fact.units) > 0)) return;
       result.set(token, skuPlanFactUnmappedSkuFromRow(row, token));
@@ -1186,6 +1240,67 @@ function skuPlanFactBuildDataQuality(rows = [], reconciliation = [], monthKey = 
   };
 }
 
+function skuPlanFactAliasImportReportHtml(report = null) {
+  if (!report) return '';
+  const errors = report.errorRows || [];
+  const duplicates = report.duplicateRows || [];
+  const skipped = report.skippedRows || [];
+  const details = errors.length ? errors.slice(0, 8)
+    : duplicates.length ? duplicates.slice(0, 8)
+      : skipped.slice(0, 8);
+  const detailRows = details.map((row) => `
+    <tr>
+      <td>${escapeHtml(row.rowNumber || '—')}</td>
+      <td>${escapeHtml(row.apiSku || row.api_sku || '—')}</td>
+      <td>${escapeHtml(row.platform || '—')}</td>
+      <td>${escapeHtml(row.targetSku || row.target_sku || '—')}</td>
+      <td>${escapeHtml(row.reason || row.action || '—')}</td>
+    </tr>
+  `).join('');
+  return `
+    <div class="notice ${errors.length ? 'warn' : 'ok'}" style="margin-top:10px">
+      <div class="section-subhead">
+        <div>
+          <strong>Отчёт импорта${report.fileName ? `: ${escapeHtml(report.fileName)}` : ''}</strong>
+          <div class="small muted">Строк: ${fmt.int(report.sourceRows || 0)} · алиасы: ${fmt.int(report.candidateAliases || 0)} · ignore: ${fmt.int(report.candidateIgnores || 0)} · дубли: ${fmt.int(duplicates.length)} · пропущено: ${fmt.int(skipped.length)} · ошибок: ${fmt.int(errors.length)}</div>
+        </div>
+        <div class="badge-stack">
+          ${(report.aliases || []).length && report.aliasPayload ? '<button class="quick-chip" type="button" data-sku-plan-fact-download-aliases>Скачать sku_aliases.json</button>' : ''}
+          ${(report.ignores || []).length && report.ignorePayload ? '<button class="quick-chip" type="button" data-sku-plan-fact-download-ignore>Скачать sku_alias_ignore.json</button>' : ''}
+          <button class="quick-chip" type="button" data-sku-plan-fact-download-import-report>Скачать отчёт</button>
+        </div>
+      </div>
+      ${detailRows ? `
+        <div class="table-scroll" style="margin-top:10px">
+          <table class="data-table compact">
+            <thead><tr><th>Строка</th><th>API SKU</th><th>Площадка</th><th>target_sku</th><th>Статус</th></tr></thead>
+            <tbody>${detailRows}</tbody>
+          </table>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function skuPlanFactQualityToolsHtml() {
+  return `
+    <div class="card sku-plan-fact-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Разбор API SKU</h3>
+          <p class="small muted">Загрузите заполненный файл проблем: строки с decision=alias попадут в алиасы, decision=ignore — в отдельный справочник исключений.</p>
+        </div>
+        <div class="badge-stack">
+          <button class="quick-chip" type="button" data-sku-plan-fact-quality-import>Загрузить заполненный файл</button>
+          <input type="file" accept=".csv,.xls,.html,.txt" data-sku-plan-fact-quality-file hidden>
+        </div>
+      </div>
+      ${skuPlanFactAliasImportReportHtml(state.skuPlanFactAliasImportReport || null)}
+      <div class="footer-note">Портал статический: кнопка готовит проверенные JSON-файлы. Для реального применения положите их в data или используйте npm run portal:sku-alias-import -- --apply.</div>
+    </div>
+  `;
+}
+
 function skuPlanFactDataQualityHtml(model) {
   const quality = model.quality || {};
   const issues = quality.topIssues || [];
@@ -1194,6 +1309,7 @@ function skuPlanFactDataQualityHtml(model) {
       <div class="notice ok" style="margin-top:14px">
         <strong>Контроль данных:</strong> критичных расхождений по текущему месяцу не найдено.
       </div>
+      ${skuPlanFactQualityToolsHtml()}
     `;
   }
   const rowsHtml = issues.map((issue) => `
@@ -1234,6 +1350,7 @@ function skuPlanFactDataQualityHtml(model) {
         </table>
       </div>
     </div>
+    ${skuPlanFactQualityToolsHtml()}
   `;
 }
 
@@ -1441,6 +1558,268 @@ function downloadSkuPlanFactQualityExcel(model) {
     return;
   }
   downloadLaunchesHtmlTable(skuPlanFactQualityExportColumns(), rows, `sku-plan-fact-data-quality-${model.monthKey}.xls`);
+}
+
+function skuPlanFactDownloadJson(filename, payload) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function skuPlanFactParseDelimited(text = '', delimiter = ';') {
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let quoted = false;
+  const source = String(text || '').replace(/^\uFEFF/, '');
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    const next = source[index + 1];
+    if (char === '"') {
+      if (quoted && next === '"') {
+        cell += '"';
+        index += 1;
+      } else {
+        quoted = !quoted;
+      }
+      continue;
+    }
+    if (!quoted && char === delimiter) {
+      row.push(cell);
+      cell = '';
+      continue;
+    }
+    if (!quoted && (char === '\n' || char === '\r')) {
+      if (char === '\r' && next === '\n') index += 1;
+      row.push(cell);
+      if (row.some((value) => String(value || '').trim())) rows.push(row);
+      row = [];
+      cell = '';
+      continue;
+    }
+    cell += char;
+  }
+  row.push(cell);
+  if (row.some((value) => String(value || '').trim())) rows.push(row);
+  return rows;
+}
+
+function skuPlanFactDetectDelimiter(text = '') {
+  const firstLine = String(text || '').replace(/^\uFEFF/, '').split(/\r?\n/).find((line) => line.trim()) || '';
+  const candidates = [';', '\t', ','];
+  return candidates
+    .map((delimiter) => ({ delimiter, count: (firstLine.match(new RegExp(delimiter === '\t' ? '\\t' : `\\${delimiter}`, 'g')) || []).length }))
+    .sort((left, right) => right.count - left.count)[0]?.delimiter || ';';
+}
+
+function skuPlanFactImportHeaderKey(header = '') {
+  const token = skuPlanFactToken(header);
+  if (!token) return '';
+  if (['action', 'decision'].includes(token) || token.startsWith('решение')) return 'action';
+  if (['targetsku', 'target', 'portalsku', 'mainsku'].includes(token) || token.includes('реестре')) return 'target_sku';
+  if (['platform', 'marketplace', 'sourceplatform'].includes(token) || token.includes('площадка')) return 'platform';
+  if (['apisku', 'apiarticle', 'api', 'sourcesku', 'marketplacesku'].includes(token)) return 'api_sku';
+  if (['articlekey', 'article', 'skuapi'].includes(token)) return 'article_key';
+  if (['status', 'active'].includes(token) || token.includes('статус')) return 'status';
+  if (['note', 'comment', 'decisioncomment'].includes(token) || token.includes('комментар')) return 'note';
+  return token;
+}
+
+function skuPlanFactRowsFromMatrix(matrix = []) {
+  const headers = (matrix[0] || []).map((value) => skuPlanFactImportHeaderKey(value));
+  return matrix.slice(1).map((values) => {
+    const row = {};
+    headers.forEach((header, index) => {
+      if (!header) return;
+      row[header] = String(values[index] ?? '').trim();
+    });
+    return row;
+  }).filter((row) => Object.values(row).some((value) => String(value || '').trim()));
+}
+
+function skuPlanFactRowsFromHtml(text = '') {
+  const doc = new DOMParser().parseFromString(text, 'text/html');
+  const table = doc.querySelector('table');
+  if (!table) return [];
+  const matrix = [...table.querySelectorAll('tr')].map((tr) => (
+    [...tr.querySelectorAll('th,td')].map((cell) => cell.textContent || '')
+  ));
+  return skuPlanFactRowsFromMatrix(matrix);
+}
+
+async function skuPlanFactRowsFromReviewFile(file) {
+  const text = await file.text();
+  if (/^\s*PK/.test(text) || /\.xlsx$/i.test(file.name || '')) {
+    throw new Error('XLSX напрямую браузер не читает. Загрузите CSV или XLS, который портал выгружает из кнопки "Выгрузить проблемы".');
+  }
+  if (/<table[\s>]/i.test(text) || /<html[\s>]/i.test(text)) return skuPlanFactRowsFromHtml(text);
+  return skuPlanFactRowsFromMatrix(skuPlanFactParseDelimited(text, skuPlanFactDetectDelimiter(text)));
+}
+
+async function skuPlanFactLoadJsonFile(path, fallback, label) {
+  if (typeof loadJsonOrFallback === 'function') return loadJsonOrFallback(path, fallback, label || path);
+  const response = await fetch(path, { cache: 'no-store' });
+  if (!response.ok) return fallback;
+  return response.json();
+}
+
+function skuPlanFactAliasRows(payload = {}) {
+  if (Array.isArray(payload)) return payload;
+  return Array.isArray(payload.aliases) ? payload.aliases : [];
+}
+
+function skuPlanFactAliasKey(alias = {}) {
+  return [
+    skuPlanFactToken(alias.target_sku || alias.targetSku || alias.target || ''),
+    skuPlanFactNormalizePlatform(alias.platform || 'all'),
+    skuPlanFactToken(alias.api_sku || alias.apiSku || alias.alias || alias.value || '')
+  ].join('|');
+}
+
+function skuPlanFactBuildSkuLookup() {
+  const lookup = new Map();
+  (state.skus || []).forEach((sku) => {
+    skuPlanFactSkuLookupTokens(sku).forEach((token) => {
+      if (token && !lookup.has(token)) lookup.set(token, sku);
+    });
+  });
+  return lookup;
+}
+
+function skuPlanFactReviewValue(row = {}, aliases = []) {
+  for (const alias of aliases) {
+    const key = skuPlanFactImportHeaderKey(alias);
+    if (row[key] !== undefined) return String(row[key] ?? '').trim();
+  }
+  return '';
+}
+
+function skuPlanFactNormalizeReviewAction(action = '', targetSku = '') {
+  const token = skuPlanFactToken(action);
+  if (['alias', 'map', 'mapping', 'apply', 'active', 'алиас', 'связать'].includes(token)) return 'alias';
+  if (['ignore', 'ignored', 'skip', 'hide', 'mute', 'exclude', 'игнор', 'игнорировать', 'скрыть'].includes(token)) return 'ignore';
+  if (!token && targetSku) return 'alias';
+  if (!token) return 'empty';
+  return token;
+}
+
+function skuPlanFactPrepareAliasImport(rows = [], currentAliases = {}, currentIgnore = {}) {
+  const skuLookup = skuPlanFactBuildSkuLookup();
+  const aliasPayload = Array.isArray(currentAliases)
+    ? { schema: 'sku-api-aliases-v1', aliases: currentAliases }
+    : { schema: 'sku-api-aliases-v1', columns: ['target_sku', 'platform', 'api_sku', 'status', 'note'], aliases: skuPlanFactAliasRows(currentAliases) };
+  const ignorePayload = Array.isArray(currentIgnore)
+    ? { schema: 'sku-api-ignore-v1', columns: ['platform', 'api_sku', 'status', 'note'], ignored: currentIgnore }
+    : { schema: 'sku-api-ignore-v1', columns: ['platform', 'api_sku', 'status', 'note'], ignored: skuPlanFactIgnorePayloadRows(currentIgnore) };
+  ignorePayload.ignored = skuPlanFactIgnorePayloadRows(currentIgnore).slice();
+  const existingAliases = new Set(skuPlanFactAliasRows(aliasPayload).map(skuPlanFactAliasKey));
+  const existingIgnores = new Set(ignorePayload.ignored.map((row) => skuPlanFactIgnoreKey(row.platform || 'all', row.api_sku || row.apiSku || row.alias || row.value || '')));
+  const aliases = [];
+  const ignores = [];
+  const skippedRows = [];
+  const errorRows = [];
+  const duplicateRows = [];
+
+  rows.forEach((row, index) => {
+    const rowNumber = index + 2;
+    const targetSku = skuPlanFactReviewValue(row, ['target_sku', 'target', 'portal_sku', 'main_sku']);
+    const apiSku = skuPlanFactReviewValue(row, ['api_sku', 'api_article', 'api', 'article_key', 'article']);
+    const platform = skuPlanFactNormalizePlatform(skuPlanFactReviewValue(row, ['platform', 'marketplace', 'source_platform']) || 'all');
+    const status = skuPlanFactReviewValue(row, ['status']) || 'active';
+    const note = skuPlanFactReviewValue(row, ['note', 'comment', 'decision_comment']) || 'Imported from portal review';
+    const action = skuPlanFactNormalizeReviewAction(skuPlanFactReviewValue(row, ['action', 'decision', 'решение']), targetSku);
+
+    if (!apiSku) {
+      skippedRows.push({ rowNumber, reason: 'empty api_sku' });
+      return;
+    }
+    if (action === 'ignore') {
+      const ignore = { platform, api_sku: apiSku, status: 'ignored', note, updatedAt: new Date().toISOString() };
+      const key = skuPlanFactIgnoreKey(platform, apiSku);
+      if (existingIgnores.has(key)) duplicateRows.push({ rowNumber, apiSku, platform, reason: 'ignore duplicate' });
+      else {
+        existingIgnores.add(key);
+        ignores.push(ignore);
+      }
+      return;
+    }
+    if (action !== 'alias') {
+      skippedRows.push({ rowNumber, apiSku, action, reason: 'not an alias action' });
+      return;
+    }
+    if (!targetSku) {
+      errorRows.push({ rowNumber, apiSku, platform, reason: 'target_sku is required for alias' });
+      return;
+    }
+    const target = skuLookup.get(skuPlanFactToken(targetSku));
+    if (!target) {
+      errorRows.push({ rowNumber, apiSku, platform, targetSku, reason: 'target_sku not found in skus.json' });
+      return;
+    }
+    const alias = { target_sku: target.articleKey || target.article || targetSku, platform, api_sku: apiSku, status, note };
+    const key = skuPlanFactAliasKey(alias);
+    if (existingAliases.has(key)) duplicateRows.push({ rowNumber, apiSku, platform, targetSku: alias.target_sku, reason: 'alias duplicate' });
+    else {
+      existingAliases.add(key);
+      aliases.push(alias);
+    }
+  });
+
+  const nextAliasPayload = { ...aliasPayload, aliases: [...skuPlanFactAliasRows(aliasPayload), ...aliases], updatedAt: new Date().toISOString() };
+  const nextIgnorePayload = { ...ignorePayload, ignored: [...ignorePayload.ignored, ...ignores], updatedAt: new Date().toISOString() };
+  return {
+    generatedAt: new Date().toISOString(),
+    sourceRows: rows.length,
+    candidateAliases: aliases.length,
+    candidateIgnores: ignores.length,
+    duplicateRows,
+    skippedRows,
+    errorRows,
+    aliases,
+    ignores,
+    aliasPayload: nextAliasPayload,
+    ignorePayload: nextIgnorePayload
+  };
+}
+
+async function handleSkuPlanFactAliasImport(file, rootId = 'view-sku-plan-fact') {
+  if (!file) return;
+  try {
+    const rows = await skuPlanFactRowsFromReviewFile(file);
+    const [currentAliases, currentIgnore] = await Promise.all([
+      skuPlanFactLoadJsonFile('data/sku_aliases.json', { schema: 'sku-api-aliases-v1', aliases: [] }, 'SKU aliases'),
+      skuPlanFactLoadJsonFile('data/sku_alias_ignore.json', { schema: 'sku-api-ignore-v1', ignored: [] }, 'SKU alias ignore')
+    ]);
+    const report = skuPlanFactPrepareAliasImport(rows, currentAliases, currentIgnore);
+    report.fileName = file.name || '';
+    state.skuPlanFactAliasImportReport = report;
+    renderSkuPlanFact(rootId);
+    if (typeof setAppError === 'function') {
+      setAppError(report.errorRows.length ? `Импорт проверен: ${report.errorRows.length} ошибок.` : 'Импорт проверен, файлы готовы к скачиванию.');
+    }
+  } catch (error) {
+    console.error('[sku-plan-fact-alias-import]', error);
+    state.skuPlanFactAliasImportReport = {
+      generatedAt: new Date().toISOString(),
+      fileName: file.name || '',
+      sourceRows: 0,
+      candidateAliases: 0,
+      candidateIgnores: 0,
+      duplicateRows: [],
+      skippedRows: [],
+      errorRows: [{ rowNumber: 0, reason: error.message || 'import failed' }],
+      aliases: [],
+      ignores: []
+    };
+    renderSkuPlanFact(rootId);
+    if (typeof setAppError === 'function') setAppError(`Не удалось разобрать файл: ${error.message}`);
+  }
 }
 
 function skuPlanFactFocusState(target) {
@@ -1666,6 +2045,27 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
   root.querySelector('[data-sku-plan-fact-refresh]')?.addEventListener('click', (event) => { refreshSkuPlanFactData(event.currentTarget, rootId); });
   root.querySelector('[data-sku-plan-fact-export]')?.addEventListener('click', () => downloadSkuPlanFactExcel(model));
   root.querySelector('[data-sku-plan-fact-quality-export]')?.addEventListener('click', () => downloadSkuPlanFactQualityExcel(model));
+  root.querySelector('[data-sku-plan-fact-quality-import]')?.addEventListener('click', () => {
+    root.querySelector('[data-sku-plan-fact-quality-file]')?.click();
+  });
+  root.querySelector('[data-sku-plan-fact-quality-file]')?.addEventListener('change', async (event) => {
+    const file = event.target.files?.[0] || null;
+    event.target.value = '';
+    await handleSkuPlanFactAliasImport(file, rootId);
+  });
+  root.querySelector('[data-sku-plan-fact-download-aliases]')?.addEventListener('click', () => {
+    const report = state.skuPlanFactAliasImportReport || {};
+    if (report.aliasPayload) skuPlanFactDownloadJson('sku_aliases.updated.json', report.aliasPayload);
+  });
+  root.querySelector('[data-sku-plan-fact-download-ignore]')?.addEventListener('click', () => {
+    const report = state.skuPlanFactAliasImportReport || {};
+    if (report.ignorePayload) skuPlanFactDownloadJson('sku_alias_ignore.updated.json', report.ignorePayload);
+  });
+  root.querySelector('[data-sku-plan-fact-download-import-report]')?.addEventListener('click', () => {
+    const report = state.skuPlanFactAliasImportReport || {};
+    const { aliasPayload, ignorePayload, ...publicReport } = report;
+    skuPlanFactDownloadJson(`sku-alias-import-report-${todayIso()}.json`, publicReport);
+  });
   skuPlanFactRestoreFocus(options.focusState);
 }
 
@@ -1675,6 +2075,8 @@ window.skuPlanFactExportRows = skuPlanFactExportRows;
 window.skuPlanFactExportColumns = skuPlanFactExportColumns;
 window.skuPlanFactQualityExportRows = skuPlanFactQualityExportRows;
 window.skuPlanFactQualityExportColumns = skuPlanFactQualityExportColumns;
+window.skuPlanFactRowsFromReviewFile = skuPlanFactRowsFromReviewFile;
+window.skuPlanFactPrepareAliasImport = skuPlanFactPrepareAliasImport;
 window.SKU_PLAN_FACT_PLATFORMS = SKU_PLAN_FACT_PLATFORMS;
 window.SKU_PLAN_FACT_PLATFORM_LABELS = SKU_PLAN_FACT_PLATFORM_LABELS;
 window.SKU_PLAN_FACT_PLATFORM_SUPPORT_KEYS = SKU_PLAN_FACT_PLATFORM_SUPPORT_KEYS;

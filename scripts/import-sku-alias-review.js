@@ -5,7 +5,8 @@ const path = require('path');
 const XLSX = require('xlsx');
 
 const APPLY_ACTIONS = new Set(['alias', 'map', 'mapping', 'apply', 'active', 'алиас', 'связать']);
-const SKIP_ACTIONS = new Set(['', 'need_check', 'check', 'new_sku', 'ignore', 'skip', 'новый sku', 'новый_ску', 'проверить', 'игнор']);
+const IGNORE_ACTIONS = new Set(['ignore', 'ignored', 'skip', 'hide', 'mute', 'exclude', 'игнор', 'игнорировать', 'скрыть']);
+const SKIP_ACTIONS = new Set(['', 'need_check', 'check', 'new_sku', 'новый sku', 'новый_ску', 'проверить']);
 
 function parseArgs(argv) {
   const args = {};
@@ -30,6 +31,7 @@ function resolveOptions(args) {
   return {
     input: path.resolve(args.input || path.join(root, 'data', 'api_sku_alias_review.csv')),
     skuAliasJson: path.resolve(args['sku-alias-json'] || path.join(root, 'data', 'sku_aliases.json')),
+    skuIgnoreJson: path.resolve(args['sku-ignore-json'] || path.join(root, 'data', 'sku_alias_ignore.json')),
     skusJson: path.resolve(args['skus-json'] || path.join(root, 'data', 'skus.json')),
     report: path.resolve(args.report || path.join(root, 'exports', `sku_alias_import_report_${new Date().toISOString().slice(0, 10)}.json`)),
     apply: Boolean(args.apply) && !Boolean(args['dry-run'])
@@ -50,7 +52,7 @@ function normalizeHeader(value) {
 
 function readJson(filePath, fallback) {
   if (!fs.existsSync(filePath)) return fallback;
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  return JSON.parse(fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, ''));
 }
 
 function readRows(filePath) {
@@ -119,6 +121,23 @@ function readAliasPayload(filePath) {
   return payload;
 }
 
+function readIgnorePayload(filePath) {
+  const payload = readJson(filePath, null);
+  if (!payload) {
+    return {
+      schema: 'sku-api-ignore-v1',
+      description: 'API SKU values intentionally excluded from alias cleanup.',
+      columns: ['platform', 'api_sku', 'status', 'note'],
+      ignored: []
+    };
+  }
+  if (Array.isArray(payload)) return { schema: 'sku-api-ignore-v1', ignored: payload };
+  payload.ignored = Array.isArray(payload.ignored)
+    ? payload.ignored
+    : (Array.isArray(payload.ignores) ? payload.ignores : []);
+  return payload;
+}
+
 function aliasKey(alias) {
   return [
     normalizeToken(alias.target_sku || alias.targetSku || alias.target || ''),
@@ -127,16 +146,25 @@ function aliasKey(alias) {
   ].join('|');
 }
 
+function ignoreKey(ignore) {
+  return [
+    normalizePlatform(ignore.platform || 'all'),
+    normalizeToken(ignore.api_sku || ignore.apiSku || ignore.alias || ignore.value || '')
+  ].join('|');
+}
+
 function normalizeAction(value, targetSku) {
   const raw = String(value || '').trim().toLowerCase();
   if (APPLY_ACTIONS.has(raw)) return 'alias';
+  if (IGNORE_ACTIONS.has(raw)) return 'ignore';
   if (!raw && targetSku) return 'alias';
   if (SKIP_ACTIONS.has(raw)) return raw || 'empty';
   return raw;
 }
 
-function buildAliasesFromRows(rows, skuLookup) {
+function buildDecisionsFromRows(rows, skuLookup) {
   const aliases = [];
+  const ignores = [];
   const skipped = [];
   const errors = [];
   rows.forEach((row, index) => {
@@ -150,6 +178,16 @@ function buildAliasesFromRows(rows, skuLookup) {
 
     if (!apiSku) {
       skipped.push({ rowNumber, reason: 'empty api_sku' });
+      return;
+    }
+    if (action === 'ignore') {
+      ignores.push({
+        platform,
+        api_sku: apiSku,
+        status: 'ignored',
+        note,
+        updatedAt: new Date().toISOString()
+      });
       return;
     }
     if (action !== 'alias') {
@@ -175,7 +213,7 @@ function buildAliasesFromRows(rows, skuLookup) {
       note
     });
   });
-  return { aliases, skipped, errors };
+  return { aliases, ignores, skipped, errors };
 }
 
 function writeReport(filePath, report) {
@@ -189,10 +227,14 @@ function main() {
   const skus = readJson(options.skusJson, []);
   const skuLookup = buildSkuLookup(Array.isArray(skus) ? skus : []);
   const currentPayload = readAliasPayload(options.skuAliasJson);
+  const currentIgnorePayload = readIgnorePayload(options.skuIgnoreJson);
   const existingKeys = new Set(currentPayload.aliases.map(aliasKey));
-  const result = buildAliasesFromRows(rows, skuLookup);
+  const existingIgnoreKeys = new Set(currentIgnorePayload.ignored.map(ignoreKey));
+  const result = buildDecisionsFromRows(rows, skuLookup);
   const newAliases = [];
+  const newIgnores = [];
   const duplicates = [];
+  const duplicateIgnores = [];
 
   result.aliases.forEach((alias) => {
     const key = aliasKey(alias);
@@ -203,21 +245,35 @@ function main() {
     existingKeys.add(key);
     newAliases.push(alias);
   });
+  result.ignores.forEach((ignore) => {
+    const key = ignoreKey(ignore);
+    if (!normalizeToken(ignore.api_sku) || existingIgnoreKeys.has(key)) {
+      duplicateIgnores.push(ignore);
+      return;
+    }
+    existingIgnoreKeys.add(key);
+    newIgnores.push(ignore);
+  });
 
   const report = {
     generatedAt: new Date().toISOString(),
     input: options.input,
     target: options.skuAliasJson,
+    ignoreTarget: options.skuIgnoreJson,
     apply: options.apply,
     sourceRows: rows.length,
     candidateAliases: result.aliases.length,
+    candidateIgnores: result.ignores.length,
     newAliases: newAliases.length,
+    newIgnores: newIgnores.length,
     duplicates: duplicates.length,
+    duplicateIgnores: duplicateIgnores.length,
     skipped: result.skipped.length,
     errors: result.errors.length,
     skippedRows: result.skipped.slice(0, 100),
     errorRows: result.errors.slice(0, 100),
-    aliases: newAliases
+    aliases: newAliases,
+    ignores: newIgnores
   };
 
   if (options.apply && result.errors.length === 0 && newAliases.length) {
@@ -226,18 +282,27 @@ function main() {
     fs.mkdirSync(path.dirname(options.skuAliasJson), { recursive: true });
     fs.writeFileSync(options.skuAliasJson, JSON.stringify(currentPayload, null, 2), 'utf8');
   }
+  if (options.apply && result.errors.length === 0 && newIgnores.length) {
+    currentIgnorePayload.ignored.push(...newIgnores);
+    currentIgnorePayload.updatedAt = new Date().toISOString();
+    fs.mkdirSync(path.dirname(options.skuIgnoreJson), { recursive: true });
+    fs.writeFileSync(options.skuIgnoreJson, JSON.stringify(currentIgnorePayload, null, 2), 'utf8');
+  }
 
   writeReport(options.report, report);
   console.log(JSON.stringify({
     apply: options.apply,
     sourceRows: report.sourceRows,
     candidateAliases: report.candidateAliases,
+    candidateIgnores: report.candidateIgnores,
     newAliases: report.newAliases,
+    newIgnores: report.newIgnores,
     duplicates: report.duplicates,
+    duplicateIgnores: report.duplicateIgnores,
     skipped: report.skipped,
     errors: report.errors,
     report: options.report,
-    targetUpdated: Boolean(options.apply && result.errors.length === 0 && newAliases.length)
+    targetUpdated: Boolean(options.apply && result.errors.length === 0 && (newAliases.length || newIgnores.length))
   }, null, 2));
 
   if (result.errors.length) process.exitCode = 1;

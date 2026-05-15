@@ -14,6 +14,7 @@
   adsSummary: { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
   iuDrrSummary: { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
   wbFeedbacks: { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] },
+  skuAliasIgnore: { schema: 'sku-api-ignore-v1', ignored: [] },
   launches: [],
   meetings: [],
   documents: { groups: [] },
@@ -32,7 +33,18 @@
     repricerCorridors: [],
     repricerOverrideDeletes: [],
     repricerSkuProfileDeletes: [],
-    repricerCorridorDeletes: []
+    repricerCorridorDeletes: [],
+    repricerPendingApiAdds: [],
+    repricerPendingApiDeletes: [],
+    repricerPendingCostFixes: [],
+    repricerPendingApiTasks: [],
+    repricerRepairHistory: [],
+    repricerRepairSnapshots: [],
+    repricerApiReconcileHistory: [],
+    repricerLastAuditImport: null,
+    repricerLastAutoFix: null,
+    repricerLastImportValidation: null,
+    repricerLastApiReconcile: null
   },
   filters: {
     search: '',
@@ -353,7 +365,8 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/order_procurement_wb.json': 'order_procurement_wb',
   'data/order_procurement_ozon.json': 'order_procurement_ozon',
   'data/warehouse_stock_overlay.json': 'warehouse_stock_overlay',
-  'data/portal_data_quality.json': 'portal_data_quality'
+  'data/portal_data_quality.json': 'portal_data_quality',
+  'data/sku_alias_ignore.json': 'sku_alias_ignore'
 };
 const portalSnapshotState = {
   client: null,
@@ -1392,7 +1405,18 @@ function defaultStorage() {
     repricerCorridors: [],
     repricerOverrideDeletes: [],
     repricerSkuProfileDeletes: [],
-    repricerCorridorDeletes: []
+    repricerCorridorDeletes: [],
+    repricerPendingApiAdds: [],
+    repricerPendingApiDeletes: [],
+    repricerPendingCostFixes: [],
+    repricerPendingApiTasks: [],
+    repricerRepairHistory: [],
+    repricerRepairSnapshots: [],
+    repricerApiReconcileHistory: [],
+    repricerLastAuditImport: null,
+    repricerLastAutoFix: null,
+    repricerLastImportValidation: null,
+    repricerLastApiReconcile: null
   };
 }
 
@@ -1468,7 +1492,7 @@ function defaultRepricerSettings() {
 
 function normalizeRepricerMode(mode) {
   const raw = String(mode || '').trim().toLowerCase();
-  if (['freeze', 'hold', 'force'].includes(raw)) return raw;
+  if (['freeze', 'hold', 'force', 'off'].includes(raw)) return raw;
   return 'auto';
 }
 
@@ -2181,7 +2205,7 @@ const LAZY_DATA_LOADERS = {
       : { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] };
   },
   skuPlanFact: async () => {
-    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, summary] = await Promise.all([
+    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, summary, skuAliasIgnore] = await Promise.all([
       loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
       loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU'),
       loadJsonOrFallback('data/price_workbench_support.dashboard-compact.json', { generatedAt: '', platforms: {} }, 'План SKU'),
@@ -2197,6 +2221,11 @@ const LAZY_DATA_LOADERS = {
         'data/iu_drr_summary.json',
         { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
         'ИУ / ДРР'
+      ),
+      loadJsonOrFallback(
+        'data/sku_alias_ignore.json',
+        { schema: 'sku-api-ignore-v1', ignored: [] },
+        'Игнор API SKU'
       )
     ]);
     state.smartPriceOverlay = smartPriceOverlay && typeof smartPriceOverlay === 'object'
@@ -2228,6 +2257,9 @@ const LAZY_DATA_LOADERS = {
     state.iuDrrSummary = summary && typeof summary === 'object'
       ? summary
       : { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };
+    state.skuAliasIgnore = skuAliasIgnore && typeof skuAliasIgnore === 'object'
+      ? skuAliasIgnore
+      : { schema: 'sku-api-ignore-v1', ignored: [] };
   },
   productLeaderboard: async () => {
     const [payload, history] = await Promise.all([

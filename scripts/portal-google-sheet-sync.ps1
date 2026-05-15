@@ -434,6 +434,11 @@ try {
   Write-Warning "[sync] data quality report build failed, but the portal sync will continue: $($_.Exception.Message)"
 }
 
+$skuAliasIgnorePath = Join-Path "data" "sku_alias_ignore.json"
+if (Test-Path -LiteralPath $skuAliasIgnorePath) {
+  Copy-Item -LiteralPath $skuAliasIgnorePath -Destination (Join-Path $resolvedOutputDir "sku_alias_ignore.json") -Force
+}
+
 $metaPath = Join-Path $resolvedOutputDir "meta.json"
 if (Test-Path -LiteralPath $metaPath) {
   $meta = Get-Content -LiteralPath $metaPath -Raw | ConvertFrom-Json
@@ -487,6 +492,10 @@ if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_data_quality.js
   $snapshotNames += "portal_data_quality"
 } else {
   Write-Warning "[sync] optional snapshot portal_data_quality is absent and will not be uploaded."
+}
+
+if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "sku_alias_ignore.json")) {
+  $snapshotNames += "sku_alias_ignore"
 }
 
 $snapshotList = ($snapshotNames | Select-Object -Unique) -join ","

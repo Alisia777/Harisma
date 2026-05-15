@@ -44,7 +44,7 @@ function resolveOptions(args) {
 
 function readJsonIfExists(filePath) {
   if (!fs.existsSync(filePath)) return null;
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  return JSON.parse(fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, ''));
 }
 
 function readSnapshot(options, name, fallback = null) {
@@ -136,6 +136,45 @@ function buildKnownSkuSet(skus = []) {
   return set;
 }
 
+function skuAliasIgnoreRows(payload = {}) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.ignored)) return payload.ignored;
+  if (Array.isArray(payload.ignores)) return payload.ignores;
+  if (Array.isArray(payload.rows)) return payload.rows;
+  return [];
+}
+
+function activeSkuAliasIgnoreRows(payload = {}) {
+  return skuAliasIgnoreRows(payload).filter((row) => {
+    const status = normalizeToken(row?.status ?? row?.active ?? 'active');
+    return !['0', 'false', 'no', 'off', 'disabled', 'inactive', 'deleted', 'remove'].includes(status);
+  });
+}
+
+function skuAliasIgnoreKey(platform = '', apiSku = '') {
+  return `${platformKey(platform) || 'all'}|${normalizeToken(apiSku)}`;
+}
+
+function buildSkuAliasIgnoreSet(payload = {}) {
+  const set = new Set();
+  activeSkuAliasIgnoreRows(payload).forEach((row) => {
+    const apiSku = row?.api_sku ?? row?.apiSku ?? row?.api ?? row?.articleKey ?? row?.article ?? row?.source_sku ?? row?.marketplace_sku ?? '';
+    const token = normalizeToken(apiSku);
+    if (!token) return;
+    const platform = platformKey(row?.platform ?? row?.marketplace ?? row?.source_platform ?? 'all') || 'all';
+    set.add(skuAliasIgnoreKey(platform, token));
+  });
+  return set;
+}
+
+function isSkuAliasIgnored(ignoreSet, platform = '', apiSku = '') {
+  const token = normalizeToken(apiSku);
+  if (!token) return false;
+  const normalizedPlatform = platformKey(platform) || 'all';
+  return ignoreSet.has(skuAliasIgnoreKey(normalizedPlatform, token))
+    || ignoreSet.has(skuAliasIgnoreKey('all', token));
+}
+
 function ownerText(sku = {}) {
   if (typeof sku.owner === 'string') return sku.owner.trim();
   return String(sku.owner?.name || '').trim();
@@ -178,8 +217,9 @@ function platformMonthAggregate(platformTrends = {}, platform = '', monthKey = '
   }, { date: '', revenue: 0, units: 0 });
 }
 
-function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDate = '') {
+function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDate = '', skuAliasIgnore = {}) {
   const known = buildKnownSkuSet(skus);
+  const ignored = buildSkuAliasIgnoreSet(skuAliasIgnore);
   const issues = [];
   const platformSummary = {};
 
@@ -193,6 +233,9 @@ function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDa
     let unmappedRevenue = 0;
     let unmappedUnits = 0;
     let unmappedCount = 0;
+    let ignoredRevenue = 0;
+    let ignoredUnits = 0;
+    let ignoredCount = 0;
 
     rows.forEach((row) => {
       const articleKey = String(row?.articleKey || row?.article || row?.sku || '').trim();
@@ -203,6 +246,12 @@ function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDa
       directRevenue += fact.revenue;
       directUnits += fact.units;
       if (!known.has(token)) {
+        if (isSkuAliasIgnored(ignored, platform, articleKey)) {
+          ignoredCount += 1;
+          ignoredRevenue += fact.revenue;
+          ignoredUnits += fact.units;
+          return;
+        }
         unmappedCount += 1;
         unmappedRevenue += fact.revenue;
         unmappedUnits += fact.units;
@@ -247,7 +296,10 @@ function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDa
       aggregateDate: aggregate.date,
       unmappedCount,
       unmappedRevenue: Math.round(unmappedRevenue),
-      unmappedUnits: Math.round(unmappedUnits)
+      unmappedUnits: Math.round(unmappedUnits),
+      ignoredCount,
+      ignoredRevenue: Math.round(ignoredRevenue),
+      ignoredUnits: Math.round(ignoredUnits)
     };
   });
 
@@ -528,13 +580,14 @@ function buildReport(options) {
     orderProcurement: readSnapshot(options, 'order_procurement', {}),
     warehouse: readSnapshot(options, 'warehouse_stock_overlay', {}),
     adsSummary: readSnapshot(options, 'ads_summary', {}),
-    iuDrr: readSnapshot(options, 'iu_drr_summary', {})
+    iuDrr: readSnapshot(options, 'iu_drr_summary', {}),
+    skuAliasIgnore: readSnapshot(options, 'sku_alias_ignore', { schema: 'sku-api-ignore-v1', ignored: [] })
   };
 
   const maxDate = dateKey(files.platformTrends?.latestMarketplaceDate)
     || latestDate((files.platformTrends?.platforms || []).flatMap((platform) => (platform.series || []).map((point) => point.date || point.label)));
   const monthKey = monthKeyFromDate(maxDate);
-  const apiQuality = buildApiSkuQuality(files.platformTrends, Array.isArray(files.skus) ? files.skus : [], monthKey, maxDate);
+  const apiQuality = buildApiSkuQuality(files.platformTrends, Array.isArray(files.skus) ? files.skus : [], monthKey, maxDate, files.skuAliasIgnore);
   const orderQuality = buildOrderQuality(files.orderProcurement);
   const freshnessQuality = buildFreshnessQuality(files);
   const ownerQuality = buildOwnerQuality(Array.isArray(files.skus) ? files.skus : []);
@@ -561,6 +614,7 @@ function buildReport(options) {
     apiUnmappedPlatformRows: apiUnmappedIssues.length,
     apiUnmappedUniqueSku: new Set(apiUnmappedIssues.map((issue) => normalizeToken(issue.articleKey))).size,
     apiUnmappedRevenue: Math.round(apiUnmappedIssues.reduce((acc, issue) => acc + numberOrZero(issue.revenue), 0)),
+    apiIgnoredPlatformRows: Object.values(apiQuality.platformSummary || {}).reduce((acc, row) => acc + numberOrZero(row.ignoredCount), 0),
     orderNoStockNeedRows: orderQuality.summary.noStockNeedRows,
     skuMissingOwner: ownerQuality.summary.missingOwner,
     warehouseUnmatchedRows: warehouseQuality.summary.unmatchedRows

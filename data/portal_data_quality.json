@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-15T21:14:39.443Z",
+  "generatedAt": "2026-05-15T21:38:08.808Z",
   "status": "critical",
   "summary": {
     "issueCount": 265,
@@ -10,6 +10,7 @@
     "apiUnmappedPlatformRows": 231,
     "apiUnmappedUniqueSku": 119,
     "apiUnmappedRevenue": 14345550,
+    "apiIgnoredPlatformRows": 0,
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 9,
     "warehouseUnmatchedRows": 25
@@ -82,7 +83,10 @@
       "aggregateDate": "2026-05-15",
       "unmappedCount": 10,
       "unmappedRevenue": 101162,
-      "unmappedUnits": 99
+      "unmappedUnits": 99,
+      "ignoredCount": 0,
+      "ignoredRevenue": 0,
+      "ignoredUnits": 0
     },
     "letu": {
       "label": "Лэтуаль",
@@ -93,7 +97,10 @@
       "aggregateDate": "",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
-      "unmappedUnits": 0
+      "unmappedUnits": 0,
+      "ignoredCount": 0,
+      "ignoredRevenue": 0,
+      "ignoredUnits": 0
     },
     "magnit": {
       "label": "Магнит Маркет",
@@ -104,7 +111,10 @@
       "aggregateDate": "2026-05-15",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
-      "unmappedUnits": 0
+      "unmappedUnits": 0,
+      "ignoredCount": 0,
+      "ignoredRevenue": 0,
+      "ignoredUnits": 0
     },
     "ozon": {
       "label": "Ozon",
@@ -115,7 +125,10 @@
       "aggregateDate": "2026-05-15",
       "unmappedCount": 85,
       "unmappedRevenue": 8490138,
-      "unmappedUnits": 13847
+      "unmappedUnits": 13847,
+      "ignoredCount": 0,
+      "ignoredRevenue": 0,
+      "ignoredUnits": 0
     },
     "wb": {
       "label": "WB",
@@ -126,7 +139,10 @@
       "aggregateDate": "2026-05-15",
       "unmappedCount": 54,
       "unmappedRevenue": 3197957,
-      "unmappedUnits": 3691
+      "unmappedUnits": 3691,
+      "ignoredCount": 0,
+      "ignoredRevenue": 0,
+      "ignoredUnits": 0
     },
     "ya": {
       "label": "Я.Маркет",
@@ -137,7 +153,10 @@
       "aggregateDate": "2026-05-15",
       "unmappedCount": 82,
       "unmappedRevenue": 2556294,
-      "unmappedUnits": 3474
+      "unmappedUnits": 3474,
+      "ignoredCount": 0,
+      "ignoredRevenue": 0,
+      "ignoredUnits": 0
     }
   },
   "orderSummary": {

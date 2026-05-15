@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-12T15:47:22.730Z",
+  "generatedAt": "2026-05-14T07:01:39.367Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
@@ -37,8 +37,8 @@
     "harly_ear_drops"
   ],
   "summary": {
-    "stockWarehouse": 262003,
-    "accepted": 1960175,
+    "stockWarehouse": 272323,
+    "accepted": 1970495,
     "shippedOzon": 525068,
     "shippedWB": 1172569
   },
@@ -322,8 +322,8 @@
     },
     {
       "articleKey": "krem_buster_250ml",
-      "stockWarehouse": 323,
-      "accepted": 11530,
+      "stockWarehouse": 923,
+      "accepted": 12130,
       "shippedOzon": 4007,
       "shippedWB": 7200,
       "sourceKeys": [
@@ -388,8 +388,8 @@
     },
     {
       "articleKey": "kremshelk_100ml",
-      "stockWarehouse": 1501,
-      "accepted": 34212,
+      "stockWarehouse": 11221,
+      "accepted": 43932,
       "shippedOzon": 4853,
       "shippedWB": 27858,
       "sourceKeys": [

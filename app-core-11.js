@@ -1396,31 +1396,41 @@ function downloadSkuPlanFactExcel(model) {
 
 function skuPlanFactQualityExportColumns() {
   return [
+    ['decision', 'Решение alias/new_sku/ignore/need_check'],
+    ['target_sku', 'SKU в реестре'],
+    ['platform', 'Площадка'],
+    ['api_sku', 'API SKU'],
+    ['status', 'Статус'],
+    ['note', 'Комментарий'],
     ['month', 'Месяц'],
     ['fact_to', 'Факт до'],
     ['severity', 'Уровень'],
     ['type', 'Проблема'],
-    ['platform', 'Площадка'],
     ['article_key', 'SKU/API'],
     ['name', 'Название'],
     ['revenue', 'Сумма'],
     ['units', 'Шт'],
-    ['action', 'Что сделать']
+    ['recommended_action', 'Что сделать']
   ];
 }
 
 function skuPlanFactQualityExportRows(model) {
   return (model.quality?.issues || []).map((issue) => ({
+    decision: '',
+    target_sku: '',
+    platform: issue.platform,
+    api_sku: issue.articleKey,
+    status: 'active',
+    note: issue.action || '',
     month: model.monthKey,
     fact_to: model.maxFactDate,
     severity: issue.severity,
     type: issue.type,
-    platform: issue.platform,
     article_key: issue.articleKey,
     name: issue.name,
     revenue: Math.round(issue.revenue || 0),
     units: Math.round(issue.units || 0),
-    action: issue.action
+    recommended_action: issue.action
   }));
 }
 

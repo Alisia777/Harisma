@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-15T20:44:53.259Z",
+  "generatedAt": "2026-05-15T21:14:39.443Z",
   "status": "critical",
   "summary": {
     "issueCount": 265,
@@ -18,8 +18,8 @@
     {
       "dataset": "dashboard",
       "asOfDate": "2026-05-15",
-      "generatedAt": "2026-05-15T19:29:51.211Z",
-      "rows": 148,
+      "generatedAt": "2026-05-15T17:24:58.117Z",
+      "rows": 141,
       "referenceDate": "2026-05-15",
       "lagDays": 0,
       "status": "ok"
@@ -27,7 +27,7 @@
     {
       "dataset": "platform_trends",
       "asOfDate": "2026-05-15",
-      "generatedAt": "2026-05-15T19:29:51.101Z",
+      "generatedAt": "2026-05-15T17:24:58.020Z",
       "rows": 7,
       "referenceDate": "2026-05-15",
       "lagDays": 0,
@@ -37,7 +37,7 @@
       "dataset": "order_procurement",
       "asOfDate": "2026-05-15",
       "generatedAt": "2026-05-15T17:24:58.190Z",
-      "rows": 1904,
+      "rows": 1977,
       "referenceDate": "2026-05-15",
       "lagDays": 0,
       "status": "ok"
@@ -66,7 +66,7 @@
       "dataset": "iu_drr_summary",
       "asOfDate": "2026-05-15",
       "generatedAt": "2026-05-15T17:40:26.864Z",
-      "rows": 15,
+      "rows": 76,
       "referenceDate": "2026-05-15",
       "lagDays": 0,
       "status": "ok"
@@ -141,12 +141,12 @@
     }
   },
   "orderSummary": {
-    "rows": 1904,
+    "rows": 1977,
     "noStockNeedRows": 0,
-    "lowTurnoverRows": 38,
+    "lowTurnoverRows": 42,
     "totalNeed7": 0,
-    "totalNeed14": 17431,
-    "totalNeed28": 80532
+    "totalNeed14": 17804,
+    "totalNeed28": 83896
   },
   "ownerSummary": {
     "totalSku": 89,

@@ -415,6 +415,111 @@ function writeCsv(filePath, issues = []) {
   fs.writeFileSync(filePath, lines.join('\r\n'), 'utf8');
 }
 
+function skuSuggestionScore(apiSku = '', sku = {}) {
+  const apiToken = normalizeToken(apiSku);
+  if (!apiToken) return 0;
+  const skuTokens = skuLookupTokens(sku);
+  if (skuTokens.includes(apiToken)) return 100;
+  const articleToken = normalizeToken(sku?.articleKey || sku?.article || '');
+  const nameToken = normalizeToken(sku?.name || '');
+  if (articleToken && apiToken.length >= 5 && (articleToken.includes(apiToken) || apiToken.includes(articleToken))) return 80;
+
+  const parts = String(apiSku || '')
+    .toLowerCase()
+    .replaceAll('ё', 'е')
+    .split(/[^a-zа-я0-9]+/gi)
+    .map((part) => part.trim())
+    .filter((part) => part.length >= 4 && !/^\d+$/.test(part));
+  if (!parts.length) return 0;
+  const hits = parts.filter((part) => {
+    const token = normalizeToken(part);
+    return token && (articleToken.includes(token) || nameToken.includes(token));
+  }).length;
+  return Math.min(70, hits * 20);
+}
+
+function buildSkuSuggestion(skus = [], apiSku = '') {
+  return skus
+    .map((sku) => ({
+      articleKey: sku?.articleKey || sku?.article || '',
+      name: sku?.name || '',
+      score: skuSuggestionScore(apiSku, sku)
+    }))
+    .filter((item) => item.articleKey && item.score >= 70)
+    .sort((a, b) => b.score - a.score || String(a.articleKey).localeCompare(String(b.articleKey)))[0]
+    || { articleKey: '', name: '', score: 0 };
+}
+
+function writeAliasReviewCsv(filePath, issues = [], skus = []) {
+  const grouped = new Map();
+  issues
+    .filter((issue) => issue.type === 'api_sku_unmapped')
+    .forEach((issue) => {
+      const key = `${issue.platform || ''}|${issue.articleKey || ''}`;
+      const current = grouped.get(key) || {
+        action: '',
+        target_sku: '',
+        platform: issue.platform || '',
+        api_sku: issue.articleKey || '',
+        status: 'active',
+        note: 'API SKU without registry pair',
+        api_revenue: 0,
+        api_units: 0,
+        api_name: issue.name || issue.articleKey || '',
+        all_platforms: new Set(),
+        first_date: issue.firstDate || '',
+        last_date: issue.lastDate || ''
+      };
+      current.api_revenue += numberOrZero(issue.revenue);
+      current.api_units += numberOrZero(issue.units);
+      if (issue.platform) current.all_platforms.add(issue.platform);
+      if (issue.firstDate && (!current.first_date || issue.firstDate < current.first_date)) current.first_date = issue.firstDate;
+      if (issue.lastDate && (!current.last_date || issue.lastDate > current.last_date)) current.last_date = issue.lastDate;
+      grouped.set(key, current);
+    });
+
+  const rows = [...grouped.values()]
+    .sort((a, b) => numberOrZero(b.api_revenue) - numberOrZero(a.api_revenue))
+    .map((row) => {
+      const suggestion = buildSkuSuggestion(skus, row.api_sku);
+      return {
+        ...row,
+        api_revenue: Math.round(row.api_revenue),
+        api_units: Math.round(row.api_units),
+        all_platforms: [...row.all_platforms].join(','),
+        suggested_target_sku: suggestion.articleKey,
+        suggested_confidence: suggestion.score || '',
+        suggested_name: suggestion.name || '',
+        decision_comment: ''
+      };
+    });
+
+  const columns = [
+    'action',
+    'target_sku',
+    'platform',
+    'api_sku',
+    'status',
+    'note',
+    'api_revenue',
+    'api_units',
+    'api_name',
+    'all_platforms',
+    'first_date',
+    'last_date',
+    'suggested_target_sku',
+    'suggested_confidence',
+    'suggested_name',
+    'decision_comment'
+  ];
+  const lines = [
+    `\uFEFF${columns.join(';')}`,
+    ...rows.map((row) => columns.map((column) => csvCell(row[column])).join(';'))
+  ];
+  fs.writeFileSync(filePath, lines.join('\r\n'), 'utf8');
+  return rows.length;
+}
+
 function buildReport(options) {
   const files = {
     dashboard: readSnapshot(options, 'dashboard', {}),
@@ -470,6 +575,7 @@ function buildReport(options) {
     orderSummary: orderQuality.summary,
     ownerSummary: ownerQuality.summary,
     warehouseSummary: warehouseQuality.summary,
+    _sourceSkus: Array.isArray(files.skus) ? files.skus : [],
     issues: allIssues.slice(0, options.issueLimit)
   };
 }
@@ -478,20 +584,25 @@ function writeReport(options, report) {
   fs.mkdirSync(options.outputDir, { recursive: true });
   const jsonPath = path.join(options.outputDir, 'portal_data_quality.json');
   const csvPath = path.join(options.outputDir, 'portal_data_quality_issues.csv');
-  fs.writeFileSync(jsonPath, JSON.stringify(report, null, 2), 'utf8');
+  const aliasReviewPath = path.join(options.outputDir, 'api_sku_alias_review.csv');
+  const { _sourceSkus, ...publicReport } = report;
+  fs.writeFileSync(jsonPath, JSON.stringify(publicReport, null, 2), 'utf8');
   writeCsv(csvPath, report.issues || []);
+  const aliasReviewRows = writeAliasReviewCsv(aliasReviewPath, report.issues || [], _sourceSkus || []);
 
   const mirrored = [];
   if (options.mirrorLocalFallback) {
     fs.mkdirSync(options.baseDataDir, { recursive: true });
     const mirrorJson = path.join(options.baseDataDir, 'portal_data_quality.json');
     const mirrorCsv = path.join(options.baseDataDir, 'portal_data_quality_issues.csv');
+    const mirrorAliasReview = path.join(options.baseDataDir, 'api_sku_alias_review.csv');
     fs.copyFileSync(jsonPath, mirrorJson);
     fs.copyFileSync(csvPath, mirrorCsv);
-    mirrored.push(mirrorJson, mirrorCsv);
+    fs.copyFileSync(aliasReviewPath, mirrorAliasReview);
+    mirrored.push(mirrorJson, mirrorCsv, mirrorAliasReview);
   }
 
-  return { jsonPath, csvPath, mirrored };
+  return { jsonPath, csvPath, aliasReviewPath, aliasReviewRows, mirrored };
 }
 
 function main() {

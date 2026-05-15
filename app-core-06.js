@@ -66,7 +66,10 @@ function renderTaskModal(taskId) {
             <option value="cross" ${task.platform === 'cross' ? 'selected' : ''}>Общий контур</option>
             <option value="wb" ${task.platform === 'wb' ? 'selected' : ''}>РОП WB</option>
             <option value="ozon" ${task.platform === 'ozon' ? 'selected' : ''}>РОП Ozon</option>
-            <option value="retail" ${task.platform === 'retail' ? 'selected' : ''}>ЯМ / Летуаль / Магнит / ЗЯ</option>
+            <option value="ya" ${task.platform === 'ya' ? 'selected' : ''}>Я.Маркет</option>
+            <option value="goldapple" ${task.platform === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
+            <option value="letu" ${task.platform === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+            <option value="magnit" ${task.platform === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
             <option value="wb+ozon" ${task.platform === 'wb+ozon' ? 'selected' : ''}>WB + Ozon</option>
           </select>
           <textarea name="nextAction" rows="4" placeholder="Следующее действие">${escapeHtml(task.nextAction || '')}</textarea>
@@ -150,16 +153,47 @@ function renderTaskModal(taskId) {
   });
 }
 
+const REGISTRY_MARKET_TABS = [
+  { key: 'all', label: 'Все площадки' },
+  { key: 'wb', label: 'WB' },
+  { key: 'ozon', label: 'Ozon' },
+  { key: 'ya', label: 'Я.Маркет' },
+  { key: 'goldapple', label: 'ЗЯ' },
+  { key: 'letu', label: 'Лэтуаль' },
+  { key: 'magnit', label: 'Магнит Маркет' }
+];
+const REGISTRY_MARKET_SUPPORT_KEYS = {
+  wb: 'wb',
+  ozon: 'ozon',
+  ya: 'ym',
+  goldapple: 'ga',
+  letu: 'letu',
+  magnit: 'mm'
+};
+
+function registryOwnerByMarket(sku, market = '') {
+  const supportKey = REGISTRY_MARKET_SUPPORT_KEYS[String(market || '').toLowerCase()] || '';
+  if (!supportKey) return '';
+  return String(
+    sku?.ownersByPlatform?.[supportKey]
+    || sku?.owner?.byPlatform?.[supportKey]
+    || ''
+  ).trim();
+}
+
 function filterSkuByMarket(sku) {
-  if (state.filters.market === 'wb') return sku?.flags?.hasWB;
-  if (state.filters.market === 'ozon') return sku?.flags?.hasOzon;
+  const market = String(state.filters.market || 'all').toLowerCase();
+  if (market === 'wb') return Boolean(sku?.flags?.hasWB || registryOwnerByMarket(sku, market));
+  if (market === 'ozon') return Boolean(sku?.flags?.hasOzon || registryOwnerByMarket(sku, market));
+  if (REGISTRY_MARKET_SUPPORT_KEYS[market]) return Boolean(registryOwnerByMarket(sku, market));
   return true;
 }
 
 function filterSkuByWorkLogic(sku) {
-  if (state.filters.market === 'wb') return sku?.flags?.toWorkWB;
-  if (state.filters.market === 'ozon') return sku?.flags?.toWorkOzon;
-  return sku?.flags?.toWork;
+  const market = String(state.filters.market || 'all').toLowerCase();
+  if (market === 'wb') return sku?.flags?.toWorkWB;
+  if (market === 'ozon') return sku?.flags?.toWorkOzon;
+  return sku?.flags?.toWork || Boolean(registryOwnerByMarket(sku, market));
 }
 
 function buildSkuRegistryTaskMap() {
@@ -275,9 +309,7 @@ function renderSkuRegistry() {
     ${registryLiveNote}
 
     <div class="market-tabs">
-      <button class="market-tab ${state.filters.market === 'all' ? 'active' : ''}" data-market-filter="all">Все площадки</button>
-      <button class="market-tab ${state.filters.market === 'wb' ? 'active' : ''}" data-market-filter="wb">WB</button>
-      <button class="market-tab ${state.filters.market === 'ozon' ? 'active' : ''}" data-market-filter="ozon">Ozon</button>
+      ${REGISTRY_MARKET_TABS.map((market) => `<button class="market-tab ${state.filters.market === market.key ? 'active' : ''}" data-market-filter="${escapeHtml(market.key)}">${escapeHtml(market.label)}</button>`).join('')}
     </div>
 
     <div class="filters filters-advanced">

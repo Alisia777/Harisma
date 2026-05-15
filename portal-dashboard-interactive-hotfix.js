@@ -198,6 +198,51 @@ const STYLE_ID = 'altea-dashboard-interactive-20260514wb2';
     const result = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
     return Number.isNaN(result.getTime()) ? null : result;
   };
+  const parseFreshStamp = (value) => {
+    if (!value) return 0;
+    if (value instanceof Date) return Number.isNaN(value.getTime()) ? 0 : value.getTime();
+    const raw = String(value || '').trim();
+    if (!raw) return 0;
+    const normalized = /^\d{4}-\d{2}$/.test(raw)
+      ? `${raw}-01T00:00:00Z`
+      : /^\d{4}-\d{2}-\d{2}$/.test(raw)
+        ? `${raw}T00:00:00Z`
+        : raw;
+    const stamp = Date.parse(normalized);
+    return Number.isFinite(stamp) ? stamp : 0;
+  };
+  const bumpFreshness = (score, value) => Math.max(score, parseFreshStamp(value));
+  function payloadFreshnessScore(key, payload) {
+    if (!payload || typeof payload !== 'object') return 0;
+    let score = 0;
+    score = bumpFreshness(score, payload.generatedAt);
+    score = bumpFreshness(score, payload.updatedAt);
+    score = bumpFreshness(score, payload.updated_at);
+    score = bumpFreshness(score, payload.asOfDate);
+    score = bumpFreshness(score, payload.latestMarketplaceDate);
+    score = bumpFreshness(score, payload.dataFreshness?.asOfDate);
+    score = bumpFreshness(score, payload.window?.to);
+    if (key === 'platformTrends' || key === 'adsSummary') {
+      (payload.platforms || []).forEach((platform) => {
+        (platform?.series || []).forEach((point) => {
+          score = bumpFreshness(score, point?.date || point?.label);
+        });
+      });
+    }
+    if (key === 'iuDrrSummary') {
+      (payload.daily || []).forEach((point) => {
+        score = bumpFreshness(score, point?.date || point?.label);
+      });
+    }
+    return score;
+  }
+  function chooseFreshDashboardPayload(key, existing, incoming) {
+    if (existing === null || existing === undefined) return incoming;
+    if (incoming === null || incoming === undefined) return existing;
+    return payloadFreshnessScore(key, existing) > payloadFreshnessScore(key, incoming)
+      ? existing
+      : incoming;
+  }
   const cleanDate = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const addDays = (date, offset) => {
     const next = cleanDate(date);
@@ -5566,7 +5611,6 @@ const STYLE_ID = 'altea-dashboard-interactive-20260514wb2';
 
   function dashboardControlPlatformKey(platformKey) {
     const key = canonicalDashboardPlatformKey(platformKey);
-    if (['ya', 'goldapple', 'letu', 'magnit', 'wb', 'ozon', 'all'].includes(key)) return key;
     return 'all';
   }
 
@@ -7221,7 +7265,8 @@ function dashboardTaskStatusChip(task) {
     }
     let text = await response.text();
     if (typeof sanitizeLooseJson === 'function') text = sanitizeLooseJson(text);
-    const payload = JSON.parse(text);
+    const staticPayload = JSON.parse(text);
+    const payload = chooseFreshDashboardPayload(key, existing, staticPayload);
     cache[key] = payload;
     const app = stateRef();
     if (app && key === 'orderProcurement') {

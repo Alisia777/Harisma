@@ -157,11 +157,20 @@ async function createTaskHistoryEntry(taskId, kind, text, payload = {}) {
 async function removeOwnerAssignment(articleKey) {
   const normalizedArticleKey = String(articleKey || '').trim();
   if (!normalizedArticleKey) return;
+  const clearedOverride = normalizeOwnerOverride({
+    articleKey: normalizedArticleKey,
+    ownerName: '',
+    ownerRole: '',
+    note: '',
+    updatedAt: new Date().toISOString(),
+    assignedBy: state.team.member.name || 'Команда'
+  });
   state.storage.ownerOverrides = (state.storage.ownerOverrides || []).filter((item) => item.articleKey !== normalizedArticleKey);
+  state.storage.ownerOverrides.unshift(clearedOverride);
   applyOwnerOverridesToSkus();
   saveLocalStorage();
   try {
-    await deleteOwnerOverride(normalizedArticleKey);
+    await persistOwnerOverride(clearedOverride);
   } catch (error) {
     console.error(error);
   }
@@ -184,10 +193,6 @@ function buildTaskUpdateMessage(before, after) {
 
 async function upsertOwnerAssignment(payload) {
   const normalizedOwnerName = canonicalOwnerName(payload?.ownerName || '');
-  if (!normalizedOwnerName) {
-    await removeOwnerAssignment(payload?.articleKey || '');
-    return;
-  }
   const override = normalizeOwnerOverride({
     articleKey: payload.articleKey,
     ownerName: normalizedOwnerName,

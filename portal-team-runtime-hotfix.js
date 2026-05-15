@@ -91,6 +91,24 @@
     return Boolean(app?.team?.ready && (app.team.accessToken || app.team.client));
   }
 
+  function mergeRemoteTasksWithLocalHotfix(remoteTasks = []) {
+    const app = appState();
+    const normalize = typeof normalizeStorageTasks === 'function'
+      ? normalizeStorageTasks
+      : (items) => Array.isArray(items) ? items : [];
+    const sort = typeof sortTasks === 'function'
+      ? sortTasks
+      : (items) => Array.isArray(items) ? items : [];
+    const merged = new Map();
+    normalize(app?.storage?.tasks || [], 'manual').forEach((task) => {
+      if (task?.id) merged.set(task.id, task);
+    });
+    normalize(remoteTasks || [], 'manual').forEach((task) => {
+      if (task?.id) merged.set(task.id, task);
+    });
+    return sort([...merged.values()]);
+  }
+
   async function queryRemoteHotfix(table) {
     if (!hasRemoteStoreHotfix()) return [];
     const app = appState();
@@ -102,7 +120,6 @@
       url.searchParams.set('brand', `eq.${cfg.brand}`);
       if (isTaskTable) {
         url.searchParams.set('select', 'id,article_key,title,next_action,reason,owner,due,status,type,priority,platform,source,entity_label,auto_code,created_at,updated_at');
-        url.searchParams.set('status', 'in.(new,in_progress,waiting_team,waiting_rop,waiting_decision)');
       } else {
         url.searchParams.set('select', '*');
       }
@@ -121,7 +138,6 @@
           .from(table)
           .select('id,article_key,title,next_action,reason,owner,due,status,type,priority,platform,source,entity_label,auto_code,created_at,updated_at')
           .eq('brand', currentBrandSafe())
-          .in('status', ['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision'])
       : app.team.client.from(table).select('*').eq('brand', currentBrandSafe());
     const response = await query;
     if (response?.error) throw response.error;
@@ -182,9 +198,7 @@
       const remoteEmpty = !taskRows.length && !commentRows.length && !decisionRows.length && !ownerRows.length;
 
       if (!remoteEmpty) {
-        app.storage.tasks = typeof normalizeStorageTasks === 'function'
-          ? normalizeStorageTasks(taskRows.map(fromRemoteTask), 'manual')
-          : taskRows.map(fromRemoteTask);
+        app.storage.tasks = mergeRemoteTasksWithLocalHotfix(taskRows.map(fromRemoteTask));
         app.storage.comments = commentRows.map(fromRemoteComment);
         app.storage.decisions = decisionRows.map(fromRemoteDecision);
         app.storage.ownerOverrides = ownerRows.map(fromRemoteOwner);

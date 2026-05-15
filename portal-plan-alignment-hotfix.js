@@ -19,7 +19,7 @@
       all: { label: 'Все площадки', revenue: 291518549 },
       wb: { label: 'WB', revenue: 179525953 },
       ozon: { label: 'Ozon', revenue: 103407638 },
-      ya: { label: 'ЯМ / сети', revenue: 8584958 }
+      ya: { label: 'Я.Маркет', revenue: 8584958 }
     }
   });
 
@@ -145,7 +145,7 @@
       channels: {
         wb: { label: 'WB', revenue: PLAN.channels.wb.revenue, dailyRevenue: PLAN.channels.wb.revenue / PLAN.days },
         ozon: { label: 'Ozon', revenue: PLAN.channels.ozon.revenue, dailyRevenue: PLAN.channels.ozon.revenue / PLAN.days },
-        ya: { label: 'ЯМ / сети', revenue: PLAN.channels.ya.revenue, dailyRevenue: PLAN.channels.ya.revenue / PLAN.days }
+        ya: { label: 'Я.Маркет', revenue: PLAN.channels.ya.revenue, dailyRevenue: PLAN.channels.ya.revenue / PLAN.days }
       }
     };
     state.dashboard.companyPlan = {

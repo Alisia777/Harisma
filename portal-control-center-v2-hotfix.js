@@ -1,5 +1,4 @@
 (function () {
-  if (window.__ALTEA_CONTROL_CENTER_V2__) return;
   if (window.__ALTEA_CONTROL_CENTER_V2_HOTFIX_20260421__) return;
   window.__ALTEA_CONTROL_CENTER_V2_HOTFIX_20260421__ = true;
 
@@ -15,7 +14,10 @@
     all: { label: 'Все задачи', chip: 'Все контуры', kind: '' },
     wb: { label: 'РОП WB', chip: 'WB', kind: 'warn' },
     ozon: { label: 'РОП Ozon', chip: 'Ozon', kind: 'info' },
-    retail: { label: 'ЯМ / сети', chip: 'ЯМ / сети', kind: 'ok' },
+    ya: { label: 'Я.Маркет', chip: 'Я.Маркет', kind: 'ok' },
+    goldapple: { label: 'Золотое яблоко', chip: 'Золотое яблоко', kind: 'ok' },
+    letu: { label: "Л'Этуаль", chip: "Л'Этуаль", kind: 'ok' },
+    magnit: { label: 'Магнит Маркет', chip: 'Магнит Маркет', kind: 'ok' },
     cross: { label: 'Общий контур', chip: 'Общий контур', kind: '' }
   };
 
@@ -36,11 +38,14 @@
     const raw = String(value || '').trim().toLowerCase();
     const text = `${raw} ${String(contextText || '').trim().toLowerCase()}`;
     if (raw === 'cross' || raw === 'common' || raw === 'general' || raw === 'shared') return 'cross';
-    if (raw === 'retail') return 'retail';
+    if (raw === 'retail') return 'ya';
     if (raw === 'wb') return 'wb';
     if (raw === 'ozon') return 'ozon';
     if (raw === 'wb+ozon' || raw === 'wb + ozon' || raw === 'all') return 'cross';
-    if (/яндекс|я[.\s-]?маркет|letu?al|л[еэ]туал|магнит|golden apple|золот[а-я\s-]*яблок/.test(text)) return 'retail';
+    if (/золот[а-я\s-]*яблок|goldapple|gold apple|zya|зя/.test(text)) return 'goldapple';
+    if (/л[еэ]туал|летуаль|letual|letu/.test(text)) return 'letu';
+    if (/магнит|magnit|mm/.test(text)) return 'magnit';
+    if (/яндекс|я[.\s-]?маркет|ym|yandex/.test(text)) return 'ya';
     if (/(^|\W)wb($|\W)|wildberries|вб/.test(text)) return 'wb';
     if (/ozon|озон/.test(text)) return 'ozon';
     return 'cross';
@@ -55,7 +60,11 @@
     const platform = normalizeTaskPlatform(task?.platform, text);
     if (platform === 'wb') return 'wb';
     if (platform === 'ozon') return 'ozon';
-    if (platform === 'retail') return 'retail';
+    if (platform === 'wb') return 'wb';
+    if (platform === 'ozon') return 'ozon';
+    if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'magnit') return platform;
+    if (platform === 'retail') return 'ya';
+    if (platform === 'cross') return 'cross';
     if (platform === 'cross') return 'cross';
     if (sku?.flags?.toWorkWB && !sku?.flags?.toWorkOzon) return 'wb';
     if (sku?.flags?.toWorkOzon && !sku?.flags?.toWorkWB) return 'ozon';
@@ -217,8 +226,37 @@
     openTaskModal(manual.id);
   }
 
+  async function ensureTaskRecordForUpdate(taskId) {
+    const normalizedTaskId = String(taskId || '').trim();
+    if (!normalizedTaskId) return null;
+
+    const existing = (state.storage.tasks || []).find((item) => item.id === normalizedTaskId);
+    if (existing) return existing;
+
+    const sourceTask = typeof getAllTasks === 'function'
+      ? getAllTasks().find((item) => item?.id === normalizedTaskId) || null
+      : null;
+    if (!sourceTask) return null;
+
+    const materialized = normalizeTask({
+      ...sourceTask,
+      id: normalizedTaskId,
+      source: 'manual',
+      createdAt: sourceTask.createdAt || new Date().toISOString()
+    }, 'manual');
+
+    state.storage.tasks.unshift(materialized);
+    saveLocalStorage();
+    try {
+      await persistTask(materialized);
+    } catch (error) {
+      console.error(error);
+    }
+    return materialized;
+  }
+
   async function updateTaskRecord(taskId, patch) {
-    const current = (state.storage.tasks || []).find((item) => item.id === taskId);
+    const current = await ensureTaskRecordForUpdate(taskId);
     if (!current) return null;
     const before = { ...current };
     const updated = normalizeTask({
@@ -454,7 +492,10 @@
               <option value="cross" ${normalizeTaskPlatform(task.platform) === 'cross' ? 'selected' : ''}>Общий контур</option>
               <option value="wb" ${normalizeTaskPlatform(task.platform) === 'wb' ? 'selected' : ''}>РОП WB</option>
               <option value="ozon" ${normalizeTaskPlatform(task.platform) === 'ozon' ? 'selected' : ''}>РОП Ozon</option>
-              <option value="retail" ${normalizeTaskPlatform(task.platform) === 'retail' ? 'selected' : ''}>ЯМ / сети</option>
+              <option value="ya" ${normalizeTaskPlatform(task.platform) === 'ya' ? 'selected' : ''}>Я.Маркет</option>
+              <option value="goldapple" ${normalizeTaskPlatform(task.platform) === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
+              <option value="letu" ${normalizeTaskPlatform(task.platform) === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+              <option value="magnit" ${normalizeTaskPlatform(task.platform) === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
             </select>
             <textarea name="nextAction" rows="4" placeholder="Следующее действие">${escapeHtml(task.nextAction || '')}</textarea>
             <textarea name="reason" rows="4" placeholder="Контекст / почему задача возникла">${escapeHtml(task.reason || '')}</textarea>
@@ -699,17 +740,19 @@
               <select name="status">${Object.entries(TASK_STATUS_META).map(([value, meta]) => `<option value="${value}" ${task.status === value ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}</select>
               <select name="priority">${Object.entries(PRIORITY_META).map(([value, meta]) => `<option value="${value}" ${task.priority === value ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}</select>
               <select name="type">${Object.entries(TASK_TYPE_META).map(([value, label]) => `<option value="${value}" ${task.type === value ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select>
-              <select name="platform">
-                <option value="cross" ${normalizeTaskPlatform(task.platform) === 'cross' ? 'selected' : ''}>Общий контур</option>
-                <option value="wb" ${normalizeTaskPlatform(task.platform) === 'wb' ? 'selected' : ''}>РОП WB</option>
-                <option value="ozon" ${normalizeTaskPlatform(task.platform) === 'ozon' ? 'selected' : ''}>РОП Ozon</option>
-                <option value="retail" ${normalizeTaskPlatform(task.platform) === 'retail' ? 'selected' : ''}>ЯМ / сети</option>
-              </select>
-              <textarea name="reason" rows="3" placeholder="Контекст / почему задача возникла">${escapeHtml(task.reason || '')}</textarea>
-            </div>
-          </details>
-          <button class="btn primary" type="submit">Сохранить</button>
-        </form>
+            <select name="platform">
+              <option value="cross" ${normalizeTaskPlatform(task.platform) === 'cross' ? 'selected' : ''}>Общий контур</option>
+              <option value="wb" ${normalizeTaskPlatform(task.platform) === 'wb' ? 'selected' : ''}>РОП WB</option>
+              <option value="ozon" ${normalizeTaskPlatform(task.platform) === 'ozon' ? 'selected' : ''}>РОП Ozon</option>
+              <option value="ya" ${normalizeTaskPlatform(task.platform) === 'ya' ? 'selected' : ''}>Я.Маркет</option>
+              <option value="goldapple" ${normalizeTaskPlatform(task.platform) === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
+              <option value="letu" ${normalizeTaskPlatform(task.platform) === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+              <option value="magnit" ${normalizeTaskPlatform(task.platform) === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
+            </select>
+            <textarea name="nextAction" rows="4" placeholder="Следующее действие">${escapeHtml(task.nextAction || '')}</textarea>
+            <textarea name="reason" rows="4" placeholder="Контекст / почему задача возникла">${escapeHtml(task.reason || '')}</textarea>
+            <button class="btn primary" type="submit">Сохранить изменения</button>
+          </form>
       </div>
     `;
   }
@@ -758,13 +801,16 @@
             <input name="due" type="date" value="${plusDays(2)}">
           </div>
           ${fixedPlatform
-            ? `<input type="hidden" name="platform" value="${escapeHtml(defaultPlatform)}"><div class="inline-hint">Контур задачи: ${escapeHtml(controlWorkstreamMeta(selectedWorkstream).label)}</div>`
+            ? `<input type="hidden" name="platform" value="${escapeHtml(defaultPlatform)}"><div class="inline-hint">Контур задачи: ${escapeHtml(workstreamMeta(selectedWorkstream).label)}</div>`
             : `
               <select name="platform">
                 <option value="cross" ${defaultPlatform === 'cross' ? 'selected' : ''}>Общий контур</option>
                 <option value="wb">РОП WB</option>
                 <option value="ozon">РОП Ozon</option>
-                <option value="retail">ЯМ / сети</option>
+                <option value="ya">Я.Маркет</option>
+                <option value="goldapple">Золотое яблоко</option>
+                <option value="letu">Л'Этуаль</option>
+                <option value="magnit">Магнит Маркет</option>
               </select>
             `}
           <textarea name="nextAction" rows="3" placeholder="Какой первый шаг делаем сразу" required></textarea>
@@ -796,7 +842,8 @@
     const tasks = typeof filteredControlTasks === 'function' ? filteredControlTasks() : getAllTasks();
     const owners = ownerOptions();
     const approvalCount = tasks.filter((task) => task.status === 'waiting_rop' || task.status === 'waiting_decision').length;
-    const selectedWorkstream = CONTROL_WORKSTREAM_META[state?.controlFilters?.platform] ? state.controlFilters.platform : 'all';
+    const selectedWorkstreamRaw = String(state?.controlFilters?.platform || '').trim().toLowerCase();
+    const selectedWorkstream = selectedWorkstreamRaw === 'retail' ? 'ya' : (CONTROL_WORKSTREAM_META[selectedWorkstreamRaw] ? selectedWorkstreamRaw : 'all');
     const firstTwoCol = root.querySelector('.two-col');
     const firstRowCards = firstTwoCol ? Array.from(firstTwoCol.children).filter((node) => node.classList?.contains('card')) : [];
 
@@ -842,8 +889,11 @@
     const platformSelect = root.querySelector('#controlPlatformFilter');
     if (platformSelect && !platformSelect.querySelector('option[value="cross"]')) {
       platformSelect.insertAdjacentHTML('beforeend', `
-        <option value="retail" ${state.controlFilters.platform === 'retail' ? 'selected' : ''}>ЯМ / сети</option>
-        <option value="cross" ${state.controlFilters.platform === 'cross' ? 'selected' : ''}>Общий контур</option>
+        <option value="ya" ${selectedWorkstream === 'ya' ? 'selected' : ''}>Я.Маркет</option>
+        <option value="goldapple" ${selectedWorkstream === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
+        <option value="letu" ${selectedWorkstream === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+        <option value="magnit" ${selectedWorkstream === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
+        <option value="cross" ${selectedWorkstream === 'cross' ? 'selected' : ''}>Общий контур</option>
       `);
     }
   }
@@ -865,6 +915,10 @@
     window.renderTaskModal = renderTaskModal;
     window.createTaskHistoryEntry = createTaskHistoryEntry;
     window.closeTaskWithReport = finalCloseTaskWithReport;
+    window.submitTaskForRopApproval = submitTaskForRopApproval;
+    window.approveTaskByRop = approveTaskByRop;
+    window.returnTaskToWork = returnTaskToWork;
+    window.finalCloseTaskWithReport = finalCloseTaskWithReport;
     window.updateTaskRecord = updateTaskRecord;
     window.taskPlatformBadge = function patchedTaskPlatformBadge(task) {
       const meta = controlWorkstreamMeta(controlWorkstreamKey(task, getSku(task.articleKey)));
@@ -893,7 +947,13 @@
     try { renderMiniTask = window.renderMiniTask; } catch {}
     try { createManualTask = window.createManualTask; } catch {}
     try { takeAutoTask = window.takeAutoTask; } catch {}
+    try { updateTaskRecord = window.updateTaskRecord; } catch {}
     try { updateTaskStatus = window.updateTaskStatus; } catch {}
+    try { submitTaskForRopApproval = window.submitTaskForRopApproval; } catch {}
+    try { approveTaskByRop = window.approveTaskByRop; } catch {}
+    try { returnTaskToWork = window.returnTaskToWork; } catch {}
+    try { finalCloseTaskWithReport = window.finalCloseTaskWithReport; } catch {}
+    try { closeTaskWithReport = window.closeTaskWithReport; } catch {}
     try { getSkuComments = window.getSkuComments; } catch {}
     try { renderControlCenter = window.renderControlCenter; } catch {}
   }

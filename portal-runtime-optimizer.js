@@ -1,6 +1,5 @@
 (function () {
-if (window.__ALTEA_RUNTIME_OPTIMIZER_20260514_PRICESMARKET1__) return;
-window.__ALTEA_RUNTIME_OPTIMIZER_20260514_PRICESMARKET1__ = true;
+if (window.__ALTEA_RUNTIME_OPTIMIZER_20260505A__) return;
 window.__ALTEA_RUNTIME_OPTIMIZER_20260505A__ = true;
 window.__ALTEA_RUNTIME_OPTIMIZER_20260503D__ = true;
 window.__ALTEA_RUNTIME_OPTIMIZER_20260503C__ = true;
@@ -26,8 +25,8 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
     order: [],
     prices: [
       'portal-price-local-fetch-bypass-hotfix.js?v=20260428a',
-      'portal-price-workbench-runtime-loader.js?v=20260514marketplaces1',
-      'portal-team-reconnect-hotfix.js?v=20260420a'
+      'portal-price-workbench-runtime-loader.js?v=20260515markets1',
+      'portal-team-reconnect-hotfix.js?v=20260515a'
     ]
   };
 
@@ -113,6 +112,11 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
   }
 
   let hasUserNavigation = false;
+  let hasBooted = false;
+  let deferredRefreshGeneration = 0;
+  let lastResumeRefreshAt = 0;
+  let resumeRefreshPromise = null;
+  let resumeRefreshTimer = null;
 
   function getActiveView() {
     if (typeof state === 'object' && state && state.activeView) return state.activeView;
@@ -205,6 +209,69 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
     }
   }
 
+  function invalidateDeferredData() {
+    deferredRefreshGeneration += 1;
+    Object.keys(deferredReady).forEach((key) => {
+      deferredReady[key] = false;
+    });
+    deferredLoads.clear();
+  }
+
+  window.__alteaInvalidateDeferredData = invalidateDeferredData;
+
+  function refreshSnapshotBackedStateOnResume(reason = 'resume') {
+    if (document.hidden) return Promise.resolve(false);
+    if (resumeRefreshPromise) return resumeRefreshPromise;
+    const now = Date.now();
+    if (now - lastResumeRefreshAt < 8000) return Promise.resolve(false);
+    lastResumeRefreshAt = now;
+
+    const activeView = getActiveView();
+    const deferredKey = VIEW_TO_DATA_KEY[activeView] || '';
+    invalidateDeferredData();
+
+    if (typeof window.__alteaResetPortalSnapshotState === 'function') {
+      try {
+        window.__alteaResetPortalSnapshotState();
+      } catch (error) {
+        console.warn('[portal-runtime-optimizer] reset snapshot cache', error);
+      }
+    }
+
+    const refreshFn = typeof window.__alteaRefreshSnapshotBackedState === 'function'
+      ? window.__alteaRefreshSnapshotBackedState
+      : null;
+
+    resumeRefreshPromise = Promise.resolve()
+      .then(() => (refreshFn ? refreshFn({ rerender: false }) : false))
+      .then((changed) => {
+        if (deferredKey) {
+          handleDeferredView(activeView);
+        } else {
+          safeRerender();
+        }
+        return changed;
+      })
+      .catch((error) => {
+        console.warn('[portal-runtime-optimizer] resume refresh', reason, error);
+        return false;
+      })
+      .finally(() => {
+        resumeRefreshPromise = null;
+      });
+
+    return resumeRefreshPromise;
+  }
+
+  function scheduleResumeRefresh(reason = 'resume') {
+    if (!hasBooted || document.hidden) return;
+    if (resumeRefreshTimer) window.clearTimeout(resumeRefreshTimer);
+    resumeRefreshTimer = window.setTimeout(() => {
+      resumeRefreshTimer = null;
+      void refreshSnapshotBackedStateOnResume(reason);
+    }, 80);
+  }
+
   function forceActivateView(view) {
     if (!view) return;
     if (typeof setView === 'function') {
@@ -268,12 +335,14 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
     if (deferredLoads.has(key)) return deferredLoads.get(key);
     const config = DEFERRED_DATA[key];
     if (!config || typeof loadJsonOrFallback !== 'function') return;
+    const generation = deferredRefreshGeneration;
 
     const promise = Promise.resolve()
       .then(async () => {
         window.__ALTEA_ALLOW_REAL_DEFERRED_FETCH__ = true;
         try {
           const payload = await loadJsonOrFallback(config.path, config.fallback, config.label);
+          if (generation !== deferredRefreshGeneration) return;
           config.assign(payload);
           deferredReady[key] = true;
         } finally {
@@ -293,7 +362,7 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
         }
       })
       .finally(() => {
-        deferredLoads.delete(key);
+        if (deferredLoads.get(key) === promise) deferredLoads.delete(key);
       });
 
     deferredLoads.set(key, promise);
@@ -336,6 +405,7 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
       const activeView = getActiveView();
       loadBundleForView(activeView);
       handleDeferredView(activeView);
+      hasBooted = true;
     };
 
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
@@ -350,4 +420,11 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
   installDeferredFetch();
   bindNavigation();
   warmCurrentView();
+  window.addEventListener('focus', () => scheduleResumeRefresh('focus'));
+  window.addEventListener('pageshow', (event) => {
+    if (event?.persisted) scheduleResumeRefresh('pageshow');
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) scheduleResumeRefresh('visibilitychange');
+  });
 })();

@@ -200,6 +200,28 @@
     var payloadByKey = {};
     var metaByKey = {};
     var chunkGroups = {};
+    var freshnessByKey = {};
+
+    function rowFreshness(row) {
+      return Math.max(
+        parseFreshStamp(row && row.updated_at),
+        parseFreshStamp(row && row.generated_at),
+        parseFreshStamp(row && row.updatedAt),
+        parseFreshStamp(row && row.payload && row.payload.generatedAt),
+        parseFreshStamp(row && row.payload && row.payload.updatedAt),
+        parseFreshStamp(row && row.payload && row.payload.updated_at),
+        parseFreshStamp(row && row.payload && row.payload.asOfDate),
+        parseFreshStamp(row && row.payload && row.payload.dataFreshness && row.payload.dataFreshness.asOfDate)
+      );
+    }
+
+    function rememberRow(snapshotKey, row) {
+      var freshness = rowFreshness(row);
+      if (freshnessByKey[snapshotKey] !== undefined && freshnessByKey[snapshotKey] > freshness) return;
+      freshnessByKey[snapshotKey] = freshness;
+      metaByKey[snapshotKey] = row;
+      payloadByKey[snapshotKey] = withRowMeta(row, row && row.payload);
+    }
 
     (rows || []).forEach(function (row) {
       var snapshotKey = String(row && row.snapshot_key || "").trim();
@@ -207,15 +229,15 @@
       var chunkMeta = parseChunkedSnapshotKey(snapshotKey);
       if (!chunkMeta && !isAllowedSnapshotKey(snapshotKey)) return;
       if (chunkMeta && !isAllowedSnapshotKey(chunkMeta.baseKey)) return;
-      metaByKey[snapshotKey] = row;
+      rememberRow(snapshotKey, row);
       if (!chunkMeta) {
-        payloadByKey[snapshotKey] = withRowMeta(row, row && row.payload);
         return;
       }
       if (!chunkGroups[chunkMeta.baseKey]) chunkGroups[chunkMeta.baseKey] = [];
       chunkGroups[chunkMeta.baseKey].push({
         index: chunkMeta.index,
-        payload: row && row.payload
+        payload: row && row.payload,
+        snapshotKey: snapshotKey
       });
     });
 
@@ -227,16 +249,30 @@
           || metaRow && metaRow.payload && (metaRow.payload.chunk_count != null ? metaRow.payload.chunk_count : metaRow.payload.chunkCount)
           || 0
       );
-      var parts = chunkGroups[baseKey]
+      var partsByIndex = {};
+      chunkGroups[baseKey]
         .filter(function (part) {
           return part.index >= 1 && (!expected || part.index <= expected);
         })
-        .sort(function (left, right) {
-          return left.index - right.index;
+        .forEach(function (part) {
+          var prev = partsByIndex[part.index];
+          var freshness = freshnessByKey[part.snapshotKey] || 0;
+          if (prev && prev.freshness > freshness) return;
+          partsByIndex[part.index] = {
+            freshness: freshness,
+            payload: part.payload
+          };
         });
-      var chunkCount = expected > 0 ? expected : parts.length;
-      if (!parts.length || parts.length !== chunkCount) return;
-      var text = parts.map(function (part) {
+      var orderedIndexes = Object.keys(partsByIndex)
+        .map(function (index) { return Number(index); })
+        .sort(function (left, right) {
+          return left - right;
+        });
+      var chunkCount = expected > 0 ? expected : orderedIndexes.length;
+      if (!orderedIndexes.length || orderedIndexes.length !== chunkCount) return;
+      var text = orderedIndexes.map(function (index) {
+        var part = partsByIndex[index];
+        if (!part) return "";
         if (typeof part.payload === "string") return part.payload;
         if (typeof (part.payload && part.payload.data) === "string") return part.payload.data;
         return "";
@@ -284,31 +320,53 @@
     return response.json();
   }
 
+  async function requestRowsForExactKeys(cfg, baseUrl, brand, keys) {
+    var result = [];
+    var cleanKeys = (Array.isArray(keys) ? keys : [])
+      .map(function (key) { return String(key || "").trim(); })
+      .filter(Boolean);
+    for (var index = 0; index < cleanKeys.length; index += 40) {
+      var batch = cleanKeys.slice(index, index + 40);
+      var url = buildSnapshotUrl(baseUrl, brand);
+      url.searchParams.set("snapshot_key", batch.length === 1 ? "eq." + batch[0] : "in.(" + batch.join(",") + ")");
+      result = result.concat(await requestSnapshotRows(url, cfg));
+    }
+    return result;
+  }
+
+  function snapshotPartKeys(snapshotKey, count) {
+    var total = Math.max(0, Math.trunc(Number(count) || 0));
+    var keys = [];
+    for (var index = 1; index <= total; index += 1) {
+      keys.push(snapshotKey + "__part__" + String(index).padStart(4, "0"));
+    }
+    return keys;
+  }
+
   async function fetchRowsForKey(cfg, baseUrl, brand, snapshotKey) {
     if (!isAllowedSnapshotKey(snapshotKey)) return [];
-    var metaUrl = buildSnapshotUrl(baseUrl, brand);
-    metaUrl.searchParams.set("snapshot_key", "eq." + snapshotKey);
-    var rows = await requestSnapshotRows(metaUrl, cfg);
-    if (!rows.some(rowIsChunkMeta)) return rows;
-    var partsUrl = buildSnapshotUrl(baseUrl, brand);
-    partsUrl.searchParams.set("snapshot_key", "like." + snapshotKey + "__part__*");
-    var parts = await requestSnapshotRows(partsUrl, cfg);
+    var rows = await requestRowsForExactKeys(cfg, baseUrl, brand, [snapshotKey]);
+    var metaRow = rows.find(rowIsChunkMeta);
+    if (!metaRow) return rows;
+    var count = Number(metaRow.payload && (metaRow.payload.chunk_count || metaRow.payload.chunkCount) || 0);
+    var parts = await requestRowsForExactKeys(cfg, baseUrl, brand, snapshotPartKeys(snapshotKey, count));
     return rows.concat(parts);
   }
 
   async function fetchRowsForAllowedKeys(cfg, baseUrl, brand) {
-    var metaUrl = buildSnapshotUrl(baseUrl, brand);
-    metaUrl.searchParams.set("snapshot_key", "in.(" + ALLOWED_SNAPSHOT_KEYS.join(",") + ")");
-    var rows = await requestSnapshotRows(metaUrl, cfg);
+    var rows = await requestRowsForExactKeys(cfg, baseUrl, brand, ALLOWED_SNAPSHOT_KEYS);
     var chunkedKeys = rows
       .filter(rowIsChunkMeta)
-      .map(function (row) { return String(row && row.snapshot_key || "").trim(); })
-      .filter(isAllowedSnapshotKey);
+      .map(function (row) {
+        return {
+          key: String(row && row.snapshot_key || "").trim(),
+          count: Number(row && row.payload && (row.payload.chunk_count || row.payload.chunkCount) || 0)
+        };
+      })
+      .filter(function (item) { return isAllowedSnapshotKey(item.key) && item.count > 0; });
     if (!chunkedKeys.length) return rows;
-    var partGroups = await Promise.all(chunkedKeys.map(function (snapshotKey) {
-      var partsUrl = buildSnapshotUrl(baseUrl, brand);
-      partsUrl.searchParams.set("snapshot_key", "like." + snapshotKey + "__part__*");
-      return requestSnapshotRows(partsUrl, cfg);
+    var partGroups = await Promise.all(chunkedKeys.map(function (item) {
+      return requestRowsForExactKeys(cfg, baseUrl, brand, snapshotPartKeys(item.key, item.count));
     }));
     return rows.concat.apply(rows, partGroups);
   }
@@ -456,17 +514,79 @@
 
   window.__alteaRefreshSnapshotBackedState = async function refreshSnapshotBackedState(options) {
     var rerender = !options || options.rerender !== false;
+    var optionalLoader = typeof optionalLoadJson === "function"
+      ? optionalLoadJson
+      : function () { return Promise.resolve(null); };
     var results = await Promise.all([
       loadSnapshotAwareJson("data/dashboard.json", { cards: [], generatedAt: "" }, true),
-      loadSnapshotAwareJson("data/skus.json", [], false)
+      loadSnapshotAwareJson("data/skus.json", [], true),
+      loadSnapshotAwareJson("data/ads_summary.json", { generatedAt: "", asOfDate: "", note: "", platforms: [], itemSeries: [] }, true),
+      loadSnapshotAwareJson("data/iu_drr_summary.json", { generatedAt: "", asOfDate: "", months: [], daily: [], channels: [], diagnostics: {} }, true),
+      loadSnapshotAwareJson("data/wb_feedbacks_summary.json", { generatedAt: "", window: {}, summary: {}, cards: [], daily: [], history: [] }, true),
+      loadSnapshotAwareJson("data/product_leaderboard.json", { generatedAt: "", items: [], summary: {} }, true),
+      loadSnapshotAwareJson("data/product_leaderboard_history.json", [], true),
+      loadSnapshotAwareJson("data/prices.json", { generatedAt: "", platforms: {} }, true),
+      loadSnapshotAwareJson("data/smart_price_workbench.json", { generatedAt: "", platforms: {} }, true),
+      optionalLoader("tmp-smart_price_workbench-live.json"),
+      loadSnapshotAwareJson("data/smart_price_overlay.json", { generatedAt: "", platforms: {} }, true),
+      optionalLoader("tmp-live-repricer.json"),
+      loadSnapshotAwareJson("data/repricer.json", { generatedAt: "", summary: {}, rows: [] }, true),
+      loadSnapshotAwareJson("data/price_workbench_support.json", { generatedAt: "", platforms: {} }, true)
     ]);
     var dashboard = results[0];
     var skus = results[1];
+    var adsSummary = results[2];
+    var iuDrrSummary = results[3];
+    var wbFeedbacks = results[4];
+    var productLeaderboard = results[5];
+    var productLeaderboardHistory = results[6];
+    var prices = results[7];
+    var smartPriceWorkbench = results[8];
+    var smartPriceWorkbenchLive = results[9];
+    var smartPriceOverlay = results[10];
+    var repricerLive = results[11];
+    var repricer = results[12];
+    var priceWorkbenchSupport = results[13];
     var changed = false;
 
     if (typeof state === "object" && state) {
       var nextDashboard = dashboard || { cards: [], generatedAt: "" };
       var nextSkus = Array.isArray(skus) ? skus : [];
+      var nextAdsSummary = adsSummary && typeof adsSummary === "object"
+        ? adsSummary
+        : { generatedAt: "", asOfDate: "", note: "", platforms: [], itemSeries: [] };
+      var nextIuDrrSummary = iuDrrSummary && typeof iuDrrSummary === "object"
+        ? iuDrrSummary
+        : { generatedAt: "", asOfDate: "", months: [], daily: [], channels: [], diagnostics: {} };
+      var nextWbFeedbacks = wbFeedbacks && typeof wbFeedbacks === "object"
+        ? wbFeedbacks
+        : { generatedAt: "", window: {}, summary: {}, cards: [], daily: [], history: [] };
+      var nextProductLeaderboard = typeof normalizeProductLeaderboardPayload === "function"
+        ? normalizeProductLeaderboardPayload(productLeaderboard || { generatedAt: "", items: [], summary: {} })
+        : (productLeaderboard || { generatedAt: "", items: [], summary: {} });
+      var nextProductLeaderboardHistory = Array.isArray(productLeaderboardHistory) ? productLeaderboardHistory : [];
+      var nextPrices = prices && typeof prices === "object" ? prices : { generatedAt: "", platforms: {} };
+      var nextSmartPriceWorkbenchLive = smartPriceWorkbenchLive && typeof smartPriceWorkbenchLive === "object"
+        ? smartPriceWorkbenchLive
+        : { generatedAt: "", platforms: {} };
+      var nextSmartPriceOverlay = smartPriceOverlay && typeof smartPriceOverlay === "object"
+        ? smartPriceOverlay
+        : { generatedAt: "", platforms: {} };
+      var nextRepricerLive = repricerLive && typeof repricerLive === "object"
+        ? repricerLive
+        : { generatedAt: "", rows: [] };
+      var nextRepricer = repricer && typeof repricer === "object"
+        ? repricer
+        : { generatedAt: "", summary: {}, rows: [] };
+      var nextPriceWorkbenchSupport = priceWorkbenchSupport && typeof priceWorkbenchSupport === "object"
+        ? priceWorkbenchSupport
+        : { generatedAt: "", platforms: {} };
+      var nextSmartPriceWorkbenchBase = typeof mergeSmartWorkbenchPayload === "function"
+        ? mergeSmartWorkbenchPayload(smartPriceWorkbench || { generatedAt: "", platforms: {} }, nextSmartPriceWorkbenchLive)
+        : (smartPriceWorkbench || { generatedAt: "", platforms: {} });
+      var nextSmartPriceWorkbench = typeof mergeSmartWorkbenchPriceOverlay === "function"
+        ? mergeSmartWorkbenchPriceOverlay(nextSmartPriceWorkbenchBase, nextSmartPriceOverlay)
+        : nextSmartPriceWorkbenchBase;
 
       if (payloadChanged("dashboard", state.dashboard, nextDashboard)) {
         state.dashboard = nextDashboard;
@@ -474,6 +594,58 @@
       }
       if (payloadChanged("skus", state.skus, nextSkus)) {
         state.skus = nextSkus;
+        changed = true;
+      }
+      if (payloadChanged("adsSummary", state.adsSummary, nextAdsSummary)) {
+        state.adsSummary = nextAdsSummary;
+        changed = true;
+      }
+      if (payloadChanged("iuDrrSummary", state.iuDrrSummary, nextIuDrrSummary)) {
+        state.iuDrrSummary = nextIuDrrSummary;
+        changed = true;
+      }
+      if (payloadChanged("wbFeedbacks", state.wbFeedbacks, nextWbFeedbacks)) {
+        state.wbFeedbacks = nextWbFeedbacks;
+        changed = true;
+      }
+      if (payloadChanged("productLeaderboard", state.productLeaderboard, nextProductLeaderboard)) {
+        state.productLeaderboard = nextProductLeaderboard;
+        changed = true;
+      }
+      if (payloadChanged("productLeaderboardHistory", state.productLeaderboardHistory, nextProductLeaderboardHistory)) {
+        state.productLeaderboardHistory = nextProductLeaderboardHistory;
+        changed = true;
+      }
+      if (payloadChanged("prices", state.prices, nextPrices)) {
+        state.prices = nextPrices;
+        changed = true;
+      }
+      if (payloadChanged("smartPriceWorkbenchBase", state.smartPriceWorkbenchBase, nextSmartPriceWorkbenchBase)) {
+        state.smartPriceWorkbenchBase = nextSmartPriceWorkbenchBase;
+        changed = true;
+      }
+      if (payloadChanged("smartPriceWorkbench", state.smartPriceWorkbench, nextSmartPriceWorkbench)) {
+        state.smartPriceWorkbench = nextSmartPriceWorkbench;
+        changed = true;
+      }
+      if (payloadChanged("smartPriceWorkbenchLive", state.smartPriceWorkbenchLive, nextSmartPriceWorkbenchLive)) {
+        state.smartPriceWorkbenchLive = nextSmartPriceWorkbenchLive;
+        changed = true;
+      }
+      if (payloadChanged("smartPriceOverlay", state.smartPriceOverlay, nextSmartPriceOverlay)) {
+        state.smartPriceOverlay = nextSmartPriceOverlay;
+        changed = true;
+      }
+      if (payloadChanged("repricerLive", state.repricerLive, nextRepricerLive)) {
+        state.repricerLive = nextRepricerLive;
+        changed = true;
+      }
+      if (payloadChanged("repricer", state.repricer, nextRepricer)) {
+        state.repricer = nextRepricer;
+        changed = true;
+      }
+      if (payloadChanged("priceWorkbenchSupport", state.priceWorkbenchSupport, nextPriceWorkbenchSupport)) {
+        state.priceWorkbenchSupport = nextPriceWorkbenchSupport;
         changed = true;
       }
       if (changed && typeof applyOwnerOverridesToSkus === "function") applyOwnerOverridesToSkus();

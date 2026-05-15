@@ -2,6 +2,8 @@
   dashboard: { cards: [], generatedAt: '' },
   skus: [],
   prices: { generatedAt: '', platforms: {} },
+  platformTrends: { generatedAt: '', platforms: [], extraMarketplace: { generatedAt: '', asOfDate: '', platforms: {} } },
+  platformPlan: { generatedAt: '', months: {} },
   smartPriceWorkbench: { generatedAt: '', platforms: {} },
   smartPriceWorkbenchBase: { generatedAt: '', platforms: {} },
   smartPriceWorkbenchLive: { generatedAt: '', platforms: {} },
@@ -251,10 +253,28 @@ const CONTROL_WORKSTREAM_META = {
     description: 'Отдельный контур по Wildberries.',
     kind: 'warn'
   },
-  retail: {
-    label: 'ЯМ / Летуаль / Магнит / ЗЯ',
-    chip: 'Сети',
-    description: 'Яндекс Маркет, Летуаль, Магнит и Золотое Яблоко одним РОПом.',
+  ya: {
+    label: 'Я.Маркет',
+    chip: 'Я.Маркет',
+    description: 'Отдельный контур Яндекс Маркета.',
+    kind: 'ok'
+  },
+  goldapple: {
+    label: 'Золотое яблоко',
+    chip: 'Золотое яблоко',
+    description: 'Отдельный контур Золотого Яблока.',
+    kind: 'ok'
+  },
+  letu: {
+    label: "Л'Этуаль",
+    chip: "Л'Этуаль",
+    description: 'Отдельный контур Л\'Этуаль.',
+    kind: 'ok'
+  },
+  magnit: {
+    label: 'Магнит Маркет',
+    chip: 'Магнит Маркет',
+    description: 'Отдельный контур Магнит Маркета.',
     kind: 'ok'
   },
   product: {
@@ -277,7 +297,7 @@ const CONTROL_WORKSTREAM_META = {
   }
 };
 
-const CONTROL_WORKSTREAM_ORDER = ['cross', 'wb', 'ozon', 'retail', 'product', 'executive'];
+const CONTROL_WORKSTREAM_ORDER = ['cross', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'executive'];
 const CONTROL_WORKSTREAM_FILTER_ORDER = ['all', ...CONTROL_WORKSTREAM_ORDER];
 
 const DEFAULT_APP_CONFIG = {
@@ -1153,20 +1173,42 @@ function parseChunkedSnapshotKey(snapshotKey = '') {
 
 function decodeChunkedPortalSnapshots(data) {
   const rows = {};
+  const rowFreshness = {};
   const chunkGroups = new Map();
+
+  const snapshotRowStamp = (row) => Math.max(
+    parseFreshStamp(row?.updated_at),
+    parseFreshStamp(row?.generated_at),
+    parseFreshStamp(row?.updatedAt),
+    parseFreshStamp(row?.payload?.generatedAt),
+    parseFreshStamp(row?.payload?.updatedAt),
+    parseFreshStamp(row?.payload?.updated_at),
+    parseFreshStamp(row?.payload?.asOfDate),
+    parseFreshStamp(row?.payload?.dataFreshness?.asOfDate)
+  );
+
+  const rememberRow = (snapshotKey, row) => {
+    if (!snapshotKey) return;
+    const freshness = snapshotRowStamp(row);
+    if (rowFreshness[snapshotKey] !== undefined && rowFreshness[snapshotKey] > freshness) return;
+    rowFreshness[snapshotKey] = freshness;
+    rows[snapshotKey] = row?.payload;
+  };
 
   for (const row of data || []) {
     const snapshotKey = String(row?.snapshot_key || '').trim();
     if (!snapshotKey) continue;
     const chunkMeta = parseChunkedSnapshotKey(snapshotKey);
     if (!chunkMeta) {
-      rows[snapshotKey] = row?.payload;
+      rememberRow(snapshotKey, row);
       continue;
     }
+    rememberRow(snapshotKey, row);
     if (!chunkGroups.has(chunkMeta.baseKey)) chunkGroups.set(chunkMeta.baseKey, []);
     chunkGroups.get(chunkMeta.baseKey).push({
       index: chunkMeta.index,
-      payload: row?.payload
+      payload: row?.payload,
+      snapshotKey
     });
   }
 
@@ -1175,14 +1217,25 @@ function decodeChunkedPortalSnapshots(data) {
     if (meta && meta.chunked !== true) continue;
     const expectedCount = Number(meta?.chunk_count || meta?.chunkCount || 0);
     const chunkCount = expectedCount > 0 ? expectedCount : parts.length;
-    const ordered = parts
-      .filter((part) => part.index >= 1 && part.index <= chunkCount)
-      .sort((left, right) => left.index - right.index);
-    if (!ordered.length || ordered.length !== chunkCount) continue;
-    const text = ordered
+    const ordered = new Map();
+    parts.forEach((part) => {
+      if (part.index < 1 || part.index > chunkCount) return;
+      const existing = ordered.get(part.index);
+      const freshness = rowFreshness[part.snapshotKey] || 0;
+      if (existing && existing.freshness > freshness) return;
+      ordered.set(part.index, {
+        freshness,
+        payload: part.payload
+      });
+    });
+    const orderedParts = Array.from(ordered.entries())
+      .sort((left, right) => left[0] - right[0])
+      .map((entry) => entry[1].payload);
+    if (!orderedParts.length || orderedParts.length !== chunkCount) continue;
+    const text = orderedParts
       .map((part) => {
-        if (typeof part.payload === 'string') return part.payload;
-        if (typeof part.payload?.data === 'string') return part.payload.data;
+        if (typeof part === 'string') return part;
+        if (typeof part?.data === 'string') return part.data;
         return '';
       })
       .join('');
@@ -1675,8 +1728,8 @@ const OWNER_CANONICAL_NAMES = new Map([
   ['алексей', 'Алексей'],
   ['александр', 'Александр Озон'],
   ['анна', 'Анна'],
-  ['артем', 'Александр Озон'],
-  ['артём', 'Александр Озон'],
+  ['артем', 'Артем'],
+  ['артём', 'Артем'],
   ['дарья', 'Даша'],
   ['даша', 'Даша'],
   ['екатерина', 'Екатерина'],
@@ -2016,17 +2069,30 @@ function registerPriceFreshnessWarning(payloads = {}) {
 async function loadJsonOrFallback(path, fallback, label = path) {
   const snapshotKey = snapshotKeyFromPath(path);
   if (snapshotKey) {
-    const [snapshotResult, localResult] = await Promise.allSettled([
+    const stagedPath = String(path || '').startsWith('data/')
+      ? `.altea-google-sheet-sync-output/${String(path).slice(5)}`
+      : '';
+    const [snapshotResult, localResult, stagedResult] = await Promise.allSettled([
       loadPortalSnapshotPayload(path),
-      loadJson(path)
+      loadJson(path),
+      stagedPath ? loadJson(stagedPath) : Promise.resolve(null)
     ]);
     if (snapshotResult.status === 'rejected') {
       console.warn(`[portal-snapshots] ${snapshotKey}`, snapshotResult.reason);
     }
+    if (stagedResult.status === 'rejected') {
+      console.warn(`[portal-staged] ${snapshotKey}`, stagedResult.reason);
+    }
+    const localPayload = localResult.status === 'fulfilled' ? localResult.value : null;
+    const stagedPayload = stagedResult.status === 'fulfilled' ? stagedResult.value : null;
+    const localOrStaged = chooseFreshestPayload(snapshotKey, localPayload, stagedPayload)?.payload
+      || localPayload
+      || stagedPayload
+      || null;
     const chosen = chooseFreshestPayload(
       snapshotKey,
       snapshotResult.status === 'fulfilled' ? snapshotResult.value : null,
-      localResult.status === 'fulfilled' ? localResult.value : null
+      localOrStaged
     );
     if (chosen) return chosen.payload;
     if (localResult.status === 'rejected') {
@@ -2102,10 +2168,13 @@ const LAZY_DATA_LOADERS = {
       : { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] };
   },
   skuPlanFact: async () => {
-    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, adsPayload, summary] = await Promise.all([
+    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, summary] = await Promise.all([
       loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
       loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU'),
       loadJsonOrFallback('data/price_workbench_support.dashboard-compact.json', { generatedAt: '', platforms: {} }, 'План SKU'),
+      loadJsonOrFallback('data/prices.json', { generatedAt: '', platforms: {} }, 'Цены'),
+      loadJsonOrFallback('data/platform_trends.json', { generatedAt: '', platforms: [], extraMarketplace: { generatedAt: '', asOfDate: '', platforms: {} } }, 'Маркетплейсы'),
+      loadJsonOrFallback('data/platform_plan.json', { generatedAt: '', months: {} }, 'План по площадкам'),
       loadJsonOrFallback(
         'data/ads_summary.json',
         { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
@@ -2123,6 +2192,15 @@ const LAZY_DATA_LOADERS = {
     state.priceWorkbenchSupport = priceWorkbenchSupport && typeof priceWorkbenchSupport === 'object'
       ? priceWorkbenchSupport
       : { generatedAt: '', platforms: {} };
+    state.prices = prices && typeof prices === 'object'
+      ? prices
+      : { generatedAt: '', platforms: {} };
+    state.platformTrends = platformTrends && typeof platformTrends === 'object'
+      ? platformTrends
+      : { generatedAt: '', platforms: [], extraMarketplace: { generatedAt: '', asOfDate: '', platforms: {} } };
+    state.platformPlan = platformPlan && typeof platformPlan === 'object'
+      ? platformPlan
+      : { generatedAt: '', months: {} };
     state.smartPriceWorkbenchBase = mergeSmartWorkbenchPayload(
       smartPriceWorkbench || { generatedAt: '', platforms: {} },
       state.smartPriceWorkbenchLive || null

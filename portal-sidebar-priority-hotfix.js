@@ -16,7 +16,8 @@
     "wb-rating",
     "product-leaderboard",
     "launch-control",
-    "skus"
+    "skus",
+    "sku-plan-fact"
   ];
 
   var META = {
@@ -75,6 +76,10 @@
     skus: {
       title: "\u0420\u0435\u0435\u0441\u0442\u0440 \u0421\u041a\u042e",
       subtitle: "\u0421\u041a\u042e \u00b7 \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438 \u00b7 owner"
+    },
+    "sku-plan-fact": {
+      title: "\u041f\u043b\u0430\u043d-\u0444\u0430\u043a\u0442 SKU",
+      subtitle: "\u041f\u043b\u0430\u043d \u00b7 \u0444\u0430\u043a\u0442 \u00b7 \u0447\u0435\u043a \u00b7 \u0414\u0420\u0420"
     }
   };
 
@@ -97,6 +102,16 @@
       return raw ? normalizeView(raw) : "";
     } catch (error) {
       console.warn("[sidebar-hotfix] readUrlView", error);
+      return "";
+    }
+  }
+
+  function readHashView() {
+    try {
+      var raw = String(window.location.hash || "").replace(/^#/, "").trim();
+      return raw ? normalizeView(raw) : "";
+    } catch (error) {
+      console.warn("[sidebar-hotfix] readHashView", error);
       return "";
     }
   }
@@ -124,7 +139,7 @@
   function restoreLastView() {
     if (viewRestored) return;
     if (typeof window.setView !== "function") return;
-    var preferred = readUrlView() || readLastView();
+    var preferred = readHashView() || readUrlView() || readLastView();
     if (!preferred) return;
     var current = normalizeView(state && state.activeView ? state.activeView : "dashboard");
     if (current === preferred) {

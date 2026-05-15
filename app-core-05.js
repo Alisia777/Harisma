@@ -139,7 +139,7 @@ function renderControlCenter() {
       <div class="section-subhead">
         <div>
           <h3>Общий обзор → контуры</h3>
-          <p class="small muted">Сверху держим общую картину по всем блокам: Общие, WB, Ozon, ЯМ / сети, Продукт и Руководитель. Ниже уже проваливаемся в конкретный контур.</p>
+          <p class="small muted">Сверху держим общую картину по всем блокам: Общие, WB, Ozon, Я.Маркет, Золотое яблоко, Л'Этуаль, Магнит Маркет, Продукт и Руководитель. Ниже уже проваливаемся в конкретный контур.</p>
         </div>
         <div class="badge-stack">
           ${badge(controlWorkstreamMeta(selectedSummary.key).label, controlWorkstreamMeta(selectedSummary.key).kind)}

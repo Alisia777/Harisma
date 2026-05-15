@@ -615,6 +615,17 @@ function hasRemoteStore() {
   return Boolean(state.team.ready && (state.team.client || state.team.accessToken));
 }
 
+function mergeRemoteTasksWithLocal(remoteTasks = []) {
+  const merged = new Map();
+  normalizeStorageTasks(state.storage.tasks || [], 'manual').forEach((task) => {
+    if (task?.id) merged.set(task.id, task);
+  });
+  normalizeStorageTasks(remoteTasks || [], 'manual').forEach((task) => {
+    if (task?.id) merged.set(task.id, task);
+  });
+  return sortTasks([...merged.values()]);
+}
+
 async function queryRemote(table) {
   if (!hasRemoteStore()) return [];
   const isTaskTable = table === TEAM_TABLES.tasks;
@@ -626,7 +637,6 @@ async function queryRemote(table) {
     url.searchParams.set('brand', `eq.${cfg.brand}`);
     if (isTaskTable) {
       url.searchParams.set('select', 'id,article_key,title,next_action,reason,owner,due,status,type,priority,platform,source,entity_label,auto_code,created_at,updated_at');
-      url.searchParams.set('status', 'in.(new,in_progress,waiting_team,waiting_rop,waiting_decision)');
     } else if (isAttachmentTable) {
       url.searchParams.set('select', 'id,task_id,article_key,file_name,mime_type,file_size,bucket_name,object_path,public_url,created_at,created_by,updated_at');
     } else {
@@ -646,7 +656,6 @@ async function queryRemote(table) {
         .from(table)
         .select('id,article_key,title,next_action,reason,owner,due,status,type,priority,platform,source,entity_label,auto_code,created_at,updated_at')
         .eq('brand', currentBrand())
-        .in('status', ['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision'])
     : isAttachmentTable
       ? state.team.client
           .from(table)
@@ -797,7 +806,7 @@ async function pullRemoteState(rerender = true) {
       || (repricerControlsLoaded && Boolean(repricerControls));
     const remoteEmpty = !hasKnownRemoteData;
     if (!remoteEmpty) {
-      state.storage.tasks = normalizeStorageTasks(manualTaskRows.map(fromRemoteTask), 'manual');
+      state.storage.tasks = mergeRemoteTasksWithLocal(manualTaskRows.map(fromRemoteTask));
       if (commentsLoaded) state.storage.comments = commentRows.map(fromRemoteComment);
       if (decisionsLoaded) state.storage.decisions = decisionRows.map(fromRemoteDecision);
       if (ownersLoaded) state.storage.ownerOverrides = ownerRows.map(fromRemoteOwner);

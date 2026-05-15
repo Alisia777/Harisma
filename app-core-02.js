@@ -193,14 +193,18 @@ function applyOwnerOverridesToSkus() {
     baseOwner.name = canonicalOwnerName(baseOwner.name || '');
     const override = overrideMap.get(sku.articleKey);
     if (override) {
+      const assignedOwnerName = canonicalOwnerName(override.ownerName || '');
+      const hasAssignedOwner = Boolean(assignedOwnerName);
       sku.owner = {
         ...baseOwner,
-        name: canonicalOwnerName(override.ownerName || ''),
-        source: override.ownerName ? 'Командное закрепление' : (baseOwner.source || ''),
-        registryStatus: override.ownerRole || baseOwner.registryStatus || ''
+        name: hasAssignedOwner ? assignedOwnerName : '',
+        source: hasAssignedOwner ? 'Командное закрепление' : '',
+        registryStatus: hasAssignedOwner
+          ? (override.ownerRole || baseOwner.registryStatus || '')
+          : (override.ownerRole || '')
       };
       sku.flags = sku.flags || {};
-      sku.flags.assigned = Boolean(canonicalOwnerName(override.ownerName || ''));
+      sku.flags.assigned = hasAssignedOwner;
     } else {
       sku.owner = baseOwner;
       sku.flags = sku.flags || {};
@@ -257,6 +261,9 @@ function ownerOptions() {
     const normalized = canonicalOwnerName(value || '');
     if (normalized) pool.add(normalized);
   };
+  if (typeof OWNER_CANONICAL_NAMES !== 'undefined') {
+    for (const name of OWNER_CANONICAL_NAMES.values()) addOwner(name);
+  }
   for (const sku of state.skus) {
     addOwner(ownerName(sku));
     if (sku?.ownersByPlatform && typeof sku.ownersByPlatform === 'object') {
@@ -511,6 +518,16 @@ function inferTaskType(text = '') {
   return 'general';
 }
 
+function detectMarketplaceNetworkKey(text = '') {
+  const raw = String(text || '').toLowerCase();
+  if (!raw) return '';
+  if (raw.includes('золотое яблоко') || raw.includes('goldapple') || raw.includes('gold apple') || raw.includes('золот')) return 'goldapple';
+  if (raw.includes("л'этуаль") || raw.includes('летуаль') || raw.includes('letual') || raw.includes('letu')) return 'letu';
+  if (raw.includes('магнит маркет') || raw.includes('магнитмаркет') || raw.includes('магнит') || raw.includes('magnit') || raw.includes('mm')) return 'magnit';
+  if (raw.includes('яндекс') || raw.includes('я.маркет') || raw.includes('я маркет') || raw.includes('ям') || raw.includes('ym') || raw.includes('yandex')) return 'ya';
+  return '';
+}
+
 function normalizeTaskPlatform(value, contextText = '') {
   const raw = String(value || '').trim().toLowerCase();
   const text = `${raw} ${String(contextText || '').trim().toLowerCase()}`;
@@ -520,13 +537,18 @@ function normalizeTaskPlatform(value, contextText = '') {
   if (['wb', 'wildberries', 'вб'].includes(raw)) return 'wb';
   if (['ozon', 'озон'].includes(raw)) return 'ozon';
   if (['wb+ozon', 'wb + ozon', 'wb_ozon', 'wb-ozon'].includes(raw)) return 'wb+ozon';
-  if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return 'retail';
+  if (['ya', 'ym', 'yandex', 'yandex_market', 'yandexmarket', 'ya_market', 'ям', 'я.маркет', 'яндекс'].includes(raw)) return 'ya';
+  if (['goldapple', 'ga', 'zya', 'зя'].includes(raw)) return 'goldapple';
+  if (['letu', 'letual', 'летуаль'].includes(raw)) return 'letu';
+  if (['magnit', 'mm'].includes(raw)) return 'magnit';
+  if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return detectMarketplaceNetworkKey(text) || 'ya';
   if (['product', 'launch', 'launches', 'новинки', 'продукт', 'ксюша'].includes(raw)) return 'product';
   if (['executive', 'director', 'ceo', 'lead', 'директор', 'руководитель'].includes(raw)) return 'executive';
 
   if (/продукт|новин|launch|ксюш/.test(text)) return 'product';
   if (/директор|руководител|ceo|executive|эскалац|согласовани/.test(text)) return 'executive';
-  if (/яндекс|я[.\s-]?маркет|yandex|letu?al|л[еэ]туал|л[еэ]туаль|магнит|golden apple|золот[а-я\s-]*яблок/.test(text)) return 'retail';
+  const marketplace = detectMarketplaceNetworkKey(text);
+  if (marketplace) return marketplace;
   if (/(^|\W)wb($|\W)|wildberries|вб/.test(text)) return 'wb';
   if (/ozon|озон/.test(text)) return 'ozon';
   return 'all';
@@ -550,7 +572,7 @@ function controlWorkstreamKey(task, sku = null) {
 
   if (platform === 'wb') return 'wb';
   if (platform === 'ozon') return 'ozon';
-  if (platform === 'retail') return 'retail';
+  if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'magnit') return platform;
   if (platform === 'product') return 'product';
   if (platform === 'executive') return 'executive';
   if (platform === 'wb+ozon' || platform === 'cross' || platform === 'all') return 'cross';
@@ -566,7 +588,8 @@ function detectTaskPlatform(task, sku) {
   if (task?.platform) return normalizeTaskPlatform(task.platform, text);
   if (/директор|руководител|ceo|executive|эскалац|согласовани/.test(text)) return 'executive';
   if (/продукт|новин|launch|ксюш/.test(text) || task?.type === 'launch') return 'product';
-  if (/яндекс|я[.\s-]?маркет|yandex|letu?al|л[еэ]туал|л[еэ]туаль|магнит|golden apple|золот[а-я\s-]*яблок/.test(text)) return 'retail';
+  const marketplace = detectMarketplaceNetworkKey(text);
+  if (marketplace) return marketplace;
   if (text.includes('wb') && text.includes('ozon')) return 'wb+ozon';
   if (text.includes('wb')) return 'wb';
   if (text.includes('ozon')) return 'ozon';

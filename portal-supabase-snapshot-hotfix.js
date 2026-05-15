@@ -1,6 +1,6 @@
 (function () {
-  if (window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260514IUDRR2__) return;
-  window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260514IUDRR2__ = true;
+  if (window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260515DASH1__) return;
+  window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260515DASH1__ = true;
 
   const SNAPSHOT_TABLE = 'portal_data_snapshots';
   const SNAPSHOT_KEYS = [
@@ -21,7 +21,7 @@
     'iu-drr': ['iu_drr_summary', 'ads_summary', 'wb_feedbacks_summary'],
     'wb-rating': ['wb_feedbacks_summary', 'iu_drr_summary']
   };
-  const SNAPSHOT_TIMEOUT_MS = 20000;
+  const SNAPSHOT_TIMEOUT_MS = 60000;
   const SNAPSHOT_TO_STATE = {
     dashboard: 'dashboard',
     skus: 'skus',
@@ -263,8 +263,23 @@
 
   function decodeChunkedSnapshotRows(rows) {
     const decodedRows = [];
+    const plainRowsByKey = new Map();
+    const plainFreshnessByKey = new Map();
     const metaByKey = new Map();
+    const metaFreshnessByKey = new Map();
     const partsByKey = new Map();
+
+    function rowFreshness(row) {
+      return Math.max(
+        parseFreshStamp(row?.updated_at),
+        parseFreshStamp(row?.generated_at),
+        parseFreshStamp(row?.payload?.generatedAt),
+        parseFreshStamp(row?.payload?.updatedAt),
+        parseFreshStamp(row?.payload?.updated_at),
+        parseFreshStamp(row?.payload?.asOfDate),
+        parseFreshStamp(row?.payload?.dataFreshness?.asOfDate)
+      );
+    }
 
     for (const row of Array.isArray(rows) ? rows : []) {
       const snapshotKey = String(row?.snapshot_key || '').trim();
@@ -272,20 +287,40 @@
       const chunkMeta = parseChunkedSnapshotKey(snapshotKey);
       if (chunkMeta) {
         if (!SNAPSHOT_TO_STATE[chunkMeta.baseKey]) continue;
-        if (!partsByKey.has(chunkMeta.baseKey)) partsByKey.set(chunkMeta.baseKey, []);
-        partsByKey.get(chunkMeta.baseKey).push({ index: chunkMeta.index, payload: row.payload, updated_at: row.updated_at });
+        if (!partsByKey.has(chunkMeta.baseKey)) partsByKey.set(chunkMeta.baseKey, new Map());
+        const partMap = partsByKey.get(chunkMeta.baseKey);
+        const freshness = rowFreshness(row);
+        const current = partMap.get(chunkMeta.index);
+        if (!current || current.freshness <= freshness) {
+          partMap.set(chunkMeta.index, { freshness, payload: row.payload, updated_at: row.updated_at });
+        }
         continue;
       }
       if (!SNAPSHOT_TO_STATE[snapshotKey]) continue;
       if (row?.payload?.chunked) {
-        metaByKey.set(snapshotKey, row);
+        const freshness = rowFreshness(row);
+        const current = metaByKey.get(snapshotKey);
+        if (!current || metaFreshnessByKey.get(snapshotKey) <= freshness) {
+          metaByKey.set(snapshotKey, row);
+          metaFreshnessByKey.set(snapshotKey, freshness);
+        }
         continue;
       }
-      decodedRows.push(row);
+      const freshness = rowFreshness(row);
+      const current = plainRowsByKey.get(snapshotKey);
+      if (!current || plainFreshnessByKey.get(snapshotKey) <= freshness) {
+        plainRowsByKey.set(snapshotKey, row);
+        plainFreshnessByKey.set(snapshotKey, freshness);
+      }
     }
 
+    decodedRows.push(...plainRowsByKey.values());
+
     for (const [baseKey, metaRow] of metaByKey.entries()) {
-      const parts = (partsByKey.get(baseKey) || []).sort((left, right) => left.index - right.index);
+      const partMap = partsByKey.get(baseKey) || new Map();
+      const parts = Array.from(partMap.entries())
+        .sort((left, right) => left[0] - right[0])
+        .map((entry) => entry[1]);
       const expectedCount = Number(metaRow?.payload?.chunk_count || metaRow?.payload?.chunkCount || 0);
       if (!parts.length || (expectedCount > 0 && parts.length < expectedCount)) continue;
       const text = parts
@@ -338,21 +373,48 @@
       : await response.json();
   }
 
+  async function requestRowsForExactKeys(activeCfg, keys) {
+    const result = [];
+    const cleanKeys = (Array.isArray(keys) ? keys : [])
+      .map((key) => String(key || '').trim())
+      .filter(Boolean);
+    for (let index = 0; index < cleanKeys.length; index += 40) {
+      const batch = cleanKeys.slice(index, index + 40);
+      const url = buildSnapshotUrl(activeCfg);
+      url.searchParams.set('snapshot_key', batch.length === 1 ? `eq.${batch[0]}` : `in.(${batch.join(',')})`);
+      result.push(...await requestSnapshotRows(activeCfg, url));
+    }
+    return result;
+  }
+
+  function snapshotPartKeys(snapshotKey, count) {
+    const total = Math.max(0, Math.trunc(Number(count) || 0));
+    const keys = [];
+    for (let index = 1; index <= total; index += 1) {
+      keys.push(`${snapshotKey}__part__${String(index).padStart(4, '0')}`);
+    }
+    return keys;
+  }
+
   async function fetchRowsForKeys(activeCfg, keys) {
     if (!Array.isArray(keys) || !keys.length) return [];
-    const metaUrl = buildSnapshotUrl(activeCfg);
-    metaUrl.searchParams.set('snapshot_key', `in.(${keys.join(',')})`);
-    const rows = await requestSnapshotRows(activeCfg, metaUrl);
+    const rows = await requestRowsForExactKeys(activeCfg, keys);
     const chunkedKeys = rows
       .filter(rowIsChunkMeta)
-      .map((row) => String(row?.snapshot_key || '').trim())
-      .filter((key) => SNAPSHOT_TO_STATE[key]);
+      .map((row) => ({
+        key: String(row?.snapshot_key || '').trim(),
+        count: Number(row?.payload?.chunk_count || row?.payload?.chunkCount || 0)
+      }))
+      .filter((item) => SNAPSHOT_TO_STATE[item.key] && item.count > 0);
     if (!chunkedKeys.length) return rows;
-    const partGroups = await Promise.all(chunkedKeys.map((key) => {
-      const partUrl = buildSnapshotUrl(activeCfg);
-      partUrl.searchParams.set('snapshot_key', `like.${key}__part__*`);
-      return requestSnapshotRows(activeCfg, partUrl);
-    }));
+    const partGroups = [];
+    for (const item of chunkedKeys) {
+      try {
+        partGroups.push(await requestRowsForExactKeys(activeCfg, snapshotPartKeys(item.key, item.count)));
+      } catch (error) {
+        console.warn('[portal-supabase-snapshot-hotfix] chunk load failed', item.key, error);
+      }
+    }
     return rows.concat(...partGroups);
   }
 
@@ -450,6 +512,13 @@
             console.warn('[portal-supabase-snapshot-hotfix] reset snapshot cache', error);
           }
         }
+        if (window.__ALTEA_DASHBOARD_INTERACTIVE_API__?.applyNow) {
+          try {
+            window.__ALTEA_DASHBOARD_INTERACTIVE_API__.applyNow(false);
+          } catch (error) {
+            console.warn('[portal-supabase-snapshot-hotfix] dashboard refresh', error);
+          }
+        }
       }
     } catch (error) {
       const message = String(error?.message || error || '');
@@ -463,7 +532,8 @@
     }
   }
 
-  [180, 1200, 3600, 9000, 18000].forEach((delay) => {
+  window.__ALTEA_REFRESH_SUPABASE_SNAPSHOTS__ = refreshSnapshots;
+  [180, 1200, 3600, 9000, 18000, 30000, 45000, 60000, 90000].forEach((delay) => {
     window.setTimeout(() => {
       refreshSnapshots().catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', error));
     }, delay);

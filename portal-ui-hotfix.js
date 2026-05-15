@@ -1337,18 +1337,29 @@
     [120, 1200, 3200, 6200, 12000, 18000].forEach((delay) => window.setTimeout(refresh, delay));
   };
 
-  const DASHBOARD_CLARITY_STYLE_ID = 'altea-dashboard-clarity-20260417';
+  const DASHBOARD_CLARITY_STYLE_ID = 'altea-dashboard-clarity-20260513market3';
   const DASHBOARD_PERIODS = [
     { key: 'mtd', label: '1', hint: 'с 1 числа' },
     { key: '7', label: '7', hint: '7 дней' },
     { key: '14', label: '14', hint: '14 дней' },
     { key: '30', label: '30', hint: '30 дней' }
   ];
+  const DASHBOARD_PLATFORMS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+  const DASHBOARD_PLATFORM_LABELS = {
+    all: 'Все площадки',
+    wb: 'WB',
+    ozon: 'Ozon',
+    ya: 'Я.Маркет',
+    goldapple: 'Золотое яблоко',
+    letu: "Л'Этуаль",
+    magnit: 'Магнит Маркет'
+  };
 
   function ensureDashboardClarityState() {
-    if (typeof state !== 'object' || !state) return { period: 'mtd' };
+    if (typeof state !== 'object' || !state) return { period: 'mtd', platform: 'all' };
     state.dashboardClarity = state.dashboardClarity || {};
     if (!state.dashboardClarity.period) state.dashboardClarity.period = 'mtd';
+    if (!state.dashboardClarity.platform) state.dashboardClarity.platform = 'all';
     return state.dashboardClarity;
   }
 
@@ -1383,6 +1394,9 @@
         border-color: rgba(236, 203, 123, 0.76);
         background: linear-gradient(180deg, rgba(83, 55, 20, 0.94), rgba(33, 22, 11, 0.96));
         color: #fff7ea;
+      }
+      .portal-ui-platform-bar {
+        justify-content: flex-start;
       }
       .portal-ui-period-meta {
         display: flex;
@@ -1591,6 +1605,25 @@
     `;
   }
 
+  function platformLabel(key) {
+    const canonical = String(key || 'all').trim().toLowerCase();
+    return DASHBOARD_PLATFORM_LABELS[canonical] || platformSeries(canonical)?.label || canonical.toUpperCase();
+  }
+
+  function renderPlatformControls(activePlatform) {
+    return `
+      <div class="portal-ui-period-bar portal-ui-platform-bar">
+        ${DASHBOARD_PLATFORMS.map((key) => `
+          <button
+            type="button"
+            class="portal-ui-period-btn ${key === activePlatform ? 'is-active' : ''}"
+            data-portal-ui-platform="${key}"
+          >${escapeHtml(platformLabel(key))}</button>
+        `).join('')}
+      </div>
+    `;
+  }
+
   function lookupPlatformPlan(asOfDate, key) {
     const monthKey = monthKeyFromDate(asOfDate);
     return toNumber(cachedData('platformPlan')?.months?.[monthKey]?.platforms?.[key]?.units);
@@ -1600,10 +1633,11 @@
     const dashboard = cachedData('dashboard') || {};
     const summary = dashboard?.brandSummary?.[0] || {};
     const period = ensureDashboardClarityState().period || 'mtd';
+    const selectedPlatform = ensureDashboardClarityState().platform || 'all';
     const asOfDate = parseIsoDate(dashboard?.dataFreshness?.asOfDate) || latestTrendDate() || new Date();
     const monthDays = new Date(asOfDate.getFullYear(), asOfDate.getMonth() + 1, 0).getDate();
     const allSeries = normalizeTrendSeries('all', asOfDate);
-    const detailedSeries = ['wb', 'ozon', 'ya']
+    const detailedSeries = DASHBOARD_PLATFORMS.filter((key) => key !== 'all')
       .map((key) => ({ key, label: platformSeries(key)?.label || key.toUpperCase(), fullSeries: normalizeTrendSeries(key, asOfDate) }))
       .filter((item) => item.fullSeries.length);
 
@@ -1651,21 +1685,29 @@
       if (card) cards.push(card);
     }
 
+    const visibleCards = selectedPlatform === 'all'
+      ? cards
+      : cards.filter((card) => card.key === selectedPlatform);
+
     return {
-      cards,
+      cards: visibleCards,
+      allCards: cards,
+      selectedPlatform,
+      selectedPlatformLabel: platformLabel(selectedPlatform),
       period,
       periodTitle: periodTitle(period),
       monthLabel: asOfDate.toLocaleString('ru-RU', { month: 'long', year: 'numeric' }),
       asOfDate,
       asOfLabel: formatRuDate(asOfDate),
       overallToDatePct: allCard?.pct || pickDashboardMetric(summary, ['plan_completion_to_date_pct', 'apr_plan_completion_to_date_pct', 'plan_completion_feb26_pct']),
-      rangeLabel: cards[0]?.windowLabel || rangeLabelFromSeries(allSeries)
+      rangeLabel: visibleCards[0]?.windowLabel || cards[0]?.windowLabel || rangeLabelFromSeries(allSeries)
     };
   }
 
   function renderDashboardHeroPulse() {
     const model = buildDashboardClarityModel();
-    if (!model.cards.length) return '';
+    const cards = model.cards.length ? model.cards : (model.allCards || []);
+    if (!cards.length) return '';
     return `
       <div class="portal-ui-hotfix-hero-pulse" data-portal-ui-hotfix-hero>
         <div class="section-subhead">
@@ -1676,14 +1718,16 @@
           <div class="badge-stack">
             ${badge(`К плану: ${fmt.pct(model.overallToDatePct)}`, model.overallToDatePct >= 1 ? 'ok' : (model.overallToDatePct >= 0.85 ? 'warn' : 'danger'))}
             ${badge(`Факт: ${model.asOfLabel}`, 'info')}
+            ${badge(`Площадка: ${model.selectedPlatformLabel}`, model.selectedPlatform === 'all' ? 'info' : 'ok')}
           </div>
         </div>
         <div class="portal-ui-period-meta">
           ${renderPeriodControls(model.period)}
+          ${renderPlatformControls(model.selectedPlatform)}
           <span class="portal-ui-range-note">Диапазон: ${escapeHtml(model.rangeLabel)} · Сейчас выбран горизонт: ${escapeHtml(model.periodTitle)}</span>
         </div>
         <div class="portal-ui-hotfix-hero-pulse-grid">
-          ${model.cards.slice(0, 4).map((card) => {
+          ${cards.slice(0, 4).map((card) => {
             const tone = toneClass(card.pct);
             const spark = sparklineGeometry(card.series.map((point) => point.units));
             const progressWidth = Math.max(6, Math.min(100, Math.round(toNumber(card.pct) * 100)));
@@ -1717,7 +1761,8 @@
 
   function renderDashboardExecutionClarity() {
     const model = buildDashboardClarityModel();
-    if (!model.cards.length) return '';
+    const cards = model.cards.length ? model.cards : (model.allCards || []);
+    if (!cards.length) return '';
     return `
       <section class="card portal-ui-hotfix-dashboard" data-portal-ui-hotfix-dashboard>
         <div class="section-subhead">
@@ -1728,10 +1773,14 @@
           <div class="badge-stack">
             ${badge(`Месяц: ${model.monthLabel}`, 'info')}
             ${badge(`Диапазон: ${model.rangeLabel}`, 'warn')}
+            ${badge(`Площадка: ${model.selectedPlatformLabel}`, model.selectedPlatform === 'all' ? 'info' : 'ok')}
           </div>
         </div>
+        <div class="portal-ui-period-meta" style="margin: 0 0 12px;">
+          ${renderPlatformControls(model.selectedPlatform)}
+        </div>
         <div class="portal-ui-hotfix-dashboard-grid">
-          ${model.cards.map((card) => `
+          ${cards.map((card) => `
             <div class="portal-ui-hotfix-card ${toneClass(card.pct)}">
               <div class="section-subhead">
                 <div>
@@ -1767,7 +1816,8 @@
 
   function renderInsightsSection() {
     const model = buildDashboardClarityModel();
-    if (!model.cards.length) return '';
+    const cards = model.cards.length ? model.cards : (model.allCards || []);
+    if (!cards.length) return '';
     return `
       <section class="card portal-ui-hotfix-insights" data-portal-ui-hotfix-insights>
         <div class="section-subhead">
@@ -1781,7 +1831,7 @@
           </div>
         </div>
         <div class="portal-ui-hotfix-insight-grid">
-          ${model.cards.map((card) => {
+          ${cards.map((card) => {
             const tone = toneClass(card.pct);
             const spark = sparklineGeometry(card.series.map((point) => point.estimatedMargin));
             return `
@@ -1907,6 +1957,12 @@
     root.querySelectorAll('[data-portal-ui-period]').forEach((button) => {
       button.addEventListener('click', () => {
         ensureDashboardClarityState().period = button.dataset.portalUiPeriod || 'mtd';
+        applyDashboardEnhancement();
+      });
+    });
+    root.querySelectorAll('[data-portal-ui-platform]').forEach((button) => {
+      button.addEventListener('click', () => {
+        ensureDashboardClarityState().platform = button.dataset.portalUiPlatform || 'all';
         applyDashboardEnhancement();
       });
     });

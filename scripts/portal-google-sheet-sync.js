@@ -16,7 +16,17 @@ const DEFAULT_SUPABASE_URL = 'https://iyckwryrucqrxwlowxow.supabase.co';
 const DEFAULT_SUPABASE_KEY = 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw';
 const SNAPSHOT_TABLE = 'portal_data_snapshots';
 const SNAPSHOT_SOURCE = 'google-sheets-bridge';
-const SNAPSHOT_KEYS = ['dashboard', 'skus', 'platform_trends', 'logistics', 'loyalty_system'];
+const SNAPSHOT_KEYS = [
+  'dashboard',
+  'skus',
+  'platform_trends',
+  'logistics',
+  'loyalty_system',
+  'warehouse_stock_overlay',
+  'ads_summary',
+  'iu_drr_summary',
+  'wb_feedbacks_summary'
+];
 const REQUIRED_SOURCE_SHEETS = {
   dimSku: ['dim_sku'],
   factAds: ['fact_ads_daily_sku'],
@@ -1859,6 +1869,9 @@ function buildSnapshots(rows, options) {
   const basePlatformTrends = readJson(path.join(baseDir, 'platform_trends.json'));
   const baseLogistics = readJson(path.join(baseDir, 'logistics.json'));
   const warehouseStockOverlay = readOptionalJson(path.join(baseDir, 'warehouse_stock_overlay.json'));
+  const adsSummary = readOptionalJson(path.join(baseDir, 'ads_summary.json'));
+  const iuDrrSummary = readOptionalJson(path.join(baseDir, 'iu_drr_summary.json'));
+  const wbFeedbacksSummary = readOptionalJson(path.join(baseDir, 'wb_feedbacks_summary.json'));
   const { skus, updatedCount } = buildSkuOverlay(baseSkus, rows.dimSku);
   const platformTrends = refreshPlatformTrendsSnapshot(basePlatformTrends, options);
   const dashboard = buildDashboardFromPlatformTrends(baseDashboard, skus, rows.factLogistics, options, platformTrends);
@@ -1890,7 +1903,10 @@ function buildSnapshots(rows, options) {
           shippedWB: 0
         },
         rows: []
-      }
+      },
+      ...(adsSummary ? { ads_summary: adsSummary } : {}),
+      ...(iuDrrSummary ? { iu_drr_summary: iuDrrSummary } : {}),
+      ...(wbFeedbacksSummary ? { wb_feedbacks_summary: wbFeedbacksSummary } : {})
     },
     meta: {
       generatedAt: new Date().toISOString(),
@@ -1918,6 +1934,14 @@ function buildSnapshots(rows, options) {
         latest_date: loyaltySystem.asOfDate || '',
         rows: loyaltySystem.summary?.rows || 0,
         spend: loyaltySystem.summary?.spend || 0
+      },
+      iuDrr: {
+        latest_date: iuDrrSummary?.asOfDate || iuDrrSummary?.window?.to || '',
+        rows: Array.isArray(iuDrrSummary?.daily) ? iuDrrSummary.daily.length : 0,
+        latest_daily_date: Array.isArray(iuDrrSummary?.daily)
+          ? iuDrrSummary.daily.map((row) => String(row?.date || '').slice(0, 10)).filter(Boolean).sort().pop() || ''
+          : '',
+        generated_at: iuDrrSummary?.generatedAt || ''
       },
       logistics: {
         latest_logistics_date: logistics.window?.to || '',
@@ -2312,7 +2336,7 @@ async function main() {
   }
 
   const uploaded = {};
-  for (const snapshotKey of SNAPSHOT_KEYS) {
+  for (const snapshotKey of SNAPSHOT_KEYS.filter((key) => snapshots[key] !== undefined && snapshots[key] !== null)) {
     uploaded[snapshotKey] = await uploadSnapshot(snapshotKey, snapshots[snapshotKey], options);
   }
   console.log(JSON.stringify({

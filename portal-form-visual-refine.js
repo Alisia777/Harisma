@@ -6,7 +6,10 @@
     all: { label: 'Все контуры', chip: 'Все контуры', kind: '' },
     wb: { label: 'РОП WB', chip: 'WB', kind: 'warn' },
     ozon: { label: 'РОП Ozon', chip: 'Ozon', kind: 'info' },
-    retail: { label: 'ЯМ / Летуаль / Магнит / ЗЯ', chip: 'ЯМ / сети', kind: 'ok' },
+    ya: { label: 'Я.Маркет', chip: 'Я.Маркет', kind: 'ok' },
+    goldapple: { label: 'Золотое яблоко', chip: 'Золотое яблоко', kind: 'ok' },
+    letu: { label: "Л'Этуаль", chip: "Л'Этуаль", kind: 'ok' },
+    magnit: { label: 'Магнит Маркет', chip: 'Магнит Маркет', kind: 'ok' },
     product: { label: 'Продукт / новинки', chip: 'Продукт', kind: 'info' },
     executive: { label: 'Руководитель / директор', chip: 'Директор', kind: 'danger' },
     cross: { label: 'Общий контур', chip: 'Общий контур', kind: '' }
@@ -27,7 +30,11 @@
   const task = (id) => typeof getTask === 'function' ? getTask(id) : null;
   const history = (id) => typeof getTaskHistory === 'function' ? getTaskHistory(id) : [];
   const owners = () => typeof ownerOptions === 'function' ? ownerOptions() : [];
-  const normPlatform = (v) => ['wb', 'ozon', 'retail', 'product', 'executive', 'cross'].includes(String(v || '').toLowerCase()) ? String(v).toLowerCase() : 'cross';
+  const normPlatform = (v) => {
+    const raw = String(v || '').trim().toLowerCase();
+    if (raw === 'retail') return 'ya';
+    return ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'executive', 'cross'].includes(raw) ? raw : 'cross';
+  };
   const stage = (s) => s === 'waiting_decision' ? 3 : s === 'waiting_rop' ? 2 : 1;
 
   function normalizeMultilineTaskText(value) {
@@ -281,12 +288,13 @@
   }
 
   function editCard(taskItem, ownerItems) {
+    const currentPlatform = normPlatform(taskItem.platform);
     return `
       <div class="card">
         <div class="section-subhead">
           <div>
-            <h3>Карточка задачи</h3>
-            <p class="small muted">Все поля сохранены. Мы просто разложили их на блоки, чтобы задачу было легче читать и редактировать.</p>
+            <h3>Редактировать задачу</h3>
+            <p class="small muted">Из карточки можно менять owner, сроки, следующий шаг, приоритет и статус.</p>
           </div>
           ${taskItem.articleKey ? taskEntityLine(taskItem, getSku(taskItem.articleKey)) : badge('Общая задача', 'info')}
         </div>
@@ -302,28 +310,36 @@
             <label class="ui-field"><span class="ui-label">Следующий шаг</span><textarea name="nextAction" rows="3" placeholder="Что делаем дальше">${escapeHtml(taskItem.nextAction || '')}</textarea></label>
           </div>
           <div class="ui-group">
-            <div class="ui-group-head"><strong>Статус и контекст</strong><span>Служебные поля сохранены и теперь видны сразу, без скрытых секций.</span></div>
+            <div class="ui-group-head"><strong>Контур и контекст</strong><span>Отдельно выбираем площадку, статус и приоритет, чтобы задачи не смешивались.</span></div>
+            <label class="ui-field"><span class="ui-label">Контур</span><select name="platform">
+              <option value="cross" ${currentPlatform === 'cross' ? 'selected' : ''}>Общий контур</option>
+              <option value="wb" ${currentPlatform === 'wb' ? 'selected' : ''}>РОП WB</option>
+              <option value="ozon" ${currentPlatform === 'ozon' ? 'selected' : ''}>РОП Ozon</option>
+              <option value="ya" ${currentPlatform === 'ya' ? 'selected' : ''}>Я.Маркет</option>
+              <option value="goldapple" ${currentPlatform === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
+              <option value="letu" ${currentPlatform === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+              <option value="magnit" ${currentPlatform === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
+              <option value="product" ${currentPlatform === 'product' ? 'selected' : ''}>Продукт / новинки</option>
+              <option value="executive" ${currentPlatform === 'executive' ? 'selected' : ''}>Руководитель / директор</option>
+            </select></label>
             <div class="ui-grid-3">
-              <label class="ui-field"><span class="ui-label">Тема / проект</span><input name="entityLabel" value="${escapeHtml(taskItem.entityLabel || '')}" placeholder="Проект / тема"></label>
+              <label class="ui-field"><span class="ui-label">Тема / проект</span><input name="entityLabel" value="${escapeHtml(taskItem.entityLabel || '')}" placeholder="Проект / тема / блок"></label>
               <label class="ui-field"><span class="ui-label">Статус</span><select name="status">${Object.entries(ST).map(([value, label]) => `<option value="${value}" ${taskItem.status === value ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select></label>
-              <label class="ui-field"><span class="ui-label">Приоритет</span><select name="priority">${Object.entries(PRIORITY_META).map(([value, item]) => `<option value="${value}" ${taskItem.priority === value ? 'selected' : ''}>${escapeHtml(item.label)}</option>`).join('')}</select></label>
-              <label class="ui-field"><span class="ui-label">Тип задачи</span><select name="type">${Object.entries(TASK_TYPE_META).map(([value, label]) => `<option value="${value}" ${taskItem.type === value ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select></label>
-              <label class="ui-field"><span class="ui-label">Контур</span><select name="platform">
-                <option value="cross" ${normPlatform(taskItem.platform) === 'cross' ? 'selected' : ''}>Общий контур</option>
-                <option value="wb" ${normPlatform(taskItem.platform) === 'wb' ? 'selected' : ''}>РОП WB</option>
-                <option value="ozon" ${normPlatform(taskItem.platform) === 'ozon' ? 'selected' : ''}>РОП Ozon</option>
-                <option value="retail" ${normPlatform(taskItem.platform) === 'retail' ? 'selected' : ''}>ЯМ / сети</option>
-                <option value="product" ${normPlatform(taskItem.platform) === 'product' ? 'selected' : ''}>Продукт / новинки</option>
-                <option value="executive" ${normPlatform(taskItem.platform) === 'executive' ? 'selected' : ''}>Руководитель / директор</option>
-              </select></label>
+              <label class="ui-field"><span class="ui-label">Приоритет</span><select name="priority">${Object.entries(PRIORITY_META).map(([value, item]) => `<option value="${value}" ${taskItem.priority === value ? 'selected' : ''}>${escapeHtml(item.label || value)}</option>`).join('')}</select></label>
             </div>
+            <label class="ui-field"><span class="ui-label">Тип задачи</span><select name="type">
+              <option value="general" ${taskItem.type === 'general' ? 'selected' : ''}>Общее</option>
+              <option value="launch" ${taskItem.type === 'launch' ? 'selected' : ''}>Новинка / запуск</option>
+              <option value="traffic" ${taskItem.type === 'traffic' ? 'selected' : ''}>Трафик / продвижение</option>
+              <option value="content" ${taskItem.type === 'content' ? 'selected' : ''}>Контент / карточка</option>
+              <option value="assignment" ${taskItem.type === 'assignment' ? 'selected' : ''}>Закрепление</option>
+            </select></label>
             <label class="ui-field"><span class="ui-label">Контекст</span><textarea name="reason" rows="3" placeholder="Почему задача возникла и что важно учитывать">${escapeHtml(taskItem.reason || '')}</textarea></label>
           </div>
           <button class="btn primary" type="submit">Сохранить изменения</button>
         </form>
       </div>`;
   }
-
   function updatesCard(taskItem, items) {
     const rows = items.length ? items.map((item) => `
       <div class="comment-item">
@@ -377,7 +393,7 @@
             <div class="ui-grid-3">
               <label class="ui-field"><span class="ui-label">Owner</span><input name="owner" list="generalTaskOwnerList" placeholder="Кто ведёт задачу"></label>
               <label class="ui-field"><span class="ui-label">Срок</span><input name="due" type="date" value="${plusDays(2)}"></label>
-              ${fixed ? `<div class="ui-note"><strong>Контур задачи</strong>${escapeHtml(meta(platform).label)}<input type="hidden" name="platform" value="${escapeHtml(platform)}"></div>` : `<label class="ui-field"><span class="ui-label">Контур</span><select name="platform"><option value="cross" ${platform === 'cross' ? 'selected' : ''}>Общий контур</option><option value="wb">РОП WB</option><option value="ozon">РОП Ozon</option><option value="retail">ЯМ / сети</option><option value="product">Продукт / новинки</option><option value="executive">Руководитель / директор</option></select></label>`}
+          ${fixed ? `<div class="ui-note"><strong>Контур задачи</strong>${escapeHtml(meta(platform).label)}<input type="hidden" name="platform" value="${escapeHtml(platform)}"></div>` : `<label class="ui-field"><span class="ui-label">Контур</span><select name="platform"><option value="cross" ${platform === 'cross' ? 'selected' : ''}>Общий контур</option><option value="wb">РОП WB</option><option value="ozon">РОП Ozon</option><option value="ya">Я.Маркет</option><option value="goldapple">Золотое яблоко</option><option value="letu">Л'Этуаль</option><option value="magnit">Магнит Маркет</option><option value="product">Продукт / новинки</option><option value="executive">Руководитель / директор</option></select></label>`}
             </div>
             <label class="ui-field"><span class="ui-label">Первый шаг</span><textarea name="nextAction" rows="3" placeholder="Что делаем первым действием" required></textarea></label>
             <label class="ui-field"><span class="ui-label">Артикулы для массовой постановки</span><textarea name="articleKeys" rows="4" placeholder="По одному SKU на строку, можно вставить столбец из Excel&#10;Пример:&#10;curly_method_300ml&#10;retinait_krem_05_50ml"></textarea><span class="ui-hint">Если поле заполнено, будет создана отдельная задача на каждый SKU.</span></label>

@@ -78,6 +78,14 @@ function writeJson(filePath, payload) {
   fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf8');
 }
 
+function deepClone(value) {
+  try {
+    return JSON.parse(JSON.stringify(value));
+  } catch (_error) {
+    return value;
+  }
+}
+
 function numberOrZero(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -284,7 +292,7 @@ function resolveOptions(args) {
   return {
     command: args.command || 'sync',
     dryRun: Boolean(args.dryRun),
-    token: args.token || process.env.ALTEA_WB_PROMOTION_TOKEN || '',
+    token: args.token || process.env.ALTEA_WB_PROMOTION_TOKEN || process.env.ALTEA_WB_API_TOKEN || '',
     apiBaseUrl: String(args['api-base-url'] || process.env.ALTEA_WB_PROMOTION_API_BASE_URL || WB_API_BASE_URL).replace(/\/+$/, ''),
     inputDir,
     baseDataDir,
@@ -301,6 +309,8 @@ function resolveOptions(args) {
     from,
     to,
     fullstatsDelayMs: Number.isFinite(Number(args['fullstats-delay-ms'])) ? Number(args['fullstats-delay-ms']) : 21000,
+    updDelayMs: Number.isFinite(Number(args['upd-delay-ms'])) ? Number(args['upd-delay-ms']) : 500,
+    requestTimeoutMs: Number.isFinite(Number(args['request-timeout-ms'])) ? Number(args['request-timeout-ms']) : 60000,
     skipUpd: asBool(args['skip-upd'], false),
     docsUrl: WB_PROMOTION_DOCS_URL
   };
@@ -317,14 +327,29 @@ async function wbRequest(options, apiPath, requestOptions = {}, attempt = 0) {
     if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value));
   });
   const method = requestOptions.method || 'GET';
-  const response = await fetch(url, {
-    method,
-    headers: {
-      Authorization: options.token,
-      'Content-Type': 'application/json; charset=utf-8'
-    },
-    body: requestOptions.body === undefined ? undefined : JSON.stringify(requestOptions.body)
-  });
+  const controller = new AbortController();
+  const timeoutMs = Math.max(1000, numberOrZero(options.requestTimeoutMs) || 60000);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let response;
+  try {
+    response = await fetch(url, {
+      method,
+      headers: {
+        Authorization: options.token,
+        'Content-Type': 'application/json; charset=utf-8'
+      },
+      body: requestOptions.body === undefined ? undefined : JSON.stringify(requestOptions.body),
+      signal: controller.signal
+    });
+  } catch (error) {
+    if ((error?.name === 'AbortError' || error?.code === 'ABORT_ERR') && attempt < 2) {
+      await sleep(5000);
+      return wbRequest(options, apiPath, requestOptions, attempt + 1);
+    }
+    throw new Error(`WB API ${method} ${apiPath} failed: ${error?.message || String(error)}`);
+  } finally {
+    clearTimeout(timer);
+  }
   const text = await response.text();
   if (!response.ok) {
     if (response.status === 429 && attempt < 4) {
@@ -376,6 +401,7 @@ async function fetchFullStats(options, campaignIds, campaignDetails, diagnostics
   const batches = chunk(campaignIds, 50);
   for (let index = 0; index < batches.length; index += 1) {
     const batch = batches[index];
+    process.stderr.write(`[wb-ads-sync] fullstats ${index + 1}/${batches.length}\n`);
     const payload = await wbRequest(options, '/adv/v3/fullstats', {
       method: 'GET',
       query: {
@@ -393,18 +419,27 @@ async function fetchFullStats(options, campaignIds, campaignDetails, diagnostics
 
 async function fetchUpdRows(options, diagnostics) {
   if (options.skipUpd) return [];
-  try {
-    const payload = await wbRequest(options, '/adv/v1/upd', {
-      method: 'GET',
-      query: { from: options.from, to: options.to }
-    });
-    const rows = Array.isArray(payload) ? payload : Array.isArray(payload?.data) ? payload.data : [];
-    diagnostics.updRows = rows.length;
-    return rows;
-  } catch (error) {
-    diagnostics.warnings.push(`financial expenses reconciliation was not loaded: ${error.message}`);
-    return [];
+  const result = [];
+  const dates = enumerateDates(options.from, options.to);
+  diagnostics.updRequests = 0;
+  for (let index = 0; index < dates.length; index += 1) {
+    const date = dates[index];
+    try {
+      const payload = await wbRequest(options, '/adv/v1/upd', {
+        method: 'GET',
+        query: { from: date, to: date }
+      });
+      const rows = Array.isArray(payload) ? payload : Array.isArray(payload?.data) ? payload.data : [];
+      diagnostics.updRequests += 1;
+      for (const row of rows) result.push({ ...row, reportDate: date });
+      process.stderr.write(`[wb-ads-sync] upd ${date}: ${rows.length} rows\n`);
+    } catch (error) {
+      diagnostics.warnings.push(`financial expenses reconciliation was not loaded for ${date}: ${error.message}`);
+    }
+    if (index < dates.length - 1) await sleep(options.updDelayMs);
   }
+  diagnostics.updRows = result.length;
+  return result;
 }
 
 function campaignChannel(campaign = {}) {
@@ -501,7 +536,7 @@ function normalizeFullStatsPayload(payload, campaignDetails) {
 
 function normalizeUpdRows(updRows) {
   return (Array.isArray(updRows) ? updRows : []).map((row) => ({
-    date: isoDate(row.updTime || row.date || row.day),
+    date: isoDate(row.reportDate || row.date || row.day || row.updTime),
     campaignId: String(Math.trunc(numberOrZero(row.advertId || row.advert_id || row.id))),
     campaignName: normalizeText(row.campName || row.name || row.advertName),
     channel: campaignChannel(row),
@@ -687,6 +722,116 @@ function buildAdsSummary(itemSeries, options, diagnostics, sourceMode, note = ''
     ],
     itemSeries: scopedItemSeries
   };
+}
+
+function buildAdsAllSeries(platformSeriesMap) {
+  const byDate = new Map();
+  for (const series of platformSeriesMap.values()) {
+    for (const point of Array.isArray(series) ? series : []) {
+      const date = isoDate(point?.date || point?.label);
+      if (!date) continue;
+      const current = byDate.get(date) || { date, label: date, views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
+      current.views += numberOrZero(point.views);
+      current.clicks += numberOrZero(point.clicks);
+      current.spend += numberOrZero(point.spend);
+      current.orders += numberOrZero(point.orders);
+      current.revenue += numberOrZero(point.revenue);
+      byDate.set(date, current);
+    }
+  }
+  return [...byDate.values()].sort((left, right) => left.date.localeCompare(right.date));
+}
+
+function latestSeriesDateFromPlatformList(platforms) {
+  let latest = '';
+  for (const platform of Array.isArray(platforms) ? platforms : []) {
+    for (const point of Array.isArray(platform?.series) ? platform.series : []) {
+      const date = isoDate(point?.date || point?.label);
+      if (date && date > latest) latest = date;
+    }
+  }
+  return latest;
+}
+
+function mergeAdsSummaryWithExisting(freshPayload, existingPayload) {
+  const merged = deepClone(freshPayload || {});
+  const freshPlatforms = Array.isArray(freshPayload?.platforms) ? freshPayload.platforms : [];
+  const existingPlatforms = Array.isArray(existingPayload?.platforms) ? existingPayload.platforms : [];
+  const platformMap = new Map();
+
+  const normalizePlatform = (platform) => {
+    const key = normalizeKey(platform?.key || platform?.platformKey || platform?.label);
+    if (!key || key === 'all') return null;
+    const series = Array.isArray(platform?.series)
+      ? platform.series
+          .map((point) => ({
+            ...point,
+            date: isoDate(point?.date || point?.label),
+            label: isoDate(point?.date || point?.label)
+          }))
+          .filter((point) => Boolean(point.date))
+      : [];
+    return {
+      ...deepClone(platform || {}),
+      key,
+      platformKey: key,
+      label: platform?.label || platform?.platformLabel || normalizeText(platform?.label || platform?.platformLabel || ''),
+      series
+    };
+  };
+
+  for (const platform of existingPlatforms) {
+    const normalized = normalizePlatform(platform);
+    if (normalized) platformMap.set(normalized.key, normalized);
+  }
+  for (const platform of freshPlatforms) {
+    const normalized = normalizePlatform(platform);
+    if (normalized) platformMap.set(normalized.key, normalized);
+  }
+
+  const totalsFromSeries = (series) => series.reduce((acc, row) => {
+    acc.views += numberOrZero(row.views);
+    acc.clicks += numberOrZero(row.clicks);
+    acc.spend += numberOrZero(row.spend);
+    acc.orders += numberOrZero(row.orders);
+    acc.revenue += numberOrZero(row.revenue);
+    return acc;
+  }, { views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 });
+
+  const mergedSeriesMap = new Map();
+  for (const [key, platform] of platformMap.entries()) {
+    mergedSeriesMap.set(key, platform.series || []);
+  }
+  const allSeries = buildAdsAllSeries(mergedSeriesMap);
+  const allTemplate = normalizePlatform(
+    freshPlatforms.find((platform) => normalizeKey(platform?.key || platform?.platformKey) === 'all')
+    || existingPlatforms.find((platform) => normalizeKey(platform?.key || platform?.platformKey) === 'all')
+    || { key: 'all', platformKey: 'all', label: 'Все площадки' }
+  ) || { key: 'all', platformKey: 'all', label: 'Все площадки', series: [] };
+  const allPlatform = {
+    ...allTemplate,
+    key: 'all',
+    platformKey: 'all',
+    label: allTemplate.label || 'Все площадки',
+    ...totalsFromSeries(allSeries),
+    series: allSeries
+  };
+
+  const mergedPlatforms = [...platformMap.values(), allPlatform];
+  merged.generatedAt = freshPayload?.generatedAt || new Date().toISOString();
+  merged.asOfDate = latestSeriesDateFromPlatformList(mergedPlatforms) || freshPayload?.asOfDate || existingPayload?.asOfDate || '';
+  merged.source = freshPayload?.source || existingPayload?.source || 'wb-promotion-api';
+  merged.sourceMode = freshPayload?.sourceMode || existingPayload?.sourceMode || 'wb-api+marketplace-workbook';
+  merged.sourceUrl = freshPayload?.sourceUrl || existingPayload?.sourceUrl || WB_PROMOTION_DOCS_URL;
+  merged.note = [freshPayload?.note, existingPayload?.extraMarketplace ? 'Marketplace extras preserved from existing ads_summary.json.' : '', existingPayload?.note]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+  merged.platforms = mergedPlatforms;
+  if (existingPayload?.extraMarketplace || freshPayload?.extraMarketplace) {
+    merged.extraMarketplace = deepClone(existingPayload?.extraMarketplace || freshPayload?.extraMarketplace);
+  }
+  return merged;
 }
 
 function parseExternalSheetPeriod(sheetName) {
@@ -924,17 +1069,19 @@ async function main() {
   const options = resolveOptions(parseArgs(process.argv));
   if (options.command !== 'sync') throw new Error(`Unsupported command: ${options.command}`);
   const payload = await buildPayload(options);
-  const writtenFiles = writeOutputs(payload, options);
-  const spend = (payload.platforms || []).find((platform) => platform.key === 'wb')?.spend || 0;
+  const existingAdsSummary = readJson(path.join(options.baseDataDir, 'ads_summary.json'), null);
+  const mergedPayload = mergeAdsSummaryWithExisting(payload, existingAdsSummary);
+  const writtenFiles = writeOutputs(mergedPayload, options);
+  const spend = (mergedPayload.platforms || []).find((platform) => platform.key === 'wb')?.spend || 0;
   const summary = {
     dryRun: options.dryRun,
-    sourceMode: payload.sourceMode,
-    window: payload.window,
-    asOfDate: payload.asOfDate,
+    sourceMode: mergedPayload.sourceMode,
+    window: mergedPayload.window,
+    asOfDate: mergedPayload.asOfDate,
     spend,
-    itemRows: Array.isArray(payload.itemSeries) ? payload.itemSeries.length : 0,
+    itemRows: Array.isArray(mergedPayload.itemSeries) ? mergedPayload.itemSeries.length : 0,
     writtenFiles,
-    diagnostics: payload.diagnostics
+    diagnostics: mergedPayload.diagnostics
   };
   console.log(JSON.stringify(summary, null, 2));
 }

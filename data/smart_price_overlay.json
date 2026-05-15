@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-15T08:31:03.914Z",
+  "generatedAt": "2026-05-15T08:46:12.540Z",
   "asOfDate": "2026-05-15",
   "sourceFile": "smart-price-workbook.xlsx",
   "platforms": {
@@ -120823,7 +120823,7 @@
       "key": "goldapple",
       "label": "ЗЯ",
       "source": "platform_trends.extraMarketplace",
-      "generatedAt": "2026-05-15T08:31:03.914Z",
+      "generatedAt": "2026-05-15T08:46:12.540Z",
       "asOfDate": "2026-05-15",
       "rows": [
         {
@@ -190078,7 +190078,7 @@
       "key": "letu",
       "label": "Лэтуаль",
       "source": "platform_trends.extraMarketplace",
-      "generatedAt": "2026-05-15T08:31:03.914Z",
+      "generatedAt": "2026-05-15T08:46:12.540Z",
       "asOfDate": "2026-05-15",
       "rows": [
         {
@@ -341712,7 +341712,7 @@
       "key": "magnit",
       "label": "Магнит Маркет",
       "source": "platform_trends.extraMarketplace",
-      "generatedAt": "2026-05-15T08:31:03.914Z",
+      "generatedAt": "2026-05-15T08:46:12.540Z",
       "asOfDate": "2026-05-15",
       "rows": [
         {
@@ -399878,7 +399878,7 @@
     }
   },
   "extraMarketplace": {
-    "generatedAt": "2026-05-15T08:31:03.914Z",
+    "generatedAt": "2026-05-15T08:46:12.540Z",
     "asOfDate": "2026-05-15",
     "source": "platform_trends.extraMarketplace",
     "platforms": {

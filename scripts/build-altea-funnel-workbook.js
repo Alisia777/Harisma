@@ -229,6 +229,15 @@ function parseArgs(argv) {
   return args;
 }
 
+function asBool(value, fallback = false) {
+  if (value === undefined || value === null || value === '') return fallback;
+  if (typeof value === 'boolean') return value;
+  const normalized = String(value).trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+  if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+  return fallback;
+}
+
 function timestamp() {
   const now = new Date();
   const pad = (value) => String(value).padStart(2, '0');
@@ -252,10 +261,12 @@ function resolveOptions(args) {
     ymApiKey: String(args['ym-api-key'] || process.env.ALTEA_YM_API_KEY || '').trim(),
     ymCampaignId: String(args['ym-campaign-id'] || process.env.ALTEA_YM_CAMPAIGN_ID || '').trim(),
     ymBusinessId: String(args['ym-business-id'] || process.env.ALTEA_YM_BUSINESS_ID || '').trim(),
+    ymUseShowsSales: asBool(args['ym-use-shows-sales'] ?? process.env.ALTEA_YM_USE_SHOWS_SALES, false),
     letualApiToken: String(args['letual-token'] || process.env.ALTEA_LETUAL_API_TOKEN || '').trim(),
     letualApiBaseUrl: String(args['letual-base-url'] || process.env.ALTEA_LETUAL_API_BASE_URL || LETUAL_DEFAULT_BASE_URL).trim(),
     letualSalesPath: String(args['letual-sales-path'] || process.env.ALTEA_LETUAL_SALES_PATH || LETUAL_DEFAULT_GRAPHQL_PATH).trim(),
     letualClientId: String(args['letual-client-id'] || process.env.ALTEA_LETUAL_CLIENT_ID || '').trim(),
+    letualFullHistory: asBool(args['letual-full-history'] ?? process.env.ALTEA_LETUAL_FULL_HISTORY, false),
     letualLocalExportXlsx: String(args['letual-local-export-xlsx'] || process.env.ALTEA_LETUAL_LOCAL_EXPORT_XLSX || LETUAL_DEFAULT_LOCAL_EXPORT_XLSX).trim(),
     letualPlanXlsx: String(args['letual-plan-xlsx'] || process.env.ALTEA_LETUAL_PLAN_XLSX || LETUAL_DEFAULT_PLAN_XLSX).trim(),
     zyaSalesZip: String(args['zya-sales-zip'] || process.env.ALTEA_ZYA_SALES_ZIP || '').trim(),
@@ -270,6 +281,19 @@ function resolveOptions(args) {
 function readWorkbook(filePath) {
   if (!fs.existsSync(filePath)) return null;
   return XLSX.readFile(filePath, { cellDates: false });
+}
+
+function fileMtimeIso(filePath) {
+  try {
+    return fs.statSync(filePath).mtime.toISOString();
+  } catch (_error) {
+    return '';
+  }
+}
+
+function withFileMtime(filePath, detail) {
+  const mtime = fileMtimeIso(filePath);
+  return mtime ? `${detail}; fileMtime=${mtime.slice(0, 10)}` : detail;
 }
 
 function sheetRows(workbook, sheetName, options = {}) {
@@ -381,6 +405,20 @@ function monthRange(month) {
     from: `${year}-${String(monthNumber).padStart(2, '0')}-01`,
     to: monthEnd(year, monthNumber)
   };
+}
+
+function trailingMonths(toDate, count) {
+  const match = String(toDate || TODAY).slice(0, 10).match(/^(\d{4})-(\d{2})/);
+  if (!match) return [];
+  const result = [];
+  const cursor = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, 1));
+  const monthCount = Math.max(1, Number(count) || 1);
+  for (let offset = monthCount - 1; offset >= 0; offset -= 1) {
+    const date = new Date(Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() - offset, 1));
+    result.push(`${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`);
+  }
+  const allowed = new Set(months2025And2026());
+  return result.filter((month) => allowed.has(month));
 }
 
 function isRateMetric(metricKey) {
@@ -1020,14 +1058,14 @@ async function addWbFunnelApi(store, options, notes) {
   const nmMap = loadWbNmMap(options.wbNmMap);
   try {
     const periods = [
-      ['2025-05-12', '2025-12-31'],
+      ['2025-05-15', '2025-12-31'],
       ['2026-01-01', TODAY]
     ];
     sourceNote(
       notes,
       'WB Analytics CSV API coverage',
       'limited',
-      'WB returned earliest available date 2025-05-12; Jan-Apr 2025 WB sales stay from seller report without traffic/cart details.'
+      'WB analytics CSV is available from 2025-05-15; Jan-Apr 2025 WB sales stay from seller report without traffic/card details.'
     );
     for (const [from, to] of periods) {
       const rows = await createAndDownloadWbFunnelReport(options, from, to);
@@ -1271,6 +1309,29 @@ async function addYandexMarketApi(store, options, notes) {
       sourceNote(notes, 'Yandex Market API', 'missing id', 'No campaignId/businessId entered and GET /v2/campaigns returned no campaigns.');
       return;
     }
+    const loadKeyIndicators = async (sourceLabel) => {
+      const rows = [];
+      for (const identity of identities) {
+        rows.push(...await generateYandexKeyIndicatorsReport(options, identity));
+      }
+      const metricKeys = new Set([
+        'impressions_total',
+        'add_to_cart_total',
+        'orders_units',
+        'orders_revenue',
+        'ads_spend',
+        'ads_revenue',
+        'logistics_cost',
+        'storage_cost'
+      ]);
+      store.removeWhere((row) => row.platformKey === 'ym' && metricKeys.has(row.metricKey));
+      addYandexKeyIndicatorRows(store, rows, notes, sourceLabel);
+    };
+    if (!options.ymUseShowsSales) {
+      sourceNote(notes, 'Yandex Market API shows-sales', 'skipped', 'Disabled by default to avoid the hourly report-generation limit; set ALTEA_YM_USE_SHOWS_SALES=1 to enable.');
+      await loadKeyIndicators('Yandex Market API key-indicators');
+      return;
+    }
     try {
       const periods = [
         ['2025-01-01', '2025-12-31'],
@@ -1297,25 +1358,10 @@ async function addYandexMarketApi(store, options, notes) {
       addYandexRows(store, rows, notes, 'Yandex Market API shows-sales');
     } catch (error) {
       sourceNote(notes, 'Yandex Market API shows-sales', 'failed', error.message);
-      const rows = [];
-      for (const identity of identities) {
-        rows.push(...await generateYandexKeyIndicatorsReport(options, identity));
-      }
-      const metricKeys = new Set([
-        'impressions_total',
-        'add_to_cart_total',
-        'orders_units',
-        'orders_revenue',
-        'ads_spend',
-        'ads_revenue',
-        'logistics_cost',
-        'storage_cost'
-      ]);
-      store.removeWhere((row) => row.platformKey === 'ym' && metricKeys.has(row.metricKey));
-      addYandexKeyIndicatorRows(store, rows, notes, 'Yandex Market API key-indicators');
+      await loadKeyIndicators('Yandex Market API key-indicators');
     }
   } catch (error) {
-    sourceNote(notes, 'Yandex Market API shows-sales', 'failed', error.message);
+    sourceNote(notes, 'Yandex Market API key-indicators', 'failed', error.message);
   }
 }
 
@@ -1519,7 +1565,7 @@ function addLetualLocalExport(store, options, notes) {
     notes,
     'Letual local export',
     skuRows ? 'loaded' : 'empty',
-    `${skuRows} SKU rows, ${monthsWithValues.size} months from ${path.basename(filePath)}${monthRangeText ? ` (${monthRangeText})` : ''}`
+    withFileMtime(filePath, `${skuRows} SKU rows, ${monthsWithValues.size} months from ${path.basename(filePath)}${monthRangeText ? ` (${monthRangeText})` : ''}`)
   );
 }
 
@@ -1563,11 +1609,12 @@ async function addLetualApi(store, options, notes) {
     } else if (isLetualGraphqlUrl(url)) {
       let loadedMonths = 0;
       try {
-        for (const month of months2025And2026()) {
+        const months = options.letualFullHistory ? months2025And2026() : trailingMonths(TODAY, 2);
+        for (const month of months) {
           const ok = await fetchLetualCpcStats(store, options, url, month, notes);
           if (ok) loadedMonths += 1;
         }
-        sourceNote(notes, 'Letual GraphQL', loadedMonths ? 'loaded' : 'empty', `${loadedMonths} month windows queried`);
+        sourceNote(notes, 'Letual GraphQL', loadedMonths ? 'loaded' : 'empty', `${loadedMonths}/${months.length} month windows queried${options.letualFullHistory ? '' : ' (recent months only; set ALTEA_LETUAL_FULL_HISTORY=1 for full backfill)'}`);
       } catch (error) {
         sourceNote(notes, 'Letual GraphQL', 'failed', error.message);
       }
@@ -1663,7 +1710,7 @@ function addZyaSalesZip(store, zipPath, notes) {
       }
       count += 1;
     }
-    sourceNote(notes, 'ZYA sales ZIP', count ? 'loaded' : 'empty', `${count} rows from ${path.basename(selection.filePath)} / ${selection.sheetName}`);
+    sourceNote(notes, 'ZYA sales ZIP', count ? 'loaded' : 'empty', withFileMtime(zipPath, `${count} rows from ${path.basename(selection.filePath)} / ${selection.sheetName}`));
   } catch (error) {
     sourceNote(notes, 'ZYA sales ZIP', 'failed', error.message);
   }
@@ -1710,7 +1757,7 @@ function addZyaAdsXlsx(store, filePath, notes) {
       }
       count += 1;
     }
-    sourceNote(notes, 'ZYA ads XLSX', count ? 'loaded' : 'empty', `${count} rows from ${path.basename(filePath)}`);
+    sourceNote(notes, 'ZYA ads XLSX', count ? 'loaded' : 'empty', withFileMtime(filePath, `${count} rows from ${path.basename(filePath)}`));
   } catch (error) {
     sourceNote(notes, 'ZYA ads XLSX', 'failed', error.message);
   }
@@ -1767,7 +1814,7 @@ function addMagnitSalesCsv(store, filePath, notes) {
       }
       count += 1;
     }
-    sourceNote(notes, 'Magnit Market sales CSV', count ? 'loaded' : 'empty', `${count} rows from ${path.basename(filePath)}`);
+    sourceNote(notes, 'Magnit Market sales CSV', count ? 'loaded' : 'empty', withFileMtime(filePath, `${count} rows from ${path.basename(filePath)}`));
   } catch (error) {
     sourceNote(notes, 'Magnit Market sales CSV', 'failed', error.message);
   }
@@ -1795,7 +1842,7 @@ function addMagnitServicesCsv(store, filePath, notes) {
       store.add({ ...commonTotal, ...metricParts('ads_spend') }, month, spend);
       count += 1;
     }
-    sourceNote(notes, 'Magnit Market services CSV', count ? 'loaded' : 'empty', `${count} paid rows from ${path.basename(filePath)}`);
+    sourceNote(notes, 'Magnit Market services CSV', count ? 'loaded' : 'empty', withFileMtime(filePath, `${count} paid rows from ${path.basename(filePath)}`));
   } catch (error) {
     sourceNote(notes, 'Magnit Market services CSV', 'failed', error.message);
   }

@@ -16,6 +16,11 @@ const SKU_PLAN_FACT_PLATFORM_SUPPORT_KEYS = {
   magnit: 'mm'
 };
 const SKU_PLAN_FACT_DIRECT_PLAN_PLATFORMS = new Set(['wb', 'ozon']);
+const SKU_PLAN_FACT_RECONCILE_OVERAGE_THRESHOLD = 1.15;
+const SKU_PLAN_FACT_RECONCILE_MIN_REVENUE = 10000;
+const SKU_PLAN_FACT_UNMAPPED_OWNER = 'Не в реестре';
+const SKU_PLAN_FACT_UNMAPPED_STATUS = 'API SKU без пары';
+const SKU_PLAN_FACT_UNALLOCATED_STATUS = 'Агрегат без SKU';
 let skuPlanFactSearchTimer = 0;
 
 function skuPlanFactPlatformLabel(platform = '') {
@@ -141,6 +146,20 @@ function skuPlanFactRowsFromIndexMap(map = null) {
   return map ? [...map.values()].flat() : [];
 }
 
+function skuPlanFactKnownSkuTokens() {
+  const tokens = new Set();
+  (state.skus || []).forEach((sku) => {
+    const values = typeof skuLookupValues === 'function'
+      ? skuLookupValues(sku)
+      : [sku?.articleKey, sku?.article, sku?.sku, sku?.vendorCode, sku?.barcode, sku?.nmId];
+    values.forEach((value) => {
+      const token = skuPlanFactToken(value);
+      if (token) tokens.add(token);
+    });
+  });
+  return tokens;
+}
+
 function skuPlanFactBuildIndexes() {
   const smart = {};
   const overlay = {};
@@ -155,6 +174,40 @@ function skuPlanFactBuildIndexes() {
     extra[platform] = skuPlanFactIndexRows(skuPlanFactRowsForPlatform(state.platformTrends || {}, platform));
   });
   return { smart, overlay, support, prices, extra };
+}
+
+function skuPlanFactUnmappedSkuFromRow(row = {}, token = '') {
+  const articleKey = String(row.articleKey || row.article || row.sku || row.offerId || row.offer_id || row.vendorCode || token || '').trim();
+  const name = String(row.name || row.offerName || row.productName || row.title || articleKey || token || '').trim();
+  return {
+    articleKey,
+    article: String(row.article || row.articleKey || articleKey).trim(),
+    name,
+    owner: {
+      name: SKU_PLAN_FACT_UNMAPPED_OWNER,
+      registryStatus: SKU_PLAN_FACT_UNMAPPED_STATUS,
+      source: row.sourceMode || row.source || 'platform_trends.extraMarketplace'
+    },
+    ownersByPlatform: {},
+    status: SKU_PLAN_FACT_UNMAPPED_STATUS,
+    flags: { assigned: true },
+    __skuPlanFactUnmapped: true
+  };
+}
+
+function skuPlanFactUnmappedSkus(indexes = {}, monthKey = '', maxFactDate = '') {
+  const knownTokens = skuPlanFactKnownSkuTokens();
+  const result = new Map();
+  SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
+    skuPlanFactRowsFromIndexMap(indexes.extra?.[platform]).forEach((row) => {
+      const token = skuPlanFactArticleToken(row);
+      if (!token || knownTokens.has(token) || result.has(token)) return;
+      const fact = skuPlanFactFactFromRows([row], monthKey, maxFactDate);
+      if (!(numberOrZero(fact.revenue) > 0 || numberOrZero(fact.units) > 0)) return;
+      result.set(token, skuPlanFactUnmappedSkuFromRow(row, token));
+    });
+  });
+  return [...result.values()].sort((left, right) => String(left.articleKey || '').localeCompare(String(right.articleKey || ''), 'ru'));
 }
 
 function skuPlanFactAvailableMonths(indexes) {
@@ -325,6 +378,167 @@ function skuPlanFactFactFromRows(rows = [], monthKey = '', maxFactDate = '') {
   return result;
 }
 
+function skuPlanFactPlatformTrend(platform = '') {
+  const supportKey = skuPlanFactPlatformSupportKey(platform);
+  return (state.platformTrends?.platforms || []).find((item) => {
+    const key = String(item?.key || '').trim();
+    return key === platform || key === supportKey;
+  }) || null;
+}
+
+function skuPlanFactPlatformAggregateFact(platform = '', monthKey = '', maxFactDate = '') {
+  const result = { units: 0, revenue: 0 };
+  const platformTrend = skuPlanFactPlatformTrend(platform);
+  (platformTrend?.series || []).forEach((item) => {
+    const date = String(item?.date || item?.label || '').slice(0, 10);
+    if (skuPlanFactMonthFromDate(date) !== monthKey) return;
+    if (maxFactDate && date > maxFactDate) return;
+    result.units += numberOrZero(item.ordersUnits ?? item.units);
+    result.revenue += numberOrZero(item.ordersRevenue ?? item.revenue ?? item.financeTurnover);
+  });
+  return result;
+}
+
+function skuPlanFactScaleMetricFact(metric = null, ratio = 1, reconciliation = null) {
+  if (!metric || !Number.isFinite(Number(ratio)) || ratio >= 1 || ratio <= 0) return;
+  const rawFactRevenue = numberOrZero(metric.factRevenue);
+  const rawFactUnits = numberOrZero(metric.factUnits);
+  metric.rawFactRevenue = rawFactRevenue;
+  metric.rawFactUnits = rawFactUnits;
+  metric.factRevenue = rawFactRevenue * ratio;
+  metric.factUnits = rawFactUnits * ratio;
+  metric.factAvgCheck = metric.factUnits > 0 ? metric.factRevenue / metric.factUnits : null;
+  metric.reconciledFact = true;
+  metric.reconciliationRatio = ratio;
+  metric.reconciliation = reconciliation;
+  if (!String(metric.source || '').includes('platform-reconciled')) {
+    metric.source = [metric.source, 'platform-reconciled'].filter(Boolean).join('+');
+  }
+}
+
+function skuPlanFactReconcilePlatformFacts(rows = [], monthKey = '', maxFactDate = '') {
+  const reconciliations = [];
+  SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
+    const aggregate = skuPlanFactPlatformAggregateFact(platform, monthKey, maxFactDate);
+    const raw = rows.reduce((acc, row) => {
+      const metric = row.platforms?.[platform] || row[platform] || null;
+      acc.units += numberOrZero(metric?.factUnits);
+      acc.revenue += numberOrZero(metric?.factRevenue);
+      return acc;
+    }, { units: 0, revenue: 0 });
+    if (!(aggregate.revenue >= SKU_PLAN_FACT_RECONCILE_MIN_REVENUE && raw.revenue > aggregate.revenue * SKU_PLAN_FACT_RECONCILE_OVERAGE_THRESHOLD)) {
+      return;
+    }
+    const ratio = aggregate.revenue / raw.revenue;
+    const reconciliation = {
+      platform,
+      label: skuPlanFactPlatformLabel(platform),
+      rawRevenue: raw.revenue,
+      aggregateRevenue: aggregate.revenue,
+      rawUnits: raw.units,
+      aggregateUnits: aggregate.units,
+      ratio
+    };
+    rows.forEach((row) => {
+      const metric = row.platforms?.[platform] || row[platform] || null;
+      skuPlanFactScaleMetricFact(metric, ratio, reconciliation);
+    });
+    reconciliations.push(reconciliation);
+  });
+  return reconciliations;
+}
+
+function skuPlanFactBlankMetric(platform = '') {
+  return {
+    platform,
+    label: skuPlanFactPlatformLabel(platform),
+    planUnits: 0,
+    planRevenue: 0,
+    planAvgCheck: null,
+    planToDateUnits: 0,
+    planToDateRevenue: 0,
+    factUnits: 0,
+    factRevenue: 0,
+    factAvgCheck: null,
+    completionToDate: null,
+    completionMonth: null,
+    gapToDate: 0,
+    adSpend: 0,
+    adViews: 0,
+    adClicks: 0,
+    adOrders: 0,
+    adRevenue: 0,
+    drr: null,
+    adsDrr: null,
+    turnoverDays: null,
+    stock: null,
+    marginPct: null,
+    currentPrice: null,
+    currentClientPrice: null,
+    currentFillPrice: null,
+    hasSource: false,
+    planPriceProxy: 0,
+    hasDirectPlan: false,
+    source: ''
+  };
+}
+
+function skuPlanFactAppendUnallocatedAggregateRows(rows = [], monthKey = '', maxFactDate = '') {
+  SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
+    const aggregate = skuPlanFactPlatformAggregateFact(platform, monthKey, maxFactDate);
+    const raw = rows.reduce((acc, row) => {
+      const metric = row.platforms?.[platform] || row[platform] || null;
+      acc.units += numberOrZero(metric?.factUnits);
+      acc.revenue += numberOrZero(metric?.factRevenue);
+      return acc;
+    }, { units: 0, revenue: 0 });
+    const revenueDelta = aggregate.revenue - raw.revenue;
+    if (!(aggregate.revenue >= SKU_PLAN_FACT_RECONCILE_MIN_REVENUE && revenueDelta > SKU_PLAN_FACT_RECONCILE_MIN_REVENUE && raw.revenue < aggregate.revenue * 0.98)) {
+      return;
+    }
+    const unitsDelta = Math.max(0, aggregate.units - raw.units);
+    const articleKey = `__unallocated_${platform}_${monthKey}`;
+    const platforms = {};
+    SKU_PLAN_FACT_PLATFORMS.forEach((key) => {
+      platforms[key] = skuPlanFactBlankMetric(key);
+    });
+    const metric = platforms[platform];
+    metric.factUnits = unitsDelta;
+    metric.factRevenue = revenueDelta;
+    metric.factAvgCheck = unitsDelta > 0 ? revenueDelta / unitsDelta : null;
+    metric.hasSource = true;
+    metric.source = 'platform-aggregate-unallocated';
+    metric.gapToDate = revenueDelta;
+    const row = {
+      sku: {
+        articleKey,
+        article: `Неразнесено ${skuPlanFactPlatformLabel(platform)}`,
+        name: 'Разница между агрегатом площадки и строками SKU',
+        owner: {
+          name: SKU_PLAN_FACT_UNMAPPED_OWNER,
+          registryStatus: SKU_PLAN_FACT_UNALLOCATED_STATUS
+        },
+        flags: { assigned: true },
+        __skuPlanFactUnmapped: true,
+        __skuPlanFactUnallocated: true
+      },
+      articleKey,
+      article: `Неразнесено ${skuPlanFactPlatformLabel(platform)}`,
+      name: 'Разница между агрегатом площадки и строками SKU',
+      owner: SKU_PLAN_FACT_UNMAPPED_OWNER,
+      status: SKU_PLAN_FACT_UNALLOCATED_STATUS,
+      syntheticUnmapped: true,
+      syntheticUnallocated: true,
+      platforms
+    };
+    SKU_PLAN_FACT_PLATFORMS.forEach((key) => {
+      row[key] = platforms[key];
+    });
+    rows.push(row);
+  });
+  return rows;
+}
+
 function skuPlanFactRowsHavePlan(rows = [], monthKey = '') {
   return rows.some((row) => {
     if (String(row.planMonthKey || '').slice(0, 7) === monthKey) return true;
@@ -372,6 +586,12 @@ function skuPlanFactPlatformPlanRows(indexes = {}, platform = '', monthKey = '')
   const smartRows = skuPlanFactRowsFromIndexMap(indexes.smart?.[platform]);
   const supportRows = skuPlanFactRowsFromIndexMap(indexes.support?.[platform]);
   return skuPlanFactRowsHavePlan(supportRows, monthKey) ? supportRows : smartRows;
+}
+
+function skuPlanFactPlatformHasDirectApiFact(indexes = {}, platform = '') {
+  if (platform !== 'ozon' && platform !== 'wb' && platform !== 'ya') return false;
+  return skuPlanFactRowsFromIndexMap(indexes.extra?.[platform])
+    .some((row) => String(row?.sourceMode || row?.source || '').includes('api-direct-sku'));
 }
 
 function skuPlanFactPlatformPlanUnits(monthKey = '', platform = '') {
@@ -535,7 +755,9 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
   const extraRows = skuPlanFactRowsFromIndexMap(indexes.extra?.[platform]).filter((row) => skuPlanFactArticleToken(row) === token);
   const sourceRows = skuPlanFactPlatformSourceRows(indexes, platform).filter((row) => skuPlanFactArticleToken(row) === token);
   const planRows = skuPlanFactPlatformPlanRows(indexes, platform, monthKey).filter((row) => skuPlanFactArticleToken(row) === token);
-  const factRows = sourceRows.length ? sourceRows : (overlayRows.length ? overlayRows : (smartRows.length ? smartRows : (pricesRows.length ? pricesRows : extraRows)));
+  const hasDirectApiFact = skuPlanFactPlatformHasDirectApiFact(indexes, platform);
+  const apiFactRows = hasDirectApiFact ? extraRows : [];
+  const factRows = hasDirectApiFact ? apiFactRows : (sourceRows.length ? sourceRows : (overlayRows.length ? overlayRows : (smartRows.length ? smartRows : (pricesRows.length ? pricesRows : extraRows))));
   const plan = SKU_PLAN_FACT_DIRECT_PLAN_PLATFORMS.has(platform)
     ? skuPlanFactPlanFromRows(planRows, monthKey)
     : { units: 0, revenue: 0, avgCheck: null, days: skuPlanFactMonthDays(monthKey), source: '' };
@@ -609,6 +831,7 @@ function skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, maxFa
     name: sku.name || '',
     owner: ownerName(sku) || 'Без owner',
     status: skuOperationalStatusMeta(sku).label,
+    syntheticUnmapped: Boolean(sku.__skuPlanFactUnmapped),
     platforms
   };
   SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
@@ -709,7 +932,13 @@ function skuPlanFactBuildModel() {
   const selectedDate = skuPlanFactSelectedDate(indexes, monthKey, maxAvailableDate);
   const elapsedDays = skuPlanFactElapsedDays(monthKey, selectedDate);
   const adIndex = skuPlanFactAdIndex(monthKey, selectedDate);
-  const rows = (state.skus || []).map((sku) => skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, selectedDate));
+  const modelSkus = [
+    ...(state.skus || []),
+    ...skuPlanFactUnmappedSkus(indexes, monthKey, selectedDate)
+  ];
+  const rows = modelSkus.map((sku) => skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, selectedDate));
+  skuPlanFactAppendUnallocatedAggregateRows(rows, monthKey, selectedDate);
+  const reconciliation = skuPlanFactReconcilePlatformFacts(rows, monthKey, selectedDate);
   SKU_PLAN_FACT_PLATFORMS.forEach((platform) => skuPlanFactAllocatePlatformPlan(rows, monthKey, platform, elapsedDays));
   rows.forEach((row) => skuPlanFactFinalizeRow(row, monthKey, elapsedDays));
   const owners = [...new Set(rows.map((row) => row.owner).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
@@ -720,6 +949,7 @@ function skuPlanFactBuildModel() {
     if (filters.status === 'with_plan' && row.planRevenue <= 0) return false;
     if (filters.status === 'under_plan' && !(row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue)) return false;
     if (filters.status === 'no_fact' && !(row.planRevenue > 0 && row.factRevenue <= 0)) return false;
+    if (filters.status === 'unmapped' && !row.syntheticUnmapped) return false;
     if (filters.platform !== 'all' && !skuPlanFactPlatformHasActivity(row.platforms?.[filters.platform] || row[filters.platform])) return false;
     if (!search) return true;
     return [row.articleKey, row.article, row.name, row.owner, row.status]
@@ -729,6 +959,8 @@ function skuPlanFactBuildModel() {
       .includes(search);
   });
   const sortedRows = skuPlanFactSortRows(filteredRows, filters.sort, filters.sortDir);
+  const unmappedRows = rows.filter((row) => row.syntheticUnmapped);
+  const unmappedRevenue = unmappedRows.reduce((sum, row) => sum + numberOrZero(row.factRevenue), 0);
   const totals = sortedRows.reduce((acc, row) => {
     acc.planRevenue += row.planRevenue;
     acc.planToDateRevenue += row.planToDateRevenue;
@@ -761,6 +993,9 @@ function skuPlanFactBuildModel() {
     owners,
     platforms: SKU_PLAN_FACT_PLATFORMS,
     platformLabels: SKU_PLAN_FACT_PLATFORM_LABELS,
+    reconciliation,
+    unmappedCount: unmappedRows.length,
+    unmappedRevenue,
     planDrrByPlatform: {
       wb: Number.isFinite(Number(state.iuDrrSummary?.planPctDefault)) ? Number(state.iuDrrSummary.planPctDefault) : 0.08,
       ozon: Number.isFinite(Number(state.iuDrrSummary?.ozonPlanPctDefault)) ? Number(state.iuDrrSummary.ozonPlanPctDefault) : 0.25,
@@ -798,6 +1033,18 @@ function skuPlanFactMetricHtml(label, value, hint = '', tone = '') {
   `;
 }
 
+function skuPlanFactReconciliationHtml(items = []) {
+  if (!items.length) return '';
+  const text = items.map((item) => (
+    `${item.label}: SKU ${fmt.money(item.rawRevenue)} -> итог площадки ${fmt.money(item.aggregateRevenue)}`
+  )).join(' · ');
+  return `
+    <div class="notice warn" style="margin-top:14px">
+      <strong>Сверка источников:</strong> ${escapeHtml(text)}. Факт по SKU скорректирован до агрегата площадки.
+    </div>
+  `;
+}
+
 function skuPlanFactPlatformCell(metric, planDrr = null) {
   if (!metric) return '<div class="muted small">—</div>';
   const drrTone = metric.drr !== null && planDrr !== null && metric.drr > planDrr ? 'danger-text' : '';
@@ -824,9 +1071,14 @@ function skuPlanFactPlatformAvgCheckLines(row = {}) {
 function skuPlanFactRowHtml(row, model) {
   const totalTone = skuPlanFactTone(row.completionToDate);
   const planDrrByPlatform = model.planDrrByPlatform || {};
+  const articleTitle = row.article || row.articleKey;
+  const articleHtml = row.syntheticUnmapped
+    ? `<strong>${escapeHtml(articleTitle)}</strong><div class="badge-stack" style="margin-top:6px">${badge(row.status || SKU_PLAN_FACT_UNMAPPED_STATUS, 'warn')}</div>`
+    : linkToSku(row.articleKey, articleTitle);
+  const openAttr = row.syntheticUnmapped ? '' : ` data-open-sku="${escapeHtml(row.articleKey)}"`;
   return `
-    <tr class="sku-plan-fact-row" data-open-sku="${escapeHtml(row.articleKey)}">
-      <td>${linkToSku(row.articleKey, row.article || row.articleKey)}<div class="muted small">${escapeHtml(row.name)}</div></td>
+    <tr class="sku-plan-fact-row ${row.syntheticUnmapped ? 'is-unmapped' : ''}"${openAttr}>
+      <td>${articleHtml}<div class="muted small">${escapeHtml(row.name)}</div></td>
       <td><strong>${escapeHtml(row.owner)}</strong><div class="muted small">${escapeHtml(row.status)}</div></td>
       ${SKU_PLAN_FACT_PLATFORMS.map((platform) => `<td>${skuPlanFactPlatformCell(row.platforms?.[platform] || row[platform], planDrrByPlatform[platform] ?? null)}</td>`).join('')}
       <td>
@@ -1067,6 +1319,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
       </div>
       <div class="badge-stack">
         ${badge(`${fmt.int(model.rows.length)} SKU`, 'info')}
+        ${badge(`${fmt.int(model.unmappedCount || 0)} API без пары`, model.unmappedCount ? 'warn' : 'ok')}
         ${badge(`факт до ${model.maxFactDate || '—'}`, 'ok')}
         ${badge(`план ДРР WB/Ozon ${fmt.pct(model.planDrrWb)}`)}
       </div>
@@ -1079,6 +1332,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
       ${skuPlanFactMetricHtml('Средний чек', fmt.money(totals.avgCheck), `${fmt.int(totals.factUnits)} шт. факт`)}
       ${skuPlanFactMetricHtml('Реклама / ДРР', `${fmt.money(totals.adSpend)} · ${fmt.pct(totals.drr)}`, 'по SKU из ads_summary')}
     </div>
+    ${skuPlanFactReconciliationHtml(model.reconciliation || [])}
 
     <div class="card sku-plan-fact-card" style="margin-top:14px">
       <div class="section-subhead">
@@ -1104,6 +1358,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
           <option value="with_plan" ${filters.status === 'with_plan' ? 'selected' : ''}>Есть план</option>
           <option value="under_plan" ${filters.status === 'under_plan' ? 'selected' : ''}>Ниже плана</option>
           <option value="no_fact" ${filters.status === 'no_fact' ? 'selected' : ''}>План есть, факта нет</option>
+          <option value="unmapped" ${filters.status === 'unmapped' ? 'selected' : ''}>API без пары в реестре</option>
         </select>
         <select id="skuPlanFactPlatform">
           <option value="all" ${filters.platform === 'all' ? 'selected' : ''}>Все площадки</option>

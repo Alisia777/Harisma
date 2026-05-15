@@ -310,6 +310,139 @@ function marginForSku(sku) {
   return numberOrZero(sku?.wb?.marginPct);
 }
 
+function articleKeyForSku(sku, fallback = '') {
+  return String(
+    sku?.articleKey
+    || sku?.article
+    || sku?.supplierArticle
+    || sku?.sku
+    || fallback
+    || ''
+  ).trim();
+}
+
+function articleNameForSku(sku, fallback = '') {
+  return String(sku?.name || sku?.title || fallback || '').trim();
+}
+
+function ownerForSku(sku) {
+  return String(
+    sku?.owner?.byPlatform?.wb
+    || sku?.owner?.name
+    || sku?.owner
+    || ''
+  ).trim();
+}
+
+function addArticlePoint(map, sku, fallbackKey, dateKey, units, revenue, estimatedMargin) {
+  const articleKey = articleKeyForSku(sku, fallbackKey);
+  if (!articleKey) return;
+  let item = map.get(articleKey);
+  if (!item) {
+    item = {
+      platformKey: 'wb',
+      platformLabel: PLATFORM_LABELS.wb,
+      articleKey,
+      article: articleKey,
+      name: articleNameForSku(sku, articleKey),
+      owner: ownerForSku(sku),
+      dailyByDate: new Map(),
+      sourceRows: 0,
+      matchedRows: 0
+    };
+    map.set(articleKey, item);
+  }
+  if (!item.name) item.name = articleNameForSku(sku, articleKey);
+  if (!item.owner) item.owner = ownerForSku(sku);
+  item.sourceRows += 1;
+  if (sku) item.matchedRows += 1;
+
+  const point = item.dailyByDate.get(dateKey) || {
+    date: dateKey,
+    units: 0,
+    ordersUnits: 0,
+    revenue: 0,
+    ordersRevenue: 0,
+    estimatedMargin: 0
+  };
+  point.units += units;
+  point.ordersUnits += units;
+  point.revenue += revenue;
+  point.ordersRevenue += revenue;
+  point.estimatedMargin += estimatedMargin;
+  if (units > 0 && revenue > 0) point.price = revenue / units;
+  item.dailyByDate.set(dateKey, point);
+}
+
+function roundArticlePoint(point, latestIndex, index) {
+  const ordersUnits = numberOrZero(point.ordersUnits ?? point.units);
+  const revenue = numberOrZero(point.revenue);
+  return {
+    date: point.date,
+    dayOffset: latestIndex - index,
+    units: Number(numberOrZero(point.units).toFixed(4)),
+    ordersUnits: Number(ordersUnits.toFixed(4)),
+    revenue: Number(revenue.toFixed(4)),
+    ordersRevenue: Number(numberOrZero(point.ordersRevenue ?? point.revenue).toFixed(4)),
+    estimatedMargin: Number(numberOrZero(point.estimatedMargin).toFixed(4)),
+    price: ordersUnits > 0 ? Number((revenue / ordersUnits).toFixed(4)) : 0
+  };
+}
+
+function materializeArticles(articleMap) {
+  return Array.from(articleMap.values())
+    .map((item) => {
+      const daily = Array.from(item.dailyByDate.values())
+        .sort((left, right) => String(left?.date || '').localeCompare(String(right?.date || '')));
+      const latestIndex = Math.max(0, daily.length - 1);
+      const roundedDaily = daily.map((point, index) => roundArticlePoint(point, latestIndex, index));
+      const latestPoint = roundedDaily[roundedDaily.length - 1] || {};
+      const currentPrice = numberOrZero(latestPoint.price);
+      return {
+        platformKey: 'wb',
+        platformLabel: PLATFORM_LABELS.wb,
+        articleKey: item.articleKey,
+        article: item.article || item.articleKey,
+        name: item.name || item.article || item.articleKey,
+        owner: item.owner || '',
+        currentPrice,
+        currentClientPrice: currentPrice,
+        currentFillPrice: currentPrice,
+        sourceRows: item.sourceRows,
+        matchedRows: item.matchedRows,
+        sourceMode: 'wb-api-direct-sku',
+        daily: roundedDaily
+      };
+    })
+    .filter((item) => item.daily.length)
+    .sort((left, right) => String(left.articleKey || '').localeCompare(String(right.articleKey || ''), 'ru'));
+}
+
+function scaleArticlesToSeries(articles, sourceSeries, targetSeries) {
+  const sourceByDate = new Map((Array.isArray(sourceSeries) ? sourceSeries : []).map((point) => [isoDate(point?.label || point?.date), point]));
+  const targetByDate = new Map((Array.isArray(targetSeries) ? targetSeries : []).map((point) => [isoDate(point?.label || point?.date), point]));
+  return (Array.isArray(articles) ? articles : []).map((article) => ({
+    ...article,
+    daily: (article.daily || []).map((point) => {
+      const date = isoDate(point.date || point.label);
+      const sourceRevenue = numberOrZero(sourceByDate.get(date)?.revenue);
+      const targetRevenue = numberOrZero(targetByDate.get(date)?.revenue);
+      const ratio = sourceRevenue > 0 && targetRevenue > 0 ? targetRevenue / sourceRevenue : 1;
+      const revenue = numberOrZero(point.revenue) * ratio;
+      const ordersRevenue = numberOrZero(point.ordersRevenue ?? point.revenue) * ratio;
+      const estimatedMargin = numberOrZero(point.estimatedMargin) * ratio;
+      const ordersUnits = numberOrZero(point.ordersUnits ?? point.units);
+      return {
+        ...point,
+        revenue: Number(revenue.toFixed(4)),
+        ordersRevenue: Number(ordersRevenue.toFixed(4)),
+        estimatedMargin: Number(estimatedMargin.toFixed(4)),
+        price: ordersUnits > 0 ? Number((revenue / ordersUnits).toFixed(4)) : numberOrZero(point.price)
+      };
+    })
+  }));
+}
+
 function platformMap(platformTrends) {
   const map = new Map();
   for (const platform of Array.isArray(platformTrends?.platforms) ? platformTrends.platforms : []) {
@@ -702,6 +835,12 @@ async function fetchWbFinanceDetailedRows(options) {
         'rrdId',
         'dateFrom',
         'dateTo',
+        'nmId',
+        'vendorCode',
+        'title',
+        'brandName',
+        'subjectName',
+        'sku',
         'docTypeName',
         'sellerOperName',
         'quantity',
@@ -769,6 +908,49 @@ function buildFinanceTurnoverMap(rows) {
   return byDate;
 }
 
+function buildFinanceArticles(rows, skus) {
+  const { byArticle, byNmId } = skuMaps(skus);
+  const articleMap = new Map();
+  let sourceRows = 0;
+  let positiveRows = 0;
+  let matchedRows = 0;
+
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const date = isoDate(row?.rrDate || row?.dateFrom || row?.dateTo);
+    if (!date) continue;
+    const retailPriceWithDisc = numberOrZero(row?.retailPriceWithDisc);
+    if (!(retailPriceWithDisc > 0)) continue;
+    const fallbackArticle = String(row?.vendorCode || row?.supplierArticle || row?.saName || row?.nmId || row?.nmID || '').trim();
+    if (!fallbackArticle) continue;
+
+    sourceRows += 1;
+    const sign = operationSign(row);
+    const revenue = retailPriceWithDisc * sign;
+    const quantity = Math.max(1, Math.abs(numberOrZero(row?.quantity) || 1)) * sign;
+    if (revenue > 0) positiveRows += 1;
+    const sku = byArticle.get(normalizeKey(fallbackArticle))
+      || byNmId.get(String(Math.trunc(numberOrZero(row?.nmId || row?.nmID))));
+    if (sku) matchedRows += 1;
+    const estimatedMargin = sku ? revenue * marginForSku(sku) : 0;
+    addArticlePoint(articleMap, sku, fallbackArticle, date, quantity, revenue, estimatedMargin);
+    const item = articleMap.get(articleKeyForSku(sku, fallbackArticle));
+    if (item) {
+      if (!item.name) item.name = String(row?.title || row?.subjectName || fallbackArticle).trim();
+      item.brand = item.brand || String(row?.brandName || '').trim();
+    }
+  }
+
+  return {
+    articles: materializeArticles(articleMap),
+    diagnostics: {
+      sourceRows,
+      positiveRows,
+      matchedRows,
+      matchRate: sourceRows > 0 ? Number((matchedRows / sourceRows).toFixed(4)) : 0
+    }
+  };
+}
+
 function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
   const turnoverByDate = buildFinanceTurnoverMap(detailedRows);
   const byDate = new Map();
@@ -833,7 +1015,7 @@ function buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows) {
   return result;
 }
 
-async function fetchWbFinanceReferenceMap(options) {
+async function fetchWbFinanceReferenceMap(options, skus = []) {
   const warnings = [];
   let summaryRows = [];
   let detailedRows = [];
@@ -858,6 +1040,7 @@ async function fetchWbFinanceReferenceMap(options) {
 
   return {
     referenceMap: buildFinanceSellerSummaryReferenceMap(summaryRows, detailedRows),
+    articleLayer: buildFinanceArticles(detailedRows, skus),
     diagnostics: {
       listPageCount: summaryDiagnostics.pageCount,
       listFetchedRows: summaryDiagnostics.fetchedRows,
@@ -878,6 +1061,7 @@ function buildWbSeries(rows, skus, options) {
   let positiveRows = 0;
   let matchedRows = 0;
   const buckets = new Map();
+  const articleMap = new Map();
 
   for (const row of Array.isArray(rows) ? rows : []) {
     sourceRows += 1;
@@ -894,10 +1078,20 @@ function buildWbSeries(rows, skus, options) {
 
     const current = buckets.get(date) || { units: 0, revenue: 0, estimatedMargin: 0 };
     const units = numberOrZero(row?.ordersCount || row?.ordersCnt || row?.quantity);
-    current.units += units > 0 ? units : 1;
+    const safeUnits = units > 0 ? units : 1;
+    current.units += safeUnits;
     current.revenue += revenue;
     if (sku) current.estimatedMargin += revenue * marginForSku(sku);
     buckets.set(date, current);
+    addArticlePoint(
+      articleMap,
+      sku,
+      row?.supplierArticle || row?.sku || row?.barcode || row?.nmID || row?.nmId,
+      date,
+      safeUnits,
+      revenue,
+      sku ? revenue * marginForSku(sku) : 0
+    );
   }
 
   const dates = enumerateDates(options.from, options.to);
@@ -922,7 +1116,8 @@ function buildWbSeries(rows, skus, options) {
       positiveRows,
       matchedRows,
       matchRate: positiveRows > 0 ? Number((matchedRows / positiveRows).toFixed(4)) : 0
-    }
+    },
+    articles: materializeArticles(articleMap)
   };
 }
 
@@ -938,7 +1133,7 @@ async function main() {
   const platforms = platformMap(existing);
   const existingWbPlatform = platforms.get('wb') || null;
   const stagedWbPlatform = platformMap(stagedExisting).get('wb') || null;
-  const financeReference = await fetchWbFinanceReferenceMap(options);
+  const financeReference = await fetchWbFinanceReferenceMap(options, skus);
   const wbReferenceMap = new Map([
     ...financeReference.referenceMap,
     ...wbSellerSummaryReferenceMap(existing, stagedExisting)
@@ -975,6 +1170,22 @@ async function main() {
     .find((item) => numberOrZero(item?.revenue) > 0 || numberOrZero(item?.units) > 0)?.label
     || existing.latestMarketplaceDate
     || '';
+  const hasFinanceSkuLayer = Boolean(financeReference.articleLayer?.articles?.length);
+  const wbSourceArticles = hasFinanceSkuLayer ? financeReference.articleLayer.articles : wb.articles;
+  const wbSourceSeries = hasFinanceSkuLayer
+    ? Array.from(financeReference.referenceMap.entries()).map(([date, item]) => ({
+      label: date,
+      revenue: numberOrZero(item?.salesRevenue ?? item?.financeTurnover),
+      units: 0
+    }))
+    : wb.series;
+  const wbArticles = scaleArticlesToSeries(wbSourceArticles, wbSourceSeries, wbSeriesFinal);
+  const existingExtraMarketplace = existing?.extraMarketplace && typeof existing.extraMarketplace === 'object'
+    ? existing.extraMarketplace
+    : {};
+  const existingExtraPlatforms = existingExtraMarketplace?.platforms && typeof existingExtraMarketplace.platforms === 'object'
+    ? existingExtraMarketplace.platforms
+    : {};
   const payload = {
     ...existing,
     generatedAt: new Date().toISOString(),
@@ -989,13 +1200,34 @@ async function main() {
       financeFetchedRows: financeReference.diagnostics.listFetchedRows,
       financeDetailedPageCount: financeReference.diagnostics.detailedPageCount,
       financeDetailedFetchedRows: financeReference.diagnostics.detailedFetchedRows,
+      financeArticleRows: financeReference.articleLayer?.articles?.length || 0,
+      financeArticleSourceRows: financeReference.articleLayer?.diagnostics?.sourceRows || 0,
+      financeArticleMatchedRows: financeReference.articleLayer?.diagnostics?.matchedRows || 0,
       pageCount: wbReport.diagnostics.pageCount,
       fetchedRows: wbReport.diagnostics.fetchedRows,
       revenueField: 'ordersSumRub',
       revenueSource: 'seller-analytics-api:GROUPED_HISTORY_REPORT',
       ...wb.diagnostics
     },
-    wbSellerSummaryReference: existing.wbSellerSummaryReference || stagedExisting.wbSellerSummaryReference || undefined
+    wbSellerSummaryReference: existing.wbSellerSummaryReference || stagedExisting.wbSellerSummaryReference || undefined,
+    extraMarketplace: {
+      ...existingExtraMarketplace,
+      generatedAt: new Date().toISOString(),
+      asOfDate: latestMarketplaceDate,
+      platforms: {
+        ...existingExtraPlatforms,
+        wb: {
+          key: 'wb',
+          label: PLATFORM_LABELS.wb,
+          supportKey: 'wb',
+          source: hasFinanceSkuLayer ? 'wb-finance-api:sales-reports/detailed' : 'seller-analytics-api:GROUPED_HISTORY_REPORT',
+          sourceMode: hasFinanceSkuLayer ? 'wb-finance-api-direct-sku' : 'all',
+          from: options.from,
+          to: options.to,
+          articles: wbArticles
+        }
+      }
+    }
   };
 
   if (wbReferenceMap.size > 0) {
@@ -1032,6 +1264,8 @@ async function main() {
     generatedAt: payload.generatedAt,
     latestMarketplaceDate,
     wbPoints: wb.series.length,
+    wbArticleRows: wbArticles.length,
+    wbArticleSource: hasFinanceSkuLayer ? 'wb-finance-api-direct-sku' : 'seller-analytics-api:GROUPED_HISTORY_REPORT',
     ...payload.wbApiDirect
   }, null, 2));
 }

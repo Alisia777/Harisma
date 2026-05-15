@@ -6,6 +6,7 @@ const path = require('path');
 const API_BASE_URL = 'https://api-seller.ozon.ru';
 const ANALYTICS_METRICS = ['revenue', 'ordered_units', 'delivered_units'];
 const ANALYTICS_DIMENSION = ['sku', 'day'];
+const PRODUCT_INFO_CHUNK_SIZE = 100;
 
 function parseArgs(argv) {
   const args = {};
@@ -116,6 +117,72 @@ function marginForSku(sku) {
   return numberOrZero(sku?.ozon?.marginPct);
 }
 
+function articleKeyForSku(sku, fallback = '') {
+  return String(
+    sku?.articleKey
+    || sku?.article
+    || sku?.sku
+    || sku?.vendorCode
+    || fallback
+    || ''
+  ).trim();
+}
+
+function articleNameForSku(sku, fallback = '') {
+  return String(sku?.name || sku?.title || fallback || '').trim();
+}
+
+function ownerForSku(sku) {
+  return String(
+    sku?.owner?.byPlatform?.ozon
+    || sku?.owner?.name
+    || sku?.owner
+    || ''
+  ).trim();
+}
+
+function addArticlePoint(map, sku, fallbackKey, dateKey, quantity, deliveredUnits, revenue, estimatedMargin) {
+  const articleKey = articleKeyForSku(sku, fallbackKey);
+  if (!articleKey) return;
+  let item = map.get(articleKey);
+  if (!item) {
+    item = {
+      platformKey: 'ozon',
+      platformLabel: 'Ozon',
+      articleKey,
+      article: articleKey,
+      name: articleNameForSku(sku, articleKey),
+      owner: ownerForSku(sku),
+      dailyByDate: new Map(),
+      sourceRows: 0,
+      matchedRows: 0
+    };
+    map.set(articleKey, item);
+  }
+  if (!item.name) item.name = articleNameForSku(sku, articleKey);
+  if (!item.owner) item.owner = ownerForSku(sku);
+  item.sourceRows += 1;
+  if (sku) item.matchedRows += 1;
+
+  const point = item.dailyByDate.get(dateKey) || {
+    date: dateKey,
+    units: 0,
+    ordersUnits: 0,
+    deliveredUnits: 0,
+    revenue: 0,
+    ordersRevenue: 0,
+    estimatedMargin: 0
+  };
+  point.units += quantity;
+  point.ordersUnits += quantity;
+  point.deliveredUnits += deliveredUnits;
+  point.revenue += revenue;
+  point.ordersRevenue += revenue;
+  point.estimatedMargin += estimatedMargin;
+  if (quantity > 0 && revenue > 0) point.price = revenue / quantity;
+  item.dailyByDate.set(dateKey, point);
+}
+
 async function analyticsRequest(options, body) {
   const response = await fetch(`${options.apiBaseUrl}/v1/analytics/data`, {
     method: 'POST',
@@ -140,6 +207,67 @@ async function analyticsRequest(options, body) {
     throw error;
   }
   return payload;
+}
+
+async function productInfoRequest(options, skuIds) {
+  const response = await fetch(`${options.apiBaseUrl}/v3/product/info/list`, {
+    method: 'POST',
+    headers: {
+      'Client-Id': options.clientId,
+      'Api-Key': options.apiKey,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ sku: skuIds.map((item) => String(item)) })
+  });
+  const text = await response.text();
+  let payload = null;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch {
+    payload = null;
+  }
+  if (!response.ok) {
+    const error = new Error(`Ozon product info API failed: HTTP ${response.status} ${text.slice(0, 500)}`);
+    error.status = response.status;
+    error.body = text;
+    throw error;
+  }
+  return Array.isArray(payload?.items) ? payload.items : [];
+}
+
+function analyticsSkuId(row = {}) {
+  const dimensions = Array.isArray(row?.dimensions) ? row.dimensions : [];
+  const skuDimension = dimensions.find((dimension) => {
+    const id = String(dimension?.id || '').trim();
+    return id && !isoDate(id);
+  });
+  const id = String(skuDimension?.id || row?.sku || row?.item?.sku || '').trim();
+  return /^\d+$/.test(id) ? id : '';
+}
+
+async function fetchProductInfoMap(options, skuIds) {
+  const ids = Array.from(new Set(Array.from(skuIds || []).map((item) => String(item || '').trim()).filter(Boolean)));
+  const map = new Map();
+  const warnings = [];
+  for (let index = 0; index < ids.length; index += PRODUCT_INFO_CHUNK_SIZE) {
+    const chunk = ids.slice(index, index + PRODUCT_INFO_CHUNK_SIZE);
+    try {
+      const items = await productInfoRequest(options, chunk);
+      for (const item of items) {
+        const keys = [
+          item?.sku,
+          ...(Array.isArray(item?.sources) ? item.sources.map((source) => source?.sku) : []),
+          ...(Array.isArray(item?.stocks?.stocks) ? item.stocks.stocks.map((stock) => stock?.sku) : [])
+        ].map((value) => String(value || '').trim()).filter(Boolean);
+        for (const key of keys) {
+          if (!map.has(key)) map.set(key, item);
+        }
+      }
+    } catch (error) {
+      warnings.push(error?.message || String(error));
+    }
+  }
+  return { map, requested: ids.length, matched: map.size, warnings };
 }
 
 function extractRows(payload) {
@@ -210,7 +338,7 @@ function mergeAllSeries(platforms) {
   const latestIndex = dates.length - 1;
   return dates.map((date, index) => {
     const total = { units: 0, ordersUnits: 0, deliveredUnits: 0, revenue: 0, ordersRevenue: 0, estimatedMargin: 0 };
-    for (const key of sourceKeys) {
+    for (const key of ['wb', 'ozon', 'ya']) {
       const point = (platforms.get(key)?.series || []).find((item) => isoDate(item?.label || item?.date) === date);
       if (!point) continue;
       const ordersUnits = numberOrZero(point.ordersUnits ?? point.units);
@@ -235,13 +363,20 @@ function mergeAllSeries(platforms) {
   });
 }
 
-function buildDayBuckets(rows, skus, dateKey, apiOk = true) {
+function buildDayBuckets(rows, skus, dateKey, apiOk = true, productInfoBySku = new Map()) {
   const { byOfferId } = skuMaps(skus);
   const all = { units: 0, ordersUnits: 0, deliveredUnits: 0, revenue: 0, ordersRevenue: 0, estimatedMargin: 0, sourceRows: 0, matchedRows: 0 };
   const matched = { units: 0, ordersUnits: 0, deliveredUnits: 0, revenue: 0, ordersRevenue: 0, estimatedMargin: 0, sourceRows: 0, matchedRows: 0 };
+  const allArticles = new Map();
+  const matchedArticles = new Map();
 
   for (const row of Array.isArray(rows) ? rows : []) {
+    const skuId = analyticsSkuId(row);
+    const productInfo = productInfoBySku.get(skuId) || null;
     const offerCandidates = [
+      productInfo?.offer_id,
+      productInfo?.sku,
+      productInfo?.name,
       row?.dimensions?.[0]?.id,
       row?.dimensions?.[0]?.name,
       row?.item?.offer_id,
@@ -256,6 +391,8 @@ function buildDayBuckets(rows, skus, dateKey, apiOk = true) {
     const quantity = extractQuantity(row);
     const deliveredUnits = extractDeliveredUnits(row);
     const revenue = extractRevenue(row, quantity);
+    const estimatedMargin = sku ? revenue * marginForSku(sku) : 0;
+    const fallbackArticleKey = productInfo?.offer_id || offerId;
 
     all.sourceRows += 1;
     all.units += quantity;
@@ -265,8 +402,9 @@ function buildDayBuckets(rows, skus, dateKey, apiOk = true) {
     all.ordersRevenue += revenue;
     if (sku) {
       all.matchedRows += 1;
-      all.estimatedMargin += revenue * marginForSku(sku);
+      all.estimatedMargin += estimatedMargin;
     }
+    addArticlePoint(allArticles, sku, fallbackArticleKey, dateKey, quantity, deliveredUnits, revenue, estimatedMargin);
 
     if (sku) {
       matched.sourceRows += 1;
@@ -276,7 +414,8 @@ function buildDayBuckets(rows, skus, dateKey, apiOk = true) {
       matched.deliveredUnits += deliveredUnits;
       matched.revenue += revenue;
       matched.ordersRevenue += revenue;
-      matched.estimatedMargin += revenue * marginForSku(sku);
+      matched.estimatedMargin += estimatedMargin;
+      addArticlePoint(matchedArticles, sku, fallbackArticleKey, dateKey, quantity, deliveredUnits, revenue, estimatedMargin);
     }
   }
 
@@ -284,8 +423,98 @@ function buildDayBuckets(rows, skus, dateKey, apiOk = true) {
     date: dateKey,
     apiOk,
     all,
-    matched
+    matched,
+    allArticles,
+    matchedArticles
   };
+}
+
+function mergeArticleMaps(target, source) {
+  for (const [articleKey, sourceItem] of source || []) {
+    let item = target.get(articleKey);
+    if (!item) {
+      item = {
+        platformKey: 'ozon',
+        platformLabel: 'Ozon',
+        articleKey,
+        article: sourceItem.article || articleKey,
+        name: sourceItem.name || '',
+        owner: sourceItem.owner || '',
+        dailyByDate: new Map(),
+        sourceRows: 0,
+        matchedRows: 0
+      };
+      target.set(articleKey, item);
+    }
+    if (!item.name) item.name = sourceItem.name || '';
+    if (!item.owner) item.owner = sourceItem.owner || '';
+    item.sourceRows += numberOrZero(sourceItem.sourceRows);
+    item.matchedRows += numberOrZero(sourceItem.matchedRows);
+    for (const [dateKey, sourcePoint] of sourceItem.dailyByDate || []) {
+      const point = item.dailyByDate.get(dateKey) || {
+        date: dateKey,
+        units: 0,
+        ordersUnits: 0,
+        deliveredUnits: 0,
+        revenue: 0,
+        ordersRevenue: 0,
+        estimatedMargin: 0
+      };
+      point.units += numberOrZero(sourcePoint.units);
+      point.ordersUnits += numberOrZero(sourcePoint.ordersUnits ?? sourcePoint.units);
+      point.deliveredUnits += numberOrZero(sourcePoint.deliveredUnits);
+      point.revenue += numberOrZero(sourcePoint.revenue);
+      point.ordersRevenue += numberOrZero(sourcePoint.ordersRevenue ?? sourcePoint.revenue);
+      point.estimatedMargin += numberOrZero(sourcePoint.estimatedMargin);
+      if (point.ordersUnits > 0 && point.revenue > 0) point.price = point.revenue / point.ordersUnits;
+      item.dailyByDate.set(dateKey, point);
+    }
+  }
+}
+
+function roundPoint(point, latestIndex, index) {
+  const ordersUnits = numberOrZero(point.ordersUnits ?? point.units);
+  const revenue = numberOrZero(point.revenue);
+  return {
+    date: point.date,
+    dayOffset: latestIndex - index,
+    units: Number(numberOrZero(point.units).toFixed(4)),
+    ordersUnits: Number(ordersUnits.toFixed(4)),
+    deliveredUnits: Number(numberOrZero(point.deliveredUnits).toFixed(4)),
+    revenue: Number(revenue.toFixed(4)),
+    ordersRevenue: Number(numberOrZero(point.ordersRevenue ?? point.revenue).toFixed(4)),
+    estimatedMargin: Number(numberOrZero(point.estimatedMargin).toFixed(4)),
+    price: ordersUnits > 0 ? Number((revenue / ordersUnits).toFixed(4)) : 0
+  };
+}
+
+function materializeArticles(articleMap) {
+  return Array.from(articleMap.values())
+    .map((item) => {
+      const daily = Array.from(item.dailyByDate.values())
+        .sort((left, right) => String(left?.date || '').localeCompare(String(right?.date || '')));
+      const latestIndex = Math.max(0, daily.length - 1);
+      const roundedDaily = daily.map((point, index) => roundPoint(point, latestIndex, index));
+      const latestPoint = roundedDaily[roundedDaily.length - 1] || {};
+      const currentPrice = numberOrZero(latestPoint.price);
+      return {
+        platformKey: 'ozon',
+        platformLabel: 'Ozon',
+        articleKey: item.articleKey,
+        article: item.article || item.articleKey,
+        name: item.name || item.article || item.articleKey,
+        owner: item.owner || '',
+        currentPrice,
+        currentClientPrice: currentPrice,
+        currentFillPrice: currentPrice,
+        sourceRows: item.sourceRows,
+        matchedRows: item.matchedRows,
+        sourceMode: 'ozon-api-direct-sku',
+        daily: roundedDaily
+      };
+    })
+    .filter((item) => item.daily.length)
+    .sort((left, right) => String(left.articleKey || '').localeCompare(String(right.articleKey || ''), 'ru'));
 }
 
 function materializePoint(dateKey, bucket, mode, fallbackPoint = null, dayOffset = 0) {
@@ -410,14 +639,32 @@ async function main() {
   const warnings = [];
   let sourceRows = 0;
   let matchedRows = 0;
+  const selectedArticleMap = new Map();
+  const dayReports = [];
+  const apiSkuIds = new Set();
 
   for (const dateKey of dates) {
     const result = await fetchDayReport(options, dateKey);
     warnings.push(...(result.warnings || []));
-    const bucket = buildDayBuckets(result.rows, skus, dateKey, result.ok);
+    dayReports.push({ dateKey, result });
+    for (const row of result.rows || []) {
+      const skuId = analyticsSkuId(row);
+      if (skuId) apiSkuIds.add(skuId);
+    }
+  }
+
+  const productInfo = await fetchProductInfoMap(options, apiSkuIds);
+  warnings.push(...productInfo.warnings.map((warning) => `product-info: ${warning}`));
+
+  for (const { dateKey, result } of dayReports) {
+    const bucket = buildDayBuckets(result.rows, skus, dateKey, result.ok, productInfo.map);
     buckets.set(dateKey, bucket);
     sourceRows += bucket.all.sourceRows;
     matchedRows += bucket.all.matchedRows;
+    mergeArticleMaps(
+      selectedArticleMap,
+      options.sourceMode === 'matched' ? bucket.matchedArticles : bucket.allArticles
+    );
   }
 
   const selectedMode = options.sourceMode;
@@ -495,16 +742,15 @@ async function main() {
     series: mergeAllSeries(platformMapNext)
   });
 
-  const seenKeys = new Set();
-  const ordered = [];
-  for (const platform of platforms) {
-    const key = String(platform?.key || '').trim();
-    if (!key || seenKeys.has(key)) continue;
-    const nextPlatform = platformMapNext.get(key);
-    if (nextPlatform) ordered.push(nextPlatform);
-    seenKeys.add(key);
-  }
-  ordered.push(platformMapNext.get('all') || { key: 'all', label: 'all', series: [] });
+  const ordered = ['wb', 'ozon', 'ya', 'all']
+    .map((key) => platformMapNext.get(key) || { key, label: key, series: [] });
+  const ozonArticles = materializeArticles(selectedArticleMap);
+  const existingExtraMarketplace = existing?.extraMarketplace && typeof existing.extraMarketplace === 'object'
+    ? existing.extraMarketplace
+    : {};
+  const existingExtraPlatforms = existingExtraMarketplace?.platforms && typeof existingExtraMarketplace.platforms === 'object'
+    ? existingExtraMarketplace.platforms
+    : {};
 
   const payload = {
     ...existing,
@@ -519,11 +765,31 @@ async function main() {
       sourceRows,
       matchedRows,
       matchRate: sourceRows > 0 ? Number((matchedRows / sourceRows).toFixed(4)) : 0,
+      productInfoRequested: productInfo.requested,
+      productInfoMatchedKeys: productInfo.matched,
       sourceMode: selectedMode,
       dimension: ANALYTICS_DIMENSION.join(','),
       revenueField: 'orders_revenue',
       unitsField: 'ordered_units',
       deliveredUnitsField: 'delivered_units'
+    },
+    extraMarketplace: {
+      ...existingExtraMarketplace,
+      generatedAt: new Date().toISOString(),
+      asOfDate: latestMarketplaceDate,
+      platforms: {
+        ...existingExtraPlatforms,
+        ozon: {
+          key: 'ozon',
+          label: 'Ozon',
+          supportKey: 'ozon',
+          source: 'analytics-api:/v1/analytics/data',
+          sourceMode: selectedMode,
+          from: options.from,
+          to: options.to,
+          articles: ozonArticles
+        }
+      }
     }
   };
 
@@ -538,6 +804,9 @@ async function main() {
     latestMarketplaceDate,
     sourceRows,
     matchedRows,
+    articleRows: ozonArticles.length,
+    productInfoRequested: productInfo.requested,
+    productInfoMatchedKeys: productInfo.matched,
     sourceMode: selectedMode,
     warnings: payload.ozonApiDirect.warnings || []
   }, null, 2));

@@ -447,12 +447,37 @@ function repricerSupportMap(platform) {
   return map;
 }
 
+function repricerRowsFromBucket(rows) {
+  if (Array.isArray(rows)) return rows;
+  if (rows && typeof rows === 'object') return Object.values(rows);
+  return [];
+}
+
 function repricerPricesMap(platform) {
-  const rows = Array.isArray(state.prices?.platforms?.[platform]?.rows) ? state.prices.platforms[platform].rows : [];
+  const platformBucket = state.prices?.platforms?.[platform] || {};
+  let rows = repricerRowsFromBucket(platformBucket.rows);
+  if (!rows.length) {
+    rows = repricerRowsFromBucket(platformBucket.items || platformBucket.byArticle || platformBucket.articles);
+  }
+  if (!rows.length) {
+    const platformKey = String(platform || '').trim().toLowerCase();
+    rows = Object.entries(state.prices?.platforms || {}).flatMap(([bucketKey, bucket]) => {
+      const bucketRows = repricerRowsFromBucket(bucket?.rows || bucket?.items || bucket?.byArticle || bucket?.articles);
+      if (String(bucketKey || '').trim().toLowerCase() === platformKey) return bucketRows;
+      return bucketRows.filter((row) => String(row?.platform || row?.marketplace || '').trim().toLowerCase() === platformKey);
+    });
+  }
   const map = new Map();
   rows.forEach((row) => {
-    const key = repricerNormalizeArticleKey(row?.articleKey || row?.article);
-    if (key && !map.has(key)) map.set(key, row);
+    [
+      row?.articleKey,
+      row?.article,
+      row?.sku,
+      row?.offerId,
+      row?.marketArticleId
+    ].map((value) => repricerNormalizeArticleKey(value)).forEach((key) => {
+      if (key && !map.has(key)) map.set(key, row);
+    });
   });
   return map;
 }
@@ -509,6 +534,14 @@ function repricerMarginAtPrice(price, discountFactor, commissionPct, logisticsRu
     - numberOrZero(storageRub)
     - numberOrZero(adRub)
     - numberOrZero(costRub);
+}
+
+function repricerMarginRatio(value) {
+  const raw = numberOrZero(value);
+  if (raw <= 0) return 0;
+  if (raw > 1 && raw <= 100) return raw / 100;
+  if (raw >= 1) return 0;
+  return raw;
 }
 
 function repricerHasOverride(override) {
@@ -577,6 +610,139 @@ function repricerProtectRecommendedPrice(side, notePrefix = '') {
   return side;
 }
 
+function repricerParseDateMs(value) {
+  if (!value) return 0;
+  const raw = String(value || '').trim();
+  if (!raw) return 0;
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T00:00:00Z` : raw;
+  const stamp = Date.parse(normalized);
+  return Number.isFinite(stamp) ? stamp : 0;
+}
+
+function repricerAgeDays(value) {
+  const stamp = repricerParseDateMs(value);
+  if (!stamp) return null;
+  return (Date.now() - stamp) / 86400000;
+}
+
+function repricerAddReason(list, reason) {
+  const text = String(reason || '').trim();
+  if (text && !list.includes(text)) list.push(text);
+}
+
+function repricerApplyStepLimit(side, roundedPrice, guardFloor, guardCap) {
+  const currentPrice = numberOrZero(side?.currentPrice);
+  let nextPrice = numberOrZero(roundedPrice);
+  if (!side || currentPrice <= 0 || nextPrice <= 0 || side.promoActive || side.reasonCode === 'FORCE' || side.criticalGate === 'SKIP') {
+    return nextPrice;
+  }
+  const delta = nextPrice - currentPrice;
+  if (Math.abs(delta) < 1) return nextPrice;
+  const marginRiskNow = side.marginPct != null && side.requiredMarginPct != null && numberOrZero(side.marginPct) + 0.0001 < numberOrZero(side.requiredMarginPct);
+  const upLimitPct = marginRiskNow || (guardFloor > 0 && currentPrice + 0.001 < guardFloor) ? 0.18 : 0.07;
+  const downLimitPct = 0.05;
+  let limitPrice = nextPrice;
+  if (delta > 0) {
+    limitPrice = Math.ceil(currentPrice * (1 + upLimitPct));
+    if (guardFloor > 0 && currentPrice + 0.001 < guardFloor) limitPrice = Math.max(limitPrice, guardFloor);
+    if (nextPrice > limitPrice) {
+      nextPrice = limitPrice;
+      side.stepLimited = true;
+      side.stepLimitPct = upLimitPct;
+    }
+  } else {
+    limitPrice = Math.floor(currentPrice * (1 - downLimitPct));
+    if (nextPrice < limitPrice) {
+      nextPrice = limitPrice;
+      side.stepLimited = true;
+      side.stepLimitPct = downLimitPct;
+    }
+  }
+  if (guardFloor > 0) nextPrice = Math.max(nextPrice, guardFloor);
+  if (guardCap > 0) nextPrice = Math.min(nextPrice, guardCap);
+  if (side.stepLimited) {
+    side.reason = [side.reason, `лимит шага ${Math.round(numberOrZero(side.stepLimitPct) * 100)}%`].filter(Boolean).join(' · ');
+  }
+  return nextPrice;
+}
+
+function repricerConfidenceLabel(level) {
+  if (level === 'green') return 'зелёный';
+  if (level === 'yellow') return 'проверить';
+  if (level === 'red') return 'стоп';
+  return 'нет оценки';
+}
+
+function repricerConfidenceTone(level) {
+  if (level === 'green') return 'ok';
+  if (level === 'yellow') return 'warn';
+  if (level === 'red') return 'danger';
+  return '';
+}
+
+function repricerBuildDecisionText(side, reasons) {
+  const finalPrice = numberOrZero(side?.finalPrice);
+  const currentPrice = numberOrZero(side?.currentPrice);
+  const deltaPct = currentPrice > 0 ? (finalPrice - currentPrice) / currentPrice : null;
+  const reasonText = reasons.length ? reasons.slice(0, 2).join(', ') : String(side?.reason || 'цена в рабочем коридоре').split(' · ')[0];
+  if (side?.confidence === 'red') return `Не выгружать: ${reasonText}.`;
+  if (side?.confidence === 'yellow') return `Проверить: ${reasonText}.`;
+  if (Math.abs(finalPrice - currentPrice) < 1) return `Оставить ${fmt.money(currentPrice)}: цена в рабочем коридоре.`;
+  const verb = finalPrice > currentPrice ? 'Поднять' : 'Снизить';
+  const deltaText = deltaPct == null ? '' : `, ${deltaPct > 0 ? '+' : ''}${fmt.pct(deltaPct)}`;
+  return `${verb} до ${fmt.money(finalPrice)}: ${reasonText}${deltaText}.`;
+}
+
+function repricerApplyConfidence(side) {
+  if (!side) return side;
+  const red = [];
+  const yellow = [];
+  const currentPrice = numberOrZero(side.currentPrice);
+  const finalPrice = numberOrZero(side.finalPrice);
+  const floor = numberOrZero(side.effectiveFloor);
+  const freshAge = repricerAgeDays(side.historyFreshnessDate);
+  const cooldownAge = repricerAgeDays(side.lastPriceChangeDate);
+  const hasReliableCost = Boolean(side.rawCostPresent) || side.economicFloorSource === 'fee_stack' || side.economicFloorSource === 'snapshot_guard';
+
+  if (side.outOfSpec || side.criticalGate === 'SKIP') repricerAddReason(red, 'строка вне спецификации');
+  if (side.criticalGate === 'BLOCK') repricerAddReason(red, 'нет обязательных входов');
+  if (currentPrice <= 0) repricerAddReason(red, 'нет текущей цены');
+  if (finalPrice <= 0) repricerAddReason(red, 'нет финальной цены');
+  if (floor <= 0) repricerAddReason(red, 'нет рабочего MIN');
+  if (floor > 0 && finalPrice > 0 && finalPrice + 0.001 < floor) repricerAddReason(red, 'финал ниже MIN');
+
+  if (!hasReliableCost) repricerAddReason(yellow, 'себестоимость не подтверждена');
+  if (side.economicFloorSource === 'snapshot_fallback') repricerAddReason(yellow, 'цена считается по fallback');
+  if (side.belowFloorNow) repricerAddReason(yellow, 'текущая цена ниже MIN');
+  if (side.marginRisk) repricerAddReason(yellow, 'маржа ниже порога');
+  if (side.liveDrift) repricerAddReason(yellow, 'расходится с live-рекомендацией');
+  if (side.launchHold === 'LAUNCH_HOLD') repricerAddReason(yellow, 'новинка не READY');
+  if (side.stepLimited) repricerAddReason(yellow, 'сработал лимит шага цены');
+  if (side.promoConfigured && !side.promoActive) repricerAddReason(yellow, 'промо не активно сейчас');
+  if (side.promoAdjustedToFloor || side.manualPromoAdjustedToFloor || side.promoOfferAdjustedToFloor) repricerAddReason(yellow, 'промо поднято до MIN');
+  if (freshAge != null && freshAge > 4) repricerAddReason(yellow, 'данные старше 4 дней');
+  if (cooldownAge != null && cooldownAge >= 0 && cooldownAge < 3 && side.changed && !side.belowFloorNow && !side.marginRisk) {
+    side.cooldownActive = true;
+    repricerAddReason(yellow, `цена менялась ${fmt.num(cooldownAge, 1)} дн. назад`);
+  } else {
+    side.cooldownActive = false;
+  }
+
+  let score = 100;
+  score -= red.length * 35;
+  score -= yellow.length * 12;
+  if (!side.changed) score -= 3;
+  score = Math.max(0, Math.min(100, score));
+  const level = red.length ? 'red' : (yellow.length ? 'yellow' : 'green');
+  side.confidence = level;
+  side.confidenceScore = score;
+  side.confidenceReasons = [...red, ...yellow];
+  side.safeToExport = level === 'green' && side.changed && !side.promoActive;
+  side.promoSafeToExport = level === 'green' && side.changed && side.promoActive;
+  side.decisionText = repricerBuildDecisionText(side, side.confidenceReasons);
+  return side;
+}
+
 function repricerFinalizeSide(side) {
   if (!side) return null;
   const rawPrice = numberOrZero(side.recommendedPrice);
@@ -596,6 +762,7 @@ function repricerFinalizeSide(side) {
   let roundedPrice = Math.round(rawPrice);
   if (guardFloor > 0) roundedPrice = Math.max(roundedPrice, guardFloor);
   if (guardCap > 0) roundedPrice = Math.min(roundedPrice, guardCap);
+  roundedPrice = repricerApplyStepLimit(side, roundedPrice, guardFloor, guardCap);
   side.recommendedPrice = roundedPrice;
   side.finalPrice = roundedPrice;
   side.finalGuardFloorRounded = guardFloor > 0 ? guardFloor : 0;
@@ -612,6 +779,7 @@ function repricerFinalizeSide(side) {
     ? side.liveDeltaRub / numberOrZero(side.liveReferencePrice)
     : null;
   side.liveDrift = side.liveDeltaPct != null && Math.abs(side.liveDeltaPct) >= 0.03;
+  repricerApplyConfidence(side);
   return side;
 }
 
@@ -643,6 +811,15 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     priceRow?.minPrice,
     priceRow?.basePrice
   ].some(repricerHasValue);
+  const legacyPricingPresent = [
+    legacySide?.currentPrice,
+    legacySide?.minPrice,
+    legacySide?.basePrice,
+    legacySide?.workingZoneFrom,
+    legacySide?.workingZoneTo,
+    legacySide?.requiredPriceForProfitability,
+    legacySide?.requiredPriceForMargin
+  ].some(repricerHasValue);
   const brand = context.brand || sourceRow.brand || skuFact?.brand || '';
   const status = context.status || sourceRow.status || '';
   const sourceMode = String(sourceRow.sourceMode || '').trim();
@@ -657,7 +834,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const skuBasePrice = repricerFirstFilledNumber(skuSide?.basePrice);
   const skuCapPrice = repricerFirstFilledNumber(skuSide?.maxPrice, skuSide?.stretchCap);
   const sourceHasLiveCurrentPrice = String(sourceRow.currentSellerPriceSource || sourceRow.currentPriceSource || '').trim().toLowerCase() === 'live';
-  const currentPricePresent = [sourceRow.currentFillPrice, sourceRow.currentPrice, priceRow?.currentPrice, supportRow?.currentExportPrice, skuSide?.currentPrice, liveSide?.currentPrice].some(repricerHasValue);
+  const currentPricePresent = [sourceRow.currentFillPrice, sourceRow.currentPrice, priceRow?.currentPrice, supportRow?.currentExportPrice, skuSide?.currentPrice, legacySide?.currentPrice, liveSide?.currentPrice].some(repricerHasValue);
   const hardFloorPresent = [
     sourceRow.hardMinPrice,
     sourceRow.requiredPriceForProfitability,
@@ -671,6 +848,9 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     corridor?.hardFloor,
     skuSide?.minPrice,
     priceRow?.minPrice,
+    legacySide?.minPrice,
+    legacySide?.workingZoneFrom,
+    legacySide?.requiredPriceForProfitability,
     liveSide?.minPrice
   ].some(repricerHasValue);
   const costPresent = [
@@ -696,7 +876,9 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
               ? sourceRow.currentPrice
               : (supportRow?.currentExportPrice != null
                 ? supportRow.currentExportPrice
-                : (skuSide?.currentPrice != null ? skuSide.currentPrice : liveSide?.currentPrice))))))
+                : (skuSide?.currentPrice != null
+                  ? skuSide.currentPrice
+                  : (legacySide?.currentPrice != null ? legacySide.currentPrice : liveSide?.currentPrice)))))))
   );
   const currentClientPrice = repricerFirstFilledNumber(
     priceRow?.currentClientPrice,
@@ -704,37 +886,25 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     clientOnlyMarketFacts ? null : sourceRow.buyerPrice,
     supportRow?.buyerCurrentExportMinPrice,
     skuSide?.buyerPrice,
+    legacySide?.buyerPrice,
+    legacySide?.currentClientPrice,
     liveSide?.buyerPrice
   );
-  const seedTargetSource = sourceRow.seedTargetFillPrice != null
-    ? 'smart_seed'
-    : (sourceRow.basePrice != null
-      ? 'smart_base'
-      : (priceRow?.basePrice != null
-        ? 'price_snapshot_base'
-        : (skuBasePrice > 0
-          ? 'sku_base'
-          : (supportRow?.workingZoneFrom != null
-            ? 'support_floor'
-            : (liveSide?.basePrice != null
-              ? 'live_base'
-              : (liveSide?.recPrice != null ? 'live_rec' : (currentPrice > 0 ? 'current_price' : '')))))));
-  const seedTargetPrice = numberOrZero(
-    sourceRow.seedTargetFillPrice != null
-      ? sourceRow.seedTargetFillPrice
-      : (sourceRow.basePrice != null
-        ? sourceRow.basePrice
-        : (priceRow?.basePrice != null
-          ? priceRow.basePrice
-          : (skuBasePrice > 0
-            ? skuBasePrice
-            : (supportRow?.workingZoneFrom != null
-              ? supportRow.workingZoneFrom
-              : (liveSide?.basePrice != null
-                ? liveSide.basePrice
-                : (liveSide?.recPrice != null ? liveSide.recPrice : currentPrice))))))
-  );
-  const rawManagedBasePrice = repricerFirstFilledNumber(corridor?.basePrice, skuBasePrice, seedTargetPrice, currentPrice);
+  const seedTargetCandidate = [
+    { source: 'smart_seed', value: sourceRow.seedTargetFillPrice, present: sourceRow.seedTargetFillPrice != null },
+    { source: 'smart_base', value: sourceRow.basePrice, present: sourceRow.basePrice != null },
+    { source: 'price_snapshot_base', value: priceRow?.basePrice, present: priceRow?.basePrice != null },
+    { source: 'sku_base', value: skuBasePrice, present: skuBasePrice > 0 },
+    { source: 'support_floor', value: supportRow?.workingZoneFrom, present: supportRow?.workingZoneFrom != null },
+    { source: 'legacy_base', value: legacySide?.basePrice, present: legacySide?.basePrice != null },
+    { source: 'legacy_rec', value: legacySide?.recPrice, present: legacySide?.recPrice != null },
+    { source: 'live_base', value: liveSide?.basePrice, present: liveSide?.basePrice != null },
+    { source: 'live_rec', value: liveSide?.recPrice, present: liveSide?.recPrice != null },
+    { source: 'current_price', value: currentPrice, present: currentPrice > 0 }
+  ].find((candidate) => candidate.present);
+  const seedTargetSource = seedTargetCandidate?.source || '';
+  const seedTargetPrice = numberOrZero(seedTargetCandidate?.value);
+  const rawManagedBasePrice = repricerFirstFilledNumber(corridor?.basePrice, skuBasePrice, seedTargetPrice, legacySide?.basePrice, currentPrice);
   const sourceFloorCandidate = Math.max(
     numberOrZero(sourceRow.hardMinPrice),
     numberOrZero(sourceRow.requiredPriceForProfitability),
@@ -746,15 +916,21 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     numberOrZero(supportRow?.requiredPriceForProfitability),
     numberOrZero(supportRow?.minPrice)
   );
+  const legacyFloorCandidate = Math.max(
+    numberOrZero(legacySide?.minPrice),
+    numberOrZero(legacySide?.workingZoneFrom),
+    numberOrZero(legacySide?.requiredPriceForProfitability)
+  );
   const hardFloorCandidates = [
     { label: 'corridor_hard_floor', value: numberOrZero(corridor?.hardFloor) },
     { label: 'market_floor', value: sourceFloorCandidate },
     { label: 'support_floor', value: supportFloorCandidate },
     { label: 'price_snapshot_min', value: numberOrZero(priceRow?.minPrice) },
     { label: 'sku_min', value: skuMinPrice },
+    { label: 'legacy_repricer_floor', value: legacyFloorCandidate },
     { label: 'live_min', value: numberOrZero(liveSide?.minPrice) }
   ];
-  const sourceHardFloor = Math.max(sourceFloorCandidate, supportFloorCandidate, numberOrZero(priceRow?.minPrice), skuMinPrice, numberOrZero(liveSide?.minPrice));
+  const sourceHardFloor = Math.max(sourceFloorCandidate, supportFloorCandidate, numberOrZero(priceRow?.minPrice), skuMinPrice, legacyFloorCandidate, numberOrZero(liveSide?.minPrice));
   const hardFloor = Math.max(sourceHardFloor, numberOrZero(corridor?.hardFloor));
   const hardFloorSourceSummary = repricerSourceSummary(hardFloorCandidates, hardFloor, hardFloor > 0 ? 'hard_floor' : '');
   const b2bFloor = numberOrZero(corridor?.b2bFloor);
@@ -768,11 +944,19 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     numberOrZero(legacySide?.cost),
     numberOrZero(legacySide?.costRub)
   );
-  const liveMinMarginPct = numberOrZero(liveSide?.marginNoAdsMinPct);
-  const baseAllowedMarginPct = Math.max(numberOrZero(sourceRow.allowedMarginPct), numberOrZero(supportRow?.allowedMarginPct), numberOrZero(priceRow?.allowedMarginPct), liveMinMarginPct, 0.0001);
-  const requiredMarginPct = Math.max(numberOrZero(brandRule.minMarginPct) / 100, numberOrZero(sourceRow.allowedMarginPct), numberOrZero(supportRow?.allowedMarginPct), numberOrZero(priceRow?.allowedMarginPct), liveMinMarginPct);
-  const economicMarginFloor = numberOrZero(sourceRow.requiredPriceForMargin) > 0
-    ? numberOrZero(sourceRow.requiredPriceForMargin) * (requiredMarginPct / baseAllowedMarginPct)
+  const liveMinMarginPct = repricerMarginRatio(liveSide?.marginNoAdsMinPct);
+  const sourceAllowedMarginPct = repricerMarginRatio(sourceRow.allowedMarginPct);
+  const supportAllowedMarginPct = repricerMarginRatio(supportRow?.allowedMarginPct);
+  const priceAllowedMarginPct = repricerMarginRatio(priceRow?.allowedMarginPct);
+  const legacyAllowedMarginPct = repricerMarginRatio(legacySide?.allowedMarginPct || legacySide?.marginNoAdsMinPct);
+  const baseAllowedMarginPct = Math.max(sourceAllowedMarginPct, supportAllowedMarginPct, priceAllowedMarginPct, legacyAllowedMarginPct, liveMinMarginPct);
+  const requiredMarginPct = Math.max(numberOrZero(brandRule.minMarginPct) / 100, sourceAllowedMarginPct, supportAllowedMarginPct, priceAllowedMarginPct, legacyAllowedMarginPct, liveMinMarginPct);
+  const requiredPriceForMargin = repricerFirstFilledNumber(sourceRow.requiredPriceForMargin, legacySide?.requiredPriceForMargin);
+  const marginFloorMultiplier = baseAllowedMarginPct > 0
+    ? Math.max(1, Math.min(requiredMarginPct / baseAllowedMarginPct, 3))
+    : 1;
+  const economicMarginFloor = requiredPriceForMargin > 0
+    ? requiredPriceForMargin * marginFloorMultiplier
     : 0;
   const commissionPct = numberOrZero(feeRule.commissionPct) / 100;
   const feeStackRub = numberOrZero(feeRule.logisticsRub) + numberOrZero(feeRule.storageRub) + numberOrZero(feeRule.adRub) + numberOrZero(feeRule.returnsRub) + numberOrZero(feeRule.otherRub);
@@ -789,6 +973,9 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     numberOrZero(supportRow?.minPrice),
     numberOrZero(supportRow?.workingZoneFrom),
     numberOrZero(priceRow?.minPrice),
+    numberOrZero(legacySide?.minPrice),
+    numberOrZero(legacySide?.workingZoneFrom),
+    numberOrZero(legacySide?.requiredPriceForProfitability),
     economicMarginFloor,
     skuMinPrice,
     numberOrZero(liveSide?.minPrice)
@@ -824,6 +1011,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     { source: 'smart_price_workbench', row: sourceRow },
     { source: 'price_workbench_support', row: supportRow },
     { source: 'prices_snapshot', row: priceRow },
+    { source: 'legacy_repricer', row: legacySide },
     { source: 'live_repricer', row: liveSide },
     { source: 'sku_fact', row: skuSide }
   ]);
@@ -897,13 +1085,14 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const promoSourceLabel = String(preferredPromo?.sourceLabel || '').trim();
   const promoPrice = promoActive ? numberOrZero(preferredPromo?.price) : 0;
   const promoAdjustedToFloor = promoActive && Boolean(preferredPromo?.adjustedToFloor);
-  const zoneFrom = Math.max(numberOrZero(sourceRow.workingZoneFrom), numberOrZero(corridor?.promoFloor), effectiveFloor);
+  const zoneFrom = Math.max(numberOrZero(sourceRow.workingZoneFrom), numberOrZero(legacySide?.workingZoneFrom), numberOrZero(corridor?.promoFloor), effectiveFloor);
   const stretchMultiplier = Math.max(1, numberOrZero(roleRule.stretchMultiplier) || 1);
   const derivedStretchCapBase = repricerFirstFilledNumber(
     corridor?.basePrice,
     skuBasePrice,
     sourceRow.basePrice,
     priceRow?.basePrice,
+    legacySide?.basePrice,
     supportRow?.workingZoneFrom,
     currentPrice
   );
@@ -917,6 +1106,8 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     sourceRow.workingZoneTo,
     supportRow?.workingZoneTo,
     supportRow?.maxPrice,
+    legacySide?.workingZoneTo,
+    legacySide?.upperCap,
     priceSnapshotCapCandidate,
     numberOrZero(liveSide?.maxPrice),
     derivedStretchCap
@@ -945,9 +1136,11 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
           ? 'support_zone_cap'
           : (numberOrZero(supportRow?.maxPrice) > 0
             ? 'support_max_cap'
-            : (priceSnapshotCapCandidate > 0
-              ? 'price_snapshot_cap'
-              : (numberOrZero(liveSide?.maxPrice) > 0 ? 'live_cap' : (derivedStretchCap > 0 ? 'role_derived_cap' : '')))))));
+            : (numberOrZero(legacySide?.workingZoneTo) > 0 || numberOrZero(legacySide?.upperCap) > 0
+              ? 'legacy_cap'
+              : (priceSnapshotCapCandidate > 0
+                ? 'price_snapshot_cap'
+                : (numberOrZero(liveSide?.maxPrice) > 0 ? 'live_cap' : (derivedStretchCap > 0 ? 'role_derived_cap' : ''))))))));
   const capSourceSummary = repricerSourceSummary([
     { label: 'override_cap', value: manualCapPrice },
     { label: stretchCapSourceSummary || 'stretch_cap', value: stretchCap }
@@ -959,7 +1152,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const autopriceAllowed = Boolean(statusRule.allowAutoprice);
   const launchAllowed = Boolean(statusRule.allowLaunch);
   const volumePushAllowed = Boolean(roleRule.allowVolumePush);
-  const targetDays = Math.max(1, numberOrZero(skuSide?.targetTurnoverDays) || numberOrZero(sourceRow.targetTurnoverDays) || numberOrZero(liveSide?.targetTurnoverDays) || numberOrZero(roleRule.targetDays) || (engineMode === 'launch'
+  const targetDays = Math.max(1, numberOrZero(skuSide?.targetTurnoverDays) || numberOrZero(sourceRow.targetTurnoverDays) || numberOrZero(legacySide?.targetTurnoverDays) || numberOrZero(liveSide?.targetTurnoverDays) || numberOrZero(roleRule.targetDays) || (engineMode === 'launch'
     ? numberOrZero(brandRule.launchTargetDays)
     : numberOrZero(brandRule.defaultTargetDays)));
   const oosDays = numberOrZero(brandRule.oosDays);
@@ -969,6 +1162,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     skuSide?.stockRepricer,
     skuSide?.stockProducts,
     skuSide?.stock,
+    legacySide?.stock,
     liveSide?.stock
   );
   const ordersDaily = numberOrZero(skuFact?.orders?.units) / 27;
@@ -976,11 +1170,11 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const leadTimeDays = numberOrZero(skuFact?.leadTimeDays);
   let turnoverSource = sourceRow.turnoverCurrentDays != null
     ? 'workbench'
-    : (skuSide?.turnoverDays != null ? 'order' : (liveSide?.turnoverDays != null ? 'live' : ''));
+    : (skuSide?.turnoverDays != null ? 'order' : (legacySide?.turnoverDays != null ? 'legacy' : (liveSide?.turnoverDays != null ? 'live' : '')));
   let turnoverDays = numberOrZero(
     sourceRow.turnoverCurrentDays != null
       ? sourceRow.turnoverCurrentDays
-      : (skuSide?.turnoverDays != null ? skuSide.turnoverDays : liveSide?.turnoverDays)
+      : (skuSide?.turnoverDays != null ? skuSide.turnoverDays : (legacySide?.turnoverDays != null ? legacySide.turnoverDays : liveSide?.turnoverDays))
   );
   if (turnoverDays <= 0 && stock > 0 && ordersDaily > 0) {
     turnoverDays = stock / ordersDaily;
@@ -1006,6 +1200,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     && !skuFact
     && !supportPricingPresent
     && !priceSnapshotPresent
+    && !legacyPricingPresent
     && !currentPricePresent
     && !pricingProxyPresent
     && numberOrZero(stock) <= 0;
@@ -1191,7 +1386,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     stretchCap,
     capPrice,
     capSourceSummary,
-    basePrice: numberOrZero(sourceRow.basePrice),
+    basePrice: repricerFirstFilledNumber(sourceRow.basePrice, priceRow?.basePrice, legacySide?.basePrice),
     managedBasePrice,
     baseSourceSummary: managedBaseSourceSummary,
     targetPrice: managedBasePrice,
@@ -1210,11 +1405,17 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     logisticsRubValue,
     storageRubValue,
     adRubValue,
-    marginPct: sourceRow.marginTotalPct == null ? (liveSide?.marginPct == null ? null : numberOrZero(liveSide.marginPct)) : numberOrZero(sourceRow.marginTotalPct),
+    marginPct: sourceRow.marginTotalPct == null
+      ? (legacySide?.marginPct == null
+        ? (liveSide?.marginPct == null ? null : numberOrZero(liveSide.marginPct))
+        : numberOrZero(legacySide.marginPct))
+      : numberOrZero(sourceRow.marginTotalPct),
     requiredMarginPct,
     strategy,
     reason: reasons.join(' · ') || sourceRow.seedReason || 'Без пояснения',
-    historyFreshnessDate: sourceRow.historyFreshnessDate || '',
+    currentPriceDate: sourceRow.currentPriceDate || priceRow?.currentPriceDate || supportRow?.currentPriceDate || legacySide?.currentPriceDate || liveSide?.currentPriceDate || '',
+    lastPriceChangeDate: sourceRow.lastPriceChangeDate || sourceRow.priceChangedAt || sourceRow.currentPriceChangedAt || priceRow?.lastPriceChangeDate || priceRow?.priceChangedAt || supportRow?.lastPriceChangeDate || skuSide?.lastPriceChangeDate || legacySide?.lastPriceChangeDate || legacySide?.priceChangedAt || liveSide?.lastPriceChangeDate || '',
+    historyFreshnessDate: sourceRow.historyFreshnessDate || priceRow?.historyFreshnessDate || priceRow?.currentPriceDate || legacySide?.historyFreshnessDate || legacySide?.currentPriceDate || liveSide?.historyFreshnessDate || '',
     historyNote: sourceRow.historyNote || '',
     mode,
     modeCode,
@@ -1223,6 +1424,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     criticalGate,
     outOfSpec,
     pricingProxyPresent,
+    legacyPricingPresent,
     rawCostPresent: costPresent,
     launchHold,
     oosFlag,
@@ -1275,13 +1477,13 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     launchAllowed,
     volumePushAllowed,
     alignmentApplied: false,
-    liveReferencePrice: numberOrZero(liveSide?.recPrice),
-    liveTargetDays: numberOrZero(liveSide?.targetTurnoverDays),
-    liveStrategy: liveSide?.strategy || '',
-    liveReason: liveSide?.reason || '',
-    liveBuyerPrice: numberOrZero(liveSide?.buyerPrice),
-    liveMarginPct: liveSide?.marginPct == null ? null : numberOrZero(liveSide.marginPct),
-    liveMarginNoAdsMinPct: liveSide?.marginNoAdsMinPct == null ? null : numberOrZero(liveSide.marginNoAdsMinPct)
+    liveReferencePrice: repricerFirstFilledNumber(liveSide?.recPrice, legacySide?.liveRecPrice, legacySide?.recPrice),
+    liveTargetDays: repricerFirstFilledNumber(liveSide?.targetTurnoverDays, legacySide?.targetTurnoverDays),
+    liveStrategy: liveSide?.strategy || legacySide?.strategy || '',
+    liveReason: liveSide?.reason || legacySide?.reason || '',
+    liveBuyerPrice: repricerFirstFilledNumber(liveSide?.buyerPrice, legacySide?.buyerPrice),
+    liveMarginPct: liveSide?.marginPct == null ? (legacySide?.marginPct == null ? null : numberOrZero(legacySide.marginPct)) : numberOrZero(liveSide.marginPct),
+    liveMarginNoAdsMinPct: liveSide?.marginNoAdsMinPct == null ? (legacySide?.marginNoAdsMinPct == null ? null : numberOrZero(legacySide.marginNoAdsMinPct)) : numberOrZero(liveSide.marginNoAdsMinPct)
   }, 'engine'));
 }
 
@@ -2032,6 +2234,7 @@ function renderRepricerSide(title, side) {
   const floorForCapGuard = Math.max(numberOrZero(side.finalGuardFloor), numberOrZero(side.effectiveFloor));
   const capLiftedByFloorGuard = manualCap > 0 && floorForCapGuard > 0 && manualCap + 0.001 < floorForCapGuard;
   const action = repricerExplainSideAction(side);
+  const confidenceBadge = badge(`${repricerConfidenceLabel(side.confidence)} ${fmt.int(side.confidenceScore)}`, repricerConfidenceTone(side.confidence));
   const businessBadges = [
     badge(`MIN ${fmt.money(side.effectiveFloor)}`, side.belowFloorNow ? 'danger' : ''),
     badge(`MAX ${fmt.money(displayedCap)}`),
@@ -2042,6 +2245,7 @@ function renderRepricerSide(title, side) {
     side.hasLiveBenchmark ? badge(`live ${fmt.money(side.liveReferencePrice)}`, side.liveDrift ? 'warn' : 'info') : ''
   ].filter(Boolean).join('');
   const summaryBadges = [
+    confidenceBadge,
     badge(`действие: ${repricerTurnoverActionLabel(side.turnoverAction)}`, side.criticalGate === 'BLOCK' ? 'danger' : 'info'),
     side.autopriceAllowed ? badge('авторежим: включен', 'ok') : badge('авторежим: выключен', 'warn'),
     side.economicFloorSource === 'snapshot_fallback' ? badge('себестоимость: нет', 'warn') : badge('себестоимость: есть', 'ok'),
@@ -2063,8 +2267,8 @@ function renderRepricerSide(title, side) {
   const controlsKey = `${String(side.articleKey || '').trim()}::${String(side.platform || '').trim()}`;
   const controlsOpen = repricerUiToggleOpen('controls', controlsKey, false);
   return `
-    <div class="repricer-side ${side.changed ? 'changed' : ''}">
-      <div class="repricer-side-head">${escapeHtml(title)} <span class="badge-stack">${badge(repricerModeLabel(side.mode), repricerModeTone(side.mode))}${side.manualPromoConfigured ? badge(repricerPromoWindowLabel({ status: side.manualPromoWindowStatus }), side.manualPromoActive ? 'warn' : 'info') : ''}${side.promoOfferConfigured ? badge(repricerPromoWindowLabel({ status: side.promoOfferWindowStatus }, 'offer'), side.promoSource === 'promo_offer' && side.promoActive ? 'info' : 'warn') : ''}${side.promoSource === 'promo_offer' ? badge('акция ведёт цену', 'info') : ''}${side.hasOverride ? badge('ручное решение', 'warn') : ''}${side.hasCorridor ? badge('коридор', 'info') : ''}${side.alignmentApplied ? badge('выравнивание', 'info') : ''}</span></div>
+    <div class="repricer-side ${side.changed ? 'changed' : ''} confidence-${escapeHtml(side.confidence || '')}">
+      <div class="repricer-side-head">${escapeHtml(title)} <span class="badge-stack">${confidenceBadge}${badge(repricerModeLabel(side.mode), repricerModeTone(side.mode))}${side.manualPromoConfigured ? badge(repricerPromoWindowLabel({ status: side.manualPromoWindowStatus }), side.manualPromoActive ? 'warn' : 'info') : ''}${side.promoOfferConfigured ? badge(repricerPromoWindowLabel({ status: side.promoOfferWindowStatus }, 'offer'), side.promoSource === 'promo_offer' && side.promoActive ? 'info' : 'warn') : ''}${side.promoSource === 'promo_offer' ? badge('акция ведёт цену', 'info') : ''}${side.hasOverride ? badge('ручное решение', 'warn') : ''}${side.hasCorridor ? badge('коридор', 'info') : ''}${side.alignmentApplied ? badge('выравнивание', 'info') : ''}</span></div>
       <div class="repricer-prices">
         <div><span>Текущая</span><strong>${fmt.money(side.currentPrice)}</strong></div>
         <div><span>Финал</span><strong>${fmt.money(side.finalPrice)}</strong></div>
@@ -2072,7 +2276,7 @@ function renderRepricerSide(title, side) {
       </div>
       <div class="repricer-side-action ${escapeHtml(action.tone)}" style="margin-top:10px">
         <strong>${escapeHtml(action.title)}</strong>
-        <span>${escapeHtml(action.hint)}</span>
+        <span>${escapeHtml(side.decisionText || action.hint)}</span>
       </div>
       <div class="badge-stack" style="margin-top:8px">
         ${businessBadges}
@@ -2081,7 +2285,7 @@ function renderRepricerSide(title, side) {
         ${summaryBadges}
       </div>
       <div class="muted small" style="margin-top:8px"><strong>${escapeHtml(side.strategy || 'Стратегия не определена')}</strong></div>
-      <div class="muted small" style="margin-top:6px">${escapeHtml(side.reason || 'Причина не указана')}</div>
+      <div class="muted small" style="margin-top:6px">${escapeHtml(side.reason || 'Причина не указана')}${Array.isArray(side.confidenceReasons) && side.confidenceReasons.length ? ` · проверка: ${escapeHtml(side.confidenceReasons.join(' · '))}` : ''}</div>
       ${renderRepricerHistoryBlock(side)}
       <details data-repricer-controls="${escapeHtml(controlsKey)}" ${controlsOpen ? 'open' : ''} style="margin-top:10px">
         <summary class="small muted" style="cursor:pointer">Управление площадкой</summary>
@@ -2393,9 +2597,41 @@ function repricerTemplateAction(side) {
   return Math.abs(numberOrZero(side?.finalPrice) - numberOrZero(side?.currentPrice)) < 1 ? 'KEEP' : 'CHANGE';
 }
 
+function repricerPrimaryStopReason(side) {
+  if (!side) return 'нет стороны';
+  if (side.outOfSpec || side.criticalGate === 'SKIP') return 'вне спецификации';
+  if (side.criticalGate === 'BLOCK') return 'нет входов';
+  if (numberOrZero(side.currentPrice) <= 0) return 'нет цены';
+  if (numberOrZero(side.effectiveFloor) <= 0) return 'нет MIN';
+  if (side.belowFloorNow) return 'ниже MIN';
+  if (!side.rawCostPresent && side.economicFloorSource === 'snapshot_fallback') return 'нет себестоимости';
+  if (side.marginRisk) return 'риск маржи';
+  if (side.launchHold === 'LAUNCH_HOLD') return 'не READY';
+  if (side.cooldownActive) return 'cooldown';
+  if (side.stepLimited) return 'лимит шага';
+  if (side.promoConfigured && !side.promoActive) return 'промо вне окна';
+  if (side.liveDrift) return 'расходится с live';
+  if (Array.isArray(side.confidenceReasons) && side.confidenceReasons.length) return side.confidenceReasons[0];
+  return '';
+}
+
+function repricerStopReasonSummary(sideRows) {
+  const counts = {};
+  (sideRows || []).forEach((item) => {
+    const side = item?.side || item;
+    const key = repricerPrimaryStopReason(side);
+    if (!key) return;
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ru'))
+    .map(([label, count]) => ({ label, count }));
+}
+
 function repricerHealthcheck(rows, platform = 'all') {
   const sideRows = repricerCollectSides(rows, platform);
   const activeSideRows = sideRows.filter(({ side }) => !side.outOfSpec);
+  const stopReasons = repricerStopReasonSummary(activeSideRows.filter(({ side }) => side.confidence !== 'green'));
   const smokeTests = repricerRunWorkbookSmokeTests(normalizeRepricerSettings(state.storage?.repricerSettings || {}));
   const metrics = {
     sku_count: rows.length,
@@ -2416,6 +2652,14 @@ function repricerHealthcheck(rows, platform = 'all') {
     smoke_passed: smokeTests.filter((item) => item.pass).length,
     smoke_total: smokeTests.length,
     promo_rows: activeSideRows.filter(({ side }) => side.promoActive).length,
+    confidence_green: activeSideRows.filter(({ side }) => side.confidence === 'green').length,
+    confidence_yellow: activeSideRows.filter(({ side }) => side.confidence === 'yellow').length,
+    confidence_red: activeSideRows.filter(({ side }) => side.confidence === 'red').length,
+    safe_export_rows: activeSideRows.filter(({ side }) => side.safeToExport || side.promoSafeToExport).length,
+    safe_wb_rows: repricerCollectSides(rows, 'wb').filter(({ side }) => side.safeToExport).length,
+    safe_ozon_rows: repricerCollectSides(rows, 'ozon').filter(({ side }) => side.safeToExport).length,
+    safe_promo_wb_rows: repricerCollectSides(rows, 'wb').filter(({ side }) => side.promoSafeToExport).length,
+    safe_promo_ozon_rows: repricerCollectSides(rows, 'ozon').filter(({ side }) => side.promoSafeToExport).length,
     wb_change_rows: repricerCollectSides(rows, 'wb').filter(({ side }) => repricerTemplateAction(side) === 'CHANGE').length,
     ozon_change_rows: repricerCollectSides(rows, 'ozon').filter(({ side }) => repricerTemplateAction(side) === 'CHANGE').length
   };
@@ -2429,6 +2673,7 @@ function repricerHealthcheck(rows, platform = 'all') {
   if (metrics.smoke_passed < metrics.smoke_total) issues.push(`smoke tests: ${fmt.int(metrics.smoke_passed)}/${fmt.int(metrics.smoke_total)}`);
   return {
     metrics,
+    stopReasons,
     smokeTests,
     issues,
     ok: issues.length === 0
@@ -2474,6 +2719,11 @@ function repricerExportRows(platform = 'all') {
       final_price_rub: repricerExportNumber(side.finalPrice),
       delta_rub: repricerExportNumber(side.changeRub),
       delta_pct: side.changePct == null ? '' : repricerExportNumber(side.changePct * 100, 1),
+      confidence: repricerConfidenceLabel(side.confidence),
+      confidence_score: repricerExportNumber(side.confidenceScore),
+      safe_export: side.safeToExport || side.promoSafeToExport ? 'yes' : 'no',
+      decision_text: side.decisionText || '',
+      confidence_reasons: Array.isArray(side.confidenceReasons) ? side.confidenceReasons.join(' · ') : '',
       hard_floor_rub: repricerExportNumber(side.hardFloor),
       b2b_floor_rub: repricerExportNumber(side.b2bFloor),
       economic_floor_rub: repricerExportNumber(side.economicFloor),
@@ -2555,6 +2805,7 @@ function repricerExportRows(platform = 'all') {
       disable_alignment: side.override?.disableAlignment ? 'yes' : 'no',
       override_note: side.override?.note || '',
       reason: side.reason || '',
+      current_price_date: side.currentPriceDate || '',
       history_freshness_date: side.historyFreshnessDate || ''
     }));
   });
@@ -2583,6 +2834,11 @@ function downloadRepricerExcel(platform = 'all') {
     ['final_price_rub', 'Финальная цена, ₽'],
     ['delta_rub', 'Δ, ₽'],
     ['delta_pct', 'Δ, %'],
+    ['confidence', 'Confidence'],
+    ['confidence_score', 'Confidence score'],
+    ['safe_export', 'В безопасной выгрузке'],
+    ['decision_text', 'Решение'],
+    ['confidence_reasons', 'Причины проверки'],
     ['hard_floor_rub', 'Hard floor, ₽'],
     ['b2b_floor_rub', 'B2B floor, ₽'],
     ['economic_floor_rub', 'Economic floor, ₽'],
@@ -2655,6 +2911,7 @@ function downloadRepricerExcel(platform = 'all') {
     ['disable_alignment', 'Без align'],
     ['override_note', 'Комментарий'],
     ['reason', 'Причина'],
+    ['current_price_date', 'Дата текущей цены'],
     ['history_freshness_date', 'История до']
   ];
   repricerDownloadHtmlTable(columns, rows, `repricer-final-${platform}-${new Date().toISOString().slice(0, 10)}.xls`);
@@ -2667,8 +2924,10 @@ function repricerExportTemplateRows(platform, options = {}) {
   return repricerCollectSides(buildRepricerRows(), platform)
     .filter(({ side }) => !side.outOfSpec)
     .filter(({ side }) => promoOnly ? side.promoActive : !side.promoActive)
+    .filter(({ side }) => promoOnly ? side.promoSafeToExport : side.safeToExport)
     .map(({ row, side }) => {
       const commentParts = [`portal repricer ${normalizedPlatform}`];
+      if (side.decisionText) commentParts.push(side.decisionText);
       if (side.promoActive) {
         commentParts.push(side.promoSource === 'promo_offer' ? 'PROMO_OFFER' : 'PROMO');
         if (side.promoSource === 'promo_offer' && side.promoSourceLabel) commentParts.push(side.promoSourceLabel);
@@ -2681,6 +2940,9 @@ function repricerExportTemplateRows(platform, options = {}) {
         sku_code: row.article || row.articleKey,
         final_price: repricerExportNumber(side.finalPrice),
         action: repricerTemplateAction(side),
+        confidence: repricerConfidenceLabel(side.confidence),
+        confidence_score: repricerExportNumber(side.confidenceScore),
+        decision_text: side.decisionText || '',
         reason_code: side.finalReasonCode || side.reasonCode || '',
         load_ts: now,
         comment: commentParts.join(' · ')
@@ -2693,6 +2955,9 @@ function repricerTemplateColumns(platform) {
     ['sku_code', 'sku_code'],
     ['final_price', 'final_price'],
     ['action', platform === 'ozon' ? 'auto_action' : 'discount_flag'],
+    ['confidence', 'confidence'],
+    ['confidence_score', 'confidence_score'],
+    ['decision_text', 'decision_text'],
     ['reason_code', 'reason_code'],
     ['load_ts', 'load_ts'],
     ['comment', 'comment']
@@ -2701,13 +2966,10 @@ function repricerTemplateColumns(platform) {
 
 function downloadRepricerTemplateExcel(platform) {
   const normalizedPlatform = platform === 'ozon' ? 'ozon' : 'wb';
-  const rows = buildRepricerRows();
-  const health = repricerHealthcheck(rows, normalizedPlatform);
   const templateRows = repricerExportTemplateRows(normalizedPlatform);
-  if (!templateRows.length) return;
-  if (!health.ok) {
-    const shouldContinue = window.confirm(`Healthcheck нашел риски: ${health.issues.join('; ')}. Продолжить выгрузку ${normalizedPlatform.toUpperCase()}?`);
-    if (!shouldContinue) return;
+  if (!templateRows.length) {
+    window.alert(`Для ${normalizedPlatform.toUpperCase()} нет зелёных строк для безопасной выгрузки. Желтые и красные позиции оставлены в аудите.`);
+    return;
   }
   const columns = repricerTemplateColumns(normalizedPlatform);
   repricerDownloadHtmlTable(columns, templateRows, `repricer-upload-${normalizedPlatform}-${new Date().toISOString().slice(0, 10)}.xls`);
@@ -2717,7 +2979,7 @@ function downloadRepricerPromoTemplateExcel(platform) {
   const normalizedPlatform = platform === 'ozon' ? 'ozon' : 'wb';
   const templateRows = repricerExportTemplateRows(normalizedPlatform, { promoOnly: true });
   if (!templateRows.length) {
-    window.alert(`В ${normalizedPlatform.toUpperCase()} сейчас нет акционных строк.`);
+    window.alert(`В ${normalizedPlatform.toUpperCase()} сейчас нет зелёных акционных строк для безопасной выгрузки.`);
     return;
   }
   const columns = repricerTemplateColumns(normalizedPlatform);
@@ -2763,7 +3025,24 @@ function repricerVisibleRows(rows) {
     .slice(0, limit);
 }
 
+function repricerOperatorLayer() {
+  const ui = ensureRepricerUiState();
+  return ui.operatorLayer === 'advanced' && window.__ALTEA_REPRICER_ADVANCED_SESSION__ === true ? 'advanced' : 'simple';
+}
+
+function setRepricerOperatorLayer(layer) {
+  const ui = ensureRepricerUiState();
+  ui.operatorLayer = layer === 'advanced' ? 'advanced' : 'simple';
+  window.__ALTEA_REPRICER_ADVANCED_SESSION__ = ui.operatorLayer === 'advanced';
+  renderRepricer();
+}
+
 function attachRepricerEvents(root) {
+  root.querySelectorAll('[data-repricer-layer-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+      setRepricerOperatorLayer(button.getAttribute('data-repricer-layer-toggle') || 'simple');
+    });
+  });
   root.querySelector('#repricerSearchInput')?.addEventListener('input', (event) => {
     state.repricerFilters.search = event.target.value;
     renderRepricer();
@@ -2899,22 +3178,10 @@ function renderRepricer() {
     root.innerHTML = `<div class="card"><div class="head"><div><h3>Репрайсер</h3><div class="muted small">Контур пока не получил smart price workbench.</div></div>${badge('нет данных', 'warn')}</div><div class="muted" style="margin-top:10px">Нужно дождаться загрузки снапшота цен, после этого вкладка начнет считать рекомендации и хранить override прямо в портале.</div></div>`;
     return;
   }
-  const rows = getFilteredRepricerRows();
-  const visibleRows = repricerVisibleRows(rows);
-  const visibleHidden = Math.max(0, rows.length - visibleRows.length);
-  const listSize = state.repricerFilters.listSize || 'focus';
-  const duplicateNames = buildRepricerDuplicateNameMap(sourceRows);
-  const settings = normalizeRepricerSettings(state.storage?.repricerSettings || {});
+  const operatorLayer = repricerOperatorLayer();
+  const operatorSimple = operatorLayer !== 'advanced';
   const health = repricerHealthcheck(sourceRows);
   const smokeTests = health.smokeTests;
-  const brandNames = [...new Set([
-    ...Object.keys(defaultRepricerSettings().brandRules || {}),
-    ...Object.keys(settings.brandRules || {}),
-    ...sourceRows.map((row) => repricerCanonicalBrandName(row.brand)).filter(Boolean)
-  ])].sort((a, b) => a.localeCompare(b, 'ru'));
-  const statuses = [...new Set([...Object.keys(defaultRepricerSettings().statusRules), ...sourceRows.map((row) => row.status).filter(Boolean)])].sort((a, b) => a.localeCompare(b, 'ru'));
-  const roles = [...new Set([...Object.keys(defaultRepricerSettings().roleRules), ...Object.keys(settings.roleRules || {}), ...sourceRows.map((row) => row.role).filter(Boolean)])].sort((a, b) => a.localeCompare(b, 'ru'));
-  const feePlatforms = [...new Set([...Object.keys(defaultRepricerSettings().feeRules), ...Object.keys(settings.feeRules || {}), 'wb', 'ozon'])];
   const sideRows = sourceRows.flatMap((row) => [row.wb, row.ozon].filter(Boolean));
   const feeStackSides = sideRows.filter((side) => side.economicFloorSource === 'fee_stack').length;
   const mixedGuardSides = sideRows.filter((side) => side.economicFloorSource === 'snapshot_guard').length;
@@ -2933,29 +3200,12 @@ function renderRepricer() {
   const actionableRows = sourceRows.filter((row) => row.changed).length;
   const manualOverrideRows = sourceRows.filter((row) => row.hasManualOverride).length;
   const belowMinSides = sideRows.filter((side) => side.belowFloorNow).length;
+  const confidenceGreenSides = sideRows.filter((side) => side.confidence === 'green').length;
+  const confidenceYellowSides = sideRows.filter((side) => side.confidence === 'yellow').length;
+  const confidenceRedSides = sideRows.filter((side) => side.confidence === 'red').length;
+  const safeWbRows = repricerCollectSides(sourceRows, 'wb').filter(({ side }) => side.safeToExport).length;
+  const safeOzonRows = repricerCollectSides(sourceRows, 'ozon').filter(({ side }) => side.safeToExport).length;
   const smokePassed = health.metrics.smoke_passed;
-  const cards = [
-    { label: 'SKU в контуре', value: sourceRows.length, hint: 'Все SKU, которые уже кормятся от smart price workbench.' },
-    { label: 'Нужны решения', value: actionableRows, hint: 'Есть разница между текущей и рекомендованной ценой.' },
-    { label: 'Профили SKU', value: sourceRows.filter((row) => row.hasManagedProfile).length, hint: 'Статус, роль или launch-профиль уже правили на портале.' },
-    { label: 'Коридоры площадок', value: sideRows.filter((side) => side.hasCorridor).length, hint: 'По площадке уже задан отдельный ценовой коридор.' },
-    { label: 'Ручные решения', value: manualOverrideRows, hint: 'Портал уже вмешался в базовый расчёт.' },
-    { label: 'Режимы stop', value: sideRows.filter((side) => ['freeze', 'hold', 'force', 'off'].includes(side.mode)).length, hint: 'Количество площадок с ручным или статусным стопом.' },
-    { label: 'Нет входов', value: blockedGateSides, hint: 'Не хватает обязательных входов: цены, рабочего MIN или себестоимости.' },
-    { label: 'Стоп до READY', value: launchHoldSides, hint: 'Новинки и перезапуски сдерживаются до READY.' },
-    { label: 'Ниже MIN', value: belowMinSides, hint: 'Текущая цена уже ниже рабочего порога.' },
-    { label: 'Риск маржи', value: sideRows.filter((side) => side.marginRisk).length, hint: 'Маржа ниже рабочего порога.' },
-    { label: 'Можно выровнять', value: alignmentEligibleRows, hint: 'SKU, где можно запускать scoring alignment WB/Ozon.' },
-    { label: 'Уже выровнены', value: alignmentChangedRows, hint: 'Сценарий follow победил keep по score-модели.' },
-    { label: 'Проверка сценариев', value: `${fmt.int(smokePassed)}/${fmt.int(smokeTests.length)}`, hint: 'Базовые тест-кейсы: AUTO, LAUNCH, FREEZE, OOS, KEEP и PROMO_OFFER.' },
-    { label: 'Полная экономика', value: feeStackSides, hint: 'Площадки, где economic floor считается прямо из себестоимости и fee stack.' },
-    { label: 'Защита snapshot', value: mixedGuardSides, hint: 'Есть cost, но итоговый economic floor всё ещё держится на страхующем snapshot-ограничении.' },
-    { label: 'Без себестоимости', value: fallbackSides, hint: 'Расчёт идёт без cost, только по текущему smart-срезу.' },
-    { label: 'Предложения акций', value: promoOfferSides, hint: 'Read-only promo offers из текущих слоев фактов, без новых таблиц.' },
-    { label: 'Есть live-ориентир', value: liveBenchmarkSides, hint: 'Площадки, где есть живая рекомендация текущего репрайсера.' },
-    { label: 'Расходятся с live', value: liveDriftSides, hint: 'Наш финал заметно расходится с живым repricer rec.' },
-    { label: 'Дубли карточек', value: duplicateNames.duplicateRows, hint: 'Proxy-контроль по названию карточки: в текущем слое нет отдельного поля описания.' }
-  ].map((card) => `<div class="card kpi control-card"><div class="label">${escapeHtml(card.label)}</div><div class="value">${typeof card.value === 'string' ? escapeHtml(card.value) : fmt.int(card.value)}</div><div class="hint">${escapeHtml(card.hint)}</div></div>`).join('');
   const summaryBadges = [
     badge(`нужны решения ${fmt.int(actionableRows)}`, actionableRows ? 'warn' : 'ok'),
     badge(`ручные решения ${fmt.int(manualOverrideRows)}`, manualOverrideRows ? 'info' : 'ok'),
@@ -2978,6 +3228,142 @@ function renderRepricer() {
     badge(`есть live-ориентир ${fmt.int(liveBenchmarkSides)}`, liveBenchmarkSides ? 'info' : 'warn'),
     badge(`расходятся с live ${fmt.int(liveDriftSides)}`, liveDriftSides ? 'warn' : 'ok')
   ].join('');
+  const safetyBadges = [
+    badge(`зелёные ${fmt.int(confidenceGreenSides)}`, confidenceGreenSides ? 'ok' : 'warn'),
+    badge(`проверить ${fmt.int(confidenceYellowSides)}`, confidenceYellowSides ? 'warn' : 'ok'),
+    badge(`стоп ${fmt.int(confidenceRedSides)}`, confidenceRedSides ? 'danger' : 'ok'),
+    badge(`в шаблон WB ${fmt.int(safeWbRows)}`, safeWbRows ? 'ok' : 'warn'),
+    badge(`в шаблон Ozon ${fmt.int(safeOzonRows)}`, safeOzonRows ? 'ok' : 'warn')
+  ].join('');
+  const stopReasonBadges = (health.stopReasons || []).slice(0, 7)
+    .map((item) => badge(`${item.label} ${fmt.int(item.count)}`, item.label === 'нет входов' || item.label === 'нет цены' || item.label === 'нет MIN' ? 'danger' : 'warn'))
+    .join('');
+  const safetyCard = `
+    <div class="card repricer-safety-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Безопасная выгрузка</h3>
+          <p class="small muted">В шаблоны WB/Ozon попадают только зелёные строки с изменением цены. Желтые и красные остаются в аудите.</p>
+        </div>
+        <div class="badge-stack">${safeWbRows || safeOzonRows ? badge('safe export on', 'ok') : badge('нет зелёных изменений', 'warn')}</div>
+      </div>
+      <div class="badge-stack" style="margin-top:10px">${safetyBadges}</div>
+      <div class="badge-stack" style="margin-top:10px">${stopReasonBadges || badge('стоп-лист пуст', 'ok')}</div>
+    </div>
+  `;
+
+  if (operatorSimple) {
+    const statusText = safeWbRows || safeOzonRows ? 'Можно выгружать' : 'Сначала проверить';
+    const statusTone = safeWbRows || safeOzonRows ? 'ok' : 'warn';
+    const hasSafeWb = safeWbRows > 0;
+    const hasSafeOzon = safeOzonRows > 0;
+    const issueItems = (health.stopReasons || []).slice(0, 5)
+      .map((item) => `<div class="repricer-operator-issue"><strong>${escapeHtml(item.label)}</strong><span>${fmt.int(item.count)}</span></div>`)
+      .join('');
+    root.classList.add('repricer-simple-mode', 'repricer-native-simple');
+    root.classList.remove('repricer-simple-expanded');
+    root.dataset.repricerNativeSimple = '1';
+    root.dataset.repricerLayer = 'simple';
+    root.innerHTML = `
+      <div class="section-title">
+        <div>
+          <h2>Репрайсер</h2>
+          <p>Операторский слой: минимум кнопок, максимум защиты. Тяжёлые настройки и карточки SKU не рендерятся, пока не открыт полный режим.</p>
+        </div>
+      </div>
+
+      <div class="repricer-operator-panel" data-repricer-operator-panel data-repricer-native-panel="1">
+        <div class="repricer-operator-copy">
+          <div class="label">Режим оператора</div>
+          <strong>${escapeHtml(statusText)}</strong>
+          <p>В шаблоны попадают только зелёные строки. Желтые и красные остаются в аудите, чтобы не отправить сомнительную цену.</p>
+        </div>
+        <div class="repricer-operator-stats">
+          ${badge(`WB к выгрузке ${fmt.int(safeWbRows)}`, hasSafeWb ? 'ok' : 'warn')}
+          ${badge(`Ozon к выгрузке ${fmt.int(safeOzonRows)}`, hasSafeOzon ? 'ok' : 'warn')}
+          ${badge(`зелёные ${fmt.int(confidenceGreenSides)}`, confidenceGreenSides ? 'ok' : 'warn')}
+          ${badge(`проверить ${fmt.int(confidenceYellowSides)}`, confidenceYellowSides ? 'warn' : 'ok')}
+          ${badge(`стоп ${fmt.int(confidenceRedSides)}`, confidenceRedSides ? 'danger' : 'ok')}
+          ${badge(`ниже MIN ${fmt.int(belowMinSides)}`, belowMinSides ? 'danger' : 'ok')}
+          ${badge(`обновлено ${state.smartPriceWorkbench?.generatedAt ? fmt.date(state.smartPriceWorkbench.generatedAt) : '—'}`, 'info')}
+        </div>
+        <div class="repricer-operator-actions" data-repricer-operator-actions>
+          <button type="button" class="quick-chip ${statusTone}" data-repricer-export="template:wb" ${hasSafeWb ? '' : 'disabled aria-disabled="true"'}>Шаблон WB</button>
+          <button type="button" class="quick-chip ${statusTone}" data-repricer-export="template:ozon" ${hasSafeOzon ? '' : 'disabled aria-disabled="true"'}>Шаблон Ozon</button>
+          <button type="button" class="quick-chip" data-repricer-export="all">Аудит</button>
+          <button type="button" class="quick-chip repricer-advanced-toggle" data-repricer-layer-toggle="advanced">Полный режим</button>
+        </div>
+      </div>
+
+      ${safetyCard}
+
+      <div class="repricer-operator-grid">
+        <div class="repricer-operator-focus-card">
+          <div class="section-subhead">
+            <div>
+              <h3>Главные стопы</h3>
+              <p class="small muted">Сначала чинить эти причины, потом выгружать цены.</p>
+            </div>
+            ${health.ok ? badge('контур чистый', 'ok') : badge('нужна проверка', 'warn')}
+          </div>
+          <div class="repricer-operator-issues">${issueItems || '<div class="muted small">Критичных стопов сейчас нет.</div>'}</div>
+        </div>
+        <div class="repricer-operator-focus-card">
+          <div class="section-subhead">
+            <div>
+              <h3>Контур данных</h3>
+              <p class="small muted">Короткая сводка без тяжёлого списка SKU.</p>
+            </div>
+            ${badge(`SKU ${fmt.int(sourceRows.length)}`, 'info')}
+          </div>
+          <div class="badge-stack" style="margin-top:10px">${summaryBadges}</div>
+          <div class="muted small" style="margin-top:10px">${health.issues.length ? escapeHtml(health.issues.slice(0, 2).join(' · ')) : 'Критичных замечаний нет.'}</div>
+        </div>
+      </div>
+    `;
+    attachRepricerEvents(root);
+    return;
+  }
+
+  root.classList.remove('repricer-simple-mode', 'repricer-boot-simple', 'repricer-native-simple');
+  delete root.dataset.repricerNativeSimple;
+  root.dataset.repricerLayer = 'advanced';
+  const rows = getFilteredRepricerRows();
+  const visibleRows = repricerVisibleRows(rows);
+  const visibleHidden = Math.max(0, rows.length - visibleRows.length);
+  const listSize = state.repricerFilters.listSize || 'focus';
+  const duplicateNames = buildRepricerDuplicateNameMap(sourceRows);
+  const settings = normalizeRepricerSettings(state.storage?.repricerSettings || {});
+  const brandNames = [...new Set([
+    ...Object.keys(defaultRepricerSettings().brandRules || {}),
+    ...Object.keys(settings.brandRules || {}),
+    ...sourceRows.map((row) => repricerCanonicalBrandName(row.brand)).filter(Boolean)
+  ])].sort((a, b) => a.localeCompare(b, 'ru'));
+  const statuses = [...new Set([...Object.keys(defaultRepricerSettings().statusRules), ...sourceRows.map((row) => row.status).filter(Boolean)])].sort((a, b) => a.localeCompare(b, 'ru'));
+  const roles = [...new Set([...Object.keys(defaultRepricerSettings().roleRules), ...Object.keys(settings.roleRules || {}), ...sourceRows.map((row) => row.role).filter(Boolean)])].sort((a, b) => a.localeCompare(b, 'ru'));
+  const feePlatforms = [...new Set([...Object.keys(defaultRepricerSettings().feeRules), ...Object.keys(settings.feeRules || {}), 'wb', 'ozon'])];
+  const cards = [
+    { label: 'SKU в контуре', value: sourceRows.length, hint: 'Все SKU, которые уже кормятся от smart price workbench.' },
+    { label: 'Нужны решения', value: actionableRows, hint: 'Есть разница между текущей и рекомендованной ценой.' },
+    { label: 'Профили SKU', value: sourceRows.filter((row) => row.hasManagedProfile).length, hint: 'Статус, роль или launch-профиль уже правили на портале.' },
+    { label: 'Коридоры площадок', value: sideRows.filter((side) => side.hasCorridor).length, hint: 'По площадке уже задан отдельный ценовой коридор.' },
+    { label: 'Ручные решения', value: manualOverrideRows, hint: 'Портал уже вмешался в базовый расчёт.' },
+    { label: 'Режимы stop', value: sideRows.filter((side) => ['freeze', 'hold', 'force', 'off'].includes(side.mode)).length, hint: 'Количество площадок с ручным или статусным стопом.' },
+    { label: 'Нет входов', value: blockedGateSides, hint: 'Не хватает обязательных входов: цены, рабочего MIN или себестоимости.' },
+    { label: 'Стоп до READY', value: launchHoldSides, hint: 'Новинки и перезапуски сдерживаются до READY.' },
+    { label: 'Ниже MIN', value: belowMinSides, hint: 'Текущая цена уже ниже рабочего порога.' },
+    { label: 'Риск маржи', value: sideRows.filter((side) => side.marginRisk).length, hint: 'Маржа ниже рабочего порога.' },
+    { label: 'Можно выровнять', value: alignmentEligibleRows, hint: 'SKU, где можно запускать scoring alignment WB/Ozon.' },
+    { label: 'Уже выровнены', value: alignmentChangedRows, hint: 'Сценарий follow победил keep по score-модели.' },
+    { label: 'Проверка сценариев', value: `${fmt.int(smokePassed)}/${fmt.int(smokeTests.length)}`, hint: 'Базовые тест-кейсы: AUTO, LAUNCH, FREEZE, OOS, KEEP и PROMO_OFFER.' },
+    { label: 'Полная экономика', value: feeStackSides, hint: 'Площадки, где economic floor считается прямо из себестоимости и fee stack.' },
+    { label: 'Защита snapshot', value: mixedGuardSides, hint: 'Есть cost, но итоговый economic floor всё ещё держится на страхующем snapshot-ограничении.' },
+    { label: 'Без себестоимости', value: fallbackSides, hint: 'Расчёт идёт без cost, только по текущему smart-срезу.' },
+    { label: 'Предложения акций', value: promoOfferSides, hint: 'Read-only promo offers из текущих слоев фактов, без новых таблиц.' },
+    { label: 'Есть live-ориентир', value: liveBenchmarkSides, hint: 'Площадки, где есть живая рекомендация текущего репрайсера.' },
+    { label: 'Расходятся с live', value: liveDriftSides, hint: 'Наш финал заметно расходится с живым repricer rec.' },
+    { label: 'Дубли карточек', value: duplicateNames.duplicateRows, hint: 'Proxy-контроль по названию карточки: в текущем слое нет отдельного поля описания.' }
+  ].map((card) => `<div class="card kpi control-card"><div class="label">${escapeHtml(card.label)}</div><div class="value">${typeof card.value === 'string' ? escapeHtml(card.value) : fmt.int(card.value)}</div><div class="hint">${escapeHtml(card.hint)}</div></div>`).join('');
 
   root.innerHTML = `
     <div class="section-title">
@@ -2991,12 +3377,14 @@ function renderRepricer() {
         <button type="button" class="quick-chip" data-repricer-export="template:ozon">Шаблон Ozon</button>
         <button type="button" class="quick-chip" data-repricer-export="promo:wb">WB промо</button>
         <button type="button" class="quick-chip" data-repricer-export="promo:ozon">Ozon промо</button>
+        <button type="button" class="quick-chip" data-repricer-layer-toggle="simple">Простой режим</button>
       </div>
     </div>
 
     <div class="badge-stack" style="margin-top:8px">${badge(`обновлено ${state.smartPriceWorkbench?.generatedAt ? fmt.date(state.smartPriceWorkbench.generatedAt) : '—'}`, 'info')}${badge(state.smartPriceWorkbench?.liveEnrichmentUsed ? 'слой: workbench + live' : 'слой: workbench', 'ok')}${state.smartPriceWorkbench?.liveEnrichmentAt ? badge(`live ${fmt.date(state.smartPriceWorkbench.liveEnrichmentAt)}`, 'info') : ''}${badge(hasRemoteStore() ? 'решения: команда' : 'решения: локально', hasRemoteStore() ? 'ok' : 'info')}</div>
     <div class="muted small" style="margin-top:8px">Проверка дублей в репрайсере сейчас идёт по совпадающим названиям карточек. Если названия похожи, дополнительно сверяйте артикул и площадку перед выгрузкой.</div>
 
+    ${safetyCard}
     ${renderRepricerWorkflowGuide()}
     ${renderRepricerSignalsCard(summaryBadges, techBadges, health.ok)}
 
@@ -3187,7 +3575,7 @@ function renderOrderCalculator() {
     });
 }
 
-const ORDER_PROCUREMENT_VERSION = '20260508order1';
+const ORDER_PROCUREMENT_VERSION = '20260515warehousefilter1';
 const ORDER_PROCUREMENT_STYLE_ID = `altea-order-procurement-${ORDER_PROCUREMENT_VERSION}`;
 const ORDER_PROCUREMENT_RUNTIME = {
   renderToken: 0,
@@ -3260,6 +3648,15 @@ function ensureOrderProcurementState() {
   orderState.days = clampOrderProcurementDays(orderState.days);
   orderState.search = String(orderState.search || '').trim();
   orderState.place = String(orderState.place || 'all').trim() || 'all';
+  const placeSelection = Array.isArray(orderState.placeSelection)
+    ? orderState.placeSelection
+    : (Array.isArray(orderState.selectedPlaces) ? orderState.selectedPlaces : []);
+  orderState.placeSelection = orderProcurementUnique(placeSelection
+    .map((place) => String(place || '').trim())
+    .filter((place) => place && place !== 'all'));
+  if (!orderState.placeSelection.length && orderState.place !== 'all') {
+    orderState.placeSelection = [orderState.place];
+  }
   orderState.clusterFilter = [
     'all',
     'risk',
@@ -3564,6 +3961,7 @@ function orderProcurementBuildRenderSignature() {
     orderState.days,
     orderState.search || '',
     orderState.place || 'all',
+    (orderState.placeSelection || []).join('~'),
     orderState.clusterFilter || 'all',
     orderState.clusterDays || 30,
     orderState.mode || 'all',

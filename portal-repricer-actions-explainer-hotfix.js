@@ -8,19 +8,19 @@
   let enhanceTimer = 0;
 
   const TOP_ACTION_LABELS = {
-    all: "Аудит Excel",
-    "template:wb": "WB цены",
-    "template:ozon": "Ozon цены",
-    "promo:wb": "WB акции",
-    "promo:ozon": "Ozon акции"
+    all: "Аудит в Excel",
+    "template:wb": "Шаблон WB",
+    "template:ozon": "Шаблон Ozon",
+    "promo:wb": "WB промо",
+    "promo:ozon": "Ozon промо"
   };
 
   const TOP_ACTION_TITLES = {
     all: "Выгружает полный аудит по всем SKU и площадкам для проверки.",
-    "template:wb": "Готовит файл обычных цен для ручной загрузки в Wildberries.",
-    "template:ozon": "Готовит файл обычных цен для ручной загрузки в Ozon.",
-    "promo:wb": "Готовит отдельный файл для акционных цен Wildberries.",
-    "promo:ozon": "Готовит отдельный файл для акционных цен Ozon."
+    "template:wb": "Готовит безопасный файл цен Wildberries: только зелёные строки.",
+    "template:ozon": "Готовит безопасный файл цен Ozon: только зелёные строки.",
+    "promo:wb": "Готовит безопасный файл акционных цен Wildberries: только зелёные строки.",
+    "promo:ozon": "Готовит безопасный файл акционных цен Ozon: только зелёные строки."
   };
 
   function normalizedText(value) {
@@ -47,6 +47,55 @@
       button.setAttribute("aria-label", TOP_ACTION_TITLES[key]);
     });
   }
+
+  function simplifyTopActions(root) {
+    const actionBar = root.querySelector(".section-title .quick-actions, [data-repricer-operator-actions] > .quick-actions");
+    if (!actionBar) return;
+    const existingMore = actionBar.querySelector(".repricer-more-actions");
+    if (existingMore && existingMore.querySelector(".repricer-more-action-buttons")) return;
+    if (existingMore) existingMore.remove();
+    const auditButton = actionBar.querySelector('[data-repricer-export="all"]');
+    const wbButton = actionBar.querySelector('[data-repricer-export="template:wb"]');
+    const ozonButton = actionBar.querySelector('[data-repricer-export="template:ozon"]');
+    const wbPromoButton = actionBar.querySelector('[data-repricer-export="promo:wb"]');
+    const ozonPromoButton = actionBar.querySelector('[data-repricer-export="promo:ozon"]');
+    if (!wbButton || !ozonButton) return;
+
+    const more = document.createElement("span");
+    more.className = "repricer-more-actions";
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "quick-chip";
+    toggle.setAttribute("data-repricer-more-actions-toggle", "1");
+    toggle.textContent = "Ещё";
+    more.appendChild(toggle);
+
+    const moreBody = document.createElement("div");
+    moreBody.className = "quick-actions repricer-more-action-buttons hidden";
+    [auditButton, wbPromoButton, ozonPromoButton].forEach(function (button) {
+      if (button) moreBody.appendChild(button);
+    });
+    more.appendChild(moreBody);
+
+    actionBar.replaceChildren(wbButton, ozonButton);
+    if (moreBody.children.length) actionBar.appendChild(more);
+  }
+
+  document.addEventListener("click", function (event) {
+    const toggle = event.target && event.target.closest
+      ? event.target.closest("[data-repricer-more-actions-toggle]")
+      : null;
+    if (toggle) {
+      const menu = toggle.closest(".repricer-more-actions")?.querySelector(".repricer-more-action-buttons");
+      if (menu) menu.classList.toggle("hidden");
+      event.preventDefault();
+      return;
+    }
+    if (event.target && event.target.closest && event.target.closest(".repricer-more-actions")) return;
+    document.querySelectorAll(".repricer-more-action-buttons:not(.hidden)").forEach(function (menu) {
+      menu.classList.add("hidden");
+    });
+  });
 
   function refineIntro(root) {
     const intro = root.querySelector(".section-title p");
@@ -150,18 +199,21 @@
     });
   }
 
+  function enhanceNow() {
+    const root = document.getElementById(VIEW_ID);
+    if (!root || !root.children.length) return;
+    relabelTopActions(root);
+    simplifyTopActions(root);
+    refineIntro(root);
+    refineSummaries(root);
+    refineFilters(root);
+    refineForms(root);
+    backfillCapLiftBadge(root);
+  }
+
   function enhance() {
     window.clearTimeout(enhanceTimer);
-    enhanceTimer = window.setTimeout(function () {
-      const root = document.getElementById(VIEW_ID);
-      if (!root || !root.children.length) return;
-      relabelTopActions(root);
-      refineIntro(root);
-      refineSummaries(root);
-      refineFilters(root);
-      refineForms(root);
-      backfillCapLiftBadge(root);
-    }, 80);
+    enhanceTimer = window.setTimeout(enhanceNow, 80);
   }
 
   function installObserver() {
@@ -178,7 +230,7 @@
     if (typeof current !== "function" || current.__alteaRepricerUiSafeWrapped) return;
     const wrapped = function () {
       const result = current.apply(this, arguments);
-      enhance();
+      enhanceNow();
       return result;
     };
     wrapped.__alteaRepricerUiSafeWrapped = true;
@@ -190,29 +242,34 @@
     wrapFunction("rerenderCurrentView");
   }
 
+  function runEnhancePasses() {
+    installObserver();
+    installWrappers();
+    enhanceNow();
+    [120, 400, 1200, 2500, 5000].forEach(function (delay) {
+      window.setTimeout(function () {
+        installObserver();
+        installWrappers();
+        enhanceNow();
+      }, delay);
+    });
+  }
+
   document.addEventListener("click", function (event) {
     const target = event.target && event.target.closest ? event.target.closest('[data-view="repricer"]') : null;
     if (!target) return;
     window.setTimeout(function () {
-      installObserver();
-      installWrappers();
-      enhance();
+      runEnhancePasses();
     }, 120);
   });
 
   document.addEventListener("DOMContentLoaded", function () {
-    installObserver();
-    installWrappers();
-    enhance();
+    runEnhancePasses();
   }, { once: true });
 
   window.addEventListener("load", function () {
-    installObserver();
-    installWrappers();
-    enhance();
+    runEnhancePasses();
   }, { once: true });
 
-  installObserver();
-  installWrappers();
-  enhance();
+  runEnhancePasses();
 })();

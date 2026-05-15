@@ -11,6 +11,7 @@ const { buildLegacyRepricerLayer } = require('./build-legacy-repricer-layer');
 
 const DEFAULT_SOURCE_URL = 'https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667';
 const MAX_LOCAL_FALLBACK_AGE_HOURS = 48;
+const DEFAULT_PROFILE_EXPORT_TIMEOUT_MS = 180000;
 
 const CHROME_CANDIDATES = [
   process.env.ALTEA_CHROME_PATH || '',
@@ -79,8 +80,17 @@ function resolveOptions(args) {
     overlayOutputPath: path.resolve(args['overlay-output-file'] || process.env.ALTEA_OVERLAY_JSON_PATH || cwdJoin('data', 'smart_price_overlay.json')),
     pricesOutputPath: path.resolve(args['prices-output-file'] || process.env.ALTEA_PRICES_JSON_PATH || cwdJoin('data', 'prices.json')),
     repricerOutputPath: path.resolve(args['repricer-output-file'] || process.env.ALTEA_REPRICER_JSON_PATH || cwdJoin('data', 'repricer.json')),
+    profileExportTimeoutMs: Number(args['profile-export-timeout-ms'] || process.env.ALTEA_SMART_PRICE_PROFILE_EXPORT_TIMEOUT_MS || DEFAULT_PROFILE_EXPORT_TIMEOUT_MS),
     dryRun: Boolean(args.dryRun)
   };
+}
+
+function compactRemoteError(error) {
+  const firstLine = String(error && error.message ? error.message : error || 'unknown error')
+    .split(/\r?\n/)[0]
+    .replace(/\s+/g, ' ')
+    .trim();
+  return firstLine.slice(0, 300) || 'unknown error';
 }
 
 function normalizePathList(value) {
@@ -201,7 +211,8 @@ async function fetchWorkbookViaBrowserAuth(options) {
       throw new Error('Google-авторизация для price-sync профиля не настроена. Один раз запустите script с --init-auth и войдите в Google.');
     }
     const response = await browser.request.get(options.exportUrl, {
-      failOnStatusCode: false
+      failOnStatusCode: false,
+      timeout: Math.max(30000, Number(options.profileExportTimeoutMs) || DEFAULT_PROFILE_EXPORT_TIMEOUT_MS)
     });
     if (!response.ok()) {
       throw new Error(`Google export returned HTTP ${response.status()}`);
@@ -248,12 +259,13 @@ async function resolveWorkbookBuffer(options) {
         sourceMtimeIso: new Date().toISOString()
       };
     } catch (profileError) {
+      const profileMessage = compactRemoteError(profileError);
       const fallback = discoverFallbackWorkbook();
-      if (!fallback) throw profileError;
+      if (!fallback) throw new Error(`Price workbook remote access failed (${profileMessage})`);
       if (fallback.ageHours > MAX_LOCAL_FALLBACK_AGE_HOURS) {
-        throw new Error(`Price workbook remote access failed (${profileError.message}), and the newest local fallback is too old: ${fallback.filePath}`);
+        throw new Error(`Price workbook remote access failed (${profileMessage}), and the newest local fallback is too old: ${fallback.filePath}`);
       }
-      console.log(`Smart price remote access failed (${profileError.message}). Using latest local workbook fallback: ${fallback.filePath}`);
+      console.log(`Smart price remote access failed (${profileMessage}). Using latest local workbook fallback: ${fallback.filePath}`);
       return {
         buffer: fs.readFileSync(fallback.filePath),
         sourceFileName: path.basename(fallback.filePath),

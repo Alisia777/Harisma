@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260502A__) return;
+  if (window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260515B__) return;
+  window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260515B__ = true;
   window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260502A__ = true;
   window.__ALTEA_REPRICER_MANAGED_HOTFIX_LOADER_20260425C__ = true;
 
@@ -8,6 +9,7 @@
   const SNAPSHOT_KEY = 'repricer_runtime_hotfix_20260424b';
   const LOCAL_RUNTIME_MANIFEST = `${SNAPSHOT_KEY}.json`;
   const RUNTIME_FETCH_TIMEOUT_MS = 4500;
+  const MANAGED_RUNTIME_DISABLED_BY_DEFAULT = true;
   const FALLBACK_CONFIG = {
     brand: '\u0410\u043b\u0442\u0435\u044f',
     supabase: {
@@ -675,9 +677,28 @@
     return false;
   }
 
+  function nativeRepricerRuntimeReady() {
+    return typeof window.renderRepricer === 'function'
+      && typeof window.buildRepricerRows === 'function'
+      && typeof window.downloadRepricerTemplateExcel === 'function';
+  }
+
+  function managedRuntimeAllowed() {
+    if (window.__ALTEA_FORCE_MANAGED_REPRICER_RUNTIME__) return true;
+    return !MANAGED_RUNTIME_DISABLED_BY_DEFAULT;
+  }
+
   function start(forceBoot = false) {
     const installedEmergencyFallbacks = installEmergencyAppCoreFallbacks();
     if (installedEmergencyFallbacks) scheduleRecoveryRerender();
+
+    if (!managedRuntimeAllowed()) {
+      return;
+    }
+
+    if (nativeRepricerRuntimeReady()) {
+      return;
+    }
 
     if (window.__ALTEA_REPRICER_MANAGED_HOTFIX_20260424B__) {
       if (typeof window.rerenderCurrentView === 'function' && window.state?.activeView === 'repricer') {

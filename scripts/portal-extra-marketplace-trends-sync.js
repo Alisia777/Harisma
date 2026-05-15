@@ -865,11 +865,20 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
   const existingPlatforms = Array.isArray(next.platforms) ? [...next.platforms] : [];
   const platformMap = new Map(existingPlatforms.map((platform) => [canonicalPlatformKey(platform?.key), deepClone(platform)]));
   const resultPlatforms = [];
+  const existingExtraMarketplace = next.extraMarketplace && typeof next.extraMarketplace === 'object'
+    ? deepClone(next.extraMarketplace)
+    : {};
+  const existingExtraPlatforms = existingExtraMarketplace?.platforms && typeof existingExtraMarketplace.platforms === 'object'
+    ? existingExtraMarketplace.platforms
+    : {};
   const extraMarketplace = {
+    ...existingExtraMarketplace,
     generatedAt: new Date().toISOString(),
     workbook: DEFAULT_WORKBOOK,
     asOfDate: iso(asOfDate),
-    platforms: {}
+    platforms: {
+      ...existingExtraPlatforms
+    }
   };
 
   const extraArticleMap = new Map();
@@ -1025,6 +1034,7 @@ function updateSmartPriceOverlay(baseOverlay, extraMarketplace, asOfDate) {
   next.platforms = next.platforms && typeof next.platforms === 'object' ? next.platforms : {};
   const platforms = extraMarketplace?.platforms || {};
   for (const [key, bucket] of Object.entries(platforms)) {
+    if (!EXTRA_PLATFORM_ORDER.includes(canonicalPlatformKey(key))) continue;
     const articles = Array.isArray(bucket?.articles) ? bucket.articles : [];
     next.platforms[key] = {
       key,

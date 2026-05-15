@@ -256,29 +256,39 @@ function resolveUpperCap(sourceRow, supportRow) {
 }
 
 function capRecommendation(recPrice, minPrice, upperCap) {
-  if (!(recPrice > 0) || !(upperCap > 0)) {
+  let guardedRecPrice = recPrice;
+  let floorApplied = false;
+  if (guardedRecPrice > 0 && minPrice > 0 && guardedRecPrice + 0.001 < minPrice) {
+    guardedRecPrice = minPrice;
+    floorApplied = true;
+  }
+  if (!(guardedRecPrice > 0) || !(upperCap > 0)) {
     return {
-      recPrice,
+      recPrice: guardedRecPrice,
+      floorApplied,
       capApplied: false,
       capBlockedByFloor: false
     };
   }
   if (minPrice > 0 && upperCap + 0.001 < minPrice) {
     return {
-      recPrice,
+      recPrice: guardedRecPrice,
+      floorApplied,
       capApplied: false,
       capBlockedByFloor: true
     };
   }
-  if (recPrice > upperCap + 0.001) {
+  if (guardedRecPrice > upperCap + 0.001) {
     return {
       recPrice: upperCap,
+      floorApplied,
       capApplied: true,
       capBlockedByFloor: false
     };
   }
   return {
-    recPrice,
+    recPrice: guardedRecPrice,
+    floorApplied,
     capApplied: false,
     capBlockedByFloor: false
   };
@@ -372,6 +382,8 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     reason = `Рекомендация ограничена ${capSourceLabel} ${formatRub(upperCap)}. Исходный target ${formatRub(seedRecPrice)} был выше допустимого диапазона.`;
   } else if (recGuard.capBlockedByFloor && upperCap > 0 && minPrice > 0) {
     reason = `Верхний cap ${formatRub(upperCap)} игнорирован, потому что он ниже floor ${formatRub(minPrice)}. ${inferredReason}`;
+  } else if (recGuard.floorApplied && minPrice > 0) {
+    reason = `Рекомендация поднята до рабочего floor ${formatRub(minPrice)}. ${inferredReason}`;
   }
   const newBuyerPrice = estimateNewBuyerPrice(
     currentBuyerPrice,
@@ -416,6 +428,7 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     liveReason: textValue(liveSide?.reason),
     seedRecPrice: seedRecPrice || 0,
     upperCap: upperCap || 0,
+    floorApplied: Boolean(recGuard.floorApplied),
     upperCapApplied: recGuard.capApplied
   };
 }

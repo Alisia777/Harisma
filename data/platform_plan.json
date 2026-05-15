@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-06T18:31:06.891Z",
-  "sourceWorkbook": "Plan A.xlsx",
+  "generatedAt": "2026-04-17T22:31:24",
+  "sourceWorkbook": "План Алтея (1).xlsx",
   "months": {
     "2026-01": {
       "label": "январь 2026",
@@ -87,7 +87,7 @@
         "goldapple": {
           "label": "Золотое Яблоко",
           "units": 1372,
-          "dailyUnits": 49,
+          "dailyUnits": 49.0,
           "source": "Золотое Яблоко"
         },
         "all": {
@@ -200,44 +200,44 @@
       "platforms": {
         "wb": {
           "label": "WB",
-          "units": 113412,
-          "dailyUnits": 3658.45,
+          "units": 150907,
+          "dailyUnits": 4867.97,
           "source": "Wildberries"
         },
         "ozon": {
           "label": "Ozon",
-          "units": 43878,
-          "dailyUnits": 1415.42,
+          "units": 58385,
+          "dailyUnits": 1883.39,
           "source": "Ozon"
         },
         "ya": {
           "label": "Я.Маркет",
-          "units": 2122,
-          "dailyUnits": 68.45,
+          "units": 2823,
+          "dailyUnits": 91.06,
           "source": "Яндекс Маркет"
         },
         "letu": {
           "label": "Летуаль",
-          "units": 3753,
-          "dailyUnits": 121.06,
+          "units": 4994,
+          "dailyUnits": 161.1,
           "source": "Летуаль"
         },
         "magnit": {
           "label": "Магнит Маркет",
-          "units": 220,
-          "dailyUnits": 7.1,
+          "units": 293,
+          "dailyUnits": 9.45,
           "source": "Магнит Маркет"
         },
         "goldapple": {
           "label": "Золотое Яблоко",
-          "units": 2188,
-          "dailyUnits": 70.58,
+          "units": 2911,
+          "dailyUnits": 93.9,
           "source": "Золотое Яблоко"
         },
         "all": {
           "label": "Все площадки",
-          "units": 165573,
-          "dailyUnits": 5341.06,
+          "units": 220313,
+          "dailyUnits": 7106.87,
           "source": "Workbook aggregate"
         }
       }
@@ -248,44 +248,44 @@
       "platforms": {
         "wb": {
           "label": "WB",
-          "units": 114194,
-          "dailyUnits": 3806.47,
+          "units": 154136,
+          "dailyUnits": 5137.87,
           "source": "Wildberries"
         },
         "ozon": {
           "label": "Ozon",
-          "units": 44428,
-          "dailyUnits": 1480.93,
+          "units": 59968,
+          "dailyUnits": 1998.93,
           "source": "Ozon"
         },
         "ya": {
           "label": "Я.Маркет",
-          "units": 2921,
-          "dailyUnits": 97.37,
+          "units": 3942,
+          "dailyUnits": 131.4,
           "source": "Яндекс Маркет"
         },
         "letu": {
           "label": "Летуаль",
-          "units": 3766,
-          "dailyUnits": 125.53,
+          "units": 5083,
+          "dailyUnits": 169.43,
           "source": "Летуаль"
         },
         "magnit": {
           "label": "Магнит Маркет",
-          "units": 217,
-          "dailyUnits": 7.23,
+          "units": 293,
+          "dailyUnits": 9.77,
           "source": "Магнит Маркет"
         },
         "goldapple": {
           "label": "Золотое Яблоко",
-          "units": 2913,
-          "dailyUnits": 97.1,
+          "units": 3932,
+          "dailyUnits": 131.07,
           "source": "Золотое Яблоко"
         },
         "all": {
           "label": "Все площадки",
-          "units": 168439,
-          "dailyUnits": 5614.63,
+          "units": 227354,
+          "dailyUnits": 7578.47,
           "source": "Workbook aggregate"
         }
       }
@@ -296,44 +296,44 @@
       "platforms": {
         "wb": {
           "label": "WB",
-          "units": 117822,
-          "dailyUnits": 3800.71,
+          "units": 160652,
+          "dailyUnits": 5182.32,
           "source": "Wildberries"
         },
         "ozon": {
           "label": "Ozon",
-          "units": 46019,
-          "dailyUnits": 1484.48,
+          "units": 62748,
+          "dailyUnits": 2024.13,
           "source": "Ozon"
         },
         "ya": {
           "label": "Я.Маркет",
-          "units": 4452,
-          "dailyUnits": 143.61,
+          "units": 6071,
+          "dailyUnits": 195.84,
           "source": "Яндекс Маркет"
         },
         "letu": {
           "label": "Летуаль",
-          "units": 4546,
-          "dailyUnits": 146.65,
+          "units": 6199,
+          "dailyUnits": 199.97,
           "source": "Летуаль"
         },
         "magnit": {
           "label": "Магнит Маркет",
-          "units": 260,
-          "dailyUnits": 8.39,
+          "units": 354,
+          "dailyUnits": 11.42,
           "source": "Магнит Маркет"
         },
         "goldapple": {
           "label": "Золотое Яблоко",
-          "units": 3981,
-          "dailyUnits": 128.42,
+          "units": 5428,
+          "dailyUnits": 175.1,
           "source": "Золотое Яблоко"
         },
         "all": {
           "label": "Все площадки",
-          "units": 177080,
-          "dailyUnits": 5712.26,
+          "units": 241452,
+          "dailyUnits": 7788.77,
           "source": "Workbook aggregate"
         }
       }
@@ -344,44 +344,44 @@
       "platforms": {
         "wb": {
           "label": "WB",
-          "units": 123742,
-          "dailyUnits": 3991.68,
+          "units": 169672,
+          "dailyUnits": 5473.29,
           "source": "Wildberries"
         },
         "ozon": {
           "label": "Ozon",
-          "units": 49123,
-          "dailyUnits": 1584.61,
+          "units": 67356,
+          "dailyUnits": 2172.77,
           "source": "Ozon"
         },
         "ya": {
           "label": "Я.Маркет",
-          "units": 5422,
-          "dailyUnits": 174.9,
+          "units": 7435,
+          "dailyUnits": 239.84,
           "source": "Яндекс Маркет"
         },
         "letu": {
           "label": "Летуаль",
-          "units": 4611,
-          "dailyUnits": 148.74,
+          "units": 6323,
+          "dailyUnits": 203.97,
           "source": "Летуаль"
         },
         "magnit": {
           "label": "Магнит Маркет",
-          "units": 259,
-          "dailyUnits": 8.35,
+          "units": 355,
+          "dailyUnits": 11.45,
           "source": "Магнит Маркет"
         },
         "goldapple": {
           "label": "Золотое Яблоко",
-          "units": 4552,
-          "dailyUnits": 146.84,
+          "units": 6241,
+          "dailyUnits": 201.32,
           "source": "Золотое Яблоко"
         },
         "all": {
           "label": "Все площадки",
-          "units": 187709,
-          "dailyUnits": 6055.13,
+          "units": 257382,
+          "dailyUnits": 8302.65,
           "source": "Workbook aggregate"
         }
       }
@@ -392,44 +392,44 @@
       "platforms": {
         "wb": {
           "label": "WB",
-          "units": 136877,
-          "dailyUnits": 4562.57,
+          "units": 185738,
+          "dailyUnits": 6191.27,
           "source": "Wildberries"
         },
         "ozon": {
           "label": "Ozon",
-          "units": 54973,
-          "dailyUnits": 1832.43,
+          "units": 74597,
+          "dailyUnits": 2486.57,
           "source": "Ozon"
         },
         "ya": {
           "label": "Я.Маркет",
-          "units": 6480,
-          "dailyUnits": 216,
+          "units": 8793,
+          "dailyUnits": 293.1,
           "source": "Яндекс Маркет"
         },
         "letu": {
           "label": "Летуаль",
-          "units": 4820,
-          "dailyUnits": 160.67,
+          "units": 6541,
+          "dailyUnits": 218.03,
           "source": "Летуаль"
         },
         "magnit": {
           "label": "Магнит Маркет",
-          "units": 262,
-          "dailyUnits": 8.73,
+          "units": 356,
+          "dailyUnits": 11.87,
           "source": "Магнит Маркет"
         },
         "goldapple": {
           "label": "Золотое Яблоко",
-          "units": 5288,
-          "dailyUnits": 176.27,
+          "units": 7175,
+          "dailyUnits": 239.17,
           "source": "Золотое Яблоко"
         },
         "all": {
           "label": "Все площадки",
-          "units": 208700,
-          "dailyUnits": 6956.67,
+          "units": 283200,
+          "dailyUnits": 9440.0,
           "source": "Workbook aggregate"
         }
       }
@@ -440,44 +440,44 @@
       "platforms": {
         "wb": {
           "label": "WB",
-          "units": 143363,
-          "dailyUnits": 4624.61,
+          "units": 204179,
+          "dailyUnits": 6586.42,
           "source": "Wildberries"
         },
         "ozon": {
           "label": "Ozon",
-          "units": 58580,
-          "dailyUnits": 1889.68,
+          "units": 83430,
+          "dailyUnits": 2691.29,
           "source": "Ozon"
         },
         "ya": {
           "label": "Я.Маркет",
-          "units": 7103,
-          "dailyUnits": 229.13,
+          "units": 10116,
+          "dailyUnits": 326.32,
           "source": "Яндекс Маркет"
         },
         "letu": {
           "label": "Летуаль",
-          "units": 4742,
-          "dailyUnits": 152.97,
+          "units": 6753,
+          "dailyUnits": 217.84,
           "source": "Летуаль"
         },
         "magnit": {
           "label": "Магнит Маркет",
-          "units": 252,
-          "dailyUnits": 8.13,
+          "units": 359,
+          "dailyUnits": 11.58,
           "source": "Магнит Маркет"
         },
         "goldapple": {
           "label": "Золотое Яблоко",
-          "units": 5795,
-          "dailyUnits": 186.94,
+          "units": 8254,
+          "dailyUnits": 266.26,
           "source": "Золотое Яблоко"
         },
         "all": {
           "label": "Все площадки",
-          "units": 219835,
-          "dailyUnits": 7091.45,
+          "units": 313091,
+          "dailyUnits": 10099.71,
           "source": "Workbook aggregate"
         }
       }
@@ -488,44 +488,44 @@
       "platforms": {
         "wb": {
           "label": "WB",
-          "units": 151362,
-          "dailyUnits": 5045.4,
+          "units": 226251,
+          "dailyUnits": 7541.7,
           "source": "Wildberries"
         },
         "ozon": {
           "label": "Ozon",
-          "units": 62989,
-          "dailyUnits": 2099.63,
+          "units": 94154,
+          "dailyUnits": 3138.47,
           "source": "Ozon"
         },
         "ya": {
           "label": "Я.Маркет",
-          "units": 7687,
-          "dailyUnits": 256.23,
+          "units": 11490,
+          "dailyUnits": 383.0,
           "source": "Яндекс Маркет"
         },
         "letu": {
           "label": "Летуаль",
-          "units": 4702,
-          "dailyUnits": 156.73,
+          "units": 7029,
+          "dailyUnits": 234.3,
           "source": "Летуаль"
         },
         "magnit": {
           "label": "Магнит Маркет",
-          "units": 244,
-          "dailyUnits": 8.13,
+          "units": 364,
+          "dailyUnits": 12.13,
           "source": "Магнит Маркет"
         },
         "goldapple": {
           "label": "Золотое Яблоко",
-          "units": 6347,
-          "dailyUnits": 211.57,
+          "units": 9488,
+          "dailyUnits": 316.27,
           "source": "Золотое Яблоко"
         },
         "all": {
           "label": "Все площадки",
-          "units": 233331,
-          "dailyUnits": 7777.7,
+          "units": 348776,
+          "dailyUnits": 11625.87,
           "source": "Workbook aggregate"
         }
       }
@@ -536,44 +536,44 @@
       "platforms": {
         "wb": {
           "label": "WB",
-          "units": 168653,
-          "dailyUnits": 5440.42,
+          "units": 254049,
+          "dailyUnits": 8195.13,
           "source": "Wildberries"
         },
         "ozon": {
           "label": "Ozon",
-          "units": 71643,
-          "dailyUnits": 2311.06,
+          "units": 107919,
+          "dailyUnits": 3481.26,
           "source": "Ozon"
         },
         "ya": {
           "label": "Я.Маркет",
-          "units": 8529,
-          "dailyUnits": 275.13,
+          "units": 12848,
+          "dailyUnits": 414.45,
           "source": "Яндекс Маркет"
         },
         "letu": {
           "label": "Летуаль",
-          "units": 4882,
-          "dailyUnits": 157.48,
+          "units": 7354,
+          "dailyUnits": 237.23,
           "source": "Летуаль"
         },
         "magnit": {
           "label": "Магнит Маркет",
-          "units": 240,
-          "dailyUnits": 7.74,
+          "units": 362,
+          "dailyUnits": 11.68,
           "source": "Магнит Маркет"
         },
         "goldapple": {
           "label": "Золотое Яблоко",
-          "units": 7245,
-          "dailyUnits": 233.71,
+          "units": 10913,
+          "dailyUnits": 352.03,
           "source": "Золотое Яблоко"
         },
         "all": {
           "label": "Все площадки",
-          "units": 261192,
-          "dailyUnits": 8425.55,
+          "units": 393445,
+          "dailyUnits": 12691.77,
           "source": "Workbook aggregate"
         }
       }

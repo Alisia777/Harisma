@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-05-15T07:04:15.090Z",
+  "generatedAt": "2026-05-15T17:23:13.307Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
   "sourceFormat": "google-csv-export",
   "sheetName": "Sheet1",
   "matchField": "Наименование как в ЛК -> article/articleKey",
-  "sheetRowCount": 294,
+  "sheetRowCount": 296,
   "matchedRowCount": 83,
   "matchedSkuCount": 81,
   "unmatchedSourceKeys": [
@@ -37,9 +37,9 @@
     "harly_ear_drops"
   ],
   "summary": {
-    "stockWarehouse": 272323,
-    "accepted": 1970495,
-    "shippedOzon": 525068,
+    "stockWarehouse": 306564,
+    "accepted": 2004215,
+    "shippedOzon": 524547,
     "shippedWB": 1172569
   },
   "rows": [
@@ -111,8 +111,8 @@
     },
     {
       "articleKey": "curly_method_300ml",
-      "stockWarehouse": 623,
-      "accepted": 71458,
+      "stockWarehouse": 7263,
+      "accepted": 78098,
       "shippedOzon": 16423,
       "shippedWB": 54412,
       "sourceKeys": [
@@ -399,8 +399,8 @@
     },
     {
       "articleKey": "krovavii_piling_30ml",
-      "stockWarehouse": 4088,
-      "accepted": 97910,
+      "stockWarehouse": 18388,
+      "accepted": 112210,
       "shippedOzon": 19679,
       "shippedWB": 74143,
       "sourceKeys": [
@@ -751,8 +751,8 @@
     },
     {
       "articleKey": "silk_hair_300ml",
-      "stockWarehouse": 7370,
-      "accepted": 29060,
+      "stockWarehouse": 9130,
+      "accepted": 30820,
       "shippedOzon": 5645,
       "shippedWB": 16045,
       "sourceKeys": [
@@ -806,8 +806,8 @@
     },
     {
       "articleKey": "sprei_buster_100ml",
-      "stockWarehouse": 3642,
-      "accepted": 26892,
+      "stockWarehouse": 6342,
+      "accepted": 29592,
       "shippedOzon": 9550,
       "shippedWB": 13700,
       "sourceKeys": [
@@ -839,8 +839,8 @@
     },
     {
       "articleKey": "syvorotka_dlya_lica_30ml_v2",
-      "stockWarehouse": 164,
-      "accepted": 21874,
+      "stockWarehouse": 8484,
+      "accepted": 30194,
       "shippedOzon": 4518,
       "shippedWB": 17192,
       "sourceKeys": [
@@ -894,9 +894,9 @@
     },
     {
       "articleKey": "telomeras_60caps",
-      "stockWarehouse": 0,
+      "stockWarehouse": 521,
       "accepted": 5588,
-      "shippedOzon": 2479,
+      "shippedOzon": 1958,
       "shippedWB": 3109,
       "sourceKeys": [
         "telomeras_60caps"

@@ -326,7 +326,10 @@ function buildOrderProcurementModel() {
       shortTurnover: 0,
       noStock: 0,
       inMotion: 0,
-      matched: 0
+      matched: 0,
+      matchedMpStock: 0,
+      matchedOrders: 0,
+      matchedNeed: 0
     };
     clusterTotal.mpStock += cluster.mpStock;
     clusterTotal.orders += cluster.orders;
@@ -335,28 +338,45 @@ function buildOrderProcurementModel() {
     if (cluster.flags.shortTurnover) clusterTotal.shortTurnover += 1;
     if (cluster.flags.noStock) clusterTotal.noStock += 1;
     if (cluster.flags.inMotion) clusterTotal.inMotion += 1;
-    if (cluster.matchesClusterFilter) clusterTotal.matched += 1;
+    if (cluster.matchesClusterFilter) {
+      clusterTotal.matched += 1;
+      clusterTotal.matchedMpStock += cluster.mpStock;
+      clusterTotal.matchedOrders += cluster.orders;
+      clusterTotal.matchedNeed += cluster.need;
+    }
     clusterTotalsMap.set(place, clusterTotal);
   });
 
   const requestedPlace = String(orderState.place || 'all').trim() || 'all';
-  const selectedPlace = requestedPlace !== 'all' && placeSeen.has(requestedPlace) ? requestedPlace : 'all';
-  if (selectedPlace !== requestedPlace) ensureOrderProcurementState().place = 'all';
-  const visiblePlaces = selectedPlace === 'all'
-    ? placeOrder.filter((place) => {
-        if (clusterFilter === 'all') return true;
-        return orderProcurementNumber(clusterTotalsMap.get(place)?.matched) > 0;
-      })
-    : [selectedPlace];
+  const requestedPlaceSelection = orderProcurementUnique([
+    ...(Array.isArray(orderState.placeSelection) ? orderState.placeSelection : []),
+    ...(requestedPlace !== 'all' ? [requestedPlace] : [])
+  ]
+    .map((place) => String(place || '').trim())
+    .filter((place) => place && place !== 'all'));
+  const selectedPlaces = requestedPlaceSelection.filter((place) => placeSeen.has(place));
+  const selectedPlaceSet = new Set(selectedPlaces);
+  const selectedPlace = selectedPlaces.length === 1 ? selectedPlaces[0] : 'all';
+  const stateForSelection = ensureOrderProcurementState();
+  stateForSelection.placeSelection = selectedPlaces;
+  stateForSelection.place = selectedPlace;
+  const visiblePlaces = placeOrder.filter((place) => {
+    if (selectedPlaceSet.size && !selectedPlaceSet.has(place)) return false;
+    if (clusterFilter !== 'all') {
+      return orderProcurementNumber(clusterTotalsMap.get(place)?.matched) > 0;
+    }
+    return true;
+  });
   const rowsWithMetrics = [...rowMap.values()].map((row) => {
     const activeClusters = visiblePlaces.map((place) => row.clusters[place]).filter(Boolean);
     const matchingClusters = activeClusters.filter((cluster) => orderProcurementClusterMatchesFilter(cluster, clusterFilter, clusterDays));
-    const displayNeed = activeClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.need), 0);
-    const displayOrders = activeClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.orders), 0);
-    const displayMpStock = activeClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.mpStock), 0);
-    const displayInTransit = activeClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.inTransit), 0);
-    const displayInRequest = activeClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.inRequest), 0);
-    const displayTurnover = orderProcurementAverage(activeClusters.map((cluster) => cluster.turnover));
+    const displayClusters = clusterFilter === 'all' ? activeClusters : matchingClusters;
+    const displayNeed = displayClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.need), 0);
+    const displayOrders = displayClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.orders), 0);
+    const displayMpStock = displayClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.mpStock), 0);
+    const displayInTransit = displayClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.inTransit), 0);
+    const displayInRequest = displayClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.inRequest), 0);
+    const displayTurnover = orderProcurementAverage(displayClusters.map((cluster) => cluster.turnover));
     return {
       ...row,
       displayNeed,
@@ -366,7 +386,7 @@ function buildOrderProcurementModel() {
       displayInRequest,
       displayTurnover,
       clusterMatchCount: matchingClusters.length,
-      hasSelectedPlace: selectedPlace === 'all' || activeClusters.length > 0
+      hasSelectedPlace: !selectedPlaceSet.size || activeClusters.length > 0
     };
   });
   const allRows = rowsWithMetrics.filter((row) => row.hasSelectedPlace);
@@ -402,6 +422,9 @@ function buildOrderProcurementModel() {
     });
   const list = orderProcurementSortRows(filteredRows, sort);
   const hasInboundWarehouse = allRows.some((row) => Boolean(row.hasInboundWarehouse));
+  const displayPlaces = clusterFilter === 'all'
+    ? visiblePlaces
+    : visiblePlaces.filter((place) => list.some((row) => orderProcurementClusterMatchesFilter(row.clusters[place], clusterFilter, clusterDays)));
 
   const totals = list.reduce((acc, row) => {
     acc.warehouseStock += orderProcurementNumber(row.warehouseStock);
@@ -422,6 +445,20 @@ function buildOrderProcurementModel() {
     totalNeed: 0
   });
   const commentsCount = list.reduce((acc, row) => acc + orderProcurementNumber(row.commentCount), 0);
+  const clusterTotalDefaults = { mpStock: 0, orders: 0, need: 0, risk: 0, shortTurnover: 0, noStock: 0, inMotion: 0, matched: 0, matchedMpStock: 0, matchedOrders: 0, matchedNeed: 0 };
+  const displayClusterTotal = (place) => {
+    const total = clusterTotalsMap.get(place) || clusterTotalDefaults;
+    if (clusterFilter === 'all') return { place, ...clusterTotalDefaults, ...total };
+    return {
+      place,
+      ...clusterTotalDefaults,
+      ...total,
+      mpStock: orderProcurementNumber(total.matchedMpStock),
+      orders: orderProcurementNumber(total.matchedOrders),
+      need: orderProcurementNumber(total.matchedNeed),
+      risk: orderProcurementNumber(total.matched)
+    };
+  };
 
   return {
     platform,
@@ -435,17 +472,16 @@ function buildOrderProcurementModel() {
     selectedPlace,
     generatedAt: payload.generatedAt || ORDER_PROCUREMENT_RUNTIME.cache.warehouse?.generatedAt || null,
     window: payload.window || null,
-    places: visiblePlaces,
+    places: displayPlaces,
     allPlaces: placeOrder,
+    selectedPlaces,
     rows: list,
     totalRows: allRows.length,
     commentsCount,
     hasInboundWarehouse,
     totals,
-    clusterTotals: visiblePlaces.map((place) => ({
-      place,
-      ...(clusterTotalsMap.get(place) || { mpStock: 0, orders: 0, need: 0, risk: 0, shortTurnover: 0, noStock: 0, inMotion: 0, matched: 0 })
-    }))
+    allClusterTotals: placeOrder.map(displayClusterTotal),
+    clusterTotals: displayPlaces.map(displayClusterTotal)
   };
 }
 
@@ -560,6 +596,38 @@ function renderOrderProcurementPlaceOptions(model) {
   ].join('');
 }
 
+function renderOrderProcurementPlaceChips(model) {
+  const sourcePlaces = model.clusterFilter === 'all' ? model.allPlaces : model.places;
+  const places = Array.isArray(sourcePlaces) ? sourcePlaces : [];
+  if (!places.length) return '';
+  const selected = new Set(Array.isArray(model.selectedPlaces) ? model.selectedPlaces : []);
+  const allActive = selected.size === 0;
+  const allLabel = model.clusterFilter === 'all' ? 'Все' : 'Все проблемные';
+  const allButton = `
+    <button type="button" class="altea-order-procurement__place-chip ${allActive ? 'is-active' : ''}" data-altea-order-place-chip="all">
+      ${allLabel}
+    </button>
+  `;
+  const totalsByPlace = new Map((model.allClusterTotals || []).map((cluster) => [cluster.place, cluster]));
+  const placeButtons = places.map((place) => {
+    const stats = totalsByPlace.get(place) || {};
+    const isActive = selected.has(place);
+    return `
+      <button type="button" class="altea-order-procurement__place-chip ${isActive ? 'is-active' : ''}" data-altea-order-place-chip="${orderProcurementEscape(place)}">
+        <span>${orderProcurementEscape(place)}</span>
+        <small>${fmt.int(stats.need || 0)}</small>
+      </button>
+    `;
+  }).join('');
+
+  return `
+    <div class="altea-order-procurement__place-filter" aria-label="Склады">
+      ${allButton}
+      ${placeButtons}
+    </div>
+  `;
+}
+
 function renderOrderProcurementClusterSummary(model) {
   if (!model.clusterTotals.length) return '';
   return `
@@ -612,6 +680,14 @@ function renderOrderProcurementTable(model) {
             isMatch && model.clusterFilter !== 'all' ? 'is-match' : '',
             !isMatch && model.clusterFilter !== 'all' ? 'is-muted' : ''
           ].filter(Boolean).join(' ');
+          if (model.clusterFilter !== 'all' && !isMatch) {
+            return `
+              <td class="${cellClass} altea-order-procurement__num">—</td>
+              <td class="${cellClass} altea-order-procurement__num">—</td>
+              <td class="${cellClass}">—</td>
+              <td class="${cellClass}">—</td>
+            `;
+          }
           return `
             <td class="${cellClass} altea-order-procurement__num">${fmt.int(cluster.mpStock)}</td>
             <td class="${cellClass} altea-order-procurement__num">${fmt.int(cluster.orders)}</td>
@@ -718,7 +794,10 @@ function renderOrderProcurement(model) {
   const clusterRiskCount = model.clusterTotals.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.risk), 0);
   const clusterMatchCount = model.clusterTotals.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.matched), 0);
   const visibleClusterSignalCount = model.clusterFilter === 'all' ? clusterRiskCount : clusterMatchCount;
-  const activePlaceLabel = model.selectedPlace === 'all' ? 'Все склады' : model.selectedPlace;
+  const selectedPlaceCount = Array.isArray(model.selectedPlaces) ? model.selectedPlaces.length : 0;
+  const activePlaceLabel = selectedPlaceCount > 1
+    ? `${fmt.int(selectedPlaceCount)} складов`
+    : (selectedPlaceCount === 1 ? model.selectedPlaces[0] : 'Все склады');
 
   return `
     <section class="${sectionClass}" data-altea-order-procurement>
@@ -754,6 +833,8 @@ function renderOrderProcurement(model) {
             <span>Склад / кластер</span>
             <select id="alteaOrderPlace">${renderOrderProcurementPlaceOptions(model)}</select>
           </label>
+
+          ${renderOrderProcurementPlaceChips(model)}
 
           <label class="altea-order-procurement__field">
             <span>Фильтр</span>
@@ -905,7 +986,10 @@ function orderProcurementRenderInto(root) {
 function bindOrderProcurement(root) {
   root.querySelectorAll('[data-altea-order-platform]').forEach((button) => {
     button.addEventListener('click', () => {
-      ensureOrderProcurementState().platform = button.dataset.alteaOrderPlatform === 'ozon' ? 'ozon' : 'wb';
+      const orderState = ensureOrderProcurementState();
+      orderState.platform = button.dataset.alteaOrderPlatform === 'ozon' ? 'ozon' : 'wb';
+      orderState.place = 'all';
+      orderState.placeSelection = [];
       renderOrderCalculator();
     });
   });
@@ -916,8 +1000,31 @@ function bindOrderProcurement(root) {
   });
 
   root.querySelector('#alteaOrderPlace')?.addEventListener('change', (event) => {
-    ensureOrderProcurementState().place = String(event.target.value || 'all');
+    const orderState = ensureOrderProcurementState();
+    const place = String(event.target.value || 'all').trim() || 'all';
+    orderState.place = place;
+    orderState.placeSelection = place === 'all' ? [] : [place];
     renderOrderCalculator();
+  });
+
+  root.querySelectorAll('[data-altea-order-place-chip]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const orderState = ensureOrderProcurementState();
+      const place = String(button.dataset.alteaOrderPlaceChip || 'all').trim() || 'all';
+      if (place === 'all') {
+        orderState.place = 'all';
+        orderState.placeSelection = [];
+        renderOrderCalculator();
+        return;
+      }
+
+      const selected = new Set(Array.isArray(orderState.placeSelection) ? orderState.placeSelection : []);
+      if (selected.has(place)) selected.delete(place);
+      else selected.add(place);
+      orderState.placeSelection = [...selected];
+      orderState.place = orderState.placeSelection.length === 1 ? orderState.placeSelection[0] : 'all';
+      renderOrderCalculator();
+    });
   });
 
   root.querySelector('#alteaOrderMode')?.addEventListener('change', (event) => {
@@ -955,6 +1062,7 @@ function bindOrderProcurement(root) {
     const orderState = ensureOrderProcurementState();
     orderState.search = '';
     orderState.place = 'all';
+    orderState.placeSelection = [];
     orderState.mode = 'all';
     orderState.sort = 'recommended_desc';
     orderState.clusterFilter = 'all';
@@ -1063,6 +1171,60 @@ function injectOrderProcurementStyles() {
 
     .altea-order-procurement__field--search input {
       min-width: 220px;
+    }
+
+    .altea-order-procurement__place-filter {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      max-height: 118px;
+      overflow: auto;
+      padding: 8px;
+      border: 1px solid rgba(212, 164, 74, 0.14);
+      border-radius: 14px;
+      background: rgba(17, 14, 11, 0.68);
+      scrollbar-gutter: stable;
+    }
+
+    .altea-order-procurement__place-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      max-width: 240px;
+      min-height: 34px;
+      padding: 8px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(212, 164, 74, 0.20);
+      background: rgba(18, 14, 10, 0.90);
+      color: #fff1dd;
+      font: inherit;
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+    }
+
+    .altea-order-procurement__place-chip span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .altea-order-procurement__place-chip small {
+      flex: 0 0 auto;
+      color: rgba(255, 244, 229, 0.58);
+      font-size: 11px;
+    }
+
+    .altea-order-procurement__place-chip:hover {
+      transform: translateY(-1px);
+      border-color: rgba(240, 196, 101, 0.45);
+    }
+
+    .altea-order-procurement__place-chip.is-active {
+      border-color: rgba(240, 196, 101, 0.62);
+      background: rgba(94, 68, 27, 0.78);
+      box-shadow: inset 0 0 0 1px rgba(240, 196, 101, 0.14);
     }
 
     .altea-order-procurement__platforms,

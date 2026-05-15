@@ -280,8 +280,7 @@ function mergeQuarterRows(reportRows, drrRows, dailyRows, from, to) {
     const current = rows.get(row.date) || { date: row.date };
     for (const field of fields) {
       if (row[field] !== undefined && row[field] !== null) {
-        const value = numberOrZero(row[field]);
-        if (value !== 0 || current[field] === undefined) current[field] = value;
+        current[field] = numberOrZero(row[field]);
       }
     }
     rows.set(row.date, current);
@@ -986,7 +985,6 @@ function buildPayload(options) {
   const channels = buildChannelRows(dailyRows, adsSummary, wbFeedbacksSummary);
   const asOfDate = dailyRows.map((row) => row.date).filter(Boolean).sort().pop() || isoDate(platformTrends?.latestMarketplaceDate) || isoDate(adsSummary?.asOfDate) || '';
   const wbQuarter = buildQuarterSummary(dailyRows, asOfDate);
-  const ozonQuarter = buildOzonQuarterSummary(dailyRows);
   const noSourceChannels = channels
     .filter((channel) => channel.source !== 'Google Sheets fact_ads_daily_sku')
     .filter((channel) => !['WB Promotion API', 'WB Feedbacks API', 'Google Sheets внешка'].includes(channel.source))
@@ -1018,7 +1016,6 @@ function buildPayload(options) {
     ozonPlanPctDefault: DEFAULT_OZON_PLAN_PCT,
     kpis: currentMonth,
     wbQuarter,
-    ozonQuarter,
     quarterSummary: wbQuarter,
     contractPeriods,
     months,

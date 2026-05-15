@@ -9,7 +9,7 @@
   <title>&#1044;&#1086;&#1084; &#1073;&#1088;&#1077;&#1085;&#1076;&#1072; &#1040;&#1083;&#1090;&#1077;&#1103; &#183; v8.7.1 Imperial</title>
   <meta name="description" content="&#1044;&#1086;&#1084; &#1073;&#1088;&#1077;&#1085;&#1076;&#1072; &#1040;&#1083;&#1090;&#1077;&#1103;: &#1086;&#1087;&#1077;&#1088;&#1072;&#1090;&#1080;&#1074;&#1085;&#1099;&#1081; &#1082;&#1086;&#1085;&#1090;&#1091;&#1088; &#1073;&#1088;&#1077;&#1085;&#1076;&#1072;, &#1087;&#1083;&#1086;&#1097;&#1072;&#1076;&#1086;&#1082;, &#1088;&#1077;&#1082;&#1083;&#1072;&#1084;&#1099; &#1080; &#1088;&#1077;&#1096;&#1077;&#1085;&#1080;&#1081; &#1074; &#1086;&#1076;&#1085;&#1086;&#1084; &#1101;&#1082;&#1088;&#1072;&#1085;&#1077;.">
   <link rel="icon" href="assets/altea-imperial-mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="styles.css?v=20260515skuplanfact2">
+<link rel="stylesheet" href="styles.css?v=20260515repricerlayers1">
 <link rel="stylesheet" href="portal-form-visual-refine.css?v=20260504c">
 <link rel="stylesheet" href="imperial.css?v=20260504c">
 <link rel="stylesheet" href="v87.css?v=20260504c">
@@ -134,6 +134,11 @@
     window.__ALTEA_BOOT = { configLoaded: true, supabaseLoaded: false };
     (function(){
       document.body.classList.add('v87-imperial');
+      if (window.location.hash === '#repricer') {
+        document.body.classList.add('repricer-operator-active');
+        const repricerRoot = document.getElementById('view-repricer');
+        if (repricerRoot) repricerRoot.classList.add('repricer-simple-mode', 'repricer-boot-simple');
+      }
       const setBadge=(txt, cls)=>{ const el=document.getElementById('syncStatusBadge'); if(!el) return; el.className='sync-status'; if(cls) el.classList.add(cls); el.textContent=txt; };
       window.__alteaSetBootBadge=setBadge;
       setBadge('\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0430\u0435\u043c \u043a\u043e\u043c\u0430\u043d\u0434\u043d\u0443\u044e \u0431\u0430\u0437\u0443\u2026','pending');
@@ -193,7 +198,7 @@
       }
 
       window.__ALTEA_PORTAL_BUILD__ = '20260515dashfix1';
-      window.__ALTEA_JSON_VERSION__ = '20260515dashfix1';
+      window.__ALTEA_JSON_VERSION__ = '20260515unmappedsku2';
 
       Response.prototype.json = async function patchedResponseJson() {
         const backup = this.clone();
@@ -218,9 +223,9 @@
   <script defer src="app-core-06.js?v=20260515skusclean1"></script>
     <script defer src="app-core-07.js?v=20260515iudrr5"></script>
 <script defer src="portal-loyalty-system-hotfix.js?v=20260515loyalty1"></script>
-<script defer src="app-core-08.js?v=20260509orderstuck1"></script>
-  <script defer src="app-core-09.js?v=20260515orderRating1"></script>
- <script defer src="app-core-11.js?v=20260515iudrr4"></script>
+<script defer src="app-core-08.js?v=20260515repricerlayers1"></script>
+  <script defer src="app-core-09.js?v=20260515warehousefilter1"></script>
+  <script defer src="app-core-11.js?v=20260515unmappedsku2"></script>
   <script defer src="app-core-10.js?v=20260515ownerdetach2"></script>
  <script defer src="portal-dashboard-interactive-hotfix.js?v=20260515dashfix1"></script>
  <script defer src="portal-ui-hotfix.js?v=20260515market4"></script>
@@ -235,13 +240,15 @@
   <script defer src="portal-plan-alignment-hotfix.js?v=20260515marketsplit1"></script>
   <script defer src="portal-supabase-snapshot-hotfix.js?v=20260515iudrrsnap2"></script>
   <script defer src="portal-smart-price-overlay-hotfix.js?v=20260504c"></script>
-<script defer src="portal-repricer-managed-hotfix.js?v=20260504c"></script>
-<script defer src="portal-repricer-actions-explainer-hotfix.js?v=20260504c"></script>
+<script defer src="portal-repricer-managed-hotfix.js?v=20260515native2"></script>
+<script defer src="portal-repricer-price-guard-hotfix.js?v=20260515a"></script>
+<script defer src="portal-repricer-actions-explainer-hotfix.js?v=20260515repricerlayers1"></script>
 <script defer src="portal-repricer-coldstart-hotfix.js?v=20260504c"></script>
 <script defer src="portal-repricer-performance-hotfix.js?v=20260515repricerperf2"></script>
 <script defer src="portal-sidebar-priority-hotfix.js?v=20260515routehash001"></script>
 <script defer src="portal-sku-registry-live-note-hotfix.js?v=20260515skusclean1"></script>
 <script defer src="portal-ux-unify.js?v=20260504c"></script>
+<script defer src="portal-repricer-operator-mode-hotfix.js?v=20260515lazy12"></script>
 <script defer src="portal-sku-plan-fact-stability-hotfix.js?v=20260515iudrr4"></script>
 </body>
 </html>

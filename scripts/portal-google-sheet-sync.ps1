@@ -23,13 +23,20 @@ function Invoke-NodeStep {
 
   for ($attempt = 1; $attempt -le $Attempts; $attempt += 1) {
     Write-Output "[sync] $StepName attempt $attempt/$Attempts"
-    $previousErrorActionPreference = $ErrorActionPreference
+    $tempStdout = [System.IO.Path]::GetTempFileName()
+    $tempStderr = [System.IO.Path]::GetTempFileName()
     try {
-      $ErrorActionPreference = "Continue"
-      & $nodeExe @Arguments 2>&1 | ForEach-Object { Write-Output $_ }
-      $exitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
+      $process = Start-Process -FilePath $nodeExe -ArgumentList $Arguments -NoNewWindow -Wait -PassThru -RedirectStandardOutput $tempStdout -RedirectStandardError $tempStderr
+      if (Test-Path -LiteralPath $tempStdout) {
+        Get-Content -LiteralPath $tempStdout -ErrorAction SilentlyContinue | ForEach-Object { Write-Output $_ }
+      }
+      if (Test-Path -LiteralPath $tempStderr) {
+        Get-Content -LiteralPath $tempStderr -ErrorAction SilentlyContinue | ForEach-Object { Write-Output $_ }
+      }
+      $exitCode = if ($null -eq $process.ExitCode) { 0 } else { $process.ExitCode }
     } finally {
-      $ErrorActionPreference = $previousErrorActionPreference
+      Remove-Item -LiteralPath $tempStdout -Force -ErrorAction SilentlyContinue
+      Remove-Item -LiteralPath $tempStderr -Force -ErrorAction SilentlyContinue
     }
     if ($exitCode -eq 0) {
       return
@@ -125,6 +132,17 @@ Invoke-NodeStep -StepName "Ozon marketplace analytics refresh" -Arguments @(
 Write-Output "[sync] Ozon marketplace analytics refresh completed"
 Write-Output "[sync] waiting 30 sec before the next Ozon-backed step"
 Start-Sleep -Seconds 30
+
+Write-Output "[sync] Yandex Market analytics refresh started"
+try {
+  Invoke-NodeStep -StepName "Yandex Market analytics refresh" -Arguments @(
+    "scripts/portal-yandex-market-trends-sync.js",
+    "sync"
+  ) -Attempts 1 -RetryDelaySeconds 20
+  Write-Output "[sync] Yandex Market analytics refresh completed"
+} catch {
+  Write-Warning "[sync] Yandex Market analytics refresh failed, but the portal sync will continue: $($_.Exception.Message)"
+}
 
 Write-Output "[sync] warehouse stock overlay refresh started"
 Invoke-NodeStep -StepName "warehouse stock overlay refresh" -Arguments @(
@@ -325,29 +343,6 @@ try {
   Write-Output "[sync] WB ads build phase completed"
 } catch {
   Write-Warning "[sync] WB ads build failed, but the portal sync will continue so price/repricer/order layers can still be uploaded: $($_.Exception.Message)"
-}
-
-$ozonAdsFinanceArguments = @(
-  "scripts/portal-ozon-ads-finance-sync.js",
-  "sync",
-  "--input-file",
-  (Join-Path $resolvedOutputDir "ads_summary.json"),
-  "--output-file",
-  (Join-Path $resolvedOutputDir "ads_summary.json"),
-  "--mirror-file",
-  (Join-Path "data" "ads_summary.json")
-)
-
-if ($DryRun) {
-  $ozonAdsFinanceArguments += "--dry-run"
-}
-
-Write-Output "[sync] Ozon ads finance refresh started"
-try {
-  Invoke-NodeStep -StepName "Ozon ads finance refresh" -Arguments $ozonAdsFinanceArguments -Attempts 2 -RetryDelaySeconds 30
-  Write-Output "[sync] Ozon ads finance refresh completed"
-} catch {
-  Write-Warning "[sync] Ozon ads finance refresh failed, IU/DRR will use the last ads_summary layer: $($_.Exception.Message)"
 }
 
 $iuDrrArguments = @(

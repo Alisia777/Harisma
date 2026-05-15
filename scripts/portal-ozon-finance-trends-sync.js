@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 
 const API_BASE_URL = 'https://api-seller.ozon.ru';
+const ANALYTICS_METRICS = ['revenue', 'ordered_units', 'delivered_units'];
+const ANALYTICS_DIMENSION = ['sku', 'day'];
 
 function parseArgs(argv) {
   const args = {};
@@ -68,6 +70,10 @@ function roundMoney(value) {
   return Math.round(numberOrZero(value) * 100) / 100;
 }
 
+function hasMetric(row, index) {
+  return Array.isArray(row?.metrics) && row.metrics.length > index;
+}
+
 function resolveOptions(args) {
   const root = process.cwd();
   const to = isoDate(args.to || args['date-to'] || new Date().toISOString().slice(0, 10));
@@ -79,6 +85,9 @@ function resolveOptions(args) {
     skusPath: path.resolve(args['skus-file'] || path.join(root, 'data', 'skus.json')),
     inputPath: path.resolve(args['input-file'] || path.join(root, 'data', 'platform_trends.json')),
     outputPath: path.resolve(args['output-file'] || path.join(root, 'data', 'platform_trends.json')),
+    sourceMode: ['all', 'matched'].includes(String(args['source-mode'] || '').trim())
+      ? String(args['source-mode']).trim()
+      : 'all',
     from,
     to
   };
@@ -90,6 +99,8 @@ function skuMaps(skus) {
     for (const value of [
       sku?.articleKey,
       sku?.article,
+      sku?.name,
+      sku?.title,
       sku?.ozon?.offerId,
       sku?.ozon?.offer_id,
       sku?.ozon?.sku
@@ -105,8 +116,8 @@ function marginForSku(sku) {
   return numberOrZero(sku?.ozon?.marginPct);
 }
 
-async function ozonRequest(options, body) {
-  const response = await fetch(`${options.apiBaseUrl}/v1/finance/realization/by-day`, {
+async function analyticsRequest(options, body) {
+  const response = await fetch(`${options.apiBaseUrl}/v1/analytics/data`, {
     method: 'POST',
     headers: {
       'Client-Id': options.clientId,
@@ -123,7 +134,7 @@ async function ozonRequest(options, body) {
     payload = null;
   }
   if (!response.ok) {
-    const error = new Error(`Ozon finance API failed: HTTP ${response.status} ${text.slice(0, 500)}`);
+    const error = new Error(`Ozon analytics API failed: HTTP ${response.status} ${text.slice(0, 500)}`);
     error.status = response.status;
     error.body = text;
     throw error;
@@ -133,12 +144,14 @@ async function ozonRequest(options, body) {
 
 function extractRows(payload) {
   if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.result)) return payload.result;
   if (Array.isArray(payload?.rows)) return payload.rows;
+  if (Array.isArray(payload?.result?.data)) return payload.result.data;
+  if (Array.isArray(payload?.result)) return payload.result;
   return [];
 }
 
 function extractQuantity(row) {
+  if (hasMetric(row, 1)) return numberOrZero(row.metrics[1]);
   return (
     numberOrZero(row?.delivery_commission?.quantity)
     || numberOrZero(row?.return_commission?.quantity)
@@ -147,7 +160,13 @@ function extractQuantity(row) {
   );
 }
 
+function extractDeliveredUnits(row) {
+  if (hasMetric(row, 2)) return numberOrZero(row.metrics[2]);
+  return 0;
+}
+
 function extractRevenue(row, quantity) {
+  if (hasMetric(row, 0)) return numberOrZero(row.metrics[0]);
   const sellerPrice = numberOrZero(row?.seller_price_per_instance);
   if (sellerPrice > 0) return sellerPrice * Math.max(1, quantity);
   const deliveryTotal = numberOrZero(row?.delivery_commission?.total);
@@ -162,7 +181,10 @@ function clonePoint(point = {}) {
     dayOffset: numberOrZero(point.dayOffset),
     label: isoDate(point.label || point.date),
     units: numberOrZero(point.units),
+    ordersUnits: numberOrZero(point.ordersUnits ?? point.units),
+    deliveredUnits: numberOrZero(point.deliveredUnits),
     revenue: numberOrZero(point.revenue),
+    ordersRevenue: numberOrZero(point.ordersRevenue ?? point.revenue),
     estimatedMargin: numberOrZero(point.estimatedMargin)
   };
 }
@@ -186,19 +208,27 @@ function mergeAllSeries(platforms) {
   const dates = Array.from(dateSet).sort();
   const latestIndex = dates.length - 1;
   return dates.map((date, index) => {
-    const total = { units: 0, revenue: 0, estimatedMargin: 0 };
+    const total = { units: 0, ordersUnits: 0, deliveredUnits: 0, revenue: 0, ordersRevenue: 0, estimatedMargin: 0 };
     for (const key of ['wb', 'ozon', 'ya']) {
       const point = (platforms.get(key)?.series || []).find((item) => isoDate(item?.label || item?.date) === date);
       if (!point) continue;
+      const ordersUnits = numberOrZero(point.ordersUnits ?? point.units);
+      const revenue = numberOrZero(point.ordersRevenue ?? point.revenue);
       total.units += numberOrZero(point.units);
+      total.ordersUnits += ordersUnits;
+      total.deliveredUnits += numberOrZero(point.deliveredUnits);
       total.revenue += numberOrZero(point.revenue);
+      total.ordersRevenue += revenue;
       total.estimatedMargin += numberOrZero(point.estimatedMargin);
     }
     return {
       dayOffset: latestIndex - index,
       label: date,
       units: Number(total.units.toFixed(4)),
+      ordersUnits: Number(total.ordersUnits.toFixed(4)),
+      deliveredUnits: Number(total.deliveredUnits.toFixed(4)),
       revenue: Number(total.revenue.toFixed(4)),
+      ordersRevenue: Number(total.ordersRevenue.toFixed(4)),
       estimatedMargin: Number(total.estimatedMargin.toFixed(4))
     };
   });
@@ -206,18 +236,32 @@ function mergeAllSeries(platforms) {
 
 function buildDayBuckets(rows, skus, dateKey, apiOk = true) {
   const { byOfferId } = skuMaps(skus);
-  const all = { units: 0, revenue: 0, estimatedMargin: 0, sourceRows: 0, matchedRows: 0 };
-  const matched = { units: 0, revenue: 0, estimatedMargin: 0, sourceRows: 0, matchedRows: 0 };
+  const all = { units: 0, ordersUnits: 0, deliveredUnits: 0, revenue: 0, ordersRevenue: 0, estimatedMargin: 0, sourceRows: 0, matchedRows: 0 };
+  const matched = { units: 0, ordersUnits: 0, deliveredUnits: 0, revenue: 0, ordersRevenue: 0, estimatedMargin: 0, sourceRows: 0, matchedRows: 0 };
 
   for (const row of Array.isArray(rows) ? rows : []) {
-    const offerId = normalizeKey(row?.item?.offer_id || row?.item?.offerId || row?.offer_id || row?.offerId || row?.item?.sku || row?.sku);
+    const offerCandidates = [
+      row?.dimensions?.[0]?.id,
+      row?.dimensions?.[0]?.name,
+      row?.item?.offer_id,
+      row?.item?.offerId,
+      row?.offer_id,
+      row?.offerId,
+      row?.item?.sku,
+      row?.sku
+    ].map(normalizeKey).filter(Boolean);
+    const offerId = offerCandidates.find((candidate) => byOfferId.has(candidate)) || offerCandidates[0] || '';
     const sku = byOfferId.get(offerId);
     const quantity = extractQuantity(row);
+    const deliveredUnits = extractDeliveredUnits(row);
     const revenue = extractRevenue(row, quantity);
 
     all.sourceRows += 1;
     all.units += quantity;
+    all.ordersUnits += quantity;
+    all.deliveredUnits += deliveredUnits;
     all.revenue += revenue;
+    all.ordersRevenue += revenue;
     if (sku) {
       all.matchedRows += 1;
       all.estimatedMargin += revenue * marginForSku(sku);
@@ -227,7 +271,10 @@ function buildDayBuckets(rows, skus, dateKey, apiOk = true) {
       matched.sourceRows += 1;
       matched.matchedRows += 1;
       matched.units += quantity;
+      matched.ordersUnits += quantity;
+      matched.deliveredUnits += deliveredUnits;
       matched.revenue += revenue;
+      matched.ordersRevenue += revenue;
       matched.estimatedMargin += revenue * marginForSku(sku);
     }
   }
@@ -247,7 +294,10 @@ function materializePoint(dateKey, bucket, mode, fallbackPoint = null, dayOffset
       dayOffset,
       label: dateKey,
       units: Number(numberOrZero(fallbackPoint.units).toFixed(4)),
+      ordersUnits: Number(numberOrZero(fallbackPoint.ordersUnits ?? fallbackPoint.units).toFixed(4)),
+      deliveredUnits: Number(numberOrZero(fallbackPoint.deliveredUnits).toFixed(4)),
       revenue: Number(numberOrZero(fallbackPoint.revenue).toFixed(4)),
+      ordersRevenue: Number(numberOrZero(fallbackPoint.ordersRevenue ?? fallbackPoint.revenue).toFixed(4)),
       estimatedMargin: Number(numberOrZero(fallbackPoint.estimatedMargin).toFixed(4))
     };
   }
@@ -255,7 +305,10 @@ function materializePoint(dateKey, bucket, mode, fallbackPoint = null, dayOffset
     dayOffset,
     label: dateKey,
     units: Number(numberOrZero(selected.units).toFixed(4)),
+    ordersUnits: Number(numberOrZero(selected.ordersUnits ?? selected.units).toFixed(4)),
+    deliveredUnits: Number(numberOrZero(selected.deliveredUnits).toFixed(4)),
     revenue: Number(numberOrZero(selected.revenue).toFixed(4)),
+    ordersRevenue: Number(numberOrZero(selected.ordersRevenue ?? selected.revenue).toFixed(4)),
     estimatedMargin: Number(numberOrZero(selected.estimatedMargin).toFixed(4))
   };
 }
@@ -278,39 +331,66 @@ async function fetchExistingPoints(options) {
 }
 
 async function fetchDayReport(options, dateKey) {
-  const [year, month, day] = dateKey.split('-').map((part) => Number(part));
-  const body = { day, month, year };
+  const limit = 1000;
   const attempts = 5;
-  for (let attempt = 1; attempt <= attempts; attempt += 1) {
-    try {
-      const payload = await ozonRequest(options, body);
-      return { ok: true, rows: extractRows(payload), warnings: [] };
-    } catch (error) {
-      const status = Number(error?.status || 0);
-      const soft = status === 404 || status === 409 || status === 403;
-      if (attempt < attempts && (status === 429 || !soft)) {
-        await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
-        continue;
-      }
-      if (soft) {
+  const rows = [];
+
+  for (let offset = 0; ; offset += limit) {
+    const body = {
+      date_from: dateKey,
+      date_to: dateKey,
+      metrics: ANALYTICS_METRICS,
+      dimension: ANALYTICS_DIMENSION,
+      filters: [],
+      sort: [{ key: 'revenue', order: 'DESC' }],
+      limit,
+      offset
+    };
+
+    let payload = null;
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      try {
+        payload = await analyticsRequest(options, body);
+        break;
+      } catch (error) {
+        const status = Number(error?.status || 0);
+        if (attempt < attempts && (status === 429 || status >= 500 || status === 0)) {
+          await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+          continue;
+        }
+        if (status === 404 || status === 409 || status === 403) {
+          return {
+            ok: false,
+            rows: [],
+            warnings: [`${dateKey}: Ozon analytics API returned HTTP ${status}`]
+          };
+        }
+        if (attempt < attempts) {
+          await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+          continue;
+        }
         return {
           ok: false,
           rows: [],
-          warnings: [`${dateKey}: Ozon API returned HTTP ${status}`]
+          warnings: [`${dateKey}: ${String(error?.message || error)}`]
         };
       }
-      if (attempt < attempts) {
-        await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
-        continue;
-      }
+    }
+
+    if (!payload) {
       return {
         ok: false,
         rows: [],
-        warnings: [`${dateKey}: ${String(error?.message || error)}`]
+        warnings: [`${dateKey}: Ozon analytics API failed without payload`]
       };
     }
+
+    const batch = extractRows(payload);
+    rows.push(...batch);
+    if (batch.length < limit) break;
   }
-  return { ok: false, rows: [], warnings: [`${dateKey}: Ozon API failed without payload`] };
+
+  return { ok: true, rows, warnings: [] };
 }
 
 async function main() {
@@ -339,8 +419,7 @@ async function main() {
     matchedRows += bucket.all.matchedRows;
   }
 
-  const useMatched = matchedRows > 0 && matchedRows / Math.max(1, sourceRows) >= 0.5;
-  const selectedMode = useMatched ? 'matched' : 'all';
+  const selectedMode = options.sourceMode;
   const rawSeries = dates.map((dateKey) => {
     const bucket = buckets.get(dateKey) || {
       date: dateKey,
@@ -360,7 +439,10 @@ async function main() {
       dayOffset,
       label: point.label || dateKey,
       units: Number(point.units.toFixed(4)),
+      ordersUnits: Number(numberOrZero(point.ordersUnits ?? point.units).toFixed(4)),
+      deliveredUnits: Number(numberOrZero(point.deliveredUnits).toFixed(4)),
       revenue: Number(point.revenue.toFixed(4)),
+      ordersRevenue: Number(numberOrZero(point.ordersRevenue ?? point.revenue).toFixed(4)),
       estimatedMargin: Number(point.estimatedMargin.toFixed(4))
     };
   });
@@ -398,18 +480,20 @@ async function main() {
     ...existing,
     generatedAt: new Date().toISOString(),
     latestMarketplaceDate,
-    note: 'Marketplace facts refreshed from API-backed platform_trends.json.',
+    note: 'Marketplace facts refreshed from Ozon analytics API-backed platform_trends.json.',
     platforms: ordered,
     ozonApiDirect: {
-      source: 'finance-api:/v1/finance/realization/by-day',
+      source: 'analytics-api:/v1/analytics/data',
       from: options.from,
       to: options.to,
       sourceRows,
       matchedRows,
       matchRate: sourceRows > 0 ? Number((matchedRows / sourceRows).toFixed(4)) : 0,
       sourceMode: selectedMode,
-      revenueField: 'seller_price_per_instance',
-      unitsField: 'delivery_commission.quantity'
+      dimension: ANALYTICS_DIMENSION.join(','),
+      revenueField: 'orders_revenue',
+      unitsField: 'ordered_units',
+      deliveredUnitsField: 'delivered_units'
     }
   };
 

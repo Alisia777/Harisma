@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-15T08:46:12.423Z",
-  "note": "Marketplace facts refreshed from API-backed platform_trends.json with marketplace workbook extras.",
+  "generatedAt": "2026-05-15T09:37:20.986Z",
+  "note": "Marketplace facts refreshed from API-backed platform_trends.json.",
   "googleSheetsSourceUrl": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
   "googleSheetsSourceGid": "2003059667",
   "googleSheetsRefreshTimeLocal": "09:00 Europe/Moscow",
@@ -283081,107 +283081,152 @@
         {
           "dayOffset": 14,
           "label": "2026-05-01",
-          "units": 1279,
+          "units": 1212,
+          "ordersUnits": 1212,
+          "deliveredUnits": 1572,
           "revenue": 1173701.06,
+          "ordersRevenue": 1173701.06,
           "estimatedMargin": 153271.4538
         },
         {
           "dayOffset": 13,
           "label": "2026-05-02",
-          "units": 1289,
+          "units": 1218,
+          "ordersUnits": 1218,
+          "deliveredUnits": 1468,
           "revenue": 1159768.02,
+          "ordersRevenue": 1159768.02,
           "estimatedMargin": 155582.2868
         },
         {
           "dayOffset": 12,
           "label": "2026-05-03",
-          "units": 1310,
+          "units": 1244,
+          "ordersUnits": 1244,
+          "deliveredUnits": 1380,
           "revenue": 1196376.02,
+          "ordersRevenue": 1196376.02,
           "estimatedMargin": 149989.7798
         },
         {
           "dayOffset": 11,
           "label": "2026-05-04",
-          "units": 1791,
+          "units": 1723,
+          "ordersUnits": 1723,
+          "deliveredUnits": 1501,
           "revenue": 1534910.02,
+          "ordersRevenue": 1534910.02,
           "estimatedMargin": 224648.671
         },
         {
           "dayOffset": 10,
           "label": "2026-05-05",
-          "units": 2073,
+          "units": 2001,
+          "ordersUnits": 2001,
+          "deliveredUnits": 1405,
           "revenue": 1686914.01,
+          "ordersRevenue": 1686914.01,
           "estimatedMargin": 247901.8883
         },
         {
           "dayOffset": 9,
           "label": "2026-05-06",
-          "units": 1826,
+          "units": 1768,
+          "ordersUnits": 1768,
+          "deliveredUnits": 1378,
           "revenue": 1521566.99,
+          "ordersRevenue": 1521566.99,
           "estimatedMargin": 227519.5571
         },
         {
           "dayOffset": 8,
           "label": "2026-05-07",
-          "units": 1933,
+          "units": 1867,
+          "ordersUnits": 1867,
+          "deliveredUnits": 1446,
           "revenue": 1593316.03,
+          "ordersRevenue": 1593316.03,
           "estimatedMargin": 224064.5018
         },
         {
           "dayOffset": 7,
           "label": "2026-05-08",
-          "units": 1981,
+          "units": 1916,
+          "ordersUnits": 1916,
+          "deliveredUnits": 1686,
           "revenue": 1654812.35,
+          "ordersRevenue": 1654812.35,
           "estimatedMargin": 245980.759
         },
         {
           "dayOffset": 6,
           "label": "2026-05-09",
-          "units": 1763,
+          "units": 1697,
+          "ordersUnits": 1697,
+          "deliveredUnits": 1188,
           "revenue": 1468851.41,
+          "ordersRevenue": 1468851.41,
           "estimatedMargin": 235523.3714
         },
         {
           "dayOffset": 5,
           "label": "2026-05-10",
-          "units": 2314,
+          "units": 2254,
+          "ordersUnits": 2254,
+          "deliveredUnits": 1466,
           "revenue": 2002127.02,
+          "ordersRevenue": 2002127.02,
           "estimatedMargin": 325990.252
         },
         {
           "dayOffset": 4,
           "label": "2026-05-11",
-          "units": 3175,
+          "units": 3122,
+          "ordersUnits": 3122,
+          "deliveredUnits": 1826,
           "revenue": 2382947.85,
+          "ordersRevenue": 2382947.85,
           "estimatedMargin": 353327.9848
         },
         {
           "dayOffset": 3,
           "label": "2026-05-12",
-          "units": 2578,
+          "units": 2519,
+          "ordersUnits": 2519,
+          "deliveredUnits": 2250,
           "revenue": 2039724.04,
+          "ordersRevenue": 2039724.04,
           "estimatedMargin": 276398.0565
         },
         {
           "dayOffset": 2,
           "label": "2026-05-13",
-          "units": 2562,
+          "units": 2497,
+          "ordersUnits": 2497,
+          "deliveredUnits": 2162,
           "revenue": 2037434.13,
+          "ordersRevenue": 2037434.13,
           "estimatedMargin": 286213.8167
         },
         {
           "dayOffset": 1,
           "label": "2026-05-14",
-          "units": 2721,
+          "units": 2658,
+          "ordersUnits": 2658,
+          "deliveredUnits": 2195,
           "revenue": 2098730.06,
+          "ordersRevenue": 2098730.06,
           "estimatedMargin": 294669.2446
         },
         {
           "dayOffset": 0,
           "label": "2026-05-15",
-          "units": 769,
-          "revenue": 527185,
-          "estimatedMargin": 60863.0608
+          "units": 1036,
+          "ordersUnits": 1036,
+          "deliveredUnits": 640,
+          "revenue": 801978,
+          "ordersRevenue": 801978,
+          "estimatedMargin": 95130.9513
         }
       ]
     },
@@ -285474,7 +285519,7 @@
         {
           "date": "2026-05-01",
           "label": "2026-05-01",
-          "units": 6292.2,
+          "units": 6225.2,
           "revenue": 7010514.91,
           "financeTurnover": 4972686.91,
           "financialResult": 2548449.0618,
@@ -285483,7 +285528,7 @@
         {
           "date": "2026-05-02",
           "label": "2026-05-02",
-          "units": 6429.2,
+          "units": 6358.2,
           "revenue": 7158627.87,
           "financeTurnover": 5155501.87,
           "financialResult": 2679321.8948,
@@ -285492,7 +285537,7 @@
         {
           "date": "2026-05-03",
           "label": "2026-05-03",
-          "units": 6533.2,
+          "units": 6467.2,
           "revenue": 7266845.87,
           "financeTurnover": 5772649.87,
           "financialResult": 3033377.3878,
@@ -285501,7 +285546,7 @@
         {
           "date": "2026-05-04",
           "label": "2026-05-04",
-          "units": 6405.2,
+          "units": 6337.2,
           "revenue": 6953817.87,
           "financeTurnover": 6124333.87,
           "financialResult": 3136691.279,
@@ -285510,7 +285555,7 @@
         {
           "date": "2026-05-05",
           "label": "2026-05-05",
-          "units": 6818.2,
+          "units": 6746.2,
           "revenue": 7181258.86,
           "financeTurnover": 6358156.86,
           "financialResult": 3211845.4963,
@@ -285519,7 +285564,7 @@
         {
           "date": "2026-05-06",
           "label": "2026-05-06",
-          "units": 6984.2,
+          "units": 6926.2,
           "revenue": 7465405.84,
           "financeTurnover": 6410572.84,
           "financialResult": 3305425.1651,
@@ -285528,7 +285573,7 @@
         {
           "date": "2026-05-07",
           "label": "2026-05-07",
-          "units": 6963.2,
+          "units": 6897.2,
           "revenue": 7367640.88,
           "financeTurnover": 6205146.88,
           "financialResult": 3145359.1098,
@@ -285537,7 +285582,7 @@
         {
           "date": "2026-05-08",
           "label": "2026-05-08",
-          "units": 7076.2,
+          "units": 7011.2,
           "revenue": 7552458.2,
           "financeTurnover": 6939701.2,
           "financialResult": 3594198.367,
@@ -285546,7 +285591,7 @@
         {
           "date": "2026-05-09",
           "label": "2026-05-09",
-          "units": 7077.2,
+          "units": 7011.2,
           "revenue": 7584786.26,
           "financeTurnover": 5499734.26,
           "financialResult": 2792049.9794,
@@ -285555,7 +285600,7 @@
         {
           "date": "2026-05-10",
           "label": "2026-05-10",
-          "units": 9283.2,
+          "units": 9223.2,
           "revenue": 9776744.87,
           "financeTurnover": 6577779.87,
           "financialResult": 3233643.86,
@@ -285564,7 +285609,7 @@
         {
           "date": "2026-05-11",
           "label": "2026-05-11",
-          "units": 9002.2,
+          "units": 8949.2,
           "revenue": 9080570.7,
           "financeTurnover": 8222786.7,
           "financialResult": 4098202.5928,
@@ -285573,7 +285618,7 @@
         {
           "date": "2026-05-12",
           "label": "2026-05-12",
-          "units": 7396.2,
+          "units": 7337.2,
           "revenue": 7568577.89,
           "financeTurnover": 7834915.89,
           "financialResult": 4050963.6645,
@@ -285582,7 +285627,7 @@
         {
           "date": "2026-05-13",
           "label": "2026-05-13",
-          "units": 7132.2,
+          "units": 7067.2,
           "revenue": 7275712.98,
           "financeTurnover": 6728504.98,
           "financialResult": 3340068.4247,
@@ -285591,7 +285636,7 @@
         {
           "date": "2026-05-14",
           "label": "2026-05-14",
-          "units": 8225.2,
+          "units": 8162.2,
           "revenue": 8395117.91,
           "financeTurnover": 7813539.91,
           "financialResult": 4013953.8526,
@@ -285600,11 +285645,11 @@
         {
           "date": "2026-05-15",
           "label": "2026-05-15",
-          "units": 2164.2,
-          "revenue": 2149120.85,
-          "financeTurnover": 2149120.85,
-          "financialResult": 61568.6688,
-          "estimatedMargin": 61568.6688
+          "units": 2431.2,
+          "revenue": 2423913.85,
+          "financeTurnover": 2423913.85,
+          "financialResult": 95836.5593,
+          "estimatedMargin": 95836.5593
         }
       ]
     }
@@ -285635,16 +285680,17 @@
     "source": "analytics-api:/v1/analytics/data",
     "from": "2026-05-01",
     "to": "2026-05-15",
-    "sourceRows": 2937,
+    "sourceRows": 2939,
     "matchedRows": 1125,
-    "matchRate": 0.383,
+    "matchRate": 0.3828,
     "sourceMode": "all",
     "dimension": "sku,day",
     "revenueField": "orders_revenue",
-    "unitsField": "ordered_units"
+    "unitsField": "ordered_units",
+    "deliveredUnitsField": "delivered_units"
   },
   "extraMarketplace": {
-    "generatedAt": "2026-05-15T08:46:12.421Z",
+    "generatedAt": "2026-05-15T09:36:55.388Z",
     "workbook": "exports/altea_max_funnel_2025_2026.xlsx",
     "asOfDate": "2026-05-15",
     "platforms": {

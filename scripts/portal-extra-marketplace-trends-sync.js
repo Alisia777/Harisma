@@ -296,10 +296,19 @@ function platformMonthlyTotals(rawRows, asOfDate) {
         adsSpend: 0,
         adsSpendPriority: 0
       };
-      setMonthlyMetric(current, 'units', value, metric === 'orders_units' ? 3 : metric === 'delivered_units' ? 2 : metric === 'buyout_units' ? 1 : 0);
-      setMonthlyMetric(current, 'revenue', value, metric === 'orders_revenue' ? 3 : metric === 'buyout_revenue' ? 2 : metric === 'delivered_revenue' ? 1 : metric === 'net_payout' ? 0 : -1);
-      setMonthlyMetric(current, 'estimatedMargin', value, metric === 'net_payout' ? 3 : 0);
-      setMonthlyMetric(current, 'adsSpend', value, metric === 'ads_spend' ? 1 : 0);
+      if (metric === 'orders_units') setMonthlyMetric(current, 'units', value, 3);
+      else if (metric === 'delivered_units') setMonthlyMetric(current, 'units', value, 2);
+      else if (metric === 'buyout_units') setMonthlyMetric(current, 'units', value, 1);
+
+      if (metric === 'orders_revenue') setMonthlyMetric(current, 'revenue', value, 3);
+      else if (metric === 'buyout_revenue') setMonthlyMetric(current, 'revenue', value, 2);
+      else if (metric === 'delivered_revenue') setMonthlyMetric(current, 'revenue', value, 1);
+      else if (metric === 'net_payout') {
+        setMonthlyMetric(current, 'revenue', value, 0);
+        setMonthlyMetric(current, 'estimatedMargin', value, 3);
+      }
+
+      if (metric === 'ads_spend') setMonthlyMetric(current, 'adsSpend', value, 1);
       platform.set(month, current);
       platforms.set(platformKey, platform);
     }
@@ -938,6 +947,8 @@ function buildAdsSummary(baseAdsSummary, wbPlatformSeries, platformAdsSeries, as
   };
 
   const mergedPlatformSeries = new Map();
+  const windowFrom = isoDate(next.window.from) || monthStart(iso(asOfDate));
+  const windowTo = isoDate(next.window.to) || iso(asOfDate);
   const addPlatform = (key, label, series, extra = {}) => {
     const cleanSeries = Array.isArray(series) ? series.map((point) => ({
       date: isoDate(point?.date || point?.label),
@@ -947,7 +958,7 @@ function buildAdsSummary(baseAdsSummary, wbPlatformSeries, platformAdsSeries, as
       spend: numberOrZero(point.spend),
       orders: numberOrZero(point.orders),
       revenue: numberOrZero(point.revenue)
-    })).filter((point) => point.date) : [];
+    })).filter((point) => point.date && point.date >= windowFrom && point.date <= windowTo) : [];
     mergedPlatformSeries.set(canonicalPlatformKey(key), cleanSeries);
     return {
       key: canonicalPlatformKey(key),
@@ -982,12 +993,13 @@ function buildAdsSummary(baseAdsSummary, wbPlatformSeries, platformAdsSeries, as
     if (!platformAdsSeries.has(key)) continue;
     adPlatforms.push(addPlatform(key, platformLabel(key), platformAdsSeries.get(key)));
   }
+  const allSeries = buildAdsAllSeries(mergedPlatformSeries);
   adPlatforms.push({
     key: 'all',
     platformKey: 'all',
     label: 'Все площадки',
-    ...totalsFromSeries(buildAdsAllSeries(mergedPlatformSeries)),
-    series: buildAdsAllSeries(mergedPlatformSeries)
+    ...totalsFromSeries(allSeries),
+    series: allSeries
   });
 
   next.platforms = adPlatforms;

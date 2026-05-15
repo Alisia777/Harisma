@@ -23,8 +23,14 @@ function Invoke-NodeStep {
 
   for ($attempt = 1; $attempt -le $Attempts; $attempt += 1) {
     Write-Output "[sync] $StepName attempt $attempt/$Attempts"
-    & $nodeExe @Arguments
-    $exitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+      $ErrorActionPreference = "Continue"
+      & $nodeExe @Arguments 2>&1 | ForEach-Object { Write-Output $_ }
+      $exitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
+    } finally {
+      $ErrorActionPreference = $previousErrorActionPreference
+    }
     if ($exitCode -eq 0) {
       return
     }
@@ -178,17 +184,11 @@ $buildArguments += $resolvedOutputDir
 $buildArguments += "--mirror-local-fallback"
 
 Write-Output "[sync] build phase started (expected dryRun=true in JSON summary below; local fallback data will also be mirrored)"
-& $nodeExe @buildArguments
-if ($LASTEXITCODE -ne 0) {
-  exit $LASTEXITCODE
-}
+Invoke-NodeStep -StepName "Google sheet data build" -Arguments $buildArguments -Attempts 2 -RetryDelaySeconds 30
 Write-Output "[sync] build phase completed"
 
 Write-Output "[sync] order procurement build phase started"
-& $nodeExe "scripts/build-order-procurement-layer.js"
-if ($LASTEXITCODE -ne 0) {
-  exit $LASTEXITCODE
-}
+Invoke-NodeStep -StepName "order procurement build" -Arguments @("scripts/build-order-procurement-layer.js") -Attempts 2 -RetryDelaySeconds 20
 
 $orderProcurementFiles = @(
   "order_procurement.json",
@@ -219,11 +219,7 @@ $priceArguments += "--dry-run"
 
 Write-Output "[sync] smart_price_overlay build phase started"
 try {
-  & $nodeExe @priceArguments
-  $priceExitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
-  if ($priceExitCode -ne 0) {
-    throw "smart_price_overlay build failed with exit code $priceExitCode"
-  }
+  Invoke-NodeStep -StepName "smart_price_overlay build" -Arguments $priceArguments -Attempts 2 -RetryDelaySeconds 30
   Write-Output "[sync] smart_price_overlay build phase completed"
   $priceRefreshSucceeded = $true
 } catch {
@@ -272,10 +268,7 @@ if ($kzExitCode -ne 0) {
 }
 
 Write-Output "[sync] product leaderboard history build phase started"
-& $nodeExe "scripts/build-product-leaderboard-history.js"
-if ($LASTEXITCODE -ne 0) {
-  exit $LASTEXITCODE
-}
+Invoke-NodeStep -StepName "product leaderboard history build" -Arguments @("scripts/build-product-leaderboard-history.js") -Attempts 2 -RetryDelaySeconds 20
 
 $leaderboardHistoryPath = Join-Path "data" "product_leaderboard_history.json"
 if (Test-Path -LiteralPath $leaderboardHistoryPath) {
@@ -284,10 +277,7 @@ if (Test-Path -LiteralPath $leaderboardHistoryPath) {
 Write-Output "[sync] product leaderboard history build phase completed"
 
 Write-Output "[sync] IU plan build phase started"
-& $nodeExe "scripts/build-iu-plan-layer.js"
-if ($LASTEXITCODE -ne 0) {
-  exit $LASTEXITCODE
-}
+Invoke-NodeStep -StepName "IU plan build" -Arguments @("scripts/build-iu-plan-layer.js") -Attempts 2 -RetryDelaySeconds 20
 
 $iuPlanPath = Join-Path "data" "iu_plan.json"
 if (Test-Path -LiteralPath $iuPlanPath) {
@@ -328,10 +318,7 @@ if ($wbAdsDryRunFlag) {
 }
 
 Write-Output "[sync] WB ads build phase started"
-& $nodeExe @wbAdsArguments
-if ($LASTEXITCODE -ne 0) {
-  exit $LASTEXITCODE
-}
+Invoke-NodeStep -StepName "WB ads build" -Arguments $wbAdsArguments -Attempts 2 -RetryDelaySeconds 60
 Write-Output "[sync] WB ads build phase completed"
 
 $iuDrrArguments = @(
@@ -350,10 +337,7 @@ if ($DryRun) {
 }
 
 Write-Output "[sync] IU/DRR summary build phase started"
-& $nodeExe @iuDrrArguments
-if ($LASTEXITCODE -ne 0) {
-  exit $LASTEXITCODE
-}
+Invoke-NodeStep -StepName "IU/DRR summary build" -Arguments $iuDrrArguments -Attempts 2 -RetryDelaySeconds 30
 Write-Output "[sync] IU/DRR summary build phase completed"
 
 if ([string]::IsNullOrWhiteSpace($env:ALTEA_WB_FEEDBACKS_TOKEN)) {
@@ -379,17 +363,11 @@ $wbFeedbackArguments = @(
 )
 
 Write-Output "[sync] WB feedbacks/questions sync started"
-& $nodeExe @wbFeedbackArguments
-if ($LASTEXITCODE -ne 0) {
-  exit $LASTEXITCODE
-}
+Invoke-NodeStep -StepName "WB feedbacks/questions sync" -Arguments $wbFeedbackArguments -Attempts 2 -RetryDelaySeconds 60
 Write-Output "[sync] WB feedbacks/questions sync completed"
 
 Write-Output "[sync] IU/DRR summary rebuild with WB feedbacks started"
-& $nodeExe @iuDrrArguments
-if ($LASTEXITCODE -ne 0) {
-  exit $LASTEXITCODE
-}
+Invoke-NodeStep -StepName "IU/DRR summary rebuild with WB feedbacks" -Arguments $iuDrrArguments -Attempts 2 -RetryDelaySeconds 30
 Write-Output "[sync] IU/DRR summary rebuild with WB feedbacks completed"
 
 $metaPath = Join-Path $resolvedOutputDir "meta.json"

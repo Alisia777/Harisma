@@ -1,8 +1,8 @@
 (function () {
-  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN5__) return;
-  window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN5__ = true;
+  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN6__) return;
+  window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN6__ = true;
 
-  const VERSION = '20260516execlean5';
+  const VERSION = '20260516execlean6';
   const KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'cross'];
   const META = {
     wb: { label: 'WB', title: 'РОП WB' },
@@ -18,6 +18,7 @@
   let queued = false;
   let rendering = false;
   let observer = null;
+  let renderApi = null;
 
   function state() { return window.__alteaAppState || window.state || {}; }
   function esc(value) {
@@ -184,10 +185,28 @@
     observer.observe(root, { childList: true, subtree: true, characterData: true });
   }
 
-  window.__ALTEA_EXECUTIVE_LITE_GUARD_READY__ = VERSION;
-  window.renderExecutive = function () { styles(); render(); };
-  try { renderExecutive = window.renderExecutive; } catch {}
+  function installRenderLock() {
+    renderApi = function executiveLiteRender() { styles(); render(); };
+    renderApi.__alteaExecutiveLite = true;
+    try {
+      const descriptor = Object.getOwnPropertyDescriptor(window, 'renderExecutive');
+      if (!descriptor || descriptor.configurable) {
+        Object.defineProperty(window, 'renderExecutive', {
+          configurable: true,
+          get() { return renderApi; },
+          set(next) { if (next && next.__alteaExecutiveLite) renderApi = next; }
+        });
+      } else {
+        window.renderExecutive = renderApi;
+      }
+    } catch {
+      window.renderExecutive = renderApi;
+    }
+    try { renderExecutive = renderApi; } catch {}
+  }
 
+  window.__ALTEA_EXECUTIVE_LITE_GUARD_READY__ = VERSION;
+  installRenderLock();
   window.addEventListener('hashchange', schedule);
   window.addEventListener('altea:viewchange', schedule);
   window.addEventListener('altea:portal-storage-updated', schedule);

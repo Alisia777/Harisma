@@ -192,6 +192,43 @@ function snapshotMetric(name, payload) {
   };
 }
 
+function token(value = '') {
+  return String(value ?? '').trim().toLowerCase().replace(/[^a-zа-я0-9]+/gi, '');
+}
+
+function aliasRows(payload = {}) {
+  if (Array.isArray(payload)) return payload;
+  return Array.isArray(payload.aliases) ? payload.aliases : [];
+}
+
+function ignoreRows(payload = {}) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.ignored)) return payload.ignored;
+  if (Array.isArray(payload.ignores)) return payload.ignores;
+  if (Array.isArray(payload.rows)) return payload.rows;
+  return [];
+}
+
+function activeStatus(row = {}) {
+  const status = token(row.status ?? row.active ?? 'active');
+  return !['disabled', 'inactive', 'deleted', 'false', '0', 'off'].includes(status);
+}
+
+function activeAliasCount(payload = {}) {
+  return aliasRows(payload).filter((row) => (
+    activeStatus(row)
+    && token(row.target_sku || row.targetSku || row.target || '')
+    && token(row.api_sku || row.apiSku || row.alias || row.value || '')
+  )).length;
+}
+
+function activeIgnoreCount(payload = {}) {
+  return ignoreRows(payload).filter((row) => (
+    activeStatus(row)
+    && token(row.api_sku || row.apiSku || row.alias || row.value || '')
+  )).length;
+}
+
 function loadLastGoodManifest(options) {
   const manifestPath = path.join(options.lastGoodDir, LAST_GOOD_MANIFEST);
   const manifest = readJsonIfExists(manifestPath);
@@ -257,6 +294,62 @@ function buildHealth(options) {
     checks.push({ name: `required:${name}`, status: ok ? 'ok' : 'blocked', rows: metric.rows });
     if (!ok) blockingReasons.push(`Required snapshot ${name} is missing or empty.`);
   });
+
+  const aliasCount = activeAliasCount(snapshots.sku_aliases || {});
+  const ignoreCount = activeIgnoreCount(snapshots.sku_alias_ignore || {});
+  const matrixAliasCount = numberOrZero(snapshots.sku_matrix?.summary?.aliasCount);
+  const matrixIgnoreCount = numberOrZero(snapshots.sku_matrix?.summary?.ignoredApiSkuCount);
+  const matrixStamp = parseStamp(sources.sku_matrix?.generatedAt || sources.sku_matrix?.asOfDate);
+  const aliasStamp = parseStamp(sources.sku_aliases?.generatedAt || sources.sku_aliases?.asOfDate);
+  const ignoreStamp = parseStamp(sources.sku_alias_ignore?.generatedAt || sources.sku_alias_ignore?.asOfDate);
+  const qualityStamp = parseStamp(sources.portal_data_quality?.generatedAt || sources.portal_data_quality?.asOfDate);
+  const skuContour = {
+    status: 'ok',
+    aliasCount,
+    ignoreCount,
+    matrixAliasCount,
+    matrixIgnoreCount,
+    checks: []
+  };
+  const addSkuContourCheck = (name, ok, message, severity = 'blocked', extra = {}) => {
+    const status = ok ? 'ok' : severity;
+    skuContour.checks.push({ name, status, message, ...extra });
+    checks.push({ name: `sku-contour:${name}`, status, message, ...extra });
+    if (!ok && severity === 'blocked') blockingReasons.push(message);
+    if (!ok && severity !== 'blocked') warnings.push(message);
+  };
+  addSkuContourCheck('aliases-present', Boolean(sources.sku_aliases?.exists), 'SKU alias snapshot is missing; resolved API SKU mappings may return to the queue.');
+  addSkuContourCheck('ignore-present', Boolean(sources.sku_alias_ignore?.exists), 'SKU ignore snapshot is missing; ignored API SKU values may return to the queue.');
+  addSkuContourCheck('matrix-present', Boolean(sources.sku_matrix?.exists), 'SKU matrix snapshot is missing; alias/ignore decisions cannot be applied to portal views.');
+  addSkuContourCheck(
+    'matrix-alias-count',
+    matrixAliasCount === aliasCount,
+    `SKU matrix alias count does not match sku_aliases (${matrixAliasCount}/${aliasCount}).`,
+    'blocked',
+    { matrixAliasCount, aliasCount }
+  );
+  addSkuContourCheck(
+    'matrix-ignore-count',
+    matrixIgnoreCount === ignoreCount,
+    `SKU matrix ignore count does not match sku_alias_ignore (${matrixIgnoreCount}/${ignoreCount}).`,
+    'blocked',
+    { matrixIgnoreCount, ignoreCount }
+  );
+  if ((aliasCount || ignoreCount) && Math.max(aliasStamp, ignoreStamp) && matrixStamp && matrixStamp < Math.max(aliasStamp, ignoreStamp)) {
+    addSkuContourCheck('matrix-after-decisions', false, 'SKU matrix is older than sku_aliases/sku_alias_ignore; applied decisions may not affect today reports.');
+  } else {
+    addSkuContourCheck('matrix-after-decisions', true, 'SKU matrix is not older than alias/ignore decisions.');
+  }
+  if (qualityStamp && matrixStamp && matrixStamp + 300000 < qualityStamp) {
+    addSkuContourCheck('matrix-after-quality', false, 'SKU matrix is older than portal_data_quality; SKU contour may show stale unresolved issues.', 'warning');
+  } else {
+    addSkuContourCheck('matrix-after-quality', true, 'SKU matrix is aligned with portal_data_quality.');
+  }
+  skuContour.status = skuContour.checks.some((check) => check.status === 'blocked')
+    ? 'blocked'
+    : skuContour.checks.some((check) => check.status === 'warning')
+      ? 'warning'
+      : 'ok';
 
   if (numberOrZero(qualitySummary.apiSumAboveAggregateCount) > 0) {
     blockingReasons.push(`API SKU sum is above marketplace aggregate for ${qualitySummary.apiSumAboveAggregateCount} platform(s).`);
@@ -325,6 +418,7 @@ function buildHealth(options) {
       maxDateAgeDays: maxDateAge
     },
     sources,
+    skuContour,
     quality: qualitySummary,
     apiReconciliation: {
       blocked: numberOrZero(qualitySummary.apiSumAboveAggregateCount) > 0,

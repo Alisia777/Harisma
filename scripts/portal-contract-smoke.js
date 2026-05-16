@@ -120,6 +120,55 @@ async function main() {
     ));
     if (!contourOk) throw new Error('SKU contour controls did not render.');
 
+    const contourPersistence = await page.evaluate(() => {
+      const appState = window.__alteaAppState;
+      const targetSku = appState?.skus?.[0]?.articleKey || appState?.skus?.[0]?.article || '';
+      if (!targetSku || typeof window.skuContourIssueRows !== 'function' || typeof window.skuContourIssueIsResolved !== 'function') {
+        return { ok: false, reason: 'SKU contour test helpers are unavailable.' };
+      }
+      const originalAliases = appState.skuAliases;
+      const originalIgnore = appState.skuAliasIgnore;
+      const originalQuality = appState.portalDataQuality;
+      const aliasApiSku = '__contract_alias_api_sku__';
+      const ignoreApiSku = '__contract_ignore_api_sku__';
+      try {
+        appState.skuAliases = {
+          schema: 'sku-api-aliases-v1',
+          aliases: [{ target_sku: targetSku, platform: 'wb', api_sku: aliasApiSku, status: 'active', note: 'contract smoke' }]
+        };
+        appState.skuAliasIgnore = {
+          schema: 'sku-api-ignore-v1',
+          ignored: [{ platform: 'ozon', api_sku: ignoreApiSku, status: 'ignored', note: 'contract smoke' }]
+        };
+        appState.portalDataQuality = {
+          generatedAt: new Date().toISOString(),
+          status: 'warning',
+          summary: {},
+          issues: [
+            { type: 'API SKU без пары', platform: 'WB', articleKey: aliasApiSku, name: 'contract alias', revenue: 1000, units: 1, action: 'contract alias' },
+            { type: 'API SKU без пары', platform: 'Ozon', articleKey: ignoreApiSku, name: 'contract ignore', revenue: 2000, units: 2, action: 'contract ignore' }
+          ]
+        };
+        const rows = window.skuContourIssueRows(window.skuPlanFactBuildModel());
+        const aliasRow = rows.find((row) => row.apiSku === aliasApiSku);
+        const ignoreRow = rows.find((row) => row.apiSku === ignoreApiSku);
+        const unresolved = [aliasRow, ignoreRow].filter((row) => row && !window.skuContourIssueIsResolved(row));
+        return {
+          ok: aliasRow?.status === 'applied' && ignoreRow?.status === 'ignored' && unresolved.length === 0,
+          aliasStatus: aliasRow?.status || '',
+          ignoreStatus: ignoreRow?.status || '',
+          unresolved: unresolved.map((row) => row.apiSku)
+        };
+      } finally {
+        appState.skuAliases = originalAliases;
+        appState.skuAliasIgnore = originalIgnore;
+        appState.portalDataQuality = originalQuality;
+      }
+    });
+    if (!contourPersistence.ok) {
+      throw new Error(`SKU contour resolved rows returned to unresolved queue: ${JSON.stringify(contourPersistence)}`);
+    }
+
     await clickView(page, 'skus');
     await assertVisible(page, '#view-skus', 'SKU registry');
     const registryOk = await page.evaluate(() => Boolean(

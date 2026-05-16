@@ -1297,6 +1297,39 @@ function skuPlanFactAliasImportReportHtml(report = null) {
       <td>${escapeHtml(row.reason || row.action || '—')}</td>
     </tr>
   `).join('');
+  const outcomeRows = [
+    {
+      label: 'Исчезнет после sync',
+      count: (report.aliases || []).length + (report.ignores || []).length,
+      tone: 'ok',
+      text: 'alias и ignore сохранятся в общий контур, матрица SKU пересоберётся, эти API SKU уйдут из нерешённой очереди.'
+    },
+    {
+      label: 'Останется как new_sku',
+      count: newSkuRows.length,
+      tone: 'warn',
+      text: 'нужно завести SKU в реестре, потом связать этот API SKU через alias.'
+    },
+    {
+      label: 'Останется как need_check',
+      count: needCheckRows.length,
+      tone: 'warn',
+      text: 'портал ничего не применяет, строка остаётся на ручную проверку.'
+    },
+    {
+      label: 'Не применится из-за ошибки',
+      count: errors.length,
+      tone: 'danger',
+      text: 'исправьте target_sku/API SKU/площадку и загрузите файл повторно.'
+    }
+  ].filter((row) => row.count > 0);
+  const outcomeHtml = outcomeRows.map((row) => `
+    <tr>
+      <td>${badge(row.label, row.tone)}</td>
+      <td><strong>${fmt.int(row.count)}</strong></td>
+      <td>${escapeHtml(row.text)}</td>
+    </tr>
+  `).join('');
   return `
     <div class="notice ${errors.length || warnings.length ? 'warn' : 'ok'}" style="margin-top:10px">
       <div class="section-subhead">
@@ -1311,6 +1344,14 @@ function skuPlanFactAliasImportReportHtml(report = null) {
           <button class="quick-chip" type="button" data-sku-plan-fact-download-import-report>Скачать отчёт</button>
         </div>
       </div>
+      ${outcomeHtml ? `
+        <div class="table-scroll" style="margin-top:10px">
+          <table class="data-table compact">
+            <thead><tr><th>Что будет</th><th>Строк</th><th>Пояснение</th></tr></thead>
+            <tbody>${outcomeHtml}</tbody>
+          </table>
+        </div>
+      ` : ''}
       ${detailRows ? `
         <div class="table-scroll" style="margin-top:10px">
           <table class="data-table compact">
@@ -1485,6 +1526,13 @@ function skuContourStatusMeta(status = '') {
 
 function skuContourHealthMeta(health = {}) {
   const status = String(health.status || '').toLowerCase();
+  const contourStatus = String(health.skuContour?.status || '').toLowerCase();
+  if (contourStatus === 'blocked') {
+    return { label: 'контур SKU не применился', tone: 'danger', notice: 'warn' };
+  }
+  if (contourStatus === 'warning') {
+    return { label: 'контур SKU требует проверки', tone: 'warn', notice: 'warn' };
+  }
   if (health?.publish?.allowed === false || status === 'blocked' || status === 'critical') {
     return { label: 'публикация остановлена', tone: 'danger', notice: 'warn' };
   }
@@ -1538,6 +1586,7 @@ function skuContourIssueRows(model = {}) {
       else if (issue.severity === 'warning' || issue.severity === 'warn') status = 'warning';
       return {
         key: `${issue.type || ''}|${issue.platform || ''}|${apiSku}|${Math.round(numberOrZero(issue.revenue))}`,
+        keys,
         status,
         type: issue.type || '',
         platform: issue.platform || '',
@@ -1568,6 +1617,73 @@ function skuContourShowResolved() {
   return state.skuContourShowResolved === true;
 }
 
+function skuContourOnlyNew() {
+  return state.skuContourOnlyNew === true;
+}
+
+function skuContourAuditIndex() {
+  const map = new Map();
+  const add = (key, event, kind, targetSku = '') => {
+    if (!key || map.has(key)) return;
+    map.set(key, {
+      kind,
+      targetSku,
+      appliedAt: event.appliedAt || event.generatedAt || '',
+      actor: event.actor || 'portal-user',
+      fileName: event.fileName || '',
+      eventId: event.id || ''
+    });
+  };
+  skuPlanFactAuditEvents(state.skuAliasAudit || {}).forEach((event) => {
+    (event.aliasKeys || []).forEach((rawKey) => {
+      const parts = String(rawKey || '').split('|');
+      if (parts.length >= 3) add(`${parts[1]}|${parts[2]}`, event, 'alias', parts[0] || '');
+    });
+    (event.ignoreKeys || []).forEach((rawKey) => add(String(rawKey || ''), event, 'ignore'));
+  });
+  return map;
+}
+
+function skuContourAuditForRow(row = {}, auditIndex = null) {
+  const index = auditIndex || skuContourAuditIndex();
+  for (const key of (row.keys || [])) {
+    const event = index.get(key);
+    if (event) return event;
+  }
+  return null;
+}
+
+function skuContourAuditJournalRows(limit = 24) {
+  const rows = [];
+  skuPlanFactAuditEvents(state.skuAliasAudit || {}).forEach((event) => {
+    (event.aliasKeys || []).forEach((rawKey) => {
+      const parts = String(rawKey || '').split('|');
+      rows.push({
+        appliedAt: event.appliedAt || event.generatedAt || '',
+        actor: event.actor || 'portal-user',
+        fileName: event.fileName || '',
+        kind: 'alias',
+        targetSku: parts[0] || '',
+        platform: parts[1] || '',
+        apiSku: parts[2] || ''
+      });
+    });
+    (event.ignoreKeys || []).forEach((rawKey) => {
+      const parts = String(rawKey || '').split('|');
+      rows.push({
+        appliedAt: event.appliedAt || event.generatedAt || '',
+        actor: event.actor || 'portal-user',
+        fileName: event.fileName || '',
+        kind: 'ignore',
+        targetSku: '',
+        platform: parts[0] || '',
+        apiSku: parts[1] || ''
+      });
+    });
+  });
+  return rows.slice(0, limit);
+}
+
 function skuContourDownloadPayload() {
   skuPlanFactDownloadJson(`sku-contour-${todayIso()}.json`, {
     generatedAt: new Date().toISOString(),
@@ -1589,16 +1705,24 @@ function renderSkuContour(rootId = 'view-sku-contour') {
   const matrix = state.skuMatrix || {};
   const matrixSummary = matrix.summary || {};
   const healthMeta = skuContourHealthMeta(health);
+  const skuHealth = health.skuContour || {};
+  const skuHealthProblems = (skuHealth.checks || []).filter((check) => check.status && check.status !== 'ok');
   const quality = state.portalDataQuality?.summary || model.quality || {};
   const quarantine = state.portalDataQuarantine?.summary || {};
   const auditEvents = skuPlanFactAuditEvents(state.skuAliasAudit || {}).slice(0, 8);
   const allIssueRows = skuContourIssueRows(model);
   const showResolved = skuContourShowResolved();
+  const onlyNew = skuContourOnlyNew();
   const resolvedIssueCount = allIssueRows.filter(skuContourIssueIsResolved).length;
-  const issueRows = showResolved ? allIssueRows : allIssueRows.filter((row) => !skuContourIssueIsResolved(row));
-  const hiddenResolvedCount = allIssueRows.length - issueRows.length;
+  const newIssueCount = allIssueRows.filter((row) => row.status === 'new').length;
+  let issueRows = showResolved ? allIssueRows : allIssueRows.filter((row) => !skuContourIssueIsResolved(row));
+  if (onlyNew) issueRows = issueRows.filter((row) => row.status === 'new');
+  const hiddenResolvedCount = resolvedIssueCount;
+  const hiddenByCurrentFilterCount = allIssueRows.length - issueRows.length;
+  const auditIndex = skuContourAuditIndex();
   const issueHtml = issueRows.slice(0, 120).map((row) => {
     const meta = skuContourStatusMeta(row.status);
+    const history = skuContourAuditForRow(row, auditIndex);
     return `
       <tr>
         <td>${badge(meta.label, meta.tone)}</td>
@@ -1606,9 +1730,20 @@ function renderSkuContour(rootId = 'view-sku-contour') {
         <td>${escapeHtml(row.platform || 'Все')}</td>
         <td><strong>${escapeHtml(row.apiSku || '—')}</strong><div class="muted small">${escapeHtml(row.name || '')}</div></td>
         <td><strong>${fmt.money(row.revenue)}</strong><div class="muted small">${fmt.int(row.units)} шт.</div></td>
+        <td>${history ? `<strong>${escapeHtml(history.kind)}</strong><div class="muted small">${escapeHtml(fmt.date(history.appliedAt))} · ${escapeHtml(history.actor)}</div>` : '<span class="muted">—</span>'}</td>
       </tr>
     `;
   }).join('');
+  const journalHtml = skuContourAuditJournalRows().map((row) => `
+    <tr>
+      <td>${escapeHtml(fmt.date(row.appliedAt))}</td>
+      <td>${badge(row.kind, row.kind === 'ignore' ? 'ok' : 'info')}</td>
+      <td>${escapeHtml(row.platform || 'all')}</td>
+      <td><strong>${escapeHtml(row.apiSku || '—')}</strong></td>
+      <td>${escapeHtml(row.targetSku || '—')}</td>
+      <td>${escapeHtml(row.actor || 'portal-user')}<div class="muted small">${escapeHtml(row.fileName || '')}</div></td>
+    </tr>
+  `).join('');
   const auditHtml = auditEvents.map((event) => `
     <tr>
       <td>${escapeHtml(fmt.date(event.appliedAt || event.generatedAt || ''))}</td>
@@ -1627,6 +1762,7 @@ function renderSkuContour(rootId = 'view-sku-contour') {
       </div>
       <div class="quick-actions">
         <button class="quick-chip" type="button" data-sku-contour-refresh>Обновить</button>
+        <button class="quick-chip ${onlyNew ? 'active' : ''}" type="button" data-sku-contour-toggle-new>${onlyNew ? 'Все нерешённые' : `Только новые${newIssueCount ? ` (${fmt.int(newIssueCount)})` : ''}`}</button>
         <button class="quick-chip" type="button" data-sku-contour-toggle-resolved>${showResolved ? 'Скрыть решённые' : `Показать решённые${hiddenResolvedCount ? ` (${fmt.int(hiddenResolvedCount)})` : ''}`}</button>
         <button class="quick-chip" type="button" data-sku-contour-open-planfact>План-факт</button>
       </div>
@@ -1640,9 +1776,11 @@ function renderSkuContour(rootId = 'view-sku-contour') {
           <strong>Sync: ${escapeHtml(healthMeta.label)}</strong>
           <div class="small muted">Проверено: ${escapeHtml(fmt.date(health.generatedAt || health.publish?.checkedAt || ''))} · данные до ${escapeHtml(health.freshness?.maxDate || quality.maxDate || '—')}</div>
           ${(health.publish?.blockingReasons || health.publish?.warnings || []).slice(0, 3).map((item) => `<div class="small muted">${escapeHtml(item)}</div>`).join('')}
+          ${skuHealthProblems.slice(0, 3).map((item) => `<div class="small muted">${escapeHtml(item.message || item.name || '')}</div>`).join('')}
         </div>
         <div class="badge-stack">
           ${badge(healthMeta.label, healthMeta.tone)}
+          ${skuHealth.status ? badge(`SKU contour: ${skuHealth.status}`, skuHealth.status === 'ok' ? 'ok' : skuHealth.status === 'blocked' ? 'danger' : 'warn') : ''}
           ${badge(`${fmt.int(quality.apiUnmappedUniqueSku || matrixSummary.apiUnmappedCount || 0)} API без пары`, (quality.apiUnmappedUniqueSku || matrixSummary.apiUnmappedCount) ? 'warn' : 'ok')}
           ${badge(`${fmt.int(quarantine.rows || 0)} в карантине`, quarantine.rows ? 'danger' : 'ok')}
           ${badge(fmt.money(quality.apiUnmappedRevenue || 0), quality.apiUnmappedRevenue ? 'warn' : 'ok')}
@@ -1683,13 +1821,30 @@ function renderSkuContour(rootId = 'view-sku-contour') {
         </div>
         <div class="badge-stack">
           ${badge(`${fmt.int(issueRows.length)} в работе`, issueRows.length ? 'warn' : 'ok')}
+          ${onlyNew ? badge('только новые', 'info') : ''}
           ${resolvedIssueCount ? badge(`${fmt.int(resolvedIssueCount)} решено`, 'ok') : ''}
         </div>
       </div>
       <div class="table-scroll">
         <table class="data-table compact">
-          <thead><tr><th>Статус</th><th>Проблема</th><th>Площадка</th><th>API / SKU</th><th>Сумма</th></tr></thead>
-          <tbody>${issueHtml || `<tr><td colspan="5"><div class="empty">${hiddenResolvedCount ? 'Нерешённых ошибок нет. Решённые строки скрыты, их можно показать кнопкой сверху.' : 'Очередь ошибок пуста'}</div></td></tr>`}</tbody>
+          <thead><tr><th>Статус</th><th>Проблема</th><th>Площадка</th><th>API / SKU</th><th>Сумма</th><th>Журнал</th></tr></thead>
+          <tbody>${issueHtml || `<tr><td colspan="6"><div class="empty">${hiddenByCurrentFilterCount ? 'По текущему фильтру строк нет. Решённые или не новые строки скрыты кнопками сверху.' : 'Очередь ошибок пуста'}</div></td></tr>`}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card sku-plan-fact-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Журнал по API SKU</h3>
+          <p class="small muted">Последние решения по конкретным API SKU: что связали alias, что отправили в ignore, кто и каким файлом применил.</p>
+        </div>
+        <div class="badge-stack">${badge(`${fmt.int(skuContourAuditJournalRows().length)} записей`, journalHtml ? 'info' : '')}</div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table compact">
+          <thead><tr><th>Дата</th><th>Решение</th><th>Площадка</th><th>API SKU</th><th>target_sku</th><th>Кто / файл</th></tr></thead>
+          <tbody>${journalHtml || '<tr><td colspan="6"><div class="empty">Журнал пока пуст: alias/ignore ещё не применяли через портал</div></td></tr>'}</tbody>
         </table>
       </div>
     </div>
@@ -1715,6 +1870,10 @@ function renderSkuContour(rootId = 'view-sku-contour') {
   `;
 
   root.querySelector('[data-sku-contour-refresh]')?.addEventListener('click', (event) => refreshSkuPlanFactData(event.currentTarget, rootId));
+  root.querySelector('[data-sku-contour-toggle-new]')?.addEventListener('click', () => {
+    state.skuContourOnlyNew = !skuContourOnlyNew();
+    renderSkuContour(rootId);
+  });
   root.querySelector('[data-sku-contour-toggle-resolved]')?.addEventListener('click', () => {
     state.skuContourShowResolved = !skuContourShowResolved();
     renderSkuContour(rootId);
@@ -2924,6 +3083,8 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
 
 window.renderSkuPlanFact = renderSkuPlanFact;
 window.renderSkuContour = renderSkuContour;
+window.skuContourIssueRows = skuContourIssueRows;
+window.skuContourIssueIsResolved = skuContourIssueIsResolved;
 window.skuPlanFactBuildModel = skuPlanFactBuildModel;
 window.skuPlanFactExportRows = skuPlanFactExportRows;
 window.skuPlanFactExportColumns = skuPlanFactExportColumns;

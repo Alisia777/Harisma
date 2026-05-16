@@ -1,8 +1,45 @@
+const EXECUTIVE_MARKETPLACE_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+const EXECUTIVE_SUPPORT_KEYS = ['cross', 'product'];
+const EXECUTIVE_WORKSTREAM_KEYS = [...EXECUTIVE_MARKETPLACE_KEYS, ...EXECUTIVE_SUPPORT_KEYS];
+
+function buildExecutiveWorkstreamSummary(active, key) {
+  const tasks = sortTasks(active.filter((task) => controlWorkstreamKey(task, getSku(task.articleKey)) === key));
+  const waitingRop = sortTasks(tasks.filter((task) => task.status === 'waiting_rop'));
+  const waitingDirector = sortTasks(tasks.filter((task) => task.status === 'waiting_decision'));
+  const overdue = tasks.filter(isTaskOverdue);
+  const critical = tasks.filter((task) => task.priority === 'critical');
+  const noOwner = tasks.filter((task) => !task.owner);
+  const hotTasks = sortTasks(tasks.filter((task) => (
+    task.status === 'waiting_decision'
+    || task.status === 'waiting_rop'
+    || isTaskOverdue(task)
+    || task.priority === 'critical'
+    || !task.owner
+  ))).slice(0, 4);
+  return {
+    key,
+    meta: controlWorkstreamMeta(key),
+    tasks,
+    activeCount: tasks.length,
+    waitingRop,
+    waitingRopCount: waitingRop.length,
+    waitingDirector,
+    waitingDirectorCount: waitingDirector.length,
+    overdueCount: overdue.length,
+    criticalCount: critical.length,
+    noOwnerCount: noOwner.length,
+    hotTasks,
+    ownerPreview: [...new Set(tasks.map((task) => task.owner).filter(Boolean))].slice(0, 3)
+  };
+}
+
 function buildExecutiveModel() {
   const control = getControlSnapshot();
   const active = sortTasks(control.active);
+  const workstreams = EXECUTIVE_WORKSTREAM_KEYS.map((key) => buildExecutiveWorkstreamSummary(active, key));
+  const waitingRop = sortTasks(active.filter((task) => task.status === 'waiting_rop'));
+  const waitingDirector = sortTasks(active.filter((task) => task.status === 'waiting_decision'));
   const overdue = active.filter(isTaskOverdue);
-  const waiting = sortTasks(active.filter((task) => task.status === 'waiting_decision' || task.status === 'waiting_rop'));
   const critical = sortTasks(active.filter((task) => task.priority === 'critical'));
   const noOwnerTasks = sortTasks(active.filter((task) => !task.owner));
   const launchFocus = getLaunchItems().slice(0, 4);
@@ -17,17 +54,68 @@ function buildExecutiveModel() {
   return {
     control,
     active,
+    workstreams,
+    marketplaceRows: workstreams.filter((row) => EXECUTIVE_MARKETPLACE_KEYS.includes(row.key)),
+    supportRows: workstreams.filter((row) => EXECUTIVE_SUPPORT_KEYS.includes(row.key)),
+    waitingRop,
+    waitingRopCount: waitingRop.length,
+    waitingDirector,
+    waitingDirectorCount: waitingDirector.length,
     overdue,
-    waiting,
-    waitingCount: waiting.length,
     critical,
     criticalCount: critical.length,
     noOwnerTasks: noOwnerTasks.slice(0, 8),
     noOwnerCount: noOwnerTasks.length,
     launchFocus,
     unassignedSkus,
-    escalations: escalations.slice(0, 12)
+    escalations: escalations.slice(0, 12),
+    riskWorkstreamCount: workstreams.filter((row) => row.overdueCount || row.criticalCount || row.noOwnerCount || row.waitingRopCount || row.waitingDirectorCount).length
   };
+}
+
+function renderExecutiveWorkstreamCard(row) {
+  const hasRisk = row.overdueCount || row.criticalCount || row.noOwnerCount || row.waitingRopCount || row.waitingDirectorCount;
+  const ownerText = row.ownerPreview.length ? row.ownerPreview.join(' · ') : 'owner не выделен';
+  return `
+    <div class="card executive-market-card ${hasRisk ? 'has-risk' : ''}">
+      <div class="section-subhead">
+        <div>
+          <h3>${escapeHtml(row.meta.label)}</h3>
+          <p class="small muted">${escapeHtml(ownerText)}</p>
+        </div>
+        ${badge(`${fmt.int(row.activeCount)} активных`, row.activeCount ? row.meta.kind : 'ok')}
+      </div>
+      <div class="badge-stack">
+        ${badge(`РОП ${fmt.int(row.waitingRopCount)}`, row.waitingRopCount ? 'warn' : 'ok')}
+        ${badge(`финал ${fmt.int(row.waitingDirectorCount)}`, row.waitingDirectorCount ? 'danger' : 'ok')}
+        ${badge(`проср. ${fmt.int(row.overdueCount)}`, row.overdueCount ? 'danger' : '')}
+        ${badge(`без owner ${fmt.int(row.noOwnerCount)}`, row.noOwnerCount ? 'warn' : '')}
+      </div>
+      <div class="task-mini-grid" style="margin-top:12px">
+        ${row.hotTasks.length ? row.hotTasks.map(renderMiniTask).join('') : '<div class="empty">Срочных задач нет</div>'}
+      </div>
+      <button class="btn small-btn" type="button" data-executive-open-workstream="${escapeHtml(row.key)}">Открыть задачи ${escapeHtml(row.meta.chip)}</button>
+    </div>
+  `;
+}
+
+function renderExecutiveWorkstreamRow(row) {
+  return `
+    <div class="executive-market-row">
+      <div>
+        <strong>${escapeHtml(row.meta.label)}</strong>
+        <div class="muted small">${escapeHtml(row.ownerPreview.length ? row.ownerPreview.join(' · ') : 'Ответственные появятся из задач')}</div>
+      </div>
+      <div class="badge-stack">
+        ${badge(`активно ${fmt.int(row.activeCount)}`, row.activeCount ? row.meta.kind : '')}
+        ${badge(`РОП ${fmt.int(row.waitingRopCount)}`, row.waitingRopCount ? 'warn' : 'ok')}
+        ${badge(`финал ${fmt.int(row.waitingDirectorCount)}`, row.waitingDirectorCount ? 'danger' : 'ok')}
+        ${badge(`проср. ${fmt.int(row.overdueCount)}`, row.overdueCount ? 'danger' : 'ok')}
+        ${badge(`без owner ${fmt.int(row.noOwnerCount)}`, row.noOwnerCount ? 'warn' : 'ok')}
+      </div>
+      <button class="btn ghost small-btn" type="button" data-executive-open-workstream="${escapeHtml(row.key)}">Показать</button>
+    </div>
+  `;
 }
 
 function renderExecutive() {
@@ -37,89 +125,91 @@ function renderExecutive() {
     <div class="section-title">
       <div>
         <h2>Руководителю</h2>
-        <p>Оставили только то, что требует финального согласования или быстрого решения по сроку, ресурсу и приоритету.</p>
+        <p>Свод по РОПам и маркетплейсам: каждый контур видит свои задачи, руководитель видит риски, просрочки и финальные согласования.</p>
       </div>
-      <div class="badge-stack">${badge(`${fmt.int(model.waitingCount)} ждут финала`, model.waitingCount ? 'warn' : 'ok')}${badge(`${fmt.int(model.criticalCount)} критично`, model.criticalCount ? 'danger' : 'ok')}</div>
+      <div class="badge-stack">${badge(`${fmt.int(model.waitingDirectorCount)} ждут финала`, model.waitingDirectorCount ? 'danger' : 'ok')}${badge(`${fmt.int(model.waitingRopCount)} ждут РОПа`, model.waitingRopCount ? 'warn' : 'ok')}</div>
     </div>
 
     <div class="kpi-strip">
-      <div class="mini-kpi warn"><span>На финальном согласовании</span><strong>${fmt.int(model.waitingCount)}</strong><span>РОП уже согласовал</span></div>
-      <div class="mini-kpi danger"><span>Критично</span><strong>${fmt.int(model.criticalCount)}</strong><span>экономика и блокеры</span></div>
+      <div class="mini-kpi danger"><span>Финал</span><strong>${fmt.int(model.waitingDirectorCount)}</strong><span>управленческое решение</span></div>
+      <div class="mini-kpi warn"><span>У РОПов</span><strong>${fmt.int(model.waitingRopCount)}</strong><span>согласование площадки</span></div>
       <div class="mini-kpi danger"><span>Просрочено</span><strong>${fmt.int(model.overdue.length)}</strong><span>нужен апдейт срока</span></div>
       <div class="mini-kpi warn"><span>Без owner</span><strong>${fmt.int(model.noOwnerCount)}</strong><span>нужно закрепить</span></div>
-      <div class="mini-kpi"><span>Активно в контуре</span><strong>${fmt.int(model.active.length)}</strong><span>всего задач</span></div>
-      <div class="mini-kpi"><span>SKU без owner</span><strong>${fmt.int(model.unassignedSkus.length)}</strong><span>в бренде Алтея</span></div>
+      <div class="mini-kpi"><span>Активно</span><strong>${fmt.int(model.active.length)}</strong><span>все задачи</span></div>
+      <div class="mini-kpi"><span>Контуры с риском</span><strong>${fmt.int(model.riskWorkstreamCount)}</strong><span>площадки и блоки</span></div>
+    </div>
+
+    <div class="executive-market-grid" style="margin-top:14px">
+      ${model.marketplaceRows.map(renderExecutiveWorkstreamCard).join('')}
     </div>
 
     <div class="two-col" style="margin-top:14px">
       <div class="card">
         <div class="section-subhead">
           <div>
-            <h3>На финальном согласовании</h3>
-            <p class="small muted">Очередь на закрытие: откройте задачу, дайте финальный комментарий и переведите её в архив выполненных.</p>
+            <h3>У РОПов на согласовании</h3>
+            <p class="small muted">Задачи уже сданы исполнителем и ждут решения конкретной площадки.</p>
           </div>
-          ${badge(`${fmt.int(model.waitingCount)} шт.`, model.waitingCount ? 'warn' : 'ok')}
+          ${badge(`${fmt.int(model.waitingRopCount)} шт.`, model.waitingRopCount ? 'warn' : 'ok')}
         </div>
-        <div class="task-mini-grid">${model.waiting.map(renderMiniTask).join('') || '<div class="empty">Нет задач на финальном согласовании</div>'}</div>
+        <div class="task-mini-grid">${model.waitingRop.slice(0, 8).map(renderMiniTask).join('') || '<div class="empty">Нет задач на согласовании у РОПов</div>'}</div>
+      </div>
+
+      <div class="card">
+        <div class="section-subhead">
+          <div>
+            <h3>Финал руководителя</h3>
+            <p class="small muted">РОП уже согласовал, осталось зафиксировать итог или вернуть задачу обратно.</p>
+          </div>
+          ${badge(`${fmt.int(model.waitingDirectorCount)} шт.`, model.waitingDirectorCount ? 'danger' : 'ok')}
+        </div>
+        <div class="task-mini-grid">${model.waitingDirector.slice(0, 8).map(renderMiniTask).join('') || '<div class="empty">Нет задач на финальном согласовании</div>'}</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Матрица ответственности</h3>
+          <p class="small muted">Одна строка — один контур. Нажмите “Показать”, чтобы перейти в задачи уже с фильтром этой площадки.</p>
+        </div>
+        ${badge(`${fmt.int(model.workstreams.length)} контуров`, 'info')}
+      </div>
+      <div class="executive-market-table">${model.workstreams.map(renderExecutiveWorkstreamRow).join('')}</div>
+    </div>
+
+    <div class="two-col" style="margin-top:14px">
+      <div class="card">
+        <div class="section-subhead">
+          <div>
+            <h3>Сквозные и продуктовые</h3>
+            <p class="small muted">Общие вопросы и продуктовые запуски отдельно от WB/Ozon.</p>
+          </div>
+        </div>
+        <div class="executive-market-table">${model.supportRows.map(renderExecutiveWorkstreamRow).join('')}</div>
       </div>
 
       <div class="card">
         <div class="section-subhead">
           <div>
             <h3>Что требует решения сегодня</h3>
-            <p class="small muted">Короткий short-list: просрочки, критичные задачи и всё, что зависло без owner.</p>
+            <p class="small muted">Просрочки, критичные задачи и всё, что зависло без owner.</p>
           </div>
           ${badge(`${fmt.int(model.escalations.length)} в short-list`, model.escalations.length ? 'danger' : 'ok')}
         </div>
         <div class="task-mini-grid">${model.escalations.map(renderMiniTask).join('') || '<div class="empty">Нет срочных эскалаций</div>'}</div>
       </div>
     </div>
-
-    <div class="two-col" style="margin-top:14px">
-      <div class="card">
-        <div class="section-subhead">
-          <div>
-            <h3>Где не хватает owner</h3>
-            <p class="small muted">Здесь видно задачи, которые зависнут первыми, если не закрепить ответственного.</p>
-          </div>
-          ${badge(`${fmt.int(model.noOwnerCount)} без owner`, model.noOwnerCount ? 'warn' : 'ok')}
-        </div>
-        <div class="task-mini-grid">${model.noOwnerTasks.map(renderMiniTask).join('') || '<div class="empty">Все задачи уже закреплены</div>'}</div>
-      </div>
-
-      <div class="card">
-        <div class="section-subhead">
-          <div>
-            <h3>Новинки и SKU без owner</h3>
-            <p class="small muted">Два частых риска: запуск без сопровождения и товар без явного владельца.</p>
-          </div>
-          ${badge(`${fmt.int(model.launchFocus.length)} новинок`, model.launchFocus.length ? 'info' : 'ok')}
-        </div>
-        <div class="alert-stack">
-          ${model.launchFocus.map((item) => `
-            <div class="alert-row">
-              <div>
-                <strong>${escapeHtml(item.name || 'Новинка')}</strong>
-                <div class="muted small">${escapeHtml(item.launchMonth || '—')} · ${escapeHtml(item.reportGroup || '—')}</div>
-              </div>
-              <div class="badge-stack">${badge(item.tag || 'новинка', 'info')}${item.production ? badge(item.production) : ''}</div>
-              <div class="muted small">${escapeHtml(item.status || 'Статус не указан')}</div>
-            </div>
-          `).join('')}
-          ${model.unassignedSkus.map((sku) => `
-            <div class="alert-row">
-              <div>
-                <strong>${linkToSku(sku.articleKey, sku.article || sku.articleKey)}</strong>
-                <div class="muted small">${escapeHtml(sku.name || 'Без названия')}</div>
-              </div>
-              <div class="badge-stack">${badge('Без owner', 'warn')}${skuOperationalStatus(sku)}</div>
-              <div class="muted small">${escapeHtml(sku.focusReasons || 'Нужно закрепить ответственного и сценарий работы')}</div>
-            </div>
-          `).join('') || '<div class="empty">Все SKU закреплены</div>'}
-        </div>
-      </div>
-    </div>
   `;
+
+  root.querySelectorAll('[data-executive-open-workstream]').forEach((button) => button.addEventListener('click', () => {
+    state.controlFilters.platform = button.dataset.executiveOpenWorkstream || 'all';
+    state.controlFilters.status = 'active';
+    state.controlFilters.horizon = 'all';
+    state.controlFilters.source = 'all';
+    state.controlFilters.lazyQueue = 'mine';
+    setView('control');
+  }));
 }
 
 async function createComment(payload) {
@@ -685,12 +775,13 @@ async function init() {
 
   try {
     const local = loadLocalStorage();
-    const [dashboard, skus, seed, productLeaderboard, productLeaderboardHistory] = await Promise.all([
+    const [dashboard, skus, seed, productLeaderboard, productLeaderboardHistory, skuMatrix] = await Promise.all([
       loadJsonOrFallback('data/dashboard.json', { cards: [], generatedAt: '' }, 'Дашборд'),
       loadJsonOrFallback('data/skus.json', [], 'SKU'),
       loadJsonOrFallback('data/seed_comments.json', { comments: [], tasks: [] }, 'Seed comments'),
       loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
-      loadJsonOrFallback('data/product_leaderboard_history.json', [], 'История продуктового лидерборда')
+      loadJsonOrFallback('data/product_leaderboard_history.json', [], 'История продуктового лидерборда'),
+      loadJsonOrFallback('data/sku_matrix.json', { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } }, 'SKU matrix')
     ]);
 
     state.dashboard = dashboard || { cards: [] };
@@ -702,6 +793,9 @@ async function init() {
       ? normalizeProductLeaderboardPayload(productLeaderboard)
       : (productLeaderboard || { generatedAt: '', items: [], summary: {} });
     state.productLeaderboardHistory = Array.isArray(productLeaderboardHistory) ? productLeaderboardHistory : [];
+    state.skuMatrix = skuMatrix && typeof skuMatrix === 'object'
+      ? skuMatrix
+      : { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } };
     state.boot.lazyReady.productLeaderboard = true;
     state.repricer = { generatedAt: '', summary: {}, rows: [] };
     if (!state.orderCalc.articleKey) state.orderCalc.articleKey = state.skus[0]?.articleKey || '';
@@ -718,7 +812,18 @@ async function init() {
       repricerCorridors: Array.isArray(local.repricerCorridors) ? local.repricerCorridors.map(normalizeRepricerCorridor).filter((item) => item.articleKey) : [],
       repricerOverrideDeletes: Array.isArray(local.repricerOverrideDeletes) ? local.repricerOverrideDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
       repricerSkuProfileDeletes: Array.isArray(local.repricerSkuProfileDeletes) ? local.repricerSkuProfileDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
-      repricerCorridorDeletes: Array.isArray(local.repricerCorridorDeletes) ? local.repricerCorridorDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : []
+      repricerCorridorDeletes: Array.isArray(local.repricerCorridorDeletes) ? local.repricerCorridorDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
+      repricerPendingApiAdds: Array.isArray(local.repricerPendingApiAdds) ? local.repricerPendingApiAdds.filter((item) => item && typeof item === 'object') : [],
+      repricerPendingApiDeletes: Array.isArray(local.repricerPendingApiDeletes) ? local.repricerPendingApiDeletes.filter((item) => item && typeof item === 'object') : [],
+      repricerPendingCostFixes: Array.isArray(local.repricerPendingCostFixes) ? local.repricerPendingCostFixes.filter((item) => item && typeof item === 'object') : [],
+      repricerPendingApiTasks: Array.isArray(local.repricerPendingApiTasks) ? local.repricerPendingApiTasks.filter((item) => item && typeof item === 'object') : [],
+      repricerRepairHistory: Array.isArray(local.repricerRepairHistory) ? local.repricerRepairHistory.filter((item) => item && typeof item === 'object').slice(0, 400) : [],
+      repricerRepairSnapshots: Array.isArray(local.repricerRepairSnapshots) ? local.repricerRepairSnapshots.filter((item) => item && typeof item === 'object').slice(0, 10) : [],
+      repricerApiReconcileHistory: Array.isArray(local.repricerApiReconcileHistory) ? local.repricerApiReconcileHistory.filter((item) => item && typeof item === 'object').slice(0, 100) : [],
+      repricerLastAuditImport: local.repricerLastAuditImport && typeof local.repricerLastAuditImport === 'object' ? local.repricerLastAuditImport : null,
+      repricerLastAutoFix: local.repricerLastAutoFix && typeof local.repricerLastAutoFix === 'object' ? local.repricerLastAutoFix : null,
+      repricerLastImportValidation: local.repricerLastImportValidation && typeof local.repricerLastImportValidation === 'object' ? local.repricerLastImportValidation : null,
+      repricerLastApiReconcile: local.repricerLastApiReconcile && typeof local.repricerLastApiReconcile === 'object' ? local.repricerLastApiReconcile : null
     };
     applyOwnerOverridesToSkus();
     mergeSeedStorage(seed || {});

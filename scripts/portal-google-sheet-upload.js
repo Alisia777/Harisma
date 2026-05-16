@@ -26,7 +26,8 @@ const SNAPSHOT_KEYS = [
   'order_procurement_ozon',
   'warehouse_stock_overlay',
   'portal_data_quality',
-  'sku_alias_ignore'
+  'sku_alias_ignore',
+  'sku_matrix'
 ];
 const INLINE_BODY_LIMIT = 18000;
 const DEFAULT_CHUNK_SIZE = 12000;

@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-05-15T21:38:08.808Z",
+  "generatedAt": "2026-05-16T08:14:05.671Z",
   "status": "critical",
   "summary": {
     "issueCount": 265,
     "criticalCount": 43,
     "warningCount": 222,
     "monthKey": "2026-05",
-    "maxDate": "2026-05-15",
+    "maxDate": "2026-05-16",
     "apiUnmappedPlatformRows": 231,
     "apiUnmappedUniqueSku": 119,
-    "apiUnmappedRevenue": 14345550,
+    "apiUnmappedRevenue": 14935829,
     "apiIgnoredPlatformRows": 0,
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 9,
@@ -18,48 +18,48 @@
   "freshness": [
     {
       "dataset": "dashboard",
-      "asOfDate": "2026-05-15",
-      "generatedAt": "2026-05-15T17:24:58.117Z",
-      "rows": 141,
-      "referenceDate": "2026-05-15",
+      "asOfDate": "2026-05-16",
+      "generatedAt": "2026-05-16T08:04:21.479Z",
+      "rows": 155,
+      "referenceDate": "2026-05-16",
       "lagDays": 0,
       "status": "ok"
     },
     {
       "dataset": "platform_trends",
-      "asOfDate": "2026-05-15",
-      "generatedAt": "2026-05-15T17:24:58.020Z",
+      "asOfDate": "2026-05-16",
+      "generatedAt": "2026-05-16T08:04:21.289Z",
       "rows": 7,
-      "referenceDate": "2026-05-15",
+      "referenceDate": "2026-05-16",
       "lagDays": 0,
       "status": "ok"
     },
     {
       "dataset": "order_procurement",
-      "asOfDate": "2026-05-15",
-      "generatedAt": "2026-05-15T17:24:58.190Z",
-      "rows": 1977,
-      "referenceDate": "2026-05-15",
+      "asOfDate": "2026-05-16",
+      "generatedAt": "2026-05-16T08:04:21.633Z",
+      "rows": 1893,
+      "referenceDate": "2026-05-16",
       "lagDays": 0,
       "status": "ok"
     },
     {
       "dataset": "warehouse_stock_overlay",
-      "asOfDate": "2026-05-15",
-      "generatedAt": "2026-05-15T17:23:13.307Z",
+      "asOfDate": "2026-05-16",
+      "generatedAt": "2026-05-16T08:02:41.647Z",
       "rows": 81,
       "matchedRows": 83,
       "unmatchedRows": 25,
-      "referenceDate": "2026-05-15",
+      "referenceDate": "2026-05-16",
       "lagDays": 0,
       "status": "ok"
     },
     {
       "dataset": "ads_summary",
-      "asOfDate": "2026-05-15",
-      "generatedAt": "2026-05-15T17:39:42.354Z",
+      "asOfDate": "2026-05-16",
+      "generatedAt": "2026-05-16T08:03:53.759Z",
       "rows": 7,
-      "referenceDate": "2026-05-15",
+      "referenceDate": "2026-05-16",
       "lagDays": 0,
       "status": "ok"
     },
@@ -68,8 +68,8 @@
       "asOfDate": "2026-05-15",
       "generatedAt": "2026-05-15T17:40:26.864Z",
       "rows": 76,
-      "referenceDate": "2026-05-15",
-      "lagDays": 0,
+      "referenceDate": "2026-05-16",
+      "lagDays": 1,
       "status": "ok"
     }
   ],
@@ -80,7 +80,7 @@
       "directRevenue": 295491,
       "directUnits": 359,
       "aggregateRevenue": 295491,
-      "aggregateDate": "2026-05-15",
+      "aggregateDate": "2026-05-16",
       "unmappedCount": 10,
       "unmappedRevenue": 101162,
       "unmappedUnits": 99,
@@ -108,7 +108,7 @@
       "directRevenue": 15112,
       "directUnits": 34,
       "aggregateRevenue": 15112,
-      "aggregateDate": "2026-05-15",
+      "aggregateDate": "2026-05-16",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,
@@ -118,28 +118,28 @@
     },
     "ozon": {
       "label": "Ozon",
-      "rows": 218,
-      "directRevenue": 25082577,
-      "directUnits": 29688,
-      "aggregateRevenue": 25082577,
-      "aggregateDate": "2026-05-15",
+      "rows": 219,
+      "directRevenue": 25994060,
+      "directUnits": 30827,
+      "aggregateRevenue": 25994060,
+      "aggregateDate": "2026-05-16",
       "unmappedCount": 85,
-      "unmappedRevenue": 8490138,
-      "unmappedUnits": 13847,
+      "unmappedRevenue": 8770313,
+      "unmappedUnits": 14330,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
       "ignoredUnits": 0
     },
     "wb": {
       "label": "WB",
-      "rows": 125,
-      "directRevenue": 82519634,
-      "directUnits": 56986,
-      "aggregateRevenue": 87093058,
-      "aggregateDate": "2026-05-15",
+      "rows": 126,
+      "directRevenue": 88293056,
+      "directUnits": 62080,
+      "aggregateRevenue": 90247832,
+      "aggregateDate": "2026-05-16",
       "unmappedCount": 54,
-      "unmappedRevenue": 3197957,
-      "unmappedUnits": 3691,
+      "unmappedRevenue": 3424683,
+      "unmappedUnits": 4034,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
       "ignoredUnits": 0
@@ -147,25 +147,25 @@
     "ya": {
       "label": "Я.Маркет",
       "rows": 180,
-      "directRevenue": 5172297,
-      "directUnits": 6453,
-      "aggregateRevenue": 5172297,
-      "aggregateDate": "2026-05-15",
+      "directRevenue": 5351787,
+      "directUnits": 6684,
+      "aggregateRevenue": 5351787,
+      "aggregateDate": "2026-05-16",
       "unmappedCount": 82,
-      "unmappedRevenue": 2556294,
-      "unmappedUnits": 3474,
+      "unmappedRevenue": 2639673,
+      "unmappedUnits": 3603,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
       "ignoredUnits": 0
     }
   },
   "orderSummary": {
-    "rows": 1977,
+    "rows": 1893,
     "noStockNeedRows": 0,
-    "lowTurnoverRows": 42,
+    "lowTurnoverRows": 37,
     "totalNeed7": 0,
-    "totalNeed14": 17804,
-    "totalNeed28": 83896
+    "totalNeed14": 17604,
+    "totalNeed28": 81686
   },
   "ownerSummary": {
     "totalSku": 89,
@@ -185,10 +185,10 @@
       "platformLabel": "Ozon",
       "articleKey": "sustalit_75ml",
       "name": "sustalit_75ml",
-      "revenue": 799420,
-      "units": 1471,
+      "revenue": 815905,
+      "units": 1491,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -199,10 +199,10 @@
       "platformLabel": "Ozon",
       "articleKey": "kavmaz",
       "name": "kavmaz",
-      "revenue": 467452,
-      "units": 927,
+      "revenue": 487634,
+      "units": 968,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -213,10 +213,10 @@
       "platformLabel": "Ozon",
       "articleKey": "uromax",
       "name": "uromax",
-      "revenue": 318419,
-      "units": 440,
+      "revenue": 327419,
+      "units": 449,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -227,24 +227,10 @@
       "platformLabel": "Ozon",
       "articleKey": "activeprost",
       "name": "activeprost",
-      "revenue": 316067,
-      "units": 706,
+      "revenue": 326892,
+      "units": 731,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "artoks",
-      "name": "artoks",
-      "revenue": 298757,
-      "units": 436,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -255,10 +241,10 @@
       "platformLabel": "WB",
       "articleKey": "sustalit_75ml",
       "name": "sustalit_75ml",
-      "revenue": 293717,
-      "units": 348,
+      "revenue": 316864,
+      "units": 382,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -269,10 +255,24 @@
       "platformLabel": "WB",
       "articleKey": "kavmaz_60ml",
       "name": "kavmaz_60ml",
-      "revenue": 282552,
-      "units": 245,
+      "revenue": 308700,
+      "units": 274,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-15",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "critical",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "artoks",
+      "name": "artoks",
+      "revenue": 305462,
+      "units": 445,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -283,10 +283,10 @@
       "platformLabel": "Ozon",
       "articleKey": "vetonus",
       "name": "vetonus",
-      "revenue": 279615,
-      "units": 950,
+      "revenue": 292968,
+      "units": 993,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -297,10 +297,10 @@
       "platformLabel": "WB",
       "articleKey": "artoks",
       "name": "artoks",
-      "revenue": 258929,
-      "units": 303,
+      "revenue": 274211,
+      "units": 326,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -311,10 +311,10 @@
       "platformLabel": "Ozon",
       "articleKey": "trezvin",
       "name": "trezvin",
-      "revenue": 246981,
-      "units": 502,
+      "revenue": 255691,
+      "units": 527,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -325,10 +325,10 @@
       "platformLabel": "Я.Маркет",
       "articleKey": "urofol",
       "name": "Таблетки от недержания мочи от цистита, средства от недержания для мочеполовой системы Алтея, Урофол, 20 капсул",
-      "revenue": 243762,
-      "units": 270,
+      "revenue": 249120,
+      "units": 276,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -342,7 +342,77 @@
       "revenue": 240294,
       "units": 165,
       "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "critical",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "allicil_gribok15ml",
+      "name": "allicil_gribok15ml",
+      "revenue": 237808,
+      "units": 416,
+      "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "critical",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "micardinforte",
+      "name": "micardinforte",
+      "revenue": 236429,
+      "units": 494,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "critical",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "sanatsin",
+      "name": "sanatsin",
+      "revenue": 234066,
+      "units": 400,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "critical",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "synergel_60ml",
+      "name": "synergel_60ml",
+      "revenue": 227478,
+      "units": 340,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "critical",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ya",
+      "platformLabel": "Я.Маркет",
+      "articleKey": "urinofix",
+      "name": "Уринофикс комплекс от недержания мочи, средство от цистита Алтея,  20 капсул",
+      "revenue": 226968,
+      "units": 348,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -356,77 +426,7 @@
       "revenue": 225701,
       "units": 212,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "micardinforte",
-      "name": "micardinforte",
-      "revenue": 224218,
-      "units": 461,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ya",
-      "platformLabel": "Я.Маркет",
-      "articleKey": "urinofix",
-      "name": "Уринофикс комплекс от недержания мочи, средство от цистита Алтея,  20 капсул",
-      "revenue": 219354,
-      "units": 336,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "sanatsin",
-      "name": "sanatsin",
-      "revenue": 218892,
-      "units": 367,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "synergel_60ml",
-      "name": "synergel_60ml",
-      "revenue": 214538,
-      "units": 320,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "allicil_gribok15ml",
-      "name": "allicil_gribok15ml",
-      "revenue": 210837,
-      "units": 356,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -437,10 +437,10 @@
       "platformLabel": "Ozon",
       "articleKey": "kavmaz_60ml",
       "name": "kavmaz_60ml",
-      "revenue": 202947,
-      "units": 260,
+      "revenue": 212671,
+      "units": 273,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -451,10 +451,10 @@
       "platformLabel": "Ozon",
       "articleKey": "arterol_1_1_1",
       "name": "arterol_1_1_1",
-      "revenue": 201226,
-      "units": 152,
+      "revenue": 211690,
+      "units": 160,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -465,22 +465,22 @@
       "platformLabel": "Ozon",
       "articleKey": "insulight",
       "name": "insulight",
-      "revenue": 195405,
-      "units": 238,
+      "revenue": 199300,
+      "units": 242,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
       "severity": "critical",
       "type": "api_sku_unmapped",
       "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "sanatsin_1_1",
-      "name": "sanatsin_1_1",
-      "revenue": 190202,
-      "units": 225,
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "micardin_1_1",
+      "name": "micardin_1_1",
+      "revenue": 197089,
+      "units": 161,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
@@ -493,24 +493,24 @@
       "platformLabel": "Ozon",
       "articleKey": "uhovit",
       "name": "uhovit",
-      "revenue": 189308,
-      "units": 152,
+      "revenue": 195905,
+      "units": 158,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
       "severity": "critical",
       "type": "api_sku_unmapped",
       "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "micardin_1_1",
-      "name": "micardin_1_1",
-      "revenue": 178823,
-      "units": 142,
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "sanatsin_1_1",
+      "name": "sanatsin_1_1",
+      "revenue": 190750,
+      "units": 226,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -521,10 +521,10 @@
       "platformLabel": "Ozon",
       "articleKey": "wbbiotrin_1_1_1",
       "name": "wbbiotrin_1_1_1",
-      "revenue": 176867,
-      "units": 114,
+      "revenue": 178507,
+      "units": 115,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -535,22 +535,8 @@
       "platformLabel": "WB",
       "articleKey": "urinofix",
       "name": "urinofix",
-      "revenue": 170407,
-      "units": 218,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "cardicin_BAD_60caps",
-      "name": "cardicin_BAD_60caps",
-      "revenue": 166725,
-      "units": 150,
+      "revenue": 178464,
+      "units": 231,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
@@ -563,10 +549,24 @@
       "platformLabel": "Ozon",
       "articleKey": "artoks_1_1",
       "name": "artoks_1_1",
-      "revenue": 162759,
-      "units": 136,
+      "revenue": 173683,
+      "units": 145,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "critical",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "cardicin_BAD_60caps",
+      "name": "cardicin_BAD_60caps",
+      "revenue": 170475,
+      "units": 153,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -577,10 +577,10 @@
       "platformLabel": "WB",
       "articleKey": "synergel_60ml",
       "name": "synergel_60ml",
-      "revenue": 151501,
-      "units": 164,
+      "revenue": 158008,
+      "units": 173,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -591,10 +591,10 @@
       "platformLabel": "Ozon",
       "articleKey": "yagodniy_spas",
       "name": "yagodniy_spas",
-      "revenue": 149015,
-      "units": 239,
+      "revenue": 155935,
+      "units": 249,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -605,10 +605,10 @@
       "platformLabel": "Ozon",
       "articleKey": "gemorekt",
       "name": "gemorekt",
-      "revenue": 141624,
-      "units": 279,
+      "revenue": 143829,
+      "units": 282,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -619,10 +619,10 @@
       "platformLabel": "Ozon",
       "articleKey": "trezax",
       "name": "trezax",
-      "revenue": 131023,
-      "units": 238,
+      "revenue": 136049,
+      "units": 245,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -633,10 +633,10 @@
       "platformLabel": "Ozon",
       "articleKey": "wbmicelix",
       "name": "wbmicelix",
-      "revenue": 129229,
-      "units": 328,
+      "revenue": 135757,
+      "units": 349,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -647,10 +647,10 @@
       "platformLabel": "Ozon",
       "articleKey": "micolan",
       "name": "micolan",
-      "revenue": 126277,
-      "units": 371,
+      "revenue": 129087,
+      "units": 376,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -661,10 +661,24 @@
       "platformLabel": "WB",
       "articleKey": "kavmaz",
       "name": "kavmaz",
-      "revenue": 118955,
-      "units": 149,
+      "revenue": 124089,
+      "units": 157,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-15",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "critical",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "insulight_1_1",
+      "name": "insulight_1_1",
+      "revenue": 121398,
+      "units": 105,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -678,6 +692,20 @@
       "revenue": 118371,
       "units": 150,
       "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "critical",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "mycoplax",
+      "name": "mycoplax",
+      "revenue": 114290,
+      "units": 152,
+      "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
@@ -685,12 +713,26 @@
       "severity": "critical",
       "type": "api_sku_unmapped",
       "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "insulight_1_1",
-      "name": "insulight_1_1",
-      "revenue": 114358,
-      "units": 99,
+      "platform": "ya",
+      "platformLabel": "Я.Маркет",
+      "articleKey": "uhovit",
+      "name": "Капсулы для улучшения слуха, усилитель слуха, средство для улучшения слуха, Алтея, Уховит, 20 капсул",
+      "revenue": 112152,
+      "units": 129,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "critical",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "pantogor_100ml",
+      "name": "pantogor_100ml",
+      "revenue": 111407,
+      "units": 103,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
@@ -703,50 +745,8 @@
       "platformLabel": "WB",
       "articleKey": "cardicin_bad_60caps",
       "name": "cardicin_bad_60caps",
-      "revenue": 109661,
-      "units": 82,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "pantogor_100ml",
-      "name": "pantogor_100ml",
-      "revenue": 108011,
-      "units": 99,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "mycoplax",
-      "name": "mycoplax",
-      "revenue": 107757,
-      "units": 141,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ya",
-      "platformLabel": "Я.Маркет",
-      "articleKey": "uhovit",
-      "name": "Капсулы для улучшения слуха, усилитель слуха, средство для улучшения слуха, Алтея, Уховит, 20 капсул",
-      "revenue": 107028,
-      "units": 123,
+      "revenue": 110755,
+      "units": 83,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
@@ -759,10 +759,10 @@
       "platformLabel": "Ozon",
       "articleKey": "pantogor_100ml",
       "name": "pantogor_100ml",
-      "revenue": 104464,
-      "units": 140,
+      "revenue": 105558,
+      "units": 141,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -773,10 +773,10 @@
       "platformLabel": "Ozon",
       "articleKey": "kinzhal",
       "name": "kinzhal",
-      "revenue": 102580,
-      "units": 139,
+      "revenue": 104162,
+      "units": 141,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -787,8 +787,22 @@
       "platformLabel": "Ozon",
       "articleKey": "urofol",
       "name": "urofol",
-      "revenue": 95445,
-      "units": 166,
+      "revenue": 99896,
+      "units": 173,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "wbsinergel",
+      "name": "wbsinergel",
+      "revenue": 99707,
+      "units": 156,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
@@ -804,6 +818,34 @@
       "revenue": 94911,
       "units": 87,
       "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "vetonus_100ml",
+      "name": "vetonus_100ml",
+      "revenue": 89633,
+      "units": 198,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "wbmicardinforte",
+      "name": "wbmicardinforte",
+      "revenue": 88793,
+      "units": 137,
+      "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
@@ -813,12 +855,12 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "wb",
       "platformLabel": "WB",
-      "articleKey": "wbsinergel",
-      "name": "wbsinergel",
-      "revenue": 92902,
-      "units": 143,
+      "articleKey": "ekzifol",
+      "name": "ekzifol",
+      "revenue": 88016,
+      "units": 135,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -832,7 +874,7 @@
       "revenue": 86376,
       "units": 111,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -843,38 +885,10 @@
       "platformLabel": "Ozon",
       "articleKey": "artoks_75ml",
       "name": "artoks_75ml",
-      "revenue": 84498,
-      "units": 93,
+      "revenue": 86372,
+      "units": 95,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "wbmicardinforte",
-      "name": "wbmicardinforte",
-      "revenue": 84127,
-      "units": 128,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "ekzifol",
-      "name": "ekzifol",
-      "revenue": 83369,
-      "units": 126,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -885,10 +899,10 @@
       "platformLabel": "Ozon",
       "articleKey": "mycoplax",
       "name": "mycoplax",
-      "revenue": 82339,
-      "units": 161,
+      "revenue": 85381,
+      "units": 167,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -897,10 +911,24 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
-      "articleKey": "vetonus_100ml",
-      "name": "vetonus_100ml",
-      "revenue": 81953,
-      "units": 178,
+      "articleKey": "kavmaz_40ml_1_1",
+      "name": "kavmaz_40ml_1_1",
+      "revenue": 82449,
+      "units": 64,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "sanatsin",
+      "name": "sanatsin",
+      "revenue": 81691,
+      "units": 105,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
@@ -916,21 +944,7 @@
       "revenue": 80792,
       "units": 165,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "sanatsin",
-      "name": "sanatsin",
-      "revenue": 80433,
-      "units": 103,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -944,7 +958,7 @@
       "revenue": 79830,
       "units": 79,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -955,24 +969,10 @@
       "platformLabel": "Ozon",
       "articleKey": "yagodniy_spas_1_1",
       "name": "yagodniy_spas_1_1",
-      "revenue": 78355,
-      "units": 66,
+      "revenue": 79433,
+      "units": 67,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "kavmaz_40ml_1_1",
-      "name": "kavmaz_40ml_1_1",
-      "revenue": 77165,
-      "units": 60,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -986,7 +986,21 @@
       "revenue": 76899,
       "units": 147,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ya",
+      "platformLabel": "Я.Маркет",
+      "articleKey": "trezvin",
+      "name": "Капсулы от алкогольной зависимости, детокс организма, пищевая добавка Трезвин,  средство от алкоголизма и запоя, 20 шт",
+      "revenue": 75612,
+      "units": 93,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -999,6 +1013,34 @@
       "name": "okospas",
       "revenue": 75230,
       "units": 123,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "sinergel_30ml_1_1",
+      "name": "sinergel_30ml_1_1",
+      "revenue": 71255,
+      "units": 50,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-15",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "sustalit",
+      "name": "sustalit",
+      "revenue": 71009,
+      "units": 102,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
@@ -1014,7 +1056,21 @@
       "revenue": 69301,
       "units": 100,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "dardrakona_1_1",
+      "name": "dardrakona_1_1",
+      "revenue": 65752,
+      "units": 113,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1023,26 +1079,12 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ya",
       "platformLabel": "Я.Маркет",
-      "articleKey": "trezvin",
-      "name": "Капсулы от алкогольной зависимости, детокс организма, пищевая добавка Трезвин,  средство от алкоголизма и запоя, 20 шт",
-      "revenue": 68430,
-      "units": 84,
+      "articleKey": "otivin",
+      "name": "Капли для ушей, усилитель слуха, ушные капли, средство для улучшения слуха, Алтея, Отивин, 10 мл",
+      "revenue": 65691,
+      "units": 114,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "sustalit",
-      "name": "sustalit",
-      "revenue": 67612,
-      "units": 96,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1056,7 +1098,7 @@
       "revenue": 65346,
       "units": 108,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1070,35 +1112,7 @@
       "revenue": 65073,
       "units": 63,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "sinergel_30ml_1_1",
-      "name": "sinergel_30ml_1_1",
-      "revenue": 64330,
-      "units": 44,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "dardrakona_1_1",
-      "name": "dardrakona_1_1",
-      "revenue": 63866,
-      "units": 111,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1109,9 +1123,37 @@
       "platformLabel": "Я.Маркет",
       "articleKey": "fbs_trezax",
       "name": "Капли от алкогольной зависимости, детокс организма, средство от алкоголизма и запоя Алтея, Трезакс, 10 мл",
-      "revenue": 62442,
-      "units": 90,
+      "revenue": 64458,
+      "units": 93,
       "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "urolgan",
+      "name": "urolgan",
+      "revenue": 61558,
+      "units": 158,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "otivin",
+      "name": "otivin",
+      "revenue": 61482,
+      "units": 80,
+      "firstDate": "2026-05-02",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
@@ -1135,12 +1177,12 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
-      "articleKey": "urolgan",
-      "name": "urolgan",
-      "revenue": 58821,
-      "units": 151,
+      "articleKey": "kardicin_1_1",
+      "name": "kardicin_1_1",
+      "revenue": 59013,
+      "units": 67,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1151,10 +1193,10 @@
       "platformLabel": "Ozon",
       "articleKey": "urinofix",
       "name": "urinofix",
-      "revenue": 56660,
-      "units": 94,
+      "revenue": 58224,
+      "units": 96,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1165,24 +1207,10 @@
       "platformLabel": "Ozon",
       "articleKey": "chudogrib",
       "name": "chudogrib",
-      "revenue": 56574,
-      "units": 78,
+      "revenue": 58110,
+      "units": 80,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "otivin",
-      "name": "otivin",
-      "revenue": 54567,
-      "units": 69,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1193,8 +1221,22 @@
       "platformLabel": "Ozon",
       "articleKey": "wbbiotrin_1_1",
       "name": "wbbiotrin_1_1",
-      "revenue": 54426,
-      "units": 53,
+      "revenue": 56824,
+      "units": 55,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "uromax",
+      "name": "uromax",
+      "revenue": 55917,
+      "units": 79,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
@@ -1210,21 +1252,7 @@
       "revenue": 53868,
       "units": 75,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "uromax",
-      "name": "uromax",
-      "revenue": 53728,
-      "units": 75,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1238,7 +1266,7 @@
       "revenue": 52276,
       "units": 88,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1249,8 +1277,36 @@
       "platformLabel": "Ozon",
       "articleKey": "brutalax",
       "name": "brutalax",
-      "revenue": 51801,
-      "units": 139,
+      "revenue": 52094,
+      "units": 140,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "micardin",
+      "name": "micardin",
+      "revenue": 50777,
+      "units": 76,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-15",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "daoshen",
+      "name": "daoshen",
+      "revenue": 49262,
+      "units": 70,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
@@ -1266,21 +1322,7 @@
       "revenue": 48890,
       "units": 121,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "micardin",
-      "name": "micardin",
-      "revenue": 47632,
-      "units": 70,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1289,12 +1331,26 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
-      "articleKey": "kardicin_1_1",
-      "name": "kardicin_1_1",
-      "revenue": 47350,
-      "units": 54,
+      "articleKey": "sustalit",
+      "name": "sustalit",
+      "revenue": 48125,
+      "units": 80,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "sinergel_30ml_1_1",
+      "name": "sinergel_30ml_1_1",
+      "revenue": 47128,
+      "units": 53,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1308,21 +1364,7 @@
       "revenue": 46314,
       "units": 54,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "sustalit",
-      "name": "sustalit",
-      "revenue": 46271,
-      "units": 77,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1336,7 +1378,7 @@
       "revenue": 46263,
       "units": 51,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1357,48 +1399,6 @@
       "severity": "warning",
       "type": "api_sku_unmapped",
       "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "sinergel_30ml_1_1",
-      "name": "sinergel_30ml_1_1",
-      "revenue": 45364,
-      "units": 51,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ya",
-      "platformLabel": "Я.Маркет",
-      "articleKey": "otivin",
-      "name": "Капли для ушей, усилитель слуха, ушные капли, средство для улучшения слуха, Алтея, Отивин, 10 мл",
-      "revenue": 45159,
-      "units": 78,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "daoshen",
-      "name": "daoshen",
-      "revenue": 45091,
-      "units": 63,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
       "platform": "ya",
       "platformLabel": "Я.Маркет",
       "articleKey": "uromax",
@@ -1406,7 +1406,21 @@
       "revenue": 45003,
       "units": 57,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ya",
+      "platformLabel": "Я.Маркет",
+      "articleKey": "micardinforte",
+      "name": "Средство от давления, витамины для сердца и  сосудов, Алтея, Микардин Форте, 10 капсул",
+      "revenue": 44502,
+      "units": 66,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1420,6 +1434,20 @@
       "revenue": 43200,
       "units": 51,
       "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "artoks_75ml",
+      "name": "artoks_75ml",
+      "revenue": 43062,
+      "units": 34,
+      "firstDate": "2026-05-02",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
@@ -1434,7 +1462,7 @@
       "revenue": 43035,
       "units": 77,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1448,7 +1476,7 @@
       "revenue": 42822,
       "units": 54,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1462,35 +1490,7 @@
       "revenue": 42520,
       "units": 70,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ya",
-      "platformLabel": "Я.Маркет",
-      "articleKey": "micardinforte",
-      "name": "Средство от давления, витамины для сердца и  сосудов, Алтея, Микардин Форте, 10 капсул",
-      "revenue": 40614,
-      "units": 60,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "wbgetsizegel",
-      "name": "wbgetsizegel",
-      "revenue": 39662,
-      "units": 111,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1501,8 +1501,64 @@
       "platformLabel": "Ozon",
       "articleKey": "otivin",
       "name": "otivin",
-      "revenue": 39650,
-      "units": 70,
+      "revenue": 40275,
+      "units": 71,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "wbgetsizegel",
+      "name": "wbgetsizegel",
+      "revenue": 40228,
+      "units": 113,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "gemorekt",
+      "name": "gemorekt",
+      "revenue": 40062,
+      "units": 61,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-15",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ya",
+      "platformLabel": "Я.Маркет",
+      "articleKey": "optitrin",
+      "name": "Витамины для глаз и зрения с лютеином и черникой, глазные капли Оптитрин, капли для глаз, 7 ампул",
+      "revenue": 39369,
+      "units": 66,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "daoshen_75ml",
+      "name": "daoshen_75ml",
+      "revenue": 39298,
+      "units": 38,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
@@ -1518,7 +1574,7 @@
       "revenue": 38943,
       "units": 60,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1532,7 +1588,7 @@
       "revenue": 38593,
       "units": 61,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1543,38 +1599,24 @@
       "platformLabel": "Ozon",
       "articleKey": "wbgetsize",
       "name": "wbgetsize",
-      "revenue": 38009,
-      "units": 65,
+      "revenue": 38591,
+      "units": 66,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
       "severity": "warning",
       "type": "api_sku_unmapped",
       "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "artoks_75ml",
-      "name": "artoks_75ml",
-      "revenue": 37700,
-      "units": 29,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-14",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ya",
-      "platformLabel": "Я.Маркет",
-      "articleKey": "optitrin",
-      "name": "Витамины для глаз и зрения с лютеином и черникой, глазные капли Оптитрин, капли для глаз, 7 ампул",
-      "revenue": 37659,
-      "units": 63,
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "arterol",
+      "name": "arterol",
+      "revenue": 37546,
+      "units": 60,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1588,21 +1630,7 @@
       "revenue": 37430,
       "units": 32,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "gemorekt",
-      "name": "gemorekt",
-      "revenue": 37366,
-      "units": 56,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1616,7 +1644,7 @@
       "revenue": 37296,
       "units": 36,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-13",
+      "lastDate": "2026-05-14",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1627,10 +1655,38 @@
       "platformLabel": "WB",
       "articleKey": "dardrakona_1_1",
       "name": "dardrakona_1_1",
-      "revenue": 34721,
-      "units": 32,
+      "revenue": 35635,
+      "units": 33,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-13",
+      "lastDate": "2026-05-15",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "dardrakona",
+      "name": "dardrakona",
+      "revenue": 34824,
+      "units": 58,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "ekzifol",
+      "name": "ekzifol",
+      "revenue": 34778,
+      "units": 118,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1644,7 +1700,7 @@
       "revenue": 34557,
       "units": 39,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1658,35 +1714,7 @@
       "revenue": 34276,
       "units": 44,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "ekzifol",
-      "name": "ekzifol",
-      "revenue": 34178,
-      "units": 116,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "arterol",
-      "name": "arterol",
-      "revenue": 34072,
-      "units": 54,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1695,12 +1723,26 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "wb",
       "platformLabel": "WB",
-      "articleKey": "daoshen_75ml",
-      "name": "daoshen_75ml",
-      "revenue": 33347,
-      "units": 31,
+      "articleKey": "vetonus",
+      "name": "vetonus",
+      "revenue": 33678,
+      "units": 45,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-15",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "osteofast",
+      "name": "osteofast",
+      "revenue": 33491,
+      "units": 69,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1721,20 +1763,6 @@
       "severity": "warning",
       "type": "api_sku_unmapped",
       "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "osteofast",
-      "name": "osteofast",
-      "revenue": 33024,
-      "units": 68,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
       "platform": "goldapple",
       "platformLabel": "ЗЯ",
       "articleKey": "maska_dlya_lica_100m",
@@ -1742,19 +1770,19 @@
       "revenue": 32799,
       "units": 33,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
       "severity": "warning",
       "type": "api_sku_unmapped",
       "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "dardrakona",
-      "name": "dardrakona",
-      "revenue": 31338,
-      "units": 52,
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "vetonus_100ml",
+      "name": "vetonus_100ml",
+      "revenue": 31344,
+      "units": 29,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
@@ -1765,12 +1793,26 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "wb",
       "platformLabel": "WB",
-      "articleKey": "vetonus",
-      "name": "vetonus",
-      "revenue": 31263,
-      "units": 41,
+      "articleKey": "varifit",
+      "name": "varifit",
+      "revenue": 30146,
+      "units": 45,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-15",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "osteofast",
+      "name": "osteofast",
+      "revenue": 29136,
+      "units": 37,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1784,35 +1826,7 @@
       "revenue": 28944,
       "units": 30,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "vetonus_100ml",
-      "name": "vetonus_100ml",
-      "revenue": 28793,
-      "units": 26,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "osteofast",
-      "name": "osteofast",
-      "revenue": 28463,
-      "units": 36,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1826,7 +1840,7 @@
       "revenue": 28296,
       "units": 30,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1840,7 +1854,7 @@
       "revenue": 28050,
       "units": 51,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1854,7 +1868,7 @@
       "revenue": 27924,
       "units": 33,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1868,7 +1882,7 @@
       "revenue": 27807,
       "units": 33,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1889,26 +1903,26 @@
       "severity": "warning",
       "type": "api_sku_unmapped",
       "dataset": "platform_trends.extraMarketplace",
-      "platform": "ya",
-      "platformLabel": "Я.Маркет",
-      "articleKey": "sustalit_75ml",
-      "name": "Мазь для суставов. Гель обезболивающий, Крем Алтея, Сусталит, Средство от боли в суставах 75 мл",
-      "revenue": 26946,
-      "units": 45,
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "varifit",
+      "name": "varifit",
+      "revenue": 27044,
+      "units": 48,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-13",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
       "severity": "warning",
       "type": "api_sku_unmapped",
       "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "varifit",
-      "name": "varifit",
-      "revenue": 26732,
-      "units": 39,
+      "platform": "ya",
+      "platformLabel": "Я.Маркет",
+      "articleKey": "sustalit_75ml",
+      "name": "Мазь для суставов. Гель обезболивающий, Крем Алтея, Сусталит, Средство от боли в суставах 75 мл",
+      "revenue": 26946,
+      "units": 45,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-14",
       "message": "API SKU не найден в skus.json/алиасах"
@@ -1924,7 +1938,7 @@
       "revenue": 26136,
       "units": 30,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1933,12 +1947,12 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
-      "articleKey": "varifit",
-      "name": "varifit",
-      "revenue": 25974,
-      "units": 46,
+      "articleKey": "trezor",
+      "name": "trezor",
+      "revenue": 25909,
+      "units": 42,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1949,7 +1963,7 @@
       "platformLabel": "WB",
       "articleKey": "sanatsin_1_1",
       "name": "sanatsin_1_1",
-      "revenue": 25723,
+      "revenue": 25724,
       "units": 10,
       "firstDate": "2026-05-02",
       "lastDate": "2026-05-14",
@@ -1966,7 +1980,21 @@
       "revenue": 24954,
       "units": 48,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ya",
+      "platformLabel": "Я.Маркет",
+      "articleKey": "psoral_50ml",
+      "name": "Мазь от псориаза и дерматита, крем от зуда, крем при псориазе Алтея, Псорал, 50 мл",
+      "revenue": 24219,
+      "units": 39,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1980,7 +2008,7 @@
       "revenue": 23937,
       "units": 36,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1989,12 +2017,12 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
-      "articleKey": "trezor",
-      "name": "trezor",
-      "revenue": 23779,
-      "units": 37,
+      "articleKey": "allicil_gribok15ml",
+      "name": "allicil_gribok15ml",
+      "revenue": 22904,
+      "units": 70,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2008,7 +2036,7 @@
       "revenue": 22903,
       "units": 49,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2022,21 +2050,7 @@
       "revenue": 22629,
       "units": 27,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ya",
-      "platformLabel": "Я.Маркет",
-      "articleKey": "psoral_50ml",
-      "name": "Мазь от псориаза и дерматита, крем от зуда, крем при псориазе Алтея, Псорал, 50 мл",
-      "revenue": 22395,
-      "units": 36,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2050,7 +2064,7 @@
       "revenue": 22392,
       "units": 19,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2064,7 +2078,7 @@
       "revenue": 21801,
       "units": 17,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2078,7 +2092,7 @@
       "revenue": 21555,
       "units": 24,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2092,7 +2106,7 @@
       "revenue": 21378,
       "units": 37,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2106,21 +2120,7 @@
       "revenue": 21054,
       "units": 27,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "allicil_gribok15ml",
-      "name": "allicil_gribok15ml",
-      "revenue": 20950,
-      "units": 64,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2134,7 +2134,7 @@
       "revenue": 20937,
       "units": 30,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2148,7 +2148,7 @@
       "revenue": 20568,
       "units": 30,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2162,7 +2162,63 @@
       "revenue": 20469,
       "units": 27,
       "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ya",
+      "platformLabel": "Я.Маркет",
+      "articleKey": "daoshen_75ml",
+      "name": "Крем от грибка ногтей и стопы ног, противогрибковое средство Даошэн, мазь гель против грибка ногтей, 75 мл",
+      "revenue": 20340,
+      "units": 36,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ya",
+      "platformLabel": "Я.Маркет",
+      "articleKey": "wowglam",
+      "name": "Сыворотка для роста волос, никотиновая кислота, биотин, бетаин, кератин, масло жожоба, Алтея, WOW GLAM, 10 штук по 2 мл",
+      "revenue": 19956,
+      "units": 30,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "vetonus_1_1",
+      "name": "vetonus_1_1",
+      "revenue": 19823,
+      "units": 18,
+      "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ya",
+      "platformLabel": "Я.Маркет",
+      "articleKey": "fbs_trezvin",
+      "name": "Капсулы от алкогольной зависимости Трезвин,  детокс организма,  средство от алкоголизма и запоя,  20 шт",
+      "revenue": 19467,
+      "units": 24,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2176,7 +2232,7 @@
       "revenue": 18707,
       "units": 35,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2185,12 +2241,12 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ya",
       "platformLabel": "Я.Маркет",
-      "articleKey": "daoshen_75ml",
-      "name": "Крем от грибка ногтей и стопы ног, противогрибковое средство Даошэн, мазь гель против грибка ногтей, 75 мл",
-      "revenue": 18618,
+      "articleKey": "micolan",
+      "name": "Крем гель от грибка ногтей на ногах, противогрибковое средство с коллоидным серебром, мазь Алтея, Миколан, 15 мл",
+      "revenue": 18420,
       "units": 33,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2204,7 +2260,7 @@
       "revenue": 18021,
       "units": 30,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2218,7 +2274,7 @@
       "revenue": 17860,
       "units": 27,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2232,7 +2288,7 @@
       "revenue": 17774,
       "units": 17,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2246,20 +2302,20 @@
       "revenue": 17490,
       "units": 21,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
       "severity": "warning",
       "type": "api_sku_unmapped",
       "dataset": "platform_trends.extraMarketplace",
-      "platform": "ya",
-      "platformLabel": "Я.Маркет",
-      "articleKey": "fbs_trezvin",
-      "name": "Капсулы от алкогольной зависимости Трезвин,  детокс организма,  средство от алкоголизма и запоя,  20 шт",
-      "revenue": 17136,
-      "units": 21,
-      "firstDate": "2026-05-01",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "dardrakona_75ml",
+      "name": "dardrakona_75ml",
+      "revenue": 17352,
+      "units": 22,
+      "firstDate": "2026-05-02",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
@@ -2274,21 +2330,7 @@
       "revenue": 17088,
       "units": 21,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ya",
-      "platformLabel": "Я.Маркет",
-      "articleKey": "micolan",
-      "name": "Крем гель от грибка ногтей на ногах, противогрибковое средство с коллоидным серебром, мазь Алтея, Миколан, 15 мл",
-      "revenue": 16782,
-      "units": 30,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2302,7 +2344,49 @@
       "revenue": 16422,
       "units": 33,
       "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "psoral_50ml",
+      "name": "psoral_50ml",
+      "revenue": 16123,
+      "units": 19,
+      "firstDate": "2026-05-01",
       "lastDate": "2026-05-15",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "wboptitrin",
+      "name": "wboptitrin",
+      "revenue": 16076,
+      "units": 42,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ya",
+      "platformLabel": "Я.Маркет",
+      "articleKey": "kinzhal",
+      "name": "Возбудитель для мужчин, средство для потенции и эрекции, витамины для мужчины,Кинжал, 20 капсул",
+      "revenue": 15984,
+      "units": 24,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2316,7 +2400,7 @@
       "revenue": 15883,
       "units": 18,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2325,40 +2409,12 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "wb",
       "platformLabel": "WB",
-      "articleKey": "dardrakona_75ml",
-      "name": "dardrakona_75ml",
-      "revenue": 15862,
-      "units": 20,
+      "articleKey": "uromax_1_1",
+      "name": "uromax_1_1",
+      "revenue": 14863,
+      "units": 8,
       "firstDate": "2026-05-02",
-      "lastDate": "2026-05-14",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "vetonus_1_1",
-      "name": "vetonus_1_1",
-      "revenue": 15260,
-      "units": 13,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "psoral_50ml",
-      "name": "psoral_50ml",
-      "revenue": 14794,
-      "units": 17,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2367,12 +2423,12 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
-      "articleKey": "wboptitrin",
-      "name": "wboptitrin",
-      "revenue": 14411,
-      "units": 37,
+      "articleKey": "khvoinitsa_1_1",
+      "name": "khvoinitsa_1_1",
+      "revenue": 14644,
+      "units": 23,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2383,9 +2439,23 @@
       "platformLabel": "Ozon",
       "articleKey": "okucin",
       "name": "okucin",
-      "revenue": 14144,
-      "units": 31,
+      "revenue": 14602,
+      "units": 32,
       "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "dolgar",
+      "name": "dolgar",
+      "revenue": 13791,
+      "units": 20,
+      "firstDate": "2026-05-03",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
@@ -2400,21 +2470,7 @@
       "revenue": 13692,
       "units": 12,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "uromax_1_1",
-      "name": "uromax_1_1",
-      "revenue": 13374,
-      "units": 7,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-13",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2428,7 +2484,7 @@
       "revenue": 13289,
       "units": 34,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2442,7 +2498,7 @@
       "revenue": 13104,
       "units": 9,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2456,7 +2512,21 @@
       "revenue": 13014,
       "units": 21,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ya",
+      "platformLabel": "Я.Маркет",
+      "articleKey": "erobrut",
+      "name": "Возбудитель для мужчин, таблетки для потенции, капсулы для секса, 18+, Эробрут,Алтея, 20 капсул",
+      "revenue": 12399,
+      "units": 18,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2470,7 +2540,7 @@
       "revenue": 12375,
       "units": 27,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2479,12 +2549,12 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ya",
       "platformLabel": "Я.Маркет",
-      "articleKey": "kinzhal",
-      "name": "Возбудитель для мужчин, средство для потенции и эрекции, витамины для мужчины,Кинжал, 20 капсул",
-      "revenue": 12033,
-      "units": 18,
+      "articleKey": "sinergel",
+      "name": "Крем мазь для суставов и связок Синергель обезболивающий, противовоспалительный гель от боли, от отеков в ногах 30 мл",
+      "revenue": 11952,
+      "units": 21,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2498,6 +2568,20 @@
       "revenue": 11814,
       "units": 15,
       "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "dardrakona",
+      "name": "dardrakona",
+      "revenue": 11764,
+      "units": 15,
+      "firstDate": "2026-05-02",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
@@ -2512,7 +2596,7 @@
       "revenue": 11508,
       "units": 21,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2526,21 +2610,35 @@
       "revenue": 11493,
       "units": 15,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
       "severity": "warning",
       "type": "api_sku_unmapped",
       "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "dardrakona",
-      "name": "dardrakona",
-      "revenue": 11138,
-      "units": 14,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-14",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "glukofol",
+      "name": "glukofol",
+      "revenue": 11381,
+      "units": 31,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ya",
+      "platformLabel": "Я.Маркет",
+      "articleKey": "getsize",
+      "name": "Эрекционная насадка для увеличения члена, мастурбатор, секс игрушки 18+",
+      "revenue": 11304,
+      "units": 24,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2554,21 +2652,7 @@
       "revenue": 10573,
       "units": 27,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "glukofol",
-      "name": "glukofol",
-      "revenue": 10547,
-      "units": 29,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2582,35 +2666,7 @@
       "revenue": 10420,
       "units": 27,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ya",
-      "platformLabel": "Я.Маркет",
-      "articleKey": "erobrut",
-      "name": "Возбудитель для мужчин, таблетки для потенции, капсулы для секса, 18+, Эробрут,Алтея, 20 капсул",
-      "revenue": 10395,
-      "units": 15,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "dolgar",
-      "name": "dolgar",
-      "revenue": 10240,
-      "units": 14,
-      "firstDate": "2026-05-03",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2624,7 +2680,7 @@
       "revenue": 10086,
       "units": 7,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2652,21 +2708,7 @@
       "revenue": 10002,
       "units": 15,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ya",
-      "platformLabel": "Я.Маркет",
-      "articleKey": "getsize",
-      "name": "Эрекционная насадка для увеличения члена, мастурбатор, секс игрушки 18+",
-      "revenue": 9897,
-      "units": 21,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2694,7 +2736,7 @@
       "revenue": 9864,
       "units": 12,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2708,7 +2750,21 @@
       "revenue": 9690,
       "units": 18,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "dolgar",
+      "name": "dolgar",
+      "revenue": 9674,
+      "units": 25,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2722,6 +2778,20 @@
       "revenue": 9666,
       "units": 9,
       "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "activeprost",
+      "name": "activeprost",
+      "revenue": 9591,
+      "units": 15,
+      "firstDate": "2026-05-04",
       "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
@@ -2743,20 +2813,6 @@
       "severity": "warning",
       "type": "api_sku_unmapped",
       "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "dolgar",
-      "name": "dolgar",
-      "revenue": 9336,
-      "units": 24,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
       "platform": "ya",
       "platformLabel": "Я.Маркет",
       "articleKey": "mycoplax",
@@ -2764,7 +2820,7 @@
       "revenue": 9330,
       "units": 15,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2792,7 +2848,7 @@
       "revenue": 8967,
       "units": 15,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2806,49 +2862,7 @@
       "revenue": 8934,
       "units": 18,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ya",
-      "platformLabel": "Я.Маркет",
-      "articleKey": "sinergel",
-      "name": "Крем мазь для суставов и связок Синергель обезболивающий, противовоспалительный гель от боли, от отеков в ногах 30 мл",
-      "revenue": 8568,
-      "units": 15,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ya",
-      "platformLabel": "Я.Маркет",
-      "articleKey": "wowglam",
-      "name": "Сыворотка для роста волос, никотиновая кислота, биотин, бетаин, кератин, масло жожоба, Алтея, WOW GLAM, 10 штук по 2 мл",
-      "revenue": 8262,
-      "units": 12,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "khvoinitsa_1_1",
-      "name": "khvoinitsa_1_1",
-      "revenue": 8154,
-      "units": 13,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2862,7 +2876,7 @@
       "revenue": 7794,
       "units": 9,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2871,12 +2885,12 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "wb",
       "platformLabel": "WB",
-      "articleKey": "activeprost",
-      "name": "activeprost",
-      "revenue": 7160,
-      "units": 11,
-      "firstDate": "2026-05-04",
-      "lastDate": "2026-05-14",
+      "articleKey": "urolgan",
+      "name": "urolgan",
+      "revenue": 7121,
+      "units": 15,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-15",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2904,7 +2918,7 @@
       "revenue": 6300,
       "units": 9,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2918,7 +2932,7 @@
       "revenue": 6174,
       "units": 9,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2946,7 +2960,7 @@
       "revenue": 5922,
       "units": 9,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2960,7 +2974,7 @@
       "revenue": 5616,
       "units": 12,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2974,7 +2988,7 @@
       "revenue": 5160,
       "units": 3,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -2988,7 +3002,7 @@
       "revenue": 5148,
       "units": 6,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3002,7 +3016,7 @@
       "revenue": 5016,
       "units": 6,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3030,7 +3044,7 @@
       "revenue": 4823,
       "units": 7,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3044,7 +3058,7 @@
       "revenue": 4533,
       "units": 5,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3058,21 +3072,7 @@
       "revenue": 4532,
       "units": 6,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "wb",
-      "platformLabel": "WB",
-      "articleKey": "urolgan",
-      "name": "urolgan",
-      "revenue": 4505,
-      "units": 9,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3086,7 +3086,7 @@
       "revenue": 4464,
       "units": 4,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3100,7 +3100,7 @@
       "revenue": 3960,
       "units": 6,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3128,7 +3128,7 @@
       "revenue": 3745,
       "units": 5,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3142,7 +3142,7 @@
       "revenue": 3486,
       "units": 6,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3170,7 +3170,7 @@
       "revenue": 3342,
       "units": 6,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3198,7 +3198,7 @@
       "revenue": 2916,
       "units": 6,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3240,7 +3240,7 @@
       "revenue": 2619,
       "units": 3,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3268,7 +3268,7 @@
       "revenue": 1971,
       "units": 3,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3296,7 +3296,7 @@
       "revenue": 1414,
       "units": 2,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3310,7 +3310,7 @@
       "revenue": 1340,
       "units": 4,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3366,7 +3366,7 @@
       "revenue": 659,
       "units": 1,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -3380,7 +3380,7 @@
       "revenue": 511,
       "units": 1,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15",
+      "lastDate": "2026-05-16",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {

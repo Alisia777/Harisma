@@ -439,6 +439,25 @@ if (Test-Path -LiteralPath $skuAliasIgnorePath) {
   Copy-Item -LiteralPath $skuAliasIgnorePath -Destination (Join-Path $resolvedOutputDir "sku_alias_ignore.json") -Force
 }
 
+$skuMatrixArguments = @(
+  "scripts/build-sku-matrix-layer.js",
+  "--input-dir",
+  $resolvedOutputDir,
+  "--base-data-dir",
+  "data",
+  "--output-dir",
+  $resolvedOutputDir,
+  "--mirror-local-fallback"
+)
+
+Write-Output "[sync] SKU matrix build started"
+try {
+  Invoke-NodeStep -StepName "SKU matrix build" -Arguments $skuMatrixArguments -Attempts 2 -RetryDelaySeconds 20
+  Write-Output "[sync] SKU matrix build completed"
+} catch {
+  Write-Warning "[sync] SKU matrix build failed, but the portal sync will continue: $($_.Exception.Message)"
+}
+
 $metaPath = Join-Path $resolvedOutputDir "meta.json"
 if (Test-Path -LiteralPath $metaPath) {
   $meta = Get-Content -LiteralPath $metaPath -Raw | ConvertFrom-Json
@@ -496,6 +515,10 @@ if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_data_quality.js
 
 if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "sku_alias_ignore.json")) {
   $snapshotNames += "sku_alias_ignore"
+}
+
+if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "sku_matrix.json")) {
+  $snapshotNames += "sku_matrix"
 }
 
 $snapshotList = ($snapshotNames | Select-Object -Unique) -join ","

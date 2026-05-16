@@ -15,6 +15,7 @@
   iuDrrSummary: { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
   wbFeedbacks: { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] },
   skuAliasIgnore: { schema: 'sku-api-ignore-v1', ignored: [] },
+  skuMatrix: { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } },
   launches: [],
   meetings: [],
   documents: { groups: [] },
@@ -296,9 +297,9 @@ const CONTROL_WORKSTREAM_META = {
     kind: 'info'
   },
   executive: {
-    label: 'Руководитель / директор',
-    chip: 'Директор',
-    description: 'Согласования, эскалации и задачи продукт-директора.',
+    label: 'Управленческий финал',
+    chip: 'Финал',
+    description: 'Финальные согласования и управленческие эскалации.',
     kind: 'danger'
   },
   cross: {
@@ -309,7 +310,7 @@ const CONTROL_WORKSTREAM_META = {
   }
 };
 
-const CONTROL_WORKSTREAM_ORDER = ['cross', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'executive'];
+const CONTROL_WORKSTREAM_ORDER = ['cross', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product'];
 const CONTROL_WORKSTREAM_FILTER_ORDER = ['all', ...CONTROL_WORKSTREAM_ORDER];
 
 const DEFAULT_APP_CONFIG = {
@@ -366,7 +367,8 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/order_procurement_ozon.json': 'order_procurement_ozon',
   'data/warehouse_stock_overlay.json': 'warehouse_stock_overlay',
   'data/portal_data_quality.json': 'portal_data_quality',
-  'data/sku_alias_ignore.json': 'sku_alias_ignore'
+  'data/sku_alias_ignore.json': 'sku_alias_ignore',
+  'data/sku_matrix.json': 'sku_matrix'
 };
 const portalSnapshotState = {
   client: null,

@@ -21,7 +21,16 @@
     "data/order_procurement.json": "order_procurement",
     "data/order_procurement_wb.json": "order_procurement_wb",
     "data/order_procurement_ozon.json": "order_procurement_ozon",
-    "data/warehouse_stock_overlay.json": "warehouse_stock_overlay"
+    "data/warehouse_stock_overlay.json": "warehouse_stock_overlay",
+    "data/sku_matrix.json": "sku_matrix"
+  };
+  var SKU_MATRIX_FALLBACK = {
+    schema: "portal-sku-matrix-v1",
+    summary: {},
+    items: [],
+    apiUnmapped: [],
+    ignoredApiSku: [],
+    indexes: { byArticleKey: {}, aliasToArticleKey: {} }
   };
   var ALLOWED_SNAPSHOT_KEYS = Object.keys(PATH_MAP).reduce(function (acc, path) {
     var key = PATH_MAP[path];
@@ -128,6 +137,13 @@
   function payloadLooksUsable(snapshotKey, payload) {
     if (!payload) return false;
     if (snapshotKey === "skus") return Array.isArray(payload) && payload.length > 0;
+    if (snapshotKey === "sku_matrix") {
+      return payload
+        && typeof payload === "object"
+        && !Array.isArray(payload)
+        && Array.isArray(payload.items)
+        && payload.items.length > 0;
+    }
     if (snapshotKey === "platform_trends" || snapshotKey === "ads_summary") {
       return Array.isArray(payload && payload.platforms) && payload.platforms.length > 0;
     }
@@ -531,7 +547,8 @@
       loadSnapshotAwareJson("data/smart_price_overlay.json", { generatedAt: "", platforms: {} }, true),
       optionalLoader("tmp-live-repricer.json"),
       loadSnapshotAwareJson("data/repricer.json", { generatedAt: "", summary: {}, rows: [] }, true),
-      loadSnapshotAwareJson("data/price_workbench_support.json", { generatedAt: "", platforms: {} }, true)
+      loadSnapshotAwareJson("data/price_workbench_support.json", { generatedAt: "", platforms: {} }, true),
+      loadSnapshotAwareJson("data/sku_matrix.json", SKU_MATRIX_FALLBACK, true)
     ]);
     var dashboard = results[0];
     var skus = results[1];
@@ -547,11 +564,14 @@
     var repricerLive = results[11];
     var repricer = results[12];
     var priceWorkbenchSupport = results[13];
+    var skuMatrix = results[14];
     var changed = false;
 
     if (typeof state === "object" && state) {
       var nextDashboard = dashboard || { cards: [], generatedAt: "" };
-      var nextSkus = Array.isArray(skus) ? skus : [];
+      var nextSkus = Array.isArray(skus) && skus.length
+        ? skus
+        : (Array.isArray(state.skus) ? state.skus : []);
       var nextAdsSummary = adsSummary && typeof adsSummary === "object"
         ? adsSummary
         : { generatedAt: "", asOfDate: "", note: "", platforms: [], itemSeries: [] };
@@ -581,6 +601,9 @@
       var nextPriceWorkbenchSupport = priceWorkbenchSupport && typeof priceWorkbenchSupport === "object"
         ? priceWorkbenchSupport
         : { generatedAt: "", platforms: {} };
+      var nextSkuMatrix = skuMatrix && typeof skuMatrix === "object"
+        ? skuMatrix
+        : (state.skuMatrix || SKU_MATRIX_FALLBACK);
       var nextSmartPriceWorkbenchBase = typeof mergeSmartWorkbenchPayload === "function"
         ? mergeSmartWorkbenchPayload(smartPriceWorkbench || { generatedAt: "", platforms: {} }, nextSmartPriceWorkbenchLive)
         : (smartPriceWorkbench || { generatedAt: "", platforms: {} });
@@ -646,6 +669,10 @@
       }
       if (payloadChanged("priceWorkbenchSupport", state.priceWorkbenchSupport, nextPriceWorkbenchSupport)) {
         state.priceWorkbenchSupport = nextPriceWorkbenchSupport;
+        changed = true;
+      }
+      if (payloadChanged("sku_matrix", state.skuMatrix, nextSkuMatrix)) {
+        state.skuMatrix = nextSkuMatrix;
         changed = true;
       }
       if (changed && typeof applyOwnerOverridesToSkus === "function") applyOwnerOverridesToSkus();

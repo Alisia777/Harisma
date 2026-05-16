@@ -43,6 +43,43 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function skuMatrixToken(value = '') {
+  return String(value ?? '').trim().toLowerCase().replaceAll('ё', 'е').replace(/[^a-zа-я0-9]+/gi, '');
+}
+
+function skuMatrixPlatform(value = '') {
+  const raw = skuMatrixToken(value);
+  if (!raw || raw === 'all' || raw === 'все') return 'all';
+  if (['wb', 'wildberries'].includes(raw)) return 'wb';
+  if (['oz', 'ozon'].includes(raw)) return 'ozon';
+  if (['ya', 'ym', 'yandex', 'yandexmarket', 'ямаркет'].includes(raw)) return 'ya';
+  if (['ga', 'goldapple', 'зя', 'золотоеяблоко'].includes(raw)) return 'goldapple';
+  if (['letu', 'letual', 'летуаль'].includes(raw)) return 'letu';
+  if (['mm', 'magnit', 'magnitmarket', 'магнитмаркет'].includes(raw)) return 'magnit';
+  return raw;
+}
+
+function getSkuMatrixEntry(articleKey = '') {
+  const matrix = state.skuMatrix || {};
+  const items = Array.isArray(matrix.items) ? matrix.items : [];
+  const directIndex = matrix.indexes?.byArticleKey?.[articleKey];
+  if (Number.isInteger(directIndex) && items[directIndex]) return items[directIndex];
+  const token = skuMatrixToken(articleKey);
+  return items.find((item) => skuMatrixToken(item.articleKey || item.article) === token) || null;
+}
+
+function getSkuMatrixAliasArticle(platform = '', apiSku = '') {
+  const indexes = state.skuMatrix?.indexes?.aliasToArticleKey || {};
+  const normalizedPlatform = skuMatrixPlatform(platform);
+  const token = skuMatrixToken(apiSku);
+  if (!token) return '';
+  return indexes[`${normalizedPlatform}|${token}`] || indexes[`all|${token}`] || '';
+}
+
+function skuMatrixSummary() {
+  return state.skuMatrix?.summary || {};
+}
+
 function plusDays(days) {
   const d = new Date();
   d.setHours(12, 0, 0, 0);
@@ -85,7 +122,18 @@ function loadLocalStorage() {
       repricerCorridors: Array.isArray(parsed.repricerCorridors) ? parsed.repricerCorridors.map(normalizeRepricerCorridor).filter((item) => item.articleKey) : [],
       repricerOverrideDeletes: Array.isArray(parsed.repricerOverrideDeletes) ? parsed.repricerOverrideDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
       repricerSkuProfileDeletes: Array.isArray(parsed.repricerSkuProfileDeletes) ? parsed.repricerSkuProfileDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
-      repricerCorridorDeletes: Array.isArray(parsed.repricerCorridorDeletes) ? parsed.repricerCorridorDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : []
+      repricerCorridorDeletes: Array.isArray(parsed.repricerCorridorDeletes) ? parsed.repricerCorridorDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
+      repricerPendingApiAdds: Array.isArray(parsed.repricerPendingApiAdds) ? parsed.repricerPendingApiAdds.filter((item) => item && typeof item === 'object') : [],
+      repricerPendingApiDeletes: Array.isArray(parsed.repricerPendingApiDeletes) ? parsed.repricerPendingApiDeletes.filter((item) => item && typeof item === 'object') : [],
+      repricerPendingCostFixes: Array.isArray(parsed.repricerPendingCostFixes) ? parsed.repricerPendingCostFixes.filter((item) => item && typeof item === 'object') : [],
+      repricerPendingApiTasks: Array.isArray(parsed.repricerPendingApiTasks) ? parsed.repricerPendingApiTasks.filter((item) => item && typeof item === 'object') : [],
+      repricerRepairHistory: Array.isArray(parsed.repricerRepairHistory) ? parsed.repricerRepairHistory.filter((item) => item && typeof item === 'object').slice(0, 400) : [],
+      repricerRepairSnapshots: Array.isArray(parsed.repricerRepairSnapshots) ? parsed.repricerRepairSnapshots.filter((item) => item && typeof item === 'object').slice(0, 10) : [],
+      repricerApiReconcileHistory: Array.isArray(parsed.repricerApiReconcileHistory) ? parsed.repricerApiReconcileHistory.filter((item) => item && typeof item === 'object').slice(0, 100) : [],
+      repricerLastAuditImport: parsed.repricerLastAuditImport && typeof parsed.repricerLastAuditImport === 'object' ? parsed.repricerLastAuditImport : null,
+      repricerLastAutoFix: parsed.repricerLastAutoFix && typeof parsed.repricerLastAutoFix === 'object' ? parsed.repricerLastAutoFix : null,
+      repricerLastImportValidation: parsed.repricerLastImportValidation && typeof parsed.repricerLastImportValidation === 'object' ? parsed.repricerLastImportValidation : null,
+      repricerLastApiReconcile: parsed.repricerLastApiReconcile && typeof parsed.repricerLastApiReconcile === 'object' ? parsed.repricerLastApiReconcile : null
     };
   } catch {
     return defaultStorage();
@@ -555,10 +603,10 @@ function normalizeTaskPlatform(value, contextText = '') {
   if (['magnit', 'mm'].includes(raw)) return 'magnit';
   if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return detectMarketplaceNetworkKey(text) || 'ya';
   if (['product', 'launch', 'launches', 'новинки', 'продукт', 'ксюша'].includes(raw)) return 'product';
-  if (['executive', 'director', 'ceo', 'lead', 'директор', 'руководитель'].includes(raw)) return 'executive';
+  if (['executive', 'director', 'ceo', 'lead', 'директор', 'руководитель'].includes(raw)) return 'cross';
 
   if (/продукт|новин|launch|ксюш/.test(text)) return 'product';
-  if (/директор|руководител|ceo|executive|эскалац|согласовани/.test(text)) return 'executive';
+  if (/директор|руководител|ceo|executive|эскалац|согласовани/.test(text)) return 'cross';
   const marketplace = detectMarketplaceNetworkKey(text);
   if (marketplace) return marketplace;
   if (/(^|\W)wb($|\W)|wildberries|вб/.test(text)) return 'wb';
@@ -586,7 +634,6 @@ function controlWorkstreamKey(task, sku = null) {
   if (platform === 'ozon') return 'ozon';
   if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'magnit') return platform;
   if (platform === 'product') return 'product';
-  if (platform === 'executive') return 'executive';
   if (platform === 'wb+ozon' || platform === 'cross' || platform === 'all') return 'cross';
 
   if (task?.type === 'launch') return 'product';
@@ -598,7 +645,7 @@ function controlWorkstreamKey(task, sku = null) {
 function detectTaskPlatform(task, sku) {
   const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''}`.toLowerCase();
   if (task?.platform) return normalizeTaskPlatform(task.platform, text);
-  if (/директор|руководител|ceo|executive|эскалац|согласовани/.test(text)) return 'executive';
+  if (/директор|руководител|ceo|executive|эскалац|согласовани/.test(text)) return 'cross';
   if (/продукт|новин|launch|ксюш/.test(text) || task?.type === 'launch') return 'product';
   const marketplace = detectMarketplaceNetworkKey(text);
   if (marketplace) return marketplace;

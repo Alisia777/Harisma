@@ -770,6 +770,20 @@ body.v87-imperial.theme-sand-dark #view-repricer .repricer-side-grid {
   gap: 12px;
 }
 
+body.v87-imperial.theme-sand-dark .repricer-marketplace-button.wb {
+  background: linear-gradient(180deg, #a45cff 0%, #7b2cff 58%, #4e168f 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(205, 166, 255, 0.44) !important;
+  box-shadow: 0 14px 30px rgba(123, 44, 255, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+body.v87-imperial.theme-sand-dark .repricer-marketplace-button.ozon {
+  background: linear-gradient(180deg, #2f86ff 0%, #005bff 58%, #003a9c 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(130, 184, 255, 0.46) !important;
+  box-shadow: 0 14px 30px rgba(0, 91, 255, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
 body.v87-imperial.theme-sand-dark #view-repricer .card,
 body.v87-imperial.theme-sand-dark #view-repricer .repricer-card,
 body.v87-imperial.theme-sand-dark #view-repricer .repricer-guide-card,

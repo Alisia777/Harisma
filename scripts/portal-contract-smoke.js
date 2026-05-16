@@ -116,6 +116,7 @@ async function main() {
       document.querySelector('#view-sku-contour [data-sku-contour-quality-export]')
       && document.querySelector('#view-sku-contour [data-sku-contour-quality-import]')
       && document.querySelector('#view-sku-contour [data-sku-contour-guide]')
+      && document.querySelector('#view-sku-contour [data-sku-contour-toggle-resolved]')
     ));
     if (!contourOk) throw new Error('SKU contour controls did not render.');
 

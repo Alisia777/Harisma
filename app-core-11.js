@@ -1448,6 +1448,11 @@ function skuContourGuideHtml() {
         <strong>Коротко: таблица в портале справочная, строки в ней не редактируются.</strong>
         <div class="small muted">Ошибки приходят из утреннего API/sync: портал сравнивает факт продаж площадок, реестр SKU, alias/ignore, карантин и health-снимок. Исправление делается через “Выгрузить форму” → заполнить Excel/CSV → “Загрузить заполненный файл” → “Применить в портал”.</div>
       </div>
+      <div class="notice ok" style="margin-top:12px">
+        <strong>Что сохранится и не должно возвращаться каждый день</strong>
+        <div class="small muted">decision=alias сохраняется в общий sku_aliases, decision=ignore сохраняется в sku_alias_ignore. Утренний sync подтягивает эти справочники и пересобирает матрицу, поэтому тот же API SKU с той же площадки больше не должен попадать в нерешённую очередь.</div>
+        <div class="small muted">decision=new_sku и decision=need_check ничего не скрывают: это честный сигнал “завести SKU” или “проверить вручную”. Они останутся в рабочем списке, пока не появится реальный alias или ignore.</div>
+      </div>
       <div class="table-scroll" style="margin-top:12px">
         <table class="data-table compact">
           <thead><tr><th>decision</th><th>Когда ставить</th><th>Что заполнить</th><th>Что произойдет</th></tr></thead>
@@ -1555,6 +1560,14 @@ function skuContourIssueRows(model = {}) {
     });
 }
 
+function skuContourIssueIsResolved(row = {}) {
+  return row.status === 'applied' || row.status === 'ignored';
+}
+
+function skuContourShowResolved() {
+  return state.skuContourShowResolved === true;
+}
+
 function skuContourDownloadPayload() {
   skuPlanFactDownloadJson(`sku-contour-${todayIso()}.json`, {
     generatedAt: new Date().toISOString(),
@@ -1579,7 +1592,11 @@ function renderSkuContour(rootId = 'view-sku-contour') {
   const quality = state.portalDataQuality?.summary || model.quality || {};
   const quarantine = state.portalDataQuarantine?.summary || {};
   const auditEvents = skuPlanFactAuditEvents(state.skuAliasAudit || {}).slice(0, 8);
-  const issueRows = skuContourIssueRows(model);
+  const allIssueRows = skuContourIssueRows(model);
+  const showResolved = skuContourShowResolved();
+  const resolvedIssueCount = allIssueRows.filter(skuContourIssueIsResolved).length;
+  const issueRows = showResolved ? allIssueRows : allIssueRows.filter((row) => !skuContourIssueIsResolved(row));
+  const hiddenResolvedCount = allIssueRows.length - issueRows.length;
   const issueHtml = issueRows.slice(0, 120).map((row) => {
     const meta = skuContourStatusMeta(row.status);
     return `
@@ -1610,6 +1627,7 @@ function renderSkuContour(rootId = 'view-sku-contour') {
       </div>
       <div class="quick-actions">
         <button class="quick-chip" type="button" data-sku-contour-refresh>Обновить</button>
+        <button class="quick-chip" type="button" data-sku-contour-toggle-resolved>${showResolved ? 'Скрыть решённые' : `Показать решённые${hiddenResolvedCount ? ` (${fmt.int(hiddenResolvedCount)})` : ''}`}</button>
         <button class="quick-chip" type="button" data-sku-contour-open-planfact>План-факт</button>
       </div>
     </div>
@@ -1661,14 +1679,17 @@ function renderSkuContour(rootId = 'view-sku-contour') {
       <div class="section-subhead">
         <div>
           <h3>Очередь ошибок и статусов</h3>
-          <p class="small muted">Статус считается из общего alias/ignore, карантина и health-снимка, поэтому синхронизируется вместе со снапшотами портала.</p>
+          <p class="small muted">По умолчанию показаны только нерешённые строки. Alias и ignore сохраняются в общий контур и скрываются из рабочей очереди после применения.</p>
         </div>
-        <div class="badge-stack">${badge(`${fmt.int(issueRows.length)} строк`, issueRows.length ? 'warn' : 'ok')}</div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(issueRows.length)} в работе`, issueRows.length ? 'warn' : 'ok')}
+          ${resolvedIssueCount ? badge(`${fmt.int(resolvedIssueCount)} решено`, 'ok') : ''}
+        </div>
       </div>
       <div class="table-scroll">
         <table class="data-table compact">
           <thead><tr><th>Статус</th><th>Проблема</th><th>Площадка</th><th>API / SKU</th><th>Сумма</th></tr></thead>
-          <tbody>${issueHtml || '<tr><td colspan="5"><div class="empty">Очередь ошибок пуста</div></td></tr>'}</tbody>
+          <tbody>${issueHtml || `<tr><td colspan="5"><div class="empty">${hiddenResolvedCount ? 'Нерешённых ошибок нет. Решённые строки скрыты, их можно показать кнопкой сверху.' : 'Очередь ошибок пуста'}</div></td></tr>`}</tbody>
         </table>
       </div>
     </div>
@@ -1694,6 +1715,10 @@ function renderSkuContour(rootId = 'view-sku-contour') {
   `;
 
   root.querySelector('[data-sku-contour-refresh]')?.addEventListener('click', (event) => refreshSkuPlanFactData(event.currentTarget, rootId));
+  root.querySelector('[data-sku-contour-toggle-resolved]')?.addEventListener('click', () => {
+    state.skuContourShowResolved = !skuContourShowResolved();
+    renderSkuContour(rootId);
+  });
   root.querySelector('[data-sku-contour-open-planfact]')?.addEventListener('click', () => {
     if (typeof setView === 'function') setView('sku-plan-fact');
     else document.querySelector('.nav-btn[data-view="sku-plan-fact"]')?.click();

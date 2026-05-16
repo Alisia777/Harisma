@@ -1,23 +1,26 @@
 (function () {
-  if (window.__ALTEA_SIDEBAR_PRIORITY_HOTFIX_20260503A__) return;
+  if (window.__ALTEA_SIDEBAR_PRIORITY_HOTFIX_20260516MORNING1__) return;
+  window.__ALTEA_SIDEBAR_PRIORITY_HOTFIX_20260516MORNING1__ = true;
   window.__ALTEA_SIDEBAR_PRIORITY_HOTFIX_20260503A__ = true;
   window.__ALTEA_SIDEBAR_PRIORITY_HOTFIX_20260425A__ = true;
 
   var ORDER = [
     "dashboard",
+    "data-health",
+    "control",
+    "executive",
+    "sku-plan-fact",
     "repricer",
     "prices",
     "order",
-    "control",
-    "executive",
+    "sku-contour",
+    "skus",
     "launches",
+    "launch-control",
     "ads-funnel",
     "iu-drr",
     "wb-rating",
-    "product-leaderboard",
-    "launch-control",
-    "skus",
-    "sku-plan-fact"
+    "product-leaderboard"
   ];
 
   var META = {
@@ -28,6 +31,10 @@
     documents: {
       title: "\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b",
       subtitle: "\u0413\u0430\u0439\u0434\u044b \u00b7 \u0448\u0430\u0431\u043b\u043e\u043d\u044b \u00b7 \u0441\u0441\u044b\u043b\u043a\u0438"
+    },
+    "data-health": {
+      title: "\u0417\u0434\u043e\u0440\u043e\u0432\u044c\u0435 \u0434\u0430\u043d\u043d\u044b\u0445",
+      subtitle: "sync \u00b7 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u044b \u00b7 \u0443\u0442\u0440\u043e"
     },
     repricer: {
       title: "\u0420\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440",
@@ -76,6 +83,10 @@
     skus: {
       title: "\u0420\u0435\u0435\u0441\u0442\u0440 \u0421\u041a\u042e",
       subtitle: "\u0421\u041a\u042e \u00b7 \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438 \u00b7 owner"
+    },
+    "sku-contour": {
+      title: "\u041a\u043e\u043d\u0442\u0443\u0440 SKU",
+      subtitle: "\u043e\u0448\u0438\u0431\u043a\u0438 \u00b7 alias \u00b7 ignore \u00b7 \u0430\u0443\u0434\u0438\u0442"
     },
     "sku-plan-fact": {
       title: "\u041f\u043b\u0430\u043d-\u0444\u0430\u043a\u0442 SKU",

@@ -865,7 +865,7 @@ async function init() {
     state.repricer = { generatedAt: '', summary: {}, rows: [] };
     if (!state.orderCalc.articleKey) state.orderCalc.articleKey = state.skus[0]?.articleKey || '';
     if (!state.orderCalc.daysToNextReceipt) state.orderCalc.daysToNextReceipt = String(Math.round(numberOrZero(state.skus[0]?.leadTimeDays) || 30));
-    state.storage = {
+    const localStorageSnapshot = {
       comments: Array.isArray(local.comments) ? local.comments : [],
       tasks: Array.isArray(local.tasks) ? local.tasks : [],
       decisions: Array.isArray(local.decisions) ? local.decisions : [],
@@ -888,8 +888,14 @@ async function init() {
       repricerLastAuditImport: local.repricerLastAuditImport && typeof local.repricerLastAuditImport === 'object' ? local.repricerLastAuditImport : null,
       repricerLastAutoFix: local.repricerLastAutoFix && typeof local.repricerLastAutoFix === 'object' ? local.repricerLastAutoFix : null,
       repricerLastImportValidation: local.repricerLastImportValidation && typeof local.repricerLastImportValidation === 'object' ? local.repricerLastImportValidation : null,
-      repricerLastApiReconcile: local.repricerLastApiReconcile && typeof local.repricerLastApiReconcile === 'object' ? local.repricerLastApiReconcile : null
+      repricerLastApiReconcile: local.repricerLastApiReconcile && typeof local.repricerLastApiReconcile === 'object' ? local.repricerLastApiReconcile : null,
+      portalDataRules: local.portalDataRules && typeof local.portalDataRules === 'object' ? local.portalDataRules : {},
+      portalDataRulesUpdatedAt: String(local.portalDataRulesUpdatedAt || '').trim(),
+      portalIssueSnapshot: local.portalIssueSnapshot && typeof local.portalIssueSnapshot === 'object' ? local.portalIssueSnapshot : null
     };
+    state.storage = typeof completePortalStorage === 'function'
+      ? completePortalStorage(localStorageSnapshot, local)
+      : localStorageSnapshot;
     applyOwnerOverridesToSkus();
     mergeSeedStorage(seed || {});
     state.boot.dataReady = true;

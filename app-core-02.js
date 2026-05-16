@@ -149,6 +149,49 @@ function shiftDateKey(dateKey, days) {
   return date.toISOString().slice(0, 10);
 }
 
+function normalizePortalStorageSnapshot(source = {}) {
+  const parsed = source && typeof source === 'object' ? source : {};
+  const defaults = defaultStorage();
+  return {
+    ...defaults,
+    comments: Array.isArray(parsed.comments) ? parsed.comments.map(normalizeComment) : [],
+    tasks: Array.isArray(parsed.tasks) ? normalizeStorageTasks(parsed.tasks, 'manual') : [],
+    decisions: Array.isArray(parsed.decisions) ? parsed.decisions.map(normalizeDecision) : [],
+    ownerOverrides: Array.isArray(parsed.ownerOverrides) ? parsed.ownerOverrides.map(normalizeOwnerOverride) : [],
+    taskAttachments: Array.isArray(parsed.taskAttachments) ? parsed.taskAttachments.map(normalizeTaskAttachment).filter((item) => item.taskId && item.objectPath) : [],
+    launchOverrides: Array.isArray(parsed.launchOverrides) ? parsed.launchOverrides.filter((item) => item && typeof item === 'object') : [],
+    launchDeletedIds: Array.isArray(parsed.launchDeletedIds) ? parsed.launchDeletedIds.map((item) => String(item || '').trim()).filter(Boolean) : [],
+    repricerSettings: normalizeRepricerSettings(parsed.repricerSettings || {}),
+    repricerSettingsUpdatedAt: String(parsed.repricerSettingsUpdatedAt || '').trim(),
+    repricerOverrides: Array.isArray(parsed.repricerOverrides) ? parsed.repricerOverrides.map(normalizeRepricerOverride).filter((item) => item.articleKey) : [],
+    repricerSkuProfiles: Array.isArray(parsed.repricerSkuProfiles) ? parsed.repricerSkuProfiles.map(normalizeRepricerSkuProfile).filter((item) => item.articleKey) : [],
+    repricerCorridors: Array.isArray(parsed.repricerCorridors) ? parsed.repricerCorridors.map(normalizeRepricerCorridor).filter((item) => item.articleKey) : [],
+    repricerOverrideDeletes: Array.isArray(parsed.repricerOverrideDeletes) ? parsed.repricerOverrideDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
+    repricerSkuProfileDeletes: Array.isArray(parsed.repricerSkuProfileDeletes) ? parsed.repricerSkuProfileDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
+    repricerCorridorDeletes: Array.isArray(parsed.repricerCorridorDeletes) ? parsed.repricerCorridorDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
+    repricerPendingApiAdds: Array.isArray(parsed.repricerPendingApiAdds) ? parsed.repricerPendingApiAdds.filter((item) => item && typeof item === 'object') : [],
+    repricerPendingApiDeletes: Array.isArray(parsed.repricerPendingApiDeletes) ? parsed.repricerPendingApiDeletes.filter((item) => item && typeof item === 'object') : [],
+    repricerPendingCostFixes: Array.isArray(parsed.repricerPendingCostFixes) ? parsed.repricerPendingCostFixes.filter((item) => item && typeof item === 'object') : [],
+    repricerPendingApiTasks: Array.isArray(parsed.repricerPendingApiTasks) ? parsed.repricerPendingApiTasks.filter((item) => item && typeof item === 'object') : [],
+    repricerRepairHistory: Array.isArray(parsed.repricerRepairHistory) ? parsed.repricerRepairHistory.filter((item) => item && typeof item === 'object').slice(0, 400) : [],
+    repricerRepairSnapshots: Array.isArray(parsed.repricerRepairSnapshots) ? parsed.repricerRepairSnapshots.filter((item) => item && typeof item === 'object').slice(0, 10) : [],
+    repricerApiReconcileHistory: Array.isArray(parsed.repricerApiReconcileHistory) ? parsed.repricerApiReconcileHistory.filter((item) => item && typeof item === 'object').slice(0, 100) : [],
+    repricerLastAuditImport: parsed.repricerLastAuditImport && typeof parsed.repricerLastAuditImport === 'object' ? parsed.repricerLastAuditImport : null,
+    repricerLastAutoFix: parsed.repricerLastAutoFix && typeof parsed.repricerLastAutoFix === 'object' ? parsed.repricerLastAutoFix : null,
+    repricerLastImportValidation: parsed.repricerLastImportValidation && typeof parsed.repricerLastImportValidation === 'object' ? parsed.repricerLastImportValidation : null,
+    repricerLastApiReconcile: parsed.repricerLastApiReconcile && typeof parsed.repricerLastApiReconcile === 'object' ? parsed.repricerLastApiReconcile : null,
+    portalDataRules: parsed.portalDataRules && typeof parsed.portalDataRules === 'object' ? parsed.portalDataRules : {},
+    portalDataRulesUpdatedAt: String(parsed.portalDataRulesUpdatedAt || '').trim(),
+    portalIssueSnapshot: parsed.portalIssueSnapshot && typeof parsed.portalIssueSnapshot === 'object' ? parsed.portalIssueSnapshot : null
+  };
+}
+
+function completePortalStorage(partial = {}, previous = {}) {
+  const previousStorage = previous && typeof previous === 'object' ? previous : {};
+  const partialStorage = partial && typeof partial === 'object' ? partial : {};
+  return normalizePortalStorageSnapshot({ ...previousStorage, ...partialStorage });
+}
+
 function loadLocalStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -160,40 +203,14 @@ function loadLocalStorage() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...parsed, tasks }));
       } catch {}
     }
-    return {
-      comments: Array.isArray(parsed.comments) ? parsed.comments.map(normalizeComment) : [],
-      tasks,
-      decisions: Array.isArray(parsed.decisions) ? parsed.decisions.map(normalizeDecision) : [],
-      ownerOverrides: Array.isArray(parsed.ownerOverrides) ? parsed.ownerOverrides.map(normalizeOwnerOverride) : [],
-      taskAttachments: Array.isArray(parsed.taskAttachments) ? parsed.taskAttachments.map(normalizeTaskAttachment).filter((item) => item.taskId && item.objectPath) : [],
-      launchOverrides: Array.isArray(parsed.launchOverrides) ? parsed.launchOverrides.filter((item) => item && typeof item === 'object') : [],
-      launchDeletedIds: Array.isArray(parsed.launchDeletedIds) ? parsed.launchDeletedIds.map((item) => String(item || '').trim()).filter(Boolean) : [],
-      repricerSettings: normalizeRepricerSettings(parsed.repricerSettings || {}),
-      repricerSettingsUpdatedAt: String(parsed.repricerSettingsUpdatedAt || '').trim(),
-      repricerOverrides: Array.isArray(parsed.repricerOverrides) ? parsed.repricerOverrides.map(normalizeRepricerOverride).filter((item) => item.articleKey) : [],
-      repricerSkuProfiles: Array.isArray(parsed.repricerSkuProfiles) ? parsed.repricerSkuProfiles.map(normalizeRepricerSkuProfile).filter((item) => item.articleKey) : [],
-      repricerCorridors: Array.isArray(parsed.repricerCorridors) ? parsed.repricerCorridors.map(normalizeRepricerCorridor).filter((item) => item.articleKey) : [],
-      repricerOverrideDeletes: Array.isArray(parsed.repricerOverrideDeletes) ? parsed.repricerOverrideDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
-      repricerSkuProfileDeletes: Array.isArray(parsed.repricerSkuProfileDeletes) ? parsed.repricerSkuProfileDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
-      repricerCorridorDeletes: Array.isArray(parsed.repricerCorridorDeletes) ? parsed.repricerCorridorDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey) : [],
-      repricerPendingApiAdds: Array.isArray(parsed.repricerPendingApiAdds) ? parsed.repricerPendingApiAdds.filter((item) => item && typeof item === 'object') : [],
-      repricerPendingApiDeletes: Array.isArray(parsed.repricerPendingApiDeletes) ? parsed.repricerPendingApiDeletes.filter((item) => item && typeof item === 'object') : [],
-      repricerPendingCostFixes: Array.isArray(parsed.repricerPendingCostFixes) ? parsed.repricerPendingCostFixes.filter((item) => item && typeof item === 'object') : [],
-      repricerPendingApiTasks: Array.isArray(parsed.repricerPendingApiTasks) ? parsed.repricerPendingApiTasks.filter((item) => item && typeof item === 'object') : [],
-      repricerRepairHistory: Array.isArray(parsed.repricerRepairHistory) ? parsed.repricerRepairHistory.filter((item) => item && typeof item === 'object').slice(0, 400) : [],
-      repricerRepairSnapshots: Array.isArray(parsed.repricerRepairSnapshots) ? parsed.repricerRepairSnapshots.filter((item) => item && typeof item === 'object').slice(0, 10) : [],
-      repricerApiReconcileHistory: Array.isArray(parsed.repricerApiReconcileHistory) ? parsed.repricerApiReconcileHistory.filter((item) => item && typeof item === 'object').slice(0, 100) : [],
-      repricerLastAuditImport: parsed.repricerLastAuditImport && typeof parsed.repricerLastAuditImport === 'object' ? parsed.repricerLastAuditImport : null,
-      repricerLastAutoFix: parsed.repricerLastAutoFix && typeof parsed.repricerLastAutoFix === 'object' ? parsed.repricerLastAutoFix : null,
-      repricerLastImportValidation: parsed.repricerLastImportValidation && typeof parsed.repricerLastImportValidation === 'object' ? parsed.repricerLastImportValidation : null,
-      repricerLastApiReconcile: parsed.repricerLastApiReconcile && typeof parsed.repricerLastApiReconcile === 'object' ? parsed.repricerLastApiReconcile : null,
-      portalDataRules: parsed.portalDataRules && typeof parsed.portalDataRules === 'object' ? parsed.portalDataRules : {},
-      portalIssueSnapshot: parsed.portalIssueSnapshot && typeof parsed.portalIssueSnapshot === 'object' ? parsed.portalIssueSnapshot : null
-    };
+    return normalizePortalStorageSnapshot({ ...parsed, tasks });
   } catch {
     return defaultStorage();
   }
 }
+
+window.normalizePortalStorageSnapshot = normalizePortalStorageSnapshot;
+window.completePortalStorage = completePortalStorage;
 
 function saveLocalStorage() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.storage));
@@ -504,6 +521,7 @@ function mergeImportedStorage(imported) {
     repricerSkuProfileDeletes: Array.isArray(imported.repricerSkuProfileDeletes) ? imported.repricerSkuProfileDeletes : [],
     repricerCorridorDeletes: Array.isArray(imported.repricerCorridorDeletes) ? imported.repricerCorridorDeletes : [],
     portalDataRules: imported.portalDataRules && typeof imported.portalDataRules === 'object' ? imported.portalDataRules : null,
+    portalDataRulesUpdatedAt: String(imported.portalDataRulesUpdatedAt || '').trim(),
     portalIssueSnapshot: imported.portalIssueSnapshot && typeof imported.portalIssueSnapshot === 'object' ? imported.portalIssueSnapshot : null
   };
   mergeSeedStorage(seed);
@@ -579,7 +597,9 @@ function mergeImportedStorage(imported) {
     state.storage.repricerCorridorDeletes.unshift(marker);
   }
   if (seed.portalDataRules) state.storage.portalDataRules = { ...(state.storage.portalDataRules || {}), ...seed.portalDataRules };
+  if (seed.portalDataRulesUpdatedAt) state.storage.portalDataRulesUpdatedAt = seed.portalDataRulesUpdatedAt;
   if (seed.portalIssueSnapshot) state.storage.portalIssueSnapshot = seed.portalIssueSnapshot;
+  state.storage = completePortalStorage(state.storage, {});
   applyOwnerOverridesToSkus();
   saveLocalStorage();
 }

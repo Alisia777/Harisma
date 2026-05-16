@@ -169,6 +169,8 @@ async function main() {
     const dataHealthRulesCheck = await page.evaluate(() => {
       const appState = window.__alteaAppState;
       const originalRules = appState.storage?.portalDataRules;
+      const originalRulesUpdatedAt = appState.storage?.portalDataRulesUpdatedAt || '';
+      const originalRaw = localStorage.getItem('brand-portal-local-v1');
       try {
         document.querySelector('#view-data-health [name="stockRiskDays"]').value = '9';
         document.querySelector('#view-data-health [name="criticalRevenueRub"]').value = '900000';
@@ -180,9 +182,69 @@ async function main() {
         };
       } finally {
         appState.storage.portalDataRules = originalRules || {};
+        appState.storage.portalDataRulesUpdatedAt = originalRulesUpdatedAt;
+        if (originalRaw === null) localStorage.removeItem('brand-portal-local-v1');
+        else localStorage.setItem('brand-portal-local-v1', originalRaw);
       }
     });
     if (!dataHealthRulesCheck.ok) throw new Error(`Data health rules did not save/render: ${JSON.stringify(dataHealthRulesCheck)}`);
+
+    const storageContourCheck = await page.evaluate(async () => {
+      const appState = window.__alteaAppState;
+      if (typeof window.completePortalStorage !== 'function' || typeof window.normalizePortalStorageSnapshot !== 'function') {
+        return { ok: false, reason: 'storage contour helpers are unavailable.' };
+      }
+      const storageKey = 'brand-portal-local-v1';
+      const originalStorage = appState.storage;
+      const originalRaw = localStorage.getItem(storageKey);
+      const previous = {
+        ...(originalStorage || {}),
+        portalDataRules: { stockRiskDays: 11, criticalRevenueRub: 1100000 },
+        portalDataRulesUpdatedAt: '2026-05-16T03:00:00.000Z',
+        portalIssueSnapshot: { generatedAt: '2026-05-16T03:01:00.000Z', keys: ['contract-issue'] },
+        repricerRepairHistory: [{ id: 'contract-repair-history' }]
+      };
+      const partialRemote = { comments: [], tasks: [], decisions: [], ownerOverrides: [] };
+      try {
+        const completed = window.completePortalStorage(partialRemote, previous);
+        const helperOk = Boolean(Number(completed.portalDataRules?.stockRiskDays) === 11
+          && completed.portalDataRulesUpdatedAt === previous.portalDataRulesUpdatedAt
+          && completed.portalIssueSnapshot?.keys?.[0] === 'contract-issue'
+          && completed.repricerRepairHistory?.[0]?.id === 'contract-repair-history'
+          && Array.isArray(completed.tasks)
+          && completed.repricerSettings);
+
+        const crossTabPayload = window.completePortalStorage({
+          ...(originalStorage || {}),
+          portalDataRules: { ...(originalStorage?.portalDataRules || {}), stockRiskDays: 13 },
+          portalDataRulesUpdatedAt: '2026-05-16T04:00:00.000Z',
+          portalIssueSnapshot: { generatedAt: '2026-05-16T04:01:00.000Z', keys: ['contract-storage-event'] }
+        }, originalStorage || {});
+        const nextRaw = JSON.stringify(crossTabPayload);
+        localStorage.setItem(storageKey, nextRaw);
+        window.dispatchEvent(new StorageEvent('storage', { key: storageKey, newValue: nextRaw, oldValue: originalRaw }));
+        await new Promise((resolve) => setTimeout(resolve, 80));
+
+        const storageEventOk = Number(appState.storage?.portalDataRules?.stockRiskDays) === 13
+          && appState.storage?.portalDataRulesUpdatedAt === '2026-05-16T04:00:00.000Z'
+          && appState.storage?.portalIssueSnapshot?.keys?.[0] === 'contract-storage-event';
+
+        return {
+          ok: helperOk && storageEventOk,
+          helperOk,
+          storageEventOk,
+          stockRiskDays: appState.storage?.portalDataRules?.stockRiskDays,
+          issueKey: appState.storage?.portalIssueSnapshot?.keys?.[0] || ''
+        };
+      } finally {
+        if (originalRaw === null) localStorage.removeItem(storageKey);
+        else localStorage.setItem(storageKey, originalRaw);
+        appState.storage = originalStorage;
+      }
+    });
+    if (!storageContourCheck.ok) {
+      throw new Error(`Storage contour did not preserve/update shared statuses: ${JSON.stringify(storageContourCheck)}`);
+    }
 
     const issueTaskCheck = await page.evaluate(async () => {
       const appState = window.__alteaAppState;

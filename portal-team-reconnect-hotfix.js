@@ -211,12 +211,16 @@
       app.meetings = Array.isArray(meetings) ? meetings : [];
       app.documents = documents || { groups: [] };
       app.repricer = repricer || { generatedAt: '', summary: {}, rows: [] };
-      app.storage = {
+      const recoveredStorage = {
+        ...(local && typeof local === 'object' ? local : {}),
         comments: Array.isArray(local.comments) ? local.comments : [],
         tasks: Array.isArray(local.tasks) ? local.tasks : [],
         decisions: Array.isArray(local.decisions) ? local.decisions : [],
         ownerOverrides: Array.isArray(local.ownerOverrides) ? local.ownerOverrides : []
       };
+      app.storage = typeof completePortalStorage === 'function'
+        ? completePortalStorage(recoveredStorage, app.storage || local || {})
+        : recoveredStorage;
 
       if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
       if (typeof mergeSeedStorage === 'function') mergeSeedStorage(seed || {});

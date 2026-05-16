@@ -55,18 +55,24 @@
     if (typeof mergeImportedStorage === 'function') {
       mergeImportedStorage(payload);
     } else {
-      app.storage = app.storage || {};
-      app.storage.tasks = typeof normalizeStorageTasks === 'function'
+      const previousStorage = app.storage && typeof app.storage === 'object' ? app.storage : {};
+      const bridgedStorage = {
+        ...previousStorage,
+        tasks: typeof normalizeStorageTasks === 'function'
         ? normalizeStorageTasks(Array.isArray(payload.tasks) ? payload.tasks : [], 'manual')
         : (Array.isArray(payload.tasks)
           ? payload.tasks.filter((task) => {
             const source = String(task?.source || '').trim().toLowerCase();
             return source !== 'auto' && source !== 'seed';
           }).slice()
-          : []);
-      app.storage.comments = Array.isArray(payload.comments) ? payload.comments.slice() : [];
-      app.storage.decisions = Array.isArray(payload.decisions) ? payload.decisions.slice() : [];
-      app.storage.ownerOverrides = Array.isArray(payload.ownerOverrides) ? payload.ownerOverrides.slice() : [];
+          : []),
+        comments: Array.isArray(payload.comments) ? payload.comments.slice() : [],
+        decisions: Array.isArray(payload.decisions) ? payload.decisions.slice() : [],
+        ownerOverrides: Array.isArray(payload.ownerOverrides) ? payload.ownerOverrides.slice() : []
+      };
+      app.storage = typeof completePortalStorage === 'function'
+        ? completePortalStorage(bridgedStorage, previousStorage)
+        : bridgedStorage;
       if (typeof saveLocalStorage === 'function') saveLocalStorage();
     }
 

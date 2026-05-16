@@ -198,10 +198,17 @@
       const remoteEmpty = !taskRows.length && !commentRows.length && !decisionRows.length && !ownerRows.length;
 
       if (!remoteEmpty) {
-        app.storage.tasks = mergeRemoteTasksWithLocalHotfix(taskRows.map(fromRemoteTask));
-        app.storage.comments = commentRows.map(fromRemoteComment);
-        app.storage.decisions = decisionRows.map(fromRemoteDecision);
-        app.storage.ownerOverrides = ownerRows.map(fromRemoteOwner);
+        const previousStorage = app.storage && typeof app.storage === 'object' ? app.storage : {};
+        const remoteStorage = {
+          ...previousStorage,
+          tasks: mergeRemoteTasksWithLocalHotfix(taskRows.map(fromRemoteTask)),
+          comments: commentRows.map(fromRemoteComment),
+          decisions: decisionRows.map(fromRemoteDecision),
+          ownerOverrides: ownerRows.map(fromRemoteOwner)
+        };
+        app.storage = typeof completePortalStorage === 'function'
+          ? completePortalStorage(remoteStorage, previousStorage)
+          : remoteStorage;
         if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
         if (typeof saveLocalStorage === 'function') saveLocalStorage();
       }

@@ -1460,6 +1460,7 @@ function defaultStorage() {
     repricerLastImportValidation: null,
     repricerLastApiReconcile: null,
     portalDataRules: {},
+    portalDataRulesUpdatedAt: '',
     portalIssueSnapshot: null
   };
 }

@@ -171,15 +171,18 @@
     if (response?.error) throw response.error;
   }
 
-  async function pullRemoteStateHotfix(rerender = true) {
+  async function pullRemoteStateHotfix(rerender = true, options = {}) {
     if (!hasRemoteStoreHotfix()) return null;
     const app = appState();
     if (!app?.team) return null;
+    const silent = Boolean(options && options.silent);
     try {
-      app.team.mode = 'pending';
-      app.team.note = 'Загружаем командные данные…';
+      if (!silent) {
+        app.team.mode = 'pending';
+        app.team.note = 'Загружаем командные данные…';
+      }
       app.team.error = '';
-      if (typeof updateSyncBadge === 'function') updateSyncBadge();
+      if (!silent && typeof updateSyncBadge === 'function') updateSyncBadge();
 
       const taskRows = await queryRemoteHotfix(TABLES.tasks);
       const [commentResult, decisionResult, ownerResult] = await Promise.allSettled([
@@ -300,8 +303,54 @@
   }
 
   const AUTO_PULL_INTERVAL_MS = 15000;
+  const AUTO_SNAPSHOT_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
   let autoPullTimer = 0;
   let autoPullInFlight = false;
+  let autoSnapshotRefreshLastAt = 0;
+  let autoSnapshotRefreshInFlight = false;
+
+  async function maybeAutoRefreshSnapshotsHotfix(reason = 'auto', options = {}) {
+    const app = appState();
+    if (!app?.boot?.dataReady || document.hidden) return false;
+    const refreshFn = typeof window.__alteaRefreshSnapshotBackedState === 'function'
+      ? window.__alteaRefreshSnapshotBackedState
+      : null;
+    if (!refreshFn || autoSnapshotRefreshInFlight) return false;
+
+    const force = Boolean(options && options.force);
+    const now = Date.now();
+    if (!force && now - autoSnapshotRefreshLastAt < AUTO_SNAPSHOT_REFRESH_INTERVAL_MS) return false;
+
+    autoSnapshotRefreshInFlight = true;
+    autoSnapshotRefreshLastAt = now;
+    try {
+      if (typeof window.__alteaResetPortalSnapshotState === 'function') {
+        try {
+          window.__alteaResetPortalSnapshotState();
+        } catch (error) {
+          console.warn('[portal-team-runtime-hotfix:snapshot-reset]', reason, error);
+        }
+      }
+
+      const changed = await refreshFn({ rerender: false });
+      if (changed) {
+        const activeView = String(app.activeView || '').trim();
+        if (activeView === 'sku-plan-fact' && typeof window.refreshSkuPlanFactData === 'function') {
+          await window.refreshSkuPlanFactData(null, 'view-sku-plan-fact');
+        } else if (typeof rerenderCurrentView === 'function') {
+          rerenderCurrentView();
+          if (app.activeSku && typeof renderSkuModal === 'function') renderSkuModal(app.activeSku);
+        }
+        if (typeof updateSyncBadge === 'function') updateSyncBadge();
+      }
+      return changed;
+    } catch (error) {
+      console.warn('[portal-team-runtime-hotfix:snapshot-auto-refresh]', reason, error);
+      return false;
+    } finally {
+      autoSnapshotRefreshInFlight = false;
+    }
+  }
 
   async function autoPullRemoteStateHotfix(reason = 'auto') {
     const app = appState();
@@ -311,7 +360,8 @@
     autoPullInFlight = true;
     try {
       const activeView = String(app.activeView || '').trim();
-      await pullRemoteStateHotfix(activeView !== 'sku-plan-fact');
+      await pullRemoteStateHotfix(activeView !== 'sku-plan-fact', { silent: reason === 'interval' });
+      await maybeAutoRefreshSnapshotsHotfix(reason);
     } catch (error) {
       console.warn('[portal-team-runtime-hotfix:auto-pull]', reason, error);
     } finally {
@@ -353,6 +403,7 @@
   assignGlobal('queryRemote', queryRemoteHotfix);
   assignGlobal('upsertRemote', upsertRemoteHotfix);
   assignGlobal('pullRemoteState', pullRemoteStateHotfix);
+  assignGlobal('portalAutoRefreshSnapshots', maybeAutoRefreshSnapshotsHotfix);
   assignGlobal('initTeamStore', initTeamStoreHotfix);
   bindAutoPullHotfix();
 

@@ -301,7 +301,9 @@ if ($priceRefreshSucceeded) {
   $priceLayerFiles = @(
     "prices.json",
     "repricer.json",
-    "smart_price_overlay.json"
+    "smart_price_overlay.json",
+    "smart_price_workbench.json",
+    "price_workbench_support.json"
   )
   foreach ($fileName in $priceLayerFiles) {
     $sourcePath = Join-Path "data" $fileName
@@ -353,7 +355,11 @@ $iuPlanPath = Join-Path "data" "iu_plan.json"
 if (Test-Path -LiteralPath $iuPlanPath) {
   Copy-Item -LiteralPath $iuPlanPath -Destination (Join-Path $resolvedOutputDir "iu_plan.json") -Force
 }
-Write-Output "[sync] IU plan build phase completed"
+$platformPlanPath = Join-Path "data" "platform_plan.json"
+if (Test-Path -LiteralPath $platformPlanPath) {
+  Copy-Item -LiteralPath $platformPlanPath -Destination (Join-Path $resolvedOutputDir "platform_plan.json") -Force
+}
+Write-Output "[sync] plan layer build phase completed"
 
 if ($DryRun) {
   $wbAdsDryRunFlag = "--dry-run"
@@ -587,6 +593,7 @@ $snapshotNames = @(
   "dashboard",
   "skus",
   "platform_trends",
+  "platform_plan",
   "ads_summary",
   "iu_plan",
   "warehouse_stock_overlay",
@@ -599,7 +606,13 @@ $snapshotNames = @(
 )
 
 if ($priceRefreshSucceeded) {
-  $snapshotNames += @("prices", "repricer", "smart_price_overlay")
+  foreach ($priceSnapshot in @("prices", "repricer", "smart_price_overlay", "smart_price_workbench", "price_workbench_support")) {
+    if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir ($priceSnapshot + ".json"))) {
+      $snapshotNames += $priceSnapshot
+    } else {
+      Write-Warning "[sync] optional snapshot $priceSnapshot is absent and will not be uploaded."
+    }
+  }
 }
 
 foreach ($optionalSnapshot in @("iu_drr_summary", "wb_feedbacks_summary")) {

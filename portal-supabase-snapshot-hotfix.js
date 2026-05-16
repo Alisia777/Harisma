@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260515DASH1__) return;
+  if (window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260516AUTOSYNC1__) return;
+  window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260516AUTOSYNC1__ = true;
   window.__ALTEA_SUPABASE_SNAPSHOT_HOTFIX_20260515DASH1__ = true;
 
   const SNAPSHOT_TABLE = 'portal_data_snapshots';
@@ -17,7 +18,19 @@
     'sku_aliases',
     'sku_alias_ignore',
     'sku_alias_audit',
-    'sku_matrix'
+    'sku_matrix',
+    'product_leaderboard',
+    'product_leaderboard_history',
+    'prices',
+    'smart_price_workbench',
+    'smart_price_overlay',
+    'price_workbench_support',
+    'repricer',
+    'logistics',
+    'order_procurement',
+    'order_procurement_wb',
+    'order_procurement_ozon',
+    'warehouse_stock_overlay'
   ];
   const VIEW_SNAPSHOT_KEYS = {
     prices: ['prices', 'smart_price_workbench', 'smart_price_overlay', 'price_workbench_support'],
@@ -29,6 +42,8 @@
     'wb-rating': ['wb_feedbacks_summary', 'iu_drr_summary']
   };
   const SNAPSHOT_TIMEOUT_MS = 60000;
+  const AUTO_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+  const AUTO_REFRESH_MIN_GAP_MS = 60 * 1000;
   const SNAPSHOT_TO_STATE = {
     dashboard: 'dashboard',
     skus: 'skus',
@@ -49,7 +64,14 @@
     sku_aliases: 'skuAliases',
     sku_alias_ignore: 'skuAliasIgnore',
     sku_alias_audit: 'skuAliasAudit',
-    sku_matrix: 'skuMatrix'
+    sku_matrix: 'skuMatrix',
+    product_leaderboard: 'productLeaderboard',
+    product_leaderboard_history: 'productLeaderboardHistory',
+    repricer: 'repricer',
+    order_procurement: 'orderProcurementData',
+    order_procurement_wb: 'orderProcurementWb',
+    order_procurement_ozon: 'orderProcurementOzon',
+    warehouse_stock_overlay: 'warehouseStockOverlay'
   };
   const FALLBACK_CONFIG = {
     brand: 'Алтея',
@@ -59,6 +81,8 @@
     }
   };
   let snapshotRefreshInFlight = false;
+  let scheduledRefreshTimer = 0;
+  let lastRequestedRefreshAt = 0;
 
   function cfg() {
     if (typeof currentConfig === 'function') return currentConfig();
@@ -266,6 +290,13 @@
     if (snapshotKey === 'sku_alias_ignore') return Array.isArray(payload?.ignored) || Array.isArray(payload?.ignores) || Array.isArray(payload?.rows);
     if (snapshotKey === 'sku_alias_audit') return Array.isArray(payload?.events);
     if (snapshotKey === 'sku_matrix') return Array.isArray(payload?.items) && payload.items.length > 0;
+    if (snapshotKey === 'product_leaderboard') return Array.isArray(payload?.items);
+    if (snapshotKey === 'product_leaderboard_history') return Array.isArray(payload);
+    if (snapshotKey === 'repricer') return Array.isArray(payload?.rows) || typeof payload?.summary === 'object';
+    if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon') {
+      return Array.isArray(payload?.rows);
+    }
+    if (snapshotKey === 'warehouse_stock_overlay') return Array.isArray(payload?.rows);
     return typeof payload === 'object' && payload !== null && Object.keys(payload).length > 0;
   }
 
@@ -491,6 +522,10 @@
         continue;
       }
       state[target] = clone(row.payload);
+      if (row.snapshot_key === 'order_procurement') {
+        state.orderProcurementSnapshot = clone(row.payload);
+        state.orderProcurement = clone(row.payload);
+      }
       applied = true;
     }
     if (!applied) return false;
@@ -540,6 +575,9 @@
             console.warn('[portal-supabase-snapshot-hotfix] dashboard refresh', error);
           }
         }
+        window.dispatchEvent(new CustomEvent('altea:datarefresh', {
+          detail: { source: 'supabase-snapshot', changed: true, at: new Date().toISOString() }
+        }));
       }
     } catch (error) {
       const message = String(error?.message || error || '');
@@ -554,10 +592,27 @@
   }
 
   window.__ALTEA_REFRESH_SUPABASE_SNAPSHOTS__ = refreshSnapshots;
+  function scheduleRefresh(reason, delay = 250) {
+    if (document.hidden && reason !== 'manual') return;
+    const now = Date.now();
+    if (now - lastRequestedRefreshAt < AUTO_REFRESH_MIN_GAP_MS) return;
+    lastRequestedRefreshAt = now;
+    if (scheduledRefreshTimer) window.clearTimeout(scheduledRefreshTimer);
+    scheduledRefreshTimer = window.setTimeout(() => {
+      scheduledRefreshTimer = 0;
+      refreshSnapshots().catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', reason, error));
+    }, delay);
+  }
+  window.__ALTEA_SCHEDULE_SUPABASE_SNAPSHOT_REFRESH__ = scheduleRefresh;
   [180, 1200, 3600, 9000, 18000, 30000, 45000, 60000, 90000].forEach((delay) => {
     window.setTimeout(() => {
       refreshSnapshots().catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', error));
     }, delay);
+  });
+  window.setInterval(() => scheduleRefresh('interval'), AUTO_REFRESH_INTERVAL_MS);
+  window.addEventListener('focus', () => scheduleRefresh('focus', 120));
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) scheduleRefresh('visible', 120);
   });
   refreshSnapshots().catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', error));
 })();

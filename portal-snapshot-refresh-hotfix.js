@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_SNAPSHOT_REFRESH_HOTFIX_20260503A__) return;
+  if (window.__ALTEA_SNAPSHOT_REFRESH_HOTFIX_20260516AUTOSYNC1__) return;
+  window.__ALTEA_SNAPSHOT_REFRESH_HOTFIX_20260516AUTOSYNC1__ = true;
   window.__ALTEA_SNAPSHOT_REFRESH_HOTFIX_20260503A__ = true;
   window.__ALTEA_SNAPSHOT_REFRESH_HOTFIX_20260425C__ = true;
 
@@ -13,11 +14,14 @@
     "data/ads_summary.json": "ads_summary",
     "data/iu_drr_summary.json": "iu_drr_summary",
     "data/wb_feedbacks_summary.json": "wb_feedbacks_summary",
+    "data/product_leaderboard.json": "product_leaderboard",
+    "data/product_leaderboard_history.json": "product_leaderboard_history",
     "data/platform_plan.json": "platform_plan",
     "data/prices.json": "prices",
     "data/smart_price_workbench.json": "smart_price_workbench",
     "data/smart_price_overlay.json": "smart_price_overlay",
     "data/price_workbench_support.json": "price_workbench_support",
+    "data/repricer.json": "repricer",
     "data/order_procurement.json": "order_procurement",
     "data/order_procurement_wb.json": "order_procurement_wb",
     "data/order_procurement_ozon.json": "order_procurement_ozon",
@@ -61,6 +65,13 @@
     schema: "portal-data-quarantine-v1",
     summary: {},
     rows: []
+  };
+  var DATA_QUALITY_FALLBACK = {
+    schema: "portal-data-quality-v1",
+    generatedAt: "",
+    summary: {},
+    issues: [],
+    freshness: []
   };
   var ALLOWED_SNAPSHOT_KEYS = Object.keys(PATH_MAP).reduce(function (acc, path) {
     var key = PATH_MAP[path];
@@ -216,6 +227,12 @@
     if (snapshotKey === "wb_feedbacks_summary") {
       return Array.isArray(payload && payload.cards) && payload.cards.length > 0;
     }
+    if (snapshotKey === "product_leaderboard") {
+      return Array.isArray(payload && payload.items);
+    }
+    if (snapshotKey === "product_leaderboard_history") {
+      return Array.isArray(payload);
+    }
     if (snapshotKey === "platform_plan" || snapshotKey === "iu_plan") {
       return payload && typeof payload.months === "object" && Object.keys(payload.months || {}).length > 0;
     }
@@ -228,8 +245,11 @@
     if (snapshotKey === "smart_price_workbench" || snapshotKey === "smart_price_overlay" || snapshotKey === "price_workbench_support") {
       return payload && typeof payload.platforms === "object" && Object.keys(payload.platforms || {}).length > 0;
     }
+    if (snapshotKey === "repricer") {
+      return Array.isArray(payload && payload.rows) || payload && typeof payload.summary === "object";
+    }
     if (snapshotKey === "order_procurement" || snapshotKey === "order_procurement_wb" || snapshotKey === "order_procurement_ozon" || snapshotKey === "warehouse_stock_overlay") {
-      return Array.isArray(payload && payload.rows) && payload.rows.length > 0;
+      return Array.isArray(payload && payload.rows);
     }
     if (snapshotKey === "logistics") {
       return Array.isArray(payload && payload.allRows) && payload.allRows.length > 0
@@ -598,6 +618,10 @@
       : function () { return Promise.resolve(null); };
     var results = await Promise.all([
       loadSnapshotAwareJson("data/dashboard.json", { cards: [], generatedAt: "" }, true),
+      loadSnapshotAwareJson("data/platform_trends.json", { generatedAt: "", platforms: [] }, true),
+      loadSnapshotAwareJson("data/platform_plan.json", { generatedAt: "", months: {} }, true),
+      loadSnapshotAwareJson("data/iu_plan.json", { generatedAt: "", months: {} }, true),
+      loadSnapshotAwareJson("data/logistics.json", { generatedAt: "", allRows: [], ozonClusters: [], wbWarehouses: [] }, true),
       loadSnapshotAwareJson("data/skus.json", [], true),
       loadSnapshotAwareJson("data/ads_summary.json", { generatedAt: "", asOfDate: "", note: "", platforms: [], itemSeries: [] }, true),
       loadSnapshotAwareJson("data/iu_drr_summary.json", { generatedAt: "", asOfDate: "", months: [], daily: [], channels: [], diagnostics: {} }, true),
@@ -613,35 +637,61 @@
       loadSnapshotAwareJson("data/price_workbench_support.json", { generatedAt: "", platforms: {} }, true),
       loadSnapshotAwareJson("data/portal_sync_health.json", SYNC_HEALTH_FALLBACK, true),
       loadSnapshotAwareJson("data/portal_data_quarantine.json", DATA_QUARANTINE_FALLBACK, true),
+      loadSnapshotAwareJson("data/portal_data_quality.json", DATA_QUALITY_FALLBACK, true),
       loadSnapshotAwareJson("data/sku_aliases.json", SKU_ALIASES_FALLBACK, true),
       loadSnapshotAwareJson("data/sku_alias_ignore.json", SKU_ALIAS_IGNORE_FALLBACK, true),
       loadSnapshotAwareJson("data/sku_alias_audit.json", SKU_ALIAS_AUDIT_FALLBACK, true),
-      loadSnapshotAwareJson("data/sku_matrix.json", SKU_MATRIX_FALLBACK, true)
+      loadSnapshotAwareJson("data/sku_matrix.json", SKU_MATRIX_FALLBACK, true),
+      loadSnapshotAwareJson("data/order_procurement.json", { generatedAt: "", rows: [] }, true),
+      loadSnapshotAwareJson("data/order_procurement_wb.json", { generatedAt: "", rows: [] }, true),
+      loadSnapshotAwareJson("data/order_procurement_ozon.json", { generatedAt: "", rows: [] }, true),
+      loadSnapshotAwareJson("data/warehouse_stock_overlay.json", { generatedAt: "", rows: [] }, true)
     ]);
     var dashboard = results[0];
-    var skus = results[1];
-    var adsSummary = results[2];
-    var iuDrrSummary = results[3];
-    var wbFeedbacks = results[4];
-    var productLeaderboard = results[5];
-    var productLeaderboardHistory = results[6];
-    var prices = results[7];
-    var smartPriceWorkbench = results[8];
-    var smartPriceWorkbenchLive = results[9];
-    var smartPriceOverlay = results[10];
-    var repricerLive = results[11];
-    var repricer = results[12];
-    var priceWorkbenchSupport = results[13];
-    var syncHealth = results[14];
-    var portalDataQuarantine = results[15];
-    var skuAliases = results[16];
-    var skuAliasIgnore = results[17];
-    var skuAliasAudit = results[18];
-    var skuMatrix = results[19];
+    var platformTrends = results[1];
+    var platformPlan = results[2];
+    var iuPlan = results[3];
+    var logistics = results[4];
+    var skus = results[5];
+    var adsSummary = results[6];
+    var iuDrrSummary = results[7];
+    var wbFeedbacks = results[8];
+    var productLeaderboard = results[9];
+    var productLeaderboardHistory = results[10];
+    var prices = results[11];
+    var smartPriceWorkbench = results[12];
+    var smartPriceWorkbenchLive = results[13];
+    var smartPriceOverlay = results[14];
+    var repricerLive = results[15];
+    var repricer = results[16];
+    var priceWorkbenchSupport = results[17];
+    var syncHealth = results[18];
+    var portalDataQuarantine = results[19];
+    var portalDataQuality = results[20];
+    var skuAliases = results[21];
+    var skuAliasIgnore = results[22];
+    var skuAliasAudit = results[23];
+    var skuMatrix = results[24];
+    var orderProcurement = results[25];
+    var orderProcurementWb = results[26];
+    var orderProcurementOzon = results[27];
+    var warehouseStockOverlay = results[28];
     var changed = false;
 
     if (typeof state === "object" && state) {
       var nextDashboard = dashboard || { cards: [], generatedAt: "" };
+      var nextPlatformTrends = platformTrends && typeof platformTrends === "object"
+        ? platformTrends
+        : (state.platformTrends || { generatedAt: "", platforms: [] });
+      var nextPlatformPlan = platformPlan && typeof platformPlan === "object"
+        ? platformPlan
+        : (state.platformPlan || { generatedAt: "", months: {} });
+      var nextIuPlan = iuPlan && typeof iuPlan === "object"
+        ? iuPlan
+        : (state.iuPlan || { generatedAt: "", months: {} });
+      var nextLogistics = logistics && typeof logistics === "object"
+        ? logistics
+        : (state.logistics || { generatedAt: "", allRows: [], ozonClusters: [], wbWarehouses: [] });
       var nextSkus = Array.isArray(skus) && skus.length
         ? skus
         : (Array.isArray(state.skus) ? state.skus : []);
@@ -680,6 +730,9 @@
       var nextPortalDataQuarantine = portalDataQuarantine && typeof portalDataQuarantine === "object"
         ? portalDataQuarantine
         : (state.portalDataQuarantine || DATA_QUARANTINE_FALLBACK);
+      var nextPortalDataQuality = portalDataQuality && typeof portalDataQuality === "object"
+        ? portalDataQuality
+        : (state.portalDataQuality || DATA_QUALITY_FALLBACK);
       var nextSkuAliases = skuAliases && typeof skuAliases === "object"
         ? skuAliases
         : (state.skuAliases || SKU_ALIASES_FALLBACK);
@@ -698,9 +751,37 @@
       var nextSmartPriceWorkbench = typeof mergeSmartWorkbenchPriceOverlay === "function"
         ? mergeSmartWorkbenchPriceOverlay(nextSmartPriceWorkbenchBase, nextSmartPriceOverlay)
         : nextSmartPriceWorkbenchBase;
+      var nextOrderProcurement = orderProcurement && typeof orderProcurement === "object"
+        ? orderProcurement
+        : (state.orderProcurementData || state.orderProcurementSnapshot || { generatedAt: "", rows: [] });
+      var nextOrderProcurementWb = orderProcurementWb && typeof orderProcurementWb === "object"
+        ? orderProcurementWb
+        : (state.orderProcurementWb || { generatedAt: "", rows: [] });
+      var nextOrderProcurementOzon = orderProcurementOzon && typeof orderProcurementOzon === "object"
+        ? orderProcurementOzon
+        : (state.orderProcurementOzon || { generatedAt: "", rows: [] });
+      var nextWarehouseStockOverlay = warehouseStockOverlay && typeof warehouseStockOverlay === "object"
+        ? warehouseStockOverlay
+        : (state.warehouseStockOverlay || { generatedAt: "", rows: [] });
 
       if (payloadChanged("dashboard", state.dashboard, nextDashboard)) {
         state.dashboard = nextDashboard;
+        changed = true;
+      }
+      if (payloadChanged("platform_trends", state.platformTrends, nextPlatformTrends)) {
+        state.platformTrends = nextPlatformTrends;
+        changed = true;
+      }
+      if (payloadChanged("platform_plan", state.platformPlan, nextPlatformPlan)) {
+        state.platformPlan = nextPlatformPlan;
+        changed = true;
+      }
+      if (payloadChanged("iu_plan", state.iuPlan, nextIuPlan)) {
+        state.iuPlan = nextIuPlan;
+        changed = true;
+      }
+      if (payloadChanged("logistics", state.logistics, nextLogistics)) {
+        state.logistics = nextLogistics;
         changed = true;
       }
       if (payloadChanged("skus", state.skus, nextSkus)) {
@@ -767,6 +848,10 @@
         state.portalDataQuarantine = nextPortalDataQuarantine;
         changed = true;
       }
+      if (payloadChanged("portal_data_quality", state.portalDataQuality, nextPortalDataQuality)) {
+        state.portalDataQuality = nextPortalDataQuality;
+        changed = true;
+      }
       if (payloadChanged("sku_aliases", state.skuAliases, nextSkuAliases)) {
         state.skuAliases = nextSkuAliases;
         changed = true;
@@ -783,6 +868,24 @@
         state.skuMatrix = nextSkuMatrix;
         changed = true;
       }
+      if (payloadChanged("order_procurement", state.orderProcurementData || state.orderProcurementSnapshot, nextOrderProcurement)) {
+        state.orderProcurementData = nextOrderProcurement;
+        state.orderProcurementSnapshot = nextOrderProcurement;
+        state.orderProcurement = nextOrderProcurement;
+        changed = true;
+      }
+      if (payloadChanged("order_procurement_wb", state.orderProcurementWb, nextOrderProcurementWb)) {
+        state.orderProcurementWb = nextOrderProcurementWb;
+        changed = true;
+      }
+      if (payloadChanged("order_procurement_ozon", state.orderProcurementOzon, nextOrderProcurementOzon)) {
+        state.orderProcurementOzon = nextOrderProcurementOzon;
+        changed = true;
+      }
+      if (payloadChanged("warehouse_stock_overlay", state.warehouseStockOverlay, nextWarehouseStockOverlay)) {
+        state.warehouseStockOverlay = nextWarehouseStockOverlay;
+        changed = true;
+      }
       if (changed && typeof applyOwnerOverridesToSkus === "function") applyOwnerOverridesToSkus();
     }
 
@@ -794,6 +897,15 @@
         }
       } catch (error) {
         console.warn("[portal-snapshot-refresh-hotfix] rerender", error);
+      }
+    }
+    if (changed) {
+      try {
+        window.dispatchEvent(new CustomEvent("altea:datarefresh", {
+          detail: { source: "snapshot-refresh", changed: true, at: new Date().toISOString() }
+        }));
+      } catch (error) {
+        console.warn("[portal-snapshot-refresh-hotfix] datarefresh event", error);
       }
     }
 

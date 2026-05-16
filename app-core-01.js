@@ -171,6 +171,13 @@ window.__ALTEA_ORDER_PROCUREMENT_ENABLED__ = true;
 window.__ALTEA_OPTIMIZED_RENDER__ = true;
 window.__alteaAppState = state;
 
+function numberOrZero(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+window.numberOrZero = window.numberOrZero || numberOrZero;
+
 const STORAGE_KEY = 'brand-portal-local-v1';
 const ACTIVE_TASK_STATUSES = new Set(['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision']);
 const VIEW_TITLES = {

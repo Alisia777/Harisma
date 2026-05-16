@@ -1,5 +1,6 @@
 (function () {
-if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE2__) return;
+if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE3__) return;
+window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE3__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE2__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE1__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516DASHCALM3__ = true;
@@ -14,8 +15,8 @@ window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260516modaltable2';
-const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable2';
+  const VERSION = '20260516modaltable3';
+const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
@@ -2542,6 +2543,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable2';
       #view-dashboard .portal-exec-empty { padding: 28px 18px; border-radius: 20px; border: 1px dashed rgba(212,164,74,.16); color: rgba(245,232,207,.62); text-align: center; }
       body > .portal-exec-modal { position: fixed; inset: 0; z-index: 120; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(6,5,4,.78); backdrop-filter: blur(8px); }
       body > .portal-exec-modal.is-open { display: flex; }
+      body > .portal-exec-modal:not(.is-open) { pointer-events: none; }
       body > .portal-exec-modal .portal-exec-modal-card { width: min(1520px, 96vw); max-height: min(90vh, 980px); overflow: auto; padding: 22px; border-radius: 24px; border: 1px solid rgba(212,164,74,.18); background: radial-gradient(circle at top left, rgba(212,164,74,.08), transparent 36%), linear-gradient(180deg, rgba(24,18,14,.97), rgba(11,9,8,.98)); box-shadow: 0 24px 70px rgba(0,0,0,.42); }
       body > .portal-exec-modal .portal-exec-modal-head { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
       body > .portal-exec-modal .portal-exec-modal-head h3 { margin: 0 0 6px; font-size: 28px; color: #f6ead4; }
@@ -2618,7 +2620,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable2';
       if (priceRow && typeof window.openPriceWorkbenchArticle === 'function') {
         event.preventDefault();
         event.stopPropagation();
-        modal.classList.remove('is-open');
+        closeModal(modal);
         Promise.resolve(window.openPriceWorkbenchArticle({
           articleKey: priceRow.dataset.openPriceArticle || '',
           marketplace: priceRow.dataset.openPriceMarket || 'wb',
@@ -2627,10 +2629,21 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable2';
         })).catch((error) => console.error(error));
         return;
       }
-      if (event.target === modal || event.target.closest('[data-portal-exec-close]')) modal.classList.remove('is-open');
+      if (event.target === modal || event.target.closest('[data-portal-exec-close]')) closeModal(modal);
+    });
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && modal.classList.contains('is-open')) closeModal(modal);
     });
     document.body.appendChild(modal);
     return modal;
+  }
+
+  function closeModal(modal = document.getElementById(MODAL_ID)) {
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.dataset.dashboardPlatform = '';
+    const body = modal.querySelector(`#${MODAL_ID}Body`);
+    if (body) body.innerHTML = '';
   }
 
   function modalSummaryCard(label, value) {

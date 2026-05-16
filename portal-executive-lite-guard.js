@@ -1,10 +1,12 @@
 (function () {
-  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN12__) return;
+  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN13__) return;
   window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN12__ = true;
+  window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN13__ = true;
 
-  const VERSION = '20260516execlean12';
+  const VERSION = '20260516execlean13';
   const PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'cross'];
   const PLATFORM_META = {
+    all: { label: 'Все', title: 'Все контуры' },
     wb: { label: 'WB', title: 'РОП WB' },
     ozon: { label: 'Ozon', title: 'РОП Ozon' },
     ya: { label: 'Я.Маркет', title: 'Яндекс Маркет' },
@@ -19,6 +21,9 @@
   let rendering = false;
   let observer = null;
   let renderApi = null;
+  let selectedPlatform = 'all';
+  let selectedTaskId = '';
+  let actionMessage = '';
 
   function appState() {
     return window.__alteaAppState || window.state || {};
@@ -102,8 +107,65 @@
     return task?.owner || 'без owner';
   }
 
+  function taskId(task) {
+    return String(task?.id || '').trim();
+  }
+
+  function statusText(task) {
+    const status = String(task?.status || 'new');
+    if (status === 'waiting_rop') return 'Ждет РОПа';
+    if (status === 'waiting_decision') return 'Ждет финал';
+    if (status === 'in_progress') return 'В работе';
+    if (status === 'waiting_team') return 'У команды';
+    if (status === 'done') return 'Закрыта';
+    if (status === 'cancelled') return 'Отменена';
+    return 'Новая';
+  }
+
+  function taskPriorityText(task) {
+    if (task?.priority === 'critical') return 'Критично';
+    if (task?.priority === 'high') return 'Высокий';
+    if (task?.priority === 'low') return 'Низкий';
+    return 'Средний';
+  }
+
+  function taskQueueTone(task) {
+    if (isOverdue(task) || task?.priority === 'critical') return 'danger';
+    if (task?.status === 'waiting_decision') return 'warn';
+    if (task?.status === 'waiting_rop') return 'info';
+    return 'ok';
+  }
+
+  function focusTasks(tasks) {
+    return tasks
+      .filter((task) => isOverdue(task) || task?.priority === 'critical' || task?.status === 'waiting_decision' || task?.status === 'waiting_rop' || !task?.owner)
+      .sort((a, b) => Number(isOverdue(b)) - Number(isOverdue(a)) || Number(b?.priority === 'critical') - Number(a?.priority === 'critical'));
+  }
+
+  function reviewTasks(tasks) {
+    return tasks
+      .filter((task) => task?.status === 'waiting_rop' || task?.status === 'waiting_decision')
+      .sort((left, right) => {
+        const stage = (task) => task?.status === 'waiting_decision' ? 2 : 1;
+        return stage(right) - stage(left)
+          || taskRiskScore(right) - taskRiskScore(left)
+          || String(left?.due || '9999-12-31').localeCompare(String(right?.due || '9999-12-31'));
+      });
+  }
+
+  function taskMetaLine(task) {
+    const sku = skuFor(task);
+    const parts = [
+      taskOwner(task),
+      task?.due || 'без срока',
+      (PLATFORM_META[platformKey(task)] || PLATFORM_META.cross).label
+    ];
+    if (sku?.name || task?.entityLabel) parts.push(sku?.name || task.entityLabel);
+    return parts.filter(Boolean).join(' · ');
+  }
+
   function rowFor(key, tasks) {
-    const items = tasks.filter((task) => platformKey(task) === key);
+    const items = key === 'all' ? tasks : tasks.filter((task) => platformKey(task) === key);
     const overdue = items.filter(isOverdue);
     const critical = items.filter((task) => task?.priority === 'critical');
     const waitingRop = items.filter((task) => task?.status === 'waiting_rop');
@@ -136,8 +198,9 @@
           : row.waitingRop.length ? `${fmt(row.waitingRop.length)} у РОПа`
             : row.items.length ? `${fmt(row.items.length)} актив.` : 'чисто';
 
+    const selected = selectedPlatform === row.key;
     return `
-      <button class="executive-lite-card ${row.risk ? 'has-risk' : ''} ${row.items.length ? '' : 'is-empty'}" type="button" data-platform="${escapeHtml(row.key)}" data-executive-lite-open="${escapeHtml(row.key)}">
+      <button class="executive-lite-card ${row.risk ? 'has-risk' : ''} ${row.items.length ? '' : 'is-empty'} ${selected ? 'is-selected' : ''}" type="button" data-platform="${escapeHtml(row.key)}" data-executive-lite-platform="${escapeHtml(row.key)}" aria-pressed="${selected ? 'true' : 'false'}">
         <span class="executive-lite-card-top"><span>${escapeHtml(meta.title)}</span>${badge(status, tone)}</span>
         <strong>${escapeHtml(meta.label)}</strong>
         <span class="executive-lite-metrics">
@@ -151,12 +214,13 @@
 
   function taskCard(task) {
     const overdue = isOverdue(task);
+    const id = taskId(task);
     const priority = task?.priority === 'critical' ? 'Критично' : task?.priority === 'high' ? 'Высокий' : 'Средний';
     return `
-      <button class="executive-lite-task ${overdue ? 'is-overdue' : ''}" type="button" data-platform="${escapeHtml(platformKey(task))}" data-executive-lite-task="${escapeHtml(task?.id || '')}">
+      <button class="executive-lite-task ${overdue ? 'is-overdue' : ''} ${id && id === selectedTaskId ? 'is-selected' : ''}" type="button" data-platform="${escapeHtml(platformKey(task))}" data-executive-lite-task="${escapeHtml(id)}">
         <strong>${escapeHtml(taskTitle(task))}</strong>
         <span>${escapeHtml(taskOwner(task))} · ${escapeHtml(task?.due || 'без срока')}</span>
-        <em>${escapeHtml(priority)}</em>
+        <em>${escapeHtml(priority)} · ${escapeHtml(statusText(task))}</em>
       </button>`;
   }
 
@@ -193,31 +257,207 @@
           </div>
         </div>
         <div class="executive-lite-task-list">${shown.map(taskCard).join('')}${hidden ? `<div class="executive-lite-more">Еще ${fmt(hidden)} в этом контуре</div>` : ''}</div>
-        <button class="btn ghost small-btn" type="button" data-executive-lite-open="${escapeHtml(row.key)}">Открыть контур</button>
+        <button class="btn ghost small-btn" type="button" data-executive-lite-open="${escapeHtml(row.key)}">Показать здесь</button>
       </section>
     `;
   }
 
+  function findTaskById(tasks, id) {
+    const normalizedId = String(id || '').trim();
+    if (!normalizedId) return null;
+    return tasks.find((task) => taskId(task) === normalizedId) || null;
+  }
+
+  function taskSummaryText(task) {
+    const bits = [
+      task?.reason || '',
+      task?.nextAction || '',
+      task?.entityLabel || ''
+    ].map((value) => String(value || '').trim()).filter(Boolean);
+    return bits.length ? bits.join(' · ') : 'Коротко проверьте результат, подтвердите закрытие или верните задачу в работу с комментарием.';
+  }
+
+  function reviewQueueCard(task) {
+    const id = taskId(task);
+    const selected = id && id === selectedTaskId;
+    const meta = PLATFORM_META[platformKey(task)] || PLATFORM_META.cross;
+    return `
+      <button class="executive-lite-review-item ${selected ? 'is-selected' : ''}" type="button" data-platform="${escapeHtml(platformKey(task))}" data-executive-lite-task="${escapeHtml(id)}">
+        <span class="executive-lite-review-item-top">
+          <strong>${escapeHtml(taskTitle(task))}</strong>
+          ${badge(statusText(task), taskQueueTone(task))}
+        </span>
+        <span>${escapeHtml(taskOwner(task))} · ${escapeHtml(meta.label)} · ${escapeHtml(task?.due || 'без срока')}</span>
+      </button>`;
+  }
+
+  function taskDecisionPanel(task, queueLength) {
+    if (!task) {
+      return `
+        <div class="executive-lite-decision is-empty">
+          <span>Приемка</span>
+          <strong>Нет задач на подтверждение</strong>
+          <p>Когда сотрудник сдаст задачу РОПу или руководителю, она появится здесь. Переходить в общий задачник для финального закрытия не нужно.</p>
+        </div>`;
+    }
+
+    const status = String(task?.status || 'new');
+    const isRop = status === 'waiting_rop';
+    const isFinal = status === 'waiting_decision';
+    const actionHint = isRop
+      ? 'Если результат нормальный, переведите задачу на финальное закрытие. Если не хватает деталей, верните в работу.'
+      : isFinal
+        ? 'Финальное закрытие уберет задачу из активной очереди и сохранит историю в общем контуре.'
+        : 'Эта задача еще не сдана на приемку. Можно открыть карточку или вернуть в работу при необходимости.';
+    const primary = isRop
+      ? `<button class="btn primary" type="button" data-executive-lite-action="approve" data-task-id="${escapeHtml(taskId(task))}">Подтвердить РОП</button>`
+      : isFinal
+        ? `<button class="btn primary" type="button" data-executive-lite-action="final" data-task-id="${escapeHtml(taskId(task))}">Финально закрыть</button>`
+        : '';
+
+    return `
+      <div class="executive-lite-decision" data-platform="${escapeHtml(platformKey(task))}">
+        <div class="executive-lite-decision-head">
+          <div>
+            <span>Проверка задачи</span>
+            <strong>${escapeHtml(taskTitle(task))}</strong>
+          </div>
+          <div class="badge-stack">${badge(statusText(task), taskQueueTone(task))}${badge(taskPriorityText(task), taskQueueTone(task))}</div>
+        </div>
+        <p class="executive-lite-decision-meta">${escapeHtml(taskMetaLine(task))}</p>
+        <div class="executive-lite-decision-body">
+          <span>Что проверяем</span>
+          <p>${escapeHtml(taskSummaryText(task))}</p>
+        </div>
+        <div class="executive-lite-decision-note">
+          <label for="executive-lite-comment">Комментарий для истории</label>
+          <textarea id="executive-lite-comment" data-executive-lite-comment rows="3" placeholder="Например: результат проверен, можно закрывать / вернуть: не хватает расчета по марже."></textarea>
+          <small>${escapeHtml(actionHint)}</small>
+        </div>
+        <div class="executive-lite-actions">
+          ${primary}
+          <button class="btn ghost" type="button" data-executive-lite-action="return" data-task-id="${escapeHtml(taskId(task))}">Вернуть в работу</button>
+          <button class="btn ghost" type="button" data-executive-lite-modal="${escapeHtml(taskId(task))}">Полная карточка</button>
+          <span>${fmt(queueLength)} в очереди</span>
+        </div>
+      </div>`;
+  }
+
+  function reviewWorkbench(tasks, rows) {
+    const filtered = selectedPlatform === 'all'
+      ? tasks
+      : tasks.filter((task) => platformKey(task) === selectedPlatform);
+    const queue = reviewTasks(filtered);
+    const backup = focusTasks(filtered).slice(0, 8);
+    const items = queue.length ? queue : backup;
+    if (!findTaskById(items, selectedTaskId)) selectedTaskId = taskId(items[0]) || '';
+    const selected = findTaskById(items, selectedTaskId);
+    const meta = selectedPlatform === 'all'
+      ? { label: 'Все площадки', title: 'Все контуры' }
+      : (PLATFORM_META[selectedPlatform] || PLATFORM_META.cross);
+    const row = rows.find((item) => item.key === selectedPlatform);
+    const waiting = row ? row.waitingRop.length + row.waitingFinal.length : reviewTasks(tasks).length;
+
+    return `
+      <div class="executive-lite-workbench" data-executive-lite-workbench data-platform="${escapeHtml(selectedPlatform)}">
+        <div class="executive-lite-head">
+          <div>
+            <span>Рабочее окно РОПа</span>
+            <strong>${escapeHtml(meta.label)}: приемка без перехода в задачник</strong>
+          </div>
+          <div class="badge-stack">${badge(`${fmt(waiting)} на подтверждение`, waiting ? 'warn' : 'ok')}${actionMessage ? badge(actionMessage, 'ok') : ''}</div>
+        </div>
+        <div class="executive-lite-review-grid">
+          <section class="executive-lite-review-queue">
+            <div class="executive-lite-review-queue-head">
+              <strong>Сдали на проверку</strong>
+              <span>${queue.length ? 'Сначала РОП и финальное закрытие' : 'Пока нет сданных, показываю ближайшие риски'}</span>
+            </div>
+            <div class="executive-lite-review-list">${items.length ? items.map(reviewQueueCard).join('') : '<div class="empty">Очередь чистая</div>'}</div>
+          </section>
+          ${taskDecisionPanel(selected, items.length)}
+        </div>
+      </div>`;
+  }
+
+  async function runExecutiveAction(taskIdValue, action, comment) {
+    const id = String(taskIdValue || '').trim();
+    if (!id) return;
+    const note = String(comment || '').trim();
+    try {
+      if (action === 'final' && !note) {
+        actionMessage = 'Нужен короткий итог';
+        renderNow(true);
+        return;
+      }
+
+      let updated = null;
+      if (action === 'approve') {
+        const approve = typeof window.approveTaskByRop === 'function' ? window.approveTaskByRop : null;
+        updated = approve ? await approve(id, note || 'Согласовано из вкладки руководителя.') : null;
+      } else if (action === 'return') {
+        const back = typeof window.returnTaskToWork === 'function' ? window.returnTaskToWork : null;
+        updated = back ? await back(id, note || 'Возвращено в работу из вкладки руководителя.') : null;
+      } else if (action === 'final') {
+        const close = typeof window.finalCloseTaskWithReport === 'function'
+          ? window.finalCloseTaskWithReport
+          : (typeof window.closeTaskWithReport === 'function' ? window.closeTaskWithReport : null);
+        updated = close ? await close(id, note) : null;
+      }
+
+      if (!updated && typeof window.updateTaskRecord === 'function') {
+        const status = action === 'approve' ? 'waiting_decision' : action === 'return' ? 'in_progress' : 'done';
+        updated = await window.updateTaskRecord(id, { status });
+      }
+
+      if (!updated) throw new Error('Не удалось обновить задачу.');
+      actionMessage = action === 'approve'
+        ? 'Передано на финал'
+        : action === 'return'
+          ? 'Вернули в работу'
+          : 'Закрыто';
+      selectedTaskId = action === 'final' ? '' : (updated.id || id);
+      window.dispatchEvent(new CustomEvent('altea:portal-storage-updated', { detail: { source: 'executive-lite', taskId: id, action } }));
+      renderNow(true);
+    } catch (error) {
+      console.error(error);
+      actionMessage = error?.message || 'Ошибка обновления';
+      renderNow(true);
+    }
+  }
+
   function bind(root) {
-    root.querySelectorAll('[data-executive-lite-open]').forEach((button) => {
+    root.querySelectorAll('[data-executive-lite-open],[data-executive-lite-platform]').forEach((button) => {
       button.addEventListener('click', () => {
-        const key = button.getAttribute('data-executive-lite-open') || 'cross';
-        const state = appState();
-        state.controlFilters = state.controlFilters || {};
-        state.controlFilters.platform = key;
-        state.controlFilters.peopleRole = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product'].includes(key) ? key : 'leader';
-        state.controlFilters.status = 'active';
-        state.controlFilters.horizon = 'all';
-        state.controlFilters.source = 'all';
-        state.controlFilters.lazyQueue = 'now';
-        if (typeof window.setView === 'function') window.setView('control');
-        else window.location.hash = '#control';
+        const key = button.getAttribute('data-executive-lite-platform') || button.getAttribute('data-executive-lite-open') || 'all';
+        selectedPlatform = PLATFORM_META[key] ? key : 'all';
+        selectedTaskId = '';
+        actionMessage = '';
+        renderNow(true);
       });
     });
 
     root.querySelectorAll('[data-executive-lite-task]').forEach((button) => {
       button.addEventListener('click', () => {
         const id = button.getAttribute('data-executive-lite-task');
+        if (!id) return;
+        selectedTaskId = id;
+        actionMessage = '';
+        renderNow(true);
+      });
+    });
+
+    root.querySelectorAll('[data-executive-lite-action]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const panel = button.closest('[data-executive-lite-workbench]') || root;
+        const comment = panel.querySelector('[data-executive-lite-comment]')?.value || '';
+        await runExecutiveAction(button.getAttribute('data-task-id'), button.getAttribute('data-executive-lite-action'), comment);
+      });
+    });
+
+    root.querySelectorAll('[data-executive-lite-modal]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const id = button.getAttribute('data-executive-lite-modal');
         if (id && typeof window.renderTaskModal === 'function') window.renderTaskModal(id);
       });
     });
@@ -246,7 +486,7 @@
       #view-executive[data-executive-layer] .executive-guide{display:none!important}
       #view-executive[data-executive-layer] .section-title.executive-lite-title{margin-bottom:0}
       .executive-lite-copy{margin-top:8px;color:var(--muted);line-height:1.45;max-width:960px}
-      .executive-lite-surface,.executive-lite-focus{border:1px solid rgba(212,164,74,.2);border-radius:12px;background:rgba(255,255,255,.025);padding:14px}
+      .executive-lite-surface,.executive-lite-focus,.executive-lite-workbench{border:1px solid rgba(212,164,74,.2);border-radius:12px;background:rgba(255,255,255,.025);padding:14px}
       .executive-lite-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
       .executive-lite-head span{display:block;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--muted)}
       .executive-lite-head strong{display:block;margin-top:3px;color:#fff7e6;font-size:18px;line-height:1.15}
@@ -255,6 +495,7 @@
       .executive-lite-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--platform-color,#d4a44a);opacity:.92}
       .executive-lite-card:hover{border-color:var(--platform-strong,rgba(212,164,74,.46));background:linear-gradient(135deg,var(--platform-active,rgba(212,164,74,.11)),rgba(0,0,0,.22))}
       .executive-lite-card.has-risk{border-color:var(--platform-strong,rgba(212,164,74,.34));background:linear-gradient(135deg,var(--platform-active,rgba(212,164,74,.09)),rgba(0,0,0,.2))}
+      .executive-lite-card.is-selected{border-color:var(--platform-strong,rgba(212,164,74,.72));box-shadow:0 0 0 1px var(--platform-border,rgba(212,164,74,.28)),0 18px 44px rgba(0,0,0,.26)}
       .executive-lite-card.is-empty{opacity:.68}
       .executive-lite-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted)}
       .executive-lite-card>strong{font-size:18px;line-height:1.1;color:#fff7e6}
@@ -274,9 +515,33 @@
       .executive-lite-task{position:relative;text-align:left;border:1px solid rgba(255,255,255,.08);border-left-color:var(--platform-strong,rgba(255,255,255,.14));border-radius:10px;background:rgba(0,0,0,.18);padding:10px 12px 10px 14px;color:inherit;cursor:pointer}
       .executive-lite-task::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--platform-color,#d4a44a);opacity:.82}
       .executive-lite-task.is-overdue{border-color:rgba(217,83,79,.42);background:rgba(217,83,79,.08)}
+      .executive-lite-task.is-selected{border-color:var(--platform-strong,rgba(212,164,74,.56));background:linear-gradient(135deg,var(--platform-active,rgba(212,164,74,.12)),rgba(0,0,0,.2))}
       .executive-lite-task strong{display:block;color:#fff7e6;line-height:1.25}
       .executive-lite-task span{display:block;margin-top:6px;font-size:12px;color:var(--muted)}
       .executive-lite-task em{display:inline-block;margin-top:9px;font-style:normal;font-size:11px;border:1px solid rgba(212,164,74,.25);border-radius:999px;padding:4px 8px;color:#f3dfad}
+      .executive-lite-review-grid{display:grid;grid-template-columns:minmax(300px,.86fr) minmax(420px,1.14fr);gap:12px}
+      .executive-lite-review-queue,.executive-lite-decision{border:1px solid var(--platform-border,rgba(255,255,255,.08));border-radius:10px;background:linear-gradient(180deg,var(--platform-soft,rgba(255,255,255,.025)),rgba(0,0,0,.2));padding:12px}
+      .executive-lite-review-queue-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+      .executive-lite-review-queue-head strong,.executive-lite-decision-head strong{display:block;color:#fff7e6;line-height:1.2}
+      .executive-lite-review-queue-head span,.executive-lite-decision-head span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;font-weight:800}
+      .executive-lite-review-list{display:flex;flex-direction:column;gap:8px;max-height:440px;overflow:auto;padding-right:2px}
+      .executive-lite-review-item{display:flex;flex-direction:column;gap:6px;text-align:left;border:1px solid rgba(255,255,255,.08);border-left:3px solid var(--platform-color,#d4a44a);border-radius:9px;background:rgba(0,0,0,.2);color:inherit;padding:10px 11px;cursor:pointer}
+      .executive-lite-review-item:hover,.executive-lite-review-item.is-selected{border-color:var(--platform-strong,rgba(212,164,74,.54));background:linear-gradient(135deg,var(--platform-active,rgba(212,164,74,.11)),rgba(0,0,0,.2))}
+      .executive-lite-review-item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+      .executive-lite-review-item-top strong{color:#fff7e6;line-height:1.25}
+      .executive-lite-review-item>span:last-child{color:var(--muted);font-size:12px;line-height:1.35}
+      .executive-lite-decision{min-height:260px;display:flex;flex-direction:column;gap:12px}
+      .executive-lite-decision.is-empty{justify-content:center}
+      .executive-lite-decision-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+      .executive-lite-decision-meta{margin:0;color:var(--muted);line-height:1.45}
+      .executive-lite-decision-body{border:1px solid rgba(255,255,255,.07);border-radius:9px;background:rgba(0,0,0,.18);padding:10px}
+      .executive-lite-decision-body span,.executive-lite-decision-note label{display:block;margin-bottom:6px;color:#f3dfad;font-size:11px;font-weight:800;text-transform:uppercase}
+      .executive-lite-decision-body p{margin:0;color:#fff7e6;line-height:1.45}
+      .executive-lite-decision-note textarea{width:100%;min-height:86px;resize:vertical;border:1px solid rgba(212,164,74,.2);border-radius:8px;background:rgba(0,0,0,.24);color:#fff7e6;padding:10px;font:inherit}
+      .executive-lite-decision-note textarea:focus{outline:none;border-color:var(--platform-strong,rgba(212,164,74,.55));box-shadow:0 0 0 2px var(--platform-soft,rgba(212,164,74,.12))}
+      .executive-lite-decision-note small{display:block;margin-top:6px;color:var(--muted);line-height:1.35}
+      .executive-lite-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:auto}
+      .executive-lite-actions>span{margin-left:auto;color:var(--muted);font-size:12px}
       [data-platform="all"]{--platform-color:#d4a44a;--platform-soft:rgba(212,164,74,.065);--platform-active:rgba(212,164,74,.13);--platform-border:rgba(212,164,74,.22);--platform-strong:rgba(212,164,74,.54)}
       [data-platform="wb"]{--platform-color:#8b5cf6;--platform-soft:rgba(139,92,246,.075);--platform-active:rgba(139,92,246,.16);--platform-border:rgba(139,92,246,.25);--platform-strong:rgba(139,92,246,.58)}
       [data-platform="ozon"]{--platform-color:#1683ff;--platform-soft:rgba(22,131,255,.075);--platform-active:rgba(22,131,255,.16);--platform-border:rgba(22,131,255,.25);--platform-strong:rgba(22,131,255,.58)}
@@ -286,8 +551,8 @@
       [data-platform="magnit"]{--platform-color:#ef4444;--platform-soft:rgba(239,68,68,.07);--platform-active:rgba(239,68,68,.15);--platform-border:rgba(239,68,68,.23);--platform-strong:rgba(239,68,68,.52)}
       [data-platform="product"]{--platform-color:#22c55e;--platform-soft:rgba(34,197,94,.07);--platform-active:rgba(34,197,94,.15);--platform-border:rgba(34,197,94,.23);--platform-strong:rgba(34,197,94,.52)}
       [data-platform="cross"]{--platform-color:#94a3b8;--platform-soft:rgba(148,163,184,.065);--platform-active:rgba(148,163,184,.13);--platform-border:rgba(148,163,184,.22);--platform-strong:rgba(148,163,184,.48)}
-      @media (max-width:1280px){.executive-lite-grid,.executive-lite-task-grid,.executive-lite-focus-board{grid-template-columns:repeat(2,minmax(0,1fr))}}
-      @media (max-width:820px){.executive-lite-grid,.executive-lite-task-grid,.executive-lite-focus-board{grid-template-columns:1fr}.executive-lite-head{flex-direction:column}}
+      @media (max-width:1280px){.executive-lite-grid,.executive-lite-task-grid,.executive-lite-focus-board{grid-template-columns:repeat(2,minmax(0,1fr))}.executive-lite-review-grid{grid-template-columns:1fr}}
+      @media (max-width:820px){.executive-lite-grid,.executive-lite-task-grid,.executive-lite-focus-board,.executive-lite-review-grid{grid-template-columns:1fr}.executive-lite-head,.executive-lite-decision-head,.executive-lite-review-queue-head{flex-direction:column}}
     `;
     document.head.appendChild(style);
   }
@@ -305,13 +570,13 @@
 
     if (!stale) return;
 
+    if (selectedPlatform !== 'all' && !PLATFORM_META[selectedPlatform]) selectedPlatform = 'all';
     const rows = PLATFORM_KEYS.map((key) => rowFor(key, tasks));
+    const allRow = rowFor('all', tasks);
     const visibleRows = rows.filter((row) => row.items.length || row.risk);
     const cleanRows = rows.filter((row) => !row.items.length && !row.risk);
-    const focus = tasks
-      .filter((task) => isOverdue(task) || task?.priority === 'critical' || task?.status === 'waiting_decision' || task?.status === 'waiting_rop' || !task?.owner)
-      .sort((a, b) => Number(isOverdue(b)) - Number(isOverdue(a)) || Number(b?.priority === 'critical') - Number(a?.priority === 'critical'))
-      .slice(0, 12);
+    const gridRows = [allRow].concat(visibleRows.length ? visibleRows : rows.slice(0, 1));
+    const focus = focusTasks(tasks).slice(0, 12);
     const waitingFinal = tasks.filter((task) => task?.status === 'waiting_decision');
     const waitingRop = tasks.filter((task) => task?.status === 'waiting_rop');
     const overdue = tasks.filter(isOverdue);
@@ -337,9 +602,10 @@
             </div>
             <div class="badge-stack">${badge(`${fmt(tasks.length)} активных`, tasks.length ? 'info' : 'ok')}${badge(`${fmt(overdue.length)} проср.`, overdue.length ? 'danger' : 'ok')}${badge(`${fmt(noOwner.length)} без owner`, noOwner.length ? 'warn' : 'ok')}</div>
           </div>
-          <div class="executive-lite-grid">${(visibleRows.length ? visibleRows : rows.slice(0, 1)).map(platformCard).join('')}</div>
+          <div class="executive-lite-grid">${gridRows.map(platformCard).join('')}</div>
           ${cleanRows.length ? `<div class="executive-lite-clean"><span>Без активных задач:</span>${cleanRows.map((row) => `<span>${escapeHtml((PLATFORM_META[row.key] || PLATFORM_META.cross).label)}</span>`).join('')}</div>` : ''}
         </div>
+        ${reviewWorkbench(tasks, rows)}
         <div class="executive-lite-focus">
           <div class="executive-lite-head">
             <div>

@@ -1,0 +1,427 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const path = require('path');
+
+const SNAPSHOT_NAMES = [
+  'dashboard',
+  'skus',
+  'platform_trends',
+  'ads_summary',
+  'iu_plan',
+  'prices',
+  'repricer',
+  'smart_price_overlay',
+  'warehouse_stock_overlay',
+  'loyalty_system',
+  'product_leaderboard',
+  'product_leaderboard_history',
+  'order_procurement',
+  'order_procurement_wb',
+  'order_procurement_ozon',
+  'iu_drr_summary',
+  'wb_feedbacks_summary',
+  'portal_data_quality',
+  'portal_data_quarantine',
+  'sku_aliases',
+  'sku_alias_ignore',
+  'sku_alias_audit',
+  'sku_matrix',
+  'portal_sync_health'
+];
+
+const REQUIRED_SNAPSHOTS = [
+  'dashboard',
+  'skus',
+  'platform_trends',
+  'order_procurement',
+  'warehouse_stock_overlay',
+  'sku_matrix',
+  'portal_data_quality'
+];
+
+const LAST_GOOD_MANIFEST = 'manifest.json';
+const DEFAULT_MIN_ROWS_RATIO = 0.55;
+const DEFAULT_MIN_REVENUE_RATIO = 0.60;
+
+function parseArgs(argv) {
+  const args = {};
+  for (let index = 2; index < argv.length; index += 1) {
+    const token = argv[index];
+    if (!token.startsWith('--')) continue;
+    const [rawKey, inlineValue] = token.split('=');
+    const key = rawKey.replace(/^--/, '');
+    const next = inlineValue !== undefined ? inlineValue : argv[index + 1];
+    if (inlineValue === undefined && next && !String(next).startsWith('--')) {
+      args[key] = next;
+      index += 1;
+    } else if (inlineValue !== undefined) {
+      args[key] = inlineValue;
+    } else {
+      args[key] = true;
+    }
+  }
+  return args;
+}
+
+function resolveOptions(args) {
+  const root = process.cwd();
+  const inputDir = path.resolve(args['input-dir'] || path.join(root, '.altea-google-sheet-sync-output'));
+  const baseDataDir = path.resolve(args['base-data-dir'] || path.join(root, 'data'));
+  const outputDir = path.resolve(args['output-dir'] || inputDir);
+  return {
+    inputDir,
+    baseDataDir,
+    outputDir,
+    lastGoodDir: path.resolve(args['last-good-dir'] || path.join(baseDataDir, 'last_good')),
+    mirrorLocalFallback: Boolean(args['mirror-local-fallback']),
+    markLastGood: Boolean(args['mark-last-good']),
+    minRowsRatio: Number(args['min-rows-ratio'] || DEFAULT_MIN_ROWS_RATIO),
+    minRevenueRatio: Number(args['min-revenue-ratio'] || DEFAULT_MIN_REVENUE_RATIO),
+    staleWarnDays: Number(args['stale-warn-days'] || 3),
+    now: args.now ? new Date(args.now) : new Date()
+  };
+}
+
+function readJsonIfExists(filePath) {
+  if (!fs.existsSync(filePath)) return null;
+  return JSON.parse(fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, ''));
+}
+
+function readSnapshot(options, name) {
+  const outputPath = path.join(options.inputDir, `${name}.json`);
+  const basePath = path.join(options.baseDataDir, `${name}.json`);
+  const payload = readJsonIfExists(outputPath) ?? readJsonIfExists(basePath);
+  return {
+    name,
+    exists: payload !== null,
+    payload,
+    sourcePath: payload !== null && fs.existsSync(outputPath) ? outputPath : (payload !== null ? basePath : '')
+  };
+}
+
+function numberOrZero(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function dateKey(value) {
+  const raw = String(value || '').slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : '';
+}
+
+function parseStamp(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return 0;
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T00:00:00Z` : raw;
+  const stamp = Date.parse(normalized);
+  return Number.isFinite(stamp) ? stamp : 0;
+}
+
+function daysOld(value, now) {
+  const stamp = parseStamp(value);
+  if (!stamp) return null;
+  return Math.max(0, Math.floor((now.getTime() - stamp) / 86400000));
+}
+
+function latestDate(values) {
+  return (values || []).map(dateKey).filter(Boolean).sort().pop() || '';
+}
+
+function rowCount(payload) {
+  if (Array.isArray(payload)) return payload.length;
+  if (!payload || typeof payload !== 'object') return 0;
+  if (Array.isArray(payload.rows)) return payload.rows.length;
+  if (Array.isArray(payload.items)) return payload.items.length;
+  if (Array.isArray(payload.cards)) return payload.cards.length;
+  if (Array.isArray(payload.platforms)) return payload.platforms.length;
+  if (Array.isArray(payload.daily)) return payload.daily.length;
+  if (Array.isArray(payload.aliases)) return payload.aliases.length;
+  if (Array.isArray(payload.ignored)) return payload.ignored.length;
+  if (Array.isArray(payload.events)) return payload.events.length;
+  if (Array.isArray(payload.apiUnmapped)) return payload.apiUnmapped.length;
+  if (Array.isArray(payload.allRows)) return payload.allRows.length;
+  return Object.keys(payload).length ? 1 : 0;
+}
+
+function latestPayloadDate(name, payload) {
+  if (!payload || typeof payload !== 'object') return '';
+  if (name === 'dashboard') return dateKey(payload.dataFreshness?.asOfDate || payload.latestMarketplaceDate || payload.generatedAt);
+  if (name === 'platform_trends') {
+    return dateKey(payload.latestMarketplaceDate)
+      || latestDate((payload.platforms || []).flatMap((platform) => (platform.series || []).map((point) => point.date || point.label)));
+  }
+  if (name === 'ads_summary') return dateKey(payload.asOfDate || payload.window?.to || payload.generatedAt);
+  if (name === 'iu_drr_summary') return dateKey(payload.asOfDate || payload.window?.to || payload.generatedAt);
+  if (name === 'wb_feedbacks_summary') return dateKey(payload.window?.to || payload.asOfDate || payload.generatedAt);
+  if (name.startsWith('order_procurement')) return dateKey(payload.window?.to || payload.generatedAt);
+  if (name === 'warehouse_stock_overlay') return dateKey(payload.asOfDate || payload.generatedAt);
+  if (name === 'portal_data_quality') return dateKey(payload.summary?.maxDate || payload.generatedAt);
+  if (name === 'portal_sync_health') return dateKey(payload.generatedAt);
+  return dateKey(payload.asOfDate || payload.generatedAt || payload.updatedAt);
+}
+
+function revenueTotal(name, payload) {
+  if (!payload || typeof payload !== 'object') return 0;
+  if (name === 'platform_trends') {
+    return Math.round((payload.platforms || []).reduce((sum, platform) => (
+      sum + (platform.series || []).reduce((inner, point) => inner + numberOrZero(point.revenue), 0)
+    ), 0));
+  }
+  if (name === 'portal_data_quality') return numberOrZero(payload.summary?.apiUnmappedRevenue);
+  if (Array.isArray(payload.rows)) {
+    return Math.round(payload.rows.reduce((sum, row) => (
+      sum + numberOrZero(row.revenue ?? row.factRevenue ?? row.ordersRevenue ?? row.salesRevenue)
+    ), 0));
+  }
+  if (Array.isArray(payload.items)) {
+    return Math.round(payload.items.reduce((sum, row) => (
+      sum + numberOrZero(row.revenue ?? row.factRevenue ?? row.ordersRevenue ?? row.salesRevenue)
+    ), 0));
+  }
+  return 0;
+}
+
+function snapshotMetric(name, payload) {
+  return {
+    exists: payload !== null && payload !== undefined,
+    rows: rowCount(payload),
+    generatedAt: payload && typeof payload === 'object' && !Array.isArray(payload) ? (payload.generatedAt || payload.updatedAt || '') : '',
+    asOfDate: latestPayloadDate(name, payload),
+    revenue: revenueTotal(name, payload)
+  };
+}
+
+function loadLastGoodManifest(options) {
+  const manifestPath = path.join(options.lastGoodDir, LAST_GOOD_MANIFEST);
+  const manifest = readJsonIfExists(manifestPath);
+  return {
+    exists: Boolean(manifest),
+    manifestPath,
+    manifest: manifest || null
+  };
+}
+
+function buildQuarantine(quality) {
+  const issues = Array.isArray(quality?.issues) ? quality.issues : [];
+  const rows = issues
+    .filter((issue) => (
+      issue.type === 'api_sum_above_aggregate'
+      || (issue.type === 'api_sku_unmapped' && numberOrZero(issue.revenue) >= 100000)
+    ))
+    .slice(0, 300)
+    .map((issue) => ({
+      type: issue.type || '',
+      severity: issue.severity || '',
+      platform: issue.platform || '',
+      platformLabel: issue.platformLabel || issue.platform || '',
+      articleKey: issue.articleKey || '',
+      name: issue.name || '',
+      revenue: Math.round(numberOrZero(issue.revenue)),
+      aggregateRevenue: Math.round(numberOrZero(issue.aggregateRevenue)),
+      overage: Math.round(numberOrZero(issue.overage)),
+      units: Math.round(numberOrZero(issue.units)),
+      message: issue.message || ''
+    }));
+  return {
+    schema: 'portal-data-quarantine-v1',
+    generatedAt: new Date().toISOString(),
+    reason: 'Rows that need review before the data contour can be trusted.',
+    summary: {
+      rows: rows.length,
+      revenue: rows.reduce((sum, row) => sum + numberOrZero(row.revenue), 0),
+      overage: rows.reduce((sum, row) => sum + numberOrZero(row.overage), 0),
+      apiSumAboveAggregateCount: rows.filter((row) => row.type === 'api_sum_above_aggregate').length,
+      apiUnmappedHighRevenueCount: rows.filter((row) => row.type === 'api_sku_unmapped').length
+    },
+    rows
+  };
+}
+
+function buildHealth(options) {
+  const snapshots = Object.fromEntries(SNAPSHOT_NAMES.map((name) => {
+    const snapshot = readSnapshot(options, name);
+    return [name, snapshot.payload];
+  }));
+  const sources = Object.fromEntries(SNAPSHOT_NAMES.map((name) => [name, snapshotMetric(name, snapshots[name])]));
+  const quality = snapshots.portal_data_quality || {};
+  const qualitySummary = quality.summary || {};
+  const quarantine = buildQuarantine(quality);
+  const blockingReasons = [];
+  const warnings = [];
+  const checks = [];
+
+  REQUIRED_SNAPSHOTS.forEach((name) => {
+    const metric = sources[name];
+    const ok = metric.exists && metric.rows > 0;
+    checks.push({ name: `required:${name}`, status: ok ? 'ok' : 'blocked', rows: metric.rows });
+    if (!ok) blockingReasons.push(`Required snapshot ${name} is missing or empty.`);
+  });
+
+  if (numberOrZero(qualitySummary.apiSumAboveAggregateCount) > 0) {
+    blockingReasons.push(`API SKU sum is above marketplace aggregate for ${qualitySummary.apiSumAboveAggregateCount} platform(s).`);
+  }
+  if (numberOrZero(qualitySummary.apiSumAboveAggregateOverage) > 0) {
+    warnings.push(`Potential duplicated revenue overage: ${Math.round(numberOrZero(qualitySummary.apiSumAboveAggregateOverage))}.`);
+  }
+  if (numberOrZero(qualitySummary.apiUnmappedRevenue) > 0) {
+    warnings.push(`Unmapped API SKU revenue: ${Math.round(numberOrZero(qualitySummary.apiUnmappedRevenue))}.`);
+  }
+  if (numberOrZero(qualitySummary.skuMissingOwner) > 0) {
+    warnings.push(`SKU without owner or registry mapping: ${Math.round(numberOrZero(qualitySummary.skuMissingOwner))}.`);
+  }
+
+  const maxDate = qualitySummary.maxDate || sources.platform_trends.asOfDate || sources.dashboard.asOfDate;
+  const maxDateAge = daysOld(maxDate, options.now);
+  if (maxDateAge !== null && maxDateAge > options.staleWarnDays) {
+    warnings.push(`Marketplace data looks stale: ${maxDate}, ${maxDateAge} day(s) old.`);
+  }
+
+  const lastGood = loadLastGoodManifest(options);
+  const comparisons = [];
+  if (lastGood.exists && lastGood.manifest?.metrics) {
+    ['skus', 'platform_trends', 'order_procurement', 'warehouse_stock_overlay', 'sku_matrix'].forEach((name) => {
+      const current = sources[name] || {};
+      const previous = lastGood.manifest.metrics[name] || {};
+      const previousRows = numberOrZero(previous.rows);
+      const previousRevenue = numberOrZero(previous.revenue);
+      const currentRows = numberOrZero(current.rows);
+      const currentRevenue = numberOrZero(current.revenue);
+      const rowRatio = previousRows > 0 ? currentRows / previousRows : 1;
+      const revenueRatio = previousRevenue > 0 ? currentRevenue / previousRevenue : 1;
+      const comparison = {
+        snapshot: name,
+        rows: currentRows,
+        previousRows,
+        rowRatio,
+        revenue: currentRevenue,
+        previousRevenue,
+        revenueRatio
+      };
+      comparisons.push(comparison);
+      if (previousRows >= 20 && rowRatio < options.minRowsRatio) {
+        blockingReasons.push(`Snapshot ${name} row count collapsed vs last good (${currentRows}/${previousRows}).`);
+      }
+      if (previousRevenue >= 100000 && currentRevenue > 0 && revenueRatio < options.minRevenueRatio) {
+        blockingReasons.push(`Snapshot ${name} revenue collapsed vs last good (${currentRevenue}/${previousRevenue}).`);
+      }
+    });
+  }
+
+  const allowed = blockingReasons.length === 0;
+  const status = allowed ? (warnings.length ? 'warning' : 'ok') : 'blocked';
+  const health = {
+    schema: 'portal-sync-health-v1',
+    generatedAt: new Date().toISOString(),
+    status,
+    publish: {
+      allowed,
+      blockingReasons,
+      warnings,
+      checkedAt: new Date().toISOString()
+    },
+    freshness: {
+      maxDate,
+      maxDateAgeDays: maxDateAge
+    },
+    sources,
+    quality: qualitySummary,
+    apiReconciliation: {
+      blocked: numberOrZero(qualitySummary.apiSumAboveAggregateCount) > 0,
+      count: numberOrZero(qualitySummary.apiSumAboveAggregateCount),
+      overage: Math.round(numberOrZero(qualitySummary.apiSumAboveAggregateOverage))
+    },
+    quarantine: quarantine.summary,
+    lastGood: {
+      exists: lastGood.exists,
+      generatedAt: lastGood.manifest?.generatedAt || '',
+      comparisons
+    },
+    checks
+  };
+  return { health, quarantine, snapshots };
+}
+
+function writeJson(filePath, payload) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+}
+
+function writeSummary(filePath, health) {
+  const lines = [
+    `Portal sync health: ${health.status}`,
+    `Generated: ${health.generatedAt}`,
+    `Publish allowed: ${health.publish.allowed ? 'yes' : 'no'}`,
+    `Max data date: ${health.freshness.maxDate || 'unknown'}`,
+    '',
+    'Blocking reasons:',
+    ...(health.publish.blockingReasons.length ? health.publish.blockingReasons.map((item) => `- ${item}`) : ['- none']),
+    '',
+    'Warnings:',
+    ...(health.publish.warnings.length ? health.publish.warnings.map((item) => `- ${item}`) : ['- none'])
+  ];
+  fs.writeFileSync(filePath, `${lines.join('\r\n')}\r\n`, 'utf8');
+}
+
+function mirrorOutput(options, files) {
+  if (!options.mirrorLocalFallback) return [];
+  fs.mkdirSync(options.baseDataDir, { recursive: true });
+  return files.map((filePath) => {
+    const target = path.join(options.baseDataDir, path.basename(filePath));
+    fs.copyFileSync(filePath, target);
+    return target;
+  });
+}
+
+function markLastGood(options, health) {
+  if (!options.markLastGood || !health.publish.allowed) return null;
+  fs.mkdirSync(options.lastGoodDir, { recursive: true });
+  const copied = [];
+  SNAPSHOT_NAMES.forEach((name) => {
+    const source = path.join(options.outputDir, `${name}.json`);
+    if (!fs.existsSync(source)) return;
+    const target = path.join(options.lastGoodDir, `${name}.json`);
+    fs.copyFileSync(source, target);
+    copied.push(`${name}.json`);
+  });
+  const metrics = Object.fromEntries(SNAPSHOT_NAMES.map((name) => {
+    const payload = readJsonIfExists(path.join(options.outputDir, `${name}.json`));
+    return [name, snapshotMetric(name, payload)];
+  }));
+  const manifest = {
+    schema: 'portal-last-good-manifest-v1',
+    generatedAt: new Date().toISOString(),
+    healthStatus: health.status,
+    copied,
+    metrics
+  };
+  writeJson(path.join(options.lastGoodDir, LAST_GOOD_MANIFEST), manifest);
+  return manifest;
+}
+
+function main() {
+  const options = resolveOptions(parseArgs(process.argv));
+  const { health, quarantine } = buildHealth(options);
+  const healthPath = path.join(options.outputDir, 'portal_sync_health.json');
+  const quarantinePath = path.join(options.outputDir, 'portal_data_quarantine.json');
+  const summaryPath = path.join(options.outputDir, 'portal_sync_summary.txt');
+  const lastGoodManifest = markLastGood(options, health);
+  if (lastGoodManifest) {
+    health.lastGood.markedAt = lastGoodManifest.generatedAt;
+    health.lastGood.copied = lastGoodManifest.copied.length;
+  }
+  writeJson(healthPath, health);
+  writeJson(quarantinePath, quarantine);
+  writeSummary(summaryPath, health);
+  const mirrored = mirrorOutput(options, [healthPath, quarantinePath, summaryPath]);
+  console.log(JSON.stringify({
+    status: health.status,
+    publishAllowed: health.publish.allowed,
+    blockingReasons: health.publish.blockingReasons,
+    warnings: health.publish.warnings,
+    output: { healthPath, quarantinePath, summaryPath, mirrored },
+    lastGoodMarked: Boolean(lastGoodManifest)
+  }, null, 2));
+}
+
+main();

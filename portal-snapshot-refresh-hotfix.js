@@ -22,9 +22,13 @@
     "data/order_procurement_wb.json": "order_procurement_wb",
     "data/order_procurement_ozon.json": "order_procurement_ozon",
     "data/warehouse_stock_overlay.json": "warehouse_stock_overlay",
+    "data/portal_data_quality.json": "portal_data_quality",
+    "data/portal_data_quarantine.json": "portal_data_quarantine",
     "data/sku_aliases.json": "sku_aliases",
     "data/sku_alias_ignore.json": "sku_alias_ignore",
-    "data/sku_matrix.json": "sku_matrix"
+    "data/sku_alias_audit.json": "sku_alias_audit",
+    "data/sku_matrix.json": "sku_matrix",
+    "data/portal_sync_health.json": "portal_sync_health"
   };
   var SKU_ALIASES_FALLBACK = {
     schema: "sku-api-aliases-v1",
@@ -34,6 +38,10 @@
     schema: "sku-api-ignore-v1",
     ignored: []
   };
+  var SKU_ALIAS_AUDIT_FALLBACK = {
+    schema: "sku-alias-audit-v1",
+    events: []
+  };
   var SKU_MATRIX_FALLBACK = {
     schema: "portal-sku-matrix-v1",
     summary: {},
@@ -41,6 +49,18 @@
     apiUnmapped: [],
     ignoredApiSku: [],
     indexes: { byArticleKey: {}, aliasToArticleKey: {} }
+  };
+  var SYNC_HEALTH_FALLBACK = {
+    schema: "portal-sync-health-v1",
+    status: "",
+    publish: { allowed: true, blockingReasons: [], warnings: [] },
+    sources: {},
+    quality: {}
+  };
+  var DATA_QUARANTINE_FALLBACK = {
+    schema: "portal-data-quarantine-v1",
+    summary: {},
+    rows: []
   };
   var ALLOWED_SNAPSHOT_KEYS = Object.keys(PATH_MAP).reduce(function (acc, path) {
     var key = PATH_MAP[path];
@@ -165,6 +185,27 @@
         && typeof payload === "object"
         && !Array.isArray(payload)
         && (Array.isArray(payload.ignored) || Array.isArray(payload.ignores) || Array.isArray(payload.rows));
+    }
+    if (snapshotKey === "sku_alias_audit") {
+      return payload
+        && typeof payload === "object"
+        && !Array.isArray(payload)
+        && Array.isArray(payload.events);
+    }
+    if (snapshotKey === "portal_sync_health") {
+      return payload
+        && typeof payload === "object"
+        && !Array.isArray(payload)
+        && typeof payload.publish === "object";
+    }
+    if (snapshotKey === "portal_data_quarantine") {
+      return payload
+        && typeof payload === "object"
+        && !Array.isArray(payload)
+        && Array.isArray(payload.rows);
+    }
+    if (snapshotKey === "portal_data_quality") {
+      return payload && typeof payload === "object" && typeof payload.summary === "object";
     }
     if (snapshotKey === "platform_trends" || snapshotKey === "ads_summary") {
       return Array.isArray(payload && payload.platforms) && payload.platforms.length > 0;
@@ -570,8 +611,11 @@
       optionalLoader("tmp-live-repricer.json"),
       loadSnapshotAwareJson("data/repricer.json", { generatedAt: "", summary: {}, rows: [] }, true),
       loadSnapshotAwareJson("data/price_workbench_support.json", { generatedAt: "", platforms: {} }, true),
+      loadSnapshotAwareJson("data/portal_sync_health.json", SYNC_HEALTH_FALLBACK, true),
+      loadSnapshotAwareJson("data/portal_data_quarantine.json", DATA_QUARANTINE_FALLBACK, true),
       loadSnapshotAwareJson("data/sku_aliases.json", SKU_ALIASES_FALLBACK, true),
       loadSnapshotAwareJson("data/sku_alias_ignore.json", SKU_ALIAS_IGNORE_FALLBACK, true),
+      loadSnapshotAwareJson("data/sku_alias_audit.json", SKU_ALIAS_AUDIT_FALLBACK, true),
       loadSnapshotAwareJson("data/sku_matrix.json", SKU_MATRIX_FALLBACK, true)
     ]);
     var dashboard = results[0];
@@ -588,9 +632,12 @@
     var repricerLive = results[11];
     var repricer = results[12];
     var priceWorkbenchSupport = results[13];
-    var skuAliases = results[14];
-    var skuAliasIgnore = results[15];
-    var skuMatrix = results[16];
+    var syncHealth = results[14];
+    var portalDataQuarantine = results[15];
+    var skuAliases = results[16];
+    var skuAliasIgnore = results[17];
+    var skuAliasAudit = results[18];
+    var skuMatrix = results[19];
     var changed = false;
 
     if (typeof state === "object" && state) {
@@ -627,12 +674,21 @@
       var nextPriceWorkbenchSupport = priceWorkbenchSupport && typeof priceWorkbenchSupport === "object"
         ? priceWorkbenchSupport
         : { generatedAt: "", platforms: {} };
+      var nextSyncHealth = syncHealth && typeof syncHealth === "object"
+        ? syncHealth
+        : (state.syncHealth || SYNC_HEALTH_FALLBACK);
+      var nextPortalDataQuarantine = portalDataQuarantine && typeof portalDataQuarantine === "object"
+        ? portalDataQuarantine
+        : (state.portalDataQuarantine || DATA_QUARANTINE_FALLBACK);
       var nextSkuAliases = skuAliases && typeof skuAliases === "object"
         ? skuAliases
         : (state.skuAliases || SKU_ALIASES_FALLBACK);
       var nextSkuAliasIgnore = skuAliasIgnore && typeof skuAliasIgnore === "object"
         ? skuAliasIgnore
         : (state.skuAliasIgnore || SKU_ALIAS_IGNORE_FALLBACK);
+      var nextSkuAliasAudit = skuAliasAudit && typeof skuAliasAudit === "object"
+        ? skuAliasAudit
+        : (state.skuAliasAudit || SKU_ALIAS_AUDIT_FALLBACK);
       var nextSkuMatrix = skuMatrix && typeof skuMatrix === "object"
         ? skuMatrix
         : (state.skuMatrix || SKU_MATRIX_FALLBACK);
@@ -703,12 +759,24 @@
         state.priceWorkbenchSupport = nextPriceWorkbenchSupport;
         changed = true;
       }
+      if (payloadChanged("portal_sync_health", state.syncHealth, nextSyncHealth)) {
+        state.syncHealth = nextSyncHealth;
+        changed = true;
+      }
+      if (payloadChanged("portal_data_quarantine", state.portalDataQuarantine, nextPortalDataQuarantine)) {
+        state.portalDataQuarantine = nextPortalDataQuarantine;
+        changed = true;
+      }
       if (payloadChanged("sku_aliases", state.skuAliases, nextSkuAliases)) {
         state.skuAliases = nextSkuAliases;
         changed = true;
       }
       if (payloadChanged("sku_alias_ignore", state.skuAliasIgnore, nextSkuAliasIgnore)) {
         state.skuAliasIgnore = nextSkuAliasIgnore;
+        changed = true;
+      }
+      if (payloadChanged("sku_alias_audit", state.skuAliasAudit, nextSkuAliasAudit)) {
+        state.skuAliasAudit = nextSkuAliasAudit;
         changed = true;
       }
       if (payloadChanged("sku_matrix", state.skuMatrix, nextSkuMatrix)) {

@@ -20,6 +20,9 @@
     "portal:sku-matrix": "node scripts/build-sku-matrix-layer.js --input-dir data --base-data-dir data --output-dir data",
     "portal:sku-alias-import": "node scripts/import-sku-alias-review.js",
     "portal:snapshot-pull": "node scripts/portal-snapshot-pull.js",
+    "portal:sync-health": "node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data",
+    "portal:rollback-last-good": "node scripts/portal-rollback-last-good.js --mirror-local-fallback",
+    "portal:contract-smoke": "node scripts/portal-contract-smoke.js",
     "portal:price-audit": "node scripts/audit-price-contour.js",
     "portal:metric-audit": "node scripts/audit-portal-metrics.js",
     "portal:wb-audit": "node scripts/audit-wb-report-reconciliation.js"

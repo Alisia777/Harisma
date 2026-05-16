@@ -639,6 +639,51 @@ function downloadDashboardExcel(model) {
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+function syncHealthStatusMeta(health = {}) {
+  const allowed = health?.publish?.allowed !== false;
+  const status = String(health?.status || '').toLowerCase();
+  if (!allowed || status === 'blocked' || status === 'critical') {
+    return { label: 'Публикация остановлена', tone: 'danger', notice: 'warn' };
+  }
+  if (status === 'warning' || (health?.publish?.warnings || []).length) {
+    return { label: 'Есть предупреждения', tone: 'warn', notice: 'warn' };
+  }
+  return { label: 'Sync в норме', tone: 'ok', notice: 'ok' };
+}
+
+function syncHealthNoticeHtml() {
+  const health = state.syncHealth || {};
+  const hasHealth = health.generatedAt || health.status || health.publish;
+  if (!hasHealth) return '';
+  const meta = syncHealthStatusMeta(health);
+  const publish = health.publish || {};
+  const reasons = (publish.blockingReasons || []).slice(0, 3);
+  const warnings = (publish.warnings || []).slice(0, 3);
+  const detailItems = reasons.length ? reasons : warnings;
+  const detailHtml = detailItems.length
+    ? `<div class="small muted" style="margin-top:6px">${detailItems.map((item) => escapeHtml(item)).join(' · ')}</div>`
+    : '';
+  const quality = health.quality || {};
+  const quarantine = health.quarantine || {};
+  return `
+    <div class="notice ${meta.notice}" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <strong>Контур данных: ${escapeHtml(meta.label)}</strong>
+          <div class="small muted">Проверено: ${escapeHtml(fmt.date(health.generatedAt || publish.checkedAt || ''))} · данные до ${escapeHtml(health.freshness?.maxDate || quality.maxDate || '—')}</div>
+          ${detailHtml}
+        </div>
+        <div class="badge-stack">
+          ${badge(meta.label, meta.tone)}
+          ${badge(`${fmt.int(quality.apiUnmappedUniqueSku || 0)} API без пары`, quality.apiUnmappedUniqueSku ? 'warn' : 'ok')}
+          ${badge(`${fmt.int(quarantine.rows || 0)} в карантине`, quarantine.rows ? 'danger' : 'ok')}
+          ${badge(fmt.money(quality.apiUnmappedRevenue || 0), quality.apiUnmappedRevenue ? 'warn' : 'ok')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderDashboard() {
   const root = document.getElementById('view-dashboard');
   const model = buildVisualDashboardModel();
@@ -773,6 +818,8 @@ function renderDashboard() {
       </div>
       <div class="hero-grid">${heroCards}</div>
     </section>
+
+    ${syncHealthNoticeHtml()}
 
     <div class="section-title" style="margin-top:18px">
       <div>

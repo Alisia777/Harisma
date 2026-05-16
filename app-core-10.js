@@ -775,7 +775,7 @@ async function init() {
 
   try {
     const local = loadLocalStorage();
-    const [dashboard, skus, seed, productLeaderboard, productLeaderboardHistory, skuAliases, skuAliasIgnore, skuMatrix] = await Promise.all([
+    const [dashboard, skus, seed, productLeaderboard, productLeaderboardHistory, skuAliases, skuAliasIgnore, skuAliasAudit, skuMatrix, syncHealth, portalDataQuarantine] = await Promise.all([
       loadJsonOrFallback('data/dashboard.json', { cards: [], generatedAt: '' }, 'Дашборд'),
       loadJsonOrFallback('data/skus.json', [], 'SKU'),
       loadJsonOrFallback('data/seed_comments.json', { comments: [], tasks: [] }, 'Seed comments'),
@@ -783,7 +783,10 @@ async function init() {
       loadJsonOrFallback('data/product_leaderboard_history.json', [], 'История продуктового лидерборда'),
       loadJsonOrFallback('data/sku_aliases.json', { schema: 'sku-api-aliases-v1', aliases: [] }, 'SKU aliases'),
       loadJsonOrFallback('data/sku_alias_ignore.json', { schema: 'sku-api-ignore-v1', ignored: [] }, 'SKU alias ignore'),
-      loadJsonOrFallback('data/sku_matrix.json', { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } }, 'SKU matrix')
+      loadJsonOrFallback('data/sku_alias_audit.json', { schema: 'sku-alias-audit-v1', events: [] }, 'SKU alias audit'),
+      loadJsonOrFallback('data/sku_matrix.json', { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } }, 'SKU matrix'),
+      loadJsonOrFallback('data/portal_sync_health.json', { schema: 'portal-sync-health-v1', status: '', publish: { allowed: true, blockingReasons: [], warnings: [] }, sources: {}, quality: {} }, 'Состояние sync'),
+      loadJsonOrFallback('data/portal_data_quarantine.json', { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] }, 'Карантин данных')
     ]);
 
     state.dashboard = dashboard || { cards: [] };
@@ -801,9 +804,18 @@ async function init() {
     state.skuAliasIgnore = skuAliasIgnore && typeof skuAliasIgnore === 'object'
       ? skuAliasIgnore
       : { schema: 'sku-api-ignore-v1', ignored: [] };
+    state.skuAliasAudit = skuAliasAudit && typeof skuAliasAudit === 'object'
+      ? skuAliasAudit
+      : { schema: 'sku-alias-audit-v1', events: [] };
     state.skuMatrix = skuMatrix && typeof skuMatrix === 'object'
       ? skuMatrix
       : { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } };
+    state.syncHealth = syncHealth && typeof syncHealth === 'object'
+      ? syncHealth
+      : { schema: 'portal-sync-health-v1', status: '', publish: { allowed: true, blockingReasons: [], warnings: [] }, sources: {}, quality: {} };
+    state.portalDataQuarantine = portalDataQuarantine && typeof portalDataQuarantine === 'object'
+      ? portalDataQuarantine
+      : { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] };
     state.boot.lazyReady.productLeaderboard = true;
     state.repricer = { generatedAt: '', summary: {}, rows: [] };
     if (!state.orderCalc.articleKey) state.orderCalc.articleKey = state.skus[0]?.articleKey || '';

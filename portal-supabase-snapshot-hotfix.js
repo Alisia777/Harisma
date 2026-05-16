@@ -10,14 +10,21 @@
     'iu_plan',
     'ads_summary',
     'iu_drr_summary',
-    'platform_plan'
+    'platform_plan',
+    'portal_sync_health',
+    'portal_data_quarantine',
+    'portal_data_quality',
+    'sku_aliases',
+    'sku_alias_ignore',
+    'sku_alias_audit',
+    'sku_matrix'
   ];
   const VIEW_SNAPSHOT_KEYS = {
     prices: ['prices', 'smart_price_workbench', 'smart_price_overlay', 'price_workbench_support'],
     repricer: ['prices', 'smart_price_workbench', 'smart_price_overlay', 'price_workbench_support'],
     order: ['logistics', 'order_procurement', 'order_procurement_wb', 'order_procurement_ozon', 'warehouse_stock_overlay'],
     'ads-funnel': ['ads_summary', 'smart_price_overlay', 'iu_drr_summary'],
-    'sku-plan-fact': ['smart_price_workbench', 'smart_price_overlay', 'price_workbench_support', 'ads_summary', 'iu_drr_summary'],
+    'sku-plan-fact': ['smart_price_workbench', 'smart_price_overlay', 'price_workbench_support', 'ads_summary', 'iu_drr_summary', 'portal_data_quality', 'sku_aliases', 'sku_alias_ignore', 'sku_alias_audit', 'sku_matrix'],
     'iu-drr': ['iu_drr_summary', 'ads_summary', 'wb_feedbacks_summary'],
     'wb-rating': ['wb_feedbacks_summary', 'iu_drr_summary']
   };
@@ -35,7 +42,14 @@
     prices: 'prices',
     smart_price_workbench: 'smartPriceWorkbench',
     smart_price_overlay: 'smartPriceOverlay',
-    price_workbench_support: 'priceWorkbenchSupport'
+    price_workbench_support: 'priceWorkbenchSupport',
+    portal_sync_health: 'syncHealth',
+    portal_data_quarantine: 'portalDataQuarantine',
+    portal_data_quality: 'portalDataQuality',
+    sku_aliases: 'skuAliases',
+    sku_alias_ignore: 'skuAliasIgnore',
+    sku_alias_audit: 'skuAliasAudit',
+    sku_matrix: 'skuMatrix'
   };
   const FALLBACK_CONFIG = {
     brand: 'Алтея',
@@ -245,6 +259,13 @@
       return typeof payload?.platforms === 'object' && payload.platforms !== null
         && Object.keys(payload.platforms).length > 0;
     }
+    if (snapshotKey === 'portal_sync_health') return typeof payload?.publish === 'object';
+    if (snapshotKey === 'portal_data_quarantine') return Array.isArray(payload?.rows);
+    if (snapshotKey === 'portal_data_quality') return typeof payload?.summary === 'object';
+    if (snapshotKey === 'sku_aliases') return Array.isArray(payload?.aliases);
+    if (snapshotKey === 'sku_alias_ignore') return Array.isArray(payload?.ignored) || Array.isArray(payload?.ignores) || Array.isArray(payload?.rows);
+    if (snapshotKey === 'sku_alias_audit') return Array.isArray(payload?.events);
+    if (snapshotKey === 'sku_matrix') return Array.isArray(payload?.items) && payload.items.length > 0;
     return typeof payload === 'object' && payload !== null && Object.keys(payload).length > 0;
   }
 

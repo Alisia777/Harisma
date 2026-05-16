@@ -1,0 +1,261 @@
+{
+  "schema": "portal-sync-health-v1",
+  "generatedAt": "2026-05-16T09:25:39.909Z",
+  "status": "warning",
+  "publish": {
+    "allowed": true,
+    "blockingReasons": [],
+    "warnings": [
+      "Unmapped API SKU revenue: 14935829.",
+      "SKU without owner or registry mapping: 9."
+    ],
+    "checkedAt": "2026-05-16T09:25:39.909Z"
+  },
+  "freshness": {
+    "maxDate": "2026-05-16",
+    "maxDateAgeDays": 0
+  },
+  "sources": {
+    "dashboard": {
+      "exists": true,
+      "rows": 155,
+      "generatedAt": "2026-05-16T08:04:21.479Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 0
+    },
+    "skus": {
+      "exists": true,
+      "rows": 89,
+      "generatedAt": "",
+      "asOfDate": "",
+      "revenue": 0
+    },
+    "platform_trends": {
+      "exists": true,
+      "rows": 7,
+      "generatedAt": "2026-05-16T08:04:21.289Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 273622658
+    },
+    "ads_summary": {
+      "exists": true,
+      "rows": 7,
+      "generatedAt": "2026-05-16T08:03:53.759Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 0
+    },
+    "iu_plan": {
+      "exists": true,
+      "rows": 1,
+      "generatedAt": "2026-05-16T08:05:38.379Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 0
+    },
+    "prices": {
+      "exists": true,
+      "rows": 1,
+      "generatedAt": "2026-05-16T08:04:57.861Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 0
+    },
+    "repricer": {
+      "exists": true,
+      "rows": 300,
+      "generatedAt": "2026-05-16T08:04:57.861Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 0
+    },
+    "smart_price_overlay": {
+      "exists": true,
+      "rows": 1,
+      "generatedAt": "2026-05-16T08:04:57.861Z",
+      "asOfDate": "2026-05-15",
+      "revenue": 0
+    },
+    "warehouse_stock_overlay": {
+      "exists": true,
+      "rows": 81,
+      "generatedAt": "2026-05-16T08:02:41.647Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 0
+    },
+    "loyalty_system": {
+      "exists": true,
+      "rows": 0,
+      "generatedAt": "2026-05-16T08:04:21.634Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 0
+    },
+    "product_leaderboard": {
+      "exists": true,
+      "rows": 49,
+      "generatedAt": "2026-05-16T08:05:16.958Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 12264180
+    },
+    "product_leaderboard_history": {
+      "exists": true,
+      "rows": 15,
+      "generatedAt": "",
+      "asOfDate": "",
+      "revenue": 0
+    },
+    "order_procurement": {
+      "exists": true,
+      "rows": 1893,
+      "generatedAt": "2026-05-16T08:04:21.633Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 0
+    },
+    "order_procurement_wb": {
+      "exists": true,
+      "rows": 632,
+      "generatedAt": "2026-05-16T08:04:21.633Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 0
+    },
+    "order_procurement_ozon": {
+      "exists": true,
+      "rows": 1261,
+      "generatedAt": "2026-05-16T08:04:21.633Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 0
+    },
+    "iu_drr_summary": {
+      "exists": true,
+      "rows": 76,
+      "generatedAt": "2026-05-15T17:40:26.864Z",
+      "asOfDate": "2026-05-15",
+      "revenue": 0
+    },
+    "wb_feedbacks_summary": {
+      "exists": true,
+      "rows": 186,
+      "generatedAt": "2026-05-15T17:40:26.170Z",
+      "asOfDate": "2026-05-15",
+      "revenue": 0
+    },
+    "portal_data_quality": {
+      "exists": true,
+      "rows": 1,
+      "generatedAt": "2026-05-16T09:25:25.300Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 14935829
+    },
+    "portal_data_quarantine": {
+      "exists": true,
+      "rows": 43,
+      "generatedAt": "2026-05-16T09:25:31.626Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 9378991
+    },
+    "sku_aliases": {
+      "exists": true,
+      "rows": 0,
+      "generatedAt": "",
+      "asOfDate": "",
+      "revenue": 0
+    },
+    "sku_alias_ignore": {
+      "exists": true,
+      "rows": 0,
+      "generatedAt": "",
+      "asOfDate": "",
+      "revenue": 0
+    },
+    "sku_alias_audit": {
+      "exists": true,
+      "rows": 0,
+      "generatedAt": "",
+      "asOfDate": "",
+      "revenue": 0
+    },
+    "sku_matrix": {
+      "exists": true,
+      "rows": 89,
+      "generatedAt": "2026-05-16T09:25:25.206Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 0
+    },
+    "portal_sync_health": {
+      "exists": true,
+      "rows": 1,
+      "generatedAt": "2026-05-16T09:25:31.626Z",
+      "asOfDate": "2026-05-16",
+      "revenue": 0
+    }
+  },
+  "quality": {
+    "issueCount": 265,
+    "criticalCount": 43,
+    "warningCount": 222,
+    "monthKey": "2026-05",
+    "maxDate": "2026-05-16",
+    "apiUnmappedPlatformRows": 231,
+    "apiUnmappedUniqueSku": 119,
+    "apiUnmappedRevenue": 14935829,
+    "apiIgnoredPlatformRows": 0,
+    "apiSumAboveAggregateCount": 0,
+    "apiSumAboveAggregateOverage": 0,
+    "skuAliasCount": 0,
+    "orderNoStockNeedRows": 0,
+    "skuMissingOwner": 9,
+    "warehouseUnmatchedRows": 25
+  },
+  "apiReconciliation": {
+    "blocked": false,
+    "count": 0,
+    "overage": 0
+  },
+  "quarantine": {
+    "rows": 43,
+    "revenue": 9378991,
+    "overage": 0,
+    "apiSumAboveAggregateCount": 0,
+    "apiUnmappedHighRevenueCount": 43
+  },
+  "lastGood": {
+    "exists": false,
+    "generatedAt": "",
+    "comparisons": [],
+    "markedAt": "2026-05-16T09:25:40.061Z",
+    "copied": 24
+  },
+  "checks": [
+    {
+      "name": "required:dashboard",
+      "status": "ok",
+      "rows": 155
+    },
+    {
+      "name": "required:skus",
+      "status": "ok",
+      "rows": 89
+    },
+    {
+      "name": "required:platform_trends",
+      "status": "ok",
+      "rows": 7
+    },
+    {
+      "name": "required:order_procurement",
+      "status": "ok",
+      "rows": 1893
+    },
+    {
+      "name": "required:warehouse_stock_overlay",
+      "status": "ok",
+      "rows": 81
+    },
+    {
+      "name": "required:sku_matrix",
+      "status": "ok",
+      "rows": 89
+    },
+    {
+      "name": "required:portal_data_quality",
+      "status": "ok",
+      "rows": 1
+    }
+  ]
+}

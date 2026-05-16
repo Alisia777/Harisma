@@ -16,7 +16,11 @@
   wbFeedbacks: { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] },
   skuAliases: { schema: 'sku-api-aliases-v1', aliases: [] },
   skuAliasIgnore: { schema: 'sku-api-ignore-v1', ignored: [] },
+  skuAliasAudit: { schema: 'sku-alias-audit-v1', events: [] },
   skuMatrix: { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } },
+  syncHealth: { schema: 'portal-sync-health-v1', status: '', publish: { allowed: true, blockingReasons: [], warnings: [] }, sources: {}, quality: {} },
+  portalDataQuality: { generatedAt: '', status: '', summary: {}, issues: [] },
+  portalDataQuarantine: { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] },
   launches: [],
   meetings: [],
   documents: { groups: [] },
@@ -368,9 +372,12 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/order_procurement_ozon.json': 'order_procurement_ozon',
   'data/warehouse_stock_overlay.json': 'warehouse_stock_overlay',
   'data/portal_data_quality.json': 'portal_data_quality',
+  'data/portal_data_quarantine.json': 'portal_data_quarantine',
   'data/sku_aliases.json': 'sku_aliases',
   'data/sku_alias_ignore.json': 'sku_alias_ignore',
-  'data/sku_matrix.json': 'sku_matrix'
+  'data/sku_alias_audit.json': 'sku_alias_audit',
+  'data/sku_matrix.json': 'sku_matrix',
+  'data/portal_sync_health.json': 'portal_sync_health'
 };
 const portalSnapshotState = {
   client: null,
@@ -565,6 +572,16 @@ function payloadFreshnessScore(snapshotKey, payload) {
     return score;
   }
 
+  if (snapshotKey === 'portal_sync_health') {
+    score = bumpFreshness(score, payload.publish?.checkedAt || payload.generatedAt);
+    score = bumpFreshness(score, payload.freshness?.maxDate);
+    return score;
+  }
+
+  if (snapshotKey === 'portal_data_quarantine' || snapshotKey === 'sku_alias_audit') {
+    return bumpFreshness(score, payload.generatedAt || payload.updatedAt);
+  }
+
   return score;
 }
 
@@ -623,6 +640,14 @@ function payloadDataFreshnessScore(snapshotKey, payload) {
 
   if (snapshotKey === 'portal_data_quality') {
     return bumpFreshness(score, payload.summary?.maxDate || payload.generatedAt);
+  }
+
+  if (snapshotKey === 'portal_sync_health') {
+    return bumpFreshness(score, payload.freshness?.maxDate || payload.generatedAt);
+  }
+
+  if (snapshotKey === 'portal_data_quarantine' || snapshotKey === 'sku_alias_audit') {
+    return bumpFreshness(score, payload.generatedAt || payload.updatedAt);
   }
 
   return score;
@@ -1150,6 +1175,15 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
   }
   if (snapshotKey === 'portal_data_quality') {
     return typeof payload?.summary === 'object' && payload.summary !== null;
+  }
+  if (snapshotKey === 'portal_sync_health') {
+    return typeof payload === 'object' && payload !== null && typeof payload.publish === 'object';
+  }
+  if (snapshotKey === 'portal_data_quarantine') {
+    return typeof payload === 'object' && payload !== null && Array.isArray(payload.rows);
+  }
+  if (snapshotKey === 'sku_alias_audit') {
+    return typeof payload === 'object' && payload !== null && Array.isArray(payload.events);
   }
   if (snapshotKey === 'logistics') {
     return Array.isArray(payload?.allRows) && payload.allRows.length > 0
@@ -2110,7 +2144,7 @@ function registerPriceFreshnessWarning(payloads = {}) {
 async function loadJsonOrFallback(path, fallback, label = path) {
   const snapshotKey = snapshotKeyFromPath(path);
   if (snapshotKey) {
-    const skipStagedFallback = new Set(['sku_aliases', 'sku_alias_ignore', 'sku_matrix']);
+    const skipStagedFallback = new Set(['sku_aliases', 'sku_alias_ignore', 'sku_alias_audit', 'sku_matrix']);
     const stagedPath = String(path || '').startsWith('data/') && !skipStagedFallback.has(snapshotKey)
       ? `.altea-google-sheet-sync-output/${String(path).slice(5)}`
       : '';
@@ -2210,7 +2244,7 @@ const LAZY_DATA_LOADERS = {
       : { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] };
   },
   skuPlanFact: async () => {
-    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, summary, skuAliases, skuAliasIgnore] = await Promise.all([
+    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, summary, skuAliases, skuAliasIgnore, skuAliasAudit] = await Promise.all([
       loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
       loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU'),
       loadJsonOrFallback('data/price_workbench_support.dashboard-compact.json', { generatedAt: '', platforms: {} }, 'План SKU'),
@@ -2236,6 +2270,11 @@ const LAZY_DATA_LOADERS = {
         'data/sku_alias_ignore.json',
         { schema: 'sku-api-ignore-v1', ignored: [] },
         'Игнор API SKU'
+      ),
+      loadJsonOrFallback(
+        'data/sku_alias_audit.json',
+        { schema: 'sku-alias-audit-v1', events: [] },
+        'SKU alias audit'
       )
     ]);
     state.smartPriceOverlay = smartPriceOverlay && typeof smartPriceOverlay === 'object'
@@ -2273,6 +2312,9 @@ const LAZY_DATA_LOADERS = {
     state.skuAliasIgnore = skuAliasIgnore && typeof skuAliasIgnore === 'object'
       ? skuAliasIgnore
       : { schema: 'sku-api-ignore-v1', ignored: [] };
+    state.skuAliasAudit = skuAliasAudit && typeof skuAliasAudit === 'object'
+      ? skuAliasAudit
+      : { schema: 'sku-alias-audit-v1', events: [] };
   },
   productLeaderboard: async () => {
     const [payload, history] = await Promise.all([

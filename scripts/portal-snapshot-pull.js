@@ -7,7 +7,7 @@ const DEFAULT_BRAND = '\u0410\u043b\u0442\u0435\u044f';
 const DEFAULT_SUPABASE_URL = 'https://iyckwryrucqrxwlowxow.supabase.co';
 const DEFAULT_SUPABASE_KEY = 'sb_publishable_PztMtkcraVy_A2ymze1Unw_I1rOjrlw';
 const SNAPSHOT_TABLE = 'portal_data_snapshots';
-const DEFAULT_SNAPSHOTS = ['sku_aliases', 'sku_alias_ignore'];
+const DEFAULT_SNAPSHOTS = ['sku_aliases', 'sku_alias_ignore', 'sku_alias_audit'];
 
 function parseArgs(argv) {
   const args = {};

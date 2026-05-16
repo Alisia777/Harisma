@@ -10,6 +10,44 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repoRoot
 $nodeExe = (Get-Command node -ErrorAction Stop).Source
+$script:syncLockPath = Join-Path $repoRoot ".portal-google-sheet-sync.lock"
+$script:syncLockAcquired = $false
+
+function Remove-SyncLock {
+  if ($script:syncLockAcquired -and (Test-Path -LiteralPath $script:syncLockPath)) {
+    Remove-Item -LiteralPath $script:syncLockPath -Force -ErrorAction SilentlyContinue
+  }
+  $script:syncLockAcquired = $false
+}
+
+function Acquire-SyncLock {
+  if (Test-Path -LiteralPath $script:syncLockPath) {
+    $lockItem = Get-Item -LiteralPath $script:syncLockPath -ErrorAction SilentlyContinue
+    $lockAgeHours = if ($lockItem) { ((Get-Date) - $lockItem.LastWriteTime).TotalHours } else { 0 }
+    if ($lockItem -and $lockAgeHours -lt 6) {
+      $lockText = Get-Content -LiteralPath $script:syncLockPath -Raw -ErrorAction SilentlyContinue
+      throw "[sync] another portal sync seems to be running; lock age $([math]::Round($lockAgeHours, 2))h. $lockText"
+    }
+    Write-Warning "[sync] stale lock removed: $script:syncLockPath"
+    Remove-Item -LiteralPath $script:syncLockPath -Force -ErrorAction SilentlyContinue
+  }
+
+  $lockPayload = [ordered]@{
+    pid = $PID
+    startedAt = (Get-Date).ToString("o")
+    machine = $env:COMPUTERNAME
+    cwd = $repoRoot
+  } | ConvertTo-Json -Compress
+  Set-Content -LiteralPath $script:syncLockPath -Value $lockPayload -Encoding UTF8
+  $script:syncLockAcquired = $true
+}
+
+trap {
+  Remove-SyncLock
+  throw $_
+}
+
+Acquire-SyncLock
 
 function Invoke-NodeStep {
   param(
@@ -84,7 +122,7 @@ try {
     "--output-dir",
     "data",
     "--snapshot",
-    "sku_aliases,sku_alias_ignore"
+    "sku_aliases,sku_alias_ignore,sku_alias_audit"
   ) -Attempts 2 -RetryDelaySeconds 20
   Write-Output "[sync] shared SKU alias snapshots pull completed"
 } catch {
@@ -450,7 +488,8 @@ try {
 
 $skuAliasFiles = @(
   "sku_aliases.json",
-  "sku_alias_ignore.json"
+  "sku_alias_ignore.json",
+  "sku_alias_audit.json"
 )
 foreach ($fileName in $skuAliasFiles) {
   $sourcePath = Join-Path "data" $fileName
@@ -478,6 +517,21 @@ try {
   Write-Warning "[sync] SKU matrix build failed, but the portal sync will continue: $($_.Exception.Message)"
 }
 
+$syncHealthArguments = @(
+  "scripts/portal-sync-health.js",
+  "--input-dir",
+  $resolvedOutputDir,
+  "--base-data-dir",
+  "data",
+  "--output-dir",
+  $resolvedOutputDir,
+  "--mirror-local-fallback"
+)
+
+Write-Output "[sync] sync health build started"
+Invoke-NodeStep -StepName "sync health build" -Arguments $syncHealthArguments -Attempts 1 -RetryDelaySeconds 10
+Write-Output "[sync] sync health build completed"
+
 $metaPath = Join-Path $resolvedOutputDir "meta.json"
 if (Test-Path -LiteralPath $metaPath) {
   $meta = Get-Content -LiteralPath $metaPath -Raw | ConvertFrom-Json
@@ -496,7 +550,36 @@ if (Test-Path -LiteralPath $metaPath) {
   }
 }
 
+$syncHealthPath = Join-Path $resolvedOutputDir "portal_sync_health.json"
+$publishAllowed = $true
+$publishBlockReasons = @()
+if (Test-Path -LiteralPath $syncHealthPath) {
+  $syncHealth = Get-Content -LiteralPath $syncHealthPath -Raw | ConvertFrom-Json
+  $publishAllowed = [bool]$syncHealth.publish.allowed
+  $publishBlockReasons = @($syncHealth.publish.blockingReasons)
+  Write-Output "[sync] health status: $($syncHealth.status); publish allowed: $publishAllowed"
+}
+
 if ($DryRun) {
+  Remove-SyncLock
+  exit 0
+}
+
+if (-not $publishAllowed) {
+  Write-Warning "[sync] publish blocked by sync health. Main snapshots and logistics upload will be skipped."
+  $publishBlockReasons | ForEach-Object { Write-Warning "[sync] block reason: $_" }
+  $healthSnapshots = @("portal_sync_health")
+  if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_data_quarantine.json")) {
+    $healthSnapshots += "portal_data_quarantine"
+  }
+  Invoke-NodeStep -StepName "sync health upload" -Arguments @(
+    "scripts/portal-google-sheet-upload.js",
+    "--input-dir",
+    $resolvedOutputDir,
+    "--snapshot",
+    (($healthSnapshots | Select-Object -Unique) -join ",")
+  )
+  Remove-SyncLock
   exit 0
 }
 
@@ -533,12 +616,24 @@ if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_data_quality.js
   Write-Warning "[sync] optional snapshot portal_data_quality is absent and will not be uploaded."
 }
 
+if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_data_quarantine.json")) {
+  $snapshotNames += "portal_data_quarantine"
+}
+
+if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_sync_health.json")) {
+  $snapshotNames += "portal_sync_health"
+}
+
 if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "sku_aliases.json")) {
   $snapshotNames += "sku_aliases"
 }
 
 if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "sku_alias_ignore.json")) {
   $snapshotNames += "sku_alias_ignore"
+}
+
+if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "sku_alias_audit.json")) {
+  $snapshotNames += "sku_alias_audit"
 }
 
 if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "sku_matrix.json")) {
@@ -561,4 +656,18 @@ Invoke-NodeStep -StepName "logistics upload" -Arguments @(
   $resolvedOutputDir
 ) -Attempts 3 -RetryDelaySeconds 30
 
+$markLastGoodArguments = @($syncHealthArguments + "--mark-last-good")
+Write-Output "[sync] last-good mark started"
+Invoke-NodeStep -StepName "last-good mark" -Arguments $markLastGoodArguments -Attempts 1 -RetryDelaySeconds 10
+Write-Output "[sync] last-good mark completed"
+
+Invoke-NodeStep -StepName "sync health final upload" -Arguments @(
+  "scripts/portal-google-sheet-upload.js",
+  "--input-dir",
+  $resolvedOutputDir,
+  "--snapshot",
+  "portal_sync_health"
+)
+
 Write-Output "[sync] full portal sync completed"
+Remove-SyncLock

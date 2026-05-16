@@ -1391,6 +1391,264 @@ function skuPlanFactDataQualityHtml(model) {
   `;
 }
 
+function skuContourStatusMeta(status = '') {
+  const key = String(status || '').trim();
+  const map = {
+    applied: { label: 'Применено', tone: 'ok' },
+    ignored: { label: 'Ignore', tone: 'ok' },
+    quarantine: { label: 'Карантин', tone: 'danger' },
+    blocked: { label: 'Блокер sync', tone: 'danger' },
+    warning: { label: 'Проверить', tone: 'warn' },
+    new: { label: 'Новая', tone: 'warn' }
+  };
+  return map[key] || map.new;
+}
+
+function skuContourHealthMeta(health = {}) {
+  const status = String(health.status || '').toLowerCase();
+  if (health?.publish?.allowed === false || status === 'blocked' || status === 'critical') {
+    return { label: 'публикация остановлена', tone: 'danger', notice: 'warn' };
+  }
+  if (status === 'warning' || (health?.publish?.warnings || []).length) {
+    return { label: 'есть предупреждения', tone: 'warn', notice: 'warn' };
+  }
+  return { label: 'в норме', tone: 'ok', notice: 'ok' };
+}
+
+function skuContourIssueKey(platform = '', apiSku = '') {
+  return skuPlanFactIgnoreKey(platform || 'all', apiSku || '');
+}
+
+function skuContourPlatformKeys(rawPlatform = '') {
+  const raw = String(rawPlatform || '').split(',').map((part) => part.trim()).filter(Boolean);
+  const keys = raw.map((item) => skuPlanFactNormalizePlatform(item)).filter(Boolean);
+  return keys.length ? keys : ['all'];
+}
+
+function skuContourKnownKeysFromIssue(issue = {}) {
+  const apiSku = issue.articleKey || issue.api_sku || issue.apiSku || '';
+  return skuContourPlatformKeys(issue.platform).map((platform) => skuContourIssueKey(platform, apiSku));
+}
+
+function skuContourIssueRows(model = {}) {
+  const aliasKeys = new Set(
+    skuPlanFactAliasRows(state.skuAliases || {})
+      .filter(skuPlanFactAliasIsActive)
+      .map((row) => skuContourIssueKey(row.platform || 'all', row.api_sku || row.apiSku || row.alias || row.value || ''))
+  );
+  const ignoredKeys = new Set(
+    skuPlanFactActiveIgnoreRowsFromPayload(state.skuAliasIgnore || {})
+      .map((row) => skuContourIssueKey(row.platform || 'all', row.api_sku || row.apiSku || row.alias || row.value || ''))
+  );
+  const quarantineKeys = new Set((state.portalDataQuarantine?.rows || []).map((row) => skuContourIssueKey(row.platform || 'all', row.articleKey || row.api_sku || row.apiSku || '')));
+  const combined = [
+    ...(state.portalDataQuality?.issues || []),
+    ...(model.quality?.issues || [])
+  ];
+  const seen = new Set();
+  return combined
+    .map((issue) => {
+      const apiSku = issue.articleKey || issue.api_sku || issue.apiSku || '';
+      const keys = skuContourKnownKeysFromIssue(issue);
+      const type = String(issue.type || '').toLowerCase();
+      let status = 'new';
+      if (keys.some((key) => ignoredKeys.has(key))) status = 'ignored';
+      else if (keys.some((key) => aliasKeys.has(key))) status = 'applied';
+      else if (keys.some((key) => quarantineKeys.has(key))) status = 'quarantine';
+      else if (type.includes('aggregate') || type.includes('агрегат') || type.includes('выше')) status = 'blocked';
+      else if (issue.severity === 'warning' || issue.severity === 'warn') status = 'warning';
+      return {
+        key: `${issue.type || ''}|${issue.platform || ''}|${apiSku}|${Math.round(numberOrZero(issue.revenue))}`,
+        status,
+        type: issue.type || '',
+        platform: issue.platform || '',
+        apiSku,
+        name: issue.name || '',
+        revenue: numberOrZero(issue.revenue),
+        units: numberOrZero(issue.units),
+        action: issue.action || issue.message || ''
+      };
+    })
+    .filter((row) => {
+      if (!row.apiSku && !row.type) return false;
+      if (seen.has(row.key)) return false;
+      seen.add(row.key);
+      return true;
+    })
+    .sort((left, right) => {
+      const rank = { blocked: 0, quarantine: 1, new: 2, warning: 3, applied: 4, ignored: 5 };
+      return (rank[left.status] ?? 9) - (rank[right.status] ?? 9) || numberOrZero(right.revenue) - numberOrZero(left.revenue);
+    });
+}
+
+function skuContourDownloadPayload() {
+  skuPlanFactDownloadJson(`sku-contour-${todayIso()}.json`, {
+    generatedAt: new Date().toISOString(),
+    skuAliases: state.skuAliases || { aliases: [] },
+    skuAliasIgnore: state.skuAliasIgnore || { ignored: [] },
+    skuAliasAudit: state.skuAliasAudit || { events: [] },
+    skuMatrix: state.skuMatrix || {},
+    syncHealth: state.syncHealth || {},
+    portalDataQuality: state.portalDataQuality || {},
+    portalDataQuarantine: state.portalDataQuarantine || {}
+  });
+}
+
+function renderSkuContour(rootId = 'view-sku-contour') {
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  const model = skuPlanFactBuildModel();
+  const health = state.syncHealth || {};
+  const matrix = state.skuMatrix || {};
+  const matrixSummary = matrix.summary || {};
+  const healthMeta = skuContourHealthMeta(health);
+  const quality = state.portalDataQuality?.summary || model.quality || {};
+  const quarantine = state.portalDataQuarantine?.summary || {};
+  const auditEvents = skuPlanFactAuditEvents(state.skuAliasAudit || {}).slice(0, 8);
+  const issueRows = skuContourIssueRows(model);
+  const issueHtml = issueRows.slice(0, 120).map((row) => {
+    const meta = skuContourStatusMeta(row.status);
+    return `
+      <tr>
+        <td>${badge(meta.label, meta.tone)}</td>
+        <td><strong>${escapeHtml(row.type || '—')}</strong><div class="muted small">${escapeHtml(row.action || '')}</div></td>
+        <td>${escapeHtml(row.platform || 'Все')}</td>
+        <td><strong>${escapeHtml(row.apiSku || '—')}</strong><div class="muted small">${escapeHtml(row.name || '')}</div></td>
+        <td><strong>${fmt.money(row.revenue)}</strong><div class="muted small">${fmt.int(row.units)} шт.</div></td>
+      </tr>
+    `;
+  }).join('');
+  const auditHtml = auditEvents.map((event) => `
+    <tr>
+      <td>${escapeHtml(fmt.date(event.appliedAt || event.generatedAt || ''))}</td>
+      <td>${escapeHtml(event.actor || 'portal-user')}</td>
+      <td>${escapeHtml(event.fileName || '—')}</td>
+      <td>${fmt.int(event.aliasesAdded || 0)} alias / ${fmt.int(event.ignoresAdded || 0)} ignore</td>
+      <td>${fmt.int(event.validationWarnings || 0)} warn</td>
+    </tr>
+  `).join('');
+
+  root.innerHTML = `
+    <div class="section-title">
+      <div>
+        <h2>Контур SKU</h2>
+        <p>Единое место для API SKU без пары, alias/ignore, аудита и статуса утреннего sync.</p>
+      </div>
+      <div class="quick-actions">
+        <button class="quick-chip" type="button" data-sku-contour-refresh>Обновить</button>
+        <button class="quick-chip" type="button" data-sku-contour-open-planfact>План-факт</button>
+      </div>
+    </div>
+
+    <div class="notice ${healthMeta.notice}">
+      <div class="section-subhead">
+        <div>
+          <strong>Sync: ${escapeHtml(healthMeta.label)}</strong>
+          <div class="small muted">Проверено: ${escapeHtml(fmt.date(health.generatedAt || health.publish?.checkedAt || ''))} · данные до ${escapeHtml(health.freshness?.maxDate || quality.maxDate || '—')}</div>
+          ${(health.publish?.blockingReasons || health.publish?.warnings || []).slice(0, 3).map((item) => `<div class="small muted">${escapeHtml(item)}</div>`).join('')}
+        </div>
+        <div class="badge-stack">
+          ${badge(healthMeta.label, healthMeta.tone)}
+          ${badge(`${fmt.int(quality.apiUnmappedUniqueSku || matrixSummary.apiUnmappedCount || 0)} API без пары`, (quality.apiUnmappedUniqueSku || matrixSummary.apiUnmappedCount) ? 'warn' : 'ok')}
+          ${badge(`${fmt.int(quarantine.rows || 0)} в карантине`, quarantine.rows ? 'danger' : 'ok')}
+          ${badge(fmt.money(quality.apiUnmappedRevenue || 0), quality.apiUnmappedRevenue ? 'warn' : 'ok')}
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-strip" style="margin-top:14px">
+      <div class="mini-kpi"><span>SKU</span><strong>${fmt.int(matrixSummary.skuCount || (state.skus || []).length)}</strong><span>в матрице</span></div>
+      <div class="mini-kpi warn"><span>Alias</span><strong>${fmt.int(matrixSummary.aliasCount || skuPlanFactAliasRows(state.skuAliases || {}).length)}</strong><span>общий справочник</span></div>
+      <div class="mini-kpi"><span>Ignore</span><strong>${fmt.int(matrixSummary.ignoredApiSkuCount || skuPlanFactIgnorePayloadRows(state.skuAliasIgnore || {}).length)}</strong><span>осознанно не маппим</span></div>
+      <div class="mini-kpi danger"><span>API без пары</span><strong>${fmt.int(matrixSummary.apiUnmappedCount || quality.apiUnmappedPlatformRows || 0)}</strong><span>из API источников</span></div>
+      <div class="mini-kpi warn"><span>Без owner</span><strong>${fmt.int(matrixSummary.missingOwnerCount || quality.skuMissingOwner || 0)}</strong><span>реестр / матрица</span></div>
+      <div class="mini-kpi"><span>Аудит</span><strong>${fmt.int(auditEvents.length)}</strong><span>последние применения</span></div>
+    </div>
+
+    <div class="card sku-plan-fact-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Форма разбора API SKU</h3>
+          <p class="small muted">Выгрузите форму, заполните decision=alias или decision=ignore, затем загрузите обратно. Те же кнопки остаются и в План-факте.</p>
+        </div>
+        <div class="badge-stack">
+          <button class="quick-chip" type="button" data-sku-contour-quality-export>Выгрузить форму</button>
+          <button class="quick-chip" type="button" data-sku-contour-quality-import>Загрузить заполненный файл</button>
+          <button class="quick-chip" type="button" data-sku-contour-download-json>Скачать контур JSON</button>
+          <input type="file" accept=".csv,.xls,.html,.txt" data-sku-contour-quality-file hidden>
+        </div>
+      </div>
+      ${skuPlanFactAliasImportReportHtml(state.skuPlanFactAliasImportReport || null)}
+    </div>
+
+    <div class="card sku-plan-fact-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Очередь ошибок и статусов</h3>
+          <p class="small muted">Статус считается из общего alias/ignore, карантина и health-снимка, поэтому синхронизируется вместе со снапшотами портала.</p>
+        </div>
+        <div class="badge-stack">${badge(`${fmt.int(issueRows.length)} строк`, issueRows.length ? 'warn' : 'ok')}</div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table compact">
+          <thead><tr><th>Статус</th><th>Проблема</th><th>Площадка</th><th>API / SKU</th><th>Сумма</th></tr></thead>
+          <tbody>${issueHtml || '<tr><td colspan="5"><div class="empty">Очередь ошибок пуста</div></td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card sku-plan-fact-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Аудит применений</h3>
+          <p class="small muted">Кто и каким файлом менял alias/ignore. Хранится в общем snapshot sku_alias_audit.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(skuPlanFactAuditEvents(state.skuAliasAudit || {}).length)} событий`, auditEvents.length ? 'info' : '')}
+          <button class="quick-chip" type="button" data-sku-contour-download-audit>Скачать аудит</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table compact">
+          <thead><tr><th>Дата</th><th>Пользователь</th><th>Файл</th><th>Применено</th><th>Warnings</th></tr></thead>
+          <tbody>${auditHtml || '<tr><td colspan="5"><div class="empty">Применений пока не было</div></td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  root.querySelector('[data-sku-contour-refresh]')?.addEventListener('click', (event) => refreshSkuPlanFactData(event.currentTarget, rootId));
+  root.querySelector('[data-sku-contour-open-planfact]')?.addEventListener('click', () => {
+    if (typeof setView === 'function') setView('sku-plan-fact');
+    else document.querySelector('.nav-btn[data-view="sku-plan-fact"]')?.click();
+  });
+  root.querySelector('[data-sku-contour-quality-export]')?.addEventListener('click', () => downloadSkuPlanFactQualityExcel(model));
+  root.querySelector('[data-sku-contour-quality-import]')?.addEventListener('click', () => root.querySelector('[data-sku-contour-quality-file]')?.click());
+  root.querySelector('[data-sku-contour-quality-file]')?.addEventListener('change', async (event) => {
+    const file = event.target.files?.[0] || null;
+    event.target.value = '';
+    await handleSkuPlanFactAliasImport(file, rootId);
+  });
+  root.querySelector('[data-sku-contour-download-json]')?.addEventListener('click', skuContourDownloadPayload);
+  root.querySelector('[data-sku-contour-download-audit]')?.addEventListener('click', () => skuPlanFactDownloadJson(`sku-alias-audit-${todayIso()}.json`, state.skuAliasAudit || { events: [] }));
+  root.querySelector('[data-sku-plan-fact-apply-import]')?.addEventListener('click', async (event) => {
+    await handleSkuPlanFactApplyAliasImport(event.currentTarget, rootId);
+  });
+  root.querySelector('[data-sku-plan-fact-download-aliases]')?.addEventListener('click', () => {
+    const report = state.skuPlanFactAliasImportReport || {};
+    if (report.aliasPayload) skuPlanFactDownloadJson('sku_aliases.updated.json', report.aliasPayload);
+  });
+  root.querySelector('[data-sku-plan-fact-download-ignore]')?.addEventListener('click', () => {
+    const report = state.skuPlanFactAliasImportReport || {};
+    if (report.ignorePayload) skuPlanFactDownloadJson('sku_alias_ignore.updated.json', report.ignorePayload);
+  });
+  root.querySelector('[data-sku-plan-fact-download-import-report]')?.addEventListener('click', () => {
+    const report = state.skuPlanFactAliasImportReport || {};
+    const { aliasPayload, ignorePayload, ...publicReport } = report;
+    skuPlanFactDownloadJson(`sku-alias-import-report-${todayIso()}.json`, publicReport);
+  });
+}
+
 function skuPlanFactReconciliationHtml(items = []) {
   if (!items.length) return '';
   const text = items.map((item) => (
@@ -2143,6 +2401,14 @@ async function skuPlanFactUpsertSnapshot(snapshotKey, payload) {
   return payloadHash;
 }
 
+function skuPlanFactRenderImportTarget(rootId = 'view-sku-plan-fact') {
+  if (rootId === 'view-sku-contour' && typeof renderSkuContour === 'function') {
+    renderSkuContour(rootId);
+    return;
+  }
+  renderSkuPlanFact(rootId);
+}
+
 async function handleSkuPlanFactApplyAliasImport(button = null, rootId = 'view-sku-plan-fact') {
   const report = state.skuPlanFactAliasImportReport || {};
   if ((report.errorRows || []).length) {
@@ -2190,7 +2456,7 @@ async function handleSkuPlanFactApplyAliasImport(button = null, rootId = 'view-s
     await skuPlanFactUpsertSnapshot('sku_alias_audit', auditPayload);
     if (typeof window.__alteaResetPortalSnapshotState === 'function') window.__alteaResetPortalSnapshotState();
     state.skuPlanFactAliasImportReport = { ...report, appliedAt, appliedAliases, auditEventId: auditEvent.id };
-    renderSkuPlanFact(rootId);
+    skuPlanFactRenderImportTarget(rootId);
     if (typeof setAppError === 'function') {
       setAppError(`Импорт применён: ${fmt.int(report.aliases?.length || 0)} alias, ${fmt.int(report.ignores?.length || 0)} ignore. Матрица обновлена.`);
     }
@@ -2216,7 +2482,7 @@ async function handleSkuPlanFactAliasImport(file, rootId = 'view-sku-plan-fact')
     const report = skuPlanFactPrepareAliasImport(rows, currentAliases, currentIgnore);
     report.fileName = file.name || '';
     state.skuPlanFactAliasImportReport = report;
-    renderSkuPlanFact(rootId);
+    skuPlanFactRenderImportTarget(rootId);
     if (typeof setAppError === 'function') {
       setAppError(report.errorRows.length ? `Импорт проверен: ${report.errorRows.length} ошибок.` : 'Импорт проверен, можно применить в портал или скачать JSON.');
     }
@@ -2235,7 +2501,7 @@ async function handleSkuPlanFactAliasImport(file, rootId = 'view-sku-plan-fact')
       aliases: [],
       ignores: []
     };
-    renderSkuPlanFact(rootId);
+    skuPlanFactRenderImportTarget(rootId);
     if (typeof setAppError === 'function') setAppError(`Не удалось разобрать файл: ${error.message}`);
   }
 }
@@ -2321,7 +2587,7 @@ async function refreshSkuPlanFactData(button = null, rootId = 'view-sku-plan-fac
     if (state.boot?.lazyLoads) delete state.boot.lazyLoads.skuPlanFact;
     if (typeof ensureViewData === 'function') await ensureViewData('sku-plan-fact');
     else if (LAZY_DATA_LOADERS?.skuPlanFact) await LAZY_DATA_LOADERS.skuPlanFact();
-    renderSkuPlanFact(rootId);
+    skuPlanFactRenderImportTarget(rootId);
     if (typeof updateSyncBadge === 'function') updateSyncBadge();
   } catch (error) {
     console.warn('[sku-plan-fact-refresh]', error);
@@ -2499,6 +2765,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
 }
 
 window.renderSkuPlanFact = renderSkuPlanFact;
+window.renderSkuContour = renderSkuContour;
 window.skuPlanFactBuildModel = skuPlanFactBuildModel;
 window.skuPlanFactExportRows = skuPlanFactExportRows;
 window.skuPlanFactExportColumns = skuPlanFactExportColumns;

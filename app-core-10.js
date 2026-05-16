@@ -622,9 +622,32 @@ function renderDashboardView() {
   renderDashboard();
 }
 
+function ensureSkuContourShell() {
+  const nav = document.querySelector('.nav');
+  if (nav && !document.querySelector('.nav-btn[data-view="sku-contour"]')) {
+    const button = document.createElement('button');
+    button.className = 'nav-btn';
+    button.type = 'button';
+    button.dataset.view = 'sku-contour';
+    button.innerHTML = '<span>Контур SKU</span><small>ошибки · alias · ignore · аудит</small>';
+    const planButton = nav.querySelector('.nav-btn[data-view="sku-plan-fact"]');
+    nav.insertBefore(button, planButton?.nextSibling || nav.firstChild);
+  }
+
+  const main = document.querySelector('.main');
+  if (main && !document.getElementById('view-sku-contour')) {
+    const section = document.createElement('section');
+    section.className = 'view';
+    section.id = 'view-sku-contour';
+    const planSection = document.getElementById('view-sku-plan-fact');
+    main.insertBefore(section, planSection?.nextSibling || main.querySelector('.view') || null);
+  }
+}
+
 function rerenderCurrentView() {
   applyOwnerOverridesToSkus();
   const renderPlan = [
+    ['view-sku-contour', 'Контур SKU', () => renderSkuContour('view-sku-contour')],
     ['view-sku-plan-fact', 'План-факт SKU', () => renderSkuPlanFact('view-sku-plan-fact')],
     ['view-wb-rating', 'Рейтинг карточек', () => renderWbCardRating('view-wb-rating')],
     ['view-ads-funnel', 'Рекламная воронка', () => renderAdsFunnel('view-ads-funnel')],
@@ -752,6 +775,7 @@ function attachGlobalListeners() {
 }
 
 async function init() {
+  ensureSkuContourShell();
   attachGlobalListeners();
   state.boot.dataWarnings = [];
   window.__ALTEA_PRIMARY_INIT_PENDING__ = true;
@@ -775,7 +799,7 @@ async function init() {
 
   try {
     const local = loadLocalStorage();
-    const [dashboard, skus, seed, productLeaderboard, productLeaderboardHistory, skuAliases, skuAliasIgnore, skuAliasAudit, skuMatrix, syncHealth, portalDataQuarantine] = await Promise.all([
+    const [dashboard, skus, seed, productLeaderboard, productLeaderboardHistory, skuAliases, skuAliasIgnore, skuAliasAudit, skuMatrix, syncHealth, portalDataQuality, portalDataQuarantine] = await Promise.all([
       loadJsonOrFallback('data/dashboard.json', { cards: [], generatedAt: '' }, 'Дашборд'),
       loadJsonOrFallback('data/skus.json', [], 'SKU'),
       loadJsonOrFallback('data/seed_comments.json', { comments: [], tasks: [] }, 'Seed comments'),
@@ -786,6 +810,7 @@ async function init() {
       loadJsonOrFallback('data/sku_alias_audit.json', { schema: 'sku-alias-audit-v1', events: [] }, 'SKU alias audit'),
       loadJsonOrFallback('data/sku_matrix.json', { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } }, 'SKU matrix'),
       loadJsonOrFallback('data/portal_sync_health.json', { schema: 'portal-sync-health-v1', status: '', publish: { allowed: true, blockingReasons: [], warnings: [] }, sources: {}, quality: {} }, 'Состояние sync'),
+      loadJsonOrFallback('data/portal_data_quality.json', { generatedAt: '', status: '', summary: {}, issues: [] }, 'Контроль данных'),
       loadJsonOrFallback('data/portal_data_quarantine.json', { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] }, 'Карантин данных')
     ]);
 
@@ -813,6 +838,9 @@ async function init() {
     state.syncHealth = syncHealth && typeof syncHealth === 'object'
       ? syncHealth
       : { schema: 'portal-sync-health-v1', status: '', publish: { allowed: true, blockingReasons: [], warnings: [] }, sources: {}, quality: {} };
+    state.portalDataQuality = portalDataQuality && typeof portalDataQuality === 'object'
+      ? portalDataQuality
+      : { generatedAt: '', status: '', summary: {}, issues: [] };
     state.portalDataQuarantine = portalDataQuarantine && typeof portalDataQuarantine === 'object'
       ? portalDataQuarantine
       : { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] };

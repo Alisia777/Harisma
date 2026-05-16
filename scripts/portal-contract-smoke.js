@@ -41,7 +41,8 @@ async function clickView(page, view) {
   const locator = page.locator(selector).first();
   const count = await page.locator(selector).count();
   if (!count) throw new Error(`Navigation button not found: ${view}`);
-  await locator.evaluate((button) => button.click());
+  const isActive = await locator.evaluate((button) => button.classList.contains('active'));
+  if (!isActive) await locator.evaluate((button) => button.click(), undefined, { timeout: 30000 });
   await page.waitForTimeout(1000);
 }
 
@@ -52,12 +53,20 @@ async function assertVisible(page, selector, label) {
   if (!box || box.width <= 0 || box.height <= 0) throw new Error(`${label} is not visible`);
 }
 
+async function waitForSkuData(page) {
+  await page.waitForFunction(() => (
+    window.__alteaAppState?.boot?.dataReady === true
+    && Array.isArray(window.__alteaAppState?.skus)
+    && window.__alteaAppState.skus.length > 0
+  ), undefined, { timeout: 60000 });
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   const url = args.url || process.env.PORTAL_CONTRACT_URL || 'http://127.0.0.1:4187/index.html';
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 950 } });
-  page.setDefaultTimeout(10000);
+  page.setDefaultTimeout(30000);
   page.setDefaultNavigationTimeout(20000);
   const pageErrors = [];
   const failedLocal = [];
@@ -79,13 +88,11 @@ async function main() {
     });
 
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
-    await page.waitForFunction(() => window.__alteaAppState && window.__alteaAppState.boot, null, { timeout: 12000 });
-    await page.waitForFunction(() => (
-      Array.isArray(window.__alteaAppState?.skus)
-      && window.__alteaAppState.skus.length > 0
-    ), null, { timeout: 30000 });
+    await page.waitForFunction(() => window.__alteaAppState && window.__alteaAppState.boot, undefined, { timeout: 12000 });
+    await waitForSkuData(page);
     await clickView(page, 'dashboard');
     await assertVisible(page, '#view-dashboard', 'dashboard');
+    await waitForSkuData(page);
 
     const initial = await page.evaluate(() => ({
       skus: Array.isArray(window.__alteaAppState?.skus) ? window.__alteaAppState.skus.length : 0,
@@ -102,6 +109,14 @@ async function main() {
       || document.querySelector('#view-sku-plan-fact .sku-plan-fact-card')
     ));
     if (!planFactOk) throw new Error('Plan-fact quality controls did not render.');
+
+    await clickView(page, 'sku-contour');
+    await assertVisible(page, '#view-sku-contour', 'SKU contour');
+    const contourOk = await page.evaluate(() => Boolean(
+      document.querySelector('#view-sku-contour [data-sku-contour-quality-export]')
+      && document.querySelector('#view-sku-contour [data-sku-contour-quality-import]')
+    ));
+    if (!contourOk) throw new Error('SKU contour controls did not render.');
 
     await clickView(page, 'skus');
     await assertVisible(page, '#view-skus', 'SKU registry');

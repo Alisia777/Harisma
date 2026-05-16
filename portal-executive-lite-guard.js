@@ -1,10 +1,11 @@
 (function () {
-  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN14__) return;
+  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN15__) return;
   window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN12__ = true;
   window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN13__ = true;
   window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN14__ = true;
+  window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN15__ = true;
 
-  const VERSION = '20260516execlean14';
+  const VERSION = '20260516execlean15';
   const PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'cross'];
   const PLATFORM_META = {
     all: { label: 'Все', title: 'Все контуры' },
@@ -18,6 +19,13 @@
     cross: { label: 'Общее', title: 'Общий контур' }
   };
 
+  const RETURN_TEMPLATES = [
+    ['calc', 'Нет расчета', 'Вернуть в работу: не хватает расчета, цифр или подтверждения по влиянию.'],
+    ['proof', 'Нет подтверждения', 'Вернуть в работу: нужен скрин, ссылка, файл или другой подтверждающий материал.'],
+    ['result', 'Не ясен итог', 'Вернуть в работу: не понятно, что сделано и какой следующий шаг.'],
+    ['owner', 'Не тот ответственный', 'Вернуть в работу: уточнить ответственного и переназначить задачу.']
+  ];
+
   let scheduled = false;
   let rendering = false;
   let observer = null;
@@ -27,6 +35,7 @@
   let actionMessage = '';
   let composerOpen = false;
   let composerMessage = '';
+  let selectedQueueFilter = 'review';
 
   function appState() {
     return window.__alteaAppState || window.state || {};
@@ -65,6 +74,17 @@
     const date = new Date();
     date.setDate(date.getDate() + 3);
     return date.toISOString().slice(0, 10);
+  }
+
+  function fmtDate(value) {
+    const date = new Date(value || '');
+    if (!Number.isFinite(date.getTime())) return String(value || '—');
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
   }
 
   function activeTasks() {
@@ -171,6 +191,57 @@
           || taskRiskScore(right) - taskRiskScore(left)
           || String(left?.due || '9999-12-31').localeCompare(String(right?.due || '9999-12-31'));
       });
+  }
+
+  function queueCounts(tasks) {
+    return {
+      review: reviewTasks(tasks).length,
+      new: tasks.filter((task) => String(task?.status || '') === 'new').length,
+      overdue: tasks.filter(isOverdue).length,
+      all: tasks.length
+    };
+  }
+
+  function queueItems(tasks, filterKey) {
+    const key = ['review', 'new', 'overdue', 'all'].includes(filterKey) ? filterKey : 'review';
+    if (key === 'review') return reviewTasks(tasks);
+    if (key === 'new') {
+      return tasks
+        .filter((task) => String(task?.status || '') === 'new')
+        .sort((left, right) => taskRiskScore(right) - taskRiskScore(left) || String(left?.due || '9999-12-31').localeCompare(String(right?.due || '9999-12-31')));
+    }
+    if (key === 'overdue') {
+      return tasks
+        .filter(isOverdue)
+        .sort((left, right) => taskRiskScore(right) - taskRiskScore(left) || String(left?.due || '9999-12-31').localeCompare(String(right?.due || '9999-12-31')));
+    }
+    return tasks
+      .slice()
+      .sort((left, right) => taskRiskScore(right) - taskRiskScore(left) || String(left?.due || '9999-12-31').localeCompare(String(right?.due || '9999-12-31')));
+  }
+
+  function filterLabel(filterKey) {
+    if (filterKey === 'new') return 'новые';
+    if (filterKey === 'overdue') return 'просроченные';
+    if (filterKey === 'all') return 'все активные';
+    return 'на приемке';
+  }
+
+  function queueFilterBar(counts) {
+    const filters = [
+      ['review', 'На приемке', counts.review],
+      ['new', 'Новые', counts.new],
+      ['overdue', 'Просроченные', counts.overdue],
+      ['all', 'Все', counts.all]
+    ];
+    return `
+      <div class="executive-lite-filterbar" role="group" aria-label="Фильтр задач руководителя">
+        ${filters.map(([key, label, count]) => `
+          <button class="${selectedQueueFilter === key ? 'is-active' : ''}" type="button" data-executive-lite-filter="${escapeHtml(key)}">
+            <span>${escapeHtml(label)}</span><b>${fmt(count)}</b>
+          </button>
+        `).join('')}
+      </div>`;
   }
 
   function taskMetaLine(task) {
@@ -297,6 +368,50 @@
     return bits.length ? bits.join(' · ') : 'Коротко проверьте результат, подтвердите закрытие или верните задачу в работу с комментарием.';
   }
 
+  function taskHistory(task) {
+    const id = taskId(task);
+    if (!id) return [];
+    try {
+      if (typeof window.getTaskHistory === 'function') return (window.getTaskHistory(id) || []).slice(0, 4);
+      if (typeof getTaskHistory === 'function') return (getTaskHistory(id) || []).slice(0, 4);
+    } catch {}
+    const state = appState();
+    return (state.storage?.comments || [])
+      .map((comment) => {
+        const match = String(comment?.text || '').match(/^\[\[task:([^\]]+)\]\]\s*\[\[kind:([^\]]+)\]\]\s*/i);
+        return match && match[1] === id ? { ...comment, kind: match[2], text: String(comment.text || '').replace(match[0], '').trim() } : null;
+      })
+      .filter(Boolean)
+      .sort((left, right) => (left.createdAt < right.createdAt ? 1 : -1))
+      .slice(0, 4);
+  }
+
+  function historyKindLabel(kind) {
+    if (kind === 'status') return 'статус';
+    if (kind === 'report') return 'отчет';
+    if (kind === 'comment') return 'комментарий';
+    if (kind === 'created') return 'создано';
+    if (kind === 'updated') return 'обновлено';
+    return kind || 'история';
+  }
+
+  function taskHistoryPanel(task) {
+    const items = taskHistory(task);
+    return `
+      <div class="executive-lite-history">
+        <div class="executive-lite-history-head">
+          <span>История решений</span>
+          <strong>${items.length ? `${fmt(items.length)} последних` : 'пока пусто'}</strong>
+        </div>
+        ${items.length ? `<div class="executive-lite-history-list">${items.map((item) => `
+          <div class="executive-lite-history-item">
+            <span>${escapeHtml(fmtDate(item.createdAt))} · ${escapeHtml(item.author || item.team || 'Команда')} · ${escapeHtml(historyKindLabel(item.kind))}</span>
+            <p>${escapeHtml(item.text || '—')}</p>
+          </div>
+        `).join('')}</div>` : '<p class="executive-lite-history-empty">Здесь появятся согласования, возвраты и финальные закрытия по этой задаче.</p>'}
+      </div>`;
+  }
+
   function reviewQueueCard(task) {
     const id = taskId(task);
     const selected = id && id === selectedTaskId;
@@ -349,10 +464,14 @@
           <span>Что проверяем</span>
           <p>${escapeHtml(taskSummaryText(task))}</p>
         </div>
+        ${taskHistoryPanel(task)}
         <div class="executive-lite-decision-note">
           <label for="executive-lite-comment">Комментарий для истории</label>
           <textarea id="executive-lite-comment" data-executive-lite-comment rows="3" placeholder="Например: результат проверен, можно закрывать / вернуть: не хватает расчета по марже."></textarea>
           <small>${escapeHtml(actionHint)}</small>
+          <div class="executive-lite-return-templates">
+            ${RETURN_TEMPLATES.map(([key, label, text]) => `<button class="btn ghost small-btn" type="button" data-executive-lite-return-template="${escapeHtml(key)}" data-template-text="${escapeHtml(text)}" data-task-id="${escapeHtml(taskId(task))}">${escapeHtml(label)}</button>`).join('')}
+          </div>
         </div>
         <div class="executive-lite-actions">
           ${primary}

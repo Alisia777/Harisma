@@ -105,6 +105,7 @@ async function main() {
     await assertVisible(page, '#view-data-health', 'data health');
     const dataHealthOk = await page.evaluate(() => Boolean(
       document.querySelector('#view-data-health [data-health-create-tasks]')
+      && document.querySelector('#view-data-health [data-health-morning-digest]')
       && document.querySelector('#view-data-health [data-health-open="sku-contour"]')
       && document.querySelector('#view-data-health .data-table')
       && typeof window.portalMaybeAutoRefreshOperationalData === 'function'
@@ -115,6 +116,7 @@ async function main() {
     await page.locator('#view-data-health [data-health-refresh]').first().click();
     await page.waitForFunction(() => Boolean(
       document.querySelector('#view-data-health [data-health-create-tasks]')
+      && document.querySelector('#view-data-health [data-health-morning-digest]')
       && document.querySelector('#view-data-health [data-health-open="sku-contour"]')
       && document.querySelector('#view-data-health .data-table')
     ), undefined, { timeout: 20000 });
@@ -162,12 +164,33 @@ async function main() {
     ));
     if (!planFactOk) throw new Error('Plan-fact quality controls did not render.');
 
+    await clickView(page, 'order');
+    await assertVisible(page, '#view-order', 'order procurement');
+    await page.waitForFunction(() => Boolean(
+      document.querySelector('#view-order [data-altea-order-procurement]')
+      && document.querySelector('#view-order #alteaOrderClusterFilter')
+    ), undefined, { timeout: 20000 });
+    const orderOk = await page.evaluate(() => Boolean(
+      document.querySelector('#view-order [data-altea-order-procurement]')
+      && document.querySelector('#view-order [data-altea-order-preset]')
+      && document.querySelector('#view-order [data-altea-order-place-chip]')
+      && document.querySelector('#view-order #alteaOrderClusterFilter')
+      && document.querySelector('#view-order [data-altea-order-export]')
+    ));
+    if (!orderOk) throw new Error('Order procurement warehouse filters did not render.');
+    await page.locator('#view-order [data-altea-order-preset="low10"]').first().click();
+    await page.waitForFunction(() => Boolean(
+      document.querySelector('#view-order [data-altea-order-preset="low10"].is-active')
+      && document.querySelector('#view-order #alteaOrderClusterDays')?.value === '10'
+    ), undefined, { timeout: 12000 });
+
     await clickView(page, 'sku-contour');
     await assertVisible(page, '#view-sku-contour', 'SKU contour');
     const contourOk = await page.evaluate(() => Boolean(
       document.querySelector('#view-sku-contour [data-sku-contour-quality-export]')
       && document.querySelector('#view-sku-contour [data-sku-contour-quality-import]')
       && document.querySelector('#view-sku-contour [data-sku-contour-guide]')
+      && document.querySelector('#view-sku-contour [data-sku-contour-decision-cards]')
       && document.querySelector('#view-sku-contour [data-sku-contour-toggle-resolved]')
     ));
     if (!contourOk) throw new Error('SKU contour controls did not render.');

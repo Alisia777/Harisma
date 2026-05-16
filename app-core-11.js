@@ -1439,6 +1439,55 @@ function skuPlanFactDataQualityHtml(model) {
   `;
 }
 
+function skuContourDecisionCardsHtml() {
+  const cards = [
+    {
+      title: 'Это тот же товар',
+      decision: 'alias',
+      text: 'API SKU на площадке — это уже существующий товар из реестра.',
+      fill: 'В Excel: decision = alias, target_sku = SKU из реестра.',
+      tone: 'ok'
+    },
+    {
+      title: 'Это новый товар',
+      decision: 'new_sku',
+      text: 'Товара ещё нет в реестре, но его нужно завести.',
+      fill: 'В Excel: decision = new_sku. Портал создаст задачу.',
+      tone: 'warn'
+    },
+    {
+      title: 'Это не надо маппить',
+      decision: 'ignore',
+      text: 'Тестовая, служебная или осознанно исключённая строка.',
+      fill: 'В Excel: decision = ignore, в note коротко причина.',
+      tone: 'ok'
+    },
+    {
+      title: 'Не уверены',
+      decision: 'need_check',
+      text: 'Нужна проверка категории, API, склада или источника.',
+      fill: 'В Excel: decision = need_check, в note вопрос.',
+      tone: 'info'
+    }
+  ];
+  return `
+    <div class="grid cards" style="margin-top:12px" data-sku-contour-decision-cards>
+      ${cards.map((card) => `
+        <div class="card">
+          <div class="section-subhead">
+            <div>
+              <h3>${escapeHtml(card.title)}</h3>
+              <p class="small muted">${escapeHtml(card.text)}</p>
+            </div>
+            ${badge(card.decision, card.tone)}
+          </div>
+          <div class="small" style="margin-top:8px">${escapeHtml(card.fill)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
 function skuContourGuideHtml() {
   const decisionRows = [
     {
@@ -1497,6 +1546,7 @@ function skuContourGuideHtml() {
         <div class="small muted">decision=alias сохраняется в общий sku_aliases, decision=ignore сохраняется в sku_alias_ignore. Утренний sync подтягивает эти справочники и пересобирает матрицу, поэтому тот же API SKU с той же площадки больше не должен попадать в нерешённую очередь.</div>
         <div class="small muted">decision=new_sku и decision=need_check ничего не скрывают: это честный сигнал “завести SKU” или “проверить вручную”. Они останутся в рабочем списке, пока не появится реальный alias или ignore.</div>
       </div>
+      ${skuContourDecisionCardsHtml()}
       <div class="table-scroll" style="margin-top:12px">
         <table class="data-table compact">
           <thead><tr><th>decision</th><th>Когда ставить</th><th>Что заполнить</th><th>Что произойдет</th></tr></thead>
@@ -1828,6 +1878,49 @@ function portalHealthIssueRows(limit = 240) {
       }));
   }
 
+  (model.allRows || []).filter((row) => !row.syntheticUnmapped && row.factRevenue > 0 && row.planRevenue <= 0).slice(0, 40).forEach((row) => add({
+    source: 'План-факт SKU',
+    type: 'Есть факт, нет плана',
+    platform: '',
+    apiSku: row.articleKey || row.article,
+    name: row.name,
+    status: 'warning',
+    amount: row.factRevenue,
+    units: row.factUnits,
+    action: 'Проверить, должен ли SKU быть в плане. Если да — добавить план/owner; если нет — подтвердить статус вывода.',
+    view: 'sku-plan-fact'
+  }));
+
+  (model.allRows || []).filter((row) => row.planRevenue > 0 && row.factRevenue <= 0).slice(0, 40).forEach((row) => add({
+    source: 'План-факт SKU',
+    type: 'План есть, факта нет',
+    platform: '',
+    apiSku: row.articleKey || row.article,
+    name: row.name,
+    status: 'warning',
+    amount: row.planToDateRevenue || row.planRevenue,
+    units: row.planUnits,
+    action: 'Проверить наличие, карточку, цену и маппинг факта. Это может быть реальная остановка продаж или потерянный API SKU.',
+    view: 'sku-plan-fact'
+  }));
+
+  (model.allRows || [])
+    .filter((row) => (row.platforms ? Object.values(row.platforms) : [])
+      .some((metric) => metric && Number.isFinite(Number(metric.turnoverDays)) && Number(metric.turnoverDays) > 0 && Number(metric.turnoverDays) <= 10))
+    .slice(0, 40)
+    .forEach((row) => add({
+      source: 'Заказ товара',
+      type: 'Закончится до 10 дней',
+      platform: '',
+      apiSku: row.articleKey || row.article,
+      name: row.name,
+      status: 'warning',
+      amount: row.factRevenue,
+      units: row.factUnits,
+      action: 'Открыть заказ товара, включить проблемные склады и проверить поставку по складам.',
+      view: 'order'
+    }));
+
   (state.syncHealth?.publish?.blockingReasons || []).forEach((message, index) => add({
     source: 'Sync',
     type: 'Блокер публикации',
@@ -1920,6 +2013,52 @@ function portalHealthBuildIssueTask(issue = {}) {
   return typeof normalizeTask === 'function' ? normalizeTask(taskPayload, 'auto') : taskPayload;
 }
 
+function portalHealthTodayDigestRows({ issues = [], sources = [], summary = {}, dangerCount = 0, warnCount = 0 } = {}) {
+  const rows = [];
+  const add = (title, text, tone = '') => rows.push({ title, text, tone });
+  const staleSources = sources.filter((row) => row.tone !== 'ok').slice(0, 3);
+  const topIssue = issues[0] || null;
+  const todayKey = todayIso();
+  const todayAuditEvents = skuPlanFactAuditEvents(state.skuAliasAudit || {})
+    .filter((event) => String(event.appliedAt || event.generatedAt || '').slice(0, 10) === todayKey);
+  const appliedToday = todayAuditEvents.reduce((acc, event) => {
+    acc.alias += numberOrZero(event.aliasesAdded);
+    acc.ignore += numberOrZero(event.ignoresAdded);
+    acc.rollback += event.type === 'sku_alias_import_rollback' ? 1 : 0;
+    return acc;
+  }, { alias: 0, ignore: 0, rollback: 0 });
+
+  add(
+    dangerCount ? 'Сначала критичное' : 'Критичных блокеров нет',
+    dangerCount
+      ? `${fmt.int(dangerCount)} строк нужно разобрать первыми. Самая крупная: ${topIssue ? `${topIssue.type} · ${fmt.money(topIssue.amount)}` : 'см. очередь ниже'}.`
+      : 'Можно работать по обычной очереди: сначала предупреждения, потом хвосты без owner и плана.',
+    dangerCount ? 'danger' : 'ok'
+  );
+  add(
+    staleSources.length ? 'Проверить источники' : 'Источники свежие',
+    staleSources.length
+      ? staleSources.map((row) => `${row.label}: ${row.asOfDate || 'нет даты'}`).join(' · ')
+      : `Данные актуальны до ${state.syncHealth?.freshness?.maxDate || summary.maxDate || 'текущего среза'}.`,
+    staleSources.length ? 'warn' : 'ok'
+  );
+  add(
+    'Что закрепили сегодня',
+    appliedToday.alias || appliedToday.ignore || appliedToday.rollback
+      ? `${fmt.int(appliedToday.alias)} alias · ${fmt.int(appliedToday.ignore)} ignore · ${fmt.int(appliedToday.rollback)} откатов.`
+      : 'Сегодня ещё не применяли alias/ignore через портал.',
+    appliedToday.rollback ? 'warn' : 'info'
+  );
+  add(
+    summary.apiUnmappedRevenue ? 'API без пары влияет на деньги' : 'API без пары под контролем',
+    summary.apiUnmappedRevenue
+      ? `${fmt.money(summary.apiUnmappedRevenue)} пока не привязано к матрице. Разбирать лучше сверху вниз по сумме.`
+      : 'Нет значимого оборота без пары по текущему health-срезу.',
+    summary.apiUnmappedRevenue ? 'warn' : 'ok'
+  );
+  return rows;
+}
+
 async function portalHealthCreateIssueTasks(options = {}) {
   const sourceRows = Array.isArray(options.rows) ? options.rows : portalHealthIssueRows(120);
   const rows = sourceRows.filter((row) => row.tone === 'danger' || row.tone === 'warn').slice(0, options.limit || 10);
@@ -1966,6 +2105,7 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
     : { label: health.status || 'sync', tone: health.status === 'warning' ? 'warn' : 'ok', notice: health.status === 'warning' ? 'warn' : 'ok' };
   const dangerCount = issues.filter((row) => row.tone === 'danger').length;
   const warnCount = issues.filter((row) => row.tone === 'warn').length;
+  const digestRows = portalHealthTodayDigestRows({ issues, sources, summary, dangerCount, warnCount });
   const sourceRows = sources.map((row) => `
     <tr>
       <td><strong>${escapeHtml(row.label)}</strong></td>
@@ -1986,6 +2126,13 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
       <td><strong>${fmt.money(row.amount)}</strong><div class="muted small">${fmt.int(row.units)} шт.</div></td>
       <td><button class="quick-chip" type="button" data-health-open="${escapeHtml(row.view || 'data-health')}">Открыть</button></td>
     </tr>
+  `).join('');
+  const digestHtml = digestRows.map((row) => `
+    <div class="mini-kpi ${row.tone || ''}">
+      <span>${escapeHtml(row.title)}</span>
+      <strong style="font-size:16px;line-height:1.25">${escapeHtml(row.text)}</strong>
+      <span>утренний рабочий срез</span>
+    </div>
   `).join('');
 
   root.innerHTML = `
@@ -2024,6 +2171,17 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
       <div class="mini-kpi warn"><span>Без owner</span><strong>${fmt.int(summary.skuMissingOwner || matrixSummary.missingOwnerCount || 0)}</strong><span>нужны ответственные</span></div>
       <div class="mini-kpi"><span>Alias</span><strong>${fmt.int(matrixSummary.aliasCount || skuPlanFactAliasRows(state.skuAliases || {}).length)}</strong><span>общий контур</span></div>
       <div class="mini-kpi"><span>Ignore</span><strong>${fmt.int(matrixSummary.ignoredApiSkuCount || skuPlanFactIgnorePayloadRows(state.skuAliasIgnore || {}).length)}</strong><span>закреплено</span></div>
+    </div>
+
+    <div class="card sku-plan-fact-card" style="margin-top:14px" data-health-morning-digest>
+      <div class="section-subhead">
+        <div>
+          <h3>Утро: что проверить первым</h3>
+          <p class="small muted">Короткая выжимка без лишней аналитики: свежесть, крупные проблемы, что уже закрепили и где деньги могут быть не в матрице.</p>
+        </div>
+        <div class="badge-stack">${badge(`${fmt.int(digestRows.length)} пункта`, 'info')}</div>
+      </div>
+      <div class="kpi-strip">${digestHtml}</div>
     </div>
 
     <div class="card sku-plan-fact-card" style="margin-top:14px">

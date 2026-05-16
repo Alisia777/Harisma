@@ -60,6 +60,17 @@
   });
 }
 
+var numberOrZero = (typeof window !== 'undefined' && typeof window.numberOrZero === 'function')
+  ? window.numberOrZero
+  : function numberOrZeroFallback(value) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+if (typeof window !== 'undefined' && typeof window.numberOrZero !== 'function') {
+  window.numberOrZero = numberOrZero;
+}
+
 function repricerClamp(value, min, max) {
   const numeric = numberOrZero(value);
   const floor = numberOrZero(min);

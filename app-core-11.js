@@ -1700,6 +1700,349 @@ function skuContourDownloadPayload() {
   });
 }
 
+function portalHealthSourceRows() {
+  const seen = new Set();
+  const rows = [];
+  const add = (row = {}) => {
+    const key = String(row.dataset || row.key || row.name || '').trim();
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    const lagDays = Number.isFinite(Number(row.lagDays)) ? Number(row.lagDays) : null;
+    const exists = row.exists !== false;
+    const rowsCount = Number(row.rows || 0);
+    const status = String(row.status || '').toLowerCase();
+    let tone = 'ok';
+    if (!exists || status === 'critical' || status === 'blocked') tone = 'danger';
+    else if (status === 'warning' || status === 'warn' || (lagDays !== null && lagDays > 1)) tone = 'warn';
+    else if (!rowsCount && key !== 'loyalty_system') tone = 'warn';
+    rows.push({
+      key,
+      label: String(row.label || key).replaceAll('_', ' '),
+      rows: rowsCount,
+      generatedAt: row.generatedAt || '',
+      asOfDate: row.asOfDate || '',
+      lagDays,
+      status: status || (tone === 'ok' ? 'ok' : 'warning'),
+      tone,
+      revenue: numberOrZero(row.revenue)
+    });
+  };
+  (state.portalDataQuality?.freshness || []).forEach(add);
+  Object.entries(state.syncHealth?.sources || {}).forEach(([key, value]) => add({ key, dataset: key, ...(value || {}) }));
+  return rows.sort((left, right) => {
+    const rank = { danger: 0, warn: 1, ok: 2 };
+    return (rank[left.tone] ?? 9) - (rank[right.tone] ?? 9) || String(left.label).localeCompare(String(right.label));
+  });
+}
+
+function portalHealthIssueTone(issue = {}) {
+  const severity = String(issue.severity || issue.status || '').toLowerCase();
+  if (['critical', 'danger', 'blocked', 'quarantine'].some((token) => severity.includes(token))) return 'danger';
+  if (['warning', 'warn', 'new', 'need_check'].some((token) => severity.includes(token))) return 'warn';
+  return issue.amount > 0 ? 'warn' : '';
+}
+
+function portalHealthIssueRows(limit = 240) {
+  const rows = [];
+  const seen = new Set();
+  const add = (row = {}) => {
+    const key = [
+      row.source || '',
+      row.type || '',
+      row.platform || '',
+      row.apiSku || row.articleKey || row.name || ''
+    ].map((value) => String(value || '').toLowerCase()).join('|');
+    if (!key.replace(/\|/g, '') || seen.has(key)) return;
+    seen.add(key);
+    const amount = numberOrZero(row.amount ?? row.revenue);
+    const tone = row.tone || portalHealthIssueTone({ ...row, amount });
+    rows.push({
+      key,
+      source: row.source || 'Данные',
+      type: row.type || 'Проверить',
+      platform: row.platform || '',
+      apiSku: row.apiSku || row.articleKey || '',
+      name: row.name || '',
+      status: row.status || row.severity || '',
+      tone,
+      amount,
+      units: numberOrZero(row.units),
+      action: row.action || row.message || '',
+      view: row.view || 'data-health'
+    });
+  };
+
+  const model = typeof skuPlanFactBuildModel === 'function' ? skuPlanFactBuildModel() : {};
+  if (typeof skuContourIssueRows === 'function') {
+    skuContourIssueRows(model)
+      .filter((row) => !(typeof skuContourIssueIsResolved === 'function' && skuContourIssueIsResolved(row)))
+      .forEach((row) => add({
+        source: 'Контур SKU',
+        type: row.type || 'API SKU без пары',
+        platform: row.platform,
+        apiSku: row.apiSku,
+        name: row.name,
+        status: row.status,
+        amount: row.revenue,
+        units: row.units,
+        action: row.action || 'Разобрать через alias / ignore / new_sku / need_check',
+        view: 'sku-contour'
+      }));
+  }
+
+  (state.syncHealth?.publish?.blockingReasons || []).forEach((message, index) => add({
+    source: 'Sync',
+    type: 'Блокер публикации',
+    status: 'blocked',
+    name: `sync-blocker-${index + 1}`,
+    action: message,
+    view: 'data-health'
+  }));
+  (state.syncHealth?.publish?.warnings || []).forEach((message, index) => add({
+    source: 'Sync',
+    type: 'Предупреждение sync',
+    status: 'warning',
+    name: `sync-warning-${index + 1}`,
+    action: message,
+    view: 'data-health'
+  }));
+
+  (state.skuMatrix?.duplicateRisks || []).forEach((row) => add({
+    source: 'Факты API',
+    type: 'Риск дубля выручки',
+    platform: row.platform,
+    apiSku: row.api_sku || row.apiSku || row.articleKey,
+    name: row.name,
+    status: 'critical',
+    amount: row.overage || row.revenue,
+    units: row.units,
+    action: row.action || 'Проверить ключ уникальности факта и карантин дублей',
+    view: 'data-health'
+  }));
+
+  const missingOwner = (state.skuMatrix?.items || []).filter((item) => !item.owner || item.problemState === 'missing_owner').slice(0, 30);
+  missingOwner.forEach((item) => add({
+    source: 'Матрица SKU',
+    type: 'SKU без owner',
+    apiSku: item.articleKey || item.article,
+    name: item.name,
+    status: 'warning',
+    action: 'Назначить owner в реестре SKU, чтобы планы и задачи не висели без ответственного',
+    view: 'skus'
+  }));
+
+  (state.portalDataQuarantine?.rows || []).slice(0, 80).forEach((row) => add({
+    source: 'Карантин данных',
+    type: row.type || row.reason || 'Строка в карантине',
+    platform: row.platform,
+    apiSku: row.articleKey || row.api_sku || row.apiSku,
+    name: row.name,
+    status: 'quarantine',
+    amount: row.revenue,
+    units: row.units,
+    action: row.action || row.message || 'Разобрать причину карантина до попадания в расчёты',
+    view: 'sku-contour'
+  }));
+
+  return rows
+    .sort((left, right) => {
+      const rank = { danger: 0, warn: 1, ok: 2, '': 3 };
+      return (rank[left.tone] ?? 9) - (rank[right.tone] ?? 9) || numberOrZero(right.amount) - numberOrZero(left.amount);
+    })
+    .slice(0, limit);
+}
+
+function portalHealthIssueTaskId(issue = {}) {
+  const raw = `portal-data-issue|${issue.key || ''}|${issue.source || ''}|${issue.type || ''}|${issue.platform || ''}|${issue.apiSku || issue.name || ''}`;
+  return typeof stableId === 'function' ? stableId('task', raw) : `task-${raw}`;
+}
+
+function portalHealthBuildIssueTask(issue = {}) {
+  const titleKey = issue.apiSku || issue.name || issue.platform || 'контур';
+  const taskPayload = {
+    id: portalHealthIssueTaskId(issue),
+    source: 'auto',
+    autoCode: 'portal_data_issue',
+    articleKey: issue.apiSku || '',
+    entityLabel: titleKey,
+    title: `${issue.type}: ${titleKey}`,
+    nextAction: issue.action || 'Разобрать проблему данных и закрыть причину, чтобы она не возвращалась после sync.',
+    reason: [
+      issue.source ? `контур: ${issue.source}` : '',
+      issue.platform ? `площадка: ${issue.platform}` : '',
+      issue.amount ? `влияние: ${fmt.money(issue.amount)}` : ''
+    ].filter(Boolean).join(' · '),
+    owner: '',
+    due: typeof plusDays === 'function' ? plusDays(issue.tone === 'danger' ? 1 : 2) : '',
+    status: 'new',
+    type: issue.type && /owner/i.test(issue.type) ? 'assignment' : 'general',
+    priority: issue.tone === 'danger' ? 'critical' : 'high',
+    platform: skuPlanFactNormalizePlatform(issue.platform || 'all') || 'all'
+  };
+  return typeof normalizeTask === 'function' ? normalizeTask(taskPayload, 'auto') : taskPayload;
+}
+
+async function portalHealthCreateIssueTasks(options = {}) {
+  const sourceRows = Array.isArray(options.rows) ? options.rows : portalHealthIssueRows(120);
+  const rows = sourceRows.filter((row) => row.tone === 'danger' || row.tone === 'warn').slice(0, options.limit || 10);
+  const result = { created: [], duplicates: [] };
+  state.storage = state.storage || {};
+  state.storage.tasks = Array.isArray(state.storage.tasks) ? state.storage.tasks : [];
+  const existingIds = new Set(state.storage.tasks.map((task) => task.id).filter(Boolean));
+  rows.forEach((row) => {
+    const task = portalHealthBuildIssueTask(row);
+    if (!task.id || existingIds.has(task.id)) {
+      result.duplicates.push({ issue: row.key, taskId: task.id || '' });
+      return;
+    }
+    existingIds.add(task.id);
+    result.created.push(task);
+  });
+  if (options.persist === false || !result.created.length) return result;
+  state.storage.tasks.unshift(...result.created);
+  if (typeof saveLocalStorage === 'function') saveLocalStorage();
+  for (const task of result.created) {
+    try {
+      if (typeof persistTask === 'function') await persistTask(task);
+      if (typeof createTaskHistoryEntry === 'function') {
+        await createTaskHistoryEntry(task.id, 'created', 'Задача создана из Центра здоровья данных.');
+      }
+    } catch (error) {
+      console.error('[portal-health-issue-task]', error);
+    }
+  }
+  return result;
+}
+
+function renderPortalDataHealth(rootId = 'view-data-health') {
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  const health = state.syncHealth || {};
+  const quality = state.portalDataQuality || {};
+  const summary = quality.summary || {};
+  const matrixSummary = state.skuMatrix?.summary || {};
+  const sources = portalHealthSourceRows();
+  const issues = portalHealthIssueRows();
+  const meta = typeof syncHealthStatusMeta === 'function'
+    ? syncHealthStatusMeta(health)
+    : { label: health.status || 'sync', tone: health.status === 'warning' ? 'warn' : 'ok', notice: health.status === 'warning' ? 'warn' : 'ok' };
+  const dangerCount = issues.filter((row) => row.tone === 'danger').length;
+  const warnCount = issues.filter((row) => row.tone === 'warn').length;
+  const sourceRows = sources.map((row) => `
+    <tr>
+      <td><strong>${escapeHtml(row.label)}</strong></td>
+      <td>${badge(row.status || 'ok', row.tone)}</td>
+      <td>${escapeHtml(row.asOfDate || '—')}</td>
+      <td>${escapeHtml(fmt.date(row.generatedAt || ''))}</td>
+      <td>${fmt.int(row.rows)}</td>
+      <td>${row.lagDays === null ? '—' : `${fmt.int(row.lagDays)} дн.`}</td>
+    </tr>
+  `).join('');
+  const issueRows = issues.slice(0, 120).map((row) => `
+    <tr>
+      <td>${badge(row.tone === 'danger' ? 'критично' : row.tone === 'warn' ? 'внимание' : 'ok', row.tone)}</td>
+      <td><strong>${escapeHtml(row.source)}</strong><div class="muted small">${escapeHtml(row.status || '')}</div></td>
+      <td><strong>${escapeHtml(row.type)}</strong><div class="muted small">${escapeHtml(row.action || '')}</div></td>
+      <td>${escapeHtml(row.platform || 'Все')}</td>
+      <td><strong>${escapeHtml(row.apiSku || row.name || '—')}</strong><div class="muted small">${escapeHtml(row.name || '')}</div></td>
+      <td><strong>${fmt.money(row.amount)}</strong><div class="muted small">${fmt.int(row.units)} шт.</div></td>
+      <td><button class="quick-chip" type="button" data-health-open="${escapeHtml(row.view || 'data-health')}">Открыть</button></td>
+    </tr>
+  `).join('');
+
+  root.innerHTML = `
+    <div class="section-title">
+      <div>
+        <h2>Здоровье данных</h2>
+        <p>Короткий контроль утреннего sync, качества данных и проблем, которые уже влияют на расчёты.</p>
+      </div>
+      <div class="quick-actions">
+        <button class="quick-chip" type="button" data-health-refresh>Обновить</button>
+        <button class="quick-chip" type="button" data-health-create-tasks>Создать задачи по топ-проблемам</button>
+        <button class="quick-chip" type="button" data-health-open="sku-contour">Контур SKU</button>
+        <button class="quick-chip" type="button" data-health-open="control">Задачи</button>
+      </div>
+    </div>
+
+    <div class="notice ${meta.notice || (meta.tone === 'danger' ? 'warn' : 'ok')}">
+      <div class="section-subhead">
+        <div>
+          <strong>${escapeHtml(meta.label || 'Sync')}</strong>
+          <div class="small muted">Проверено: ${escapeHtml(fmt.date(health.generatedAt || health.publish?.checkedAt || quality.generatedAt || ''))} · данные до ${escapeHtml(health.freshness?.maxDate || summary.maxDate || '—')}</div>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(sources.length)} источников`, sources.some((row) => row.tone !== 'ok') ? 'warn' : 'ok')}
+          ${badge(`${fmt.int(dangerCount)} критично`, dangerCount ? 'danger' : 'ok')}
+          ${badge(`${fmt.int(warnCount)} внимание`, warnCount ? 'warn' : 'ok')}
+          ${badge(fmt.money(summary.apiUnmappedRevenue || 0), summary.apiUnmappedRevenue ? 'warn' : 'ok')}
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-strip" style="margin-top:14px">
+      <div class="mini-kpi ${dangerCount ? 'danger' : ''}"><span>Проблемы</span><strong>${fmt.int(issues.length)}</strong><span>в единой очереди</span></div>
+      <div class="mini-kpi warn"><span>API без пары</span><strong>${fmt.int(summary.apiUnmappedUniqueSku || matrixSummary.apiUnmappedCount || 0)}</strong><span>${fmt.money(summary.apiUnmappedRevenue || 0)}</span></div>
+      <div class="mini-kpi"><span>Карантин</span><strong>${fmt.int(state.portalDataQuarantine?.summary?.rows || state.portalDataQuarantine?.rows?.length || 0)}</strong><span>не в расчётах</span></div>
+      <div class="mini-kpi warn"><span>Без owner</span><strong>${fmt.int(summary.skuMissingOwner || matrixSummary.missingOwnerCount || 0)}</strong><span>нужны ответственные</span></div>
+      <div class="mini-kpi"><span>Alias</span><strong>${fmt.int(matrixSummary.aliasCount || skuPlanFactAliasRows(state.skuAliases || {}).length)}</strong><span>общий контур</span></div>
+      <div class="mini-kpi"><span>Ignore</span><strong>${fmt.int(matrixSummary.ignoredApiSkuCount || skuPlanFactIgnorePayloadRows(state.skuAliasIgnore || {}).length)}</strong><span>закреплено</span></div>
+    </div>
+
+    <div class="card sku-plan-fact-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Что требует внимания</h3>
+          <p class="small muted">Сюда сведены SKU-контур, карантин, предупреждения sync, риски дублей и строки без owner. Это не заменяет вкладки, а даёт один утренний список.</p>
+        </div>
+        <div class="badge-stack">${badge(`${fmt.int(issues.length)} строк`, issues.length ? 'warn' : 'ok')}</div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table compact">
+          <thead><tr><th>Уровень</th><th>Контур</th><th>Проблема</th><th>Площадка</th><th>SKU/API</th><th>Влияние</th><th></th></tr></thead>
+          <tbody>${issueRows || '<tr><td colspan="7"><div class="empty">Критичных проблем по текущему срезу нет</div></td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card sku-plan-fact-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Свежесть источников</h3>
+          <p class="small muted">Проверка, что утренний API/sync реально подгрузил данные, а не оставил старый или пустой источник.</p>
+        </div>
+        <div class="badge-stack">${badge(`${fmt.int(sources.filter((row) => row.tone !== 'ok').length)} не в норме`, sources.some((row) => row.tone !== 'ok') ? 'warn' : 'ok')}</div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table compact">
+          <thead><tr><th>Источник</th><th>Статус</th><th>Дата данных</th><th>Собрано</th><th>Строк</th><th>Лаг</th></tr></thead>
+          <tbody>${sourceRows || '<tr><td colspan="6"><div class="empty">Нет данных по источникам</div></td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  root.querySelector('[data-health-refresh]')?.addEventListener('click', (event) => refreshSkuPlanFactData(event.currentTarget, rootId));
+  root.querySelector('[data-health-create-tasks]')?.addEventListener('click', async (event) => {
+    const button = event.currentTarget;
+    const originalText = button.textContent;
+    try {
+      button.disabled = true;
+      button.textContent = 'Создаём...';
+      const result = await portalHealthCreateIssueTasks({ limit: 10 });
+      renderPortalDataHealth(rootId);
+      if (typeof setAppError === 'function') setAppError(`Создано задач: ${fmt.int(result.created.length)} · уже были: ${fmt.int(result.duplicates.length)}.`);
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText || 'Создать задачи по топ-проблемам';
+    }
+  });
+  root.querySelectorAll('[data-health-open]').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (typeof setView === 'function') setView(button.dataset.healthOpen || 'data-health');
+    });
+  });
+}
+
 function renderSkuContour(rootId = 'view-sku-contour') {
   const root = document.getElementById(rootId);
   if (!root) return;
@@ -1713,6 +2056,7 @@ function renderSkuContour(rootId = 'view-sku-contour') {
   const quality = state.portalDataQuality?.summary || model.quality || {};
   const quarantine = state.portalDataQuarantine?.summary || {};
   const auditEvents = skuPlanFactAuditEvents(state.skuAliasAudit || {}).slice(0, 8);
+  const latestRollbackEvent = skuContourLatestRollbackableEvent();
   const allIssueRows = skuContourIssueRows(model);
   const showResolved = skuContourShowResolved();
   const onlyNew = skuContourOnlyNew();
@@ -1754,6 +2098,7 @@ function renderSkuContour(rootId = 'view-sku-contour') {
       <td>${escapeHtml(event.fileName || '—')}</td>
       <td>${fmt.int(event.aliasesAdded || 0)} alias / ${fmt.int(event.ignoresAdded || 0)} ignore</td>
       <td>${fmt.int(event.validationWarnings || 0)} warn</td>
+      <td>${event.type === 'sku_alias_import_rollback' ? badge('откат', 'info') : event.rollback ? badge('версия', 'warn') : '<span class="muted">—</span>'}</td>
     </tr>
   `).join('');
 
@@ -1860,13 +2205,14 @@ function renderSkuContour(rootId = 'view-sku-contour') {
         </div>
         <div class="badge-stack">
           ${badge(`${fmt.int(skuPlanFactAuditEvents(state.skuAliasAudit || {}).length)} событий`, auditEvents.length ? 'info' : '')}
+          ${latestRollbackEvent ? '<button class="quick-chip" type="button" data-sku-contour-rollback-latest>Откатить последнее</button>' : ''}
           <button class="quick-chip" type="button" data-sku-contour-download-audit>Скачать аудит</button>
         </div>
       </div>
       <div class="table-scroll">
         <table class="data-table compact">
-          <thead><tr><th>Дата</th><th>Пользователь</th><th>Файл</th><th>Применено</th><th>Warnings</th></tr></thead>
-          <tbody>${auditHtml || '<tr><td colspan="5"><div class="empty">Применений пока не было</div></td></tr>'}</tbody>
+          <thead><tr><th>Дата</th><th>Пользователь</th><th>Файл</th><th>Применено</th><th>Warnings</th><th>Версия</th></tr></thead>
+          <tbody>${auditHtml || '<tr><td colspan="6"><div class="empty">Применений пока не было</div></td></tr>'}</tbody>
         </table>
       </div>
     </div>
@@ -1894,6 +2240,12 @@ function renderSkuContour(rootId = 'view-sku-contour') {
   });
   root.querySelector('[data-sku-contour-download-json]')?.addEventListener('click', skuContourDownloadPayload);
   root.querySelector('[data-sku-contour-download-audit]')?.addEventListener('click', () => skuPlanFactDownloadJson(`sku-alias-audit-${todayIso()}.json`, state.skuAliasAudit || { events: [] }));
+  root.querySelector('[data-sku-contour-rollback-latest]')?.addEventListener('click', async (event) => {
+    const latest = skuContourLatestRollbackableEvent();
+    if (!latest) return;
+    if (!window.confirm('Откатить последнее применение alias/ignore? Это вернёт общий контур к состоянию до этой загрузки.')) return;
+    await skuContourRollbackAliasImport(latest.id, event.currentTarget, rootId);
+  });
   root.querySelector('[data-sku-plan-fact-apply-import]')?.addEventListener('click', async (event) => {
     await handleSkuPlanFactApplyAliasImport(event.currentTarget, rootId);
   });
@@ -2717,6 +3069,96 @@ async function skuPlanFactUpsertSnapshot(snapshotKey, payload) {
   return payloadHash;
 }
 
+function skuPlanFactClonePayload(payload, fallback = {}) {
+  try {
+    if (typeof cloneJsonValue === 'function') return cloneJsonValue(payload ?? fallback);
+  } catch {}
+  try {
+    return JSON.parse(JSON.stringify(payload ?? fallback));
+  } catch {
+    return fallback;
+  }
+}
+
+function skuContourRollbackEventIds() {
+  return new Set(
+    skuPlanFactAuditEvents(state.skuAliasAudit || {})
+      .filter((event) => event.type === 'sku_alias_import_rollback')
+      .map((event) => event.rolledBackEventId || event.rollbackOf || '')
+      .filter(Boolean)
+  );
+}
+
+function skuContourRollbackableEvents() {
+  const rolledBack = skuContourRollbackEventIds();
+  return skuPlanFactAuditEvents(state.skuAliasAudit || {}).filter((event) => (
+    event?.id
+    && event.type === 'sku_alias_import_apply'
+    && event.rollback?.beforeAliasPayload
+    && event.rollback?.beforeIgnorePayload
+    && !rolledBack.has(event.id)
+  ));
+}
+
+function skuContourLatestRollbackableEvent() {
+  return skuContourRollbackableEvents()[0] || null;
+}
+
+async function skuContourRollbackAliasImport(eventId = '', button = null, rootId = 'view-sku-contour') {
+  const event = skuPlanFactAuditEvents(state.skuAliasAudit || {}).find((item) => item.id === eventId);
+  if (!event?.rollback?.beforeAliasPayload || !event?.rollback?.beforeIgnorePayload) {
+    if (typeof setAppError === 'function') setAppError('Для этого изменения нет сохранённой версии для отката.');
+    return;
+  }
+  if (skuContourRollbackEventIds().has(event.id)) {
+    if (typeof setAppError === 'function') setAppError('Это изменение уже откатывали.');
+    return;
+  }
+  const originalText = button?.textContent || '';
+  try {
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Откатываем...';
+    }
+    const aliasPayload = skuPlanFactClonePayload(event.rollback.beforeAliasPayload, { schema: 'sku-api-aliases-v1', aliases: [] });
+    const ignorePayload = skuPlanFactClonePayload(event.rollback.beforeIgnorePayload, { schema: 'sku-api-ignore-v1', ignored: [] });
+    state.skuAliases = aliasPayload;
+    state.skuAliasIgnore = ignorePayload;
+    const matrixPayload = skuPlanFactBuildRuntimeSkuMatrix(aliasPayload, ignorePayload);
+    state.skuMatrix = matrixPayload;
+    const appliedAt = new Date().toISOString();
+    const actor = state.team?.member?.name || state.team?.userId || 'portal-user';
+    const rollbackEvent = {
+      id: `sku-alias-rollback-${Date.now()}`,
+      type: 'sku_alias_import_rollback',
+      appliedAt,
+      actor,
+      fileName: event.fileName || '',
+      rolledBackEventId: event.id,
+      aliasesRestored: skuPlanFactAliasRows(aliasPayload).length,
+      ignoresRestored: skuPlanFactIgnorePayloadRows(ignorePayload).length,
+      reason: 'Откат последнего применения alias/ignore из портала'
+    };
+    const auditPayload = skuPlanFactBuildAuditPayload(rollbackEvent);
+    state.skuAliasAudit = auditPayload;
+    await skuPlanFactUpsertSnapshot('sku_aliases', aliasPayload);
+    await skuPlanFactUpsertSnapshot('sku_alias_ignore', ignorePayload);
+    await skuPlanFactUpsertSnapshot('sku_matrix', matrixPayload);
+    await skuPlanFactUpsertSnapshot('sku_alias_audit', auditPayload);
+    if (typeof window.__alteaResetPortalSnapshotState === 'function') window.__alteaResetPortalSnapshotState();
+    skuPlanFactRenderImportTarget(rootId);
+    if (typeof setAppError === 'function') setAppError(`Откат применён: alias ${fmt.int(rollbackEvent.aliasesRestored)}, ignore ${fmt.int(rollbackEvent.ignoresRestored)}.`);
+  } catch (error) {
+    console.error('[sku-contour-rollback]', error);
+    if (typeof setAppError === 'function') setAppError(`Не удалось откатить изменение: ${error.message}`);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText || 'Откатить последнее';
+    }
+  }
+}
+
 function skuPlanFactRenderImportTarget(rootId = 'view-sku-plan-fact') {
   if (rootId === 'view-sku-contour' && typeof renderSkuContour === 'function') {
     renderSkuContour(rootId);
@@ -2813,6 +3255,8 @@ async function handleSkuPlanFactApplyAliasImport(button = null, rootId = 'view-s
       button.disabled = true;
       button.textContent = 'Применяем...';
     }
+    const beforeAliasPayload = skuPlanFactClonePayload(state.skuAliases || { schema: 'sku-api-aliases-v1', aliases: [] });
+    const beforeIgnorePayload = skuPlanFactClonePayload(state.skuAliasIgnore || { schema: 'sku-api-ignore-v1', ignored: [] });
     const aliasPayload = report.aliasPayload || state.skuAliases || { schema: 'sku-api-aliases-v1', aliases: [] };
     const ignorePayload = report.ignorePayload || state.skuAliasIgnore || { schema: 'sku-api-ignore-v1', ignored: [] };
     state.skuAliases = aliasPayload;
@@ -2840,7 +3284,13 @@ async function handleSkuPlanFactApplyAliasImport(button = null, rootId = 'view-s
       errorRows: (report.errorRows || []).length,
       validationWarnings: (report.validationWarnings || []).length,
       aliasKeys: (report.aliases || []).slice(0, 50).map((row) => skuPlanFactAliasKey(row)),
-      ignoreKeys: (report.ignores || []).slice(0, 50).map((row) => skuPlanFactIgnoreKey(row.platform || 'all', row.api_sku || row.apiSku || ''))
+      ignoreKeys: (report.ignores || []).slice(0, 50).map((row) => skuPlanFactIgnoreKey(row.platform || 'all', row.api_sku || row.apiSku || '')),
+      rollback: {
+        beforeAliasPayload,
+        beforeIgnorePayload,
+        beforeAliasCount: skuPlanFactAliasRows(beforeAliasPayload).length,
+        beforeIgnoreCount: skuPlanFactIgnorePayloadRows(beforeIgnorePayload).length
+      }
     };
     const auditPayload = skuPlanFactBuildAuditPayload(auditEvent);
     state.skuAliasAudit = auditPayload;
@@ -3164,8 +3614,12 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
 
 window.renderSkuPlanFact = renderSkuPlanFact;
 window.renderSkuContour = renderSkuContour;
+window.renderPortalDataHealth = renderPortalDataHealth;
 window.skuContourIssueRows = skuContourIssueRows;
 window.skuContourIssueIsResolved = skuContourIssueIsResolved;
+window.portalHealthIssueRows = portalHealthIssueRows;
+window.portalHealthCreateIssueTasks = portalHealthCreateIssueTasks;
+window.skuContourRollbackableEvents = skuContourRollbackableEvents;
 window.skuPlanFactCreateNewSkuTasks = skuPlanFactCreateNewSkuTasks;
 window.skuPlanFactBuildNewSkuTask = skuPlanFactBuildNewSkuTask;
 window.skuPlanFactBuildModel = skuPlanFactBuildModel;

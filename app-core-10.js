@@ -624,6 +624,15 @@ function renderDashboardView() {
 
 function ensureSkuContourShell() {
   const nav = document.querySelector('.nav');
+  if (nav && !document.querySelector('.nav-btn[data-view="data-health"]')) {
+    const button = document.createElement('button');
+    button.className = 'nav-btn';
+    button.type = 'button';
+    button.dataset.view = 'data-health';
+    button.innerHTML = '<span>Здоровье данных</span><small>sync · проблемы · утро</small>';
+    const dashboardButton = nav.querySelector('.nav-btn[data-view="dashboard"]');
+    nav.insertBefore(button, dashboardButton?.nextSibling || nav.firstChild);
+  }
   if (nav && !document.querySelector('.nav-btn[data-view="sku-contour"]')) {
     const button = document.createElement('button');
     button.className = 'nav-btn';
@@ -635,6 +644,13 @@ function ensureSkuContourShell() {
   }
 
   const main = document.querySelector('.main');
+  if (main && !document.getElementById('view-data-health')) {
+    const section = document.createElement('section');
+    section.className = 'view';
+    section.id = 'view-data-health';
+    const dashboardSection = document.getElementById('view-dashboard');
+    main.insertBefore(section, dashboardSection?.nextSibling || main.querySelector('.view') || null);
+  }
   if (main && !document.getElementById('view-sku-contour')) {
     const section = document.createElement('section');
     section.className = 'view';
@@ -647,6 +663,7 @@ function ensureSkuContourShell() {
 function rerenderCurrentView() {
   applyOwnerOverridesToSkus();
   const renderPlan = [
+    ['view-data-health', 'Здоровье данных', () => { if (typeof renderPortalDataHealth === 'function') renderPortalDataHealth('view-data-health'); }],
     ['view-sku-contour', 'Контур SKU', () => renderSkuContour('view-sku-contour')],
     ['view-sku-plan-fact', 'План-факт SKU', () => renderSkuPlanFact('view-sku-plan-fact')],
     ['view-wb-rating', 'Рейтинг карточек', () => renderWbCardRating('view-wb-rating')],

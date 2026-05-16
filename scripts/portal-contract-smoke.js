@@ -101,6 +101,49 @@ async function main() {
     }));
     if (initial.skus <= 0) throw new Error('SKU data did not load.');
 
+    await clickView(page, 'data-health');
+    await assertVisible(page, '#view-data-health', 'data health');
+    const dataHealthOk = await page.evaluate(() => Boolean(
+      document.querySelector('#view-data-health [data-health-create-tasks]')
+      && document.querySelector('#view-data-health [data-health-open="sku-contour"]')
+      && document.querySelector('#view-data-health .data-table')
+    ));
+    if (!dataHealthOk) throw new Error('Data health center did not render controls.');
+
+    const issueTaskCheck = await page.evaluate(async () => {
+      const appState = window.__alteaAppState;
+      if (typeof window.portalHealthCreateIssueTasks !== 'function') {
+        return { ok: false, reason: 'portal health task helper is unavailable.' };
+      }
+      appState.storage = appState.storage || {};
+      const originalTasks = Array.isArray(appState.storage.tasks) ? appState.storage.tasks.slice() : [];
+      const rows = [{
+        key: 'contract-data-issue',
+        source: 'Contract',
+        type: 'Critical data issue',
+        apiSku: '__contract_data_issue__',
+        tone: 'danger',
+        action: 'contract smoke'
+      }];
+      try {
+        appState.storage.tasks = originalTasks.slice();
+        const first = await window.portalHealthCreateIssueTasks({ rows, persist: false });
+        appState.storage.tasks = [...originalTasks, ...first.created];
+        const second = await window.portalHealthCreateIssueTasks({ rows, persist: false });
+        return {
+          ok: first.created.length === 1 && second.created.length === 0 && second.duplicates.length === 1,
+          firstCreated: first.created.length,
+          secondCreated: second.created.length,
+          secondDuplicates: second.duplicates.length
+        };
+      } finally {
+        appState.storage.tasks = originalTasks;
+      }
+    });
+    if (!issueTaskCheck.ok) {
+      throw new Error(`Data health issue tasks did not create/dedupe correctly: ${JSON.stringify(issueTaskCheck)}`);
+    }
+
     await clickView(page, 'sku-plan-fact');
     await assertVisible(page, '#view-sku-plan-fact', 'SKU plan-fact');
     const planFactOk = await page.evaluate(() => Boolean(
@@ -167,6 +210,37 @@ async function main() {
     });
     if (!contourPersistence.ok) {
       throw new Error(`SKU contour resolved rows returned to unresolved queue: ${JSON.stringify(contourPersistence)}`);
+    }
+
+    const rollbackVersionCheck = await page.evaluate(() => {
+      const appState = window.__alteaAppState;
+      if (typeof window.skuContourRollbackableEvents !== 'function') {
+        return { ok: false, reason: 'rollback helper is unavailable.' };
+      }
+      const originalAudit = appState.skuAliasAudit;
+      const applyEvent = {
+        id: 'contract-rollback-event',
+        type: 'sku_alias_import_apply',
+        rollback: {
+          beforeAliasPayload: { schema: 'sku-api-aliases-v1', aliases: [] },
+          beforeIgnorePayload: { schema: 'sku-api-ignore-v1', ignored: [] }
+        }
+      };
+      try {
+        appState.skuAliasAudit = { schema: 'sku-alias-audit-v1', events: [applyEvent] };
+        const first = window.skuContourRollbackableEvents();
+        appState.skuAliasAudit = {
+          schema: 'sku-alias-audit-v1',
+          events: [{ id: 'contract-rollback-done', type: 'sku_alias_import_rollback', rolledBackEventId: applyEvent.id }, applyEvent]
+        };
+        const second = window.skuContourRollbackableEvents();
+        return { ok: first.length === 1 && second.length === 0, first: first.length, second: second.length };
+      } finally {
+        appState.skuAliasAudit = originalAudit;
+      }
+    });
+    if (!rollbackVersionCheck.ok) {
+      throw new Error(`SKU contour rollback versions did not resolve correctly: ${JSON.stringify(rollbackVersionCheck)}`);
     }
 
     const newSkuTaskCheck = await page.evaluate(async () => {

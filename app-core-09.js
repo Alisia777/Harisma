@@ -139,7 +139,21 @@ function orderProcurementReadWarehouseInbound(row) {
   return 0;
 }
 
-function orderProcurementBuildSkuSignals(sku, platform) {
+function orderProcurementProductLeaderboardEntry(articleKey) {
+  if (typeof productLeaderboardEntryForArticle === 'function') {
+    return productLeaderboardEntryForArticle(articleKey, orderProcurementNormalizeKey);
+  }
+  if (typeof getProductLeaderboardEntry === 'function') {
+    try {
+      return getProductLeaderboardEntry(articleKey);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+function orderProcurementBuildSkuSignals(sku, platform, articleKey) {
   const side = sku?.[platform] || {};
   const channelText = Array.isArray(sku?.traffic?.channels) ? sku.traffic.channels.join(' ') : '';
   const text = [
@@ -151,8 +165,20 @@ function orderProcurementBuildSkuSignals(sku, platform) {
   const signals = [];
   const recPrice = orderProcurementNumber(side?.recPrice);
   const currentPrice = orderProcurementNumber(side?.currentPrice);
+  const leaderboardEntry = orderProcurementProductLeaderboardEntry(articleKey || sku?.articleKey || sku?.article || sku?.sku);
 
-  if (sku?.traffic?.kz || sku?.flags?.hasKZ || /(^|\s|[,;])кз($|\s|[,;])/i.test(channelText)) {
+  if (leaderboardEntry) {
+    signals.push({
+      code: 'product-ads',
+      label: typeof productLeaderboardAdLabel === 'function' ? productLeaderboardAdLabel(leaderboardEntry) : '\u041a\u0417 / \u0440\u0435\u043a\u043b\u0430\u043c\u0430',
+      tone: typeof productLeaderboardAdTone === 'function' ? productLeaderboardAdTone(leaderboardEntry) : 'info',
+      action: 'product-leaderboard',
+      articleKey: articleKey || leaderboardEntry.articleKey || '',
+      title: typeof productLeaderboardAdSummary === 'function' ? productLeaderboardAdSummary(leaderboardEntry) : ''
+    });
+  }
+
+  if (!leaderboardEntry && (sku?.traffic?.kz || sku?.flags?.hasKZ || /(^|\s|[,;])кз($|\s|[,;])/i.test(channelText))) {
     signals.push({ code: 'kz', label: 'КЗ работает', tone: 'info' });
   }
   if (/акци|promo|промо|скид/i.test(text)) {
@@ -292,7 +318,7 @@ function buildOrderProcurementModel() {
       commentCount: orderProcurementNumber(commentMeta.count),
       latestCommentPreview: String(commentMeta.latestText || '').slice(0, 180),
       latestCommentAuthor: String(commentMeta.latestAuthor || ''),
-      signals: orderProcurementBuildSkuSignals(sku, platform),
+      signals: orderProcurementBuildSkuSignals(sku, platform, articleKey),
       clusters: {}
     };
 
@@ -678,6 +704,14 @@ function renderOrderProcurementClusterSummary(model) {
   `;
 }
 
+function renderOrderProcurementSignalBadge(item, row) {
+  if (item?.action === 'product-leaderboard') {
+    const articleKey = item.articleKey || row?.articleKey || row?.article || '';
+    return `<button type="button" class="chip ${orderProcurementEscape(item.tone || 'info')} altea-order-procurement__ad-badge" data-open-product-leaderboard="${orderProcurementEscape(articleKey)}" title="${orderProcurementEscape(item.title || item.label || '')}">${orderProcurementEscape(item.label || '\u041a\u0417 / \u0440\u0435\u043a\u043b\u0430\u043c\u0430')}</button>`;
+  }
+  return orderProcurementBadge(item?.label || '', item?.tone || 'info');
+}
+
 function renderOrderProcurementTable(model) {
   const headGroups = model.places
     .map((place) => {
@@ -738,7 +772,7 @@ function renderOrderProcurementTable(model) {
           : 'Комментариев пока нет';
         const movementFromWarehouse = orderProcurementNumber(row.shippedFromWarehouse) + orderProcurementNumber(row.displayInTransit);
         const signals = Array.isArray(row.signals) && row.signals.length
-          ? row.signals.map((item) => orderProcurementBadge(item.label, item.tone || 'info')).join('')
+          ? row.signals.map((item) => renderOrderProcurementSignalBadge(item, row)).join('')
           : orderProcurementBadge('нет', '');
 
         return `
@@ -830,7 +864,7 @@ function renderOrderProcurement(model) {
     : (selectedPlaceCount === 1 ? model.selectedPlaces[0] : 'Все склады');
 
   return `
-    <section class="${sectionClass}" data-altea-order-procurement>
+    <section class="${sectionClass}" data-altea-order-procurement data-platform="${orderProcurementEscape(model.platform)}">
       <div class="card">
         <div class="section-title">
           <div>
@@ -1017,6 +1051,15 @@ function orderProcurementRenderInto(root) {
 }
 
 function bindOrderProcurement(root) {
+  root.querySelectorAll('[data-open-product-leaderboard]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const articleKey = button.getAttribute('data-open-product-leaderboard') || '';
+      if (typeof openProductLeaderboardForSku === 'function') openProductLeaderboardForSku(articleKey);
+    });
+  });
+
   root.querySelectorAll('[data-altea-order-platform]').forEach((button) => {
     button.addEventListener('click', () => {
       const orderState = ensureOrderProcurementState();
@@ -1172,10 +1215,31 @@ function injectOrderProcurementStyles() {
       --col-warehouse: 132px;
       --col-inbound: 132px;
       --col-total: 148px;
+      --order-platform-rgb: 212, 164, 74;
+      --order-platform-color: rgb(var(--order-platform-rgb));
       display: grid;
       gap: 14px;
       width: 100%;
       margin-top: 18px;
+    }
+
+    .altea-order-procurement[data-platform="wb"] {
+      --order-platform-rgb: 156, 104, 255;
+      --order-platform-color: #b28aff;
+    }
+
+    .altea-order-procurement[data-platform="ozon"] {
+      --order-platform-rgb: 31, 139, 255;
+      --order-platform-color: #67b8ff;
+    }
+
+    .altea-order-procurement[data-platform] > .card:first-child,
+    .altea-order-procurement[data-platform] .altea-order-procurement__table-card {
+      border-color: rgba(var(--order-platform-rgb), 0.30);
+      background:
+        linear-gradient(135deg, rgba(var(--order-platform-rgb), 0.14), rgba(14, 11, 8, 0.82) 34%),
+        rgba(18, 14, 10, 0.76);
+      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24), inset 0 0 0 1px rgba(var(--order-platform-rgb), 0.08);
     }
 
     .altea-order-procurement.altea-order-procurement--no-inbound {
@@ -1244,9 +1308,9 @@ function injectOrderProcurementStyles() {
     }
 
     .altea-order-procurement__preset.is-active {
-      border-color: rgba(240, 196, 101, 0.68);
-      background: rgba(94, 68, 27, 0.74);
-      box-shadow: inset 0 0 0 1px rgba(240, 196, 101, 0.14);
+      border-color: rgba(var(--order-platform-rgb), 0.68);
+      background: rgba(var(--order-platform-rgb), 0.15);
+      box-shadow: inset 0 0 0 1px rgba(var(--order-platform-rgb), 0.14);
     }
 
     .altea-order-procurement__place-filter {
@@ -1298,9 +1362,9 @@ function injectOrderProcurementStyles() {
     }
 
     .altea-order-procurement__place-chip.is-active {
-      border-color: rgba(240, 196, 101, 0.62);
-      background: rgba(94, 68, 27, 0.78);
-      box-shadow: inset 0 0 0 1px rgba(240, 196, 101, 0.14);
+      border-color: rgba(var(--order-platform-rgb), 0.66);
+      background: rgba(var(--order-platform-rgb), 0.16);
+      box-shadow: inset 0 0 0 1px rgba(var(--order-platform-rgb), 0.16);
     }
 
     .altea-order-procurement__platforms,
@@ -1333,9 +1397,17 @@ function injectOrderProcurementStyles() {
     }
 
     .altea-order-procurement__platform-btn.is-active {
-      background: linear-gradient(135deg, rgba(212, 164, 74, 0.30), rgba(101, 67, 33, 0.56));
-      border-color: rgba(240, 196, 101, 0.60);
+      background: linear-gradient(135deg, rgba(var(--order-platform-rgb), 0.34), rgba(var(--order-platform-rgb), 0.10));
+      border-color: rgba(var(--order-platform-rgb), 0.72);
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+    }
+
+    .altea-order-procurement__platform-btn[data-altea-order-platform="wb"].is-active {
+      color: #efe6ff;
+    }
+
+    .altea-order-procurement__platform-btn[data-altea-order-platform="ozon"].is-active {
+      color: #e4f3ff;
     }
 
     .altea-order-procurement__summary {
@@ -1581,6 +1653,14 @@ function injectOrderProcurementStyles() {
     .altea-order-procurement__signals .chip {
       margin: 0 4px 4px 0;
       white-space: nowrap;
+    }
+
+    .altea-order-procurement__ad-badge {
+      cursor: pointer;
+      border-color: rgba(var(--order-platform-rgb), 0.42);
+      background: rgba(var(--order-platform-rgb), 0.16);
+      color: #fff6e8;
+      font: inherit;
     }
 
     .altea-order-procurement__num {

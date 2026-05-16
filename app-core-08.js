@@ -402,6 +402,59 @@ function repricerNormalizeArticleKey(value) {
   return String(value || '').trim().toLowerCase().replace(/[^a-zа-я0-9]+/gi, '');
 }
 
+function productLeaderboardEntryForArticle(articleKey, normalizeKey = repricerNormalizeArticleKey) {
+  const normalize = typeof normalizeKey === 'function'
+    ? normalizeKey
+    : (value) => String(value || '').trim().toLowerCase();
+  const wanted = normalize(articleKey);
+  if (!wanted) return null;
+
+  if (typeof getProductLeaderboardEntry === 'function') {
+    try {
+      const direct = getProductLeaderboardEntry(articleKey);
+      if (direct) return direct;
+    } catch (error) {
+      console.warn('[product-leaderboard] direct lookup', error);
+    }
+  }
+
+  const payload = state.productLeaderboard || {};
+  const items = Array.isArray(payload.items) ? payload.items : [];
+  return items.find((item) => [
+    item?.articleKey,
+    item?.article,
+    item?.sku
+  ].some((value) => normalize(value) === wanted)) || null;
+}
+
+function productLeaderboardAdTone(entry) {
+  const severity = String(entry?.diagnostics?.highestSeverity || entry?.severity || '').toLowerCase();
+  if (severity === 'critical' || severity === 'high') return 'danger';
+  if (severity === 'medium' || severity === 'warn' || severity === 'warning') return 'warn';
+  return 'info';
+}
+
+function productLeaderboardAdLabel(entry) {
+  const traffic = String(entry?.traffic || '\u041a\u0417').trim() || '\u041a\u0417';
+  return `${traffic} / \u0440\u0435\u043a\u043b\u0430\u043c\u0430`;
+}
+
+function productLeaderboardAdSummary(entry) {
+  if (!entry) return '';
+  const parts = [productLeaderboardAdLabel(entry)];
+  if (entry.weekLabel) parts.push(String(entry.weekLabel));
+  if (numberOrZero(entry.buys || entry.orders) > 0) parts.push(`${fmt.int(entry.buys || entry.orders)} \u043f\u043e\u043a.`);
+  if (numberOrZero(entry.revenue) > 0) parts.push(fmt.money(entry.revenue));
+  if (numberOrZero(entry.drrPct) > 0) parts.push(`\u0414\u0420\u0420 ${fmt.pct(entry.drrPct)}`);
+  if (entry.diagnostics?.summary) parts.push(String(entry.diagnostics.summary));
+  return parts.join(' · ');
+}
+
+window.productLeaderboardEntryForArticle = window.productLeaderboardEntryForArticle || productLeaderboardEntryForArticle;
+window.productLeaderboardAdTone = window.productLeaderboardAdTone || productLeaderboardAdTone;
+window.productLeaderboardAdLabel = window.productLeaderboardAdLabel || productLeaderboardAdLabel;
+window.productLeaderboardAdSummary = window.productLeaderboardAdSummary || productLeaderboardAdSummary;
+
 function repricerLiveMap() {
   const rows = Array.isArray(state.repricerLive?.rows) ? state.repricerLive.rows : [];
   const map = new Map();
@@ -4590,9 +4643,12 @@ function repricerOperatorLayer() {
 function repricerRenderSignature(operatorLayer = repricerOperatorLayer()) {
   const filters = state.repricerFilters || {};
   const ui = state.repricerUi || {};
+  const leaderboard = state.productLeaderboard || {};
   return [
     operatorLayer,
     repricerRowsCacheSignature(),
+    leaderboard.generatedAt || '',
+    Array.isArray(leaderboard.items) ? leaderboard.items.length : 0,
     filters.search || '',
     filters.platform || '',
     filters.mode || '',
@@ -4665,6 +4721,24 @@ function renderRepricerRepairStatusCard() {
       </div>
     </div>
   `;
+}
+
+function repricerProductLeaderboardBadge(articleKey) {
+  const entry = productLeaderboardEntryForArticle(articleKey, repricerNormalizeArticleKey);
+  if (!entry) return '';
+  return `<button type="button" class="chip ${escapeHtml(productLeaderboardAdTone(entry))} repricer-ad-badge" data-open-product-leaderboard="${escapeHtml(articleKey || entry.articleKey || '')}" title="${escapeHtml(productLeaderboardAdSummary(entry))}">${escapeHtml(productLeaderboardAdLabel(entry))}</button>`;
+}
+
+function decorateRepricerProductLeaderboardBadges(root) {
+  if (!root) return;
+  root.querySelectorAll('.repricer-card').forEach((card) => {
+    if (card.querySelector('.repricer-ad-badge')) return;
+    const articleKey = card.querySelector('[data-open-sku]')?.getAttribute('data-open-sku') || '';
+    const badgeHtml = repricerProductLeaderboardBadge(articleKey);
+    if (!badgeHtml) return;
+    const stack = card.querySelector('.head .badge-stack');
+    if (stack) stack.insertAdjacentHTML('afterbegin', badgeHtml);
+  });
 }
 
 function renderRepricerFixTeamCard(rows = buildRepricerRows()) {
@@ -4877,6 +4951,15 @@ function runRepricerExportMode(button, mode) {
 }
 
 function attachRepricerEvents(root) {
+  root.querySelectorAll('[data-open-product-leaderboard]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const articleKey = button.getAttribute('data-open-product-leaderboard') || '';
+      if (typeof openProductLeaderboardForSku === 'function') openProductLeaderboardForSku(articleKey);
+    });
+  });
+
   root.querySelectorAll('[data-repricer-layer-toggle]').forEach((button) => {
     button.addEventListener('click', () => {
       setRepricerOperatorLayer(button.getAttribute('data-repricer-layer-toggle') || 'simple');
@@ -5512,6 +5595,7 @@ function renderRepricer() {
     </div>
   `;
 
+  decorateRepricerProductLeaderboardBadges(root);
   attachRepricerEvents(root);
 }
 
@@ -5995,6 +6079,7 @@ function orderProcurementBuildRenderSignature() {
   const comments = Array.isArray(state.storage?.comments) ? state.storage.comments : [];
   const commentCount = comments.length;
   const newestCommentId = String(comments[0]?.id || comments[0]?.createdAt || '');
+  const leaderboard = state.productLeaderboard || {};
   return [
     orderState.platform,
     orderState.days,
@@ -6009,6 +6094,8 @@ function orderProcurementBuildRenderSignature() {
     payloadStamp,
     warehouseStamp,
     skuCount,
+    leaderboard.generatedAt || '',
+    Array.isArray(leaderboard.items) ? leaderboard.items.length : 0,
     commentCount,
     newestCommentId
   ].join('|');

@@ -366,6 +366,8 @@ textarea{resize:vertical;min-height:84px}
 .repricer-filters{grid-template-columns:1.5fr minmax(180px,220px) minmax(220px,260px)}
 .repricer-stack{display:flex;flex-direction:column;gap:12px;margin-top:14px}
 .repricer-card{padding:16px}
+.repricer-ad-badge{cursor:pointer;border-color:rgba(86,160,255,.34)!important;background:linear-gradient(135deg,rgba(86,160,255,.22),rgba(212,164,74,.12))!important;color:#f3f8ff!important;font:inherit}
+.repricer-ad-badge:hover{border-color:rgba(142,208,255,.68)!important;box-shadow:0 8px 20px rgba(40,116,220,.18)}
 .repricer-side-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
 .repricer-side-grid.single{grid-template-columns:1fr}
 .repricer-side{padding:12px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.02)}

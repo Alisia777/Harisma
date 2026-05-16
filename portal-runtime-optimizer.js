@@ -25,7 +25,7 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
     order: [],
     prices: [
       'portal-price-local-fetch-bypass-hotfix.js?v=20260428a',
-      'portal-price-workbench-runtime-loader.js?v=20260515markets1',
+      'portal-price-workbench-runtime-loader.js?v=20260516adscolors1',
       'portal-team-reconnect-hotfix.js?v=20260515a'
     ]
   };

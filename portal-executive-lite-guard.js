@@ -486,10 +486,11 @@
     const filtered = selectedPlatform === 'all'
       ? tasks
       : tasks.filter((task) => platformKey(task) === selectedPlatform);
-    const queue = reviewTasks(filtered);
-    const backup = focusTasks(filtered).slice(0, 8);
+    if (!['review', 'new', 'overdue', 'all'].includes(selectedQueueFilter)) selectedQueueFilter = 'review';
+    const counts = queueCounts(filtered);
+    const queue = queueItems(filtered, selectedQueueFilter);
     const selectedAny = findTaskById(filtered, selectedTaskId);
-    let items = queue.length ? queue : backup;
+    let items = queue.slice(0, 16);
     if (selectedAny && !findTaskById(items, selectedTaskId)) items = [selectedAny].concat(items).slice(0, 9);
     if (!findTaskById(items, selectedTaskId)) selectedTaskId = taskId(items[0]) || '';
     const selected = findTaskById(items, selectedTaskId);
@@ -512,6 +513,7 @@
           </div>
         </div>
         ${composerOpen ? generalTaskComposer() : ''}
+        ${queueFilterBar(counts)}
         <div class="executive-lite-review-grid">
           <section class="executive-lite-review-queue">
             <div class="executive-lite-review-queue-head">

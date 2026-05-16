@@ -1,9 +1,10 @@
 (function () {
-  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN13__) return;
+  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN14__) return;
   window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN12__ = true;
   window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN13__ = true;
+  window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN14__ = true;
 
-  const VERSION = '20260516execlean13';
+  const VERSION = '20260516execlean14';
   const PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'cross'];
   const PLATFORM_META = {
     all: { label: 'Все', title: 'Все контуры' },
@@ -24,6 +25,8 @@
   let selectedPlatform = 'all';
   let selectedTaskId = '';
   let actionMessage = '';
+  let composerOpen = false;
+  let composerMessage = '';
 
   function appState() {
     return window.__alteaAppState || window.state || {};
@@ -45,6 +48,23 @@
 
   function badge(text, tone) {
     return `<span class="badge ${tone || ''}">${escapeHtml(text)}</span>`;
+  }
+
+  function focusWorkbench() {
+    window.requestAnimationFrame(() => {
+      const workbench = document.querySelector('[data-executive-lite-workbench]');
+      if (workbench) workbench.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  function dueDefault() {
+    try {
+      if (typeof window.plusDays === 'function') return window.plusDays(3);
+      if (typeof plusDays === 'function') return plusDays(3);
+    } catch {}
+    const date = new Date();
+    date.setDate(date.getDate() + 3);
+    return date.toISOString().slice(0, 10);
   }
 
   function activeTasks() {
@@ -349,7 +369,9 @@
       : tasks.filter((task) => platformKey(task) === selectedPlatform);
     const queue = reviewTasks(filtered);
     const backup = focusTasks(filtered).slice(0, 8);
-    const items = queue.length ? queue : backup;
+    const selectedAny = findTaskById(filtered, selectedTaskId);
+    let items = queue.length ? queue : backup;
+    if (selectedAny && !findTaskById(items, selectedTaskId)) items = [selectedAny].concat(items).slice(0, 9);
     if (!findTaskById(items, selectedTaskId)) selectedTaskId = taskId(items[0]) || '';
     const selected = findTaskById(items, selectedTaskId);
     const meta = selectedPlatform === 'all'
@@ -365,8 +387,12 @@
             <span>Рабочее окно РОПа</span>
             <strong>${escapeHtml(meta.label)}: приемка без перехода в задачник</strong>
           </div>
-          <div class="badge-stack">${badge(`${fmt(waiting)} на подтверждение`, waiting ? 'warn' : 'ok')}${actionMessage ? badge(actionMessage, 'ok') : ''}</div>
+          <div class="executive-lite-workbench-toolbar">
+            <div class="badge-stack">${badge(`${fmt(waiting)} на подтверждение`, waiting ? 'warn' : 'ok')}${actionMessage ? badge(actionMessage, 'ok') : ''}${composerMessage ? badge(composerMessage, 'info') : ''}</div>
+            <button class="btn primary small-btn" type="button" data-executive-lite-compose>Поставить общую задачу</button>
+          </div>
         </div>
+        ${composerOpen ? generalTaskComposer() : ''}
         <div class="executive-lite-review-grid">
           <section class="executive-lite-review-queue">
             <div class="executive-lite-review-queue-head">
@@ -378,6 +404,97 @@
           ${taskDecisionPanel(selected, items.length)}
         </div>
       </div>`;
+  }
+
+  function generalTaskComposer() {
+    const platformOptions = [
+      ['cross', 'Общее'],
+      ['wb', 'WB'],
+      ['ozon', 'Ozon'],
+      ['ya', 'Я.Маркет'],
+      ['product', 'Продукт'],
+      ['goldapple', 'ЗЯ'],
+      ['letu', "Л'Этуаль"],
+      ['magnit', 'Магнит']
+    ];
+    const selected = selectedPlatform === 'all' ? 'cross' : selectedPlatform;
+    return `
+      <form class="executive-lite-composer" data-executive-lite-composer>
+        <div class="executive-lite-composer-main">
+          <label>Что нужно сделать<input name="title" required placeholder="Например: согласовать акцию WB / проверить остатки / подготовить ответ"></label>
+          <label>Первый шаг<textarea name="nextAction" rows="2" placeholder="Коротко: что должен сделать исполнитель и какой результат нужен"></textarea></label>
+        </div>
+        <div class="executive-lite-composer-side">
+          <label>Контур<select name="platform">${platformOptions.map(([value, label]) => `<option value="${escapeHtml(value)}" ${value === selected ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select></label>
+          <label>Кто ведет<input name="owner" placeholder="Имя ответственного"></label>
+          <label>Срок<input name="due" type="date" value="${escapeHtml(dueDefault())}"></label>
+          <label>Приоритет<select name="priority"><option value="medium">Средний</option><option value="high">Высокий</option><option value="critical">Критично</option><option value="low">Низкий</option></select></label>
+        </div>
+        <div class="executive-lite-composer-actions">
+          <button class="btn primary" type="submit">Поставить задачу</button>
+          <button class="btn ghost" type="button" data-executive-lite-compose-close>Свернуть</button>
+        </div>
+      </form>`;
+  }
+
+  function fallbackCreateTask(payload) {
+    const state = appState();
+    state.storage = state.storage || {};
+    state.storage.tasks = Array.isArray(state.storage.tasks) ? state.storage.tasks : [];
+    const now = new Date().toISOString();
+    const task = {
+      id: `task-executive-${Date.now()}`,
+      source: 'manual',
+      articleKey: '',
+      entityLabel: 'Общая задача',
+      title: payload.title,
+      type: 'general',
+      priority: payload.priority || 'medium',
+      platform: payload.platform || 'cross',
+      owner: payload.owner || '',
+      due: payload.due || dueDefault(),
+      status: 'new',
+      nextAction: payload.nextAction || '',
+      reason: 'Поставлено из вкладки руководителя',
+      createdAt: now
+    };
+    state.storage.tasks.unshift(task);
+    if (typeof window.saveLocalStorage === 'function') window.saveLocalStorage();
+    else if (typeof saveLocalStorage === 'function') saveLocalStorage();
+    return task;
+  }
+
+  async function createExecutiveGeneralTask(form) {
+    const data = new FormData(form);
+    const title = String(data.get('title') || '').trim();
+    if (!title) {
+      composerMessage = 'Нужно название';
+      renderNow(true);
+      focusWorkbench();
+      return;
+    }
+    const payload = {
+      title,
+      platform: String(data.get('platform') || 'cross'),
+      owner: String(data.get('owner') || '').trim(),
+      due: String(data.get('due') || '').trim() || dueDefault(),
+      priority: String(data.get('priority') || 'medium'),
+      nextAction: String(data.get('nextAction') || '').trim(),
+      type: 'general',
+      entityLabel: 'Общая задача',
+      skipRerender: true
+    };
+    const task = typeof window.createManualTask === 'function'
+      ? await window.createManualTask(payload)
+      : fallbackCreateTask(payload);
+    selectedPlatform = payload.platform || 'cross';
+    selectedTaskId = task?.id || '';
+    composerOpen = false;
+    composerMessage = 'Задача поставлена';
+    actionMessage = '';
+    window.dispatchEvent(new CustomEvent('altea:portal-storage-updated', { detail: { source: 'executive-lite', taskId: selectedTaskId, action: 'create' } }));
+    renderNow(true);
+    focusWorkbench();
   }
 
   async function runExecutiveAction(taskIdValue, action, comment) {
@@ -434,6 +551,7 @@
         selectedTaskId = '';
         actionMessage = '';
         renderNow(true);
+        focusWorkbench();
       });
     });
 
@@ -441,10 +559,33 @@
       button.addEventListener('click', () => {
         const id = button.getAttribute('data-executive-lite-task');
         if (!id) return;
+        const task = findTaskById(activeTasks(), id);
+        if (task) selectedPlatform = platformKey(task);
         selectedTaskId = id;
         actionMessage = '';
         renderNow(true);
+        focusWorkbench();
       });
+    });
+
+    root.querySelector('[data-executive-lite-compose]')?.addEventListener('click', () => {
+      composerOpen = true;
+      composerMessage = '';
+      actionMessage = '';
+      renderNow(true);
+      focusWorkbench();
+    });
+
+    root.querySelector('[data-executive-lite-composer]')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      await createExecutiveGeneralTask(event.currentTarget);
+    });
+
+    root.querySelector('[data-executive-lite-compose-close]')?.addEventListener('click', () => {
+      composerOpen = false;
+      composerMessage = '';
+      renderNow(true);
+      focusWorkbench();
     });
 
     root.querySelectorAll('[data-executive-lite-action]').forEach((button) => {
@@ -490,6 +631,7 @@
       .executive-lite-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
       .executive-lite-head span{display:block;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--muted)}
       .executive-lite-head strong{display:block;margin-top:3px;color:#fff7e6;font-size:18px;line-height:1.15}
+      .executive-lite-workbench-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
       .executive-lite-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
       .executive-lite-card{position:relative;display:flex;flex-direction:column;gap:9px;min-height:126px;overflow:hidden;text-align:left;border:1px solid var(--platform-border,rgba(255,255,255,.08));border-radius:10px;background:linear-gradient(135deg,var(--platform-soft,rgba(255,255,255,.025)),rgba(0,0,0,.22));color:inherit;padding:12px 12px 12px 14px;cursor:pointer}
       .executive-lite-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--platform-color,#d4a44a);opacity:.92}
@@ -519,6 +661,7 @@
       .executive-lite-task strong{display:block;color:#fff7e6;line-height:1.25}
       .executive-lite-task span{display:block;margin-top:6px;font-size:12px;color:var(--muted)}
       .executive-lite-task em{display:inline-block;margin-top:9px;font-style:normal;font-size:11px;border:1px solid rgba(212,164,74,.25);border-radius:999px;padding:4px 8px;color:#f3dfad}
+      .executive-lite-task small{display:inline-block;margin-left:6px;margin-top:9px;color:#fff7e6;font-size:11px;opacity:.78}
       .executive-lite-review-grid{display:grid;grid-template-columns:minmax(300px,.86fr) minmax(420px,1.14fr);gap:12px}
       .executive-lite-review-queue,.executive-lite-decision{border:1px solid var(--platform-border,rgba(255,255,255,.08));border-radius:10px;background:linear-gradient(180deg,var(--platform-soft,rgba(255,255,255,.025)),rgba(0,0,0,.2));padding:12px}
       .executive-lite-review-queue-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
@@ -542,6 +685,14 @@
       .executive-lite-decision-note small{display:block;margin-top:6px;color:var(--muted);line-height:1.35}
       .executive-lite-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:auto}
       .executive-lite-actions>span{margin-left:auto;color:var(--muted);font-size:12px}
+      .executive-lite-composer{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:12px;margin-bottom:12px;border:1px solid var(--platform-border,rgba(212,164,74,.22));border-radius:10px;background:linear-gradient(135deg,var(--platform-soft,rgba(212,164,74,.06)),rgba(0,0,0,.2));padding:12px}
+      .executive-lite-composer-main,.executive-lite-composer-side{display:grid;gap:10px}
+      .executive-lite-composer-side{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .executive-lite-composer label{display:grid;gap:6px;color:#f3dfad;font-size:11px;font-weight:800;text-transform:uppercase}
+      .executive-lite-composer input,.executive-lite-composer select,.executive-lite-composer textarea{width:100%;border:1px solid rgba(212,164,74,.2);border-radius:8px;background:rgba(0,0,0,.24);color:#fff7e6;padding:9px 10px;font:inherit;text-transform:none;font-weight:500}
+      .executive-lite-composer textarea{resize:vertical}
+      .executive-lite-composer input:focus,.executive-lite-composer select:focus,.executive-lite-composer textarea:focus{outline:none;border-color:var(--platform-strong,rgba(212,164,74,.55));box-shadow:0 0 0 2px var(--platform-soft,rgba(212,164,74,.12))}
+      .executive-lite-composer-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
       [data-platform="all"]{--platform-color:#d4a44a;--platform-soft:rgba(212,164,74,.065);--platform-active:rgba(212,164,74,.13);--platform-border:rgba(212,164,74,.22);--platform-strong:rgba(212,164,74,.54)}
       [data-platform="wb"]{--platform-color:#8b5cf6;--platform-soft:rgba(139,92,246,.075);--platform-active:rgba(139,92,246,.16);--platform-border:rgba(139,92,246,.25);--platform-strong:rgba(139,92,246,.58)}
       [data-platform="ozon"]{--platform-color:#1683ff;--platform-soft:rgba(22,131,255,.075);--platform-active:rgba(22,131,255,.16);--platform-border:rgba(22,131,255,.25);--platform-strong:rgba(22,131,255,.58)}
@@ -552,7 +703,7 @@
       [data-platform="product"]{--platform-color:#22c55e;--platform-soft:rgba(34,197,94,.07);--platform-active:rgba(34,197,94,.15);--platform-border:rgba(34,197,94,.23);--platform-strong:rgba(34,197,94,.52)}
       [data-platform="cross"]{--platform-color:#94a3b8;--platform-soft:rgba(148,163,184,.065);--platform-active:rgba(148,163,184,.13);--platform-border:rgba(148,163,184,.22);--platform-strong:rgba(148,163,184,.48)}
       @media (max-width:1280px){.executive-lite-grid,.executive-lite-task-grid,.executive-lite-focus-board{grid-template-columns:repeat(2,minmax(0,1fr))}.executive-lite-review-grid{grid-template-columns:1fr}}
-      @media (max-width:820px){.executive-lite-grid,.executive-lite-task-grid,.executive-lite-focus-board,.executive-lite-review-grid{grid-template-columns:1fr}.executive-lite-head,.executive-lite-decision-head,.executive-lite-review-queue-head{flex-direction:column}}
+      @media (max-width:820px){.executive-lite-grid,.executive-lite-task-grid,.executive-lite-focus-board,.executive-lite-review-grid,.executive-lite-composer,.executive-lite-composer-side{grid-template-columns:1fr}.executive-lite-head,.executive-lite-decision-head,.executive-lite-review-queue-head{flex-direction:column}}
     `;
     document.head.appendChild(style);
   }

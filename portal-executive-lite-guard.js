@@ -1,8 +1,8 @@
 (function () {
-  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN6__) return;
-  window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN6__ = true;
+  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN7__) return;
+  window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN7__ = true;
 
-  const VERSION = '20260516execlean6';
+  const VERSION = '20260516execlean7';
   const KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'cross'];
   const META = {
     wb: { label: 'WB', title: 'РОП WB' },
@@ -175,6 +175,7 @@
     requestAnimationFrame(() => {
       queued = false;
       if (!active()) return;
+      restoreRenderApi();
       styles();
       render();
     });
@@ -205,14 +206,22 @@
     try { renderExecutive = renderApi; } catch {}
   }
 
+  function restoreRenderApi() {
+    if (!renderApi) return;
+    try { if (window.renderExecutive !== renderApi) window.renderExecutive = renderApi; } catch {}
+    try { if (renderExecutive !== renderApi) renderExecutive = renderApi; } catch {}
+  }
+
   window.__ALTEA_EXECUTIVE_LITE_GUARD_READY__ = VERSION;
   installRenderLock();
-  window.addEventListener('hashchange', schedule);
-  window.addEventListener('altea:viewchange', schedule);
-  window.addEventListener('altea:portal-storage-updated', schedule);
-  window.addEventListener('load', schedule, { once: true });
+  restoreRenderApi();
+  window.addEventListener('hashchange', () => { restoreRenderApi(); schedule(); });
+  window.addEventListener('altea:viewchange', () => { restoreRenderApi(); schedule(); });
+  window.addEventListener('altea:portal-storage-updated', () => { restoreRenderApi(); schedule(); });
+  window.addEventListener('load', () => { restoreRenderApi(); schedule(); }, { once: true });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule, { once: true });
   schedule();
+  [60, 180, 420, 900, 1800, 3600, 7000].forEach((delay) => setTimeout(restoreRenderApi, delay));
   setTimeout(schedule, 120);
   setTimeout(schedule, 700);
 })();

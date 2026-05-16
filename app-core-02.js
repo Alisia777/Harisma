@@ -186,7 +186,9 @@ function loadLocalStorage() {
       repricerLastAuditImport: parsed.repricerLastAuditImport && typeof parsed.repricerLastAuditImport === 'object' ? parsed.repricerLastAuditImport : null,
       repricerLastAutoFix: parsed.repricerLastAutoFix && typeof parsed.repricerLastAutoFix === 'object' ? parsed.repricerLastAutoFix : null,
       repricerLastImportValidation: parsed.repricerLastImportValidation && typeof parsed.repricerLastImportValidation === 'object' ? parsed.repricerLastImportValidation : null,
-      repricerLastApiReconcile: parsed.repricerLastApiReconcile && typeof parsed.repricerLastApiReconcile === 'object' ? parsed.repricerLastApiReconcile : null
+      repricerLastApiReconcile: parsed.repricerLastApiReconcile && typeof parsed.repricerLastApiReconcile === 'object' ? parsed.repricerLastApiReconcile : null,
+      portalDataRules: parsed.portalDataRules && typeof parsed.portalDataRules === 'object' ? parsed.portalDataRules : {},
+      portalIssueSnapshot: parsed.portalIssueSnapshot && typeof parsed.portalIssueSnapshot === 'object' ? parsed.portalIssueSnapshot : null
     };
   } catch {
     return defaultStorage();
@@ -500,7 +502,9 @@ function mergeImportedStorage(imported) {
     repricerCorridors: Array.isArray(imported.repricerCorridors) ? imported.repricerCorridors : [],
     repricerOverrideDeletes: Array.isArray(imported.repricerOverrideDeletes) ? imported.repricerOverrideDeletes : [],
     repricerSkuProfileDeletes: Array.isArray(imported.repricerSkuProfileDeletes) ? imported.repricerSkuProfileDeletes : [],
-    repricerCorridorDeletes: Array.isArray(imported.repricerCorridorDeletes) ? imported.repricerCorridorDeletes : []
+    repricerCorridorDeletes: Array.isArray(imported.repricerCorridorDeletes) ? imported.repricerCorridorDeletes : [],
+    portalDataRules: imported.portalDataRules && typeof imported.portalDataRules === 'object' ? imported.portalDataRules : null,
+    portalIssueSnapshot: imported.portalIssueSnapshot && typeof imported.portalIssueSnapshot === 'object' ? imported.portalIssueSnapshot : null
   };
   mergeSeedStorage(seed);
   for (const raw of seed.decisions) {
@@ -574,6 +578,8 @@ function mergeImportedStorage(imported) {
     state.storage.repricerCorridorDeletes = (state.storage.repricerCorridorDeletes || []).filter((item) => !(item.articleKey === marker.articleKey && item.platform === marker.platform));
     state.storage.repricerCorridorDeletes.unshift(marker);
   }
+  if (seed.portalDataRules) state.storage.portalDataRules = { ...(state.storage.portalDataRules || {}), ...seed.portalDataRules };
+  if (seed.portalIssueSnapshot) state.storage.portalIssueSnapshot = seed.portalIssueSnapshot;
   applyOwnerOverridesToSkus();
   saveLocalStorage();
 }

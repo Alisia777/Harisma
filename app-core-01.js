@@ -1458,7 +1458,9 @@ function defaultStorage() {
     repricerLastAuditImport: null,
     repricerLastAutoFix: null,
     repricerLastImportValidation: null,
-    repricerLastApiReconcile: null
+    repricerLastApiReconcile: null,
+    portalDataRules: {},
+    portalIssueSnapshot: null
   };
 }
 

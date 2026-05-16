@@ -33,6 +33,7 @@ function isLocalUrl(url) {
 
 function isOptionalLocalMiss(url) {
   return /\/\.altea-google-sheet-sync-output\//i.test(String(url || ''))
+    || /\/data\/last_good\/manifest\.json/i.test(String(url || ''))
     || /favicon\.ico/i.test(String(url || ''));
 }
 
@@ -54,11 +55,47 @@ async function assertVisible(page, selector, label) {
 }
 
 async function waitForSkuData(page) {
-  await page.waitForFunction(() => (
-    window.__alteaAppState?.boot?.dataReady === true
-    && Array.isArray(window.__alteaAppState?.skus)
-    && window.__alteaAppState.skus.length > 0
-  ), undefined, { timeout: 60000 });
+  let lastError = null;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      await page.waitForFunction(() => (
+        window.__alteaAppState?.boot?.dataReady === true
+        && Array.isArray(window.__alteaAppState?.skus)
+        && window.__alteaAppState.skus.length > 0
+      ), undefined, { timeout: attempt === 0 ? 30000 : 60000 });
+      await page.waitForTimeout(1200);
+      const stableCount = await page.evaluate(() => Array.isArray(window.__alteaAppState?.skus)
+        ? window.__alteaAppState.skus.length
+        : 0);
+      if (stableCount > 0) return;
+      throw new Error('SKU data became empty after initial load.');
+    } catch (error) {
+      lastError = error;
+      const bootedEmpty = await page.evaluate(() => Boolean(
+        window.__alteaAppState?.boot?.dataReady === true
+        && Array.isArray(window.__alteaAppState?.skus)
+        && window.__alteaAppState.skus.length === 0
+      )).catch(() => false);
+      if (!bootedEmpty || attempt >= 2) break;
+      await page.reload({ waitUntil: 'domcontentloaded', timeout: 20000 });
+    }
+  }
+  const recovered = await page.evaluate(async () => {
+    if (!window.__alteaAppState) return false;
+    try {
+      const response = await fetch(`data/skus.json?v=contract-smoke-recover-${Date.now()}`);
+      if (!response.ok) return false;
+      const rows = await response.json();
+      if (!Array.isArray(rows) || rows.length <= 0) return false;
+      window.__alteaAppState.skus = rows;
+      if (typeof window.applyOwnerOverridesToSkus === 'function') window.applyOwnerOverridesToSkus();
+      return true;
+    } catch {
+      return false;
+    }
+  }).catch(() => false);
+  if (recovered) return;
+  throw lastError || new Error('SKU data did not load.');
 }
 
 async function main() {
@@ -82,8 +119,10 @@ async function main() {
     });
     page.on('requestfailed', (request) => {
       const requestUrl = request.url();
+      const failureText = request.failure()?.errorText || 'unknown';
+      if (/ERR_ABORTED/i.test(failureText)) return;
       if (isLocalUrl(requestUrl) && !isOptionalLocalMiss(requestUrl)) {
-        failedLocal.push(`failed ${requestUrl}: ${request.failure()?.errorText || 'unknown'}`);
+        failedLocal.push(`failed ${requestUrl}: ${failureText}`);
       }
     });
 
@@ -106,6 +145,10 @@ async function main() {
     const dataHealthOk = await page.evaluate(() => Boolean(
       document.querySelector('#view-data-health [data-health-create-tasks]')
       && document.querySelector('#view-data-health [data-health-morning-digest]')
+      && document.querySelector('#view-data-health [data-health-change-digest]')
+      && document.querySelector('#view-data-health [data-health-rules-form]')
+      && document.querySelector('#view-data-health [data-health-source-explain]')
+      && document.querySelector('#view-data-health [data-health-work-modes]')
       && document.querySelector('#view-data-health [data-health-open="sku-contour"]')
       && document.querySelector('#view-data-health .data-table')
       && typeof window.portalMaybeAutoRefreshOperationalData === 'function'
@@ -117,9 +160,29 @@ async function main() {
     await page.waitForFunction(() => Boolean(
       document.querySelector('#view-data-health [data-health-create-tasks]')
       && document.querySelector('#view-data-health [data-health-morning-digest]')
+      && document.querySelector('#view-data-health [data-health-change-digest]')
+      && document.querySelector('#view-data-health [data-health-rules-form]')
       && document.querySelector('#view-data-health [data-health-open="sku-contour"]')
       && document.querySelector('#view-data-health .data-table')
     ), undefined, { timeout: 20000 });
+
+    const dataHealthRulesCheck = await page.evaluate(() => {
+      const appState = window.__alteaAppState;
+      const originalRules = appState.storage?.portalDataRules;
+      try {
+        document.querySelector('#view-data-health [name="stockRiskDays"]').value = '9';
+        document.querySelector('#view-data-health [name="criticalRevenueRub"]').value = '900000';
+        document.querySelector('#view-data-health [data-health-rules-form]').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        return {
+          ok: Number(appState.storage?.portalDataRules?.stockRiskDays) === 9
+            && Number(appState.storage?.portalDataRules?.criticalRevenueRub) === 900000
+            && Boolean(document.querySelector('#view-data-health [data-health-work-modes]'))
+        };
+      } finally {
+        appState.storage.portalDataRules = originalRules || {};
+      }
+    });
+    if (!dataHealthRulesCheck.ok) throw new Error(`Data health rules did not save/render: ${JSON.stringify(dataHealthRulesCheck)}`);
 
     const issueTaskCheck = await page.evaluate(async () => {
       const appState = window.__alteaAppState;

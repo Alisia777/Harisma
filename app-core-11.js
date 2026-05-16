@@ -1752,7 +1752,7 @@ function skuContourDownloadPayload() {
 
 async function portalRefreshOperationalDataPayloads() {
   if (typeof loadJsonOrFallback !== 'function') return;
-  const [skuMatrix, syncHealth, portalDataQuality, portalDataQuarantine] = await Promise.all([
+  const [skuMatrix, syncHealth, portalDataQuality, portalDataQuarantine, lastGoodManifest] = await Promise.all([
     loadJsonOrFallback(
       'data/sku_matrix.json',
       { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } },
@@ -1772,6 +1772,11 @@ async function portalRefreshOperationalDataPayloads() {
       'data/portal_data_quarantine.json',
       { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] },
       'Карантин данных'
+    ),
+    loadJsonOrFallback(
+      'data/last_good/manifest.json',
+      { generatedAt: '', files: [] },
+      'last good manifest'
     )
   ]);
   state.skuMatrix = skuMatrix && typeof skuMatrix === 'object'
@@ -1786,6 +1791,9 @@ async function portalRefreshOperationalDataPayloads() {
   state.portalDataQuarantine = portalDataQuarantine && typeof portalDataQuarantine === 'object'
     ? portalDataQuarantine
     : { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] };
+  state.portalLastGoodManifest = lastGoodManifest && typeof lastGoodManifest === 'object'
+    ? lastGoodManifest
+    : { generatedAt: '', files: [] };
 }
 
 function portalHealthSourceRows() {
@@ -1801,7 +1809,7 @@ function portalHealthSourceRows() {
     const status = String(row.status || '').toLowerCase();
     let tone = 'ok';
     if (!exists || status === 'critical' || status === 'blocked') tone = 'danger';
-    else if (status === 'warning' || status === 'warn' || (lagDays !== null && lagDays > 1)) tone = 'warn';
+    else if (status === 'warning' || status === 'warn' || (lagDays !== null && lagDays > portalDataRuleNumber('staleSourceDays'))) tone = 'warn';
     else if (!rowsCount && key !== 'loyalty_system') tone = 'warn';
     rows.push({
       key,
@@ -1830,6 +1838,132 @@ function portalHealthIssueTone(issue = {}) {
   return issue.amount > 0 ? 'warn' : '';
 }
 
+const PORTAL_DATA_RULE_DEFAULTS = {
+  stockRiskDays: 10,
+  criticalRevenueRub: 1000000,
+  staleSourceDays: 1,
+  autoTaskLimit: 10
+};
+
+function portalDataRules() {
+  const raw = state.storage?.portalDataRules && typeof state.storage.portalDataRules === 'object'
+    ? state.storage.portalDataRules
+    : {};
+  const next = { ...PORTAL_DATA_RULE_DEFAULTS };
+  Object.keys(next).forEach((key) => {
+    const value = Number(raw[key]);
+    if (Number.isFinite(value) && value >= 0) next[key] = value;
+  });
+  return next;
+}
+
+function portalDataRuleNumber(key) {
+  return Number(portalDataRules()[key] ?? PORTAL_DATA_RULE_DEFAULTS[key] ?? 0);
+}
+
+function portalSaveDataRules(raw = {}) {
+  const current = portalDataRules();
+  const next = { ...current };
+  Object.keys(PORTAL_DATA_RULE_DEFAULTS).forEach((key) => {
+    const value = Number(raw[key]);
+    if (Number.isFinite(value) && value >= 0) next[key] = Math.round(value);
+  });
+  state.storage = state.storage || {};
+  state.storage.portalDataRules = next;
+  state.storage.portalDataRulesUpdatedAt = new Date().toISOString();
+  if (typeof saveLocalStorage === 'function') saveLocalStorage();
+  return next;
+}
+
+function portalHealthIssueSnapshot(issues = []) {
+  const rows = (issues || []).map((row) => ({
+    key: row.key || [row.source, row.type, row.platform, row.apiSku || row.name].join('|'),
+    title: [row.source, row.type, row.apiSku || row.name].filter(Boolean).join(' · '),
+    tone: row.tone || '',
+    amount: numberOrZero(row.amount)
+  })).filter((row) => row.key);
+  return {
+    generatedAt: new Date().toISOString(),
+    healthGeneratedAt: state.syncHealth?.generatedAt || state.portalDataQuality?.generatedAt || '',
+    keys: rows.map((row) => row.key),
+    rows
+  };
+}
+
+function portalHealthSnapshotDiff(issues = []) {
+  const current = portalHealthIssueSnapshot(issues);
+  const previous = state.storage?.portalIssueSnapshot && typeof state.storage.portalIssueSnapshot === 'object'
+    ? state.storage.portalIssueSnapshot
+    : null;
+  const previousKeys = new Set(Array.isArray(previous?.keys) ? previous.keys : []);
+  const currentKeys = new Set(current.keys);
+  const previousRows = Array.isArray(previous?.rows) ? previous.rows : [];
+  const newRows = current.rows.filter((row) => !previousKeys.has(row.key));
+  const closedRows = previousRows.filter((row) => !currentKeys.has(row.key));
+  return {
+    current,
+    previous,
+    newRows,
+    closedRows,
+    unchangedCount: current.rows.length - newRows.length
+  };
+}
+
+function portalHealthCommitIssueSnapshot(issues = []) {
+  state.storage = state.storage || {};
+  state.storage.portalIssueSnapshot = portalHealthIssueSnapshot(issues);
+  if (typeof saveLocalStorage === 'function') saveLocalStorage();
+  return state.storage.portalIssueSnapshot;
+}
+
+function portalHealthSavedViews() {
+  const rules = portalDataRules();
+  return [
+    {
+      id: 'warehouse-risk',
+      title: `Склад: закончится до ${fmt.int(rules.stockRiskDays)} дней`,
+      text: 'Открывает Заказ товара с проблемными складами и нужным порогом дней.',
+      view: 'order',
+      tone: 'warn'
+    },
+    {
+      id: 'api-unmapped',
+      title: 'API без пары по выручке',
+      text: 'Открывает Контур SKU, где можно выгрузить форму, загрузить решения и закрепить alias/ignore.',
+      view: 'sku-contour',
+      tone: 'danger'
+    },
+    {
+      id: 'plan-fact-gaps',
+      title: 'План-факт: нет плана или факта',
+      text: 'Открывает план-факт SKU, чтобы проверить owner, план и потерянные API SKU.',
+      view: 'sku-plan-fact',
+      tone: 'warn'
+    },
+    {
+      id: 'price-safety',
+      title: 'Цены и репрайсер',
+      text: 'Переход к ценовому контуру: MIN/MAX, safe export, ручные решения и аудит.',
+      view: 'repricer',
+      tone: 'info'
+    }
+  ];
+}
+
+function portalHealthApplySavedView(id = '') {
+  const rules = portalDataRules();
+  if (id === 'warehouse-risk') {
+    state.orderProcurementUi = state.orderProcurementUi || {};
+    state.orderProcurementUi.clusterFilter = 'low_stock';
+    state.orderProcurementUi.clusterDays = rules.stockRiskDays;
+    state.orderProcurementUi.mode = 'all';
+    if (typeof setView === 'function') setView('order');
+    return;
+  }
+  const target = portalHealthSavedViews().find((item) => item.id === id)?.view || 'data-health';
+  if (typeof setView === 'function') setView(target);
+}
+
 function portalHealthIssueRows(limit = 240) {
   const rows = [];
   const seen = new Set();
@@ -1843,7 +1977,10 @@ function portalHealthIssueRows(limit = 240) {
     if (!key.replace(/\|/g, '') || seen.has(key)) return;
     seen.add(key);
     const amount = numberOrZero(row.amount ?? row.revenue);
-    const tone = row.tone || portalHealthIssueTone({ ...row, amount });
+    const criticalRevenueRub = portalDataRuleNumber('criticalRevenueRub');
+    const tone = row.tone || (criticalRevenueRub > 0 && amount >= criticalRevenueRub
+      ? 'danger'
+      : portalHealthIssueTone({ ...row, amount }));
     rows.push({
       key,
       source: row.source || 'Данные',
@@ -1904,20 +2041,21 @@ function portalHealthIssueRows(limit = 240) {
     view: 'sku-plan-fact'
   }));
 
+  const stockRiskDays = Math.max(1, portalDataRuleNumber('stockRiskDays') || PORTAL_DATA_RULE_DEFAULTS.stockRiskDays);
   (model.allRows || [])
     .filter((row) => (row.platforms ? Object.values(row.platforms) : [])
-      .some((metric) => metric && Number.isFinite(Number(metric.turnoverDays)) && Number(metric.turnoverDays) > 0 && Number(metric.turnoverDays) <= 10))
+      .some((metric) => metric && Number.isFinite(Number(metric.turnoverDays)) && Number(metric.turnoverDays) > 0 && Number(metric.turnoverDays) <= stockRiskDays))
     .slice(0, 40)
     .forEach((row) => add({
       source: 'Заказ товара',
-      type: 'Закончится до 10 дней',
+      type: `Закончится до ${fmt.int(stockRiskDays)} дней`,
       platform: '',
       apiSku: row.articleKey || row.article,
       name: row.name,
       status: 'warning',
       amount: row.factRevenue,
       units: row.factUnits,
-      action: 'Открыть заказ товара, включить проблемные склады и проверить поставку по складам.',
+      action: `Открыть заказ товара, включить проблемные склады и проверить поставку по складам. Порог настраивается в правилах: ${fmt.int(stockRiskDays)} дней.`,
       view: 'order'
     }));
 
@@ -2059,6 +2197,273 @@ function portalHealthTodayDigestRows({ issues = [], sources = [], summary = {}, 
   return rows;
 }
 
+function portalHealthLastGoodHtml() {
+  const manifest = state.portalLastGoodManifest || {};
+  const publish = state.syncHealth?.publish || {};
+  const allowed = publish.allowed !== false;
+  const generatedAt = manifest.generatedAt || manifest.createdAt || manifest.updatedAt || '';
+  const files = Array.isArray(manifest.files) ? manifest.files.length : numberOrZero(manifest.fileCount);
+  const tone = allowed ? 'ok' : 'danger';
+  const title = allowed ? 'Текущий срез разрешён' : 'Публикация заблокирована';
+  const text = allowed
+    ? 'Портал показывает свежий опубликованный срез. Если sync завтра приедет криво, здесь будет видно, что надо смотреть последний хороший.'
+    : `Портал должен показывать последний хороший срез${generatedAt ? ` от ${fmt.date(generatedAt)}` : ''}, пока блокеры sync не закрыты.`;
+  return `
+    <div class="notice ${allowed ? 'ok' : 'warn'}" data-health-last-good>
+      <div class="section-subhead">
+        <div>
+          <strong>${escapeHtml(title)}</strong>
+          <div class="small muted">${escapeHtml(text)}</div>
+        </div>
+        <div class="badge-stack">
+          ${badge(allowed ? 'можно доверять' : 'последний хороший', tone)}
+          ${generatedAt ? badge(`last good ${fmt.date(generatedAt)}`, 'info') : ''}
+          ${files ? badge(`${fmt.int(files)} файлов`, 'info') : ''}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function portalHealthChangesHtml(diff = {}) {
+  const previousAt = diff.previous?.generatedAt || '';
+  const newPreview = (diff.newRows || []).slice(0, 5).map((row) => `
+    <div class="alert-row">
+      <div><strong>${escapeHtml(row.title || row.key)}</strong><div class="muted small">${fmt.money(row.amount)}</div></div>
+      ${badge('новая', row.tone || 'warn')}
+    </div>
+  `).join('');
+  const closedPreview = (diff.closedRows || []).slice(0, 5).map((row) => `
+    <div class="alert-row">
+      <div><strong>${escapeHtml(row.title || row.key)}</strong><div class="muted small">${fmt.money(row.amount)}</div></div>
+      ${badge('закрыта', 'ok')}
+    </div>
+  `).join('');
+  return `
+    <div class="card sku-plan-fact-card" data-health-change-digest>
+      <div class="section-subhead">
+        <div>
+          <h3>Что изменилось с прошлого контроля</h3>
+          <p class="small muted">${previousAt ? `Сравнение с отметкой ${escapeHtml(fmt.date(previousAt))}.` : 'Пока нет сохранённой отметки: нажмите “зафиксировать срез”, и дальше портал будет показывать только изменения.'}</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`новых ${fmt.int((diff.newRows || []).length)}`, (diff.newRows || []).length ? 'warn' : 'ok')}
+          ${badge(`закрыто ${fmt.int((diff.closedRows || []).length)}`, (diff.closedRows || []).length ? 'ok' : 'info')}
+          ${badge(`без изменений ${fmt.int(diff.unchangedCount || 0)}`, 'info')}
+          <button class="quick-chip" type="button" data-health-save-snapshot>Зафиксировать текущий срез</button>
+        </div>
+      </div>
+      <div class="two-col" style="margin-top:12px">
+        <div>
+          <div class="muted small" style="margin-bottom:6px">Новые проблемы</div>
+          <div class="alert-stack">${newPreview || '<div class="empty">Новых проблем нет</div>'}</div>
+        </div>
+        <div>
+          <div class="muted small" style="margin-bottom:6px">Закрылись после прошлого контроля</div>
+          <div class="alert-stack">${closedPreview || '<div class="empty">Пока ничего не закрылось</div>'}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function portalHealthRulesHtml(rules = portalDataRules()) {
+  return `
+    <details class="card sku-plan-fact-card" data-health-rules>
+      <summary style="cursor:pointer;font-weight:800">Правила тревог и автозадач</summary>
+      <form class="grid cards" style="margin-top:12px" data-health-rules-form>
+        <label class="mini-kpi">
+          <span>Товар закончится, дней</span>
+          <input name="stockRiskDays" type="number" min="1" max="180" step="1" value="${escapeHtml(rules.stockRiskDays)}">
+          <span>для “Заказа товара” и общей очереди</span>
+        </label>
+        <label class="mini-kpi">
+          <span>Критичная сумма, ₽</span>
+          <input name="criticalRevenueRub" type="number" min="0" step="10000" value="${escapeHtml(rules.criticalRevenueRub)}">
+          <span>выше этой суммы проблема становится критичной</span>
+        </label>
+        <label class="mini-kpi">
+          <span>Просрочка источника, дней</span>
+          <input name="staleSourceDays" type="number" min="0" max="14" step="1" value="${escapeHtml(rules.staleSourceDays)}">
+          <span>порог для утренней проверки свежести</span>
+        </label>
+        <label class="mini-kpi">
+          <span>Автозадач за раз</span>
+          <input name="autoTaskLimit" type="number" min="1" max="50" step="1" value="${escapeHtml(rules.autoTaskLimit)}">
+          <span>чтобы не плодить лишнее</span>
+        </label>
+        <div class="quick-actions" style="align-self:end">
+          <button class="quick-chip" type="submit">Сохранить правила</button>
+        </div>
+      </form>
+    </details>
+  `;
+}
+
+function portalHealthSourceExplanationHtml(summary = {}) {
+  const cards = [
+    {
+      key: 'revenue',
+      title: 'Выручка и факт',
+      text: 'Берём fact/API продажи по площадкам, затем проверяем дубли, карантин и связь API SKU с матрицей.',
+      value: fmt.money(summary.totalRevenue || summary.revenue || 0)
+    },
+    {
+      key: 'api-unmapped',
+      title: 'API без пары',
+      text: 'Это продажи, где площадка отдала API SKU, но он ещё не связан с реестром SKU через alias и не занесён в ignore.',
+      value: fmt.money(summary.apiUnmappedRevenue || 0)
+    },
+    {
+      key: 'freshness',
+      title: 'Свежесть источников',
+      text: 'Смотрим дату данных, дату сборки, количество строк и лаг относительно максимальной даты текущего sync.',
+      value: state.syncHealth?.freshness?.maxDate || summary.maxDate || '—'
+    },
+    {
+      key: 'quarantine',
+      title: 'Карантин',
+      text: 'Строки, которые не должны тихо попадать в расчёты: дубли, блокеры sync, подозрительные агрегаты и ошибки источников.',
+      value: fmt.int(state.portalDataQuarantine?.summary?.rows || state.portalDataQuarantine?.rows?.length || 0)
+    }
+  ];
+  return `
+    <div class="card sku-plan-fact-card" data-health-source-explain>
+      <div class="section-subhead">
+        <div>
+          <h3>Откуда берутся цифры</h3>
+          <p class="small muted">Короткая расшифровка, чтобы у каждой ключевой цифры был понятный источник и смысл.</p>
+        </div>
+        ${badge('прозрачность расчёта', 'info')}
+      </div>
+      <div class="grid cards" style="margin-top:12px">
+        ${cards.map((card) => `
+          <div class="mini-kpi">
+            <span>${escapeHtml(card.title)}</span>
+            <strong>${escapeHtml(card.value)}</strong>
+            <span>${escapeHtml(card.text)}</span>
+            <button class="quick-chip" type="button" data-health-explain="${escapeHtml(card.key)}">Подробнее</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function portalHealthWorkModesHtml() {
+  const roles = [
+    ['warehouse-risk', 'Склад', 'Заканчивается, к заказу, в пути, проблемные склады.', 'warn'],
+    ['api-unmapped', 'Категория / SKU', 'API без пары, owner, новые SKU, alias и ignore.', 'danger'],
+    ['price-safety', 'Коммерция', 'Цены, репрайсер, маржа, safe export и стоп-листы.', 'info'],
+    ['plan-fact-gaps', 'Руководитель', 'План-факт, крупные отклонения, открытые проблемы.', 'ok']
+  ];
+  const saved = portalHealthSavedViews();
+  return `
+    <div class="card sku-plan-fact-card" data-health-work-modes>
+      <div class="section-subhead">
+        <div>
+          <h3>Рабочие режимы без лишнего</h3>
+          <p class="small muted">Не заставляем людей собирать фильтры заново: каждый открывает свой готовый срез.</p>
+        </div>
+        ${badge(`${fmt.int(saved.length)} представления`, 'info')}
+      </div>
+      <div class="grid cards" style="margin-top:12px">
+        ${roles.map(([id, title, text, tone]) => `
+          <div class="card">
+            <div class="section-subhead">
+              <div>
+                <h3>${escapeHtml(title)}</h3>
+                <p class="small muted">${escapeHtml(text)}</p>
+              </div>
+              ${badge('открыть', tone)}
+            </div>
+            <button class="quick-chip" type="button" data-health-saved-view="${escapeHtml(id)}">Перейти в режим</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function portalHealthUploadWizardHtml() {
+  return `
+    <div class="card sku-plan-fact-card" data-health-upload-wizard>
+      <div class="section-subhead">
+        <div>
+          <h3>Загрузка файлов без страха</h3>
+          <p class="small muted">Правило простое: сначала выгрузить форму, заполнить только рабочие колонки, загрузить обратно, посмотреть отчёт, потом применить.</p>
+        </div>
+        ${badge('есть откат', 'ok')}
+      </div>
+      <div class="kpi-strip" style="margin-top:12px">
+        <div class="mini-kpi"><span>1</span><strong>Выгрузить форму</strong><span>из Контура SKU или План-факта</span></div>
+        <div class="mini-kpi"><span>2</span><strong>Заполнить решение</strong><span>alias / ignore / new_sku / need_check</span></div>
+        <div class="mini-kpi"><span>3</span><strong>Проверить отчёт</strong><span>сколько применится и что пропущено</span></div>
+        <div class="mini-kpi"><span>4</span><strong>Применить или откатить</strong><span>журнал сохранит кто, когда и что поменял</span></div>
+      </div>
+      <div class="quick-actions" style="margin-top:12px">
+        <button class="quick-chip" type="button" data-health-open="sku-contour">Открыть Контур SKU</button>
+        <button class="quick-chip" type="button" data-health-open="sku-plan-fact">Открыть План-факт</button>
+      </div>
+    </div>
+  `;
+}
+
+function portalHealthHistoryHtml() {
+  const auditRows = skuContourAuditJournalRows(8);
+  const taskRows = (state.storage?.tasks || []).slice(0, 8).map((task) => ({
+    date: task.updatedAt || task.createdAt || '',
+    title: task.title || task.name || task.articleKey || '',
+    status: task.status || ''
+  }));
+  const auditHtml = auditRows.map((row) => `
+    <div class="alert-row">
+      <div><strong>${escapeHtml(row.kind)} · ${escapeHtml(row.apiSku || row.targetSku || '')}</strong><div class="muted small">${escapeHtml(row.platform || '')} · ${escapeHtml(row.actor || '')}</div></div>
+      ${badge(fmt.date(row.appliedAt), 'info')}
+    </div>
+  `).join('');
+  const taskHtml = taskRows.map((row) => `
+    <div class="alert-row">
+      <div><strong>${escapeHtml(row.title)}</strong><div class="muted small">${escapeHtml(row.status || '')}</div></div>
+      ${badge(row.date ? fmt.date(row.date) : 'без даты', 'info')}
+    </div>
+  `).join('');
+  return `
+    <div class="card sku-plan-fact-card" data-health-history>
+      <div class="section-subhead">
+        <div>
+          <h3>История изменений</h3>
+          <p class="small muted">Видно, что уже применяли в справочниках и какие задачи появились. Это снижает страх “куда делась ошибка”.</p>
+        </div>
+        ${badge('журнал', 'info')}
+      </div>
+      <div class="two-col" style="margin-top:12px">
+        <div><div class="muted small" style="margin-bottom:6px">Alias / ignore / откаты</div>${auditHtml || '<div class="empty">Пока нет применений через портал</div>'}</div>
+        <div><div class="muted small" style="margin-bottom:6px">Последние задачи</div>${taskHtml || '<div class="empty">Задач пока нет</div>'}</div>
+      </div>
+    </div>
+  `;
+}
+
+function portalHealthSkuPassportHtml() {
+  const sku = (state.skus || []).find((item) => item?.articleKey) || null;
+  return `
+    <div class="card sku-plan-fact-card" data-health-sku-passport>
+      <div class="section-subhead">
+        <div>
+          <h3>Единая карточка SKU</h3>
+          <p class="small muted">Из любого раздела SKU открывается как паспорт товара: owner, задачи, решения, комментарии и рабочие сигналы. Следующий шаг — постепенно добавить туда цены, alias/API и репрайсерные причины.</p>
+        </div>
+        ${badge('единая точка', 'ok')}
+      </div>
+      <div class="quick-actions" style="margin-top:12px">
+        ${sku ? `<button class="quick-chip" type="button" data-open-sku="${escapeHtml(sku.articleKey)}">Открыть пример SKU</button>` : ''}
+        <button class="quick-chip" type="button" data-health-open="skus">Открыть Реестр SKU</button>
+      </div>
+    </div>
+  `;
+}
+
 async function portalHealthCreateIssueTasks(options = {}) {
   const sourceRows = Array.isArray(options.rows) ? options.rows : portalHealthIssueRows(120);
   const rows = sourceRows.filter((row) => row.tone === 'danger' || row.tone === 'warn').slice(0, options.limit || 10);
@@ -2100,12 +2505,21 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
   const matrixSummary = state.skuMatrix?.summary || {};
   const sources = portalHealthSourceRows();
   const issues = portalHealthIssueRows();
+  const rules = portalDataRules();
+  const issueDiff = portalHealthSnapshotDiff(issues);
   const meta = typeof syncHealthStatusMeta === 'function'
     ? syncHealthStatusMeta(health)
     : { label: health.status || 'sync', tone: health.status === 'warning' ? 'warn' : 'ok', notice: health.status === 'warning' ? 'warn' : 'ok' };
   const dangerCount = issues.filter((row) => row.tone === 'danger').length;
   const warnCount = issues.filter((row) => row.tone === 'warn').length;
   const digestRows = portalHealthTodayDigestRows({ issues, sources, summary, dangerCount, warnCount });
+  const changeHtml = portalHealthChangesHtml(issueDiff);
+  const rulesHtml = portalHealthRulesHtml(rules);
+  const sourceExplainHtml = portalHealthSourceExplanationHtml(summary);
+  const workModesHtml = portalHealthWorkModesHtml();
+  const uploadWizardHtml = portalHealthUploadWizardHtml();
+  const historyHtml = portalHealthHistoryHtml();
+  const skuPassportHtml = portalHealthSkuPassportHtml();
   const sourceRows = sources.map((row) => `
     <tr>
       <td><strong>${escapeHtml(row.label)}</strong></td>
@@ -2164,6 +2578,8 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
       </div>
     </div>
 
+    ${portalHealthLastGoodHtml()}
+
     <div class="kpi-strip" style="margin-top:14px">
       <div class="mini-kpi ${dangerCount ? 'danger' : ''}"><span>Проблемы</span><strong>${fmt.int(issues.length)}</strong><span>в единой очереди</span></div>
       <div class="mini-kpi warn"><span>API без пары</span><strong>${fmt.int(summary.apiUnmappedUniqueSku || matrixSummary.apiUnmappedCount || 0)}</strong><span>${fmt.money(summary.apiUnmappedRevenue || 0)}</span></div>
@@ -2171,6 +2587,11 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
       <div class="mini-kpi warn"><span>Без owner</span><strong>${fmt.int(summary.skuMissingOwner || matrixSummary.missingOwnerCount || 0)}</strong><span>нужны ответственные</span></div>
       <div class="mini-kpi"><span>Alias</span><strong>${fmt.int(matrixSummary.aliasCount || skuPlanFactAliasRows(state.skuAliases || {}).length)}</strong><span>общий контур</span></div>
       <div class="mini-kpi"><span>Ignore</span><strong>${fmt.int(matrixSummary.ignoredApiSkuCount || skuPlanFactIgnorePayloadRows(state.skuAliasIgnore || {}).length)}</strong><span>закреплено</span></div>
+    </div>
+
+    <div class="two-col" style="margin-top:14px">
+      ${changeHtml}
+      ${rulesHtml}
     </div>
 
     <div class="card sku-plan-fact-card" style="margin-top:14px" data-health-morning-digest>
@@ -2182,6 +2603,16 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
         <div class="badge-stack">${badge(`${fmt.int(digestRows.length)} пункта`, 'info')}</div>
       </div>
       <div class="kpi-strip">${digestHtml}</div>
+    </div>
+
+    <div class="two-col" style="margin-top:14px">
+      ${sourceExplainHtml}
+      ${workModesHtml}
+    </div>
+
+    <div class="two-col" style="margin-top:14px">
+      ${uploadWizardHtml}
+      ${skuPassportHtml}
     </div>
 
     <div class="card sku-plan-fact-card" style="margin-top:14px">
@@ -2198,6 +2629,10 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
           <tbody>${issueRows || '<tr><td colspan="7"><div class="empty">Критичных проблем по текущему срезу нет</div></td></tr>'}</tbody>
         </table>
       </div>
+    </div>
+
+    <div style="margin-top:14px">
+      ${historyHtml}
     </div>
 
     <div class="card sku-plan-fact-card" style="margin-top:14px">
@@ -2224,7 +2659,7 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
     try {
       button.disabled = true;
       button.textContent = 'Создаём...';
-      const result = await portalHealthCreateIssueTasks({ limit: 10 });
+      const result = await portalHealthCreateIssueTasks({ limit: rules.autoTaskLimit || 10 });
       renderPortalDataHealth(rootId);
       if (typeof setAppError === 'function') setAppError(`Создано задач: ${fmt.int(result.created.length)} · уже были: ${fmt.int(result.duplicates.length)}.`);
     } finally {
@@ -2235,6 +2670,38 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
   root.querySelectorAll('[data-health-open]').forEach((button) => {
     button.addEventListener('click', () => {
       if (typeof setView === 'function') setView(button.dataset.healthOpen || 'data-health');
+    });
+  });
+  root.querySelector('[data-health-save-snapshot]')?.addEventListener('click', () => {
+    portalHealthCommitIssueSnapshot(issues);
+    renderPortalDataHealth(rootId);
+    if (typeof setAppError === 'function') setAppError('Текущий срез проблем зафиксирован. Завтра портал покажет только новые и закрытые изменения.');
+  });
+  root.querySelector('[data-health-rules-form]')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    portalSaveDataRules({
+      stockRiskDays: form.get('stockRiskDays'),
+      criticalRevenueRub: form.get('criticalRevenueRub'),
+      staleSourceDays: form.get('staleSourceDays'),
+      autoTaskLimit: form.get('autoTaskLimit')
+    });
+    renderPortalDataHealth(rootId);
+    if (typeof setAppError === 'function') setAppError('Правила сохранены. Очередь проблем и складской порог пересчитаны.');
+  });
+  root.querySelectorAll('[data-health-saved-view]').forEach((button) => {
+    button.addEventListener('click', () => portalHealthApplySavedView(button.dataset.healthSavedView || ''));
+  });
+  root.querySelectorAll('[data-health-explain]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const key = String(button.dataset.healthExplain || '');
+      const text = {
+        revenue: 'Выручка собирается из fact/API строк площадок. До попадания в портал строки проверяются на дубли, карантин и связь с матрицей SKU.',
+        'api-unmapped': 'API без пары означает: площадка прислала SKU/offer_id, но портал не знает, к какому SKU реестра его отнести. Решение закрепляется через alias или ignore.',
+        freshness: 'Свежесть считается по asOfDate/generatedAt каждого источника. Если лаг больше правила в настройках, источник подсвечивается.',
+        quarantine: 'Карантин нужен, чтобы подозрительные строки не смешивались с нормальным расчётом. Их надо разбирать отдельно, а не молча считать.'
+      }[key] || 'Для этой цифры пока нет отдельной расшифровки.';
+      window.alert(text);
     });
   });
 }

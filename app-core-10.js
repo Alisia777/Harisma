@@ -775,12 +775,14 @@ async function init() {
 
   try {
     const local = loadLocalStorage();
-    const [dashboard, skus, seed, productLeaderboard, productLeaderboardHistory, skuMatrix] = await Promise.all([
+    const [dashboard, skus, seed, productLeaderboard, productLeaderboardHistory, skuAliases, skuAliasIgnore, skuMatrix] = await Promise.all([
       loadJsonOrFallback('data/dashboard.json', { cards: [], generatedAt: '' }, 'Дашборд'),
       loadJsonOrFallback('data/skus.json', [], 'SKU'),
       loadJsonOrFallback('data/seed_comments.json', { comments: [], tasks: [] }, 'Seed comments'),
       loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
       loadJsonOrFallback('data/product_leaderboard_history.json', [], 'История продуктового лидерборда'),
+      loadJsonOrFallback('data/sku_aliases.json', { schema: 'sku-api-aliases-v1', aliases: [] }, 'SKU aliases'),
+      loadJsonOrFallback('data/sku_alias_ignore.json', { schema: 'sku-api-ignore-v1', ignored: [] }, 'SKU alias ignore'),
       loadJsonOrFallback('data/sku_matrix.json', { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } }, 'SKU matrix')
     ]);
 
@@ -793,6 +795,12 @@ async function init() {
       ? normalizeProductLeaderboardPayload(productLeaderboard)
       : (productLeaderboard || { generatedAt: '', items: [], summary: {} });
     state.productLeaderboardHistory = Array.isArray(productLeaderboardHistory) ? productLeaderboardHistory : [];
+    state.skuAliases = skuAliases && typeof skuAliases === 'object'
+      ? skuAliases
+      : { schema: 'sku-api-aliases-v1', aliases: [] };
+    state.skuAliasIgnore = skuAliasIgnore && typeof skuAliasIgnore === 'object'
+      ? skuAliasIgnore
+      : { schema: 'sku-api-ignore-v1', ignored: [] };
     state.skuMatrix = skuMatrix && typeof skuMatrix === 'object'
       ? skuMatrix
       : { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } };

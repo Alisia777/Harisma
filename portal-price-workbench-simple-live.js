@@ -1237,6 +1237,35 @@
     return map;
   }
 
+  function priceSkuMatrixEntry(articleKey) {
+    if (typeof window.getSkuMatrixEntry === "function") {
+      return window.getSkuMatrixEntry(articleKey) || null;
+    }
+    var root = rootState() || {};
+    var matrix = root.skuMatrix || {};
+    var items = Array.isArray(matrix.items) ? matrix.items : [];
+    var rawKey = String(articleKey || "").trim();
+    var directIndex = matrix.indexes && matrix.indexes.byArticleKey && matrix.indexes.byArticleKey[rawKey];
+    if (Number.isInteger(directIndex) && items[directIndex]) return items[directIndex];
+    var token = norm(rawKey);
+    if (!token) return null;
+    for (var index = 0; index < items.length; index += 1) {
+      var item = items[index] || {};
+      if (norm(item.articleKey || item.article) === token) return item;
+    }
+    return null;
+  }
+
+  function priceSkuMatrixProblemMeta(entry) {
+    var problemState = entry && (entry.problemState || (Array.isArray(entry.problemStates) ? entry.problemStates[0] : ""));
+    if (!problemState || problemState === "ok") return null;
+    if (typeof window.skuMatrixProblemMeta === "function") return window.skuMatrixProblemMeta(problemState);
+    return {
+      label: (entry && entry.problemLabel) || problemState,
+      tone: (entry && entry.problemTone) || "warn"
+    };
+  }
+
   function buildSkuMetaMap() {
     var map = Object.create(null);
     var root = rootState() || {};
@@ -1244,20 +1273,24 @@
     skuRows.forEach(function (row) {
       var key = norm(row && (row.articleKey || row.article || row.sku));
       if (!key || map[key]) return;
+      var matrixEntry = priceSkuMatrixEntry(row && (row.articleKey || row.article || row.sku));
       var rawPlatformOwners = row && row.ownersByPlatform && typeof row.ownersByPlatform === "object"
         ? row.ownersByPlatform
         : (row && row.owner && typeof row.owner === "object" && row.owner.byPlatform && typeof row.owner.byPlatform === "object"
           ? row.owner.byPlatform
           : {});
       map[key] = {
-        owner: normalizeOwnerValue(row && row.owner && typeof row.owner === "object" ? row.owner.name : (row && row.owner)),
+        owner: normalizeOwnerValue((row && row.owner && typeof row.owner === "object" ? row.owner.name : (row && row.owner)) || (matrixEntry && matrixEntry.owner)),
         ownersByPlatform: {
           wb: normalizeOwnerValue(rawPlatformOwners && rawPlatformOwners.wb),
           ozon: normalizeOwnerValue(rawPlatformOwners && rawPlatformOwners.ozon),
           ym: normalizeOwnerValue(rawPlatformOwners && (rawPlatformOwners.ym || rawPlatformOwners.ya)),
           ya: normalizeOwnerValue(rawPlatformOwners && (rawPlatformOwners.ya || rawPlatformOwners.ym))
         },
-        status: row && (row.statusSku || row.status),
+        status: row && (row.statusSku || row.status) || (matrixEntry && (matrixEntry.registryStatus || matrixEntry.status)),
+        matrixProblemState: matrixEntry && (matrixEntry.problemState || (Array.isArray(matrixEntry.problemStates) ? matrixEntry.problemStates[0] : "")),
+        matrixProblemLabel: matrixEntry && matrixEntry.problemLabel,
+        matrixProblemTone: matrixEntry && matrixEntry.problemTone,
         role: row && (row.roleSku || row.role),
         launchReady: row && row.launchReady
       };
@@ -1583,14 +1616,18 @@
     }
     var sourceKey = norm(source && (source.articleKey || source.article || source.sku));
     var skuRow = (skuMeta && skuMeta[sourceKey]) || null;
+    var matrixEntry = priceSkuMatrixEntry(source && (source.articleKey || source.article || source.sku));
+    var matrixProblemMeta = priceSkuMatrixProblemMeta(matrixEntry || skuRow);
     var skuPlatformOwner = skuMetaPlatformOwner(skuRow, market);
-    var resolvedOwner = normalizeOwnerValue(overlayOwner || skuPlatformOwner || source.owner || (skuRow && skuRow.owner) || "");
+    var resolvedOwner = normalizeOwnerValue(overlayOwner || skuPlatformOwner || source.owner || (skuRow && skuRow.owner) || (matrixEntry && matrixEntry.owner) || "");
     var row = {
       market: market,
       articleKey: source.articleKey || source.article || source.sku || "",
       name: source.name || source.title || source.articleKey || "\u0411\u0435\u0437 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f",
       owner: resolvedOwner || "\u2014",
-      status: overlayStatus || source.status || (skuRow && skuRow.status) || "\u2014",
+      status: overlayStatus || source.status || (skuRow && skuRow.status) || (matrixEntry && (matrixEntry.registryStatus || matrixEntry.status)) || "\u2014",
+      matrixProblemLabel: matrixProblemMeta && matrixProblemMeta.label,
+      matrixProblemTone: matrixProblemMeta && matrixProblemMeta.tone,
       role: source.role || (skuRow && skuRow.role) || "\u2014",
       launchReady: source.launchReady || (skuRow && skuRow.launchReady) || "\u2014",
       allowedMarginPct: num(source.allowedMarginPct),
@@ -1867,7 +1904,7 @@
       if (ownerFilter !== "all" && norm(row.owner) !== ownerFilter) return;
       if (statusFilter !== "all" && norm(row.status) !== statusFilter) return;
       if (search) {
-        var hay = [row.articleKey, row.name, row.owner, row.status, row.comment, row.reason].join(" ").toLowerCase();
+        var hay = [row.articleKey, row.name, row.owner, row.status, row.matrixProblemLabel, row.comment, row.reason].join(" ").toLowerCase();
         var hayNorm = norm(hay);
         if (hay.indexOf(search) === -1 && (!searchNorm || hayNorm.indexOf(searchNorm) === -1)) return;
       }
@@ -2253,7 +2290,9 @@ function downloadPriceSummaryExcel(rows) {
           row.productLeaderboard ? '<div class="pw-kz-stack">' + renderProductLeaderboardBadge(row.productLeaderboard, row.articleKey) + renderProductLeaderboardAlerts(row.productLeaderboard, 1) + '</div>' : '',
           '</td>',
           '<td>', esc(row.owner || "\u2014"), '</td>',
-          '<td><span class="pw-badge">', esc(row.status || "\u2014"), '</span></td>',
+          '<td><span class="pw-badge">', esc(row.status || "\u2014"), '</span>',
+          row.matrixProblemLabel ? '<div class="pw-mini-note"><span class="pw-badge ' + esc(row.matrixProblemTone || "warn") + '">' + esc(row.matrixProblemLabel) + '</span></div>' : '',
+          '</td>',
           '<td>', renderPriceCell(row.listPrice != null ? row.listPrice : row.currentFillPrice, row.listPriceSource, row.listPriceMode, row.listPriceFactDate || row.valueDate), '</td>',
           '<td>', renderPriceCell(row.currentFillPrice, row.currentFillPriceSource, row.currentFillPriceMode, row.priceFactDate || row.valueDate), '</td>',
           '<td>', pct(row.sellerDiscountPct), '</td>',

@@ -130,9 +130,39 @@ function skuLookupTokens(sku = {}) {
   return values.map(normalizeToken).filter(Boolean);
 }
 
-function buildKnownSkuSet(skus = []) {
+function skuAliasRows(payload = {}) {
+  if (Array.isArray(payload)) return payload;
+  return Array.isArray(payload.aliases) ? payload.aliases : [];
+}
+
+function activeSkuAliasRows(payload = {}) {
+  return skuAliasRows(payload).filter((row) => {
+    const status = normalizeToken(row?.status ?? row?.active ?? 'active');
+    return !['0', 'false', 'no', 'off', 'disabled', 'inactive', 'deleted', 'remove'].includes(status);
+  });
+}
+
+function buildSkuLookup(skus = []) {
+  const lookup = new Map();
+  skus.forEach((sku) => {
+    skuLookupTokens(sku).forEach((token) => {
+      if (token && !lookup.has(token)) lookup.set(token, sku);
+    });
+  });
+  return lookup;
+}
+
+function buildKnownSkuSet(skus = [], skuAliases = {}) {
   const set = new Set();
   skus.forEach((sku) => skuLookupTokens(sku).forEach((token) => set.add(token)));
+  const lookup = buildSkuLookup(skus);
+  activeSkuAliasRows(skuAliases).forEach((row) => {
+    const targetToken = normalizeToken(row?.target_sku ?? row?.targetSku ?? row?.target ?? '');
+    const apiToken = normalizeToken(row?.api_sku ?? row?.apiSku ?? row?.alias ?? row?.value ?? '');
+    if (!targetToken || !apiToken) return;
+    if (!lookup.has(targetToken)) return;
+    set.add(apiToken);
+  });
   return set;
 }
 
@@ -217,8 +247,8 @@ function platformMonthAggregate(platformTrends = {}, platform = '', monthKey = '
   }, { date: '', revenue: 0, units: 0 });
 }
 
-function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDate = '', skuAliasIgnore = {}) {
-  const known = buildKnownSkuSet(skus);
+function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDate = '', skuAliasIgnore = {}, skuAliases = {}) {
+  const known = buildKnownSkuSet(skus, skuAliases);
   const ignored = buildSkuAliasIgnoreSet(skuAliasIgnore);
   const issues = [];
   const platformSummary = {};
@@ -581,13 +611,14 @@ function buildReport(options) {
     warehouse: readSnapshot(options, 'warehouse_stock_overlay', {}),
     adsSummary: readSnapshot(options, 'ads_summary', {}),
     iuDrr: readSnapshot(options, 'iu_drr_summary', {}),
+    skuAliases: readSnapshot(options, 'sku_aliases', { schema: 'sku-api-aliases-v1', aliases: [] }),
     skuAliasIgnore: readSnapshot(options, 'sku_alias_ignore', { schema: 'sku-api-ignore-v1', ignored: [] })
   };
 
   const maxDate = dateKey(files.platformTrends?.latestMarketplaceDate)
     || latestDate((files.platformTrends?.platforms || []).flatMap((platform) => (platform.series || []).map((point) => point.date || point.label)));
   const monthKey = monthKeyFromDate(maxDate);
-  const apiQuality = buildApiSkuQuality(files.platformTrends, Array.isArray(files.skus) ? files.skus : [], monthKey, maxDate, files.skuAliasIgnore);
+  const apiQuality = buildApiSkuQuality(files.platformTrends, Array.isArray(files.skus) ? files.skus : [], monthKey, maxDate, files.skuAliasIgnore, files.skuAliases);
   const orderQuality = buildOrderQuality(files.orderProcurement);
   const freshnessQuality = buildFreshnessQuality(files);
   const ownerQuality = buildOwnerQuality(Array.isArray(files.skus) ? files.skus : []);
@@ -605,6 +636,7 @@ function buildReport(options) {
   });
 
   const apiUnmappedIssues = apiQuality.issues.filter((issue) => issue.type === 'api_sku_unmapped');
+  const apiSumAboveAggregateIssues = apiQuality.issues.filter((issue) => issue.type === 'api_sum_above_aggregate');
   const summary = {
     issueCount: allIssues.length,
     criticalCount: allIssues.filter((issue) => issue.severity === 'critical').length,
@@ -615,6 +647,9 @@ function buildReport(options) {
     apiUnmappedUniqueSku: new Set(apiUnmappedIssues.map((issue) => normalizeToken(issue.articleKey))).size,
     apiUnmappedRevenue: Math.round(apiUnmappedIssues.reduce((acc, issue) => acc + numberOrZero(issue.revenue), 0)),
     apiIgnoredPlatformRows: Object.values(apiQuality.platformSummary || {}).reduce((acc, row) => acc + numberOrZero(row.ignoredCount), 0),
+    apiSumAboveAggregateCount: apiSumAboveAggregateIssues.length,
+    apiSumAboveAggregateOverage: Math.round(apiSumAboveAggregateIssues.reduce((acc, issue) => acc + numberOrZero(issue.overage), 0)),
+    skuAliasCount: activeSkuAliasRows(files.skuAliases).length,
     orderNoStockNeedRows: orderQuality.summary.noStockNeedRows,
     skuMissingOwner: ownerQuality.summary.missingOwner,
     warehouseUnmatchedRows: warehouseQuality.summary.unmatchedRows

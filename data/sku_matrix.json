@@ -1,11 +1,11 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-05-16T08:14:12.384Z",
+  "generatedAt": "2026-05-16T08:51:21.202Z",
   "source": {
     "skus": 89,
     "aliases": 0,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-05-16T08:14:05.671Z"
+    "dataQualityGeneratedAt": "2026-05-16T08:51:17.088Z"
   },
   "summary": {
     "skuCount": 89,
@@ -13,8 +13,46 @@
     "aliasCount": 0,
     "ignoredApiSkuCount": 0,
     "apiUnmappedCount": 231,
+    "duplicateRiskCount": 0,
+    "duplicateRiskOverage": 0,
     "missingOwnerCount": 9,
-    "issueCount": 265
+    "issueCount": 265,
+    "problemStateCounts": {
+      "ok": 80,
+      "missing_owner": 9,
+      "has_warning": 9,
+      "api_unmapped": 1
+    }
+  },
+  "problemStates": {
+    "ok": {
+      "label": "В матрице",
+      "tone": "ok"
+    },
+    "missing_owner": {
+      "label": "Нет owner",
+      "tone": "warn"
+    },
+    "has_critical_issue": {
+      "label": "Есть критичная ошибка",
+      "tone": "danger"
+    },
+    "has_warning": {
+      "label": "Есть замечание",
+      "tone": "warn"
+    },
+    "api_unmapped": {
+      "label": "API SKU без пары",
+      "tone": "danger"
+    },
+    "ignored": {
+      "label": "API SKU в ignore",
+      "tone": ""
+    },
+    "duplicate_risk": {
+      "label": "Риск дубля выручки",
+      "tone": "danger"
+    }
   },
   "items": [
     {
@@ -28,6 +66,12 @@
       "category": "Декоративная косметика",
       "type": "Набор для бровей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -43,6 +87,12 @@
       "category": "Косметика для ухода",
       "type": "Набор уходовой косметики",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -58,6 +108,12 @@
       "category": "БАДы и витамины",
       "type": "Витаминный комплекс",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -73,6 +129,12 @@
       "category": "Парафармацевтика",
       "type": "Пищевая добавка",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -88,6 +150,12 @@
       "category": "БАДы и витамины",
       "type": "БАД для снижения веса",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -103,6 +171,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Крем для волос",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -118,6 +192,12 @@
       "category": "Спортивное питание",
       "type": "Средства для повышения тестостерона",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -133,6 +213,12 @@
       "category": "Косметика для ухода",
       "type": "Средство для умывания",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -148,6 +234,12 @@
       "category": "Косметика для ухода",
       "type": "Средство для умывания",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -163,6 +255,12 @@
       "category": "БАДы и витамины",
       "type": "БАД для снижения веса",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -178,6 +276,12 @@
       "category": "БАДы и витамины",
       "type": "БАД для снижения веса",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -193,6 +297,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -208,6 +318,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -223,6 +339,12 @@
       "category": "Декоративная косметика",
       "type": "Гель для бровей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -238,6 +360,12 @@
       "category": "Средства для бритья и груминг",
       "type": "Средство для бритья",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -253,6 +381,12 @@
       "category": "Декоративная косметика",
       "type": "Гель для бровей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -268,6 +402,12 @@
       "category": "Средства для гигиены тела",
       "type": "Средство для душа",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -283,6 +423,12 @@
       "category": "Средства для гигиены тела",
       "type": "Средство для душа",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -298,6 +444,12 @@
       "category": "Косметика для ухода",
       "type": "Средство для умывания",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -313,6 +465,12 @@
       "category": "БАДы и витамины",
       "type": "БАД для ускорения обмена веществ",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -328,6 +486,12 @@
       "category": "Спортивное питание",
       "type": "Средства для повышения тестостерона",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -343,6 +507,12 @@
       "category": "Парафармацевтика",
       "type": "Пищевая добавка",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -358,6 +528,12 @@
       "category": "Парафармацевтика",
       "type": "Пищевая добавка",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -373,6 +549,12 @@
       "category": "Средства для гигиены тела",
       "type": "Средство для интимной гигиены",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -388,6 +570,12 @@
       "category": "Средства для гигиены тела",
       "type": "Средство для интимной гигиены",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -403,6 +591,12 @@
       "category": "Косметика для ухода",
       "type": "Стик",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -418,6 +612,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -433,6 +633,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -448,6 +654,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -463,6 +675,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -478,6 +696,12 @@
       "category": "Косметика для ухода",
       "type": "Средство солнцезащитное",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -493,6 +717,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -508,6 +738,12 @@
       "category": "Косметика для ухода",
       "type": "Пилинг",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -523,6 +759,12 @@
       "category": "БАДы и витамины",
       "type": "БАД для поддержания иммунитета",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -538,6 +780,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Маска для волос",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -553,6 +801,13 @@
       "category": "Косметика для ухода за волосами",
       "type": "Маска для волос",
       "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
       "issueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
@@ -577,6 +832,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Маска для волос",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -592,6 +853,12 @@
       "category": "Маска косметическая",
       "type": "Маска косметическая",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -607,6 +874,12 @@
       "category": "Средства для бритья и груминг",
       "type": "Средство для ухода за бородой",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -622,6 +895,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Масло для волос",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -637,6 +916,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Масло для волос",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -652,6 +937,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Воск для волос",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -667,6 +958,12 @@
       "category": "БАДы и витамины",
       "type": "БАД при гинекологических нарушениях",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -682,6 +979,12 @@
       "category": "Косметика для ухода",
       "type": "Средство для ногтей и кутикулы",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -697,6 +1000,12 @@
       "category": "Косметика для ухода",
       "type": "Средство для снятия макияжа",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -712,6 +1021,12 @@
       "category": "Косметика для ухода",
       "type": "Средство для ногтей и кутикулы",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -727,6 +1042,12 @@
       "category": "Косметика для ухода",
       "type": "Средство для ногтей и кутикулы",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -742,6 +1063,12 @@
       "category": "Декоративная косметика",
       "type": "Средство для наращивания ресниц",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -757,6 +1084,12 @@
       "category": "Косметика для ухода",
       "type": "Средство для снятия макияжа",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -772,6 +1105,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Пенка для волос",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -787,6 +1126,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Пилинг для кожи головы",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -802,6 +1147,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -817,6 +1168,12 @@
       "category": "БАДы и витамины",
       "type": "БАД для ЖКТ",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -832,6 +1189,12 @@
       "category": "Парафармацевтика",
       "type": "Пищевая добавка",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -847,6 +1210,13 @@
       "category": "",
       "type": "",
       "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
       "issueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
@@ -871,6 +1241,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -886,6 +1262,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -901,6 +1283,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -916,6 +1304,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -931,6 +1325,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -946,6 +1346,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -961,6 +1367,13 @@
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
       "issueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
@@ -985,6 +1398,13 @@
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
       "issueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
@@ -1009,6 +1429,12 @@
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1024,6 +1450,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1039,6 +1471,13 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
       "issueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
@@ -1063,6 +1502,12 @@
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1078,6 +1523,12 @@
       "category": "БАДы и витамины",
       "type": "БАД для костей и суставов",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1093,6 +1544,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Шампунь для волос",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1108,6 +1565,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Шампунь для волос",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1123,6 +1586,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Крем для волос",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1138,6 +1607,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Скраб для кожи головы",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1153,6 +1628,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Спрей для укладки волос",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1168,6 +1649,13 @@
       "category": "Маска косметическая",
       "type": "Маска косметическая",
       "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
       "issueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
@@ -1192,6 +1680,13 @@
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
       "issueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
@@ -1216,6 +1711,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Сыворотка для волос",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1231,6 +1732,12 @@
       "category": "Косметика для ухода",
       "type": "Стик",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1246,6 +1753,13 @@
       "category": "Косметика для ухода за волосами",
       "type": "Косметический набор для волос",
       "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
       "issueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
@@ -1270,6 +1784,12 @@
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1285,6 +1805,12 @@
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1300,6 +1826,12 @@
       "category": "Средства по уходу за бровями и ресницами",
       "type": "Средство для роста ресниц и бровей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1315,6 +1847,12 @@
       "category": "Средства по уходу за бровями и ресницами",
       "type": "Средство для роста ресниц и бровей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1330,6 +1868,12 @@
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1345,6 +1889,13 @@
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
       "issueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
@@ -1369,6 +1920,12 @@
       "category": "Парафармацевтика",
       "type": "Пищевая добавка",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1384,6 +1941,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Спрей для ухода за волосами",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1399,6 +1962,12 @@
       "category": "Косметика для ухода",
       "type": "Тоник для ухода за кожей",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1414,6 +1983,12 @@
       "category": "Косметика для ухода за волосами",
       "type": "Воск для волос",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -1429,6 +2004,12 @@
       "category": "БАДы и витамины",
       "type": "БАД при эректильной дисфункции",
       "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
@@ -3515,6 +4096,7 @@
       "lastDate": "2026-05-15"
     }
   ],
+  "duplicateRisks": [],
   "ignoredApiSku": [],
   "indexes": {
     "byArticleKey": {

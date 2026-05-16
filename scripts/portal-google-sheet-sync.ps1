@@ -77,6 +77,20 @@ function Set-ProcessEnvFallback {
 $resolvedOutputDir = if ($OutputDir) { $OutputDir } else { ".altea-google-sheet-sync-output" }
 New-Item -ItemType Directory -Path $resolvedOutputDir -Force | Out-Null
 
+Write-Output "[sync] shared SKU alias snapshots pull started"
+try {
+  Invoke-NodeStep -StepName "shared SKU alias snapshots pull" -Arguments @(
+    "scripts/portal-snapshot-pull.js",
+    "--output-dir",
+    "data",
+    "--snapshot",
+    "sku_aliases,sku_alias_ignore"
+  ) -Attempts 2 -RetryDelaySeconds 20
+  Write-Output "[sync] shared SKU alias snapshots pull completed"
+} catch {
+  Write-Warning "[sync] shared SKU alias snapshots pull failed, continuing with local data files: $($_.Exception.Message)"
+}
+
 if ([string]::IsNullOrWhiteSpace($env:ALTEA_WB_API_TOKEN)) {
   $userWbApiToken = [Environment]::GetEnvironmentVariable("ALTEA_WB_API_TOKEN", "User")
   if ([string]::IsNullOrWhiteSpace($userWbApiToken)) {
@@ -434,9 +448,15 @@ try {
   Write-Warning "[sync] data quality report build failed, but the portal sync will continue: $($_.Exception.Message)"
 }
 
-$skuAliasIgnorePath = Join-Path "data" "sku_alias_ignore.json"
-if (Test-Path -LiteralPath $skuAliasIgnorePath) {
-  Copy-Item -LiteralPath $skuAliasIgnorePath -Destination (Join-Path $resolvedOutputDir "sku_alias_ignore.json") -Force
+$skuAliasFiles = @(
+  "sku_aliases.json",
+  "sku_alias_ignore.json"
+)
+foreach ($fileName in $skuAliasFiles) {
+  $sourcePath = Join-Path "data" $fileName
+  if (Test-Path -LiteralPath $sourcePath) {
+    Copy-Item -LiteralPath $sourcePath -Destination (Join-Path $resolvedOutputDir $fileName) -Force
+  }
 }
 
 $skuMatrixArguments = @(
@@ -511,6 +531,10 @@ if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_data_quality.js
   $snapshotNames += "portal_data_quality"
 } else {
   Write-Warning "[sync] optional snapshot portal_data_quality is absent and will not be uploaded."
+}
+
+if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "sku_aliases.json")) {
+  $snapshotNames += "sku_aliases"
 }
 
 if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "sku_alias_ignore.json")) {

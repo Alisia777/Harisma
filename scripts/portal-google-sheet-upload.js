@@ -26,6 +26,7 @@ const SNAPSHOT_KEYS = [
   'order_procurement_ozon',
   'warehouse_stock_overlay',
   'portal_data_quality',
+  'sku_aliases',
   'sku_alias_ignore',
   'sku_matrix'
 ];

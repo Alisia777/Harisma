@@ -22,7 +22,17 @@
     "data/order_procurement_wb.json": "order_procurement_wb",
     "data/order_procurement_ozon.json": "order_procurement_ozon",
     "data/warehouse_stock_overlay.json": "warehouse_stock_overlay",
+    "data/sku_aliases.json": "sku_aliases",
+    "data/sku_alias_ignore.json": "sku_alias_ignore",
     "data/sku_matrix.json": "sku_matrix"
+  };
+  var SKU_ALIASES_FALLBACK = {
+    schema: "sku-api-aliases-v1",
+    aliases: []
+  };
+  var SKU_ALIAS_IGNORE_FALLBACK = {
+    schema: "sku-api-ignore-v1",
+    ignored: []
   };
   var SKU_MATRIX_FALLBACK = {
     schema: "portal-sku-matrix-v1",
@@ -143,6 +153,18 @@
         && !Array.isArray(payload)
         && Array.isArray(payload.items)
         && payload.items.length > 0;
+    }
+    if (snapshotKey === "sku_aliases") {
+      return payload
+        && typeof payload === "object"
+        && !Array.isArray(payload)
+        && Array.isArray(payload.aliases);
+    }
+    if (snapshotKey === "sku_alias_ignore") {
+      return payload
+        && typeof payload === "object"
+        && !Array.isArray(payload)
+        && (Array.isArray(payload.ignored) || Array.isArray(payload.ignores) || Array.isArray(payload.rows));
     }
     if (snapshotKey === "platform_trends" || snapshotKey === "ads_summary") {
       return Array.isArray(payload && payload.platforms) && payload.platforms.length > 0;
@@ -548,6 +570,8 @@
       optionalLoader("tmp-live-repricer.json"),
       loadSnapshotAwareJson("data/repricer.json", { generatedAt: "", summary: {}, rows: [] }, true),
       loadSnapshotAwareJson("data/price_workbench_support.json", { generatedAt: "", platforms: {} }, true),
+      loadSnapshotAwareJson("data/sku_aliases.json", SKU_ALIASES_FALLBACK, true),
+      loadSnapshotAwareJson("data/sku_alias_ignore.json", SKU_ALIAS_IGNORE_FALLBACK, true),
       loadSnapshotAwareJson("data/sku_matrix.json", SKU_MATRIX_FALLBACK, true)
     ]);
     var dashboard = results[0];
@@ -564,7 +588,9 @@
     var repricerLive = results[11];
     var repricer = results[12];
     var priceWorkbenchSupport = results[13];
-    var skuMatrix = results[14];
+    var skuAliases = results[14];
+    var skuAliasIgnore = results[15];
+    var skuMatrix = results[16];
     var changed = false;
 
     if (typeof state === "object" && state) {
@@ -601,6 +627,12 @@
       var nextPriceWorkbenchSupport = priceWorkbenchSupport && typeof priceWorkbenchSupport === "object"
         ? priceWorkbenchSupport
         : { generatedAt: "", platforms: {} };
+      var nextSkuAliases = skuAliases && typeof skuAliases === "object"
+        ? skuAliases
+        : (state.skuAliases || SKU_ALIASES_FALLBACK);
+      var nextSkuAliasIgnore = skuAliasIgnore && typeof skuAliasIgnore === "object"
+        ? skuAliasIgnore
+        : (state.skuAliasIgnore || SKU_ALIAS_IGNORE_FALLBACK);
       var nextSkuMatrix = skuMatrix && typeof skuMatrix === "object"
         ? skuMatrix
         : (state.skuMatrix || SKU_MATRIX_FALLBACK);
@@ -669,6 +701,14 @@
       }
       if (payloadChanged("priceWorkbenchSupport", state.priceWorkbenchSupport, nextPriceWorkbenchSupport)) {
         state.priceWorkbenchSupport = nextPriceWorkbenchSupport;
+        changed = true;
+      }
+      if (payloadChanged("sku_aliases", state.skuAliases, nextSkuAliases)) {
+        state.skuAliases = nextSkuAliases;
+        changed = true;
+      }
+      if (payloadChanged("sku_alias_ignore", state.skuAliasIgnore, nextSkuAliasIgnore)) {
+        state.skuAliasIgnore = nextSkuAliasIgnore;
         changed = true;
       }
       if (payloadChanged("sku_matrix", state.skuMatrix, nextSkuMatrix)) {

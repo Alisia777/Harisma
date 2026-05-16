@@ -80,6 +80,59 @@ function skuMatrixSummary() {
   return state.skuMatrix?.summary || {};
 }
 
+function skuMatrixEntryForSku(skuOrArticleKey = '') {
+  if (!skuOrArticleKey) return null;
+  if (typeof skuOrArticleKey === 'string' || typeof skuOrArticleKey === 'number') {
+    return getSkuMatrixEntry(String(skuOrArticleKey));
+  }
+  const key = skuOrArticleKey.articleKey || skuOrArticleKey.article || skuOrArticleKey.sku || '';
+  return key ? getSkuMatrixEntry(key) : null;
+}
+
+function skuMatrixOwnerName(skuOrArticleKey = '', fallback = '') {
+  const entry = skuMatrixEntryForSku(skuOrArticleKey);
+  return canonicalOwnerName(entry?.owner || fallback || '');
+}
+
+function skuMatrixStatusLabel(skuOrArticleKey = '', fallback = '') {
+  const entry = skuMatrixEntryForSku(skuOrArticleKey);
+  return String(entry?.registryStatus || entry?.status || fallback || '').trim();
+}
+
+function skuMatrixProblemMeta(problemState = '') {
+  const key = String(problemState || 'ok').trim() || 'ok';
+  const meta = state.skuMatrix?.problemStates?.[key] || {};
+  const defaults = {
+    ok: { label: '\u0412 \u043c\u0430\u0442\u0440\u0438\u0446\u0435', tone: 'ok' },
+    missing_owner: { label: '\u041d\u0435\u0442 owner', tone: 'warn' },
+    has_critical_issue: { label: '\u041e\u0448\u0438\u0431\u043a\u0430 \u0434\u0430\u043d\u043d\u044b\u0445', tone: 'danger' },
+    has_warning: { label: '\u0415\u0441\u0442\u044c \u0437\u0430\u043c\u0435\u0447\u0430\u043d\u0438\u0435', tone: 'warn' },
+    api_unmapped: { label: 'API SKU \u0431\u0435\u0437 \u043f\u0430\u0440\u044b', tone: 'danger' },
+    ignored: { label: 'API SKU \u0432 ignore', tone: '' },
+    duplicate_risk: { label: '\u0420\u0438\u0441\u043a \u0434\u0443\u0431\u043b\u044f \u0432\u044b\u0440\u0443\u0447\u043a\u0438', tone: 'danger' },
+    problem: { label: '\u041f\u0440\u043e\u0431\u043b\u0435\u043c\u043d\u044b\u0439 SKU', tone: 'warn' }
+  };
+  return {
+    label: meta.label || defaults[key]?.label || key,
+    tone: meta.tone ?? defaults[key]?.tone ?? 'warn'
+  };
+}
+
+function skuMatrixProblemState(skuOrArticleKey = '') {
+  if (skuOrArticleKey && typeof skuOrArticleKey === 'object') {
+    if (skuOrArticleKey.__skuPlanFactUnmapped) return 'api_unmapped';
+    if (skuOrArticleKey.syntheticUnmapped) return 'api_unmapped';
+    if (skuOrArticleKey.matrixProblemState) return skuOrArticleKey.matrixProblemState;
+  }
+  const entry = skuMatrixEntryForSku(skuOrArticleKey);
+  if (entry?.problemState) return entry.problemState;
+  if (Array.isArray(entry?.problemStates) && entry.problemStates.length) return entry.problemStates[0];
+  const owner = typeof skuOrArticleKey === 'object'
+    ? canonicalOwnerName(skuOrArticleKey?.owner?.name || '')
+    : '';
+  return owner ? 'ok' : 'missing_owner';
+}
+
 function plusDays(days) {
   const d = new Date();
   d.setHours(12, 0, 0, 0);
@@ -312,7 +365,8 @@ function getSku(articleKey) {
 }
 
 function ownerName(sku) {
-  return canonicalOwnerName(sku?.owner?.name || '');
+  const localOwner = canonicalOwnerName(sku?.owner?.name || '');
+  return localOwner || skuMatrixOwnerName(sku, '');
 }
 
 function ownerOptions() {

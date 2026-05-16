@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-16T08:14:05.671Z",
+  "generatedAt": "2026-05-16T08:51:17.088Z",
   "status": "critical",
   "summary": {
     "issueCount": 265,
@@ -11,6 +11,9 @@
     "apiUnmappedUniqueSku": 119,
     "apiUnmappedRevenue": 14935829,
     "apiIgnoredPlatformRows": 0,
+    "apiSumAboveAggregateCount": 0,
+    "apiSumAboveAggregateOverage": 0,
+    "skuAliasCount": 0,
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 9,
     "warehouseUnmatchedRows": 25

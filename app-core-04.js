@@ -30,14 +30,21 @@ function renderControlWorkstreamSection(summary) {
 }
 
 function skuOperationalStatusMeta(sku) {
-  const rawStatus = String(sku?.status || '').toLowerCase();
-  const registryStatus = String(sku?.owner?.registryStatus || '').toLowerCase();
+  const matrixStatus = typeof skuMatrixStatusLabel === 'function' ? skuMatrixStatusLabel(sku, '') : '';
+  const rawStatus = String(sku?.status || matrixStatus || '').toLowerCase();
+  const registryStatus = String(sku?.owner?.registryStatus || matrixStatus || '').toLowerCase();
+  const matrixProblemState = typeof skuMatrixProblemState === 'function' ? skuMatrixProblemState(sku) : '';
 
   if (rawStatus.includes('вывод') || registryStatus.includes('вывод')) return { label: 'На вывод', tone: '' };
   if (rawStatus.includes('нов') || registryStatus.includes('нов')) return { label: 'Новинка', tone: 'info' };
   if (rawStatus.includes('вопрос') || registryStatus.includes('вопрос')) return { label: 'Под вопросом', tone: 'warn' };
   if (rawStatus.includes('специф') || registryStatus.includes('специф')) return { label: 'Нет в спецификации', tone: 'warn' };
-  if (!sku?.flags?.assigned) return { label: 'Без owner', tone: 'warn' };
+  if (!ownerName(sku)) return { label: 'Без owner', tone: 'warn' };
+  if (matrixProblemState && !['ok', 'missing_owner'].includes(matrixProblemState)) {
+    return typeof skuMatrixProblemMeta === 'function'
+      ? skuMatrixProblemMeta(matrixProblemState)
+      : { label: matrixProblemState, tone: 'warn' };
+  }
   if (sku?.flags?.toWorkWB && sku?.flags?.toWorkOzon) return { label: 'В работу WB + Ozon', tone: 'danger' };
   if (sku?.flags?.toWorkWB) return { label: 'В работу WB', tone: 'danger' };
   if (sku?.flags?.toWorkOzon) return { label: 'В работу Ozon', tone: 'danger' };
@@ -45,8 +52,9 @@ function skuOperationalStatusMeta(sku) {
   if (sku?.flags?.lowStock) return { label: 'Низкий остаток', tone: 'warn' };
   if (sku?.flags?.underPlan) return { label: 'Ниже плана', tone: 'warn' };
   if ((sku?.focusScore || 0) >= 4) return { label: 'Наблюдать', tone: 'warn' };
-  if (registryStatus) return { label: sku.owner.registryStatus, tone: 'ok' };
+  if (registryStatus) return { label: sku?.owner?.registryStatus || matrixStatus, tone: 'ok' };
   if (sku?.status) return { label: sku.status, tone: 'ok' };
+  if (matrixStatus) return { label: matrixStatus, tone: 'ok' };
   return { label: 'Актуальный', tone: 'ok' };
 }
 

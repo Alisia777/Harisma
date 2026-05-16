@@ -936,13 +936,24 @@ function skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, maxFa
       elapsedDays
     );
   });
+  const matrixEntry = typeof skuMatrixEntryForSku === 'function' ? skuMatrixEntryForSku(sku) : null;
+  const matrixProblemState = typeof skuMatrixProblemState === 'function' ? skuMatrixProblemState(sku) : (sku?.__skuPlanFactUnmapped ? 'api_unmapped' : 'ok');
+  const matrixProblemMeta = typeof skuMatrixProblemMeta === 'function'
+    ? skuMatrixProblemMeta(matrixProblemState)
+    : { label: matrixProblemState, tone: '' };
+  const statusMeta = skuOperationalStatusMeta(sku);
+  const matrixStatus = typeof skuMatrixStatusLabel === 'function' ? skuMatrixStatusLabel(sku, '') : '';
   const row = {
     sku,
     articleKey: skuPrimaryKey(sku),
     article: sku.article || sku.articleKey || '',
     name: sku.name || '',
     owner: ownerName(sku) || 'Без owner',
-    status: skuOperationalStatusMeta(sku).label,
+    status: statusMeta.label || matrixStatus || '',
+    matrixEntry,
+    matrixProblemState,
+    matrixProblemMeta,
+    matrixStatus,
     syntheticUnmapped: Boolean(sku.__skuPlanFactUnmapped),
     platforms
   };
@@ -985,6 +996,21 @@ function skuPlanFactFinalizeRow(row = {}, monthKey = '', elapsedDays = 0) {
   row.drr = row.factRevenue > 0 ? row.adSpend / row.factRevenue : null;
   row.hasPlanOrFact = totals.hasPlanOrFact;
   return row;
+}
+
+function skuPlanFactMarkDuplicateRiskRows(rows = []) {
+  rows.forEach((row) => {
+    row.duplicateRisk = SKU_PLAN_FACT_PLATFORMS.some((platform) => {
+      const metric = row.platforms?.[platform] || row[platform] || null;
+      return Boolean(metric?.reconciledFact);
+    });
+    if (row.duplicateRisk) {
+      row.matrixProblemState = 'duplicate_risk';
+      row.matrixProblemMeta = typeof skuMatrixProblemMeta === 'function'
+        ? skuMatrixProblemMeta('duplicate_risk')
+        : { label: 'Риск дубля выручки', tone: 'danger' };
+    }
+  });
 }
 
 function skuPlanFactDefaultSortDir(sort = '') {
@@ -1051,6 +1077,7 @@ function skuPlanFactBuildModel() {
   const rows = modelSkus.map((sku) => skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, selectedDate));
   skuPlanFactAppendUnallocatedAggregateRows(rows, monthKey, selectedDate);
   const reconciliation = skuPlanFactReconcilePlatformFacts(rows, monthKey, selectedDate);
+  skuPlanFactMarkDuplicateRiskRows(rows);
   SKU_PLAN_FACT_PLATFORMS.forEach((platform) => skuPlanFactAllocatePlatformPlan(rows, monthKey, platform, elapsedDays));
   rows.forEach((row) => skuPlanFactFinalizeRow(row, monthKey, elapsedDays));
   const owners = [...new Set(rows.map((row) => row.owner).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
@@ -1062,9 +1089,12 @@ function skuPlanFactBuildModel() {
     if (filters.status === 'under_plan' && !(row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue)) return false;
     if (filters.status === 'no_fact' && !(row.planRevenue > 0 && row.factRevenue <= 0)) return false;
     if (filters.status === 'unmapped' && !row.syntheticUnmapped) return false;
+    if (filters.status === 'matrix_problem' && (row.matrixProblemState === 'ok' || !row.matrixProblemState)) return false;
+    if (filters.status === 'missing_owner' && row.matrixProblemState !== 'missing_owner' && row.owner !== 'Без owner') return false;
+    if (filters.status === 'duplicate_risk' && !row.duplicateRisk) return false;
     if (filters.platform !== 'all' && !skuPlanFactPlatformHasActivity(row.platforms?.[filters.platform] || row[filters.platform])) return false;
     if (!search) return true;
-    return [row.articleKey, row.article, row.name, row.owner, row.status]
+    return [row.articleKey, row.article, row.name, row.owner, row.status, row.matrixProblemMeta?.label]
       .filter(Boolean)
       .join(' ')
       .toLowerCase()
@@ -1248,6 +1278,10 @@ function skuPlanFactAliasImportReportHtml(report = null) {
   const details = errors.length ? errors.slice(0, 8)
     : duplicates.length ? duplicates.slice(0, 8)
       : skipped.slice(0, 8);
+  const canApply = !report.appliedAt && !errors.length && Boolean(
+    ((report.aliases || []).length && report.aliasPayload)
+    || ((report.ignores || []).length && report.ignorePayload)
+  );
   const detailRows = details.map((row) => `
     <tr>
       <td>${escapeHtml(row.rowNumber || '—')}</td>
@@ -1265,6 +1299,7 @@ function skuPlanFactAliasImportReportHtml(report = null) {
           <div class="small muted">Строк: ${fmt.int(report.sourceRows || 0)} · алиасы: ${fmt.int(report.candidateAliases || 0)} · ignore: ${fmt.int(report.candidateIgnores || 0)} · дубли: ${fmt.int(duplicates.length)} · пропущено: ${fmt.int(skipped.length)} · ошибок: ${fmt.int(errors.length)}</div>
         </div>
         <div class="badge-stack">
+          ${canApply ? '<button class="quick-chip" type="button" data-sku-plan-fact-apply-import>Применить в портал</button>' : ''}
           ${(report.aliases || []).length && report.aliasPayload ? '<button class="quick-chip" type="button" data-sku-plan-fact-download-aliases>Скачать sku_aliases.json</button>' : ''}
           ${(report.ignores || []).length && report.ignorePayload ? '<button class="quick-chip" type="button" data-sku-plan-fact-download-ignore>Скачать sku_alias_ignore.json</button>' : ''}
           <button class="quick-chip" type="button" data-sku-plan-fact-download-import-report>Скачать отчёт</button>
@@ -1296,7 +1331,7 @@ function skuPlanFactQualityToolsHtml() {
         </div>
       </div>
       ${skuPlanFactAliasImportReportHtml(state.skuPlanFactAliasImportReport || null)}
-      <div class="footer-note">Портал статический: кнопка готовит проверенные JSON-файлы. Для реального применения положите их в data или используйте npm run portal:sku-alias-import -- --apply.</div>
+      <div class="footer-note">Кнопка применения обновляет общий справочник алиасов/ignore и матрицу SKU в снапшотах портала; следующий sync подтянет эти изменения в локальные JSON.</div>
     </div>
   `;
 }
@@ -1393,6 +1428,10 @@ function skuPlanFactRowHtml(row, model) {
   const totalTone = skuPlanFactTone(row.completionToDate);
   const planDrrByPlatform = model.planDrrByPlatform || {};
   const articleTitle = row.article || row.articleKey;
+  const problemMeta = row.matrixProblemMeta || (typeof skuMatrixProblemMeta === 'function' ? skuMatrixProblemMeta(row.matrixProblemState || 'ok') : null);
+  const problemBadge = problemMeta && row.matrixProblemState && row.matrixProblemState !== 'ok'
+    ? badge(problemMeta.label, problemMeta.tone || 'warn')
+    : '';
   const articleHtml = row.syntheticUnmapped
     ? `<strong>${escapeHtml(articleTitle)}</strong><div class="badge-stack" style="margin-top:6px">${badge(row.status || SKU_PLAN_FACT_UNMAPPED_STATUS, 'warn')}</div>`
     : linkToSku(row.articleKey, articleTitle);
@@ -1400,7 +1439,7 @@ function skuPlanFactRowHtml(row, model) {
   return `
     <tr class="sku-plan-fact-row ${row.syntheticUnmapped ? 'is-unmapped' : ''}"${openAttr}>
       <td>${articleHtml}<div class="muted small">${escapeHtml(row.name)}</div></td>
-      <td><strong>${escapeHtml(row.owner)}</strong><div class="muted small">${escapeHtml(row.status)}</div></td>
+      <td><strong>${escapeHtml(row.owner)}</strong><div class="muted small">${escapeHtml(row.status)}</div>${problemBadge ? `<div class="badge-stack" style="margin-top:6px">${problemBadge}</div>` : ''}</td>
       ${SKU_PLAN_FACT_PLATFORMS.map((platform) => `<td>${skuPlanFactPlatformCell(row.platforms?.[platform] || row[platform], planDrrByPlatform[platform] ?? null)}</td>`).join('')}
       <td>
         <strong>${fmt.money(row.factRevenue)}</strong>
@@ -1435,7 +1474,8 @@ function skuPlanFactExportColumns() {
     ['article', 'Артикул'],
     ['name', 'Товар'],
     ['owner', 'Owner'],
-    ['status', 'Статус']
+    ['status', 'Статус'],
+    ['matrix_problem', 'Проблема матрицы']
   ];
   SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
     const label = skuPlanFactPlatformLabel(platform);
@@ -1475,7 +1515,8 @@ function skuPlanFactExportRows(rows, model) {
       article: row.article,
       name: row.name,
       owner: row.owner,
-      status: row.status
+      status: row.status,
+      matrix_problem: row.matrixProblemMeta?.label || row.matrixProblemState || ''
     };
     SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
       const metric = row.platforms?.[platform] || row[platform] || {};
@@ -1788,6 +1829,262 @@ function skuPlanFactPrepareAliasImport(rows = [], currentAliases = {}, currentIg
   };
 }
 
+function skuPlanFactAliasIsActive(row = {}) {
+  const status = skuPlanFactToken(row?.status ?? row?.active ?? 'active');
+  return !['0', 'false', 'no', 'off', 'disabled', 'inactive', 'deleted', 'remove'].includes(status);
+}
+
+function skuPlanFactApplyAliasesToStateSkus(aliasRows = []) {
+  const lookup = skuPlanFactBuildSkuLookup();
+  let applied = 0;
+  (aliasRows || []).filter(skuPlanFactAliasIsActive).forEach((alias) => {
+    const targetToken = skuPlanFactToken(alias.target_sku || alias.targetSku || alias.target || '');
+    const apiSku = String(alias.api_sku || alias.apiSku || alias.alias || alias.value || '').trim();
+    if (!targetToken || !apiSku) return;
+    const sku = lookup.get(targetToken);
+    if (!sku) return;
+    const platform = skuPlanFactNormalizePlatform(alias.platform || 'all') || 'all';
+    sku.platformAliases = sku.platformAliases && typeof sku.platformAliases === 'object' ? sku.platformAliases : {};
+    if (!Array.isArray(sku.platformAliases[platform])) sku.platformAliases[platform] = sku.platformAliases[platform] ? [sku.platformAliases[platform]] : [];
+    const platformTokens = new Set(sku.platformAliases[platform].map((value) => skuPlanFactToken(value)));
+    if (!platformTokens.has(skuPlanFactToken(apiSku))) sku.platformAliases[platform].push(apiSku);
+    sku.aliases = Array.isArray(sku.aliases) ? sku.aliases : [];
+    const aliasTokens = new Set(sku.aliases.map((value) => skuPlanFactToken(typeof value === 'string' ? value : (value?.value || value?.alias || value?.api_sku || ''))));
+    if (!aliasTokens.has(skuPlanFactToken(apiSku))) {
+      sku.aliases.push({ value: apiSku, platform, source: 'portal-import' });
+    }
+    applied += 1;
+  });
+  return applied;
+}
+
+function skuPlanFactActiveIgnoreRowsFromPayload(payload = {}) {
+  return skuPlanFactIgnorePayloadRows(payload).filter((row) => {
+    const status = skuPlanFactToken(row?.status ?? row?.active ?? 'active');
+    return !['0', 'false', 'no', 'off', 'disabled', 'inactive', 'deleted', 'remove'].includes(status);
+  });
+}
+
+function skuPlanFactBuildRuntimeSkuMatrix(aliasPayload = {}, ignorePayload = {}) {
+  const aliases = skuPlanFactAliasRows(aliasPayload).filter(skuPlanFactAliasIsActive);
+  const ignored = skuPlanFactActiveIgnoreRowsFromPayload(ignorePayload);
+  const lookup = skuPlanFactBuildSkuLookup();
+  const aliasesByTarget = new Map();
+  const aliasToArticleKey = {};
+  aliases.forEach((alias) => {
+    const targetToken = skuPlanFactToken(alias.target_sku || alias.targetSku || alias.target || '');
+    const apiSku = String(alias.api_sku || alias.apiSku || alias.alias || alias.value || '').trim();
+    if (!targetToken || !apiSku) return;
+    const target = lookup.get(targetToken);
+    const articleKey = target?.articleKey || target?.article || alias.target_sku || '';
+    if (!articleKey) return;
+    if (!aliasesByTarget.has(articleKey)) aliasesByTarget.set(articleKey, []);
+    const platform = skuPlanFactNormalizePlatform(alias.platform || 'all') || 'all';
+    aliasesByTarget.get(articleKey).push({
+      platform,
+      api_sku: apiSku,
+      status: alias.status || 'active',
+      note: alias.note || '',
+      source: alias.source || 'portal-import'
+    });
+    aliasToArticleKey[skuPlanFactIgnoreKey(platform, apiSku)] = articleKey;
+  });
+
+  const previous = state.skuMatrix || {};
+  const previousByToken = new Map((previous.items || []).map((item) => [skuPlanFactToken(item.articleKey || item.article || ''), item]));
+  const items = (state.skus || []).map((sku, index) => {
+    const articleKey = sku.articleKey || sku.article || '';
+    const previousItem = previousByToken.get(skuPlanFactToken(articleKey)) || {};
+    const owner = ownerName(sku) || previousItem.owner || '';
+    let problemStates = Array.isArray(previousItem.problemStates) && previousItem.problemStates.length
+      ? previousItem.problemStates.filter((stateKey) => stateKey !== 'missing_owner')
+      : ['ok'];
+    if (!owner) problemStates = ['missing_owner', ...problemStates.filter((stateKey) => stateKey !== 'ok')];
+    if (!problemStates.length) problemStates = ['ok'];
+    return {
+      ...previousItem,
+      articleKey,
+      article: sku.article || articleKey,
+      name: sku.name || previousItem.name || '',
+      owner,
+      status: sku.status || previousItem.status || '',
+      registryStatus: sku.owner?.registryStatus || previousItem.registryStatus || sku.status || '',
+      brand: sku.brand || previousItem.brand || '',
+      category: sku.category || previousItem.category || '',
+      aliases: aliasesByTarget.get(articleKey) || [],
+      problemStates,
+      problemState: problemStates[0] || 'ok',
+      problemLabel: typeof skuMatrixProblemMeta === 'function' ? skuMatrixProblemMeta(problemStates[0] || 'ok').label : '',
+      problemTone: typeof skuMatrixProblemMeta === 'function' ? skuMatrixProblemMeta(problemStates[0] || 'ok').tone : '',
+      _index: index
+    };
+  }).map(({ _index, ...item }) => item);
+
+  const ignoredKeys = new Set(ignored.map((row) => skuPlanFactIgnoreKey(row.platform || 'all', row.api_sku || row.apiSku || row.alias || row.value || '')));
+  const activeAliasKeys = new Set(Object.keys(aliasToArticleKey));
+  const apiUnmapped = (previous.apiUnmapped || []).filter((row) => {
+    const platform = row.platform || 'all';
+    const apiSku = row.api_sku || row.apiSku || row.articleKey || '';
+    return !ignoredKeys.has(skuPlanFactIgnoreKey(platform, apiSku))
+      && !ignoredKeys.has(skuPlanFactIgnoreKey('all', apiSku))
+      && !activeAliasKeys.has(skuPlanFactIgnoreKey(platform, apiSku))
+      && !activeAliasKeys.has(skuPlanFactIgnoreKey('all', apiSku));
+  });
+  const byArticleKey = {};
+  items.forEach((item, index) => { if (item.articleKey) byArticleKey[item.articleKey] = index; });
+  const problemStateCounts = items.reduce((acc, item) => {
+    (item.problemStates || ['ok']).forEach((stateKey) => {
+      acc[stateKey] = (acc[stateKey] || 0) + 1;
+    });
+    return acc;
+  }, {});
+  if (apiUnmapped.length) problemStateCounts.api_unmapped = apiUnmapped.length;
+  if ((previous.duplicateRisks || []).length) problemStateCounts.duplicate_risk = previous.duplicateRisks.length;
+
+  return {
+    schema: 'portal-sku-matrix-v1',
+    generatedAt: new Date().toISOString(),
+    source: {
+      ...(previous.source || {}),
+      skus: items.length,
+      aliases: aliases.length,
+      ignored: ignored.length,
+      runtimeApplied: true
+    },
+    summary: {
+      ...(previous.summary || {}),
+      skuCount: items.length,
+      aliasCount: aliases.length,
+      ignoredApiSkuCount: ignored.length,
+      apiUnmappedCount: apiUnmapped.length,
+      missingOwnerCount: items.filter((item) => !item.owner || item.owner === 'Без owner').length,
+      problemStateCounts
+    },
+    problemStates: previous.problemStates || (state.skuMatrix?.problemStates || {}),
+    items,
+    apiUnmapped,
+    duplicateRisks: previous.duplicateRisks || [],
+    ignoredApiSku: ignored.map((row) => ({
+      platform: skuPlanFactNormalizePlatform(row.platform || 'all') || 'all',
+      api_sku: row.api_sku || row.apiSku || row.alias || row.value || '',
+      status: row.status || 'ignored',
+      note: row.note || ''
+    })),
+    indexes: {
+      byArticleKey,
+      aliasToArticleKey
+    }
+  };
+}
+
+async function skuPlanFactSnapshotHash(text = '') {
+  if (window.crypto?.subtle && window.TextEncoder) {
+    const buffer = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(buffer)).map((byte) => byte.toString(16).padStart(2, '0')).join('');
+  }
+  let hash = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    hash = ((hash << 5) - hash + text.charCodeAt(index)) | 0;
+  }
+  return `fallback-${Math.abs(hash)}`;
+}
+
+async function skuPlanFactPostSnapshotRow(row, cfg, brand) {
+  const url = `${String(cfg.supabase.url || '').replace(/\/+$/, '')}/rest/v1/portal_data_snapshots?on_conflict=brand,snapshot_key`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      apikey: cfg.supabase.anonKey,
+      Authorization: `Bearer ${cfg.supabase.anonKey}`,
+      Prefer: 'resolution=merge-duplicates,return=minimal',
+      'Content-Type': 'application/json; charset=utf-8'
+    },
+    body: JSON.stringify([{ ...row, brand }])
+  });
+  if (!response.ok) throw new Error(`Supabase ${row.snapshot_key}: HTTP ${response.status} ${await response.text()}`);
+}
+
+async function skuPlanFactUpsertSnapshot(snapshotKey, payload) {
+  const cfg = typeof currentConfig === 'function' ? currentConfig() : (window.APP_CONFIG || {});
+  if (!cfg?.supabase?.url || !cfg?.supabase?.anonKey) throw new Error('Supabase config is not available');
+  const brand = typeof currentBrand === 'function' ? currentBrand() : (cfg.brand || 'Алтея');
+  const generatedAt = payload?.generatedAt || payload?.updatedAt || new Date().toISOString();
+  const payloadText = JSON.stringify(payload);
+  const payloadHash = await skuPlanFactSnapshotHash(payloadText);
+  const baseRow = {
+    snapshot_key: snapshotKey,
+    payload,
+    payload_hash: payloadHash,
+    source: 'portal-ui-sku-alias-import',
+    generated_at: generatedAt
+  };
+  if (JSON.stringify([{ ...baseRow, brand }]).length <= 18000) {
+    await skuPlanFactPostSnapshotRow(baseRow, cfg, brand);
+    return payloadHash;
+  }
+  const chunkSize = 12000;
+  const chunks = [];
+  for (let index = 0; index < payloadText.length; index += chunkSize) chunks.push(payloadText.slice(index, index + chunkSize));
+  await skuPlanFactPostSnapshotRow({
+    snapshot_key: snapshotKey,
+    payload: { chunked: true, encoding: 'utf8-json', chunk_count: chunks.length, generatedAt, payload_hash: payloadHash },
+    payload_hash: payloadHash,
+    source: 'portal-ui-sku-alias-import',
+    generated_at: generatedAt
+  }, cfg, brand);
+  for (let index = 0; index < chunks.length; index += 1) {
+    await skuPlanFactPostSnapshotRow({
+      snapshot_key: `${snapshotKey}__part__${String(index + 1).padStart(4, '0')}`,
+      payload: chunks[index],
+      payload_hash: await skuPlanFactSnapshotHash(`${payloadHash}:${index + 1}:${chunks[index]}`),
+      source: 'portal-ui-sku-alias-import',
+      generated_at: generatedAt
+    }, cfg, brand);
+  }
+  return payloadHash;
+}
+
+async function handleSkuPlanFactApplyAliasImport(button = null, rootId = 'view-sku-plan-fact') {
+  const report = state.skuPlanFactAliasImportReport || {};
+  if ((report.errorRows || []).length) {
+    if (typeof setAppError === 'function') setAppError('В импорте есть ошибки, применение остановлено.');
+    return;
+  }
+  if (!report.aliasPayload && !report.ignorePayload) return;
+  const originalText = button?.textContent || '';
+  try {
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Применяем...';
+    }
+    const aliasPayload = report.aliasPayload || state.skuAliases || { schema: 'sku-api-aliases-v1', aliases: [] };
+    const ignorePayload = report.ignorePayload || state.skuAliasIgnore || { schema: 'sku-api-ignore-v1', ignored: [] };
+    state.skuAliases = aliasPayload;
+    state.skuAliasIgnore = ignorePayload;
+    const appliedAliases = skuPlanFactApplyAliasesToStateSkus(report.aliases || []);
+    if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
+    const matrixPayload = skuPlanFactBuildRuntimeSkuMatrix(aliasPayload, ignorePayload);
+    state.skuMatrix = matrixPayload;
+    await skuPlanFactUpsertSnapshot('sku_aliases', aliasPayload);
+    await skuPlanFactUpsertSnapshot('sku_alias_ignore', ignorePayload);
+    await skuPlanFactUpsertSnapshot('sku_matrix', matrixPayload);
+    if (typeof window.__alteaResetPortalSnapshotState === 'function') window.__alteaResetPortalSnapshotState();
+    state.skuPlanFactAliasImportReport = { ...report, appliedAt: new Date().toISOString(), appliedAliases };
+    renderSkuPlanFact(rootId);
+    if (typeof setAppError === 'function') {
+      setAppError(`Импорт применён: ${fmt.int(report.aliases?.length || 0)} alias, ${fmt.int(report.ignores?.length || 0)} ignore. Матрица обновлена.`);
+    }
+  } catch (error) {
+    console.error('[sku-plan-fact-apply-alias-import]', error);
+    if (typeof setAppError === 'function') setAppError(`Не удалось применить импорт: ${error.message}`);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText || 'Применить в портал';
+    }
+  }
+}
+
 async function handleSkuPlanFactAliasImport(file, rootId = 'view-sku-plan-fact') {
   if (!file) return;
   try {
@@ -1801,7 +2098,7 @@ async function handleSkuPlanFactAliasImport(file, rootId = 'view-sku-plan-fact')
     state.skuPlanFactAliasImportReport = report;
     renderSkuPlanFact(rootId);
     if (typeof setAppError === 'function') {
-      setAppError(report.errorRows.length ? `Импорт проверен: ${report.errorRows.length} ошибок.` : 'Импорт проверен, файлы готовы к скачиванию.');
+      setAppError(report.errorRows.length ? `Импорт проверен: ${report.errorRows.length} ошибок.` : 'Импорт проверен, можно применить в портал или скачать JSON.');
     }
   } catch (error) {
     console.error('[sku-plan-fact-alias-import]', error);
@@ -1942,6 +2239,8 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
   const rowsHtml = model.rows.length
     ? model.rows.map((row) => skuPlanFactRowHtml(row, model)).join('')
     : `<tr><td colspan="${tableColspan}"><div class="empty">По текущим фильтрам нет SKU.</div></td></tr>`;
+  const matrixSummary = typeof skuMatrixSummary === 'function' ? skuMatrixSummary() : {};
+  const matrixGeneratedAt = state.skuMatrix?.generatedAt || state.skuMatrix?.updatedAt || '';
 
   root.innerHTML = `
     <div class="section-title">
@@ -1952,6 +2251,9 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
       <div class="badge-stack">
         ${badge(`${fmt.int(model.rows.length)} SKU`, 'info')}
         ${badge(`${fmt.int(model.unmappedCount || 0)} API без пары`, model.unmappedCount ? 'warn' : 'ok')}
+        ${badge(`${fmt.int(matrixSummary.aliasCount || 0)} alias`, matrixSummary.aliasCount ? 'ok' : '')}
+        ${matrixSummary.duplicateRiskCount ? badge(`${fmt.int(matrixSummary.duplicateRiskCount)} риск дубля`, 'danger') : ''}
+        ${badge(`матрица ${matrixGeneratedAt ? fmt.date(matrixGeneratedAt) : '—'}`, matrixGeneratedAt ? 'ok' : 'warn')}
         ${badge(`факт до ${model.maxFactDate || '—'}`, 'ok')}
         ${badge(`план ДРР WB/Ozon ${fmt.pct(model.planDrrWb)}`)}
       </div>
@@ -1992,6 +2294,9 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
           <option value="under_plan" ${filters.status === 'under_plan' ? 'selected' : ''}>Ниже плана</option>
           <option value="no_fact" ${filters.status === 'no_fact' ? 'selected' : ''}>План есть, факта нет</option>
           <option value="unmapped" ${filters.status === 'unmapped' ? 'selected' : ''}>API без пары в реестре</option>
+          <option value="matrix_problem" ${filters.status === 'matrix_problem' ? 'selected' : ''}>Проблемы матрицы</option>
+          <option value="missing_owner" ${filters.status === 'missing_owner' ? 'selected' : ''}>Матрица: без owner</option>
+          <option value="duplicate_risk" ${filters.status === 'duplicate_risk' ? 'selected' : ''}>Риск дубля выручки</option>
         </select>
         <select id="skuPlanFactPlatform">
           <option value="all" ${filters.platform === 'all' ? 'selected' : ''}>Все площадки</option>
@@ -2052,6 +2357,9 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
     const file = event.target.files?.[0] || null;
     event.target.value = '';
     await handleSkuPlanFactAliasImport(file, rootId);
+  });
+  root.querySelector('[data-sku-plan-fact-apply-import]')?.addEventListener('click', async (event) => {
+    await handleSkuPlanFactApplyAliasImport(event.currentTarget, rootId);
   });
   root.querySelector('[data-sku-plan-fact-download-aliases]')?.addEventListener('click', () => {
     const report = state.skuPlanFactAliasImportReport || {};

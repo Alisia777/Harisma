@@ -14,6 +14,7 @@
   adsSummary: { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
   iuDrrSummary: { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
   wbFeedbacks: { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] },
+  skuAliases: { schema: 'sku-api-aliases-v1', aliases: [] },
   skuAliasIgnore: { schema: 'sku-api-ignore-v1', ignored: [] },
   skuMatrix: { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } },
   launches: [],
@@ -367,6 +368,7 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/order_procurement_ozon.json': 'order_procurement_ozon',
   'data/warehouse_stock_overlay.json': 'warehouse_stock_overlay',
   'data/portal_data_quality.json': 'portal_data_quality',
+  'data/sku_aliases.json': 'sku_aliases',
   'data/sku_alias_ignore.json': 'sku_alias_ignore',
   'data/sku_matrix.json': 'sku_matrix'
 };
@@ -2108,7 +2110,8 @@ function registerPriceFreshnessWarning(payloads = {}) {
 async function loadJsonOrFallback(path, fallback, label = path) {
   const snapshotKey = snapshotKeyFromPath(path);
   if (snapshotKey) {
-    const stagedPath = String(path || '').startsWith('data/')
+    const skipStagedFallback = new Set(['sku_aliases', 'sku_alias_ignore', 'sku_matrix']);
+    const stagedPath = String(path || '').startsWith('data/') && !skipStagedFallback.has(snapshotKey)
       ? `.altea-google-sheet-sync-output/${String(path).slice(5)}`
       : '';
     const [snapshotResult, localResult, stagedResult] = await Promise.allSettled([
@@ -2207,7 +2210,7 @@ const LAZY_DATA_LOADERS = {
       : { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] };
   },
   skuPlanFact: async () => {
-    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, summary, skuAliasIgnore] = await Promise.all([
+    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, summary, skuAliases, skuAliasIgnore] = await Promise.all([
       loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
       loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU'),
       loadJsonOrFallback('data/price_workbench_support.dashboard-compact.json', { generatedAt: '', platforms: {} }, 'План SKU'),
@@ -2223,6 +2226,11 @@ const LAZY_DATA_LOADERS = {
         'data/iu_drr_summary.json',
         { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
         'ИУ / ДРР'
+      ),
+      loadJsonOrFallback(
+        'data/sku_aliases.json',
+        { schema: 'sku-api-aliases-v1', aliases: [] },
+        'SKU aliases'
       ),
       loadJsonOrFallback(
         'data/sku_alias_ignore.json',
@@ -2259,6 +2267,9 @@ const LAZY_DATA_LOADERS = {
     state.iuDrrSummary = summary && typeof summary === 'object'
       ? summary
       : { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };
+    state.skuAliases = skuAliases && typeof skuAliases === 'object'
+      ? skuAliases
+      : { schema: 'sku-api-aliases-v1', aliases: [] };
     state.skuAliasIgnore = skuAliasIgnore && typeof skuAliasIgnore === 'object'
       ? skuAliasIgnore
       : { schema: 'sku-api-ignore-v1', ignored: [] };

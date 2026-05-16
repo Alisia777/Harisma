@@ -19,6 +19,7 @@
     "portal:data-quality": "node scripts/build-portal-data-quality-report.js --input-dir data --base-data-dir data --output-dir data",
     "portal:sku-matrix": "node scripts/build-sku-matrix-layer.js --input-dir data --base-data-dir data --output-dir data",
     "portal:sku-alias-import": "node scripts/import-sku-alias-review.js",
+    "portal:snapshot-pull": "node scripts/portal-snapshot-pull.js",
     "portal:price-audit": "node scripts/audit-price-contour.js",
     "portal:metric-audit": "node scripts/audit-portal-metrics.js",
     "portal:wb-audit": "node scripts/audit-wb-report-reconciliation.js"

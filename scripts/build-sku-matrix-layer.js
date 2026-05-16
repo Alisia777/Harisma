@@ -148,6 +148,46 @@ function issuesByArticle(quality = {}) {
   return map;
 }
 
+const PROBLEM_STATE_META = {
+  ok: { label: '\u0412 \u043c\u0430\u0442\u0440\u0438\u0446\u0435', tone: 'ok' },
+  missing_owner: { label: '\u041d\u0435\u0442 owner', tone: 'warn' },
+  has_critical_issue: { label: '\u0415\u0441\u0442\u044c \u043a\u0440\u0438\u0442\u0438\u0447\u043d\u0430\u044f \u043e\u0448\u0438\u0431\u043a\u0430', tone: 'danger' },
+  has_warning: { label: '\u0415\u0441\u0442\u044c \u0437\u0430\u043c\u0435\u0447\u0430\u043d\u0438\u0435', tone: 'warn' },
+  api_unmapped: { label: 'API SKU \u0431\u0435\u0437 \u043f\u0430\u0440\u044b', tone: 'danger' },
+  ignored: { label: 'API SKU \u0432 ignore', tone: '' },
+  duplicate_risk: { label: '\u0420\u0438\u0441\u043a \u0434\u0443\u0431\u043b\u044f \u0432\u044b\u0440\u0443\u0447\u043a\u0438', tone: 'danger' }
+};
+
+function isMissingOwnerText(owner = '') {
+  const raw = String(owner || '').trim().toLowerCase();
+  return !raw
+    || raw === 'без owner'
+    || raw === 'р‘рµр· owner'
+    || raw === 'не в реестре'
+    || raw === 'рќрµ рІ сЂрµрµсЃс‚сЂрµ';
+}
+
+function problemStatesForItem(owner = '', issues = []) {
+  const states = [];
+  if (isMissingOwnerText(owner)) states.push('missing_owner');
+  if (issues.some((issue) => issue.severity === 'critical' || issue.severity === 'danger')) {
+    states.push('has_critical_issue');
+  } else if (issues.length) {
+    states.push('has_warning');
+  }
+  return states.length ? states : ['ok'];
+}
+
+function summarizeProblemStates(items = [], apiUnmapped = [], ignored = [], duplicateRisks = []) {
+  const counts = {};
+  const bump = (state) => { counts[state] = (counts[state] || 0) + 1; };
+  items.forEach((item) => (item.problemStates || ['ok']).forEach(bump));
+  if (apiUnmapped.length) bump('api_unmapped');
+  if (ignored.length) bump('ignored');
+  if (duplicateRisks.length) bump('duplicate_risk');
+  return counts;
+}
+
 function buildMatrix(options) {
   const skus = readSnapshot(options, 'skus', []);
   const aliases = aliasRows(readSnapshot(options, 'sku_aliases', { aliases: [] }));
@@ -181,17 +221,23 @@ function buildMatrix(options) {
   const items = (Array.isArray(skus) ? skus : []).map((sku) => {
     const articleKey = sku.articleKey || sku.article || '';
     const issues = qualityByArticle.get(normalizeToken(articleKey)) || [];
+    const owner = ownerText(sku);
+    const problemStates = problemStatesForItem(owner, issues);
     return {
       articleKey,
       article: sku.article || articleKey,
       name: sku.name || '',
-      owner: ownerText(sku),
+      owner,
       status: sku.status || sku.registryStatus || '',
       registryStatus: sku.registryStatus || sku.status || '',
       brand: sku.brand || '',
       category: sku.category || '',
       type: sku.type || '',
       aliases: aliasesByTarget.get(articleKey) || [],
+      problemStates,
+      problemState: problemStates[0] || 'ok',
+      problemLabel: PROBLEM_STATE_META[problemStates[0]]?.label || '',
+      problemTone: PROBLEM_STATE_META[problemStates[0]]?.tone || '',
       issueCount: issues.length,
       criticalIssueCount: issues.filter((issue) => issue.severity === 'critical' || issue.severity === 'danger').length,
       issues: issues.slice(0, 20)
@@ -213,6 +259,17 @@ function buildMatrix(options) {
       lastDate: issue.lastDate || ''
     }));
 
+  const duplicateRisks = (quality.issues || [])
+    .filter((issue) => issue.type === 'api_sum_above_aggregate')
+    .map((issue) => ({
+      platform: platformKey(issue.platform || '') || issue.platform || '',
+      platformLabel: issue.platformLabel || issue.platform || '',
+      revenue: Math.round(numberOrZero(issue.revenue)),
+      aggregateRevenue: Math.round(numberOrZero(issue.aggregateRevenue)),
+      overage: Math.round(numberOrZero(issue.overage)),
+      message: issue.message || ''
+    }));
+
   return {
     schema: 'portal-sku-matrix-v1',
     generatedAt: new Date().toISOString(),
@@ -228,11 +285,16 @@ function buildMatrix(options) {
       aliasCount: aliases.length,
       ignoredApiSkuCount: ignored.length,
       apiUnmappedCount: apiUnmapped.length,
-      missingOwnerCount: items.filter((item) => !item.owner || item.owner === 'Без owner').length,
-      issueCount: numberOrZero(quality.summary?.issueCount)
+      duplicateRiskCount: duplicateRisks.length,
+      duplicateRiskOverage: duplicateRisks.reduce((sum, item) => sum + numberOrZero(item.overage), 0),
+      missingOwnerCount: items.filter((item) => isMissingOwnerText(item.owner)).length,
+      issueCount: numberOrZero(quality.summary?.issueCount),
+      problemStateCounts: summarizeProblemStates(items, apiUnmapped, ignored, duplicateRisks)
     },
+    problemStates: PROBLEM_STATE_META,
     items,
     apiUnmapped,
+    duplicateRisks,
     ignoredApiSku: ignored.map((row) => ({
       platform: platformKey(row.platform || 'all') || 'all',
       api_sku: row.api_sku || row.apiSku || row.alias || row.value || '',

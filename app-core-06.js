@@ -211,12 +211,14 @@ function getFilteredSkus(taskMap = null) {
   const q = String(state.filters.search || '').trim().toLowerCase();
   return state.skus.filter((sku) => {
     if (!filterSkuByMarket(sku)) return false;
-    const hay = [sku.article, sku.articleKey, sku.name, sku.brand, sku.category, sku.segment, ownerName(sku), sku.status, sku.focusReasons].filter(Boolean).join(' ').toLowerCase();
+    const matrixProblemState = typeof skuMatrixProblemState === 'function' ? skuMatrixProblemState(sku) : 'ok';
+    const matrixProblemMeta = typeof skuMatrixProblemMeta === 'function' ? skuMatrixProblemMeta(matrixProblemState) : null;
+    const hay = [sku.article, sku.articleKey, sku.name, sku.brand, sku.category, sku.segment, ownerName(sku), sku.status, sku.focusReasons, matrixProblemMeta?.label].filter(Boolean).join(' ').toLowerCase();
     if (q && !hay.includes(q)) return false;
     if (state.filters.owner !== 'all' && ownerName(sku) !== state.filters.owner) return false;
     if (state.filters.segment !== 'all' && sku.segment !== state.filters.segment) return false;
-    if (state.filters.assignment === 'assigned' && !sku?.flags?.assigned) return false;
-    if (state.filters.assignment === 'unassigned' && sku?.flags?.assigned) return false;
+    if (state.filters.assignment === 'assigned' && !ownerName(sku)) return false;
+    if (state.filters.assignment === 'unassigned' && ownerName(sku)) return false;
     if (state.filters.traffic === 'any' && !sku?.flags?.hasExternalTraffic) return false;
     if (state.filters.traffic === 'kz' && !sku?.flags?.hasKZ) return false;
     if (state.filters.traffic === 'vk' && !sku?.flags?.hasVK) return false;
@@ -242,7 +244,9 @@ function getFilteredSkus(taskMap = null) {
       case 'extVK':
         return sku?.flags?.hasVK;
       case 'unassigned':
-        return !sku?.flags?.assigned;
+        return !ownerName(sku);
+      case 'matrixIssue':
+        return matrixProblemState && matrixProblemState !== 'ok';
       default:
         return true;
     }
@@ -262,17 +266,26 @@ function renderSkuRegistry() {
   const items = getFilteredSkus(skuTaskMap);
   const owners = [...new Set(state.skus.map((sku) => ownerName(sku)).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
   const segments = [...new Set(state.skus.map((sku) => sku.segment).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
-  const assignedCount = items.filter((sku) => sku?.flags?.assigned).length;
+  const assignedCount = items.filter((sku) => ownerName(sku)).length;
   const unassignedCount = items.length - assignedCount;
   const kzCount = items.filter((sku) => sku?.flags?.hasKZ).length;
   const vkCount = items.filter((sku) => sku?.flags?.hasVK).length;
+  const matrixSummary = typeof skuMatrixSummary === 'function' ? skuMatrixSummary() : {};
+  const matrixIssueCount = Object.entries(matrixSummary.problemStateCounts || {})
+    .filter(([key]) => key !== 'ok')
+    .reduce((sum, [, value]) => sum + numberOrZero(value), 0);
   const rows = items.map((sku) => {
     const task = skuTaskMap.get(String(sku.articleKey || '').trim()) || null;
+    const matrixProblemState = typeof skuMatrixProblemState === 'function' ? skuMatrixProblemState(sku) : 'ok';
+    const matrixProblemMeta = typeof skuMatrixProblemMeta === 'function' ? skuMatrixProblemMeta(matrixProblemState) : null;
+    const matrixBadge = matrixProblemState && matrixProblemState !== 'ok' && matrixProblemMeta
+      ? `<div class="badge-stack" style="margin-top:6px">${badge(matrixProblemMeta.label, matrixProblemMeta.tone || 'warn')}</div>`
+      : '';
     return `
     <tr class="sku-registry-row" data-open-sku="${escapeHtml(sku.articleKey)}">
       <td>${linkToSku(sku.articleKey, sku.article || sku.articleKey)}</td>
       <td><div><strong>${escapeHtml(sku.name || 'Без названия')}</strong></div><div class="muted small">${escapeHtml(sku.category || sku.segment || '—')}</div></td>
-      <td>${skuOperationalStatus(sku)}</td>
+      <td>${skuOperationalStatus(sku)}${matrixBadge}</td>
       <td>${ownerCell(sku)}</td>
       <td>${trafficBadges(sku, 'нет')}</td>
       <td>${renderSkuTaskSummary(sku, task)}</td>
@@ -290,6 +303,8 @@ function renderSkuRegistry() {
         ${badge(`${fmt.int(items.length)} SKU`)}
         ${badge(`${fmt.int(assignedCount)} с owner`, 'ok')}
         ${badge(`${fmt.int(unassignedCount)} без owner`, unassignedCount ? 'warn' : 'ok')}
+        ${badge(`${fmt.int(matrixSummary.aliasCount || 0)} alias`, matrixSummary.aliasCount ? 'ok' : '')}
+        ${matrixIssueCount ? badge(`${fmt.int(matrixIssueCount)} проблем матрицы`, 'warn') : ''}
         ${badge(`🚀 КЗ ${fmt.int(kzCount)}`, kzCount ? 'info' : '')}
         ${badge(`📣 VK ${fmt.int(vkCount)}`, vkCount ? 'info' : '')}
       </div>
@@ -319,6 +334,7 @@ function renderSkuRegistry() {
         <option value="highReturn" ${state.filters.focus === 'highReturn' ? 'selected' : ''}>Высокие возвраты</option>
         <option value="extAny" ${state.filters.focus === 'extAny' ? 'selected' : ''}>Есть внешний трафик</option>
         <option value="unassigned" ${state.filters.focus === 'unassigned' ? 'selected' : ''}>Без owner</option>
+        <option value="matrixIssue" ${state.filters.focus === 'matrixIssue' ? 'selected' : ''}>Проблемы матрицы</option>
       </select>
       <select id="skuTrafficFilter">
         <option value="all" ${state.filters.traffic === 'all' ? 'selected' : ''}>Весь трафик</option>

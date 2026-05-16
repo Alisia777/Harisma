@@ -895,6 +895,7 @@ async function init() {
     state.boot.dataReady = true;
     rerenderCurrentView();
     setView(resolveInitialView(), { persist: true, syncHash: true });
+    if (typeof window.portalStartOperationalAutoRefresh === 'function') window.portalStartOperationalAutoRefresh();
     if (state.boot.dataWarnings.length) setAppError(`Часть данных загружена с исправлениями: ${state.boot.dataWarnings[0]}`);
     else setAppError('');
   } catch (error) {

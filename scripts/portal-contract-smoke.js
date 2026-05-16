@@ -107,8 +107,17 @@ async function main() {
       document.querySelector('#view-data-health [data-health-create-tasks]')
       && document.querySelector('#view-data-health [data-health-open="sku-contour"]')
       && document.querySelector('#view-data-health .data-table')
+      && typeof window.portalMaybeAutoRefreshOperationalData === 'function'
+      && typeof window.portalRefreshOperationalDataPayloads === 'function'
     ));
     if (!dataHealthOk) throw new Error('Data health center did not render controls.');
+
+    await page.locator('#view-data-health [data-health-refresh]').first().click();
+    await page.waitForFunction(() => Boolean(
+      document.querySelector('#view-data-health [data-health-create-tasks]')
+      && document.querySelector('#view-data-health [data-health-open="sku-contour"]')
+      && document.querySelector('#view-data-health .data-table')
+    ), undefined, { timeout: 20000 });
 
     const issueTaskCheck = await page.evaluate(async () => {
       const appState = window.__alteaAppState;

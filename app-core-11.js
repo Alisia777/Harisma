@@ -1700,6 +1700,44 @@ function skuContourDownloadPayload() {
   });
 }
 
+async function portalRefreshOperationalDataPayloads() {
+  if (typeof loadJsonOrFallback !== 'function') return;
+  const [skuMatrix, syncHealth, portalDataQuality, portalDataQuarantine] = await Promise.all([
+    loadJsonOrFallback(
+      'data/sku_matrix.json',
+      { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } },
+      'SKU matrix'
+    ),
+    loadJsonOrFallback(
+      'data/portal_sync_health.json',
+      { schema: 'portal-sync-health-v1', status: '', publish: { allowed: true, blockingReasons: [], warnings: [] }, sources: {}, quality: {} },
+      'Состояние sync'
+    ),
+    loadJsonOrFallback(
+      'data/portal_data_quality.json',
+      { generatedAt: '', status: '', summary: {}, issues: [] },
+      'Контроль данных'
+    ),
+    loadJsonOrFallback(
+      'data/portal_data_quarantine.json',
+      { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] },
+      'Карантин данных'
+    )
+  ]);
+  state.skuMatrix = skuMatrix && typeof skuMatrix === 'object'
+    ? skuMatrix
+    : { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } };
+  state.syncHealth = syncHealth && typeof syncHealth === 'object'
+    ? syncHealth
+    : { schema: 'portal-sync-health-v1', status: '', publish: { allowed: true, blockingReasons: [], warnings: [] }, sources: {}, quality: {} };
+  state.portalDataQuality = portalDataQuality && typeof portalDataQuality === 'object'
+    ? portalDataQuality
+    : { generatedAt: '', status: '', summary: {}, issues: [] };
+  state.portalDataQuarantine = portalDataQuarantine && typeof portalDataQuarantine === 'object'
+    ? portalDataQuarantine
+    : { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] };
+}
+
 function portalHealthSourceRows() {
   const seen = new Set();
   const rows = [];
@@ -3160,6 +3198,10 @@ async function skuContourRollbackAliasImport(eventId = '', button = null, rootId
 }
 
 function skuPlanFactRenderImportTarget(rootId = 'view-sku-plan-fact') {
+  if (rootId === 'view-data-health' && typeof renderPortalDataHealth === 'function') {
+    renderPortalDataHealth(rootId);
+    return;
+  }
   if (rootId === 'view-sku-contour' && typeof renderSkuContour === 'function') {
     renderSkuContour(rootId);
     return;
@@ -3433,8 +3475,12 @@ async function refreshSkuPlanFactData(button = null, rootId = 'view-sku-plan-fac
     if (typeof window.__alteaResetPortalSnapshotState === 'function') window.__alteaResetPortalSnapshotState();
     if (state.boot?.lazyReady) state.boot.lazyReady.skuPlanFact = false;
     if (state.boot?.lazyLoads) delete state.boot.lazyLoads.skuPlanFact;
-    if (typeof ensureViewData === 'function') await ensureViewData('sku-plan-fact');
-    else if (LAZY_DATA_LOADERS?.skuPlanFact) await LAZY_DATA_LOADERS.skuPlanFact();
+    await Promise.all([
+      typeof ensureViewData === 'function'
+        ? ensureViewData('sku-plan-fact')
+        : (LAZY_DATA_LOADERS?.skuPlanFact ? LAZY_DATA_LOADERS.skuPlanFact() : Promise.resolve()),
+      portalRefreshOperationalDataPayloads()
+    ]);
     skuPlanFactRenderImportTarget(rootId);
     if (typeof updateSyncBadge === 'function') updateSyncBadge();
   } catch (error) {
@@ -3446,6 +3492,68 @@ async function refreshSkuPlanFactData(button = null, rootId = 'view-sku-plan-fac
       button.textContent = originalText || 'Обновить данные';
     }
   }
+}
+
+let portalOperationalAutoRefreshStarted = false;
+let portalOperationalAutoRefreshRunning = false;
+let portalOperationalAutoRefreshLastAttemptAt = 0;
+const PORTAL_OPERATIONAL_AUTO_REFRESH_INTERVAL_MS = 30 * 60 * 1000;
+
+function portalOperationalLatestDate() {
+  return String(
+    state.syncHealth?.freshness?.maxDate
+    || state.portalDataQuality?.summary?.maxDate
+    || state.portalDataQuality?.generatedAt
+    || state.syncHealth?.generatedAt
+    || ''
+  ).slice(0, 10);
+}
+
+function portalOperationalRootIdForActiveView() {
+  const view = String(state.activeView || '').trim();
+  if (['data-health', 'sku-contour', 'sku-plan-fact'].includes(view)) return `view-${view}`;
+  return 'view-data-health';
+}
+
+function portalOperationalNeedsDailyRefresh(force = false) {
+  if (!state.boot?.dataReady) return false;
+  if (force) return true;
+  const latestDate = portalOperationalLatestDate();
+  const today = todayIso();
+  if (latestDate === today) return false;
+  const now = Date.now();
+  return now - portalOperationalAutoRefreshLastAttemptAt >= PORTAL_OPERATIONAL_AUTO_REFRESH_INTERVAL_MS;
+}
+
+async function portalMaybeAutoRefreshOperationalData(reason = 'auto', options = {}) {
+  if (portalOperationalAutoRefreshRunning) return false;
+  if (!portalOperationalNeedsDailyRefresh(options.force === true)) return false;
+  portalOperationalAutoRefreshRunning = true;
+  portalOperationalAutoRefreshLastAttemptAt = Date.now();
+  try {
+    await refreshSkuPlanFactData(null, portalOperationalRootIdForActiveView());
+    return true;
+  } catch (error) {
+    console.warn('[portal-operational-auto-refresh]', reason, error);
+    return false;
+  } finally {
+    portalOperationalAutoRefreshRunning = false;
+  }
+}
+
+function portalStartOperationalAutoRefresh() {
+  if (portalOperationalAutoRefreshStarted) return;
+  portalOperationalAutoRefreshStarted = true;
+  window.setInterval(() => {
+    void portalMaybeAutoRefreshOperationalData('timer');
+  }, PORTAL_OPERATIONAL_AUTO_REFRESH_INTERVAL_MS);
+  window.addEventListener('focus', () => {
+    void portalMaybeAutoRefreshOperationalData('focus');
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) void portalMaybeAutoRefreshOperationalData('visible');
+  });
+  void portalMaybeAutoRefreshOperationalData('boot');
 }
 
 function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
@@ -3619,6 +3727,9 @@ window.skuContourIssueRows = skuContourIssueRows;
 window.skuContourIssueIsResolved = skuContourIssueIsResolved;
 window.portalHealthIssueRows = portalHealthIssueRows;
 window.portalHealthCreateIssueTasks = portalHealthCreateIssueTasks;
+window.portalRefreshOperationalDataPayloads = portalRefreshOperationalDataPayloads;
+window.portalMaybeAutoRefreshOperationalData = portalMaybeAutoRefreshOperationalData;
+window.portalStartOperationalAutoRefresh = portalStartOperationalAutoRefresh;
 window.skuContourRollbackableEvents = skuContourRollbackableEvents;
 window.skuPlanFactCreateNewSkuTasks = skuPlanFactCreateNewSkuTasks;
 window.skuPlanFactBuildNewSkuTask = skuPlanFactBuildNewSkuTask;

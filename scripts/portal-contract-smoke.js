@@ -169,6 +169,38 @@ async function main() {
       throw new Error(`SKU contour resolved rows returned to unresolved queue: ${JSON.stringify(contourPersistence)}`);
     }
 
+    const newSkuTaskCheck = await page.evaluate(async () => {
+      const appState = window.__alteaAppState;
+      if (typeof window.skuPlanFactCreateNewSkuTasks !== 'function') {
+        return { ok: false, reason: 'new_sku task helper is unavailable.' };
+      }
+      appState.storage = appState.storage || {};
+      const originalTasks = Array.isArray(appState.storage.tasks) ? appState.storage.tasks.slice() : [];
+      const report = {
+        fileName: 'contract-new-sku.csv',
+        newSkuRows: [{ rowNumber: 2, apiSku: '__contract_new_sku__', platform: 'WB', note: 'contract smoke' }]
+      };
+      try {
+        appState.storage.tasks = originalTasks.slice();
+        const first = await window.skuPlanFactCreateNewSkuTasks(report, { persist: false });
+        appState.storage.tasks = [...originalTasks, ...first.created];
+        const second = await window.skuPlanFactCreateNewSkuTasks(report, { persist: false });
+        const task = first.created?.[0] || {};
+        return {
+          ok: first.created.length === 1 && second.created.length === 0 && second.duplicates.length === 1 && /Завести SKU/.test(task.title || ''),
+          firstCreated: first.created.length,
+          secondCreated: second.created.length,
+          secondDuplicates: second.duplicates.length,
+          title: task.title || ''
+        };
+      } finally {
+        appState.storage.tasks = originalTasks;
+      }
+    });
+    if (!newSkuTaskCheck.ok) {
+      throw new Error(`new_sku did not create/dedupe SKU task correctly: ${JSON.stringify(newSkuTaskCheck)}`);
+    }
+
     await clickView(page, 'skus');
     await assertVisible(page, '#view-skus', 'SKU registry');
     const registryOk = await page.evaluate(() => Boolean(

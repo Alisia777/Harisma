@@ -1278,6 +1278,7 @@ function skuPlanFactAliasImportReportHtml(report = null) {
   const skipped = report.skippedRows || [];
   const newSkuRows = report.newSkuRows || [];
   const needCheckRows = report.needCheckRows || [];
+  const newSkuTaskResult = report.newSkuTaskResult || {};
   const details = errors.length ? errors.slice(0, 8)
     : warnings.length ? warnings.slice(0, 8)
       : duplicates.length ? duplicates.slice(0, 8)
@@ -1287,6 +1288,7 @@ function skuPlanFactAliasImportReportHtml(report = null) {
   const canApply = !report.appliedAt && !errors.length && Boolean(
     ((report.aliases || []).length && report.aliasPayload)
     || ((report.ignores || []).length && report.ignorePayload)
+    || (report.newSkuRows || []).length
   );
   const detailRows = details.map((row) => `
     <tr>
@@ -1308,7 +1310,7 @@ function skuPlanFactAliasImportReportHtml(report = null) {
       label: 'Останется как new_sku',
       count: newSkuRows.length,
       tone: 'warn',
-      text: 'нужно завести SKU в реестре, потом связать этот API SKU через alias.'
+      text: 'при применении портал создаст задачу “Завести SKU”; после заведения нужно связать API SKU через alias.'
     },
     {
       label: 'Останется как need_check',
@@ -1336,6 +1338,7 @@ function skuPlanFactAliasImportReportHtml(report = null) {
         <div>
           <strong>Отчёт импорта${report.fileName ? `: ${escapeHtml(report.fileName)}` : ''}</strong>
           <div class="small muted">Строк: ${fmt.int(report.sourceRows || 0)} · alias: ${fmt.int(report.candidateAliases || 0)} · ignore: ${fmt.int(report.candidateIgnores || 0)} · new_sku: ${fmt.int(report.candidateNewSkus || 0)} · need_check: ${fmt.int(report.candidateNeedCheck || 0)} · дубли: ${fmt.int(duplicates.length)} · пропущено: ${fmt.int(skipped.length)} · ошибок: ${fmt.int(errors.length)}</div>
+          ${report.appliedAt ? `<div class="small muted">Применено: ${escapeHtml(fmt.date(report.appliedAt))} · задач new_sku создано: ${fmt.int((newSkuTaskResult.created || []).length)} · дублей задач: ${fmt.int((newSkuTaskResult.duplicates || []).length)}</div>` : ''}
         </div>
         <div class="badge-stack">
           ${canApply ? '<button class="quick-chip" type="button" data-sku-plan-fact-apply-import>Применить в портал</button>' : ''}
@@ -2722,13 +2725,88 @@ function skuPlanFactRenderImportTarget(rootId = 'view-sku-plan-fact') {
   renderSkuPlanFact(rootId);
 }
 
+function skuPlanFactNewSkuTaskKey(row = {}) {
+  const apiSku = row.apiSku || row.api_sku || '';
+  const platform = skuPlanFactNormalizePlatform(row.platform || 'all') || 'all';
+  return `sku-new-sku|${platform}|${skuPlanFactToken(apiSku)}`;
+}
+
+function skuPlanFactNewSkuTaskId(row = {}) {
+  const raw = skuPlanFactNewSkuTaskKey(row);
+  return typeof stableId === 'function' ? stableId('task', raw) : `task-${raw}`;
+}
+
+function skuPlanFactBuildNewSkuTask(row = {}, report = {}) {
+  const apiSku = String(row.apiSku || row.api_sku || '').trim();
+  const platform = skuPlanFactNormalizePlatform(row.platform || 'all') || 'all';
+  const platformLabel = skuPlanFactPlatformLabel(platform);
+  const titleSku = apiSku || row.targetSku || row.target_sku || 'API SKU';
+  const taskPayload = {
+    id: skuPlanFactNewSkuTaskId(row),
+    source: 'manual',
+    autoCode: 'sku_new_sku',
+    articleKey: '',
+    entityLabel: titleSku,
+    title: `Завести SKU в реестре: ${titleSku}`,
+    nextAction: 'Завести SKU в реестре, назначить owner, затем повторно загрузить строку как alias с target_sku.',
+    reason: [
+      'decision=new_sku',
+      apiSku ? `API SKU: ${apiSku}` : '',
+      platformLabel ? `площадка: ${platformLabel}` : '',
+      row.note ? `комментарий: ${row.note}` : '',
+      report.fileName ? `файл: ${report.fileName}` : ''
+    ].filter(Boolean).join(' · '),
+    owner: '',
+    due: typeof plusDays === 'function' ? plusDays(2) : '',
+    status: 'new',
+    type: 'assignment',
+    priority: 'high',
+    platform
+  };
+  return typeof normalizeTask === 'function' ? normalizeTask(taskPayload, 'manual') : taskPayload;
+}
+
+async function skuPlanFactCreateNewSkuTasks(report = {}, options = {}) {
+  const rows = report.newSkuRows || [];
+  const result = { created: [], duplicates: [] };
+  if (!rows.length) return result;
+  state.storage = state.storage || {};
+  state.storage.tasks = Array.isArray(state.storage.tasks) ? state.storage.tasks : [];
+  const existingIds = new Set((state.storage.tasks || []).map((task) => task.id).filter(Boolean));
+  const tasksToCreate = [];
+  rows.forEach((row) => {
+    const task = skuPlanFactBuildNewSkuTask(row, report);
+    if (!task.id || existingIds.has(task.id)) {
+      result.duplicates.push({ rowNumber: row.rowNumber, apiSku: row.apiSku || row.api_sku || '', platform: row.platform || 'all', taskId: task.id || '' });
+      return;
+    }
+    existingIds.add(task.id);
+    tasksToCreate.push(task);
+  });
+  result.created = tasksToCreate;
+  if (options.persist === false || !tasksToCreate.length) return result;
+  state.storage.tasks.unshift(...tasksToCreate);
+  if (typeof saveLocalStorage === 'function') saveLocalStorage();
+  for (const task of tasksToCreate) {
+    try {
+      if (typeof persistTask === 'function') await persistTask(task);
+      if (typeof createTaskHistoryEntry === 'function') {
+        await createTaskHistoryEntry(task.id, 'created', 'Задача создана из decision=new_sku в Контуре SKU.');
+      }
+    } catch (error) {
+      console.error('[sku-plan-fact-new-sku-task]', error);
+    }
+  }
+  return result;
+}
+
 async function handleSkuPlanFactApplyAliasImport(button = null, rootId = 'view-sku-plan-fact') {
   const report = state.skuPlanFactAliasImportReport || {};
   if ((report.errorRows || []).length) {
     if (typeof setAppError === 'function') setAppError('В импорте есть ошибки, применение остановлено.');
     return;
   }
-  if (!report.aliasPayload && !report.ignorePayload) return;
+  if (!report.aliasPayload && !report.ignorePayload && !(report.newSkuRows || []).length) return;
   const originalText = button?.textContent || '';
   try {
     if (button) {
@@ -2741,6 +2819,7 @@ async function handleSkuPlanFactApplyAliasImport(button = null, rootId = 'view-s
     state.skuAliasIgnore = ignorePayload;
     const appliedAliases = skuPlanFactApplyAliasesToStateSkus(report.aliases || []);
     if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
+    const newSkuTaskResult = await skuPlanFactCreateNewSkuTasks(report);
     const matrixPayload = skuPlanFactBuildRuntimeSkuMatrix(aliasPayload, ignorePayload);
     state.skuMatrix = matrixPayload;
     const appliedAt = new Date().toISOString();
@@ -2754,6 +2833,8 @@ async function handleSkuPlanFactApplyAliasImport(button = null, rootId = 'view-s
       sourceRows: report.sourceRows || 0,
       aliasesAdded: (report.aliases || []).length,
       ignoresAdded: (report.ignores || []).length,
+      newSkuTasksCreated: newSkuTaskResult.created.length,
+      newSkuTaskDuplicates: newSkuTaskResult.duplicates.length,
       duplicateRows: (report.duplicateRows || []).length,
       skippedRows: (report.skippedRows || []).length,
       errorRows: (report.errorRows || []).length,
@@ -2768,10 +2849,10 @@ async function handleSkuPlanFactApplyAliasImport(button = null, rootId = 'view-s
     await skuPlanFactUpsertSnapshot('sku_matrix', matrixPayload);
     await skuPlanFactUpsertSnapshot('sku_alias_audit', auditPayload);
     if (typeof window.__alteaResetPortalSnapshotState === 'function') window.__alteaResetPortalSnapshotState();
-    state.skuPlanFactAliasImportReport = { ...report, appliedAt, appliedAliases, auditEventId: auditEvent.id };
+    state.skuPlanFactAliasImportReport = { ...report, appliedAt, appliedAliases, newSkuTaskResult, auditEventId: auditEvent.id };
     skuPlanFactRenderImportTarget(rootId);
     if (typeof setAppError === 'function') {
-      setAppError(`Импорт применён: ${fmt.int(report.aliases?.length || 0)} alias, ${fmt.int(report.ignores?.length || 0)} ignore. Матрица обновлена.`);
+      setAppError(`Импорт применён: ${fmt.int(report.aliases?.length || 0)} alias, ${fmt.int(report.ignores?.length || 0)} ignore, ${fmt.int(newSkuTaskResult.created.length)} задач new_sku. Матрица обновлена.`);
     }
   } catch (error) {
     console.error('[sku-plan-fact-apply-alias-import]', error);
@@ -3085,6 +3166,8 @@ window.renderSkuPlanFact = renderSkuPlanFact;
 window.renderSkuContour = renderSkuContour;
 window.skuContourIssueRows = skuContourIssueRows;
 window.skuContourIssueIsResolved = skuContourIssueIsResolved;
+window.skuPlanFactCreateNewSkuTasks = skuPlanFactCreateNewSkuTasks;
+window.skuPlanFactBuildNewSkuTask = skuPlanFactBuildNewSkuTask;
 window.skuPlanFactBuildModel = skuPlanFactBuildModel;
 window.skuPlanFactExportRows = skuPlanFactExportRows;
 window.skuPlanFactExportColumns = skuPlanFactExportColumns;

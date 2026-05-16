@@ -132,10 +132,11 @@ async function main() {
     await clickView(page, 'dashboard');
     await assertVisible(page, '#view-dashboard', 'dashboard');
     await waitForSkuData(page);
+    await page.waitForSelector('#view-dashboard .portal-calm-hero', { timeout: 30000 });
     const dashboardCalmOk = await page.evaluate(() => Boolean(
       document.querySelector('#view-dashboard .portal-calm-hero')
       && document.querySelectorAll('#view-dashboard .portal-calm-chart').length >= 3
-      && document.querySelector('#view-dashboard .portal-calm-platform-table')
+      && document.querySelectorAll('#view-dashboard .portal-calm-platform-button').length >= 3
     ));
     if (!dashboardCalmOk) throw new Error('Calm dashboard did not render core blocks.');
 

@@ -1,5 +1,6 @@
 (function () {
-if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__) return;
+if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260516DASHCALM2__) return;
+window.__ALTEA_DASHBOARD_INTERACTIVE_20260516DASHCALM2__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260507N__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429C__ = true;
@@ -11,8 +12,8 @@ window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260516dashcalm1';
-const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm1';
+  const VERSION = '20260516dashcalm2';
+const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm2';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
@@ -5835,13 +5836,24 @@ function dashboardTaskStatusChip(task) {
       #view-dashboard .portal-calm-control-label { color: rgba(245,232,207,.58); font-size: 11px; letter-spacing: 0; text-transform: uppercase; }
       #view-dashboard .portal-calm-periods,
       #view-dashboard .portal-calm-platforms { display: flex; flex-wrap: wrap; gap: 8px; }
+      #view-dashboard .portal-calm-platform-button { position: relative; overflow: hidden; min-width: 86px; justify-content: center; border-color: var(--platform-border, rgba(212,164,74,.2)); background: linear-gradient(135deg, var(--platform-soft, rgba(15,11,9,.94)), rgba(15,11,9,.9)); }
+      #view-dashboard .portal-calm-platform-button::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--platform-color, #d4a44a); opacity: .95; }
+      #view-dashboard .portal-calm-platform-button:hover { border-color: var(--platform-strong, rgba(212,164,74,.36)); }
+      #view-dashboard .portal-calm-platform-button.active { border-color: var(--platform-strong, rgba(236,203,123,.98)); background: linear-gradient(135deg, var(--platform-active, rgba(212,164,74,.15)), rgba(15,11,9,.88)); color: #fff6e7; box-shadow: inset 0 0 0 1px var(--platform-border, rgba(236,203,123,.18)); }
       #view-dashboard .portal-calm-select { width: 100%; min-width: 0; padding: 11px 12px; border-radius: 8px; border: 1px solid rgba(212,164,74,.18); background: rgba(17,14,11,.96); color: #f6ead4; font: inherit; font-size: 13px; color-scheme: dark; }
       #view-dashboard .portal-calm-select:focus { outline: none; border-color: rgba(236,203,123,.82); box-shadow: 0 0 0 3px rgba(212,164,74,.12); }
-      #view-dashboard .portal-calm-dates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      #view-dashboard [data-platform="all"] { --platform-color:#d4a44a; --platform-soft:rgba(212,164,74,.075); --platform-active:rgba(212,164,74,.15); --platform-border:rgba(212,164,74,.24); --platform-strong:rgba(212,164,74,.58); }
+      #view-dashboard [data-platform="wb"] { --platform-color:#8b5cf6; --platform-soft:rgba(139,92,246,.08); --platform-active:rgba(139,92,246,.17); --platform-border:rgba(139,92,246,.26); --platform-strong:rgba(139,92,246,.6); }
+      #view-dashboard [data-platform="ozon"] { --platform-color:#1683ff; --platform-soft:rgba(22,131,255,.08); --platform-active:rgba(22,131,255,.17); --platform-border:rgba(22,131,255,.26); --platform-strong:rgba(22,131,255,.6); }
+      #view-dashboard [data-platform="ya"] { --platform-color:#f4c430; --platform-soft:rgba(244,196,48,.08); --platform-active:rgba(244,196,48,.15); --platform-border:rgba(244,196,48,.25); --platform-strong:rgba(244,196,48,.56); }
+      #view-dashboard [data-platform="goldapple"] { --platform-color:#9ac43a; --platform-soft:rgba(154,196,58,.08); --platform-active:rgba(154,196,58,.16); --platform-border:rgba(154,196,58,.25); --platform-strong:rgba(154,196,58,.56); }
+      #view-dashboard [data-platform="letu"] { --platform-color:#d946ef; --platform-soft:rgba(217,70,239,.075); --platform-active:rgba(217,70,239,.16); --platform-border:rgba(217,70,239,.24); --platform-strong:rgba(217,70,239,.54); }
+      #view-dashboard [data-platform="magnit"] { --platform-color:#ef4444; --platform-soft:rgba(239,68,68,.075); --platform-active:rgba(239,68,68,.16); --platform-border:rgba(239,68,68,.24); --platform-strong:rgba(239,68,68,.54); }
+      #view-dashboard .portal-calm-dates { display: grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap: 8px; }
       #view-dashboard .portal-calm-date { display: grid; gap: 6px; min-width: 0; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,.06); background: rgba(7,6,5,.34); }
       #view-dashboard .portal-calm-date span { color: rgba(245,232,207,.6); font-size: 11px; letter-spacing: 0; text-transform: uppercase; }
       #view-dashboard .portal-calm-date-shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; align-items: center; }
-      #view-dashboard .portal-calm-date .portal-exec-date-input { padding: 10px 9px; font-size: 12px; }
+      #view-dashboard .portal-calm-date .portal-exec-date-input { min-height: 42px; padding: 10px 34px 10px 11px; font-size: 13px; }
       #view-dashboard .portal-calm-date small { color: rgba(255,244,229,.66); font-size: 11px; line-height: 1.25; }
       #view-dashboard .portal-calm-section { display: grid; gap: 14px; padding: 18px; border-radius: 12px; }
       #view-dashboard .portal-calm-section-head { display: flex; gap: 14px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }
@@ -6045,9 +6057,12 @@ function dashboardTaskStatusChip(task) {
           </div>
           <div class="portal-calm-control-group">
             <div class="portal-calm-control-label">Площадка</div>
-            <select class="portal-calm-select" data-portal-exec-platform-select aria-label="Площадка">
-              ${platformOptions.map((platform) => `<option value="${esc(platform.key)}" ${executive.selectedPlatform === platform.key ? 'selected' : ''}>${esc(platform.label)}</option>`).join('')}
-            </select>
+            <div class="portal-calm-platforms" role="group" aria-label="Площадка">
+              ${platformOptions.map((platform) => {
+                const active = executive.selectedPlatform === platform.key;
+                return `<button type="button" class="quick-chip portal-calm-platform-button ${active ? 'active' : ''}" data-platform="${esc(platform.key)}" data-portal-exec-platform="${esc(platform.key)}">${esc(platform.label)}</button>`;
+              }).join('')}
+            </div>
           </div>
           <div class="portal-calm-dates">
             <label class="portal-calm-date">
@@ -7644,8 +7659,12 @@ function dashboardTaskStatusChip(task) {
     if (typeof window[name] !== 'function' || window[name].__dashboardInteractiveWrapped) return;
     const original = window[name];
     const wrapped = function () {
-      const result = original.apply(this, arguments);
       const onDashboard = typeof state !== 'object' || !state || state.activeView === 'dashboard';
+      if (onDashboard && (name === 'rerenderCurrentView' || name === 'renderDashboard')) {
+        scheduleApply(90);
+        return null;
+      }
+      const result = original.apply(this, arguments);
       if (onDashboard) scheduleApply(90);
       return result;
     };
@@ -8034,9 +8053,9 @@ function dashboardTaskStatusChip(task) {
   syncChrome();
   ensureInteractiveDashboardBoot(false);
   window.setTimeout(() => ensureInteractiveDashboardBoot(false), 30);
-  window.setTimeout(() => ensureInteractiveDashboardBoot(true), 320);
+  window.setTimeout(() => ensureInteractiveDashboardBoot(false), 320);
   if (document.readyState !== 'complete') {
-    window.addEventListener('load', () => ensureInteractiveDashboardBoot(true), { once: true });
+    window.addEventListener('load', () => ensureInteractiveDashboardBoot(false), { once: true });
   }
   window.addEventListener('altea:viewchange', (event) => {
     if (event.detail?.view === 'dashboard') primeDashboard(false);

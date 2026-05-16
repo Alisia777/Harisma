@@ -2,7 +2,7 @@
   if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516__) return;
   window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516__ = true;
 
-  const VERSION = '20260516execlean1';
+  const VERSION = '20260516execlean2';
   const KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'cross', 'product'];
   const META = {
     wb: { label: 'WB', title: 'РОП WB' },
@@ -84,11 +84,7 @@
     const meta = META[row.key] || META.cross;
     const tone = row.late.length || row.crit.length ? 'danger' : row.final.length || row.rop.length ? 'warn' : row.items.length ? 'info' : 'ok';
     const status = row.late.length ? `${fmt(row.late.length)} проср.` : row.crit.length ? `${fmt(row.crit.length)} крит.` : row.final.length ? `${fmt(row.final.length)} финал` : row.rop.length ? `${fmt(row.rop.length)} у РОПа` : row.items.length ? `${fmt(row.items.length)} актив.` : 'чисто';
-    return `<button class="executive-lite-card ${row.risk ? 'has-risk' : ''} ${row.items.length ? '' : 'is-empty'}" type="button" data-executive-lite-open="${esc(row.key)}">
-      <span class="executive-lite-card-top"><span>${esc(meta.title)}</span>${badge(status, tone)}</span>
-      <strong>${esc(meta.label)}</strong>
-      <span class="executive-lite-metrics"><span><b>${fmt(row.items.length)}</b> активных</span><span><b>${fmt(row.rop.length)}</b> РОП</span><span><b>${fmt(row.final.length)}</b> финал</span><span><b>${fmt(row.noOwner.length)}</b> без owner</span></span>
-    </button>`;
+    return `<button class="executive-lite-card ${row.risk ? 'has-risk' : ''} ${row.items.length ? '' : 'is-empty'}" type="button" data-executive-lite-open="${esc(row.key)}"><span class="executive-lite-card-top"><span>${esc(meta.title)}</span>${badge(status, tone)}</span><strong>${esc(meta.label)}</strong><span class="executive-lite-metrics"><span><b>${fmt(row.items.length)}</b> активных</span><span><b>${fmt(row.rop.length)}</b> РОП</span><span><b>${fmt(row.final.length)}</b> финал</span><span><b>${fmt(row.noOwner.length)}</b> без owner</span></span></button>`;
   }
 
   function taskTitle(task) { return task?.title || task?.entityLabel || task?.articleKey || 'Задача'; }
@@ -131,12 +127,29 @@
   }
 
   let scheduled = false;
+  let rendering = false;
+  let observer = null;
+  function stale(root) {
+    const title = root?.querySelector('.section-title p')?.textContent || '';
+    return !root?.querySelector('[data-executive-lite-panel]') || title.includes('общий уровень риска') || title.includes('очередь руководителя') || title.includes('очередь директора');
+  }
+  function watch() {
+    if (observer || typeof MutationObserver !== 'function') return;
+    const root = document.getElementById('view-executive');
+    if (!root) return;
+    observer = new MutationObserver(() => { if (!rendering && stale(root)) schedule(); });
+    observer.observe(root, { childList: true, subtree: true, characterData: true });
+  }
   function schedule() {
     if (scheduled) return;
     scheduled = true;
     requestAnimationFrame(() => {
       scheduled = false;
-      if (location.hash === '#executive' || state().activeView === 'executive') { injectStyles(); render(); }
+      if (location.hash === '#executive' || state().activeView === 'executive') {
+        rendering = true;
+        try { injectStyles(); render(); watch(); }
+        finally { rendering = false; }
+      }
     });
   }
 
@@ -149,4 +162,6 @@
   schedule();
   setTimeout(schedule, 250);
   setTimeout(schedule, 900);
+  setTimeout(schedule, 1800);
+  setTimeout(schedule, 3500);
 })();

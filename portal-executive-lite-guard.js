@@ -1,8 +1,8 @@
 (function () {
-  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN11__) return;
-  window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN11__ = true;
+  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN12__) return;
+  window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN12__ = true;
 
-  const VERSION = '20260516execlean11';
+  const VERSION = '20260516execlean12';
   const PLATFORM_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'cross'];
   const PLATFORM_META = {
     wb: { label: 'WB', title: 'РОП WB' },
@@ -137,7 +137,7 @@
             : row.items.length ? `${fmt(row.items.length)} актив.` : 'чисто';
 
     return `
-      <button class="executive-lite-card ${row.risk ? 'has-risk' : ''} ${row.items.length ? '' : 'is-empty'}" type="button" data-executive-lite-open="${escapeHtml(row.key)}">
+      <button class="executive-lite-card ${row.risk ? 'has-risk' : ''} ${row.items.length ? '' : 'is-empty'}" type="button" data-platform="${escapeHtml(row.key)}" data-executive-lite-open="${escapeHtml(row.key)}">
         <span class="executive-lite-card-top"><span>${escapeHtml(meta.title)}</span>${badge(status, tone)}</span>
         <strong>${escapeHtml(meta.label)}</strong>
         <span class="executive-lite-metrics">
@@ -153,7 +153,7 @@
     const overdue = isOverdue(task);
     const priority = task?.priority === 'critical' ? 'Критично' : task?.priority === 'high' ? 'Высокий' : 'Средний';
     return `
-      <button class="executive-lite-task ${overdue ? 'is-overdue' : ''}" type="button" data-executive-lite-task="${escapeHtml(task?.id || '')}">
+      <button class="executive-lite-task ${overdue ? 'is-overdue' : ''}" type="button" data-platform="${escapeHtml(platformKey(task))}" data-executive-lite-task="${escapeHtml(task?.id || '')}">
         <strong>${escapeHtml(taskTitle(task))}</strong>
         <span>${escapeHtml(taskOwner(task))} · ${escapeHtml(task?.due || 'без срока')}</span>
         <em>${escapeHtml(priority)}</em>
@@ -174,13 +174,13 @@
       .filter((task) => platformKey(task) === row.key)
       .sort((left, right) => taskRiskScore(right) - taskRiskScore(left) || String(left?.due || '9999-12-31').localeCompare(String(right?.due || '9999-12-31')));
     if (!items.length) return '';
-    const shown = items.slice(0, 4);
+    const shown = items.slice(0, 3);
     const hidden = Math.max(0, items.length - shown.length);
     const tone = row.overdue.length || row.critical.length ? 'danger'
       : row.waitingFinal.length || row.waitingRop.length || row.noOwner.length ? 'warn'
         : 'info';
     return `
-      <section class="executive-lite-focus-group">
+      <section class="executive-lite-focus-group" data-platform="${escapeHtml(row.key)}">
         <div class="executive-lite-focus-group-head">
           <div>
             <span>${escapeHtml(meta.title)}</span>
@@ -229,7 +229,7 @@
       state.controlFilters.status = 'active';
       state.controlFilters.horizon = 'all';
       state.controlFilters.source = 'all';
-      state.controlFilters.taskLiteCreateOpen = true;
+      state.controlFilters.taskSimpleCreateOpen = true;
       if (typeof window.setView === 'function') window.setView('control');
       else window.location.hash = '#control';
     });
@@ -251,9 +251,10 @@
       .executive-lite-head span{display:block;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--muted)}
       .executive-lite-head strong{display:block;margin-top:3px;color:#fff7e6;font-size:18px;line-height:1.15}
       .executive-lite-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-      .executive-lite-card{display:flex;flex-direction:column;gap:9px;min-height:132px;text-align:left;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(0,0,0,.22);color:inherit;padding:12px;cursor:pointer}
-      .executive-lite-card:hover{border-color:rgba(212,164,74,.46);background:rgba(212,164,74,.06)}
-      .executive-lite-card.has-risk{border-color:rgba(212,164,74,.34);background:rgba(212,164,74,.055)}
+      .executive-lite-card{position:relative;display:flex;flex-direction:column;gap:9px;min-height:126px;overflow:hidden;text-align:left;border:1px solid var(--platform-border,rgba(255,255,255,.08));border-radius:10px;background:linear-gradient(135deg,var(--platform-soft,rgba(255,255,255,.025)),rgba(0,0,0,.22));color:inherit;padding:12px 12px 12px 14px;cursor:pointer}
+      .executive-lite-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--platform-color,#d4a44a);opacity:.92}
+      .executive-lite-card:hover{border-color:var(--platform-strong,rgba(212,164,74,.46));background:linear-gradient(135deg,var(--platform-active,rgba(212,164,74,.11)),rgba(0,0,0,.22))}
+      .executive-lite-card.has-risk{border-color:var(--platform-strong,rgba(212,164,74,.34));background:linear-gradient(135deg,var(--platform-active,rgba(212,164,74,.09)),rgba(0,0,0,.2))}
       .executive-lite-card.is-empty{opacity:.68}
       .executive-lite-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted)}
       .executive-lite-card>strong{font-size:18px;line-height:1.1;color:#fff7e6}
@@ -262,17 +263,29 @@
       .executive-lite-metrics b{display:block;color:#fff7e6;font-size:15px;line-height:1}
       .executive-lite-task-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
       .executive-lite-focus-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-      .executive-lite-focus-group{display:flex;flex-direction:column;gap:10px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(0,0,0,.18);padding:12px}
+      .executive-lite-focus-group{display:flex;flex-direction:column;gap:10px;border:1px solid var(--platform-border,rgba(255,255,255,.08));border-radius:10px;background:linear-gradient(180deg,var(--platform-soft,rgba(255,255,255,.025)),rgba(0,0,0,.18));padding:12px}
       .executive-lite-focus-group-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
       .executive-lite-focus-group-head span{display:block;font-size:11px;color:var(--muted);line-height:1.25}
       .executive-lite-focus-group-head strong{display:block;margin-top:2px;color:#fff7e6;font-size:18px;line-height:1.1}
       .executive-lite-task-list{display:flex;flex-direction:column;gap:8px}
       .executive-lite-more{border:1px dashed rgba(255,255,255,.12);border-radius:8px;padding:8px;color:var(--muted);font-size:12px}
-      .executive-lite-task{text-align:left;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(0,0,0,.18);padding:12px;color:inherit;cursor:pointer}
+      .executive-lite-clean{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;color:var(--muted);font-size:12px}
+      .executive-lite-clean span{border:1px solid rgba(255,255,255,.07);border-radius:999px;padding:5px 8px;background:rgba(0,0,0,.16)}
+      .executive-lite-task{position:relative;text-align:left;border:1px solid rgba(255,255,255,.08);border-left-color:var(--platform-strong,rgba(255,255,255,.14));border-radius:10px;background:rgba(0,0,0,.18);padding:10px 12px 10px 14px;color:inherit;cursor:pointer}
+      .executive-lite-task::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--platform-color,#d4a44a);opacity:.82}
       .executive-lite-task.is-overdue{border-color:rgba(217,83,79,.42);background:rgba(217,83,79,.08)}
       .executive-lite-task strong{display:block;color:#fff7e6;line-height:1.25}
       .executive-lite-task span{display:block;margin-top:6px;font-size:12px;color:var(--muted)}
       .executive-lite-task em{display:inline-block;margin-top:9px;font-style:normal;font-size:11px;border:1px solid rgba(212,164,74,.25);border-radius:999px;padding:4px 8px;color:#f3dfad}
+      [data-platform="all"]{--platform-color:#d4a44a;--platform-soft:rgba(212,164,74,.065);--platform-active:rgba(212,164,74,.13);--platform-border:rgba(212,164,74,.22);--platform-strong:rgba(212,164,74,.54)}
+      [data-platform="wb"]{--platform-color:#8b5cf6;--platform-soft:rgba(139,92,246,.075);--platform-active:rgba(139,92,246,.16);--platform-border:rgba(139,92,246,.25);--platform-strong:rgba(139,92,246,.58)}
+      [data-platform="ozon"]{--platform-color:#1683ff;--platform-soft:rgba(22,131,255,.075);--platform-active:rgba(22,131,255,.16);--platform-border:rgba(22,131,255,.25);--platform-strong:rgba(22,131,255,.58)}
+      [data-platform="ya"]{--platform-color:#f4c430;--platform-soft:rgba(244,196,48,.075);--platform-active:rgba(244,196,48,.14);--platform-border:rgba(244,196,48,.24);--platform-strong:rgba(244,196,48,.54)}
+      [data-platform="goldapple"]{--platform-color:#9ac43a;--platform-soft:rgba(154,196,58,.075);--platform-active:rgba(154,196,58,.15);--platform-border:rgba(154,196,58,.24);--platform-strong:rgba(154,196,58,.54)}
+      [data-platform="letu"]{--platform-color:#d946ef;--platform-soft:rgba(217,70,239,.07);--platform-active:rgba(217,70,239,.15);--platform-border:rgba(217,70,239,.23);--platform-strong:rgba(217,70,239,.52)}
+      [data-platform="magnit"]{--platform-color:#ef4444;--platform-soft:rgba(239,68,68,.07);--platform-active:rgba(239,68,68,.15);--platform-border:rgba(239,68,68,.23);--platform-strong:rgba(239,68,68,.52)}
+      [data-platform="product"]{--platform-color:#22c55e;--platform-soft:rgba(34,197,94,.07);--platform-active:rgba(34,197,94,.15);--platform-border:rgba(34,197,94,.23);--platform-strong:rgba(34,197,94,.52)}
+      [data-platform="cross"]{--platform-color:#94a3b8;--platform-soft:rgba(148,163,184,.065);--platform-active:rgba(148,163,184,.13);--platform-border:rgba(148,163,184,.22);--platform-strong:rgba(148,163,184,.48)}
       @media (max-width:1280px){.executive-lite-grid,.executive-lite-task-grid,.executive-lite-focus-board{grid-template-columns:repeat(2,minmax(0,1fr))}}
       @media (max-width:820px){.executive-lite-grid,.executive-lite-task-grid,.executive-lite-focus-board{grid-template-columns:1fr}.executive-lite-head{flex-direction:column}}
     `;
@@ -293,10 +306,12 @@
     if (!stale) return;
 
     const rows = PLATFORM_KEYS.map((key) => rowFor(key, tasks));
+    const visibleRows = rows.filter((row) => row.items.length || row.risk);
+    const cleanRows = rows.filter((row) => !row.items.length && !row.risk);
     const focus = tasks
       .filter((task) => isOverdue(task) || task?.priority === 'critical' || task?.status === 'waiting_decision' || task?.status === 'waiting_rop' || !task?.owner)
       .sort((a, b) => Number(isOverdue(b)) - Number(isOverdue(a)) || Number(b?.priority === 'critical') - Number(a?.priority === 'critical'))
-      .slice(0, 24);
+      .slice(0, 12);
     const waitingFinal = tasks.filter((task) => task?.status === 'waiting_decision');
     const waitingRop = tasks.filter((task) => task?.status === 'waiting_rop');
     const overdue = tasks.filter(isOverdue);
@@ -310,9 +325,9 @@
         <div class="section-title executive-lite-title">
           <div>
             <h2>Руководителю</h2>
-            <div class="executive-lite-copy">Сначала площадки: WB, Ozon и остальные контуры. РОП открывает свой список, руководитель видит только финал и риски.</div>
+            <div class="executive-lite-copy">Сначала видно, где горит. Клик по площадке открывает её задачи без общей каши.</div>
           </div>
-          <div class="badge-stack"><button class="btn primary" type="button" data-executive-lite-create>Поставить задачу</button>${badge(`${fmt(waitingFinal.length)} финал`, waitingFinal.length ? 'warn' : 'ok')}${badge(`${fmt(waitingRop.length)} у РОПа`, waitingRop.length ? 'info' : 'ok')}</div>
+          <div class="badge-stack">${badge(`${fmt(waitingFinal.length)} финал`, waitingFinal.length ? 'warn' : 'ok')}${badge(`${fmt(waitingRop.length)} у РОПа`, waitingRop.length ? 'info' : 'ok')}</div>
         </div>
         <div class="executive-lite-surface" data-executive-lite-panel>
           <div class="executive-lite-head">
@@ -322,7 +337,8 @@
             </div>
             <div class="badge-stack">${badge(`${fmt(tasks.length)} активных`, tasks.length ? 'info' : 'ok')}${badge(`${fmt(overdue.length)} проср.`, overdue.length ? 'danger' : 'ok')}${badge(`${fmt(noOwner.length)} без owner`, noOwner.length ? 'warn' : 'ok')}</div>
           </div>
-          <div class="executive-lite-grid">${rows.map(platformCard).join('')}</div>
+          <div class="executive-lite-grid">${(visibleRows.length ? visibleRows : rows.slice(0, 1)).map(platformCard).join('')}</div>
+          ${cleanRows.length ? `<div class="executive-lite-clean"><span>Без активных задач:</span>${cleanRows.map((row) => `<span>${escapeHtml((PLATFORM_META[row.key] || PLATFORM_META.cross).label)}</span>`).join('')}</div>` : ''}
         </div>
         <div class="executive-lite-focus">
           <div class="executive-lite-head">
@@ -332,7 +348,7 @@
             </div>
             ${badge(`${fmt(focus.length)} задач`, focus.length ? 'danger' : 'ok')}
           </div>
-          <div class="executive-lite-focus-board">${rows.map((row) => focusPlatformGroup(row, focus)).join('') || '<div class="empty">Срочных решений нет</div>'}</div>
+          <div class="executive-lite-focus-board">${visibleRows.map((row) => focusPlatformGroup(row, focus)).join('') || '<div class="empty">Срочных решений нет</div>'}</div>
         </div>`;
       bind(root);
       watch();

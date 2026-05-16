@@ -856,7 +856,7 @@
       </div>`;
   }
 
-  const CONTROL_SIMPLE_TITLE = 'Сначала выбираем направление, потом работаем с пятью очередями. Полный экран открыт только по кнопке.';
+  const CONTROL_SIMPLE_TITLE = 'Выберите площадку, дальше работайте только с её задачами. Обзор по всем показывает контуры отдельно.';
   const CONTROL_SIMPLE_DIRECTIONS = [
     ['all', 'Все', 'весь контур'],
     ['wb', 'WB', 'РОП WB'],
@@ -1036,7 +1036,7 @@
     const counts = controlSimpleWorkstreamCounts(sorted);
     const tone = counts.overdue ? 'danger' : counts.sent || counts.noOwner ? 'warn' : counts.active ? 'info' : 'ok';
     return `
-      <section class="control-simple-workstream-lane ${counts.active ? '' : 'is-empty'}" data-control-simple-workstream-lane="${escapeHtml(key)}">
+      <section class="control-simple-workstream-lane ${counts.active ? '' : 'is-empty'}" data-platform="${escapeHtml(key)}" data-control-simple-workstream-lane="${escapeHtml(key)}">
         <div class="control-simple-workstream-lane-head">
           <div>
             <span>${escapeHtml(meta.hint)}</span>
@@ -1057,7 +1057,7 @@
           ${visible.length ? visible.map(controlSimpleTaskCard).join('') : '<div class="control-simple-empty">Пусто. Здесь не горит.</div>'}
           ${hidden ? `<button class="control-simple-more" type="button" data-control-simple-expand-platform="${escapeHtml(key)}">Ещё ${fmt.int(hidden)} в ${escapeHtml(meta.label)}</button>` : ''}
         </div>
-        <button class="btn ghost small-btn" type="button" data-control-simple-direction="${escapeHtml(key)}">Открыть только ${escapeHtml(meta.label)}</button>
+        <button class="btn ghost small-btn" type="button" data-control-simple-direction="${escapeHtml(key)}">Открыть ${escapeHtml(meta.label)}</button>
       </section>`;
   }
 
@@ -1072,10 +1072,10 @@
       <div class="control-simple-platform-board">
         <div class="control-simple-platform-board-head">
           <div>
-            <span>Разделение по площадкам</span>
-            <strong>Сначала контур, потом статус</strong>
+            <span>Площадки</span>
+            <strong>Каждая площадка отдельно</strong>
           </div>
-          ${badge(`${fmt.int(data.tasks.length)} задач в общем режиме`, data.tasks.length ? 'info' : 'ok')}
+          ${badge(`${fmt.int(data.tasks.length)} задач всего`, data.tasks.length ? 'info' : 'ok')}
         </div>
         <div class="control-simple-platform-lanes">
           ${lanes.length ? lanes.map((lane) => controlSimpleWorkstreamPanel(lane.key, lane.tasks)).join('') : '<div class="control-simple-empty">По текущему фильтру задач нет.</div>'}
@@ -1121,9 +1121,10 @@
     const id = controlSimpleTaskId(taskItem);
     const next = String(taskItem?.nextAction || taskItem?.reason || '').trim();
     const tone = controlSimpleIsOverdue(taskItem) || taskItem?.priority === 'critical' ? 'danger' : CONTROL_SIMPLE_SENT.has(controlSimpleStatus(taskItem)) ? 'warn' : controlSimpleIsDone(taskItem) ? 'ok' : '';
-    const direction = CONTROL_SIMPLE_META[controlSimpleDirectionKey(taskItem)] || CONTROL_SIMPLE_META.cross;
+    const directionKey = controlSimpleDirectionKey(taskItem);
+    const direction = CONTROL_SIMPLE_META[directionKey] || CONTROL_SIMPLE_META.cross;
     return `
-      <div class="control-simple-task ${tone ? `is-${tone}` : ''}">
+      <div class="control-simple-task ${tone ? `is-${tone}` : ''}" data-platform="${escapeHtml(directionKey)}">
         <button class="control-simple-task-main" type="button" data-control-simple-open-task="${escapeHtml(id)}">
           <strong>${escapeHtml(taskItem?.title || taskItem?.entityLabel || taskItem?.articleKey || 'Задача')}</strong>
           <span>${escapeHtml(taskItem?.owner || 'без owner')} · ${escapeHtml(taskItem?.due || 'без срока')}</span>
@@ -1155,7 +1156,7 @@
   }
 
   function controlSimpleCreateForm(selected) {
-    const direction = CONTROL_SIMPLE_META[selected] ? selected : 'cross';
+    const direction = selected && selected !== 'all' && CONTROL_SIMPLE_META[selected] ? selected : 'cross';
     return `
       <details class="control-simple-create" ${state?.controlFilters?.taskSimpleCreateOpen ? 'open' : ''}>
         <summary><span><strong>Поставить задачу</strong><em>что сделать, кому, срок</em></span>${badge('короткая форма', 'info')}</summary>
@@ -1179,27 +1180,21 @@
     const count = Number(data?.counts?.[key] || 0);
     const active = data?.selected === key;
     const manager = key === 'all';
-    return `<button class="control-simple-direction ${active ? 'active' : ''} ${manager ? 'is-manager' : ''}" type="button" data-control-simple-direction="${escapeHtml(key)}"><strong>${escapeHtml(meta.label)}</strong><span>${escapeHtml(manager ? 'для руководителя' : meta.hint)}</span><b>${fmt.int(count)}</b></button>`;
+    return `<button class="control-simple-direction ${active ? 'active' : ''} ${manager ? 'is-manager' : ''}" type="button" data-platform="${escapeHtml(key)}" data-control-simple-direction="${escapeHtml(key)}"><strong>${escapeHtml(meta.label)}</strong><span>${escapeHtml(manager ? 'обзор по всем' : meta.hint)}</span><b>${fmt.int(count)}</b></button>`;
   }
 
   function controlSimpleWorkspacePanel(data) {
     const selectedMeta = CONTROL_SIMPLE_META[data.selected] || CONTROL_SIMPLE_META.cross;
-    const selectedCount = Number(data.counts?.[data.selected] || 0);
     const selectedText = data.selected === 'all'
-      ? 'Показаны все контуры. Это режим руководителя, не рабочее место РОПа.'
-      : `Показаны только задачи контура: ${selectedMeta.label}. Остальные не мешают в очередях.`;
+      ? 'Все площадки ниже разделены на отдельные колонки. Ничего не смешивается в одну очередь.'
+      : `Открыта площадка ${selectedMeta.label}. Остальные задачи скрыты, чтобы не мешали работе.`;
     return `
       <div class="control-simple-workspace">
         <div class="control-simple-workspace-head">
           <div>
-            <span>Рабочее место</span>
+            <span>Контуры задач</span>
             <strong>Сначала выберите площадку</strong>
             <em>${escapeHtml(selectedText)}</em>
-          </div>
-          <div class="control-simple-selected">
-            <span>Открыто сейчас</span>
-            <strong>${escapeHtml(selectedMeta.label)}</strong>
-            <b>${fmt.int(data.selected === 'all' ? data.tasks.length : selectedCount)} задач</b>
           </div>
         </div>
         <div class="control-simple-directions">${CONTROL_SIMPLE_DIRECTION_RENDER_ORDER.map((key) => controlSimpleDirectionButton(key, data)).join('')}</div>
@@ -1224,7 +1219,7 @@
     state.controlFilters = state.controlFilters || {};
     if (state.controlFilters.taskSimpleFullMode) {
       if (baseControl) baseControl();
-      root.insertAdjacentHTML('afterbegin', `<div class="control-simple-return"><button class="btn primary" type="button" data-control-simple-return>Вернуться в простой режим</button>${badge('полный режим', 'warn')}</div>`);
+      root.insertAdjacentHTML('afterbegin', `<div class="control-simple-return"><button class="btn primary" type="button" data-control-simple-return>Вернуться к рабочему виду</button>${badge('все поля', 'warn')}</div>`);
       root.querySelector('[data-control-simple-return]')?.addEventListener('click', () => {
         state.controlFilters.taskSimpleFullMode = false;
         controlRefined();
@@ -1236,7 +1231,7 @@
     const boardHtml = data.selected === 'all'
       ? controlSimpleWorkstreamBoard(data)
       : `<div class="control-simple-board">${CONTROL_SIMPLE_QUEUES.map(([key, title, hint]) => controlSimpleQueuePanel(key, title, hint, data.buckets[key] || [])).join('')}</div>`;
-    root.dataset.controlSimple = '20260516taskworkspace2';
+    root.dataset.controlSimple = '20260516taskworkspace3';
     root.innerHTML = `
       <div class="section-title control-simple-title">
         <div><h2>Задачи</h2><div class="control-simple-title-copy">${escapeHtml(CONTROL_SIMPLE_TITLE)}</div></div>
@@ -1246,7 +1241,7 @@
         ${controlSimpleWorkspacePanel(data)}
         <div class="control-simple-topbar">
           <input id="controlSimpleSearch" value="${escapeHtml(state.controlFilters.search || '')}" placeholder="Поиск по задаче, SKU, owner">
-          <div class="badge-stack"><button class="btn primary" type="button" data-control-simple-create-toggle>Новая задача</button><button class="btn ghost" type="button" data-control-simple-full>Полный режим</button></div>
+          <div class="badge-stack"><button class="btn primary" type="button" data-control-simple-create-toggle>Поставить задачу</button><button class="btn ghost" type="button" data-control-simple-full>Все поля</button></div>
         </div>
         <div class="control-simple-summary">
           <span><b>${fmt.int(data.buckets.new.length)}</b> новые</span><span><b>${fmt.int(data.buckets.signals.length)}</b> автосигналы</span><span><b>${fmt.int(data.buckets.common.length)}</b> общие</span><span><b>${fmt.int(data.buckets.sent.length)}</b> отправленные</span><span><b>${fmt.int(data.buckets.confirmed.length)}</b> подтвержденные</span>

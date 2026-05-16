@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260514_MARKETPLACES1__) return;
+  if (window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260516_PLATFORMCOLORS2__) return;
+  window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260516_PLATFORMCOLORS2__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260514_MARKETPLACES1__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260508_PRICECACHE1__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260505A__ = true;
@@ -13,8 +14,8 @@
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260428B__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260428A__ = true;
 
-  const SCRIPT_ID = 'portalPriceWorkbenchSimpleLive20260514marketplaces1';
-  const SRC = 'portal-price-workbench-simple-live.js?v=20260516adscolors1';
+  const SCRIPT_ID = 'portalPriceWorkbenchSimpleLive20260516platformcolors2';
+  const SRC = 'portal-price-workbench-simple-live.js?v=20260516platformcolors2';
 
   function isPricesViewActive() {
     if (window.state && window.state.activeView) return window.state.activeView === 'prices';
@@ -31,7 +32,7 @@
   }
 
   function ensureLoaded() {
-    if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260514_MARKETPLACES1__) {
+    if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260516_PLATFORMCOLORS2__) {
       if (isPricesViewActive()) rerender();
       return;
     }

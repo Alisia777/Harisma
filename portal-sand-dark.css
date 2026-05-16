@@ -947,3 +947,97 @@ body.v87-imperial.theme-sand-dark #view-repricer .control-card {
     backdrop-filter: none !important;
   }
 }
+
+body.v87-imperial.theme-sand-dark #view-prices,
+body.v87-imperial.theme-sand-dark #view-ads-funnel {
+  --market-rgb: 212, 164, 74;
+  --market-ink: #fff5df;
+}
+
+body.v87-imperial.theme-sand-dark #view-prices[data-price-active-market="wb"],
+body.v87-imperial.theme-sand-dark #view-ads-funnel[data-platform="wb"] {
+  --market-rgb: 139, 92, 246;
+}
+
+body.v87-imperial.theme-sand-dark #view-prices[data-price-active-market="ozon"],
+body.v87-imperial.theme-sand-dark #view-ads-funnel[data-platform="ozon"] {
+  --market-rgb: 22, 131, 255;
+}
+
+body.v87-imperial.theme-sand-dark #view-prices[data-price-active-market="ym"],
+body.v87-imperial.theme-sand-dark #view-ads-funnel[data-platform="ya"] {
+  --market-rgb: 244, 196, 48;
+}
+
+body.v87-imperial.theme-sand-dark #view-prices .pw-card,
+body.v87-imperial.theme-sand-dark #view-ads-funnel .card {
+  border-color: rgba(var(--market-rgb), 0.18) !important;
+  background:
+    radial-gradient(circle at 92% 0, rgba(var(--market-rgb), 0.10), transparent 34%),
+    linear-gradient(180deg, rgba(24, 19, 15, 0.92), rgba(10, 8, 7, 0.96)) !important;
+}
+
+body.v87-imperial.theme-sand-dark #view-prices .pw-chip[data-price-market],
+body.v87-imperial.theme-sand-dark #view-ads-funnel .ads-platform-chip,
+body.v87-imperial.theme-sand-dark #view-ads-funnel .ads-platform-pill {
+  --platform-chip-rgb: 212, 164, 74;
+  border-color: rgba(var(--platform-chip-rgb), 0.42) !important;
+  background:
+    radial-gradient(circle at 22% 0, rgba(var(--platform-chip-rgb), 0.22), transparent 30%),
+    linear-gradient(180deg, rgba(var(--platform-chip-rgb), 0.16), rgba(12, 10, 8, 0.92)) !important;
+  color: #fff1d8 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055) !important;
+}
+
+body.v87-imperial.theme-sand-dark #view-prices .pw-chip[data-price-market="wb"],
+body.v87-imperial.theme-sand-dark #view-ads-funnel [data-platform="wb"] {
+  --platform-chip-rgb: 139, 92, 246;
+}
+
+body.v87-imperial.theme-sand-dark #view-prices .pw-chip[data-price-market="ozon"],
+body.v87-imperial.theme-sand-dark #view-ads-funnel [data-platform="ozon"] {
+  --platform-chip-rgb: 22, 131, 255;
+}
+
+body.v87-imperial.theme-sand-dark #view-prices .pw-chip[data-price-market="ym"],
+body.v87-imperial.theme-sand-dark #view-ads-funnel [data-platform="ya"] {
+  --platform-chip-rgb: 244, 196, 48;
+}
+
+body.v87-imperial.theme-sand-dark #view-prices .pw-chip[data-price-market="goldapple"],
+body.v87-imperial.theme-sand-dark #view-ads-funnel [data-platform="goldapple"] {
+  --platform-chip-rgb: 154, 196, 58;
+}
+
+body.v87-imperial.theme-sand-dark #view-prices .pw-chip[data-price-market="letu"],
+body.v87-imperial.theme-sand-dark #view-ads-funnel [data-platform="letu"] {
+  --platform-chip-rgb: 217, 70, 239;
+}
+
+body.v87-imperial.theme-sand-dark #view-prices .pw-chip[data-price-market="magnit"],
+body.v87-imperial.theme-sand-dark #view-ads-funnel [data-platform="magnit"] {
+  --platform-chip-rgb: 239, 68, 68;
+}
+
+body.v87-imperial.theme-sand-dark #view-prices .pw-chip[data-price-market].active,
+body.v87-imperial.theme-sand-dark #view-ads-funnel .ads-platform-chip.active,
+body.v87-imperial.theme-sand-dark #view-ads-funnel .ads-platform-chip[aria-pressed="true"] {
+  background:
+    radial-gradient(circle at 20% 0, rgba(255, 255, 255, 0.22), transparent 30%),
+    linear-gradient(180deg, rgba(var(--platform-chip-rgb), 0.86), rgba(var(--platform-chip-rgb), 0.44)) !important;
+  border-color: rgba(var(--platform-chip-rgb), 0.86) !important;
+  color: #ffffff !important;
+  box-shadow: 0 14px 32px rgba(var(--platform-chip-rgb), 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.42);
+}
+
+body.v87-imperial.theme-sand-dark #view-ads-funnel .ads-platform-switch {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+body.v87-imperial.theme-sand-dark #view-ads-funnel .ads-platform-pill {
+  padding: 5px 9px;
+}

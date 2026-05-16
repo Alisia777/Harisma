@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260514_MARKETPLACES1__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260516_PLATFORMCOLORS2__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260516_PLATFORMCOLORS2__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260514_MARKETPLACES1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260508_PRICECACHE1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260505A__ = true;
@@ -2715,6 +2716,9 @@ function downloadPriceSummaryExcel(rows) {
     if (!root) return;
     if (state.loaded) normalizeDateRange();
     ensureStyles();
+    var activeMarket = state.market || "all";
+    root.dataset.priceActiveMarket = activeMarket;
+    root.dataset.platform = activeMarket === "ym" ? "ya" : activeMarket;
     var rows = visibleRows();
     var summary = stats(rows);
     var selected = state.selectedKey ? buildDisplayRow(findRow(state.selectedKey)) : null;

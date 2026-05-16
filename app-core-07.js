@@ -2744,6 +2744,22 @@ function renderAdsFunnel(rootId = 'view-ads-funnel') {
     ? 'В выбранном фильтре нет SKU-строк рекламы. Сбросьте фильтры или проверьте, что itemSeries заполнен в ads_summary.'
     : 'Рекламный слой пуст: в ads_summary пока нет дат и строк. После публикации bridge-среза здесь появится внутренняя реклама.';
 
+  const platformChipsHtml = `
+    <div class="ads-platform-switch" role="group" aria-label="Площадка">
+      ${model.platformOptions.map((option) => `
+        <button
+          class="quick-chip ads-platform-chip ${model.filters.platform === option.key ? 'active' : ''}"
+          type="button"
+          data-ads-platform="${escapeHtml(option.key)}"
+          data-platform="${escapeHtml(option.key)}"
+          aria-pressed="${model.filters.platform === option.key}"
+        >${escapeHtml(option.label)}</button>
+      `).join('')}
+    </div>
+  `;
+
+  root.dataset.platform = model.platformFilter || 'all';
+
   root.innerHTML = `
     <div class="section-title">
       <div>
@@ -2770,9 +2786,7 @@ function renderAdsFunnel(rootId = 'view-ads-funnel') {
       </div>
       <div class="control-filters" style="margin-top:12px">
         <input id="adsFunnelSearch" placeholder="Поиск по SKU, названию, owner…" value="${escapeHtml(model.filters.search)}">
-        <select id="adsFunnelPlatform">
-          ${model.platformOptions.map((option) => `<option value="${escapeHtml(option.key)}" ${model.filters.platform === option.key ? 'selected' : ''}>${escapeHtml(option.label)}</option>`).join('')}
-        </select>
+        ${platformChipsHtml}
         <select id="adsFunnelHorizon">
           <option value="7" ${model.filters.horizon === '7' ? 'selected' : ''}>Последние 7 дней</option>
           <option value="14" ${model.filters.horizon === '14' ? 'selected' : ''}>Последние 14 дней</option>
@@ -2840,7 +2854,7 @@ function renderAdsFunnel(rootId = 'view-ads-funnel') {
                   <div class="muted small">${escapeHtml(row.name || row.article || row.articleKey || '—')}</div>
                 </td>
                 <td>${row.owner ? badge(row.owner, 'info') : badge('Без owner', 'warn')}</td>
-                <td><div class="badge-stack">${[...row.platforms].map((platform) => badge(adsFunnelPlatformLabel(platform), '')).join('')}</div></td>
+                <td><div class="badge-stack">${[...row.platforms].map((platform) => `<span class="chip ads-platform-pill" data-platform="${escapeHtml(platform)}">${escapeHtml(adsFunnelPlatformLabel(platform))}</span>`).join('')}</div></td>
                 <td>${fmt.int(row.views)}</td>
                 <td>${fmt.int(row.clicks)}</td>
                 <td>${fmt.pct(row.ctr)}</td>
@@ -2862,6 +2876,12 @@ function renderAdsFunnel(rootId = 'view-ads-funnel') {
   root.querySelector('#adsFunnelSearch')?.addEventListener('input', (event) => {
     getAdsFunnelFilters().search = event.target.value;
     rerenderCurrentView();
+  });
+  root.querySelectorAll('[data-ads-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      getAdsFunnelFilters().platform = adsFunnelNormalizePlatformKey(button.getAttribute('data-ads-platform'));
+      rerenderCurrentView();
+    });
   });
   root.querySelector('#adsFunnelPlatform')?.addEventListener('change', (event) => {
     getAdsFunnelFilters().platform = adsFunnelNormalizePlatformKey(event.target.value);

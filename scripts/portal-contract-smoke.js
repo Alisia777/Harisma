@@ -132,6 +132,12 @@ async function main() {
     await clickView(page, 'dashboard');
     await assertVisible(page, '#view-dashboard', 'dashboard');
     await waitForSkuData(page);
+    const dashboardCalmOk = await page.evaluate(() => Boolean(
+      document.querySelector('#view-dashboard .portal-calm-hero')
+      && document.querySelectorAll('#view-dashboard .portal-calm-chart').length >= 3
+      && document.querySelector('#view-dashboard .portal-calm-platform-table')
+    ));
+    if (!dashboardCalmOk) throw new Error('Calm dashboard did not render core blocks.');
 
     const initial = await page.evaluate(() => ({
       skus: Array.isArray(window.__alteaAppState?.skus) ? window.__alteaAppState.skus.length : 0,

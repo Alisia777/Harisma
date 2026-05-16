@@ -11,8 +11,8 @@ window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260514wb2';
-const STYLE_ID = 'altea-dashboard-interactive-20260514wb2';
+  const VERSION = '20260516dashcalm1';
+const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm1';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
@@ -5808,6 +5808,442 @@ function dashboardTaskStatusChip(task) {
     });
   };
 
+  function ensureDashboardCalmStyles() {
+    if (document.getElementById('portalDashboardCalmStyles')) return;
+    const style = document.createElement('style');
+    style.id = 'portalDashboardCalmStyles';
+    style.textContent = `
+      #view-dashboard [data-portal-dashboard-executive-root] { gap: 14px; }
+      #view-dashboard .portal-calm-hero,
+      #view-dashboard .portal-calm-section,
+      #view-dashboard .portal-calm-panel,
+      #view-dashboard .portal-calm-chart-card { box-sizing: border-box; border: 1px solid rgba(231,188,101,.16); background: linear-gradient(180deg, rgba(22,18,14,.96), rgba(12,10,9,.98)); box-shadow: 0 18px 42px rgba(0,0,0,.18); }
+      #view-dashboard .portal-calm-hero { display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(340px, .82fr); gap: 18px; padding: 20px; border-radius: 12px; }
+      #view-dashboard .portal-calm-hero-main { display: grid; gap: 14px; align-content: start; min-width: 0; }
+      #view-dashboard .portal-calm-eyebrow { color: rgba(245,232,207,.58); font-size: 11px; letter-spacing: 0; text-transform: uppercase; }
+      #view-dashboard .portal-calm-title { margin: 0; color: #fff1d7; font-size: 30px; line-height: 1.12; letter-spacing: 0; }
+      #view-dashboard .portal-calm-lede { margin: 0; max-width: 820px; color: rgba(255,244,229,.76); font-size: 14px; line-height: 1.55; }
+      #view-dashboard .portal-calm-badges,
+      #view-dashboard .portal-calm-chip-row,
+      #view-dashboard .portal-calm-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      #view-dashboard .portal-calm-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+      #view-dashboard .portal-calm-kpi { min-width: 0; padding: 11px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.06); background: rgba(255,255,255,.026); }
+      #view-dashboard .portal-calm-kpi span { display: block; color: rgba(255,244,229,.58); font-size: 11px; letter-spacing: 0; text-transform: uppercase; }
+      #view-dashboard .portal-calm-kpi strong { display: block; margin-top: 5px; color: #fff2dc; font-size: 18px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-calm-controls { display: grid; gap: 13px; padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,.06); background: rgba(255,255,255,.024); min-width: 0; }
+      #view-dashboard .portal-calm-control-group { display: grid; gap: 8px; min-width: 0; }
+      #view-dashboard .portal-calm-control-label { color: rgba(245,232,207,.58); font-size: 11px; letter-spacing: 0; text-transform: uppercase; }
+      #view-dashboard .portal-calm-periods,
+      #view-dashboard .portal-calm-platforms { display: flex; flex-wrap: wrap; gap: 8px; }
+      #view-dashboard .portal-calm-select { width: 100%; min-width: 0; padding: 11px 12px; border-radius: 8px; border: 1px solid rgba(212,164,74,.18); background: rgba(17,14,11,.96); color: #f6ead4; font: inherit; font-size: 13px; color-scheme: dark; }
+      #view-dashboard .portal-calm-select:focus { outline: none; border-color: rgba(236,203,123,.82); box-shadow: 0 0 0 3px rgba(212,164,74,.12); }
+      #view-dashboard .portal-calm-dates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      #view-dashboard .portal-calm-date { display: grid; gap: 6px; min-width: 0; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,.06); background: rgba(7,6,5,.34); }
+      #view-dashboard .portal-calm-date span { color: rgba(245,232,207,.6); font-size: 11px; letter-spacing: 0; text-transform: uppercase; }
+      #view-dashboard .portal-calm-date-shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; align-items: center; }
+      #view-dashboard .portal-calm-date .portal-exec-date-input { padding: 10px 9px; font-size: 12px; }
+      #view-dashboard .portal-calm-date small { color: rgba(255,244,229,.66); font-size: 11px; line-height: 1.25; }
+      #view-dashboard .portal-calm-section { display: grid; gap: 14px; padding: 18px; border-radius: 12px; }
+      #view-dashboard .portal-calm-section-head { display: flex; gap: 14px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }
+      #view-dashboard .portal-calm-section-copy { display: grid; gap: 5px; min-width: 0; max-width: 820px; }
+      #view-dashboard .portal-calm-section-copy h3 { margin: 0; color: #fff1d7; font-size: 19px; line-height: 1.2; letter-spacing: 0; }
+      #view-dashboard .portal-calm-section-copy p { margin: 0; color: rgba(255,244,229,.66); font-size: 13px; line-height: 1.45; }
+      #view-dashboard .portal-calm-chart-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+      #view-dashboard .portal-calm-chart-card { display: grid; gap: 10px; min-width: 0; padding: 15px; border-radius: 10px; overflow: hidden; }
+      #view-dashboard .portal-calm-chart-card.is-clickable { cursor: pointer; transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease; }
+      #view-dashboard .portal-calm-chart-card.is-clickable:hover { transform: translateY(-1px); border-color: rgba(231,188,101,.34); box-shadow: 0 18px 34px rgba(0,0,0,.22); }
+      #view-dashboard .portal-calm-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; min-width: 0; }
+      #view-dashboard .portal-calm-card-label { color: rgba(255,244,229,.66); font-size: 11px; text-transform: uppercase; letter-spacing: 0; }
+      #view-dashboard .portal-calm-card-value { color: #fff2dc; font-size: 24px; line-height: 1.08; font-weight: 750; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-calm-card-sub { color: rgba(255,244,229,.7); font-size: 12px; line-height: 1.4; min-height: 34px; }
+      #view-dashboard .portal-calm-progress { height: 7px; border-radius: 999px; background: rgba(255,255,255,.07); overflow: hidden; }
+      #view-dashboard .portal-calm-progress > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #d7a94f, #f0d07b); }
+      #view-dashboard .portal-calm-progress.is-ok > span { background: linear-gradient(90deg, #61bd7c, #9fdfab); }
+      #view-dashboard .portal-calm-progress.is-danger > span { background: linear-gradient(90deg, #cb5841, #ee8b73); }
+      #view-dashboard .portal-calm-chart { position: relative; height: 150px; width: 100%; border-radius: 8px; background: rgba(255,255,255,.018); overflow: hidden; }
+      #view-dashboard .portal-calm-chart svg { display: block; width: 100%; height: 100%; }
+      #view-dashboard .portal-calm-chart-gridline { stroke: rgba(255,255,255,.08); stroke-width: 1; }
+      #view-dashboard .portal-calm-chart-area { fill: rgba(231,188,101,.16); }
+      #view-dashboard .portal-calm-chart-line { fill: none; stroke: rgba(240,208,123,.98); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+      #view-dashboard .portal-calm-chart-dot { fill: #ffe3a3; stroke: rgba(17,12,8,.9); stroke-width: 2; }
+      #view-dashboard .portal-calm-chart.is-ok .portal-calm-chart-area { fill: rgba(116,196,135,.15); }
+      #view-dashboard .portal-calm-chart.is-ok .portal-calm-chart-line { stroke: rgba(143,222,162,.98); }
+      #view-dashboard .portal-calm-chart.is-ok .portal-calm-chart-dot { fill: #a9e8b7; }
+      #view-dashboard .portal-calm-chart.is-danger .portal-calm-chart-area { fill: rgba(222,100,75,.16); }
+      #view-dashboard .portal-calm-chart.is-danger .portal-calm-chart-line { stroke: rgba(238,139,115,.98); }
+      #view-dashboard .portal-calm-chart.is-danger .portal-calm-chart-dot { fill: #ffad96; }
+      #view-dashboard .portal-calm-chart.is-empty { display: grid; place-items: center; color: rgba(255,244,229,.5); font-size: 12px; }
+      #view-dashboard .portal-calm-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+      #view-dashboard .portal-calm-panel { display: grid; gap: 12px; padding: 16px; border-radius: 10px; }
+      #view-dashboard .portal-calm-panel-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; }
+      #view-dashboard .portal-calm-panel h3 { margin: 0; color: #fff1d7; font-size: 17px; line-height: 1.2; letter-spacing: 0; }
+      #view-dashboard .portal-calm-list { display: grid; gap: 8px; }
+      #view-dashboard .portal-calm-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; min-width: 0; padding: 11px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.06); background: rgba(255,255,255,.022); color: inherit; text-align: left; }
+      #view-dashboard .portal-calm-row.is-clickable { cursor: pointer; transition: border-color .16s ease, transform .16s ease, background .16s ease; }
+      #view-dashboard .portal-calm-row.is-clickable:hover { transform: translateY(-1px); border-color: rgba(231,188,101,.3); background: rgba(255,255,255,.035); }
+      #view-dashboard .portal-calm-row-main { min-width: 0; display: grid; gap: 3px; }
+      #view-dashboard .portal-calm-row-main strong { min-width: 0; color: #fff2dc; font-size: 13px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-calm-row-main span { min-width: 0; color: rgba(255,244,229,.62); font-size: 12px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-calm-row-meta { display: flex; gap: 7px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+      #view-dashboard .portal-calm-empty { padding: 14px; border-radius: 8px; border: 1px dashed rgba(255,255,255,.12); color: rgba(255,244,229,.62); font-size: 13px; line-height: 1.45; }
+      #view-dashboard .portal-calm-platform-table { display: grid; gap: 7px; }
+      #view-dashboard .portal-calm-platform-head,
+      #view-dashboard .portal-calm-platform-row { display: grid; grid-template-columns: minmax(160px, 1.15fr) minmax(92px, .7fr) minmax(120px, .9fr) minmax(86px, .65fr) minmax(104px, .75fr) minmax(90px, .65fr); gap: 10px; align-items: center; }
+      #view-dashboard .portal-calm-platform-head { padding: 0 12px; color: rgba(255,244,229,.48); font-size: 11px; text-transform: uppercase; letter-spacing: 0; }
+      #view-dashboard .portal-calm-platform-row { padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.06); background: rgba(255,255,255,.022); cursor: pointer; transition: border-color .16s ease, transform .16s ease, background .16s ease; }
+      #view-dashboard .portal-calm-platform-row:hover { transform: translateY(-1px); border-color: rgba(231,188,101,.3); background: rgba(255,255,255,.035); }
+      #view-dashboard .portal-calm-platform-name { display: grid; gap: 3px; min-width: 0; }
+      #view-dashboard .portal-calm-platform-name strong { color: #fff2dc; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-calm-platform-name span { color: rgba(255,244,229,.58); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-calm-platform-cell { color: rgba(255,244,229,.78); font-size: 13px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #view-dashboard .portal-calm-platform-cell strong { color: #fff2dc; }
+      #view-dashboard .portal-calm-platform-row.is-danger { border-color: rgba(203,88,65,.24); }
+      #view-dashboard .portal-calm-platform-row.is-warn { border-color: rgba(231,188,101,.22); }
+      @media (max-width: 1380px) {
+        #view-dashboard .portal-calm-chart-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        #view-dashboard .portal-calm-platform-head,
+        #view-dashboard .portal-calm-platform-row { grid-template-columns: minmax(150px, 1.2fr) minmax(92px, .8fr) minmax(116px, 1fr) minmax(88px, .72fr) minmax(96px, .8fr) minmax(80px, .7fr); }
+      }
+      @media (max-width: 980px) {
+        #view-dashboard .portal-calm-hero,
+        #view-dashboard .portal-calm-split { grid-template-columns: 1fr; }
+        #view-dashboard .portal-calm-kpis,
+        #view-dashboard .portal-calm-chart-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        #view-dashboard .portal-calm-platform-head { display: none; }
+        #view-dashboard .portal-calm-platform-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+      @media (max-width: 620px) {
+        #view-dashboard .portal-calm-title { font-size: 24px; }
+        #view-dashboard .portal-calm-kpis,
+        #view-dashboard .portal-calm-chart-grid,
+        #view-dashboard .portal-calm-dates,
+        #view-dashboard .portal-calm-platform-row { grid-template-columns: 1fr; }
+        #view-dashboard .portal-calm-card-value { font-size: 22px; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function dashboardIssueTotal(metric) {
+    const counters = metric?.issues?.counters || {};
+    return num(counters.toWork) + num(counters.negativeMargin) + num(counters.lowStock) + num(counters.noOwner) + num(counters.belowMin);
+  }
+
+  function dashboardCalmPoints(rows, getter) {
+    return (Array.isArray(rows) ? rows : [])
+      .map((row, index) => ({
+        date: row?.date || index,
+        value: Number(typeof getter === 'function' ? getter(row) : row?.value)
+      }))
+      .filter((point) => Number.isFinite(point.value));
+  }
+
+  function dashboardCalmChart(points, options = {}) {
+    const series = (Array.isArray(points) ? points : []).filter((point) => Number.isFinite(Number(point.value))).slice(-24);
+    if (series.length < 2) {
+      return `<div class="portal-calm-chart is-empty"><span>${esc(options.empty || 'Нет ряда для графика')}</span></div>`;
+    }
+    const width = 360;
+    const height = 150;
+    const padX = 16;
+    const padY = 16;
+    const values = series.map((point) => Number(point.value));
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const span = max === min ? Math.max(Math.abs(max), 1) : max - min;
+    const coords = values.map((value, index) => {
+      const x = padX + (index / Math.max(1, series.length - 1)) * (width - padX * 2);
+      const y = height - padY - ((value - min) / span) * (height - padY * 2);
+      return { x, y };
+    });
+    const linePath = coords.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(' ');
+    const first = coords[0];
+    const last = coords[coords.length - 1];
+    const areaPath = `M ${first.x.toFixed(1)} ${(height - padY).toFixed(1)} ${linePath.replace(/^M /, 'L ')} L ${last.x.toFixed(1)} ${(height - padY).toFixed(1)} Z`;
+    const grid = [0, 1, 2].map((index) => {
+      const y = padY + index * ((height - padY * 2) / 2);
+      return `<line class="portal-calm-chart-gridline" x1="${padX}" y1="${y.toFixed(1)}" x2="${width - padX}" y2="${y.toFixed(1)}"></line>`;
+    }).join('');
+    const tone = options.tone ? ` is-${esc(options.tone)}` : '';
+    return `
+      <div class="portal-calm-chart${tone}" aria-hidden="true">
+        <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" focusable="false">
+          ${grid}
+          <path class="portal-calm-chart-area" d="${areaPath}"></path>
+          <path class="portal-calm-chart-line" d="${linePath}"></path>
+          <circle class="portal-calm-chart-dot" cx="${last.x.toFixed(1)}" cy="${last.y.toFixed(1)}" r="4.6"></circle>
+        </svg>
+      </div>
+    `;
+  }
+
+  function dashboardStatusSentence(metric, issueCount, taskCount, executive) {
+    const completion = num(metric?.completion);
+    const marginPct = num(metric?.marginPct);
+    if (executive?.range?.clamped) {
+      return 'Период шире доступного факта, поэтому экран честно считает только опубликованные дни.';
+    }
+    if (completion >= 1 && issueCount <= 3 && taskCount === 0) {
+      return 'План держится, явных ручных вмешательств на сегодня немного.';
+    }
+    if (completion >= 0.9 && marginPct >= 0.25) {
+      return 'Картина рабочая: план рядом, маржа живая, ниже оставлены только точки контроля.';
+    }
+    if (completion < 0.75) {
+      return 'Нужен фокус: план проседает, сначала смотрим задачи и проблемные SKU.';
+    }
+    if (issueCount > 0 || taskCount > 0) {
+      return 'Есть что разобрать сегодня: задачи и сигналы собраны в короткий список ниже.';
+    }
+    return 'Данные свежие в рамках доступного факта, можно смотреть динамику без лишнего шума.';
+  }
+
+  function dashboardHeroSection(executive) {
+    const metric = executive.focusMetric || executive.overall;
+    const turnover = buildTurnoverMetric(metric.key, executive.range);
+    const taskPanel = dashboardTaskPanel(executive);
+    const issueCount = dashboardIssueTotal(metric);
+    const status = dashboardStatusSentence(metric, issueCount, taskPanel.rows.length, executive);
+    const selectedStart = parseDate(executive.range.state.start) || executive.range.effectiveStart;
+    const selectedEnd = parseDate(executive.range.state.end) || executive.range.effectiveEnd;
+    const presetLabel = (key) => key === 'yesterday' ? 'Вчера' : key === 'prevweek' ? 'Прошлая неделя' : `${key} дней`;
+    const platformOptions = [
+      { key: 'all', label: 'Все' },
+      ...PLATFORM_KEYS.filter((key) => key !== 'all').map((key) => ({ key, label: shortPlatformLabel(key) }))
+    ];
+    const clampBadge = executive.range.clamped
+      ? badgeHtml('Период сужен до факта', 'warn')
+      : badgeHtml('Факт в выбранном окне', 'ok');
+    return `
+      <section class="portal-calm-hero">
+        <div class="portal-calm-hero-main">
+          <div class="portal-calm-eyebrow">Главный дашборд</div>
+          <h2 class="portal-calm-title">Пульс бренда</h2>
+          <p class="portal-calm-lede">${esc(status)}</p>
+          <div class="portal-calm-badges">
+            ${badgeHtml(`Период: ${executive.range.effectiveLabel}`, 'info')}
+            ${badgeHtml(`Площадка: ${currentFocusLabel(executive)}`, executive.selectedPlatform === 'all' ? 'info' : 'ok')}
+            ${badgeHtml(`Факт до ${shortDate(executive.range.max)}`, 'info')}
+            ${clampBadge}
+          </div>
+          <div class="portal-calm-kpis">
+            <div class="portal-calm-kpi"><span>Выручка</span><strong>${esc(money(metric.revenue))}</strong></div>
+            <div class="portal-calm-kpi"><span>План</span><strong>${esc(pct(metric.completion))}</strong></div>
+            <div class="portal-calm-kpi"><span>Маржа</span><strong>${esc(pct(metric.marginPct))}</strong></div>
+            <div class="portal-calm-kpi"><span>Запас</span><strong>${esc(turnover.avgTurnoverDays !== null ? `${turnover.avgTurnoverDays.toFixed(1)} дн.` : '—')}</strong></div>
+          </div>
+        </div>
+        <div class="portal-calm-controls">
+          <div class="portal-calm-control-group">
+            <div class="portal-calm-control-label">Быстрый период</div>
+            <div class="portal-calm-periods">
+              ${PRESET_KEYS.map((key) => {
+                const active = executive.range.state.mode === 'preset' && executive.range.state.active === key;
+                return `<button type="button" class="quick-chip ${active ? 'active' : ''}" data-portal-exec-preset="${esc(key)}">${esc(presetLabel(key))}</button>`;
+              }).join('')}
+            </div>
+          </div>
+          <div class="portal-calm-control-group">
+            <div class="portal-calm-control-label">Площадка</div>
+            <select class="portal-calm-select" data-portal-exec-platform-select aria-label="Площадка">
+              ${platformOptions.map((platform) => `<option value="${esc(platform.key)}" ${executive.selectedPlatform === platform.key ? 'selected' : ''}>${esc(platform.label)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="portal-calm-dates">
+            <label class="portal-calm-date">
+              <span>Начало</span>
+              <div class="portal-calm-date-shell">
+                <input type="date" class="portal-exec-date-input ${executive.range.state.mode === 'custom' ? 'is-active' : ''}" data-portal-exec-start data-portal-exec-min="${esc(iso(executive.range.min))}" data-portal-exec-max="${esc(iso(executive.range.max))}" value="${esc(executive.range.state.start || '')}">
+              </div>
+              <small>${esc(longDate(selectedStart))}</small>
+            </label>
+            <label class="portal-calm-date">
+              <span>Конец</span>
+              <div class="portal-calm-date-shell">
+                <input type="date" class="portal-exec-date-input ${executive.range.state.mode === 'custom' ? 'is-active' : ''}" data-portal-exec-end data-portal-exec-min="${esc(iso(executive.range.min))}" data-portal-exec-max="${esc(iso(executive.range.max))}" value="${esc(executive.range.state.end || '')}">
+              </div>
+              <small>${esc(longDate(selectedEnd))}</small>
+            </label>
+          </div>
+          <div class="portal-calm-actions">
+            <button type="button" class="quick-chip" data-portal-export="dashboard-summary">Отчет Excel</button>
+            <button type="button" class="quick-chip" data-portal-export="dashboard-daily">По дням Excel</button>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function dashboardOverviewCalmSection(executive) {
+    const metric = executive.focusMetric || executive.overall;
+    const previous = executive.compareByKey.get(metric.key);
+    const turnover = buildTurnoverMetric(metric.key, executive.range);
+    const revenueDelta = relativeDelta(metric.revenue, previous?.revenue);
+    const completionDelta = percentagePointDelta(metric.completion, previous?.completion);
+    const marginDelta = relativeDelta(metric.margin, previous?.margin);
+    const turnoverDelta = relativeDelta(turnover.avgTurnoverDays, previous?.avgTurnoverDays);
+    const revenuePoints = dashboardCalmPoints(metric.days, (row) => row.revenue);
+    const completionPoints = dashboardCalmPoints(metric.days, (row) => {
+      const value = dailyCompletion(row, metric);
+      return value === null ? NaN : value * 100;
+    });
+    const marginPoints = dashboardCalmPoints(metric.days, (row) => row.margin);
+    const turnoverSource = turnover.turnoverPublishedSeries?.length
+      ? turnover.turnoverPublishedSeries
+      : (turnover.turnoverSeries?.length ? turnover.turnoverSeries : (turnover.rows || []).slice(0, 18));
+    const turnoverPoints = dashboardCalmPoints(turnoverSource, (row) => row.avgTurnover ?? row.turnoverDays);
+    const completionTone = toneCompletion(metric.completion);
+    const marginTone = toneMargin(metric.marginPct);
+    const turnoverTone = turnover.avgTurnoverDays !== null && turnover.avgTurnoverDays > 90 ? 'warn' : 'ok';
+    return `
+      <section class="portal-calm-section">
+        <div class="portal-calm-section-head">
+          <div class="portal-calm-section-copy">
+            <h3>Главные графики</h3>
+            <p>Оставила только то, что быстро отвечает на вопрос “что происходит”: деньги, план, качество прибыли и запас.</p>
+          </div>
+          ${sectionMetaHtml(executive, [executive.compareRange ? badgeHtml(`LFL: ${executive.compareRange.label}`, executive.compareRange.clamped ? 'warn' : 'info') : badgeHtml('LFL: нет окна', 'info')])}
+        </div>
+        <div class="portal-calm-chart-grid">
+          <article class="portal-calm-chart-card is-${completionTone} is-clickable" data-portal-exec-open="revenue" data-portal-exec-key="${esc(metric.key)}">
+            <div class="portal-calm-card-head"><span class="portal-calm-card-label">Выручка</span>${deltaBadge('LFL', revenueDelta)}</div>
+            <div class="portal-calm-card-value">${esc(money(metric.revenue))}</div>
+            <div class="portal-calm-card-sub">${esc(int(metric.units))} шт. · средний чек ${esc(metric.avgCheck > 0 ? money(metric.avgCheck) : '—')}</div>
+            ${dashboardCalmChart(revenuePoints, { tone: completionTone, empty: 'Нет выручки' })}
+          </article>
+          <article class="portal-calm-chart-card is-${completionTone} is-clickable" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}">
+            <div class="portal-calm-card-head"><span class="portal-calm-card-label">План-факт</span>${deltaBadge('LFL', completionDelta, false, 'pp')}</div>
+            <div class="portal-calm-card-value">${esc(pct(metric.completion))}</div>
+            <div class="portal-calm-card-sub">План ${esc(metricPlanDisplay(metric))} · факт ${esc(metricFactDisplay(metric))}</div>
+            <div class="portal-calm-progress is-${completionTone}"><span style="width:${Math.max(4, Math.min(100, Math.round(num(metric.completion) * 100)))}%"></span></div>
+            ${dashboardCalmChart(completionPoints, { tone: completionTone, empty: 'Нет плана' })}
+          </article>
+          <article class="portal-calm-chart-card is-${marginTone} is-clickable" data-portal-exec-open="margin" data-portal-exec-key="${esc(metric.key)}">
+            <div class="portal-calm-card-head"><span class="portal-calm-card-label">Маржа</span>${deltaBadge('LFL', marginDelta)}</div>
+            <div class="portal-calm-card-value">${esc(money(metric.margin))}</div>
+            <div class="portal-calm-card-sub">Маржинальность ${esc(pct(metric.marginPct))} · выручка ${esc(money(metric.revenue))}</div>
+            ${dashboardCalmChart(marginPoints, { tone: marginTone, empty: 'Нет маржи' })}
+          </article>
+          <article class="portal-calm-chart-card is-${turnoverTone} is-clickable" data-portal-exec-open="stock" data-portal-exec-key="${esc(turnover.key)}">
+            <div class="portal-calm-card-head"><span class="portal-calm-card-label">Запас</span>${deltaBadge('LFL', turnoverDelta, true)}</div>
+            <div class="portal-calm-card-value">${esc(turnover.avgTurnoverDays !== null ? `${turnover.avgTurnoverDays.toFixed(1)} дн.` : '—')}</div>
+            <div class="portal-calm-card-sub">Остаток ${esc(int(turnover.totalStock))} · в пути ${esc(int(turnover.totalTransit))} · риск ${esc(int(turnover.lowCoverage))}</div>
+            ${dashboardCalmChart(turnoverPoints, { tone: turnoverTone, empty: 'Нет ряда запаса' })}
+          </article>
+        </div>
+      </section>
+    `;
+  }
+
+  function dashboardIssueRows(executive) {
+    const metrics = executive.selectedPlatform === 'all' ? visibleMetrics(executive) : [executive.focusMetric || executive.overall];
+    return metrics
+      .flatMap((metric) => (metric?.issues?.rows || []).map((row) => ({
+        ...row,
+        platformKey: metric.key,
+        platformLabel: metric.label
+      })))
+      .sort((left, right) => num(right.score) - num(left.score) || String(left.article || '').localeCompare(String(right.article || ''), 'ru'));
+  }
+
+  function dashboardPrioritySection(executive) {
+    const panel = dashboardTaskPanel(executive);
+    const tasks = panel.rows.slice(0, 4);
+    const issueRows = dashboardIssueRows(executive).slice(0, 4);
+    const overdueCount = panel.rows.filter(dashboardTaskIsOverdue).length;
+    const controlPlatformKey = dashboardControlPlatformKey(executive.selectedPlatform);
+    const taskMarkup = tasks.length
+      ? tasks.map((task) => {
+        const sku = typeof getSku === 'function' ? getSku(task.articleKey) : null;
+        const subject = sku?.article || task.articleKey || task.entityLabel || 'Без SKU';
+        const title = task.title || 'Задача без названия';
+        const subtitle = task.nextAction || task.reason || sku?.name || task.entityLabel || 'Нужен следующий шаг.';
+        return `
+          <article class="portal-calm-row is-clickable" data-portal-open-control="1" data-portal-control-platform="${esc(controlPlatformKey)}">
+            <div class="portal-calm-row-main">
+              <strong>${esc(subject)}</strong>
+              <span>${esc(title)} · ${esc(subtitle)}</span>
+            </div>
+            <div class="portal-calm-row-meta">
+              ${dashboardTaskStatusChip(task)}
+              ${dashboardTaskPriorityChip(task)}
+            </div>
+          </article>
+        `;
+      }).join('')
+      : `<div class="portal-calm-empty">Активных задач по этому фильтру сейчас нет. Если появится дубль, просадка или новый SKU, он попадет сюда автоматически.</div>`;
+    const issueMarkup = issueRows.length
+      ? issueRows.map((row) => `
+        <article class="portal-calm-row is-clickable" data-portal-exec-open="issues" data-portal-exec-key="${esc(row.platformKey)}">
+          <div class="portal-calm-row-main">
+            <strong>${esc(row.article || 'Без артикула')}</strong>
+            <span>${esc(row.platformLabel)} · ${esc(row.reasons || row.name || 'Нужна проверка')}</span>
+          </div>
+          <div class="portal-calm-row-meta">
+            ${badgeHtml(row.owner || 'Без owner', row.owner && row.owner !== 'Без owner' ? 'ok' : 'warn')}
+          </div>
+        </article>
+      `).join('')
+      : `<div class="portal-calm-empty">Крупных сигналов по текущему фильтру не видно. Это хороший режим: главная остается чистой, пока нет повода дергать команду.</div>`;
+    return `
+      <section class="portal-calm-split">
+        <div class="portal-calm-panel">
+          <div class="portal-calm-panel-head">
+            <h3>Что разобрать сегодня</h3>
+            <div class="portal-calm-chip-row">
+              ${badgeHtml(`${int(panel.rows.length)} задач`, panel.rows.length ? 'warn' : 'ok')}
+              ${overdueCount ? badgeHtml(`${int(overdueCount)} проср.`, 'danger') : ''}
+              <button type="button" class="quick-chip" data-portal-open-control="1" data-portal-control-platform="${esc(controlPlatformKey)}">Открыть задачи</button>
+            </div>
+          </div>
+          <div class="portal-calm-list">${taskMarkup}</div>
+        </div>
+        <div class="portal-calm-panel">
+          <div class="portal-calm-panel-head">
+            <h3>Сигналы без шума</h3>
+            <div class="portal-calm-chip-row">${badgeHtml(`${int(issueRows.length)} в фокусе`, issueRows.length ? 'warn' : 'ok')}</div>
+          </div>
+          <div class="portal-calm-list">${issueMarkup}</div>
+        </div>
+      </section>
+    `;
+  }
+
+  function dashboardPlatformCalmSection(executive) {
+    const metrics = visibleMetrics(executive);
+    return `
+      <section class="portal-calm-section">
+        <div class="portal-calm-section-head">
+          <div class="portal-calm-section-copy">
+            <h3>Площадки одним взглядом</h3>
+            <p>Вместо набора тяжелых карточек — короткая рабочая таблица: план, деньги, маржа, запас и количество сигналов.</p>
+          </div>
+          ${sectionMetaHtml(executive, [badgeHtml(`${int(metrics.length)} площадки`, 'info')])}
+        </div>
+        <div class="portal-calm-platform-table">
+          <div class="portal-calm-platform-head">
+            <span>Площадка</span><span>План</span><span>Выручка</span><span>Маржа</span><span>Запас</span><span>Сигналы</span>
+          </div>
+          ${metrics.map((metric) => {
+            const turnover = buildTurnoverMetric(metric.key, executive.range);
+            const signals = dashboardIssueTotal(metric);
+            const tone = signals > 8 || metric.completion < 0.75 ? 'danger' : (signals > 0 || metric.completion < 0.9 ? 'warn' : 'ok');
+            return `
+              <article class="portal-calm-platform-row is-${tone}" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}">
+                <div class="portal-calm-platform-name"><strong>${esc(metric.label)}</strong><span>${esc(int(metric.units))} шт. · чек ${esc(metric.avgCheck > 0 ? money(metric.avgCheck) : '—')}</span></div>
+                <div class="portal-calm-platform-cell"><strong>${esc(pct(metric.completion))}</strong></div>
+                <div class="portal-calm-platform-cell">${esc(money(metric.revenue))}</div>
+                <div class="portal-calm-platform-cell">${esc(pct(metric.marginPct))}</div>
+                <div class="portal-calm-platform-cell">${esc(turnover.avgTurnoverDays !== null ? `${turnover.avgTurnoverDays.toFixed(1)} дн.` : '—')}</div>
+                <div class="portal-calm-platform-cell">${badgeHtml(`${int(signals)} сигналов`, signals ? 'warn' : 'ok')}</div>
+              </article>
+            `;
+          }).join('') || `<div class="portal-calm-empty">По выбранной площадке пока нет рабочего среза.</div>`}
+        </div>
+      </section>
+    `;
+  }
+
   function renderDashboard(executive) {
     const root = document.getElementById('view-dashboard');
     if (!root) return;
@@ -6630,6 +7066,16 @@ function dashboardTaskStatusChip(task) {
       });
     });
 
+    root.querySelectorAll('[data-portal-exec-platform-select]').forEach((select) => {
+      if (select.dataset.portalExecPlatformSelectBound) return;
+      select.dataset.portalExecPlatformSelectBound = '1';
+      select.addEventListener('change', () => {
+        const nextPlatform = setPlatformState(select.value || 'all');
+        syncPlatformButtons(root, nextPlatform);
+        scheduleLocalApply(180);
+      });
+    });
+
     const startInput = root.querySelector('[data-portal-exec-start]');
     const endInput = root.querySelector('[data-portal-exec-end]');
 
@@ -6835,6 +7281,29 @@ function dashboardTaskStatusChip(task) {
       platformSection(executive),
       adsSection(executive),
       issuesSection(executive),
+      `<div class="portal-exec-section-foot">Источник факта: ${esc(executive.range.availableLabel)} · API-срез platform_trends · актуально на ${esc(longDate(executive.range.max))}.</div>`
+    ].join('');
+    root.insertAdjacentElement('afterbegin', container);
+    bindDashboard(root, executive);
+  }
+
+  function renderDashboard(executive) {
+    const root = document.getElementById('view-dashboard');
+    if (!root) return;
+    ensureStyles();
+    ensureDashboardManagementStyles();
+    ensureDashboardCalmStyles();
+    ensureModal();
+    hideLegacyDashboard(root);
+    root.querySelector('[data-portal-dashboard-executive-root]')?.remove();
+    const container = document.createElement('div');
+    container.id = ROOT_ID;
+    container.dataset.portalDashboardExecutiveRoot = 'true';
+    container.innerHTML = [
+      dashboardHeroSection(executive),
+      dashboardOverviewCalmSection(executive),
+      dashboardPrioritySection(executive),
+      dashboardPlatformCalmSection(executive),
       `<div class="portal-exec-section-foot">Источник факта: ${esc(executive.range.availableLabel)} · API-срез platform_trends · актуально на ${esc(longDate(executive.range.max))}.</div>`
     ].join('');
     root.insertAdjacentElement('afterbegin', container);

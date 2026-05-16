@@ -1,8 +1,8 @@
 (function () {
-  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN8__) return;
-  window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN8__ = true;
+  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN9__) return;
+  window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN9__ = true;
 
-  const VERSION = '20260516execlean8';
+  const VERSION = '20260516execlean9';
   const KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'cross'];
   const META = {
     wb: { label: 'WB', title: 'РОП WB' },
@@ -117,13 +117,9 @@
     if (!root) return;
     const tasks = activeTasks();
     const sig = signature(tasks);
-    const oldText = root.textContent || '';
     const stale = root.dataset.executiveLayer !== VERSION
       || root.dataset.executiveSignature !== sig
-      || !root.querySelector('[data-executive-lite-panel]')
-      || oldText.includes('очередь директора')
-      || oldText.includes('очередь руководителя')
-      || oldText.includes('общий уровень риска');
+      || !root.querySelector('[data-executive-lite-panel]');
     if (!stale) return;
 
     const rows = KEYS.map((key) => rowFor(key, tasks));

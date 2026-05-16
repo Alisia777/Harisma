@@ -146,6 +146,23 @@ async function main() {
     }));
     if (initial.skus <= 0) throw new Error('SKU data did not load.');
 
+    await clickView(page, 'control');
+    await assertVisible(page, '#view-control', 'control center');
+    const taskSplitOk = await page.evaluate(() => {
+      const appState = window.__alteaAppState;
+      appState.controlFilters = appState.controlFilters || {};
+      appState.controlFilters.platform = 'all';
+      appState.controlFilters.peopleRole = 'leader';
+      appState.controlFilters.taskSimpleWorkspaceChosen = true;
+      appState.controlFilters.taskSimpleFullMode = false;
+      if (typeof window.renderControlCenter === 'function') window.renderControlCenter();
+      return Boolean(
+        document.querySelector('#view-control .control-simple-platform-board')
+        && document.querySelectorAll('#view-control .control-simple-workstream-lane').length >= 1
+      );
+    });
+    if (!taskSplitOk) throw new Error('Task center did not render platform-separated lanes.');
+
     await clickView(page, 'data-health');
     await assertVisible(page, '#view-data-health', 'data health');
     const dataHealthOk = await page.evaluate(() => Boolean(

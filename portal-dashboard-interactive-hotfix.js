@@ -1,6 +1,6 @@
 (function () {
-if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260516DASHCALM2__) return;
-window.__ALTEA_DASHBOARD_INTERACTIVE_20260516DASHCALM2__ = true;
+if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260516DASHCALM3__) return;
+window.__ALTEA_DASHBOARD_INTERACTIVE_20260516DASHCALM3__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260507N__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260429C__ = true;
@@ -12,8 +12,8 @@ window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260516dashcalm2';
-const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm2';
+  const VERSION = '20260516dashcalm3';
+const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm3';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
@@ -192,6 +192,32 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm2';
     letu: "Л'Этуаль",
     magnit: 'Магнит Маркет'
   })[canonicalDashboardPlatformKey(key)] || String(key || '').toUpperCase();
+  const DASHBOARD_PLATFORM_RGB = {
+    all: [212, 164, 74],
+    wb: [139, 92, 246],
+    ozon: [22, 131, 255],
+    ya: [244, 196, 48],
+    goldapple: [154, 196, 58],
+    letu: [217, 70, 239],
+    magnit: [239, 68, 68]
+  };
+  const clampNumber = (value, min, max) => Math.max(min, Math.min(max, Number(value)));
+  function dashboardPlatformRgb(platformKey) {
+    return DASHBOARD_PLATFORM_RGB[canonicalDashboardPlatformKey(platformKey)] || DASHBOARD_PLATFORM_RGB.all;
+  }
+  function dashboardChartStyle(platformKey, completion) {
+    const target = dashboardPlatformRgb(platformKey);
+    const neutral = [174, 151, 113];
+    const rawCompletion = Number(completion);
+    const completionRatio = Number.isFinite(rawCompletion) ? clampNumber(rawCompletion, 0, 1.12) : 0.72;
+    const strength = clampNumber(0.34 + completionRatio * 0.58, 0.34, 1);
+    const mixed = target.map((channel, index) => Math.round(neutral[index] + (channel - neutral[index]) * strength));
+    const line = `rgba(${mixed[0]}, ${mixed[1]}, ${mixed[2]}, .98)`;
+    const area = `rgba(${target[0]}, ${target[1]}, ${target[2]}, ${(0.055 + strength * 0.16).toFixed(3)})`;
+    const dot = `rgba(${Math.min(255, mixed[0] + 28)}, ${Math.min(255, mixed[1] + 28)}, ${Math.min(255, mixed[2] + 28)}, 1)`;
+    const glow = `rgba(${target[0]}, ${target[1]}, ${target[2]}, ${(0.05 + strength * 0.14).toFixed(3)})`;
+    return ` style="--portal-calm-chart-line:${line};--portal-calm-chart-area:${area};--portal-calm-chart-dot:${dot};--portal-calm-chart-glow:${glow};--portal-calm-progress-fill:linear-gradient(90deg, rgba(${mixed[0]}, ${mixed[1]}, ${mixed[2]}, .78), rgba(${target[0]}, ${target[1]}, ${target[2]}, .98));"`;
+  }
   const parseDate = (value) => {
     if (!value) return null;
     const match = String(value).slice(0, 10).match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -3710,14 +3736,12 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm2';
 
   function buildCompletionDetail(metric, executive) {
     const allSkuRows = articleRowsForPlatform(metric.key, executive.range);
-    const skuRows = allSkuRows
-      .sort((left, right) => num(left.completionPct) - num(right.completionPct) || num(right.planUnitsSelected) - num(left.planUnitsSelected) || num(right.salesValue) - num(left.salesValue))
-      .slice(0, 18);
+    const overRows = dashboardOverPlanRows(allSkuRows, 12);
+    const moneyRows = dashboardMoneyLeaderRows(allSkuRows, 12);
     const summary = completionDetailArticleSummary(metric, allSkuRows, executive.range);
     const previousRows = executive.compareRange
       ? articleRowsForPlatform(metric.key, executive.compareRange)
       : [];
-    const focusDays = detailTailRows(metric.days, 14);
     const previous = executive.compareByKey.get(metric.key);
     const previousSummary = previous ? completionDetailArticleSummary(previous, previousRows, executive.compareRange || executive.range) : null;
     const completionDelta = percentagePointDelta(summary.completion, previousSummary?.completion ?? previous?.completion);
@@ -3735,7 +3759,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm2';
     };
     return {
       title: `${metric.label} · план-факт по артикулам`,
-      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчете: ${executive.range.effectiveLabel}. Справа всегда последние 14 дней доступного факта.`,
+      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчете: ${executive.range.effectiveLabel}. Внутри только SKU-лидеры: кто идет выше плана и кто дает выручку.`,
       body: `
         <div class="portal-exec-modal-metrics">
           ${modalSummaryCard('% выполнения', pct(metric.completion))}
@@ -3746,63 +3770,23 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm2';
           ${modalSummaryCard('Выручка', money(metric.revenue))}
         </div>
         <div class="portal-exec-modal-grid">
-          <div class="portal-exec-modal-card">
-            <h4 class="portal-exec-table-title">Слева артикула</h4>
-            <p class="portal-exec-table-sub">Короткий список для разбора: кто не добирает план, кто делает выручку и кого нужно открыть во вкладке цен.</p>
-            <table class="portal-exec-modal-table">
-              <thead>
-                <tr>
-                  <th>SKU</th>
-                  <th>Площадка</th>
-                  <th>План</th>
-                  <th>Факт</th>
-                  <th>%</th>
-                  <th>Выручка</th>
-                  <th>Owner</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${skuRows.length ? skuRows.map((row) => `
-                  <tr${priceWorkbenchOpenAttrs(row.platformKey, row.article, executive)}>
-                    <td><strong>${esc(row.article)}</strong><div class="muted small">${esc(row.name)}</div></td>
-                    <td>${esc(row.platformLabel)}</td>
-                    <td>${esc(row.planUnitsSelected !== null ? int(row.planUnitsSelected) : '—')}</td>
-                    <td>${esc(row.actualUnitsSelected !== null ? int(row.actualUnitsSelected) : '—')}</td>
-                    <td>${esc(row.completionPct !== null ? pct(row.completionPct) : '—')}</td>
-                    <td>${esc(row.salesValue ? money(row.salesValue) : '—')}</td>
-                    <td>${esc(row.owner)}</td>
-                  </tr>
-                `).join('') : `<tr><td colspan="7">По выбранной площадке нет SKU-среза.</td></tr>`}
-              </tbody>
-            </table>
-          </div>
+          ${dashboardLeaderCard(
+            'Кто перевыполняет план',
+            'Сначала SKU выше 100%; если таких нет, показываем ближайших к плану. Клик открывает карточку цены.',
+            overRows,
+            executive,
+            'over',
+            'Сейчас нет SKU выше плана в выбранном окне.'
+          )}
           <div class="portal-exec-side-stack">
-            <div class="portal-exec-modal-card">
-              <h4 class="portal-exec-table-title">Справа 14 дней</h4>
-              <p class="portal-exec-table-sub">План, факт и выручка по дням. Это окно отвечает на вопрос: когда именно начался провал или ускорение.</p>
-              <table class="portal-exec-modal-table">
-                <thead>
-                  <tr>
-                    <th>Дата</th>
-                    <th>План</th>
-                    <th>Факт</th>
-                    <th>%</th>
-                    <th>Выручка</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${focusDays.length ? focusDays.map((row) => `
-                    <tr>
-                      <td>${esc(shortDate(row.date))}</td>
-                      <td>${esc(dailyPlanDisplay(row, metric))}</td>
-                      <td>${esc(dailyFactDisplay(row, metric))}</td>
-                      <td>${esc(dailyCompletion(row, metric) !== null ? pct(dailyCompletion(row, metric)) : '—')}</td>
-                      <td>${esc(money(row.revenue))}</td>
-                    </tr>
-                  `).join('') : `<tr><td colspan="5">Нет дневных данных по выбранному окну.</td></tr>`}
-                </tbody>
-              </table>
-            </div>
+            ${dashboardLeaderCard(
+              'Кто приносит больше денег',
+              'Лидеры по выручке за выбранный период: видно факт, план, owner и вклад в деньги.',
+              moneyRows,
+              executive,
+              'money',
+              'В выбранном окне нет SKU с выручкой.'
+            )}
           </div>
         </div>
         ${renderActionSection(metricActionBullets(metric, executive), 'План-факт выглядит стабильно, открывайте только отдельные SKU с вопросами.')}
@@ -4705,15 +4689,14 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm2';
   }
 
   buildCompletionDetail = function (metric, executive) {
-    const skuRows = articleRowsForPlatform(metric.key, executive.range)
-      .sort((left, right) => num(left.completionPct) - num(right.completionPct) || num(right.planUnitsSelected) - num(left.planUnitsSelected) || num(right.salesValue) - num(left.salesValue))
-      .slice(0, 18);
-    const focusDays = detailTailRows(metric.days, 14);
+    const allSkuRows = articleRowsForPlatform(metric.key, executive.range);
+    const overRows = dashboardOverPlanRows(allSkuRows, 12);
+    const moneyRows = dashboardMoneyLeaderRows(allSkuRows, 12);
     const previous = executive.compareByKey.get(metric.key);
     const completionDelta = percentagePointDelta(metric.completion, previous?.completion);
     return {
       title: `${metric.label} · план-факт по артикулам`,
-      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчете: ${executive.range.effectiveLabel}. Справа всегда последние 14 дней доступного факта.`,
+      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчете: ${executive.range.effectiveLabel}. Внутри только SKU-лидеры: кто идет выше плана и кто дает выручку.`,
       body: `
         <div class="portal-exec-modal-metrics">
           ${modalSummaryCard('% выполнения', pct(metric.completion))}
@@ -4724,63 +4707,23 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm2';
           ${modalSummaryCard('Выручка', money(metric.revenue))}
         </div>
         <div class="portal-exec-modal-grid">
-          <div class="portal-exec-modal-card">
-            <h4 class="portal-exec-table-title">Слева артикула</h4>
-            <p class="portal-exec-table-sub">Короткий список для разбора: кто не добирает план, кто делает выручку и кого нужно открыть во вкладке цен.</p>
-            <table class="portal-exec-modal-table">
-              <thead>
-                <tr>
-                  <th>SKU</th>
-                  <th>Площадка</th>
-                  <th>План</th>
-                  <th>Факт</th>
-                  <th>%</th>
-                  <th>Выручка</th>
-                  <th>Owner</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${skuRows.length ? skuRows.map((row) => `
-                  <tr${priceWorkbenchOpenAttrs(row.platformKey, row.article, executive)}>
-                    <td><strong>${esc(row.article)}</strong><div class="muted small">${esc(row.name)}</div></td>
-                    <td>${esc(row.platformLabel)}</td>
-                    <td>${esc(row.planUnitsSelected !== null ? int(row.planUnitsSelected) : '—')}</td>
-                    <td>${esc(row.actualUnitsSelected !== null ? int(row.actualUnitsSelected) : '—')}</td>
-                    <td>${esc(row.completionPct !== null ? pct(row.completionPct) : '—')}</td>
-                    <td>${esc(row.salesValue ? money(row.salesValue) : '—')}</td>
-                    <td>${esc(row.owner)}</td>
-                  </tr>
-                `).join('') : `<tr><td colspan="7">По выбранной площадке нет SKU-среза.</td></tr>`}
-              </tbody>
-            </table>
-          </div>
+          ${dashboardLeaderCard(
+            'Кто перевыполняет план',
+            'Сначала SKU выше 100%; если таких нет, показываем ближайших к плану. Клик открывает карточку цены.',
+            overRows,
+            executive,
+            'over',
+            'Сейчас нет SKU выше плана в выбранном окне.'
+          )}
           <div class="portal-exec-side-stack">
-            <div class="portal-exec-modal-card">
-              <h4 class="portal-exec-table-title">Справа 14 дней</h4>
-              <p class="portal-exec-table-sub">План, факт и выручка по дням. Это окно отвечает на вопрос: когда именно начался провал или ускорение.</p>
-              <table class="portal-exec-modal-table">
-                <thead>
-                  <tr>
-                    <th>Дата</th>
-                    <th>План</th>
-                    <th>Факт</th>
-                    <th>%</th>
-                    <th>Выручка</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${focusDays.length ? focusDays.map((row) => `
-                    <tr>
-                      <td>${esc(shortDate(row.date))}</td>
-                      <td>${esc(dailyPlanDisplay(row, metric))}</td>
-                      <td>${esc(dailyFactDisplay(row, metric))}</td>
-                      <td>${esc(dailyCompletion(row, metric) !== null ? pct(dailyCompletion(row, metric)) : '—')}</td>
-                      <td>${esc(money(row.revenue))}</td>
-                    </tr>
-                  `).join('') : `<tr><td colspan="5">Нет дневных данных по выбранному окну.</td></tr>`}
-                </tbody>
-              </table>
-            </div>
+            ${dashboardLeaderCard(
+              'Кто приносит больше денег',
+              'Лидеры по выручке за выбранный период: видно факт, план, owner и вклад в деньги.',
+              moneyRows,
+              executive,
+              'money',
+              'В выбранном окне нет SKU с выручкой.'
+            )}
           </div>
         </div>
         ${renderActionSection(metricActionBullets(metric, executive), 'План-факт выглядит стабильно, открывайте только отдельные SKU с вопросами.')}
@@ -4893,28 +4836,12 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm2';
   buildRevenueDetail = function (metric, executive) {
     const previous = executive.compareByKey.get(metric.key);
     const revenueDelta = relativeDelta(metric.revenue, previous?.revenue);
-    const priceDailyMap = new Map((metric.priceMatrixSeries || []).map((row) => [iso(row.date), row]));
-    const focusDays = detailTailRows(metric.days, 14).map((row) => {
-      const avgCheck = row.factUnits > 0 ? row.revenue / row.factUnits : null;
-      const matrix = priceDailyMap.get(iso(row.date));
-      return {
-        date: row.date,
-        planUnits: row.planUnits,
-        planRevenue: row.planRevenue,
-        factUnits: row.factUnits,
-        units: row.factUnits,
-        completion: dailyCompletion(row, metric),
-        revenue: row.revenue,
-        avgCheck,
-        avgPrice: matrix?.avgPrice || 0
-      };
-    });
-    const skuRows = articleRowsForPlatform(metric.key, executive.range)
-      .sort((left, right) => num(right.salesValue) - num(left.salesValue) || num(right.actualUnitsSelected) - num(left.actualUnitsSelected))
-      .slice(0, 18);
+    const allSkuRows = articleRowsForPlatform(metric.key, executive.range);
+    const moneyRows = dashboardMoneyLeaderRows(allSkuRows, 12);
+    const overRows = dashboardOverPlanRows(allSkuRows, 12);
     return {
       title: `${metric.label} · оборот и продажи`,
-      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчете: ${executive.range.effectiveLabel}. Справа последние 14 дней оборота.`,
+      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчете: ${executive.range.effectiveLabel}. В фокусе SKU, которые приносят деньги и держат план.`,
       body: `
         <div class="portal-exec-modal-metrics">
           ${modalSummaryCard('Выручка', money(metric.revenue))}
@@ -4925,67 +4852,23 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm2';
           ${modalSummaryCard('Средний чек', metric.avgCheck > 0 ? money(metric.avgCheck) : '—')}
         </div>
         <div class="portal-exec-modal-grid">
-          <div class="portal-exec-modal-card">
-            <h4 class="portal-exec-table-title">Слева артикула</h4>
-            <p class="portal-exec-table-sub">Топ SKU по обороту. Отсюда удобно сразу открыть карточку цены и проверить причину изменения.</p>
-            <table class="portal-exec-modal-table">
-              <thead>
-                <tr>
-                  <th>SKU</th>
-                  <th>Площадка</th>
-                  <th>Выручка</th>
-                  <th>Факт</th>
-                  <th>План</th>
-                  <th>%</th>
-                  <th>Owner</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${skuRows.length ? skuRows.map((row) => `
-                  <tr${priceWorkbenchOpenAttrs(row.platformKey, row.article, executive)}>
-                    <td><strong>${esc(row.article)}</strong><div class="muted small">${esc(row.name)}</div></td>
-                    <td>${esc(row.platformLabel)}</td>
-                    <td>${esc(row.salesValue ? money(row.salesValue) : '—')}</td>
-                    <td>${esc(row.actualUnitsSelected !== null ? int(row.actualUnitsSelected) : '—')}</td>
-                    <td>${esc(row.planUnitsSelected !== null ? int(row.planUnitsSelected) : '—')}</td>
-                    <td>${esc(row.completionPct !== null ? pct(row.completionPct) : '—')}</td>
-                    <td>${esc(row.owner)}</td>
-                  </tr>
-                `).join('') : `<tr><td colspan="7">Нет SKU-списка по обороту.</td></tr>`}
-              </tbody>
-            </table>
-          </div>
+          ${dashboardLeaderCard(
+            'Кто приносит больше денег',
+            'Топ SKU по выручке за выбранный период. Сразу видно факт, план и ответственного.',
+            moneyRows,
+            executive,
+            'money',
+            'В выбранном окне нет SKU с выручкой.'
+          )}
           <div class="portal-exec-side-stack">
-            <div class="portal-exec-modal-card">
-              <h4 class="portal-exec-table-title">Справа 14 дней</h4>
-              <p class="portal-exec-table-sub">Дневной ряд продаж, плана, выручки и среднего чека. Он нужен для быстрого ответа, когда началось изменение.</p>
-              <table class="portal-exec-modal-table">
-                <thead>
-                  <tr>
-                    <th>Дата</th>
-                    <th>План</th>
-                    <th>Факт</th>
-                    <th>%</th>
-                    <th>Выручка</th>
-                    <th>Средний чек</th>
-                    <th>Средняя цена</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${focusDays.length ? focusDays.map((row) => `
-                    <tr>
-                      <td>${esc(shortDate(row.date))}</td>
-                      <td>${esc(dailyPlanDisplay(row, metric))}</td>
-                      <td>${esc(dailyFactDisplay(row, metric))}</td>
-                      <td>${esc(dailyCompletion(row, metric) !== null ? pct(dailyCompletion(row, metric)) : '—')}</td>
-                      <td>${esc(money(row.revenue))}</td>
-                      <td>${esc(row.avgCheck ? money(row.avgCheck) : '—')}</td>
-                      <td>${esc(row.avgPrice > 0 ? money(row.avgPrice) : '—')}</td>
-                    </tr>
-                  `).join('') : `<tr><td colspan="7">Нет дневных данных по продажам.</td></tr>`}
-                </tbody>
-              </table>
-            </div>
+            ${dashboardLeaderCard(
+              'Кто перевыполняет план',
+              'SKU выше 100% или ближайшие к выполнению. Так понятно, кто тянет площадку вверх.',
+              overRows,
+              executive,
+              'over',
+              'Сейчас нет SKU выше плана в выбранном окне.'
+            )}
           </div>
         </div>
         ${renderActionSection(metricActionBullets(metric, executive), 'Оборот выглядит стабильно. Используйте левый список как короткий лист лидеров по выручке.')}
@@ -5869,21 +5752,21 @@ function dashboardTaskStatusChip(task) {
       #view-dashboard .portal-calm-card-value { color: #fff2dc; font-size: 24px; line-height: 1.08; font-weight: 750; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       #view-dashboard .portal-calm-card-sub { color: rgba(255,244,229,.7); font-size: 12px; line-height: 1.4; min-height: 34px; }
       #view-dashboard .portal-calm-progress { height: 7px; border-radius: 999px; background: rgba(255,255,255,.07); overflow: hidden; }
-      #view-dashboard .portal-calm-progress > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #d7a94f, #f0d07b); }
-      #view-dashboard .portal-calm-progress.is-ok > span { background: linear-gradient(90deg, #61bd7c, #9fdfab); }
-      #view-dashboard .portal-calm-progress.is-danger > span { background: linear-gradient(90deg, #cb5841, #ee8b73); }
-      #view-dashboard .portal-calm-chart { position: relative; height: 150px; width: 100%; border-radius: 8px; background: rgba(255,255,255,.018); overflow: hidden; }
+      #view-dashboard .portal-calm-progress > span { display: block; height: 100%; border-radius: inherit; background: var(--portal-calm-progress-fill, linear-gradient(90deg, #d7a94f, #f0d07b)); }
+      #view-dashboard .portal-calm-progress.is-ok > span { background: var(--portal-calm-progress-fill, linear-gradient(90deg, #61bd7c, #9fdfab)); }
+      #view-dashboard .portal-calm-progress.is-danger > span { background: var(--portal-calm-progress-fill, linear-gradient(90deg, #cb5841, #ee8b73)); }
+      #view-dashboard .portal-calm-chart { position: relative; height: 150px; width: 100%; border-radius: 8px; background: radial-gradient(circle at 82% 22%, var(--portal-calm-chart-glow, rgba(231,188,101,.09)), transparent 34%), rgba(255,255,255,.018); overflow: hidden; }
       #view-dashboard .portal-calm-chart svg { display: block; width: 100%; height: 100%; }
       #view-dashboard .portal-calm-chart-gridline { stroke: rgba(255,255,255,.08); stroke-width: 1; }
-      #view-dashboard .portal-calm-chart-area { fill: rgba(231,188,101,.16); }
-      #view-dashboard .portal-calm-chart-line { fill: none; stroke: rgba(240,208,123,.98); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
-      #view-dashboard .portal-calm-chart-dot { fill: #ffe3a3; stroke: rgba(17,12,8,.9); stroke-width: 2; }
-      #view-dashboard .portal-calm-chart.is-ok .portal-calm-chart-area { fill: rgba(116,196,135,.15); }
-      #view-dashboard .portal-calm-chart.is-ok .portal-calm-chart-line { stroke: rgba(143,222,162,.98); }
-      #view-dashboard .portal-calm-chart.is-ok .portal-calm-chart-dot { fill: #a9e8b7; }
-      #view-dashboard .portal-calm-chart.is-danger .portal-calm-chart-area { fill: rgba(222,100,75,.16); }
-      #view-dashboard .portal-calm-chart.is-danger .portal-calm-chart-line { stroke: rgba(238,139,115,.98); }
-      #view-dashboard .portal-calm-chart.is-danger .portal-calm-chart-dot { fill: #ffad96; }
+      #view-dashboard .portal-calm-chart-area { fill: var(--portal-calm-chart-area, rgba(231,188,101,.16)); }
+      #view-dashboard .portal-calm-chart-line { fill: none; stroke: var(--portal-calm-chart-line, rgba(240,208,123,.98)); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+      #view-dashboard .portal-calm-chart-dot { fill: var(--portal-calm-chart-dot, #ffe3a3); stroke: rgba(17,12,8,.9); stroke-width: 2; }
+      #view-dashboard .portal-calm-chart.is-ok .portal-calm-chart-area { fill: var(--portal-calm-chart-area, rgba(116,196,135,.15)); }
+      #view-dashboard .portal-calm-chart.is-ok .portal-calm-chart-line { stroke: var(--portal-calm-chart-line, rgba(143,222,162,.98)); }
+      #view-dashboard .portal-calm-chart.is-ok .portal-calm-chart-dot { fill: var(--portal-calm-chart-dot, #a9e8b7); }
+      #view-dashboard .portal-calm-chart.is-danger .portal-calm-chart-area { fill: var(--portal-calm-chart-area, rgba(222,100,75,.16)); }
+      #view-dashboard .portal-calm-chart.is-danger .portal-calm-chart-line { stroke: var(--portal-calm-chart-line, rgba(238,139,115,.98)); }
+      #view-dashboard .portal-calm-chart.is-danger .portal-calm-chart-dot { fill: var(--portal-calm-chart-dot, #ffad96); }
       #view-dashboard .portal-calm-chart.is-empty { display: grid; place-items: center; color: rgba(255,244,229,.5); font-size: 12px; }
       #view-dashboard .portal-calm-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
       #view-dashboard .portal-calm-panel { display: grid; gap: 12px; padding: 16px; border-radius: 10px; }
@@ -5977,8 +5860,9 @@ function dashboardTaskStatusChip(task) {
       return `<line class="portal-calm-chart-gridline" x1="${padX}" y1="${y.toFixed(1)}" x2="${width - padX}" y2="${y.toFixed(1)}"></line>`;
     }).join('');
     const tone = options.tone ? ` is-${esc(options.tone)}` : '';
+    const style = dashboardChartStyle(options.platformKey, options.completion);
     return `
-      <div class="portal-calm-chart${tone}" aria-hidden="true">
+      <div class="portal-calm-chart${tone}"${style} aria-hidden="true">
         <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" focusable="false">
           ${grid}
           <path class="portal-calm-chart-area" d="${areaPath}"></path>
@@ -6120,30 +6004,30 @@ function dashboardTaskStatusChip(task) {
           ${sectionMetaHtml(executive, [executive.compareRange ? badgeHtml(`LFL: ${executive.compareRange.label}`, executive.compareRange.clamped ? 'warn' : 'info') : badgeHtml('LFL: нет окна', 'info')])}
         </div>
         <div class="portal-calm-chart-grid">
-          <article class="portal-calm-chart-card is-${completionTone} is-clickable" data-portal-exec-open="revenue" data-portal-exec-key="${esc(metric.key)}">
+          <article class="portal-calm-chart-card is-${completionTone} is-clickable" data-platform="${esc(metric.key)}" data-portal-exec-open="revenue" data-portal-exec-key="${esc(metric.key)}">
             <div class="portal-calm-card-head"><span class="portal-calm-card-label">Выручка</span>${deltaBadge('LFL', revenueDelta)}</div>
             <div class="portal-calm-card-value">${esc(money(metric.revenue))}</div>
             <div class="portal-calm-card-sub">${esc(int(metric.units))} шт. · средний чек ${esc(metric.avgCheck > 0 ? money(metric.avgCheck) : '—')}</div>
-            ${dashboardCalmChart(revenuePoints, { tone: completionTone, empty: 'Нет выручки' })}
+            ${dashboardCalmChart(revenuePoints, { tone: completionTone, platformKey: metric.key, completion: metric.completion, empty: 'Нет выручки' })}
           </article>
-          <article class="portal-calm-chart-card is-${completionTone} is-clickable" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}">
+          <article class="portal-calm-chart-card is-${completionTone} is-clickable" data-platform="${esc(metric.key)}" data-portal-exec-open="completion" data-portal-exec-key="${esc(metric.key)}">
             <div class="portal-calm-card-head"><span class="portal-calm-card-label">План-факт</span>${deltaBadge('LFL', completionDelta, false, 'pp')}</div>
             <div class="portal-calm-card-value">${esc(pct(metric.completion))}</div>
             <div class="portal-calm-card-sub">План ${esc(metricPlanDisplay(metric))} · факт ${esc(metricFactDisplay(metric))}</div>
-            <div class="portal-calm-progress is-${completionTone}"><span style="width:${Math.max(4, Math.min(100, Math.round(num(metric.completion) * 100)))}%"></span></div>
-            ${dashboardCalmChart(completionPoints, { tone: completionTone, empty: 'Нет плана' })}
+            <div class="portal-calm-progress is-${completionTone}"${dashboardChartStyle(metric.key, metric.completion)}><span style="width:${Math.max(4, Math.min(100, Math.round(num(metric.completion) * 100)))}%"></span></div>
+            ${dashboardCalmChart(completionPoints, { tone: completionTone, platformKey: metric.key, completion: metric.completion, empty: 'Нет плана' })}
           </article>
-          <article class="portal-calm-chart-card is-${marginTone} is-clickable" data-portal-exec-open="margin" data-portal-exec-key="${esc(metric.key)}">
+          <article class="portal-calm-chart-card is-${marginTone} is-clickable" data-platform="${esc(metric.key)}" data-portal-exec-open="margin" data-portal-exec-key="${esc(metric.key)}">
             <div class="portal-calm-card-head"><span class="portal-calm-card-label">Маржа</span>${deltaBadge('LFL', marginDelta)}</div>
             <div class="portal-calm-card-value">${esc(money(metric.margin))}</div>
             <div class="portal-calm-card-sub">Маржинальность ${esc(pct(metric.marginPct))} · выручка ${esc(money(metric.revenue))}</div>
-            ${dashboardCalmChart(marginPoints, { tone: marginTone, empty: 'Нет маржи' })}
+            ${dashboardCalmChart(marginPoints, { tone: marginTone, platformKey: metric.key, completion: metric.completion, empty: 'Нет маржи' })}
           </article>
-          <article class="portal-calm-chart-card is-${turnoverTone} is-clickable" data-portal-exec-open="stock" data-portal-exec-key="${esc(turnover.key)}">
+          <article class="portal-calm-chart-card is-${turnoverTone} is-clickable" data-platform="${esc(turnover.key)}" data-portal-exec-open="stock" data-portal-exec-key="${esc(turnover.key)}">
             <div class="portal-calm-card-head"><span class="portal-calm-card-label">Запас</span>${deltaBadge('LFL', turnoverDelta, true)}</div>
             <div class="portal-calm-card-value">${esc(turnover.avgTurnoverDays !== null ? `${turnover.avgTurnoverDays.toFixed(1)} дн.` : '—')}</div>
             <div class="portal-calm-card-sub">Остаток ${esc(int(turnover.totalStock))} · в пути ${esc(int(turnover.totalTransit))} · риск ${esc(int(turnover.lowCoverage))}</div>
-            ${dashboardCalmChart(turnoverPoints, { tone: turnoverTone, empty: 'Нет ряда запаса' })}
+            ${dashboardCalmChart(turnoverPoints, { tone: turnoverTone, platformKey: turnover.key, completion: metric.completion, empty: 'Нет ряда запаса' })}
           </article>
         </div>
       </section>
@@ -6215,7 +6099,7 @@ function dashboardTaskStatusChip(task) {
         </div>
         <div class="portal-calm-panel">
           <div class="portal-calm-panel-head">
-            <h3>Сигналы без шума</h3>
+            <h3>Сигналы</h3>
             <div class="portal-calm-chip-row">${badgeHtml(`${int(issueRows.length)} в фокусе`, issueRows.length ? 'warn' : 'ok')}</div>
           </div>
           <div class="portal-calm-list">${issueMarkup}</div>
@@ -6318,14 +6202,16 @@ function dashboardTaskStatusChip(task) {
       #view-dashboard .portal-exec-focus-card p { margin: 8px 0 0; color: rgba(245,232,207,.66); font-size: 13px; line-height: 1.45; }
       #view-dashboard .portal-exec-focus-card .portal-exec-chip-stack { margin-top: 10px; }
       body > .portal-exec-modal > .portal-exec-modal-card { display: grid; gap: 14px; width: min(1860px, 98vw) !important; max-height: 94vh !important; overflow: auto !important; padding: 20px 22px !important; }
-      body > .portal-exec-modal .portal-exec-modal-metrics { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)) !important; }
+      body > .portal-exec-modal .portal-exec-modal-metrics { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)) !important; gap: 10px !important; }
       body > .portal-exec-modal .portal-exec-modal-grid { grid-template-columns: minmax(420px, 1.02fr) minmax(620px, .98fr) !important; gap: 16px !important; align-items: start !important; }
       body > .portal-exec-modal .portal-exec-modal-grid > * { min-width: 0 !important; }
       body > .portal-exec-modal .portal-exec-side-stack { display: grid; gap: 14px; min-width: 0; align-content: start; }
       body > .portal-exec-modal .portal-exec-modal-card { min-width: 0; }
+      body > .portal-exec-modal .portal-exec-modal-metrics .portal-exec-modal-card,
       body > .portal-exec-modal .portal-exec-modal-grid .portal-exec-modal-card,
       body > .portal-exec-modal .portal-exec-side-stack .portal-exec-modal-card,
       body > .portal-exec-modal .portal-exec-modal-actions .portal-exec-modal-card { width: auto !important; max-height: none !important; overflow-x: auto !important; overflow-y: visible !important; }
+      body > .portal-exec-modal .portal-exec-modal-metrics .portal-exec-modal-card { padding: 12px 14px !important; border-radius: 12px !important; }
       body > .portal-exec-modal .portal-exec-modal-actions { margin-top: 14px; min-width: 0; }
       body > .portal-exec-modal .portal-exec-table-title { margin: 0; color: #f6ead4; }
       body > .portal-exec-modal .portal-exec-table-sub { margin: 6px 0 12px; color: rgba(245,232,207,.66); font-size: 13px; line-height: 1.45; }
@@ -6334,6 +6220,15 @@ function dashboardTaskStatusChip(task) {
       body > .portal-exec-modal .portal-exec-modal-table td { min-width: 88px; line-height: 1.4; }
       body > .portal-exec-modal .portal-exec-modal-table th:first-child,
       body > .portal-exec-modal .portal-exec-modal-table td:first-child { min-width: 320px; }
+      body > .portal-exec-modal .portal-exec-leader-list { display: grid; gap: 8px; }
+      body > .portal-exec-modal .portal-exec-leader-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,.07); background: rgba(255,255,255,.025); cursor: pointer; transition: border-color .16s ease, background .16s ease, transform .16s ease; }
+      body > .portal-exec-modal .portal-exec-leader-row:hover { transform: translateY(-1px); border-color: rgba(231,188,101,.28); background: rgba(255,255,255,.04); }
+      body > .portal-exec-modal .portal-exec-leader-main { min-width: 0; display: grid; gap: 3px; }
+      body > .portal-exec-modal .portal-exec-leader-main strong { color: #fff2dc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      body > .portal-exec-modal .portal-exec-leader-main span { color: rgba(245,232,207,.62); font-size: 12px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      body > .portal-exec-modal .portal-exec-leader-meta { display: flex; gap: 7px; align-items: center; justify-content: flex-end; flex-wrap: wrap; min-width: 180px; }
+      body > .portal-exec-modal .portal-exec-leader-empty { padding: 12px; border-radius: 10px; border: 1px dashed rgba(255,255,255,.13); color: rgba(245,232,207,.64); font-size: 13px; line-height: 1.45; }
+      @media (max-width: 760px) { body > .portal-exec-modal .portal-exec-leader-row { grid-template-columns: 1fr; } body > .portal-exec-modal .portal-exec-leader-meta { justify-content: flex-start; min-width: 0; } }
       @media (max-width: 1280px) { #view-dashboard .portal-exec-focus-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
       @media (max-width: 1400px) { body > .portal-exec-modal .portal-exec-modal-grid { grid-template-columns: 1fr !important; } }
       @media (max-width: 720px) { #view-dashboard .portal-exec-focus-grid { grid-template-columns: 1fr; } }
@@ -6390,16 +6285,90 @@ function dashboardTaskStatusChip(task) {
       .slice(0, 8);
   }
 
+  function dashboardRowCompletion(row) {
+    const direct = Number(row?.completionPct);
+    if (Number.isFinite(direct)) return direct;
+    const plan = Number(row?.planUnitsSelected);
+    const actual = Number(row?.actualUnitsSelected);
+    if (Number.isFinite(plan) && plan > 0 && Number.isFinite(actual)) return actual / plan;
+    return null;
+  }
+
+  function dashboardRowOverUnits(row) {
+    const plan = Number(row?.planUnitsSelected);
+    const actual = Number(row?.actualUnitsSelected);
+    if (!Number.isFinite(plan) || !Number.isFinite(actual)) return null;
+    return actual - plan;
+  }
+
+  function dashboardOverPlanRows(rows, limit = 12) {
+    const prepared = (Array.isArray(rows) ? rows : [])
+      .map((row) => ({ ...row, _completion: dashboardRowCompletion(row), _overUnits: dashboardRowOverUnits(row) }))
+      .filter((row) => row._completion !== null || row._overUnits !== null);
+    const winners = prepared.filter((row) => num(row._completion) >= 1 || num(row._overUnits) > 0);
+    const source = winners.length ? winners : prepared;
+    return source
+      .sort((left, right) => num(right._completion) - num(left._completion) || num(right._overUnits) - num(left._overUnits) || num(right.salesValue) - num(left.salesValue))
+      .slice(0, limit);
+  }
+
+  function dashboardMoneyLeaderRows(rows, limit = 12) {
+    return (Array.isArray(rows) ? rows : [])
+      .filter((row) => num(row.salesValue) > 0 || num(row.actualUnitsSelected) > 0)
+      .sort((left, right) => num(right.salesValue) - num(left.salesValue) || num(right.actualUnitsSelected) - num(left.actualUnitsSelected) || num(right.completionPct) - num(left.completionPct))
+      .slice(0, limit);
+  }
+
+  function dashboardLeaderRowHtml(row, executive, mode) {
+    const completion = row?._completion ?? dashboardRowCompletion(row);
+    const overUnits = row?._overUnits ?? dashboardRowOverUnits(row);
+    const planText = row?.planUnitsSelected !== null && row?.planUnitsSelected !== undefined ? int(row.planUnitsSelected) : '—';
+    const actualText = row?.actualUnitsSelected !== null && row?.actualUnitsSelected !== undefined ? int(row.actualUnitsSelected) : '—';
+    const completionTone = completion === null ? 'info' : toneCompletion(completion);
+    const completionText = completion === null ? 'нет плана' : pct(completion);
+    const moneyText = num(row?.salesValue) > 0 ? money(row.salesValue) : '—';
+    const overText = overUnits === null ? '' : `${overUnits >= 0 ? '+' : ''}${int(overUnits)} шт.`;
+    const subtitle = mode === 'money'
+      ? `${esc(row?.platformLabel || shortPlatformLabel(row?.platformKey))} · факт ${esc(actualText)} · план ${esc(planText)} · ${esc(row?.owner || 'Без owner')}`
+      : `${esc(row?.platformLabel || shortPlatformLabel(row?.platformKey))} · план ${esc(planText)} → факт ${esc(actualText)} · ${esc(row?.owner || 'Без owner')}`;
+    return `
+      <article class="portal-exec-leader-row"${priceWorkbenchOpenAttrs(row?.platformKey, row?.article, executive)}>
+        <div class="portal-exec-leader-main">
+          <strong>${esc(row?.article || 'Без артикула')}</strong>
+          <span>${esc(row?.name || '')}</span>
+          <span>${subtitle}</span>
+        </div>
+        <div class="portal-exec-leader-meta">
+          ${mode === 'money' ? badgeHtml(moneyText, 'warn') : ''}
+          ${badgeHtml(completionText, completionTone)}
+          ${mode !== 'money' && overText ? badgeHtml(overText, overUnits >= 0 ? 'ok' : 'warn') : ''}
+          ${mode !== 'money' ? badgeHtml(moneyText, 'info') : ''}
+        </div>
+      </article>
+    `;
+  }
+
+  function dashboardLeaderCard(title, subtitle, rows, executive, mode, emptyCopy) {
+    const list = rows?.length
+      ? rows.map((row) => dashboardLeaderRowHtml(row, executive, mode)).join('')
+      : `<div class="portal-exec-leader-empty">${esc(emptyCopy || 'По выбранному окну нет строк для этого списка.')}</div>`;
+    return `
+      <div class="portal-exec-modal-card">
+        <h4 class="portal-exec-table-title">${esc(title)}</h4>
+        <p class="portal-exec-table-sub">${esc(subtitle)}</p>
+        <div class="portal-exec-leader-list">${list}</div>
+      </div>
+    `;
+  }
+
   function buildCompletionDetail(metric, executive) {
     const allSkuRows = articleRowsForPlatform(metric.key, executive.range);
-    const skuRows = allSkuRows
-      .sort((left, right) => num(left.completionPct) - num(right.completionPct) || num(right.planUnitsSelected) - num(left.planUnitsSelected) || num(right.salesValue) - num(left.salesValue))
-      .slice(0, 18);
+    const overRows = dashboardOverPlanRows(allSkuRows, 12);
+    const moneyRows = dashboardMoneyLeaderRows(allSkuRows, 12);
     const summary = completionDetailArticleSummary(metric, allSkuRows, executive.range);
     const previousRows = executive.compareRange
       ? articleRowsForPlatform(metric.key, executive.compareRange)
       : [];
-    const focusDays = detailTailRows(metric.days, 14);
     const previous = executive.compareByKey.get(metric.key);
     const previousSummary = previous ? completionDetailArticleSummary(previous, previousRows, executive.compareRange || executive.range) : null;
     const completionDelta = percentagePointDelta(summary.completion, previousSummary?.completion ?? previous?.completion);
@@ -6417,7 +6386,7 @@ function dashboardTaskStatusChip(task) {
     };
     return {
       title: `${metric.label} · план-факт по артикулу`,
-      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчёте: ${executive.range.effectiveLabel}. Справа всегда последние 14 дней доступного факта.`,
+      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчёте: ${executive.range.effectiveLabel}. Внутри только SKU-лидеры: кто идет выше плана и кто дает выручку.`,
       body: `
         <div class="portal-exec-modal-metrics">
           ${modalSummaryCard('% выполнения', pct(metric.completion))}
@@ -6428,63 +6397,23 @@ function dashboardTaskStatusChip(task) {
           ${modalSummaryCard('Выручка', money(metric.revenue))}
         </div>
         <div class="portal-exec-modal-grid">
-          <div class="portal-exec-modal-card">
-            <h4 class="portal-exec-table-title">Слева артикула</h4>
-            <p class="portal-exec-table-sub">Короткий список для разбора: кто не добирает план, кто делает выручку и кого нужно открыть во вкладке цен.</p>
-            <table class="portal-exec-modal-table">
-              <thead>
-                <tr>
-                  <th>SKU</th>
-                  <th>Площадка</th>
-                  <th>План</th>
-                  <th>Факт</th>
-                  <th>%</th>
-                  <th>Выручка</th>
-                  <th>Owner</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${skuRows.length ? skuRows.map((row) => `
-                  <tr${priceWorkbenchOpenAttrs(row.platformKey, row.article, executive)}>
-                    <td><strong>${esc(row.article)}</strong><div class="muted small">${esc(row.name)}</div></td>
-                    <td>${esc(row.platformLabel)}</td>
-                    <td>${esc(row.planUnitsSelected !== null ? int(row.planUnitsSelected) : '—')}</td>
-                    <td>${esc(row.actualUnitsSelected !== null ? int(row.actualUnitsSelected) : '—')}</td>
-                    <td>${esc(row.completionPct !== null ? pct(row.completionPct) : '—')}</td>
-                    <td>${esc(row.salesValue ? money(row.salesValue) : '—')}</td>
-                    <td>${esc(row.owner)}</td>
-                  </tr>
-                `).join('') : `<tr><td colspan="7">По выбранной площадке нет SKU-среза.</td></tr>`}
-              </tbody>
-            </table>
-          </div>
+          ${dashboardLeaderCard(
+            'Кто перевыполняет план',
+            'Сначала SKU выше 100%; если таких нет, показываем ближайших к плану. Клик открывает карточку цены.',
+            overRows,
+            executive,
+            'over',
+            'Сейчас нет SKU выше плана в выбранном окне.'
+          )}
           <div class="portal-exec-side-stack">
-            <div class="portal-exec-modal-card">
-              <h4 class="portal-exec-table-title">Справа 14 дней</h4>
-              <p class="portal-exec-table-sub">План, факт и выручка по дням. Это окно отвечает на вопрос: когда именно начался провал или ускорение.</p>
-              <table class="portal-exec-modal-table">
-                <thead>
-                  <tr>
-                    <th>Дата</th>
-                    <th>План</th>
-                    <th>Факт</th>
-                    <th>%</th>
-                    <th>Выручка</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${focusDays.length ? focusDays.map((row) => `
-                    <tr>
-                      <td>${esc(shortDate(row.date))}</td>
-                      <td>${esc(dailyPlanDisplay(row, metric))}</td>
-                      <td>${esc(dailyFactDisplay(row, metric))}</td>
-                      <td>${esc(dailyCompletion(row, metric) !== null ? pct(dailyCompletion(row, metric)) : '—')}</td>
-                      <td>${esc(money(row.revenue))}</td>
-                    </tr>
-                  `).join('') : `<tr><td colspan="5">Нет дневных данных по выбранному окну.</td></tr>`}
-                </tbody>
-              </table>
-            </div>
+            ${dashboardLeaderCard(
+              'Кто приносит больше денег',
+              'Лидеры по выручке за выбранный период: видно факт, план, owner и вклад в деньги.',
+              moneyRows,
+              executive,
+              'money',
+              'В выбранном окне нет SKU с выручкой.'
+            )}
             ${renderActionBullets(metricActionBullets(metric, executive), 'План-факт выглядит стабильно, открывайте только отдельные SKU с вопросами.')}
           </div>
         </div>
@@ -6597,28 +6526,12 @@ function dashboardTaskStatusChip(task) {
   function buildRevenueDetail(metric, executive) {
     const previous = executive.compareByKey.get(metric.key);
     const revenueDelta = relativeDelta(metric.revenue, previous?.revenue);
-    const priceDailyMap = new Map((metric.priceMatrixSeries || []).map((row) => [iso(row.date), row]));
-    const focusDays = detailTailRows(metric.days, 14).map((row) => {
-      const avgCheck = row.factUnits > 0 ? row.revenue / row.factUnits : null;
-      const matrix = priceDailyMap.get(iso(row.date));
-      return {
-        date: row.date,
-        planUnits: row.planUnits,
-        planRevenue: row.planRevenue,
-        factUnits: row.factUnits,
-        units: row.factUnits,
-        completion: dailyCompletion(row, metric),
-        revenue: row.revenue,
-        avgCheck,
-        avgPrice: matrix?.avgPrice || 0
-      };
-    });
-    const skuRows = articleRowsForPlatform(metric.key, executive.range)
-      .sort((left, right) => num(right.salesValue) - num(left.salesValue) || num(right.actualUnitsSelected) - num(left.actualUnitsSelected))
-      .slice(0, 18);
+    const allSkuRows = articleRowsForPlatform(metric.key, executive.range);
+    const moneyRows = dashboardMoneyLeaderRows(allSkuRows, 12);
+    const overRows = dashboardOverPlanRows(allSkuRows, 12);
     return {
       title: `${metric.label} · оборот и продажи`,
-      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчёте: ${executive.range.effectiveLabel}. Справа последние 14 дней оборота.`,
+      subtitle: `Запрос: ${executive.range.requestedLabel}. В расчёте: ${executive.range.effectiveLabel}. В фокусе SKU, которые приносят деньги и держат план.`,
       body: `
         <div class="portal-exec-modal-metrics">
           ${modalSummaryCard('Выручка', money(metric.revenue))}
@@ -6629,67 +6542,23 @@ function dashboardTaskStatusChip(task) {
           ${modalSummaryCard('Средний чек', metric.avgCheck > 0 ? money(metric.avgCheck) : '—')}
         </div>
         <div class="portal-exec-modal-grid">
-          <div class="portal-exec-modal-card">
-            <h4 class="portal-exec-table-title">Слева артикула</h4>
-            <p class="portal-exec-table-sub">Топ SKU по обороту. Отсюда удобно сразу открыть карточку цены и проверить причину изменения.</p>
-            <table class="portal-exec-modal-table">
-              <thead>
-                <tr>
-                  <th>SKU</th>
-                  <th>Площадка</th>
-                  <th>Выручка</th>
-                  <th>Факт</th>
-                  <th>План</th>
-                  <th>%</th>
-                  <th>Owner</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${skuRows.length ? skuRows.map((row) => `
-                  <tr${priceWorkbenchOpenAttrs(row.platformKey, row.article, executive)}>
-                    <td><strong>${esc(row.article)}</strong><div class="muted small">${esc(row.name)}</div></td>
-                    <td>${esc(row.platformLabel)}</td>
-                    <td>${esc(row.salesValue ? money(row.salesValue) : '—')}</td>
-                    <td>${esc(row.actualUnitsSelected !== null ? int(row.actualUnitsSelected) : '—')}</td>
-                    <td>${esc(row.planUnitsSelected !== null ? int(row.planUnitsSelected) : '—')}</td>
-                    <td>${esc(row.completionPct !== null ? pct(row.completionPct) : '—')}</td>
-                    <td>${esc(row.owner)}</td>
-                  </tr>
-                `).join('') : `<tr><td colspan="7">Нет SKU-списка по обороту.</td></tr>`}
-              </tbody>
-            </table>
-          </div>
+          ${dashboardLeaderCard(
+            'Кто приносит больше денег',
+            'Топ SKU по выручке за выбранный период. Сразу видно факт, план и ответственного.',
+            moneyRows,
+            executive,
+            'money',
+            'В выбранном окне нет SKU с выручкой.'
+          )}
           <div class="portal-exec-side-stack">
-            <div class="portal-exec-modal-card">
-              <h4 class="portal-exec-table-title">Справа 14 дней</h4>
-              <p class="portal-exec-table-sub">Дневной ряд продаж, плана, выручки и среднего чека. Он нужен для быстрого ответа, когда началось изменение.</p>
-              <table class="portal-exec-modal-table">
-                <thead>
-                  <tr>
-                    <th>Дата</th>
-                    <th>План</th>
-                    <th>Факт</th>
-                    <th>%</th>
-                    <th>Выручка</th>
-                    <th>Средний чек</th>
-                    <th>Средняя цена</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${focusDays.length ? focusDays.map((row) => `
-                    <tr>
-                      <td>${esc(shortDate(row.date))}</td>
-                      <td>${esc(dailyPlanDisplay(row, metric))}</td>
-                      <td>${esc(dailyFactDisplay(row, metric))}</td>
-                      <td>${esc(dailyCompletion(row, metric) !== null ? pct(dailyCompletion(row, metric)) : '—')}</td>
-                      <td>${esc(money(row.revenue))}</td>
-                      <td>${esc(row.avgCheck ? money(row.avgCheck) : '—')}</td>
-                      <td>${esc(row.avgPrice > 0 ? money(row.avgPrice) : '—')}</td>
-                    </tr>
-                  `).join('') : `<tr><td colspan="7">Нет дневных данных по продажам.</td></tr>`}
-                </tbody>
-              </table>
-            </div>
+            ${dashboardLeaderCard(
+              'Кто перевыполняет план',
+              'SKU выше 100% или ближайшие к выполнению. Так понятно, кто тянет площадку вверх.',
+              overRows,
+              executive,
+              'over',
+              'Сейчас нет SKU выше плана в выбранном окне.'
+            )}
             ${renderActionBullets(metricActionBullets(metric, executive), 'Оборот выглядит стабильно. Используйте левый список как короткий лист лидеров по выручке.')}
           </div>
         </div>

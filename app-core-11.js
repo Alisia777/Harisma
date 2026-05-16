@@ -1276,10 +1276,14 @@ function skuPlanFactAliasImportReportHtml(report = null) {
   const warnings = report.validationWarnings || [];
   const duplicates = report.duplicateRows || [];
   const skipped = report.skippedRows || [];
+  const newSkuRows = report.newSkuRows || [];
+  const needCheckRows = report.needCheckRows || [];
   const details = errors.length ? errors.slice(0, 8)
     : warnings.length ? warnings.slice(0, 8)
       : duplicates.length ? duplicates.slice(0, 8)
-        : skipped.slice(0, 8);
+        : skipped.length ? skipped.slice(0, 8)
+          : newSkuRows.length ? newSkuRows.slice(0, 8)
+            : needCheckRows.slice(0, 8);
   const canApply = !report.appliedAt && !errors.length && Boolean(
     ((report.aliases || []).length && report.aliasPayload)
     || ((report.ignores || []).length && report.ignorePayload)
@@ -1298,7 +1302,7 @@ function skuPlanFactAliasImportReportHtml(report = null) {
       <div class="section-subhead">
         <div>
           <strong>Отчёт импорта${report.fileName ? `: ${escapeHtml(report.fileName)}` : ''}</strong>
-          <div class="small muted">Строк: ${fmt.int(report.sourceRows || 0)} · алиасы: ${fmt.int(report.candidateAliases || 0)} · ignore: ${fmt.int(report.candidateIgnores || 0)} · дубли: ${fmt.int(duplicates.length)} · пропущено: ${fmt.int(skipped.length)} · ошибок: ${fmt.int(errors.length)}</div>
+          <div class="small muted">Строк: ${fmt.int(report.sourceRows || 0)} · alias: ${fmt.int(report.candidateAliases || 0)} · ignore: ${fmt.int(report.candidateIgnores || 0)} · new_sku: ${fmt.int(report.candidateNewSkus || 0)} · need_check: ${fmt.int(report.candidateNeedCheck || 0)} · дубли: ${fmt.int(duplicates.length)} · пропущено: ${fmt.int(skipped.length)} · ошибок: ${fmt.int(errors.length)}</div>
         </div>
         <div class="badge-stack">
           ${canApply ? '<button class="quick-chip" type="button" data-sku-plan-fact-apply-import>Применить в портал</button>' : ''}
@@ -1325,7 +1329,7 @@ function skuPlanFactQualityToolsHtml() {
       <div class="section-subhead">
         <div>
           <h3>Разбор API SKU</h3>
-          <p class="small muted">Загрузите заполненный файл проблем: строки с decision=alias попадут в алиасы, decision=ignore — в отдельный справочник исключений.</p>
+          <p class="small muted">Загрузите заполненный файл проблем: decision=alias связывает API SKU с SKU реестра, decision=ignore скрывает осознанное исключение, decision=new_sku/need_check остаётся в разборе без применения.</p>
         </div>
         <div class="badge-stack">
           <button class="quick-chip" type="button" data-sku-plan-fact-quality-import>Загрузить заполненный файл</button>
@@ -1388,6 +1392,76 @@ function skuPlanFactDataQualityHtml(model) {
       </div>
     </div>
     ${skuPlanFactQualityToolsHtml()}
+  `;
+}
+
+function skuContourGuideHtml() {
+  const decisionRows = [
+    {
+      decision: 'alias',
+      use: 'API SKU оказался тем же товаром, который уже есть в реестре.',
+      fill: 'В decision пишем alias, в target_sku пишем точный SKU/артикул из реестра. platform и api_sku не меняем.',
+      result: 'После загрузки и применения выручка и штуки этого API SKU начнут попадать в один общий SKU во всех контурах.'
+    },
+    {
+      decision: 'ignore',
+      use: 'Это не товар для матрицы: тест, дубль мусорного источника, сервисная строка или строка, которую сознательно не надо маппить.',
+      fill: 'В decision пишем ignore, target_sku оставляем пустым, в note коротко пишем причину.',
+      result: 'Строка уйдет в справочник исключений и перестанет висеть как нерешенная ошибка, но останется в аудите.'
+    },
+    {
+      decision: 'new_sku',
+      use: 'Это реальный новый товар, которого еще нет в реестре SKU.',
+      fill: 'В decision пишем new_sku, в note пишем что завести. target_sku можно оставить пустым или указать будущий код.',
+      result: 'Портал не создает SKU автоматически. Строка попадет в отчет импорта как задача на заведение SKU, затем ее надо связать через alias.'
+    },
+    {
+      decision: 'need_check',
+      use: 'Непонятно, что это: нужна проверка у категории, API, склада или источника.',
+      fill: 'Оставляем decision=need_check и пишем вопрос/наблюдение в note.',
+      result: 'Ничего не применится. Строка останется в очереди, чтобы ее не спрятать случайно.'
+    }
+  ].map((row) => `
+    <tr>
+      <td><strong>${escapeHtml(row.decision)}</strong></td>
+      <td>${escapeHtml(row.use)}</td>
+      <td>${escapeHtml(row.fill)}</td>
+      <td>${escapeHtml(row.result)}</td>
+    </tr>
+  `).join('');
+
+  const statusRows = [
+    ['Блокер sync', 'Синхронизация увидела риск в данных. Сначала проверяем источник/API или дубли, потом применяем alias/ignore.'],
+    ['Карантин', 'Строка уже изолирована защитой данных. Ее можно разобрать через форму, но в расчетах она не должна тихо смешиваться с нормальными SKU.'],
+    ['Новая', 'По этой строке еще нет решения в общем alias/ignore. Это главный рабочий список.'],
+    ['Проверить', 'Предупреждение: не всегда блокирует работу, но требует ручной проверки.'],
+    ['Применено', 'Для API SKU уже есть alias, строка должна уйти из проблем после обновления данных.'],
+    ['Ignore', 'Строка сознательно исключена, она не должна требовать маппинга.']
+  ].map(([status, description]) => `
+    <tr><td><strong>${escapeHtml(status)}</strong></td><td>${escapeHtml(description)}</td></tr>
+  `).join('');
+
+  return `
+    <details class="card sku-plan-fact-card" style="margin-top:14px" open data-sku-contour-guide>
+      <summary style="cursor:pointer;font-weight:800">Как работать с ошибками SKU и колонкой decision в Excel</summary>
+      <div class="notice info" style="margin-top:12px">
+        <strong>Коротко: таблица в портале справочная, строки в ней не редактируются.</strong>
+        <div class="small muted">Ошибки приходят из утреннего API/sync: портал сравнивает факт продаж площадок, реестр SKU, alias/ignore, карантин и health-снимок. Исправление делается через “Выгрузить форму” → заполнить Excel/CSV → “Загрузить заполненный файл” → “Применить в портал”.</div>
+      </div>
+      <div class="table-scroll" style="margin-top:12px">
+        <table class="data-table compact">
+          <thead><tr><th>decision</th><th>Когда ставить</th><th>Что заполнить</th><th>Что произойдет</th></tr></thead>
+          <tbody>${decisionRows}</tbody>
+        </table>
+      </div>
+      <div class="table-scroll" style="margin-top:12px">
+        <table class="data-table compact">
+          <thead><tr><th>Статус в портале</th><th>Что значит</th></tr></thead>
+          <tbody>${statusRows}</tbody>
+        </table>
+      </div>
+      <div class="footer-note">В Excel обычно трогаем только decision, target_sku и note. Колонки platform/api_sku/status нужны порталу, их лучше не менять без причины.</div>
+    </details>
   `;
 }
 
@@ -1540,6 +1614,8 @@ function renderSkuContour(rootId = 'view-sku-contour') {
       </div>
     </div>
 
+    ${skuContourGuideHtml()}
+
     <div class="notice ${healthMeta.notice}">
       <div class="section-subhead">
         <div>
@@ -1569,7 +1645,7 @@ function renderSkuContour(rootId = 'view-sku-contour') {
       <div class="section-subhead">
         <div>
           <h3>Форма разбора API SKU</h3>
-          <p class="small muted">Выгрузите форму, заполните decision=alias или decision=ignore, затем загрузите обратно. Те же кнопки остаются и в План-факте.</p>
+          <p class="small muted">Выгрузите форму, заполните decision: alias, ignore, new_sku или need_check, затем загрузите обратно. Те же кнопки остаются и в План-факте.</p>
         </div>
         <div class="badge-stack">
           <button class="quick-chip" type="button" data-sku-contour-quality-export>Выгрузить форму</button>
@@ -1814,11 +1890,12 @@ function downloadSkuPlanFactExcel(model) {
 
 function skuPlanFactQualityExportColumns() {
   return [
-    ['decision', 'Решение alias/new_sku/ignore/need_check'],
-    ['target_sku', 'SKU в реестре'],
+    ['decision', 'Решение: alias / new_sku / ignore / need_check'],
+    ['decision_hint', 'Подсказка по решению'],
+    ['target_sku', 'SKU в реестре (заполнять для alias)'],
     ['platform', 'Площадка'],
     ['api_sku', 'API SKU'],
-    ['status', 'Статус'],
+    ['status', 'Статус записи (обычно active)'],
     ['note', 'Комментарий'],
     ['month', 'Месяц'],
     ['fact_to', 'Факт до'],
@@ -1832,9 +1909,25 @@ function skuPlanFactQualityExportColumns() {
   ];
 }
 
+function skuPlanFactDecisionHint(issue = {}) {
+  const type = String(issue.type || '').toLowerCase();
+  const action = String(issue.action || '').toLowerCase();
+  if (type.includes('owner') || action.includes('owner')) {
+    return 'Поставьте need_check и заполните owner в реестре SKU; alias тут обычно не нужен.';
+  }
+  if (type.includes('агрегат') || action.includes('детал')) {
+    return 'Сначала проверьте API-детализацию. Если нашли товар в реестре - alias; если это новый товар - new_sku; если мусор источника - ignore.';
+  }
+  if (type.includes('api sku') || action.includes('alias') || action.includes('dim_sku_aliases')) {
+    return 'Если это существующий товар - alias + target_sku. Если товара нет в реестре - new_sku. Если маппить не нужно - ignore.';
+  }
+  return 'Если уверены в паре - alias + target_sku; если не уверены - need_check; если строку не надо маппить - ignore.';
+}
+
 function skuPlanFactQualityExportRows(model) {
   return (model.quality?.issues || []).map((issue) => ({
-    decision: '',
+    decision: 'need_check',
+    decision_hint: skuPlanFactDecisionHint(issue),
     target_sku: '',
     platform: issue.platform,
     api_sku: issue.articleKey,
@@ -2042,6 +2135,8 @@ function skuPlanFactNormalizeReviewAction(action = '', targetSku = '') {
   const token = skuPlanFactToken(action);
   if (['alias', 'map', 'mapping', 'apply', 'active', 'алиас', 'связать'].includes(token)) return 'alias';
   if (['ignore', 'ignored', 'skip', 'hide', 'mute', 'exclude', 'игнор', 'игнорировать', 'скрыть'].includes(token)) return 'ignore';
+  if (['newsku', 'new', 'createsku', 'create', 'sku', 'newproduct'].includes(token)) return 'new_sku';
+  if (['needcheck', 'check', 'review', 'manual', 'question', 'later', 'todo'].includes(token)) return 'need_check';
   if (!token && targetSku) return 'alias';
   if (!token) return 'empty';
   return token;
@@ -2075,6 +2170,8 @@ function skuPlanFactPrepareAliasImport(rows = [], currentAliases = {}, currentIg
   const uploadApiTargets = new Map();
   const aliases = [];
   const ignores = [];
+  const newSkuRows = [];
+  const needCheckRows = [];
   const skippedRows = [];
   const errorRows = [];
   const duplicateRows = [];
@@ -2118,6 +2215,34 @@ function skuPlanFactPrepareAliasImport(rows = [], currentAliases = {}, currentIg
         existingIgnores.add(key);
         ignores.push(ignore);
       }
+      return;
+    }
+    if (action === 'new_sku') {
+      const item = {
+        rowNumber,
+        apiSku,
+        platform,
+        targetSku,
+        note,
+        action,
+        reason: 'new_sku: сначала заведите SKU в реестре, затем загрузите эту строку как alias'
+      };
+      newSkuRows.push(item);
+      skippedRows.push(item);
+      return;
+    }
+    if (action === 'need_check') {
+      const item = {
+        rowNumber,
+        apiSku,
+        platform,
+        targetSku,
+        note,
+        action,
+        reason: 'need_check: строка оставлена на ручную проверку, портал ничего не применяет'
+      };
+      needCheckRows.push(item);
+      skippedRows.push(item);
       return;
     }
     if (action !== 'alias') {
@@ -2175,10 +2300,14 @@ function skuPlanFactPrepareAliasImport(rows = [], currentAliases = {}, currentIg
     sourceRows: rows.length,
     candidateAliases: aliases.length,
     candidateIgnores: ignores.length,
+    candidateNewSkus: newSkuRows.length,
+    candidateNeedCheck: needCheckRows.length,
     validationWarnings,
     duplicateRows,
     skippedRows,
     errorRows,
+    newSkuRows,
+    needCheckRows,
     aliases,
     ignores,
     aliasPayload: nextAliasPayload,
@@ -2494,10 +2623,14 @@ async function handleSkuPlanFactAliasImport(file, rootId = 'view-sku-plan-fact')
       sourceRows: 0,
       candidateAliases: 0,
       candidateIgnores: 0,
+      candidateNewSkus: 0,
+      candidateNeedCheck: 0,
       validationWarnings: [],
       duplicateRows: [],
       skippedRows: [],
       errorRows: [{ rowNumber: 0, reason: error.message || 'import failed' }],
+      newSkuRows: [],
+      needCheckRows: [],
       aliases: [],
       ignores: []
     };

@@ -115,6 +115,7 @@ async function main() {
     const contourOk = await page.evaluate(() => Boolean(
       document.querySelector('#view-sku-contour [data-sku-contour-quality-export]')
       && document.querySelector('#view-sku-contour [data-sku-contour-quality-import]')
+      && document.querySelector('#view-sku-contour [data-sku-contour-guide]')
     ));
     if (!contourOk) throw new Error('SKU contour controls did not render.');
 

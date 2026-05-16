@@ -1,8 +1,8 @@
 (function () {
-  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN7__) return;
-  window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN7__ = true;
+  if (window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN8__) return;
+  window.__ALTEA_EXECUTIVE_LITE_GUARD_20260516_EXECLEAN8__ = true;
 
-  const VERSION = '20260516execlean7';
+  const VERSION = '20260516execlean8';
   const KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'cross'];
   const META = {
     wb: { label: 'WB', title: 'РОП WB' },
@@ -85,7 +85,7 @@
   }
 
   function signature(tasks) {
-    return tasks.map((task) => [task?.id || task?.articleKey || '', task?.status || '', task?.priority || '', task?.owner || '', task?.due || '', task?.platform || ''].join(':')).join('|');
+    return tasks.map((task) => [task?.id || task?.articleKey || '', task?.status || '', task?.priority || '', task?.owner || '', task?.due || '', task?.platform || ''].join(':')).sort().join('|');
   }
 
   function card(row) {

@@ -1,5 +1,7 @@
 (function () {
-if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260516DASHCALM3__) return;
+if (window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE2__) return;
+window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE2__ = true;
+window.__ALTEA_DASHBOARD_INTERACTIVE_20260516MODALTABLE1__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260516DASHCALM3__ = true;
 window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260507N__ = true;
@@ -12,8 +14,8 @@ window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260516dashcalm3';
-const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm3';
+  const VERSION = '20260516modaltable2';
+const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable2';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
@@ -39,6 +41,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm3';
   let applyTimer = 0;
   let dashboardBootPrimed = false;
   let metricsCache = null;
+  let lastDashboardRenderSignature = '';
 
   function syncChrome() {
     document.title = 'Дом бренда Алтея · v8.7.1 Imperial';
@@ -217,6 +220,10 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm3';
     const dot = `rgba(${Math.min(255, mixed[0] + 28)}, ${Math.min(255, mixed[1] + 28)}, ${Math.min(255, mixed[2] + 28)}, 1)`;
     const glow = `rgba(${target[0]}, ${target[1]}, ${target[2]}, ${(0.05 + strength * 0.14).toFixed(3)})`;
     return ` style="--portal-calm-chart-line:${line};--portal-calm-chart-area:${area};--portal-calm-chart-dot:${dot};--portal-calm-chart-glow:${glow};--portal-calm-progress-fill:linear-gradient(90deg, rgba(${mixed[0]}, ${mixed[1]}, ${mixed[2]}, .78), rgba(${target[0]}, ${target[1]}, ${target[2]}, .98));"`;
+  }
+  function dashboardPlatformVarsAttr(platformKey) {
+    const rgb = dashboardPlatformRgb(platformKey);
+    return ` style="--portal-platform-rgb:${rgb[0]}, ${rgb[1]}, ${rgb[2]};"`;
   }
   const parseDate = (value) => {
     if (!value) return null;
@@ -1827,6 +1834,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516dashcalm3';
       const byKey = new Map(metrics.map((item) => [item.key, item]));
       const compareByKey = new Map(compareMetrics.map((item) => [item.key, item]));
       base = {
+        signature,
         range,
         compareRange: compare,
         metrics,
@@ -5911,7 +5919,7 @@ function dashboardTaskStatusChip(task) {
       ? badgeHtml('Период сужен до факта', 'warn')
       : badgeHtml('Факт в выбранном окне', 'ok');
     return `
-      <section class="portal-calm-hero">
+      <section class="portal-calm-hero"${dashboardPlatformVarsAttr(executive.selectedPlatform)}>
         <div class="portal-calm-hero-main">
           <div class="portal-calm-eyebrow">Главный дашборд</div>
           <h2 class="portal-calm-title">Пульс бренда</h2>
@@ -7830,11 +7838,528 @@ function dashboardTaskStatusChip(task) {
     };
   }
 
+  function ensureDashboardStructuredModalStyles() {
+    if (document.getElementById('portalDashboardStructuredModalStyles')) return;
+    const style = document.createElement('style');
+    style.id = 'portalDashboardStructuredModalStyles';
+    style.textContent = `
+      #view-dashboard .portal-calm-hero {
+        background:
+          radial-gradient(circle at 82% 8%, rgba(var(--portal-platform-rgb, 212,164,74), .18), transparent 34%),
+          radial-gradient(circle at 8% 0, rgba(var(--portal-platform-rgb, 212,164,74), .10), transparent 28%),
+          linear-gradient(180deg, rgba(20,15,11,.86), rgba(10,8,7,.92));
+        border-color: rgba(var(--portal-platform-rgb, 212,164,74), .22);
+      }
+      #view-dashboard .portal-calm-platform-button { --portal-platform-rgb: 212, 164, 74; border-color: rgba(var(--portal-platform-rgb), .18); }
+      #view-dashboard .portal-calm-platform-button[data-platform="wb"] { --portal-platform-rgb: 139, 92, 246; }
+      #view-dashboard .portal-calm-platform-button[data-platform="ozon"] { --portal-platform-rgb: 22, 131, 255; }
+      #view-dashboard .portal-calm-platform-button[data-platform="ya"] { --portal-platform-rgb: 244, 196, 48; }
+      #view-dashboard .portal-calm-platform-button[data-platform="goldapple"] { --portal-platform-rgb: 154, 196, 58; }
+      #view-dashboard .portal-calm-platform-button[data-platform="letu"] { --portal-platform-rgb: 217, 70, 239; }
+      #view-dashboard .portal-calm-platform-button[data-platform="magnit"] { --portal-platform-rgb: 239, 68, 68; }
+      #view-dashboard .portal-calm-platform-button.active {
+        color: #fff7e8;
+        border-color: rgba(var(--portal-platform-rgb), .56);
+        background: linear-gradient(180deg, rgba(var(--portal-platform-rgb), .28), rgba(var(--portal-platform-rgb), .12));
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 12px 30px rgba(var(--portal-platform-rgb), .11);
+      }
+      body > .portal-exec-modal > .portal-exec-modal-card {
+        --portal-platform-rgb: 212, 164, 74;
+        border-color: rgba(var(--portal-platform-rgb), .32) !important;
+        background:
+          radial-gradient(circle at 88% 0, rgba(var(--portal-platform-rgb), .18), transparent 32%),
+          radial-gradient(circle at 0 0, rgba(var(--portal-platform-rgb), .10), transparent 26%),
+          linear-gradient(180deg, rgba(19,15,12,.98), rgba(9,8,7,.985)) !important;
+      }
+      body > .portal-exec-modal .portal-exec-modal-head {
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(var(--portal-platform-rgb), .18);
+      }
+      body > .portal-exec-modal .portal-exec-modal-head h3 { letter-spacing: 0; }
+      body > .portal-exec-modal .portal-exec-structured-grid {
+        grid-template-columns: minmax(700px, 1.34fr) minmax(500px, .86fr) !important;
+      }
+      body > .portal-exec-modal .portal-exec-table-card {
+        padding: 0 !important;
+        border-color: rgba(var(--portal-platform-rgb), .14) !important;
+        background: linear-gradient(180deg, rgba(var(--portal-platform-rgb), .045), rgba(255,255,255,.018)) !important;
+      }
+      body > .portal-exec-modal .portal-exec-table-card-head {
+        display: grid;
+        gap: 4px;
+        padding: 14px 16px 10px;
+        border-bottom: 1px solid rgba(255,255,255,.06);
+      }
+      body > .portal-exec-modal .portal-exec-table-card-head h4 {
+        margin: 0;
+        color: #fff2dc;
+        font-size: 15px;
+        line-height: 1.25;
+        letter-spacing: 0;
+      }
+      body > .portal-exec-modal .portal-exec-table-card-head p {
+        margin: 0;
+        color: rgba(245,232,207,.66);
+        font-size: 12px;
+        line-height: 1.42;
+      }
+      body > .portal-exec-modal .portal-exec-table-wrap {
+        max-height: min(58vh, 650px);
+        overflow: auto;
+      }
+      body > .portal-exec-modal .portal-exec-structured-table {
+        width: max-content !important;
+        min-width: 100% !important;
+        border-collapse: separate !important;
+        border-spacing: 0;
+      }
+      body > .portal-exec-modal .portal-exec-structured-table th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: rgba(17,13,10,.98);
+        color: rgba(255,244,229,.58);
+        white-space: nowrap;
+      }
+      body > .portal-exec-modal .portal-exec-structured-table td {
+        white-space: nowrap;
+        color: rgba(255,244,229,.82);
+      }
+      body > .portal-exec-modal .portal-exec-structured-table td.portal-exec-sku-cell,
+      body > .portal-exec-modal .portal-exec-structured-table th.portal-exec-sku-cell {
+        min-width: 340px;
+        max-width: 420px;
+        white-space: normal;
+      }
+      body > .portal-exec-modal .portal-exec-sku-cell strong {
+        display: block;
+        color: #fff3df;
+        font-size: 13px;
+        line-height: 1.24;
+      }
+      body > .portal-exec-modal .portal-exec-sku-cell span {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        color: rgba(245,232,207,.58);
+        font-size: 12px;
+        line-height: 1.32;
+      }
+      body > .portal-exec-modal .portal-exec-num { text-align: right !important; font-variant-numeric: tabular-nums; }
+      body > .portal-exec-modal .portal-exec-owner { max-width: 132px; overflow: hidden; text-overflow: ellipsis; }
+      body > .portal-exec-modal .portal-exec-cell-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 58px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,.10);
+        background: rgba(255,255,255,.035);
+        color: #fff0d8;
+        font-size: 12px;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+      body > .portal-exec-modal .portal-exec-cell-chip.is-ok { border-color: rgba(104,210,143,.32); background: rgba(104,210,143,.13); }
+      body > .portal-exec-modal .portal-exec-cell-chip.is-warn { border-color: rgba(231,188,101,.34); background: rgba(231,188,101,.12); }
+      body > .portal-exec-modal .portal-exec-cell-chip.is-danger { border-color: rgba(231,92,68,.36); background: rgba(231,92,68,.13); }
+      body > .portal-exec-modal .portal-exec-cell-chip.is-muted { color: rgba(255,244,229,.55); }
+      body > .portal-exec-modal .portal-exec-row-danger td { background: rgba(231,92,68,.045); }
+      body > .portal-exec-modal .portal-exec-row-warn td { background: rgba(231,188,101,.035); }
+      body > .portal-exec-modal .portal-exec-row-ok td { background: rgba(104,210,143,.025); }
+      body > .portal-exec-modal .portal-exec-freshness-note {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(var(--portal-platform-rgb), .18);
+        background: rgba(var(--portal-platform-rgb), .07);
+        color: rgba(255,244,229,.72);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+      @media (max-width: 1400px) {
+        body > .portal-exec-modal .portal-exec-structured-grid { grid-template-columns: 1fr !important; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function dashboardDetailPlatformKey(detail) {
+    return canonicalDashboardPlatformKey(detail?.platformKey || detail?.taskPreset?.platformKey || 'all');
+  }
+
+  function applyDashboardModalTheme(modal, detail) {
+    if (!modal) return;
+    const key = dashboardDetailPlatformKey(detail);
+    const rgb = dashboardPlatformRgb(key);
+    modal.dataset.dashboardPlatform = key;
+    const outer = Array.from(modal.children || []).find((node) => node.classList?.contains('portal-exec-modal-card'));
+    if (outer) outer.style.setProperty('--portal-platform-rgb', `${rgb[0]}, ${rgb[1]}, ${rgb[2]}`);
+  }
+
+  function dashboardCompletionTone(value) {
+    if (!Number.isFinite(Number(value))) return 'muted';
+    const numeric = Number(value);
+    if (numeric >= 1) return 'ok';
+    if (numeric >= 0.85) return 'warn';
+    return 'danger';
+  }
+
+  function dashboardStockTone(row) {
+    const turnover = Number(row?.avgTurnoverDays ?? row?.turnoverDays);
+    if (!Number.isFinite(turnover)) return 'muted';
+    if (turnover < 14) return 'danger';
+    if (turnover > 90) return 'warn';
+    return 'ok';
+  }
+
+  function dashboardCellChip(value, tone = '') {
+    const safeTone = tone ? ` is-${esc(tone)}` : '';
+    return `<span class="portal-exec-cell-chip${safeTone}">${esc(value)}</span>`;
+  }
+
+  function dashboardSkuCell(row) {
+    return `<td class="portal-exec-sku-cell"><strong>${esc(row.article || row.articleKey || '—')}</strong><span>${esc(row.name || row.article || row.articleKey || '—')}</span></td>`;
+  }
+
+  function dashboardSourceLabel(value) {
+    if (value === 'daily') return 'daily';
+    if (value === 'monthly') return 'month';
+    if (value === 'procurement') return 'API';
+    return '—';
+  }
+
+  function dashboardTableCard(title, subtitle, headHtml, bodyHtml, className = '') {
+    const extraClass = className ? ` ${esc(className)}` : '';
+    return `
+      <div class="portal-exec-modal-card portal-exec-table-card${extraClass}">
+        <div class="portal-exec-table-card-head">
+          <h4>${esc(title)}</h4>
+          <p>${esc(subtitle)}</p>
+        </div>
+        <div class="portal-exec-table-wrap">
+          <table class="portal-exec-modal-table portal-exec-structured-table">
+            <thead>${headHtml}</thead>
+            <tbody>${bodyHtml}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function buildRevenueDetailStructured(metric, executive) {
+    const previous = executive.compareByKey.get(metric.key);
+    const revenueDelta = relativeDelta(metric.revenue, previous?.revenue);
+    const allRows = articleRowsForPlatform(metric.key, executive.range)
+      .sort((left, right) => num(right.actualRevenueSelected) - num(left.actualRevenueSelected) || num(right.actualUnitsSelected) - num(left.actualUnitsSelected))
+      .slice(0, 36);
+    const priceDailyMap = new Map((metric.priceMatrixSeries || []).map((row) => [iso(row.date), row]));
+    const dailyRows = metric.days.map((row) => {
+      const price = priceDailyMap.get(iso(row.date));
+      return {
+        date: row.date,
+        plan: dailyPlanDisplay(row, metric),
+        fact: dailyFactDisplay(row, metric),
+        completion: dailyCompletion(row, metric),
+        revenue: row.revenue,
+        units: row.factUnits,
+        avgCheck: row.factUnits > 0 ? row.revenue / row.factUnits : null,
+        avgPrice: price?.avgPrice || 0
+      };
+    });
+    const skuBody = allRows.length ? allRows.map((row) => {
+      const completion = row.completionPct;
+      const tone = dashboardCompletionTone(completion);
+      return `
+        <tr class="portal-exec-row-${esc(tone)}"${priceWorkbenchOpenAttrs(row.platformKey, row.article, executive)}>
+          ${dashboardSkuCell(row)}
+          <td>${esc(row.owner || 'Без owner')}</td>
+          <td class="portal-exec-num">${esc(row.actualRevenueSelected !== null ? money(row.actualRevenueSelected) : '—')}</td>
+          <td class="portal-exec-num">${esc(row.actualUnitsSelected !== null ? int(row.actualUnitsSelected) : '—')}</td>
+          <td class="portal-exec-num">${esc(row.planUnitsSelected !== null ? int(row.planUnitsSelected) : '—')}</td>
+          <td class="portal-exec-num">${dashboardCellChip(completion !== null ? pct(completion) : '—', tone)}</td>
+          <td class="portal-exec-num">${esc(row.periodAvgCheck ? money(row.periodAvgCheck) : '—')}</td>
+          <td class="portal-exec-num">${esc(row.stock > 0 ? int(row.stock) : '—')}</td>
+        </tr>
+      `;
+    }).join('') : '<tr><td colspan="8">Нет SKU с выручкой в выбранном окне.</td></tr>';
+    const dailyBody = dailyRows.length ? dailyRows.map((row) => {
+      const tone = dashboardCompletionTone(row.completion);
+      return `
+        <tr class="portal-exec-row-${esc(tone)}">
+          <td>${esc(shortDate(row.date))}</td>
+          <td class="portal-exec-num">${esc(row.plan)}</td>
+          <td class="portal-exec-num">${esc(row.fact)}</td>
+          <td class="portal-exec-num">${dashboardCellChip(row.completion !== null ? pct(row.completion) : '—', tone)}</td>
+          <td class="portal-exec-num">${esc(money(row.revenue))}</td>
+          <td class="portal-exec-num">${esc(int(row.units))}</td>
+          <td class="portal-exec-num">${esc(row.avgCheck ? money(row.avgCheck) : '—')}</td>
+        </tr>
+      `;
+    }).join('') : '<tr><td colspan="7">Нет дневного ряда в выбранном окне.</td></tr>';
+    return {
+      platformKey: metric.key,
+      title: `${metric.label} · оборот и продажи`,
+      subtitle: `Период: ${executive.range.effectiveLabel}. Таблица показывает, кто дает деньги, план и факт без карточной каши.`,
+      body: `
+        <div class="portal-exec-modal-metrics">
+          ${modalSummaryCard('Выручка', money(metric.revenue))}
+          ${modalSummaryCard('WoW', revenueDelta !== null ? pct(revenueDelta) : '—')}
+          ${modalSummaryCard('Продано, шт.', int(metric.units))}
+          ${modalSummaryCard('План периода', metricPlanDisplay(metric))}
+          ${modalSummaryCard('% к плану', pct(metric.completion))}
+          ${modalSummaryCard('Средний чек', metric.avgCheck > 0 ? money(metric.avgCheck) : '—')}
+        </div>
+        <div class="portal-exec-modal-grid portal-exec-structured-grid">
+          ${dashboardTableCard(
+            'Артикулы: деньги, факт, план',
+            'Отсортировано по выручке. Клик по строке открывает карточку цены этого SKU.',
+            '<tr><th class="portal-exec-sku-cell">SKU</th><th>Owner</th><th class="portal-exec-num">Выручка</th><th class="portal-exec-num">Факт</th><th class="portal-exec-num">План</th><th class="portal-exec-num">%</th><th class="portal-exec-num">Ср. чек</th><th class="portal-exec-num">Остаток</th></tr>',
+            skuBody
+          )}
+          ${dashboardTableCard(
+            'Дни периода',
+            'План, факт, выполнение и выручка по каждому дню выбранного окна.',
+            '<tr><th>Дата</th><th class="portal-exec-num">План</th><th class="portal-exec-num">Факт</th><th class="portal-exec-num">%</th><th class="portal-exec-num">Выручка</th><th class="portal-exec-num">Шт.</th><th class="portal-exec-num">Ср. чек</th></tr>',
+            dailyBody
+          )}
+        </div>
+      `,
+      taskRows: allRows.slice(0, 18),
+      taskPreset: { label: `${metric.label} · оборот`, priority: 'high', platformKey: metric.key || 'all' }
+    };
+  }
+
+  function buildCompletionDetailStructured(metric, executive) {
+    const allRows = articleRowsForPlatform(metric.key, executive.range);
+    const summary = completionDetailArticleSummary(metric, allRows, executive.range);
+    const previousRows = executive.compareRange ? articleRowsForPlatform(metric.key, executive.compareRange) : [];
+    const previous = executive.compareByKey.get(metric.key);
+    const previousSummary = previous ? completionDetailArticleSummary(previous, previousRows, executive.compareRange || executive.range) : null;
+    const completionDelta = percentagePointDelta(summary.completion, previousSummary?.completion ?? previous?.completion);
+    const rows = allRows
+      .map((row) => ({ ...row, planGap: num(row.actualUnitsSelected) - num(row.planUnitsSelected) }))
+      .sort((left, right) => Math.abs(num(right.planGap)) - Math.abs(num(left.planGap)) || num(right.actualRevenueSelected) - num(left.actualRevenueSelected))
+      .slice(0, 36);
+    const dailyRows = metric.days || [];
+    const skuBody = rows.length ? rows.map((row) => {
+      const tone = dashboardCompletionTone(row.completionPct);
+      const gapTone = num(row.planGap) >= 0 ? 'ok' : 'danger';
+      return `
+        <tr class="portal-exec-row-${esc(tone)}"${priceWorkbenchOpenAttrs(row.platformKey, row.article, executive)}>
+          ${dashboardSkuCell(row)}
+          <td class="portal-exec-owner">${esc(row.owner || 'Без owner')}</td>
+          <td class="portal-exec-num">${esc(row.planUnitsSelected !== null ? int(row.planUnitsSelected) : '—')}</td>
+          <td class="portal-exec-num">${esc(row.actualUnitsSelected !== null ? int(row.actualUnitsSelected) : '—')}</td>
+          <td class="portal-exec-num">${dashboardCellChip(Number.isFinite(Number(row.planGap)) ? `${row.planGap >= 0 ? '+' : ''}${int(row.planGap)}` : '—', gapTone)}</td>
+          <td class="portal-exec-num">${dashboardCellChip(row.completionPct !== null ? pct(row.completionPct) : '—', tone)}</td>
+          <td class="portal-exec-num">${esc(row.actualRevenueSelected !== null ? money(row.actualRevenueSelected) : '—')}</td>
+          <td>${esc(dashboardSourceLabel(row.factSource))}</td>
+        </tr>
+      `;
+    }).join('') : '<tr><td colspan="8">Нет SKU для план-факта в выбранном окне.</td></tr>';
+    const dailyBody = dailyRows.length ? dailyRows.map((row) => {
+      const completion = dailyCompletion(row, metric);
+      const tone = dashboardCompletionTone(completion);
+      return `
+        <tr class="portal-exec-row-${esc(tone)}">
+          <td>${esc(shortDate(row.date))}</td>
+          <td class="portal-exec-num">${esc(dailyPlanDisplay(row, metric))}</td>
+          <td class="portal-exec-num">${esc(dailyFactDisplay(row, metric))}</td>
+          <td class="portal-exec-num">${dashboardCellChip(completion !== null ? pct(completion) : '—', tone)}</td>
+          <td class="portal-exec-num">${esc(money(row.revenue))}</td>
+          <td class="portal-exec-num">${esc(int(row.factUnits))}</td>
+        </tr>
+      `;
+    }).join('') : '<tr><td colspan="6">Нет дневного план-факта в выбранном окне.</td></tr>';
+    return {
+      platformKey: metric.key,
+      title: `${metric.label} · план-факт по артикулам`,
+      subtitle: `Период: ${executive.range.effectiveLabel}. Сначала видно отклонение SKU от плана, потом дневную сверку.`,
+      body: `
+        <div class="portal-exec-modal-metrics">
+          ${modalSummaryCard('% выполнения', pct(summary.completion))}
+          ${modalSummaryCard('WoW', completionDelta !== null ? `${completionDelta >= 0 ? '+' : ''}${(completionDelta * 100).toFixed(1)} pp` : '—')}
+          ${modalSummaryCard('План периода', metricPlanDisplay({ ...metric, plan: summary.plan || metric.plan, planUnits: summary.planUnits || metric.planUnits, planRevenue: summary.planRevenue || metric.planRevenue }))}
+          ${modalSummaryCard('Факт периода', metricFactDisplay({ ...metric, planFactUnits: summary.factUnits, planFactRevenue: summary.factRevenue, units: summary.factUnits, revenue: summary.revenue }))}
+          ${modalSummaryCard('Факт / день', int(summary.avgUnits))}
+          ${modalSummaryCard('Выручка', money(summary.revenue))}
+        </div>
+        <div class="portal-exec-modal-grid portal-exec-structured-grid">
+          ${dashboardTableCard(
+            'Артикулы: план, факт, отклонение',
+            'Сортировка по самому заметному отклонению от плана. Минус подсвечен красным, перевыполнение зеленым.',
+            '<tr><th class="portal-exec-sku-cell">SKU</th><th>Owner</th><th class="portal-exec-num">План</th><th class="portal-exec-num">Факт</th><th class="portal-exec-num">Откл.</th><th class="portal-exec-num">%</th><th class="portal-exec-num">Выручка</th><th>Источник</th></tr>',
+            skuBody
+          )}
+          ${dashboardTableCard(
+            'Дни периода',
+            'Ежедневный план-факт: где именно начался провал или ускорение.',
+            '<tr><th>Дата</th><th class="portal-exec-num">План</th><th class="portal-exec-num">Факт</th><th class="portal-exec-num">%</th><th class="portal-exec-num">Выручка</th><th class="portal-exec-num">Шт.</th></tr>',
+            dailyBody
+          )}
+        </div>
+      `,
+      taskRows: rows.slice(0, 18),
+      taskPreset: { label: `${metric.label} · план-факт`, priority: 'high', platformKey: metric.key || 'all' }
+    };
+  }
+
+  function buildStockDetailStructured(platformKey, executive) {
+    const stockMetric = buildTurnoverMetric(platformKey, executive.range);
+    const rows = articleRowsForPlatform(platformKey, executive.range)
+      .sort((left, right) => num(right.avgTurnoverDays) - num(left.avgTurnoverDays) || num(right.stock) - num(left.stock))
+      .slice(0, 36);
+    const selectedDates = detailTailRows(enumerateDates(executive.range.effectiveStart, executive.range.effectiveEnd), 14);
+    const turnoverByDate = new Map();
+    (stockMetric.turnoverPublishedSeries || []).forEach((point) => {
+      if (point?.date instanceof Date) turnoverByDate.set(iso(point.date), point);
+    });
+    (stockMetric.turnoverSeries || []).forEach((point) => {
+      if (point?.date instanceof Date) turnoverByDate.set(iso(point.date), point);
+    });
+    const priceDailyMap = new Map(priceMatrixSeries(platformKey, executive.range).map((row) => [iso(row.date), row]));
+    const dailyRows = selectedDates.map((date) => {
+      const key = iso(date);
+      return { date, point: turnoverByDate.get(key) || null, price: priceDailyMap.get(key) || null };
+    });
+    const latestDaily = dailyRows.map((row) => row.point?.date).filter(Boolean).sort((left, right) => left - right).pop() || null;
+    const dailyLag = latestDaily && latestDaily < executive.range.effectiveEnd
+      ? `Daily по оборачиваемости сейчас есть до ${shortDate(latestDaily)}. Дни после этой даты оставлены пустыми, чтобы старый ряд не выглядел как свежий.`
+      : '';
+    const skuBody = rows.length ? rows.map((row) => {
+      const tone = dashboardStockTone(row);
+      const status = tone === 'danger' ? 'риск' : tone === 'warn' ? 'избыток' : tone === 'ok' ? 'норма' : 'нет daily';
+      return `
+        <tr class="portal-exec-row-${esc(tone)}"${priceWorkbenchOpenAttrs(row.platformKey, row.article, executive)}>
+          ${dashboardSkuCell(row)}
+          <td>${dashboardCellChip(status, tone)}</td>
+          <td class="portal-exec-num">${esc(int(row.stock))}</td>
+          <td class="portal-exec-num">${esc(int(row.inTransit))}</td>
+          <td class="portal-exec-num">${esc(row.avgTurnoverDays !== null ? `${row.avgTurnoverDays.toFixed(1)} дн.` : '—')}</td>
+          <td class="portal-exec-num">${esc(row.marginPct !== null ? pct(row.marginPct) : '—')}</td>
+          <td class="portal-exec-num">${esc(row.currentPrice > 0 ? money(row.currentPrice) : row.avgPrice > 0 ? money(row.avgPrice) : '—')}</td>
+          <td class="portal-exec-owner">${esc(row.owner || 'Без owner')}</td>
+        </tr>
+      `;
+    }).join('') : '<tr><td colspan="8">По площадке нет рабочего списка по запасу.</td></tr>';
+    const dailyBody = dailyRows.length ? dailyRows.map((row) => {
+      const point = row.point;
+      const tone = point ? 'ok' : 'muted';
+      return `
+        <tr class="portal-exec-row-${esc(tone)}">
+          <td>${esc(shortDate(row.date))}</td>
+          <td class="portal-exec-num">${point ? esc(`${Number(point.avgTurnover).toFixed(1)} дн.`) : dashboardCellChip('нет daily', 'muted')}</td>
+          <td class="portal-exec-num">${point ? esc(int(point.skuCount)) : '—'}</td>
+          <td class="portal-exec-num">${esc(row.price?.avgPrice > 0 ? money(row.price.avgPrice) : '—')}</td>
+        </tr>
+      `;
+    }).join('') : '<tr><td colspan="4">Нет дат в выбранном периоде.</td></tr>';
+    return {
+      platformKey: platformKey || 'all',
+      title: `${stockMetric.label} · оборачиваемость и запас`,
+      subtitle: `Период: ${executive.range.effectiveLabel}. Слева SKU-срез, справа календарь выбранного окна без маскировки устаревших daily.`,
+      body: `
+        <div class="portal-exec-modal-metrics">
+          ${modalSummaryCard('Остаток, шт.', int(stockMetric.totalStock))}
+          ${modalSummaryCard('В пути, шт.', int(stockMetric.totalTransit))}
+          ${modalSummaryCard('Средняя оборачиваемость', stockMetric.avgTurnoverDays !== null ? `${stockMetric.avgTurnoverDays.toFixed(1)} дн.` : '—')}
+          ${modalSummaryCard('Низкое покрытие', int(stockMetric.lowCoverage))}
+          ${modalSummaryCard('Избыточный запас', int(stockMetric.overstock))}
+          ${modalSummaryCard('SKU в срезе', int(stockMetric.skuCount))}
+        </div>
+        <div class="portal-exec-modal-grid portal-exec-structured-grid">
+          ${dashboardTableCard(
+            'Артикулы: запас и решение',
+            'Красный — риск выпадения, зеленый — нормальная оборачиваемость, желтый — возможный избыток.',
+            '<tr><th class="portal-exec-sku-cell">SKU</th><th>Статус</th><th class="portal-exec-num">Остаток</th><th class="portal-exec-num">В пути</th><th class="portal-exec-num">Обор.</th><th class="portal-exec-num">Маржа</th><th class="portal-exec-num">Цена</th><th>Owner</th></tr>',
+            skuBody
+          )}
+          <div class="portal-exec-side-stack">
+            ${dashboardTableCard(
+              'Дни периода',
+              'Daily-ряд по оборачиваемости строго в выбранном окне. Пустые дни означают, что обновление по ним еще не приехало.',
+              '<tr><th>Дата</th><th class="portal-exec-num">Средняя обор.</th><th class="portal-exec-num">SKU с daily</th><th class="portal-exec-num">Средняя цена</th></tr>',
+              dailyBody
+            )}
+            ${dailyLag ? `<div class="portal-exec-freshness-note">${esc(dailyLag)}</div>` : ''}
+            ${renderActionBullets([
+              stockMetric.lowCoverage > 0 ? `Есть ${int(stockMetric.lowCoverage)} SKU с низким покрытием. Сначала проверяйте, где товар может закончиться.` : '',
+              stockMetric.overstock > 0 ? `Есть ${int(stockMetric.overstock)} SKU с медленной оборачиваемостью. Проверяйте цену, спрос и промо.` : '',
+              stockMetric.avgTurnoverDays !== null && stockMetric.avgTurnoverDays > 60 ? `Средняя оборачиваемость ${stockMetric.avgTurnoverDays.toFixed(1)} дн. Это зона ручного решения.` : ''
+            ], 'По запасу сильных отклонений не видно.')}
+          </div>
+        </div>
+      `,
+      taskRows: rows.slice(0, 18),
+      taskPreset: { label: `${stockMetric.label} · оборачиваемость и запас`, priority: 'high', platformKey: platformKey || 'all' }
+    };
+  }
+
+  buildRevenueDetail = buildRevenueDetailStructured;
+  buildCompletionDetail = buildCompletionDetailStructured;
+  buildStockDetail = buildStockDetailStructured;
+
+  const openModalStructuredBase = openModal;
+  openModal = function (detail) {
+    ensureDashboardStructuredModalStyles();
+    openModalStructuredBase(detail);
+    applyDashboardModalTheme(ensureModal(), detail);
+  };
+
+  function dashboardTaskRenderSignature(platformKey) {
+    const snapshot = typeof getControlSnapshot === 'function'
+      ? getControlSnapshot()
+      : { tasks: (stateRef()?.storage?.tasks || []) };
+    const tasks = Array.isArray(snapshot?.tasks) ? snapshot.tasks : [];
+    return tasks
+      .filter(dashboardTaskIsActive)
+      .filter((task) => dashboardTaskMatchesPlatform(task, platformKey))
+      .sort(dashboardTaskSort)
+      .slice(0, 80)
+      .map((task) => [
+        task.id || task.uid || task.title || '',
+        task.status || '',
+        task.priority || '',
+        task.owner || '',
+        task.due || '',
+        task.updatedAt || task.updated || '',
+        dashboardTaskWorkstreamKey(task)
+      ].join(':'))
+      .join('|');
+  }
+
+  function dashboardRenderSignature(executive) {
+    const metricPart = (executive?.metrics || []).map((metric) => [
+      metric.key,
+      Math.round(num(metric.revenue)),
+      Math.round(num(metric.units)),
+      Number.isFinite(Number(metric.completion)) ? Number(metric.completion).toFixed(4) : '',
+      Math.round(num(metric.margin)),
+      Math.round(num(metric.totalStock)),
+      metric.days?.length || 0
+    ].join(':')).join('|');
+    return [
+      VERSION,
+      executive?.signature || '',
+      executive?.selectedPlatform || 'all',
+      metricPart,
+      dashboardTaskRenderSignature(executive?.selectedPlatform || 'all')
+    ].join('||');
+  }
+
   function apply() {
     const dashboardRoot = document.getElementById('view-dashboard');
     if (!dashboardRoot) return;
+    ensureDashboardStructuredModalStyles();
     syncChrome();
-    renderDashboard(buildPlatformMetrics());
+    const executive = buildPlatformMetrics();
+    const renderSignature = dashboardRenderSignature(executive);
+    if (document.getElementById(ROOT_ID) && renderSignature === lastDashboardRenderSignature) return;
+    lastDashboardRenderSignature = renderSignature;
+    renderDashboard(executive);
   }
 
   function isDashboardActive() {

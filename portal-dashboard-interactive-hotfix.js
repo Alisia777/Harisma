@@ -2077,10 +2077,23 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
 
   function buildTurnoverMetric(platformKey, range) {
     const stockMetric = buildStockMetric(platformKey);
-    const officialTurnoverSeries = sellerSummaryTurnoverSeries(platformKey, range);
-    const turnoverSeries = officialTurnoverSeries.length ? officialTurnoverSeries : turnoverMatrixSeries(platformKey, range);
+    const requestedDates = enumerateDates(range?.effectiveStart, range?.effectiveEnd);
+    const seriesCoversRange = (series = []) => {
+      if (!series.length || !requestedDates.length) return false;
+      const latest = series[series.length - 1]?.date;
+      if (!(latest instanceof Date) || Number.isNaN(latest.getTime())) return false;
+      const coverage = series.length / requestedDates.length;
+      return cleanDate(latest).getTime() >= cleanDate(range.effectiveEnd).getTime() && coverage >= 0.6;
+    };
+    const rawOfficialTurnoverSeries = sellerSummaryTurnoverSeries(platformKey, range);
+    const matrixTurnoverSeries = turnoverMatrixSeries(platformKey, range);
+    const officialTurnoverSeries = seriesCoversRange(rawOfficialTurnoverSeries) ? rawOfficialTurnoverSeries : [];
+    const turnoverSeries = officialTurnoverSeries.length
+      ? officialTurnoverSeries
+      : (seriesCoversRange(matrixTurnoverSeries) ? matrixTurnoverSeries : []);
     let publishedTurnoverSeries = [];
     let publishedFromFreshness = officialTurnoverSeries.length > 0;
+    let publishedFromPartialApi = false;
 
     const bounds = officialTurnoverSeries.length ? null : turnoverPublishedBounds(platformKey);
     if (bounds?.maxDate instanceof Date) {
@@ -2124,8 +2137,23 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       publishedTurnoverSeries = detailTailRows(officialTurnoverSeries, 14);
     }
 
-    if (!publishedTurnoverSeries.length && turnoverSeries.length) {
-      publishedTurnoverSeries = detailTailRows(turnoverSeries, 14);
+    if (!officialTurnoverSeries.length && rawOfficialTurnoverSeries.length) {
+      const byDate = new Map();
+      [...publishedTurnoverSeries, ...rawOfficialTurnoverSeries].forEach((point) => {
+        const key = iso(point?.date);
+        if (!key) return;
+        const existing = byDate.get(key);
+        if (!existing || num(point?.skuCount) >= num(existing?.skuCount)) byDate.set(key, point);
+      });
+      publishedTurnoverSeries = detailTailRows(
+        [...byDate.values()].sort((left, right) => left.date - right.date),
+        14
+      );
+      publishedFromPartialApi = true;
+    }
+
+    if (!publishedTurnoverSeries.length && matrixTurnoverSeries.length) {
+      publishedTurnoverSeries = detailTailRows(matrixTurnoverSeries, 14);
     }
 
     if (!publishedTurnoverSeries.length) {
@@ -2150,18 +2178,25 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       && turnoverEnd.getTime() === publishedEnd.getTime()
     );
     const latestPublishedDate = publishedEnd || turnoverEnd || null;
+    const primaryTurnoverAverage = turnoverSeries.length
+      ? avg(turnoverSeries.map((row) => row.avgTurnover))
+      : null;
+    const publishedTurnoverAverage = publishedTurnoverSeries.length && !publishedFromPartialApi
+      ? avg(publishedTurnoverSeries.map((row) => row.avgTurnover))
+      : null;
     return {
       ...stockMetric,
       turnoverSeries,
       turnoverPublishedSeries: publishedTurnoverSeries,
+      turnoverDailyIsPartial: publishedFromPartialApi,
       turnoverHistoryScope: publishedTurnoverSeries.length
-        ? (officialTurnoverSeries.length ? 'wb-seller-summary' : (publishedFromFreshness ? 'freshness' : (sameRangeAsRequested ? 'range' : 'published')))
+        ? (officialTurnoverSeries.length ? 'wb-seller-summary' : (publishedFromPartialApi ? 'partial-api' : (publishedFromFreshness ? 'freshness' : (sameRangeAsRequested ? 'range' : 'published'))))
         : (turnoverSeries.length ? 'range' : 'none'),
       turnoverPublishedLabel: publishedStart && publishedEnd ? rangeLabel(publishedStart, publishedEnd) : '',
       turnoverLatestPublishedDate: latestPublishedDate,
-      avgTurnoverDays: turnoverSeries.length
-        ? avg(turnoverSeries.map((row) => row.avgTurnover))
-        : (publishedTurnoverSeries.length ? avg(publishedTurnoverSeries.map((row) => row.avgTurnover)) : stockMetric.avgTurnover),
+      avgTurnoverDays: primaryTurnoverAverage !== null
+        ? primaryTurnoverAverage
+        : (publishedTurnoverAverage !== null ? publishedTurnoverAverage : stockMetric.avgTurnover),
       sparkTurnover: sparkline(
         turnoverSeries.length
           ? turnoverSeries.map((row) => row.avgTurnover)

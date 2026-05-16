@@ -743,6 +743,71 @@ function repricerApplyConfidence(side) {
   return side;
 }
 
+function repricerAppendSideReason(side, reason) {
+  if (!side || !reason) return;
+  const current = String(side.reason || '').trim();
+  if (current.includes(reason)) return;
+  side.reason = [current, reason].filter(Boolean).join(' · ');
+}
+
+function repricerGuardOutlierSide(side) {
+  if (!side || typeof side !== 'object') return false;
+  const current = numberOrZero(side.currentPrice);
+  const finalPrice = numberOrZero(side.finalPrice ?? side.recommendedPrice);
+  const hardFloor = Math.max(
+    numberOrZero(side.hardFloor),
+    numberOrZero(side.b2bFloor),
+    numberOrZero(side.skuMinPrice),
+    numberOrZero(side.override?.floorPrice)
+  );
+  const basis = Math.max(current, hardFloor, 1);
+  const limit = Math.max(10000, basis * 5);
+  const fallbackFloorOutlier = String(side.economicFloorSource || '') === 'snapshot_fallback'
+    && numberOrZero(side.economicFloor) > limit
+    && numberOrZero(side.economicFloorByFee) <= 0
+    && !side.rawCostPresent;
+  const finalPriceOutlier = finalPrice > limit && !side.promoActive && !side.hasOverride;
+  if (!fallbackFloorOutlier && !finalPriceOutlier) return false;
+
+  const safeFloor = hardFloor > 0 ? hardFloor : 0;
+  const safePrice = Math.max(current, safeFloor);
+  side.outlierGuarded = true;
+  side.economicFloor = safeFloor;
+  side.economicFloorFallback = Math.min(numberOrZero(side.economicFloorFallback), safeFloor || numberOrZero(side.economicFloorFallback));
+  side.marginFloor = safeFloor;
+  side.effectiveFloor = safeFloor;
+  side.finalGuardFloor = safeFloor;
+  side.finalGuardFloorRounded = safeFloor;
+  side.recommendedPrice = safePrice;
+  side.finalPrice = safePrice;
+  side.preAlignPrice = Math.min(numberOrZero(side.preAlignPrice) || safePrice, safePrice);
+  side.cappedPrice = Math.min(numberOrZero(side.cappedPrice) || safePrice, safePrice);
+  side.changeRub = safePrice - current;
+  side.changePct = current > 0 ? side.changeRub / current : null;
+  side.changed = Math.abs(side.changeRub) >= 1;
+  side.belowFloorNow = current > 0 && safeFloor > 0 && current + 0.001 < safeFloor;
+  side.liveDeltaRub = numberOrZero(side.liveReferencePrice) > 0 ? safePrice - numberOrZero(side.liveReferencePrice) : null;
+  side.liveDeltaPct = side.liveDeltaRub != null && numberOrZero(side.liveReferencePrice) > 0
+    ? side.liveDeltaRub / numberOrZero(side.liveReferencePrice)
+    : null;
+  side.liveDrift = side.liveDeltaPct != null && Math.abs(side.liveDeltaPct) >= 0.03;
+  side.alignmentApplied = false;
+  side.finalReasonCode = 'GUARD_OUTLIER';
+  repricerAppendSideReason(side, 'аномальный fallback-floor отключен');
+  repricerApplyConfidence(side);
+  return true;
+}
+
+function repricerApplyOutlierGuard(row) {
+  const guarded = Boolean(repricerGuardOutlierSide(row?.wb) || repricerGuardOutlierSide(row?.ozon));
+  if (!guarded || !row) return false;
+  row.alignmentChanged = false;
+  row.alignmentEligible = false;
+  row.alignmentScenario = 'GUARD_OUTLIER';
+  row.alignmentReason = 'fallback-floor guard';
+  return true;
+}
+
 function repricerFinalizeSide(side) {
   if (!side) return null;
   const rawPrice = numberOrZero(side.recommendedPrice);
@@ -1648,7 +1713,57 @@ function repricerRunWorkbookSmokeTests(settings) {
   });
 }
 
-function buildRepricerRows() {
+const REPRICER_ROWS_CACHE = {
+  signature: '',
+  rows: [],
+  builtAt: 0
+};
+
+function repricerCacheListSignature(items = [], fields = []) {
+  const list = Array.isArray(items) ? items : [];
+  const sample = list.slice(0, 30).map((item) => fields.map((field) => String(item?.[field] ?? '')).join(':')).join('|');
+  return `${list.length}:${sample}`;
+}
+
+function repricerRowsCacheSignature() {
+  const workbench = state.smartPriceWorkbench || {};
+  const platforms = workbench.platforms || {};
+  const storage = state.storage || {};
+  return [
+    workbench.generatedAt || '',
+    workbench.liveEnrichmentAt || '',
+    Array.isArray(platforms?.wb?.rows) ? platforms.wb.rows.length : 0,
+    Array.isArray(platforms?.ozon?.rows) ? platforms.ozon.rows.length : 0,
+    state.repricerLive?.generatedAt || '',
+    Array.isArray(state.repricerLive?.rows) ? state.repricerLive.rows.length : 0,
+    state.prices?.generatedAt || '',
+    storage.repricerSettingsUpdatedAt || '',
+    JSON.stringify(storage.repricerSettings || {}),
+    repricerCacheListSignature(storage.repricerOverrides, ['articleKey', 'platform', 'mode', 'floorPrice', 'capPrice', 'forcePrice', 'promoActive', 'promoPrice', 'updatedAt']),
+    repricerCacheListSignature(storage.repricerCorridors, ['articleKey', 'platform', 'hardFloor', 'basePrice', 'stretchCap', 'promoFloor', 'updatedAt']),
+    repricerCacheListSignature(storage.repricerSkuProfiles, ['articleKey', 'status', 'role', 'launchReady', 'updatedAt'])
+  ].join('||');
+}
+
+function invalidateRepricerRowsCache() {
+  REPRICER_ROWS_CACHE.signature = '';
+  REPRICER_ROWS_CACHE.rows = [];
+  REPRICER_ROWS_CACHE.builtAt = 0;
+}
+
+function buildRepricerRows(forceFresh = false) {
+  const signature = repricerRowsCacheSignature();
+  if (!forceFresh && REPRICER_ROWS_CACHE.signature === signature && Array.isArray(REPRICER_ROWS_CACHE.rows)) {
+    return REPRICER_ROWS_CACHE.rows;
+  }
+  const rows = buildRepricerRowsFresh();
+  REPRICER_ROWS_CACHE.signature = signature;
+  REPRICER_ROWS_CACHE.rows = rows;
+  REPRICER_ROWS_CACHE.builtAt = Date.now();
+  return rows;
+}
+
+function buildRepricerRowsFresh() {
   const settings = normalizeRepricerSettings(state.storage?.repricerSettings || {});
   const platforms = state.smartPriceWorkbench?.platforms || {};
   const liveMap = repricerLiveMap();
@@ -1732,6 +1847,7 @@ function buildRepricerRows() {
   });
   return [...byArticle.values()].map((row) => {
     repricerApplyAlignment(row, settings);
+    repricerApplyOutlierGuard(row);
     row.hasManualOverride = Boolean(row.wb?.hasOverride || row.ozon?.hasOverride);
     row.hasManagedProfile = repricerHasSkuProfile(row.profile);
     row.hasCorridor = Boolean(row.wb?.hasCorridor || row.ozon?.hasCorridor);
@@ -1825,12 +1941,13 @@ function repricerEconomicSourceMatches(row, platform, source) {
   return sourceMatches(row?.wb) || sourceMatches(row?.ozon);
 }
 
-function getFilteredRepricerRows() {
+function getFilteredRepricerRows(sourceRows = null) {
   const search = String(state.repricerFilters.search || '').trim().toLowerCase();
   const platform = state.repricerFilters.platform || 'all';
   const mode = state.repricerFilters.mode || 'changes';
   const economicSource = state.repricerFilters.economicSource || 'all';
-  return buildRepricerRows().filter((row) => {
+  const rows = Array.isArray(sourceRows) ? sourceRows : buildRepricerRows();
+  return rows.filter((row) => {
     if (search && !String(row.searchIndex || '').includes(search)) return false;
     if (platform === 'wb' && !row?.wb) return false;
     if (platform === 'ozon' && !row?.ozon) return false;
@@ -1932,7 +2049,16 @@ function renderRepricerSmokeTests(smokeTests, smokePassed) {
 function renderRepricerHistoryBlock(side) {
   const historyKey = `${String(side.articleKey || '').trim()}::${String(side.platform || '').trim()}`;
   const isOpen = repricerUiToggleOpen('history', historyKey, false);
+  const repairHistory = repricerHistoryForSide(side, 5);
+  const repairLines = repairHistory.map((item) => `
+    <div class="repricer-repair-history-row">
+      <strong>${escapeHtml(fmt.date(item.createdAt))} · ${escapeHtml(item.command || item.source || 'решение')}</strong>
+      <span>${escapeHtml(item.before || '')}${item.after ? ` → ${escapeHtml(item.after)}` : ''}</span>
+      ${item.details ? `<em>${escapeHtml(item.details)}</em>` : ''}
+    </div>
+  `).join('');
   const lines = [
+    repairLines ? `<div class="repricer-repair-history">${repairLines}</div>` : '',
     `<div class="muted small">Sources: min ${escapeHtml(side.floorSourceSummary || '—')} · max ${escapeHtml(side.capSourceSummary || '—')} · base ${escapeHtml(side.baseSourceSummary || '—')}${side.promoConfigured ? ` · promo floor ${escapeHtml(side.promoFloorSourceSummary || '—')}` : ''}</div>`,
     side.floorGuardApplied || side.capGuardApplied ? `<div class="muted small">Guards: floor ${fmt.money(side.finalGuardFloor)}${side.capGuardApplied ? ` · cap ${fmt.money(side.finalGuardCap)}` : ''}</div>` : '',
     side.promoConfigured ? `<div class="muted small">Активный промо-сценарий: ${side.promoActive ? fmt.money(side.promoPrice) : 'не активен'}${side.promoSource ? ` · ${escapeHtml(side.promoSource === 'promo_offer' ? 'предложение акции' : 'ручной override')}` : ''}${side.promoSource === 'promo_offer' && side.promoSourceLabel ? ` · ${escapeHtml(side.promoSourceLabel)}` : ''}${side.promoLabel ? ` · ${escapeHtml(side.promoLabel)}` : ''}${side.promoFrom ? ` · с ${escapeHtml(side.promoFrom)}` : ''}${side.promoTo ? ` · по ${escapeHtml(side.promoTo)}` : ''}${side.promoAdjustedToFloor ? ` · защитный floor ${fmt.money(side.promoFloor)}` : ''}</div>` : '',
@@ -2315,6 +2441,7 @@ function renderRepricerSide(title, side) {
               <option value="hold" ${override?.mode === 'hold' ? 'selected' : ''}>Hold</option>
               <option value="freeze" ${override?.mode === 'freeze' ? 'selected' : ''}>Freeze</option>
               <option value="force" ${override?.mode === 'force' ? 'selected' : ''}>Force</option>
+              <option value="off" ${override?.mode === 'off' ? 'selected' : ''}>Off</option>
             </select>
             <input type="number" step="1" min="0" name="floorPrice" value="${escapeHtml(override?.floorPrice ?? '')}" placeholder="Ручной MIN, ₽">
             <input type="number" step="1" min="0" name="capPrice" value="${escapeHtml(override?.capPrice ?? '')}" placeholder="Ручной MAX, ₽">
@@ -2352,6 +2479,7 @@ function renderRepricerSide(title, side) {
 }
 
 function persistRepricerState() {
+  invalidateRepricerRowsCache();
   saveLocalStorage();
   if (typeof persistRepricerControls === 'function') persistRepricerControls().catch((error) => console.error(error));
   renderRepricer();
@@ -2615,6 +2743,173 @@ function repricerPrimaryStopReason(side) {
   return '';
 }
 
+function repricerIssueFlags(side) {
+  const reasonCode = String(side?.reasonCode || '');
+  return {
+    missingMin: numberOrZero(side?.effectiveFloor) <= 0 && !['LAUNCH_HOLD', 'OFF'].includes(reasonCode),
+    missingCost: numberOrZero(side?.costRub) <= 0 && (!side?.pricingProxyPresent || side?.economicFloorSource === 'snapshot_fallback'),
+    missingPrice: numberOrZero(side?.currentPrice) <= 0 && !['LAUNCH_HOLD', 'OOS', 'OFF'].includes(reasonCode),
+    belowMin: Boolean(side?.belowFloorNow),
+    liveDrift: Boolean(side?.liveDrift),
+    marginRisk: Boolean(side?.marginRisk),
+    blocked: side?.criticalGate === 'BLOCK',
+    notReady: side?.launchHold === 'LAUNCH_HOLD',
+    promoWindow: Boolean(side?.promoConfigured && !side?.promoActive)
+  };
+}
+
+function repricerFixSource(side) {
+  const flags = repricerIssueFlags(side);
+  if (flags.missingMin || flags.belowMin) return 'Цены';
+  if (flags.missingCost) return 'Себестоимость';
+  if (flags.missingPrice) return 'Маркетплейс / текущая цена';
+  if (flags.notReady) return 'SKU';
+  if (flags.liveDrift || flags.marginRisk || flags.blocked || flags.promoWindow) return 'Ручное решение';
+  return 'Аудит';
+}
+
+function repricerFixAction(side) {
+  const flags = repricerIssueFlags(side);
+  if (flags.missingMin) return 'заполнить рабочий MIN/MAX';
+  if (flags.belowMin) return 'поднять цену до MIN или пересмотреть MIN';
+  if (flags.missingCost) return 'добавить себестоимость / fee stack';
+  if (flags.missingPrice) return 'обновить текущую цену площадки';
+  if (flags.liveDrift) return 'сверить live-рекомендацию с финальной ценой';
+  if (flags.marginRisk) return 'поднять цену или пересмотреть маржинальный порог';
+  if (flags.notReady) return 'перевести launch статус в READY или оставить HOLD';
+  if (flags.promoWindow) return 'проверить даты промо';
+  if (flags.blocked) return 'разобрать обязательные входы';
+  return 'проверить строку в аудите';
+}
+
+function repricerFixProposal(side) {
+  const flags = repricerIssueFlags(side);
+  const floor = numberOrZero(side?.effectiveFloor);
+  const current = numberOrZero(side?.currentPrice);
+  const finalPrice = numberOrZero(side?.finalPrice);
+  const livePrice = numberOrZero(side?.liveReferencePrice);
+  if (flags.missingMin) return current > 0
+    ? `предложение без записи: проверить и заполнить MIN в «Цены» около текущей цены ${fmt.money(current)}`
+    : 'предложение без записи: заполнить MIN/MAX после проверки карточки';
+  if (flags.belowMin) return floor > 0
+    ? `предложение без записи: поднять цену не ниже ${fmt.money(floor)} или подтвердить новый MIN`
+    : 'предложение без записи: перепроверить рабочий MIN';
+  if (flags.missingCost) return 'предложение без записи: добавить себестоимость и комиссии, затем пересчитать safe export';
+  if (flags.missingPrice) return 'предложение без записи: обновить price snapshot и не выгружать цену до появления текущей цены';
+  if (flags.liveDrift) return livePrice > 0
+    ? `предложение без записи: сравнить финал ${fmt.money(finalPrice)} с live ${fmt.money(livePrice)}`
+    : 'предложение без записи: сверить live repricer перед выгрузкой';
+  if (flags.marginRisk) return floor > 0
+    ? `предложение без записи: держать цену не ниже economic floor ${fmt.money(floor)}`
+    : 'предложение без записи: поднять цену до безопасной маржи';
+  if (flags.notReady) return 'предложение без записи: оставить HOLD до готовности запуска';
+  if (flags.promoWindow) return 'предложение без записи: поправить даты промо или отключить промо-цену';
+  if (flags.blocked) return 'предложение без записи: сначала закрыть обязательные входы, затем пересчитать';
+  return side?.decisionText ? `предложение без записи: ${side.decisionText}` : 'предложение без записи: нужна ручная проверка';
+}
+
+function repricerCommandHint(side) {
+  const flags = repricerIssueFlags(side);
+  if (side?.outOfSpec || side?.criticalGate === 'SKIP') return 'УДАЛИТЬ';
+  if (flags.belowMin) return 'ИСПРАВИТЬ или FORCE';
+  if (flags.missingMin) return 'ИСПРАВИТЬ + MIN';
+  if (flags.missingCost) return 'ИСПРАВИТЬ + себестоимость';
+  if (flags.missingPrice) return 'HOLD';
+  if (flags.notReady) return 'HOLD или READY';
+  if (flags.marginRisk) return 'ИСПРАВИТЬ';
+  if (flags.liveDrift) return 'ИСПРАВИТЬ или HOLD';
+  if (flags.promoWindow) return 'ИСПРАВИТЬ промо';
+  return side?.confidence === 'green' ? 'оставить пусто' : 'ИСПРАВИТЬ';
+}
+
+function repricerRecommendedAction(side) {
+  const flags = repricerIssueFlags(side);
+  const floor = numberOrZero(side?.effectiveFloor);
+  const current = numberOrZero(side?.currentPrice);
+  if (side?.outOfSpec || side?.criticalGate === 'SKIP') return 'Удалить/выключить: позиция вне ценового контура.';
+  if (flags.belowMin && floor > 0) return `Поднять до ${fmt.money(floor)}: текущая цена ниже рабочего MIN.`;
+  if (flags.missingMin) return current > 0 ? `Заполнить MIN около ${fmt.money(current)} после проверки карточки.` : 'Заполнить MIN/MAX после проверки карточки.';
+  if (flags.missingCost) return 'Добавить себестоимость / fee stack в API, до этого не выгружать цену.';
+  if (flags.missingPrice) return 'Обновить текущую цену из маркетплейса, до этого держать HOLD.';
+  if (flags.marginRisk) return floor > 0 ? `Держать цену не ниже ${fmt.money(floor)} и проверить маржу.` : 'Поднять цену или пересмотреть порог маржи.';
+  if (flags.liveDrift) return 'Сверить live-рекомендацию с финальной ценой перед выгрузкой.';
+  if (flags.notReady) return 'Оставить HOLD до READY или изменить launch статус.';
+  if (flags.promoWindow) return 'Проверить окно промо или выключить промо-цену.';
+  return side?.decisionText || 'Проверить строку и оставить пустой Команду, если менять ничего не нужно.';
+}
+
+function repricerFixTeamKey(side) {
+  const flags = repricerIssueFlags(side);
+  if (side?.outOfSpec || side?.criticalGate === 'SKIP') return 'api';
+  if (flags.missingMin || flags.belowMin) return 'prices';
+  if (flags.missingCost) return 'cost';
+  if (flags.missingPrice) return 'marketplace';
+  if (flags.notReady) return 'sku';
+  if (flags.liveDrift || flags.marginRisk || flags.promoWindow || flags.blocked) return 'manual';
+  return 'audit';
+}
+
+function repricerFixTeamLabel(team) {
+  const map = {
+    prices: 'Цены',
+    cost: 'Себестоимость',
+    api: 'API',
+    marketplace: 'Маркетплейс',
+    sku: 'SKU',
+    manual: 'Ручное решение',
+    audit: 'Аудит'
+  };
+  return map[team] || map.audit;
+}
+
+function repricerPriceTrace(row, side) {
+  const parts = [
+    `текущая ${fmt.money(side?.currentPrice)}`,
+    `MIN ${fmt.money(side?.effectiveFloor)}`,
+    numberOrZero(side?.capPrice || side?.stretchCap) > 0 ? `MAX ${fmt.money(side.capPrice || side.stretchCap)}` : '',
+    `финал ${fmt.money(side?.finalPrice)}`,
+    `confidence ${repricerConfidenceLabel(side?.confidence)} ${fmt.int(side?.confidenceScore)}`,
+    side?.safeToExport || side?.promoSafeToExport ? 'safe export: да' : 'safe export: нет'
+  ].filter(Boolean);
+  if (side?.decisionText) parts.push(side.decisionText);
+  return `${row?.article || row?.articleKey || ''}: ${parts.join(' → ')}`;
+}
+
+function repricerFixTeamCounts(rows = buildRepricerRows()) {
+  const counts = {};
+  repricerCollectSides(rows).forEach(({ side }) => {
+    if (!side || side.confidence === 'green') return;
+    const key = repricerFixTeamKey(side);
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  return counts;
+}
+
+function repricerIssueBatch(side) {
+  const flags = repricerIssueFlags(side);
+  if (flags.missingMin) return 'missing_min';
+  if (flags.missingCost) return 'missing_cost';
+  if (flags.belowMin) return 'below_min';
+  if (flags.liveDrift) return 'live_drift';
+  if (flags.marginRisk) return 'margin_risk';
+  if (flags.missingPrice) return 'missing_price';
+  return 'other';
+}
+
+function repricerIssueBatchLabel(batch) {
+  const map = {
+    all: 'стоп-лист',
+    missing_min: 'нет MIN',
+    missing_cost: 'нет себестоимости',
+    below_min: 'ниже MIN',
+    live_drift: 'live расходится',
+    margin_risk: 'риск маржи',
+    missing_price: 'нет цены',
+    other: 'прочее'
+  };
+  return map[batch] || map.all;
+}
+
 function repricerStopReasonSummary(sideRows) {
   const counts = {};
   (sideRows || []).forEach((item) => {
@@ -2680,26 +2975,1213 @@ function repricerHealthcheck(rows, platform = 'all') {
   };
 }
 
-function repricerDownloadHtmlTable(columns, rows, filename) {
-  if (!rows.length) return;
+function repricerTemplateStats(rows, platform = 'wb') {
+  const sides = repricerCollectSides(rows, platform).filter(({ side }) => side);
+  const active = sides.filter(({ side }) => !side.outOfSpec);
+  const nonPromo = active.filter(({ side }) => !side.promoActive);
+  const green = nonPromo.filter(({ side }) => side.confidence === 'green');
+  const safe = nonPromo.filter(({ side }) => side.safeToExport);
+  return {
+    platform: platform === 'ozon' ? 'ozon' : 'wb',
+    label: platform === 'ozon' ? 'Ozon' : 'WB',
+    total: sides.length,
+    active: active.length,
+    safe: safe.length,
+    green: green.length,
+    greenChanged: green.filter(({ side }) => side.changed).length,
+    greenNoChange: green.filter(({ side }) => !side.changed).length,
+    changed: nonPromo.filter(({ side }) => side.changed).length,
+    yellow: nonPromo.filter(({ side }) => side.confidence === 'yellow').length,
+    red: nonPromo.filter(({ side }) => side.confidence === 'red').length,
+    belowMin: nonPromo.filter(({ side }) => side.belowFloorNow).length,
+    blocked: nonPromo.filter(({ side }) => side.criticalGate === 'BLOCK').length,
+    missingMin: nonPromo.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0).length,
+    missingCost: nonPromo.filter(({ side }) => numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent).length,
+    promo: active.filter(({ side }) => side.promoActive).length,
+    outOfSpec: sides.filter(({ side }) => side.outOfSpec).length
+  };
+}
+
+function repricerTemplateEmptyReason(stats) {
+  if (!stats) return 'нет данных для проверки шаблона';
+  if (stats.safe > 0) return `${stats.label}: в шаблон попадёт ${fmt.int(stats.safe)} строк.`;
+  if (stats.greenNoChange > 0 && stats.changed <= 0) return `${stats.label}: зелёные есть, но цена не меняется, поэтому файл цен пуст.`;
+  if (stats.yellow || stats.red) return `${stats.label}: строки есть, но они требуют проверки: жёлтые ${fmt.int(stats.yellow)}, стоп ${fmt.int(stats.red)}.`;
+  if (stats.missingMin || stats.missingCost || stats.blocked) return `${stats.label}: мешают данные контура: нет MIN ${fmt.int(stats.missingMin)}, нет себестоимости ${fmt.int(stats.missingCost)}, нет входов ${fmt.int(stats.blocked)}.`;
+  if (stats.promo > 0) return `${stats.label}: часть строк в промо, они уходят в отдельную промо-выгрузку.`;
+  return `${stats.label}: нет зелёных строк с изменением цены.`;
+}
+
+function repricerTopStatusText(stats) {
+  const totalSafe = numberOrZero(stats?.wb?.safe) + numberOrZero(stats?.ozon?.safe);
+  if (totalSafe > 0) return `Сегодня можно выгружать: WB ${fmt.int(stats.wb.safe)}, Ozon ${fmt.int(stats.ozon.safe)}.`;
+  const blockers = [
+    ['нет MIN', numberOrZero(stats?.wb?.missingMin) + numberOrZero(stats?.ozon?.missingMin)],
+    ['нет себестоимости', numberOrZero(stats?.wb?.missingCost) + numberOrZero(stats?.ozon?.missingCost)],
+    ['нет входов', numberOrZero(stats?.wb?.blocked) + numberOrZero(stats?.ozon?.blocked)],
+    ['ниже MIN', numberOrZero(stats?.wb?.belowMin) + numberOrZero(stats?.ozon?.belowMin)],
+    ['нужна проверка', numberOrZero(stats?.wb?.yellow) + numberOrZero(stats?.ozon?.yellow)]
+  ].filter(([, count]) => count > 0).slice(0, 3);
+  if (blockers.length) {
+    return `Сегодня не выгружаем автоматически: ${blockers.map(([label, count]) => `${label} ${fmt.int(count)}`).join(', ')}.`;
+  }
+  return 'Сегодня шаблон пуст: нет зелёных строк с изменением цены.';
+}
+
+function repricerDownloadHtmlTable(columns, rows, filename, options = {}) {
+  if (!rows.length && !options.allowEmpty) return { ok: false, rows: 0, filename };
   const head = `<tr>${columns.map(([, label]) => `<th>${escapeHtml(label)}</th>`).join('')}</tr>`;
-  const body = rows.map((row) => `<tr>${columns.map(([key]) => `<td>${escapeHtml(row[key] || '')}</td>`).join('')}</tr>`).join('');
+  const body = rows.map((row) => `<tr>${columns.map(([key]) => `<td>${escapeHtml(row[key] ?? '')}</td>`).join('')}</tr>`).join('');
   const html = `<!doctype html><html><head><meta charset="utf-8"></head><body><table border="1">${head}${body}</table></body></html>`;
   const blob = new Blob(['\uFEFF', html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;
   anchor.download = filename;
+  anchor.style.display = 'none';
+  document.body.appendChild(anchor);
   anchor.click();
-  URL.revokeObjectURL(url);
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return { ok: true, rows: rows.length, filename };
 }
 
-function repricerExportRows(platform = 'all') {
-  return buildRepricerRows().flatMap((row) => {
+function repricerIssueScore(side) {
+  const flags = repricerIssueFlags(side);
+  return (flags.missingMin ? 120 : 0)
+    + (flags.belowMin ? 95 : 0)
+    + (flags.blocked ? 75 : 0)
+    + (flags.marginRisk ? 55 : 0)
+    + (flags.missingPrice ? 45 : 0)
+    + (flags.missingCost ? 35 : 0)
+    + (flags.liveDrift ? 20 : 0)
+    + (side?.confidence === 'red' ? 15 : 0)
+    + numberOrZero(side?.confidenceScore);
+}
+
+function repricerIssueRows(batch = 'all', sourceRows = null) {
+  const normalizedBatch = String(batch || 'all');
+  const rows = Array.isArray(sourceRows) ? sourceRows : buildRepricerRows();
+  return repricerCollectSides(rows)
+    .filter(({ side }) => side)
+    .filter(({ side }) => side.confidence !== 'green' || side.belowFloorNow || side.liveDrift || side.marginRisk)
+    .map(({ row, platformLabel, side }) => {
+      const issueBatch = repricerIssueBatch(side);
+      const reason = repricerPrimaryStopReason(side) || issueBatch;
+      return {
+        generated_at: state.smartPriceWorkbench?.generatedAt || '',
+        batch: repricerIssueBatchLabel(issueBatch),
+        priority: repricerIssueScore(side),
+        marketplace: platformLabel,
+        article_key: row.articleKey,
+        article: row.article || row.articleKey,
+        name: row.name || '',
+        owner: row.owner || '',
+        brand: row.brand || '',
+        status: row.status || '',
+        confidence: repricerConfidenceLabel(side.confidence),
+        confidence_score: repricerExportNumber(side.confidenceScore),
+        reason,
+        where_fix: repricerFixSource(side),
+        what_to_fill: repricerFixAction(side),
+        proposal_no_write: repricerFixProposal(side),
+        current_price_rub: repricerExportNumber(side.currentPrice),
+        final_price_rub: repricerExportNumber(side.finalPrice),
+        min_rub: repricerExportNumber(side.effectiveFloor),
+        cost_rub: repricerExportNumber(side.costRub),
+        live_rec_price_rub: repricerExportNumber(side.liveReferencePrice),
+        decision_text: side.decisionText || '',
+        confidence_reasons: Array.isArray(side.confidenceReasons) ? side.confidenceReasons.join(' · ') : '',
+        safe_export: side.safeToExport || side.promoSafeToExport ? 'yes' : 'no',
+        reason_code: side.finalReasonCode || side.reasonCode || '',
+        import_command: '',
+        import_price_rub: '',
+        import_min_rub: '',
+        import_max_rub: '',
+        import_cost_rub: '',
+        import_status: '',
+        import_role: '',
+        import_launch_ready: '',
+        import_note: '',
+        command_hint: repricerCommandHint(side),
+        recommended_action: repricerRecommendedAction(side),
+        fix_team: repricerFixTeamLabel(repricerFixTeamKey(side)),
+        price_trace: repricerPriceTrace(row, side)
+      };
+    })
+    .filter((row) => normalizedBatch === 'all' || row.batch === repricerIssueBatchLabel(normalizedBatch))
+    .sort((left, right) => numberOrZero(right.priority) - numberOrZero(left.priority)
+      || String(left.article || '').localeCompare(String(right.article || ''), 'ru'));
+}
+
+function repricerIssueColumns() {
+  return [
+    ['import_command', 'Команда'],
+    ['import_price_rub', 'Новая цена, ₽'],
+    ['import_min_rub', 'Новый MIN, ₽'],
+    ['import_max_rub', 'Новый MAX, ₽'],
+    ['import_cost_rub', 'Новая себестоимость, ₽'],
+    ['import_status', 'Новый статус'],
+    ['import_role', 'Новая роль'],
+    ['import_launch_ready', 'Launch ready'],
+    ['import_note', 'Комментарий для импорта'],
+    ['command_hint', 'Что написать в Команда'],
+    ['recommended_action', 'Рекомендованное действие'],
+    ['fix_team', 'Кто чинит'],
+    ['price_trace', 'Почему цена такая'],
+    ['generated_at', 'Срез'],
+    ['batch', 'Пачка'],
+    ['priority', 'Приоритет'],
+    ['marketplace', 'Площадка'],
+    ['article_key', 'article_key'],
+    ['article', 'Артикул'],
+    ['name', 'Название'],
+    ['owner', 'Owner'],
+    ['brand', 'Бренд'],
+    ['status', 'Статус'],
+    ['confidence', 'Confidence'],
+    ['confidence_score', 'Confidence score'],
+    ['reason', 'Причина'],
+    ['where_fix', 'Где чинить'],
+    ['what_to_fill', 'Что сделать'],
+    ['proposal_no_write', 'Предложение без записи'],
+    ['current_price_rub', 'Текущая цена, ₽'],
+    ['final_price_rub', 'Финальная цена, ₽'],
+    ['min_rub', 'MIN, ₽'],
+    ['cost_rub', 'Себестоимость, ₽'],
+    ['live_rec_price_rub', 'Live rec, ₽'],
+    ['decision_text', 'Решение'],
+    ['confidence_reasons', 'Проверки'],
+    ['safe_export', 'В безопасной выгрузке'],
+    ['reason_code', 'Reason code']
+  ];
+}
+
+function downloadRepricerStopList(batch = 'all', sourceRows = null) {
+  const rows = repricerIssueRows(batch, sourceRows);
+  if (!rows.length) {
+    return { ok: false, rows: 0, tone: 'ok', message: 'В этой пачке нет проблемных строк.' };
+  }
+  const suffix = batch === 'all' ? 'stop-list' : `batch-${batch}`;
+  repricerDownloadHtmlTable(repricerIssueColumns(), rows, `repricer-${suffix}-${new Date().toISOString().slice(0, 10)}.xls`);
+  return { ok: true, rows: rows.length, tone: 'ok', message: `Стоп-лист подготовлен: ${fmt.int(rows.length)} строк.` };
+}
+
+function downloadRepricerFixProposals(sourceRows = null) {
+  const rows = repricerIssueRows('all', sourceRows).filter((row) => row.proposal_no_write);
+  if (!rows.length) {
+    return { ok: false, rows: 0, tone: 'ok', message: 'Сейчас нет предложений для исправления.' };
+  }
+  repricerDownloadHtmlTable(repricerIssueColumns(), rows, `repricer-fix-proposals-${new Date().toISOString().slice(0, 10)}.xls`);
+  return { ok: true, rows: rows.length, tone: 'ok', message: `Предложения подготовлены: ${fmt.int(rows.length)} строк.` };
+}
+
+function downloadRepricerTeamIssues(team = 'all', sourceRows = null) {
+  const normalizedTeam = String(team || 'all');
+  const rows = repricerIssueRows('all', sourceRows).filter((row) => normalizedTeam === 'all' || String(row.fix_team || '') === repricerFixTeamLabel(normalizedTeam));
+  if (!rows.length) {
+    return { ok: false, rows: 0, tone: 'ok', message: 'Для этой команды сейчас нет строк в аудите.' };
+  }
+  repricerDownloadHtmlTable(repricerIssueColumns(), rows, `repricer-team-${normalizedTeam}-${new Date().toISOString().slice(0, 10)}.xls`);
+  return { ok: true, rows: rows.length, tone: 'ok', message: `Файл команды подготовлен: ${fmt.int(rows.length)} строк.` };
+}
+
+function repricerImportKey(value) {
+  return String(value || '').trim().toLowerCase().replaceAll('ё', 'е').replace(/[^a-zа-я0-9]+/gi, '');
+}
+
+function repricerImportValue(row, aliases) {
+  const normalized = row.__normalized || {};
+  for (const alias of aliases) {
+    const value = normalized[repricerImportKey(alias)];
+    if (value !== undefined && value !== null && String(value).trim() !== '') return String(value).trim();
+  }
+  return '';
+}
+
+function repricerImportNumber(value) {
+  const raw = String(value || '').replace(/\s+/g, '').replace(',', '.').replace(/[^\d.-]/g, '');
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : '';
+}
+
+function repricerImportPlatform(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (raw.includes('ozon') || raw.includes('озон')) return 'ozon';
+  if (raw.includes('wb') || raw.includes('wild') || raw.includes('вайлд')) return 'wb';
+  return 'all';
+}
+
+function repricerImportCommand(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw) return '';
+  if (/(ignore|skip|keep|no|нет|игнор|пропуст|остав)/i.test(raw)) return 'ignore';
+  if (/(clear|reset|сброс|очист)/i.test(raw)) return 'clear';
+  if (/(add|добав)/i.test(raw)) return 'add';
+  if (/(delete|remove|off|del|удал|исключ|выключ|вывод)/i.test(raw)) return 'off';
+  if (/(hold|freeze|stop|стоп|холд|пауза|замороз)/i.test(raw)) return 'hold';
+  if (/(force|фикс|цена)/i.test(raw)) return 'force';
+  if (/(fix|apply|ok|yes|да|исправ|примен)/i.test(raw)) return 'fix';
+  return '';
+}
+
+function repricerParseDelimitedText(text) {
+  const sample = String(text || '').slice(0, 2000);
+  const counts = {
+    tab: (sample.match(/\t/g) || []).length,
+    semicolon: (sample.match(/;/g) || []).length,
+    comma: (sample.match(/,/g) || []).length
+  };
+  const delimiter = counts.tab >= counts.semicolon && counts.tab >= counts.comma ? '\t' : counts.semicolon >= counts.comma ? ';' : ',';
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let quoted = false;
+  const source = String(text || '').replace(/^\uFEFF/, '');
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    const next = source[index + 1];
+    if (char === '"') {
+      if (quoted && next === '"') {
+        cell += '"';
+        index += 1;
+      } else {
+        quoted = !quoted;
+      }
+      continue;
+    }
+    if (!quoted && char === delimiter) {
+      row.push(cell);
+      cell = '';
+      continue;
+    }
+    if (!quoted && (char === '\n' || char === '\r')) {
+      if (char === '\r' && next === '\n') index += 1;
+      row.push(cell);
+      if (row.some((item) => String(item || '').trim())) rows.push(row);
+      row = [];
+      cell = '';
+      continue;
+    }
+    cell += char;
+  }
+  row.push(cell);
+  if (row.some((item) => String(item || '').trim())) rows.push(row);
+  if (rows.length < 2) return [];
+  const headers = rows[0].map((header) => String(header || '').trim());
+  return rows.slice(1).map((values) => {
+    const item = {};
+    const normalized = {};
+    headers.forEach((header, index) => {
+      item[header] = String(values[index] || '').trim();
+      normalized[repricerImportKey(header)] = item[header];
+    });
+    item.__normalized = normalized;
+    return item;
+  });
+}
+
+function repricerParseAuditImportText(text) {
+  const source = String(text || '').replace(/^\uFEFF/, '');
+  if (source.includes('<table') || source.includes('<TABLE')) {
+    const doc = new DOMParser().parseFromString(source, 'text/html');
+    const table = doc.querySelector('table');
+    if (table) {
+      const matrix = Array.from(table.querySelectorAll('tr')).map((tr) => Array.from(tr.children).map((cell) => String(cell.textContent || '').trim()));
+      const filledRows = matrix.filter((row) => row.some((cell) => String(cell || '').trim()));
+      if (filledRows.length > 1) {
+        const headers = filledRows[0];
+        return filledRows.slice(1).map((values) => {
+          const item = {};
+          const normalized = {};
+          headers.forEach((header, index) => {
+            item[header] = String(values[index] || '').trim();
+            normalized[repricerImportKey(header)] = item[header];
+          });
+          item.__normalized = normalized;
+          return item;
+        });
+      }
+    }
+  }
+  return repricerParseDelimitedText(source);
+}
+
+function repricerReadFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(reader.error || new Error('Не удалось прочитать файл.'));
+    reader.readAsText(file, 'utf-8');
+  });
+}
+
+function repricerExactStorageItem(bucket, articleKey, platform = 'all') {
+  return (state.storage?.[bucket] || []).find((item) => String(item.articleKey || '').trim() === articleKey
+    && String(item.platform || 'all').trim().toLowerCase() === platform) || null;
+}
+
+function repricerUpsertStorageItem(bucket, item, predicate) {
+  state.storage[bucket] = (state.storage[bucket] || []).filter((entry) => !predicate(entry));
+  state.storage[bucket].unshift(item);
+}
+
+function repricerTeamActor() {
+  return state.team?.member?.name || 'Команда';
+}
+
+function repricerQueuePlatform(platform = 'all') {
+  const raw = String(platform || '').trim().toLowerCase();
+  return ['wb', 'ozon', 'all'].includes(raw) ? raw : 'all';
+}
+
+function repricerQueueTaskKey(item = {}) {
+  const type = String(item.type || item.action || 'API_TASK').trim().toUpperCase();
+  const articleKey = String(item.articleKey || item.article || item.sku || '').trim();
+  const platform = repricerQueuePlatform(item.platform);
+  const field = String(item.field || item.apiField || '').trim().toLowerCase();
+  return `${type}|${articleKey}|${platform}|${field}`;
+}
+
+function repricerQueueApiTask(task = {}) {
+  const articleKey = String(task.articleKey || task.article || task.sku || '').trim();
+  if (!articleKey) return null;
+  const now = task.requestedAt || task.updatedAt || new Date().toISOString();
+  const next = {
+    id: task.id || stableId('repricer-api', repricerQueueTaskKey(task)),
+    type: String(task.type || task.action || 'API_TASK').trim().toUpperCase(),
+    action: String(task.action || task.type || 'API_TASK').trim().toUpperCase(),
+    articleKey,
+    article: String(task.article || articleKey).trim(),
+    platform: repricerQueuePlatform(task.platform),
+    name: String(task.name || '').trim(),
+    owner: String(task.owner || '').trim(),
+    field: String(task.field || task.apiField || '').trim(),
+    value: task.value ?? task.costRub ?? '',
+    status: String(task.status || 'open').trim(),
+    requestedAt: now,
+    updatedAt: now,
+    requestedBy: String(task.requestedBy || repricerTeamActor()).trim() || 'Команда',
+    note: String(task.note || '').trim()
+  };
+  repricerUpsertStorageItem('repricerPendingApiTasks', next, (item) => repricerQueueTaskKey(item) === repricerQueueTaskKey(next));
+  return next;
+}
+
+function repricerRecordRepairHistory(item = {}) {
+  const articleKey = String(item.articleKey || item.article || '').trim();
+  if (!articleKey) return null;
+  const now = item.createdAt || new Date().toISOString();
+  const next = {
+    id: item.id || stableId('repricer-repair', `${now}|${articleKey}|${item.platform || 'all'}|${item.command || item.source || ''}|${item.details || ''}`),
+    articleKey,
+    article: String(item.article || articleKey).trim(),
+    platform: repricerQueuePlatform(item.platform),
+    source: String(item.source || 'manual').trim(),
+    command: String(item.command || '').trim(),
+    result: String(item.result || '').trim(),
+    before: String(item.before || '').trim(),
+    after: String(item.after || '').trim(),
+    details: String(item.details || '').trim(),
+    createdAt: now,
+    createdBy: String(item.createdBy || repricerTeamActor()).trim() || 'Команда'
+  };
+  state.storage.repricerRepairHistory = [next, ...(state.storage.repricerRepairHistory || [])]
+    .filter((entry, index, list) => list.findIndex((candidate) => candidate.id === entry.id) === index)
+    .slice(0, 400);
+  return next;
+}
+
+function repricerHistoryForSide(side, limit = 5) {
+  const articleKey = String(side?.articleKey || '').trim();
+  const platform = repricerQueuePlatform(side?.platform);
+  if (!articleKey) return [];
+  return (state.storage?.repricerRepairHistory || [])
+    .filter((item) => String(item.articleKey || '').trim() === articleKey && (repricerQueuePlatform(item.platform) === platform || repricerQueuePlatform(item.platform) === 'all'))
+    .slice(0, limit);
+}
+
+function repricerApiTaskRows() {
+  const rows = [];
+  const pushRow = (item = {}, patch = {}) => {
+    const articleKey = String(item.articleKey || item.article || item.sku || '').trim();
+    if (!articleKey) return;
+    rows.push({
+      task_type: patch.task_type || patch.type || item.type || item.action || 'API_TASK',
+      action: patch.action || item.action || item.type || 'API_TASK',
+      marketplace: (patch.marketplace || item.platform || 'all').toString().toUpperCase(),
+      article_key: articleKey,
+      article: item.article || articleKey,
+      name: item.name || '',
+      owner: item.owner || '',
+      field: patch.field || item.field || '',
+      value: patch.value ?? item.value ?? item.costRub ?? '',
+      status: patch.status || item.status || 'open',
+      status_label: repricerStatusLabel(patch.status || item.status || 'open'),
+      requested_at: item.requestedAt || item.updatedAt || '',
+      sent_at: item.sentAt || '',
+      accepted_at: item.acceptedAt || '',
+      reconciled_at: item.reconciledAt || '',
+      requested_by: item.requestedBy || item.updatedBy || repricerTeamActor(),
+      note: patch.note || item.note || '',
+      result: item.resultMessage || ''
+    });
+  };
+  (state.storage?.repricerPendingApiAdds || []).forEach((item) => pushRow(item, { task_type: 'ADD_SKU', action: 'ADD_SKU', field: 'sku', note: item.note || 'Добавить SKU из API-источника' }));
+  (state.storage?.repricerPendingApiDeletes || []).forEach((item) => pushRow(item, { task_type: 'DELETE_SKU', action: 'DELETE_SKU', field: 'sku', note: item.note || 'Удалить или выключить лишнюю позицию в API' }));
+  (state.storage?.repricerPendingCostFixes || []).forEach((item) => pushRow(item, { task_type: 'UPDATE_COST', action: 'UPDATE_COST', field: 'cost', value: item.costRub ?? item.value ?? '', note: item.note || 'Обновить себестоимость / fee stack в API' }));
+  (state.storage?.repricerPendingApiTasks || []).forEach((item) => pushRow(item));
+  return rows.sort((left, right) => String(right.requested_at || '').localeCompare(String(left.requested_at || '')));
+}
+
+function repricerApiQueueSummary() {
+  const rows = repricerApiTaskRows();
+  const countType = (type) => rows.filter((row) => String(row.task_type || '').toUpperCase() === type).length;
+  const countStatus = (status) => rows.filter((row) => String(row.status || 'open').toLowerCase() === status).length;
+  return {
+    rows,
+    total: rows.length,
+    active: rows.filter((row) => String(row.status || 'open').toLowerCase() !== 'accepted').length,
+    add: countType('ADD_SKU'),
+    remove: countType('DELETE_SKU'),
+    cost: countType('UPDATE_COST'),
+    minmax: countType('UPDATE_MIN_MAX'),
+    priceSnapshot: countType('UPDATE_PRICE_SNAPSHOT'),
+    open: countStatus('open'),
+    sent: countStatus('sent'),
+    accepted: countStatus('accepted'),
+    error: countStatus('error')
+  };
+}
+
+function repricerApiTaskColumns() {
+  return [
+    ['task_type', 'Тип задачи'],
+    ['action', 'Команда API'],
+    ['marketplace', 'Площадка'],
+    ['article_key', 'article_key'],
+    ['article', 'Артикул'],
+    ['name', 'Название'],
+    ['owner', 'Owner'],
+    ['field', 'Поле'],
+    ['value', 'Значение'],
+    ['status', 'Статус'],
+    ['status_label', 'Статус понятный'],
+    ['requested_at', 'Создано'],
+    ['sent_at', 'Отправлено'],
+    ['accepted_at', 'Принято'],
+    ['reconciled_at', 'Сверено'],
+    ['requested_by', 'Кто создал'],
+    ['note', 'Комментарий'],
+    ['result', 'Результат сверки']
+  ];
+}
+
+function downloadRepricerApiTasks() {
+  const rows = repricerApiTaskRows();
+  if (!rows.length) {
+    return { ok: false, rows: 0, tone: 'ok', message: 'Очередь API сейчас пустая.' };
+  }
+  repricerDownloadHtmlTable(repricerApiTaskColumns(), rows, `repricer-api-tasks-${new Date().toISOString().slice(0, 10)}.xls`);
+  return { ok: true, rows: rows.length, tone: 'ok', message: `Задачи API подготовлены: ${fmt.int(rows.length)} строк.` };
+}
+
+function repricerRepairSnapshotFields() {
+  return [
+    'repricerOverrides',
+    'repricerSkuProfiles',
+    'repricerCorridors',
+    'repricerOverrideDeletes',
+    'repricerSkuProfileDeletes',
+    'repricerCorridorDeletes',
+    'repricerPendingApiAdds',
+    'repricerPendingApiDeletes',
+    'repricerPendingCostFixes',
+    'repricerPendingApiTasks',
+    'repricerRepairHistory',
+    'repricerApiReconcileHistory',
+    'repricerLastAuditImport',
+    'repricerLastAutoFix',
+    'repricerLastImportValidation',
+    'repricerLastApiReconcile'
+  ];
+}
+
+function repricerCloneValue(value) {
+  return value == null ? value : JSON.parse(JSON.stringify(value));
+}
+
+function repricerCreateRepairSnapshot(kind = 'change', label = '') {
+  const now = new Date().toISOString();
+  const storage = {};
+  repricerRepairSnapshotFields().forEach((field) => {
+    storage[field] = repricerCloneValue(state.storage?.[field]);
+  });
+  const snapshot = {
+    id: stableId('repricer-snapshot', `${now}|${kind}|${label}`),
+    articleKey: `snapshot-${Date.now()}`,
+    kind,
+    label: label || kind,
+    createdAt: now,
+    createdBy: repricerTeamActor(),
+    storage
+  };
+  state.storage.repricerRepairSnapshots = [snapshot, ...(state.storage.repricerRepairSnapshots || [])].slice(0, 10);
+  return snapshot;
+}
+
+function restoreLastRepricerRepairSnapshot() {
+  const snapshot = (state.storage?.repricerRepairSnapshots || [])[0];
+  if (!snapshot?.storage) {
+    window.alert('Нет сохранённого действия для отката.');
+    return false;
+  }
+  const remaining = (state.storage.repricerRepairSnapshots || []).slice(1);
+  repricerRepairSnapshotFields().forEach((field) => {
+    state.storage[field] = repricerCloneValue(snapshot.storage[field]);
+  });
+  state.storage.repricerRepairSnapshots = remaining;
+  repricerRecordRepairHistory({
+    articleKey: snapshot.articleKey || `snapshot-${Date.now()}`,
+    platform: 'all',
+    source: 'undo',
+    command: 'UNDO',
+    result: 'применено',
+    before: snapshot.label || snapshot.kind || '',
+    after: 'состояние восстановлено',
+    details: `Откат: ${snapshot.label || snapshot.kind || 'последнее действие'}`,
+    createdAt: new Date().toISOString()
+  });
+  saveLocalStorage();
+  if (typeof persistRepricerControls === 'function') persistRepricerControls().catch((error) => console.error(error));
+  renderRepricer();
+  window.alert(`Откат выполнен: ${snapshot.label || snapshot.kind || 'последнее действие'}.`);
+  return true;
+}
+
+function repricerStatusLabel(status = '') {
+  const code = String(status || 'open').trim().toLowerCase();
+  const map = {
+    open: 'новая',
+    sent: 'отправлено',
+    accepted: 'принято',
+    error: 'ошибка',
+    skipped: 'пропущено'
+  };
+  return map[code] || code;
+}
+
+function repricerStatusTone(status = '') {
+  const code = String(status || 'open').trim().toLowerCase();
+  if (code === 'accepted') return 'ok';
+  if (code === 'sent') return 'info';
+  if (code === 'error') return 'danger';
+  return 'warn';
+}
+
+function repricerTaskStatus(item = {}, fallback = 'open') {
+  return String(item.status || fallback || 'open').trim().toLowerCase();
+}
+
+function repricerUpdateApiTaskBuckets(updater) {
+  const buckets = ['repricerPendingApiAdds', 'repricerPendingApiDeletes', 'repricerPendingCostFixes', 'repricerPendingApiTasks'];
+  buckets.forEach((bucket) => {
+    state.storage[bucket] = (state.storage?.[bucket] || []).map((item) => updater({ ...item }, bucket));
+  });
+}
+
+function repricerTaskTypeFromBucket(bucket, item = {}) {
+  if (item.type || item.action) return String(item.type || item.action).trim().toUpperCase();
+  if (bucket === 'repricerPendingApiAdds') return 'ADD_SKU';
+  if (bucket === 'repricerPendingApiDeletes') return 'DELETE_SKU';
+  if (bucket === 'repricerPendingCostFixes') return 'UPDATE_COST';
+  return 'API_TASK';
+}
+
+function markRepricerApiTasksSent() {
+  const now = new Date().toISOString();
+  let changed = 0;
+  repricerUpdateApiTaskBuckets((item, bucket) => {
+    const type = repricerTaskTypeFromBucket(bucket, item);
+    const status = repricerTaskStatus(item);
+    if (status === 'open') {
+      changed += 1;
+      return { ...item, type, action: item.action || type, status: 'sent', sentAt: now, updatedAt: now, sentBy: repricerTeamActor() };
+    }
+    return { ...item, type, action: item.action || type };
+  });
+  saveLocalStorage();
+  if (typeof persistRepricerControls === 'function') persistRepricerControls().catch((error) => console.error(error));
+  renderRepricer();
+  window.alert(changed ? `API-задачи помечены как отправленные: ${fmt.int(changed)}.` : 'Новых API-задач для отправки нет.');
+}
+
+function repricerCurrentRowMaps() {
+  const rows = buildRepricerRows();
+  const map = new Map(rows.map((row) => [repricerNormalizeArticleKey(row.articleKey || row.article), row]));
+  return { rows, map };
+}
+
+function repricerTaskResolvedByCurrentData(task, currentMap) {
+  const type = String(task.type || task.action || '').trim().toUpperCase();
+  const articleKey = repricerNormalizeArticleKey(task.articleKey || task.article || task.sku);
+  const row = currentMap.get(articleKey);
+  const platform = repricerQueuePlatform(task.platform);
+  const side = platform === 'ozon' ? row?.ozon : (platform === 'wb' ? row?.wb : (row?.wb || row?.ozon));
+  if (type === 'ADD_SKU') return Boolean(row);
+  if (type === 'DELETE_SKU') return !row;
+  if (type === 'UPDATE_COST') return Boolean(side && numberOrZero(side.costRub) > 0);
+  if (type === 'UPDATE_MIN_MAX') return Boolean(side && numberOrZero(side.effectiveFloor) > 0);
+  if (type === 'UPDATE_PRICE_SNAPSHOT') return Boolean(side && numberOrZero(side.currentPrice) > 0);
+  if (type === 'UPDATE_SKU_PROFILE') return Boolean(row && (String(row.status || '').trim() || String(row.role || '').trim() || String(row.launchReady || '').trim()));
+  return false;
+}
+
+function reconcileRepricerApiTasks() {
+  const now = new Date().toISOString();
+  const { map } = repricerCurrentRowMaps();
+  const summary = { checked: 0, accepted: 0, error: 0, open: 0 };
+  repricerUpdateApiTaskBuckets((item, bucket) => {
+    const type = repricerTaskTypeFromBucket(bucket, item);
+    item = { ...item, type, action: item.action || type };
+    const status = repricerTaskStatus(item);
+    if (status === 'accepted') return item;
+    const resolved = repricerTaskResolvedByCurrentData(item, map);
+    summary.checked += 1;
+    if (resolved) {
+      summary.accepted += 1;
+      return { ...item, status: 'accepted', acceptedAt: now, reconciledAt: now, updatedAt: now, resultMessage: 'данные в API/источнике уже отражены' };
+    }
+    if (status === 'sent') {
+      summary.error += 1;
+      return { ...item, status: 'error', reconciledAt: now, updatedAt: now, resultMessage: 'после обновления данные не изменились' };
+    }
+    summary.open += 1;
+    return { ...item, reconciledAt: now, updatedAt: now, resultMessage: 'ждёт отправки в API' };
+  });
+  const record = {
+    id: stableId('repricer-api-check', `${now}|${summary.checked}|${summary.accepted}|${summary.error}`),
+    articleKey: `api-check-${Date.now()}`,
+    checkedAt: now,
+    checkedBy: repricerTeamActor(),
+    ...summary
+  };
+  state.storage.repricerLastApiReconcile = record;
+  state.storage.repricerApiReconcileHistory = [record, ...(state.storage.repricerApiReconcileHistory || [])].slice(0, 100);
+  saveLocalStorage();
+  if (typeof persistRepricerControls === 'function') persistRepricerControls().catch((error) => console.error(error));
+  renderRepricer();
+  window.alert(`Сверка API: принято ${summary.accepted}, не принято ${summary.error}, ждёт отправки ${summary.open}.`);
+  return summary;
+}
+
+function repricerUpsertImportedOverride(next) {
+  const normalized = normalizeRepricerOverride(next);
+  const articleKey = normalized.articleKey;
+  const platform = normalized.platform;
+  state.storage.repricerOverrides = (state.storage.repricerOverrides || []).filter((item) => !(item.articleKey === articleKey && item.platform === platform));
+  if (repricerHasOverride(normalized)) {
+    clearRepricerDeleteTombstone('repricerOverrideDeletes', articleKey, platform, true);
+    state.storage.repricerOverrides.unshift(normalized);
+  }
+}
+
+function repricerUpsertImportedCorridor(next) {
+  const normalized = normalizeRepricerCorridor(next);
+  const articleKey = normalized.articleKey;
+  const platform = normalized.platform;
+  state.storage.repricerCorridors = (state.storage.repricerCorridors || []).filter((item) => !(item.articleKey === articleKey && item.platform === platform));
+  if (repricerHasCorridor(normalized)) {
+    clearRepricerDeleteTombstone('repricerCorridorDeletes', articleKey, platform, true);
+    state.storage.repricerCorridors.unshift(normalized);
+  }
+}
+
+function repricerUpsertImportedProfile(next) {
+  const normalized = normalizeRepricerSkuProfile(next);
+  const articleKey = normalized.articleKey;
+  state.storage.repricerSkuProfiles = (state.storage.repricerSkuProfiles || []).filter((item) => item.articleKey !== articleKey);
+  if (repricerHasSkuProfile(normalized)) {
+    clearRepricerDeleteTombstone('repricerSkuProfileDeletes', articleKey, 'all', false);
+    state.storage.repricerSkuProfiles.unshift(normalized);
+  }
+}
+
+function repricerImportResultColumns() {
+  return [
+    ['article', 'Артикул'],
+    ['marketplace', 'Площадка'],
+    ['command', 'Команда'],
+    ['result', 'Результат'],
+    ['details', 'Детали']
+  ];
+}
+
+function repricerDownloadImportResult(rows) {
+  if (!rows.length) return;
+  repricerDownloadHtmlTable(repricerImportResultColumns(), rows, `repricer-import-result-${new Date().toISOString().slice(0, 10)}.xls`);
+}
+
+function repricerImportDraft(row = {}, fileName = '') {
+  const article = repricerImportValue(row, ['article_key', 'article', 'Артикул', 'sku_code', 'SKU', 'Номенклатура']);
+  const articleKey = String(article || '').trim();
+  const marketplace = repricerImportValue(row, ['marketplace', 'Площадка', 'platform']);
+  const platform = repricerImportPlatform(marketplace);
+  const commandRaw = repricerImportValue(row, ['import_command', 'Команда', 'Действие', 'action', 'cmd']);
+  const price = repricerImportNumber(repricerImportValue(row, ['import_price_rub', 'Новая цена, ₽', 'Новая цена', 'force_price', 'force_price_rub']));
+  const min = repricerImportNumber(repricerImportValue(row, ['import_min_rub', 'Новый MIN, ₽', 'Новый MIN', 'new_min', 'min_rub', 'MIN, ₽']));
+  const max = repricerImportNumber(repricerImportValue(row, ['import_max_rub', 'Новый MAX, ₽', 'Новый MAX', 'new_max', 'max_rub']));
+  const cost = repricerImportNumber(repricerImportValue(row, ['import_cost_rub', 'Новая себестоимость, ₽', 'Новая себестоимость', 'cost_rub', 'Себестоимость, ₽']));
+  const status = repricerImportValue(row, ['import_status', 'Новый статус', 'status', 'Статус']);
+  const role = repricerImportValue(row, ['import_role', 'Новая роль', 'role', 'Роль']);
+  const launchReady = repricerImportValue(row, ['import_launch_ready', 'Launch ready', 'launch_ready']);
+  const importNote = repricerImportValue(row, ['import_note', 'Комментарий для импорта', 'Комментарий', 'note']);
+  const note = importNote || `Импорт аудита ${fileName || ''}`.trim();
+  const hasImportFields = Boolean(price || min || max || cost || status || role || launchReady || importNote);
+  const command = commandRaw ? repricerImportCommand(commandRaw) : (hasImportFields ? 'fix' : '');
+  return { articleKey, platform, commandRaw, command, price, min, max, cost, status, role, launchReady, importNote, note, hasImportFields };
+}
+
+function validateRepricerAuditImportRows(rows, fileName = '') {
+  const currentRows = buildRepricerRows();
+  const currentMap = new Map(currentRows.map((row) => [repricerNormalizeArticleKey(row.articleKey || row.article), row]));
+  const summary = { fileName, validatedAt: new Date().toISOString(), rows: rows.length, actionable: 0, skipped: 0, errors: 0, warnings: 0, force: 0, fix: 0, hold: 0, off: 0, add: 0, clear: 0, resultRows: [] };
+  rows.forEach((row, index) => {
+    const draft = repricerImportDraft(row, fileName);
+    const result = { article: draft.articleKey, marketplace: draft.platform.toUpperCase(), command: draft.command || draft.commandRaw || 'skip', result: 'ok', details: '' };
+    if (!draft.command && !draft.hasImportFields && !draft.commandRaw) {
+      summary.skipped += 1;
+      result.result = 'пропущено';
+      result.details = 'команда и поля импорта пустые';
+      summary.resultRows.push(result);
+      return;
+    }
+    summary.actionable += 1;
+    if (!draft.articleKey) {
+      summary.errors += 1;
+      result.result = 'ошибка';
+      result.details = `строка ${index + 2}: нет артикула`;
+      summary.resultRows.push(result);
+      return;
+    }
+    if (draft.commandRaw && !draft.command) {
+      summary.errors += 1;
+      result.result = 'ошибка';
+      result.details = `строка ${index + 2}: команда не распознана`;
+      summary.resultRows.push(result);
+      return;
+    }
+    if (draft.command === 'force' && !draft.price) {
+      summary.errors += 1;
+      result.result = 'ошибка';
+      result.details = `строка ${index + 2}: FORCE без новой цены`;
+      summary.resultRows.push(result);
+      return;
+    }
+    if (draft.command === 'fix' && !(draft.price || draft.min || draft.max || draft.cost || draft.status || draft.role || draft.launchReady)) {
+      summary.warnings += 1;
+      result.result = 'предупреждение';
+      result.details = `строка ${index + 2}: FIX без заполняемых полей`;
+    }
+    if (draft.command === 'add' && currentMap.has(repricerNormalizeArticleKey(draft.articleKey))) {
+      summary.warnings += 1;
+      result.result = 'предупреждение';
+      result.details = `строка ${index + 2}: SKU уже есть в текущем API-срезе`;
+    }
+    if (draft.command === 'force') summary.force += 1;
+    if (draft.command === 'fix') summary.fix += 1;
+    if (draft.command === 'hold') summary.hold += 1;
+    if (draft.command === 'off') summary.off += 1;
+    if (draft.command === 'add') summary.add += 1;
+    if (draft.command === 'clear') summary.clear += 1;
+    if (!result.details) result.details = 'строка готова к применению';
+    summary.resultRows.push(result);
+  });
+  summary.canApply = summary.errors === 0;
+  return summary;
+}
+
+function repricerImportValidationMessage(summary) {
+  return [
+    `Проверка Excel: строк ${fmt.int(summary.rows)}, к применению ${fmt.int(summary.actionable)}, пропущено ${fmt.int(summary.skipped)}.`,
+    `Ошибки ${fmt.int(summary.errors)}, предупреждения ${fmt.int(summary.warnings)}.`,
+    `Будет: исправить ${fmt.int(summary.fix)}, force ${fmt.int(summary.force)}, hold ${fmt.int(summary.hold)}, удалить/off ${fmt.int(summary.off)}, добавить ${fmt.int(summary.add)}, сброс ${fmt.int(summary.clear)}.`
+  ].join('\n');
+}
+
+function repricerApplyAuditImportRows(rows, fileName = '') {
+  const now = new Date().toISOString();
+  const currentRows = buildRepricerRows();
+  const currentMap = new Map(currentRows.map((row) => [repricerNormalizeArticleKey(row.articleKey || row.article), row]));
+  const summary = { applied: 0, skipped: 0, errors: 0, overrides: 0, corridors: 0, profiles: 0, pendingAdds: 0, pendingDeletes: 0, pendingCosts: 0, pendingTasks: 0, history: 0, resultRows: [] };
+  rows.forEach((row) => {
+    const { articleKey, platform, commandRaw, command, price, min, max, cost, status, role, launchReady, note } = repricerImportDraft(row, fileName);
+    const result = { article: articleKey, marketplace: platform.toUpperCase(), command: command || 'skip', result: '', details: '' };
+    if (!articleKey) {
+      summary.errors += 1;
+      result.result = 'ошибка';
+      result.details = 'нет артикула';
+      summary.resultRows.push(result);
+      return;
+    }
+    if (commandRaw && !command) {
+      summary.errors += 1;
+      result.command = commandRaw;
+      result.result = 'ошибка';
+      result.details = 'команда не распознана';
+      summary.resultRows.push(result);
+      return;
+    }
+    if (!command || command === 'ignore') {
+      summary.skipped += 1;
+      result.result = 'пропущено';
+      result.details = 'нет команды';
+      summary.resultRows.push(result);
+      return;
+    }
+    const existingRow = currentMap.get(repricerNormalizeArticleKey(articleKey));
+    const existingSide = platform === 'ozon' ? existingRow?.ozon : (platform === 'wb' ? existingRow?.wb : (existingRow?.wb || existingRow?.ozon));
+    const beforeText = existingSide ? `текущая ${fmt.money(existingSide.currentPrice)}, финал ${fmt.money(existingSide.finalPrice)}` : 'не было в текущем контуре';
+    if (command === 'add') {
+      repricerUpsertStorageItem('repricerPendingApiAdds', {
+        articleKey,
+        article: articleKey,
+        name: repricerImportValue(row, ['name', 'Название']),
+        owner: repricerImportValue(row, ['owner', 'Owner']),
+        requestedAt: now,
+        requestedBy: state.team?.member?.name || 'Команда',
+        note
+      }, (item) => String(item.articleKey || '').trim() === articleKey);
+      summary.pendingAdds += 1;
+      summary.applied += 1;
+      result.result = existingRow ? 'уже есть в API' : 'в очередь API';
+      result.details = existingRow ? 'добавление не нужно, SKU уже пришел из источника' : 'не включаем в расчет до появления в API';
+      repricerRecordRepairHistory({ articleKey, platform, source: 'import', command: 'ADD_SKU', result: result.result, before: beforeText, after: result.details, details: note, createdAt: now });
+      summary.history += 1;
+      summary.resultRows.push(result);
+      return;
+    }
+    if (command === 'clear') {
+      state.storage.repricerOverrides = (state.storage.repricerOverrides || []).filter((item) => !(item.articleKey === articleKey && (platform === 'all' || item.platform === platform)));
+      state.storage.repricerCorridors = (state.storage.repricerCorridors || []).filter((item) => !(item.articleKey === articleKey && (platform === 'all' || item.platform === platform)));
+      state.storage.repricerSkuProfiles = (state.storage.repricerSkuProfiles || []).filter((item) => item.articleKey !== articleKey);
+      summary.applied += 1;
+      result.result = 'сброшено';
+      result.details = 'локальные решения по SKU очищены';
+      repricerRecordRepairHistory({ articleKey, platform, source: 'import', command: 'CLEAR', result: result.result, before: beforeText, after: result.details, details: note, createdAt: now });
+      summary.history += 1;
+      summary.resultRows.push(result);
+      return;
+    }
+    const details = [];
+    if (command === 'off') {
+      const previous = repricerExactStorageItem('repricerOverrides', articleKey, platform) || {};
+      repricerUpsertImportedOverride({ ...previous, articleKey, platform, mode: 'off', note, updatedAt: now, updatedBy: state.team?.member?.name || 'Команда' });
+      repricerUpsertStorageItem('repricerPendingApiDeletes', { articleKey, platform, requestedAt: now, requestedBy: state.team?.member?.name || 'Команда', note }, (item) => item.articleKey === articleKey && item.platform === platform);
+      summary.overrides += 1;
+      summary.pendingDeletes += 1;
+      details.push('локально выключено до удаления из API');
+    } else if (command === 'hold') {
+      const previous = repricerExactStorageItem('repricerOverrides', articleKey, platform) || {};
+      repricerUpsertImportedOverride({ ...previous, articleKey, platform, mode: 'hold', note, updatedAt: now, updatedBy: state.team?.member?.name || 'Команда' });
+      summary.overrides += 1;
+      details.push('поставлен HOLD');
+    } else if (command === 'force') {
+      if (!price) {
+        summary.errors += 1;
+        result.result = 'ошибка';
+        result.details = 'для FORCE нужна новая цена';
+        summary.resultRows.push(result);
+        return;
+      }
+      const previous = repricerExactStorageItem('repricerOverrides', articleKey, platform) || {};
+      repricerUpsertImportedOverride({ ...previous, articleKey, platform, mode: 'force', forcePrice: price, note, updatedAt: now, updatedBy: state.team?.member?.name || 'Команда' });
+      summary.overrides += 1;
+      details.push(`force price ${fmt.money(price)}`);
+    }
+    if (command === 'fix' || command === 'force') {
+      if (min || max) {
+        const previous = repricerExactStorageItem('repricerCorridors', articleKey, platform) || {};
+        repricerUpsertImportedCorridor({ ...previous, articleKey, platform, hardFloor: min || previous.hardFloor || '', stretchCap: max || previous.stretchCap || '', updatedAt: now, updatedBy: state.team?.member?.name || 'Команда' });
+        summary.corridors += 1;
+        details.push(`коридор ${min ? `MIN ${fmt.money(min)}` : ''}${max ? ` MAX ${fmt.money(max)}` : ''}`.trim());
+        repricerQueueApiTask({ type: 'UPDATE_MIN_MAX', action: 'UPDATE_MIN_MAX', articleKey, platform, field: 'min_max', value: `${min ? `MIN ${min}` : ''}${max ? ` MAX ${max}` : ''}`.trim(), note, requestedAt: now });
+        summary.pendingTasks += 1;
+      }
+      if (price && command === 'fix') {
+        const previous = repricerExactStorageItem('repricerOverrides', articleKey, platform) || {};
+        repricerUpsertImportedOverride({ ...previous, articleKey, platform, mode: 'force', forcePrice: price, note, updatedAt: now, updatedBy: state.team?.member?.name || 'Команда' });
+        summary.overrides += 1;
+        details.push(`цена ${fmt.money(price)}`);
+      }
+      if (status || role || launchReady) {
+        const previous = repricerFindSkuProfile(articleKey) || {};
+        repricerUpsertImportedProfile({ ...previous, articleKey, status: status || previous.status || '', role: role || previous.role || '', launchReady: launchReady || previous.launchReady || '', updatedAt: now, updatedBy: state.team?.member?.name || 'Команда' });
+        summary.profiles += 1;
+        details.push('обновлен профиль SKU');
+        repricerQueueApiTask({ type: 'UPDATE_SKU_PROFILE', action: 'UPDATE_SKU_PROFILE', articleKey, platform: 'all', field: 'status_role_launch', value: [status, role, launchReady].filter(Boolean).join(' / '), note, requestedAt: now });
+        summary.pendingTasks += 1;
+      }
+      if (cost) {
+        repricerUpsertStorageItem('repricerPendingCostFixes', { articleKey, platform, costRub: cost, requestedAt: now, requestedBy: state.team?.member?.name || 'Команда', note }, (item) => item.articleKey === articleKey && item.platform === platform);
+        summary.pendingCosts += 1;
+        details.push('себестоимость отправлена в очередь API');
+      }
+    }
+    if (!details.length) {
+      summary.skipped += 1;
+      result.result = 'пропущено';
+      result.details = 'нет заполняемых полей';
+    } else {
+      summary.applied += 1;
+      result.result = 'применено';
+      result.details = details.join(' · ');
+      repricerRecordRepairHistory({ articleKey, platform, source: 'import', command: command.toUpperCase(), result: result.result, before: beforeText, after: result.details, details: note, createdAt: now });
+      summary.history += 1;
+    }
+    summary.resultRows.push(result);
+  });
+  state.storage.repricerLastAuditImport = {
+    fileName,
+    importedAt: now,
+    applied: summary.applied,
+    skipped: summary.skipped,
+    errors: summary.errors,
+    pendingAdds: summary.pendingAdds,
+    pendingDeletes: summary.pendingDeletes,
+    pendingCosts: summary.pendingCosts,
+    pendingTasks: summary.pendingTasks,
+    history: summary.history
+  };
+  saveLocalStorage();
+  if (typeof persistRepricerControls === 'function') persistRepricerControls().catch((error) => console.error(error));
+  renderRepricer();
+  return summary;
+}
+
+async function importRepricerAuditFile(file) {
+  if (!file) return;
+  if (/\.xlsx$/i.test(file.name || '')) {
+    throw new Error('Нужен файл аудита в формате .xls из портала или CSV. Если Excel пересохранил его как .xlsx, сохраните как "Excel 97-2003 (*.xls)" или CSV.');
+  }
+  const text = await repricerReadFileAsText(file);
+  if (/^\s*PK/.test(text)) {
+    throw new Error('Это настоящий .xlsx-файл. Браузерный импорт читает .xls/CSV из портала; сохраните файл как "Excel 97-2003 (*.xls)" или CSV.');
+  }
+  const rows = repricerParseAuditImportText(text);
+  if (!rows.length) {
+    window.alert('Не удалось прочитать таблицу. Используйте файл аудита .xls, скачанный из портала, или CSV.');
+    return;
+  }
+  const validation = validateRepricerAuditImportRows(rows, file.name || '');
+  state.storage.repricerLastImportValidation = {
+    fileName: file.name || '',
+    validatedAt: validation.validatedAt,
+    rows: validation.rows,
+    actionable: validation.actionable,
+    skipped: validation.skipped,
+    errors: validation.errors,
+    warnings: validation.warnings,
+    canApply: validation.canApply
+  };
+  saveLocalStorage();
+  if (validation.resultRows.length && (validation.errors || validation.warnings)) {
+    repricerDownloadHtmlTable(repricerImportResultColumns(), validation.resultRows, `repricer-import-validation-${new Date().toISOString().slice(0, 10)}.xls`);
+  }
+  const validationText = repricerImportValidationMessage(validation);
+  if (!validation.canApply) {
+    renderRepricer();
+    window.alert(`${validationText}\n\nКритичные ошибки есть, импорт не применён. Скачан файл проверки.`);
+    return;
+  }
+  const shouldApply = window.confirm(`${validationText}\n\nПрименить эти решения? Перед применением будет сохранён откат.`);
+  if (!shouldApply) {
+    renderRepricer();
+    return;
+  }
+  repricerCreateRepairSnapshot('import', `Перед импортом ${file.name || 'аудита'}`);
+  const summary = repricerApplyAuditImportRows(rows, file.name || '');
+  repricerDownloadImportResult(summary.resultRows);
+  window.alert(`Импорт решений: применено ${summary.applied}, пропущено ${summary.skipped}, ошибок ${summary.errors}. Очередь API: добавить ${summary.pendingAdds}, удалить ${summary.pendingDeletes}, себестоимость ${summary.pendingCosts}, прочие задачи ${summary.pendingTasks}.`);
+}
+
+function previewRepricerSafeFixes(rows = buildRepricerRows()) {
+  const summary = { touched: 0, raisedToMin: 0, holds: 0, pendingCost: 0, pendingMinMax: 0, pendingPrice: 0, pendingDeletes: 0, skipped: 0, examples: [] };
+  repricerCollectSides(rows).forEach(({ row, platformLabel, side }) => {
+    if (!side) return;
+    const flags = repricerIssueFlags(side);
+    const details = [];
+    if (side.outOfSpec || side.criticalGate === 'SKIP') {
+      summary.pendingDeletes += 1;
+      details.push('OFF + DELETE_SKU');
+    } else {
+      if (flags.belowMin && numberOrZero(side.effectiveFloor) > 0) {
+        summary.raisedToMin += 1;
+        details.push(`до MIN ${fmt.money(side.effectiveFloor)}`);
+      }
+      if (flags.missingPrice) {
+        summary.holds += 1;
+        summary.pendingPrice += 1;
+        details.push('HOLD + price snapshot');
+      }
+      if (flags.missingCost) {
+        summary.pendingCost += 1;
+        details.push('UPDATE_COST');
+      }
+      if (flags.missingMin) {
+        summary.pendingMinMax += 1;
+        details.push('UPDATE_MIN_MAX');
+      }
+    }
+    if (details.length) {
+      summary.touched += 1;
+      if (summary.examples.length < 5) summary.examples.push(`${row.article || row.articleKey} · ${platformLabel}: ${details.join(', ')}`);
+    } else {
+      summary.skipped += 1;
+    }
+  });
+  return summary;
+}
+
+function repricerSafeFixPreviewMessage(summary) {
+  const lines = [
+    `Предпросмотр безопасного автопочина: будет обработано ${fmt.int(summary.touched)} строк.`,
+    `До MIN: ${fmt.int(summary.raisedToMin)}, HOLD: ${fmt.int(summary.holds)}, удалить/OFF: ${fmt.int(summary.pendingDeletes)}.`,
+    `API-задачи: себестоимость ${fmt.int(summary.pendingCost)}, MIN/MAX ${fmt.int(summary.pendingMinMax)}, текущая цена ${fmt.int(summary.pendingPrice)}.`
+  ];
+  if (summary.examples.length) lines.push(`Примеры:\n${summary.examples.join('\n')}`);
+  lines.push('Применить? Перед применением будет сохранён откат.');
+  return lines.join('\n\n');
+}
+
+function applyRepricerSafeFixes() {
+  const now = new Date().toISOString();
+  const rows = buildRepricerRows();
+  const preview = previewRepricerSafeFixes(rows);
+  if (!preview.touched) {
+    window.alert('Безопасных автоматических правок сейчас нет.');
+    return preview;
+  }
+  if (!window.confirm(repricerSafeFixPreviewMessage(preview))) return preview;
+  repricerCreateRepairSnapshot('safe_fix', 'Перед безопасным автопочином');
+  const summary = {
+    raisedToMin: 0,
+    holds: 0,
+    pendingCost: 0,
+    pendingMinMax: 0,
+    pendingPrice: 0,
+    pendingDeletes: 0,
+    touched: 0,
+    skipped: 0,
+    history: 0,
+    resultRows: []
+  };
+  repricerCollectSides(rows).forEach(({ row, platform, platformLabel, side }) => {
+    if (!side) return;
+    const articleKey = String(row.articleKey || row.article || side.articleKey || '').trim();
+    if (!articleKey) return;
+    const flags = repricerIssueFlags(side);
+    const details = [];
+    const beforeText = `текущая ${fmt.money(side.currentPrice)}, финал ${fmt.money(side.finalPrice)}`;
+    const baseTask = {
+      articleKey,
+      article: row.article || articleKey,
+      platform,
+      name: row.name || '',
+      owner: row.owner || '',
+      requestedAt: now,
+      requestedBy: repricerTeamActor()
+    };
+    const note = `Безопасный автопочин ${fmt.date(now)}`;
+    if (side.outOfSpec || side.criticalGate === 'SKIP') {
+      const previous = repricerExactStorageItem('repricerOverrides', articleKey, platform) || {};
+      repricerUpsertImportedOverride({ ...previous, articleKey, platform, mode: 'off', note, updatedAt: now, updatedBy: repricerTeamActor() });
+      repricerUpsertStorageItem('repricerPendingApiDeletes', { ...baseTask, note: 'Позиция вне ценового контура, удалить или выключить в API' }, (item) => item.articleKey === articleKey && repricerQueuePlatform(item.platform) === platform);
+      summary.pendingDeletes += 1;
+      details.push('OFF + задача DELETE_SKU');
+    } else {
+      const floor = Math.ceil(numberOrZero(side.effectiveFloor));
+      if (flags.belowMin && floor > 0) {
+        const previous = repricerExactStorageItem('repricerOverrides', articleKey, platform) || {};
+        repricerUpsertImportedOverride({ ...previous, articleKey, platform, mode: 'force', forcePrice: floor, note, updatedAt: now, updatedBy: repricerTeamActor() });
+        summary.raisedToMin += 1;
+        details.push(`цена поднята до MIN ${fmt.money(floor)}`);
+      }
+      if (flags.missingPrice) {
+        const previous = repricerExactStorageItem('repricerOverrides', articleKey, platform) || {};
+        repricerUpsertImportedOverride({ ...previous, articleKey, platform, mode: 'hold', note, updatedAt: now, updatedBy: repricerTeamActor() });
+        repricerQueueApiTask({ ...baseTask, type: 'UPDATE_PRICE_SNAPSHOT', action: 'UPDATE_PRICE_SNAPSHOT', field: 'current_price', note: 'Нет текущей цены площадки, нужен свежий price snapshot' });
+        summary.holds += 1;
+        summary.pendingPrice += 1;
+        details.push('HOLD + задача UPDATE_PRICE_SNAPSHOT');
+      }
+      if (flags.missingCost) {
+        repricerUpsertStorageItem('repricerPendingCostFixes', { ...baseTask, costRub: '', note: 'Нет себестоимости / fee stack, нужна правка в API' }, (item) => item.articleKey === articleKey && repricerQueuePlatform(item.platform) === platform);
+        summary.pendingCost += 1;
+        details.push('задача UPDATE_COST');
+      }
+      if (flags.missingMin) {
+        repricerQueueApiTask({ ...baseTask, type: 'UPDATE_MIN_MAX', action: 'UPDATE_MIN_MAX', field: 'min_max', note: 'Нет рабочего MIN/MAX, нужна правка в источнике цен' });
+        summary.pendingMinMax += 1;
+        details.push('задача UPDATE_MIN_MAX');
+      }
+    }
+    if (details.length) {
+      summary.touched += 1;
+      const afterText = details.join(' · ');
+      summary.resultRows.push({
+        article: articleKey,
+        marketplace: platformLabel,
+        command: 'SAFE_FIX',
+        result: 'применено',
+        details: afterText
+      });
+      repricerRecordRepairHistory({ articleKey, article: row.article || articleKey, platform, source: 'safe_fix', command: 'SAFE_FIX', result: 'применено', before: beforeText, after: afterText, details: note, createdAt: now });
+      summary.history += 1;
+    } else {
+      summary.skipped += 1;
+    }
+  });
+  state.storage.repricerLastAutoFix = {
+    appliedAt: now,
+    touched: summary.touched,
+    skipped: summary.skipped,
+    raisedToMin: summary.raisedToMin,
+    holds: summary.holds,
+    pendingCost: summary.pendingCost,
+    pendingMinMax: summary.pendingMinMax,
+    pendingPrice: summary.pendingPrice,
+    pendingDeletes: summary.pendingDeletes,
+    history: summary.history
+  };
+  saveLocalStorage();
+  if (typeof persistRepricerControls === 'function') persistRepricerControls().catch((error) => console.error(error));
+  renderRepricer();
+  if (summary.resultRows.length) repricerDownloadImportResult(summary.resultRows);
+  window.alert(`Безопасный автопочин: обработано ${summary.touched}. До MIN: ${summary.raisedToMin}, HOLD: ${summary.holds}, задачи API: cost ${summary.pendingCost}, MIN/MAX ${summary.pendingMinMax}, цена ${summary.pendingPrice}, удалить ${summary.pendingDeletes}.`);
+  return summary;
+}
+
+function repricerExportRows(platform = 'all', sourceRows = null) {
+  const rows = Array.isArray(sourceRows) ? sourceRows : buildRepricerRows();
+  return rows.flatMap((row) => {
     const sides = [];
     if ((platform === 'all' || platform === 'wb') && row.wb) sides.push(['WB', row.wb]);
     if ((platform === 'all' || platform === 'ozon') && row.ozon) sides.push(['Ozon', row.ozon]);
     return sides.map(([platformLabel, side]) => ({
+      import_command: '',
+      import_price_rub: '',
+      import_min_rub: '',
+      import_max_rub: '',
+      import_cost_rub: '',
+      import_status: '',
+      import_role: '',
+      import_launch_ready: '',
+      import_note: '',
+      command_hint: repricerCommandHint(side),
+      recommended_action: repricerRecommendedAction(side),
+      fix_team: repricerFixTeamLabel(repricerFixTeamKey(side)),
+      price_trace: repricerPriceTrace(row, side),
       generated_at: state.smartPriceWorkbench?.generatedAt || '',
       marketplace: platformLabel,
       brand: row.brand || '',
@@ -2811,10 +4293,23 @@ function repricerExportRows(platform = 'all') {
   });
 }
 
-function downloadRepricerExcel(platform = 'all') {
-  const rows = repricerExportRows(platform);
-  if (!rows.length) return;
+function downloadRepricerExcel(platform = 'all', sourceRows = null) {
+  const rows = repricerExportRows(platform, sourceRows);
+  if (!rows.length) return { ok: false, rows: 0, tone: 'warn', message: 'В аудите нет строк для выгрузки.' };
   const columns = [
+    ['import_command', 'Команда'],
+    ['import_price_rub', 'Новая цена, ₽'],
+    ['import_min_rub', 'Новый MIN, ₽'],
+    ['import_max_rub', 'Новый MAX, ₽'],
+    ['import_cost_rub', 'Новая себестоимость, ₽'],
+    ['import_status', 'Новый статус'],
+    ['import_role', 'Новая роль'],
+    ['import_launch_ready', 'Launch ready'],
+    ['import_note', 'Комментарий для импорта'],
+    ['command_hint', 'Что написать в Команда'],
+    ['recommended_action', 'Рекомендованное действие'],
+    ['fix_team', 'Кто чинит'],
+    ['price_trace', 'Почему цена такая'],
     ['generated_at', 'Срез'],
     ['marketplace', 'Площадка'],
     ['brand', 'Бренд'],
@@ -2915,13 +4410,15 @@ function downloadRepricerExcel(platform = 'all') {
     ['history_freshness_date', 'История до']
   ];
   repricerDownloadHtmlTable(columns, rows, `repricer-final-${platform}-${new Date().toISOString().slice(0, 10)}.xls`);
+  return { ok: true, rows: rows.length, tone: 'ok', message: `Аудит подготовлен: ${fmt.int(rows.length)} строк.` };
 }
 
 function repricerExportTemplateRows(platform, options = {}) {
   const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
   const promoOnly = Boolean(options.promoOnly);
   const normalizedPlatform = platform === 'ozon' ? 'ozon' : 'wb';
-  return repricerCollectSides(buildRepricerRows(), platform)
+  const rows = Array.isArray(options.rows) ? options.rows : buildRepricerRows();
+  return repricerCollectSides(rows, platform)
     .filter(({ side }) => !side.outOfSpec)
     .filter(({ side }) => promoOnly ? side.promoActive : !side.promoActive)
     .filter(({ side }) => promoOnly ? side.promoSafeToExport : side.safeToExport)
@@ -2964,26 +4461,86 @@ function repricerTemplateColumns(platform) {
   ];
 }
 
-function downloadRepricerTemplateExcel(platform) {
+function downloadRepricerTemplateEmptyAudit(platform, stats, sourceRows = null) {
   const normalizedPlatform = platform === 'ozon' ? 'ozon' : 'wb';
-  const templateRows = repricerExportTemplateRows(normalizedPlatform);
-  if (!templateRows.length) {
-    window.alert(`Для ${normalizedPlatform.toUpperCase()} нет зелёных строк для безопасной выгрузки. Желтые и красные позиции оставлены в аудите.`);
-    return;
-  }
-  const columns = repricerTemplateColumns(normalizedPlatform);
-  repricerDownloadHtmlTable(columns, templateRows, `repricer-upload-${normalizedPlatform}-${new Date().toISOString().slice(0, 10)}.xls`);
+  const platformLabel = normalizedPlatform === 'ozon' ? 'Ozon' : 'WB';
+  const reasonText = repricerTemplateEmptyReason(stats);
+  const issueRows = repricerIssueRows('all', sourceRows)
+    .filter((row) => String(row.marketplace || '').toLowerCase() === platformLabel.toLowerCase());
+  const rows = issueRows.length ? issueRows : [{
+    generated_at: state.smartPriceWorkbench?.generatedAt || '',
+    batch: 'шаблон пуст',
+    priority: 0,
+    marketplace: platformLabel,
+    article_key: '',
+    article: '',
+    name: '',
+    owner: '',
+    brand: '',
+    status: '',
+    confidence: '',
+    confidence_score: '',
+    reason: 'шаблон пуст',
+    where_fix: 'Аудит',
+    what_to_fill: reasonText,
+    proposal_no_write: reasonText,
+    current_price_rub: '',
+    final_price_rub: '',
+    min_rub: '',
+    cost_rub: '',
+    live_rec_price_rub: '',
+    decision_text: '',
+    confidence_reasons: '',
+    safe_export: 'no',
+    reason_code: '',
+    import_command: '',
+    import_price_rub: '',
+    import_min_rub: '',
+    import_max_rub: '',
+    import_cost_rub: '',
+    import_status: '',
+    import_role: '',
+    import_launch_ready: '',
+    import_note: '',
+    command_hint: 'исправить причины и пересчитать',
+    recommended_action: reasonText,
+    fix_team: 'Аудит',
+    price_trace: ''
+  }];
+  repricerDownloadHtmlTable(repricerIssueColumns(), rows, `repricer-template-empty-${normalizedPlatform}-audit-${new Date().toISOString().slice(0, 10)}.xls`);
+  return { ok: false, rows: 0, tone: 'warn', message: `Шаблон ${platformLabel} пуст. Скачан аудит причин: ${fmt.int(rows.length)} строк.` };
 }
 
-function downloadRepricerPromoTemplateExcel(platform) {
+function downloadRepricerTemplateExcel(platform, sourceRows = null, statsArg = null) {
   const normalizedPlatform = platform === 'ozon' ? 'ozon' : 'wb';
-  const templateRows = repricerExportTemplateRows(normalizedPlatform, { promoOnly: true });
+  const platformLabel = normalizedPlatform === 'ozon' ? 'Ozon' : 'WB';
+  const rows = Array.isArray(sourceRows) ? sourceRows : buildRepricerRows();
+  const templateRows = repricerExportTemplateRows(normalizedPlatform, { rows });
+  const columns = repricerTemplateColumns(normalizedPlatform);
   if (!templateRows.length) {
-    window.alert(`В ${normalizedPlatform.toUpperCase()} сейчас нет зелёных акционных строк для безопасной выгрузки.`);
-    return;
+    const stats = statsArg || repricerTemplateStats(rows, normalizedPlatform);
+    repricerDownloadHtmlTable(columns, [], `repricer-upload-${normalizedPlatform}-${new Date().toISOString().slice(0, 10)}.xls`, { allowEmpty: true });
+    return {
+      ok: true,
+      rows: 0,
+      tone: 'warn',
+      message: `Шаблон ${platformLabel} скачан, но строк 0: зелёных безопасных цен нет. Нажмите «Аудит в Excel», чтобы увидеть причины.`
+    };
+  }
+  repricerDownloadHtmlTable(columns, templateRows, `repricer-upload-${normalizedPlatform}-${new Date().toISOString().slice(0, 10)}.xls`);
+  return { ok: true, rows: templateRows.length, tone: 'ok', message: `Шаблон ${platformLabel} подготовлен: ${fmt.int(templateRows.length)} строк.` };
+}
+
+function downloadRepricerPromoTemplateExcel(platform, sourceRows = null) {
+  const normalizedPlatform = platform === 'ozon' ? 'ozon' : 'wb';
+  const rows = Array.isArray(sourceRows) ? sourceRows : buildRepricerRows();
+  const templateRows = repricerExportTemplateRows(normalizedPlatform, { promoOnly: true, rows });
+  if (!templateRows.length) {
+    return { ok: false, rows: 0, tone: 'warn', message: `В ${normalizedPlatform.toUpperCase()} сейчас нет зелёных акционных строк для безопасной выгрузки.` };
   }
   const columns = repricerTemplateColumns(normalizedPlatform);
   repricerDownloadHtmlTable(columns, templateRows, `repricer-promo-upload-${normalizedPlatform}-${new Date().toISOString().slice(0, 10)}.xls`);
+  return { ok: true, rows: templateRows.length, tone: 'ok', message: `Промо-шаблон ${normalizedPlatform.toUpperCase()} подготовлен: ${fmt.int(templateRows.length)} строк.` };
 }
 
 function repricerListSizeLimit(mode = 'focus') {
@@ -3030,6 +4587,23 @@ function repricerOperatorLayer() {
   return ui.operatorLayer === 'advanced' && window.__ALTEA_REPRICER_ADVANCED_SESSION__ === true ? 'advanced' : 'simple';
 }
 
+function repricerRenderSignature(operatorLayer = repricerOperatorLayer()) {
+  const filters = state.repricerFilters || {};
+  const ui = state.repricerUi || {};
+  return [
+    operatorLayer,
+    repricerRowsCacheSignature(),
+    filters.search || '',
+    filters.platform || '',
+    filters.mode || '',
+    filters.economicSource || '',
+    filters.listSize || '',
+    JSON.stringify(ui.sections || {}),
+    JSON.stringify(ui.history || {}),
+    JSON.stringify(ui.controls || {})
+  ].join('||');
+}
+
 function setRepricerOperatorLayer(layer) {
   const ui = ensureRepricerUiState();
   ui.operatorLayer = layer === 'advanced' ? 'advanced' : 'simple';
@@ -3037,11 +4611,316 @@ function setRepricerOperatorLayer(layer) {
   renderRepricer();
 }
 
+function renderRepricerRepairStatusCard() {
+  const api = repricerApiQueueSummary();
+  const lastImport = state.storage?.repricerLastAuditImport || null;
+  const lastFix = state.storage?.repricerLastAutoFix || null;
+  const lastValidation = state.storage?.repricerLastImportValidation || null;
+  const lastReconcile = state.storage?.repricerLastApiReconcile || null;
+  const lastSnapshot = (state.storage?.repricerRepairSnapshots || [])[0] || null;
+  const lastImportText = lastImport?.importedAt
+    ? `Импорт: ${fmt.date(lastImport.importedAt)} · применено ${fmt.int(lastImport.applied)} · ошибок ${fmt.int(lastImport.errors)}`
+    : 'Импортов пока не было';
+  const lastFixText = lastFix?.appliedAt
+    ? `Автопочин: ${fmt.date(lastFix.appliedAt)} · обработано ${fmt.int(lastFix.touched)}`
+    : 'Автопочин еще не запускали';
+  const validationText = lastValidation?.validatedAt
+    ? `Проверка Excel: ${fmt.date(lastValidation.validatedAt)} · ошибок ${fmt.int(lastValidation.errors)} · предупреждений ${fmt.int(lastValidation.warnings)}`
+    : 'Excel ещё не проверяли';
+  const reconcileText = lastReconcile?.checkedAt
+    ? `Сверка API: ${fmt.date(lastReconcile.checkedAt)} · принято ${fmt.int(lastReconcile.accepted)} · ошибок ${fmt.int(lastReconcile.error)}`
+    : 'API ещё не сверяли';
+  return `
+    <div class="repricer-operator-focus-card repricer-repair-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Очередь исправлений</h3>
+          <p class="small muted">Что портал уже принял из аудита и что ждёт источники/API.</p>
+        </div>
+        ${api.active ? badge(`API в работе ${fmt.int(api.active)}`, 'warn') : badge('API очередь чистая', 'ok')}
+      </div>
+      <div class="badge-stack" style="margin-top:10px">
+        ${badge(`добавить ${fmt.int(api.add)}`, api.add ? 'warn' : 'ok')}
+        ${badge(`удалить ${fmt.int(api.remove)}`, api.remove ? 'warn' : 'ok')}
+        ${badge(`себестоимость ${fmt.int(api.cost)}`, api.cost ? 'warn' : 'ok')}
+        ${badge(`MIN/MAX ${fmt.int(api.minmax)}`, api.minmax ? 'warn' : 'ok')}
+        ${badge(`цена из MP ${fmt.int(api.priceSnapshot)}`, api.priceSnapshot ? 'warn' : 'ok')}
+        ${badge(`новые ${fmt.int(api.open)}`, api.open ? 'warn' : 'ok')}
+        ${badge(`отправлено ${fmt.int(api.sent)}`, api.sent ? 'info' : 'ok')}
+        ${badge(`принято ${fmt.int(api.accepted)}`, api.accepted ? 'ok' : 'info')}
+        ${badge(`ошибка ${fmt.int(api.error)}`, api.error ? 'danger' : 'ok')}
+      </div>
+      <div class="repricer-repair-lines" style="margin-top:10px">
+        <div><strong>${escapeHtml(lastImportText)}</strong></div>
+        <div><strong>${escapeHtml(lastFixText)}</strong></div>
+        <div><strong>${escapeHtml(validationText)}</strong></div>
+        <div><strong>${escapeHtml(reconcileText)}</strong></div>
+      </div>
+      <div class="quick-actions" style="margin-top:12px">
+        <button type="button" class="quick-chip" data-repricer-auto-fix>Починить безопасное</button>
+        <button type="button" class="quick-chip" data-repricer-export="api:tasks" ${api.total ? '' : 'disabled aria-disabled="true"'}>Задачи API</button>
+        <button type="button" class="quick-chip" data-repricer-api-mark-sent ${api.open ? '' : 'disabled aria-disabled="true"'}>API отправлено</button>
+        <button type="button" class="quick-chip" data-repricer-api-reconcile ${api.total ? '' : 'disabled aria-disabled="true"'}>Сверить после API</button>
+        <button type="button" class="quick-chip" data-repricer-undo-last ${lastSnapshot ? '' : 'disabled aria-disabled="true"'}>Отменить последнее</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderRepricerFixTeamCard(rows = buildRepricerRows()) {
+  const counts = repricerFixTeamCounts(rows);
+  const teams = ['prices', 'cost', 'api', 'marketplace', 'sku', 'manual'];
+  const chips = teams.map((team) => {
+    const count = counts[team] || 0;
+    const tone = team === 'prices' || team === 'api' ? 'danger' : (count ? 'warn' : 'ok');
+    return `<button type="button" class="quick-chip ${count ? tone : ''}" data-repricer-export="team:${escapeHtml(team)}" ${count ? '' : 'disabled aria-disabled="true"'}>${escapeHtml(repricerFixTeamLabel(team))} ${fmt.int(count)}</button>`;
+  }).join('');
+  return `
+    <div class="repricer-operator-focus-card repricer-team-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Кто чинит</h3>
+          <p class="small muted">Пачки по ответственному контуру: можно скачать только нужной команде.</p>
+        </div>
+        ${badge('файлы по командам', 'info')}
+      </div>
+      <div class="quick-actions" style="margin-top:12px">${chips}</div>
+    </div>
+  `;
+}
+
+function renderRepricerWorkLogicCard() {
+  return `
+    <div class="repricer-operator-focus-card repricer-logic-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Как работает решение</h3>
+          <p class="small muted">Короткая схема без настроек: данные → проверка → предпросмотр → выгрузка/API → сверка.</p>
+        </div>
+        ${badge('минимум действий', 'ok')}
+      </div>
+      <div class="repricer-logic-steps" style="margin-top:12px">
+        <div><strong>1. Данные</strong><span>Берём текущую цену, MIN/MAX, себестоимость, статус и live-ориентир.</span></div>
+        <div><strong>2. Confidence</strong><span>Зелёные идут в шаблон, жёлтые и красные остаются в аудите.</span></div>
+        <div><strong>3. Исправления</strong><span>Excel сначала проверяется, автопочин показывает предпросмотр и сохраняет откат.</span></div>
+        <div><strong>4. API</strong><span>Задачи получают статус: новая, отправлено, принято или ошибка после сверки.</span></div>
+      </div>
+    </div>
+  `;
+}
+
+function repricerOperatorTaskPlan(health, stats = {}) {
+  const metrics = health?.metrics || {};
+  const tasks = [
+    {
+      title: 'Заполнить MIN',
+      count: metrics.missing_effective_floor_actionable || metrics.missing_effective_floor || 0,
+      hint: 'Без рабочего MIN цена не уходит в шаблон.',
+      mode: 'blocked',
+      tone: 'danger',
+      source: 'Цены'
+    },
+    {
+      title: 'Разобрать ниже MIN',
+      count: stats.belowMinSides || 0,
+      hint: 'Текущая цена уже ниже рабочего порога.',
+      mode: 'below_min',
+      tone: 'danger',
+      source: 'Цены'
+    },
+    {
+      title: 'Дособрать себестоимость',
+      count: metrics.missing_cost_actionable || metrics.missing_cost || 0,
+      hint: 'Без cost расчёт держится на guard/fallback.',
+      mode: 'blocked',
+      tone: 'warn',
+      source: 'Себестоимость'
+    },
+    {
+      title: 'Подтянуть текущую цену',
+      count: metrics.missing_current_price_actionable || 0,
+      hint: 'Нет входной цены для активного контура.',
+      mode: 'blocked',
+      tone: 'warn',
+      source: 'Маркетплейс'
+    },
+    {
+      title: 'Сверить live-расхождения',
+      count: stats.liveDriftSides || 0,
+      hint: 'Наш финал расходится с текущим live repricer.',
+      mode: 'live_drift',
+      tone: 'warn',
+      source: 'Ручное решение'
+    },
+    {
+      title: 'Выгрузить зелёные',
+      count: (stats.safeWbRows || 0) + (stats.safeOzonRows || 0),
+      hint: 'Эти строки уже прошли safe export.',
+      mode: 'changes',
+      tone: 'ok',
+      source: 'Выгрузка'
+    }
+  ];
+  const active = tasks.filter((task) => numberOrZero(task.count) > 0);
+  return active.length ? active : [{
+    title: 'Контур чистый',
+    count: metrics.sku_count || 0,
+    hint: 'Критичных стопов сейчас нет.',
+    mode: 'changes',
+    tone: 'ok',
+    source: 'Выгрузка'
+  }];
+}
+
+function repricerIssueBatchCounts(rows) {
+  const counts = { missing_min: 0, missing_cost: 0, below_min: 0, live_drift: 0 };
+  repricerCollectSides(rows).forEach(({ side }) => {
+    if (!side) return;
+    const batch = repricerIssueBatch(side);
+    if (Object.prototype.hasOwnProperty.call(counts, batch)) counts[batch] += 1;
+  });
+  return counts;
+}
+
+function repricerOperatorQueueRows(rows, limit = 6) {
+  const scored = repricerCollectSides(rows).filter(({ side }) => side && !side.outOfSpec && side.confidence !== 'green')
+    .map(({ row, side }) => {
+      const missingMin = numberOrZero(side.effectiveFloor) <= 0 && !['LAUNCH_HOLD', 'OFF'].includes(String(side.reasonCode || ''));
+      const missingPrice = numberOrZero(side.currentPrice) <= 0 && !['LAUNCH_HOLD', 'OOS', 'OFF'].includes(String(side.reasonCode || ''));
+      const missingCost = numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent;
+      const score = (missingMin ? 120 : 0)
+        + (side.belowFloorNow ? 90 : 0)
+        + (side.criticalGate === 'BLOCK' ? 70 : 0)
+        + (side.marginRisk ? 55 : 0)
+        + (missingPrice ? 45 : 0)
+        + (missingCost ? 35 : 0)
+        + (side.liveDrift ? 18 : 0)
+        + numberOrZero(side.confidenceScore);
+      return { row, side, score };
+    })
+    .sort((left, right) => right.score - left.score || String(left.row?.article || left.row?.articleKey || '').localeCompare(String(right.row?.article || right.row?.articleKey || ''), 'ru'));
+  return scored.slice(0, limit);
+}
+
+function setRepricerExportStatus(root, message, tone = 'info') {
+  const target = root?.querySelector?.('[data-repricer-export-status]');
+  if (!target) return;
+  target.className = `small muted repricer-export-status ${tone || 'info'}`;
+  target.textContent = message || '';
+}
+
+function runRepricerExport(button, task) {
+  if (!button || button.dataset.repricerExportBusy === '1') return;
+  const root = button.closest?.('#view-repricer') || document.getElementById('view-repricer');
+  const originalText = button.textContent;
+  const wasDisabled = button.disabled;
+  button.dataset.repricerExportBusy = '1';
+  button.disabled = true;
+  button.setAttribute('aria-busy', 'true');
+  button.textContent = 'Готовлю...';
+  setRepricerExportStatus(root, 'Готовлю файл...', 'info');
+  try {
+    const result = task();
+    if (result?.message) {
+      setRepricerExportStatus(root, result.message, result.tone || (result.ok ? 'ok' : 'warn'));
+      button.textContent = result.ok === false ? 'Скачан аудит' : 'Скачано';
+    } else {
+      setRepricerExportStatus(root, 'Файл подготовлен.', 'ok');
+      button.textContent = 'Скачано';
+    }
+  } catch (error) {
+    console.error('[repricer] export failed', error);
+    setRepricerExportStatus(root, 'Не удалось подготовить Excel. Обновите страницу и попробуйте ещё раз.', 'danger');
+    button.textContent = 'Ошибка';
+  } finally {
+    window.setTimeout(() => {
+      button.disabled = wasDisabled;
+      button.removeAttribute('aria-busy');
+      delete button.dataset.repricerExportBusy;
+      button.textContent = originalText;
+    }, 700);
+  }
+}
+
+function runRepricerExportMode(button, mode) {
+  runRepricerExport(button, () => {
+    const rows = buildRepricerRows();
+    if (mode === 'template:wb') {
+      return downloadRepricerTemplateExcel('wb', rows, repricerTemplateStats(rows, 'wb'));
+    }
+    if (mode === 'template:ozon') {
+      return downloadRepricerTemplateExcel('ozon', rows, repricerTemplateStats(rows, 'ozon'));
+    }
+    if (mode === 'promo:wb') {
+      return downloadRepricerPromoTemplateExcel('wb', rows);
+    }
+    if (mode === 'promo:ozon') {
+      return downloadRepricerPromoTemplateExcel('ozon', rows);
+    }
+    if (mode === 'stop:all') {
+      return downloadRepricerStopList('all', rows);
+    }
+    if (mode.startsWith('batch:')) {
+      return downloadRepricerStopList(mode.replace('batch:', ''), rows);
+    }
+    if (mode === 'fix:proposals') {
+      return downloadRepricerFixProposals(rows);
+    }
+    if (mode === 'api:tasks') {
+      return downloadRepricerApiTasks();
+    }
+    if (mode.startsWith('team:')) {
+      return downloadRepricerTeamIssues(mode.replace('team:', ''), rows);
+    }
+    return downloadRepricerExcel(mode, rows);
+  });
+}
+
 function attachRepricerEvents(root) {
   root.querySelectorAll('[data-repricer-layer-toggle]').forEach((button) => {
     button.addEventListener('click', () => {
       setRepricerOperatorLayer(button.getAttribute('data-repricer-layer-toggle') || 'simple');
     });
+  });
+  root.querySelectorAll('[data-repricer-open-filter]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const mode = button.getAttribute('data-repricer-open-filter') || 'changes';
+      state.repricerFilters.mode = mode;
+      setRepricerOperatorLayer('advanced');
+    });
+  });
+  const auditImportInput = root.querySelector('[data-repricer-audit-import]');
+  root.querySelectorAll('[data-repricer-import="audit"]').forEach((button) => {
+    button.addEventListener('click', () => {
+      setRepricerExportStatus(root, 'Выберите файл аудита, который скачали из портала и поправили в Excel.', 'info');
+      auditImportInput?.click();
+    });
+  });
+  root.querySelectorAll('[data-repricer-auto-fix]').forEach((button) => {
+    button.addEventListener('click', () => {
+      applyRepricerSafeFixes();
+    });
+  });
+  root.querySelector('[data-repricer-undo-last]')?.addEventListener('click', () => {
+    restoreLastRepricerRepairSnapshot();
+  });
+  root.querySelector('[data-repricer-api-mark-sent]')?.addEventListener('click', () => {
+    markRepricerApiTasksSent();
+  });
+  root.querySelector('[data-repricer-api-reconcile]')?.addEventListener('click', () => {
+    reconcileRepricerApiTasks();
+  });
+  auditImportInput?.addEventListener('change', (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    importRepricerAuditFile(file)
+      .catch((error) => {
+        console.error('[repricer.importAudit]', error);
+        window.alert(`Не удалось импортировать решения: ${error?.message || error}`);
+      })
+      .finally(() => {
+        event.target.value = '';
+      });
   });
   root.querySelector('#repricerSearchInput')?.addEventListener('input', (event) => {
     state.repricerFilters.search = event.target.value;
@@ -3146,39 +5025,31 @@ function attachRepricerEvents(root) {
       applyRepricerPromoOffer(button.getAttribute('data-article-key') || '', button.getAttribute('data-platform') || 'wb');
     });
   });
-  root.querySelectorAll('[data-repricer-export]').forEach((button) => {
-    button.addEventListener('click', () => {
+  if (root.dataset.repricerExportDelegate !== '20260516direct') {
+    root.dataset.repricerExportDelegate = '20260516direct';
+    root.addEventListener('click', (event) => {
+      const button = event.target?.closest?.('[data-repricer-export]');
+      if (!button || !root.contains(button)) return;
+      event.preventDefault();
+      event.stopPropagation();
       const mode = button.getAttribute('data-repricer-export') || 'all';
-      if (mode === 'template:wb') {
-        downloadRepricerTemplateExcel('wb');
-        return;
-      }
-      if (mode === 'template:ozon') {
-        downloadRepricerTemplateExcel('ozon');
-        return;
-      }
-      if (mode === 'promo:wb') {
-        downloadRepricerPromoTemplateExcel('wb');
-        return;
-      }
-      if (mode === 'promo:ozon') {
-        downloadRepricerPromoTemplateExcel('ozon');
-        return;
-      }
-      downloadRepricerExcel(mode);
+      runRepricerExportMode(button, mode);
     });
-  });
+  }
 }
 
 function renderRepricer() {
   const root = document.getElementById('view-repricer');
   if (!root) return;
+  const operatorLayer = repricerOperatorLayer();
+  const renderSignature = repricerRenderSignature(operatorLayer);
+  if (root.dataset.repricerRenderSignature === renderSignature && root.children.length) return;
   const sourceRows = buildRepricerRows();
   if (!sourceRows.length) {
+    root.dataset.repricerRenderSignature = renderSignature;
     root.innerHTML = `<div class="card"><div class="head"><div><h3>Репрайсер</h3><div class="muted small">Контур пока не получил smart price workbench.</div></div>${badge('нет данных', 'warn')}</div><div class="muted" style="margin-top:10px">Нужно дождаться загрузки снапшота цен, после этого вкладка начнет считать рекомендации и хранить override прямо в портале.</div></div>`;
     return;
   }
-  const operatorLayer = repricerOperatorLayer();
   const operatorSimple = operatorLayer !== 'advanced';
   const health = repricerHealthcheck(sourceRows);
   const smokeTests = health.smokeTests;
@@ -3205,6 +5076,11 @@ function renderRepricer() {
   const confidenceRedSides = sideRows.filter((side) => side.confidence === 'red').length;
   const safeWbRows = repricerCollectSides(sourceRows, 'wb').filter(({ side }) => side.safeToExport).length;
   const safeOzonRows = repricerCollectSides(sourceRows, 'ozon').filter(({ side }) => side.safeToExport).length;
+  const templateStats = {
+    wb: repricerTemplateStats(sourceRows, 'wb'),
+    ozon: repricerTemplateStats(sourceRows, 'ozon')
+  };
+  const topStatusText = repricerTopStatusText(templateStats);
   const smokePassed = health.metrics.smoke_passed;
   const summaryBadges = [
     badge(`нужны решения ${fmt.int(actionableRows)}`, actionableRows ? 'warn' : 'ok'),
@@ -3251,51 +5127,204 @@ function renderRepricer() {
       <div class="badge-stack" style="margin-top:10px">${stopReasonBadges || badge('стоп-лист пуст', 'ok')}</div>
     </div>
   `;
+  const templateExplainCard = `
+    <div class="repricer-operator-focus-card repricer-template-explain-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Почему шаблон такой</h3>
+          <p class="small muted">Шаблон цен получает только зелёные строки, где финальная цена отличается от текущей.</p>
+        </div>
+        ${safeWbRows || safeOzonRows ? badge('есть что выгружать', 'ok') : badge('шаблон пуст', 'warn')}
+      </div>
+      <div class="repricer-template-explain-grid" style="margin-top:12px">
+        <div class="repricer-operator-sku">
+          <div>
+            <strong>WB: ${fmt.int(templateStats.wb.safe)} в файл</strong>
+            <span>${escapeHtml(repricerTemplateEmptyReason(templateStats.wb))}</span>
+          </div>
+          <div class="badge-stack">${badge(`зелёные ${fmt.int(templateStats.wb.green)}`, templateStats.wb.green ? 'ok' : 'warn')}${badge(`без изменения ${fmt.int(templateStats.wb.greenNoChange)}`, templateStats.wb.greenNoChange ? 'info' : '')}${badge(`проверить ${fmt.int(templateStats.wb.yellow)}`, templateStats.wb.yellow ? 'warn' : 'ok')}${badge(`стоп ${fmt.int(templateStats.wb.red)}`, templateStats.wb.red ? 'danger' : 'ok')}</div>
+        </div>
+        <div class="repricer-operator-sku">
+          <div>
+            <strong>Ozon: ${fmt.int(templateStats.ozon.safe)} в файл</strong>
+            <span>${escapeHtml(repricerTemplateEmptyReason(templateStats.ozon))}</span>
+          </div>
+          <div class="badge-stack">${badge(`зелёные ${fmt.int(templateStats.ozon.green)}`, templateStats.ozon.green ? 'ok' : 'warn')}${badge(`без изменения ${fmt.int(templateStats.ozon.greenNoChange)}`, templateStats.ozon.greenNoChange ? 'info' : '')}${badge(`проверить ${fmt.int(templateStats.ozon.yellow)}`, templateStats.ozon.yellow ? 'warn' : 'ok')}${badge(`стоп ${fmt.int(templateStats.ozon.red)}`, templateStats.ozon.red ? 'danger' : 'ok')}</div>
+        </div>
+      </div>
+    </div>
+  `;
 
   if (operatorSimple) {
     const statusText = safeWbRows || safeOzonRows ? 'Можно выгружать' : 'Сначала проверить';
     const statusTone = safeWbRows || safeOzonRows ? 'ok' : 'warn';
     const hasSafeWb = safeWbRows > 0;
     const hasSafeOzon = safeOzonRows > 0;
+    const batchCounts = repricerIssueBatchCounts(sourceRows);
+    const batchButtons = [
+      ['missing_min', 'нет MIN', batchCounts.missing_min, 'danger'],
+      ['missing_cost', 'нет себестоимости', batchCounts.missing_cost, 'warn'],
+      ['below_min', 'ниже MIN', batchCounts.below_min, 'danger'],
+      ['live_drift', 'live расходится', batchCounts.live_drift, 'warn']
+    ].map(([key, label, count, tone]) => `
+      <button type="button" class="quick-chip ${count ? tone : ''}" data-repricer-export="batch:${escapeHtml(key)}">${escapeHtml(label)} ${fmt.int(count)}</button>
+    `).join('');
+    const taskPlan = repricerOperatorTaskPlan(health, { belowMinSides, liveDriftSides, safeWbRows, safeOzonRows });
+    const taskCards = taskPlan.slice(0, 4).map((task, index) => `
+      <div class="repricer-operator-task ${escapeHtml(task.tone)}">
+        <div class="repricer-operator-task-index">${fmt.int(index + 1)}</div>
+        <div>
+          <strong>${escapeHtml(task.title)}</strong>
+          <span>${escapeHtml(task.hint)}</span>
+          <em>${escapeHtml(task.source || 'Аудит')}</em>
+        </div>
+        <button type="button" class="quick-chip" data-repricer-open-filter="${escapeHtml(task.mode)}">${fmt.int(task.count)}</button>
+      </div>
+    `).join('');
+    const queueRows = repricerOperatorQueueRows(sourceRows, 6);
+    const queueMarkup = queueRows.map(({ row, side }) => {
+      const reason = repricerPrimaryStopReason(side) || side.reasonCode || 'проверить';
+      const platformLabel = side.platform === 'ozon' ? 'Ozon' : 'WB';
+      return `
+        <div class="repricer-operator-sku">
+          <div>
+            <strong>${linkToSku(row.articleKey, row.article || row.articleKey)} · ${escapeHtml(platformLabel)}</strong>
+            <span>${escapeHtml(row.name || row.owner || side.decisionText || 'Без названия')}</span>
+            <span>${escapeHtml(repricerFixSource(side))}: ${escapeHtml(repricerFixAction(side))}</span>
+          </div>
+          ${badge(reason, side.confidence === 'red' ? 'danger' : 'warn')}
+        </div>
+      `;
+    }).join('');
     const issueItems = (health.stopReasons || []).slice(0, 5)
       .map((item) => `<div class="repricer-operator-issue"><strong>${escapeHtml(item.label)}</strong><span>${fmt.int(item.count)}</span></div>`)
       .join('');
+    const wbTemplate = templateStats.wb || {};
+    const ozonTemplate = templateStats.ozon || {};
+    const safeCount = (value) => {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+    const wbCheckCount = safeCount(wbTemplate.yellow) + safeCount(wbTemplate.red);
+    const ozonCheckCount = safeCount(ozonTemplate.yellow) + safeCount(ozonTemplate.red);
+    const emptyExportReasons = [
+      ['нет MIN', safeCount(wbTemplate.missingMin) + safeCount(ozonTemplate.missingMin), 'Заполнить MIN/MAX в Ценах или через аудит'],
+      ['ниже MIN', safeCount(wbTemplate.belowMin) + safeCount(ozonTemplate.belowMin), 'Проверить цену и рабочий порог'],
+      ['нет себестоимости', safeCount(wbTemplate.missingCost) + safeCount(ozonTemplate.missingCost), 'Добавить себестоимость или fee-контур'],
+      ['требует проверки', wbCheckCount + ozonCheckCount, 'Оставить в аудите, в шаблон цен не отправлять'],
+      ['стоп входов', safeCount(wbTemplate.blocked) + safeCount(ozonTemplate.blocked), 'Разобрать блокирующие входы SKU']
+    ].filter(([, count]) => count > 0).slice(0, 4);
+    const emptyExportReasonMarkup = emptyExportReasons.map(([label, count, hint]) => `
+      <div class="repricer-empty-reason">
+        <strong>${escapeHtml(label)}</strong>
+        <span>${fmt.int(count)}</span>
+        <em>${escapeHtml(hint)}</em>
+      </div>
+    `).join('');
+    const noSafeExport = safeWbRows + safeOzonRows <= 0;
     root.classList.add('repricer-simple-mode', 'repricer-native-simple');
     root.classList.remove('repricer-simple-expanded');
     root.dataset.repricerNativeSimple = '1';
     root.dataset.repricerLayer = 'simple';
+    root.dataset.repricerRenderSignature = renderSignature;
     root.innerHTML = `
       <div class="section-title">
         <div>
           <h2>Репрайсер</h2>
-          <p>Операторский слой: минимум кнопок, максимум защиты. Тяжёлые настройки и карточки SKU не рендерятся, пока не открыт полный режим.</p>
+          <p>Здесь в одном месте сходятся текущая цена, рабочий MIN/MAX из «Цен», модель репрайсера и ручные решения по каждой площадке.</p>
         </div>
       </div>
 
-      <div class="repricer-operator-panel" data-repricer-operator-panel data-repricer-native-panel="1">
-        <div class="repricer-operator-copy">
-          <div class="label">Режим оператора</div>
-          <strong>${escapeHtml(statusText)}</strong>
-          <p>В шаблоны попадают только зелёные строки. Желтые и красные остаются в аудите, чтобы не отправить сомнительную цену.</p>
+      <div class="repricer-operator-panel repricer-human-panel" data-repricer-operator-panel data-repricer-native-panel="1">
+        <div class="repricer-human-head">
+          <div class="repricer-operator-copy">
+            <div class="label">Рабочий режим</div>
+            <strong>${escapeHtml(statusText)}</strong>
+            <p>${escapeHtml(topStatusText)} В шаблоны отправляем только зелёные строки. Всё спорное остаётся в аудите.</p>
+          </div>
+          <div class="repricer-human-status ${statusTone}">
+            <span>${safeWbRows + safeOzonRows ? 'Можно скачивать' : 'Сначала аудит'}</span>
+            <strong>${fmt.int(safeWbRows + safeOzonRows)}</strong>
+            <em>строк в безопасную выгрузку</em>
+          </div>
         </div>
-        <div class="repricer-operator-stats">
-          ${badge(`WB к выгрузке ${fmt.int(safeWbRows)}`, hasSafeWb ? 'ok' : 'warn')}
-          ${badge(`Ozon к выгрузке ${fmt.int(safeOzonRows)}`, hasSafeOzon ? 'ok' : 'warn')}
-          ${badge(`зелёные ${fmt.int(confidenceGreenSides)}`, confidenceGreenSides ? 'ok' : 'warn')}
-          ${badge(`проверить ${fmt.int(confidenceYellowSides)}`, confidenceYellowSides ? 'warn' : 'ok')}
-          ${badge(`стоп ${fmt.int(confidenceRedSides)}`, confidenceRedSides ? 'danger' : 'ok')}
-          ${badge(`ниже MIN ${fmt.int(belowMinSides)}`, belowMinSides ? 'danger' : 'ok')}
-          ${badge(`обновлено ${state.smartPriceWorkbench?.generatedAt ? fmt.date(state.smartPriceWorkbench.generatedAt) : '—'}`, 'info')}
+        <div class="repricer-marketplace-grid" data-repricer-operator-actions>
+          <div class="repricer-marketplace-card wb">
+            <div class="repricer-marketplace-title">
+              <span>WB</span>
+              ${badge(hasSafeWb ? 'есть выгрузка' : 'пустой шаблон', hasSafeWb ? 'ok' : 'warn')}
+            </div>
+            <div class="repricer-marketplace-count">${fmt.int(safeWbRows)}</div>
+            <p>В шаблон попадут только безопасные изменения цен. Если строк 0, файл всё равно сохранится, чтобы было видно, что выгрузка отработала.</p>
+            <div class="repricer-mini-metrics">
+              <span>зелёные ${fmt.int(safeCount(wbTemplate.green))}</span>
+              <span>проверить ${fmt.int(wbCheckCount)}</span>
+              <span>ниже MIN ${fmt.int(safeCount(wbTemplate.belowMin))}</span>
+            </div>
+            <button type="button" class="repricer-marketplace-button wb" data-repricer-export="template:wb" data-repricer-empty="${hasSafeWb ? '0' : '1'}">Скачать шаблон WB</button>
+          </div>
+          <div class="repricer-marketplace-card ozon">
+            <div class="repricer-marketplace-title">
+              <span>Ozon</span>
+              ${badge(hasSafeOzon ? 'есть выгрузка' : 'пустой шаблон', hasSafeOzon ? 'ok' : 'warn')}
+            </div>
+            <div class="repricer-marketplace-count">${fmt.int(safeOzonRows)}</div>
+            <p>Ozon-файл сохраняется отдельно. Жёлтые и красные строки не попадут в ценовой шаблон.</p>
+            <div class="repricer-mini-metrics">
+              <span>зелёные ${fmt.int(safeCount(ozonTemplate.green))}</span>
+              <span>проверить ${fmt.int(ozonCheckCount)}</span>
+              <span>ниже MIN ${fmt.int(safeCount(ozonTemplate.belowMin))}</span>
+            </div>
+            <button type="button" class="repricer-marketplace-button ozon" data-repricer-export="template:ozon" data-repricer-empty="${hasSafeOzon ? '0' : '1'}">Скачать шаблон Ozon</button>
+          </div>
         </div>
-        <div class="repricer-operator-actions" data-repricer-operator-actions>
-          <button type="button" class="quick-chip ${statusTone}" data-repricer-export="template:wb" ${hasSafeWb ? '' : 'disabled aria-disabled="true"'}>Шаблон WB</button>
-          <button type="button" class="quick-chip ${statusTone}" data-repricer-export="template:ozon" ${hasSafeOzon ? '' : 'disabled aria-disabled="true"'}>Шаблон Ozon</button>
-          <button type="button" class="quick-chip" data-repricer-export="all">Аудит</button>
+        ${noSafeExport ? `
+          <div class="repricer-empty-explain">
+            <div>
+              <strong>Почему шаблон пустой</strong>
+              <p>В WB/Ozon сейчас нет зелёных безопасных изменений цены. Шаблоны можно скачать для контроля, но сначала лучше выгрузить аудит и закрыть причины ниже.</p>
+            </div>
+            <div class="repricer-empty-reasons">${emptyExportReasonMarkup || '<div class="repricer-empty-reason"><strong>нет причин</strong><span>0</span><em>Проверьте свежесть данных.</em></div>'}</div>
+          </div>
+        ` : ''}
+        <div class="repricer-human-actions">
+          <button type="button" class="quick-chip repricer-audit-primary" data-repricer-export="all">Аудит Excel</button>
+          <button type="button" class="quick-chip" data-repricer-import="audit" title="Загрузить обратно файл аудита после правок в Excel">Загрузить аудит</button>
+          <button type="button" class="quick-chip" data-repricer-export="stop:all">Стоп-лист</button>
+          <button type="button" class="quick-chip" data-repricer-export="fix:proposals">Предложения</button>
           <button type="button" class="quick-chip repricer-advanced-toggle" data-repricer-layer-toggle="advanced">Полный режим</button>
         </div>
+        <div class="repricer-export-status" data-repricer-export-status>Нажмите WB или Ozon. После сохранения здесь появится имя файла и откроется папка Downloads.</div>
+        <input id="repricerAuditImportInput" class="hidden" type="file" data-repricer-audit-import accept=".xls,.html,.htm,.csv,.tsv,.txt,text/html,text/csv,text/tab-separated-values,application/vnd.ms-excel">
       </div>
 
+      ${renderRepricerRepairStatusCard()}
+      ${renderRepricerFixTeamCard(sourceRows)}
+      ${renderRepricerWorkLogicCard()}
       ${safetyCard}
+      ${templateExplainCard}
+
+      <div class="repricer-operator-focus-card" style="margin-top:14px">
+        <div class="section-subhead">
+          <div>
+            <h3>Что делать сейчас</h3>
+            <p class="small muted">Очередь действий по текущему контуру цен.</p>
+          </div>
+          ${health.ok ? badge('можно работать', 'ok') : badge('сначала стопы', 'warn')}
+        </div>
+        <div class="repricer-operator-tasks">${taskCards}</div>
+      </div>
+
+      <div class="repricer-operator-focus-card" style="margin-top:14px">
+        <div class="section-subhead">
+          <div>
+            <h3>Быстрые пачки</h3>
+            <p class="small muted">Короткие выгрузки только по одной причине.</p>
+          </div>
+          ${badge('без автозаписи', 'info')}
+        </div>
+        <div class="quick-actions" style="margin-top:12px">${batchButtons}</div>
+      </div>
 
       <div class="repricer-operator-grid">
         <div class="repricer-operator-focus-card">
@@ -3311,15 +5340,15 @@ function renderRepricer() {
         <div class="repricer-operator-focus-card">
           <div class="section-subhead">
             <div>
-              <h3>Контур данных</h3>
-              <p class="small muted">Короткая сводка без тяжёлого списка SKU.</p>
+              <h3>Первые SKU</h3>
+              <p class="small muted">Самые заметные строки для проверки.</p>
             </div>
             ${badge(`SKU ${fmt.int(sourceRows.length)}`, 'info')}
           </div>
-          <div class="badge-stack" style="margin-top:10px">${summaryBadges}</div>
-          <div class="muted small" style="margin-top:10px">${health.issues.length ? escapeHtml(health.issues.slice(0, 2).join(' · ')) : 'Критичных замечаний нет.'}</div>
+          <div class="repricer-operator-sku-list">${queueMarkup || '<div class="muted small">Очередь проверки пуста.</div>'}</div>
         </div>
       </div>
+      <div class="badge-stack" style="margin-top:12px">${summaryBadges}</div>
     `;
     attachRepricerEvents(root);
     return;
@@ -3328,7 +5357,8 @@ function renderRepricer() {
   root.classList.remove('repricer-simple-mode', 'repricer-boot-simple', 'repricer-native-simple');
   delete root.dataset.repricerNativeSimple;
   root.dataset.repricerLayer = 'advanced';
-  const rows = getFilteredRepricerRows();
+  root.dataset.repricerRenderSignature = renderSignature;
+  const rows = getFilteredRepricerRows(sourceRows);
   const visibleRows = repricerVisibleRows(rows);
   const visibleHidden = Math.max(0, rows.length - visibleRows.length);
   const listSize = state.repricerFilters.listSize || 'focus';
@@ -3373,18 +5403,27 @@ function renderRepricer() {
       </div>
       <div class="quick-actions">
         <button type="button" class="quick-chip" data-repricer-export="all">Аудит в Excel</button>
+        <button type="button" class="quick-chip" data-repricer-import="audit" title="Загрузить обратно файл аудита после правок в Excel">Загрузить аудит Excel</button>
+        <button type="button" class="quick-chip" data-repricer-export="stop:all">Стоп-лист</button>
+        <button type="button" class="quick-chip" data-repricer-export="fix:proposals">Предложения</button>
         <button type="button" class="quick-chip" data-repricer-export="template:wb">Шаблон WB</button>
         <button type="button" class="quick-chip" data-repricer-export="template:ozon">Шаблон Ozon</button>
         <button type="button" class="quick-chip" data-repricer-export="promo:wb">WB промо</button>
         <button type="button" class="quick-chip" data-repricer-export="promo:ozon">Ozon промо</button>
         <button type="button" class="quick-chip" data-repricer-layer-toggle="simple">Простой режим</button>
       </div>
+      <div class="small muted repricer-export-status" data-repricer-export-status>После клика здесь появится статус файла.</div>
+      <input id="repricerAuditImportInput" class="hidden" type="file" data-repricer-audit-import accept=".xls,.html,.htm,.csv,.tsv,.txt,text/html,text/csv,text/tab-separated-values,application/vnd.ms-excel">
     </div>
 
     <div class="badge-stack" style="margin-top:8px">${badge(`обновлено ${state.smartPriceWorkbench?.generatedAt ? fmt.date(state.smartPriceWorkbench.generatedAt) : '—'}`, 'info')}${badge(state.smartPriceWorkbench?.liveEnrichmentUsed ? 'слой: workbench + live' : 'слой: workbench', 'ok')}${state.smartPriceWorkbench?.liveEnrichmentAt ? badge(`live ${fmt.date(state.smartPriceWorkbench.liveEnrichmentAt)}`, 'info') : ''}${badge(hasRemoteStore() ? 'решения: команда' : 'решения: локально', hasRemoteStore() ? 'ok' : 'info')}</div>
     <div class="muted small" style="margin-top:8px">Проверка дублей в репрайсере сейчас идёт по совпадающим названиям карточек. Если названия похожи, дополнительно сверяйте артикул и площадку перед выгрузкой.</div>
 
     ${safetyCard}
+    ${templateExplainCard}
+    ${renderRepricerRepairStatusCard()}
+    ${renderRepricerFixTeamCard(sourceRows)}
+    ${renderRepricerWorkLogicCard()}
     ${renderRepricerWorkflowGuide()}
     ${renderRepricerSignalsCard(summaryBadges, techBadges, health.ok)}
 

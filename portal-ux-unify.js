@@ -81,9 +81,9 @@
       chips: ["Новая задача", "Согласование", "История"]
     },
     executive: {
-      eyebrow: "Решения руководителя",
-      title: "Сначала общий риск, затем очередь директора, затем owner и новинки.",
-      text: "Экран собран сверху вниз, чтобы руководитель сначала видел общий контур, а потом уже конкретные узкие места и запуски.",
+      eyebrow: "Управленческий обзор",
+      title: "Сначала общий риск, затем финальный блок, затем owner и новинки.",
+      text: "Экран собран сверху вниз: общий контур, узкие места, просрочки и запуски без лишнего отдельного слоя.",
       chips: ["Общий риск", "Очередь РОП", "Owner и новинки"]
     },
     launches: {
@@ -280,17 +280,42 @@
     });
   }
 
+  function restoreRepricerMarketplaceLabels(root) {
+    if (!(root instanceof HTMLElement)) return;
+    [
+      {
+        selector: ".repricer-marketplace-button[data-repricer-export='template:wb']",
+        text: "Скачать шаблон WB",
+        title: "Сохранить шаблон WB в Downloads"
+      },
+      {
+        selector: ".repricer-marketplace-button[data-repricer-export='template:ozon']",
+        text: "Скачать шаблон Ozon",
+        title: "Сохранить шаблон Ozon в Downloads"
+      }
+    ].forEach(function (rule) {
+      root.querySelectorAll(rule.selector).forEach(function (node) {
+        if (!(node instanceof HTMLElement)) return;
+        if (node.textContent !== rule.text) node.textContent = rule.text;
+        node.title = rule.title;
+        node.setAttribute("aria-label", rule.text);
+      });
+    });
+  }
+
   function rewriteViewCopy(root, viewKey) {
     if (viewKey === "dashboard") {
       setText(root, ".portal-exec-head p", "Сначала общий результат по площадкам, затем узкие места и сигналы, которые нужно разобрать команде сегодня.");
       return;
     }
     if (viewKey === "control") {
+      if (root.querySelector && root.querySelector("[data-task-lazy-panel]")) return;
       setText(root, ".section-title p", "Единый контур задач для команды: постановка, согласование у РОПов и финальное решение без потери истории.");
       return;
     }
     if (viewKey === "executive") {
-      setText(root, ".section-title p", "Сначала общий уровень риска, затем очередь руководителя, затем owner и новинки — чтобы решения принимались сверху вниз.");
+      if (root.querySelector && root.querySelector("[data-executive-lite-panel]")) return;
+      setText(root, ".section-title p", "Сначала площадки: WB, Ozon и остальные контуры. Руководитель видит общий риск, а РОПы открывают только свой список задач.");
       return;
     }
     if (viewKey === "launches") {
@@ -341,9 +366,37 @@
 
   function ensureGuide(root, viewKey) {
     if (!(root instanceof HTMLElement)) return;
-    if (root.querySelector("[data-portal-view-guide='" + viewKey + "']")) return;
+    if (viewKey === "executive") {
+      root.querySelectorAll("[data-portal-view-guide]").forEach(function (node) {
+        node.remove();
+      });
+      return;
+    }
+    if (viewKey === "control" && (root.dataset.controlSimple || root.querySelector("[data-task-lazy-panel]"))) {
+      var existingControlGuide = root.querySelector("[data-portal-view-guide='control']");
+      if (existingControlGuide) existingControlGuide.remove();
+      return;
+    }
     var meta = VIEW_META[viewKey];
     if (!meta) return;
+
+    root.querySelectorAll("[data-portal-view-guide]").forEach(function (node) {
+      if (node.getAttribute("data-portal-view-guide") !== viewKey) node.remove();
+    });
+
+    var existingGuides = Array.prototype.slice.call(root.querySelectorAll("[data-portal-view-guide='" + viewKey + "']"));
+    existingGuides.slice(1).forEach(function (node) {
+      node.remove();
+    });
+
+    if (existingGuides[0]) {
+      var freshGuide = buildGuide(meta, viewKey);
+      if (existingGuides[0].innerHTML !== freshGuide.innerHTML) {
+        existingGuides[0].replaceWith(freshGuide);
+      }
+      return;
+    }
+
     var anchor = guideAnchor(root, viewKey);
     if (!anchor) return;
     var guide = buildGuide(meta, viewKey);
@@ -388,6 +441,7 @@
     );
 
     applyLabelRules(root);
+    restoreRepricerMarketplaceLabels(root);
     rewriteViewCopy(root, viewKey);
     ensureGuide(root, viewKey);
   }
@@ -396,6 +450,7 @@
     var taskBody = document.getElementById("taskModalBody");
     if (taskBody) {
       applyLabelRules(taskBody);
+      restoreRepricerMarketplaceLabels(taskBody);
       markNodes(taskBody, ".card, .ui-group, .comment-item, .owner-row, .alert-row", "portal-surface");
       markNodes(taskBody, ".quick-actions, .ui-actions", "portal-toolbar");
       markNodes(taskBody, ".empty", "portal-empty");
@@ -404,6 +459,7 @@
     var priceModalHost = document.getElementById("priceSimpleModalHost");
     if (priceModalHost) {
       applyLabelRules(priceModalHost);
+      restoreRepricerMarketplaceLabels(priceModalHost);
       markNodes(priceModalHost, ".pw-card, .pw-modal-box", "portal-surface");
       markNodes(priceModalHost, ".pw-chip-row", "portal-toolbar");
     }
@@ -414,6 +470,7 @@
   function mutationTouchesDecoratedSurface(node) {
     if (!node || node.nodeType !== 1) return false;
     if (typeof node.closest !== "function") return false;
+    if (node.closest("#view-executive[data-executive-layer]")) return false;
     return Boolean(node.closest(".view.active, #taskModalBody, #priceSimpleModalHost, #skuModal, #launchEditorModal, #taskModal"));
   }
 
@@ -436,8 +493,11 @@
     window.requestAnimationFrame(function () {
       queued = false;
       if (document.body) document.body.classList.add("theme-sand-dark");
-      applyRoles(document);
-      decorateView(activeViewRoot());
+      var root = activeViewRoot();
+      if (root) {
+        applyRoles(root);
+        decorateView(root);
+      }
       decorateFloatingPanels();
     });
   }

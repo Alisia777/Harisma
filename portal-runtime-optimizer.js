@@ -56,9 +56,11 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
     launches: 'launches',
     'launch-control': 'launches',
     meetings: 'meetings',
-    documents: 'documents',
-    repricer: 'repricer'
+    documents: 'documents'
   };
+
+  const RESUME_REFRESH_MIN_INTERVAL_MS = 60000;
+  const HEAVY_VIEW_RESUME_SKIP = new Set(['repricer', 'executive', 'control']);
 
   const DEFERRED_DATA = {
     launches: {
@@ -83,14 +85,6 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
       label: 'Документы',
       assign(value) {
         state.documents = value || { groups: [] };
-      }
-    },
-    repricer: {
-      path: 'data/repricer.json',
-      fallback: { generatedAt: '', summary: {}, rows: [] },
-      label: 'Репрайсер',
-      assign(value) {
-        state.repricer = value || { generatedAt: '', summary: {}, rows: [] };
       }
     }
   };
@@ -223,10 +217,13 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
     if (document.hidden) return Promise.resolve(false);
     if (resumeRefreshPromise) return resumeRefreshPromise;
     const now = Date.now();
-    if (now - lastResumeRefreshAt < 8000) return Promise.resolve(false);
+    if (now - lastResumeRefreshAt < RESUME_REFRESH_MIN_INTERVAL_MS) return Promise.resolve(false);
     lastResumeRefreshAt = now;
 
     const activeView = getActiveView();
+    if (HEAVY_VIEW_RESUME_SKIP.has(activeView) && !window.__ALTEA_FORCE_HEAVY_RESUME_REFRESH__) {
+      return Promise.resolve(false);
+    }
     const deferredKey = VIEW_TO_DATA_KEY[activeView] || '';
     invalidateDeferredData();
 

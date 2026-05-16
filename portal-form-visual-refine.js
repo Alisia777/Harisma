@@ -1140,17 +1140,13 @@
   }
 
   function controlSimpleQueuePanel(key, title, hint, tasks) {
-    const expanded = state?.controlFilters?.taskSimpleExpandedQueue === key;
-    const limit = expanded ? 999 : key === 'confirmed' ? 5 : 6;
-    const visible = tasks.slice(0, limit);
-    const hidden = Math.max(0, tasks.length - visible.length);
+    const visible = tasks;
     const tone = key === 'sent' ? 'warn' : key === 'signals' ? 'info' : key === 'confirmed' ? 'ok' : '';
     return `
       <section class="control-simple-queue" data-control-simple-queue="${escapeHtml(key)}">
         <div class="control-simple-queue-head"><div><span>${escapeHtml(hint)}</span><strong>${escapeHtml(title)}</strong></div>${badge(fmt.int(tasks.length), tone)}</div>
         <div class="control-simple-list">
           ${visible.length ? visible.map(controlSimpleTaskCard).join('') : '<div class="control-simple-empty">Пусто. Здесь не горит.</div>'}
-          ${hidden ? `<button class="control-simple-more" type="button" data-control-simple-expand="${escapeHtml(key)}">Ещё ${fmt.int(hidden)}</button>` : ''}
         </div>
       </section>`;
   }
@@ -1260,7 +1256,6 @@
       state.controlFilters.platform = key;
       state.controlFilters.peopleRole = key === 'all' || key === 'cross' ? 'leader' : key;
       state.controlFilters.taskSimpleWorkspaceChosen = true;
-      state.controlFilters.taskSimpleExpandedQueue = '';
       state.controlFilters.taskSimpleExpandedPlatform = '';
       state.controlFilters.status = 'active';
       state.controlFilters.horizon = 'all';
@@ -1275,10 +1270,6 @@
       state.controlFilters.taskSimpleFullMode = true;
       controlRefined();
     });
-    root.querySelectorAll('[data-control-simple-expand]').forEach((button) => button.addEventListener('click', () => {
-      state.controlFilters.taskSimpleExpandedQueue = button.dataset.controlSimpleExpand || '';
-      controlRefined();
-    }));
     root.querySelectorAll('[data-control-simple-expand-platform]').forEach((button) => button.addEventListener('click', () => {
       state.controlFilters.taskSimpleExpandedPlatform = button.dataset.controlSimpleExpandPlatform || '';
       controlRefined();

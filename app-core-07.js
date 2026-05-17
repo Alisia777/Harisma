@@ -499,10 +499,50 @@ function serializeLaunchDraft(item = {}) {
     reportGroup: String(item.reportGroup || item.segment || 'Продукт').trim() || 'Продукт',
     tag: String(item.tag || 'без тега').trim() || 'без тега',
     skuBucket: String(item.skuBucket || '').trim(),
+    productType: String(item.productType || '').trim(),
+    productVersion: String(item.productVersion || 'v1').trim() || 'v1',
+    versionReason: String(item.versionReason || '').trim(),
     launchMonth,
     launchDate: String(item.launchDate || '').trim(),
     status: String(item.status || '').trim(),
+    launchDecision: String(item.launchDecision || '').trim(),
+    launchDecisionReason: String(item.launchDecisionReason || '').trim(),
     production: String(item.production || '').trim(),
+    supplierName: String(item.supplierName || '').trim(),
+    factoryName: String(item.factoryName || '').trim(),
+    supplierContact: String(item.supplierContact || '').trim(),
+    negotiationStatus: String(item.negotiationStatus || '').trim(),
+    negotiationOwner: String(item.negotiationOwner || '').trim(),
+    negotiationDue: String(item.negotiationDue || '').trim(),
+    negotiationSince: String(item.negotiationSince || '').trim(),
+    negotiationComment: String(item.negotiationComment || '').trim(),
+    sampleStatus: String(item.sampleStatus || '').trim(),
+    sampleOwner: String(item.sampleOwner || '').trim(),
+    sampleDue: String(item.sampleDue || '').trim(),
+    sampleSince: String(item.sampleSince || '').trim(),
+    sampleComment: String(item.sampleComment || '').trim(),
+    productionStatus: String(item.productionStatus || '').trim(),
+    productionOwner: String(item.productionOwner || '').trim(),
+    productionDue: String(item.productionDue || '').trim(),
+    productionSince: String(item.productionSince || '').trim(),
+    productionComment: String(item.productionComment || '').trim(),
+    packagingStatus: String(item.packagingStatus || '').trim(),
+    packagingOwner: String(item.packagingOwner || '').trim(),
+    packagingDue: String(item.packagingDue || '').trim(),
+    packagingSince: String(item.packagingSince || '').trim(),
+    packagingComment: String(item.packagingComment || '').trim(),
+    contentStatus: String(item.contentStatus || '').trim(),
+    contentOwner: String(item.contentOwner || '').trim(),
+    contentDue: String(item.contentDue || '').trim(),
+    contentSince: String(item.contentSince || '').trim(),
+    contentComment: String(item.contentComment || '').trim(),
+    launchReadinessStatus: String(item.launchReadinessStatus || '').trim(),
+    launchReadinessOwner: String(item.launchReadinessOwner || '').trim(),
+    launchReadinessDue: String(item.launchReadinessDue || '').trim(),
+    launchReadinessSince: String(item.launchReadinessSince || '').trim(),
+    launchReadinessComment: String(item.launchReadinessComment || '').trim(),
+    decisionLog: String(item.decisionLog || '').trim(),
+    productComment: String(item.productComment || '').trim(),
     name: String(item.name || item.title || 'Новинка').trim() || 'Новинка',
     subCategory: String(item.subCategory || item.category || '').trim(),
     characteristic: String(item.characteristic || '').trim(),
@@ -607,7 +647,7 @@ function launchBlockers(item) {
   if (ownerRequired && !launchCurrentOwner(item)) blockers.push('не назначен owner');
   if (nearLaunch && !String(item?.articleKey || '').trim()) blockers.push('нет связки с реестром SKU');
   if (nearLaunch && !String(item?.marketplaces || '').trim()) blockers.push('не указаны площадки');
-  if (!Array.isArray(item?.ganttMonths) || !item.ganttMonths.length) blockers.push('не заполнен gantt');
+  if (!Array.isArray(item?.ganttMonths) || !item.ganttMonths.length) blockers.push('не заполнен календарь запуска');
   if (soonLaunch && !String(item?.presentationUrl || '').trim()) blockers.push('нет презентации / материалов');
   return [...new Set(blockers)];
 }
@@ -626,6 +666,9 @@ function normalizeLaunchItem(item = {}, options = {}) {
     articleKey: item.articleKey || '',
     article: item.article || '',
     skuBucket: item.skuBucket || '',
+    productType: item.productType || '',
+    productVersion: item.productVersion || 'v1',
+    versionReason: item.versionReason || '',
     name: item.name || item.title || 'Новинка',
     reportGroup: item.reportGroup || item.segment || 'Продукт',
     tag: item.tag || 'без тега',
@@ -637,9 +680,46 @@ function normalizeLaunchItem(item = {}, options = {}) {
     launchDate: String(item.launchDate || '').trim(),
     launchDateKey: launchDueDateKey(item),
     status: item.status || 'Статус не указан',
+    launchDecision: item.launchDecision || '',
+    launchDecisionReason: item.launchDecisionReason || '',
     phase,
     owner,
     production: item.production || '',
+    supplierName: item.supplierName || '',
+    factoryName: item.factoryName || '',
+    supplierContact: item.supplierContact || '',
+    negotiationStatus: item.negotiationStatus || '',
+    negotiationOwner: item.negotiationOwner || '',
+    negotiationDue: item.negotiationDue || '',
+    negotiationSince: item.negotiationSince || '',
+    negotiationComment: item.negotiationComment || '',
+    sampleStatus: item.sampleStatus || '',
+    sampleOwner: item.sampleOwner || '',
+    sampleDue: item.sampleDue || '',
+    sampleSince: item.sampleSince || '',
+    sampleComment: item.sampleComment || '',
+    productionStatus: item.productionStatus || '',
+    productionOwner: item.productionOwner || '',
+    productionDue: item.productionDue || '',
+    productionSince: item.productionSince || '',
+    productionComment: item.productionComment || '',
+    packagingStatus: item.packagingStatus || '',
+    packagingOwner: item.packagingOwner || '',
+    packagingDue: item.packagingDue || '',
+    packagingSince: item.packagingSince || '',
+    packagingComment: item.packagingComment || '',
+    contentStatus: item.contentStatus || '',
+    contentOwner: item.contentOwner || '',
+    contentDue: item.contentDue || '',
+    contentSince: item.contentSince || '',
+    contentComment: item.contentComment || '',
+    launchReadinessStatus: item.launchReadinessStatus || '',
+    launchReadinessOwner: item.launchReadinessOwner || '',
+    launchReadinessDue: item.launchReadinessDue || '',
+    launchReadinessSince: item.launchReadinessSince || '',
+    launchReadinessComment: item.launchReadinessComment || '',
+    decisionLog: item.decisionLog || '',
+    productComment: item.productComment || '',
     plannedRevenue,
     targetCost: launchParseNumber(item.targetCost) ?? 0,
     srcWithoutVat: launchParseNumber(item.srcWithoutVat),
@@ -661,7 +741,7 @@ function normalizeLaunchItem(item = {}, options = {}) {
     segment: item.segment || '',
     presentationUrl: String(item.presentationUrl || '').trim(),
     notes: String(item.notes || '').trim(),
-    skuSuggestions: getLaunchSkuSuggestions(item, 3),
+    skuSuggestions: options.includeSkuSuggestions ? getLaunchSkuSuggestions(item, 3) : (Array.isArray(item.skuSuggestions) ? item.skuSuggestions : []),
     sourceRow: item.sourceRow || '',
     activeTasks: options.skipTaskLookup ? numberOrZero(item.activeTasks) : linkedTasks.filter(isTaskActive).length,
     blockers: launchBlockers(item),
@@ -792,10 +872,8 @@ function launchHasActiveTasks(item) {
 }
 
 function launchIsReady(item) {
-  return launchHasOwner(item)
-    && launchHasLinkedSku(item)
-    && launchHasPresentation(item)
-    && launchHasGantt(item)
+  return launchReadinessState(item).ready
+    && launchFinalDecisionApproved(item)
     && !(item?.blockers || []).length;
 }
 
@@ -949,7 +1027,7 @@ function launchReadinessLabel(value) {
     'no-owner': 'Без owner',
     'no-sku': 'Без SKU',
     'no-presentation': 'Без презентации',
-    'no-gantt': 'Без gantt'
+    'no-gantt': 'Без календаря'
   };
   return map[value] || map.all;
 }
@@ -990,6 +1068,42 @@ function launchExportRows(items) {
     launch_date: item.launchDate || '',
     status: item.status || '',
     phase: launchPhaseMeta(item.phase).label,
+    production: item.production || '',
+    supplier_name: item.supplierName || '',
+    factory_name: item.factoryName || '',
+    supplier_contact: item.supplierContact || '',
+    negotiation_status: item.negotiationStatus || '',
+    negotiation_owner: item.negotiationOwner || '',
+    negotiation_due: item.negotiationDue || '',
+    negotiation_since: item.negotiationSince || '',
+    negotiation_comment: item.negotiationComment || '',
+    sample_status: item.sampleStatus || '',
+    sample_owner: item.sampleOwner || '',
+    sample_due: item.sampleDue || '',
+    sample_since: item.sampleSince || '',
+    sample_comment: item.sampleComment || '',
+    production_status: item.productionStatus || '',
+    production_owner: item.productionOwner || '',
+    production_due: item.productionDue || '',
+    production_since: item.productionSince || '',
+    production_comment: item.productionComment || '',
+    packaging_status: item.packagingStatus || '',
+    packaging_owner: item.packagingOwner || '',
+    packaging_due: item.packagingDue || '',
+    packaging_since: item.packagingSince || '',
+    packaging_comment: item.packagingComment || '',
+    content_status: item.contentStatus || '',
+    content_owner: item.contentOwner || '',
+    content_due: item.contentDue || '',
+    content_since: item.contentSince || '',
+    content_comment: item.contentComment || '',
+    launch_readiness_status: item.launchReadinessStatus || '',
+    launch_readiness_owner: item.launchReadinessOwner || '',
+    launch_readiness_due: item.launchReadinessDue || '',
+    launch_readiness_since: item.launchReadinessSince || '',
+    launch_readiness_comment: item.launchReadinessComment || '',
+    decision_log: item.decisionLog || '',
+    product_comment: item.productComment || '',
     name: item.name || '',
     sub_category: item.subCategory || '',
     marketplaces: item.marketplaces || '',
@@ -1038,10 +1152,51 @@ function downloadLaunchesExcel(items, scope = 'launches') {
     ['group', 'Группа'],
     ['tag', 'Тег'],
     ['sku_bucket', 'SKU bucket'],
+    ['product_type', 'Тип продукта'],
+    ['product_version', 'Версия продукта'],
+    ['version_reason', 'Что изменилось в версии'],
     ['launch_month', 'Месяц запуска'],
     ['launch_date', 'Точная дата запуска'],
     ['status', 'Статус'],
+    ['launch_decision', 'Решение по запуску'],
+    ['launch_decision_reason', 'Причина решения'],
     ['phase', 'Этап'],
+    ['production', 'Производство'],
+    ['supplier_name', 'Поставщик'],
+    ['factory_name', 'Завод'],
+    ['supplier_contact', 'Контакт поставщика'],
+    ['negotiation_status', 'Статус переговоров'],
+    ['negotiation_owner', 'Ответственный за переговоры'],
+    ['negotiation_due', 'Срок переговоров'],
+    ['negotiation_since', 'В этапе переговоров с'],
+    ['negotiation_comment', 'Комментарий по переговорам'],
+    ['sample_status', 'Статус образца'],
+    ['sample_owner', 'Ответственный за образец'],
+    ['sample_due', 'Срок образца'],
+    ['sample_since', 'В этапе образца с'],
+    ['sample_comment', 'Комментарий по образцу'],
+    ['production_status', 'Статус производства'],
+    ['production_owner', 'Ответственный за производство'],
+    ['production_due', 'Срок производства'],
+    ['production_since', 'В этапе производства с'],
+    ['production_comment', 'Комментарий по производству'],
+    ['packaging_status', 'Статус упаковки / документов'],
+    ['packaging_owner', 'Ответственный за упаковку / документы'],
+    ['packaging_due', 'Срок упаковки / документов'],
+    ['packaging_since', 'В этапе упаковки с'],
+    ['packaging_comment', 'Комментарий по упаковке / документам'],
+    ['content_status', 'Статус карточки / SKU'],
+    ['content_owner', 'Ответственный за карточку / SKU'],
+    ['content_due', 'Срок карточки / SKU'],
+    ['content_since', 'В этапе карточки с'],
+    ['content_comment', 'Комментарий по карточке / SKU'],
+    ['launch_readiness_status', 'Статус запуска'],
+    ['launch_readiness_owner', 'Ответственный за запуск'],
+    ['launch_readiness_due', 'Срок запуска'],
+    ['launch_readiness_since', 'В этапе запуска с'],
+    ['launch_readiness_comment', 'Комментарий по запуску'],
+    ['decision_log', 'Журнал решений'],
+    ['product_comment', 'Комментарий по продукту'],
     ['name', 'Новинка'],
     ['sub_category', 'Подкатегория'],
     ['owner', 'Owner'],
@@ -1065,7 +1220,7 @@ function downloadLaunchesExcel(items, scope = 'launches') {
     ['presentation_url', 'Презентация'],
     ['notes', 'Заметки'],
     ['blockers', 'Блокеры'],
-    ['gantt', 'Gantt']
+    ['gantt', 'Календарь запуска']
   ], launchExportRows(items), `${scope}-${todayIso()}.xls`);
 }
 
@@ -1092,10 +1247,50 @@ function buildLaunchWorkbookRow(item, revenueLabels, launchLabels) {
     report_group: item.reportGroup || '',
     tag: item.tag || '',
     sku_bucket: item.skuBucket || '',
+    product_type: item.productType || '',
+    product_version: item.productVersion || '',
+    version_reason: item.versionReason || '',
     launch_month: item.launchMonth || '',
     launch_date: item.launchDate || '',
     status: item.status || '',
+    launch_decision: item.launchDecision || '',
+    launch_decision_reason: item.launchDecisionReason || '',
     production: item.production || '',
+    supplier_name: item.supplierName || '',
+    factory_name: item.factoryName || '',
+    supplier_contact: item.supplierContact || '',
+    negotiation_status: item.negotiationStatus || '',
+    negotiation_owner: item.negotiationOwner || '',
+    negotiation_due: item.negotiationDue || '',
+    negotiation_since: item.negotiationSince || '',
+    negotiation_comment: item.negotiationComment || '',
+    sample_status: item.sampleStatus || '',
+    sample_owner: item.sampleOwner || '',
+    sample_due: item.sampleDue || '',
+    sample_since: item.sampleSince || '',
+    sample_comment: item.sampleComment || '',
+    production_status: item.productionStatus || '',
+    production_owner: item.productionOwner || '',
+    production_due: item.productionDue || '',
+    production_since: item.productionSince || '',
+    production_comment: item.productionComment || '',
+    packaging_status: item.packagingStatus || '',
+    packaging_owner: item.packagingOwner || '',
+    packaging_due: item.packagingDue || '',
+    packaging_since: item.packagingSince || '',
+    packaging_comment: item.packagingComment || '',
+    content_status: item.contentStatus || '',
+    content_owner: item.contentOwner || '',
+    content_due: item.contentDue || '',
+    content_since: item.contentSince || '',
+    content_comment: item.contentComment || '',
+    launch_readiness_status: item.launchReadinessStatus || '',
+    launch_readiness_owner: item.launchReadinessOwner || '',
+    launch_readiness_due: item.launchReadinessDue || '',
+    launch_readiness_since: item.launchReadinessSince || '',
+    launch_readiness_comment: item.launchReadinessComment || '',
+    decision_log: item.decisionLog || '',
+    product_comment: item.productComment || '',
     name: item.name || '',
     sub_category: item.subCategory || '',
     category: item.category || '',
@@ -1137,10 +1332,50 @@ function downloadLaunchWorkbookTemplate(items) {
     ['report_group', 'Группа'],
     ['tag', 'Тег'],
     ['sku_bucket', 'SKU bucket'],
+    ['product_type', 'Тип продукта'],
+    ['product_version', 'Версия продукта'],
+    ['version_reason', 'Что изменилось в версии'],
     ['launch_month', 'Месяц запуска'],
     ['launch_date', 'Точная дата запуска'],
     ['status', 'Статус'],
+    ['launch_decision', 'Решение по запуску'],
+    ['launch_decision_reason', 'Причина решения'],
     ['production', 'Производство'],
+    ['supplier_name', 'Поставщик'],
+    ['factory_name', 'Завод'],
+    ['supplier_contact', 'Контакт поставщика'],
+    ['negotiation_status', 'Статус переговоров'],
+    ['negotiation_owner', 'Ответственный за переговоры'],
+    ['negotiation_due', 'Срок переговоров'],
+    ['negotiation_since', 'В этапе переговоров с'],
+    ['negotiation_comment', 'Комментарий по переговорам'],
+    ['sample_status', 'Статус образца'],
+    ['sample_owner', 'Ответственный за образец'],
+    ['sample_due', 'Срок образца'],
+    ['sample_since', 'В этапе образца с'],
+    ['sample_comment', 'Комментарий по образцу'],
+    ['production_status', 'Статус производства'],
+    ['production_owner', 'Ответственный за производство'],
+    ['production_due', 'Срок производства'],
+    ['production_since', 'В этапе производства с'],
+    ['production_comment', 'Комментарий по производству'],
+    ['packaging_status', 'Статус упаковки / документов'],
+    ['packaging_owner', 'Ответственный за упаковку / документы'],
+    ['packaging_due', 'Срок упаковки / документов'],
+    ['packaging_since', 'В этапе упаковки с'],
+    ['packaging_comment', 'Комментарий по упаковке / документам'],
+    ['content_status', 'Статус карточки / SKU'],
+    ['content_owner', 'Ответственный за карточку / SKU'],
+    ['content_due', 'Срок карточки / SKU'],
+    ['content_since', 'В этапе карточки с'],
+    ['content_comment', 'Комментарий по карточке / SKU'],
+    ['launch_readiness_status', 'Статус запуска'],
+    ['launch_readiness_owner', 'Ответственный за запуск'],
+    ['launch_readiness_due', 'Срок запуска'],
+    ['launch_readiness_since', 'В этапе запуска с'],
+    ['launch_readiness_comment', 'Комментарий по запуску'],
+    ['decision_log', 'Журнал решений'],
+    ['product_comment', 'Комментарий по продукту'],
     ['name', 'Новинка'],
     ['sub_category', 'Подкатегория'],
     ['category', 'Категория'],
@@ -1166,7 +1401,7 @@ function downloadLaunchWorkbookTemplate(items) {
   columns.push(['registry_status', 'Статус в реестре SKU']);
   columns.push(['presentation_url', 'Презентация / ссылка']);
   columns.push(['notes', 'Заметки']);
-  columns.push(['gantt', 'Gantt']);
+  columns.push(['gantt', 'Календарь запуска']);
   downloadLaunchesHtmlTable(columns, sourceItems.map((item) => buildLaunchWorkbookRow(item, revenueLabels, launchLabels)), `launch-form-${todayIso()}.xls`);
 }
 
@@ -1252,10 +1487,50 @@ function parseLaunchWorkbookRows(text) {
     reportGroup: findColumn('report_group', 'group', 'группа'),
     tag: findColumn('tag', 'тег'),
     skuBucket: findColumn('sku_bucket'),
+    productType: findColumn('product_type', 'тип_продукта'),
+    productVersion: findColumn('product_version', 'версия_продукта'),
+    versionReason: findColumn('version_reason', 'что_изменилось_в_версии'),
     launchMonth: findColumn('launch_month', 'месяц_запуска'),
     launchDate: findColumn('launch_date', 'точная_дата_запуска'),
     status: findColumn('status', 'статус'),
+    launchDecision: findColumn('launch_decision', 'решение_по_запуску'),
+    launchDecisionReason: findColumn('launch_decision_reason', 'причина_решения'),
     production: findColumn('production', 'производство'),
+    supplierName: findColumn('supplier_name', 'поставщик'),
+    factoryName: findColumn('factory_name', 'завод', 'фабрика'),
+    supplierContact: findColumn('supplier_contact', 'контакт_поставщика', 'контакт'),
+    negotiationStatus: findColumn('negotiation_status', 'статус_переговоров', 'переговоры_статус'),
+    negotiationOwner: findColumn('negotiation_owner', 'ответственный_за_переговоры'),
+    negotiationDue: findColumn('negotiation_due', 'срок_переговоров'),
+    negotiationSince: findColumn('negotiation_since', 'в_этапе_переговоров_с'),
+    negotiationComment: findColumn('negotiation_comment', 'комментарий_по_переговорам', 'переговоры'),
+    sampleStatus: findColumn('sample_status', 'статус_образца'),
+    sampleOwner: findColumn('sample_owner', 'ответственный_за_образец'),
+    sampleDue: findColumn('sample_due', 'срок_образца'),
+    sampleSince: findColumn('sample_since', 'в_этапе_образца_с'),
+    sampleComment: findColumn('sample_comment', 'комментарий_по_образцу'),
+    productionStatus: findColumn('production_status', 'статус_производства'),
+    productionOwner: findColumn('production_owner', 'ответственный_за_производство'),
+    productionDue: findColumn('production_due', 'срок_производства'),
+    productionSince: findColumn('production_since', 'в_этапе_производства_с'),
+    productionComment: findColumn('production_comment', 'комментарий_по_производству'),
+    packagingStatus: findColumn('packaging_status', 'статус_упаковки___документов', 'статус_упаковки_документов'),
+    packagingOwner: findColumn('packaging_owner', 'ответственный_за_упаковку___документы', 'ответственный_за_упаковку_документы'),
+    packagingDue: findColumn('packaging_due', 'срок_упаковки___документов', 'срок_упаковки_документов'),
+    packagingSince: findColumn('packaging_since', 'в_этапе_упаковки_с'),
+    packagingComment: findColumn('packaging_comment', 'комментарий_по_упаковке___документам', 'комментарий_по_упаковке_документам'),
+    contentStatus: findColumn('content_status', 'статус_карточки___sku', 'статус_карточки_sku'),
+    contentOwner: findColumn('content_owner', 'ответственный_за_карточку___sku', 'ответственный_за_карточку_sku'),
+    contentDue: findColumn('content_due', 'срок_карточки___sku', 'срок_карточки_sku'),
+    contentSince: findColumn('content_since', 'в_этапе_карточки_с'),
+    contentComment: findColumn('content_comment', 'комментарий_по_карточке___sku', 'комментарий_по_карточке_sku'),
+    launchReadinessStatus: findColumn('launch_readiness_status', 'статус_запуска'),
+    launchReadinessOwner: findColumn('launch_readiness_owner', 'ответственный_за_запуск'),
+    launchReadinessDue: findColumn('launch_readiness_due', 'срок_запуска'),
+    launchReadinessSince: findColumn('launch_readiness_since', 'в_этапе_запуска_с'),
+    launchReadinessComment: findColumn('launch_readiness_comment', 'комментарий_по_запуску'),
+    decisionLog: findColumn('decision_log', 'журнал_решений'),
+    productComment: findColumn('product_comment', 'комментарий_по_продукту', 'комментарий_продукта'),
     name: findColumn('name', 'новинка', 'товар'),
     subCategory: findColumn('sub_category', 'подкатегория'),
     category: findColumn('category', 'категория'),
@@ -1290,10 +1565,50 @@ function parseLaunchWorkbookRows(text) {
       reportGroup,
       tag: indexes.tag >= 0 ? row[indexes.tag] : '',
       skuBucket: indexes.skuBucket >= 0 ? row[indexes.skuBucket] : '',
+      productType: indexes.productType >= 0 ? row[indexes.productType] : '',
+      productVersion: indexes.productVersion >= 0 ? row[indexes.productVersion] : '',
+      versionReason: indexes.versionReason >= 0 ? row[indexes.versionReason] : '',
       launchMonth: indexes.launchMonth >= 0 ? row[indexes.launchMonth] : '',
       launchDate: indexes.launchDate >= 0 ? row[indexes.launchDate] : '',
       status: indexes.status >= 0 ? row[indexes.status] : '',
+      launchDecision: indexes.launchDecision >= 0 ? row[indexes.launchDecision] : '',
+      launchDecisionReason: indexes.launchDecisionReason >= 0 ? row[indexes.launchDecisionReason] : '',
       production: indexes.production >= 0 ? row[indexes.production] : '',
+      supplierName: indexes.supplierName >= 0 ? row[indexes.supplierName] : '',
+      factoryName: indexes.factoryName >= 0 ? row[indexes.factoryName] : '',
+      supplierContact: indexes.supplierContact >= 0 ? row[indexes.supplierContact] : '',
+      negotiationStatus: indexes.negotiationStatus >= 0 ? row[indexes.negotiationStatus] : '',
+      negotiationOwner: indexes.negotiationOwner >= 0 ? row[indexes.negotiationOwner] : '',
+      negotiationDue: indexes.negotiationDue >= 0 ? row[indexes.negotiationDue] : '',
+      negotiationSince: indexes.negotiationSince >= 0 ? row[indexes.negotiationSince] : '',
+      negotiationComment: indexes.negotiationComment >= 0 ? row[indexes.negotiationComment] : '',
+      sampleStatus: indexes.sampleStatus >= 0 ? row[indexes.sampleStatus] : '',
+      sampleOwner: indexes.sampleOwner >= 0 ? row[indexes.sampleOwner] : '',
+      sampleDue: indexes.sampleDue >= 0 ? row[indexes.sampleDue] : '',
+      sampleSince: indexes.sampleSince >= 0 ? row[indexes.sampleSince] : '',
+      sampleComment: indexes.sampleComment >= 0 ? row[indexes.sampleComment] : '',
+      productionStatus: indexes.productionStatus >= 0 ? row[indexes.productionStatus] : '',
+      productionOwner: indexes.productionOwner >= 0 ? row[indexes.productionOwner] : '',
+      productionDue: indexes.productionDue >= 0 ? row[indexes.productionDue] : '',
+      productionSince: indexes.productionSince >= 0 ? row[indexes.productionSince] : '',
+      productionComment: indexes.productionComment >= 0 ? row[indexes.productionComment] : '',
+      packagingStatus: indexes.packagingStatus >= 0 ? row[indexes.packagingStatus] : '',
+      packagingOwner: indexes.packagingOwner >= 0 ? row[indexes.packagingOwner] : '',
+      packagingDue: indexes.packagingDue >= 0 ? row[indexes.packagingDue] : '',
+      packagingSince: indexes.packagingSince >= 0 ? row[indexes.packagingSince] : '',
+      packagingComment: indexes.packagingComment >= 0 ? row[indexes.packagingComment] : '',
+      contentStatus: indexes.contentStatus >= 0 ? row[indexes.contentStatus] : '',
+      contentOwner: indexes.contentOwner >= 0 ? row[indexes.contentOwner] : '',
+      contentDue: indexes.contentDue >= 0 ? row[indexes.contentDue] : '',
+      contentSince: indexes.contentSince >= 0 ? row[indexes.contentSince] : '',
+      contentComment: indexes.contentComment >= 0 ? row[indexes.contentComment] : '',
+      launchReadinessStatus: indexes.launchReadinessStatus >= 0 ? row[indexes.launchReadinessStatus] : '',
+      launchReadinessOwner: indexes.launchReadinessOwner >= 0 ? row[indexes.launchReadinessOwner] : '',
+      launchReadinessDue: indexes.launchReadinessDue >= 0 ? row[indexes.launchReadinessDue] : '',
+      launchReadinessSince: indexes.launchReadinessSince >= 0 ? row[indexes.launchReadinessSince] : '',
+      launchReadinessComment: indexes.launchReadinessComment >= 0 ? row[indexes.launchReadinessComment] : '',
+      decisionLog: indexes.decisionLog >= 0 ? row[indexes.decisionLog] : '',
+      productComment: indexes.productComment >= 0 ? row[indexes.productComment] : '',
       name,
       subCategory: indexes.subCategory >= 0 ? row[indexes.subCategory] : '',
       category: indexes.category >= 0 ? row[indexes.category] : '',
@@ -1320,6 +1635,110 @@ function parseLaunchWorkbookRows(text) {
   }).filter(Boolean);
 }
 
+function ensureLaunchImportPreviewModal() {
+  let modal = document.getElementById('launchImportPreviewModal');
+  if (modal) return modal;
+  modal = document.createElement('div');
+  modal.id = 'launchImportPreviewModal';
+  modal.className = 'modal';
+  modal.innerHTML = '<div class="modal-card launch-import-preview-card" id="launchImportPreviewBody"></div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (event) => {
+    if (event.target?.id === 'launchImportPreviewModal') closeLaunchImportPreview();
+  });
+  return modal;
+}
+
+function closeLaunchImportPreview() {
+  document.getElementById('launchImportPreviewModal')?.classList.remove('open');
+}
+
+function launchImportExistingItem(row = {}, existingItems = []) {
+  const rowId = launchStableId(row);
+  const rowArticle = String(row.articleKey || '').trim();
+  const rowName = String(row.name || '').trim().toLowerCase();
+  return existingItems.find((item) => item.id === rowId)
+    || existingItems.find((item) => rowArticle && item.articleKey === rowArticle)
+    || existingItems.find((item) => rowName && String(item.name || '').trim().toLowerCase() === rowName)
+    || null;
+}
+
+function launchImportDiff(existing = {}, row = {}) {
+  const fields = [
+    ['name', 'товар'],
+    ['launchMonth', 'месяц'],
+    ['launchDate', 'дата'],
+    ['owner', 'owner'],
+    ['supplierName', 'поставщик'],
+    ['factoryName', 'завод'],
+    ['negotiationStatus', 'переговоры'],
+    ['launchDecision', 'решение'],
+    ['status', 'статус']
+  ];
+  return fields
+    .filter(([key]) => String(existing?.[key] || '').trim() !== String(row?.[key] || '').trim())
+    .map(([, label]) => label);
+}
+
+function showLaunchImportPreview(parsedRows = []) {
+  const existingItems = getLaunchItems({ skipTaskLookup: true });
+  const previewRows = parsedRows.map((row) => {
+    const existing = launchImportExistingItem(row, existingItems);
+    return {
+      row,
+      existing,
+      mode: existing ? 'update' : 'new',
+      diff: existing ? launchImportDiff(existing, row) : []
+    };
+  });
+  const created = previewRows.filter((row) => row.mode === 'new').length;
+  const updated = previewRows.filter((row) => row.mode === 'update').length;
+  const changed = previewRows.filter((row) => row.diff.length).length;
+  const modal = ensureLaunchImportPreviewModal();
+  const body = document.getElementById('launchImportPreviewBody');
+  body.innerHTML = `
+    <div class="modal-head">
+      <div>
+        <div class="muted small">Excel загрузка</div>
+        <h2>Предпросмотр новинок</h2>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(created)} новых`, created ? 'ok' : '')}
+          ${badge(`${fmt.int(updated)} обновлений`, updated ? 'info' : '')}
+          ${changed ? badge(`${fmt.int(changed)} с изменениями`, 'warn') : badge('конфликтов нет', 'ok')}
+        </div>
+      </div>
+      <button class="btn ghost" type="button" data-launch-import-cancel>Закрыть</button>
+    </div>
+    <div class="launch-import-preview-list">
+      ${previewRows.slice(0, 18).map(({ row, mode, diff }) => `
+        <div class="launch-import-preview-row ${mode}">
+          <div>
+            <strong>${escapeHtml(row.name || row.articleKey || 'Новинка')}</strong>
+            <span>${escapeHtml(row.launchMonth || 'без месяца')} · ${escapeHtml(row.owner || 'без owner')}</span>
+          </div>
+          <div class="badge-stack">
+            ${badge(mode === 'new' ? 'новая строка' : 'обновить', mode === 'new' ? 'ok' : 'info')}
+            ${diff.length ? badge(diff.slice(0, 3).join(', '), 'warn') : badge('без явных изменений', 'ok')}
+          </div>
+        </div>
+      `).join('')}
+      ${previewRows.length > 18 ? `<div class="muted small">Еще ${fmt.int(previewRows.length - 18)} строк будут применены вместе с этим списком.</div>` : ''}
+    </div>
+    <div class="quick-actions launch-editor-actions">
+      <button class="btn ghost" type="button" data-launch-import-cancel>Отмена</button>
+      <button class="btn primary" type="button" data-launch-import-apply>Применить загрузку</button>
+    </div>
+  `;
+  modal.classList.add('open');
+  body.querySelectorAll('[data-launch-import-cancel]').forEach((button) => button.addEventListener('click', closeLaunchImportPreview));
+  body.querySelector('[data-launch-import-apply]')?.addEventListener('click', () => {
+    parsedRows.forEach((row) => upsertLaunchDraft(row));
+    closeLaunchImportPreview();
+    rerenderCurrentView();
+    window.alert(`Форма новинок загружена: ${parsedRows.length} строк.`);
+  });
+}
+
 function importLaunchWorkbookFile(file) {
   if (!file) return;
   const reader = new FileReader();
@@ -1330,9 +1749,7 @@ function importLaunchWorkbookFile(file) {
         window.alert('Не удалось распознать форму новинок. Используйте шаблон, скачанный с вкладки Продукт.');
         return;
       }
-      parsedRows.forEach((row) => upsertLaunchDraft(row));
-      rerenderCurrentView();
-      window.alert(`Форма новинок загружена: ${parsedRows.length} строк.`);
+      showLaunchImportPreview(parsedRows);
     } catch (error) {
       console.error('[launches] import', error);
       window.alert('Не удалось загрузить файл новинок.');
@@ -1445,7 +1862,7 @@ function renderLaunchMonthFilters(model) {
       <div class="section-subhead">
         <div>
           <h3>Фильтры продукта</h3>
-          <p class="small muted">Слой строится из файла Ксюши и gantt. Здесь быстро видно, что именно мешает запуску: owner, SKU, материалы, gantt или отсутствие задач. Выгрузка в Excel берёт уже отфильтрованный список.</p>
+          <p class="small muted">Слой строится из файла Ксюши и календаря запуска. Здесь быстро видно, что именно мешает запуску: owner, SKU, материалы, календарь или отсутствие задач. Выгрузка в Excel берёт уже отфильтрованный список.</p>
         </div>
         <div class="badge-stack">
           ${badge(`${fmt.int(model.filteredItems.length)} строк`, model.filteredItems.length ? 'info' : 'warn')}
@@ -1456,7 +1873,7 @@ function renderLaunchMonthFilters(model) {
         <div class="badge-stack">
           ${badge(sourceLabel, 'info')}
           ${badge(`SKU связано ${fmt.int(model.fullSummary.linkedSku)} / ${fmt.int(model.fullSummary.total)}`, model.fullSummary.linkedSku ? 'info' : 'warn')}
-          ${badge(`Gantt заполнен ${fmt.int(model.fullSummary.withGantt)}`, model.fullSummary.withGantt ? 'ok' : 'warn')}
+          ${badge(`Календарь заполнен ${fmt.int(model.fullSummary.withGantt)}`, model.fullSummary.withGantt ? 'ok' : 'warn')}
           ${badge(`Материалы ${fmt.int(model.fullSummary.withPresentation)}`, model.fullSummary.withPresentation ? 'ok' : 'warn')}
         </div>
       </div>
@@ -1493,7 +1910,7 @@ function renderLaunchMonthFilters(model) {
           <option value="no-owner" ${model.filters.readiness === 'no-owner' ? 'selected' : ''}>Без owner</option>
           <option value="no-sku" ${model.filters.readiness === 'no-sku' ? 'selected' : ''}>Без SKU</option>
           <option value="no-presentation" ${model.filters.readiness === 'no-presentation' ? 'selected' : ''}>Без презентации</option>
-          <option value="no-gantt" ${model.filters.readiness === 'no-gantt' ? 'selected' : ''}>Без gantt</option>
+          <option value="no-gantt" ${model.filters.readiness === 'no-gantt' ? 'selected' : ''}>Без календаря</option>
         </select>
         <select id="launchTaskFilter">
           <option value="all">Все задачи</option>
@@ -1575,33 +1992,39 @@ function bindLaunchMonthFilters(root, model) {
       downloadLaunchesExcel(model.filteredItems, scope);
     });
   });
-  root.querySelector('[data-launch-download-form]')?.addEventListener('click', () => {
-    downloadLaunchWorkbookTemplate(model.filteredItems.length ? model.filteredItems : model.items);
+  root.querySelectorAll('[data-launch-download-form]').forEach((button) => {
+    button.addEventListener('click', () => {
+      downloadLaunchWorkbookTemplate(model.filteredItems.length ? model.filteredItems : model.items);
+    });
   });
-  root.querySelector('[data-launch-import]')?.addEventListener('click', () => {
-    root.querySelector('#launchWorkbookImport')?.click();
+  root.querySelectorAll('[data-launch-import]').forEach((button) => {
+    button.addEventListener('click', () => {
+      root.querySelector('#launchWorkbookImport')?.click();
+    });
   });
   root.querySelector('#launchWorkbookImport')?.addEventListener('change', (event) => {
     importLaunchWorkbookFile(event.target.files?.[0]);
     event.target.value = '';
   });
-  root.querySelector('[data-launch-add]')?.addEventListener('click', () => {
-    openLaunchEditor();
+  root.querySelectorAll('[data-launch-add]').forEach((button) => {
+    button.addEventListener('click', () => openLaunchEditor());
   });
-  root.querySelector('[data-launch-reset]')?.addEventListener('click', () => {
-    state.launchFilters = {
-      month: 'all',
-      search: '',
-      group: 'all',
-      tag: 'all',
-      status: 'all',
-      phase: 'all',
-      owner: 'all',
-      readiness: 'all',
-      tasks: 'all',
-      ganttExpanded: true
-    };
-    rerenderCurrentView();
+  root.querySelectorAll('[data-launch-reset]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.launchFilters = {
+        month: 'all',
+        search: '',
+        group: 'all',
+        tag: 'all',
+        status: 'all',
+        phase: 'all',
+        owner: 'all',
+        readiness: 'all',
+        tasks: 'all',
+        ganttExpanded: true
+      };
+      rerenderCurrentView();
+    });
   });
 }
 
@@ -1684,7 +2107,7 @@ async function createOrOpenLaunchTask(item = {}) {
     platform: 'product',
     owner: item.owner || '',
     due: dueDate && Number.isFinite(diffFromTodayInDays(dueDate)) && diffFromTodayInDays(dueDate) > 0 ? dueDate : plusDays(3),
-    nextAction: `Проверить owner, карточку, презентацию, запуск в реестре SKU, gantt и ближайшие блокеры.${item.notes ? ` Контекст: ${item.notes}` : ''}`,
+    nextAction: `Проверить owner, карточку, презентацию, запуск в реестре SKU, календарь запуска и ближайшие блокеры.${item.notes ? ` Контекст: ${item.notes}` : ''}`,
     reason: [
       item.launchMonth,
       item.status,
@@ -1709,9 +2132,29 @@ function getLaunchEditorItem(launchId = '') {
     || normalizeLaunchItem({ id: launchId, reportGroup: 'Продукт', launchMonth: state.dashboard?.dataFreshness?.launchPlanHorizon || 'Текущий фокус' }, { skipTaskLookup: true });
 }
 
+function launchApplyStageSince(draft = {}, currentItem = {}) {
+  const next = { ...draft };
+  launchStageConfigs().forEach((config) => {
+    const nextStatus = String(next[config.status] || '').trim();
+    const previousStatus = String(currentItem?.[config.status] || '').trim();
+    const submittedSince = String(next[config.since] || '').trim();
+    const previousSince = String(currentItem?.[config.since] || '').trim();
+    if (!nextStatus) {
+      next[config.since] = '';
+      return;
+    }
+    if (nextStatus !== previousStatus) {
+      next[config.since] = todayIso();
+      return;
+    }
+    next[config.since] = submittedSince || previousSince || todayIso();
+  });
+  return next;
+}
+
 function readLaunchEditorForm(form, currentItem, revenuePlan, launchPlan, ganttColumns) {
   const data = new FormData(form);
-  return hydrateLaunchDraftWithSkuLink({
+  const draft = {
     id: data.get('id') || currentItem.id,
     articleKey: data.get('articleKey'),
     article: data.get('article'),
@@ -1719,10 +2162,50 @@ function readLaunchEditorForm(form, currentItem, revenuePlan, launchPlan, ganttC
     reportGroup: data.get('reportGroup'),
     tag: data.get('tag'),
     skuBucket: data.get('skuBucket'),
+    productType: data.get('productType'),
+    productVersion: data.get('productVersion'),
+    versionReason: data.get('versionReason'),
     launchMonth: data.get('launchMonth'),
     launchDate: data.get('launchDate'),
     status: data.get('status'),
+    launchDecision: data.get('launchDecision'),
+    launchDecisionReason: data.get('launchDecisionReason'),
     production: data.get('production'),
+    supplierName: data.get('supplierName'),
+    factoryName: data.get('factoryName'),
+    supplierContact: data.get('supplierContact'),
+    negotiationStatus: data.get('negotiationStatus'),
+    negotiationOwner: data.get('negotiationOwner'),
+    negotiationDue: data.get('negotiationDue'),
+    negotiationSince: data.get('negotiationSince'),
+    negotiationComment: data.get('negotiationComment'),
+    sampleStatus: data.get('sampleStatus'),
+    sampleOwner: data.get('sampleOwner'),
+    sampleDue: data.get('sampleDue'),
+    sampleSince: data.get('sampleSince'),
+    sampleComment: data.get('sampleComment'),
+    productionStatus: data.get('productionStatus'),
+    productionOwner: data.get('productionOwner'),
+    productionDue: data.get('productionDue'),
+    productionSince: data.get('productionSince'),
+    productionComment: data.get('productionComment'),
+    packagingStatus: data.get('packagingStatus'),
+    packagingOwner: data.get('packagingOwner'),
+    packagingDue: data.get('packagingDue'),
+    packagingSince: data.get('packagingSince'),
+    packagingComment: data.get('packagingComment'),
+    contentStatus: data.get('contentStatus'),
+    contentOwner: data.get('contentOwner'),
+    contentDue: data.get('contentDue'),
+    contentSince: data.get('contentSince'),
+    contentComment: data.get('contentComment'),
+    launchReadinessStatus: data.get('launchReadinessStatus'),
+    launchReadinessOwner: data.get('launchReadinessOwner'),
+    launchReadinessDue: data.get('launchReadinessDue'),
+    launchReadinessSince: data.get('launchReadinessSince'),
+    launchReadinessComment: data.get('launchReadinessComment'),
+    decisionLog: data.get('decisionLog'),
+    productComment: data.get('productComment'),
     name: data.get('name'),
     subCategory: data.get('subCategory'),
     category: data.get('category'),
@@ -1749,7 +2232,62 @@ function readLaunchEditorForm(form, currentItem, revenuePlan, launchPlan, ganttC
       .map((column) => ({ year: column.year, label: column.label, monthKey: column.monthKey, value: 1 })),
     sourceFile: currentItem.sourceFile || 'portal',
     sourceRow: currentItem.sourceRow || ''
-  });
+  };
+  return hydrateLaunchDraftWithSkuLink(launchApplyStageSince(draft, currentItem));
+}
+
+function renderLaunchNowPanel(item = {}) {
+  const summary = launchNowSummary(item);
+  const stage = summary.currentStage;
+  const dueDays = summary.due ? diffFromTodayInDays(summary.due) : Number.POSITIVE_INFINITY;
+  const dueTone = summary.due && Number.isFinite(dueDays) && dueDays < 0 ? 'danger' : summary.due && Number.isFinite(dueDays) && dueDays <= 3 ? 'warn' : 'info';
+  return `
+    <div class="launch-editor-panel launch-now-panel">
+      <div class="launch-now-main">
+        <div>
+          <span class="muted small">Сейчас важно</span>
+          <strong>${escapeHtml(summary.action)}</strong>
+          <p>${escapeHtml(stage ? `${stage.config.title}: ${stage.status || stage.column.value}` : 'Этап не выбран')}</p>
+        </div>
+        <div class="badge-stack">
+          ${summary.readiness.ready ? badge('Можно запускать', 'ok') : badge(`Нельзя запускать: ${fmt.int(summary.readiness.missing.length)} пунктов`, 'warn')}
+          ${summary.task ? badge('Есть задача запуска', 'ok') : badge('Задачу надо поставить', 'warn')}
+        </div>
+      </div>
+      <div class="launch-now-grid">
+        <div><span>Кто ведет</span><strong>${escapeHtml(summary.owner || 'не назначен')}</strong></div>
+        <div><span>Срок</span><strong>${escapeHtml(summary.due || 'не указан')}</strong>${summary.due ? badge(Number.isFinite(dueDays) && dueDays < 0 ? `просрочено ${fmt.int(Math.abs(dueDays))} дн.` : Number.isFinite(dueDays) ? `через ${fmt.int(dueDays)} дн.` : 'срок есть', dueTone) : ''}</div>
+        <div><span>Блокирует</span><strong>${escapeHtml(summary.blocker || 'явных блокеров нет')}</strong></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderLaunchReadinessPanel(item = {}) {
+  const liveItem = normalizeLaunchItem(item);
+  const readiness = launchReadinessState(liveItem);
+  const doneCount = readiness.checks.length - readiness.missing.length;
+  return `
+    <div class="launch-editor-panel launch-readiness-panel">
+      <div class="section-subhead">
+        <div>
+          <h3>Готовность к запуску</h3>
+          <p class="small muted">${readiness.ready ? 'Все ключевые пункты закрыты.' : `Нужно закрыть: ${escapeHtml(readiness.missing.slice(0, 3).map((entry) => entry.label).join(', '))}${readiness.missing.length > 3 ? '…' : ''}`}</p>
+        </div>
+        ${badge(`${fmt.int(doneCount)} / ${fmt.int(readiness.checks.length)}`, readiness.ready ? 'ok' : 'warn')}
+      </div>
+      <div class="launch-readiness-bar"><span style="width:${Math.round(readiness.pct * 100)}%"></span></div>
+      <div class="launch-readiness-grid">
+        ${readiness.checks.map((entry) => `
+          <div class="launch-readiness-item ${entry.ok ? 'ok' : 'warn'}">
+            <strong>${entry.ok ? '✓' : '!'}</strong>
+            <span>${escapeHtml(entry.label)}</span>
+            <small>${escapeHtml(entry.detail || (entry.ok ? 'готово' : 'нужно заполнить'))}</small>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
 }
 
 function openLaunchEditor(launchId = '') {
@@ -1760,7 +2298,7 @@ function openLaunchEditor(launchId = '') {
   const activeGantt = new Set((currentItem.ganttMonths || []).map((entry) => entry.monthKey));
   const owners = ownerOptions();
   const skuOptions = launchEditorSkuOptions(currentItem);
-  const skuSuggestions = currentItem.skuSuggestions || getLaunchSkuSuggestions(currentItem, 3);
+  const skuSuggestions = currentItem.skuSuggestions && currentItem.skuSuggestions.length ? currentItem.skuSuggestions : getLaunchSkuSuggestions(currentItem, 3);
   const linkedSku = currentItem.articleKey ? getSku(currentItem.articleKey) : null;
   const modal = ensureLaunchEditorModal();
   const body = document.getElementById('launchEditorModalBody');
@@ -1850,7 +2388,7 @@ function openLaunchEditor(launchId = '') {
       </div>
 
       <div class="card subtle" style="grid-column:1 / -1">
-        <h3>Gantt</h3>
+        <h3>Календарь запуска</h3>
         <div class="control-filters" style="margin-top:12px">${ganttColumns.map((column) => `
           <label class="chip ${activeGantt.has(column.monthKey) ? 'info' : ''}" style="display:flex; gap:8px; align-items:center; justify-content:flex-start;">
             <input type="checkbox" name="gantt__${column.monthKey}" ${activeGantt.has(column.monthKey) ? 'checked' : ''}>
@@ -4342,7 +4880,7 @@ function renderLaunchItem(item) {
         ${item.marketplaces ? badge(item.marketplaces, '') : badge('Площадки не указаны', 'warn')}
         ${item.articleMatched ? badge('Есть в SKU', 'ok') : badge('Нет связки с SKU', 'warn')}
         ${hasPresentation ? badge('Материалы есть', 'ok') : badge('Нет презентации', 'warn')}
-        ${hasGantt ? badge('Gantt есть', 'ok') : badge('Нет gantt', 'warn')}
+        ${hasGantt ? badge('Календарь есть', 'ok') : badge('Нет календаря', 'warn')}
       </div>
       <div class="muted small launch-source-line" style="margin-top:8px">${escapeHtml(sourceMeta || 'Источник: портал')}</div>
       <div class="muted small" style="margin-top:8px">${escapeHtml(item.status || 'Статус не указан')}</div>
@@ -4350,7 +4888,7 @@ function renderLaunchItem(item) {
       ${!item.articleMatched && item.skuSuggestions?.length ? `<div class="muted small" style="margin-top:8px">Подсказка по SKU: ${escapeHtml(item.skuSuggestions.map((entry) => entry.articleKey).join(', '))}</div>` : ''}
       <div class="muted small" style="margin-top:8px">${escapeHtml(item.characteristic || 'Описание по новинке пока не заполнено')}</div>
       ${item.notes ? `<div class="muted small" style="margin-top:8px">${escapeHtml(item.notes)}</div>` : ''}
-      <div class="muted small" style="margin-top:8px">Gantt: ${escapeHtml(ganttPreview || 'месяцы в плане пока не отмечены')}</div>
+      <div class="muted small" style="margin-top:8px">Календарь: ${escapeHtml(ganttPreview || 'месяцы в плане пока не отмечены')}</div>
       <div class="quick-actions launch-card-actions" style="margin-top:10px; justify-content:flex-start">
         <button class="quick-chip" type="button" data-launch-edit="${escapeHtml(item.id)}">Редактировать</button>
         <button class="quick-chip portal-action-primary" type="button" data-launch-task="${escapeHtml(item.id)}">${item.activeTasks ? 'Открыть задачу' : 'Поставить задачу'}</button>
@@ -4415,13 +4953,771 @@ function launchStatusOptionsHtml(currentStatus = '') {
   return `${custom}${options.map((option) => `<option value="${escapeHtml(option)}" ${current === option ? 'selected' : ''}>${escapeHtml(option)}</option>`).join('')}`;
 }
 
+function launchNegotiationStatusOptionsHtml(currentStatus = '') {
+  const current = String(currentStatus || '').trim();
+  const options = [
+    'Не начинали',
+    'Запрошены условия',
+    'Ждем КП',
+    'Ждем образец',
+    'Образец получен',
+    'Согласуем цену',
+    'Контракт / заказ',
+    'Пауза'
+  ];
+  const custom = current && !options.includes(current)
+    ? `<option value="${escapeHtml(current)}" selected>${escapeHtml(current)}</option>`
+    : '';
+  return `${custom}${options.map((option) => `<option value="${escapeHtml(option)}" ${current === option ? 'selected' : ''}>${escapeHtml(option)}</option>`).join('')}`;
+}
+
+function launchSupplyLabel(item = {}) {
+  const parts = [
+    item.supplierName ? `Поставщик: ${item.supplierName}` : '',
+    item.factoryName ? `Завод: ${item.factoryName}` : '',
+    item.production ? `Условия: ${item.production}` : '',
+    item.negotiationStatus || ''
+  ].filter(Boolean);
+  return parts.join(' · ');
+}
+
+function launchTaskStatusOptionsHtml(currentStatus = '') {
+  const current = String(currentStatus || '').trim();
+  const options = ['Не начато', 'В работе', 'Ждем ответ', 'Блокер', 'Готово'];
+  const custom = current && !options.includes(current)
+    ? `<option value="${escapeHtml(current)}" selected>${escapeHtml(current)}</option>`
+    : '';
+  return `${custom}${options.map((option) => `<option value="${escapeHtml(option)}" ${current === option ? 'selected' : ''}>${escapeHtml(option)}</option>`).join('')}`;
+}
+
+const LAUNCH_PRODUCT_TEMPLATES = [
+  {
+    key: 'cosmetics',
+    label: 'Косметика',
+    type: 'Косметика',
+    stages: {
+      negotiation: { dueBeforeLaunch: 45, fallbackDays: 3, comment: 'Цена, MOQ, сроки, документы, образец.' },
+      sample: { dueBeforeLaunch: 35, fallbackDays: 10, comment: 'Получить и проверить образец.' },
+      production: { dueBeforeLaunch: 24, fallbackDays: 18, comment: 'Зафиксировать партию, срок и ограничения производства.' },
+      packaging: { dueBeforeLaunch: 18, fallbackDays: 22, comment: 'Этикетка, макеты, сертификаты, маркировка.' },
+      content: { dueBeforeLaunch: 12, fallbackDays: 26, comment: 'Фото, описание, SKU, карточки площадок.' },
+      launchReadiness: { dueBeforeLaunch: 3, fallbackDays: 30, comment: 'Проверить остаток, карточки, цену, дату запуска.' }
+    }
+  },
+  {
+    key: 'supplement',
+    label: 'БАД / нутра',
+    type: 'БАД / нутра',
+    stages: {
+      negotiation: { dueBeforeLaunch: 60, fallbackDays: 5, comment: 'Состав, документы, MOQ, цена, контракт.' },
+      sample: { dueBeforeLaunch: 48, fallbackDays: 14, comment: 'Образец, вкус/форма, тест, правки.' },
+      production: { dueBeforeLaunch: 34, fallbackDays: 28, comment: 'Партия, сырье, сроки, декларации.' },
+      packaging: { dueBeforeLaunch: 24, fallbackDays: 36, comment: 'Этикетка, инструкция, документы, маркировка.' },
+      content: { dueBeforeLaunch: 16, fallbackDays: 42, comment: 'Карточка, фото, описание без рискованных обещаний.' },
+      launchReadiness: { dueBeforeLaunch: 5, fallbackDays: 50, comment: 'Финальная проверка площадок, цены и наличия.' }
+    }
+  },
+  {
+    key: 'accessory',
+    label: 'Аксессуар',
+    type: 'Аксессуар',
+    stages: {
+      negotiation: { dueBeforeLaunch: 32, fallbackDays: 2, comment: 'Цена, MOQ, цвет/размер, срок поставки.' },
+      sample: { dueBeforeLaunch: 24, fallbackDays: 7, comment: 'Проверить качество и комплектацию.' },
+      production: { dueBeforeLaunch: 16, fallbackDays: 14, comment: 'Подтвердить партию и упаковку.' },
+      packaging: { dueBeforeLaunch: 12, fallbackDays: 18, comment: 'Упаковка, штрихкод, маркировка.' },
+      content: { dueBeforeLaunch: 8, fallbackDays: 21, comment: 'Фото, размеры, карточка, преимущества.' },
+      launchReadiness: { dueBeforeLaunch: 2, fallbackDays: 28, comment: 'Финальная проверка цены, карточки и остатков.' }
+    }
+  },
+  {
+    key: 'marketplace',
+    label: 'Маркетплейс SKU',
+    type: 'Маркетплейс SKU',
+    stages: {
+      negotiation: { dueBeforeLaunch: 21, fallbackDays: 2, comment: 'Условия поставки, документы, цена.' },
+      sample: { dueBeforeLaunch: 17, fallbackDays: 5, comment: 'Проверить образец или фото/спецификацию.' },
+      production: { dueBeforeLaunch: 12, fallbackDays: 9, comment: 'Готовность партии и отгрузки.' },
+      packaging: { dueBeforeLaunch: 9, fallbackDays: 12, comment: 'Упаковка, штрихкод, требования площадок.' },
+      content: { dueBeforeLaunch: 6, fallbackDays: 15, comment: 'Карточка, SEO, фото, цена.' },
+      launchReadiness: { dueBeforeLaunch: 1, fallbackDays: 21, comment: 'Проверить публикацию и дату запуска.' }
+    }
+  },
+  {
+    key: 'relaunch',
+    label: 'Перезапуск',
+    type: 'Перезапуск',
+    stages: {
+      negotiation: { dueBeforeLaunch: 24, fallbackDays: 2, comment: 'Что меняем: цена, упаковка, поставщик, условия.' },
+      sample: { dueBeforeLaunch: 18, fallbackDays: 5, comment: 'Проверить новую версию.' },
+      production: { dueBeforeLaunch: 12, fallbackDays: 10, comment: 'Подтвердить партию и срок перехода.' },
+      packaging: { dueBeforeLaunch: 9, fallbackDays: 12, comment: 'Обновить упаковку, документы, карточку.' },
+      content: { dueBeforeLaunch: 6, fallbackDays: 14, comment: 'Обновить карточки, фото, УТП.' },
+      launchReadiness: { dueBeforeLaunch: 1, fallbackDays: 18, comment: 'Проверить замену старой версии и старт продаж.' }
+    }
+  }
+];
+
+function launchProductTypeOptionsHtml(currentType = '') {
+  const current = String(currentType || '').trim();
+  const options = LAUNCH_PRODUCT_TEMPLATES.map((template) => template.type);
+  const custom = current && !options.includes(current)
+    ? `<option value="${escapeHtml(current)}" selected>${escapeHtml(current)}</option>`
+    : '';
+  return `${custom}<option value="" ${current ? '' : 'selected'}>Не выбран</option>${options.map((option) => `<option value="${escapeHtml(option)}" ${current === option ? 'selected' : ''}>${escapeHtml(option)}</option>`).join('')}`;
+}
+
+function launchDecisionOptionsHtml(currentDecision = '') {
+  const current = String(currentDecision || '').trim();
+  const options = ['Нет решения', 'Запускаем', 'Запускаем после правок', 'На паузе', 'Не запускаем'];
+  const custom = current && !options.includes(current)
+    ? `<option value="${escapeHtml(current)}" selected>${escapeHtml(current)}</option>`
+    : '';
+  return `${custom}${options.map((option) => `<option value="${escapeHtml(option)}" ${current === option ? 'selected' : ''}>${escapeHtml(option)}</option>`).join('')}`;
+}
+
+function launchDateOffset(dateKey = '', offsetDays = 0) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(dateKey || ''))) {
+    const date = new Date(`${dateKey}T12:00:00`);
+    date.setDate(date.getDate() + offsetDays);
+    return date.toISOString().slice(0, 10);
+  }
+  return plusDays(offsetDays);
+}
+
+function launchStageTemplateKey(statusField = '') {
+  return String(statusField || '').replace(/Status$/, '');
+}
+
+function applyLaunchTemplateToForm(form, templateKey = '') {
+  const template = LAUNCH_PRODUCT_TEMPLATES.find((entry) => entry.key === templateKey);
+  if (!form || !template) return false;
+  const setValue = (name, value, options = {}) => {
+    const field = form.elements.namedItem(name);
+    if (!field) return;
+    if (options.onlyEmpty && String(field.value || '').trim()) return;
+    field.value = value;
+    field.dispatchEvent(new Event('change', { bubbles: true }));
+  };
+  const launchDate = String(form.elements.namedItem('launchDate')?.value || '').trim();
+  setValue('productType', template.type);
+  launchStageConfigs().forEach((config) => {
+    const templateStage = template.stages[launchStageTemplateKey(config.status)];
+    if (!templateStage) return;
+    setValue(config.status, 'Не начато', { onlyEmpty: true });
+    const due = launchDate
+      ? launchDateOffset(launchDate, -Math.abs(templateStage.dueBeforeLaunch || 0))
+      : plusDays(templateStage.fallbackDays || 3);
+    setValue(config.due, due, { onlyEmpty: true });
+    setValue(config.comment, templateStage.comment || config.hint || '', { onlyEmpty: true });
+  });
+  return true;
+}
+
+function renderLaunchTemplateBar(currentItem = {}) {
+  return `
+    <div class="launch-template-bar">
+      <div>
+        <strong>Шаблон этапов</strong>
+        <span class="muted small">Сроки и комментарии заполняются в пустые поля.</span>
+      </div>
+      <div class="quick-actions">
+        ${LAUNCH_PRODUCT_TEMPLATES.map((template) => `<button class="quick-chip" type="button" data-launch-template="${escapeHtml(template.key)}">${escapeHtml(template.label)}</button>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+const LAUNCH_STAGE_STATUS_COLUMNS = [
+  { key: 'todo', label: 'Не начато', value: 'Не начато', tone: '' },
+  { key: 'doing', label: 'В работе', value: 'В работе', tone: 'info' },
+  { key: 'waiting', label: 'Ждем ответ', value: 'Ждем ответ', tone: 'warn' },
+  { key: 'blocked', label: 'Блокер', value: 'Блокер', tone: 'danger' },
+  { key: 'done', label: 'Готово', value: 'Готово', tone: 'ok' }
+];
+
+function launchStageColumnKey(status = '') {
+  const raw = String(status || '').trim().toLowerCase();
+  if (!raw || /не\s*нач|чернов|нов/.test(raw)) return 'todo';
+  if (/готов|получен|контракт|заказ|ready|live|продаж|масштаб/.test(raw)) return 'done';
+  if (/блок|стоп|пауза|риск|отказ|не\s*запуска/.test(raw)) return 'blocked';
+  if (/ждем|ждём|ожид|ответ|кп|образец/.test(raw)) return 'waiting';
+  if (/работ|соглас|производ|запрош|услов|цена|контент|карточ|дизайн|тест/.test(raw)) return 'doing';
+  return 'todo';
+}
+
+function launchStageColumnMeta(status = '') {
+  const key = launchStageColumnKey(status);
+  return LAUNCH_STAGE_STATUS_COLUMNS.find((column) => column.key === key) || LAUNCH_STAGE_STATUS_COLUMNS[0];
+}
+
+function launchStageColumnValue(columnKey = '') {
+  return (LAUNCH_STAGE_STATUS_COLUMNS.find((column) => column.key === columnKey) || LAUNCH_STAGE_STATUS_COLUMNS[0]).value;
+}
+
+function launchTaskTone(status = '') {
+  const raw = String(status || '').toLowerCase();
+  if (/готов/.test(raw)) return 'ok';
+  if (/блок|стоп|пауза|риск/.test(raw)) return 'danger';
+  if (/ждем|ожид|ответ|образец|кп/.test(raw)) return 'warn';
+  if (/работ|соглас|производ|заказ|контракт/.test(raw)) return 'info';
+  return 'warn';
+}
+
+function launchStageConfigs() {
+  return [
+    {
+      title: 'Переговоры',
+      hint: 'условия, цена, КП, договоренности',
+      status: 'negotiationStatus',
+      owner: 'negotiationOwner',
+      due: 'negotiationDue',
+      since: 'negotiationSince',
+      comment: 'negotiationComment',
+      statusOptions: launchNegotiationStatusOptionsHtml
+    },
+    {
+      title: 'Пробный образец',
+      hint: 'запрошен, получен, тестируется',
+      status: 'sampleStatus',
+      owner: 'sampleOwner',
+      due: 'sampleDue',
+      since: 'sampleSince',
+      comment: 'sampleComment'
+    },
+    {
+      title: 'Производство',
+      hint: 'MOQ, срок партии, бронь сырья',
+      status: 'productionStatus',
+      owner: 'productionOwner',
+      due: 'productionDue',
+      since: 'productionSince',
+      comment: 'productionComment'
+    },
+    {
+      title: 'Упаковка / документы',
+      hint: 'этикетка, сертификаты, макеты',
+      status: 'packagingStatus',
+      owner: 'packagingOwner',
+      due: 'packagingDue',
+      since: 'packagingSince',
+      comment: 'packagingComment'
+    },
+    {
+      title: 'Карточка / SKU',
+      hint: 'контент, фото, связка SKU',
+      status: 'contentStatus',
+      owner: 'contentOwner',
+      due: 'contentDue',
+      since: 'contentSince',
+      comment: 'contentComment'
+    },
+    {
+      title: 'Запуск',
+      hint: 'READY, поставка, площадки, задача',
+      status: 'launchReadinessStatus',
+      owner: 'launchReadinessOwner',
+      due: 'launchReadinessDue',
+      since: 'launchReadinessSince',
+      comment: 'launchReadinessComment'
+    }
+  ];
+}
+
+function launchStageAgeDays(item = {}, config = {}) {
+  const since = String(item[config.since] || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(since)) return null;
+  const diff = diffFromTodayInDays(since);
+  return Number.isFinite(diff) ? Math.max(0, -diff) : null;
+}
+
+function launchStageDueDays(item = {}, config = {}) {
+  const due = String(item[config.due] || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(due)) return null;
+  const diff = diffFromTodayInDays(due);
+  return Number.isFinite(diff) ? diff : null;
+}
+
+function launchStageAgeText(item = {}, config = {}) {
+  const ageDays = launchStageAgeDays(item, config);
+  if (ageDays === null) return 'в колонке: новая запись';
+  if (ageDays === 0) return 'в колонке: сегодня';
+  return `в колонке ${fmt.int(ageDays)} дн.`;
+}
+
+function launchStageDueText(item = {}, config = {}) {
+  const dueDays = launchStageDueDays(item, config);
+  if (dueDays === null) return '';
+  if (dueDays < 0) return `просрочено ${fmt.int(Math.abs(dueDays))} дн.`;
+  if (dueDays === 0) return 'срок сегодня';
+  return `до срока ${fmt.int(dueDays)} дн.`;
+}
+
+function launchStageEntries(item = {}) {
+  return launchStageConfigs().map((config) => {
+    const status = String(item[config.status] || '').trim();
+    const column = launchStageColumnMeta(status);
+    const dueDays = launchStageDueDays(item, config);
+    const ageDays = launchStageAgeDays(item, config);
+    const done = column.key === 'done';
+    const stale = !done && ((column.key === 'waiting' && ageDays !== null && ageDays >= 7) || (dueDays !== null && dueDays < 0));
+    return {
+      config,
+      status,
+      column,
+      done,
+      stale,
+      ageDays,
+      dueDays,
+      due: String(item[config.due] || '').trim(),
+      owner: String(item[config.owner] || '').trim(),
+      comment: String(item[config.comment] || '').trim()
+    };
+  });
+}
+
+function launchCurrentStageEntry(item = {}) {
+  const entries = launchStageEntries(item);
+  return entries.find((entry) => !entry.done && entry.status) || entries.find((entry) => !entry.done) || entries[entries.length - 1];
+}
+
+function launchReadinessChecks(item = {}) {
+  const stageEntries = launchStageEntries(item);
+  const stageByStatus = new Map(stageEntries.map((entry) => [entry.config.status, entry]));
+  const hasSupply = Boolean(String(item.supplierName || item.factoryName || item.production || '').trim());
+  const check = (key, label, ok, detail = '') => ({ key, label, ok: Boolean(ok), detail });
+  return [
+    check('owner', 'Owner назначен', launchHasOwner(item), item.owner || 'нужен ответственный'),
+    check('supplier', 'Поставщик / завод заполнен', hasSupply, launchSupplyLabel(item) || 'нужен поставщик, завод или условия'),
+    check('negotiation', 'Переговоры закрыты', stageByStatus.get('negotiationStatus')?.done, item.negotiationStatus || 'нужно закрыть переговоры'),
+    check('sample', 'Образец готов', stageByStatus.get('sampleStatus')?.done, item.sampleStatus || 'нужен статус образца'),
+    check('production', 'Производство готово', stageByStatus.get('productionStatus')?.done, item.productionStatus || 'нужен статус производства'),
+    check('packaging', 'Упаковка / документы готовы', stageByStatus.get('packagingStatus')?.done, item.packagingStatus || 'нужен статус упаковки и документов'),
+    check('sku', 'SKU связан', launchHasLinkedSku(item), item.articleKey || 'нужна связка с реестром SKU'),
+    check('content', 'Карточка / SKU готовы', stageByStatus.get('contentStatus')?.done, item.contentStatus || 'нужен статус карточки'),
+    check('marketplaces', 'Площадки выбраны', String(item.marketplaces || '').trim(), item.marketplaces || 'нужны WB / Ozon / другие площадки'),
+    check('materials', 'Материалы есть', launchHasPresentation(item), item.presentationUrl || 'нужна презентация / материалы'),
+    check('gantt', 'Календарь запуска заполнен', launchHasGantt(item), launchHasGantt(item) ? 'месяцы отмечены' : 'нужно отметить месяцы'),
+    check('launchTask', 'Задача запуска стоит', launchHasActiveTasks(item), item.activeTasks ? `${fmt.int(item.activeTasks)} активн.` : 'нужна задача с owner и сроком'),
+    check('decision', 'Решение по запуску принято', launchFinalDecisionApproved(item), item.launchDecision || 'нужно финальное решение'),
+    check('launch', 'Запуск готов', stageByStatus.get('launchReadinessStatus')?.done || launchFinalStatusReady(item), item.launchReadinessStatus || item.status || 'нужен финальный статус')
+  ];
+}
+
+function launchReadinessState(item = {}) {
+  const checks = launchReadinessChecks(item);
+  const missing = checks.filter((entry) => !entry.ok);
+  return {
+    checks,
+    missing,
+    ready: missing.length === 0,
+    pct: checks.length ? (checks.length - missing.length) / checks.length : 0
+  };
+}
+
+function launchNowSummary(item = {}) {
+  const liveItem = normalizeLaunchItem(item);
+  const readiness = launchReadinessState(liveItem);
+  const currentStage = launchCurrentStageEntry(liveItem);
+  const task = sortTasks(launchLinkedTasks(liveItem).filter(isTaskActive))[0] || null;
+  const due = currentStage?.due || task?.due || launchDueDateKey(liveItem) || '';
+  const owner = currentStage?.owner || task?.owner || liveItem.owner || '';
+  const blocker = readiness.missing[0]?.detail || (liveItem.blockers || [])[0] || '';
+  return {
+    item: liveItem,
+    readiness,
+    currentStage,
+    task,
+    action: launchDirectorNextAction(liveItem),
+    owner,
+    due,
+    blocker
+  };
+}
+
+function renderLaunchStageTaskCard(item = {}, config = {}) {
+  const statusValue = item[config.status] || '';
+  const columnMeta = launchStageColumnMeta(statusValue);
+  const tone = launchTaskTone(statusValue || columnMeta.value);
+  const statusOptions = config.statusOptions || launchTaskStatusOptionsHtml;
+  const dueText = launchStageDueText(item, config);
+  const ageText = launchStageAgeText(item, config);
+  const stale = launchStageEntries(item).find((entry) => entry.config.status === config.status)?.stale;
+  return `
+    <div class="launch-task-card launch-task-${tone} ${stale ? 'is-stale' : ''}" draggable="true" data-launch-stage-card data-launch-stage-field="${escapeHtml(config.status)}" data-launch-stage-current="${escapeHtml(columnMeta.key)}">
+      <div class="launch-task-card-head">
+        <div>
+          <strong>${escapeHtml(config.title)}</strong>
+          <span>${escapeHtml(config.hint || '')}</span>
+        </div>
+        <span class="chip ${escapeHtml(columnMeta.tone || tone)}" data-launch-stage-status-chip>${escapeHtml(statusValue || columnMeta.value)}</span>
+      </div>
+      <input type="hidden" name="${escapeHtml(config.since)}" value="${escapeHtml(item[config.since] || '')}">
+      <div class="launch-task-age ${stale ? 'warn' : ''}" data-launch-stage-age>${escapeHtml([ageText, dueText].filter(Boolean).join(' · '))}</div>
+      <div class="launch-task-fields">
+        <label><span class="muted small">Статус</span><select name="${escapeHtml(config.status)}">${statusOptions(statusValue)}</select></label>
+        <label><span class="muted small">Срок</span><input name="${escapeHtml(config.due)}" type="date" value="${escapeHtml(item[config.due] || '')}"></label>
+        <label class="span-all"><span class="muted small">Ответственный / контакт</span><input name="${escapeHtml(config.owner)}" value="${escapeHtml(item[config.owner] || '')}" placeholder="кто ведет этот шаг"></label>
+        <label class="span-all"><span class="muted small">Комментарий</span><textarea name="${escapeHtml(config.comment)}" rows="2" placeholder="что происходит, что ждем, следующий шаг">${escapeHtml(item[config.comment] || '')}</textarea></label>
+      </div>
+      <div class="launch-task-move-row">
+        <button class="quick-chip" type="button" data-launch-stage-move="prev">Влево</button>
+        <button class="quick-chip" type="button" data-launch-stage-move="next">Дальше</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderLaunchStageTaskBoard(item = {}) {
+  const configs = launchStageConfigs();
+  return `
+    <div class="launch-task-board" data-launch-stage-board>
+      ${LAUNCH_STAGE_STATUS_COLUMNS.map((column) => {
+        const cards = configs
+          .filter((config) => launchStageColumnKey(item[config.status]) === column.key)
+          .map((config) => renderLaunchStageTaskCard(item, config))
+          .join('');
+        return `
+          <div class="launch-task-column" data-launch-stage-column="${escapeHtml(column.key)}">
+            <div class="launch-task-column-head">
+              <strong>${escapeHtml(column.label)}</strong>
+              <span data-launch-stage-count>${fmt.int(cards ? (cards.match(/data-launch-stage-card/g) || []).length : 0)}</span>
+            </div>
+            <div class="launch-task-list" data-launch-stage-list="${escapeHtml(column.key)}">
+              ${cards}
+              <div class="launch-stage-empty" data-launch-stage-empty ${cards ? 'hidden' : ''}>Перетащите этап сюда</div>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function launchStageSetSelectValue(select, value) {
+  if (!select) return;
+  const normalized = String(value || '').trim();
+  if (!normalized) return;
+  const exists = Array.from(select.options || []).some((option) => option.value === normalized);
+  if (!exists) select.insertBefore(new Option(normalized, normalized), select.firstChild);
+  select.value = normalized;
+}
+
+function launchStageRefreshColumnCounts(board) {
+  if (!board) return;
+  board.querySelectorAll('[data-launch-stage-column]').forEach((column) => {
+    const cards = column.querySelectorAll('[data-launch-stage-card]');
+    const counter = column.querySelector('[data-launch-stage-count]');
+    const empty = column.querySelector('[data-launch-stage-empty]');
+    if (counter) counter.textContent = fmt.int(cards.length);
+    if (empty) empty.hidden = cards.length > 0;
+  });
+}
+
+function launchStageRefreshCard(card) {
+  if (!card) return;
+  const select = card.querySelector('select');
+  const statusValue = String(select?.value || '').trim();
+  const columnMeta = launchStageColumnMeta(statusValue);
+  const tone = launchTaskTone(statusValue || columnMeta.value);
+  card.dataset.launchStageCurrent = columnMeta.key;
+  card.classList.remove('launch-task-ok', 'launch-task-warn', 'launch-task-danger', 'launch-task-info', 'is-stale');
+  if (tone) card.classList.add(`launch-task-${tone}`);
+  const chip = card.querySelector('[data-launch-stage-status-chip]');
+  if (chip) {
+    chip.className = `chip ${columnMeta.tone || tone}`.trim();
+    chip.textContent = statusValue || columnMeta.value;
+  }
+  const age = card.querySelector('[data-launch-stage-age]');
+  const since = card.querySelector('input[type="hidden"]')?.value || '';
+  if (age) {
+    const days = /^\d{4}-\d{2}-\d{2}$/.test(since) ? Math.max(0, -diffFromTodayInDays(since)) : null;
+    age.classList.remove('warn');
+    age.textContent = days === null ? 'в колонке: новая запись' : days === 0 ? 'в колонке: сегодня' : `в колонке ${fmt.int(days)} дн.`;
+  }
+}
+
+function launchStageMoveCard(board, card, columnKey) {
+  if (!board || !card || !columnKey) return;
+  const list = board.querySelector(`[data-launch-stage-list="${columnKey}"]`);
+  if (!list) return;
+  const select = card.querySelector('select');
+  launchStageSetSelectValue(select, launchStageColumnValue(columnKey));
+  const sinceInput = card.querySelector('input[type="hidden"]');
+  if (sinceInput) sinceInput.value = todayIso();
+  list.appendChild(card);
+  launchStageRefreshCard(card);
+  launchStageRefreshColumnCounts(board);
+}
+
+function bindLaunchStageTaskBoard(root) {
+  const board = root?.querySelector('[data-launch-stage-board]');
+  if (!board) return;
+  launchStageRefreshColumnCounts(board);
+
+  board.querySelectorAll('[data-launch-stage-card]').forEach((card) => {
+    card.addEventListener('dragstart', (event) => {
+      if (event.target?.closest?.('input, textarea, select, button')) {
+        event.preventDefault();
+        return;
+      }
+      card.classList.add('is-dragging');
+      event.dataTransfer?.setData('text/plain', card.getAttribute('data-launch-stage-field') || '');
+      if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('is-dragging');
+      board.querySelectorAll('.is-drop-target').forEach((column) => column.classList.remove('is-drop-target'));
+    });
+    card.querySelector('select')?.addEventListener('change', () => {
+      const sinceInput = card.querySelector('input[type="hidden"]');
+      if (sinceInput) sinceInput.value = todayIso();
+      const columnKey = launchStageColumnKey(card.querySelector('select')?.value || '');
+      const currentList = card.closest('[data-launch-stage-list]');
+      if (currentList?.getAttribute('data-launch-stage-list') !== columnKey) {
+        launchStageMoveCard(board, card, columnKey);
+      } else {
+        launchStageRefreshCard(card);
+        launchStageRefreshColumnCounts(board);
+      }
+    });
+    card.querySelectorAll('[data-launch-stage-move]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const currentKey = card.closest('[data-launch-stage-list]')?.getAttribute('data-launch-stage-list') || launchStageColumnKey(card.querySelector('select')?.value || '');
+        const currentIndex = LAUNCH_STAGE_STATUS_COLUMNS.findIndex((column) => column.key === currentKey);
+        const direction = button.getAttribute('data-launch-stage-move') === 'prev' ? -1 : 1;
+        const nextColumn = LAUNCH_STAGE_STATUS_COLUMNS[Math.min(Math.max(currentIndex + direction, 0), LAUNCH_STAGE_STATUS_COLUMNS.length - 1)];
+        if (nextColumn) launchStageMoveCard(board, card, nextColumn.key);
+      });
+    });
+  });
+
+  board.querySelectorAll('[data-launch-stage-column]').forEach((column) => {
+    column.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      column.classList.add('is-drop-target');
+      if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    });
+    column.addEventListener('dragleave', (event) => {
+      if (!column.contains(event.relatedTarget)) column.classList.remove('is-drop-target');
+    });
+    column.addEventListener('drop', (event) => {
+      event.preventDefault();
+      column.classList.remove('is-drop-target');
+      const statusField = event.dataTransfer?.getData('text/plain') || '';
+      const card = Array.from(board.querySelectorAll('[data-launch-stage-card]'))
+        .find((entry) => entry.getAttribute('data-launch-stage-field') === statusField);
+      launchStageMoveCard(board, card, column.getAttribute('data-launch-stage-column') || '');
+    });
+  });
+}
+
+async function createLaunchStageTasks(item = {}) {
+  if (typeof createManualTask !== 'function') return { created: 0, skipped: 0 };
+  const liveItem = normalizeLaunchItem(item, { skipTaskLookup: true });
+  const itemName = liveItem.name || liveItem.articleKey || 'Новинка';
+  const nameKey = String(itemName || '').trim().toLowerCase();
+  const activeTasks = getAllTasks().filter((task) => isTaskActive(task) && task.type === 'launch');
+  let created = 0;
+  let skipped = 0;
+
+  for (const entry of launchStageEntries(liveItem)) {
+    if (entry.done) {
+      skipped += 1;
+      continue;
+    }
+    const stageTitle = entry.config.title;
+    const hasDuplicate = activeTasks.some((task) => {
+      const sameProduct = (liveItem.articleKey && task.articleKey === liveItem.articleKey)
+        || String(task.entityLabel || '').trim().toLowerCase() === nameKey;
+      return sameProduct && String(task.title || '').toLowerCase().includes(stageTitle.toLowerCase());
+    });
+    if (hasDuplicate) {
+      skipped += 1;
+      continue;
+    }
+    const due = entry.due || launchDueDateKey(liveItem) || plusDays(3 + created * 2);
+    const dueDays = /^\d{4}-\d{2}-\d{2}$/.test(due) ? diffFromTodayInDays(due) : 7;
+    await createManualTask({
+      articleKey: liveItem.articleKey || '',
+      entityLabel: itemName,
+      title: `${stageTitle}: ${itemName}`,
+      type: 'launch',
+      priority: Number.isFinite(dueDays) && dueDays <= 0 ? 'critical' : Number.isFinite(dueDays) && dueDays <= 5 ? 'high' : 'medium',
+      platform: 'product',
+      owner: entry.owner || liveItem.owner || '',
+      due,
+      nextAction: entry.comment || entry.config.hint || launchDirectorNextAction(liveItem),
+      reason: `Этап карточки продукта · ${stageTitle} · ${liveItem.launchMonth || 'без месяца'}`,
+      skipRerender: true
+    });
+    created += 1;
+  }
+
+  return { created, skipped };
+}
+
+async function createLaunchNextStageTask(item = {}) {
+  if (typeof createManualTask !== 'function') return { created: 0, skipped: 0 };
+  const liveItem = normalizeLaunchItem(item, { skipTaskLookup: true });
+  const itemName = liveItem.name || liveItem.articleKey || 'Новинка';
+  const nameKey = String(itemName || '').trim().toLowerCase();
+  const stage = launchStageEntries(liveItem)
+    .filter((entry) => !entry.done)
+    .sort((left, right) => {
+      const leftDue = left.dueDays === null ? 9999 : left.dueDays;
+      const rightDue = right.dueDays === null ? 9999 : right.dueDays;
+      return leftDue - rightDue;
+    })[0];
+  if (!stage) return { created: 0, skipped: 1 };
+  const stageTitle = stage.config.title;
+  const duplicate = getAllTasks().some((task) => {
+    if (!isTaskActive(task) || task.type !== 'launch') return false;
+    const sameProduct = (liveItem.articleKey && task.articleKey === liveItem.articleKey)
+      || String(task.entityLabel || '').trim().toLowerCase() === nameKey;
+    return sameProduct && String(task.title || '').toLowerCase().includes(stageTitle.toLowerCase());
+  });
+  if (duplicate) return { created: 0, skipped: 1 };
+  const due = stage.due || launchDueDateKey(liveItem) || plusDays(3);
+  const dueDays = /^\d{4}-\d{2}-\d{2}$/.test(due) ? diffFromTodayInDays(due) : 7;
+  await createManualTask({
+    articleKey: liveItem.articleKey || '',
+    entityLabel: itemName,
+    title: `${stageTitle}: ${itemName}`,
+    type: 'launch',
+    priority: Number.isFinite(dueDays) && dueDays <= 0 ? 'critical' : Number.isFinite(dueDays) && dueDays <= 5 ? 'high' : 'medium',
+    platform: 'product',
+    owner: stage.owner || liveItem.owner || '',
+    due,
+    nextAction: stage.comment || stage.config.hint || launchDirectorNextAction(liveItem),
+    reason: `Ближайший этап карточки продукта · ${stageTitle} · ${liveItem.launchMonth || 'без месяца'}`,
+    skipRerender: true
+  });
+  return { created: 1, skipped: 0 };
+}
+
+function launchNegotiationRedReason(item = {}) {
+  const liveItem = normalizeLaunchItem(item, { skipTaskLookup: true });
+  const entry = launchStageEntries(liveItem).find((stage) => stage.config.status === 'negotiationStatus');
+  const statusText = String(liveItem.negotiationStatus || '').trim();
+  const raw = `${statusText} ${liveItem.negotiationComment || ''}`.toLowerCase();
+  if (!String(liveItem.supplierName || liveItem.factoryName || liveItem.production || '').trim()) return 'нет поставщика или завода';
+  if (entry?.column?.key === 'blocked') return statusText || 'переговоры заблокированы';
+  if (entry?.dueDays !== null && entry?.dueDays < 0) return `срок переговоров просрочен на ${fmt.int(Math.abs(entry.dueDays))} дн.`;
+  if (entry?.column?.key === 'waiting' && entry?.ageDays !== null && entry.ageDays >= 7) return `ждем ответ ${fmt.int(entry.ageDays)} дн.`;
+  if (/ждем|ждём|кп|ответ/.test(raw) && entry?.ageDays !== null && entry.ageDays >= 5) return `зависло: ${statusText || 'ждем ответ'}`;
+  return '';
+}
+
+function launchRedZoneItems(items = []) {
+  return (items || [])
+    .map((item) => {
+      const liveItem = normalizeLaunchItem(item, { skipTaskLookup: true });
+      return { item: liveItem, reason: launchNegotiationRedReason(liveItem) };
+    })
+    .filter((entry) => entry.reason)
+    .sort((left, right) => launchDirectorPriority(right.item) - launchDirectorPriority(left.item) || left.item.name.localeCompare(right.item.name, 'ru'))
+    .slice(0, 8);
+}
+
+function renderLaunchRedZone(items = []) {
+  const rows = launchRedZoneItems(items);
+  return `
+    <div class="card launch-red-zone-card">
+      <div class="section-subhead">
+        <div>
+          <h3>Красная зона переговоров</h3>
+          <p class="small muted">То, что тормозит запуск на стороне поставщика, завода или КП.</p>
+        </div>
+        ${rows.length ? badge(`${fmt.int(rows.length)} в красной зоне`, 'danger') : badge('переговоры спокойные', 'ok')}
+      </div>
+      <div class="launch-red-zone-list">
+        ${rows.map(({ item, reason }) => `
+          <button class="launch-red-zone-row" type="button" data-launch-edit="${escapeHtml(item.id)}">
+            <span class="launch-red-dot"></span>
+            <strong>${escapeHtml(item.name || item.articleKey || 'Новинка')}</strong>
+            <span>${escapeHtml(reason)}</span>
+            <em>${escapeHtml(item.negotiationOwner || item.owner || 'без owner')}</em>
+          </button>
+        `).join('') || '<div class="empty">Сейчас нет зависших переговоров.</div>'}
+      </div>
+    </div>
+  `;
+}
+
+function renderLaunchExcelMenu(label = 'Excel') {
+  return `
+    <details class="launch-excel-menu">
+      <summary class="quick-chip">${escapeHtml(label)}</summary>
+      <div class="launch-excel-menu-panel">
+        <button type="button" data-launch-import>Загрузить файл</button>
+        <button type="button" data-launch-download-form>Скачать форму</button>
+        <button type="button" data-launch-export="product">Выгрузить отбор</button>
+      </div>
+    </details>
+  `;
+}
+
+function renderLaunchAttentionPanel(items = [], summary = {}) {
+  const focusItems = (items || []).slice(0, 5);
+  const chips = [
+    { label: `${fmt.int(summary.total || 0)} в отборе`, tone: 'info' },
+    { label: `${fmt.int(summary.withoutOwner || 0)} без owner`, tone: summary.withoutOwner ? 'warn' : 'ok' },
+    { label: `${fmt.int(summary.withoutSku || 0)} без SKU`, tone: summary.withoutSku ? 'warn' : 'ok' },
+    { label: `${fmt.int(summary.withoutMaterials || 0)} без материалов`, tone: summary.withoutMaterials ? 'warn' : 'ok' },
+    { label: `${fmt.int(summary.ready || 0)} готово`, tone: summary.ready ? 'ok' : 'warn' }
+  ];
+  return `
+    <div class="card launch-attention-card">
+      <div class="section-subhead">
+        <div>
+          <h3>Что требует внимания</h3>
+          <p class="small muted">Короткий список того, что мешает запуску прямо сейчас.</p>
+        </div>
+        <div class="badge-stack">${chips.map((entry) => badge(entry.label, entry.tone)).join('')}</div>
+      </div>
+      <div class="launch-attention-list">
+        ${focusItems.map((item) => `
+          <button class="launch-attention-row" type="button" data-launch-edit="${escapeHtml(item.id)}">
+            <span class="launch-attention-status ${launchIsReady(item) ? 'ok' : (item.blockers || []).length ? 'danger' : 'warn'}"></span>
+            <strong>${escapeHtml(item.name || item.articleKey || 'Новинка')}</strong>
+            <em>${escapeHtml(launchDirectorNextAction(item))}</em>
+            <small>${escapeHtml(item.owner || 'без owner')} · ${escapeHtml(launchDueDateLabel(item))}</small>
+          </button>
+        `).join('') || '<div class="empty">По текущему фильтру критичных дыр нет.</div>'}
+      </div>
+    </div>
+  `;
+}
+
+function launchFinalStatusReady(item = {}) {
+  const statusRaw = String(item.status || '').toLowerCase();
+  const launchRaw = String(item.launchReadinessStatus || '').toLowerCase();
+  return /готово к запуску|в продаже|масштаб/.test(statusRaw) || /готов/.test(launchRaw) || launchFinalDecisionApproved(item);
+}
+
+function launchFinalDecisionApproved(item = {}) {
+  const decisionRaw = String(item.launchDecision || '').trim().toLowerCase();
+  if (!decisionRaw) return false;
+  if (/пауза|стоп|отказ|не\s*запуска|hold|no-go/.test(decisionRaw)) return false;
+  return /запуск|запускаем|go|утвержд|да|готов/.test(decisionRaw);
+}
+
 function launchDirectorNextAction(item = {}) {
   if (!launchHasOwner(item)) return 'Назначить owner и зону ответственности';
+  if (!String(item.supplierName || item.factoryName || item.production || '').trim()) return 'Заполнить поставщика, завод или производство';
+  if (!String(item.negotiationStatus || '').trim()) return 'Указать статус переговоров с поставщиком';
+  if (!String(item.sampleStatus || '').trim()) return 'Зафиксировать статус пробного образца';
+  if (!String(item.productionStatus || '').trim()) return 'Зафиксировать статус производства';
+  if (!String(item.packagingStatus || '').trim()) return 'Зафиксировать упаковку, документы или макеты';
   if (!launchHasLinkedSku(item)) return 'Связать с реестром SKU или завести новый SKU';
+  if (!String(item.contentStatus || '').trim()) return 'Зафиксировать статус карточки и контента';
   if (!String(item.marketplaces || '').trim()) return 'Выбрать площадки запуска: WB, Ozon или другие';
   if (!launchHasPresentation(item)) return 'Добавить презентацию, фото, карточку или ТЗ на контент';
-  if (!launchHasGantt(item)) return 'Отметить месяц в gantt и план запуска';
+  if (!launchHasGantt(item)) return 'Отметить месяц в календаре запуска и план запуска';
   if (!launchHasActiveTasks(item)) return 'Поставить задачу запуска с owner и сроком';
+  if (!launchFinalDecisionApproved(item)) return 'Принять финальное решение: запускаем, пауза или не запускаем';
+  if (!launchFinalStatusReady(item)) return 'Поставить финальный статус запуска: Готово';
   if ((item.blockers || []).length) return `Закрыть блокер: ${item.blockers[0]}`;
   return 'Готово к запуску: вести факт, цены и первые продажи';
 }
@@ -4449,10 +5745,11 @@ function renderLaunchDirectorCard(item = {}) {
       : `до запуска ${fmt.int(daysUntil)} дн.`;
   const checklist = [
     { ok: launchHasOwner(item), label: item.owner ? `Owner: ${item.owner}` : 'Owner не назначен' },
+    { ok: Boolean(String(item.supplierName || item.factoryName || item.production || '').trim()), label: launchSupplyLabel(item) || 'Поставщик / завод не заполнены' },
     { ok: launchHasLinkedSku(item), label: item.articleKey ? `SKU: ${item.articleKey}` : 'SKU не связан' },
     { ok: Boolean(String(item.marketplaces || '').trim()), label: item.marketplaces || 'Площадки не выбраны' },
     { ok: launchHasPresentation(item), label: launchHasPresentation(item) ? 'Материалы есть' : 'Нет материалов' },
-    { ok: launchHasGantt(item), label: launchHasGantt(item) ? 'Gantt есть' : 'Нет gantt' }
+    { ok: launchHasGantt(item), label: launchHasGantt(item) ? 'Календарь есть' : 'Нет календаря' }
   ];
   return `
     <div class="launch-director-card">
@@ -4471,6 +5768,7 @@ function renderLaunchDirectorCard(item = {}) {
         ${checklist.map((entry) => badge(entry.label, entry.ok ? 'ok' : 'warn')).join('')}
         ${badge(`${fmt.int(item.activeTasks || 0)} задач`, item.activeTasks ? 'warn' : 'ok')}
       </div>
+      ${(item.productComment || item.negotiationComment) ? `<div class="launch-product-note">${escapeHtml(item.productComment || item.negotiationComment)}</div>` : ''}
       <div class="muted small">${escapeHtml(item.status || 'Статус не указан')}</div>
       <div class="quick-actions launch-card-actions">
         <button class="quick-chip portal-action-primary" type="button" data-launch-edit="${escapeHtml(item.id)}">Открыть карточку</button>
@@ -4482,7 +5780,7 @@ function renderLaunchDirectorCard(item = {}) {
 }
 
 function renderLaunchDirectorGantt(items = [], columns = []) {
-  if (!columns.length) return '<div class="empty">Gantt по текущему фильтру пока пустой.</div>';
+  if (!columns.length) return '<div class="empty">Календарь запуска по текущему фильтру пока пустой.</div>';
   const rows = items.slice(0, 18).map((item) => `
     <tr>
       <td class="launch-gantt-name">
@@ -4506,6 +5804,245 @@ function renderLaunchDirectorGantt(items = [], columns = []) {
         </thead>
         <tbody>${rows}</tbody>
       </table>
+    </div>
+  `;
+}
+
+function launchAutoGraphRows(items = []) {
+  const rows = [];
+  const pushRow = (row) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(row.date || ''))) return;
+    const key = [row.itemId, row.date, row.kind, row.label].join('|');
+    if (rows.some((entry) => entry.__key === key)) return;
+    rows.push({ ...row, __key: key, days: diffFromTodayInDays(row.date) });
+  };
+
+  (items || []).forEach((rawItem) => {
+    const item = normalizeLaunchItem(rawItem);
+    const itemLabel = item.name || item.articleKey || 'Новинка';
+    launchStageEntries(item).forEach((entry) => {
+      if (!entry.due || entry.done) return;
+      pushRow({
+        itemId: item.id,
+        item,
+        date: entry.due,
+        kind: 'Этап',
+        label: entry.config.title,
+        owner: entry.owner || item.owner,
+        status: entry.status || entry.column.value,
+        source: 'карточка продукта',
+        action: entry.comment || launchDirectorNextAction(item)
+      });
+    });
+
+    sortTasks(launchLinkedTasks(item).filter(isTaskActive)).forEach((task) => {
+      if (!task?.due) return;
+      pushRow({
+        itemId: item.id,
+        item,
+        date: task.due,
+        kind: 'Задача',
+        label: task.title || 'Задача запуска',
+        owner: task.owner || item.owner,
+        status: TASK_STATUS_META?.[task.status]?.label || task.status || 'активна',
+        source: 'центр задач',
+        action: task.nextAction || task.reason || launchDirectorNextAction(item)
+      });
+    });
+
+    const launchDate = launchDueDateKey(item);
+    if (launchDate) {
+      pushRow({
+        itemId: item.id,
+        item,
+        date: launchDate,
+        kind: 'Запуск',
+        label: itemLabel,
+        owner: item.owner,
+        status: launchReadinessState(item).ready ? 'готово' : 'не готово',
+        source: item.launchDate ? 'точная дата' : 'месяц запуска',
+        action: launchDirectorNextAction(item)
+      });
+    }
+  });
+
+  return rows
+    .sort((left, right) => left.days - right.days || String(left.item.name || '').localeCompare(String(right.item.name || ''), 'ru'))
+    .map(({ __key, ...row }) => row);
+}
+
+function launchTimelineMonthKey(dateKey = '') {
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(dateKey || '')) ? String(dateKey).slice(0, 7) : '';
+}
+
+function launchTimelineMonthLabel(monthKey = '') {
+  const match = String(monthKey || '').match(/^(\d{4})-(\d{2})$/);
+  if (!match) return monthKey;
+  return `${launchMonthName(Number(match[2]) - 1)} ${match[1]}`;
+}
+
+function launchTimelineDefaultMonths(count = 6) {
+  const date = new Date();
+  date.setDate(1);
+  date.setHours(12, 0, 0, 0);
+  return Array.from({ length: count }, (_, index) => {
+    const month = new Date(date);
+    month.setMonth(month.getMonth() + index);
+    return `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`;
+  });
+}
+
+function launchTimelineTone(row = {}) {
+  if (row.days < 0) return 'danger';
+  if (row.kind === 'Запуск' && /готов|запуск/.test(String(row.status || '').toLowerCase())) return 'ok';
+  if (row.days <= 7) return 'warn';
+  if (row.kind === 'Запуск') return 'ok';
+  if (row.kind === 'Задача') return 'info';
+  return 'stage';
+}
+
+function launchTimelineRowDateLabel(dateKey = '') {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(dateKey || ''))) return 'дата';
+  return String(Number(String(dateKey).slice(8, 10)));
+}
+
+function launchTimelineMonthTone(rows = []) {
+  if (rows.some((row) => row.days < 0)) return 'danger';
+  if (rows.some((row) => Number.isFinite(row.days) && row.days <= 14)) return 'warn';
+  if (rows.length) return 'ok';
+  return '';
+}
+
+function renderLaunchTimelineChart(rows = []) {
+  const launchRows = rows.filter((row) => row.kind === 'Запуск');
+  const controlRows = rows
+    .filter((row) => row.kind !== 'Запуск' && row.days <= 45 && row.days >= -14)
+    .slice(0, 6);
+  const monthSet = new Set(launchTimelineDefaultMonths(3));
+  launchRows
+    .filter((row) => row.days <= 210 && row.days >= -45)
+    .forEach((row) => {
+      const key = launchTimelineMonthKey(row.date);
+      if (key) monthSet.add(key);
+    });
+  const months = [...monthSet].sort().slice(0, 3);
+  const byMonth = new Map(months.map((key) => [key, []]));
+  launchRows.forEach((row) => {
+    const key = launchTimelineMonthKey(row.date);
+    if (byMonth.has(key)) byMonth.get(key).push(row);
+  });
+
+  return `
+    <div class="launch-human-graph" aria-label="План запусков по месяцам">
+      <div class="launch-graph-legend">
+        <span><i class="ok"></i> можно запускать</span>
+        <span><i class="warn"></i> близко / нужен контроль</span>
+        <span><i class="danger"></i> просрочено</span>
+      </div>
+      <div class="launch-month-plan-grid">
+        ${months.map((monthKey) => {
+          const monthRows = (byMonth.get(monthKey) || []).sort((left, right) => left.date.localeCompare(right.date));
+          const visible = monthRows.slice(0, 4);
+          const hidden = Math.max(0, monthRows.length - visible.length);
+          const tone = launchTimelineMonthTone(monthRows);
+          const ready = monthRows.filter((row) => launchTimelineTone(row) === 'ok').length;
+          return `
+            <div class="launch-month-plan-card ${escapeHtml(tone)}">
+              <div class="launch-month-plan-head">
+                <div>
+                  <strong>${escapeHtml(launchTimelineMonthLabel(monthKey))}</strong>
+                  <span>${monthRows.length ? `${fmt.int(monthRows.length)} запусков` : 'пока пусто'}</span>
+                </div>
+                ${monthRows.length ? badge(`${fmt.int(ready)} готово`, ready === monthRows.length ? 'ok' : 'warn') : badge('план', '')}
+              </div>
+              <div class="launch-month-plan-list">
+                ${visible.map((row) => {
+                  const tone = launchTimelineTone(row);
+                  return `
+                    <button class="launch-month-plan-item ${escapeHtml(tone)}" type="button" data-launch-edit="${escapeHtml(row.itemId || row.item?.id || '')}">
+                      <span class="launch-month-plan-day">${escapeHtml(launchTimelineRowDateLabel(row.date))}</span>
+                      <span class="launch-month-plan-title">
+                        <strong>${escapeHtml(row.item?.name || row.item?.articleKey || row.label || 'Новинка')}</strong>
+                        <em>${escapeHtml(row.owner || row.item?.owner || 'без owner')} · ${escapeHtml(row.status || 'без статуса')}</em>
+                      </span>
+                    </button>
+                  `;
+                }).join('') || '<div class="launch-month-plan-empty">Нет запусков в этом месяце</div>'}
+                ${hidden ? `<div class="launch-month-plan-more">+${fmt.int(hidden)} еще в этом месяце</div>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <div class="launch-checkpoint-strip">
+        <div class="launch-checkpoint-head">
+          <strong>Ближайшие контрольные точки</strong>
+          <span class="muted small">Этапы и задачи, которые двигают товары к запуску</span>
+        </div>
+        <div class="launch-checkpoint-list">
+          ${controlRows.map((row) => {
+            const tone = launchTimelineTone(row);
+            const timing = row.days < 0 ? `просрочено ${fmt.int(Math.abs(row.days))} дн.` : row.days === 0 ? 'сегодня' : `через ${fmt.int(row.days)} дн.`;
+            return `
+              <button class="launch-checkpoint-item ${escapeHtml(tone)}" type="button" data-launch-edit="${escapeHtml(row.itemId || row.item?.id || '')}">
+                <span>${escapeHtml(row.date)}</span>
+                <strong>${escapeHtml(row.label || row.kind)}</strong>
+                <em>${escapeHtml(row.item?.name || 'Новинка')} · ${escapeHtml(timing)}</em>
+              </button>
+            `;
+          }).join('') || '<div class="empty">Ближайших контрольных точек нет.</div>'}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderLaunchAutoGraph(items = []) {
+  const rows = launchAutoGraphRows(items);
+  const visibleRows = rows.filter((row) => row.days <= 120).slice(0, 18);
+  const overdue = rows.filter((row) => row.days < 0).length;
+  const fromTasks = rows.filter((row) => row.kind === 'Задача').length;
+  const launchRows = rows.filter((row) => row.kind === 'Запуск');
+  return `
+    <div class="card launch-auto-graph-card">
+      <div class="section-subhead">
+        <div>
+          <h3>План запусков по месяцам</h3>
+          <p class="small muted">Сверху показываем только сами запуски по месяцам. Этапы и задачи остаются ниже как контрольные точки, чтобы график не превращался в шум.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(launchRows.length)} запусков`, launchRows.length ? 'info' : 'warn')}
+          ${badge(`${fmt.int(fromTasks)} задач`, fromTasks ? 'ok' : 'warn')}
+          ${overdue ? badge(`${fmt.int(overdue)} просрочено`, 'danger') : badge('просрочки нет', 'ok')}
+        </div>
+      </div>
+      ${renderLaunchTimelineChart(rows)}
+      <details class="launch-auto-details">
+        <summary>Показать все ближайшие точки</summary>
+      <div class="launch-auto-graph">
+        ${visibleRows.map((row) => {
+          const tone = row.days < 0 ? 'danger' : row.days <= 7 ? 'warn' : row.kind === 'Запуск' ? 'ok' : 'info';
+          const timing = row.days < 0 ? `-${fmt.int(Math.abs(row.days))} дн.` : row.days === 0 ? 'сегодня' : `+${fmt.int(row.days)} дн.`;
+          return `
+            <div class="launch-auto-row ${tone}">
+              <div class="launch-auto-date">
+                <strong>${escapeHtml(row.date)}</strong>
+                <span>${escapeHtml(timing)}</span>
+              </div>
+              <div class="launch-auto-main">
+                <strong>${row.item.articleKey ? linkToSku(row.item.articleKey, row.item.name || row.item.articleKey) : escapeHtml(row.item.name || 'Новинка')}</strong>
+                <span>${escapeHtml(row.kind)} · ${escapeHtml(row.label)} · ${escapeHtml(row.source)}</span>
+                <em>${escapeHtml(row.action || 'Следующий шаг не указан')}</em>
+              </div>
+              <div class="launch-auto-side">
+                ${badge(row.status || 'без статуса', tone)}
+                ${row.owner ? badge(row.owner, 'info') : badge('без owner', 'warn')}
+              </div>
+            </div>
+          `;
+        }).join('') || '<div class="empty">Сроков по текущему фильтру пока нет. Добавьте срок этапа или задачу запуска.</div>'}
+      </div>
+      </details>
     </div>
   `;
 }
@@ -4541,7 +6078,7 @@ function renderLaunchMonthFilters(model) {
           <option value="no-owner" ${model.filters.readiness === 'no-owner' ? 'selected' : ''}>Без owner</option>
           <option value="no-sku" ${model.filters.readiness === 'no-sku' ? 'selected' : ''}>Без SKU</option>
           <option value="no-presentation" ${model.filters.readiness === 'no-presentation' ? 'selected' : ''}>Без материалов</option>
-          <option value="no-gantt" ${model.filters.readiness === 'no-gantt' ? 'selected' : ''}>Без gantt</option>
+          <option value="no-gantt" ${model.filters.readiness === 'no-gantt' ? 'selected' : ''}>Без календаря</option>
         </select>
       </div>
       <details class="launch-filters-more">
@@ -4579,9 +6116,7 @@ function renderLaunchMonthFilters(model) {
       </details>
       <div class="quick-actions launch-primary-actions">
         <button class="quick-chip portal-action-primary" type="button" data-launch-add>+ Добавить новинку</button>
-        <button class="quick-chip" type="button" data-launch-import>Загрузить Excel</button>
-        <button class="quick-chip" type="button" data-launch-download-form>Скачать форму</button>
-        <button class="quick-chip" type="button" data-launch-export="product">Выгрузить отбор</button>
+        ${renderLaunchExcelMenu()}
         <button class="quick-chip" type="button" data-launch-reset>Сбросить</button>
       </div>
       <input type="file" id="launchWorkbookImport" accept=".xls,.html,.csv,.tsv,.txt" style="display:none">
@@ -4641,32 +6176,40 @@ function bindLaunchMonthFilters(root, model) {
       downloadLaunchesExcel(model.filteredItems, button.getAttribute('data-launch-export') || 'launches');
     });
   });
-  root.querySelector('[data-launch-download-form]')?.addEventListener('click', () => {
-    downloadLaunchWorkbookTemplate(model.filteredItems.length ? model.filteredItems : model.items);
+  root.querySelectorAll('[data-launch-download-form]').forEach((button) => {
+    button.addEventListener('click', () => {
+      downloadLaunchWorkbookTemplate(model.filteredItems.length ? model.filteredItems : model.items);
+    });
   });
-  root.querySelector('[data-launch-import]')?.addEventListener('click', () => {
-    root.querySelector('#launchWorkbookImport')?.click();
+  root.querySelectorAll('[data-launch-import]').forEach((button) => {
+    button.addEventListener('click', () => {
+      root.querySelector('#launchWorkbookImport')?.click();
+    });
   });
   root.querySelector('#launchWorkbookImport')?.addEventListener('change', (event) => {
     importLaunchWorkbookFile(event.target.files?.[0]);
     event.target.value = '';
   });
-  root.querySelector('[data-launch-add]')?.addEventListener('click', () => openLaunchEditor());
-  root.querySelector('[data-launch-reset]')?.addEventListener('click', () => {
-    state.launchFilters = {
-      month: 'all',
-      search: '',
-      group: 'all',
-      tag: 'all',
-      status: 'all',
-      phase: 'all',
-      owner: 'all',
-      readiness: 'all',
-      tasks: 'all',
-      ganttExpanded: false,
-      monthsExpanded: false
-    };
-    rerenderCurrentView();
+  root.querySelectorAll('[data-launch-add]').forEach((button) => {
+    button.addEventListener('click', () => openLaunchEditor());
+  });
+  root.querySelectorAll('[data-launch-reset]').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.launchFilters = {
+        month: 'all',
+        search: '',
+        group: 'all',
+        tag: 'all',
+        status: 'all',
+        phase: 'all',
+        owner: 'all',
+        readiness: 'all',
+        tasks: 'all',
+        ganttExpanded: false,
+        monthsExpanded: false
+      };
+      rerenderCurrentView();
+    });
   });
 }
 
@@ -4712,7 +6255,7 @@ function openLaunchEditor(launchId = '') {
   const activeGantt = new Set((currentItem.ganttMonths || []).map((entry) => entry.monthKey));
   const owners = ownerOptions();
   const skuOptions = launchEditorSkuOptions(currentItem);
-  const skuSuggestions = currentItem.skuSuggestions || getLaunchSkuSuggestions(currentItem, 3);
+  const skuSuggestions = currentItem.skuSuggestions && currentItem.skuSuggestions.length ? currentItem.skuSuggestions : getLaunchSkuSuggestions(currentItem, 3);
   const linkedSku = currentItem.articleKey ? getSku(currentItem.articleKey) : null;
   const modal = ensureLaunchEditorModal();
   const body = document.getElementById('launchEditorModalBody');
@@ -4721,15 +6264,9 @@ function openLaunchEditor(launchId = '') {
       <div>
         <div class="muted small">${escapeHtml(currentItem.reportGroup || 'Продукт')} · ${escapeHtml(currentItem.launchMonth || 'Без месяца')}</div>
         <h2>${escapeHtml(currentItem.name || 'Новая новинка')}</h2>
-        <div class="badge-stack">${currentItem.owner ? badge(currentItem.owner, 'info') : badge('Без owner', 'warn')}${badge(currentItem.status || 'Черновик', 'info')}</div>
+        <div class="badge-stack">${currentItem.owner ? badge(currentItem.owner, 'info') : badge('Без owner', 'warn')}${badge(currentItem.status || 'Черновик', 'info')}${currentItem.launchDecision ? badge(currentItem.launchDecision, launchFinalDecisionApproved(currentItem) ? 'ok' : 'warn') : ''}</div>
       </div>
       <button class="btn ghost" type="button" data-close-launch-editor>Закрыть</button>
-    </div>
-
-    <div class="launch-editor-help">
-      <div><strong>1. Завести</strong><span>название, месяц, статус</span></div>
-      <div><strong>2. Связать</strong><span>owner, SKU, площадки</span></div>
-      <div><strong>3. Запустить</strong><span>материалы, gantt, задача</span></div>
     </div>
 
     <datalist id="launchEditorOwnerList">${owners.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
@@ -4737,30 +6274,90 @@ function openLaunchEditor(launchId = '') {
 
     <form id="launchEditorForm" class="form-grid compact launch-editor-lite-form">
       <input type="hidden" name="id" value="${escapeHtml(currentItem.id)}">
-      <label><span class="muted small">Новинка</span><input name="name" value="${escapeHtml(currentItem.name || '')}" required></label>
-      <label><span class="muted small">Группа</span><input name="reportGroup" value="${escapeHtml(currentItem.reportGroup || 'Продукт')}" required></label>
-      <label><span class="muted small">Месяц запуска</span><input name="launchMonth" value="${escapeHtml(currentItem.launchMonth || '')}" required></label>
-      <label><span class="muted small">Точная дата</span><input name="launchDate" type="date" value="${escapeHtml(currentItem.launchDate || '')}"></label>
-      <label><span class="muted small">Статус</span><select name="status">${launchStatusOptionsHtml(currentItem.status)}</select></label>
-      <label><span class="muted small">Owner</span><input name="owner" list="launchEditorOwnerList" value="${escapeHtml(currentItem.owner || '')}"></label>
-      <label><span class="muted small">Площадки</span><input name="marketplaces" value="${escapeHtml(currentItem.marketplaces || '')}" placeholder="WB, Ozon, Я.Маркет..."></label>
-      <label><span class="muted small">Презентация / материалы</span><input name="presentationUrl" value="${escapeHtml(currentItem.presentationUrl || '')}" placeholder="https://..."></label>
 
-      <div class="launch-editor-panel">
+      ${renderLaunchNowPanel(currentItem)}
+      <details class="launch-editor-fold">
+        <summary>
+          <span>Готовность к запуску</span>
+          ${badge(`${fmt.int(launchReadinessState(currentItem).checks.length - launchReadinessState(currentItem).missing.length)} / ${fmt.int(launchReadinessState(currentItem).checks.length)}`, launchReadinessState(currentItem).ready ? 'ok' : 'warn')}
+        </summary>
+        ${renderLaunchReadinessPanel(currentItem)}
+      </details>
+
+      <div class="launch-editor-panel launch-editor-section">
         <div class="section-subhead">
           <div>
-            <h3>Связь с SKU</h3>
-            <p class="small muted">Если SKU уже есть в реестре, выберите article_key и подтяните owner, категорию и площадки.</p>
+            <h3>Карточка товара</h3>
+            <p class="small muted">Минимум для заведения: название, группа, месяц, статус и ответственный.</p>
+          </div>
+          ${badge(currentItem.status || 'Черновик', 'info')}
+        </div>
+        ${renderLaunchTemplateBar(currentItem)}
+        <div class="launch-editor-grid">
+          <label class="span-2"><span class="muted small">Название товара</span><input name="name" value="${escapeHtml(currentItem.name || '')}" placeholder="Например: крем с ретинолом 50 мл" required></label>
+          <label><span class="muted small">Группа</span><input name="reportGroup" value="${escapeHtml(currentItem.reportGroup || 'Продукт')}" required></label>
+          <label><span class="muted small">Тип продукта</span><select name="productType">${launchProductTypeOptionsHtml(currentItem.productType)}</select></label>
+          <label><span class="muted small">Месяц запуска</span><input name="launchMonth" value="${escapeHtml(currentItem.launchMonth || '')}" required></label>
+          <label><span class="muted small">Точная дата</span><input name="launchDate" type="date" value="${escapeHtml(currentItem.launchDate || '')}"></label>
+          <label><span class="muted small">Статус карточки</span><select name="status">${launchStatusOptionsHtml(currentItem.status)}</select></label>
+          <label><span class="muted small">Owner внутри команды</span><input name="owner" list="launchEditorOwnerList" value="${escapeHtml(currentItem.owner || '')}" placeholder="Кто ведет запуск"></label>
+          <label><span class="muted small">Версия продукта</span><input name="productVersion" value="${escapeHtml(currentItem.productVersion || 'v1')}" placeholder="v1, v2, relaunch"></label>
+          <label class="span-2"><span class="muted small">Что изменилось в версии</span><input name="versionReason" value="${escapeHtml(currentItem.versionReason || '')}" placeholder="новая упаковка, формула, поставщик, цена"></label>
+          <label><span class="muted small">Решение по запуску</span><select name="launchDecision">${launchDecisionOptionsHtml(currentItem.launchDecision)}</select></label>
+          <label class="span-2"><span class="muted small">Причина решения</span><input name="launchDecisionReason" value="${escapeHtml(currentItem.launchDecisionReason || '')}" placeholder="почему запускаем / что держит на паузе"></label>
+        </div>
+      </div>
+
+      <details class="launch-editor-detail-pack">
+        <summary>
+          <span>Подробно: поставщик, этапы, SKU и комментарии</span>
+          ${badge('открыть детали', 'info')}
+        </summary>
+
+      <div class="launch-editor-panel launch-editor-section">
+        <div class="section-subhead">
+          <div>
+            <h3>Поставщик и переговоры</h3>
+            <p class="small muted">Здесь хранится рабочая история по заводу, условиям, образцам и следующему шагу.</p>
+          </div>
+          ${currentItem.negotiationStatus ? badge(currentItem.negotiationStatus, 'warn') : badge('переговоры не заполнены', 'warn')}
+        </div>
+        <div class="launch-editor-grid">
+          <label><span class="muted small">Поставщик</span><input name="supplierName" value="${escapeHtml(currentItem.supplierName || '')}" placeholder="Юрлицо / менеджер / бренд"></label>
+          <label><span class="muted small">Завод / производство</span><input name="factoryName" value="${escapeHtml(currentItem.factoryName || '')}" placeholder="Где производится"></label>
+          <label><span class="muted small">Контакт поставщика</span><input name="supplierContact" value="${escapeHtml(currentItem.supplierContact || '')}" placeholder="имя, телефон, почта, Telegram"></label>
+          <label class="span-all"><span class="muted small">Производство / условия</span><input name="production" value="${escapeHtml(currentItem.production || '')}" placeholder="MOQ, срок, образцы, упаковка, ограничения"></label>
+        </div>
+      </div>
+
+      <div class="launch-editor-panel launch-editor-section">
+        <div class="section-subhead">
+          <div>
+            <h3>Доска этапов</h3>
+            <p class="small muted">Каждый этап — рабочая задача внутри товара. Перетащите карточку в нужную колонку или используйте кнопки внутри карточки.</p>
+          </div>
+          ${badge('канбан внутри продукта', 'info')}
+        </div>
+        ${renderLaunchStageTaskBoard(currentItem)}
+      </div>
+
+      <div class="launch-editor-panel launch-editor-section">
+        <div class="section-subhead">
+          <div>
+            <h3>SKU и площадки</h3>
+            <p class="small muted">Если SKU уже есть в реестре, выберите article_key и подтяните карточку. Если нет, можно сохранить как черновик.</p>
           </div>
           <div class="badge-stack">
             ${currentItem.articleKey ? badge(currentItem.articleKey, 'ok') : badge('SKU пока не связан', 'warn')}
             ${linkedSku ? badge(linkedSku.article || linkedSku.articleKey, 'info') : ''}
           </div>
         </div>
-        <div class="control-filters launch-editor-registry-grid">
+        <div class="launch-editor-grid">
           <label><span class="muted small">article_key</span><input name="articleKey" list="launchEditorSkuList" value="${escapeHtml(currentItem.articleKey || '')}" placeholder="telomeras_60caps"></label>
           <label><span class="muted small">Артикул</span><input name="article" value="${escapeHtml(currentItem.article || '')}"></label>
           <label><span class="muted small">Статус в SKU</span><input name="registryStatus" value="${escapeHtml(currentItem.registryStatus || '')}"></label>
+          <label><span class="muted small">Площадки</span><input name="marketplaces" value="${escapeHtml(currentItem.marketplaces || '')}" placeholder="WB, Ozon, Я.Маркет..."></label>
+          <label class="span-2"><span class="muted small">Презентация / материалы</span><input name="presentationUrl" value="${escapeHtml(currentItem.presentationUrl || '')}" placeholder="https://..."></label>
         </div>
         <div class="quick-actions">
           <button class="btn ghost" type="button" data-launch-editor-apply-sku>Подтянуть из SKU</button>
@@ -4775,16 +6372,30 @@ function openLaunchEditor(launchId = '') {
         ` : ''}
       </div>
 
-      <label><span class="muted small">Подкатегория</span><input name="subCategory" value="${escapeHtml(currentItem.subCategory || '')}"></label>
-      <label><span class="muted small">Категория</span><input name="category" value="${escapeHtml(currentItem.category || '')}"></label>
-      <label><span class="muted small">Тег</span><input name="tag" value="${escapeHtml(currentItem.tag || '')}"></label>
-      <label><span class="muted small">SKU bucket</span><input name="skuBucket" value="${escapeHtml(currentItem.skuBucket || '')}"></label>
-      <label class="span-all"><span class="muted small">Характеристика</span><textarea name="characteristic" rows="3">${escapeHtml(currentItem.characteristic || '')}</textarea></label>
-      <label class="span-all"><span class="muted small">Заметки</span><textarea name="notes" rows="3">${escapeHtml(currentItem.notes || '')}</textarea></label>
-      <label><span class="muted small">Производство</span><input name="production" value="${escapeHtml(currentItem.production || '')}"></label>
+      <div class="launch-editor-panel launch-editor-section">
+        <div class="section-subhead">
+          <div>
+            <h3>Решения и комментарии</h3>
+            <p class="small muted">Решения — фиксируем как итог переговоров. Комментарии — живой рабочий контекст по продукту.</p>
+          </div>
+          ${badge((currentItem.decisionLog || currentItem.productComment || currentItem.notes) ? 'есть история' : 'пусто', (currentItem.decisionLog || currentItem.productComment || currentItem.notes) ? 'ok' : 'warn')}
+        </div>
+        <div class="launch-editor-grid">
+          <label><span class="muted small">Подкатегория</span><input name="subCategory" value="${escapeHtml(currentItem.subCategory || '')}"></label>
+          <label><span class="muted small">Категория</span><input name="category" value="${escapeHtml(currentItem.category || '')}"></label>
+          <label><span class="muted small">Тег</span><input name="tag" value="${escapeHtml(currentItem.tag || '')}"></label>
+          <label><span class="muted small">SKU bucket</span><input name="skuBucket" value="${escapeHtml(currentItem.skuBucket || '')}"></label>
+          <label class="span-all"><span class="muted small">Характеристика / УТП</span><textarea name="characteristic" rows="3" placeholder="Что это за продукт, чем отличается, кому нужен">${escapeHtml(currentItem.characteristic || '')}</textarea></label>
+          <label class="span-all"><span class="muted small">Журнал решений</span><textarea name="decisionLog" rows="4" placeholder="Дата / кто / что решили / что больше не обсуждаем">${escapeHtml(currentItem.decisionLog || '')}</textarea></label>
+          <label class="span-all"><span class="muted small">Рабочие комментарии по продукту</span><textarea name="productComment" rows="3" placeholder="Гипотезы, риски, обещания, что проверить">${escapeHtml(currentItem.productComment || '')}</textarea></label>
+          <label class="span-all"><span class="muted small">Внутренние заметки</span><textarea name="notes" rows="3" placeholder="Любой рабочий контекст, который должен остаться в карточке">${escapeHtml(currentItem.notes || '')}</textarea></label>
+        </div>
+      </div>
+
+      </details>
 
       <details class="launch-editor-advanced">
-        <summary>Экономика, план и gantt</summary>
+        <summary>Экономика, план и календарь</summary>
         <div class="form-grid compact">
           <label><span class="muted small">Целевая себестоимость</span><input name="targetCost" value="${escapeHtml(currentItem.targetCost ?? '')}"></label>
           <label><span class="muted small">СРЦ без НДС</span><input name="srcWithoutVat" value="${escapeHtml(currentItem.srcWithoutVat ?? '')}"></label>
@@ -4813,7 +6424,7 @@ function openLaunchEditor(launchId = '') {
           </div>
         </div>
         <div class="launch-gantt-picker">
-          <h3>Gantt</h3>
+          <h3>Календарь запуска</h3>
           <div class="control-filters">${ganttColumns.map((column) => `
             <label class="chip ${activeGantt.has(column.monthKey) ? 'info' : ''}">
               <input type="checkbox" name="gantt__${column.monthKey}" ${activeGantt.has(column.monthKey) ? 'checked' : ''}>
@@ -4825,9 +6436,11 @@ function openLaunchEditor(launchId = '') {
 
       <div class="quick-actions launch-editor-actions">
         <button class="btn ghost" type="button" data-launch-editor-task>Поставить задачу</button>
+        <button class="btn ghost" type="button" data-launch-editor-next-task>Создать ближайшую задачу</button>
+        <button class="btn ghost" type="button" data-launch-editor-stage-tasks>Все задачи по этапам</button>
         <button class="btn ghost" type="button" data-launch-editor-delete>Убрать из портала</button>
         <button class="btn ghost" type="button" data-close-launch-editor>Закрыть</button>
-        <button class="btn primary" type="submit">Сохранить новинку</button>
+        <button class="btn primary" type="submit">Сохранить карточку</button>
       </div>
     </form>
   `;
@@ -4837,7 +6450,15 @@ function openLaunchEditor(launchId = '') {
   body.querySelectorAll('[data-close-launch-editor]').forEach((button) => {
     button.addEventListener('click', closeLaunchEditor);
   });
+  bindLaunchStageTaskBoard(body);
   const form = body.querySelector('#launchEditorForm');
+  body.querySelectorAll('[data-launch-template]').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (!applyLaunchTemplateToForm(form, button.getAttribute('data-launch-template') || '')) {
+        window.alert('Не удалось применить шаблон этапов.');
+      }
+    });
+  });
   const articleKeyField = form?.elements.namedItem('articleKey');
   const syncSkuToForm = (force = false) => {
     const articleKey = String(articleKeyField?.value || '').trim();
@@ -4885,6 +6506,22 @@ function openLaunchEditor(launchId = '') {
     rerenderCurrentView();
     await createOrOpenLaunchTask(normalizeLaunchItem(draft, { skipTaskLookup: true }));
   });
+  body.querySelector('[data-launch-editor-next-task]')?.addEventListener('click', async () => {
+    const draft = readLaunchEditorForm(form, currentItem, revenuePlan, launchPlan, ganttColumns);
+    upsertLaunchDraft(draft);
+    const result = await createLaunchNextStageTask(normalizeLaunchItem(draft, { skipTaskLookup: true }));
+    closeLaunchEditor();
+    rerenderCurrentView();
+    window.alert(`Ближайшая задача: создано ${result.created}, пропущено ${result.skipped}.`);
+  });
+  body.querySelector('[data-launch-editor-stage-tasks]')?.addEventListener('click', async () => {
+    const draft = readLaunchEditorForm(form, currentItem, revenuePlan, launchPlan, ganttColumns);
+    upsertLaunchDraft(draft);
+    const result = await createLaunchStageTasks(normalizeLaunchItem(draft, { skipTaskLookup: true }));
+    closeLaunchEditor();
+    rerenderCurrentView();
+    window.alert(`Задачи по этапам: создано ${result.created}, пропущено ${result.skipped}.`);
+  });
 }
 
 function renderLaunchesDirectorLite() {
@@ -4908,39 +6545,28 @@ function renderLaunchesDirectorLite() {
     <div class="section-title launch-director-title">
       <div>
         <h2>Продукт / запуск новинок</h2>
-        <p>Рабочий экран директора по продукту: завести новинку, назначить owner, связать SKU, поставить статус и не потерять запуск.</p>
+        <p>Рабочий экран директора по продукту: карточка товара, поставщик, переговоры, SKU, площадки, комментарии и запуск в одном месте.</p>
       </div>
       <div class="quick-actions">
         <button class="quick-chip portal-action-primary" type="button" data-launch-add>+ Добавить новинку</button>
-        <button class="quick-chip" type="button" data-launch-import>Загрузить Excel</button>
-        <button class="quick-chip" type="button" data-launch-download-form>Скачать форму</button>
+        ${renderLaunchExcelMenu()}
       </div>
     </div>
 
-    <div class="launch-workflow-grid">
-      <div class="launch-work-step"><strong>1</strong><span>Новинка</span><small>название и месяц</small></div>
-      <div class="launch-work-step"><strong>2</strong><span>Owner</span><small>кто отвечает</small></div>
-      <div class="launch-work-step"><strong>3</strong><span>SKU</span><small>связь с реестром</small></div>
-      <div class="launch-work-step"><strong>4</strong><span>Материалы</span><small>карточка и площадки</small></div>
-      <div class="launch-work-step"><strong>5</strong><span>Запуск</span><small>gantt и задача</small></div>
-    </div>
-
-    <div class="kpi-strip launch-kpi-strip">
-      <div class="mini-kpi"><span>В отборе</span><strong>${fmt.int(filteredItems.length)}</strong><span>по текущим фильтрам</span></div>
-      <div class="mini-kpi ${withoutOwner ? 'warn' : ''}"><span>Без owner</span><strong>${fmt.int(withoutOwner)}</strong><span>нужно назначить</span></div>
-      <div class="mini-kpi ${withoutSku ? 'warn' : ''}"><span>Без SKU</span><strong>${fmt.int(withoutSku)}</strong><span>связать или завести</span></div>
-      <div class="mini-kpi ${withoutMaterials ? 'warn' : ''}"><span>Без материалов</span><strong>${fmt.int(withoutMaterials)}</strong><span>карточка / презентация</span></div>
-      <div class="mini-kpi ${readyCount ? '' : 'warn'}"><span>Готово</span><strong>${fmt.int(readyCount)}</strong><span>можно вести запуск</span></div>
-    </div>
-
     ${renderLaunchMonthFilters({ ...model, filteredItems })}
+
+    ${renderLaunchAttentionPanel(actionItems, { total: filteredItems.length, withoutOwner, withoutSku, withoutMaterials, ready: readyCount })}
+
+    ${renderLaunchAutoGraph(filteredItems)}
+
+    ${renderLaunchRedZone(filteredItems)}
 
     <div class="two-col launch-work-columns">
       <div class="card">
         <div class="section-subhead">
           <div>
             <h3>Сначала закрыть</h3>
-            <p class="small muted">Список уже отсортирован по тому, что мешает запуску: owner, SKU, материалы, gantt, задачи.</p>
+            <p class="small muted">Список уже отсортирован по тому, что мешает запуску: owner, SKU, материалы, календарь запуска, задачи.</p>
           </div>
           ${badge(`${fmt.int(actionItems.length)} в фокусе`, actionItems.length ? 'warn' : 'ok')}
         </div>
@@ -4961,8 +6587,8 @@ function renderLaunchesDirectorLite() {
     <details class="card launch-gantt-card" data-launch-gantt-fold ${ganttExpanded ? 'open' : ''}>
       <summary>
         <div>
-          <h3>Gantt по фильтру</h3>
-          <p class="small muted">Тяжелый график открыт только по кнопке, чтобы вкладка не тормозила.</p>
+          <h3>Календарь запуска по фильтру</h3>
+          <p class="small muted">Полный календарь открыт только по кнопке, чтобы сверху оставался рабочий экран.</p>
         </div>
         <div class="badge-stack">
           ${badge(`${fmt.int(model.ganttColumns.length)} месяцев`, model.ganttColumns.length ? 'info' : 'warn')}
@@ -5000,7 +6626,7 @@ function renderLaunchesDirectorLite() {
       <div class="section-subhead">
         <div>
           <h3>Готово к запуску</h3>
-          <p class="small muted">Строки, где заполнены owner, SKU, материалы и gantt, без явных блокеров.</p>
+          <p class="small muted">Строки, где заполнены owner, SKU, материалы и календарь запуска, без явных блокеров.</p>
         </div>
         ${badge(`${fmt.int(readyCount)} готово`, readyCount ? 'ok' : 'warn')}
       </div>
@@ -5040,7 +6666,7 @@ function renderLaunches() {
     <div class="section-title">
       <div>
         <h2>Продукт / календарь новинок</h2>
-        <p>Единый слой по новинкам: фильтры по календарю, карточки товаров, связь с реестром SKU, месяцы gantt и выгрузка в Excel.</p>
+        <p>Единый слой по новинкам: фильтры по календарю, карточки товаров, связь с реестром SKU, календарь запуска и выгрузка в Excel.</p>
       </div>
       <div class="badge-stack">
         ${badge(`${fmt.int(model.filteredItems.length)} строк в фокусе`, model.filteredItems.length ? 'info' : 'warn')}
@@ -5055,7 +6681,7 @@ function renderLaunches() {
       <div class="mini-kpi warn"><span>С блокерами</span><strong>${fmt.int(withBlockers)}</strong><span>нужно добить данные или owner</span></div>
       <div class="mini-kpi"><span>Активные задачи</span><strong>${fmt.int(activeTasksTotal)}</strong><span>подтянуты из задач портала</span></div>
       <div class="mini-kpi"><span>Есть материалы</span><strong>${fmt.int(model.filteredSummary.withPresentation)}</strong><span>карточки и презентации</span></div>
-      <div class="mini-kpi"><span>Gantt заполнен</span><strong>${fmt.int(model.filteredSummary.withGantt)}</strong><span>контроль по срокам</span></div>
+      <div class="mini-kpi"><span>Календарь заполнен</span><strong>${fmt.int(model.filteredSummary.withGantt)}</strong><span>контроль по срокам</span></div>
     </div>
 
     ${renderLaunchMonthFilters(model)}
@@ -5065,7 +6691,7 @@ function renderLaunches() {
         <summary style="list-style:none; cursor:pointer;">
           <div class="section-subhead">
             <div>
-              <h3>Gantt по фильтру</h3>
+              <h3>Календарь запуска по фильтру</h3>
               <p class="small muted">Верхние месяцы подтягиваются из листа “Календарь новинок Гант”. Для удобства показываем первые 12 строк текущего среза.</p>
             </div>
             <div class="badge-stack">
@@ -5083,7 +6709,7 @@ function renderLaunches() {
               </tr>
             </thead>
             <tbody>
-              ${ganttRows || `<tr><td colspan="${model.ganttColumns.length + 1}"><div class="empty">Gantt по текущему фильтру пока пустой.</div></td></tr>`}
+              ${ganttRows || `<tr><td colspan="${model.ganttColumns.length + 1}"><div class="empty">Календарь запуска по текущему фильтру пока пустой.</div></td></tr>`}
             </tbody>
           </table>
         </div>
@@ -5094,7 +6720,7 @@ function renderLaunches() {
       <div class="section-subhead">
         <div>
           <h3>Источник и покрытие</h3>
-          <p class="small muted">Карточки и gantt подтягиваются из файла Ксюши. Если новинка уже заведена в реестре SKU, здесь должны появляться связка, owner и задачи.</p>
+          <p class="small muted">Карточки и календарь запуска подтягиваются из файла Ксюши. Если новинка уже заведена в реестре SKU, здесь должны появляться связка, owner и задачи.</p>
         </div>
         <div class="badge-stack">
           ${badge(sourceLabel, 'info')}

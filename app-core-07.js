@@ -3144,16 +3144,8 @@ function iuDrrPlatformMeta(model) {
     adsCompletion: isOzon ? month.iuAdsCompletionOzonToDate : month.iuAdsCompletionToDate,
     adsDelta: isOzon ? month.spendDeltaOzon : month.spendDelta,
     adsDeltaPct: isOzon ? month.spendDeltaOzonPct : month.spendDeltaPct,
-    adsFactSource: isOzon ? 'Ozon Seller Finance API из ads_summary' : 'WB Promotion API без Внешки'
+    adsFactSource: isOzon ? 'расчетная реклама Ozon; API-факт Ozon Ads не подключен' : 'WB Promotion API без Внешки'
   };
-}
-
-function iuDrrOzonAdsSourceLabel(mode, planPct) {
-  const raw = String(mode || '');
-  if (raw.includes('pending_ozon_seller_finance_api')) return `ожидаем API, временно оборот x ${fmt.pct(planPct)}`;
-  if (raw.includes('ozon_seller_finance_api')) return 'Ozon Seller Finance API';
-  if (raw.includes('modeled_from_revenue')) return `модель: оборот x ${fmt.pct(planPct)}`;
-  return raw || 'ads_summary';
 }
 
 function iuDrrSourceBadge(model) {
@@ -3678,10 +3670,10 @@ function downloadIuDrrExcel(model) {
       ['completion_pct', 'Выполнение Ozon, %'],
       ['plan_ads_pct_ozon', 'Реклама Ozon. План в %'],
       ['plan_spend_ozon', 'План расхода Ozon'],
-      ['spend_fact_ozon', 'Реклама Ozon. Фактический расход'],
-      ['fact_drr_ozon_pct', 'Реклама Ozon. Факт ДРР, %'],
-      ['spend_delta_ozon', 'Дельта фактического расхода Ozon'],
-      ['spend_delta_ozon_pct', 'Дельта фактического расхода Ozon, %'],
+      ['spend_fact_ozon', 'Реклама Ozon. Расчетный расход'],
+      ['fact_drr_ozon_pct', 'Реклама Ozon. Расчетная ставка, %'],
+      ['spend_delta_ozon', 'Дельта расчетного расхода Ozon'],
+      ['spend_delta_ozon_pct', 'Дельта расчетного расхода Ozon, %'],
       ['ozon_ads_source', 'Источник/модель рекламы Ozon']
     ], rows, `iu-drr-ozon-${model.selectedMonth || todayIso()}.xls`);
     return;
@@ -3786,9 +3778,9 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       <div class="mini-kpi ${platformIuTone}"><span>ИУ Ozon</span><strong>${fmt.pct(platformMeta.completion)}</strong><span>${fmt.money(platformMeta.fact)} / ${fmt.money(platformMeta.planToDate)}</span></div>
       <div class="mini-kpi ${revenueDeltaTone}"><span>Целевой Ozon</span><strong>${fmt.money(platformMeta.targetRevenue)}</strong><span>разница ${fmt.money(platformMeta.revenueDelta)}</span></div>
       <div class="mini-kpi ok"><span>Реклама Ozon план</span><strong>${fmt.pct(platformMeta.adsPlanPct)}</strong><span>${fmt.money(platformMeta.adsPlan)}</span></div>
-      <div class="mini-kpi ${platformMeta.adsFactPct <= platformMeta.adsPlanPct ? 'ok' : 'warn'}"><span>Реклама Ozon факт</span><strong>${fmt.money(platformMeta.adsFact)}</strong><span>${fmt.pct(platformMeta.adsFactPct)} · ads_summary</span></div>
-      <div class="mini-kpi"><span>Источник Ozon Ads</span><strong>${String(month.ozonAdsFactMode || '').includes('pending_') ? 'ожидаем' : 'факт'}</strong><span>${escapeHtml(iuDrrOzonAdsSourceLabel(month.ozonAdsFactMode, platformMeta.adsPlanPct))}</span></div>
-      <div class="mini-kpi ${ozonAdsDeltaTone}"><span>Дельта расхода</span><strong>${fmt.money(platformMeta.adsDelta)}</strong><span>факт - план расхода</span></div>
+      <div class="mini-kpi ${platformMeta.adsFactPct <= platformMeta.adsPlanPct ? 'ok' : 'warn'}"><span>Реклама Ozon расчет</span><strong>${fmt.money(platformMeta.adsFact)}</strong><span>${fmt.pct(platformMeta.adsFactPct)} · нет API-факта</span></div>
+      <div class="mini-kpi warn"><span>Источник Ozon Ads</span><strong>модель</strong><span>оборот × ${fmt.pct(platformMeta.adsPlanPct)}</span></div>
+      <div class="mini-kpi ${ozonAdsDeltaTone}"><span>Дельта расчетного расхода</span><strong>${fmt.money(platformMeta.adsDelta)}</strong><span>расчет - план расхода</span></div>
     </div>
   ` : `
     <div class="kpi-strip" style="margin-top:14px">
@@ -3818,7 +3810,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       </div>
       <div class="card">
         <div class="section-subhead">
-          <div><h3>Реклама Ozon факт</h3><p class="small muted">Ozon Seller Finance API; план ${fmt.pct(platformMeta.adsPlanPct)} остаётся контрольной нормой</p></div>
+          <div><h3>Реклама Ozon расчет</h3><p class="small muted">${fmt.pct(platformMeta.adsPlanPct)} от фактического оборота; не API-факт</p></div>
           ${badge(fmt.money(platformMeta.adsFact), ozonAdsDeltaTone)}
         </div>
         ${iuDrrSparkline(model.dailyRows, 'spendFactOzon', ozonAdsDeltaTone)}
@@ -3863,7 +3855,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   const dailyTableHtml = isOzonView ? `
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
-        <div><h3>Дневная форма Ozon</h3><p class="small muted">Отдельный план-факт оборота Ozon и рекламного расхода из Ozon Seller Finance API.</p></div>
+        <div><h3>Дневная форма Ozon</h3><p class="small muted">Отдельный план-факт оборота Ozon по дням.</p></div>
         ${badge(model.hasRows ? 'готово' : 'нет строк', model.hasRows ? 'ok' : 'warn')}
       </div>
       <div class="table-wrap">
@@ -3877,9 +3869,9 @@ function renderIuDrr(rootId = 'view-iu-drr') {
               <th>Выполнение</th>
               <th>Реклама. План в %</th>
               <th>План расхода Ozon</th>
-              <th>Реклама. Фактический расход Ozon API</th>
-              <th>Факт ДРР</th>
-              <th>Дельта фактического расхода</th>
+              <th>Реклама. Расчетный расход ${fmt.pct(platformMeta.adsPlanPct)}</th>
+              <th>Расчетная ставка</th>
+              <th>Дельта расчетного расхода</th>
             </tr>
           </thead>
           <tbody>
@@ -3961,7 +3953,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     <div class="section-title">
       <div>
         <h2>${escapeHtml(platformMeta.title)}</h2>
-        <p>${isOzonView ? `Ozon: оборот, план рекламы ${fmt.pct(platformMeta.adsPlanPct)} и факт рекламных затрат из ads_summary.` : 'WB: выполнение ИУ, ДРР без Внешки и дневная детализация каналов рекламы.'}</p>
+        <p>${isOzonView ? `Ozon: оборот, план рекламы и расчетный расход ${fmt.pct(platformMeta.adsPlanPct)}; фактические затраты из Ozon Ads пока не подключены.` : 'WB: выполнение ИУ, ДРР без Внешки и дневная детализация каналов рекламы.'}</p>
       </div>
       <div class="badge-stack">
         ${isOzonView ? badge('Ozon', 'info') : iuDrrSourceBadge(model)}
@@ -4385,6 +4377,643 @@ function bindLaunchItemActions(root) {
   });
 }
 
+function launchTaskCountMap() {
+  const map = new Map();
+  getAllTasks().forEach((task) => {
+    if (!isTaskActive(task) || task.type !== 'launch') return;
+    const keys = [
+      String(task.articleKey || '').trim(),
+      String(task.entityLabel || '').trim().toLowerCase()
+    ].filter(Boolean);
+    keys.forEach((key) => map.set(key, (map.get(key) || 0) + 1));
+  });
+  return map;
+}
+
+function launchWithTaskCount(item, countMap) {
+  const nameKey = String(item?.name || '').trim().toLowerCase();
+  const articleCount = item?.articleKey ? numberOrZero(countMap.get(item.articleKey)) : 0;
+  const nameCount = nameKey ? numberOrZero(countMap.get(nameKey)) : 0;
+  return { ...item, activeTasks: Math.max(numberOrZero(item?.activeTasks), articleCount, nameCount) };
+}
+
+function launchStatusOptionsHtml(currentStatus = '') {
+  const current = String(currentStatus || '').trim();
+  const options = [
+    'Черновик',
+    'Бриф заполнить',
+    'В производстве',
+    'Карточка / контент',
+    'Цена / экономика',
+    'Готово к запуску',
+    'В продаже / масштабировать',
+    'Пауза / не запускаем'
+  ];
+  const custom = current && !options.includes(current)
+    ? `<option value="${escapeHtml(current)}" selected>${escapeHtml(current)}</option>`
+    : '';
+  return `${custom}${options.map((option) => `<option value="${escapeHtml(option)}" ${current === option ? 'selected' : ''}>${escapeHtml(option)}</option>`).join('')}`;
+}
+
+function launchDirectorNextAction(item = {}) {
+  if (!launchHasOwner(item)) return 'Назначить owner и зону ответственности';
+  if (!launchHasLinkedSku(item)) return 'Связать с реестром SKU или завести новый SKU';
+  if (!String(item.marketplaces || '').trim()) return 'Выбрать площадки запуска: WB, Ozon или другие';
+  if (!launchHasPresentation(item)) return 'Добавить презентацию, фото, карточку или ТЗ на контент';
+  if (!launchHasGantt(item)) return 'Отметить месяц в gantt и план запуска';
+  if (!launchHasActiveTasks(item)) return 'Поставить задачу запуска с owner и сроком';
+  if ((item.blockers || []).length) return `Закрыть блокер: ${item.blockers[0]}`;
+  return 'Готово к запуску: вести факт, цены и первые продажи';
+}
+
+function launchDirectorPriority(item = {}) {
+  let score = 0;
+  const days = launchDaysUntil(item);
+  if (!launchHasOwner(item)) score += 80;
+  if (!launchHasLinkedSku(item)) score += 70;
+  if (!launchHasPresentation(item)) score += 55;
+  if (!launchHasGantt(item)) score += 45;
+  if ((item.blockers || []).length) score += 35;
+  if (Number.isFinite(days) && days <= 45) score += 30;
+  if (Number.isFinite(days) && days < 0) score += 20;
+  return score;
+}
+
+function renderLaunchDirectorCard(item = {}) {
+  const phaseMeta = launchPhaseMeta(item.phase);
+  const daysUntil = launchDaysUntil(item);
+  const timingLabel = !Number.isFinite(daysUntil)
+    ? 'без точной даты'
+    : daysUntil < 0
+      ? `в запуске ${fmt.int(Math.abs(daysUntil))} дн.`
+      : `до запуска ${fmt.int(daysUntil)} дн.`;
+  const checklist = [
+    { ok: launchHasOwner(item), label: item.owner ? `Owner: ${item.owner}` : 'Owner не назначен' },
+    { ok: launchHasLinkedSku(item), label: item.articleKey ? `SKU: ${item.articleKey}` : 'SKU не связан' },
+    { ok: Boolean(String(item.marketplaces || '').trim()), label: item.marketplaces || 'Площадки не выбраны' },
+    { ok: launchHasPresentation(item), label: launchHasPresentation(item) ? 'Материалы есть' : 'Нет материалов' },
+    { ok: launchHasGantt(item), label: launchHasGantt(item) ? 'Gantt есть' : 'Нет gantt' }
+  ];
+  return `
+    <div class="launch-director-card">
+      <div class="head">
+        <div>
+          <strong>${item.articleKey ? linkToSku(item.articleKey, item.name || item.articleKey) : escapeHtml(item.name || 'Новая новинка')}</strong>
+          <div class="muted small">${escapeHtml(item.reportGroup || 'Продукт')} · ${escapeHtml(item.subCategory || item.category || 'без категории')} · ${escapeHtml(launchDueDateLabel(item))}</div>
+        </div>
+        <div class="badge-stack">
+          ${badge(phaseMeta.label, phaseMeta.tone)}
+          ${badge(timingLabel, Number.isFinite(daysUntil) && daysUntil <= 21 ? 'warn' : 'info')}
+        </div>
+      </div>
+      <div class="launch-next-action">${escapeHtml(launchDirectorNextAction(item))}</div>
+      <div class="badge-stack launch-status-row">
+        ${checklist.map((entry) => badge(entry.label, entry.ok ? 'ok' : 'warn')).join('')}
+        ${badge(`${fmt.int(item.activeTasks || 0)} задач`, item.activeTasks ? 'warn' : 'ok')}
+      </div>
+      <div class="muted small">${escapeHtml(item.status || 'Статус не указан')}</div>
+      <div class="quick-actions launch-card-actions">
+        <button class="quick-chip portal-action-primary" type="button" data-launch-edit="${escapeHtml(item.id)}">Открыть карточку</button>
+        <button class="quick-chip" type="button" data-launch-task="${escapeHtml(item.id)}">${item.activeTasks ? 'Открыть задачу' : 'Поставить задачу'}</button>
+        ${item.presentationUrl ? launchLinkHtml(item.presentationUrl) : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderLaunchDirectorGantt(items = [], columns = []) {
+  if (!columns.length) return '<div class="empty">Gantt по текущему фильтру пока пустой.</div>';
+  const rows = items.slice(0, 18).map((item) => `
+    <tr>
+      <td class="launch-gantt-name">
+        <strong>${escapeHtml(item.name || item.articleKey || 'Новинка')}</strong>
+        <div class="muted small">${escapeHtml(item.owner || 'без owner')} · ${escapeHtml(item.status || 'без статуса')}</div>
+      </td>
+      ${columns.map((column) => {
+        const active = (item.ganttMonths || []).some((entry) => `${entry.label} ${entry.year}` === column);
+        return `<td class="${active ? 'launch-gantt-hit' : ''}">${active ? '●' : ''}</td>`;
+      }).join('')}
+    </tr>
+  `).join('');
+  return `
+    <div class="table-wrap launch-gantt-wrap">
+      <table class="launch-gantt-table">
+        <thead>
+          <tr>
+            <th>Новинка</th>
+            ${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderLaunchMonthFilters(model) {
+  const sourceLabel = model.sourceFiles[0] || 'Портальные черновики';
+  return `
+    <div class="card launch-filter-shell launch-filter-lite">
+      <div class="section-subhead">
+        <div>
+          <h3>Отбор новинок</h3>
+          <p class="small muted">Обычно хватает поиска, месяца, owner и готовности. Остальные фильтры спрятаны ниже.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(sourceLabel, 'info')}
+          ${badge(`${fmt.int(model.filteredItems.length)} в отборе`, model.filteredItems.length ? 'info' : 'warn')}
+        </div>
+      </div>
+      <div class="control-filters launch-filter-grid launch-filter-main">
+        <input id="launchSearchInput" placeholder="Поиск: новинка, SKU, owner..." value="${escapeHtml(model.filters.search)}">
+        <select id="launchMonthFilter">
+          <option value="all">Все месяцы</option>
+          ${model.months.map((item) => `<option value="${escapeHtml(item.label)}" ${model.filters.month === item.label ? 'selected' : ''}>${escapeHtml(item.label)} · ${fmt.int(item.count)}</option>`).join('')}
+        </select>
+        <select id="launchOwnerFilter">
+          <option value="all">Все owner</option>
+          ${model.owners.map((item) => `<option value="${escapeHtml(item)}" ${model.filters.owner === item ? 'selected' : ''}>${escapeHtml(item)}</option>`).join('')}
+        </select>
+        <select id="launchReadinessFilter">
+          <option value="all">Все статусы готовности</option>
+          <option value="blocked" ${model.filters.readiness === 'blocked' ? 'selected' : ''}>Нужно заполнить</option>
+          <option value="ready" ${model.filters.readiness === 'ready' ? 'selected' : ''}>Готово к запуску</option>
+          <option value="no-owner" ${model.filters.readiness === 'no-owner' ? 'selected' : ''}>Без owner</option>
+          <option value="no-sku" ${model.filters.readiness === 'no-sku' ? 'selected' : ''}>Без SKU</option>
+          <option value="no-presentation" ${model.filters.readiness === 'no-presentation' ? 'selected' : ''}>Без материалов</option>
+          <option value="no-gantt" ${model.filters.readiness === 'no-gantt' ? 'selected' : ''}>Без gantt</option>
+        </select>
+      </div>
+      <details class="launch-filters-more">
+        <summary>Ещё фильтры</summary>
+        <div class="control-filters launch-filter-grid">
+          <select id="launchGroupFilter">
+            <option value="all">Все группы</option>
+            ${model.groups.map((item) => `<option value="${escapeHtml(item)}" ${model.filters.group === item ? 'selected' : ''}>${escapeHtml(item)}</option>`).join('')}
+          </select>
+          <select id="launchTagFilter">
+            <option value="all">Все теги</option>
+            ${model.tags.map((item) => `<option value="${escapeHtml(item)}" ${model.filters.tag === item ? 'selected' : ''}>${escapeHtml(item)}</option>`).join('')}
+          </select>
+          <select id="launchStatusFilter">
+            <option value="all">Все статусы</option>
+            ${model.statuses.map((item) => `<option value="${escapeHtml(item)}" ${model.filters.status === item ? 'selected' : ''}>${escapeHtml(item)}</option>`).join('')}
+          </select>
+          <select id="launchPhaseFilter">
+            <option value="all">Все этапы</option>
+            ${model.phases.map((item) => `<option value="${item}" ${model.filters.phase === item ? 'selected' : ''}>${escapeHtml(launchPhaseMeta(item).label)}</option>`).join('')}
+          </select>
+          <select id="launchTaskFilter">
+            <option value="all">Все задачи</option>
+            <option value="with" ${model.filters.tasks === 'with' ? 'selected' : ''}>Есть задачи</option>
+            <option value="without" ${model.filters.tasks === 'without' ? 'selected' : ''}>Без задач</option>
+          </select>
+        </div>
+        <div class="quick-actions launch-focus-rail">
+          <button class="${launchFocusChipClass(model.filters.readiness === 'no-owner')}" type="button" data-launch-preset="no-owner">Без owner · ${fmt.int(model.fullSummary.total - model.fullSummary.withOwner)}</button>
+          <button class="${launchFocusChipClass(model.filters.readiness === 'no-sku')}" type="button" data-launch-preset="no-sku">Без SKU · ${fmt.int(model.fullSummary.total - model.fullSummary.linkedSku)}</button>
+          <button class="${launchFocusChipClass(model.filters.readiness === 'no-presentation')}" type="button" data-launch-preset="no-presentation">Без материалов · ${fmt.int(model.fullSummary.total - model.fullSummary.withPresentation)}</button>
+          <button class="${launchFocusChipClass(model.filters.readiness === 'blocked')}" type="button" data-launch-preset="blocked">С блокерами · ${fmt.int(model.fullSummary.blocked)}</button>
+          <button class="${launchFocusChipClass(model.filters.tasks === 'without')}" type="button" data-launch-preset="without-tasks">Без задач · ${fmt.int(model.fullSummary.total - model.fullSummary.withTasks)}</button>
+        </div>
+      </details>
+      <div class="quick-actions launch-primary-actions">
+        <button class="quick-chip portal-action-primary" type="button" data-launch-add>+ Добавить новинку</button>
+        <button class="quick-chip" type="button" data-launch-import>Загрузить Excel</button>
+        <button class="quick-chip" type="button" data-launch-download-form>Скачать форму</button>
+        <button class="quick-chip" type="button" data-launch-export="product">Выгрузить отбор</button>
+        <button class="quick-chip" type="button" data-launch-reset>Сбросить</button>
+      </div>
+      <input type="file" id="launchWorkbookImport" accept=".xls,.html,.csv,.tsv,.txt" style="display:none">
+    </div>
+  `;
+}
+
+function bindLaunchMonthFilters(root, model) {
+  root.querySelector('#launchSearchInput')?.addEventListener('input', (event) => {
+    getLaunchFilters().search = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#launchMonthFilter')?.addEventListener('change', (event) => {
+    getLaunchFilters().month = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#launchGroupFilter')?.addEventListener('change', (event) => {
+    getLaunchFilters().group = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#launchTagFilter')?.addEventListener('change', (event) => {
+    getLaunchFilters().tag = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#launchStatusFilter')?.addEventListener('change', (event) => {
+    getLaunchFilters().status = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#launchPhaseFilter')?.addEventListener('change', (event) => {
+    getLaunchFilters().phase = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#launchOwnerFilter')?.addEventListener('change', (event) => {
+    getLaunchFilters().owner = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#launchReadinessFilter')?.addEventListener('change', (event) => {
+    getLaunchFilters().readiness = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelector('#launchTaskFilter')?.addEventListener('change', (event) => {
+    getLaunchFilters().tasks = event.target.value;
+    rerenderCurrentView();
+  });
+  root.querySelectorAll('[data-launch-preset]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const preset = button.getAttribute('data-launch-preset') || '';
+      if (preset === 'without-tasks') {
+        applyLaunchFilterPatch({ tasks: model.filters.tasks === 'without' ? 'all' : 'without' });
+        return;
+      }
+      applyLaunchFilterPatch({ readiness: model.filters.readiness === preset ? 'all' : preset });
+    });
+  });
+  root.querySelectorAll('[data-launch-export]').forEach((button) => {
+    button.addEventListener('click', () => {
+      downloadLaunchesExcel(model.filteredItems, button.getAttribute('data-launch-export') || 'launches');
+    });
+  });
+  root.querySelector('[data-launch-download-form]')?.addEventListener('click', () => {
+    downloadLaunchWorkbookTemplate(model.filteredItems.length ? model.filteredItems : model.items);
+  });
+  root.querySelector('[data-launch-import]')?.addEventListener('click', () => {
+    root.querySelector('#launchWorkbookImport')?.click();
+  });
+  root.querySelector('#launchWorkbookImport')?.addEventListener('change', (event) => {
+    importLaunchWorkbookFile(event.target.files?.[0]);
+    event.target.value = '';
+  });
+  root.querySelector('[data-launch-add]')?.addEventListener('click', () => openLaunchEditor());
+  root.querySelector('[data-launch-reset]')?.addEventListener('click', () => {
+    state.launchFilters = {
+      month: 'all',
+      search: '',
+      group: 'all',
+      tag: 'all',
+      status: 'all',
+      phase: 'all',
+      owner: 'all',
+      readiness: 'all',
+      tasks: 'all',
+      ganttExpanded: false,
+      monthsExpanded: false
+    };
+    rerenderCurrentView();
+  });
+}
+
+function launchGanttExpanded() {
+  const filters = getLaunchFilters();
+  if (typeof filters.ganttExpanded !== 'boolean') filters.ganttExpanded = false;
+  return filters.ganttExpanded;
+}
+
+function bindLaunchGanttFold(root) {
+  const panel = root.querySelector('[data-launch-gantt-fold]');
+  if (!panel) return;
+  panel.addEventListener('toggle', () => {
+    setLaunchGanttExpanded(panel.open);
+    rerenderCurrentView();
+  });
+}
+
+function launchMonthsExpanded() {
+  const filters = getLaunchFilters();
+  if (typeof filters.monthsExpanded !== 'boolean') filters.monthsExpanded = false;
+  return filters.monthsExpanded;
+}
+
+function setLaunchMonthsExpanded(expanded) {
+  getLaunchFilters().monthsExpanded = Boolean(expanded);
+}
+
+function bindLaunchMonthsFold(root) {
+  const panel = root.querySelector('[data-launch-months-fold]');
+  if (!panel) return;
+  panel.addEventListener('toggle', () => {
+    setLaunchMonthsExpanded(panel.open);
+    rerenderCurrentView();
+  });
+}
+
+function openLaunchEditor(launchId = '') {
+  const currentItem = getLaunchEditorItem(launchId);
+  const revenuePlan = normalizeLaunchPlanList(currentItem.monthlyRevenuePlan, launchPortalMonthPlanLabels(currentItem.launchMonth));
+  const launchPlan = normalizeLaunchPlanList(currentItem.monthlyLaunchPlan, revenuePlan.map((entry) => entry.label));
+  const ganttColumns = launchEditorMonthColumns(currentItem);
+  const activeGantt = new Set((currentItem.ganttMonths || []).map((entry) => entry.monthKey));
+  const owners = ownerOptions();
+  const skuOptions = launchEditorSkuOptions(currentItem);
+  const skuSuggestions = currentItem.skuSuggestions || getLaunchSkuSuggestions(currentItem, 3);
+  const linkedSku = currentItem.articleKey ? getSku(currentItem.articleKey) : null;
+  const modal = ensureLaunchEditorModal();
+  const body = document.getElementById('launchEditorModalBody');
+  body.innerHTML = `
+    <div class="modal-head">
+      <div>
+        <div class="muted small">${escapeHtml(currentItem.reportGroup || 'Продукт')} · ${escapeHtml(currentItem.launchMonth || 'Без месяца')}</div>
+        <h2>${escapeHtml(currentItem.name || 'Новая новинка')}</h2>
+        <div class="badge-stack">${currentItem.owner ? badge(currentItem.owner, 'info') : badge('Без owner', 'warn')}${badge(currentItem.status || 'Черновик', 'info')}</div>
+      </div>
+      <button class="btn ghost" type="button" data-close-launch-editor>Закрыть</button>
+    </div>
+
+    <div class="launch-editor-help">
+      <div><strong>1. Завести</strong><span>название, месяц, статус</span></div>
+      <div><strong>2. Связать</strong><span>owner, SKU, площадки</span></div>
+      <div><strong>3. Запустить</strong><span>материалы, gantt, задача</span></div>
+    </div>
+
+    <datalist id="launchEditorOwnerList">${owners.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
+    <datalist id="launchEditorSkuList">${skuOptions.map((entry) => `<option value="${escapeHtml(entry.articleKey)}">${escapeHtml(launchSkuSuggestionLabel(entry))}</option>`).join('')}</datalist>
+
+    <form id="launchEditorForm" class="form-grid compact launch-editor-lite-form">
+      <input type="hidden" name="id" value="${escapeHtml(currentItem.id)}">
+      <label><span class="muted small">Новинка</span><input name="name" value="${escapeHtml(currentItem.name || '')}" required></label>
+      <label><span class="muted small">Группа</span><input name="reportGroup" value="${escapeHtml(currentItem.reportGroup || 'Продукт')}" required></label>
+      <label><span class="muted small">Месяц запуска</span><input name="launchMonth" value="${escapeHtml(currentItem.launchMonth || '')}" required></label>
+      <label><span class="muted small">Точная дата</span><input name="launchDate" type="date" value="${escapeHtml(currentItem.launchDate || '')}"></label>
+      <label><span class="muted small">Статус</span><select name="status">${launchStatusOptionsHtml(currentItem.status)}</select></label>
+      <label><span class="muted small">Owner</span><input name="owner" list="launchEditorOwnerList" value="${escapeHtml(currentItem.owner || '')}"></label>
+      <label><span class="muted small">Площадки</span><input name="marketplaces" value="${escapeHtml(currentItem.marketplaces || '')}" placeholder="WB, Ozon, Я.Маркет..."></label>
+      <label><span class="muted small">Презентация / материалы</span><input name="presentationUrl" value="${escapeHtml(currentItem.presentationUrl || '')}" placeholder="https://..."></label>
+
+      <div class="launch-editor-panel">
+        <div class="section-subhead">
+          <div>
+            <h3>Связь с SKU</h3>
+            <p class="small muted">Если SKU уже есть в реестре, выберите article_key и подтяните owner, категорию и площадки.</p>
+          </div>
+          <div class="badge-stack">
+            ${currentItem.articleKey ? badge(currentItem.articleKey, 'ok') : badge('SKU пока не связан', 'warn')}
+            ${linkedSku ? badge(linkedSku.article || linkedSku.articleKey, 'info') : ''}
+          </div>
+        </div>
+        <div class="control-filters launch-editor-registry-grid">
+          <label><span class="muted small">article_key</span><input name="articleKey" list="launchEditorSkuList" value="${escapeHtml(currentItem.articleKey || '')}" placeholder="telomeras_60caps"></label>
+          <label><span class="muted small">Артикул</span><input name="article" value="${escapeHtml(currentItem.article || '')}"></label>
+          <label><span class="muted small">Статус в SKU</span><input name="registryStatus" value="${escapeHtml(currentItem.registryStatus || '')}"></label>
+        </div>
+        <div class="quick-actions">
+          <button class="btn ghost" type="button" data-launch-editor-apply-sku>Подтянуть из SKU</button>
+          ${currentItem.articleKey ? '<button class="btn ghost" type="button" data-launch-editor-open-sku>Открыть SKU</button>' : ''}
+        </div>
+        ${skuSuggestions.length ? `
+          <div class="launch-editor-suggestion-row">
+            ${skuSuggestions.map((entry) => `
+              <button class="quick-chip" type="button" data-launch-sku-suggest="${escapeHtml(entry.articleKey)}">${escapeHtml(launchSkuSuggestionLabel(entry))}</button>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+
+      <label><span class="muted small">Подкатегория</span><input name="subCategory" value="${escapeHtml(currentItem.subCategory || '')}"></label>
+      <label><span class="muted small">Категория</span><input name="category" value="${escapeHtml(currentItem.category || '')}"></label>
+      <label><span class="muted small">Тег</span><input name="tag" value="${escapeHtml(currentItem.tag || '')}"></label>
+      <label><span class="muted small">SKU bucket</span><input name="skuBucket" value="${escapeHtml(currentItem.skuBucket || '')}"></label>
+      <label class="span-all"><span class="muted small">Характеристика</span><textarea name="characteristic" rows="3">${escapeHtml(currentItem.characteristic || '')}</textarea></label>
+      <label class="span-all"><span class="muted small">Заметки</span><textarea name="notes" rows="3">${escapeHtml(currentItem.notes || '')}</textarea></label>
+      <label><span class="muted small">Производство</span><input name="production" value="${escapeHtml(currentItem.production || '')}"></label>
+
+      <details class="launch-editor-advanced">
+        <summary>Экономика, план и gantt</summary>
+        <div class="form-grid compact">
+          <label><span class="muted small">Целевая себестоимость</span><input name="targetCost" value="${escapeHtml(currentItem.targetCost ?? '')}"></label>
+          <label><span class="muted small">СРЦ без НДС</span><input name="srcWithoutVat" value="${escapeHtml(currentItem.srcWithoutVat ?? '')}"></label>
+          <label><span class="muted small">СРЦ с НДС</span><input name="srcWithVat" value="${escapeHtml(currentItem.srcWithVat ?? '')}"></label>
+          <label><span class="muted small">СРЦ со СПП 28</span><input name="srcWithSpp28" value="${escapeHtml(currentItem.srcWithSpp28 ?? '')}"></label>
+          <label><span class="muted small">Δ МРЦ</span><input name="mrpDeltaPct" value="${escapeHtml(currentItem.mrpDeltaPct ?? '')}"></label>
+          <label><span class="muted small">РРЦ с НДС</span><input name="rrpWithVat" value="${escapeHtml(currentItem.rrpWithVat ?? '')}"></label>
+          <label><span class="muted small">МРЦ с НДС</span><input name="mrpWithVat" value="${escapeHtml(currentItem.mrpWithVat ?? '')}"></label>
+          <label><span class="muted small">Маржа %</span><input name="grossMarginPct" value="${escapeHtml(currentItem.grossMarginPct ?? '')}"></label>
+          <label><span class="muted small">Маржа ₽</span><input name="grossMarginRub" value="${escapeHtml(currentItem.grossMarginRub ?? '')}"></label>
+          <label><span class="muted small">Якорная выручка</span><input name="revenueAnchor" value="${escapeHtml(currentItem.revenueAnchor ?? '')}"></label>
+          <label><span class="muted small">План за год</span><input name="yearlyPlanValue" value="${escapeHtml(currentItem.yearlyPlanValue ?? '')}"></label>
+        </div>
+        <div class="launch-plan-grid">
+          <div>
+            <h3>План выручки</h3>
+            <div class="control-filters">${revenuePlan.map((entry, index) => `
+              <label><span class="muted small">${escapeHtml(entry.label)}</span><input name="revenuePlan__${index}" value="${escapeHtml(entry.value ?? '')}"></label>
+            `).join('')}</div>
+          </div>
+          <div>
+            <h3>План запуска</h3>
+            <div class="control-filters">${launchPlan.map((entry, index) => `
+              <label><span class="muted small">${escapeHtml(entry.label)}</span><input name="launchPlan__${index}" value="${escapeHtml(entry.value ?? '')}"></label>
+            `).join('')}</div>
+          </div>
+        </div>
+        <div class="launch-gantt-picker">
+          <h3>Gantt</h3>
+          <div class="control-filters">${ganttColumns.map((column) => `
+            <label class="chip ${activeGantt.has(column.monthKey) ? 'info' : ''}">
+              <input type="checkbox" name="gantt__${column.monthKey}" ${activeGantt.has(column.monthKey) ? 'checked' : ''}>
+              <span>${escapeHtml(`${column.label} ${column.year}`)}</span>
+            </label>
+          `).join('')}</div>
+        </div>
+      </details>
+
+      <div class="quick-actions launch-editor-actions">
+        <button class="btn ghost" type="button" data-launch-editor-task>Поставить задачу</button>
+        <button class="btn ghost" type="button" data-launch-editor-delete>Убрать из портала</button>
+        <button class="btn ghost" type="button" data-close-launch-editor>Закрыть</button>
+        <button class="btn primary" type="submit">Сохранить новинку</button>
+      </div>
+    </form>
+  `;
+
+  modal.classList.add('open');
+
+  body.querySelectorAll('[data-close-launch-editor]').forEach((button) => {
+    button.addEventListener('click', closeLaunchEditor);
+  });
+  const form = body.querySelector('#launchEditorForm');
+  const articleKeyField = form?.elements.namedItem('articleKey');
+  const syncSkuToForm = (force = false) => {
+    const articleKey = String(articleKeyField?.value || '').trim();
+    if (!articleKey) return false;
+    const sku = getSku(articleKey);
+    if (!sku) return false;
+    return applySkuToLaunchEditorForm(form, sku, { force });
+  };
+  articleKeyField?.addEventListener('change', () => {
+    syncSkuToForm(false);
+  });
+  body.querySelector('[data-launch-editor-apply-sku]')?.addEventListener('click', () => {
+    if (!syncSkuToForm(true)) window.alert('В реестре SKU пока нет такой связки. Можно сохранить новинку и вернуться к ней позже.');
+  });
+  body.querySelector('[data-launch-editor-open-sku]')?.addEventListener('click', () => {
+    const articleKey = String(articleKeyField?.value || '').trim();
+    if (!articleKey || typeof openSkuModal !== 'function') return;
+    closeLaunchEditor();
+    openSkuModal(articleKey);
+  });
+  body.querySelectorAll('[data-launch-sku-suggest]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const sku = getSku(button.getAttribute('data-launch-sku-suggest') || '');
+      if (!sku) return;
+      applySkuToLaunchEditorForm(form, sku, { force: true });
+    });
+  });
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const draft = readLaunchEditorForm(event.currentTarget, currentItem, revenuePlan, launchPlan, ganttColumns);
+    upsertLaunchDraft(draft);
+    closeLaunchEditor();
+    rerenderCurrentView();
+  });
+  body.querySelector('[data-launch-editor-delete]')?.addEventListener('click', () => {
+    if (!window.confirm('Убрать эту новинку из портального слоя? Исходный файл это не тронет.')) return;
+    deleteLaunchDraft(currentItem.id);
+    closeLaunchEditor();
+    rerenderCurrentView();
+  });
+  body.querySelector('[data-launch-editor-task]')?.addEventListener('click', async () => {
+    const draft = readLaunchEditorForm(form, currentItem, revenuePlan, launchPlan, ganttColumns);
+    upsertLaunchDraft(draft);
+    closeLaunchEditor();
+    rerenderCurrentView();
+    await createOrOpenLaunchTask(normalizeLaunchItem(draft, { skipTaskLookup: true }));
+  });
+}
+
+function renderLaunchesDirectorLite() {
+  const root = document.getElementById('view-launches');
+  const model = getLaunchViewModel();
+  const taskCounts = launchTaskCountMap();
+  const filteredItems = model.filteredItems.map((item) => launchWithTaskCount(item, taskCounts));
+  const workItems = [...filteredItems]
+    .sort((left, right) => launchDirectorPriority(right) - launchDirectorPriority(left) || launchMonthSortValue(left.launchMonth) - launchMonthSortValue(right.launchMonth) || left.name.localeCompare(right.name, 'ru'));
+  const actionItems = workItems.filter((item) => !launchIsReady(item) || (item.blockers || []).length).slice(0, 10);
+  const readyItems = workItems.filter(launchIsReady).slice(0, 6);
+  const upcomingItems = (model.upcomingItems.length ? model.upcomingItems.map((item) => launchWithTaskCount(item, taskCounts)) : workItems).slice(0, 6);
+  const withoutOwner = filteredItems.filter((item) => !launchHasOwner(item)).length;
+  const withoutSku = filteredItems.filter((item) => !launchHasLinkedSku(item)).length;
+  const withoutMaterials = filteredItems.filter((item) => !launchHasPresentation(item)).length;
+  const readyCount = filteredItems.filter(launchIsReady).length;
+  const ganttExpanded = launchGanttExpanded();
+  const monthsExpanded = launchMonthsExpanded();
+
+  root.innerHTML = `
+    <div class="section-title launch-director-title">
+      <div>
+        <h2>Продукт / запуск новинок</h2>
+        <p>Рабочий экран директора по продукту: завести новинку, назначить owner, связать SKU, поставить статус и не потерять запуск.</p>
+      </div>
+      <div class="quick-actions">
+        <button class="quick-chip portal-action-primary" type="button" data-launch-add>+ Добавить новинку</button>
+        <button class="quick-chip" type="button" data-launch-import>Загрузить Excel</button>
+        <button class="quick-chip" type="button" data-launch-download-form>Скачать форму</button>
+      </div>
+    </div>
+
+    <div class="launch-workflow-grid">
+      <div class="launch-work-step"><strong>1</strong><span>Новинка</span><small>название и месяц</small></div>
+      <div class="launch-work-step"><strong>2</strong><span>Owner</span><small>кто отвечает</small></div>
+      <div class="launch-work-step"><strong>3</strong><span>SKU</span><small>связь с реестром</small></div>
+      <div class="launch-work-step"><strong>4</strong><span>Материалы</span><small>карточка и площадки</small></div>
+      <div class="launch-work-step"><strong>5</strong><span>Запуск</span><small>gantt и задача</small></div>
+    </div>
+
+    <div class="kpi-strip launch-kpi-strip">
+      <div class="mini-kpi"><span>В отборе</span><strong>${fmt.int(filteredItems.length)}</strong><span>по текущим фильтрам</span></div>
+      <div class="mini-kpi ${withoutOwner ? 'warn' : ''}"><span>Без owner</span><strong>${fmt.int(withoutOwner)}</strong><span>нужно назначить</span></div>
+      <div class="mini-kpi ${withoutSku ? 'warn' : ''}"><span>Без SKU</span><strong>${fmt.int(withoutSku)}</strong><span>связать или завести</span></div>
+      <div class="mini-kpi ${withoutMaterials ? 'warn' : ''}"><span>Без материалов</span><strong>${fmt.int(withoutMaterials)}</strong><span>карточка / презентация</span></div>
+      <div class="mini-kpi ${readyCount ? '' : 'warn'}"><span>Готово</span><strong>${fmt.int(readyCount)}</strong><span>можно вести запуск</span></div>
+    </div>
+
+    ${renderLaunchMonthFilters({ ...model, filteredItems })}
+
+    <div class="two-col launch-work-columns">
+      <div class="card">
+        <div class="section-subhead">
+          <div>
+            <h3>Сначала закрыть</h3>
+            <p class="small muted">Список уже отсортирован по тому, что мешает запуску: owner, SKU, материалы, gantt, задачи.</p>
+          </div>
+          ${badge(`${fmt.int(actionItems.length)} в фокусе`, actionItems.length ? 'warn' : 'ok')}
+        </div>
+        <div class="launch-card-list">${actionItems.map(renderLaunchDirectorCard).join('') || '<div class="empty">Критичных дыр по текущему фильтру нет.</div>'}</div>
+      </div>
+      <div class="card">
+        <div class="section-subhead">
+          <div>
+            <h3>Ближайшие запуски</h3>
+            <p class="small muted">То, что подходит по сроку. Здесь удобно каждый день проверять статус.</p>
+          </div>
+          ${badge(`${fmt.int(upcomingItems.length)} позиций`, upcomingItems.length ? 'info' : 'ok')}
+        </div>
+        <div class="launch-card-list compact">${upcomingItems.map(renderLaunchDirectorCard).join('') || '<div class="empty">Ближайших запусков нет.</div>'}</div>
+      </div>
+    </div>
+
+    <details class="card launch-gantt-card" data-launch-gantt-fold ${ganttExpanded ? 'open' : ''}>
+      <summary>
+        <div>
+          <h3>Gantt по фильтру</h3>
+          <p class="small muted">Тяжелый график открыт только по кнопке, чтобы вкладка не тормозила.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(model.ganttColumns.length)} месяцев`, model.ganttColumns.length ? 'info' : 'warn')}
+          ${badge(ganttExpanded ? 'Свернуть' : 'Показать', 'info')}
+        </div>
+      </summary>
+      ${ganttExpanded ? renderLaunchDirectorGantt(filteredItems, model.ganttColumns) : ''}
+    </details>
+
+    <details class="card launch-months-card" data-launch-months-fold ${monthsExpanded ? 'open' : ''}>
+      <summary>
+        <div>
+          <h3>Все по месяцам</h3>
+          <p class="small muted">Полный список оставлен ниже, чтобы рабочий экран сверху не превращался в простыню.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(model.sections.length)} месяцев`, model.sections.length ? 'info' : 'ok')}
+          ${badge(monthsExpanded ? 'Свернуть' : 'Показать', 'info')}
+        </div>
+      </summary>
+      ${monthsExpanded ? `<div class="launch-month-sections">
+        ${model.sections.map((section) => `
+          <div class="launch-month-block">
+            <div class="section-subhead">
+              <div><h3>${escapeHtml(section.label)}</h3></div>
+              ${badge(`${fmt.int(section.items.length)} SKU`, section.items.length ? 'info' : '')}
+            </div>
+            <div class="launch-card-list">${section.items.slice(0, 12).map((item) => renderLaunchDirectorCard(launchWithTaskCount(item, taskCounts))).join('') || '<div class="empty">Нет строк.</div>'}</div>
+          </div>
+        `).join('') || '<div class="empty">Новинок не найдено.</div>'}
+      </div>` : ''}
+    </details>
+
+    <div class="card launch-ready-card">
+      <div class="section-subhead">
+        <div>
+          <h3>Готово к запуску</h3>
+          <p class="small muted">Строки, где заполнены owner, SKU, материалы и gantt, без явных блокеров.</p>
+        </div>
+        ${badge(`${fmt.int(readyCount)} готово`, readyCount ? 'ok' : 'warn')}
+      </div>
+      <div class="launch-card-list compact">${readyItems.map(renderLaunchDirectorCard).join('') || '<div class="empty">Готовых строк пока нет.</div>'}</div>
+    </div>
+  `;
+
+  bindLaunchMonthFilters(root, { ...model, filteredItems });
+  bindLaunchGanttFold(root);
+  bindLaunchMonthsFold(root);
+  bindLaunchItemActions(root);
+}
+
 function renderLaunches() {
   const root = document.getElementById('view-launches');
   const model = getLaunchViewModel();
@@ -4617,6 +5246,10 @@ function renderLaunchControl() {
 
   bindLaunchMonthFilters(root, model);
   bindLaunchItemActions(root);
+}
+
+function renderLaunches() {
+  return renderLaunchesDirectorLite();
 }
 
 window.__ALTEA_MODERN_LAUNCH_PORTAL__ = true;

@@ -689,11 +689,20 @@ function inferTaskType(text = '') {
 function detectMarketplaceNetworkKey(text = '') {
   const raw = String(text || '').toLowerCase();
   if (!raw) return '';
+  if (/\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*\u044f\u0431\u043b\u043e\u043a|goldapple|gold apple|zya|\u0437\u044f/.test(raw)) return 'goldapple';
+  if (/\u043b['’]?\s?[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c|letual|letu/.test(raw)) return 'letu';
+  if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|(^|\W)mm($|\W)/.test(raw)) return 'magnit';
+  if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|\u044f\u043c|ym|yandex/.test(raw)) return 'ya';
   if (raw.includes('золотое яблоко') || raw.includes('goldapple') || raw.includes('gold apple') || raw.includes('золот')) return 'goldapple';
   if (raw.includes("л'этуаль") || raw.includes('летуаль') || raw.includes('letual') || raw.includes('letu')) return 'letu';
   if (raw.includes('магнит маркет') || raw.includes('магнитмаркет') || raw.includes('магнит') || raw.includes('magnit') || raw.includes('mm')) return 'magnit';
   if (raw.includes('яндекс') || raw.includes('я.маркет') || raw.includes('я маркет') || raw.includes('ям') || raw.includes('ym') || raw.includes('yandex')) return 'ya';
   return '';
+}
+
+function detectTaskSpecificMarketplace(task) {
+  const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''}`;
+  return detectMarketplaceNetworkKey(text);
 }
 
 function normalizeTaskPlatform(value, contextText = '') {
@@ -735,7 +744,10 @@ function controlWorkstreamMeta(key) {
 }
 
 function controlWorkstreamKey(task, sku = null) {
-  const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''} ${task?.entityLabel || ''}`;
+  const specificMarketplace = detectTaskSpecificMarketplace(task);
+  if (specificMarketplace === 'goldapple' || specificMarketplace === 'letu' || specificMarketplace === 'magnit' || specificMarketplace === 'ya') return specificMarketplace;
+
+  const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''}`;
   const platform = normalizeTaskPlatform(task?.platform, text);
 
   if (platform === 'wb') return 'wb';
@@ -752,11 +764,11 @@ function controlWorkstreamKey(task, sku = null) {
 
 function detectTaskPlatform(task, sku) {
   const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''}`.toLowerCase();
+  const marketplace = detectMarketplaceNetworkKey(text);
+  if (marketplace) return marketplace;
   if (task?.platform) return normalizeTaskPlatform(task.platform, text);
   if (/директор|руководител|ceo|executive|эскалац|согласовани/.test(text)) return 'cross';
   if (/продукт|новин|launch|ксюш/.test(text) || task?.type === 'launch') return 'product';
-  const marketplace = detectMarketplaceNetworkKey(text);
-  if (marketplace) return marketplace;
   if (text.includes('wb') && text.includes('ozon')) return 'wb+ozon';
   if (text.includes('wb')) return 'wb';
   if (text.includes('ozon')) return 'ozon';

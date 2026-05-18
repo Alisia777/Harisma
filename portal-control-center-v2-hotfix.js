@@ -52,11 +52,21 @@
     };
   }
 
+  function inferMarketplacePlatform(text) {
+    const raw = String(text || '').trim().toLowerCase();
+    if (!raw) return '';
+    if (/\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*\u044f\u0431\u043b\u043e\u043a|goldapple|gold apple|zya|\u0437\u044f/.test(raw)) return 'goldapple';
+    if (/\u043b['’]?\s?[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c|letual|letu/.test(raw)) return 'letu';
+    if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|(^|\W)mm($|\W)/.test(raw)) return 'magnit';
+    if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|\u044f\u043c|ym|yandex/.test(raw)) return 'ya';
+    return '';
+  }
+
   function normalizeTaskPlatform(value, contextText) {
     const raw = String(value || '').trim().toLowerCase();
     const text = `${raw} ${String(contextText || '').trim().toLowerCase()}`;
     if (raw === 'cross' || raw === 'common' || raw === 'general' || raw === 'shared') return 'cross';
-    if (raw === 'retail') return 'ya';
+    if (raw === 'retail') return inferMarketplacePlatform(contextText) || 'ya';
     if (raw === 'wb') return 'wb';
     if (raw === 'ozon') return 'ozon';
     if (raw === 'wb+ozon' || raw === 'wb + ozon' || raw === 'all') return 'cross';
@@ -104,7 +114,10 @@
   }
 
   function controlWorkstreamKey(task, sku) {
-    const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''} ${task?.entityLabel || ''}`;
+    const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''}`;
+    const specificMarketplace = inferMarketplacePlatform(text);
+    if (specificMarketplace === 'goldapple' || specificMarketplace === 'letu' || specificMarketplace === 'magnit' || specificMarketplace === 'ya') return specificMarketplace;
+
     const platform = normalizeTaskPlatform(task?.platform, text);
     if (platform === 'wb') return 'wb';
     if (platform === 'ozon') return 'ozon';

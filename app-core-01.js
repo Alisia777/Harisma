@@ -1587,8 +1587,8 @@ function normalizeProductLifecycleKey(value = '') {
   const raw = productLifecycleLookupText(value);
   if (!raw) return '';
   if (['active', 'actual', 'ok', 'актуально', 'актуальный', 'в работе', 'работает'].includes(raw) || /актуал|active/.test(raw)) return 'active';
-  if (['new', 'launch', 'новинка', 'запуск'].includes(raw) || /новин|новый|launch|запуск/.test(raw)) return 'new';
   if (['relaunch', 'restart', 'перезапуск'].includes(raw) || /перезапуск|relaunch|restart/.test(raw)) return 'relaunch';
+  if (['new', 'launch', 'новинка', 'запуск'].includes(raw) || /новин|новый|\blaunch\b|запуск/.test(raw)) return 'new';
   if (['watch', 'monitor', 'наблюдать'].includes(raw) || /наблюд|монитор|watch|monitor/.test(raw)) return 'watch';
   if (['question', 'review', 'под вопросом', 'перерабатываем', 'нет в спецификации'].includes(raw) || /вопрос|перераб|review|специф/.test(raw)) return 'question';
   if (['paused', 'pause', 'freeze', 'hold', 'пауза', 'заморозка', 'стоп'].includes(raw) || /пауза|замороз|freeze|hold/.test(raw)) return 'paused';

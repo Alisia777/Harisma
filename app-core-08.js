@@ -86,6 +86,14 @@ function repricerFirstFilledNumber(...values) {
   return 0;
 }
 
+function repricerFirstPositiveNumber(...values) {
+  for (const value of values) {
+    const parsed = numberOrZero(value);
+    if (parsed > 0) return parsed;
+  }
+  return 0;
+}
+
 function repricerCurrentDateKey() {
   const now = new Date();
   const year = now.getFullYear();
@@ -1003,7 +1011,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const feeRule = repricerFeeRule(platform, settings);
   const skuMinPrice = numberOrZero(skuSide?.minPrice);
   const skuBasePrice = repricerFirstFilledNumber(skuSide?.basePrice);
-  const skuCapPrice = repricerFirstFilledNumber(skuSide?.maxPrice, skuSide?.stretchCap);
+  const skuCapPrice = repricerFirstPositiveNumber(skuSide?.maxPrice, skuSide?.stretchCap);
   const sourceHasLiveCurrentPrice = String(sourceRow.currentSellerPriceSource || sourceRow.currentPriceSource || '').trim().toLowerCase() === 'live';
   const currentPricePresent = [sourceRow.currentFillPrice, sourceRow.currentPrice, priceRow?.currentPrice, supportRow?.currentExportPrice, skuSide?.currentPrice, legacySide?.currentPrice, liveSide?.currentPrice].some(repricerHasValue);
   const hardFloorPresent = [
@@ -1258,9 +1266,9 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const promoAdjustedToFloor = promoActive && Boolean(preferredPromo?.adjustedToFloor);
   const zoneFrom = Math.max(numberOrZero(sourceRow.workingZoneFrom), numberOrZero(legacySide?.workingZoneFrom), numberOrZero(corridor?.promoFloor), effectiveFloor);
   const stretchMultiplier = Math.max(1, numberOrZero(roleRule.stretchMultiplier) || 1);
-  const derivedStretchCapBase = repricerFirstFilledNumber(
+  const derivedStretchCapBase = repricerFirstPositiveNumber(
     corridor?.basePrice,
-    skuBasePrice,
+    skuSide?.basePrice,
     sourceRow.basePrice,
     priceRow?.basePrice,
     legacySide?.basePrice,
@@ -1271,9 +1279,10 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     ? Math.round(Math.max(derivedStretchCapBase, derivedStretchCapBase * stretchMultiplier))
     : 0;
   const priceSnapshotCapCandidate = Math.max(numberOrZero(priceRow?.maxPrice), numberOrZero(priceRow?.workingZoneTo));
-  const stretchCap = repricerFirstFilledNumber(
+  const stretchCap = repricerFirstPositiveNumber(
     corridor?.stretchCap,
-    skuCapPrice,
+    skuSide?.maxPrice,
+    skuSide?.stretchCap,
     sourceRow.workingZoneTo,
     supportRow?.workingZoneTo,
     supportRow?.maxPrice,
@@ -1565,6 +1574,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     effectiveFloor,
     floorSourceSummary: effectiveFloorSourceSummary,
     stretchCap,
+    stretchCapSourceSummary,
     capPrice,
     capSourceSummary,
     basePrice: repricerFirstFilledNumber(sourceRow.basePrice, priceRow?.basePrice, legacySide?.basePrice),
@@ -1867,6 +1877,26 @@ function invalidateRepricerRowsCache() {
   REPRICER_ROWS_CACHE.builtAt = 0;
 }
 
+function repricerOutOfScopeBrandLabel(value) {
+  const compact = String(value || '').trim().toLowerCase().replace(/[\s._-]+/g, '');
+  if (!compact) return '';
+  if (compact.includes('qeep')) return 'QEEP';
+  if (compact.includes('harly') || compact.includes('harley') || compact.includes('харли')) return 'Harly';
+  return '';
+}
+
+function repricerOutOfScopeBrandForRows(...rows) {
+  const fields = ['brand', 'brandName', 'vendor', 'manufacturer', 'articleKey', 'article', 'name'];
+  for (const row of rows) {
+    if (!row || typeof row !== 'object') continue;
+    for (const field of fields) {
+      const label = repricerOutOfScopeBrandLabel(row[field]);
+      if (label) return label;
+    }
+  }
+  return '';
+}
+
 function buildRepricerRows(forceFresh = false) {
   const signature = repricerRowsCacheSignature();
   if (!forceFresh && REPRICER_ROWS_CACHE.signature === signature && Array.isArray(REPRICER_ROWS_CACHE.rows)) {
@@ -1908,6 +1938,7 @@ function buildRepricerRowsFresh() {
         : null;
       const supportRow = supportMaps[platform].get(normalizedKey) || null;
       const priceRow = pricesMaps[platform].get(normalizedKey) || null;
+      if (repricerOutOfScopeBrandForRows(sourceRow, supportRow, priceRow, skuFact, legacyRow, legacySide)) return;
       const profile = repricerFindSkuProfile(articleKey);
       const resolvedBrand = repricerCanonicalBrandName(sourceRow.brand || skuFact?.brand || '');
       const skuOwnerName = typeof skuFact?.owner === 'object' ? skuFact.owner?.name : skuFact?.owner;

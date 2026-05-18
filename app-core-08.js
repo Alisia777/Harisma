@@ -320,6 +320,68 @@ function repricerModeTone(mode) {
   return 'ok';
 }
 
+function repricerLifecycleKey(value = '') {
+  if (typeof normalizeProductLifecycleKey === 'function') return normalizeProductLifecycleKey(value);
+  const raw = String(value || '').trim().toLowerCase().replaceAll('ё', 'е');
+  if (!raw) return '';
+  if (/новин|новый|launch|запуск/.test(raw)) return 'new';
+  if (/перезапуск|relaunch|restart/.test(raw)) return 'relaunch';
+  if (/наблюд|монитор|watch|monitor/.test(raw)) return 'watch';
+  if (/вопрос|перераб|review|специф/.test(raw)) return 'question';
+  if (/пауза|замороз|freeze|hold/.test(raw)) return 'paused';
+  if (/вывед|archiv|removed/.test(raw)) return 'archived';
+  if (/вывод|снимаем|снятие|exit|discontinu|sell.?out|clearance/.test(raw)) return 'exit';
+  if (/актуал|active|работает|в работе/.test(raw)) return 'active';
+  return '';
+}
+
+function repricerLifecycleMeta(key = '', fallbackLabel = '') {
+  const normalizedKey = repricerLifecycleKey(key) || String(key || '').trim();
+  const meta = window.PRODUCT_LIFECYCLE_STATUS_META?.[normalizedKey] || null;
+  if (meta) return { key: normalizedKey, ...meta };
+  const label = String(fallbackLabel || key || '').trim();
+  return {
+    key: label ? 'custom' : 'active',
+    label: label || 'Актуальный',
+    tone: label ? 'warn' : 'ok',
+    repricerMode: label ? 'freeze' : 'auto',
+    taskPolicy: label ? 'decision' : 'normal',
+    description: label ? 'Пользовательский статус требует ручной проверки.' : ''
+  };
+}
+
+function repricerProductLifecycleForRecord(record = {}, fallbackStatus = '', fallbackArticleKey = '') {
+  const articleKey = String(record?.articleKey || record?.article || record?.sku || fallbackArticleKey || '').trim();
+  let lifecycle = record?.productLifecycle && typeof record.productLifecycle === 'object'
+    ? record.productLifecycle
+    : null;
+
+  if (!lifecycle && typeof productLifecycleForSku === 'function') {
+    try {
+      lifecycle = productLifecycleForSku({ ...record, articleKey }, articleKey);
+    } catch (error) {
+      console.warn('[repricer] product lifecycle', error);
+    }
+  }
+
+  const rawKey = lifecycle?.key || lifecycle?.status || lifecycle?.label || fallbackStatus;
+  const key = repricerLifecycleKey(rawKey) || (String(rawKey || '').trim() ? 'custom' : 'active');
+  const meta = repricerLifecycleMeta(key, lifecycle?.label || lifecycle?.status || fallbackStatus);
+  return {
+    ...meta,
+    ...lifecycle,
+    key: lifecycle?.key ? (repricerLifecycleKey(lifecycle.key) || lifecycle.key) : meta.key,
+    articleKey,
+    label: lifecycle?.label || lifecycle?.status || meta.label,
+    status: lifecycle?.status || lifecycle?.label || meta.label,
+    repricerMode: lifecycle?.repricerMode || meta.repricerMode,
+    taskPolicy: lifecycle?.taskPolicy || meta.taskPolicy,
+    tone: lifecycle?.tone || meta.tone || '',
+    source: lifecycle?.source || '',
+    reason: lifecycle?.reason || lifecycle?.note || meta.description || ''
+  };
+}
+
 function repricerStatusRule(status, settings) {
   const normalized = String(status || '').trim();
   if (!normalized) return normalizeRepricerStatusRule({ mode: 'hold', allowAutoprice: false, allowLaunch: false, allowAlignment: false });
@@ -330,6 +392,31 @@ function repricerStatusRule(status, settings) {
   if (raw.includes('вопрос') || raw.includes('перераб')) return normalizeRepricerStatusRule({ mode: 'freeze', allowAutoprice: false, allowLaunch: false, allowAlignment: false });
   if (raw.includes('вывод')) return normalizeRepricerStatusRule({ mode: 'off', allowAutoprice: false, allowLaunch: false, allowAlignment: false });
   return normalizeRepricerStatusRule({ mode: 'auto', allowAutoprice: true, allowLaunch: false, allowAlignment: true });
+}
+
+function repricerLifecycleStatusRule(lifecycle, status, settings) {
+  const fallback = repricerStatusRule(status, settings);
+  const mode = String(lifecycle?.repricerMode || '').trim().toLowerCase();
+  const key = String(lifecycle?.key || '').trim();
+  const sourceLabel = lifecycle?.label || lifecycle?.status || status;
+  const decorate = (rule) => ({
+    ...normalizeRepricerStatusRule(rule),
+    lifecycleKey: key,
+    lifecycleLabel: sourceLabel,
+    lifecycleSource: lifecycle?.source || '',
+    lifecycleReason: lifecycle?.reason || lifecycle?.note || ''
+  });
+
+  if (!key || key === 'active' || mode === 'auto') return decorate(fallback);
+  if (mode === 'launch') return decorate({ mode: 'launch', allowAutoprice: true, allowLaunch: true, allowAlignment: false });
+  if (mode === 'freeze') return decorate({ mode: 'freeze', allowAutoprice: false, allowLaunch: false, allowAlignment: false });
+  if (mode === 'hold') return decorate({ mode: 'hold', allowAutoprice: false, allowLaunch: false, allowAlignment: false });
+  if (mode === 'off') return decorate({ mode: 'off', allowAutoprice: false, allowLaunch: false, allowAlignment: false });
+  return decorate(fallback);
+}
+
+function productLifecycleBlocksAutoOrder(lifecycle) {
+  return ['question', 'paused', 'exit', 'archived'].includes(String(lifecycle?.key || '').trim());
 }
 
 function repricerSuggestedRole(status, segment) {
@@ -412,59 +499,6 @@ function repricerFindOverride(articleKey, platform) {
 function repricerNormalizeArticleKey(value) {
   return String(value || '').trim().toLowerCase().replace(/[^a-zа-я0-9]+/gi, '');
 }
-
-function productLeaderboardEntryForArticle(articleKey, normalizeKey = repricerNormalizeArticleKey) {
-  const normalize = typeof normalizeKey === 'function'
-    ? normalizeKey
-    : (value) => String(value || '').trim().toLowerCase();
-  const wanted = normalize(articleKey);
-  if (!wanted) return null;
-
-  if (typeof getProductLeaderboardEntry === 'function') {
-    try {
-      const direct = getProductLeaderboardEntry(articleKey);
-      if (direct) return direct;
-    } catch (error) {
-      console.warn('[product-leaderboard] direct lookup', error);
-    }
-  }
-
-  const payload = state.productLeaderboard || {};
-  const items = Array.isArray(payload.items) ? payload.items : [];
-  return items.find((item) => [
-    item?.articleKey,
-    item?.article,
-    item?.sku
-  ].some((value) => normalize(value) === wanted)) || null;
-}
-
-function productLeaderboardAdTone(entry) {
-  const severity = String(entry?.diagnostics?.highestSeverity || entry?.severity || '').toLowerCase();
-  if (severity === 'critical' || severity === 'high') return 'danger';
-  if (severity === 'medium' || severity === 'warn' || severity === 'warning') return 'warn';
-  return 'info';
-}
-
-function productLeaderboardAdLabel(entry) {
-  const traffic = String(entry?.traffic || '\u041a\u0417').trim() || '\u041a\u0417';
-  return `${traffic} / \u0440\u0435\u043a\u043b\u0430\u043c\u0430`;
-}
-
-function productLeaderboardAdSummary(entry) {
-  if (!entry) return '';
-  const parts = [productLeaderboardAdLabel(entry)];
-  if (entry.weekLabel) parts.push(String(entry.weekLabel));
-  if (numberOrZero(entry.buys || entry.orders) > 0) parts.push(`${fmt.int(entry.buys || entry.orders)} \u043f\u043e\u043a.`);
-  if (numberOrZero(entry.revenue) > 0) parts.push(fmt.money(entry.revenue));
-  if (numberOrZero(entry.drrPct) > 0) parts.push(`\u0414\u0420\u0420 ${fmt.pct(entry.drrPct)}`);
-  if (entry.diagnostics?.summary) parts.push(String(entry.diagnostics.summary));
-  return parts.join(' · ');
-}
-
-window.productLeaderboardEntryForArticle = window.productLeaderboardEntryForArticle || productLeaderboardEntryForArticle;
-window.productLeaderboardAdTone = window.productLeaderboardAdTone || productLeaderboardAdTone;
-window.productLeaderboardAdLabel = window.productLeaderboardAdLabel || productLeaderboardAdLabel;
-window.productLeaderboardAdSummary = window.productLeaderboardAdSummary || productLeaderboardAdSummary;
 
 function repricerLiveMap() {
   const rows = Array.isArray(state.repricerLive?.rows) ? state.repricerLive.rows : [];
@@ -950,13 +984,21 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     legacySide?.requiredPriceForMargin
   ].some(repricerHasValue);
   const brand = context.brand || sourceRow.brand || skuFact?.brand || '';
-  const status = context.status || sourceRow.status || '';
+  const fallbackStatus = context.status || sourceRow.status || '';
+  const productLifecycle = context.productLifecycle || repricerProductLifecycleForRecord({
+    ...(skuFact || {}),
+    articleKey,
+    article: sourceRow.article || articleKey,
+    productStatus: fallbackStatus || skuFact?.productStatus,
+    status: fallbackStatus || skuFact?.status || sourceRow.status
+  }, fallbackStatus, articleKey);
+  const status = productLifecycle?.label || productLifecycle?.status || fallbackStatus;
   const sourceMode = String(sourceRow.sourceMode || '').trim();
   const clientOnlyMarketFacts = sourceMode === 'wb-market-facts-client-only';
   const role = context.role || repricerSuggestedRole(status, sourceRow.segment);
   const launchReady = normalizeRepricerLaunchReady(context.launchReady || repricerDefaultLaunchReady(status));
   const brandRule = repricerBrandRule(brand, settings);
-  const statusRule = repricerStatusRule(status, settings);
+  const statusRule = repricerLifecycleStatusRule(productLifecycle, status, settings);
   const roleRule = repricerRoleRule(role, settings);
   const feeRule = repricerFeeRule(platform, settings);
   const skuMinPrice = numberOrZero(skuSide?.minPrice);
@@ -1339,6 +1381,9 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   let turnoverAction = 'KEEP';
   let reasonCode = 'KEEP';
 
+  if (productLifecycle?.key && productLifecycle.key !== 'active') {
+    reasons.push(`статус товара: ${productLifecycle.label || productLifecycle.status || productLifecycle.key}`);
+  }
   if (promoActive && !outOfSpec && pricingProxyPresent) {
     criticalGate = 'OK';
     if (!currentPricePresent) reasons.push(promoSource === 'promo_offer' ? 'promo offer без текущей цены' : 'promo override без текущей цены');
@@ -1490,6 +1535,13 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     brand,
     brandRule,
     status,
+    productLifecycle,
+    productLifecycleKey: productLifecycle?.key || 'active',
+    productLifecycleLabel: productLifecycle?.label || productLifecycle?.status || status,
+    productLifecycleTone: productLifecycle?.tone || '',
+    productLifecycleSource: productLifecycle?.source || '',
+    productLifecycleReason: productLifecycle?.reason || productLifecycle?.note || '',
+    productLifecycleTaskPolicy: productLifecycle?.taskPolicy || '',
     role,
     launchReady,
     currentPrice,
@@ -1862,7 +1914,20 @@ function buildRepricerRowsFresh() {
       const platformSpecificOwner = typeof platformOwnerName === 'function'
         ? platformOwnerName(skuFact, platform)
         : '';
-      const resolvedStatus = profile?.status || sourceRow.status || supportRow?.repricerStatus || supportRow?.productStatus || skuFact?.status || '';
+      const fallbackStatus = profile?.status || sourceRow.status || supportRow?.repricerStatus || supportRow?.productStatus || skuFact?.productStatus || skuFact?.status || '';
+      const productLifecycle = repricerProductLifecycleForRecord({
+        ...(skuFact || {}),
+        articleKey,
+        article: sourceRow.article || articleKey,
+        productLifecycle: skuFact?.productLifecycle,
+        productLifecycleStatus: profile?.status || skuFact?.productLifecycleStatus || sourceRow.productLifecycleStatus || supportRow?.productLifecycleStatus,
+        lifecycleStatus: skuFact?.lifecycleStatus || sourceRow.lifecycleStatus || supportRow?.lifecycleStatus,
+        productStatus: profile?.status || sourceRow.productStatus || supportRow?.productStatus || skuFact?.productStatus,
+        sheetStatus: skuFact?.sheetStatus || sourceRow.sheetStatus || supportRow?.sheetStatus,
+        registryStatus: skuFact?.registryStatus || sourceRow.registryStatus || supportRow?.registryStatus,
+        status: fallbackStatus
+      }, fallbackStatus, articleKey);
+      const resolvedStatus = productLifecycle?.label || productLifecycle?.status || fallbackStatus;
       const resolvedRole = profile?.role || repricerSuggestedRole(resolvedStatus, sourceRow.segment || supportRow?.segment || skuFact?.segment);
       const resolvedLaunchReady = normalizeRepricerLaunchReady(profile?.launchReady || repricerDefaultLaunchReady(resolvedStatus));
       if (!byArticle.has(articleKey)) byArticle.set(articleKey, {
@@ -1872,6 +1937,7 @@ function buildRepricerRowsFresh() {
         name: sourceRow.name || supportRow?.name || priceRow?.name || skuFact?.name || '',
         owner: platformSpecificOwner || sourceRow.owner || supportRow?.owner || priceRow?.owner || skuOwnerName || '',
         status: resolvedStatus,
+        productLifecycle,
         role: resolvedRole,
         launchReady: resolvedLaunchReady,
         segment: sourceRow.segment || supportRow?.segment || skuFact?.segment || '',
@@ -1887,7 +1953,10 @@ function buildRepricerRowsFresh() {
       row.brand = row.brand || resolvedBrand;
       row.name = row.name || sourceRow.name || supportRow?.name || priceRow?.name || skuFact?.name || '';
       row.owner = row.owner || platformSpecificOwner || sourceRow.owner || supportRow?.owner || priceRow?.owner || skuOwnerName || '';
-      row.status = profile?.status || row.status || sourceRow.status || supportRow?.repricerStatus || supportRow?.productStatus || skuFact?.status || '';
+      row.productLifecycle = row.productLifecycle?.key && row.productLifecycle.key !== 'active'
+        ? row.productLifecycle
+        : (productLifecycle || row.productLifecycle || null);
+      row.status = row.productLifecycle?.label || row.productLifecycle?.status || profile?.status || row.status || sourceRow.status || supportRow?.repricerStatus || supportRow?.productStatus || skuFact?.status || '';
       row.role = profile?.role || row.role || repricerSuggestedRole(row.status || sourceRow.status || supportRow?.repricerStatus || skuFact?.status, sourceRow.segment || supportRow?.segment || skuFact?.segment);
       row.launchReady = normalizeRepricerLaunchReady(profile?.launchReady || row.launchReady || repricerDefaultLaunchReady(row.status || sourceRow.status || skuFact?.status));
       row.segment = row.segment || sourceRow.segment || supportRow?.segment || skuFact?.segment || '';
@@ -1898,6 +1967,7 @@ function buildRepricerRowsFresh() {
       row[platform] = buildRepricerSide(sourceRow, platform, settings, {
         brand: row.brand,
         status: row.status,
+        productLifecycle: row.productLifecycle,
         role: row.role,
         launchReady: row.launchReady,
         liveRow: row.liveRow,
@@ -1927,7 +1997,7 @@ function buildRepricerRowsFresh() {
     row.alignmentEligible = Boolean(row.alignmentEligible);
     row.alignmentChanged = Boolean(row.alignmentChanged);
     row.blocked = ['freeze', 'hold', 'force', 'off'].includes(row.wb?.mode) || ['freeze', 'hold', 'force', 'off'].includes(row.ozon?.mode);
-    row.searchIndex = [row.article, row.articleKey, row.brand, row.name, row.owner, row.status, row.role, row.launchReady, row.segment, row.abc, row.alignmentScenario, row.alignmentReason, row.wb?.reason, row.ozon?.reason, row.wb?.reasonCode, row.ozon?.reasonCode, row.wb?.liveStrategy, row.ozon?.liveStrategy, row.wb?.liveReason, row.ozon?.liveReason, row.wb?.promoLabel, row.ozon?.promoLabel, row.wb?.promoSourceLabel, row.ozon?.promoSourceLabel, row.wb?.promoOfferLabel, row.ozon?.promoOfferLabel, row.wb?.promoOfferSourceLabel, row.ozon?.promoOfferSourceLabel].filter(Boolean).join(' ').toLowerCase();
+    row.searchIndex = [row.article, row.articleKey, row.brand, row.name, row.owner, row.status, row.productLifecycle?.label, row.productLifecycle?.reason, row.productLifecycle?.source, row.role, row.launchReady, row.segment, row.abc, row.alignmentScenario, row.alignmentReason, row.wb?.reason, row.ozon?.reason, row.wb?.reasonCode, row.ozon?.reasonCode, row.wb?.liveStrategy, row.ozon?.liveStrategy, row.wb?.liveReason, row.ozon?.liveReason, row.wb?.promoLabel, row.ozon?.promoLabel, row.wb?.promoSourceLabel, row.ozon?.promoSourceLabel, row.wb?.promoOfferLabel, row.ozon?.promoOfferLabel, row.wb?.promoOfferSourceLabel, row.ozon?.promoOfferSourceLabel].filter(Boolean).join(' ').toLowerCase();
     row.maxAbsDelta = Math.max(Math.abs(numberOrZero(row.wb?.changeRub)), Math.abs(numberOrZero(row.ozon?.changeRub)));
     return row;
   }).sort((a, b) => Number(b.hasManualOverride) - Number(a.hasManualOverride)
@@ -2425,6 +2495,9 @@ function renderRepricerSide(title, side) {
   const capLiftedByFloorGuard = manualCap > 0 && floorForCapGuard > 0 && manualCap + 0.001 < floorForCapGuard;
   const action = repricerExplainSideAction(side);
   const confidenceBadge = badge(`${repricerConfidenceLabel(side.confidence)} ${fmt.int(side.confidenceScore)}`, repricerConfidenceTone(side.confidence));
+  const lifecycleBadge = side.productLifecycleKey && side.productLifecycleKey !== 'active'
+    ? badge(`товар: ${side.productLifecycleLabel || side.productLifecycleKey}`, side.productLifecycleTone || 'warn')
+    : '';
   const businessBadges = [
     badge(`MIN ${fmt.money(side.effectiveFloor)}`, side.belowFloorNow ? 'danger' : ''),
     badge(`MAX ${fmt.money(displayedCap)}`),
@@ -2436,6 +2509,7 @@ function renderRepricerSide(title, side) {
   ].filter(Boolean).join('');
   const summaryBadges = [
     confidenceBadge,
+    lifecycleBadge,
     badge(`действие: ${repricerTurnoverActionLabel(side.turnoverAction)}`, side.criticalGate === 'BLOCK' ? 'danger' : 'info'),
     side.autopriceAllowed ? badge('авторежим: включен', 'ok') : badge('авторежим: выключен', 'warn'),
     side.economicFloorSource === 'snapshot_fallback' ? badge('себестоимость: нет', 'warn') : badge('себестоимость: есть', 'ok'),
@@ -2457,8 +2531,8 @@ function renderRepricerSide(title, side) {
   const controlsKey = `${String(side.articleKey || '').trim()}::${String(side.platform || '').trim()}`;
   const controlsOpen = repricerUiToggleOpen('controls', controlsKey, false);
   return `
-    <div class="repricer-side ${side.changed ? 'changed' : ''} confidence-${escapeHtml(side.confidence || '')}">
-      <div class="repricer-side-head">${escapeHtml(title)} <span class="badge-stack">${confidenceBadge}${badge(repricerModeLabel(side.mode), repricerModeTone(side.mode))}${side.manualPromoConfigured ? badge(repricerPromoWindowLabel({ status: side.manualPromoWindowStatus }), side.manualPromoActive ? 'warn' : 'info') : ''}${side.promoOfferConfigured ? badge(repricerPromoWindowLabel({ status: side.promoOfferWindowStatus }, 'offer'), side.promoSource === 'promo_offer' && side.promoActive ? 'info' : 'warn') : ''}${side.promoSource === 'promo_offer' ? badge('акция ведёт цену', 'info') : ''}${side.hasOverride ? badge('ручное решение', 'warn') : ''}${side.hasCorridor ? badge('коридор', 'info') : ''}${side.alignmentApplied ? badge('выравнивание', 'info') : ''}</span></div>
+    <div class="repricer-side ${side.changed ? 'changed' : ''} confidence-${escapeHtml(side.confidence || '')}" data-lifecycle-key="${escapeHtml(side.productLifecycleKey || 'active')}" data-lifecycle-mode="${escapeHtml(side.engineMode || side.mode || 'auto')}">
+      <div class="repricer-side-head">${escapeHtml(title)} <span class="badge-stack">${confidenceBadge}${lifecycleBadge}${badge(repricerModeLabel(side.mode), repricerModeTone(side.mode))}${side.manualPromoConfigured ? badge(repricerPromoWindowLabel({ status: side.manualPromoWindowStatus }), side.manualPromoActive ? 'warn' : 'info') : ''}${side.promoOfferConfigured ? badge(repricerPromoWindowLabel({ status: side.promoOfferWindowStatus }, 'offer'), side.promoSource === 'promo_offer' && side.promoActive ? 'info' : 'warn') : ''}${side.promoSource === 'promo_offer' ? badge('акция ведёт цену', 'info') : ''}${side.hasOverride ? badge('ручное решение', 'warn') : ''}${side.hasCorridor ? badge('коридор', 'info') : ''}${side.alignmentApplied ? badge('выравнивание', 'info') : ''}</span></div>
       <div class="repricer-prices">
         <div><span>Текущая</span><strong>${fmt.money(side.currentPrice)}</strong></div>
         <div><span>Финал</span><strong>${fmt.money(side.finalPrice)}</strong></div>
@@ -3385,9 +3459,56 @@ function repricerExactStorageItem(bucket, articleKey, platform = 'all') {
     && String(item.platform || 'all').trim().toLowerCase() === platform) || null;
 }
 
+const REPRICER_API_QUEUE_BUCKETS = new Set(['repricerPendingApiAdds', 'repricerPendingApiDeletes', 'repricerPendingCostFixes', 'repricerPendingApiTasks']);
+
+function repricerQueuePayloadSignature(item = {}, bucket = '') {
+  const type = String(item.type || item.action || repricerTaskTypeFromBucket(bucket, item)).trim().toUpperCase();
+  const fallbackField = bucket === 'repricerPendingCostFixes' ? 'cost' : (bucket === 'repricerPendingApiAdds' || bucket === 'repricerPendingApiDeletes' ? 'sku' : '');
+  const field = String(item.field || item.apiField || fallbackField).trim().toLowerCase();
+  const value = item.value ?? item.costRub ?? '';
+  return `${type}|${field}|${String(value).trim()}`;
+}
+
+function repricerMergeQueueUpsert(bucket, existing, incoming) {
+  if (!existing || !REPRICER_API_QUEUE_BUCKETS.has(bucket)) return incoming;
+  const type = incoming.type || incoming.action || existing.type || existing.action || repricerTaskTypeFromBucket(bucket, incoming);
+  const next = {
+    ...existing,
+    ...incoming,
+    id: incoming.id || existing.id,
+    type,
+    action: incoming.action || incoming.type || existing.action || existing.type || type,
+    requestedAt: existing.requestedAt || incoming.requestedAt || incoming.updatedAt || '',
+    updatedAt: incoming.updatedAt || incoming.requestedAt || new Date().toISOString()
+  };
+  const changed = repricerQueuePayloadSignature(existing, bucket) !== repricerQueuePayloadSignature(next, bucket);
+  if (changed) {
+    next.status = incoming.status || 'open';
+    delete next.sentAt;
+    delete next.sentBy;
+    delete next.acceptedAt;
+    delete next.reconciledAt;
+    delete next.resultMessage;
+    return next;
+  }
+  const existingStatus = repricerTaskStatus(existing);
+  if (existingStatus !== 'open') {
+    next.status = existingStatus === 'error' && existing.sentAt ? 'sent' : existingStatus;
+    next.sentAt = existing.sentAt || incoming.sentAt || '';
+    next.sentBy = existing.sentBy || incoming.sentBy || '';
+    next.acceptedAt = existing.acceptedAt || incoming.acceptedAt || '';
+    next.reconciledAt = existing.reconciledAt || incoming.reconciledAt || '';
+    next.resultMessage = existing.resultMessage || incoming.resultMessage || '';
+  }
+  return next;
+}
+
 function repricerUpsertStorageItem(bucket, item, predicate) {
-  state.storage[bucket] = (state.storage[bucket] || []).filter((entry) => !predicate(entry));
-  state.storage[bucket].unshift(item);
+  const current = state.storage[bucket] || [];
+  const existing = current.find((entry) => predicate(entry)) || null;
+  const next = repricerMergeQueueUpsert(bucket, existing, item);
+  state.storage[bucket] = current.filter((entry) => !predicate(entry));
+  state.storage[bucket].unshift(next);
 }
 
 function repricerTeamActor() {
@@ -3704,7 +3825,7 @@ function repricerTaskResolvedByCurrentData(task, currentMap) {
 function reconcileRepricerApiTasks() {
   const now = new Date().toISOString();
   const { map } = repricerCurrentRowMaps();
-  const summary = { checked: 0, accepted: 0, error: 0, open: 0 };
+  const summary = { checked: 0, accepted: 0, error: 0, open: 0, waiting: 0 };
   repricerUpdateApiTaskBuckets((item, bucket) => {
     const type = repricerTaskTypeFromBucket(bucket, item);
     item = { ...item, type, action: item.action || type };
@@ -3716,15 +3837,19 @@ function reconcileRepricerApiTasks() {
       summary.accepted += 1;
       return { ...item, status: 'accepted', acceptedAt: now, reconciledAt: now, updatedAt: now, resultMessage: 'данные в API/источнике уже отражены' };
     }
-    if (status === 'sent') {
-      summary.error += 1;
-      return { ...item, status: 'error', reconciledAt: now, updatedAt: now, resultMessage: 'после обновления данные не изменились' };
+    if (status === 'sent' || item.sentAt) {
+      summary.waiting += 1;
+      return { ...item, status: 'sent', reconciledAt: now, updatedAt: now, resultMessage: 'отправлено, ждём обновления источника' };
+    }
+    if (status === 'error') {
+      summary.open += 1;
+      return { ...item, status: 'open', reconciledAt: now, updatedAt: now, resultMessage: 'возвращено в очередь после повторной сверки' };
     }
     summary.open += 1;
     return { ...item, reconciledAt: now, updatedAt: now, resultMessage: 'ждёт отправки в API' };
   });
   const record = {
-    id: stableId('repricer-api-check', `${now}|${summary.checked}|${summary.accepted}|${summary.error}`),
+    id: stableId('repricer-api-check', `${now}|${summary.checked}|${summary.accepted}|${summary.waiting}|${summary.error}`),
     articleKey: `api-check-${Date.now()}`,
     checkedAt: now,
     checkedBy: repricerTeamActor(),
@@ -3735,7 +3860,7 @@ function reconcileRepricerApiTasks() {
   saveLocalStorage();
   if (typeof persistRepricerControls === 'function') persistRepricerControls().catch((error) => console.error(error));
   renderRepricer();
-  window.alert(`Сверка API: принято ${summary.accepted}, не принято ${summary.error}, ждёт отправки ${summary.open}.`);
+  window.alert(`Сверка API: принято ${summary.accepted}, ждёт обновления источника ${summary.waiting}, ждёт отправки ${summary.open}, ошибок ${summary.error}.`);
   return summary;
 }
 
@@ -3987,7 +4112,18 @@ function repricerApplyAuditImportRows(rows, fileName = '') {
         summary.pendingTasks += 1;
       }
       if (cost) {
-        repricerUpsertStorageItem('repricerPendingCostFixes', { articleKey, platform, costRub: cost, requestedAt: now, requestedBy: state.team?.member?.name || 'Команда', note }, (item) => item.articleKey === articleKey && item.platform === platform);
+        repricerUpsertStorageItem('repricerPendingCostFixes', {
+          type: 'UPDATE_COST',
+          action: 'UPDATE_COST',
+          articleKey,
+          platform,
+          field: 'cost',
+          value: cost,
+          costRub: cost,
+          requestedAt: now,
+          requestedBy: state.team?.member?.name || 'Команда',
+          note
+        }, (item) => item.articleKey === articleKey && item.platform === platform);
         summary.pendingCosts += 1;
         details.push('себестоимость отправлена в очередь API');
       }
@@ -4654,12 +4790,9 @@ function repricerOperatorLayer() {
 function repricerRenderSignature(operatorLayer = repricerOperatorLayer()) {
   const filters = state.repricerFilters || {};
   const ui = state.repricerUi || {};
-  const leaderboard = state.productLeaderboard || {};
   return [
     operatorLayer,
     repricerRowsCacheSignature(),
-    leaderboard.generatedAt || '',
-    Array.isArray(leaderboard.items) ? leaderboard.items.length : 0,
     filters.search || '',
     filters.platform || '',
     filters.mode || '',
@@ -4695,7 +4828,7 @@ function renderRepricerRepairStatusCard() {
     ? `Проверка Excel: ${fmt.date(lastValidation.validatedAt)} · ошибок ${fmt.int(lastValidation.errors)} · предупреждений ${fmt.int(lastValidation.warnings)}`
     : 'Excel ещё не проверяли';
   const reconcileText = lastReconcile?.checkedAt
-    ? `Сверка API: ${fmt.date(lastReconcile.checkedAt)} · принято ${fmt.int(lastReconcile.accepted)} · ошибок ${fmt.int(lastReconcile.error)}`
+    ? `Сверка API: ${fmt.date(lastReconcile.checkedAt)} · принято ${fmt.int(lastReconcile.accepted)} · ждёт источника ${fmt.int(lastReconcile.waiting)} · ошибок ${fmt.int(lastReconcile.error)}`
     : 'API ещё не сверяли';
   return `
     <div class="repricer-operator-focus-card repricer-repair-card" style="margin-top:14px">
@@ -4734,24 +4867,6 @@ function renderRepricerRepairStatusCard() {
   `;
 }
 
-function repricerProductLeaderboardBadge(articleKey) {
-  const entry = productLeaderboardEntryForArticle(articleKey, repricerNormalizeArticleKey);
-  if (!entry) return '';
-  return `<button type="button" class="chip ${escapeHtml(productLeaderboardAdTone(entry))} repricer-ad-badge" data-open-product-leaderboard="${escapeHtml(articleKey || entry.articleKey || '')}" title="${escapeHtml(productLeaderboardAdSummary(entry))}">${escapeHtml(productLeaderboardAdLabel(entry))}</button>`;
-}
-
-function decorateRepricerProductLeaderboardBadges(root) {
-  if (!root) return;
-  root.querySelectorAll('.repricer-card').forEach((card) => {
-    if (card.querySelector('.repricer-ad-badge')) return;
-    const articleKey = card.querySelector('[data-open-sku]')?.getAttribute('data-open-sku') || '';
-    const badgeHtml = repricerProductLeaderboardBadge(articleKey);
-    if (!badgeHtml) return;
-    const stack = card.querySelector('.head .badge-stack');
-    if (stack) stack.insertAdjacentHTML('afterbegin', badgeHtml);
-  });
-}
-
 function renderRepricerFixTeamCard(rows = buildRepricerRows()) {
   const counts = repricerFixTeamCounts(rows);
   const teams = ['prices', 'cost', 'api', 'marketplace', 'sku', 'manual'];
@@ -4788,7 +4903,7 @@ function renderRepricerWorkLogicCard() {
         <div><strong>1. Данные</strong><span>Берём текущую цену, MIN/MAX, себестоимость, статус и live-ориентир.</span></div>
         <div><strong>2. Confidence</strong><span>Зелёные идут в шаблон, жёлтые и красные остаются в аудите.</span></div>
         <div><strong>3. Исправления</strong><span>Excel сначала проверяется, автопочин показывает предпросмотр и сохраняет откат.</span></div>
-        <div><strong>4. API</strong><span>Задачи получают статус: новая, отправлено, принято или ошибка после сверки.</span></div>
+        <div><strong>4. API</strong><span>Задачи получают статус: новая, отправлено, ждёт обновления источника или принято.</span></div>
       </div>
     </div>
   `;
@@ -4962,15 +5077,6 @@ function runRepricerExportMode(button, mode) {
 }
 
 function attachRepricerEvents(root) {
-  root.querySelectorAll('[data-open-product-leaderboard]').forEach((button) => {
-    button.addEventListener('click', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const articleKey = button.getAttribute('data-open-product-leaderboard') || '';
-      if (typeof openProductLeaderboardForSku === 'function') openProductLeaderboardForSku(articleKey);
-    });
-  });
-
   root.querySelectorAll('[data-repricer-layer-toggle]').forEach((button) => {
     button.addEventListener('click', () => {
       setRepricerOperatorLayer(button.getAttribute('data-repricer-layer-toggle') || 'simple');
@@ -5463,7 +5569,10 @@ function renderRepricer() {
     ...Object.keys(settings.brandRules || {}),
     ...sourceRows.map((row) => repricerCanonicalBrandName(row.brand)).filter(Boolean)
   ])].sort((a, b) => a.localeCompare(b, 'ru'));
-  const statuses = [...new Set([...Object.keys(defaultRepricerSettings().statusRules), ...sourceRows.map((row) => row.status).filter(Boolean)])].sort((a, b) => a.localeCompare(b, 'ru'));
+  const lifecycleStatusLabels = Object.values(window.PRODUCT_LIFECYCLE_STATUS_META || {})
+    .map((item) => item?.label)
+    .filter(Boolean);
+  const statuses = [...new Set([...lifecycleStatusLabels, ...Object.keys(defaultRepricerSettings().statusRules), ...sourceRows.map((row) => row.status).filter(Boolean)])].sort((a, b) => a.localeCompare(b, 'ru'));
   const roles = [...new Set([...Object.keys(defaultRepricerSettings().roleRules), ...Object.keys(settings.roleRules || {}), ...sourceRows.map((row) => row.role).filter(Boolean)])].sort((a, b) => a.localeCompare(b, 'ru'));
   const feePlatforms = [...new Set([...Object.keys(defaultRepricerSettings().feeRules), ...Object.keys(settings.feeRules || {}), 'wb', 'ozon'])];
   const cards = [
@@ -5601,18 +5710,19 @@ function renderRepricer() {
         const duplicatePeers = (duplicateEntry?.articles || [])
           .filter((article) => article !== String(row.article || row.articleKey || '').trim())
           .slice(0, 4);
-        return `<div class="card repricer-card"><div class="head"><div><strong>${linkToSku(row.articleKey, row.article || row.articleKey)}</strong><div class="muted small">${escapeHtml(row.name || 'Без названия')} · ${escapeHtml(row.owner || 'Без owner')}</div>${duplicatePeers.length ? `<div class="muted small" style="margin-top:6px">Похожие карточки: ${escapeHtml(duplicatePeers.join(', '))}</div>` : ''}</div><div class="badge-stack">${row.brand ? badge(row.brand, 'info') : ''}${badge(row.status || 'Статус не указан')}${badge(`роль ${row.role || '—'}`, 'info')}${badge(row.launchReady === 'READY' ? 'готов к запуску' : 'hold до запуска', row.launchReady === 'READY' ? 'ok' : 'warn')}${row.segment ? badge(row.segment, 'info') : ''}${row.abc ? badge(`ABC ${row.abc}`) : ''}${row.hasManagedProfile ? badge('профиль SKU', 'ok') : ''}${row.hasCorridor ? badge('коридор', 'info') : ''}${row.hasManualOverride ? badge('ручное решение', 'warn') : ''}${duplicateEntry ? badge(`дубль названия x${fmt.int(duplicateEntry.count)}`, 'warn') : ''}</div></div><details style="margin:10px 0"><summary class="small muted" style="cursor:pointer">Настроить профиль SKU</summary><form class="repricer-sku-form" data-article-key="${escapeHtml(row.articleKey)}" style="margin-top:10px"><div class="filters repricer-filters"><select name="status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${row.status === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select><select name="role">${roles.map((role) => `<option value="${escapeHtml(role)}" ${row.role === role ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}</select><select name="launchReady"><option value="READY" ${row.launchReady === 'READY' ? 'selected' : ''}>READY</option><option value="HOLD" ${row.launchReady !== 'READY' ? 'selected' : ''}>HOLD</option></select></div><div class="quick-actions" style="margin-top:10px"><button type="submit" class="quick-chip">Сохранить профиль</button><button type="button" class="quick-chip" data-repricer-sku-reset data-article-key="${escapeHtml(row.articleKey)}">Сбросить профиль</button></div></form></details><div class="repricer-side-grid ${state.repricerFilters.platform !== 'all' ? 'single' : ''}">${state.repricerFilters.platform !== 'ozon' ? renderRepricerSide('WB', row.wb) : ''}${state.repricerFilters.platform !== 'wb' ? renderRepricerSide('Ozon', row.ozon) : ''}</div></div>`;
+        return `<div class="card repricer-card"><div class="head"><div><strong>${linkToSku(row.articleKey, row.article || row.articleKey)}</strong><div class="muted small">${escapeHtml(row.name || 'Без названия')} · ${escapeHtml(row.owner || 'Без owner')}</div>${duplicatePeers.length ? `<div class="muted small" style="margin-top:6px">Похожие карточки: ${escapeHtml(duplicatePeers.join(', '))}</div>` : ''}</div><div class="badge-stack">${row.brand ? badge(row.brand, 'info') : ''}${badge(row.status || 'Статус не указан')}${row.productLifecycle?.key && row.productLifecycle.key !== 'active' ? badge(`товар: ${row.productLifecycle.label || row.productLifecycle.status || row.productLifecycle.key}`, row.productLifecycle.tone || 'warn') : ''}${badge(`роль ${row.role || '—'}`, 'info')}${badge(row.launchReady === 'READY' ? 'готов к запуску' : 'hold до запуска', row.launchReady === 'READY' ? 'ok' : 'warn')}${row.segment ? badge(row.segment, 'info') : ''}${row.abc ? badge(`ABC ${row.abc}`) : ''}${row.hasManagedProfile ? badge('профиль SKU', 'ok') : ''}${row.hasCorridor ? badge('коридор', 'info') : ''}${row.hasManualOverride ? badge('ручное решение', 'warn') : ''}${duplicateEntry ? badge(`дубль названия x${fmt.int(duplicateEntry.count)}`, 'warn') : ''}</div></div><details style="margin:10px 0"><summary class="small muted" style="cursor:pointer">Настроить профиль SKU</summary><form class="repricer-sku-form" data-article-key="${escapeHtml(row.articleKey)}" style="margin-top:10px"><div class="filters repricer-filters"><select name="status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${row.status === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select><select name="role">${roles.map((role) => `<option value="${escapeHtml(role)}" ${row.role === role ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}</select><select name="launchReady"><option value="READY" ${row.launchReady === 'READY' ? 'selected' : ''}>READY</option><option value="HOLD" ${row.launchReady !== 'READY' ? 'selected' : ''}>HOLD</option></select></div><div class="quick-actions" style="margin-top:10px"><button type="submit" class="quick-chip">Сохранить профиль</button><button type="button" class="quick-chip" data-repricer-sku-reset data-article-key="${escapeHtml(row.articleKey)}">Сбросить профиль</button></div></form></details><div class="repricer-side-grid ${state.repricerFilters.platform !== 'all' ? 'single' : ''}">${state.repricerFilters.platform !== 'ozon' ? renderRepricerSide('WB', row.wb) : ''}${state.repricerFilters.platform !== 'wb' ? renderRepricerSide('Ozon', row.ozon) : ''}</div></div>`;
       }).join('') || '<div class="empty">По выбранным фильтрам репрайсер ничего не показал.</div>'}
     </div>
   `;
 
-  decorateRepricerProductLeaderboardBadges(root);
   attachRepricerEvents(root);
 }
 
 function getOrderCalcBase() {
   const sku = getSku(state.orderCalc.articleKey || state.skus[0]?.articleKey);
   if (!sku) return null;
+  const productLifecycle = repricerProductLifecycleForRecord(sku, sku?.status || sku?.productStatus || '', sku?.articleKey || sku?.article || sku?.sku);
+  const orderBlockedByLifecycle = productLifecycleBlocksAutoOrder(productLifecycle);
   const scope = state.orderCalc.scope || 'all';
   const wbStock = numberOrZero(sku?.wb?.stock);
   const ozonStock = numberOrZero(sku?.ozon?.stockProducts ?? sku?.ozon?.stock);
@@ -5635,7 +5745,7 @@ function getOrderCalcBase() {
   const rawOrderQty = Math.max(0, demandUnits - availableNow - inbound);
   const moq = Math.max(0, numberOrZero(state.orderCalc.moq));
   const packSize = Math.max(1, numberOrZero(state.orderCalc.packSize));
-  let finalQty = rawOrderQty;
+  let finalQty = orderBlockedByLifecycle ? 0 : rawOrderQty;
   if (finalQty > 0 && moq > 0) finalQty = Math.max(finalQty, moq);
   if (finalQty > 0) finalQty = Math.ceil(finalQty / packSize) * packSize;
   const coverageNowDays = dailySales > 0 ? availableNow / dailySales : null;
@@ -5643,6 +5753,9 @@ function getOrderCalcBase() {
   const summaryText = `${sku.article || sku.articleKey}: РїСЂРё СЃРєРѕСЂРѕСЃС‚Рё ${fmt.num(dailySales, 1)} С€С‚./РґРµРЅСЊ, РіРѕСЂРёР·РѕРЅС‚Рµ ${fmt.int(totalHorizon)} РґРЅ., РЅР°Р»РёС‡РёРё ${fmt.int(availableNow)} С€С‚. Рё РІС…РѕРґСЏС‰РµРј Р·Р°РїР°СЃРµ ${fmt.int(inbound)} С€С‚. СЂРµРєРѕРјРµРЅРґРѕРІР°РЅРЅС‹Р№ Р·Р°РєР°Р· = ${fmt.int(finalQty)} С€С‚.`;
   return {
     sku,
+    productLifecycle,
+    orderBlockedByLifecycle,
+    blockedOrderQty: orderBlockedByLifecycle ? rawOrderQty : 0,
     scope,
     availableNow,
     wbStock,
@@ -6090,7 +6203,6 @@ function orderProcurementBuildRenderSignature() {
   const comments = Array.isArray(state.storage?.comments) ? state.storage.comments : [];
   const commentCount = comments.length;
   const newestCommentId = String(comments[0]?.id || comments[0]?.createdAt || '');
-  const leaderboard = state.productLeaderboard || {};
   return [
     orderState.platform,
     orderState.days,
@@ -6105,8 +6217,6 @@ function orderProcurementBuildRenderSignature() {
     payloadStamp,
     warehouseStamp,
     skuCount,
-    leaderboard.generatedAt || '',
-    Array.isArray(leaderboard.items) ? leaderboard.items.length : 0,
     commentCount,
     newestCommentId
   ].join('|');

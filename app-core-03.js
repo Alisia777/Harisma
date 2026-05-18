@@ -296,7 +296,18 @@ function buildRepricerControlsPayload() {
       : [],
     corridorDeletes: Array.isArray(state.storage?.repricerCorridorDeletes)
       ? state.storage.repricerCorridorDeletes.map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey)
-      : []
+      : [],
+    pendingApiAdds: repricerControlsQueueItems(state.storage?.repricerPendingApiAdds),
+    pendingApiDeletes: repricerControlsQueueItems(state.storage?.repricerPendingApiDeletes),
+    pendingCostFixes: repricerControlsQueueItems(state.storage?.repricerPendingCostFixes),
+    pendingApiTasks: repricerControlsQueueItems(state.storage?.repricerPendingApiTasks),
+    repairHistory: repricerControlsQueueItems(state.storage?.repricerRepairHistory).slice(0, 400),
+    repairSnapshots: repricerControlsQueueItems(state.storage?.repricerRepairSnapshots).slice(0, 10),
+    apiReconcileHistory: repricerControlsQueueItems(state.storage?.repricerApiReconcileHistory).slice(0, 100),
+    lastAuditImport: state.storage?.repricerLastAuditImport && typeof state.storage.repricerLastAuditImport === 'object' ? state.storage.repricerLastAuditImport : null,
+    lastAutoFix: state.storage?.repricerLastAutoFix && typeof state.storage.repricerLastAutoFix === 'object' ? state.storage.repricerLastAutoFix : null,
+    lastImportValidation: state.storage?.repricerLastImportValidation && typeof state.storage.repricerLastImportValidation === 'object' ? state.storage.repricerLastImportValidation : null,
+    lastApiReconcile: state.storage?.repricerLastApiReconcile && typeof state.storage.repricerLastApiReconcile === 'object' ? state.storage.repricerLastApiReconcile : null
   };
 }
 
@@ -322,6 +333,17 @@ function applyRepricerControlsPayload(payload) {
   state.storage.repricerCorridorDeletes = Array.isArray(payload.corridorDeletes || payload.repricerCorridorDeletes)
     ? (payload.corridorDeletes || payload.repricerCorridorDeletes).map(normalizeRepricerDeleteTombstone).filter((item) => item.articleKey)
     : [];
+  if (Array.isArray(payload.pendingApiAdds || payload.repricerPendingApiAdds)) state.storage.repricerPendingApiAdds = repricerControlsQueueItems(payload.pendingApiAdds || payload.repricerPendingApiAdds);
+  if (Array.isArray(payload.pendingApiDeletes || payload.repricerPendingApiDeletes)) state.storage.repricerPendingApiDeletes = repricerControlsQueueItems(payload.pendingApiDeletes || payload.repricerPendingApiDeletes);
+  if (Array.isArray(payload.pendingCostFixes || payload.repricerPendingCostFixes)) state.storage.repricerPendingCostFixes = repricerControlsQueueItems(payload.pendingCostFixes || payload.repricerPendingCostFixes);
+  if (Array.isArray(payload.pendingApiTasks || payload.repricerPendingApiTasks)) state.storage.repricerPendingApiTasks = repricerControlsQueueItems(payload.pendingApiTasks || payload.repricerPendingApiTasks);
+  if (Array.isArray(payload.repairHistory || payload.repricerRepairHistory)) state.storage.repricerRepairHistory = repricerControlsQueueItems(payload.repairHistory || payload.repricerRepairHistory).slice(0, 400);
+  if (Array.isArray(payload.repairSnapshots || payload.repricerRepairSnapshots)) state.storage.repricerRepairSnapshots = repricerControlsQueueItems(payload.repairSnapshots || payload.repricerRepairSnapshots).slice(0, 10);
+  if (Array.isArray(payload.apiReconcileHistory || payload.repricerApiReconcileHistory)) state.storage.repricerApiReconcileHistory = repricerControlsQueueItems(payload.apiReconcileHistory || payload.repricerApiReconcileHistory).slice(0, 100);
+  if (payload.lastAuditImport && typeof payload.lastAuditImport === 'object') state.storage.repricerLastAuditImport = payload.lastAuditImport;
+  if (payload.lastAutoFix && typeof payload.lastAutoFix === 'object') state.storage.repricerLastAutoFix = payload.lastAutoFix;
+  if (payload.lastImportValidation && typeof payload.lastImportValidation === 'object') state.storage.repricerLastImportValidation = payload.lastImportValidation;
+  if (payload.lastApiReconcile && typeof payload.lastApiReconcile === 'object') state.storage.repricerLastApiReconcile = payload.lastApiReconcile;
   saveLocalStorage();
   return true;
 }
@@ -330,6 +352,48 @@ function repricerControlsStamp(value) {
   if (!value) return 0;
   const stamp = Date.parse(String(value));
   return Number.isFinite(stamp) ? stamp : 0;
+}
+
+function repricerControlsQueueItems(items) {
+  return (Array.isArray(items) ? items : [])
+    .filter((item) => item && typeof item === 'object')
+    .map((item) => ({ ...item }))
+    .filter((item) => String(item.articleKey || item.article || item.sku || item.id || '').trim());
+}
+
+function repricerQueueStamp(item) {
+  return repricerControlsStamp(item?.updatedAt || item?.requestedAt || item?.importedAt || item?.createdAt);
+}
+
+function repricerQueueKey(item) {
+  const articleKey = String(item?.articleKey || item?.article || item?.sku || '').trim();
+  const rawPlatform = String(item?.platform || '').trim().toLowerCase();
+  const platform = ['wb', 'ozon', 'all'].includes(rawPlatform) ? rawPlatform : 'all';
+  const type = String(item?.type || item?.action || item?.command || item?.kind || '').trim().toUpperCase();
+  const field = String(item?.field || item?.apiField || item?.reason || '').trim().toLowerCase();
+  return item?.id || `${type || 'API'}|${articleKey}|${platform}|${field}`;
+}
+
+function mergeRepricerQueueItems(remoteItems, localItems, limit = 400) {
+  const map = new Map();
+  [...repricerControlsQueueItems(remoteItems), ...repricerControlsQueueItems(localItems)].forEach((item) => {
+    const key = repricerQueueKey(item);
+    if (!key) return;
+    const current = map.get(key);
+    if (!current || repricerQueueStamp(item) >= repricerQueueStamp(current)) map.set(key, item);
+  });
+  return [...map.values()]
+    .sort((a, b) => repricerQueueStamp(b) - repricerQueueStamp(a))
+    .slice(0, limit);
+}
+
+function repricerLatestObject(remoteObject, localObject, stampKeys = ['importedAt', 'appliedAt', 'updatedAt', 'createdAt']) {
+  const remote = remoteObject && typeof remoteObject === 'object' ? remoteObject : null;
+  const local = localObject && typeof localObject === 'object' ? localObject : null;
+  if (!remote) return local;
+  if (!local) return remote;
+  const stamp = (item) => Math.max(...stampKeys.map((key) => repricerControlsStamp(item?.[key])));
+  return stamp(local) >= stamp(remote) ? local : remote;
 }
 
 function repricerControlsKey(item, withPlatform = true) {
@@ -419,6 +483,17 @@ function mergeRepricerControlsPayload(remotePayload, localPayload) {
     normalizeRepricerCorridor,
     true
   );
+  merged.pendingApiAdds = mergeRepricerQueueItems(remote.pendingApiAdds || remote.repricerPendingApiAdds, local.pendingApiAdds || local.repricerPendingApiAdds);
+  merged.pendingApiDeletes = mergeRepricerQueueItems(remote.pendingApiDeletes || remote.repricerPendingApiDeletes, local.pendingApiDeletes || local.repricerPendingApiDeletes);
+  merged.pendingCostFixes = mergeRepricerQueueItems(remote.pendingCostFixes || remote.repricerPendingCostFixes, local.pendingCostFixes || local.repricerPendingCostFixes);
+  merged.pendingApiTasks = mergeRepricerQueueItems(remote.pendingApiTasks || remote.repricerPendingApiTasks, local.pendingApiTasks || local.repricerPendingApiTasks);
+  merged.repairHistory = mergeRepricerQueueItems(remote.repairHistory || remote.repricerRepairHistory, local.repairHistory || local.repricerRepairHistory, 400);
+  merged.repairSnapshots = mergeRepricerQueueItems(remote.repairSnapshots || remote.repricerRepairSnapshots, local.repairSnapshots || local.repricerRepairSnapshots, 10);
+  merged.apiReconcileHistory = mergeRepricerQueueItems(remote.apiReconcileHistory || remote.repricerApiReconcileHistory, local.apiReconcileHistory || local.repricerApiReconcileHistory, 100);
+  merged.lastAuditImport = repricerLatestObject(remote.lastAuditImport, local.lastAuditImport || local.repricerLastAuditImport, ['importedAt', 'updatedAt']);
+  merged.lastAutoFix = repricerLatestObject(remote.lastAutoFix, local.lastAutoFix || local.repricerLastAutoFix, ['appliedAt', 'updatedAt']);
+  merged.lastImportValidation = repricerLatestObject(remote.lastImportValidation, local.lastImportValidation || local.repricerLastImportValidation, ['validatedAt', 'updatedAt']);
+  merged.lastApiReconcile = repricerLatestObject(remote.lastApiReconcile, local.lastApiReconcile || local.repricerLastApiReconcile, ['checkedAt', 'updatedAt']);
   return merged;
 }
 

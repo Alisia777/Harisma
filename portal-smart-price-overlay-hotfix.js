@@ -174,8 +174,30 @@
       'turnoverCurrentDays',
       'historyNote',
       'valueDate',
-      'sourceMode'
+      'sourceMode',
+      'minPrice',
+      'hardMinPrice',
+      'maxPrice',
+      'basePrice',
+      'allowedMarginPct',
+      'avgMargin7dPct',
+      'estimatedMarginPct',
+      'requiredPriceForProfitability',
+      'requiredPriceForMargin',
+      'workingZoneFrom',
+      'workingZoneTo',
+      'marginSource'
     ].forEach((key) => mergeField(next, key, overlayRow[key], true));
+
+    const overlayMarginPct = !valueMissing(overlayRow?.marginTotalPct)
+      ? overlayRow.marginTotalPct
+      : (!valueMissing(overlayRow?.marginPct)
+        ? overlayRow.marginPct
+        : overlayRow?.avgMargin7dPct);
+    if (!valueMissing(overlayMarginPct)) {
+      mergeField(next, 'marginPct', overlayMarginPct, true);
+      mergeField(next, 'marginTotalPct', overlayMarginPct, true);
+    }
 
     next.monthly = mergeTimeline(next.monthly, overlayRow);
     next.daily = mergeTimeline(next.daily, overlayRow);

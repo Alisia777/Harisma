@@ -31,6 +31,7 @@
     tasks: [],
     decisions: [],
     ownerOverrides: [],
+    productLifecycleOverrides: [],
     taskAttachments: [],
     repricerSettings: {},
     repricerSettingsUpdatedAt: '',
@@ -53,11 +54,12 @@
     repricerLastApiReconcile: null
   },
   filters: {
-    search: '',
-    segment: 'all',
-    focus: 'all',
-    market: 'all',
-    owner: 'all',
+  search: '',
+  segment: 'all',
+  lifecycle: 'all',
+  focus: 'all',
+  market: 'all',
+  owner: 'all',
     traffic: 'all',
     assignment: 'all'
   },
@@ -190,7 +192,7 @@ const VIEW_TITLES = {
   skus: 'Реестр СКЮ',
   'data-health': 'Здоровье данных',
   'sku-contour': 'Контур SKU',
-  launches: 'Продукт / Ксения',
+  launches: 'Продукт / новинки',
   'ads-funnel': 'Рекламная воронка',
   'iu-drr': 'ИУ / ДРР',
   'sku-plan-fact': 'План-факт SKU',
@@ -1087,6 +1089,31 @@ function mergeSmartWorkbenchPriceOverlayRow(primaryRow = {}, overlayRow = {}, pl
     'stockTotal'
   ].forEach((key) => mergeWorkbenchField(next, key, overlay[key], true));
 
+  [
+    'minPrice',
+    'hardMinPrice',
+    'maxPrice',
+    'basePrice',
+    'allowedMarginPct',
+    'avgMargin7dPct',
+    'estimatedMarginPct',
+    'requiredPriceForProfitability',
+    'requiredPriceForMargin',
+    'workingZoneFrom',
+    'workingZoneTo',
+    'marginSource'
+  ].forEach((key) => mergeWorkbenchField(next, key, overlay[key], true));
+
+  const overlayMarginPct = !workbenchValueMissing(overlay?.marginTotalPct)
+    ? overlay.marginTotalPct
+    : (!workbenchValueMissing(overlay?.marginPct)
+      ? overlay.marginPct
+      : overlay?.avgMargin7dPct);
+  if (!workbenchValueMissing(overlayMarginPct)) {
+    mergeWorkbenchField(next, 'marginPct', overlayMarginPct, true);
+    mergeWorkbenchField(next, 'marginTotalPct', overlayMarginPct, true);
+  }
+
   if (platform && workbenchValueMissing(next.marketplace)) next.marketplace = platform;
   if (!workbenchValueMissing(overlay?.status)) next.productStatus = overlay.status;
   next.monthly = mergeWorkbenchTimelineWithOverlay(next.monthly, overlay);
@@ -1444,6 +1471,7 @@ function defaultStorage() {
     tasks: [],
     decisions: [],
     ownerOverrides: [],
+    productLifecycleOverrides: [],
     taskAttachments: [],
     launchOverrides: [],
     launchDeletedIds: [],
@@ -1485,6 +1513,400 @@ function hashString(value) {
 function stableId(prefix, raw) {
   return `${prefix}-${hashString(raw)}`;
 }
+
+const PRODUCT_LIFECYCLE_STATUS_META = {
+  active: {
+    label: 'Актуальный',
+    tone: 'ok',
+    repricerMode: 'auto',
+    taskPolicy: 'normal',
+    description: 'Товар в продаже, репрайсер работает по обычным правилам.'
+  },
+  new: {
+    label: 'Новинка',
+    tone: 'info',
+    repricerMode: 'launch',
+    taskPolicy: 'launch',
+    description: 'Новинка или первый запуск: репрайсер использует launch-режим, автозадачи смотрят готовность запуска.'
+  },
+  relaunch: {
+    label: 'Перезапуск',
+    tone: 'info',
+    repricerMode: 'launch',
+    taskPolicy: 'launch',
+    description: 'Перезапуск: логика близка к новинке, без межплощадочного выравнивания.'
+  },
+  watch: {
+    label: 'Наблюдать',
+    tone: 'warn',
+    repricerMode: 'auto',
+    taskPolicy: 'normal',
+    description: 'Товар активен, но требует ручного наблюдения.'
+  },
+  question: {
+    label: 'Под вопросом',
+    tone: 'warn',
+    repricerMode: 'freeze',
+    taskPolicy: 'decision',
+    description: 'Нужна управленческая развилка; репрайсер замораживает автосдвиг цены.'
+  },
+  paused: {
+    label: 'Пауза',
+    tone: 'warn',
+    repricerMode: 'freeze',
+    taskPolicy: 'decision',
+    description: 'Товар временно на паузе; репрайсер не двигает цену автоматически.'
+  },
+  exit: {
+    label: 'Выводится',
+    tone: 'danger',
+    repricerMode: 'off',
+    taskPolicy: 'exit',
+    description: 'Товар выводится: репрайсер не выгружает автоизменения, автозадачи ведут план вывода и остатки.'
+  },
+  archived: {
+    label: 'Выведен',
+    tone: '',
+    repricerMode: 'off',
+    taskPolicy: 'archive',
+    description: 'Товар выведен из активного контура.'
+  }
+};
+
+const PRODUCT_LIFECYCLE_STATUS_ORDER = ['active', 'new', 'relaunch', 'watch', 'question', 'paused', 'exit', 'archived'];
+
+function productLifecycleLookupText(value = '') {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replaceAll('ё', 'е')
+    .replace(/\s+/g, ' ');
+}
+
+function normalizeProductLifecycleKey(value = '') {
+  const raw = productLifecycleLookupText(value);
+  if (!raw) return '';
+  if (['active', 'actual', 'ok', 'актуально', 'актуальный', 'в работе', 'работает'].includes(raw) || /актуал|active/.test(raw)) return 'active';
+  if (['new', 'launch', 'новинка', 'запуск'].includes(raw) || /новин|новый|launch|запуск/.test(raw)) return 'new';
+  if (['relaunch', 'restart', 'перезапуск'].includes(raw) || /перезапуск|relaunch|restart/.test(raw)) return 'relaunch';
+  if (['watch', 'monitor', 'наблюдать'].includes(raw) || /наблюд|монитор|watch|monitor/.test(raw)) return 'watch';
+  if (['question', 'review', 'под вопросом', 'перерабатываем', 'нет в спецификации'].includes(raw) || /вопрос|перераб|review|специф/.test(raw)) return 'question';
+  if (['paused', 'pause', 'freeze', 'hold', 'пауза', 'заморозка', 'стоп'].includes(raw) || /пауза|замороз|freeze|hold/.test(raw)) return 'paused';
+  if (['archived', 'removed', 'выведен', 'выведено'].includes(raw) || /вывед|archiv|removed/.test(raw)) return 'archived';
+  if (['exit', 'вывод', 'выводится', 'снимаем', 'снятие'].includes(raw) || /вывод|снимаем|снятие|exit|discontinu|sell.?out|clearance/.test(raw)) return 'exit';
+  return '';
+}
+
+function productLifecycleMeta(key = '', fallbackLabel = '') {
+  const normalizedKey = normalizeProductLifecycleKey(key) || String(key || '').trim();
+  const meta = PRODUCT_LIFECYCLE_STATUS_META[normalizedKey] || null;
+  if (meta) return { key: normalizedKey, ...meta };
+  const label = String(fallbackLabel || key || '').trim();
+  return {
+    key: label ? 'custom' : 'active',
+    label: label || PRODUCT_LIFECYCLE_STATUS_META.active.label,
+    tone: label ? 'warn' : PRODUCT_LIFECYCLE_STATUS_META.active.tone,
+    repricerMode: label ? 'freeze' : PRODUCT_LIFECYCLE_STATUS_META.active.repricerMode,
+    taskPolicy: label ? 'decision' : PRODUCT_LIFECYCLE_STATUS_META.active.taskPolicy,
+    description: label ? 'Пользовательский статус требует ручной проверки.' : PRODUCT_LIFECYCLE_STATUS_META.active.description
+  };
+}
+
+function normalizeProductLifecycleOverride(item = {}) {
+  const articleKey = String(item.articleKey || item.article || item.sku || '').trim();
+  const rawStatus = String(item.status || item.productStatus || item.lifecycleStatus || '').trim();
+  const key = normalizeProductLifecycleKey(item.key || rawStatus) || 'active';
+  const meta = productLifecycleMeta(key, rawStatus);
+  return {
+    articleKey,
+    key: meta.key,
+    status: meta.label,
+    note: String(item.note || item.comment || '').trim(),
+    updatedAt: String(item.updatedAt || item.updated_at || '').trim() || new Date().toISOString(),
+    updatedBy: String(item.updatedBy || item.updated_by || state.team?.member?.name || 'Команда').trim() || 'Команда'
+  };
+}
+
+function productLifecycleOverrideForArticle(articleKey = '') {
+  const wanted = String(articleKey || '').trim();
+  if (!wanted) return null;
+  return (state.storage?.productLifecycleOverrides || [])
+    .map(normalizeProductLifecycleOverride)
+    .find((item) => item.articleKey === wanted) || null;
+}
+
+function productLifecycleSourceValues(record = {}) {
+  if (!record || typeof record !== 'object') return [];
+  return [
+    ['productLifecycleStatus', record.productLifecycleStatus],
+    ['lifecycleStatus', record.lifecycleStatus],
+    ['productStatus', record.productStatus],
+    ['sheetStatus', record.sheetStatus],
+    ['statusSku', record.statusSku],
+    ['registryStatus', record.registryStatus],
+    ['owner.registryStatus', record.owner?.registryStatus],
+    ['status', record.status]
+  ]
+    .map(([source, value]) => ({ source, value: String(value || '').trim() }))
+    .filter((entry) => entry.value);
+}
+
+function productLifecycleFinite(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function productLifecycleFirstFinite(...values) {
+  for (const value of values) {
+    const parsed = productLifecycleFinite(value);
+    if (parsed !== null) return parsed;
+  }
+  return null;
+}
+
+function productLifecycleTotalStock(record = {}) {
+  return [
+    record?.wb?.stock,
+    record?.ozon?.stockProducts,
+    record?.ozon?.stock
+  ]
+    .map(productLifecycleFinite)
+    .filter((value) => value !== null)
+    .reduce((sum, value) => sum + value, 0);
+}
+
+function productLifecycleHasStockSignal(record = {}) {
+  return [
+    record?.wb?.stock,
+    record?.ozon?.stockProducts,
+    record?.ozon?.stock
+  ].some((value) => productLifecycleFinite(value) !== null);
+}
+
+function productLifecycleCompletionRatio(record = {}) {
+  const value = productLifecycleFirstFinite(
+    record?.planFact?.completionAprToDatePct,
+    record?.planFact?.completionAprMonthPct,
+    record?.planFact?.completionToDatePct,
+    record?.planFact?.completionMonthPct,
+    record?.planFact?.completionFeb26Pct
+  );
+  if (value === null) return null;
+  return value > 1.5 ? value / 100 : value;
+}
+
+function productLifecycleSalesUnits(record = {}) {
+  return productLifecycleFirstFinite(
+    record?.planFact?.factApr16Units,
+    record?.planFact?.factAprToDateUnits,
+    record?.planFact?.factFeb26Units,
+    record?.orders?.units,
+    record?.orders?.count
+  ) || 0;
+}
+
+function productLifecycleAutoForSku(record = {}, articleKey = '') {
+  const flags = record?.flags || {};
+  const reasons = [];
+  let severity = 0;
+  let watchSignals = 0;
+
+  const completion = productLifecycleCompletionRatio(record);
+  const focusScore = numberOrZero(record?.focusScore);
+  const totalStock = productLifecycleTotalStock(record);
+  const hasStockSignal = productLifecycleHasStockSignal(record);
+  const salesUnits = productLifecycleSalesUnits(record);
+  const turnoverDays = productLifecycleFirstFinite(record?.wb?.turnoverDays, record?.ozon?.turnoverDays);
+  const marginValues = [
+    record?.wb?.marginPct,
+    record?.ozon?.marginPct,
+    record?.planFact?.factApr16MarginPct,
+    record?.planFact?.factFeb26MarginPct
+  ]
+    .map(productLifecycleFinite)
+    .filter((value) => value !== null);
+  const hasNegativeMargin = Boolean(flags.negativeMargin || flags.wbNegativeMargin || flags.ozonNegativeMargin || marginValues.some((value) => value < 0));
+  const hasToWork = Boolean(flags.toWork || flags.toWorkWB || flags.toWorkOzon);
+
+  if (hasStockSignal && totalStock <= 0 && salesUnits > 0) {
+    const meta = productLifecycleMeta('paused');
+    return {
+      ...meta,
+      articleKey,
+      status: meta.label,
+      source: 'auto',
+      explicit: true,
+      reason: 'Остаток на активных площадках нулевой при наличии продаж: товар временно уходит в паузу до решения по поставке.',
+      note: ''
+    };
+  }
+
+  if (hasNegativeMargin) {
+    severity += 2;
+    watchSignals += 1;
+    reasons.push('маржа ниже нуля или отмечена как риск');
+  }
+  if (completion !== null && completion < 0.55) {
+    severity += 1;
+    watchSignals += 1;
+    reasons.push(`выполнение плана ${Math.round(completion * 100)}%`);
+  } else if (completion !== null && completion < 0.85) {
+    watchSignals += 1;
+    reasons.push(`выполнение плана ${Math.round(completion * 100)}%`);
+  }
+  if (flags.highReturn) {
+    severity += 1;
+    watchSignals += 1;
+    reasons.push('высокие возвраты');
+  }
+  if (flags.lowStock && totalStock > 0) {
+    watchSignals += 1;
+    reasons.push('низкий остаток');
+  }
+  if (hasToWork) {
+    severity += 1;
+    watchSignals += 1;
+    reasons.push('SKU уже попал в работу');
+  }
+  if (focusScore >= 7) {
+    severity += 1;
+    watchSignals += 1;
+    reasons.push(`фокус score ${focusScore}`);
+  } else if (focusScore >= 4) {
+    watchSignals += 1;
+    reasons.push(`фокус score ${focusScore}`);
+  }
+  if (turnoverDays !== null && turnoverDays >= 180) {
+    watchSignals += 1;
+    reasons.push(`оборачиваемость ${Math.round(turnoverDays)} дн.`);
+  }
+
+  if (severity >= 3) {
+    const meta = productLifecycleMeta('question');
+    return {
+      ...meta,
+      articleKey,
+      status: meta.label,
+      source: 'auto',
+      explicit: true,
+      reason: `Авто-статус: нужна развилка по товару (${reasons.slice(0, 3).join('; ')}).`,
+      note: ''
+    };
+  }
+
+  if (watchSignals > 0) {
+    const meta = productLifecycleMeta('watch');
+    return {
+      ...meta,
+      articleKey,
+      status: meta.label,
+      source: 'auto',
+      explicit: true,
+      reason: `Авто-статус: держим товар на наблюдении (${reasons.slice(0, 3).join('; ')}).`,
+      note: ''
+    };
+  }
+
+  const meta = productLifecycleMeta('active');
+  return {
+    ...meta,
+    articleKey,
+    status: meta.label,
+    source: 'auto',
+    explicit: false,
+    reason: 'Критичных авто-сигналов по марже, плану, остаткам и возвратам нет.',
+    note: ''
+  };
+}
+
+function productLifecycleForSku(record = {}, fallbackArticleKey = '') {
+  const articleKey = String(record?.articleKey || record?.article || record?.sku || fallbackArticleKey || '').trim();
+  const override = productLifecycleOverrideForArticle(articleKey);
+  if (override?.key) {
+    const meta = productLifecycleMeta(override.key, override.status);
+    return {
+      ...meta,
+      articleKey,
+      status: meta.label,
+      source: 'manual',
+      explicit: true,
+      note: override.note || '',
+      updatedAt: override.updatedAt || '',
+      updatedBy: override.updatedBy || ''
+    };
+  }
+
+  const sourceMatches = productLifecycleSourceValues(record)
+    .map((entry) => ({ ...entry, key: normalizeProductLifecycleKey(entry.value) }))
+    .filter((entry) => entry.key);
+  const hardSource = sourceMatches.find((entry) => entry.key && entry.key !== 'active');
+  if (hardSource) {
+    const meta = productLifecycleMeta(hardSource.key, hardSource.value);
+    return {
+      ...meta,
+      articleKey,
+      status: meta.label,
+      rawStatus: hardSource.value,
+      source: hardSource.source,
+      explicit: true,
+      reason: `Статус пришёл из поля ${hardSource.source}: ${hardSource.value}.`,
+      note: ''
+    };
+  }
+
+  const autoLifecycle = productLifecycleAutoForSku(record, articleKey);
+  if (autoLifecycle?.key && autoLifecycle.key !== 'active') return autoLifecycle;
+
+  const activeSource = sourceMatches.find((entry) => entry.key === 'active');
+  if (activeSource) {
+    const meta = productLifecycleMeta(activeSource.key, activeSource.value);
+    return {
+      ...meta,
+      articleKey,
+      status: meta.label,
+      rawStatus: activeSource.value,
+      source: activeSource.source,
+      explicit: true,
+      reason: autoLifecycle?.reason || `Статус пришёл из поля ${activeSource.source}: ${activeSource.value}.`,
+      note: ''
+    };
+  }
+
+  return autoLifecycle || {
+    ...productLifecycleMeta('active'),
+    articleKey,
+    status: PRODUCT_LIFECYCLE_STATUS_META.active.label,
+    source: 'fallback',
+    explicit: false,
+    reason: '',
+    note: ''
+  };
+}
+
+function productLifecycleIsExit(recordOrKey = '') {
+  const key = typeof recordOrKey === 'string'
+    ? normalizeProductLifecycleKey(recordOrKey)
+    : productLifecycleForSku(recordOrKey)?.key;
+  return key === 'exit' || key === 'archived';
+}
+
+function productLifecycleOptionsHtml(current = '') {
+  const currentKey = normalizeProductLifecycleKey(current) || String(current || '').trim() || 'active';
+  return PRODUCT_LIFECYCLE_STATUS_ORDER.map((key) => {
+    const meta = productLifecycleMeta(key);
+    return `<option value="${key}" ${key === currentKey ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`;
+  }).join('');
+}
+
+window.PRODUCT_LIFECYCLE_STATUS_META = PRODUCT_LIFECYCLE_STATUS_META;
+window.normalizeProductLifecycleKey = normalizeProductLifecycleKey;
+window.normalizeProductLifecycleOverride = normalizeProductLifecycleOverride;
+window.productLifecycleForSku = productLifecycleForSku;
+window.productLifecycleAutoForSku = productLifecycleAutoForSku;
+window.productLifecycleOverrideForArticle = productLifecycleOverrideForArticle;
+window.productLifecycleIsExit = productLifecycleIsExit;
+window.productLifecycleOptionsHtml = productLifecycleOptionsHtml;
 
 const REPRICER_BRAND_ALIAS_MAP = {
   'алтея': 'Алтея',
@@ -2202,7 +2624,7 @@ async function loadJsonOrFallback(path, fallback, label = path) {
 
 const LAZY_DATA_LOADERS = {
   launches: async () => {
-    const launches = await loadJsonOrFallback('data/launches.json', [], 'Продукт / Ксения');
+    const launches = await loadJsonOrFallback('data/launches.json', [], 'Продукт / новинки');
     state.launches = Array.isArray(launches) ? launches : [];
   },
   adsFunnel: async () => {

@@ -274,6 +274,9 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   function chooseFreshDashboardPayload(key, existing, incoming) {
     if (existing === null || existing === undefined) return incoming;
     if (incoming === null || incoming === undefined) return existing;
+    if (key === 'skus' && Array.isArray(existing) && existing.length > 0 && (!Array.isArray(incoming) || incoming.length === 0)) {
+      return existing;
+    }
     return payloadFreshnessScore(key, existing) > payloadFreshnessScore(key, incoming)
       ? existing
       : incoming;
@@ -7645,6 +7648,7 @@ function dashboardTaskStatusChip(task) {
           || (Array.isArray(payload.daily) && payload.daily.length > 0)
           || (Array.isArray(payload.months) && payload.months.length > 0);
       }
+      if (key === 'skus') return Array.isArray(payload) && payload.length > 0;
       if (key === 'productLeaderboard') return Boolean(payload.generatedAt) || (Array.isArray(payload.items) && payload.items.length > 0);
       if (key === 'orderProcurement') return Boolean(payload.generatedAt) || (Array.isArray(payload.rows) && payload.rows.length > 0) || Boolean(payload.platforms);
       if (key === 'prices') {

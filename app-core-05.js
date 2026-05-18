@@ -311,7 +311,7 @@ function renderControlCenter() {
         <div class="section-subhead">
           <div>
             <h3>Решения ждут подтверждения</h3>
-            <p class="small muted">То, что руководитель, директор или бренд-лид должны быстро зафиксировать.</p>
+            <p class="small muted">То, что руководитель или бренд-лид должны быстро зафиксировать.</p>
           </div>
           ${badge(`${fmt.int(waitingDecisions.length)} шт.`, waitingDecisions.length ? 'warn' : 'ok')}
         </div>

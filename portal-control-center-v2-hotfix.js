@@ -18,11 +18,29 @@
     goldapple: { label: 'Золотое яблоко', chip: 'Золотое яблоко', kind: 'ok' },
     letu: { label: "Л'Этуаль", chip: "Л'Этуаль", kind: 'ok' },
     magnit: { label: 'Магнит Маркет', chip: 'Магнит Маркет', kind: 'ok' },
+    product: { label: 'Продукт / новинки', chip: 'Продукт', kind: 'info' },
+    executive: { label: 'Управленческий финал', chip: 'Финал', kind: 'danger' },
     cross: { label: 'Общий контур', chip: 'Общий контур', kind: '' }
   };
+  const CONTROL_TASK_PLATFORM_FILTERS = ['all', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'cross', 'product'];
+  const CONTROL_ROLE_PRESETS = [
+    { key: 'leader', label: 'Все', platform: 'all', text: 'видит всё' },
+    { key: 'wb', label: 'РОП WB', platform: 'wb', text: 'только WB' },
+    { key: 'ozon', label: 'РОП Ozon', platform: 'ozon', text: 'только Ozon' },
+    { key: 'ya', label: 'Я.Маркет', platform: 'ya', text: 'только Я.Маркет' },
+    { key: 'goldapple', label: 'ЗЯ', platform: 'goldapple', text: 'только ЗЯ' },
+    { key: 'letu', label: "Л'Этуаль", platform: 'letu', text: "только Л'Этуаль" },
+    { key: 'magnit', label: 'Магнит', platform: 'magnit', text: 'только Магнит' },
+    { key: 'product', label: 'Продукт', platform: 'product', text: 'новинки' }
+  ];
+  const CONTROL_ROLE_KEYS = CONTROL_ROLE_PRESETS.map((item) => item.key);
 
   const originalRenderControlCenter = typeof renderControlCenter === 'function' ? renderControlCenter : null;
+  const originalGetAllTasks = typeof getAllTasks === 'function' ? getAllTasks : null;
+  const originalGetControlSnapshot = typeof getControlSnapshot === 'function' ? getControlSnapshot : null;
   const originalGetSkuComments = typeof getSkuComments === 'function' ? getSkuComments : null;
+  let controlTaskCacheVersion = 0;
+  let controlSnapshotCache = { key: '', value: null };
 
   function parseTaskLogComment(comment) {
     const match = String(comment?.text || '').match(/^\[\[task:([^\]]+)\]\]\s*\[\[kind:([^\]]+)\]\]\s*/i);
@@ -45,6 +63,8 @@
     if (/золот[а-я\s-]*яблок|goldapple|gold apple|zya|зя/.test(text)) return 'goldapple';
     if (/л[еэ]туал|летуаль|letual|letu/.test(text)) return 'letu';
     if (/магнит|magnit|mm/.test(text)) return 'magnit';
+    if (/продукт|новин|launch|ксени|ксюш|product/.test(text)) return 'product';
+    if (/руковод|директор|director|executive/.test(text)) return 'cross';
     if (/яндекс|я[.\s-]?маркет|ym|yandex/.test(text)) return 'ya';
     if (/(^|\W)wb($|\W)|wildberries|вб/.test(text)) return 'wb';
     if (/ozon|озон/.test(text)) return 'ozon';
@@ -55,6 +75,34 @@
     return CONTROL_WORKSTREAM_META[key] || CONTROL_WORKSTREAM_META.cross;
   }
 
+  function selectedTaskWorkstream() {
+    const role = String(state?.controlFilters?.peopleRole || '').trim().toLowerCase();
+    const roleMeta = CONTROL_ROLE_PRESETS.find((item) => item.key === role);
+    if (roleMeta && roleMeta.platform !== 'all') return roleMeta.platform;
+    const raw = String(state?.controlFilters?.platform || 'all').trim().toLowerCase();
+    if (raw === 'retail') return 'ya';
+    return CONTROL_WORKSTREAM_META[raw] ? raw : 'all';
+  }
+
+  function currentPeopleRole() {
+    const raw = String(state?.controlFilters?.peopleRole || '').trim().toLowerCase();
+    if (CONTROL_ROLE_KEYS.includes(raw)) return raw;
+    const platform = String(state?.controlFilters?.platform || '').trim().toLowerCase();
+    if (CONTROL_ROLE_KEYS.includes(platform)) return platform;
+    return 'leader';
+  }
+
+  function renderPeopleRoleSwitch() {
+    const role = currentPeopleRole();
+    return `
+      <div class="task-role-switch" data-task-role-switch>
+        <span>Роль</span>
+        ${CONTROL_ROLE_PRESETS.map((item) => `
+          <button class="quick-chip ${role === item.key ? 'active' : ''}" type="button" data-task-role="${escapeHtml(item.key)}" title="${escapeHtml(item.text)}">${escapeHtml(item.label)}</button>
+        `).join('')}
+      </div>`;
+  }
+
   function controlWorkstreamKey(task, sku) {
     const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''} ${task?.entityLabel || ''}`;
     const platform = normalizeTaskPlatform(task?.platform, text);
@@ -63,12 +111,32 @@
     if (platform === 'wb') return 'wb';
     if (platform === 'ozon') return 'ozon';
     if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'magnit') return platform;
+    if (platform === 'product') return platform;
     if (platform === 'retail') return 'ya';
     if (platform === 'cross') return 'cross';
     if (platform === 'cross') return 'cross';
     if (sku?.flags?.toWorkWB && !sku?.flags?.toWorkOzon) return 'wb';
     if (sku?.flags?.toWorkOzon && !sku?.flags?.toWorkWB) return 'ozon';
     return 'cross';
+  }
+
+  function taskWorkstreamCount(tasks, key) {
+    const active = (tasks || []).filter(isTaskActive);
+    if (key === 'all') return active.length;
+    return active.filter((task) => controlWorkstreamKey(task, getSku(task.articleKey)) === key).length;
+  }
+
+  function renderTaskWorkstreamSwitch(baseTasks, selectedWorkstream) {
+    return `
+      <div class="task-workstream-switch" data-task-workstream-switch>
+        <span>Кому показываем</span>
+        ${CONTROL_TASK_PLATFORM_FILTERS.map((key) => {
+          const meta = controlWorkstreamMeta(key);
+          const count = taskWorkstreamCount(baseTasks, key);
+          return `<button class="quick-chip ${selectedWorkstream === key ? 'active' : ''}" type="button" data-task-platform-filter="${escapeHtml(key)}">${escapeHtml(meta.chip)} ${fmt.int(count)}</button>`;
+        }).join('')}
+      </div>
+    `;
   }
 
   function getTask(taskId) {
@@ -189,6 +257,7 @@
       reason: String(payload.reason || '').trim()
     }, 'manual');
     state.storage.tasks.unshift(task);
+    invalidateControlTaskCache();
     saveLocalStorage();
     try {
       await persistTask(task);
@@ -196,8 +265,10 @@
       console.error(error);
     }
     await createTaskHistoryEntry(task.id, 'created', `Задача создана${task.owner ? ` · owner ${task.owner}` : ''}${task.due ? ` · срок ${task.due}` : ''}.`);
-    rerenderCurrentView();
-    if (state.activeSku === task.articleKey) renderSkuModal(task.articleKey);
+    if (!payload?.skipRerender) {
+      rerenderCurrentView();
+      if (state.activeSku === task.articleKey) renderSkuModal(task.articleKey);
+    }
     return task;
   }
 
@@ -214,6 +285,7 @@
       owner: task.owner || ownerName(getSku(task.articleKey)) || ''
     }, 'manual');
     state.storage.tasks.unshift(manual);
+    invalidateControlTaskCache();
     saveLocalStorage();
     try {
       await persistTask(manual);
@@ -268,6 +340,7 @@
       articleKey: patch && patch.articleKey !== undefined ? patch.articleKey : current.articleKey
     }, current.source || 'manual');
     Object.assign(current, updated);
+    invalidateControlTaskCache();
     saveLocalStorage();
     try {
       await persistTask(current);
@@ -626,6 +699,14 @@
         });
         renderTaskModal(taskId);
       });
+      body.querySelectorAll('[data-task-modal-due]').forEach((button) => button.addEventListener('click', async () => {
+        const days = Number(button.dataset.taskModalDue || 0);
+        const due = plusDays(Number.isFinite(days) ? days : 0);
+        const dueInput = body.querySelector('#taskEditForm input[name="due"]');
+        if (dueInput) dueInput.value = due;
+        await updateTaskRecord(taskId, { due });
+        renderTaskModal(taskId);
+      }));
     }
 
     if (replacedHistoryCard) {
@@ -732,6 +813,13 @@
             <input name="owner" list="taskOwnerList" value="${escapeHtml(task.owner || '')}" placeholder="Кто ведёт">
             <input name="due" type="date" value="${escapeHtml(task.due || '')}">
           </div>
+          <div class="task-due-modal-quick">
+            <span>Быстрый срок</span>
+            <button class="btn ghost small-btn" type="button" data-task-modal-due="0">Сегодня</button>
+            <button class="btn ghost small-btn" type="button" data-task-modal-due="1">+1 день</button>
+            <button class="btn ghost small-btn" type="button" data-task-modal-due="3">+3 дня</button>
+            <button class="btn ghost small-btn" type="button" data-task-modal-due="7">+7 дней</button>
+          </div>
           <textarea name="nextAction" rows="3" placeholder="Следующий шаг">${escapeHtml(task.nextAction || '')}</textarea>
           <details class="compact-details">
             <summary>Дополнительно: статус, контур и контекст</summary>
@@ -780,6 +868,486 @@
     `;
   }
 
+  function taskMeaningKey(task) {
+    const article = String(task?.articleKey || task?.entityLabel || '').trim().toLowerCase();
+    const meaning = String(task?.autoCode || task?.type || task?.title || '').trim().toLowerCase();
+    return `${article || 'common'}|${meaning || 'general'}`;
+  }
+
+  function taskDedupeKey(task) {
+    if (task?.source !== 'auto') return `manual|${task?.id || taskMeaningKey(task)}`;
+    return `auto|${taskMeaningKey(task)}`;
+  }
+
+  function shouldPreferTask(candidate, current) {
+    if (!current) return true;
+    const candidateManual = candidate?.source !== 'auto';
+    const currentManual = current?.source !== 'auto';
+    if (candidateManual !== currentManual) return candidateManual;
+    if (isTaskOverdue(candidate) !== isTaskOverdue(current)) return isTaskOverdue(candidate);
+    const candidateRank = PRIORITY_META[candidate?.priority]?.rank || 0;
+    const currentRank = PRIORITY_META[current?.priority]?.rank || 0;
+    if (candidateRank !== currentRank) return candidateRank > currentRank;
+    return String(candidate?.createdAt || '') > String(current?.createdAt || '');
+  }
+
+  function dedupeControlTasks(tasks) {
+    const manualMeaningKeys = new Set(
+      (tasks || [])
+        .filter((task) => task?.source !== 'auto' && isTaskActive(task))
+        .map(taskMeaningKey)
+    );
+    const byKey = new Map();
+    for (const task of tasks || []) {
+      if (task?.source === 'auto' && manualMeaningKeys.has(taskMeaningKey(task))) continue;
+      const key = taskDedupeKey(task);
+      const existing = byKey.get(key);
+      if (shouldPreferTask(task, existing)) byKey.set(key, task);
+    }
+    const result = [...byKey.values()];
+    return typeof sortTasks === 'function' ? sortTasks(result) : result;
+  }
+
+  function getAllTasksDeduped() {
+    const sourceTasks = typeof originalGetAllTasks === 'function' ? originalGetAllTasks() : [];
+    return dedupeControlTasks(sourceTasks);
+  }
+
+  function invalidateControlTaskCache() {
+    controlTaskCacheVersion += 1;
+    controlSnapshotCache = { key: '', value: null };
+  }
+
+  function controlSnapshotCacheKey(tasks) {
+    const source = tasks || [];
+    const stamp = source
+      .map((task) => [
+        task?.id,
+        task?.status,
+        task?.owner,
+        task?.due,
+        task?.priority,
+        task?.platform,
+        task?.updatedAt,
+        task?.source
+      ].join(':'))
+      .join('|');
+    return `${controlTaskCacheVersion}|${source.length}|${stamp}`;
+  }
+
+  function getControlSnapshotCached() {
+    const tasks = getAllTasksDeduped();
+    const key = controlSnapshotCacheKey(tasks);
+    if (controlSnapshotCache.key === key && controlSnapshotCache.value) return controlSnapshotCache.value;
+    if (typeof originalGetControlSnapshot === 'function') {
+      const previousGetAllTasks = typeof getAllTasks === 'function' ? getAllTasks : null;
+      try {
+        try { getAllTasks = () => tasks; } catch {}
+        const value = originalGetControlSnapshot();
+        controlSnapshotCache = { key, value };
+        return value;
+      } finally {
+        if (previousGetAllTasks) {
+          try { getAllTasks = previousGetAllTasks; } catch {}
+        }
+      }
+    }
+    const active = tasks.filter(isTaskActive);
+    const overdue = active.filter(isTaskOverdue);
+    const waitingRop = active.filter((task) => task.status === 'waiting_rop');
+    const waitingDecision = active.filter((task) => task.status === 'waiting_decision');
+    const noOwner = active.filter((task) => !task.owner);
+    const ownerMap = new Map();
+    for (const task of active) {
+      const keyName = task.owner || 'Без owner';
+      const row = ownerMap.get(keyName) || { owner: keyName, total: 0, overdue: 0, critical: 0, waiting: 0, waitingRop: 0, waitingDecision: 0 };
+      row.total += 1;
+      if (isTaskOverdue(task)) row.overdue += 1;
+      if (task.priority === 'critical') row.critical += 1;
+      if (task.status === 'waiting_rop') row.waitingRop += 1;
+      if (task.status === 'waiting_decision') row.waitingDecision += 1;
+      row.waiting = row.waitingRop + row.waitingDecision;
+      ownerMap.set(keyName, row);
+    }
+    const value = {
+      tasks,
+      active,
+      overdue,
+      waitingRop,
+      waitingDecision,
+      noOwner,
+      dueThisWeek: active.filter((task) => task.due && task.due <= plusDays(7)),
+      byOwner: [...ownerMap.values()].sort((a, b) => b.total - a.total || a.owner.localeCompare(b.owner, 'ru')),
+      todayList: sortLazyTasks(active).filter((task) => isTaskOverdue(task) || task.status === 'waiting_rop' || task.status === 'waiting_decision' || task.priority === 'critical' || (task.due && task.due <= plusDays(2))).slice(0, 12),
+      autoCount: tasks.filter((task) => task.source === 'auto' && isTaskActive(task)).length,
+      manualCount: tasks.filter((task) => task.source !== 'auto' && isTaskActive(task)).length
+    };
+    controlSnapshotCache = { key, value };
+    return value;
+  }
+
+  function controlTasksRawCount() {
+    return typeof originalGetAllTasks === 'function' ? originalGetAllTasks().length : getAllTasksDeduped().length;
+  }
+
+  function taskUrgencyScore(task) {
+    let score = PRIORITY_META[task?.priority]?.rank || 0;
+    if (isTaskOverdue(task)) score += 10;
+    if (task?.status === 'waiting_rop' || task?.status === 'waiting_decision') score += 8;
+    if (!task?.owner) score += 5;
+    if (task?.due && task.due <= plusDays(2)) score += 3;
+    if (task?.source === 'auto') score -= 1;
+    return score;
+  }
+
+  function sortLazyTasks(tasks) {
+    return [...(tasks || [])].sort((a, b) => {
+      const scoreDiff = taskUrgencyScore(b) - taskUrgencyScore(a);
+      if (scoreDiff) return scoreDiff;
+      return String(a.due || '9999-12-31').localeCompare(String(b.due || '9999-12-31'));
+    });
+  }
+
+  function lazyTaskBuckets(tasks) {
+    const active = (tasks || []).filter(isTaskActive);
+    const memberName = String(state?.team?.member?.name || '').trim().toLowerCase();
+    const general = active.filter((task) => !String(task.articleKey || '').trim());
+    const now = active.filter((task) => isTaskOverdue(task) || task.status === 'waiting_rop' || task.status === 'waiting_decision' || !task.owner || task.priority === 'critical');
+    const mine = memberName
+      ? active.filter((task) => String(task.owner || '').trim().toLowerCase() === memberName)
+      : active.filter((task) => isTaskOverdue(task) || task.priority === 'critical' || (task.due && task.due <= plusDays(2)));
+    const urgent = active.filter((task) => isTaskOverdue(task) || task.priority === 'critical' || (task.due && task.due <= plusDays(1)));
+    const waiting = active.filter((task) => task.status === 'waiting_rop' || task.status === 'waiting_decision');
+    const noOwner = active.filter((task) => !task.owner);
+    return {
+      now: sortLazyTasks(now),
+      mine: sortLazyTasks(mine),
+      urgent: sortLazyTasks(urgent),
+      waiting: sortLazyTasks(waiting),
+      no_owner: sortLazyTasks(noOwner),
+      general: sortLazyTasks(general),
+      all: sortLazyTasks(active)
+    };
+  }
+
+  function lazyQueueMeta(key) {
+    const current = key || 'now';
+    const meta = {
+      now: { title: 'Что делать сейчас', text: 'Одна рабочая очередь: просрочено, согласования, без owner и критичные задачи.' },
+      mine: { title: 'Мои / сегодня', text: 'Берём сверху вниз: срочные, критичные и ближайшие по сроку.' },
+      urgent: { title: 'Срочно', text: 'Сначала закрываем просрочку, критичные задачи и дедлайны до завтра.' },
+      waiting: { title: 'Ждёт решения', text: 'Здесь задачи, которые надо согласовать или вернуть в работу.' },
+      no_owner: { title: 'Без owner', text: 'Назначаем ответственного прямо здесь, чтобы задача не была ничьей.' },
+      general: { title: 'Общие задачи', text: 'Задачи без привязки к карточке: согласования, процессы, созвоны, блоки и поручения.' },
+      all: { title: 'Все активные', text: 'Полный активный список без дублей авто-сигналов.' }
+    };
+    return meta[current] || meta.mine;
+  }
+
+  function currentLazyQueue() {
+    const raw = String(state?.controlFilters?.lazyQueue || 'now').trim();
+    return ['now', 'mine', 'urgent', 'waiting', 'no_owner', 'general', 'all'].includes(raw) ? raw : 'now';
+  }
+
+  function parseTaskArticleKeysInput(rawValue) {
+    const raw = String(rawValue || '').replace(/\r\n?/g, '\n');
+    if (!raw.trim()) return [];
+    const seen = new Set();
+    const result = [];
+    raw
+      .split('\n')
+      .flatMap((line) => String(line || '').split(/[;,]/))
+      .map((part) => part.trim().split(/\s+/)[0])
+      .map((part) => part.replace(/^[-•*]+/, '').replace(/^["'`«»]+|["'`«»]+$/g, '').trim())
+      .filter(Boolean)
+      .forEach((articleKey) => {
+        const key = articleKey.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        result.push(articleKey);
+      });
+    return result;
+  }
+
+  function renderLazyTaskRow(task) {
+    const sku = getSku(task.articleKey);
+    const entity = sku ? (sku.article || sku.articleKey) : (task.entityLabel || task.articleKey || 'Общая задача');
+    const ownerQuick = !task.owner
+      ? `
+        <div class="task-owner-quick">
+          <input data-task-owner-input="${escapeHtml(task.id)}" list="taskLazyOwnerList" placeholder="Owner">
+          <button class="btn small-btn" type="button" data-task-assign-owner="${escapeHtml(task.id)}">Назначить</button>
+        </div>
+      `
+      : '';
+    const primaryAction = task.source === 'auto'
+      ? `<button class="btn primary small-btn" type="button" data-take-task="${escapeHtml(task.id)}">Взять</button>`
+      : task.status === 'new'
+        ? `<button class="btn primary small-btn" type="button" data-task-status-fast="${escapeHtml(task.id)}" data-status="in_progress">В работу</button>`
+        : `<button class="btn primary small-btn" type="button" data-open-task="${escapeHtml(task.id)}">Открыть</button>`;
+
+    return `
+      <div class="task-lazy-row ${isTaskOverdue(task) ? 'overdue' : ''}" data-task-row-id="${escapeHtml(task.id)}">
+        <label class="task-select-box" title="Выбрать для массового действия">
+          <input type="checkbox" data-task-bulk-select="${escapeHtml(task.id)}">
+        </label>
+        <div class="task-lazy-main">
+          <div class="task-lazy-title">${escapeHtml(task.title || 'Задача')}</div>
+          <div class="muted small">${escapeHtml(entity)} · ${escapeHtml(task.owner || 'Без owner')} · срок ${escapeHtml(task.due || '—')}</div>
+          <div class="task-lazy-next">${escapeHtml(task.nextAction || task.reason || 'Нужен короткий следующий шаг.')}</div>
+          <div class="badge-stack">${taskPriorityBadge(task)}${taskStatusBadge(task)}${taskPlatformBadge(task)}${taskSourceBadge(task)}</div>
+        </div>
+        <div class="task-lazy-actions">
+          ${ownerQuick}
+          <div class="task-due-quick">
+            <button class="btn ghost small-btn" type="button" data-task-due-fast="${escapeHtml(task.id)}" data-days="1">+1д</button>
+            <button class="btn ghost small-btn" type="button" data-task-due-fast="${escapeHtml(task.id)}" data-days="3">+3д</button>
+            <button class="btn ghost small-btn" type="button" data-task-due-fast="${escapeHtml(task.id)}" data-days="7">+7д</button>
+          </div>
+          ${primaryAction}
+          <button class="btn ghost small-btn" type="button" data-open-task="${escapeHtml(task.id)}">Карточка</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderGeneralQuickTaskForm(owners, defaultPlatform = 'cross') {
+    const selectedPlatform = CONTROL_WORKSTREAM_META[defaultPlatform] && defaultPlatform !== 'all' && defaultPlatform !== 'executive' ? defaultPlatform : 'cross';
+    return `
+      <div class="task-general-create" data-task-general-create>
+        <div class="task-general-create-head">
+          <div>
+            <strong>Общая задача</strong>
+            <span>Без SKU: поручение, согласование, процесс или блок для команды.</span>
+          </div>
+          ${badge('без карточки', 'info')}
+        </div>
+        <form id="generalQuickTaskForm" class="task-general-form">
+          <input name="title" placeholder="Что нужно сделать без привязки к SKU" required>
+          <input name="owner" list="taskLazyOwnerList" placeholder="Кто ведёт">
+          <input name="due" type="date" value="${plusDays(2)}">
+          <button class="btn primary" type="submit">Поставить</button>
+          <textarea name="nextAction" rows="2" placeholder="Первый шаг и ожидаемый результат" required></textarea>
+          <details class="compact-details">
+            <summary>Контекст и приоритет</summary>
+            <div class="form-grid compact" style="margin-top:10px">
+              <input name="entityLabel" placeholder="Тема / проект" value="Общая задача">
+              <select name="platform">
+                <option value="cross" ${selectedPlatform === 'cross' ? 'selected' : ''}>Общий контур</option>
+                <option value="wb" ${selectedPlatform === 'wb' ? 'selected' : ''}>РОП WB</option>
+                <option value="ozon" ${selectedPlatform === 'ozon' ? 'selected' : ''}>РОП Ozon</option>
+                <option value="ya" ${selectedPlatform === 'ya' ? 'selected' : ''}>Я.Маркет</option>
+                <option value="goldapple" ${selectedPlatform === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
+                <option value="letu" ${selectedPlatform === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+                <option value="magnit" ${selectedPlatform === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
+                <option value="product" ${selectedPlatform === 'product' ? 'selected' : ''}>Продукт / новинки</option>
+              </select>
+              <select name="priority">
+                ${Object.entries(PRIORITY_META).map(([value, meta]) => `<option value="${value}" ${value === 'high' ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}
+              </select>
+              <select name="type">
+                <option value="general">Общее</option>
+                <option value="launch">Новинка / запуск</option>
+                <option value="traffic">Трафик / продвижение</option>
+                <option value="content">Контент / карточка</option>
+                <option value="assignment">Закрепление</option>
+              </select>
+              <textarea name="reason" rows="3" placeholder="Почему задача появилась / что важно знать"></textarea>
+            </div>
+          </details>
+        </form>
+      </div>
+    `;
+  }
+
+  function renderTaskBulkToolbar(owners, selected) {
+    return `
+      <div class="task-bulk-toolbar" data-task-bulk-toolbar>
+        <div>
+          <strong>Массовые действия</strong>
+          <span>${fmt.int(selected.length)} выбрано</span>
+        </div>
+        <input data-task-bulk-owner list="taskLazyOwnerList" placeholder="Назначить owner">
+        <button class="btn small-btn" type="button" data-task-bulk-action="assign_owner">Owner</button>
+        <button class="btn ghost small-btn" type="button" data-task-bulk-due="1">+1 день</button>
+        <button class="btn ghost small-btn" type="button" data-task-bulk-due="3">+3 дня</button>
+        <button class="btn ghost small-btn" type="button" data-task-bulk-due="7">+7 дней</button>
+        <button class="btn ghost small-btn" type="button" data-task-bulk-action="in_progress">В работу</button>
+        <button class="btn ghost small-btn" type="button" data-task-bulk-action="waiting_rop">К РОПу</button>
+        <button class="btn ghost small-btn" type="button" data-task-bulk-action="done">Закрыть</button>
+        <button class="btn ghost small-btn" type="button" data-task-cleanup>Навести порядок</button>
+      </div>`;
+  }
+
+  function selectedBulkTaskIds(root) {
+    return Array.from(root.querySelectorAll('[data-task-bulk-select]:checked'))
+      .map((input) => String(input.dataset.taskBulkSelect || '').trim())
+      .filter(Boolean);
+  }
+
+  async function applyBulkPatch(taskIds, patch) {
+    const ids = [...new Set(taskIds || [])].filter(Boolean);
+    for (const taskId of ids) {
+      await updateTaskRecord(taskId, typeof patch === 'function' ? patch(taskId) : patch);
+    }
+    invalidateControlTaskCache();
+    renderControlCenter();
+    return ids.length;
+  }
+
+  async function cleanupControlTasks() {
+    const rawTasks = typeof originalGetAllTasks === 'function' ? originalGetAllTasks() : getAllTasksDeduped();
+    const active = (rawTasks || []).filter(isTaskActive);
+    const byKey = new Map();
+    const updates = [];
+
+    for (const task of active) {
+      const key = taskDedupeKey(task);
+      const current = byKey.get(key);
+      if (!current) {
+        byKey.set(key, task);
+        continue;
+      }
+      const keep = shouldPreferTask(task, current) ? task : current;
+      const drop = keep === task ? current : task;
+      byKey.set(key, keep);
+      if (drop?.id && drop.source === 'auto') {
+        updates.push({
+          id: drop.id,
+          patch: {
+            status: 'cancelled',
+            reason: `${drop.reason || ''}\nАвтоочистка: скрыт дубль задачи ${keep.title || keep.id}.`.trim()
+          },
+          note: 'дубль'
+        });
+      }
+    }
+
+    for (const task of active) {
+      const sku = task.articleKey ? getSku(task.articleKey) : null;
+      if (task.articleKey && !sku && task.source === 'auto') {
+        updates.push({
+          id: task.id,
+          patch: {
+            status: 'cancelled',
+            reason: `${task.reason || ''}\nАвтоочистка: SKU не найден в текущем реестре.`.trim()
+          },
+          note: 'нет SKU'
+        });
+        continue;
+      }
+      const key = controlWorkstreamKey(task, sku);
+      if (key && key !== 'all' && key !== task.platform && CONTROL_WORKSTREAM_META[key]) {
+        updates.push({
+          id: task.id,
+          patch: { platform: key },
+          note: 'контур'
+        });
+      }
+    }
+
+    const limited = updates.slice(0, 30);
+    for (const update of limited) {
+      await updateTaskRecord(update.id, update.patch);
+    }
+    invalidateControlTaskCache();
+    renderControlCenter();
+    return {
+      total: updates.length,
+      applied: limited.length,
+      duplicates: updates.filter((item) => item.note === 'дубль').length,
+      missingSku: updates.filter((item) => item.note === 'нет SKU').length,
+      platform: updates.filter((item) => item.note === 'контур').length
+    };
+  }
+
+  function renderTaskLazyPanel(tasks, owners) {
+    const buckets = lazyTaskBuckets(tasks);
+    const queue = currentLazyQueue();
+    const selected = buckets[queue] || buckets.mine;
+    const meta = lazyQueueMeta(queue);
+    const selectedWorkstream = selectedTaskWorkstream();
+    const selectedWorkstreamMeta = controlWorkstreamMeta(selectedWorkstream);
+    const defaultPlatform = selectedWorkstream === 'all' ? 'cross' : selectedWorkstream;
+    const rawCount = controlTasksRawCount();
+    const duplicatesHidden = Math.max(0, rawCount - (tasks || []).length);
+    return `
+      <div class="card task-lazy-panel" data-task-lazy-panel>
+        <div class="section-subhead">
+          <div>
+            <h3>${escapeHtml(meta.title)}</h3>
+            <p class="small muted">${escapeHtml(meta.text)}</p>
+          </div>
+          <div class="badge-stack">
+            ${selectedWorkstream === 'all' ? badge('все контуры', 'info') : badge(`контур: ${selectedWorkstreamMeta.label}`, selectedWorkstreamMeta.kind)}
+            ${badge(`${fmt.int(selected.length)} в очереди`, selected.length ? 'warn' : 'ok')}
+            ${duplicatesHidden ? badge(`скрыто дублей ${fmt.int(duplicatesHidden)}`, 'info') : badge('дублей нет', 'ok')}
+          </div>
+        </div>
+        <datalist id="taskLazyOwnerList">${owners.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
+        ${renderTaskBulkToolbar(owners, [])}
+        ${renderGeneralQuickTaskForm(owners, defaultPlatform)}
+        <div class="task-lazy-list">
+          ${selected.length ? selected.slice(0, 10).map(renderLazyTaskRow).join('') : '<div class="empty">В этой очереди сейчас пусто.</div>'}
+        </div>
+        ${selected.length > 10 ? `<div class="muted small" style="margin-top:10px">Показали первые 10, остальное видно в полном режиме.</div>` : ''}
+      </div>
+    `;
+  }
+
+  function setAdvancedTaskVisibility(root) {
+    const fullMode = Boolean(state?.controlFilters?.taskFullMode);
+    root.classList.toggle('task-full-mode-on', fullMode);
+    root.querySelectorAll('[data-task-advanced]').forEach((node) => {
+      node.hidden = !fullMode;
+    });
+    root.querySelectorAll('[data-toggle-task-full-mode]').forEach((button) => {
+      button.textContent = fullMode ? 'Скрыть полный режим' : 'Полный режим';
+    });
+  }
+
+  function markAdvancedTaskBlocks(root, firstRowCards) {
+    const kpi = root.querySelector('.kpi-strip');
+    const overviewCard = kpi?.nextElementSibling?.matches?.('.card') ? kpi.nextElementSibling : null;
+    const workstreamGrid = overviewCard?.nextElementSibling?.matches?.('.grid.cards') ? overviewCard.nextElementSibling : null;
+    [kpi, overviewCard, workstreamGrid, firstRowCards?.[1], root.querySelector('.team-strip'), root.querySelector('.check-grid')]
+      .filter(Boolean)
+      .forEach((node) => { node.dataset.taskAdvanced = '1'; });
+
+    const twoCol = root.querySelector('.two-col');
+    let node = twoCol?.nextElementSibling || null;
+    while (node && !node.classList?.contains('team-strip') && !node.classList?.contains('check-grid')) {
+      if (!node.hasAttribute('data-task-lazy-panel')) node.dataset.taskAdvanced = '1';
+      node = node.nextElementSibling;
+    }
+  }
+
+  function tuneTaskHeader(root, tasks, baseTasks) {
+    const title = root.querySelector('.section-title h2');
+    const text = root.querySelector('.section-title p');
+    const actions = root.querySelector('.section-title .quick-actions');
+    const buckets = lazyTaskBuckets(tasks);
+    const queue = currentLazyQueue();
+    const selectedWorkstream = selectedTaskWorkstream();
+    if (title) title.textContent = 'Задачи на сегодня';
+    if (text) text.textContent = 'Сначала выбираем площадку: WB видит WB, Ozon видит Ozon, остальные маркетплейсы видят свой контур. Потом работаем короткой очередью.';
+    if (actions) {
+      actions.innerHTML = `
+        ${renderPeopleRoleSwitch()}
+        ${renderTaskWorkstreamSwitch(baseTasks || tasks, selectedWorkstream)}
+        <div class="task-queue-switch">
+          <button class="quick-chip ${queue === 'now' ? 'active' : ''}" type="button" data-task-lazy-queue="now">Сейчас ${fmt.int(buckets.now.length)}</button>
+          <button class="quick-chip ${queue === 'mine' ? 'active' : ''}" type="button" data-task-lazy-queue="mine">Мои ${fmt.int(buckets.mine.length)}</button>
+          <button class="quick-chip ${queue === 'urgent' ? 'active' : ''}" type="button" data-task-lazy-queue="urgent">Срочно ${fmt.int(buckets.urgent.length)}</button>
+          <button class="quick-chip ${queue === 'waiting' ? 'active' : ''}" type="button" data-task-lazy-queue="waiting">Ждёт решения ${fmt.int(buckets.waiting.length)}</button>
+          <button class="quick-chip ${queue === 'no_owner' ? 'active' : ''}" type="button" data-task-lazy-queue="no_owner">Без owner ${fmt.int(buckets.no_owner.length)}</button>
+          <button class="quick-chip ${queue === 'general' ? 'active' : ''}" type="button" data-task-lazy-queue="general">Общие ${fmt.int(buckets.general.length)}</button>
+          <button class="quick-chip" type="button" data-toggle-task-full-mode>Полный режим</button>
+        </div>
+      `;
+    }
+  }
+
   function renderCompactGeneralTaskCard(selectedWorkstream, owners, approvalCount) {
     const fixedPlatform = selectedWorkstream && selectedWorkstream !== 'all';
     const defaultPlatform = fixedPlatform ? selectedWorkstream : 'cross';
@@ -801,7 +1369,7 @@
             <input name="due" type="date" value="${plusDays(2)}">
           </div>
           ${fixedPlatform
-            ? `<input type="hidden" name="platform" value="${escapeHtml(defaultPlatform)}"><div class="inline-hint">Контур задачи: ${escapeHtml(workstreamMeta(selectedWorkstream).label)}</div>`
+            ? `<input type="hidden" name="platform" value="${escapeHtml(defaultPlatform)}"><div class="inline-hint">Контур задачи: ${escapeHtml(controlWorkstreamMeta(selectedWorkstream).label)}</div>`
             : `
               <select name="platform">
                 <option value="cross" ${defaultPlatform === 'cross' ? 'selected' : ''}>Общий контур</option>
@@ -828,6 +1396,7 @@
                 <option value="content">Контент / карточка</option>
                 <option value="assignment">Закрепление</option>
               </select>
+              <textarea name="articleKeys" rows="4" placeholder="Артикулы для массовой постановки, по одному в строке"></textarea>
               <textarea name="reason" rows="3" placeholder="Коротко: зачем задача и какой контекст"></textarea>
             </div>
           </details>
@@ -839,7 +1408,9 @@
 
   function renderGeneralTaskEnhancements(root) {
     root.querySelector('[data-control-center-v2-block]')?.remove();
+    root.querySelector('[data-task-lazy-panel]')?.remove();
     const tasks = typeof filteredControlTasks === 'function' ? filteredControlTasks() : getAllTasks();
+    const baseTasks = typeof filteredControlTasks === 'function' ? filteredControlTasks({ ignorePlatform: true }) : getAllTasks();
     const owners = ownerOptions();
     const approvalCount = tasks.filter((task) => task.status === 'waiting_rop' || task.status === 'waiting_decision').length;
     const selectedWorkstreamRaw = String(state?.controlFilters?.platform || '').trim().toLowerCase();
@@ -847,8 +1418,16 @@
     const firstTwoCol = root.querySelector('.two-col');
     const firstRowCards = firstTwoCol ? Array.from(firstTwoCol.children).filter((node) => node.classList?.contains('card')) : [];
 
-    if (firstRowCards[1]) {
-      firstRowCards[1].outerHTML = renderCompactGeneralTaskCard(selectedWorkstream, owners, approvalCount);
+    tuneTaskHeader(root, tasks, baseTasks);
+    markAdvancedTaskBlocks(root, firstRowCards);
+
+    const sectionTitle = root.querySelector('.section-title');
+    if (sectionTitle) {
+      sectionTitle.insertAdjacentHTML('afterend', renderTaskLazyPanel(tasks, owners));
+    }
+
+    if (firstRowCards[0]) {
+      firstRowCards[0].outerHTML = renderCompactGeneralTaskCard(selectedWorkstream, owners, approvalCount);
     } else {
       const target = root.querySelector('.kpi-strip');
       if (target) {
@@ -860,6 +1439,8 @@
       }
     }
 
+    setAdvancedTaskVisibility(root);
+
     const summaryHint = root.querySelector('.task-mini:last-child .muted.small');
     if (summaryHint) {
       summaryHint.textContent = approvalCount
@@ -867,10 +1448,125 @@
         : 'Открывать задачу, фиксировать короткий апдейт и вести следующий шаг.';
     }
 
-    root.querySelector('#generalTaskForm')?.addEventListener('submit', async (event) => {
+    root.querySelectorAll('[data-task-lazy-queue]').forEach((button) => button.addEventListener('click', () => {
+      state.controlFilters.lazyQueue = button.dataset.taskLazyQueue || 'mine';
+      renderControlCenter();
+    }));
+
+    root.querySelectorAll('[data-task-role]').forEach((button) => button.addEventListener('click', () => {
+      const role = button.dataset.taskRole || 'leader';
+      const roleMeta = CONTROL_ROLE_PRESETS.find((item) => item.key === role) || CONTROL_ROLE_PRESETS[0];
+      state.controlFilters.peopleRole = roleMeta.key;
+      state.controlFilters.platform = roleMeta.platform;
+      state.controlFilters.lazyQueue = 'now';
+      renderControlCenter();
+    }));
+
+    root.querySelectorAll('[data-task-platform-filter]').forEach((button) => button.addEventListener('click', () => {
+      state.controlFilters.peopleRole = '';
+      state.controlFilters.platform = button.dataset.taskPlatformFilter || 'all';
+      renderControlCenter();
+    }));
+
+    root.querySelectorAll('[data-toggle-task-full-mode]').forEach((button) => button.addEventListener('click', () => {
+      state.controlFilters.taskFullMode = !state.controlFilters.taskFullMode;
+      setAdvancedTaskVisibility(root);
+    }));
+
+    root.querySelectorAll('[data-task-status-fast]').forEach((button) => button.addEventListener('click', async () => {
+      const taskId = button.dataset.taskStatusFast;
+      const status = button.dataset.status || 'in_progress';
+      if (!taskId) return;
+      await updateTaskStatus(taskId, status);
+      renderControlCenter();
+    }));
+
+    root.querySelectorAll('[data-task-due-fast]').forEach((button) => button.addEventListener('click', async () => {
+      const taskId = button.dataset.taskDueFast;
+      const days = Number(button.dataset.days || 1);
+      if (!taskId) return;
+      await updateTaskRecord(taskId, { due: plusDays(Number.isFinite(days) ? days : 1) });
+      renderControlCenter();
+    }));
+
+    root.querySelectorAll('[data-task-assign-owner]').forEach((button) => button.addEventListener('click', async () => {
+      const taskId = button.dataset.taskAssignOwner;
+      const input = root.querySelector(`[data-task-owner-input="${CSS.escape(taskId)}"]`);
+      const owner = String(input?.value || '').trim();
+      if (!taskId || !owner) return;
+      await updateTaskRecord(taskId, { owner });
+      renderControlCenter();
+    }));
+
+    const bulkToolbar = root.querySelector('[data-task-bulk-toolbar]');
+    const refreshBulkToolbar = () => {
+      const selectedIds = selectedBulkTaskIds(root);
+      if (bulkToolbar) {
+        bulkToolbar.classList.toggle('has-selection', selectedIds.length > 0);
+        const label = bulkToolbar.querySelector('span');
+        if (label) label.textContent = `${fmt.int(selectedIds.length)} выбрано`;
+      }
+      root.querySelectorAll('[data-task-row-id]').forEach((row) => {
+        const id = row.getAttribute('data-task-row-id') || '';
+        row.classList.toggle('is-selected', selectedIds.includes(id));
+      });
+    };
+    root.querySelectorAll('[data-task-bulk-select]').forEach((input) => {
+      input.addEventListener('change', refreshBulkToolbar);
+    });
+    refreshBulkToolbar();
+
+    root.querySelectorAll('[data-task-bulk-due]').forEach((button) => button.addEventListener('click', async () => {
+      const ids = selectedBulkTaskIds(root);
+      if (!ids.length) return;
+      const days = Number(button.dataset.taskBulkDue || 1);
+      await applyBulkPatch(ids, { due: plusDays(Number.isFinite(days) ? days : 1) });
+    }));
+
+    root.querySelectorAll('[data-task-bulk-action]').forEach((button) => button.addEventListener('click', async () => {
+      const ids = selectedBulkTaskIds(root);
+      if (!ids.length) return;
+      const action = button.dataset.taskBulkAction || '';
+      if (action === 'assign_owner') {
+        const owner = String(root.querySelector('[data-task-bulk-owner]')?.value || '').trim();
+        if (!owner) return;
+        await applyBulkPatch(ids, { owner });
+        return;
+      }
+      if (action === 'in_progress') await applyBulkPatch(ids, { status: 'in_progress' });
+      if (action === 'waiting_rop') await applyBulkPatch(ids, { status: 'waiting_rop' });
+      if (action === 'done') await applyBulkPatch(ids, { status: 'done' });
+    }));
+
+    root.querySelector('[data-task-cleanup]')?.addEventListener('click', async () => {
+      const result = await cleanupControlTasks();
+      alert(`Порядок наведён: применено ${result.applied} из ${result.total}. Дубли: ${result.duplicates}, нет SKU: ${result.missingSku}, контуры: ${result.platform}.`);
+    });
+
+    root.querySelector('#generalQuickTaskForm')?.addEventListener('submit', async (event) => {
       event.preventDefault();
       const form = new FormData(event.currentTarget);
       const task = await createManualTask({
+        articleKey: '',
+        entityLabel: form.get('entityLabel') || 'Общая задача',
+        title: form.get('title'),
+        type: form.get('type') || 'general',
+        priority: form.get('priority') || 'high',
+        platform: form.get('platform') || 'cross',
+        owner: form.get('owner'),
+        due: form.get('due'),
+        nextAction: form.get('nextAction'),
+        reason: form.get('reason')
+      });
+      state.controlFilters.lazyQueue = 'general';
+      renderControlCenter();
+      if (task?.id) openTaskModal(task.id);
+    });
+
+    firstTwoCol?.querySelector('#generalTaskForm')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const basePayload = {
         articleKey: '',
         entityLabel: form.get('entityLabel'),
         title: form.get('title'),
@@ -881,9 +1577,27 @@
         due: form.get('due'),
         nextAction: form.get('nextAction'),
         reason: form.get('reason')
-      });
+      };
+      const articleKeys = parseTaskArticleKeysInput(form.get('articleKeys'));
+      const createdTasks = [];
+      if (articleKeys.length) {
+        for (const articleKey of articleKeys) {
+          const sku = typeof getSku === 'function' ? getSku(articleKey) : null;
+          const task = await createManualTask({
+            ...basePayload,
+            articleKey,
+            entityLabel: basePayload.entityLabel || sku?.name || articleKey,
+            owner: String(basePayload.owner || ownerName(sku) || '').trim(),
+            skipRerender: true
+          });
+          if (task?.id) createdTasks.push(task);
+        }
+      } else {
+        const task = await createManualTask(basePayload);
+        if (task?.id) createdTasks.push(task);
+      }
       renderControlCenter();
-      if (task?.id) openTaskModal(task.id);
+      if (createdTasks[0]?.id) openTaskModal(createdTasks[0].id);
     });
 
     const platformSelect = root.querySelector('#controlPlatformFilter');
@@ -920,6 +1634,9 @@
     window.returnTaskToWork = returnTaskToWork;
     window.finalCloseTaskWithReport = finalCloseTaskWithReport;
     window.updateTaskRecord = updateTaskRecord;
+    window.getAllTasks = getAllTasksDeduped;
+    window.getControlSnapshot = getControlSnapshotCached;
+    window.invalidateControlTaskCache = invalidateControlTaskCache;
     window.taskPlatformBadge = function patchedTaskPlatformBadge(task) {
       const meta = controlWorkstreamMeta(controlWorkstreamKey(task, getSku(task.articleKey)));
       return badge(meta.chip, meta.kind);
@@ -954,6 +1671,8 @@
     try { returnTaskToWork = window.returnTaskToWork; } catch {}
     try { finalCloseTaskWithReport = window.finalCloseTaskWithReport; } catch {}
     try { closeTaskWithReport = window.closeTaskWithReport; } catch {}
+    try { getAllTasks = window.getAllTasks; } catch {}
+    try { getControlSnapshot = window.getControlSnapshot; } catch {}
     try { getSkuComments = window.getSkuComments; } catch {}
     try { renderControlCenter = window.renderControlCenter; } catch {}
   }

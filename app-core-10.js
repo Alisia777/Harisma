@@ -266,6 +266,57 @@ async function removeOwnerAssignment(articleKey) {
   }
 }
 
+async function upsertProductLifecycleStatus(payload = {}) {
+  const override = normalizeProductLifecycleOverride({
+    articleKey: payload.articleKey,
+    status: payload.status,
+    key: payload.key,
+    note: payload.note,
+    updatedAt: new Date().toISOString(),
+    updatedBy: state.team.member.name || 'Команда'
+  });
+  if (!override.articleKey) return;
+
+  const previous = productLifecycleOverrideForArticle(override.articleKey);
+  state.storage.productLifecycleOverrides = (state.storage.productLifecycleOverrides || [])
+    .filter((item) => item.articleKey !== override.articleKey);
+  state.storage.productLifecycleOverrides.unshift(override);
+  applyOwnerOverridesToSkus();
+  if (typeof invalidateRepricerRowsCache === 'function') invalidateRepricerRowsCache();
+  saveLocalStorage();
+
+  const changed = !previous || previous.key !== override.key || String(previous.note || '') !== override.note;
+  if (changed) {
+    await createComment({
+      articleKey: override.articleKey,
+      author: state.team.member.name || 'Команда',
+      team: teamMemberLabel(),
+      type: productLifecycleIsExit(override.key) ? 'risk' : 'signal',
+      text: `Статус товара: ${override.status}${override.note ? `. ${override.note}` : ''}`
+    });
+  }
+}
+
+async function removeProductLifecycleStatus(articleKey) {
+  const normalizedArticleKey = String(articleKey || '').trim();
+  if (!normalizedArticleKey) return;
+  const previous = productLifecycleOverrideForArticle(normalizedArticleKey);
+  state.storage.productLifecycleOverrides = (state.storage.productLifecycleOverrides || [])
+    .filter((item) => item.articleKey !== normalizedArticleKey);
+  applyOwnerOverridesToSkus();
+  if (typeof invalidateRepricerRowsCache === 'function') invalidateRepricerRowsCache();
+  saveLocalStorage();
+  if (previous) {
+    await createComment({
+      articleKey: normalizedArticleKey,
+      author: state.team.member.name || 'Команда',
+      team: teamMemberLabel(),
+      type: 'signal',
+      text: `Ручной статус товара снят. Было: ${previous.status}.`
+    });
+  }
+}
+
 function buildTaskUpdateMessage(before, after) {
   const changes = [];
   if (before.title !== after.title) changes.push(`заголовок → ${after.title}`);
@@ -676,7 +727,7 @@ function rerenderCurrentView() {
     ['view-order', 'Логистика и заказ', () => { if (typeof renderOrderCalculator === 'function') renderOrderCalculator(); }],
     ['view-control', 'Задачи', renderControlCenter],
     ['view-skus', 'Реестр SKU', renderSkuRegistry],
-    ['view-launches', 'Продукт / Ксения', renderLaunches],
+    ['view-launches', 'Продукт / новинки', renderLaunches],
     ['view-product-leaderboard', 'Продуктовый лидерборд', renderProductLeaderboard],
     ['view-launch-control', 'Запуск новинок', renderLaunchControl],
     ['view-meetings', 'Ритм работы', renderMeetings],

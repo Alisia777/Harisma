@@ -139,21 +139,7 @@ function orderProcurementReadWarehouseInbound(row) {
   return 0;
 }
 
-function orderProcurementProductLeaderboardEntry(articleKey) {
-  if (typeof productLeaderboardEntryForArticle === 'function') {
-    return productLeaderboardEntryForArticle(articleKey, orderProcurementNormalizeKey);
-  }
-  if (typeof getProductLeaderboardEntry === 'function') {
-    try {
-      return getProductLeaderboardEntry(articleKey);
-    } catch {
-      return null;
-    }
-  }
-  return null;
-}
-
-function orderProcurementBuildSkuSignals(sku, platform, articleKey) {
+function orderProcurementBuildSkuSignals(sku, platform) {
   const side = sku?.[platform] || {};
   const channelText = Array.isArray(sku?.traffic?.channels) ? sku.traffic.channels.join(' ') : '';
   const text = [
@@ -165,20 +151,8 @@ function orderProcurementBuildSkuSignals(sku, platform, articleKey) {
   const signals = [];
   const recPrice = orderProcurementNumber(side?.recPrice);
   const currentPrice = orderProcurementNumber(side?.currentPrice);
-  const leaderboardEntry = orderProcurementProductLeaderboardEntry(articleKey || sku?.articleKey || sku?.article || sku?.sku);
 
-  if (leaderboardEntry) {
-    signals.push({
-      code: 'product-ads',
-      label: typeof productLeaderboardAdLabel === 'function' ? productLeaderboardAdLabel(leaderboardEntry) : '\u041a\u0417 / \u0440\u0435\u043a\u043b\u0430\u043c\u0430',
-      tone: typeof productLeaderboardAdTone === 'function' ? productLeaderboardAdTone(leaderboardEntry) : 'info',
-      action: 'product-leaderboard',
-      articleKey: articleKey || leaderboardEntry.articleKey || '',
-      title: typeof productLeaderboardAdSummary === 'function' ? productLeaderboardAdSummary(leaderboardEntry) : ''
-    });
-  }
-
-  if (!leaderboardEntry && (sku?.traffic?.kz || sku?.flags?.hasKZ || /(^|\s|[,;])кз($|\s|[,;])/i.test(channelText))) {
+  if (sku?.traffic?.kz || sku?.flags?.hasKZ || /(^|\s|[,;])кз($|\s|[,;])/i.test(channelText)) {
     signals.push({ code: 'kz', label: 'КЗ работает', tone: 'info' });
   }
   if (/акци|promo|промо|скид/i.test(text)) {
@@ -189,6 +163,67 @@ function orderProcurementBuildSkuSignals(sku, platform, articleKey) {
   }
 
   return signals;
+}
+
+function orderProcurementLifecycleForSku(sku = {}, row = {}, articleKey = '') {
+  const fallbackStatus = String(
+    sku?.productLifecycleStatus ||
+    sku?.lifecycleStatus ||
+    sku?.productStatus ||
+    sku?.sheetStatus ||
+    sku?.registryStatus ||
+    row?.productStatus ||
+    row?.status ||
+    sku?.status ||
+    ''
+  ).trim();
+  let lifecycle = sku?.productLifecycle && typeof sku.productLifecycle === 'object'
+    ? sku.productLifecycle
+    : null;
+
+  if (!lifecycle && typeof productLifecycleForSku === 'function') {
+    try {
+      lifecycle = productLifecycleForSku({
+        ...sku,
+        articleKey,
+        article: row?.article || sku?.article || articleKey,
+        productStatus: sku?.productStatus || row?.productStatus || fallbackStatus,
+        status: sku?.status || row?.status || fallbackStatus
+      }, articleKey);
+    } catch (error) {
+      console.warn('[order-procurement] product lifecycle', error);
+    }
+  }
+
+  const key = typeof normalizeProductLifecycleKey === 'function'
+    ? normalizeProductLifecycleKey(lifecycle?.key || lifecycle?.status || lifecycle?.label || fallbackStatus)
+    : String(lifecycle?.key || '').trim();
+  const meta = window.PRODUCT_LIFECYCLE_STATUS_META?.[key] || {};
+  return {
+    ...meta,
+    ...lifecycle,
+    key: key || lifecycle?.key || 'active',
+    label: lifecycle?.label || lifecycle?.status || meta.label || fallbackStatus || 'Актуальный',
+    status: lifecycle?.status || lifecycle?.label || meta.label || fallbackStatus || 'Актуальный',
+    tone: lifecycle?.tone || meta.tone || '',
+    taskPolicy: lifecycle?.taskPolicy || meta.taskPolicy || 'normal',
+    reason: lifecycle?.reason || lifecycle?.note || meta.description || '',
+    source: lifecycle?.source || ''
+  };
+}
+
+function orderProcurementLifecycleBlocksOrder(lifecycle) {
+  return ['question', 'paused', 'exit', 'archived'].includes(String(lifecycle?.key || '').trim());
+}
+
+function orderProcurementLifecycleSignal(lifecycle) {
+  if (!lifecycle?.key || lifecycle.key === 'active') return null;
+  const blocksOrder = orderProcurementLifecycleBlocksOrder(lifecycle);
+  return {
+    code: `lifecycle-${lifecycle.key}`,
+    label: `Статус: ${lifecycle.label || lifecycle.status || lifecycle.key}`,
+    tone: blocksOrder ? 'danger' : (lifecycle.tone || 'warn')
+  };
 }
 
 function orderProcurementMetricValue(row, sortKey) {
@@ -299,11 +334,18 @@ function buildOrderProcurementModel() {
     const sku = skuLookup.get(articleKey) || skuLookup.get(orderProcurementNormalizeKey(article)) || {};
     const warehouse = warehouseLookup.get(articleKey) || warehouseLookup.get(orderProcurementNormalizeKey(article)) || {};
     const commentMeta = commentMap.get(articleKey) || { count: 0, latestText: '', latestAuthor: '' };
+    const productLifecycle = orderProcurementLifecycleForSku(sku, row, articleKey);
+    const lifecycleSignal = orderProcurementLifecycleSignal(productLifecycle);
+    const orderBlockedByLifecycle = orderProcurementLifecycleBlocksOrder(productLifecycle);
+    const baseSignals = orderProcurementBuildSkuSignals(sku, platform);
+    const signals = lifecycleSignal ? [lifecycleSignal, ...baseSignals] : baseSignals;
     const current = rowMap.get(articleKey) || {
       article,
       articleKey,
       name: sku?.name || row?.name || article,
       owner: orderProcurementOwnerForPlatform(sku, row, platform),
+      productLifecycle,
+      orderBlockedByLifecycle,
       warehouseStock: orderProcurementNumber(warehouse.stockWarehouse),
       inboundWarehouse: orderProcurementNumber(warehouse.inboundWarehouse),
       acceptedFromSupplier: orderProcurementNumber(warehouse.accepted),
@@ -312,18 +354,21 @@ function buildOrderProcurementModel() {
         : orderProcurementNumber(warehouse.shippedWB),
       hasInboundWarehouse: Boolean(warehouse.hasInboundWarehouse),
       totalNeed: 0,
+      rawTotalNeed: 0,
+      blockedNeed: 0,
       totalOrders: 0,
       totalInTransit: 0,
       totalInRequest: 0,
       commentCount: orderProcurementNumber(commentMeta.count),
       latestCommentPreview: String(commentMeta.latestText || '').slice(0, 180),
       latestCommentAuthor: String(commentMeta.latestAuthor || ''),
-      signals: orderProcurementBuildSkuSignals(sku, platform, articleKey),
+      signals,
       clusters: {}
     };
 
     const clusterOrders = orderProcurementOrdersForDays(row, days);
-    const clusterNeed = orderProcurementNeedForDays(row, days);
+    const rawClusterNeed = orderProcurementNeedForDays(row, days);
+    const clusterNeed = orderBlockedByLifecycle ? 0 : rawClusterNeed;
     const clusterInTransit = orderProcurementNumber(row?.inTransit);
     const clusterInRequest = orderProcurementNumber(row?.inRequest);
     const cluster = {
@@ -331,6 +376,8 @@ function buildOrderProcurementModel() {
       orders: clusterOrders,
       turnover: orderProcurementSafeTurnover(row),
       need: clusterNeed,
+      rawNeed: rawClusterNeed,
+      blockedNeed: orderBlockedByLifecycle ? rawClusterNeed : 0,
       inTransit: clusterInTransit,
       inRequest: clusterInRequest
     };
@@ -338,6 +385,8 @@ function buildOrderProcurementModel() {
     cluster.matchesClusterFilter = orderProcurementClusterMatchesFilter(cluster, clusterFilter, clusterDays);
 
     current.totalNeed += clusterNeed;
+    current.rawTotalNeed += rawClusterNeed;
+    current.blockedNeed += cluster.blockedNeed;
     current.totalOrders += clusterOrders;
     current.totalInTransit += clusterInTransit;
     current.totalInRequest += clusterInRequest;
@@ -398,6 +447,8 @@ function buildOrderProcurementModel() {
     const matchingClusters = activeClusters.filter((cluster) => orderProcurementClusterMatchesFilter(cluster, clusterFilter, clusterDays));
     const displayClusters = clusterFilter === 'all' ? activeClusters : matchingClusters;
     const displayNeed = displayClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.need), 0);
+    const displayRawNeed = displayClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.rawNeed), 0);
+    const displayBlockedNeed = displayClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.blockedNeed), 0);
     const displayOrders = displayClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.orders), 0);
     const displayMpStock = displayClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.mpStock), 0);
     const displayInTransit = displayClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.inTransit), 0);
@@ -406,6 +457,8 @@ function buildOrderProcurementModel() {
     return {
       ...row,
       displayNeed,
+      displayRawNeed,
+      displayBlockedNeed,
       displayOrders,
       displayMpStock,
       displayInTransit,
@@ -423,6 +476,9 @@ function buildOrderProcurementModel() {
         row.articleKey,
         row.name,
         row.owner,
+        row.productLifecycle?.label,
+        row.productLifecycle?.reason,
+        row.productLifecycle?.source,
         row.latestCommentPreview,
         row.latestCommentAuthor,
         ...(row.signals || []).map((item) => item.label)
@@ -460,6 +516,7 @@ function buildOrderProcurementModel() {
     acc.displayInTransit += orderProcurementNumber(row.displayInTransit);
     acc.displayInRequest += orderProcurementNumber(row.displayInRequest);
     acc.totalNeed += orderProcurementNumber(row.displayNeed);
+    acc.blockedNeed += orderProcurementNumber(row.displayBlockedNeed);
     return acc;
   }, {
     warehouseStock: 0,
@@ -468,9 +525,11 @@ function buildOrderProcurementModel() {
     shippedFromWarehouse: 0,
     displayInTransit: 0,
     displayInRequest: 0,
-    totalNeed: 0
+    totalNeed: 0,
+    blockedNeed: 0
   });
   const commentsCount = list.reduce((acc, row) => acc + orderProcurementNumber(row.commentCount), 0);
+  const lifecycleBlockedRows = list.filter((row) => Boolean(row.orderBlockedByLifecycle)).length;
   const clusterTotalDefaults = { mpStock: 0, orders: 0, need: 0, risk: 0, shortTurnover: 0, noStock: 0, inMotion: 0, matched: 0, matchedMpStock: 0, matchedOrders: 0, matchedNeed: 0 };
   const displayClusterTotal = (place) => {
     const total = clusterTotalsMap.get(place) || clusterTotalDefaults;
@@ -505,6 +564,8 @@ function buildOrderProcurementModel() {
     rows: list,
     totalRows: allRows.length,
     commentsCount,
+    lifecycleBlockedRows,
+    lifecycleBlockedNeed: totals.blockedNeed,
     hasInboundWarehouse,
     totals,
     allClusterTotals: placeOrder.map(displayClusterTotal),
@@ -523,6 +584,8 @@ function exportOrderProcurementModel(model) {
   ];
   if (model.hasInboundWarehouse) headers.push('В пути на склад');
   headers.push(
+    'Статус товара',
+    'Заблокировано статусом',
     'Итого заказ товара',
     'Локальные заказы',
     'Едет от поставщика',
@@ -547,6 +610,8 @@ function exportOrderProcurementModel(model) {
     ];
     if (model.hasInboundWarehouse) cells.push(row.inboundWarehouse);
     cells.push(
+      row.productLifecycle?.label || row.productLifecycle?.status || '',
+      row.displayBlockedNeed || 0,
       row.displayNeed,
       row.displayInRequest,
       row.acceptedFromSupplier,
@@ -704,14 +769,6 @@ function renderOrderProcurementClusterSummary(model) {
   `;
 }
 
-function renderOrderProcurementSignalBadge(item, row) {
-  if (item?.action === 'product-leaderboard') {
-    const articleKey = item.articleKey || row?.articleKey || row?.article || '';
-    return `<button type="button" class="chip ${orderProcurementEscape(item.tone || 'info')} altea-order-procurement__ad-badge" data-open-product-leaderboard="${orderProcurementEscape(articleKey)}" title="${orderProcurementEscape(item.title || item.label || '')}">${orderProcurementEscape(item.label || '\u041a\u0417 / \u0440\u0435\u043a\u043b\u0430\u043c\u0430')}</button>`;
-  }
-  return orderProcurementBadge(item?.label || '', item?.tone || 'info');
-}
-
 function renderOrderProcurementTable(model) {
   const headGroups = model.places
     .map((place) => {
@@ -752,11 +809,14 @@ function renderOrderProcurementTable(model) {
               <td class="${cellClass}">—</td>
             `;
           }
+          const blockedNote = orderProcurementNumber(cluster.blockedNeed) > 0
+            ? `<div class="altea-order-procurement__cluster-note">статус блок: ${fmt.int(cluster.blockedNeed)}</div>`
+            : '';
           return `
             <td class="${cellClass} altea-order-procurement__num">${fmt.int(cluster.mpStock)}</td>
             <td class="${cellClass} altea-order-procurement__num">${fmt.int(cluster.orders)}</td>
             <td class="${cellClass}">${orderProcurementTurnoverBadge(cluster.turnover)}${cluster?.flags?.label ? `<div class="altea-order-procurement__cluster-note">${orderProcurementEscape(cluster.flags.label)}</div>` : ''}</td>
-            <td class="${cellClass}">${orderProcurementBadge(fmt.int(cluster.need), cluster.need > 0 ? 'warn' : 'ok')}</td>
+            <td class="${cellClass}">${orderProcurementBadge(fmt.int(cluster.need), cluster.need > 0 ? 'warn' : 'ok')}${blockedNote}</td>
           `;
         }).join('');
 
@@ -771,12 +831,18 @@ function renderOrderProcurementTable(model) {
           ? `${row.latestCommentAuthor ? `${row.latestCommentAuthor}: ` : ''}${row.latestCommentPreview}`
           : 'Комментариев пока нет';
         const movementFromWarehouse = orderProcurementNumber(row.shippedFromWarehouse) + orderProcurementNumber(row.displayInTransit);
+        const lifecycleBadge = row.productLifecycle?.key && row.productLifecycle.key !== 'active'
+          ? orderProcurementBadge(`Статус: ${row.productLifecycle.label || row.productLifecycle.status || row.productLifecycle.key}`, row.productLifecycle.tone || 'warn')
+          : '';
+        const lifecycleBlockBadge = orderProcurementNumber(row.displayBlockedNeed) > 0
+          ? orderProcurementBadge(`заблокировано ${fmt.int(row.displayBlockedNeed)}`, 'danger')
+          : '';
         const signals = Array.isArray(row.signals) && row.signals.length
-          ? row.signals.map((item) => renderOrderProcurementSignalBadge(item, row)).join('')
+          ? row.signals.map((item) => orderProcurementBadge(item.label, item.tone || 'info')).join('')
           : orderProcurementBadge('нет', '');
 
         return `
-          <tr>
+          <tr data-lifecycle-key="${orderProcurementEscape(row.productLifecycle?.key || 'active')}" data-order-lifecycle-block="${row.orderBlockedByLifecycle ? '1' : '0'}">
             <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--sku">
               <strong>${skuLink}</strong>
               <div class="altea-order-procurement__meta">${orderProcurementEscape(row.owner || 'Без owner')}</div>
@@ -784,6 +850,8 @@ function renderOrderProcurementTable(model) {
               <div class="altea-order-procurement__row-actions">
                 <button type="button" class="quick-chip" data-altea-order-comment="${orderProcurementEscape(row.articleKey || articleLabel)}" data-altea-order-comment-title="${orderProcurementEscape(articleLabel)}">Комментарий</button>
                 ${orderProcurementBadge(`C: ${fmt.int(row.commentCount)}`, row.commentCount ? 'info' : '')}
+                ${lifecycleBadge}
+                ${lifecycleBlockBadge}
               </div>
             </td>
             <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--article">${orderProcurementEscape(row.owner || 'Без owner')}</td>
@@ -864,7 +932,7 @@ function renderOrderProcurement(model) {
     : (selectedPlaceCount === 1 ? model.selectedPlaces[0] : 'Все склады');
 
   return `
-    <section class="${sectionClass}" data-altea-order-procurement data-platform="${orderProcurementEscape(model.platform)}">
+    <section class="${sectionClass}" data-altea-order-procurement data-lifecycle-blocked-rows="${orderProcurementEscape(model.lifecycleBlockedRows || 0)}" data-lifecycle-blocked-need="${orderProcurementEscape(model.lifecycleBlockedNeed || 0)}">
       <div class="card">
         <div class="section-title">
           <div>
@@ -923,6 +991,7 @@ function renderOrderProcurement(model) {
           ${renderOrderProcurementFilterPresets(model)}
 
           <div class="badge-stack">
+            ${model.lifecycleBlockedRows ? orderProcurementBadge(`статус-блок: ${fmt.int(model.lifecycleBlockedRows)}`, 'danger') : ''}
             ${orderProcurementBadge(`SKU: ${fmt.int(model.rows.length)}`, model.rows.length ? 'ok' : 'warn')}
             ${orderProcurementBadge(`Кластеры: ${fmt.int(model.places.length)}`, model.places.length ? 'ok' : 'warn')}
             ${orderProcurementBadge(`сигналы: ${fmt.int(visibleClusterSignalCount)}`, visibleClusterSignalCount ? 'warn' : 'info')}
@@ -990,6 +1059,11 @@ function renderOrderProcurement(model) {
             <strong>${fmt.int(clusterRiskCount)}</strong>
             <span>${model.clusterFilter === 'all' ? 'все сигнальные ячейки' : `совпало с фильтром: ${fmt.int(clusterMatchCount)}`}</span>
           </div>
+          <div class="mini-kpi ${model.lifecycleBlockedNeed ? 'warn' : ''}">
+            <span>Блок статуса</span>
+            <strong>${fmt.int(model.lifecycleBlockedNeed || 0)}</strong>
+            <span>${fmt.int(model.lifecycleBlockedRows || 0)} SKU не идут в автозаказ</span>
+          </div>
           <div class="mini-kpi warn">
             <span>Итого к заказу</span>
             <strong>${fmt.int(model.totals.totalNeed)}</strong>
@@ -1051,15 +1125,6 @@ function orderProcurementRenderInto(root) {
 }
 
 function bindOrderProcurement(root) {
-  root.querySelectorAll('[data-open-product-leaderboard]').forEach((button) => {
-    button.addEventListener('click', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const articleKey = button.getAttribute('data-open-product-leaderboard') || '';
-      if (typeof openProductLeaderboardForSku === 'function') openProductLeaderboardForSku(articleKey);
-    });
-  });
-
   root.querySelectorAll('[data-altea-order-platform]').forEach((button) => {
     button.addEventListener('click', () => {
       const orderState = ensureOrderProcurementState();
@@ -1215,31 +1280,10 @@ function injectOrderProcurementStyles() {
       --col-warehouse: 132px;
       --col-inbound: 132px;
       --col-total: 148px;
-      --order-platform-rgb: 212, 164, 74;
-      --order-platform-color: rgb(var(--order-platform-rgb));
       display: grid;
       gap: 14px;
       width: 100%;
       margin-top: 18px;
-    }
-
-    .altea-order-procurement[data-platform="wb"] {
-      --order-platform-rgb: 156, 104, 255;
-      --order-platform-color: #b28aff;
-    }
-
-    .altea-order-procurement[data-platform="ozon"] {
-      --order-platform-rgb: 31, 139, 255;
-      --order-platform-color: #67b8ff;
-    }
-
-    .altea-order-procurement[data-platform] > .card:first-child,
-    .altea-order-procurement[data-platform] .altea-order-procurement__table-card {
-      border-color: rgba(var(--order-platform-rgb), 0.30);
-      background:
-        linear-gradient(135deg, rgba(var(--order-platform-rgb), 0.14), rgba(14, 11, 8, 0.82) 34%),
-        rgba(18, 14, 10, 0.76);
-      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24), inset 0 0 0 1px rgba(var(--order-platform-rgb), 0.08);
     }
 
     .altea-order-procurement.altea-order-procurement--no-inbound {
@@ -1308,9 +1352,9 @@ function injectOrderProcurementStyles() {
     }
 
     .altea-order-procurement__preset.is-active {
-      border-color: rgba(var(--order-platform-rgb), 0.68);
-      background: rgba(var(--order-platform-rgb), 0.15);
-      box-shadow: inset 0 0 0 1px rgba(var(--order-platform-rgb), 0.14);
+      border-color: rgba(240, 196, 101, 0.68);
+      background: rgba(94, 68, 27, 0.74);
+      box-shadow: inset 0 0 0 1px rgba(240, 196, 101, 0.14);
     }
 
     .altea-order-procurement__place-filter {
@@ -1362,9 +1406,9 @@ function injectOrderProcurementStyles() {
     }
 
     .altea-order-procurement__place-chip.is-active {
-      border-color: rgba(var(--order-platform-rgb), 0.66);
-      background: rgba(var(--order-platform-rgb), 0.16);
-      box-shadow: inset 0 0 0 1px rgba(var(--order-platform-rgb), 0.16);
+      border-color: rgba(240, 196, 101, 0.62);
+      background: rgba(94, 68, 27, 0.78);
+      box-shadow: inset 0 0 0 1px rgba(240, 196, 101, 0.14);
     }
 
     .altea-order-procurement__platforms,
@@ -1397,17 +1441,9 @@ function injectOrderProcurementStyles() {
     }
 
     .altea-order-procurement__platform-btn.is-active {
-      background: linear-gradient(135deg, rgba(var(--order-platform-rgb), 0.34), rgba(var(--order-platform-rgb), 0.10));
-      border-color: rgba(var(--order-platform-rgb), 0.72);
+      background: linear-gradient(135deg, rgba(212, 164, 74, 0.30), rgba(101, 67, 33, 0.56));
+      border-color: rgba(240, 196, 101, 0.60);
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
-    }
-
-    .altea-order-procurement__platform-btn[data-altea-order-platform="wb"].is-active {
-      color: #efe6ff;
-    }
-
-    .altea-order-procurement__platform-btn[data-altea-order-platform="ozon"].is-active {
-      color: #e4f3ff;
     }
 
     .altea-order-procurement__summary {
@@ -1653,14 +1689,6 @@ function injectOrderProcurementStyles() {
     .altea-order-procurement__signals .chip {
       margin: 0 4px 4px 0;
       white-space: nowrap;
-    }
-
-    .altea-order-procurement__ad-badge {
-      cursor: pointer;
-      border-color: rgba(var(--order-platform-rgb), 0.42);
-      background: rgba(var(--order-platform-rgb), 0.16);
-      color: #fff6e8;
-      font: inherit;
     }
 
     .altea-order-procurement__num {

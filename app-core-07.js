@@ -14,6 +14,26 @@ function renderSkuModal(articleKey) {
   const currentOwner = ownerName(sku);
   const currentOwnerOverride = (state.storage.ownerOverrides || [])
     .find((item) => item.articleKey === resolvedArticleKey) || {};
+  const currentLifecycle = typeof productLifecycleForSku === 'function'
+    ? productLifecycleForSku(sku, resolvedArticleKey)
+    : { key: 'active', label: sku.status || 'Актуальный', tone: 'ok', note: '' };
+  const currentLifecycleOverride = typeof productLifecycleOverrideForArticle === 'function'
+    ? productLifecycleOverrideForArticle(resolvedArticleKey)
+    : null;
+  const lifecycleSourceLabel = ({
+    manual: 'Ручное решение',
+    auto: 'Авто-статус',
+    productLifecycleStatus: 'Реестр SKU',
+    lifecycleStatus: 'Реестр SKU',
+    productStatus: 'Реестр SKU',
+    sheetStatus: 'Реестр SKU',
+    statusSku: 'Реестр SKU',
+    registryStatus: 'Реестр SKU',
+    'owner.registryStatus': 'Реестр owner',
+    status: 'Реестр SKU',
+    fallback: 'По умолчанию'
+  })[currentLifecycle.source] || currentLifecycle.source || 'По данным SKU';
+  const lifecycleReason = currentLifecycle.note || currentLifecycle.reason || currentLifecycle.description || '';
   const ownerSelectOptions = [...new Set([currentOwner, ...owners].filter(Boolean))]
     .sort((a, b) => a.localeCompare(b, 'ru'));
   const completion = currentCompletionSnapshot(sku);
@@ -124,6 +144,22 @@ function renderSkuModal(articleKey) {
             <button class="btn ghost" type="button" id="clearOwnerBtn">Снять owner</button>
           </div>
         </form>
+        <div class="modal-section-title" style="margin-top:14px">
+          <div>
+            <h3>Статус товара</h3>
+            <p class="small muted">Единый lifecycle-статус для задач, цен и репрайсера.</p>
+          </div>
+          ${badge(currentLifecycle.label || 'Актуальный', currentLifecycle.tone || '')}
+        </div>
+        <div class="note-box"><strong>${escapeHtml(lifecycleSourceLabel)}</strong>${lifecycleReason ? `<div>${escapeHtml(lifecycleReason)}</div>` : ''}</div>
+        <form id="productLifecycleForm" class="form-grid compact">
+          <select name="status">${typeof productLifecycleOptionsHtml === 'function' ? productLifecycleOptionsHtml(currentLifecycle.key || currentLifecycle.label) : ''}</select>
+          <textarea name="note" rows="3" placeholder="Комментарий: почему выводим, до какой даты, кто ведёт">${escapeHtml(currentLifecycleOverride?.note || '')}</textarea>
+          <div class="quick-actions">
+            <button class="btn" type="submit">Сохранить статус</button>
+            <button class="btn ghost" type="button" id="clearProductLifecycleBtn">Сбросить ручной статус</button>
+          </div>
+        </form>
         <div class="team-note">Командный режим: ${escapeHtml(state.team.note || 'Локальный режим')}</div>
       </div>
       <div class="card">
@@ -227,6 +263,24 @@ function renderSkuModal(articleKey) {
 
   body.querySelector('#clearOwnerBtn')?.addEventListener('click', async () => {
     await removeOwnerAssignment(resolvedArticleKey);
+    renderSkuModal(resolvedArticleKey);
+    rerenderCurrentView();
+  });
+
+  body.querySelector('#productLifecycleForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    await upsertProductLifecycleStatus({
+      articleKey: resolvedArticleKey,
+      status: form.get('status'),
+      note: form.get('note')
+    });
+    renderSkuModal(resolvedArticleKey);
+    rerenderCurrentView();
+  });
+
+  body.querySelector('#clearProductLifecycleBtn')?.addEventListener('click', async () => {
+    await removeProductLifecycleStatus(resolvedArticleKey);
     renderSkuModal(resolvedArticleKey);
     rerenderCurrentView();
   });

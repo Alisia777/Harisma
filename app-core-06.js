@@ -206,17 +206,26 @@ function buildSkuRegistryTaskMap() {
   return taskMap;
 }
 
+function skuLifecycleMetaForRegistry(sku) {
+  return sku?.productLifecycle || (typeof productLifecycleForSku === 'function'
+    ? productLifecycleForSku(sku, sku?.articleKey || sku?.article || '')
+    : { key: 'active', label: sku?.status || 'Актуальный', tone: 'ok' });
+}
+
 function getFilteredSkus(taskMap = null) {
   const nextTaskMap = taskMap instanceof Map ? taskMap : buildSkuRegistryTaskMap();
+  state.filters.lifecycle = state.filters.lifecycle || 'all';
   const q = String(state.filters.search || '').trim().toLowerCase();
   return state.skus.filter((sku) => {
     if (!filterSkuByMarket(sku)) return false;
     const matrixProblemState = typeof skuMatrixProblemState === 'function' ? skuMatrixProblemState(sku) : 'ok';
     const matrixProblemMeta = typeof skuMatrixProblemMeta === 'function' ? skuMatrixProblemMeta(matrixProblemState) : null;
-    const hay = [sku.article, sku.articleKey, sku.name, sku.brand, sku.category, sku.segment, ownerName(sku), sku.status, sku.focusReasons, matrixProblemMeta?.label].filter(Boolean).join(' ').toLowerCase();
+    const lifecycle = skuLifecycleMetaForRegistry(sku);
+    const hay = [sku.article, sku.articleKey, sku.name, sku.brand, sku.category, sku.segment, ownerName(sku), sku.status, lifecycle?.label, lifecycle?.reason, sku.focusReasons, matrixProblemMeta?.label].filter(Boolean).join(' ').toLowerCase();
     if (q && !hay.includes(q)) return false;
     if (state.filters.owner !== 'all' && ownerName(sku) !== state.filters.owner) return false;
     if (state.filters.segment !== 'all' && sku.segment !== state.filters.segment) return false;
+    if (state.filters.lifecycle !== 'all' && (lifecycle?.key || 'active') !== state.filters.lifecycle) return false;
     if (state.filters.assignment === 'assigned' && !ownerName(sku)) return false;
     if (state.filters.assignment === 'unassigned' && ownerName(sku)) return false;
     if (state.filters.traffic === 'any' && !sku?.flags?.hasExternalTraffic) return false;
@@ -263,9 +272,22 @@ function getFilteredSkus(taskMap = null) {
 function renderSkuRegistry() {
   const root = document.getElementById('view-skus');
   const skuTaskMap = buildSkuRegistryTaskMap();
+  state.filters.lifecycle = state.filters.lifecycle || 'all';
   const items = getFilteredSkus(skuTaskMap);
   const owners = [...new Set(state.skus.map((sku) => ownerName(sku)).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
   const segments = [...new Set(state.skus.map((sku) => sku.segment).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
+  const lifecycleCounts = new Map();
+  state.skus.forEach((sku) => {
+    const lifecycle = skuLifecycleMetaForRegistry(sku);
+    const key = lifecycle?.key || 'active';
+    lifecycleCounts.set(key, (lifecycleCounts.get(key) || 0) + 1);
+  });
+  const lifecycleOptions = (typeof PRODUCT_LIFECYCLE_STATUS_ORDER !== 'undefined' ? PRODUCT_LIFECYCLE_STATUS_ORDER : ['active', 'new', 'relaunch', 'watch', 'question', 'paused', 'exit', 'archived'])
+    .map((key) => {
+      const meta = typeof productLifecycleMeta === 'function' ? productLifecycleMeta(key) : { label: key };
+      return { key, label: meta.label || key, count: lifecycleCounts.get(key) || 0, tone: meta.tone || '' };
+    })
+    .filter((item) => item.count > 0 || item.key === state.filters.lifecycle || item.key === 'active');
   const assignedCount = items.filter((sku) => ownerName(sku)).length;
   const unassignedCount = items.length - assignedCount;
   const kzCount = items.filter((sku) => sku?.flags?.hasKZ).length;
@@ -303,6 +325,7 @@ function renderSkuRegistry() {
         ${badge(`${fmt.int(items.length)} SKU`)}
         ${badge(`${fmt.int(assignedCount)} с owner`, 'ok')}
         ${badge(`${fmt.int(unassignedCount)} без owner`, unassignedCount ? 'warn' : 'ok')}
+        ${lifecycleOptions.filter((item) => item.count > 0 && item.key !== 'active').slice(0, 4).map((item) => badge(`${item.label} ${fmt.int(item.count)}`, item.tone)).join('')}
         ${badge(`${fmt.int(matrixSummary.aliasCount || 0)} alias`, matrixSummary.aliasCount ? 'ok' : '')}
         ${matrixIssueCount ? badge(`${fmt.int(matrixIssueCount)} проблем матрицы`, 'warn') : ''}
         ${badge(`🚀 КЗ ${fmt.int(kzCount)}`, kzCount ? 'info' : '')}
@@ -323,6 +346,10 @@ function renderSkuRegistry() {
       <select id="skuSegmentFilter">
         <option value="all">Все сегменты</option>
         ${segments.map((segment) => `<option value="${escapeHtml(segment)}" ${state.filters.segment === segment ? 'selected' : ''}>${escapeHtml(segment)}</option>`).join('')}
+      </select>
+      <select id="skuLifecycleFilter">
+        <option value="all" ${state.filters.lifecycle === 'all' ? 'selected' : ''}>Все статусы товара</option>
+        ${lifecycleOptions.map((item) => `<option value="${escapeHtml(item.key)}" ${state.filters.lifecycle === item.key ? 'selected' : ''}>${escapeHtml(item.label)} · ${fmt.int(item.count)}</option>`).join('')}
       </select>
       <select id="skuFocusFilter">
         <option value="all" ${state.filters.focus === 'all' ? 'selected' : ''}>Все SKU</option>
@@ -372,6 +399,7 @@ function renderSkuRegistry() {
   document.getElementById('skuSearchInput').addEventListener('input', (e) => { state.filters.search = e.target.value; renderSkuRegistry(); });
   document.getElementById('skuOwnerFilter').addEventListener('change', (e) => { state.filters.owner = e.target.value; renderSkuRegistry(); });
   document.getElementById('skuSegmentFilter').addEventListener('change', (e) => { state.filters.segment = e.target.value; renderSkuRegistry(); });
+  document.getElementById('skuLifecycleFilter').addEventListener('change', (e) => { state.filters.lifecycle = e.target.value; renderSkuRegistry(); });
   document.getElementById('skuFocusFilter').addEventListener('change', (e) => { state.filters.focus = e.target.value; renderSkuRegistry(); });
   document.getElementById('skuTrafficFilter').addEventListener('change', (e) => { state.filters.traffic = e.target.value; renderSkuRegistry(); });
   document.getElementById('skuAssignmentFilter').addEventListener('change', (e) => { state.filters.assignment = e.target.value; renderSkuRegistry(); });

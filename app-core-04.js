@@ -30,6 +30,10 @@ function renderControlWorkstreamSection(summary) {
 }
 
 function skuOperationalStatusMeta(sku) {
+  const lifecycle = sku?.productLifecycle || (typeof productLifecycleForSku === 'function' ? productLifecycleForSku(sku) : null);
+  if (lifecycle?.key && lifecycle.key !== 'active') {
+    return { label: lifecycle.label || lifecycle.status || 'Статус товара', tone: lifecycle.tone || '' };
+  }
   const matrixStatus = typeof skuMatrixStatusLabel === 'function' ? skuMatrixStatusLabel(sku, '') : '';
   const rawStatus = String(sku?.status || matrixStatus || '').toLowerCase();
   const registryStatus = String(sku?.owner?.registryStatus || matrixStatus || '').toLowerCase();

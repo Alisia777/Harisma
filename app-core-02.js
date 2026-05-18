@@ -158,6 +158,7 @@ function normalizePortalStorageSnapshot(source = {}) {
     tasks: Array.isArray(parsed.tasks) ? normalizeStorageTasks(parsed.tasks, 'manual') : [],
     decisions: Array.isArray(parsed.decisions) ? parsed.decisions.map(normalizeDecision) : [],
     ownerOverrides: Array.isArray(parsed.ownerOverrides) ? parsed.ownerOverrides.map(normalizeOwnerOverride) : [],
+    productLifecycleOverrides: Array.isArray(parsed.productLifecycleOverrides) ? parsed.productLifecycleOverrides.map(normalizeProductLifecycleOverride).filter((item) => item.articleKey) : [],
     taskAttachments: Array.isArray(parsed.taskAttachments) ? parsed.taskAttachments.map(normalizeTaskAttachment).filter((item) => item.taskId && item.objectPath) : [],
     launchOverrides: Array.isArray(parsed.launchOverrides) ? parsed.launchOverrides.filter((item) => item && typeof item === 'object') : [],
     launchDeletedIds: Array.isArray(parsed.launchDeletedIds) ? parsed.launchDeletedIds.map((item) => String(item || '').trim()).filter(Boolean) : [],
@@ -302,6 +303,8 @@ function prepareSkuBaseState() {
   for (const sku of state.skus) {
     normalizeSkuOwnerState(sku);
     if (!sku.__baseOwner) sku.__baseOwner = JSON.parse(JSON.stringify(sku.owner || {}));
+    if (!Object.prototype.hasOwnProperty.call(sku, '__baseStatus')) sku.__baseStatus = sku.status || '';
+    if (!Object.prototype.hasOwnProperty.call(sku, '__baseProductStatus')) sku.__baseProductStatus = sku.productStatus || '';
   }
 }
 
@@ -329,6 +332,24 @@ function applyOwnerOverridesToSkus() {
       sku.owner = baseOwner;
       sku.flags = sku.flags || {};
       sku.flags.assigned = Boolean(baseOwner?.name);
+    }
+
+    const lifecycle = typeof productLifecycleForSku === 'function'
+      ? productLifecycleForSku({
+        ...sku,
+        status: sku.__baseStatus || sku.status || '',
+        productStatus: sku.__baseProductStatus || sku.productStatus || ''
+      }, sku.articleKey)
+      : null;
+    if (lifecycle) {
+      sku.productLifecycle = lifecycle;
+      if (lifecycle.explicit) {
+        sku.productStatus = lifecycle.label;
+        sku.status = lifecycle.label;
+      } else {
+        sku.productStatus = sku.__baseProductStatus || lifecycle.label || sku.productStatus || '';
+        sku.status = sku.__baseStatus || sku.status || lifecycle.label || '';
+      }
     }
   }
 }
@@ -509,6 +530,7 @@ function mergeImportedStorage(imported) {
     tasks: Array.isArray(imported.tasks) ? imported.tasks : [],
     decisions: Array.isArray(imported.decisions) ? imported.decisions : [],
     ownerOverrides: Array.isArray(imported.ownerOverrides) ? imported.ownerOverrides : [],
+    productLifecycleOverrides: Array.isArray(imported.productLifecycleOverrides) ? imported.productLifecycleOverrides : [],
     taskAttachments: Array.isArray(imported.taskAttachments) ? imported.taskAttachments : [],
     launchOverrides: Array.isArray(imported.launchOverrides) ? imported.launchOverrides : [],
     launchDeletedIds: Array.isArray(imported.launchDeletedIds) ? imported.launchDeletedIds : [],
@@ -533,6 +555,12 @@ function mergeImportedStorage(imported) {
     const override = normalizeOwnerOverride(raw);
     state.storage.ownerOverrides = (state.storage.ownerOverrides || []).filter((item) => item.articleKey !== override.articleKey);
     state.storage.ownerOverrides.unshift(override);
+  }
+  for (const raw of seed.productLifecycleOverrides) {
+    const override = normalizeProductLifecycleOverride(raw);
+    if (!override.articleKey) continue;
+    state.storage.productLifecycleOverrides = (state.storage.productLifecycleOverrides || []).filter((item) => item.articleKey !== override.articleKey);
+    state.storage.productLifecycleOverrides.unshift(override);
   }
   for (const raw of seed.taskAttachments) {
     const attachment = normalizeTaskAttachment(raw);

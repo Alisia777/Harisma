@@ -25,7 +25,7 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
     order: [],
     prices: [
       'portal-price-local-fetch-bypass-hotfix.js?v=20260428a',
-      'portal-price-workbench-runtime-loader.js?v=20260516platformcolors2',
+      'portal-price-workbench-runtime-loader.js?v=20260518zerofix1',
       'portal-team-reconnect-hotfix.js?v=20260515a'
     ]
   };
@@ -43,7 +43,7 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
     order: 'Логистика и заказ',
     control: 'Задачи',
     skus: 'Реестр SKU',
-    launches: 'Продукт / Ксения',
+    launches: 'Продукт / новинки',
     'product-leaderboard': 'Продуктовый лидерборд',
     'launch-control': 'Запуск новинок',
     meetings: 'Ритм работы',
@@ -66,7 +66,7 @@ window.__ALTEA_RUNTIME_OPTIMIZER_20260503A__ = true;
     launches: {
       path: 'data/launches.json',
       fallback: [],
-      label: 'Продукт / Ксения',
+      label: 'Продукт / новинки',
       assign(value) {
         state.launches = Array.isArray(value) ? value : [];
       }

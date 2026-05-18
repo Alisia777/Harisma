@@ -327,6 +327,25 @@ async function main() {
       && document.querySelector('#view-order [data-altea-order-export]')
     ));
     if (!orderOk) throw new Error('Order procurement warehouse filters did not render.');
+    const orderLifecycleCheck = await page.evaluate(() => {
+      const root = document.querySelector('#view-order [data-altea-order-procurement]');
+      const blockedRows = Number(root?.dataset?.lifecycleBlockedRows || 0);
+      const blockedNeed = Number(root?.dataset?.lifecycleBlockedNeed || 0);
+      const blockedDomRows = document.querySelectorAll('#view-order [data-order-lifecycle-block="1"]').length;
+      return {
+        ok: Boolean(root)
+          && root.dataset.lifecycleBlockedRows !== undefined
+          && root.dataset.lifecycleBlockedNeed !== undefined
+          && (blockedRows <= 0 || blockedDomRows > 0)
+          && blockedNeed >= 0,
+        blockedRows,
+        blockedNeed,
+        blockedDomRows
+      };
+    });
+    if (!orderLifecycleCheck.ok) {
+      throw new Error(`Order procurement lifecycle guard did not initialize: ${JSON.stringify(orderLifecycleCheck)}`);
+    }
     await page.locator('#view-order [data-altea-order-preset="low10"]').first().click();
     await page.waitForFunction(() => Boolean(
       document.querySelector('#view-order [data-altea-order-preset="low10"].is-active')
@@ -465,6 +484,62 @@ async function main() {
     ));
     if (!registryOk) throw new Error('SKU registry did not render a usable surface.');
 
+    const lifecycleFilterCheck = await page.evaluate(() => {
+      const filter = document.querySelector('#skuLifecycleFilter');
+      const options = Array.from(filter?.querySelectorAll('option') || []).map((option) => option.value);
+      const lifecycleCounts = (window.__alteaAppState?.skus || []).reduce((acc, sku) => {
+        const lifecycle = sku?.productLifecycle || (typeof window.productLifecycleForSku === 'function' ? window.productLifecycleForSku(sku) : null);
+        const key = lifecycle?.key || 'active';
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+      return {
+        ok: Boolean(filter)
+          && typeof window.productLifecycleAutoForSku === 'function'
+          && options.includes('watch')
+          && options.includes('question')
+          && Object.values(lifecycleCounts).some((value) => value > 0),
+        options,
+        lifecycleCounts
+      };
+    });
+    if (!lifecycleFilterCheck.ok) {
+      throw new Error(`SKU lifecycle filter/statuses did not initialize: ${JSON.stringify(lifecycleFilterCheck)}`);
+    }
+
+    const lifecycleButtonCheck = await page.evaluate(() => ({
+      openButtons: document.querySelectorAll('#view-skus [data-open-sku]').length,
+      originalRaw: localStorage.getItem('brand-portal-local-v1'),
+      originalStorage: window.__alteaAppState?.storage || null
+    }));
+    if (lifecycleButtonCheck.openButtons <= 0) {
+      throw new Error('SKU registry did not expose SKU open buttons for lifecycle status editing.');
+    }
+    try {
+      await page.locator('#view-skus [data-open-sku]').first().click();
+      await page.waitForSelector('#skuModal.open #productLifecycleForm', { timeout: 12000 });
+      await page.selectOption('#skuModal #productLifecycleForm select[name="status"]', 'watch');
+      await page.fill('#skuModal #productLifecycleForm textarea[name="note"]', 'contract smoke lifecycle status');
+      await page.locator('#skuModal #productLifecycleForm button[type="submit"]').click();
+      await page.waitForFunction(() => {
+        const modalText = document.querySelector('#skuModal')?.textContent || '';
+        const overrides = window.__alteaAppState?.storage?.productLifecycleOverrides || [];
+        return modalText.includes('Наблюдать')
+          && overrides.some((item) => item.key === 'watch' && /contract smoke lifecycle status/.test(item.note || ''));
+      }, undefined, { timeout: 12000 });
+    } finally {
+      await page.evaluate(({ originalRaw, originalStorage }) => {
+        const storageKey = 'brand-portal-local-v1';
+        if (originalRaw === null) localStorage.removeItem(storageKey);
+        else localStorage.setItem(storageKey, originalRaw);
+        if (window.__alteaAppState) {
+          window.__alteaAppState.storage = originalStorage || {};
+          if (typeof window.applyOwnerOverridesToSkus === 'function') window.applyOwnerOverridesToSkus();
+        }
+        document.getElementById('skuModal')?.classList.remove('open');
+      }, lifecycleButtonCheck);
+    }
+
     await clickView(page, 'prices');
     await assertVisible(page, '#view-prices', 'prices');
     await page.waitForFunction(() => {
@@ -481,6 +556,31 @@ async function main() {
 
     await clickView(page, 'repricer');
     await assertVisible(page, '#view-repricer', 'repricer');
+    const repricerLifecycleCheck = await page.evaluate(() => {
+      if (typeof window.buildRepricerRows !== 'function') {
+        return { ok: false, reason: 'buildRepricerRows is unavailable.' };
+      }
+      const rows = window.buildRepricerRows(true) || [];
+      const sides = rows.flatMap((row) => [row.wb, row.ozon].filter(Boolean));
+      const nonActive = sides.filter((side) => side.productLifecycleKey && side.productLifecycleKey !== 'active');
+      const launchSide = sides.find((side) => side.productLifecycleKey === 'new' || side.productLifecycleKey === 'relaunch');
+      const stoppedSide = sides.find((side) => ['question', 'paused', 'exit', 'archived'].includes(side.productLifecycleKey));
+      return {
+        ok: sides.length > 0
+          && typeof window.PRODUCT_LIFECYCLE_STATUS_META === 'object'
+          && nonActive.length > 0
+          && (!launchSide || launchSide.engineMode === 'launch')
+          && (!stoppedSide || ['freeze', 'off'].includes(stoppedSide.engineMode)),
+        rows: rows.length,
+        nonActive: nonActive.length,
+        launchMode: launchSide?.engineMode || '',
+        stoppedMode: stoppedSide?.engineMode || '',
+        stoppedKey: stoppedSide?.productLifecycleKey || ''
+      };
+    });
+    if (!repricerLifecycleCheck.ok) {
+      throw new Error(`Repricer lifecycle guard did not initialize: ${JSON.stringify(repricerLifecycleCheck)}`);
+    }
 
     if (pageErrors.length || failedLocal.length) {
       throw new Error(JSON.stringify({ pageErrors, failedLocal }, null, 2));

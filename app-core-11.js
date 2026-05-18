@@ -128,6 +128,18 @@ function skuPlanFactToken(value = '') {
 }
 
 function skuPlanFactNormalizePlatform(value = '') {
+  const text = String(value ?? '').trim();
+  const lower = text.toLowerCase().replaceAll('ё', 'е');
+  const detected = [];
+  if (/\bwb\b|wildberries|вб|вайлдбер/i.test(lower)) detected.push('wb');
+  if (/\boz\b|\bozon\b|озон/i.test(lower)) detected.push('ozon');
+  if (/\bya\b|\bym\b|yandex|яндекс|я\.?маркет|ямаркет/i.test(lower)) detected.push('ya');
+  if (/gold\s*apple|золотое\s*яблоко|\bзя\b/i.test(lower)) detected.push('goldapple');
+  if (/letu|letual|летуаль/i.test(lower)) detected.push('letu');
+  if (/magnit|магнит/i.test(lower)) detected.push('magnit');
+  const uniqueDetected = [...new Set(detected)];
+  if (uniqueDetected.length > 1) return 'all';
+  if (uniqueDetected.length === 1) return uniqueDetected[0];
   const raw = skuPlanFactToken(value);
   if (!raw || raw === 'all' || raw === 'все') return 'all';
   if (['wb', 'wildberries'].includes(raw)) return 'wb';
@@ -3217,18 +3229,61 @@ function skuPlanFactDetectDelimiter(text = '') {
 function skuPlanFactImportHeaderKey(header = '') {
   const token = skuPlanFactToken(header);
   if (!token) return '';
-  if (['action', 'decision'].includes(token) || token.startsWith('решение')) return 'action';
-  if (['targetsku', 'target', 'portalsku', 'mainsku'].includes(token) || token.includes('реестре')) return 'target_sku';
+  if (['action', 'decision'].includes(token) || token.startsWith('решение') || (token.includes('alias') && token.includes('ignore'))) return 'action';
+  if (['targetsku', 'target', 'portalsku', 'mainsku'].includes(token) || token.includes('реестре') || (token.startsWith('sku') && token.includes('alias'))) return 'target_sku';
   if (['platform', 'marketplace', 'sourceplatform'].includes(token) || token.includes('площадка')) return 'platform';
   if (['apisku', 'apiarticle', 'api', 'sourcesku', 'marketplacesku'].includes(token)) return 'api_sku';
   if (['articlekey', 'article', 'skuapi'].includes(token)) return 'article_key';
-  if (['status', 'active'].includes(token) || token.includes('статус')) return 'status';
+  if (['status', 'active'].includes(token) || token.includes('статус') || token.includes('active')) return 'status';
   if (['note', 'comment', 'decisioncomment'].includes(token) || token.includes('комментар')) return 'note';
   return token;
 }
 
+function skuPlanFactLooksLikeReviewForm(matrix = [], headers = []) {
+  const rawHeaders = matrix[0] || [];
+  const headerTokens = rawHeaders.map((value) => skuPlanFactToken(value));
+  const hasReviewHeaderHints = headerTokens.some((token) => token.includes('alias') && token.includes('ignore'))
+    || headerTokens.includes('skuapi')
+    || headerTokens.some((token) => token.includes('apisku'));
+  const hasReviewBodyHints = matrix.slice(1, 20).some((row) => {
+    const action = skuPlanFactNormalizeReviewAction(row?.[0] || '', row?.[2] || '');
+    return ['alias', 'ignore', 'new_sku', 'need_check'].includes(action);
+  });
+  const recognized = new Set(headers.filter(Boolean));
+  const missingCore = !recognized.has('action')
+    || !recognized.has('target_sku')
+    || !recognized.has('platform')
+    || (!recognized.has('api_sku') && !recognized.has('article_key'));
+  return missingCore && rawHeaders.length >= 5 && (hasReviewHeaderHints || hasReviewBodyHints);
+}
+
+function skuPlanFactReviewFallbackHeaders(headers = []) {
+  const fallback = [
+    'action',
+    'decision_hint',
+    'target_sku',
+    'platform',
+    'api_sku',
+    'status',
+    'note',
+    'month',
+    'fact_to',
+    'severity',
+    'type',
+    'article_key',
+    'name',
+    'revenue',
+    'units',
+    'recommended_action'
+  ];
+  return headers.map((header, index) => fallback[index] || header);
+}
+
 function skuPlanFactRowsFromMatrix(matrix = []) {
-  const headers = (matrix[0] || []).map((value) => skuPlanFactImportHeaderKey(value));
+  let headers = (matrix[0] || []).map((value) => skuPlanFactImportHeaderKey(value));
+  if (skuPlanFactLooksLikeReviewForm(matrix, headers)) {
+    headers = skuPlanFactReviewFallbackHeaders(headers);
+  }
   return matrix.slice(1).map((values) => {
     const row = {};
     headers.forEach((header, index) => {

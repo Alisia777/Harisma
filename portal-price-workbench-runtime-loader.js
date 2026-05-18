@@ -1,5 +1,8 @@
 (function () {
-  if (window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260516_PLATFORMCOLORS2__) return;
+  if (window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260518_STATUS_EDIT1__) return;
+  window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260518_STATUS_EDIT1__ = true;
+  window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260518_ZEROFIX1__ = true;
+  window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260518_PRICEFIELDS1__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260516_PLATFORMCOLORS2__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260514_MARKETPLACES1__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260508_PRICECACHE1__ = true;
@@ -14,8 +17,8 @@
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260428B__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260428A__ = true;
 
-  const SCRIPT_ID = 'portalPriceWorkbenchSimpleLive20260516platformcolors2';
-  const SRC = 'portal-price-workbench-simple-live.js?v=20260516platformcolors2';
+  const SCRIPT_ID = 'portalPriceWorkbenchSimpleLive20260518statusedit1';
+  const SRC = 'portal-price-workbench-simple-live.js?v=20260518statusedit1';
 
   function isPricesViewActive() {
     if (window.state && window.state.activeView) return window.state.activeView === 'prices';
@@ -32,7 +35,7 @@
   }
 
   function ensureLoaded() {
-    if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260516_PLATFORMCOLORS2__) {
+    if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_STATUS_EDIT1__) {
       if (isPricesViewActive()) rerender();
       return;
     }

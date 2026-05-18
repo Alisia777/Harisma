@@ -5144,6 +5144,58 @@ function runRepricerExportMode(button, mode) {
   });
 }
 
+function repricerProductLifecycleEditorHtml(row = {}) {
+  const articleKey = String(row.articleKey || row.article || row.sku || '').trim();
+  if (!articleKey) return '';
+  const lifecycle = row.productLifecycle || repricerProductLifecycleForRecord(row, row.status || '', articleKey);
+  const manualOverride = typeof productLifecycleOverrideForArticle === 'function'
+    ? productLifecycleOverrideForArticle(articleKey)
+    : null;
+  const options = typeof productLifecycleOptionsHtml === 'function'
+    ? productLifecycleOptionsHtml(lifecycle?.key || lifecycle?.label || row.status || 'active')
+    : '';
+
+  return `
+    <form class="repricer-product-lifecycle-form" data-article-key="${escapeHtml(articleKey)}" style="grid-column:1 / -1;margin:10px 0 4px">
+      <div class="filters repricer-filters" style="grid-template-columns:minmax(180px,240px) minmax(220px,1fr);margin-bottom:8px">
+        <label>
+          <span class="muted small">Статус товара</span>
+          <select name="status">${options}</select>
+        </label>
+        <label>
+          <span class="muted small">Комментарий</span>
+          <input name="note" value="${escapeHtml(manualOverride?.note || '')}" placeholder="Почему меняем статус / до какой даты">
+        </label>
+      </div>
+      <div class="quick-actions">
+        <button type="submit" class="quick-chip">Сохранить статус</button>
+        <button type="button" class="quick-chip" data-repricer-product-lifecycle-reset data-article-key="${escapeHtml(articleKey)}">Авто-статус</button>
+      </div>
+    </form>
+  `;
+}
+
+async function saveRepricerProductLifecycleForm(form) {
+  const articleKey = String(form?.getAttribute('data-article-key') || '').trim();
+  if (!articleKey || typeof upsertProductLifecycleStatus !== 'function') return;
+  const formData = new FormData(form);
+  await upsertProductLifecycleStatus({
+    articleKey,
+    status: formData.get('status'),
+    note: formData.get('note')
+  });
+  if (typeof invalidateRepricerRowsCache === 'function') invalidateRepricerRowsCache();
+  renderRepricer();
+}
+
+async function resetRepricerProductLifecycle(articleKey) {
+  const normalizedArticleKey = String(articleKey || '').trim();
+  if (!normalizedArticleKey || typeof removeProductLifecycleStatus !== 'function') return;
+  await removeProductLifecycleStatus(normalizedArticleKey);
+  if (typeof invalidateRepricerRowsCache === 'function') invalidateRepricerRowsCache();
+  renderRepricer();
+}
+
 function attachRepricerEvents(root) {
   root.querySelectorAll('[data-repricer-layer-toggle]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -5264,6 +5316,17 @@ function attachRepricerEvents(root) {
   root.querySelectorAll('[data-repricer-sku-reset]').forEach((button) => {
     button.addEventListener('click', () => {
       resetRepricerSkuProfile(button.getAttribute('data-article-key') || '');
+    });
+  });
+  root.querySelectorAll('.repricer-product-lifecycle-form').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      await saveRepricerProductLifecycleForm(event.currentTarget);
+    });
+  });
+  root.querySelectorAll('[data-repricer-product-lifecycle-reset]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      await resetRepricerProductLifecycle(button.getAttribute('data-article-key') || '');
     });
   });
   root.querySelectorAll('.repricer-corridor-form').forEach((form) => {
@@ -5461,6 +5524,7 @@ function renderRepricer() {
             <span>${escapeHtml(repricerFixSource(side))}: ${escapeHtml(repricerFixAction(side))}</span>
           </div>
           ${badge(reason, side.confidence === 'red' ? 'danger' : 'warn')}
+          ${repricerProductLifecycleEditorHtml(row)}
         </div>
       `;
     }).join('');
@@ -5778,7 +5842,7 @@ function renderRepricer() {
         const duplicatePeers = (duplicateEntry?.articles || [])
           .filter((article) => article !== String(row.article || row.articleKey || '').trim())
           .slice(0, 4);
-        return `<div class="card repricer-card"><div class="head"><div><strong>${linkToSku(row.articleKey, row.article || row.articleKey)}</strong><div class="muted small">${escapeHtml(row.name || 'Без названия')} · ${escapeHtml(row.owner || 'Без owner')}</div>${duplicatePeers.length ? `<div class="muted small" style="margin-top:6px">Похожие карточки: ${escapeHtml(duplicatePeers.join(', '))}</div>` : ''}</div><div class="badge-stack">${row.brand ? badge(row.brand, 'info') : ''}${badge(row.status || 'Статус не указан')}${row.productLifecycle?.key && row.productLifecycle.key !== 'active' ? badge(`товар: ${row.productLifecycle.label || row.productLifecycle.status || row.productLifecycle.key}`, row.productLifecycle.tone || 'warn') : ''}${badge(`роль ${row.role || '—'}`, 'info')}${badge(row.launchReady === 'READY' ? 'готов к запуску' : 'hold до запуска', row.launchReady === 'READY' ? 'ok' : 'warn')}${row.segment ? badge(row.segment, 'info') : ''}${row.abc ? badge(`ABC ${row.abc}`) : ''}${row.hasManagedProfile ? badge('профиль SKU', 'ok') : ''}${row.hasCorridor ? badge('коридор', 'info') : ''}${row.hasManualOverride ? badge('ручное решение', 'warn') : ''}${duplicateEntry ? badge(`дубль названия x${fmt.int(duplicateEntry.count)}`, 'warn') : ''}</div></div><details style="margin:10px 0"><summary class="small muted" style="cursor:pointer">Настроить профиль SKU</summary><form class="repricer-sku-form" data-article-key="${escapeHtml(row.articleKey)}" style="margin-top:10px"><div class="filters repricer-filters"><select name="status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${row.status === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select><select name="role">${roles.map((role) => `<option value="${escapeHtml(role)}" ${row.role === role ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}</select><select name="launchReady"><option value="READY" ${row.launchReady === 'READY' ? 'selected' : ''}>READY</option><option value="HOLD" ${row.launchReady !== 'READY' ? 'selected' : ''}>HOLD</option></select></div><div class="quick-actions" style="margin-top:10px"><button type="submit" class="quick-chip">Сохранить профиль</button><button type="button" class="quick-chip" data-repricer-sku-reset data-article-key="${escapeHtml(row.articleKey)}">Сбросить профиль</button></div></form></details><div class="repricer-side-grid ${state.repricerFilters.platform !== 'all' ? 'single' : ''}">${state.repricerFilters.platform !== 'ozon' ? renderRepricerSide('WB', row.wb) : ''}${state.repricerFilters.platform !== 'wb' ? renderRepricerSide('Ozon', row.ozon) : ''}</div></div>`;
+        return `<div class="card repricer-card"><div class="head"><div><strong>${linkToSku(row.articleKey, row.article || row.articleKey)}</strong><div class="muted small">${escapeHtml(row.name || 'Без названия')} · ${escapeHtml(row.owner || 'Без owner')}</div>${duplicatePeers.length ? `<div class="muted small" style="margin-top:6px">Похожие карточки: ${escapeHtml(duplicatePeers.join(', '))}</div>` : ''}</div><div class="badge-stack">${row.brand ? badge(row.brand, 'info') : ''}${badge(row.status || 'Статус не указан')}${row.productLifecycle?.key && row.productLifecycle.key !== 'active' ? badge(`товар: ${row.productLifecycle.label || row.productLifecycle.status || row.productLifecycle.key}`, row.productLifecycle.tone || 'warn') : ''}${badge(`роль ${row.role || '—'}`, 'info')}${badge(row.launchReady === 'READY' ? 'готов к запуску' : 'hold до запуска', row.launchReady === 'READY' ? 'ok' : 'warn')}${row.segment ? badge(row.segment, 'info') : ''}${row.abc ? badge(`ABC ${row.abc}`) : ''}${row.hasManagedProfile ? badge('профиль SKU', 'ok') : ''}${row.hasCorridor ? badge('коридор', 'info') : ''}${row.hasManualOverride ? badge('ручное решение', 'warn') : ''}${duplicateEntry ? badge(`дубль названия x${fmt.int(duplicateEntry.count)}`, 'warn') : ''}</div></div>${repricerProductLifecycleEditorHtml(row)}<details style="margin:10px 0"><summary class="small muted" style="cursor:pointer">Настроить профиль SKU</summary><form class="repricer-sku-form" data-article-key="${escapeHtml(row.articleKey)}" style="margin-top:10px"><div class="filters repricer-filters"><select name="status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${row.status === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select><select name="role">${roles.map((role) => `<option value="${escapeHtml(role)}" ${row.role === role ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}</select><select name="launchReady"><option value="READY" ${row.launchReady === 'READY' ? 'selected' : ''}>READY</option><option value="HOLD" ${row.launchReady !== 'READY' ? 'selected' : ''}>HOLD</option></select></div><div class="quick-actions" style="margin-top:10px"><button type="submit" class="quick-chip">Сохранить профиль</button><button type="button" class="quick-chip" data-repricer-sku-reset data-article-key="${escapeHtml(row.articleKey)}">Сбросить профиль</button></div></form></details><div class="repricer-side-grid ${state.repricerFilters.platform !== 'all' ? 'single' : ''}">${state.repricerFilters.platform !== 'ozon' ? renderRepricerSide('WB', row.wb) : ''}${state.repricerFilters.platform !== 'wb' ? renderRepricerSide('Ozon', row.ozon) : ''}</div></div>`;
       }).join('') || '<div class="empty">По выбранным фильтрам репрайсер ничего не показал.</div>'}
     </div>
   `;

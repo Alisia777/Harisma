@@ -1,5 +1,9 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260516_PLATFORMCOLORS2__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_STATUS_EDIT1__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_STATUS_EDIT1__ = true;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_ZEROFIX1__ = true;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_PRICEFIELDS1__ = true;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260516_PLATFORMCOLORS2__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260516_PLATFORMCOLORS2__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260514_MARKETPLACES1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260508_PRICECACHE1__ = true;
@@ -114,6 +118,11 @@
     return Number.isFinite(parsed) ? parsed : null;
   }
 
+  function positiveNum(value) {
+    var parsed = num(value);
+    return parsed != null && parsed > 0 ? parsed : null;
+  }
+
   function pct(value) {
     if (value === null || value === undefined || !Number.isFinite(Number(value))) return "\u2014";
     return (sanitizeDiscountPct(Number(value)) * 100).toFixed(1) + "%";
@@ -125,7 +134,7 @@
   }
 
   function days(value) {
-    if (value === null || value === undefined || !Number.isFinite(Number(value))) return "\u2014";
+    if (value === null || value === undefined || !Number.isFinite(Number(value)) || Number(value) <= 0) return "\u2014";
     return Number(value).toFixed(1) + " \u0434\u043d.";
   }
 
@@ -669,7 +678,16 @@
       var parsed = Number(arguments[index]);
       if (Number.isFinite(parsed) && parsed > 0) return parsed;
     }
-    return 0;
+    return null;
+  }
+
+  function firstRatio() {
+    for (var index = 0; index < arguments.length; index += 1) {
+      var parsed = num(arguments[index]);
+      if (parsed == null) continue;
+      return Math.abs(parsed) > 1 ? parsed / 100 : parsed;
+    }
+    return null;
   }
 
   function resolvedRepricerSidePrice(side) {
@@ -811,6 +829,26 @@
       minSource: manualMin != null && manualMin > 0 ? "portal" : "расчет",
       maxSource: manualMax != null && manualMax > 0 ? "portal" : "расчет"
     };
+  }
+
+  function mergeRowPriceBounds(bounds, row) {
+    var fallbackMin = Math.max(
+      firstPositive(row && row.minPrice),
+      firstPositive(row && row.hardMinPrice),
+      firstPositive(row && row.workingZoneFrom)
+    );
+    var fallbackMax = firstPositive(row && row.maxPrice, row && row.workingZoneTo);
+    if (!(fallbackMin > 0) && !(fallbackMax > 0)) return bounds;
+    var next = bounds ? Object.assign({}, bounds) : {};
+    if ((next.effectiveMin == null || !(Number(next.effectiveMin) > 0)) && fallbackMin > 0) {
+      next.effectiveMin = moneyRound(fallbackMin);
+      next.minSource = row && row.marginSource === "prices.json" ? "prices" : "snapshot";
+    }
+    if ((next.effectiveMax == null || !(Number(next.effectiveMax) > 0)) && fallbackMax > 0) {
+      next.effectiveMax = moneyRound(fallbackMax);
+      next.maxSource = row && row.marginSource === "prices.json" ? "prices" : "snapshot";
+    }
+    return Object.keys(next).length ? next : bounds;
   }
 
   function overlayFlagEnabled(value) {
@@ -1154,12 +1192,6 @@
       ".pw-chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}",
       ".pw-chip{border:1px solid rgba(214,175,85,.24);background:rgba(214,175,85,.06);color:#f3e3bf;border-radius:999px;padding:8px 12px;font-size:13px;cursor:pointer;}",
       ".pw-chip.active{background:linear-gradient(135deg,#c49a37,#f2d48d);color:#23180b;border-color:transparent;}",
-      ".pw-chip[data-price-market=\"wb\"].active{background:linear-gradient(135deg,#8f5cff,#d7c6ff);color:#160b2a;}",
-      ".pw-chip[data-price-market=\"ozon\"].active{background:linear-gradient(135deg,#0878e6,#8ed0ff);color:#061426;}",
-      ".pw-chip[data-price-market=\"ym\"].active{background:linear-gradient(135deg,#f5bd22,#ffe59a);color:#211606;}",
-      ".pw-chip[data-price-market=\"goldapple\"].active{background:linear-gradient(135deg,#6dbb67,#f0d67a);color:#071b0b;}",
-      ".pw-chip[data-price-market=\"letu\"].active{background:linear-gradient(135deg,#c45b91,#f4c0d8);color:#260719;}",
-      ".pw-chip[data-price-market=\"magnit\"].active{background:linear-gradient(135deg,#e7414e,#ffc1c7);color:#280509;}",
       ".pw-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px;}",
       ".pw-grid2 input,.pw-grid2 select,.pw-search{width:100%;box-sizing:border-box;border-radius:14px;border:1px solid rgba(214,175,85,.18);background:rgba(9,7,5,.78);color:#f7ead1;padding:12px 14px;}",
       ".pw-help{display:grid;gap:10px;margin-top:12px;padding:14px 16px;border-radius:18px;border:1px solid rgba(214,175,85,.14);background:rgba(214,175,85,.05);}",
@@ -1188,6 +1220,12 @@
       ".pw-sku{font-weight:700;color:#fff0cf;}",
       ".pw-note{margin-top:4px;color:#bda57a;font-size:12px;line-height:1.35;max-width:460px;}",
       ".pw-badge{display:inline-flex;padding:4px 8px;border-radius:999px;border:1px solid rgba(214,175,85,.26);background:rgba(214,175,85,.08);color:#f3dfb6;font-size:12px;line-height:1.2;}",
+      ".pw-status-editor{display:grid;gap:7px;min-width:168px;max-width:260px;}",
+      ".pw-status-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}",
+      ".pw-status-row select{width:auto;min-width:140px;max-width:100%;border-radius:12px;border:1px solid rgba(214,175,85,.22);background:rgba(9,7,5,.78);color:#f7ead1;padding:7px 9px;font-size:12px;}",
+      ".pw-status-row button{border:1px solid rgba(214,175,85,.24);background:rgba(214,175,85,.07);color:#f3e3bf;border-radius:999px;padding:7px 9px;font-size:12px;cursor:pointer;}",
+      ".pw-status-row button:hover{background:rgba(214,175,85,.13);}",
+      ".pw-status-editor textarea{width:100%;box-sizing:border-box;border-radius:12px;border:1px solid rgba(214,175,85,.18);background:rgba(9,7,5,.78);color:#f7ead1;padding:9px 10px;resize:vertical;}",
       ".pw-repricer-cell{display:grid;gap:4px;min-width:110px;}",
       ".pw-repricer-cell strong{color:#fff0cf;font-weight:700;}",
       ".pw-repricer-cell small{color:#cdb892;line-height:1.3;}",
@@ -1216,16 +1254,6 @@
       ".pw-badge.pw-badge-warn{background:rgba(138,98,29,.22);border-color:rgba(240,188,82,.32);color:#ffe7b1;}",
       ".pw-badge.pw-badge-danger{background:rgba(132,43,43,.24);border-color:rgba(255,136,136,.28);color:#ffd5d5;}",
       ".pw-history-wrap{overflow:auto;}",
-      ".pw-detail--history{--pw-platform-rgb:214,175,85;--pw-platform-color:#e6c77e;border:1px solid rgba(var(--pw-platform-rgb),.22);border-left:3px solid rgba(var(--pw-platform-rgb),.78);border-radius:18px;padding:12px 14px;background:linear-gradient(135deg,rgba(var(--pw-platform-rgb),.12),rgba(10,8,6,.42) 44%);}",
-      ".pw-detail--history[data-price-platform=\"wb\"]{--pw-platform-rgb:156,104,255;--pw-platform-color:#d8c6ff;}",
-      ".pw-detail--history[data-price-platform=\"ozon\"]{--pw-platform-rgb:31,139,255;--pw-platform-color:#b6ddff;}",
-      ".pw-detail--history[data-price-platform=\"ym\"]{--pw-platform-rgb:245,189,34;--pw-platform-color:#ffe59a;}",
-      ".pw-detail--history[data-price-platform=\"goldapple\"]{--pw-platform-rgb:109,187,103;--pw-platform-color:#d8f0b8;}",
-      ".pw-detail--history[data-price-platform=\"letu\"]{--pw-platform-rgb:196,91,145;--pw-platform-color:#f5c3db;}",
-      ".pw-detail--history[data-price-platform=\"magnit\"]{--pw-platform-rgb:231,65,78;--pw-platform-color:#ffc1c7;}",
-      ".pw-detail--history summary{color:var(--pw-platform-color);}",
-      ".pw-detail--history .pw-history th,.pw-detail--history .pw-history td{border-top-color:rgba(var(--pw-platform-rgb),.18);}",
-      ".pw-detail--history .pw-history th{color:var(--pw-platform-color);}",
       ".pw-history{width:100%;border-collapse:collapse;min-width:760px;}",
       ".pw-history th,.pw-history td{padding:10px 12px;border-top:1px solid rgba(214,175,85,.1);text-align:left;}",
       ".pw-history th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#bda57a;}",
@@ -1281,6 +1309,178 @@
       label: (entry && entry.problemLabel) || problemState,
       tone: (entry && entry.problemTone) || "warn"
     };
+  }
+
+  function priceProductLifecycleOverride(articleKey) {
+    if (typeof window.productLifecycleOverrideForArticle === "function") {
+      return window.productLifecycleOverrideForArticle(articleKey) || null;
+    }
+    var portal = readPortalStorageState();
+    var wanted = String(articleKey || "").trim();
+    if (!wanted) return null;
+    var overrides = Array.isArray(portal && portal.productLifecycleOverrides)
+      ? portal.productLifecycleOverrides
+      : [];
+    return overrides.find(function (item) {
+      return String(item && item.articleKey || "").trim() === wanted;
+    }) || null;
+  }
+
+  function priceSkuForLifecycle(row) {
+    var root = rootState() || {};
+    var wanted = norm(row && row.articleKey);
+    var sku = null;
+    if (wanted && Array.isArray(root.skus)) {
+      sku = root.skus.find(function (item) {
+        return norm(item && (item.articleKey || item.article || item.sku)) === wanted;
+      }) || null;
+    }
+    var matrixEntry = priceSkuMatrixEntry(row && row.articleKey);
+    return Object.assign({}, matrixEntry || {}, sku || {}, row || {}, {
+      articleKey: row && row.articleKey || sku && (sku.articleKey || sku.article || sku.sku) || "",
+      article: row && row.articleKey || sku && (sku.article || sku.articleKey || sku.sku) || "",
+      productStatus: row && row.status || sku && (sku.productStatus || sku.status) || "",
+      status: row && row.status || sku && sku.status || ""
+    });
+  }
+
+  function priceProductLifecycleForRow(row) {
+    var articleKey = String(row && row.articleKey || "").trim();
+    if (!articleKey) return null;
+    if (typeof window.productLifecycleForSku === "function") {
+      try {
+        return window.productLifecycleForSku(priceSkuForLifecycle(row), articleKey);
+      } catch (error) {
+        console.warn("[price-simple] product lifecycle", error);
+      }
+    }
+    var override = priceProductLifecycleOverride(articleKey);
+    if (override) {
+      var normalizedKey = typeof window.normalizeProductLifecycleKey === "function"
+        ? window.normalizeProductLifecycleKey(override.key || override.status)
+        : String(override.key || override.status || "").trim();
+      var meta = window.PRODUCT_LIFECYCLE_STATUS_META && window.PRODUCT_LIFECYCLE_STATUS_META[normalizedKey];
+      return Object.assign({
+        key: normalizedKey || "active",
+        label: override.status || (meta && meta.label) || "\u0410\u043a\u0442\u0443\u0430\u043b\u044c\u043d\u044b\u0439",
+        tone: meta && meta.tone || "ok",
+        note: override.note || "",
+        source: "manual"
+      }, meta || {});
+    }
+    return {
+      key: "active",
+      label: String(row && row.status || "").trim() || "\u0410\u043a\u0442\u0443\u0430\u043b\u044c\u043d\u044b\u0439",
+      tone: "ok",
+      source: "fallback",
+      note: ""
+    };
+  }
+
+  function priceLifecycleOptionsHtml(current) {
+    if (typeof window.productLifecycleOptionsHtml === "function") {
+      return window.productLifecycleOptionsHtml(current || "active");
+    }
+    var meta = window.PRODUCT_LIFECYCLE_STATUS_META || {};
+    var order = ["active", "new", "relaunch", "watch", "question", "paused", "exit", "archived"];
+    var currentKey = typeof window.normalizeProductLifecycleKey === "function"
+      ? (window.normalizeProductLifecycleKey(current) || "active")
+      : String(current || "active").trim();
+    return order.map(function (key) {
+      var item = meta[key] || {};
+      return '<option value="' + esc(key) + '"' + (key === currentKey ? " selected" : "") + '>' + esc(item.label || key) + '</option>';
+    }).join("");
+  }
+
+  function priceLifecycleBadgeClass(lifecycle) {
+    var tone = String(lifecycle && lifecycle.tone || "").trim();
+    return tone ? " pw-badge-" + esc(tone) : "";
+  }
+
+  function renderPriceLifecycleEditor(row, compact) {
+    var articleKey = String(row && row.articleKey || "").trim();
+    if (!articleKey) return "";
+    var lifecycle = row.productLifecycle || priceProductLifecycleForRow(row) || {};
+    var override = priceProductLifecycleOverride(articleKey);
+    return [
+      '<form class="pw-status-editor" data-price-lifecycle-form data-article-key="', esc(articleKey), '">',
+      '<div class="pw-status-row">',
+      '<select name="status" aria-label="\u0421\u0442\u0430\u0442\u0443\u0441 \u0442\u043e\u0432\u0430\u0440\u0430">', priceLifecycleOptionsHtml(lifecycle.key || lifecycle.label || row.status), '</select>',
+      '<button type="submit">\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c</button>',
+      '<button type="button" data-price-lifecycle-reset data-article-key="', esc(articleKey), '">\u0410\u0432\u0442\u043e</button>',
+      '</div>',
+      compact ? '' : '<textarea name="note" rows="2" placeholder="\u041a\u043e\u043c\u043c\u0435\u043d\u0442\u0430\u0440\u0438\u0439: \u043f\u043e\u0447\u0435\u043c\u0443 \u043c\u0435\u043d\u044f\u0435\u043c / \u0434\u043e \u043a\u0430\u043a\u043e\u0439 \u0434\u0430\u0442\u044b">' + esc(override && override.note || '') + '</textarea>',
+      '</form>'
+    ].join("");
+  }
+
+  function invalidatePriceRenderCaches() {
+    derived.visibleRows.rowsRef = null;
+    derived.visibleRows.value = null;
+    derived.stats.rowsRef = null;
+    derived.stats.value = null;
+    derived.table.rowsRef = null;
+    derived.table.value = null;
+    derived.portalStorageRaw = null;
+    derived.portalStorageParsed = null;
+  }
+
+  async function savePriceLifecycleForm(form) {
+    var articleKey = String(form && form.getAttribute("data-article-key") || "").trim();
+    if (!articleKey || typeof window.upsertProductLifecycleStatus !== "function") return;
+    var formData = new FormData(form);
+    try {
+      await window.upsertProductLifecycleStatus({
+        articleKey: articleKey,
+        status: formData.get("status"),
+        note: formData.get("note")
+      });
+    } catch (error) {
+      console.warn("[price-simple] lifecycle-save", error);
+      window.alert("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u0441\u0442\u0430\u0442\u0443\u0441 \u0442\u043e\u0432\u0430\u0440\u0430.");
+      return;
+    }
+    invalidatePriceRenderCaches();
+    renderPriceWorkbench();
+  }
+
+  async function resetPriceLifecycle(articleKey) {
+    if (!articleKey || typeof window.removeProductLifecycleStatus !== "function") return;
+    try {
+      await window.removeProductLifecycleStatus(articleKey);
+    } catch (error) {
+      console.warn("[price-simple] lifecycle-reset", error);
+      return;
+    }
+    invalidatePriceRenderCaches();
+    renderPriceWorkbench();
+  }
+
+  function attachPriceLifecycleForms(scope) {
+    if (!scope) return;
+    scope.querySelectorAll("[data-price-lifecycle-form]").forEach(function (form) {
+      if (form.dataset.priceLifecycleBound === "1") return;
+      form.dataset.priceLifecycleBound = "1";
+      ["click", "mousedown", "touchstart"].forEach(function (eventName) {
+        form.addEventListener(eventName, function (event) {
+          event.stopPropagation();
+        }, { passive: eventName === "touchstart" });
+      });
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        savePriceLifecycleForm(form);
+      });
+    });
+    scope.querySelectorAll("[data-price-lifecycle-reset]").forEach(function (button) {
+      if (button.dataset.priceLifecycleResetBound === "1") return;
+      button.dataset.priceLifecycleResetBound = "1";
+      button.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        resetPriceLifecycle(button.getAttribute("data-article-key") || "");
+      });
+    });
   }
 
   function buildSkuMetaMap() {
@@ -1547,36 +1747,48 @@
     var overlayClearsClient = overlayFlagEnabled(overlayRow && overlayRow.clearCurrentClientPrice);
     var overlayClearsSpp = overlayFlagEnabled(overlayRow && overlayRow.clearCurrentSppPct);
     var overlayClearsTurnover = overlayFlagEnabled(overlayRow && overlayRow.clearCurrentTurnoverDays);
-    var overlayFillPrice = num(overlayRow && (overlayRow.currentFillPrice != null ? overlayRow.currentFillPrice : overlayRow.currentPrice));
-    var overlayClientPrice = num(overlayRow && overlayRow.currentClientPrice);
+    var overlayFillPrice = positiveNum(overlayRow && (overlayRow.currentFillPrice != null ? overlayRow.currentFillPrice : overlayRow.currentPrice));
+    var overlayClientPrice = positiveNum(overlayRow && overlayRow.currentClientPrice);
     var overlaySppPct = num(overlayRow && overlayRow.currentSppPct);
-    var overlayTurnoverDays = num(overlayRow && overlayRow.currentTurnoverDays);
+    var overlayTurnoverDays = positiveNum(overlayRow && overlayRow.currentTurnoverDays);
     var overlayStatus = overlayRow && overlayRow.status;
     var overlayOwner = overlayRow && overlayRow.owner;
     var overlayValueDate = isoDate(overlayRow && (overlayRow.valueDate || overlayRow.historyFreshnessDate));
-    var priceFillPrice = num(priceRow && (priceRow.currentPrice != null ? priceRow.currentPrice : priceRow.currentFillPrice));
-    var priceClientPrice = num(priceRow && priceRow.currentClientPrice);
+    var priceFillPrice = positiveNum(priceRow && (priceRow.currentPrice != null ? priceRow.currentPrice : priceRow.currentFillPrice));
+    var priceClientPrice = positiveNum(priceRow && priceRow.currentClientPrice);
     var priceSppPct = num(priceRow && priceRow.currentSppPct);
-    var priceTurnoverDays = num(priceRow && priceRow.currentTurnoverDays);
+    var priceTurnoverDays = positiveNum(priceRow && priceRow.currentTurnoverDays);
     var priceCurrentDate = isoDate(priceRow && (priceRow.currentPriceDate || priceRow.historyFreshnessDate));
     var sourceListPrice = firstPositive(source && source.firstPrice, source && source.currentFirstPrice, source && source.sellerPrice, source && source.currentSellerPriceBeforeDiscount);
     var overlayListPrice = firstPositive(overlayRow && overlayRow.firstPrice, overlayRow && overlayRow.currentFirstPrice, overlayRow && overlayRow.sellerPrice, overlayRow && overlayRow.currentSellerPriceBeforeDiscount);
     var priceListPrice = firstPositive(priceRow && priceRow.firstPrice, priceRow && priceRow.currentFirstPrice, priceRow && priceRow.sellerPrice, priceRow && priceRow.currentSellerPriceBeforeDiscount);
-    var liveFillPrice = num(liveRow && (liveRow.currentFillPrice != null ? liveRow.currentFillPrice : liveRow.currentPrice));
-    var liveClientPrice = num(liveRow && liveRow.currentClientPrice);
+    var liveFillPrice = positiveNum(liveRow && (liveRow.currentFillPrice != null ? liveRow.currentFillPrice : liveRow.currentPrice));
+    var liveClientPrice = positiveNum(liveRow && liveRow.currentClientPrice);
     var liveListPrice = firstPositive(liveRow && liveRow.firstPrice, liveRow && liveRow.currentFirstPrice, liveRow && liveRow.sellerPrice, liveRow && liveRow.currentSellerPriceBeforeDiscount);
     var livePriceDate = isoDate(liveRow && (liveRow.valueDate || liveRow.historyFreshnessDate || liveGeneratedAt));
     var sourceValueDate = isoDate(source && source.historyFreshnessDate) || isoDate(maxDate);
     var useOverlayFacts = Boolean(overlayRow) && (!overlayValueDate || !sourceValueDate || overlayValueDate >= sourceValueDate);
-    var sourceFillPrice = num(source.currentFillPrice != null ? source.currentFillPrice : source.currentPrice);
-    var sourceClientPrice = num(source.currentClientPrice);
+    var sourceFillPrice = positiveNum(source.currentFillPrice != null ? source.currentFillPrice : source.currentPrice);
+    var sourceClientPrice = positiveNum(source.currentClientPrice);
     var sourceSppPct = num(source.currentSppPct);
-    var sourceTurnoverDays = num(source.turnoverCurrentDays != null ? source.turnoverCurrentDays : source.currentTurnoverDays);
-    var procurementTurnoverDays = num(orderProcurementRow && orderProcurementRow.turnoverDays);
+    var sourceTurnoverDays = positiveNum(source.turnoverCurrentDays != null ? source.turnoverCurrentDays : source.currentTurnoverDays);
+    var procurementTurnoverDays = positiveNum(orderProcurementRow && orderProcurementRow.turnoverDays);
     var sourcePriceMode = String(source && source.sourceMode || "");
     var overlayPriceMode = String(overlayRow && overlayRow.sourceMode || "");
     var pricePriceMode = String(priceRow && priceRow.sourceMode || "");
     var livePriceMode = String(liveRow && liveRow.sourceMode || "");
+    var allowedMarginPct = firstRatio(
+      priceRow && priceRow.allowedMarginPct,
+      overlayRow && overlayRow.allowedMarginPct,
+      source && source.allowedMarginPct,
+      liveRow && liveRow.allowedMarginPct
+    );
+    var marginTotalPct = firstRatio(
+      priceRow && (priceRow.marginTotalPct != null ? priceRow.marginTotalPct : (priceRow.marginPct != null ? priceRow.marginPct : priceRow.avgMargin7dPct)),
+      overlayRow && (overlayRow.marginTotalPct != null ? overlayRow.marginTotalPct : (overlayRow.marginPct != null ? overlayRow.marginPct : overlayRow.avgMargin7dPct)),
+      source && (source.marginTotalPct != null ? source.marginTotalPct : (source.marginPct != null ? source.marginPct : source.avgMargin7dPct)),
+      liveRow && (liveRow.marginTotalPct != null ? liveRow.marginTotalPct : (liveRow.marginPct != null ? liveRow.marginPct : liveRow.avgMargin7dPct))
+    );
     var currentFillPrice = overlayClearsFill
       ? null
       : (priceFillPrice != null
@@ -1647,8 +1859,14 @@
       matrixProblemTone: matrixProblemMeta && matrixProblemMeta.tone,
       role: source.role || (skuRow && skuRow.role) || "\u2014",
       launchReady: source.launchReady || (skuRow && skuRow.launchReady) || "\u2014",
-      allowedMarginPct: num(source.allowedMarginPct),
-      marginTotalPct: num(source.marginTotalPct != null ? source.marginTotalPct : source.avgMargin7dPct),
+      allowedMarginPct: allowedMarginPct,
+      marginTotalPct: marginTotalPct,
+      minPrice: firstPositive(priceRow && priceRow.minPrice, overlayRow && overlayRow.minPrice, source && source.minPrice, liveRow && liveRow.minPrice) || null,
+      hardMinPrice: firstPositive(priceRow && priceRow.hardMinPrice, overlayRow && overlayRow.hardMinPrice, source && source.hardMinPrice, liveRow && liveRow.hardMinPrice) || null,
+      maxPrice: firstPositive(priceRow && priceRow.maxPrice, overlayRow && overlayRow.maxPrice, source && source.maxPrice, liveRow && liveRow.maxPrice) || null,
+      workingZoneFrom: firstPositive(priceRow && priceRow.workingZoneFrom, overlayRow && overlayRow.workingZoneFrom, source && source.workingZoneFrom, liveRow && liveRow.workingZoneFrom) || null,
+      workingZoneTo: firstPositive(priceRow && priceRow.workingZoneTo, overlayRow && overlayRow.workingZoneTo, source && source.workingZoneTo, liveRow && liveRow.workingZoneTo) || null,
+      marginSource: priceRow ? "prices.json" : (overlayRow && overlayRow.marginSource || source.marginSource || ""),
       turnoverDays: turnoverDays,
       turnoverSource: turnoverSource,
       currentFillPrice: currentFillPrice,
@@ -1843,6 +2061,21 @@
     return { value: null, date: "" };
   }
 
+  function latestPositiveRangeMetric(row, key) {
+    var items = rangeSlice(row);
+    for (var index = items.length - 1; index >= 0; index -= 1) {
+      var item = items[index];
+      var value = positiveNum(item && item[key]);
+      if (value != null) {
+        return {
+          value: value,
+          date: isoDate(item && item.date)
+        };
+      }
+    }
+    return { value: null, date: "" };
+  }
+
   function metricHelp(baseText, factDate, sliceDate) {
     if (factDate && sliceDate && factDate !== sliceDate) {
       return baseText + " Последний непустой факт в диапазоне: " + factDate + ".";
@@ -1854,17 +2087,21 @@
     if (!row) return null;
     var next = Object.assign({}, row);
     next.productLeaderboard = findProductLeaderboardEntry(next.articleKey);
+    next.productLifecycle = priceProductLifecycleForRow(next);
+    if (next.productLifecycle && (next.productLifecycle.label || next.productLifecycle.status)) {
+      next.status = next.productLifecycle.label || next.productLifecycle.status || next.status;
+    }
     var point = latestRangePoint(row);
     next.rangeHasPoint = Boolean(point);
     next.repricerDisplay = buildRepricerDisplay(next.market, next.articleKey);
-    next.repricerBounds = buildRepricerBounds(next.market, next.articleKey);
+    next.repricerBounds = mergeRowPriceBounds(buildRepricerBounds(next.market, next.articleKey), next);
     if (!point) return next;
 
-    var priceMetric = latestNonNullRangeMetric(row, "price");
-    var clientMetric = latestNonNullRangeMetric(row, "clientPrice");
+    var priceMetric = latestPositiveRangeMetric(row, "price");
+    var clientMetric = latestPositiveRangeMetric(row, "clientPrice");
     var sppMetric = latestNonNullRangeMetric(row, "sppPct");
-    var turnoverMetric = latestNonNullRangeMetric(row, "turnoverDays");
-    var currentSnapshotPrice = /^(live|prices)$/i.test(String(row.currentFillPriceSource || "")) ? num(row.currentFillPrice) : null;
+    var turnoverMetric = latestPositiveRangeMetric(row, "turnoverDays");
+    var currentSnapshotPrice = /^(live|prices)$/i.test(String(row.currentFillPriceSource || "")) ? positiveNum(row.currentFillPrice) : null;
     var currentSnapshotPriceDate = isoDate(row.currentPriceDate);
     var preferSnapshotPrice = currentSnapshotPrice != null
       && (priceMetric.value == null || !priceMetric.date || (currentSnapshotPriceDate && currentSnapshotPriceDate >= priceMetric.date));
@@ -1918,14 +2155,14 @@
     var next = [];
     state.rows.forEach(function (row) {
       if (state.market !== "all" && row.market !== state.market) return;
-      if (ownerFilter !== "all" && norm(row.owner) !== ownerFilter) return;
-      if (statusFilter !== "all" && norm(row.status) !== statusFilter) return;
+      var displayRow = buildDisplayRow(row);
+      if (ownerFilter !== "all" && norm(displayRow.owner) !== ownerFilter) return;
+      if (statusFilter !== "all" && norm(displayRow.status) !== statusFilter) return;
       if (search) {
-        var hay = [row.articleKey, row.name, row.owner, row.status, row.matrixProblemLabel, row.comment, row.reason].join(" ").toLowerCase();
+        var hay = [displayRow.articleKey, displayRow.name, displayRow.owner, displayRow.status, displayRow.productLifecycle && displayRow.productLifecycle.note, displayRow.matrixProblemLabel, displayRow.comment, displayRow.reason].join(" ").toLowerCase();
         var hayNorm = norm(hay);
         if (hay.indexOf(search) === -1 && (!searchNorm || hayNorm.indexOf(searchNorm) === -1)) return;
       }
-      var displayRow = buildDisplayRow(row);
       if ((state.dateFrom || state.dateTo) && !displayRow.rangeHasPoint) return;
       next.push(displayRow);
     });
@@ -1955,7 +2192,7 @@
       if (row.listPrice != null) price.push(row.listPrice);
       else if (row.currentFillPrice != null) price.push(row.currentFillPrice);
       if (row.marginTotalPct != null) margin.push(row.marginTotalPct);
-      if (row.turnoverDays != null) turnover.push(row.turnoverDays);
+      if (row.turnoverDays != null && row.turnoverDays > 0) turnover.push(row.turnoverDays);
       if (row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct) below += 1;
     });
     var summary = {
@@ -2301,14 +2538,16 @@ function downloadPriceSummaryExcel(rows) {
       '</tr></thead><tbody>',
       sorted.map(function (row) {
         var danger = row.allowedMarginPct != null && row.marginTotalPct != null && row.marginTotalPct < row.allowedMarginPct;
+        var lifecycle = row.productLifecycle || priceProductLifecycleForRow(row) || {};
         return [
           '<tr class="pw-row" data-open-price="', esc(row.articleKey), '" data-price-market="', esc(row.market), '">',
           '<td><div class="pw-sku">', esc(row.articleKey), '</div><div class="pw-note">', esc(row.name), '</div>',
           row.productLeaderboard ? '<div class="pw-kz-stack">' + renderProductLeaderboardBadge(row.productLeaderboard, row.articleKey) + renderProductLeaderboardAlerts(row.productLeaderboard, 1) + '</div>' : '',
           '</td>',
           '<td>', esc(row.owner || "\u2014"), '</td>',
-          '<td><span class="pw-badge">', esc(row.status || "\u2014"), '</span>',
+          '<td><span class="pw-badge', priceLifecycleBadgeClass(lifecycle), '">', esc(row.status || "\u2014"), '</span>',
           row.matrixProblemLabel ? '<div class="pw-mini-note"><span class="pw-badge ' + esc(row.matrixProblemTone || "warn") + '">' + esc(row.matrixProblemLabel) + '</span></div>' : '',
+          renderPriceLifecycleEditor(row, true),
           '</td>',
           '<td>', renderPriceCell(row.listPrice != null ? row.listPrice : row.currentFillPrice, row.listPriceSource, row.listPriceMode, row.listPriceFactDate || row.valueDate), '</td>',
           '<td>', renderPriceCell(row.currentFillPrice, row.currentFillPriceSource, row.currentFillPriceMode, row.priceFactDate || row.valueDate), '</td>',
@@ -2374,7 +2613,7 @@ function downloadPriceSummaryExcel(rows) {
       note += ' \u041f\u043e WB \u0438\u0441\u0442\u043e\u0440\u0438\u044f \u043f\u043e \u0434\u043d\u044f\u043c \u0441\u0442\u0440\u043e\u0438\u0442\u0441\u044f \u0438\u0437 daily market-facts. \u042d\u0442\u043e \u043d\u0435 \u0436\u0443\u0440\u043d\u0430\u043b \u0440\u0443\u0447\u043d\u044b\u0445 \u0441\u043c\u0435\u043d \u0446\u0435\u043d\u044b, \u043f\u043e\u044d\u0442\u043e\u043c\u0443 \u043f\u043e\u0440\u0442\u0430\u043b \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0435\u0442 \u043f\u0435\u0440\u0432\u044b\u0439 \u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u0434\u043d\u0435\u0432\u043d\u043e\u0439 \u0444\u0430\u043a\u0442 \u043f\u043e\u0441\u043b\u0435 \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f.';
     }
     return [
-      '<details class="pw-detail pw-detail--history" data-price-platform="', esc(row.market || "all"), '"><summary>\u0418\u0441\u0442\u043e\u0440\u0438\u044f \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0439 \u043f\u043e \u0434\u043d\u044f\u043c</summary>',
+      '<details class="pw-detail"><summary>\u0418\u0441\u0442\u043e\u0440\u0438\u044f \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0439 \u043f\u043e \u0434\u043d\u044f\u043c</summary>',
       '<div class="pw-detail-note">', esc(note), '</div>',
       '<div class="pw-history-wrap"><table class="pw-history"><thead><tr>',
       '<th>\u0414\u0430\u0442\u0430</th><th>\u0426\u0435\u043d\u0430 MP</th><th>\u0421\u041f\u041f</th><th>\u041e\u0431\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u043c\u043e\u0441\u0442\u044c</th>',
@@ -2398,6 +2637,7 @@ function downloadPriceSummaryExcel(rows) {
     if (!row) return "";
     var leaderboardEntry = row.productLeaderboard || findProductLeaderboardEntry(row.articleKey);
     var bounds = row.repricerBounds || buildRepricerBounds(row.market, row.articleKey);
+    var lifecycle = row.productLifecycle || priceProductLifecycleForRow(row) || {};
     var turnoverHelp = row.turnoverSource === "order_procurement"
       ? "\u0424\u043e\u043b\u0431\u044d\u043a \u0438\u0437 \u0417\u0430\u043a\u0430\u0437\u0430: inStock / avgDaily \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u043f\u043b\u043e\u0449\u0430\u0434\u043a\u0435."
       : "\u0422\u0435\u043a\u0443\u0449\u0435\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043f\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u0438.";
@@ -2420,6 +2660,12 @@ function downloadPriceSummaryExcel(rows) {
       '<div class="pw-mini"><span class="pw-label">\u0421\u0442\u0430\u0442\u0443\u0441 \u0442\u043e\u0432\u0430\u0440\u0430</span><strong>', esc(row.status || "\u2014"), '</strong><small>\u0421\u0442\u0430\u0442\u0443\u0441 \u0441\u0442\u0440\u043e\u043a\u0438 \u043f\u043e \u0442\u0435\u043a\u0443\u0449\u0435\u043c\u0443 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0443.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0426\u0435\u043d\u0430 \u043f\u043e \u043c\u0430\u0440\u0436\u0435</span><strong>', money(row.requiredPriceForMargin), '</strong><small>\u0415\u0441\u043b\u0438 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u0438\u0435\u0445\u0430\u043b\u043e \u0432 smart-\u0441\u043b\u043e\u0435.</small></div>',
       '<div class="pw-mini"><span class="pw-label">\u0421\u0440\u0435\u0437 \u0446\u0435\u043d</span><strong>', esc(row.valueDate || state.latestFactDate || "\u2014"), '</strong><small>\u042d\u0442\u043e \u0434\u0430\u0442\u0430 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0435\u0439 \u0442\u043e\u0447\u043a\u0438 \u0432 \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u043c \u0434\u0438\u0430\u043f\u0430\u0437\u043e\u043d\u0435.</small></div>',
+      '</div>',
+      '<div class="pw-card">',
+      '<div class="pw-label">\u0421\u0442\u0430\u0442\u0443\u0441 \u0442\u043e\u0432\u0430\u0440\u0430</div>',
+      '<div class="pw-chip-row"><span class="pw-badge', priceLifecycleBadgeClass(lifecycle), '">', esc(lifecycle.label || row.status || "\u2014"), '</span></div>',
+      '<div class="pw-note">\u042d\u0442\u043e\u0442 lifecycle-\u0441\u0442\u0430\u0442\u0443\u0441 \u0441\u0440\u0430\u0437\u0443 \u0438\u0434\u0435\u0442 \u0432 \u0446\u0435\u043d\u044b, \u0440\u0435\u043f\u0440\u0430\u0439\u0441\u0435\u0440, \u0437\u0430\u043a\u0430\u0437 \u0438 \u0440\u0435\u0435\u0441\u0442\u0440 SKU.</div>',
+      renderPriceLifecycleEditor(row, false),
       '</div>',
       '<div class="pw-card">',
       '<div class="pw-label">MIN / MAX</div>',
@@ -2472,6 +2718,7 @@ function downloadPriceSummaryExcel(rows) {
   function attachModalHandlers() {
     var modal = document.getElementById("priceSimpleModal");
     if (!modal) return;
+    attachPriceLifecycleForms(modal);
     modal.addEventListener("click", function (event) {
       var leaderboardButton = event.target.closest("[data-open-product-leaderboard]");
       if (leaderboardButton) {
@@ -2697,7 +2944,8 @@ function downloadPriceSummaryExcel(rows) {
       var ownerLabel = String(row.owner || "").trim();
       var ownerKey = norm(ownerLabel);
       if (ownerLabel && ownerKey && !owners[ownerKey]) owners[ownerKey] = ownerLabel;
-      var statusLabel = String(row.status || "").trim();
+      var lifecycle = priceProductLifecycleForRow(row);
+      var statusLabel = String(lifecycle && (lifecycle.label || lifecycle.status) || row.status || "").trim();
       var statusKey = norm(statusLabel);
       if (statusLabel && statusKey && !statuses[statusKey]) statuses[statusKey] = statusLabel;
     });
@@ -2876,6 +3124,7 @@ function downloadPriceSummaryExcel(rows) {
         renderPriceWorkbench();
       });
     });
+    attachPriceLifecycleForms(root);
     root.querySelectorAll("[data-open-price]").forEach(function (rowNode) {
       var rememberScroll = function () {
         modalScrollState.pendingOpenY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;

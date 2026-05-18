@@ -366,6 +366,7 @@ const TASK_ATTACHMENT_ALLOWED_EXTENSIONS = ['xlsx', 'xls', 'csv'];
 const TASK_ATTACHMENT_MAX_BYTES = 20 * 1024 * 1024;
 
 const PORTAL_SNAPSHOT_TABLE = 'portal_data_snapshots';
+const PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS = 60000;
 const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/dashboard.json': 'dashboard',
   'data/skus.json': 'skus',
@@ -1369,12 +1370,12 @@ async function loadPortalSnapshotRows() {
 
   portalSnapshotState.promise = withTimeout(
     fetch(requestConfig.url, { headers: requestConfig.headers }),
-    5000,
+    PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS,
     'Загрузка витрины из Supabase'
   )
     .then((response) => {
       if (!response?.ok) throw new Error(`Supabase snapshots ${response?.status || 'request failed'}`);
-      return withTimeout(response.json(), 5000, 'Чтение витрины из Supabase');
+      return withTimeout(response.json(), PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS, 'Чтение витрины из Supabase');
     })
     .then((data) => {
       const rows = decodeChunkedPortalSnapshots(data);
@@ -1419,11 +1420,11 @@ async function fetchPortalSnapshotRowsByKeys(snapshotKeys) {
     url.searchParams.set('snapshot_key', batch.length === 1 ? `eq.${batch[0]}` : `in.(${batch.join(',')})`);
     const response = await withTimeout(
       fetch(url.toString(), { headers: requestConfig.headers }),
-      5000,
+      PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS,
       'Загрузка витрины из Supabase'
     );
     if (!response?.ok) throw new Error(`Supabase snapshots ${response?.status || 'request failed'}`);
-    rows.push(...await withTimeout(response.json(), 5000, 'Чтение витрины из Supabase'));
+    rows.push(...await withTimeout(response.json(), PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS, 'Чтение витрины из Supabase'));
   }
   return rows;
 }

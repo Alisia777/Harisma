@@ -362,16 +362,59 @@ function repricerControlsQueueItems(items) {
 }
 
 function repricerQueueStamp(item) {
-  return repricerControlsStamp(item?.updatedAt || item?.requestedAt || item?.importedAt || item?.createdAt);
+  return repricerControlsStamp(item?.updatedAt || item?.acceptedAt || item?.reconciledAt || item?.sentAt || item?.requestedAt || item?.importedAt || item?.createdAt);
+}
+
+function repricerQueueType(item) {
+  const raw = String(item?.type || item?.action || item?.command || item?.kind || '').trim().toUpperCase();
+  if (raw) return raw;
+  if (item?.costRub != null || item?.cost != null) return 'UPDATE_COST';
+  return 'API';
+}
+
+function repricerQueueField(item, type = repricerQueueType(item)) {
+  const raw = String(item?.field || item?.apiField || '').trim().toLowerCase();
+  if (type === 'UPDATE_COST') return 'cost';
+  if (type === 'ADD_SKU' || type === 'DELETE_SKU') return 'sku';
+  return raw || String(item?.reason || '').trim().toLowerCase();
+}
+
+function repricerQueuePayloadSignature(item) {
+  const type = repricerQueueType(item);
+  const field = repricerQueueField(item, type);
+  const value = item?.value ?? item?.costRub ?? item?.cost ?? '';
+  return `${type}|${field}|${String(value).trim()}`;
+}
+
+function repricerQueueStatusRank(item) {
+  const status = String(item?.status || 'open').trim().toLowerCase();
+  if (status === 'accepted') return 4;
+  if (status === 'sent') return 3;
+  if (status === 'open') return 2;
+  if (status === 'error') return 1;
+  return 0;
 }
 
 function repricerQueueKey(item) {
   const articleKey = String(item?.articleKey || item?.article || item?.sku || '').trim();
   const rawPlatform = String(item?.platform || '').trim().toLowerCase();
   const platform = ['wb', 'ozon', 'all'].includes(rawPlatform) ? rawPlatform : 'all';
-  const type = String(item?.type || item?.action || item?.command || item?.kind || '').trim().toUpperCase();
-  const field = String(item?.field || item?.apiField || item?.reason || '').trim().toLowerCase();
-  return item?.id || `${type || 'API'}|${articleKey}|${platform}|${field}`;
+  const type = repricerQueueType(item);
+  const field = repricerQueueField(item, type);
+  if (articleKey) return `${type}|${articleKey}|${platform}|${field}`;
+  return String(item?.id || '').trim();
+}
+
+function repricerPreferQueueItem(current, next) {
+  if (!current) return next;
+  if (!next) return current;
+  if (repricerQueuePayloadSignature(current) !== repricerQueuePayloadSignature(next)) {
+    return repricerQueueStamp(next) >= repricerQueueStamp(current) ? next : current;
+  }
+  const currentRank = repricerQueueStatusRank(current);
+  const nextRank = repricerQueueStatusRank(next);
+  if (nextRank !== currentRank) return nextRank > currentRank ? next : current;
+  return repricerQueueStamp(next) >= repricerQueueStamp(current) ? next : current;
 }
 
 function mergeRepricerQueueItems(remoteItems, localItems, limit = 400) {
@@ -379,8 +422,7 @@ function mergeRepricerQueueItems(remoteItems, localItems, limit = 400) {
   [...repricerControlsQueueItems(remoteItems), ...repricerControlsQueueItems(localItems)].forEach((item) => {
     const key = repricerQueueKey(item);
     if (!key) return;
-    const current = map.get(key);
-    if (!current || repricerQueueStamp(item) >= repricerQueueStamp(current)) map.set(key, item);
+    map.set(key, repricerPreferQueueItem(map.get(key), item));
   });
   return [...map.values()]
     .sort((a, b) => repricerQueueStamp(b) - repricerQueueStamp(a))

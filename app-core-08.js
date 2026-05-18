@@ -3461,12 +3461,81 @@ function repricerExactStorageItem(bucket, articleKey, platform = 'all') {
 
 const REPRICER_API_QUEUE_BUCKETS = new Set(['repricerPendingApiAdds', 'repricerPendingApiDeletes', 'repricerPendingCostFixes', 'repricerPendingApiTasks']);
 
+function repricerQueueTaskField(item = {}, bucket = '', type = '') {
+  const normalizedType = String(type || item.type || item.action || repricerTaskTypeFromBucket(bucket, item)).trim().toUpperCase();
+  const rawField = String(item.field || item.apiField || '').trim().toLowerCase();
+  if (normalizedType === 'UPDATE_COST' || bucket === 'repricerPendingCostFixes') return 'cost';
+  if (normalizedType === 'ADD_SKU' || normalizedType === 'DELETE_SKU' || bucket === 'repricerPendingApiAdds' || bucket === 'repricerPendingApiDeletes') return 'sku';
+  if (rawField) return rawField;
+  return String(item.reason || '').trim().toLowerCase();
+}
+
+function repricerQueueTaskSemanticKey(item = {}, bucket = '') {
+  const type = String(item.type || item.action || repricerTaskTypeFromBucket(bucket, item) || 'API_TASK').trim().toUpperCase();
+  const articleKey = String(item.articleKey || item.article || item.sku || '').trim();
+  const platform = repricerQueuePlatform(item.platform);
+  const field = repricerQueueTaskField(item, bucket, type);
+  if (articleKey) return `${type}|${articleKey}|${platform}|${field}`;
+  return String(item.id || '').trim();
+}
+
 function repricerQueuePayloadSignature(item = {}, bucket = '') {
   const type = String(item.type || item.action || repricerTaskTypeFromBucket(bucket, item)).trim().toUpperCase();
-  const fallbackField = bucket === 'repricerPendingCostFixes' ? 'cost' : (bucket === 'repricerPendingApiAdds' || bucket === 'repricerPendingApiDeletes' ? 'sku' : '');
-  const field = String(item.field || item.apiField || fallbackField).trim().toLowerCase();
+  const field = repricerQueueTaskField(item, bucket, type);
   const value = item.value ?? item.costRub ?? '';
   return `${type}|${field}|${String(value).trim()}`;
+}
+
+function repricerQueueStatusRank(item = {}) {
+  const status = repricerTaskStatus(item);
+  if (status === 'accepted') return 4;
+  if (status === 'sent') return 3;
+  if (status === 'open') return 2;
+  if (status === 'error') return 1;
+  return 0;
+}
+
+function repricerQueueStamp(item = {}) {
+  const stamp = Date.parse(String(item.updatedAt || item.acceptedAt || item.reconciledAt || item.sentAt || item.requestedAt || item.createdAt || ''));
+  return Number.isFinite(stamp) ? stamp : 0;
+}
+
+function repricerChooseQueueItem(bucket, left, right) {
+  if (!left) return right;
+  if (!right) return left;
+  const leftSignature = repricerQueuePayloadSignature(left, bucket);
+  const rightSignature = repricerQueuePayloadSignature(right, bucket);
+  if (leftSignature !== rightSignature) {
+    return repricerQueueStamp(right) >= repricerQueueStamp(left) ? right : left;
+  }
+  const leftRank = repricerQueueStatusRank(left);
+  const rightRank = repricerQueueStatusRank(right);
+  if (rightRank !== leftRank) return rightRank > leftRank ? right : left;
+  return repricerQueueStamp(right) >= repricerQueueStamp(left) ? right : left;
+}
+
+function repricerNormalizeQueueTask(bucket, item = {}) {
+  const type = String(item.type || item.action || repricerTaskTypeFromBucket(bucket, item) || 'API_TASK').trim().toUpperCase();
+  const field = repricerQueueTaskField(item, bucket, type);
+  return {
+    ...item,
+    type,
+    action: item.action || item.type || type,
+    platform: repricerQueuePlatform(item.platform),
+    field,
+    value: item.value ?? item.costRub ?? ''
+  };
+}
+
+function repricerDedupeQueueItems(bucket, items = []) {
+  const map = new Map();
+  (Array.isArray(items) ? items : []).forEach((item) => {
+    const normalized = repricerNormalizeQueueTask(bucket, item || {});
+    const key = repricerQueueTaskSemanticKey(normalized, bucket);
+    if (!key) return;
+    map.set(key, repricerChooseQueueItem(bucket, map.get(key), normalized));
+  });
+  return [...map.values()].sort((left, right) => repricerQueueStamp(right) - repricerQueueStamp(left));
 }
 
 function repricerMergeQueueUpsert(bucket, existing, incoming) {
@@ -3509,6 +3578,7 @@ function repricerUpsertStorageItem(bucket, item, predicate) {
   const next = repricerMergeQueueUpsert(bucket, existing, item);
   state.storage[bucket] = current.filter((entry) => !predicate(entry));
   state.storage[bucket].unshift(next);
+  if (REPRICER_API_QUEUE_BUCKETS.has(bucket)) state.storage[bucket] = repricerDedupeQueueItems(bucket, state.storage[bucket]);
 }
 
 function repricerTeamActor() {
@@ -3521,11 +3591,7 @@ function repricerQueuePlatform(platform = 'all') {
 }
 
 function repricerQueueTaskKey(item = {}) {
-  const type = String(item.type || item.action || 'API_TASK').trim().toUpperCase();
-  const articleKey = String(item.articleKey || item.article || item.sku || '').trim();
-  const platform = repricerQueuePlatform(item.platform);
-  const field = String(item.field || item.apiField || '').trim().toLowerCase();
-  return `${type}|${articleKey}|${platform}|${field}`;
+  return repricerQueueTaskSemanticKey(item, 'repricerPendingApiTasks');
 }
 
 function repricerQueueApiTask(task = {}) {
@@ -3771,7 +3837,9 @@ function repricerTaskStatus(item = {}, fallback = 'open') {
 function repricerUpdateApiTaskBuckets(updater) {
   const buckets = ['repricerPendingApiAdds', 'repricerPendingApiDeletes', 'repricerPendingCostFixes', 'repricerPendingApiTasks'];
   buckets.forEach((bucket) => {
-    state.storage[bucket] = (state.storage?.[bucket] || []).map((item) => updater({ ...item }, bucket));
+    state.storage[bucket] = repricerDedupeQueueItems(bucket, state.storage?.[bucket] || [])
+      .map((item) => updater({ ...item }, bucket));
+    state.storage[bucket] = repricerDedupeQueueItems(bucket, state.storage[bucket]);
   });
 }
 

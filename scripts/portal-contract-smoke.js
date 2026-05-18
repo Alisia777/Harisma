@@ -306,6 +306,11 @@ async function main() {
 
     await clickView(page, 'sku-plan-fact');
     await assertVisible(page, '#view-sku-plan-fact', 'SKU plan-fact');
+    await page.waitForFunction(() => Boolean(
+      document.querySelector('#view-sku-plan-fact [data-sku-plan-fact-quality-export]')
+      || document.querySelector('#view-sku-plan-fact [data-sku-plan-fact-quality-import]')
+      || document.querySelector('#view-sku-plan-fact .sku-plan-fact-card')
+    ), undefined, { timeout: 20000 });
     const planFactOk = await page.evaluate(() => Boolean(
       document.querySelector('#view-sku-plan-fact [data-sku-plan-fact-quality-export]')
       || document.querySelector('#view-sku-plan-fact [data-sku-plan-fact-quality-import]')

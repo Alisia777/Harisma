@@ -312,12 +312,11 @@ textarea{resize:vertical;min-height:84px}
 .launch-excel-menu-panel button{width:100%;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.035);color:var(--text);padding:9px 10px;text-align:left;cursor:pointer}
 .launch-excel-menu-panel button:hover{border-color:var(--line-strong);background:rgba(255,255,255,.07)}
 .launch-attention-card{margin-top:14px;border-color:rgba(220,177,95,.24);background:linear-gradient(180deg,rgba(220,177,95,.055),rgba(255,255,255,.018))}
-.launch-attention-list{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
-.launch-attention-row{min-width:0;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.12);color:var(--text);padding:10px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;text-align:left;cursor:pointer}
+.launch-attention-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
+.launch-attention-row{min-width:0;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.12);color:var(--text);padding:12px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 10px;text-align:left;cursor:pointer;align-items:start}
 .launch-attention-row:hover{border-color:var(--line-strong);background:rgba(255,255,255,.045)}
-.launch-attention-row strong{grid-column:2;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.launch-attention-row em,.launch-attention-row small{grid-column:2;color:var(--muted);font-style:normal;font-size:11px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.launch-attention-row small{-webkit-line-clamp:1}
+.launch-attention-row strong{grid-column:2;line-height:1.28;white-space:normal;overflow:visible;text-overflow:clip}
+.launch-attention-row em,.launch-attention-row small{grid-column:2;color:var(--muted);font-style:normal;font-size:11px;line-height:1.35;display:block;overflow:visible}
 .launch-attention-status{grid-row:1 / 4;width:10px;height:10px;border-radius:999px;margin-top:4px;background:#f6c25d;box-shadow:0 0 0 5px rgba(246,194,93,.1)}
 .launch-attention-status.ok{background:#8fd18f;box-shadow:0 0 0 5px rgba(143,209,143,.1)}
 .launch-attention-status.danger{background:#ff8a8a;box-shadow:0 0 0 5px rgba(255,138,138,.12)}

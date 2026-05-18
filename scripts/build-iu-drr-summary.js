@@ -31,6 +31,10 @@ const CHANNEL_KEYS = [
 ];
 const DOWNLOADS_ROOT = path.resolve(process.env.USERPROFILE || process.cwd(), 'Downloads');
 const QUARTER_REPORT_CANDIDATES = [
+  path.join(DOWNLOADS_ROOT, 'report 2026-5-18.xlsx'),
+  path.join(DOWNLOADS_ROOT, 'report 2026-05-18.xlsx'),
+  path.join(DOWNLOADS_ROOT, 'Telegram Desktop', 'report 2026-5-18.xlsx'),
+  path.join(DOWNLOADS_ROOT, 'Telegram Desktop', 'report 2026-05-18.xlsx'),
   path.join(DOWNLOADS_ROOT, 'report 2026-5-13.xlsx'),
   path.join(DOWNLOADS_ROOT, 'report 2026-05-13.xlsx'),
   path.join(DOWNLOADS_ROOT, 'Telegram Desktop', 'report 2026-5-13.xlsx'),
@@ -454,7 +458,7 @@ function channelKey(channel) {
 }
 
 function emptyAdsBucket() {
-  return { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0, rows: 0, sourceModes: [] };
+  return { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0, rows: 0 };
 }
 
 function addAdsBucket(map, date, row) {
@@ -464,10 +468,7 @@ function addAdsBucket(map, date, row) {
   current.clicks += numberOrZero(row.clicks);
   current.orders += numberOrZero(row.orders);
   current.revenue += numberOrZero(row.revenue);
-  const explicitRows = Number(row.sourceRows ?? row.operationRows);
-  current.rows += Number.isFinite(explicitRows) ? explicitRows : 1;
-  const sourceMode = String(row.sourceMode || row.source || row.campaignId || row.channel || '').trim();
-  if (sourceMode && !current.sourceModes.includes(sourceMode)) current.sourceModes.push(sourceMode);
+  current.rows += 1;
   map.set(date, current);
   return current;
 }
@@ -490,8 +491,6 @@ function mergePlatformAdsSeries(adsSummary, platformKey, targetMap, onSpendGap) 
     current.clicks = Math.max(current.clicks, numberOrZero(point.clicks));
     current.orders = Math.max(current.orders, numberOrZero(point.orders));
     current.revenue = Math.max(current.revenue, numberOrZero(point.revenue));
-    const sourceMode = String(point.sourceMode || `${platformKey}_platform_series`).trim();
-    if (sourceMode && !current.sourceModes.includes(sourceMode)) current.sourceModes.push(sourceMode);
     targetMap.set(date, current);
   }
 }
@@ -608,9 +607,7 @@ function dateRange(platformTrends, adsSummary, explicitFrom, explicitTo) {
     : '';
   const sorted = dates.sort();
   const to = explicitTo || latestCompleteMarketplaceDate || sorted[sorted.length - 1] || isoDate(platformTrends?.latestMarketplaceDate) || isoDate(adsSummary?.asOfDate) || new Date().toISOString().slice(0, 10);
-  const from = explicitFrom || (WB_CONTRACT.salesPeriodStart && WB_CONTRACT.salesPeriodStart <= to
-    ? WB_CONTRACT.salesPeriodStart
-    : `${to.slice(0, 7)}-01`);
+  const from = explicitFrom || `${to.slice(0, 7)}-01`;
   return { from, to };
 }
 
@@ -619,11 +616,6 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, 
   const ozonMap = buildPlatformDateMap(platformTrends, 'ozon');
   const adsMaps = buildAdsDailyMaps(adsSummary);
   const reviewPointsMap = buildReviewPointsMap(wbFeedbacksSummary);
-  const ozonPendingAdsDates = new Set(
-    (adsSummary?.diagnostics?.ozonAdsFinance?.pendingDates || [])
-      .map(isoDate)
-      .filter(Boolean)
-  );
   const range = dateRange(platformTrends, adsSummary, options.from, options.to);
   return enumerateDates(range.from, range.to).map((date) => {
     const month = monthKey(date);
@@ -636,7 +628,6 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, 
     const ads = adsMaps.byDate.get(date) || {};
     const ozonAds = adsMaps.ozonByDate.get(date) || {};
     const hasOzonAdsFact = adsMaps.ozonByDate.has(date);
-    const hasOzonAdsPending = ozonPendingAdsDates.has(date);
     const revenueWb = numberOrZero(wb.revenue);
     const ordersRevenueWb = numberOrZero(wb.ordersRevenue) || revenueWb;
     const revenueOzon = numberOrZero(ozon.revenue);
@@ -653,13 +644,8 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, 
     const planSpendWb = contractMarketingPlanWb || managementPlanSpendWb;
     const planSpendOzon = numberOrZero(plan.dailyIuAdsOzon) || (targetRevenueOzon * planPctOzon);
     const spendFactOzon = hasOzonAdsFact ? numberOrZero(ozonAds.spend) : revenueOzon * planPctOzon;
-    const ozonAdsSourceModes = Array.isArray(ozonAds.sourceModes) ? ozonAds.sourceModes.filter(Boolean) : [];
     const ozonAdsFactMode = hasOzonAdsFact
-      ? (ozonAdsSourceModes.includes('ozon_seller_finance_api')
-        ? 'ozon_seller_finance_api'
-        : (ozonAdsSourceModes.join('+') || 'ads_summary_fact'))
-      : hasOzonAdsPending
-        ? 'pending_ozon_seller_finance_api_modeled_from_revenue_25pct'
+      ? 'google_sheets_fact_ads_daily_sku'
       : 'modeled_from_revenue_25pct_no_ozon_ads_fact';
     const channels = Object.fromEntries(CHANNEL_KEYS.map(([key]) => [key, 0]));
     for (const [key] of CHANNEL_KEYS) channels[key] = roundMoney(adsMaps.byDateChannel.get(`${date}|${key}`) || 0);
@@ -903,54 +889,6 @@ function buildContractPeriodRows(dailyRows) {
   });
 }
 
-function buildOzonQuarterSummary(dailyRows) {
-  const from = WB_CONTRACT.salesPeriodStart;
-  const to = dailyRows.map((row) => row.date).filter(Boolean).sort().pop() || '';
-  if (!from || !to || from > to) {
-    return {
-      status: 'empty',
-      from,
-      to,
-      label: '',
-      days: 0,
-      targetRevenueOzon: 0,
-      revenueOzon: 0,
-      revenueDeltaOzon: 0,
-      planPctOzon: roundRate(DEFAULT_OZON_PLAN_PCT),
-      planSpendOzon: 0,
-      spendFactOzon: 0,
-      factPctOzon: null,
-      spendDeltaOzon: 0
-    };
-  }
-  const rows = dailyRows.filter((row) => row.date >= from && row.date <= to);
-  const targetRevenueOzon = roundMoney(sumRows(rows, 'targetRevenueOzon'));
-  const revenueOzon = roundMoney(sumRows(rows, 'revenueOzon'));
-  const planSpendOzon = roundMoney(sumRows(rows, 'planSpendOzon'));
-  const spendFactOzon = roundMoney(sumRows(rows, 'spendFactOzon'));
-  const revenueDeltaOzon = roundMoney(revenueOzon - targetRevenueOzon);
-  const spendDeltaOzon = roundMoney(spendFactOzon - planSpendOzon);
-  return {
-    status: rows.length ? 'ok' : 'empty',
-    from,
-    to,
-    label: `${String(from).slice(8, 10)}.${String(from).slice(5, 7)}-${String(to).slice(8, 10)}.${String(to).slice(5, 7)}`,
-    days: rows.length,
-    targetRevenueOzon,
-    revenueOzon,
-    revenueDeltaOzon,
-    revenueDeltaPctOzon: targetRevenueOzon > 0 ? roundRate(revenueDeltaOzon / targetRevenueOzon) : null,
-    revenueCompletionPctOzon: targetRevenueOzon > 0 ? roundRate(revenueOzon / targetRevenueOzon) : null,
-    planPctOzon: targetRevenueOzon > 0 ? roundRate(planSpendOzon / targetRevenueOzon) : roundRate(DEFAULT_OZON_PLAN_PCT),
-    planSpendOzon,
-    spendFactOzon,
-    factPctOzon: revenueOzon > 0 ? roundRate(spendFactOzon / revenueOzon) : null,
-    spendDeltaOzon,
-    spendDeltaPctOzon: planSpendOzon > 0 ? roundRate(spendDeltaOzon / planSpendOzon) : null,
-    sourceLabel: 'Ozon Analytics API + iu_plan.json + ads_summary.json'
-  };
-}
-
 function buildChannelRows(dailyRows, adsSummary = {}, wbFeedbacksSummary = {}) {
   const adsSourceMode = String(adsSummary.sourceMode || adsSummary.source || '');
   const wbAdsSource = adsSourceMode.includes('google-sheets-fact-ads')
@@ -1029,7 +967,7 @@ function buildPayload(options) {
       noSourceChannels,
       unmatchedNmIds: adsSummary.diagnostics?.unmatchedNmIds || [],
       notes: [
-        'Ozon ad spend comes from Ozon Seller Finance API daily advertising operations when present; planPctOzon remains the plan benchmark.',
+        'Ozon ad spend comes from Google Sheets fact_ads_daily_sku when present; planPctOzon remains the plan benchmark.',
         'Review points are filled from WB Feedbacks API supplierFeedbackValuation when present.',
         'WB contract logic: factual turnover is sales minus returns, without WB deductions; it maps to revenueWb / finance turnover.',
         'WB marketing plan is 8% of factual turnover. ordersRevenueWb is retained as a report-control field, not as the contract DRR denominator.',

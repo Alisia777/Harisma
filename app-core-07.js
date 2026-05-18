@@ -3540,22 +3540,25 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
     adsClicks: numberOrZero(row?.adsClicks),
     adsOrders: numberOrZero(row?.adsOrders)
   })).map((row) => {
-    const wbTarget = numberOrZero(row.managementTargetRevenueWb || row.targetRevenueWb);
-    const wbFactOrders = numberOrZero(row.ordersRevenueWb || row.revenueWb);
+    const wbTarget = numberOrZero(row.targetRevenueWb || row.contractTargetRevenueWb || row.managementTargetRevenueWb);
+    const wbFactRevenue = numberOrZero(row.adsPctBaseWb || row.revenueWb || row.ordersRevenueWb);
+    const wbOrdersRevenue = numberOrZero(row.ordersRevenueWb);
     const wbPlanPct = Number.isFinite(Number(row.planPct)) ? Number(row.planPct) : 0;
-    const wbPlanSpendByOrders = wbFactOrders * wbPlanPct;
+    const wbPlanSpendByRevenue = wbFactRevenue * wbPlanPct;
     const wbSpendFact = numberOrZero(row.spendFact);
     return {
       ...row,
       iuTargetRevenueWb: wbTarget,
-      iuOrdersRevenueWb: wbFactOrders,
-      iuRevenueWbDelta: wbFactOrders - wbTarget,
-      iuRevenueWbDeltaPct: wbTarget > 0 ? (wbFactOrders - wbTarget) / wbTarget : null,
-      iuRevenueWbCompletionPct: wbTarget > 0 ? wbFactOrders / wbTarget : null,
-      iuPlanSpendWb: wbPlanSpendByOrders,
-      iuFactPct: wbFactOrders > 0 ? wbSpendFact / wbFactOrders : null,
-      iuSpendDelta: wbSpendFact - wbPlanSpendByOrders,
-      iuSpendDeltaPct: wbPlanSpendByOrders > 0 ? (wbSpendFact - wbPlanSpendByOrders) / wbPlanSpendByOrders : null
+      iuRevenueWb: wbFactRevenue,
+      iuOrdersRevenueWb: wbFactRevenue,
+      iuOrdersRevenueWbControl: wbOrdersRevenue,
+      iuRevenueWbDelta: wbFactRevenue - wbTarget,
+      iuRevenueWbDeltaPct: wbTarget > 0 ? (wbFactRevenue - wbTarget) / wbTarget : null,
+      iuRevenueWbCompletionPct: wbTarget > 0 ? wbFactRevenue / wbTarget : null,
+      iuPlanSpendWb: wbPlanSpendByRevenue,
+      iuFactPct: wbFactRevenue > 0 ? wbSpendFact / wbFactRevenue : null,
+      iuSpendDelta: wbSpendFact - wbPlanSpendByRevenue,
+      iuSpendDeltaPct: wbPlanSpendByRevenue > 0 ? (wbSpendFact - wbPlanSpendByRevenue) / wbPlanSpendByRevenue : null
     };
   }).filter((row) => row.date) : [];
   const months = Array.isArray(payload.months) ? payload.months : [];
@@ -3605,29 +3608,30 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
   const quarterSummary = normalized.quarterSummary || normalized.wbQuarter || {};
   const dailyRows = normalized.daily.filter((row) => row.monthKey === selectedMonth);
   const rawMonthSummary = (normalized.months || []).find((month) => month.monthKey === selectedMonth) || {};
-  const wbOrdersFactToDate = dailyRows.reduce((sum, row) => sum + numberOrZero(row.iuOrdersRevenueWb), 0);
+  const wbRevenueFactToDate = dailyRows.reduce((sum, row) => sum + numberOrZero(row.iuRevenueWb || row.iuOrdersRevenueWb), 0);
+  const wbOrdersRevenueToDate = dailyRows.reduce((sum, row) => sum + numberOrZero(row.ordersRevenueWb), 0);
   const wbTargetToDate = dailyRows.reduce((sum, row) => sum + numberOrZero(row.iuTargetRevenueWb), 0);
   const wbPlanSpendToDate = dailyRows.reduce((sum, row) => sum + numberOrZero(row.iuPlanSpendWb), 0);
   const wbSpendFactToDate = dailyRows.reduce((sum, row) => sum + numberOrZero(row.spendFact), 0);
-  const wbRevenueDeltaToDate = wbOrdersFactToDate - wbTargetToDate;
+  const wbRevenueDeltaToDate = wbRevenueFactToDate - wbTargetToDate;
   const wbSpendDeltaToDate = wbSpendFactToDate - wbPlanSpendToDate;
   const monthSummary = {
     ...rawMonthSummary,
     iuRevenueWbPlanToDate: wbTargetToDate || rawMonthSummary.iuRevenueWbPlanToDate,
     targetRevenueWb: wbTargetToDate || rawMonthSummary.targetRevenueWb,
-    iuRevenueWbFactToDate: wbOrdersFactToDate || rawMonthSummary.iuRevenueWbFactToDate,
-    revenueWb: wbOrdersFactToDate || rawMonthSummary.revenueWb,
-    ordersRevenueWb: wbOrdersFactToDate || rawMonthSummary.ordersRevenueWb,
-    revenueWbDelta: wbOrdersFactToDate ? wbRevenueDeltaToDate : rawMonthSummary.revenueWbDelta,
+    iuRevenueWbFactToDate: wbRevenueFactToDate || rawMonthSummary.iuRevenueWbFactToDate,
+    revenueWb: wbRevenueFactToDate || rawMonthSummary.revenueWb,
+    ordersRevenueWb: wbOrdersRevenueToDate || rawMonthSummary.ordersRevenueWb,
+    revenueWbDelta: wbRevenueFactToDate ? wbRevenueDeltaToDate : rawMonthSummary.revenueWbDelta,
     revenueWbDeltaPct: wbTargetToDate > 0 ? wbRevenueDeltaToDate / wbTargetToDate : rawMonthSummary.revenueWbDeltaPct,
-    revenueWbCompletionPct: wbTargetToDate > 0 ? wbOrdersFactToDate / wbTargetToDate : rawMonthSummary.revenueWbCompletionPct,
-    iuRevenueWbCompletionToDate: wbTargetToDate > 0 ? wbOrdersFactToDate / wbTargetToDate : rawMonthSummary.iuRevenueWbCompletionToDate,
+    revenueWbCompletionPct: wbTargetToDate > 0 ? wbRevenueFactToDate / wbTargetToDate : rawMonthSummary.revenueWbCompletionPct,
+    iuRevenueWbCompletionToDate: wbTargetToDate > 0 ? wbRevenueFactToDate / wbTargetToDate : rawMonthSummary.iuRevenueWbCompletionToDate,
     iuAdsPlanToDate: wbPlanSpendToDate || rawMonthSummary.iuAdsPlanToDate,
     planSpendWb: wbPlanSpendToDate || rawMonthSummary.planSpendWb,
-    spendDelta: wbOrdersFactToDate ? wbSpendDeltaToDate : rawMonthSummary.spendDelta,
+    spendDelta: wbRevenueFactToDate ? wbSpendDeltaToDate : rawMonthSummary.spendDelta,
     spendDeltaPct: wbPlanSpendToDate > 0 ? wbSpendDeltaToDate / wbPlanSpendToDate : rawMonthSummary.spendDeltaPct,
-    drrWb: wbOrdersFactToDate > 0 ? wbSpendFactToDate / wbOrdersFactToDate : rawMonthSummary.drrWb,
-    ordersAdPct: wbOrdersFactToDate > 0 ? wbSpendFactToDate / wbOrdersFactToDate : rawMonthSummary.ordersAdPct
+    drrWb: wbRevenueFactToDate > 0 ? wbSpendFactToDate / wbRevenueFactToDate : rawMonthSummary.drrWb,
+    ordersAdPct: wbOrdersRevenueToDate > 0 ? wbSpendFactToDate / wbOrdersRevenueToDate : rawMonthSummary.ordersAdPct
   };
   const channelRows = (normalized.channels || []).map((channel) => ({
     ...channel,
@@ -3673,9 +3677,9 @@ function iuDrrPlatformMeta(model) {
     targetRevenue: isOzon ? (month.targetRevenueOzon || month.iuRevenueOzonPlanToDate) : (month.targetRevenueWb || month.iuRevenueWbPlanToDate),
     revenueDelta: isOzon ? month.revenueOzonDelta : month.revenueWbDelta,
     revenueDeltaPct: isOzon ? month.revenueOzonDeltaPct : month.revenueWbDeltaPct,
-    sparkKey: isOzon ? 'revenueOzon' : 'iuOrdersRevenueWb',
+    sparkKey: isOzon ? 'revenueOzon' : 'iuRevenueWb',
     tableTargetKey: isOzon ? 'targetRevenueOzon' : 'iuTargetRevenueWb',
-    tableRevenueKey: isOzon ? 'revenueOzon' : 'iuOrdersRevenueWb',
+    tableRevenueKey: isOzon ? 'revenueOzon' : 'iuRevenueWb',
     tableDeltaKey: isOzon ? 'revenueOzonDelta' : 'iuRevenueWbDelta',
     tableDeltaPctKey: isOzon ? 'revenueOzonDeltaPct' : 'iuRevenueWbDeltaPct',
     tableCompletionKey: isOzon ? 'revenueOzonCompletionPct' : 'iuRevenueWbCompletionPct',
@@ -4165,9 +4169,9 @@ function iuDrrExportRows(rows, model) {
     date: row.date,
     period: row.period || row.date,
     target_revenue_wb: row.iuTargetRevenueWb || row.targetRevenueWb,
-    revenue_wb: row.iuOrdersRevenueWb || row.ordersRevenueWb || row.revenueWb,
+    revenue_wb: row.iuRevenueWb || row.revenueWb || row.iuOrdersRevenueWb || row.ordersRevenueWb,
     orders_revenue_wb: row.ordersRevenueWb,
-    ads_pct_base_wb: row.iuOrdersRevenueWb || row.ordersRevenueWb || row.adsPctBaseWb || row.revenueWb,
+    ads_pct_base_wb: row.adsPctBaseWb || row.iuRevenueWb || row.revenueWb || row.iuOrdersRevenueWb,
     revenue_wb_delta: row.iuRevenueWbDelta,
     revenue_wb_delta_pct: row.iuRevenueWbDeltaPct != null ? Math.round(Number(row.iuRevenueWbDeltaPct) * 10000) / 100 : '',
     revenue_ozon: row.revenueOzon,
@@ -4227,7 +4231,7 @@ function downloadIuDrrExcel(model) {
     ['date', 'Дата'],
     ['period', 'Период'],
     ['target_revenue_wb', 'Целевой оборот WB'],
-    ['revenue_wb', 'Заказы WB. Фактический оборот по розничным ценам'],
+    ['revenue_wb', 'Продажи WB. Фактический оборот по розничным ценам'],
     ['orders_revenue_wb', 'Заказы WB. Сверка с отчетом WB'],
     ['ads_pct_base_wb', 'База расчета рекламы WB по договору'],
     ['revenue_wb_delta', 'Разница оборота WB'],
@@ -4282,10 +4286,10 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   `;
   const quarter = model.quarterSummary || {};
   const quarterTargetWb = numberOrZero(quarter.targetRevenueWb);
-  const quarterOrdersFactWb = numberOrZero(quarter.ordersRevenueWb || quarter.revenueWb);
-  const quarterRevenueDeltaDisplay = quarterOrdersFactWb - quarterTargetWb;
-  const quarterRevenueCompletionDisplay = quarterTargetWb > 0 ? quarterOrdersFactWb / quarterTargetWb : quarter.revenueCompletionPct;
-  const quarterAvailable = numberOrZero(quarter.days) > 0 || quarterOrdersFactWb > 0 || numberOrZero(quarter.spendFact) > 0;
+  const quarterRevenueFactWb = numberOrZero(quarter.revenueWb || quarter.adsPctBaseWb || quarter.ordersRevenueWb);
+  const quarterRevenueDeltaDisplay = quarterRevenueFactWb - quarterTargetWb;
+  const quarterRevenueCompletionDisplay = quarterTargetWb > 0 ? quarterRevenueFactWb / quarterTargetWb : quarter.revenueCompletionPct;
+  const quarterAvailable = numberOrZero(quarter.days) > 0 || quarterRevenueFactWb > 0 || numberOrZero(quarter.spendFact) > 0;
   const quarterCompletionTone = numberOrZero(quarterRevenueCompletionDisplay) >= 1 ? 'ok' : 'warn';
   const quarterDrrTone = quarter.factPct != null && quarter.planPct != null && quarter.factPct <= quarter.planPct ? 'ok' : 'warn';
   const quarterRevenueTone = iuDrrToneForRevenueDelta(quarterRevenueDeltaDisplay);
@@ -4295,7 +4299,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       <div class="section-subhead">
         <div>
           <h3>Накопительно с 01.03</h3>
-          <p class="small muted">Факт ИУ WB сверяем с заказами по розничным ценам из отчета WB; рекламный % считаем от этих заказов.</p>
+          <p class="small muted">Факт ИУ WB сверяем с выкупленными продажами по розничным ценам из отчета WB; ДРР по договору считаем от этой базы.</p>
         </div>
         <div class="badge-stack">
           ${badge(quarter.label || `${String(quarter.from || '').slice(8, 10)}.${String(quarter.from || '').slice(5, 7)}–${String(quarter.to || '').slice(8, 10)}.${String(quarter.to || '').slice(5, 7)}`, 'info')}
@@ -4307,7 +4311,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       </div>
       <div class="kpi-strip" style="margin-top:12px">
         <div class="mini-kpi ${quarterRevenueTone}"><span>Целевой оборот</span><strong>${fmt.money(quarterTargetWb)}</strong><span>накопительно</span></div>
-        <div class="mini-kpi ${quarterRevenueTone}"><span>Факт заказов</span><strong>${fmt.money(quarterOrdersFactWb)}</strong><span>WB orders</span></div>
+        <div class="mini-kpi ${quarterRevenueTone}"><span>Факт продаж</span><strong>${fmt.money(quarterRevenueFactWb)}</strong><span>WB buyout sales</span></div>
         <div class="mini-kpi ${quarterCompletionTone}"><span>Выполнение</span><strong>${fmt.pct(quarterRevenueCompletionDisplay)}</strong><span>${fmt.money(quarterRevenueDeltaDisplay)}</span></div>
         <div class="mini-kpi ${quarterSpendTone}"><span>Рекламный расход</span><strong>${fmt.money(quarter.spendFact)}</strong><span>без Внешки</span></div>
         <div class="mini-kpi ${quarterDrrTone}"><span>ДРР по договору</span><strong>${fmt.pct(quarter.factPct)}</strong><span>${fmt.money(quarter.planSpendWb)}</span></div>
@@ -4366,7 +4370,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
           <div><h3>WB оборот</h3><p class="small muted">факт против плана ИУ</p></div>
           ${badge(fmt.pct(platformMeta.completion), platformIuTone)}
         </div>
-        ${iuDrrSparkline(model.dailyRows, 'iuOrdersRevenueWb', platformIuTone)}
+        ${iuDrrSparkline(model.dailyRows, 'iuRevenueWb', platformIuTone)}
       </div>
       <div class="card">
         <div class="section-subhead">
@@ -4448,12 +4452,12 @@ function renderIuDrr(rootId = 'view-iu-drr') {
             <tr>
               <th>Период</th>
               <th>Целевой оборот WB</th>
-              <th>Заказы. Фактический оборот WB</th>
+              <th>Продажи. Фактический оборот WB</th>
               <th>Разница оборота</th>
               <th>Реклама. План в %</th>
               <th>План расхода</th>
               <th>Реклама. Фактические затраты</th>
-              <th>Реклама. Факт в % от заказов</th>
+              <th>Реклама. Факт в % по договору</th>
               <th>ВБ Продвижение</th>
               <th>ВБ Медиа</th>
               <th>ВБ Инфлюенс</th>
@@ -4470,7 +4474,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
               <tr>
                 <td><strong>${escapeHtml(row.period || row.date)}</strong><div class="muted small">${escapeHtml(row.date)}</div></td>
                 <td>${fmt.money(row.iuTargetRevenueWb || row.targetRevenueWb)}</td>
-                <td>${fmt.money(row.iuOrdersRevenueWb || row.ordersRevenueWb || row.revenueWb)}</td>
+                <td>${fmt.money(row.iuRevenueWb || row.revenueWb || row.iuOrdersRevenueWb || row.ordersRevenueWb)}</td>
                 <td>${badge(fmt.money(row.iuRevenueWbDelta), iuDrrToneForRevenueDelta(row.iuRevenueWbDelta))}</td>
                 <td>${fmt.pct(row.planPct)}</td>
                 <td>${fmt.money(row.iuPlanSpendWb || row.planSpendWb)}</td>

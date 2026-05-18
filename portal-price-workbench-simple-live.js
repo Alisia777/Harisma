@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_STATUS_EDIT1__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_MINMAXQUEUE1__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_MINMAXQUEUE1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_STATUS_EDIT1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_ZEROFIX1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_PRICEFIELDS1__ = true;
@@ -474,10 +475,40 @@
     return pickFreshestCorridor(fromAll, fromMarket);
   }
 
+  function queueMinMaxApiTask(articleKey, platform, values) {
+    var minPrice = moneyRound(values && values.floorPrice);
+    var maxPrice = moneyRound(values && values.capPrice);
+    if (!(minPrice > 0) && !(maxPrice > 0)) return null;
+    var note = String(values && values.note || "MIN/MAX из вкладки Цены").trim();
+    var queued = null;
+    if (typeof window.repricerQueueMinMaxTask === "function") {
+      queued = window.repricerQueueMinMaxTask({
+        articleKey: articleKey,
+        platform: platform,
+        min: minPrice,
+        max: maxPrice,
+        note: note,
+        requestedAt: new Date().toISOString()
+      });
+    } else if (typeof window.repricerQueueApiTask === "function") {
+      queued = window.repricerQueueApiTask({
+        type: "UPDATE_MIN_MAX",
+        action: "UPDATE_MIN_MAX",
+        articleKey: articleKey,
+        platform: platform,
+        field: "min_max",
+        value: [minPrice > 0 ? "MIN " + minPrice : "", maxPrice > 0 ? "MAX " + maxPrice : ""].filter(Boolean).join(" "),
+        note: note,
+        requestedAt: new Date().toISOString()
+      });
+    }
+    return queued;
+  }
+
   function upsertMinMaxOverride(articleKey, platform, values) {
     var targetArticle = String(articleKey || "").trim();
     var targetPlatform = repricerMarket(platform);
-    if (!targetArticle || (targetPlatform !== "wb" && targetPlatform !== "ozon")) return;
+    if (!targetArticle || (targetPlatform !== "wb" && targetPlatform !== "ozon")) return null;
 
     var portal = cloneValue(readPortalStorageState()) || {};
     var overrides = Array.isArray(portal.repricerOverrides) ? portal.repricerOverrides.slice() : [];
@@ -512,8 +543,14 @@
       return overrideHasMeaning(normalizeRepricerOverride(entry));
     });
 
+    var queuedTask = queueMinMaxApiTask(targetArticle, targetPlatform, values);
+    var root = rootState();
+    if (queuedTask && root && root.storage && Array.isArray(root.storage.repricerPendingApiTasks)) {
+      portal.repricerPendingApiTasks = root.storage.repricerPendingApiTasks.slice();
+    }
     portal.repricerOverrides = overrides;
     writePortalStorageState(portal);
+    return queuedTask;
   }
 
   function pickFreshestDisplay(current, candidate) {
@@ -2916,18 +2953,20 @@ function downloadPriceSummaryExcel(rows) {
           return;
         }
         var applied = 0;
+        var queued = 0;
         parsedRows.forEach(function (row) {
           if (row.minPrice == null && row.maxPrice == null && !row.note) return;
-          upsertMinMaxOverride(row.articleKey, row.platform, {
+          var task = upsertMinMaxOverride(row.articleKey, row.platform, {
             floorPrice: row.minPrice,
             capPrice: row.maxPrice,
             note: row.note
           });
           applied += 1;
+          if (task) queued += 1;
         });
         renderPriceWorkbench();
         if (state.selectedKey) renderSelectedModal();
-        window.alert("MIN/MAX загружены: " + applied + " строк.");
+        window.alert("MIN/MAX загружены: " + applied + " строк. API-задачи MIN/MAX: " + queued + ".");
       } catch (error) {
         console.error("[price-simple] min/max import", error);
         window.alert("Не удалось загрузить файл MIN/MAX.");

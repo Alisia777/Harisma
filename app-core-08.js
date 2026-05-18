@@ -2761,6 +2761,14 @@ function saveRepricerCorridor(form) {
   if (repricerHasCorridor(next)) {
     clearRepricerDeleteTombstone('repricerCorridorDeletes', articleKey, platform, true);
     state.storage.repricerCorridors.unshift(next);
+    repricerQueueMinMaxTask({
+      articleKey,
+      platform,
+      min: Math.max(numberOrZero(next.hardFloor), numberOrZero(next.b2bFloor)),
+      max: next.stretchCap,
+      note: 'Ручное сохранение коридора MIN/MAX',
+      requestedAt: next.updatedAt
+    });
   } else {
     markRepricerDeleteTombstone('repricerCorridorDeletes', articleKey, platform, true);
   }
@@ -2780,6 +2788,14 @@ function upsertRepricerOverride(next) {
   if (repricerHasOverride(next)) {
     clearRepricerDeleteTombstone('repricerOverrideDeletes', articleKey, platform, true);
     state.storage.repricerOverrides.unshift(next);
+    repricerQueueMinMaxTask({
+      articleKey,
+      platform,
+      min: next.floorPrice,
+      max: next.capPrice,
+      note: next.note || 'Ручное сохранение MIN/MAX',
+      requestedAt: next.updatedAt
+    });
   } else {
     markRepricerDeleteTombstone('repricerOverrideDeletes', articleKey, platform, true);
   }
@@ -3619,6 +3635,28 @@ function repricerQueueApiTask(task = {}) {
   return next;
 }
 
+function repricerQueueMinMaxTask(task = {}) {
+  const articleKey = String(task.articleKey || task.article || '').trim();
+  const platform = repricerQueuePlatform(task.platform);
+  const min = numberOrZero(task.min ?? task.minPrice ?? task.floorPrice ?? task.hardFloor);
+  const max = numberOrZero(task.max ?? task.maxPrice ?? task.capPrice ?? task.stretchCap);
+  if (!articleKey || (min <= 0 && max <= 0)) return null;
+  const value = [
+    min > 0 ? `MIN ${min}` : '',
+    max > 0 ? `MAX ${max}` : ''
+  ].filter(Boolean).join(' ');
+  return repricerQueueApiTask({
+    ...task,
+    type: 'UPDATE_MIN_MAX',
+    action: 'UPDATE_MIN_MAX',
+    articleKey,
+    platform,
+    field: 'min_max',
+    value,
+    note: task.note || 'Обновить рабочий MIN/MAX в источнике цен'
+  });
+}
+
 function repricerRecordRepairHistory(item = {}) {
   const articleKey = String(item.articleKey || item.article || '').trim();
   if (!articleKey) return null;
@@ -3884,7 +3922,12 @@ function repricerTaskResolvedByCurrentData(task, currentMap) {
   if (type === 'ADD_SKU') return Boolean(row);
   if (type === 'DELETE_SKU') return !row;
   if (type === 'UPDATE_COST') return Boolean(side && numberOrZero(side.costRub) > 0);
-  if (type === 'UPDATE_MIN_MAX') return Boolean(side && numberOrZero(side.effectiveFloor) > 0);
+  if (type === 'UPDATE_MIN_MAX') return Boolean(side && (
+    numberOrZero(side.effectiveFloor) > 0
+    || numberOrZero(side.hardFloor) > 0
+    || numberOrZero(side.capPrice) > 0
+    || numberOrZero(side.stretchCap) > 0
+  ));
   if (type === 'UPDATE_PRICE_SNAPSHOT') return Boolean(side && numberOrZero(side.currentPrice) > 0);
   if (type === 'UPDATE_SKU_PROFILE') return Boolean(row && (String(row.status || '').trim() || String(row.role || '').trim() || String(row.launchReady || '').trim()));
   return false;
@@ -4162,7 +4205,7 @@ function repricerApplyAuditImportRows(rows, fileName = '') {
         repricerUpsertImportedCorridor({ ...previous, articleKey, platform, hardFloor: min || previous.hardFloor || '', stretchCap: max || previous.stretchCap || '', updatedAt: now, updatedBy: state.team?.member?.name || 'Команда' });
         summary.corridors += 1;
         details.push(`коридор ${min ? `MIN ${fmt.money(min)}` : ''}${max ? ` MAX ${fmt.money(max)}` : ''}`.trim());
-        repricerQueueApiTask({ type: 'UPDATE_MIN_MAX', action: 'UPDATE_MIN_MAX', articleKey, platform, field: 'min_max', value: `${min ? `MIN ${min}` : ''}${max ? ` MAX ${max}` : ''}`.trim(), note, requestedAt: now });
+        repricerQueueMinMaxTask({ articleKey, platform, min, max, note, requestedAt: now });
         summary.pendingTasks += 1;
       }
       if (price && command === 'fix') {

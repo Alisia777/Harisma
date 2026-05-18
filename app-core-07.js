@@ -2241,13 +2241,18 @@ function renderLaunchNowPanel(item = {}) {
   const stage = summary.currentStage;
   const dueDays = summary.due ? diffFromTodayInDays(summary.due) : Number.POSITIVE_INFINITY;
   const dueTone = summary.due && Number.isFinite(dueDays) && dueDays < 0 ? 'danger' : summary.due && Number.isFinite(dueDays) && dueDays <= 3 ? 'warn' : 'info';
+  const meta = [
+    summary.owner ? `owner: ${summary.owner}` : 'owner не назначен',
+    summary.due ? `срок: ${summary.due}` : 'срок не указан',
+    stage ? stage.config.title : ''
+  ].filter(Boolean).join(' · ');
   return `
     <div class="launch-editor-panel launch-now-panel">
       <div class="launch-now-main">
         <div>
-          <span class="muted small">Сейчас важно</span>
+          <span class="muted small">Следующее действие</span>
           <strong>${escapeHtml(summary.action)}</strong>
-          <p>${escapeHtml(stage ? `${stage.config.title}: ${stage.status || stage.column.value}` : 'Этап не выбран')}</p>
+          <p>${escapeHtml(meta)}</p>
         </div>
         <div class="badge-stack">
           ${summary.readiness.ready ? badge('Можно запускать', 'ok') : badge(`Нельзя запускать: ${fmt.int(summary.readiness.missing.length)} пунктов`, 'warn')}
@@ -5913,6 +5918,50 @@ function launchTimelineMonthTone(rows = []) {
   return '';
 }
 
+function launchTimelineBucket(row = {}) {
+  const item = row.item || {};
+  if (!launchHasOwner(item)) return { key: 'no-owner', label: 'без owner', tone: 'warn', rank: 1 };
+  if (!launchHasLinkedSku(item)) return { key: 'no-sku', label: 'без SKU', tone: 'warn', rank: 2 };
+  if (!launchHasPresentation(item)) return { key: 'no-materials', label: 'без материалов', tone: 'warn', rank: 3 };
+  if (!launchHasGantt(item)) return { key: 'no-calendar', label: 'без календаря', tone: 'warn', rank: 4 };
+  if (row.days < 0 && !launchIsReady(item)) return { key: 'overdue', label: 'просрочено', tone: 'danger', rank: 0 };
+  if (launchIsReady(item)) return { key: 'ready', label: 'готовы', tone: 'ok', rank: 6 };
+  return { key: 'control', label: 'нужен контроль', tone: 'info', rank: 5 };
+}
+
+function launchTimelineMonthBuckets(rows = []) {
+  const order = ['overdue', 'no-owner', 'no-sku', 'no-materials', 'no-calendar', 'control', 'ready'];
+  const map = new Map();
+  rows.forEach((row) => {
+    const bucket = launchTimelineBucket(row);
+    const current = map.get(bucket.key) || { ...bucket, count: 0 };
+    current.count += 1;
+    map.set(bucket.key, current);
+  });
+  return order.map((key) => map.get(key)).filter(Boolean);
+}
+
+function renderLaunchTimelineProductRow(row = {}) {
+  const tone = launchTimelineTone(row);
+  const bucket = launchTimelineBucket(row);
+  const dateLabel = launchTimelineRowDateLabel(row.date);
+  const title = row.item?.name || row.item?.articleKey || row.label || 'Новинка';
+  const meta = [
+    row.owner || row.item?.owner || 'без owner',
+    row.status || bucket.label,
+    row.action || launchDirectorNextAction(row.item || {})
+  ].filter(Boolean).join(' · ');
+  return `
+    <button class="launch-month-product-row ${escapeHtml(tone)}" type="button" data-launch-edit="${escapeHtml(row.itemId || row.item?.id || '')}">
+      <span class="launch-month-plan-day">${escapeHtml(dateLabel)}</span>
+      <span class="launch-month-plan-title">
+        <strong>${escapeHtml(title)}</strong>
+        <em>${escapeHtml(meta)}</em>
+      </span>
+    </button>
+  `;
+}
+
 function renderLaunchTimelineChart(rows = []) {
   const launchRows = rows.filter((row) => row.kind === 'Запуск');
   const controlRows = rows
@@ -5941,9 +5990,14 @@ function renderLaunchTimelineChart(rows = []) {
       </div>
       <div class="launch-month-plan-grid">
         ${months.map((monthKey) => {
-          const monthRows = (byMonth.get(monthKey) || []).sort((left, right) => left.date.localeCompare(right.date));
-          const visible = monthRows.slice(0, 4);
-          const hidden = Math.max(0, monthRows.length - visible.length);
+          const monthRows = (byMonth.get(monthKey) || []).sort((left, right) => {
+            const bucketDelta = launchTimelineBucket(left).rank - launchTimelineBucket(right).rank;
+            return bucketDelta || left.date.localeCompare(right.date) || launchDirectorPriority(right.item || {}) - launchDirectorPriority(left.item || {});
+          });
+          const buckets = launchTimelineMonthBuckets(monthRows);
+          const visible = monthRows.slice(0, 3);
+          const hiddenRows = monthRows.slice(3, 11);
+          const extraHidden = Math.max(0, monthRows.length - visible.length - hiddenRows.length);
           const tone = launchTimelineMonthTone(monthRows);
           const ready = monthRows.filter((row) => launchTimelineTone(row) === 'ok').length;
           return `
@@ -5955,21 +6009,28 @@ function renderLaunchTimelineChart(rows = []) {
                 </div>
                 ${monthRows.length ? badge(`${fmt.int(ready)} готово`, ready === monthRows.length ? 'ok' : 'warn') : badge('план', '')}
               </div>
-              <div class="launch-month-plan-list">
-                ${visible.map((row) => {
-                  const tone = launchTimelineTone(row);
-                  return `
-                    <button class="launch-month-plan-item ${escapeHtml(tone)}" type="button" data-launch-edit="${escapeHtml(row.itemId || row.item?.id || '')}">
-                      <span class="launch-month-plan-day">${escapeHtml(launchTimelineRowDateLabel(row.date))}</span>
-                      <span class="launch-month-plan-title">
-                        <strong>${escapeHtml(row.item?.name || row.item?.articleKey || row.label || 'Новинка')}</strong>
-                        <em>${escapeHtml(row.owner || row.item?.owner || 'без owner')} · ${escapeHtml(row.status || 'без статуса')}</em>
-                      </span>
-                    </button>
-                  `;
-                }).join('') || '<div class="launch-month-plan-empty">Нет запусков в этом месяце</div>'}
-                ${hidden ? `<div class="launch-month-plan-more">+${fmt.int(hidden)} еще в этом месяце</div>` : ''}
-              </div>
+              ${monthRows.length ? `
+                <div class="launch-month-plan-buckets">
+                  ${buckets.map((bucket) => `
+                    <span class="launch-month-plan-bucket ${escapeHtml(bucket.tone)}">
+                      <strong>${fmt.int(bucket.count)}</strong>
+                      <em>${escapeHtml(bucket.label)}</em>
+                    </span>
+                  `).join('')}
+                </div>
+                <div class="launch-month-plan-products">
+                  ${visible.map(renderLaunchTimelineProductRow).join('')}
+                </div>
+                ${hiddenRows.length ? `
+                  <details class="launch-month-plan-detail">
+                    <summary>Показать еще ${fmt.int(hiddenRows.length + extraHidden)} товаров</summary>
+                    <div class="launch-month-plan-products">
+                      ${hiddenRows.map(renderLaunchTimelineProductRow).join('')}
+                      ${extraHidden ? `<div class="launch-month-plan-more">+${fmt.int(extraHidden)} товаров ниже в полном списке</div>` : ''}
+                    </div>
+                  </details>
+                ` : ''}
+              ` : '<div class="launch-month-plan-empty">Нет запусков в этом месяце</div>'}
             </div>
           `;
         }).join('')}

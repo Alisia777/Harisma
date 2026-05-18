@@ -670,6 +670,16 @@ function chooseFreshestPayload(snapshotKey, snapshotPayload, localPayload) {
   const snapshotReady = snapshotPayloadLooksUsable(snapshotKey, snapshotPayload) ? snapshotPayload : null;
   const localReady = localPayload !== null && localPayload !== undefined ? localPayload : null;
   if (snapshotReady && localReady) {
+    const publishFirstKeys = new Set(['prices', 'smart_price_workbench', 'smart_price_overlay', 'repricer']);
+    if (publishFirstKeys.has(snapshotKey)) {
+      const localFreshness = payloadFreshnessScore(snapshotKey, localReady);
+      const snapshotFreshness = payloadFreshnessScore(snapshotKey, snapshotReady);
+      if (localFreshness !== snapshotFreshness) {
+        return localFreshness > snapshotFreshness
+          ? { payload: localReady, source: 'local' }
+          : { payload: snapshotReady, source: 'snapshot' };
+      }
+    }
     const localDataScore = payloadDataFreshnessScore(snapshotKey, localReady);
     const snapshotDataScore = payloadDataFreshnessScore(snapshotKey, snapshotReady);
     if (localDataScore !== snapshotDataScore) {

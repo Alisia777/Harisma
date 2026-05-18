@@ -1256,7 +1256,6 @@ function resetPortalSnapshotState() {
 function getPortalSnapshotRequestConfig() {
   const cfg = currentConfig();
   if (!cfg.supabase?.url || !cfg.supabase?.anonKey || typeof fetch !== 'function') return null;
-  if (state.team?.mode === 'pending') return null;
   const brand = currentBrand();
   portalSnapshotState.brand = brand;
   const baseUrl = String(cfg.supabase.url || '').replace(/\/+$/, '');

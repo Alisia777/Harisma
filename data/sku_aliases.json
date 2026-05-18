@@ -1,6 +1,6 @@
 {
   "schema": "sku-api-aliases-v1",
-  "description": "Optional local mapping for API SKU values that must be attached to portal articleKey values. Prefer the Google Sheet tab dim_sku_aliases for team-managed mappings.",
+  "aliases": [],
   "columns": [
     "target_sku",
     "platform",
@@ -8,5 +8,5 @@
     "status",
     "note"
   ],
-  "aliases": []
+  "description": "Optional local mapping for API SKU values that must be attached to portal articleKey values. Prefer the Google Sheet tab dim_sku_aliases for team-managed mappings."
 }

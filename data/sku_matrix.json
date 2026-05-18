@@ -1,22 +1,22 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-05-16T09:25:25.206Z",
+  "generatedAt": "2026-05-18T07:21:52.645Z",
   "source": {
     "skus": 89,
     "aliases": 0,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-05-16T08:51:17.088Z"
+    "dataQualityGeneratedAt": "2026-05-18T07:21:51.727Z"
   },
   "summary": {
     "skuCount": 89,
     "activeSkuCount": 63,
     "aliasCount": 0,
     "ignoredApiSkuCount": 0,
-    "apiUnmappedCount": 231,
+    "apiUnmappedCount": 87,
     "duplicateRiskCount": 0,
     "duplicateRiskOverage": 0,
     "missingOwnerCount": 9,
-    "issueCount": 265,
+    "issueCount": 121,
     "problemStateCounts": {
       "ok": 80,
       "missing_owner": 9,
@@ -2020,8 +2020,8 @@
       "platform": "ozon",
       "api_sku": "sustalit_75ml",
       "name": "sustalit_75ml",
-      "revenue": 815905,
-      "units": 1491,
+      "revenue": 781805,
+      "units": 1428,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2029,8 +2029,8 @@
       "platform": "ozon",
       "api_sku": "kavmaz",
       "name": "kavmaz",
-      "revenue": 487634,
-      "units": 968,
+      "revenue": 476656,
+      "units": 945,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2038,8 +2038,8 @@
       "platform": "ozon",
       "api_sku": "uromax",
       "name": "uromax",
-      "revenue": 327419,
-      "units": 449,
+      "revenue": 320419,
+      "units": 442,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2047,35 +2047,17 @@
       "platform": "ozon",
       "api_sku": "activeprost",
       "name": "activeprost",
-      "revenue": 326892,
-      "units": 731,
+      "revenue": 313935,
+      "units": 701,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "sustalit_75ml",
-      "name": "sustalit_75ml",
-      "revenue": 316864,
-      "units": 382,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "kavmaz_60ml",
-      "name": "kavmaz_60ml",
-      "revenue": 308700,
-      "units": 274,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
     },
     {
       "platform": "ozon",
       "api_sku": "artoks",
       "name": "artoks",
-      "revenue": 305462,
-      "units": 445,
+      "revenue": 292797,
+      "units": 428,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2083,35 +2065,17 @@
       "platform": "ozon",
       "api_sku": "vetonus",
       "name": "vetonus",
-      "revenue": 292968,
-      "units": 993,
+      "revenue": 287509,
+      "units": 973,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "artoks",
-      "name": "artoks",
-      "revenue": 274211,
-      "units": 326,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
     },
     {
       "platform": "ozon",
       "api_sku": "trezvin",
       "name": "trezvin",
-      "revenue": 255691,
-      "units": 527,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "urofol",
-      "name": "Таблетки от недержания мочи от цистита, средства от недержания для мочеполовой системы Алтея, Урофол, 20 капсул",
-      "revenue": 249120,
-      "units": 276,
+      "revenue": 240337,
+      "units": 483,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2119,35 +2083,8 @@
       "platform": "ozon",
       "api_sku": "kardicin_1_1_1",
       "name": "kardicin_1_1_1",
-      "revenue": 240294,
-      "units": 165,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "allicil_gribok15ml",
-      "name": "allicil_gribok15ml",
-      "revenue": 237808,
-      "units": 416,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "micardinforte",
-      "name": "micardinforte",
-      "revenue": 236429,
-      "units": 494,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "sanatsin",
-      "name": "sanatsin",
-      "revenue": 234066,
-      "units": 400,
+      "revenue": 238540,
+      "units": 164,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2155,17 +2092,26 @@
       "platform": "ozon",
       "api_sku": "synergel_60ml",
       "name": "synergel_60ml",
-      "revenue": 227478,
-      "units": 340,
+      "revenue": 220413,
+      "units": 329,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "ya",
-      "api_sku": "urinofix",
-      "name": "Уринофикс комплекс от недержания мочи, средство от цистита Алтея,  20 капсул",
-      "revenue": 226968,
-      "units": 348,
+      "platform": "ozon",
+      "api_sku": "sanatsin",
+      "name": "sanatsin",
+      "revenue": 219058,
+      "units": 367,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "micardinforte",
+      "name": "micardinforte",
+      "revenue": 215653,
+      "units": 438,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2173,8 +2119,8 @@
       "platform": "ozon",
       "api_sku": "uromax_1_1",
       "name": "uromax_1_1",
-      "revenue": 225701,
-      "units": 212,
+      "revenue": 210536,
+      "units": 202,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2182,8 +2128,8 @@
       "platform": "ozon",
       "api_sku": "kavmaz_60ml",
       "name": "kavmaz_60ml",
-      "revenue": 212671,
-      "units": 273,
+      "revenue": 207395,
+      "units": 266,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2191,8 +2137,8 @@
       "platform": "ozon",
       "api_sku": "arterol_1_1_1",
       "name": "arterol_1_1_1",
-      "revenue": 211690,
-      "units": 160,
+      "revenue": 193606,
+      "units": 146,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2200,26 +2146,8 @@
       "platform": "ozon",
       "api_sku": "insulight",
       "name": "insulight",
-      "revenue": 199300,
-      "units": 242,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "micardin_1_1",
-      "name": "micardin_1_1",
-      "revenue": 197089,
-      "units": 161,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "uhovit",
-      "name": "uhovit",
-      "revenue": 195905,
-      "units": 158,
+      "revenue": 192244,
+      "units": 235,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2227,8 +2155,17 @@
       "platform": "ozon",
       "api_sku": "sanatsin_1_1",
       "name": "sanatsin_1_1",
-      "revenue": 190750,
+      "revenue": 190837,
       "units": 226,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "uhovit",
+      "name": "uhovit",
+      "revenue": 182771,
+      "units": 147,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2236,26 +2173,8 @@
       "platform": "ozon",
       "api_sku": "wbbiotrin_1_1_1",
       "name": "wbbiotrin_1_1_1",
-      "revenue": 178507,
-      "units": 115,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "urinofix",
-      "name": "urinofix",
-      "revenue": 178464,
-      "units": 231,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "artoks_1_1",
-      "name": "artoks_1_1",
-      "revenue": 173683,
-      "units": 145,
+      "revenue": 180147,
+      "units": 116,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2263,26 +2182,26 @@
       "platform": "ozon",
       "api_sku": "cardicin_BAD_60caps",
       "name": "cardicin_BAD_60caps",
-      "revenue": 170475,
+      "revenue": 170415,
       "units": 153,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "wb",
-      "api_sku": "synergel_60ml",
-      "name": "synergel_60ml",
-      "revenue": 158008,
-      "units": 173,
+      "platform": "ozon",
+      "api_sku": "artoks_1_1",
+      "name": "artoks_1_1",
+      "revenue": 161503,
+      "units": 135,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
+      "lastDate": "2026-05-16"
     },
     {
       "platform": "ozon",
       "api_sku": "yagodniy_spas",
       "name": "yagodniy_spas",
-      "revenue": 155935,
-      "units": 249,
+      "revenue": 158011,
+      "units": 252,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2290,8 +2209,8 @@
       "platform": "ozon",
       "api_sku": "gemorekt",
       "name": "gemorekt",
-      "revenue": 143829,
-      "units": 282,
+      "revenue": 140929,
+      "units": 278,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2299,17 +2218,8 @@
       "platform": "ozon",
       "api_sku": "trezax",
       "name": "trezax",
-      "revenue": 136049,
-      "units": 245,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "wbmicelix",
-      "name": "wbmicelix",
-      "revenue": 135757,
-      "units": 349,
+      "revenue": 134569,
+      "units": 243,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2317,80 +2227,35 @@
       "platform": "ozon",
       "api_sku": "micolan",
       "name": "micolan",
-      "revenue": 129087,
-      "units": 376,
+      "revenue": 127963,
+      "units": 374,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "wb",
-      "api_sku": "kavmaz",
-      "name": "kavmaz",
-      "revenue": 124089,
-      "units": 157,
+      "platform": "ozon",
+      "api_sku": "wbmicelix",
+      "name": "wbmicelix",
+      "revenue": 127900,
+      "units": 325,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
+      "lastDate": "2026-05-16"
     },
     {
       "platform": "ozon",
       "api_sku": "insulight_1_1",
       "name": "insulight_1_1",
-      "revenue": 121398,
-      "units": 105,
+      "revenue": 114521,
+      "units": 100,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "okospas",
-      "name": "Витамины для глаз и восстановления зрения, глазные капли с лютеином и черникой,  капли для глаз, Окоспас 10 мл",
-      "revenue": 118371,
-      "units": 150,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "mycoplax",
-      "name": "mycoplax",
-      "revenue": 114290,
-      "units": 152,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "uhovit",
-      "name": "Капсулы для улучшения слуха, усилитель слуха, средство для улучшения слуха, Алтея, Уховит, 20 капсул",
-      "revenue": 112152,
-      "units": 129,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "pantogor_100ml",
-      "name": "pantogor_100ml",
-      "revenue": 111407,
-      "units": 103,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "cardicin_bad_60caps",
-      "name": "cardicin_bad_60caps",
-      "revenue": 110755,
-      "units": 83,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
     },
     {
       "platform": "ozon",
       "api_sku": "pantogor_100ml",
       "name": "pantogor_100ml",
-      "revenue": 105558,
-      "units": 141,
+      "revenue": 101182,
+      "units": 137,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2398,8 +2263,8 @@
       "platform": "ozon",
       "api_sku": "kinzhal",
       "name": "kinzhal",
-      "revenue": 104162,
-      "units": 141,
+      "revenue": 100207,
+      "units": 136,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2407,80 +2272,8 @@
       "platform": "ozon",
       "api_sku": "urofol",
       "name": "urofol",
-      "revenue": 99896,
-      "units": 173,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "wbsinergel",
-      "name": "wbsinergel",
-      "revenue": 99707,
-      "units": 156,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "arterol_1_1",
-      "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Артерол, 10мл х 2",
-      "revenue": 94911,
-      "units": 87,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "vetonus_100ml",
-      "name": "vetonus_100ml",
-      "revenue": 89633,
-      "units": 198,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "wbmicardinforte",
-      "name": "wbmicardinforte",
-      "revenue": 88793,
-      "units": 137,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "ekzifol",
-      "name": "ekzifol",
-      "revenue": 88016,
-      "units": 135,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "fbs_okospas",
-      "name": "Витамины для глаз и восстановления зрения Окоспас, глазные капли с лютеином и черникой,  капли для глаз, 10 мл",
-      "revenue": 86376,
-      "units": 111,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "artoks_75ml",
-      "name": "artoks_75ml",
-      "revenue": 86372,
-      "units": 95,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "mycoplax",
-      "name": "mycoplax",
-      "revenue": 85381,
-      "units": 167,
+      "revenue": 94554,
+      "units": 165,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2488,26 +2281,35 @@
       "platform": "ozon",
       "api_sku": "kavmaz_40ml_1_1",
       "name": "kavmaz_40ml_1_1",
-      "revenue": 82449,
-      "units": 64,
+      "revenue": 86369,
+      "units": 67,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "wb",
-      "api_sku": "sanatsin",
-      "name": "sanatsin",
-      "revenue": 81691,
-      "units": 105,
+      "platform": "ozon",
+      "api_sku": "artoks_75ml",
+      "name": "artoks_75ml",
+      "revenue": 84498,
+      "units": 93,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
+      "lastDate": "2026-05-16"
     },
     {
       "platform": "ozon",
-      "api_sku": "wbsinergel",
-      "name": "wbsinergel",
-      "revenue": 80792,
-      "units": 165,
+      "api_sku": "vetonus_100ml",
+      "name": "vetonus_100ml",
+      "revenue": 83968,
+      "units": 183,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "mycoplax",
+      "name": "mycoplax",
+      "revenue": 78832,
+      "units": 154,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2515,8 +2317,8 @@
       "platform": "ozon",
       "api_sku": "kinzhal_1_1",
       "name": "kinzhal_1_1",
-      "revenue": 79830,
-      "units": 79,
+      "revenue": 76746,
+      "units": 76,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2524,26 +2326,8 @@
       "platform": "ozon",
       "api_sku": "yagodniy_spas_1_1",
       "name": "yagodniy_spas_1_1",
-      "revenue": 79433,
-      "units": 67,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "biotrin",
-      "name": "Крем мазь для суставов и связок Биотрин обезболивающий, гель от боли в суставах 30 мл",
-      "revenue": 76899,
-      "units": 147,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "trezvin",
-      "name": "Капсулы от алкогольной зависимости, детокс организма, пищевая добавка Трезвин,  средство от алкоголизма и запоя, 20 шт",
-      "revenue": 75612,
-      "units": 93,
+      "revenue": 76065,
+      "units": 63,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2557,29 +2341,20 @@
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "wb",
-      "api_sku": "sinergel_30ml_1_1",
-      "name": "sinergel_30ml_1_1",
-      "revenue": 71255,
-      "units": 50,
+      "platform": "ozon",
+      "api_sku": "wbsinergel",
+      "name": "wbsinergel",
+      "revenue": 75168,
+      "units": 157,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "sustalit",
-      "name": "sustalit",
-      "revenue": 71009,
-      "units": 102,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
+      "lastDate": "2026-05-16"
     },
     {
       "platform": "ozon",
       "api_sku": "oftalmol",
       "name": "oftalmol",
-      "revenue": 69301,
-      "units": 100,
+      "revenue": 66025,
+      "units": 97,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2587,89 +2362,8 @@
       "platform": "ozon",
       "api_sku": "dardrakona_1_1",
       "name": "dardrakona_1_1",
-      "revenue": 65752,
-      "units": 113,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "otivin",
-      "name": "Капли для ушей, усилитель слуха, ушные капли, средство для улучшения слуха, Алтея, Отивин, 10 мл",
-      "revenue": 65691,
-      "units": 114,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "kardicin",
-      "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Кардицин, 10мг",
-      "revenue": 65346,
-      "units": 108,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "oftalmol",
-      "name": "Витамины для глаз, лютеин комплекс витаминов для зрения, для улучшения и восстановления зрения, Офтальмол Oftalmol",
-      "revenue": 65073,
-      "units": 63,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "fbs_trezax",
-      "name": "Капли от алкогольной зависимости, детокс организма, средство от алкоголизма и запоя Алтея, Трезакс, 10 мл",
-      "revenue": 64458,
-      "units": 93,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "urolgan",
-      "name": "urolgan",
-      "revenue": 61558,
-      "units": 158,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "otivin",
-      "name": "otivin",
-      "revenue": 61482,
-      "units": 80,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "kavmaz_40ml_1_1",
-      "name": "kavmaz_40ml_1_1",
-      "revenue": 59797,
-      "units": 35,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-12"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "kardicin_1_1",
-      "name": "kardicin_1_1",
-      "revenue": 59013,
-      "units": 67,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "urinofix",
-      "name": "urinofix",
-      "revenue": 58224,
-      "units": 96,
+      "revenue": 62923,
+      "units": 110,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2677,35 +2371,26 @@
       "platform": "ozon",
       "api_sku": "chudogrib",
       "name": "chudogrib",
-      "revenue": 58110,
-      "units": 80,
+      "revenue": 59646,
+      "units": 82,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
     {
       "platform": "ozon",
-      "api_sku": "wbbiotrin_1_1",
-      "name": "wbbiotrin_1_1",
-      "revenue": 56824,
-      "units": 55,
+      "api_sku": "urolgan",
+      "name": "urolgan",
+      "revenue": 54976,
+      "units": 141,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "wb",
-      "api_sku": "uromax",
-      "name": "uromax",
-      "revenue": 55917,
-      "units": 79,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "trezax",
-      "name": "Капли от алкогольной зависимости, детокс организма, средство от алкоголизма и запоя Алтея, Трезакс, 10 мл",
-      "revenue": 53868,
-      "units": 75,
+      "platform": "ozon",
+      "api_sku": "urinofix",
+      "name": "urinofix",
+      "revenue": 53553,
+      "units": 90,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2720,30 +2405,30 @@
     },
     {
       "platform": "ozon",
-      "api_sku": "brutalax",
-      "name": "brutalax",
-      "revenue": 52094,
-      "units": 140,
+      "api_sku": "wbbiotrin_1_1",
+      "name": "wbbiotrin_1_1",
+      "revenue": 52028,
+      "units": 51,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "wb",
-      "api_sku": "micardin",
-      "name": "micardin",
-      "revenue": 50777,
-      "units": 76,
+      "platform": "ozon",
+      "api_sku": "kardicin_1_1",
+      "name": "kardicin_1_1",
+      "revenue": 51103,
+      "units": 58,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
+      "lastDate": "2026-05-16"
     },
     {
-      "platform": "wb",
-      "api_sku": "daoshen",
-      "name": "daoshen",
-      "revenue": 49262,
-      "units": 70,
+      "platform": "ozon",
+      "api_sku": "brutalax",
+      "name": "brutalax",
+      "revenue": 49164,
+      "units": 130,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
+      "lastDate": "2026-05-16"
     },
     {
       "platform": "ozon",
@@ -2758,8 +2443,8 @@
       "platform": "ozon",
       "api_sku": "sustalit",
       "name": "sustalit",
-      "revenue": 48125,
-      "units": 80,
+      "revenue": 46371,
+      "units": 77,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2767,107 +2452,17 @@
       "platform": "ozon",
       "api_sku": "sinergel_30ml_1_1",
       "name": "sinergel_30ml_1_1",
-      "revenue": 47128,
-      "units": 53,
+      "revenue": 43600,
+      "units": 49,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "antigiperton",
-      "name": "Антигипертон,  витамины для сердца и сосудов. средство от давления, чистка сосудов,  комплекс для сердца 10 шт",
-      "revenue": 46314,
-      "units": 54,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "kavmaz_40ml_1_1",
-      "name": "Кавказская мазь Натуральное лечебное средство для суставов и связок обезболивающее, крем Алтея, 40 + 40 мл",
-      "revenue": 46263,
-      "units": 51,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "micardin",
-      "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Микардин, 10 капсул",
-      "revenue": 45696,
-      "units": 78,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "uromax",
-      "name": "Таблетки от простатита для мужчин, средство для потенции, женьшень корень, Алтея, Уромакс, 20 капсул",
-      "revenue": 45003,
-      "units": 57,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "micardinforte",
-      "name": "Средство от давления, витамины для сердца и  сосудов, Алтея, Микардин Форте, 10 капсул",
-      "revenue": 44502,
-      "units": 66,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "arterol",
-      "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Артерол, 10мл",
-      "revenue": 43200,
-      "units": 51,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "artoks_75ml",
-      "name": "artoks_75ml",
-      "revenue": 43062,
-      "units": 34,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-15"
     },
     {
       "platform": "ozon",
       "api_sku": "varifit_1_1",
       "name": "varifit_1_1",
-      "revenue": 43035,
-      "units": 77,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "fbs_arterol",
-      "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Артерол, 10мл",
-      "revenue": 42822,
-      "units": 54,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "daoshen",
-      "name": "daoshen",
-      "revenue": 42520,
-      "units": 70,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "otivin",
-      "name": "otivin",
-      "revenue": 40275,
-      "units": 71,
+      "revenue": 41121,
+      "units": 74,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2875,71 +2470,17 @@
       "platform": "ozon",
       "api_sku": "wbgetsizegel",
       "name": "wbgetsizegel",
-      "revenue": 40228,
-      "units": 113,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "gemorekt",
-      "name": "gemorekt",
-      "revenue": 40062,
-      "units": 61,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "optitrin",
-      "name": "Витамины для глаз и зрения с лютеином и черникой, глазные капли Оптитрин, капли для глаз, 7 ампул",
-      "revenue": 39369,
-      "units": 66,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "daoshen_75ml",
-      "name": "daoshen_75ml",
-      "revenue": 39298,
-      "units": 38,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "micelix",
-      "name": "Комплекс Детокс для иммунитета, детокс для очищения печени и кишечника, грибной сбор Мицеликс, 10 саше",
-      "revenue": 38943,
-      "units": 60,
+      "revenue": 40794,
+      "units": 115,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
     {
       "platform": "ozon",
-      "api_sku": "psoral_50ml",
-      "name": "psoral_50ml",
-      "revenue": 38593,
-      "units": 61,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "wbgetsize",
-      "name": "wbgetsize",
-      "revenue": 38591,
-      "units": 66,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "arterol",
-      "name": "arterol",
-      "revenue": 37546,
-      "units": 60,
+      "api_sku": "daoshen",
+      "name": "daoshen",
+      "revenue": 40456,
+      "units": 67,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2953,29 +2494,38 @@
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "ya",
-      "api_sku": "okucin",
-      "name": "Витамины для глаз и восстановления зрения, капли для глаз для улучшения зрения, лютеин, Окуцин, Алтея, 10 мл",
-      "revenue": 37296,
-      "units": 36,
+      "platform": "ozon",
+      "api_sku": "wbgetsize",
+      "name": "wbgetsize",
+      "revenue": 37427,
+      "units": 64,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "dardrakona_1_1",
-      "name": "dardrakona_1_1",
-      "revenue": 35635,
-      "units": 33,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
+      "lastDate": "2026-05-16"
     },
     {
       "platform": "ozon",
-      "api_sku": "dardrakona",
-      "name": "dardrakona",
-      "revenue": 34824,
-      "units": 58,
+      "api_sku": "arterol",
+      "name": "arterol",
+      "revenue": 36947,
+      "units": 59,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "psoral_50ml",
+      "name": "psoral_50ml",
+      "revenue": 36767,
+      "units": 59,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "otivin",
+      "name": "otivin",
+      "revenue": 36525,
+      "units": 65,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -2983,17 +2533,8 @@
       "platform": "ozon",
       "api_sku": "ekzifol",
       "name": "ekzifol",
-      "revenue": 34778,
-      "units": 118,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "cardicin_BAD_60caps",
-      "name": "Таблетки от давления при гипертонии для сердца, чистка сосудов, Алтея, Кардицин, 60 капсул",
-      "revenue": 34557,
-      "units": 39,
+      "revenue": 36053,
+      "units": 123,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -3007,74 +2548,20 @@
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "wb",
-      "api_sku": "vetonus",
-      "name": "vetonus",
-      "revenue": 33678,
-      "units": 45,
+      "platform": "ozon",
+      "api_sku": "dardrakona",
+      "name": "dardrakona",
+      "revenue": 33734,
+      "units": 56,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
+      "lastDate": "2026-05-16"
     },
     {
       "platform": "ozon",
       "api_sku": "osteofast",
       "name": "osteofast",
-      "revenue": 33491,
-      "units": 69,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "chudofrukt",
-      "name": "Шипучие таблетки для похудения, детокс, жиросжигатель,  средство для похудения, Алтея, Чудо фрукт, 10 таблеток",
-      "revenue": 33150,
-      "units": 51,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "maska_dlya_lica_100m",
-      "name": "Продукция косметическая для ухода за кожей, в том числе в наборах: Маска для проблемной кожи лица м",
-      "revenue": 32799,
-      "units": 33,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "vetonus_100ml",
-      "name": "vetonus_100ml",
-      "revenue": 31344,
-      "units": 29,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "varifit",
-      "name": "varifit",
-      "revenue": 30146,
-      "units": 45,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "osteofast",
-      "name": "osteofast",
-      "revenue": 29136,
-      "units": 37,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "fbs_syvorotka_dlya_lica_30ml",
-      "name": "Сыворотка для лица с ниацинамидом от прыщей и черных точек, от  пигментации, Алтея, 30 мл",
-      "revenue": 28944,
-      "units": 30,
+      "revenue": 30222,
+      "units": 62,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -3082,71 +2569,17 @@
       "platform": "ozon",
       "api_sku": "daoshen_75ml",
       "name": "daoshen_75ml",
-      "revenue": 28296,
-      "units": 30,
+      "revenue": 29287,
+      "units": 31,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "gemorekt",
-      "name": "Крем гель от геморроя и анальных трещин, мазь лечебная, Геморект, 15 мл",
-      "revenue": 28050,
-      "units": 51,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "pirantox",
-      "name": "Антипаразитарный комплекс от глистов, очищение организма от паразитов, детокс, Алтея, Пирантокс, 10 капсул",
-      "revenue": 27924,
-      "units": 33,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "insulight",
-      "name": "Диабет витамины при сахарном диабете, Алтея, Инсулайт порошок",
-      "revenue": 27807,
-      "units": 33,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "sustalit_30ml_1_1",
-      "name": "sustalit_30ml_1_1",
-      "revenue": 27675,
-      "units": 21,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-13"
     },
     {
       "platform": "ozon",
       "api_sku": "varifit",
       "name": "varifit",
-      "revenue": 27044,
-      "units": 48,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "sustalit_75ml",
-      "name": "Мазь для суставов. Гель обезболивающий, Крем Алтея, Сусталит, Средство от боли в суставах 75 мл",
-      "revenue": 26946,
-      "units": 45,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "pantogor_100ml",
-      "name": "Крем от боли в суставах, Мазь для суставов и связок Пантогор, Гель обезболивающий, Средство для суставов 100 мл",
-      "revenue": 26136,
-      "units": 30,
+      "revenue": 26509,
+      "units": 47,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -3154,53 +2587,8 @@
       "platform": "ozon",
       "api_sku": "trezor",
       "name": "trezor",
-      "revenue": 25909,
-      "units": 42,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "sanatsin_1_1",
-      "name": "sanatsin_1_1",
-      "revenue": 25724,
-      "units": 10,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-14"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "allicil_gribok15ml",
-      "name": "Крем от грибка ногтей на ногах Аллицил, противогрибковое средство, гель для ухода за ногами,  мазь Алтея 15 мл",
-      "revenue": 24954,
-      "units": 48,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "psoral_50ml",
-      "name": "Мазь от псориаза и дерматита, крем от зуда, крем при псориазе Алтея, Псорал, 50 мл",
-      "revenue": 24219,
-      "units": 39,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "ekzifol",
-      "name": "Крем гель от грибка ногтей на ногах, противогрибковое средство для ногтей, мазь против грибка Алтея, Экзифол, 30 мл",
-      "revenue": 23937,
-      "units": 36,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "allicil_gribok15ml",
-      "name": "allicil_gribok15ml",
-      "revenue": 22904,
-      "units": 70,
+      "revenue": 25057,
+      "units": 40,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -3208,44 +2596,17 @@
       "platform": "ozon",
       "api_sku": "khvoinitsa",
       "name": "khvoinitsa",
-      "revenue": 22903,
-      "units": 49,
+      "revenue": 22433,
+      "units": 48,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "ya",
-      "api_sku": "enteroshol",
-      "name": "Таблетки от изжоги, для желудка и печени, средство для улучшения пищеварения, нормализация ЖКТ  Энтеросхол, 20 капсул",
-      "revenue": 22629,
-      "units": 27,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "retinait_krem_025_50",
-      "name": "Крем с липомосомальным ретинолом (0,1% - 3%), торговая марка Алтея",
-      "revenue": 22392,
-      "units": 19,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "retinait_syvorotka_1",
-      "name": "РЕТИНАЙТ сыворотка для лица 30 мл",
-      "revenue": 21801,
-      "units": 17,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "sanatsin_1_1",
-      "name": "Санацин антипаразитарный комплекс от паразитов и глистов. Капсулы от глистов, противопаразитарное средство / 20 капсул*2",
-      "revenue": 21555,
-      "units": 24,
+      "platform": "ozon",
+      "api_sku": "allicil_gribok15ml",
+      "name": "allicil_gribok15ml",
+      "revenue": 21614,
+      "units": 66,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -3253,107 +2614,8 @@
       "platform": "ozon",
       "api_sku": "psoral",
       "name": "psoral",
-      "revenue": 21378,
-      "units": 37,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "trezor",
-      "name": "Средство т алкогольной зависимости,  детокс организма, стики от алкоголизма и запоя Алтея, Трезор, 10 стиков",
-      "revenue": 21054,
-      "units": 27,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "artoks_75ml",
-      "name": "Крем мазь для суставов и связок Артокс, гель обезболивающий,  бальзам панты марала 75 мл",
-      "revenue": 20937,
-      "units": 30,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "synergel_60ml",
-      "name": "Мазь для суставов гель обезболивающий от боли в спине, крем глюкозамин Алтея, бальзам Синергель, 60 мл",
-      "revenue": 20568,
-      "units": 30,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "dardrakona_1_1",
-      "name": "Крем гель от варикоза усталости и отеков ног охлаждающий, мазь от тяжести в ногах  Дар Дракона, 30 мл",
-      "revenue": 20469,
-      "units": 27,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "daoshen_75ml",
-      "name": "Крем от грибка ногтей и стопы ног, противогрибковое средство Даошэн, мазь гель против грибка ногтей, 75 мл",
-      "revenue": 20340,
+      "revenue": 20553,
       "units": 36,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "wowglam",
-      "name": "Сыворотка для роста волос, никотиновая кислота, биотин, бетаин, кератин, масло жожоба, Алтея, WOW GLAM, 10 штук по 2 мл",
-      "revenue": 19956,
-      "units": 30,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "vetonus_1_1",
-      "name": "vetonus_1_1",
-      "revenue": 19823,
-      "units": 18,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "fbs_trezvin",
-      "name": "Капсулы от алкогольной зависимости Трезвин,  детокс организма,  средство от алкоголизма и запоя,  20 шт",
-      "revenue": 19467,
-      "units": 24,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "erobrut",
-      "name": "erobrut",
-      "revenue": 18707,
-      "units": 35,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "micolan",
-      "name": "Крем гель от грибка ногтей на ногах, противогрибковое средство с коллоидным серебром, мазь Алтея, Миколан, 15 мл",
-      "revenue": 18420,
-      "units": 33,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "sanatsin",
-      "name": "Антипаразитарный  комплекс от паразитов, глистов, противопаразитарное средство, Алтея, Санацин, 20 штук",
-      "revenue": 18021,
-      "units": 30,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -3376,65 +2638,11 @@
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "ya",
-      "api_sku": "chudogrib",
-      "name": "Антипаразитарный комплекс от глистов, очищение организма от паразитов, детокс, Алтея, Чудо гриб, чудогриб, 20 капсул",
-      "revenue": 17490,
-      "units": 21,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "dardrakona_75ml",
-      "name": "dardrakona_75ml",
-      "revenue": 17352,
-      "units": 22,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "wboptitrin",
-      "name": "Витамины для глаз, лютеин комплекс для зрения, капли для глаз, Оптитрин, 7 капсул",
-      "revenue": 17088,
-      "units": 21,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "fruitalica",
-      "name": "Таблетки для похудения, жиросжигатель,  подавление аппетита, детокс Алтея, Фруталика, 10 капсул",
-      "revenue": 16422,
-      "units": 33,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "psoral_50ml",
-      "name": "psoral_50ml",
-      "revenue": 16123,
-      "units": 19,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
       "platform": "ozon",
-      "api_sku": "wboptitrin",
-      "name": "wboptitrin",
-      "revenue": 16076,
-      "units": 42,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "kinzhal",
-      "name": "Возбудитель для мужчин, средство для потенции и эрекции, витамины для мужчины,Кинжал, 20 капсул",
-      "revenue": 15984,
-      "units": 24,
+      "api_sku": "erobrut",
+      "name": "erobrut",
+      "revenue": 16707,
+      "units": 31,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -3442,19 +2650,19 @@
       "platform": "ozon",
       "api_sku": "arterol_1_1",
       "name": "arterol_1_1",
-      "revenue": 15883,
-      "units": 18,
+      "revenue": 14998,
+      "units": 17,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "wb",
-      "api_sku": "uromax_1_1",
-      "name": "uromax_1_1",
-      "revenue": 14863,
-      "units": 8,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-15"
+      "platform": "ozon",
+      "api_sku": "wboptitrin",
+      "name": "wboptitrin",
+      "revenue": 14830,
+      "units": 38,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-16"
     },
     {
       "platform": "ozon",
@@ -3467,118 +2675,10 @@
     },
     {
       "platform": "ozon",
-      "api_sku": "okucin",
-      "name": "okucin",
-      "revenue": 14602,
-      "units": 32,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "dolgar",
-      "name": "dolgar",
-      "revenue": 13791,
-      "units": 20,
-      "firstDate": "2026-05-03",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "kardicin_1_1",
-      "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Кардицин, 2 шт",
-      "revenue": 13692,
-      "units": 12,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ozon",
       "api_sku": "papiderm",
       "name": "papiderm",
-      "revenue": 13289,
-      "units": 34,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "yagodniy_spas_1_1",
-      "name": "Антипаразитарный комплекс от глистов и паразитов, очищение организма , детокс, Алтея, Ягодный спас, 20 шипучих таблеток",
-      "revenue": 13104,
-      "units": 9,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "biotrin_60ml",
-      "name": "Мазь для суставов обезболивающая, крем панты морала, хондротин, гель глюкозамин, бальзам Биотрин, 60 мл",
-      "revenue": 13014,
-      "units": 21,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "erobrut",
-      "name": "Возбудитель для мужчин, таблетки для потенции, капсулы для секса, 18+, Эробрут,Алтея, 20 капсул",
-      "revenue": 12399,
-      "units": 18,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "wbgetsizegel",
-      "name": "Возбуждающая интимная  гель смазка лубрикант для увеличения члена на водной основе съедобная, Алтея, Getsize, 30 мл",
-      "revenue": 12375,
-      "units": 27,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "sinergel",
-      "name": "Крем мазь для суставов и связок Синергель обезболивающий, противовоспалительный гель от боли, от отеков в ногах 30 мл",
-      "revenue": 11952,
-      "units": 21,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "dardrakona_75ml",
-      "name": "Крем от варикоза, Гель от усталости и отеков ног,  Мазь от тяжести в ногах Алтея, Дар Дракона, 75 мл",
-      "revenue": 11814,
-      "units": 15,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "dardrakona",
-      "name": "dardrakona",
-      "revenue": 11764,
-      "units": 15,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "wbsinergel",
-      "name": "Мазь для суставов обезболивающая с глюкозамин крем от боли, гель Алтея, Синергель, 30 мл",
-      "revenue": 11508,
-      "units": 21,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "kavmaz_60ml",
-      "name": "Кавказская мазь Натуральное лечебное средство для суставов и связок, крем обезболивающий, гель Алтея, 60мл",
-      "revenue": 11493,
-      "units": 15,
+      "revenue": 14411,
+      "units": 37,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -3586,17 +2686,8 @@
       "platform": "ozon",
       "api_sku": "glukofol",
       "name": "glukofol",
-      "revenue": 11381,
-      "units": 31,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "getsize",
-      "name": "Эрекционная насадка для увеличения члена, мастурбатор, секс игрушки 18+",
-      "revenue": 11304,
-      "units": 24,
+      "revenue": 10951,
+      "units": 30,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -3604,16 +2695,7 @@
       "platform": "ozon",
       "api_sku": "fruitalica",
       "name": "fruitalica",
-      "revenue": 10573,
-      "units": 27,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "glikiron",
-      "name": "glikiron",
-      "revenue": 10420,
+      "revenue": 10634,
       "units": 27,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
@@ -3628,47 +2710,20 @@
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "wb",
-      "api_sku": "khvoinitsa_1_1",
-      "name": "khvoinitsa_1_1",
-      "revenue": 10010,
-      "units": 8,
-      "firstDate": "2026-05-04",
-      "lastDate": "2026-05-14"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "osteofast",
-      "name": "Мазь для суставов обезболивающая, панты марала и глюкозамин, Алтея, Остеофаст, Osteofast, 30 мл",
-      "revenue": 10002,
-      "units": 15,
+      "platform": "ozon",
+      "api_sku": "okucin",
+      "name": "okucin",
+      "revenue": 8648,
+      "units": 19,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "wb",
-      "api_sku": "micardin_1_1_1",
-      "name": "micardin_1_1_1",
-      "revenue": 9876,
-      "units": 5,
-      "firstDate": "2026-05-03",
-      "lastDate": "2026-05-06"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "yagodniy_spas",
-      "name": "Антипаразитарный комплекс от глистов и паразитов, очищение организма от гельминтов, детокс, Алтея, Ягодный спас, 10 таб.",
-      "revenue": 9864,
-      "units": 12,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "daoshen",
-      "name": "Крем от грибка ногтей на ногах, противогрибковое средство с коллоидным серебром, мазь против грибка Алтея,  Даошэн, 15 мл",
-      "revenue": 9690,
-      "units": 18,
+      "platform": "ozon",
+      "api_sku": "glikiron",
+      "name": "glikiron",
+      "revenue": 8575,
+      "units": 22,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -3676,152 +2731,8 @@
       "platform": "ozon",
       "api_sku": "dolgar",
       "name": "dolgar",
-      "revenue": 9674,
-      "units": 25,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "fbs_retiderm_50ml",
-      "name": "Крем для лица антивозрастной с ретинолом 0,5, сыворотка для лица от морщин и пигментных пятен, Ретидерм, 50 мл",
-      "revenue": 9666,
-      "units": 9,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "activeprost",
-      "name": "activeprost",
-      "revenue": 9591,
-      "units": 15,
-      "firstDate": "2026-05-04",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "wbbiotrin_1_1_1",
-      "name": "wbbiotrin_1_1_1",
-      "revenue": 9385,
-      "units": 6,
-      "firstDate": "2026-05-05",
-      "lastDate": "2026-05-11"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "mycoplax",
-      "name": "Крем от грибка ногтей на ногах, мазь против грибка, противогрибковое средство, гель Алтея, Микоплакс Mycoplax, 15 мл",
-      "revenue": 9330,
-      "units": 15,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "mycoplax_1_1",
-      "name": "mycoplax_1_1",
-      "revenue": 9007,
-      "units": 5,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "t34poten10caps",
-      "name": "Возбудитель для мужчин, таблетки для потенции и эрекции, капсулы для мужчин для секса, 18+, Т-34, 10 шт.",
-      "revenue": 8967,
-      "units": 15,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "sustalit",
-      "name": "Мазь для суставов, гель обезболивающий, крем от боли в суставах. Глюкозамин и хондроитин, Сусталит, 30 мл",
-      "revenue": 8934,
-      "units": 18,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "sinergel_30ml_1_1",
-      "name": "Мазь для суставов обезболивающая с глюкозамин и панты марала Алтея,  гель от боли, Синергель, 30 мл х 2",
-      "revenue": 7794,
-      "units": 9,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "urolgan",
-      "name": "urolgan",
-      "revenue": 7121,
-      "units": 15,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "wbvaritox",
-      "name": "wbvaritox",
-      "revenue": 6484,
-      "units": 9,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-14"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "wbvaritox",
-      "name": "Крем от варикоза усталости и отеков ног охлаждающий, гель тонизирующий, укрепление вен и сосудов, Varitox, 30 мл",
-      "revenue": 6300,
-      "units": 9,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "urolgan",
-      "name": "Средство от простатита для потенции, защита от простатита для мужчин Уролган",
-      "revenue": 6174,
-      "units": 9,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "wbgetsizegel",
-      "name": "wbgetsizegel",
-      "revenue": 6044,
-      "units": 13,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-14"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "kavmaz",
-      "name": "Кавказская мазь Натуральное средство для суставов и связок, крем обезболивающий гель, Алтея, 40мл",
-      "revenue": 5922,
-      "units": 9,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "brutalax",
-      "name": "Возбудитель для мужчин, средство для потенции и эрекции у мужчин, для секса, витамины для мужчин, Бруталакс, 18+ 20 шт.",
-      "revenue": 5616,
-      "units": 12,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "kardicin_1_1_1",
-      "name": "Средство от давления, витамины для сердца, чистка сосудов, Алтея, Кардицин, 3 шт",
-      "revenue": 5160,
-      "units": 3,
+      "revenue": 8392,
+      "units": 21,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
     },
@@ -3835,193 +2746,13 @@
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "ya",
-      "api_sku": "varifit_1_1",
-      "name": "Крем мазь от варикоза, конский каштан, Алтея, Варифит, 30 мл х 2",
-      "revenue": 5016,
-      "units": 6,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "fbs_yagodniy_spas",
-      "name": "Антипаразитарный комплекс от глистов и паразитов, очищение организма, от гельминтов, детокс, Алтея, Ягодный спас, 10 таб",
-      "revenue": 4860,
-      "units": 6,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "shampun_dlya_rosta_2",
-      "name": "Шампунь для роста волос, от выпадения волос профессиональный, Алтея, 250 мл",
-      "revenue": 4823,
-      "units": 7,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "retinait_krem_05_50m",
-      "name": "Ретинайт 0,5 экспресс-омоложение Anti-Age Липосомальный комплекс ретинола 0,5 + Ниацинамид 50 мл",
-      "revenue": 4533,
-      "units": 5,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "maslo_dlya_borodi_50",
-      "name": "Средство косметическое для ухода за волосами: масло для бороды, маркировка: Алтея.",
-      "revenue": 4532,
-      "units": 6,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
       "platform": "goldapple",
       "api_sku": "psoral_50ml",
       "name": "Крем специального назначения «Псоридонт» 50 мл",
       "revenue": 4464,
       "units": 4,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "vetonus_100ml",
-      "name": "Крем от варикоза и отеков ног, гель для ног тонизирующий, конский каштан Ветонус, 100 мл",
-      "revenue": 3960,
-      "units": 6,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "psoral",
-      "name": "psoral",
-      "revenue": 3890,
-      "units": 5,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-14"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "shampun_protiv_perho",
-      "name": "Шампунь от перхоти лечебный с климбазолом Алтея, 250мл",
-      "revenue": 3745,
-      "units": 5,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "dardrakona",
-      "name": "Крем от варикоза усталости и отеков ног, гель тонизирующий для ног,  Алтея, Дар Дракона, 30 мл",
-      "revenue": 3486,
-      "units": 6,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "erobrut",
-      "name": "erobrut",
-      "revenue": 3395,
-      "units": 5,
-      "firstDate": "2026-05-08",
-      "lastDate": "2026-05-12"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "vetonus",
-      "name": "Крем от варикоза усталости и отеков ног Ветонус натуральный, 30 мл",
-      "revenue": 3342,
-      "units": 6,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "wbpantogor_1_1",
-      "name": "wbpantogor_1_1",
-      "revenue": 2973,
-      "units": 2,
-      "firstDate": "2026-05-10",
-      "lastDate": "2026-05-13"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "papiderm",
-      "name": "Средство от бородавок, удаление папиллом, Алтея, Папидерм, 11 мл",
-      "revenue": 2916,
-      "units": 6,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "artoks_1_1",
-      "name": "artoks_1_1",
-      "revenue": 2807,
-      "units": 2,
-      "firstDate": "2026-05-04",
-      "lastDate": "2026-05-06"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "varifit_1_1",
-      "name": "varifit_1_1",
-      "revenue": 2629,
-      "units": 2,
-      "firstDate": "2026-05-11",
-      "lastDate": "2026-05-12"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "wbmicelix",
-      "name": "Комплекс Детокс для очищения печени и кишечника, для похудения, детокc для печени, Алтея, Мицеликс, 10 шт",
-      "revenue": 2619,
-      "units": 3,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "wbpantogor_1_1",
-      "name": "Мазь для суставов, крем от боли в суставах обезболивающая, панты марала бальзам Алтея, Пантогор, 2 штуки",
-      "revenue": 2388,
-      "units": 3,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-05"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "varifit",
-      "name": "Крем мазь от варикоза, конский каштан, гель от тяжести в ногах Алтея, Варифит, 30 мл",
-      "revenue": 1971,
-      "units": 3,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
-    },
-    {
-      "platform": "ya",
-      "api_sku": "psoral",
-      "name": "Мазь от псориаза и дерматита, крем от зуда, крем при псориазе , экземе, гель от псориаза, Алтея, Псорал, 30 мл",
-      "revenue": 1764,
-      "units": 3,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-08"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "tonik_dlya_lica_200m",
-      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек д",
-      "revenue": 1414,
-      "units": 2,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-16"
+      "lastDate": "2026-05-18"
     },
     {
       "platform": "ozon",
@@ -4033,15 +2764,6 @@
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "wb",
-      "api_sku": "khvoinitsa",
-      "name": "khvoinitsa",
-      "revenue": 1252,
-      "units": 2,
-      "firstDate": "2026-05-05",
-      "lastDate": "2026-05-08"
-    },
-    {
       "platform": "ozon",
       "api_sku": "4094166081",
       "name": "4094166081",
@@ -4051,19 +2773,10 @@
       "lastDate": "2026-05-05"
     },
     {
-      "platform": "wb",
-      "api_sku": "wbgetsize",
-      "name": "wbgetsize",
-      "revenue": 984,
-      "units": 1,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-02"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "nabor_penka_dlya_res",
-      "name": "Пенка для очищения ресниц, торговая марка Алтея.",
-      "revenue": 659,
+      "platform": "ozon",
+      "api_sku": "t34poten10caps",
+      "name": "t34poten10caps",
+      "revenue": 665,
       "units": 1,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-16"
@@ -4078,22 +2791,13 @@
       "lastDate": "2026-05-16"
     },
     {
-      "platform": "wb",
-      "api_sku": "otz_fbs6_curly_method_300ml",
-      "name": "otz_fbs6_curly_method_300ml",
-      "revenue": 367,
-      "units": 1,
-      "firstDate": "2026-05-06",
-      "lastDate": "2026-05-06"
-    },
-    {
       "platform": "ozon",
       "api_sku": "4143253129",
       "name": "4143253129",
       "revenue": 240,
       "units": 1,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
+      "lastDate": "2026-05-04"
     }
   ],
   "duplicateRisks": [],

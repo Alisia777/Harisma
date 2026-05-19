@@ -111,12 +111,61 @@ function firstNumber(...values) {
   return 0;
 }
 
+function firstFiniteOrNull(...values) {
+  for (const value of values) {
+    if (value === null || value === undefined || value === '') continue;
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
 function normalizeText(value) {
   return String(value || '').trim();
 }
 
 function normalizeKey(value) {
   return normalizeText(value).toLowerCase();
+}
+
+function normalizeSkuToken(value) {
+  return normalizeText(value)
+    .toLowerCase()
+    .replace(/[^a-z\u0430-\u044f\u04510-9]+/giu, '');
+}
+
+const OUT_OF_SCOPE_BRAND_TOKENS = [
+  'qeep',
+  'qip',
+  'harly',
+  'harley',
+  '\u043a\u0432\u0438\u043f',
+  '\u0445\u0430\u0440\u043b\u0438'
+].map((token) => normalizeSkuToken(token));
+
+function isOutOfScopeBrandText(value) {
+  const compact = normalizeSkuToken(value);
+  return Boolean(compact) && OUT_OF_SCOPE_BRAND_TOKENS.some((token) => token && compact.includes(token));
+}
+
+function isOutOfScopeBrandRow(row = {}) {
+  return [
+    row.brand,
+    row.brandName,
+    row.brand_name,
+    row.article,
+    row.articleKey,
+    row.sourceArticleKey,
+    row.sku,
+    row.offer_id,
+    row.offerId,
+    row.vendorCode,
+    row.name,
+    row.offerName,
+    row.productName,
+    row.campaignName,
+    row.campaign
+  ].some(isOutOfScopeBrandText);
 }
 
 function canonicalPlatformKey(value) {
@@ -130,6 +179,108 @@ function platformLabel(key) {
 
 function supportKeyForPlatform(key) {
   return PLATFORM_SUPPORT_KEYS[canonicalPlatformKey(key)] || canonicalPlatformKey(key);
+}
+
+function aliasPlatformMatches(value, platformKey) {
+  const raw = normalizeKey(value);
+  if (!raw || ['all', 'any', '*'].includes(raw)) return true;
+  return supportKeyForPlatform(canonicalPlatformKey(raw)) === supportKeyForPlatform(platformKey);
+}
+
+function skuAliasRows(payload = {}) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.aliases)) return payload.aliases;
+  if (payload.aliases && typeof payload.aliases === 'object') {
+    return Object.entries(payload.aliases).flatMap(([targetSku, aliases]) => {
+      if (Array.isArray(aliases)) return aliases.map((alias) => ({ targetSku, ...(typeof alias === 'object' ? alias : { alias }) }));
+      if (aliases && typeof aliases === 'object') return Object.entries(aliases).map(([platform, alias]) => ({ targetSku, platform, alias }));
+      return [{ targetSku, alias: aliases }];
+    });
+  }
+  return [];
+}
+
+function activeSkuAliasRows(payload = {}) {
+  return skuAliasRows(payload).filter((row) => {
+    const status = normalizeSkuToken(row?.status ?? row?.active ?? 'active');
+    return !['0', 'false', 'no', 'off', 'disabled', 'inactive', 'deleted', 'remove', 'ignore', 'skip'].includes(status);
+  });
+}
+
+function firstTextValue(row, names) {
+  for (const name of names) {
+    const value = normalizeText(row?.[name]);
+    if (value) return value;
+  }
+  return '';
+}
+
+function articleKeyForSku(sku, fallback = '') {
+  return normalizeText(sku?.articleKey || sku?.article || sku?.sku || sku?.vendorCode || fallback);
+}
+
+function articleNameForSku(sku, fallback = '') {
+  return normalizeText(sku?.name || sku?.title || fallback);
+}
+
+function skuLookupTokens(sku = {}, platformKey = '') {
+  const supportKey = supportKeyForPlatform(platformKey);
+  const platformBucket = sku?.[supportKey] || sku?.[canonicalPlatformKey(platformKey)] || {};
+  const values = [
+    sku.articleKey,
+    sku.article,
+    sku.sku,
+    sku.vendorCode,
+    sku.supplierArticle,
+    sku.nmId,
+    sku.nmID,
+    sku.barcode,
+    platformBucket.offerId,
+    platformBucket.offer_id,
+    platformBucket.vendorCode,
+    platformBucket.vendor_code,
+    platformBucket.sku
+  ];
+  if (Array.isArray(sku.aliases)) {
+    sku.aliases.forEach((alias) => {
+      if (typeof alias === 'string') {
+        values.push(alias);
+        return;
+      }
+      if (platformKey && !aliasPlatformMatches(alias?.platform || alias?.marketplace || alias?.sourcePlatform, platformKey)) return;
+      values.push(alias?.value, alias?.alias, alias?.sku, alias?.article, alias?.articleKey, alias?.offerId, alias?.offer_id, alias?.vendorCode);
+    });
+  }
+  Object.entries(sku.platformAliases || {}).forEach(([aliasPlatform, aliases]) => {
+    if (platformKey && !aliasPlatformMatches(aliasPlatform, platformKey)) return;
+    if (Array.isArray(aliases)) values.push(...aliases);
+    else values.push(aliases);
+  });
+  return values;
+}
+
+function buildSkuLookup(skus = [], skuAliases = {}) {
+  const lookup = new Map();
+  const addToken = (value, sku) => {
+    const token = normalizeSkuToken(value);
+    if (token && !lookup.has(token)) lookup.set(token, sku);
+  };
+
+  for (const sku of Array.isArray(skus) ? skus : []) {
+    skuLookupTokens(sku).forEach((value) => addToken(value, sku));
+    EXTRA_PLATFORM_ORDER.forEach((platformKey) => skuLookupTokens(sku, platformKey).forEach((value) => addToken(value, sku)));
+  }
+
+  for (const row of activeSkuAliasRows(skuAliases)) {
+    const platform = canonicalPlatformKey(firstTextValue(row, ['platform', 'marketplace', 'source_platform', 'sourcePlatform']));
+    if (platform && !EXTRA_PLATFORM_ORDER.includes(platform)) continue;
+    const targetToken = normalizeSkuToken(firstTextValue(row, ['target_sku', 'targetSku', 'target', 'portal_sku', 'article_key', 'articleKey', 'sku']));
+    const aliasValue = firstTextValue(row, ['api_sku', 'apiSku', 'api_article', 'alias', 'value', 'source_sku', 'marketplace_sku', 'external_sku', 'offer_id', 'offerId', 'vendor_code', 'vendorCode']);
+    const targetSku = lookup.get(targetToken);
+    if (targetSku) addToken(aliasValue, targetSku);
+  }
+
+  return lookup;
 }
 
 function monthKeyFromHeader(header) {
@@ -410,28 +561,37 @@ function platformMonthlyTotals(rawRows, asOfDate) {
   return result;
 }
 
-function buildArticleRows(rows, skus, asOfDate) {
-  const skuMap = new Map((Array.isArray(skus) ? skus : []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku]));
+function buildArticleRows(rows, skus, skuAliases, asOfDate) {
+  const skuLookup = buildSkuLookup(skus, skuAliases);
   const monthHeaders = Object.keys(rows[0] || {}).filter((header) => /^\d{2}\.\d{4}$/.test(String(header)));
   const grouped = new Map();
 
   for (const row of rows) {
     const platformKey = canonicalPlatformKey(row['Площадка'] || row.platform || row.marketplace);
     if (!EXTRA_PLATFORM_ORDER.includes(platformKey)) continue;
-    const articleKey = normalizeText(row['Артикул/SKU'] || row.article || row.sku || row.offer_id || row.vendorCode);
-    if (!articleKey) continue;
-    const name = normalizeText(row['Название'] || row.name || row.offerName || row.productName) || articleKey;
+    const sourceArticleKey = normalizeText(row['Артикул/SKU'] || row.article || row.sku || row.offer_id || row.vendorCode);
+    if (!sourceArticleKey) continue;
+    if (isOutOfScopeBrandRow(row) || isOutOfScopeBrandText(sourceArticleKey)) continue;
+    const sku = skuLookup.get(normalizeSkuToken(sourceArticleKey)) || null;
+    const articleKey = articleKeyForSku(sku, sourceArticleKey);
+    const name = articleNameForSku(sku, normalizeText(row['Название'] || row.name || row.offerName || row.productName) || articleKey);
     const metric = normalizeKey(row['Метрика'] || row.metric || row.metric_key);
-    const bucketKey = `${platformKey}|${normalizeKey(articleKey)}`;
+    const bucketKey = `${platformKey}|${normalizeSkuToken(articleKey)}`;
     const bucket = grouped.get(bucketKey) || {
       platformKey,
       articleKey,
       article: articleKey,
       name,
+      sku,
+      skuMatched: Boolean(sku),
+      sourceArticleKeys: new Set(),
       metrics: new Map(),
       source: 'SKU_месяцы'
     };
     bucket.name = bucket.name || name;
+    bucket.sku = bucket.sku || sku;
+    bucket.skuMatched = bucket.skuMatched || Boolean(sku);
+    bucket.sourceArticleKeys.add(sourceArticleKey);
     const series = bucket.metrics.get(metric) || new Map();
     for (const header of monthHeaders) {
       const month = monthKeyFromHeader(header);
@@ -440,7 +600,7 @@ function buildArticleRows(rows, skus, asOfDate) {
       if (!monthDate || monthDate > asOfDate) continue;
       const raw = row[header];
       if (raw === '' || raw === null || raw === undefined) continue;
-      series.set(month, numberOrZero(raw));
+      series.set(month, numberOrZero(series.get(month)) + numberOrZero(raw));
     }
     bucket.metrics.set(metric, series);
     grouped.set(bucketKey, bucket);
@@ -559,13 +719,17 @@ function buildArticleRows(rows, skus, asOfDate) {
       ? latestMonth.estimatedMargin / latestMonth.revenue
       : null;
     const ownerKey = ownerKeyMap[bucket.platformKey] || bucket.platformKey;
-    const sku = skuMap.get(normalizeKey(bucket.articleKey)) || null;
+    const sku = bucket.sku || null;
+    const sourceArticleKeys = Array.from(bucket.sourceArticleKeys || []);
 
     result.push({
       platformKey: bucket.platformKey,
       platformLabel: platformLabel(bucket.platformKey),
       articleKey: bucket.articleKey,
       article: bucket.article,
+      sourceArticleKey: sourceArticleKeys[0] || bucket.articleKey,
+      sourceArticleKeys,
+      skuMatched: Boolean(sku),
       name: bucket.name || bucket.articleKey,
       owner: sku?.ownersByPlatform?.[ownerKey] || sku?.owner?.byPlatform?.[ownerKey] || sku?.owner?.name || '',
       currentPrice: latestPrice,
@@ -616,6 +780,20 @@ function setPriorityMetric(bucket, metric, value) {
   }
 }
 
+function addPriorityMetric(bucket, metric, value) {
+  const target = adsMetricTarget(metric);
+  if (!target || !(value > 0)) return;
+  const priorityField = `${target.field}Priority`;
+  const currentPriority = numberOrZero(bucket[priorityField]);
+  if (target.priority > currentPriority) {
+    bucket[target.field] = 0;
+    bucket[priorityField] = target.priority;
+  }
+  if (target.priority === numberOrZero(bucket[priorityField])) {
+    bucket[target.field] += value;
+  }
+}
+
 function buildAdsItemSeries(rawRows, asOfDate) {
   const grouped = new Map();
   const totalGrouped = new Map();
@@ -659,6 +837,7 @@ function buildAdsItemSeries(rawRows, asOfDate) {
     if (level !== 'sku') continue;
     if (!articleKey) continue;
     skuMonthPresence.add(`${platformKey}|${month}`);
+    if (isOutOfScopeBrandRow(row)) continue;
     const name = normalizeText(row.name || row.offerName || row.productName || row.article) || articleKey;
     const bucketKey = `${platformKey}|${articleKey}|${month}`;
     const bucket = grouped.get(bucketKey) || {
@@ -700,6 +879,7 @@ function mergeItemSeries(baseSeries, extraSeries) {
   const result = [];
   const seen = new Set();
   for (const row of [...(Array.isArray(baseSeries) ? baseSeries : []), ...(Array.isArray(extraSeries) ? extraSeries : [])]) {
+    if (isOutOfScopeBrandRow(row)) continue;
     const date = normalizeText(row?.date || row?.label);
     const platformKey = normalizeKey(row?.platformKey || row?.platform || '');
     const articleKey = normalizeText(row?.articleKey || row?.article || row?.offer_id || row?.offerId || row?.sku || '');
@@ -742,6 +922,131 @@ function buildPlatformSeriesFromMonthly(monthlyTotals, asOfDate) {
     }
   }
   return series;
+}
+
+function latestPlatformDate(platformTrends, key) {
+  const platform = (Array.isArray(platformTrends?.platforms) ? platformTrends.platforms : [])
+    .find((item) => canonicalPlatformKey(item?.key || item?.platformKey) === canonicalPlatformKey(key));
+  let latest = '';
+  for (const point of Array.isArray(platform?.series) ? platform.series : []) {
+    const date = isoDate(point?.date || point?.label);
+    if (date && date > latest) latest = date;
+  }
+  return latest;
+}
+
+function completeMarketplaceDate(platformTrends) {
+  const coreDates = ['wb', 'ozon']
+    .map((key) => latestPlatformDate(platformTrends, key))
+    .filter(Boolean)
+    .sort();
+  if (coreDates.length >= 2) return coreDates[0];
+  return coreDates[0] || '';
+}
+
+function completeSeriesDate(platformSeriesMap) {
+  const coreDates = ['wb', 'ozon']
+    .map((key) => {
+      let latest = '';
+      for (const point of Array.isArray(platformSeriesMap.get(key)) ? platformSeriesMap.get(key) : []) {
+        const date = isoDate(point?.date || point?.label);
+        if (date && date > latest) latest = date;
+      }
+      return latest;
+    })
+    .filter(Boolean)
+    .sort();
+  if (coreDates.length >= 2) return coreDates[0];
+  return coreDates[0] || '';
+}
+
+function trimSeriesToDate(series, cutoffDate) {
+  const cutoff = isoDate(cutoffDate);
+  const list = (Array.isArray(series) ? series : [])
+    .map((point) => {
+      const date = isoDate(point?.date || point?.label);
+      return date ? { ...point, date, label: date } : null;
+    })
+    .filter((point) => point && (!cutoff || point.date <= cutoff))
+    .sort((left, right) => left.date.localeCompare(right.date));
+  const latestIndex = list.length - 1;
+  return list.map((point, index) => ({
+    ...point,
+    dayOffset: latestIndex - index
+  }));
+}
+
+function trimArticleDailyToDate(article, cutoffDate) {
+  const daily = trimSeriesToDate(article?.daily || [], cutoffDate);
+  const latestPoint = daily[daily.length - 1] || {};
+  const latestPrice = numberOrZero(latestPoint.price);
+  return {
+    ...article,
+    daily,
+    currentPrice: latestPrice || article?.currentPrice || 0,
+    currentClientPrice: latestPrice || article?.currentClientPrice || article?.currentPrice || 0,
+    currentFillPrice: latestPrice || article?.currentFillPrice || article?.currentPrice || 0
+  };
+}
+
+function trimExtraPlatformToDate(bucket, cutoffDate) {
+  if (!bucket || typeof bucket !== 'object') return bucket;
+  const cutoff = isoDate(cutoffDate);
+  const next = {
+    ...bucket,
+    articles: (Array.isArray(bucket.articles) ? bucket.articles : [])
+      .map((article) => trimArticleDailyToDate(article, cutoff))
+      .filter((article) => !Array.isArray(article.daily) || article.daily.length)
+  };
+  if (cutoff) {
+    if (next.asOfDate) next.asOfDate = cutoff;
+    if (next.to && isoDate(next.to) > cutoff) next.to = cutoff;
+  }
+  return next;
+}
+
+function articleRevenueTotal(article) {
+  return (Array.isArray(article?.monthly) ? article.monthly : [])
+    .reduce((sum, month) => sum + numberOrZero(month?.revenue), 0);
+}
+
+function articleDiagnostics(articles) {
+  const summary = {
+    articleCount: articles.length,
+    matchedArticleCount: 0,
+    unmatchedArticleCount: 0,
+    revenue: 0,
+    matchedRevenue: 0,
+    unmatchedRevenue: 0,
+    matchRate: 0,
+    revenueMatchRate: 0,
+    unmatchedSamples: []
+  };
+  for (const article of articles) {
+    const revenue = articleRevenueTotal(article);
+    summary.revenue += revenue;
+    if (article?.skuMatched) {
+      summary.matchedArticleCount += 1;
+      summary.matchedRevenue += revenue;
+      continue;
+    }
+    summary.unmatchedArticleCount += 1;
+    summary.unmatchedRevenue += revenue;
+    if (summary.unmatchedSamples.length < 30) {
+      summary.unmatchedSamples.push({
+        articleKey: article?.articleKey || '',
+        sourceArticleKey: article?.sourceArticleKey || '',
+        name: article?.name || '',
+        revenue: Number(revenue.toFixed(4))
+      });
+    }
+  }
+  summary.matchRate = summary.articleCount > 0 ? Number((summary.matchedArticleCount / summary.articleCount).toFixed(4)) : 0;
+  summary.revenueMatchRate = summary.revenue > 0 ? Number((summary.matchedRevenue / summary.revenue).toFixed(4)) : 0;
+  summary.revenue = Number(summary.revenue.toFixed(4));
+  summary.matchedRevenue = Number(summary.matchedRevenue.toFixed(4));
+  summary.unmatchedRevenue = Number(summary.unmatchedRevenue.toFixed(4));
+  return summary;
 }
 
 function buildAllSeries(platformSeriesMap) {
@@ -862,6 +1167,7 @@ function buildAdsAllSeries(platformSeriesMap) {
 
 function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, asOfDate) {
   const next = deepClone(basePlatformTrends || {});
+  const cutoffDate = iso(asOfDate);
   const existingPlatforms = Array.isArray(next.platforms) ? [...next.platforms] : [];
   const platformMap = new Map(existingPlatforms.map((platform) => [canonicalPlatformKey(platform?.key), deepClone(platform)]));
   const resultPlatforms = [];
@@ -875,10 +1181,11 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
     ...existingExtraMarketplace,
     generatedAt: new Date().toISOString(),
     workbook: DEFAULT_WORKBOOK,
-    asOfDate: iso(asOfDate),
-    platforms: {
-      ...existingExtraPlatforms
-    }
+    asOfDate: cutoffDate,
+    platforms: Object.fromEntries(Object.entries(existingExtraPlatforms).map(([key, bucket]) => [
+      key,
+      trimExtraPlatformToDate(bucket, cutoffDate)
+    ]))
   };
 
   const extraArticleMap = new Map();
@@ -893,17 +1200,20 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
     const series = buildPlatformSeriesFromMonthly(platformTotals.get(key) || new Map(), asOfDate);
     const existing = platformMap.get(key) || {};
     const articles = (extraArticleMap.get(key) || []).sort((left, right) => left.articleKey.localeCompare(right.articleKey));
+    const diagnostics = articleDiagnostics(articles);
     resultPlatforms.push({
       ...existing,
       key,
       label: platformLabel(key),
       series,
-      articles
+      articles,
+      diagnostics
     });
     extraMarketplace.platforms[key] = {
       key,
       label: platformLabel(key),
       supportKey: supportKeyForPlatform(key),
+      diagnostics,
       articles
     };
   }
@@ -911,7 +1221,10 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
   for (const platform of existingPlatforms) {
     const key = canonicalPlatformKey(platform?.key);
     if (EXTRA_PLATFORM_ORDER.includes(key) || key === 'all') continue;
-    resultPlatforms.push(platform);
+    const platformNext = key === 'ya'
+      ? { ...platform, series: trimSeriesToDate(platform.series, cutoffDate) }
+      : platform;
+    resultPlatforms.push(platformNext);
   }
 
   const allSeriesMap = new Map();
@@ -920,9 +1233,12 @@ function updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, a
   }
   for (const [key, platform] of platformMap.entries()) {
     if (EXTRA_PLATFORM_ORDER.includes(key) || key === 'all') continue;
-    allSeriesMap.set(key, Array.isArray(platform.series) ? platform.series : []);
+    const series = key === 'ya' ? trimSeriesToDate(platform.series, cutoffDate) : platform.series;
+    allSeriesMap.set(key, Array.isArray(series) ? series : []);
   }
-  const allSeries = buildAllSeries(allSeriesMap);
+  const allSeriesCutoff = completeSeriesDate(allSeriesMap);
+  const allSeries = buildAllSeries(allSeriesMap)
+    .filter((point) => !allSeriesCutoff || isoDate(point?.date || point?.label) <= allSeriesCutoff);
   const allExisting = platformMap.get('all') || {};
   const latestMarketplaceDate = allSeries.length ? allSeries[allSeries.length - 1].date : iso(asOfDate);
   resultPlatforms.push({
@@ -1029,8 +1345,114 @@ function resolveOptions(args) {
   };
 }
 
-function updateSmartPriceOverlay(baseOverlay, extraMarketplace, asOfDate) {
+function smartPriceOverlayKey(value) {
+  const canonical = canonicalPlatformKey(value);
+  return canonical === 'ym' ? 'ya' : canonical;
+}
+
+function smartPriceArticleTokens(row = {}) {
+  const tokens = new Set();
+  [
+    row.articleKey,
+    row.article,
+    row.sku,
+    row.item_code,
+    row.vendorCode,
+    row.offerId,
+    row.nmId,
+    row.name
+  ].forEach((value) => {
+    const exact = normalizeKey(value);
+    const compact = normalizeSkuToken(value);
+    if (exact) tokens.add(exact);
+    if (compact) tokens.add(compact);
+  });
+  return [...tokens];
+}
+
+function buildSmartPriceMarginLookup(priceSnapshot = {}) {
+  const lookup = new Map();
+  const platforms = priceSnapshot?.platforms || {};
+  for (const [rawKey, bucket] of Object.entries(platforms)) {
+    const platformKey = smartPriceOverlayKey(rawKey);
+    if (!['wb', 'ozon', 'ya'].includes(platformKey)) continue;
+    const rows = Array.isArray(bucket?.rows) ? bucket.rows : [];
+    for (const row of rows) {
+      for (const token of smartPriceArticleTokens(row)) {
+        lookup.set(`${platformKey}|${token}`, row);
+      }
+    }
+  }
+  return lookup;
+}
+
+function findSmartPriceMarginRow(lookup, platformKey, row) {
+  for (const token of smartPriceArticleTokens(row)) {
+    const match = lookup.get(`${platformKey}|${token}`);
+    if (match) return match;
+  }
+  return null;
+}
+
+function mergeSmartPriceMarginFields(row, priceRow) {
+  if (!priceRow) return row;
+  const next = { ...row };
+  let enriched = false;
+  [
+    'minPrice',
+    'hardMinPrice',
+    'maxPrice',
+    'basePrice',
+    'allowedMarginPct',
+    'avgMargin7dPct',
+    'currentTurnoverDays',
+    'workingZoneFrom',
+    'workingZoneTo'
+  ].forEach((field) => {
+    const value = firstFiniteOrNull(priceRow[field]);
+    if (value !== null) {
+      next[field] = value;
+      enriched = true;
+    } else if (next.marginSource === 'prices.json') {
+      delete next[field];
+    }
+  });
+
+  const marginPct = firstFiniteOrNull(priceRow.marginPct, priceRow.marginTotalPct, priceRow.avgMargin7dPct, priceRow.allowedMarginPct);
+  if (marginPct !== null) {
+    next.marginPct = marginPct;
+    next.marginTotalPct = marginPct;
+    if (firstFiniteOrNull(next.estimatedMarginPct) === null) next.estimatedMarginPct = marginPct;
+    enriched = true;
+  } else if (next.marginSource === 'prices.json') {
+    delete next.marginPct;
+    delete next.marginTotalPct;
+    delete next.estimatedMarginPct;
+  }
+  if (enriched) {
+    next.marginSource = 'prices.json';
+  } else if (next.marginSource === 'prices.json') {
+    delete next.marginSource;
+  }
+  return next;
+}
+
+function enrichSmartPriceOverlayWithPrices(baseOverlay, priceSnapshot = {}) {
   const next = deepClone(baseOverlay || {});
+  next.platforms = next.platforms && typeof next.platforms === 'object' ? next.platforms : {};
+  const marginLookup = buildSmartPriceMarginLookup(priceSnapshot);
+  for (const [rawKey, bucket] of Object.entries(next.platforms)) {
+    const platformKey = smartPriceOverlayKey(rawKey);
+    if (!['wb', 'ozon', 'ya'].includes(platformKey) || !Array.isArray(bucket?.rows)) continue;
+    bucket.rows = bucket.rows
+      .filter((row) => !isOutOfScopeBrandRow(row))
+      .map((row) => mergeSmartPriceMarginFields(row, findSmartPriceMarginRow(marginLookup, platformKey, row)));
+  }
+  return next;
+}
+
+function updateSmartPriceOverlay(baseOverlay, extraMarketplace, asOfDate, priceSnapshot = {}) {
+  const next = enrichSmartPriceOverlayWithPrices(baseOverlay, priceSnapshot);
   next.platforms = next.platforms && typeof next.platforms === 'object' ? next.platforms : {};
   const platforms = extraMarketplace?.platforms || {};
   for (const [key, bucket] of Object.entries(platforms)) {
@@ -1112,17 +1534,21 @@ async function main() {
   const basePlatformTrends = readJson(path.join(options.baseDataDir, 'platform_trends.json'), {});
   const baseAdsSummary = readJson(path.join(options.baseDataDir, 'ads_summary.json'), {});
   const baseSmartPriceOverlay = readJson(path.join(options.baseDataDir, 'smart_price_overlay.json'), { generatedAt: '', platforms: {} });
+  const priceSnapshot = readJson(path.join(options.baseDataDir, 'prices.json'), { platforms: {} });
   const skus = readJson(path.join(options.baseDataDir, 'skus.json'), []);
-  const referenceDate = parseDate(basePlatformTrends.latestMarketplaceDate || baseAdsSummary.asOfDate || new Date().toISOString().slice(0, 10))
+  const skuAliases = readJson(path.join(options.baseDataDir, 'sku_aliases.json'), { aliases: [] });
+  const referenceDate = parseDate(completeMarketplaceDate(basePlatformTrends) || basePlatformTrends.latestMarketplaceDate || baseAdsSummary.asOfDate || new Date().toISOString().slice(0, 10))
     || new Date();
 
   const platformTotals = platformMonthlyTotals(rawMonthlyRows, referenceDate);
-  const articleRows = buildArticleRows(skuMonthlyRows, skus, referenceDate);
+  const articleRows = buildArticleRows(skuMonthlyRows, skus, skuAliases, referenceDate);
 
   const platformTrends = updatePlatformTrends(basePlatformTrends, platformTotals, articleRows, referenceDate);
 
   const adsMonthlyTotals = new Map();
-  const addAdsRow = (platformKey, monthKeyValue, metric, value) => {
+  const skuAdsFieldPresence = new Set();
+  const totalAdsRows = [];
+  const addAdsRow = (platformKey, monthKeyValue, metric, value, aggregate = false) => {
     const platform = adsMonthlyTotals.get(platformKey) || new Map();
     const current = platform.get(monthKeyValue) || {
       monthKey: monthKeyValue,
@@ -1136,22 +1562,38 @@ async function main() {
       ordersPriority: 0,
       revenue: 0
     };
-    setPriorityMetric(current, metric, value);
+    if (aggregate) addPriorityMetric(current, metric, value);
+    else setPriorityMetric(current, metric, value);
     platform.set(monthKeyValue, current);
     adsMonthlyTotals.set(platformKey, platform);
   };
 
   for (const row of rawMonthlyRows) {
-    if (normalizeKey(row.level || row['level']) !== 'total') continue;
+    const level = normalizeKey(row.level || row['level']);
     const platformKey = canonicalPlatformKey(row.platform_key || row.platformKey || row.platform);
     const month = normalizeText(row.month || row['month']);
     const monthDate = parseDate(`${month}-01`);
     if (!month || !monthDate || monthDate > referenceDate) continue;
     const metric = normalizeKey(row.metric_key || row.metric || '');
+    const target = adsMetricTarget(metric);
+    if (!target) continue;
     const value = numberOrZero(row.value);
     const targetKey = platformKey === 'ym' ? 'ya' : platformKey;
     if (!ADS_PLATFORM_ORDER.includes(targetKey)) continue;
-    addAdsRow(targetKey, month, metric, value);
+    if (level === 'sku') {
+      if (isOutOfScopeBrandRow(row)) continue;
+      skuAdsFieldPresence.add(`${targetKey}|${month}|${target.field}`);
+      addAdsRow(targetKey, month, metric, value, true);
+      continue;
+    }
+    if (level === 'total') {
+      totalAdsRows.push({ targetKey, month, metric, value, field: target.field });
+    }
+  }
+
+  for (const row of totalAdsRows) {
+    if (skuAdsFieldPresence.has(`${row.targetKey}|${row.month}|${row.field}`)) continue;
+    addAdsRow(row.targetKey, row.month, row.metric, row.value);
   }
 
   const wbPlatformSeries = (platformTotals.get('wb') || []).length ? buildPlatformSeriesFromMonthly(platformTotals.get('wb'), referenceDate) : [];
@@ -1178,7 +1620,7 @@ async function main() {
     }, {})
   };
 
-  const smartPriceOverlay = updateSmartPriceOverlay(baseSmartPriceOverlay, platformTrends.extraMarketplace, referenceDate);
+  const smartPriceOverlay = updateSmartPriceOverlay(baseSmartPriceOverlay, platformTrends.extraMarketplace, referenceDate, priceSnapshot);
   const writtenFiles = writeOutputs(platformTrends, mergedAdsSummary, smartPriceOverlay, options);
   const summary = {
     dryRun: options.dryRun,

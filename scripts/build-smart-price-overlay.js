@@ -11,6 +11,33 @@ function normalizeArticleKey(value = '') {
     .replace(/^_+|_+$/g, '');
 }
 
+const OUT_OF_SCOPE_BRAND_TOKENS = [
+  'qeep',
+  'qip',
+  'harly',
+  'harley',
+  '\u043a\u0432\u0438\u043f',
+  '\u0445\u0430\u0440\u043b\u0438'
+].map((token) => normalizeArticleKey(token).replace(/[_-]+/g, ''));
+
+function isOutOfScopeBrandText(value) {
+  const compact = normalizeArticleKey(value).replace(/[_-]+/g, '');
+  return Boolean(compact) && OUT_OF_SCOPE_BRAND_TOKENS.some((token) => token && compact.includes(token));
+}
+
+function isOutOfScopeBrandRow(row = {}) {
+  return [
+    row.brand,
+    row.articleKey,
+    row.article,
+    row.sku,
+    row.vendorCode,
+    row.offerId,
+    row.nmId,
+    row.name
+  ].some(isOutOfScopeBrandText);
+}
+
 function parseSmartNumber(value) {
   if (value === null || value === undefined || value === '') return null;
   if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -58,6 +85,7 @@ function ensurePlatformBucket(payload, platform) {
 
 function upsertRow(bucket, nextRow, replaceExisting = true) {
   if (!nextRow?.articleKey) return;
+  if (isOutOfScopeBrandRow(nextRow)) return;
   const index = bucket.rows.findIndex((row) => row.articleKey === nextRow.articleKey);
   if (index === -1) {
     bucket.rows.push(nextRow);
@@ -66,6 +94,127 @@ function upsertRow(bucket, nextRow, replaceExisting = true) {
   bucket.rows[index] = replaceExisting
     ? { ...bucket.rows[index], ...nextRow }
     : { ...nextRow, ...bucket.rows[index] };
+}
+
+function readJsonIfExists(filePath, fallback = null) {
+  try {
+    if (!fs.existsSync(filePath)) return fallback;
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (_error) {
+    return fallback;
+  }
+}
+
+function firstFiniteOrNull(...values) {
+  for (const value of values) {
+    if (value === null || value === undefined || value === '') continue;
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
+function normalizePriceLookupToken(value = '') {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z\u0430-\u044f\u04510-9]+/giu, '');
+}
+
+function priceOverlayPlatformKey(value = '') {
+  const raw = String(value || '').trim().toLowerCase();
+  if (raw === 'ym' || raw === 'ya' || raw === 'yandex' || raw === 'yandex market') return 'ya';
+  return raw;
+}
+
+function priceArticleTokens(row = {}) {
+  const tokens = new Set();
+  [
+    row.articleKey,
+    row.article,
+    row.sku,
+    row.item_code,
+    row.vendorCode,
+    row.offerId,
+    row.nmId,
+    row.name
+  ].forEach((value) => {
+    const exact = String(value || '').trim().toLowerCase();
+    const compact = normalizePriceLookupToken(value);
+    if (exact) tokens.add(exact);
+    if (compact) tokens.add(compact);
+  });
+  return [...tokens];
+}
+
+function buildPriceMarginLookup(priceSnapshot = {}) {
+  const lookup = new Map();
+  const platforms = priceSnapshot?.platforms || {};
+  Object.entries(platforms).forEach(([rawKey, bucket]) => {
+    const platformKey = priceOverlayPlatformKey(rawKey);
+    if (!['wb', 'ozon', 'ya'].includes(platformKey)) return;
+    const rows = Array.isArray(bucket?.rows) ? bucket.rows : [];
+    rows.forEach((row) => {
+      priceArticleTokens(row).forEach((token) => lookup.set(`${platformKey}|${token}`, row));
+    });
+  });
+  return lookup;
+}
+
+function mergePriceMarginFields(row, priceRow) {
+  if (!priceRow) return row;
+  const next = { ...row };
+  let enriched = false;
+  [
+    'minPrice',
+    'hardMinPrice',
+    'maxPrice',
+    'basePrice',
+    'allowedMarginPct',
+    'avgMargin7dPct',
+    'currentTurnoverDays',
+    'workingZoneFrom',
+    'workingZoneTo'
+  ].forEach((field) => {
+    const value = firstFiniteOrNull(priceRow[field]);
+    if (value !== null) {
+      next[field] = value;
+      enriched = true;
+    } else if (next.marginSource === 'prices.json') {
+      delete next[field];
+    }
+  });
+  const marginPct = firstFiniteOrNull(priceRow.marginPct, priceRow.marginTotalPct, priceRow.avgMargin7dPct, priceRow.allowedMarginPct);
+  if (marginPct !== null) {
+    next.marginPct = marginPct;
+    next.marginTotalPct = marginPct;
+    if (firstFiniteOrNull(next.estimatedMarginPct) === null) next.estimatedMarginPct = marginPct;
+    enriched = true;
+  } else if (next.marginSource === 'prices.json') {
+    delete next.marginPct;
+    delete next.marginTotalPct;
+    delete next.estimatedMarginPct;
+  }
+  if (enriched) {
+    next.marginSource = 'prices.json';
+  } else if (next.marginSource === 'prices.json') {
+    delete next.marginSource;
+  }
+  return next;
+}
+
+function enrichOverlayWithPrices(payload, priceSnapshot = {}) {
+  const lookup = buildPriceMarginLookup(priceSnapshot);
+  Object.entries(payload.platforms || {}).forEach(([rawKey, bucket]) => {
+    const platformKey = priceOverlayPlatformKey(rawKey);
+    if (!['wb', 'ozon', 'ya'].includes(platformKey) || !Array.isArray(bucket?.rows)) return;
+    bucket.rows = bucket.rows.map((row) => {
+      const priceRow = priceArticleTokens(row)
+        .map((token) => lookup.get(`${platformKey}|${token}`))
+        .find(Boolean);
+      return mergePriceMarginFields(row, priceRow);
+    });
+  });
 }
 
 function computeClientDiscount(currentFillPrice, currentClientPrice, currentSppPct) {
@@ -187,12 +336,7 @@ function buildFactTimelinePoint(platform, row) {
     point.sppPct = 0;
   }
 
-  // Ozon source here is a daily sales fact from Google Sheets, not the LK "ordered" metric.
-  if (platform === 'ozon') {
-    if (Number.isFinite(soldQty)) point.deliveredUnits = soldQty;
-  } else if (Number.isFinite(soldQty)) {
-    point.ordersUnits = soldQty;
-  }
+  if (Number.isFinite(soldQty)) point.ordersUnits = soldQty;
   if (Number.isFinite(revenue)) point.revenue = revenue;
   return point;
 }
@@ -428,8 +572,13 @@ function buildSmartPriceOverlay(inputPath, outputPath = path.join('data', 'smart
     parseSvodnayaSheet(workbook, payload, valueDate);
   }
 
+  const priceSnapshot = readJsonIfExists(path.join(path.dirname(resolvedOutputPath), 'prices.json'))
+    || readJsonIfExists(path.resolve(process.cwd(), 'data', 'prices.json'), { platforms: {} });
+  enrichOverlayWithPrices(payload, priceSnapshot);
+
   const overlayDates = [];
   Object.values(payload.platforms).forEach((bucket) => {
+    bucket.rows = (bucket.rows || []).filter((row) => !isOutOfScopeBrandRow(row));
     (bucket.rows || []).forEach((row) => {
       if (row && row.valueDate) overlayDates.push(String(row.valueDate));
     });

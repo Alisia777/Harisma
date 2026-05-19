@@ -3969,7 +3969,26 @@ function ozonPlanFactDailyRows(model, context = {}) {
       sum.forecastDailyAds += numberOrZero(row.forecastDailyAds);
       return sum;
     }, { revenue: 0, gmv: 0, ads: 0, deltaToTargetSpend: 0, cumulativeAds: 0, forecastDailyAds: 0 });
+    const accountBreakdown = {};
+    for (const row of rows) {
+      for (const [key, source] of Object.entries(row.accountBreakdown || {})) {
+        if (!key || !source) continue;
+        const target = accountBreakdown[key] || {
+          revenue: 0,
+          gmv: 0,
+          ads: 0,
+          label: source.label || key
+        };
+        target.revenue += numberOrZero(source.revenue);
+        target.gmv += numberOrZero(source.gmv);
+        target.ads += numberOrZero(source.ads);
+        target.label = source.label || target.label;
+        accountBreakdown[key] = target;
+      }
+    }
     const finance = financeByDate.get(date) || {};
+    const primary = accountBreakdown.primary || {};
+    const smart = accountBreakdown.smart || {};
     const factGmv = numberOrZero(total.gmv);
     const factAds = numberOrZero(total.ads);
     cumulativeTargetGmv += dailyTargetGmv;
@@ -4001,6 +4020,14 @@ function ozonPlanFactDailyRows(model, context = {}) {
       dashboardCumulativeAds: total.cumulativeAds,
       forecastDailyAds: total.forecastDailyAds,
       drr: factGmv > 0 ? factAds / factGmv : null,
+      primaryRevenue: numberOrZero(primary.revenue),
+      primaryGmv: numberOrZero(primary.gmv),
+      primaryAds: numberOrZero(primary.ads),
+      smartRevenue: numberOrZero(smart.revenue),
+      smartGmv: numberOrZero(smart.gmv),
+      smartAds: numberOrZero(smart.ads),
+      smartDrrRevenue: numberOrZero(smart.revenue) > 0 ? numberOrZero(smart.ads) / numberOrZero(smart.revenue) : null,
+      smartDrrGmv: numberOrZero(smart.gmv) > 0 ? numberOrZero(smart.ads) / numberOrZero(smart.gmv) : null,
       smartShareAds: factAds * smartShare,
       smartShareGmv: factGmv * smartShare,
       financeAccrued: numberOrZero(finance.accruedNet),
@@ -4040,7 +4067,7 @@ function renderOzonIuPlanFactTable(model, context = {}) {
       <div class="section-subhead">
         <div>
           <h3>Форма ИУ Ozon: план-факт</h3>
-          <p class="small muted">Оборот и реклама: дневной план/факт, накопительный план/факт и отклонение к плану.</p>
+          <p class="small muted">GMV и реклама по двум кабинетам; выручка Smart вынесена отдельной сверочной колонкой.</p>
         </div>
         ${badge(rows.length ? `${fmt.int(rows.length)} дней` : 'нет строк', rows.length ? 'ok' : 'warn')}
       </div>
@@ -4049,11 +4076,12 @@ function renderOzonIuPlanFactTable(model, context = {}) {
           <thead>
             <tr>
               <th>Дата</th>
-              <th>Оборот план / день</th>
-              <th>Оборот факт / день</th>
-              <th>Оборот план накоп.</th>
-              <th>Оборот факт накоп.</th>
-              <th>Δ оборота накоп.</th>
+              <th>GMV план / день</th>
+              <th>GMV факт оба ЛК / день</th>
+              <th>Смарт выручка / день</th>
+              <th>GMV план накоп.</th>
+              <th>GMV факт накоп.</th>
+              <th>Δ GMV накоп.</th>
               <th>Реклама план / день</th>
               <th>Реклама факт / день</th>
               <th>Реклама план накоп.</th>
@@ -4068,7 +4096,8 @@ function renderOzonIuPlanFactTable(model, context = {}) {
               <tr>
                 <td><strong>${escapeHtml(row.period || row.date)}</strong><div class="muted small">${escapeHtml(row.date)}</div></td>
                 <td>${fmt.money(row.dailyTargetGmv)}</td>
-                <td>${fmt.money(row.factGmv)}</td>
+                <td>${fmt.money(row.factGmv)}${numberOrZero(row.primaryGmv) || numberOrZero(row.smartGmv) ? `<div class="muted small">Биг-Л ${fmt.money(row.primaryGmv)} · Смарт GMV ${fmt.money(row.smartGmv)}</div>` : ''}</td>
+                <td>${numberOrZero(row.smartRevenue) ? fmt.money(row.smartRevenue) : '—'}${numberOrZero(row.smartAds) ? `<div class="muted small">ИУ ${fmt.money(row.smartAds)}</div>` : ''}</td>
                 <td>${fmt.money(row.cumulativeTargetGmv)}</td>
                 <td>${fmt.money(row.cumulativeFactGmv)}</td>
                 <td>${badge(fmt.money(row.cumulativeGmvDelta), iuDrrToneForRevenueDelta(row.cumulativeGmvDelta))}<div class="muted small">${row.cumulativeGmvCompletion != null ? fmt.pct(row.cumulativeGmvCompletion) : '—'}</div></td>
@@ -4080,7 +4109,7 @@ function renderOzonIuPlanFactTable(model, context = {}) {
                 <td>${numberOrZero(row.forecastDailyAds) ? fmt.money(row.forecastDailyAds) : '—'}</td>
                 <td>${row.drr != null ? fmt.pct(row.drr) : '—'}</td>
               </tr>
-            `).join('') || '<tr><td colspan="13">Нет данных Ozon по выбранному месяцу.</td></tr>'}
+            `).join('') || '<tr><td colspan="14">Нет данных Ozon по выбранному месяцу.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -4672,6 +4701,14 @@ function iuDrrExportRows(rows, model) {
       spp_pct: sppRate ? Math.round(sppRate * 10000) / 100 : '',
       daily_target_gmv: row.dailyTargetGmv,
       fact_gmv_both_accounts: row.factGmv,
+      primary_revenue: row.primaryRevenue,
+      primary_gmv: row.primaryGmv,
+      primary_ads: row.primaryAds,
+      smart_revenue: row.smartRevenue,
+      smart_gmv: row.smartGmv,
+      smart_ads: row.smartAds,
+      smart_drr_revenue_pct: row.smartDrrRevenue != null ? Math.round(Number(row.smartDrrRevenue) * 10000) / 100 : '',
+      smart_drr_gmv_pct: row.smartDrrGmv != null ? Math.round(Number(row.smartDrrGmv) * 10000) / 100 : '',
       gmv_delta: row.planDeltaGmv,
       cumulative_target_gmv: row.cumulativeTargetGmv,
       cumulative_fact_gmv: row.cumulativeFactGmv,

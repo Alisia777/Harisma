@@ -1115,6 +1115,7 @@ function buildOzonPlanDashboardSummary(options) {
       contractKpis: {},
       accounts: [],
       daily: [],
+      dailyAccounts: [],
       monthly: [],
       totals: { revenue: 0, gmv: 0, ads: 0, targetDrr: DEFAULT_OZON_PLAN_PCT, deltaToTargetSpend: 0 },
       allocation: {
@@ -1168,6 +1169,7 @@ function buildOzonPlanDashboardSummary(options) {
       const revenue = moneyOrZero(row[offset + 1]);
       const gmv = moneyOrZero(row[offset + 2]);
       const ads = moneyOrZero(row[offset + 11]);
+      if (!revenue && !gmv && !ads) continue;
       const drr = moneyOrZero(row[offset + 12]);
       const targetDrr = moneyOrZero(row[offset + 13]) || DEFAULT_OZON_PLAN_PCT;
       const deltaToTargetSpend = moneyOrZero(row[offset + 14]);
@@ -1203,6 +1205,24 @@ function buildOzonPlanDashboardSummary(options) {
   const dailyTotals = [...new Set(dailyRows.map((row) => row.date).filter(Boolean))].sort().map((date) => {
     const dateRows = dailyRows.filter((row) => row.date === date);
     const targetDrr = dateRows.map((row) => numberOrZero(row.targetDrr)).find((value) => value > 0) || DEFAULT_OZON_PLAN_PCT;
+    const accountBreakdown = Object.fromEntries(dateRows.map((row) => {
+      const revenue = numberOrZero(row.revenue);
+      const gmv = numberOrZero(row.gmv);
+      const ads = numberOrZero(row.ads);
+      return [row.accountKey, {
+        key: row.accountKey,
+        label: row.accountLabel,
+        revenue: roundMoney(revenue),
+        gmv: roundMoney(gmv),
+        ads: roundMoney(ads),
+        drrRevenue: revenue > 0 ? roundRate(ads / revenue) : null,
+        drrGmv: gmv > 0 ? roundRate(ads / gmv) : null,
+        targetDrr: numberOrZero(row.targetDrr) || DEFAULT_OZON_PLAN_PCT,
+        deltaToTargetSpend: roundMoney(row.deltaToTargetSpend),
+        cumulativeAds: roundMoney(row.cumulativeAds),
+        forecastDailyAds: roundMoney(row.forecastDailyAds)
+      }];
+    }));
     const totalsForDate = dateRows.reduce((sum, row) => {
       sum.revenue += numberOrZero(row.revenue);
       sum.gmv += numberOrZero(row.gmv);
@@ -1224,7 +1244,8 @@ function buildOzonPlanDashboardSummary(options) {
       targetDrr,
       deltaToTargetSpend: roundMoney(totalsForDate.deltaToTargetSpend),
       cumulativeAds: roundMoney(totalsForDate.cumulativeAds),
-      forecastDailyAds: roundMoney(totalsForDate.forecastDailyAds)
+      forecastDailyAds: roundMoney(totalsForDate.forecastDailyAds),
+      accountBreakdown
     };
   });
   const accounts = [...accountMaps.values()].map((account) => ({
@@ -1323,8 +1344,9 @@ function buildOzonPlanDashboardSummary(options) {
     source: { planPath, planFile: path.basename(planPath) },
     monthlyTargets,
     contractKpis,
-    accounts: [],
+    accounts,
     daily: dailyTotals,
+    dailyAccounts: dailyRows,
     monthly,
     totals,
     allocation

@@ -11,6 +11,9 @@ const OZON_API_BASE_URL = 'https://api-seller.ozon.ru';
 const OZON_FINANCE_TRANSACTION_PAGE_SIZE = 1000;
 const OZON_FINANCE_FIELDS = [
   'salesGross',
+  'realizationRevenue',
+  'discountBonus',
+  'partnerPrograms',
   'returnsGross',
   'ozonReward',
   'deliveryServices',
@@ -21,8 +24,19 @@ const OZON_FINANCE_FIELDS = [
   'compensations',
   'accruedNet'
 ];
+const OZON_REALIZATION_FIELDS = [
+  'realizationRevenue',
+  'discountBonus',
+  'partnerPrograms',
+  'realizationSalesGross',
+  'realizationReturnRevenue',
+  'realizationReturnBonus'
+];
 const OZON_FINANCE_GROUP_LABELS = {
   salesGross: 'Продажи',
+  realizationRevenue: 'Ozon UI revenue',
+  discountBonus: 'Ozon discount points',
+  partnerPrograms: 'Ozon partner programs',
   returnsGross: 'Возвраты',
   ozonReward: 'Вознаграждение Ozon',
   deliveryServices: 'Услуги доставки',
@@ -125,6 +139,14 @@ function readJson(filePath, fallback) {
 function writeJson(filePath, payload) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf8');
+}
+
+function deepClone(value) {
+  try {
+    return JSON.parse(JSON.stringify(value));
+  } catch (_error) {
+    return value;
+  }
 }
 
 function numberOrZero(value) {
@@ -460,6 +482,12 @@ function emptyOzonFinanceBucket(key = '', label = '') {
     rowCount: 0,
     quantity: 0,
     salesGross: 0,
+    realizationRevenue: 0,
+    discountBonus: 0,
+    partnerPrograms: 0,
+    realizationSalesGross: 0,
+    realizationReturnRevenue: 0,
+    realizationReturnBonus: 0,
     returnsGross: 0,
     ozonReward: 0,
     deliveryServices: 0,
@@ -476,7 +504,7 @@ function addOzonFinanceParts(bucket, parts) {
   bucket.rowCount += 1;
   bucket.quantity += numberOrZero(parts.quantity);
   for (const key of OZON_FINANCE_FIELDS) {
-    bucket[key] += numberOrZero(parts[key]);
+    bucket[key] = numberOrZero(bucket[key]) + numberOrZero(parts[key]);
   }
   return bucket;
 }
@@ -1042,12 +1070,148 @@ async function buildOzonFinanceSummaryFromApi(options) {
   ]);
 }
 
+function emptyOzonRealizationBucket(date = '') {
+  return {
+    date,
+    rowCount: 0,
+    realizationRevenue: 0,
+    discountBonus: 0,
+    partnerPrograms: 0,
+    realizationSalesGross: 0,
+    realizationReturnRevenue: 0,
+    realizationReturnBonus: 0
+  };
+}
+
+function addOzonRealizationRow(bucket, row = {}) {
+  const delivery = row.delivery_commission || {};
+  const returnCommission = row.return_commission || {};
+  const hasDelivery = Boolean(row.delivery_commission);
+  const quantity = numberOrZero(delivery.quantity || 1) || 1;
+  const revenue = moneyOrZero(delivery.amount);
+  const discountBonus = moneyOrZero(delivery.bonus);
+  const partnerPrograms = moneyOrZero(delivery.stars)
+    + moneyOrZero(delivery.bank_coinvestment)
+    + moneyOrZero(delivery.pick_up_point_coinvestment);
+  bucket.rowCount += 1;
+  if (hasDelivery) {
+    bucket.realizationRevenue += revenue;
+    bucket.discountBonus += discountBonus;
+    bucket.partnerPrograms += partnerPrograms;
+    bucket.realizationSalesGross += revenue + discountBonus + partnerPrograms;
+    if (!(revenue + discountBonus + partnerPrograms > 0)) {
+      bucket.realizationSalesGross += moneyOrZero(row.seller_price_per_instance) * quantity;
+    }
+  }
+  bucket.realizationReturnRevenue += moneyOrZero(returnCommission.amount);
+  bucket.realizationReturnBonus += moneyOrZero(returnCommission.bonus);
+}
+
+function materializeOzonRealizationBucket(bucket = {}) {
+  return {
+    ...bucket,
+    rowCount: Math.round(numberOrZero(bucket.rowCount)),
+    realizationRevenue: roundMoney(bucket.realizationRevenue),
+    discountBonus: roundMoney(bucket.discountBonus),
+    partnerPrograms: roundMoney(bucket.partnerPrograms),
+    realizationSalesGross: roundMoney(bucket.realizationSalesGross),
+    realizationReturnRevenue: roundMoney(bucket.realizationReturnRevenue),
+    realizationReturnBonus: roundMoney(bucket.realizationReturnBonus)
+  };
+}
+
+function addOzonRealizationBucket(target, source = {}) {
+  target.rowCount += numberOrZero(source.rowCount);
+  for (const field of OZON_REALIZATION_FIELDS) {
+    target[field] = numberOrZero(target[field]) + numberOrZero(source[field]);
+  }
+  return target;
+}
+
+async function fetchOzonFinanceRealizationByDay(options) {
+  if (!options.ozonClientId || !options.ozonApiKey) {
+    return { status: 'missing', daily: [], totals: emptyOzonRealizationBucket('total'), warnings: ['Ozon API credentials are not set'] };
+  }
+  const dates = enumerateDates(options.ozonFinanceApiFrom, options.ozonFinanceApiTo);
+  const daily = [];
+  const totals = emptyOzonRealizationBucket('total');
+  const warnings = [];
+  for (const date of dates) {
+    const [year, month, day] = date.split('-').map((value) => Number(value));
+    try {
+      const payload = await ozonApiRequest(options, '/v1/finance/realization/by-day', { day, month, year });
+      const bucket = emptyOzonRealizationBucket(date);
+      for (const row of Array.isArray(payload.rows) ? payload.rows : []) {
+        addOzonRealizationRow(bucket, row);
+      }
+      const materialized = materializeOzonRealizationBucket(bucket);
+      daily.push(materialized);
+      addOzonRealizationBucket(totals, materialized);
+    } catch (error) {
+      warnings.push(`Ozon realization ${date}: ${error?.message || String(error)}`);
+    }
+  }
+  return {
+    status: warnings.length && !daily.length ? 'error' : 'ok',
+    endpoint: '/v1/finance/realization/by-day',
+    daily,
+    totals: materializeOzonRealizationBucket(totals),
+    warnings
+  };
+}
+
+function mergeOzonRealizationIntoFinance(summary, realization) {
+  if (!realization || !Array.isArray(realization.daily) || !realization.daily.length) return summary;
+  const next = deepClone(summary);
+  const byDate = new Map(realization.daily.map((row) => [row.date, row]));
+  const apply = (bucket = {}, source = {}) => ({
+    ...bucket,
+    realizationRevenue: roundMoney(source.realizationRevenue),
+    discountBonus: roundMoney(source.discountBonus),
+    partnerPrograms: roundMoney(source.partnerPrograms),
+    realizationSalesGross: roundMoney(source.realizationSalesGross),
+    realizationReturnRevenue: roundMoney(source.realizationReturnRevenue),
+    realizationReturnBonus: roundMoney(source.realizationReturnBonus)
+  });
+  next.daily = (Array.isArray(next.daily) ? next.daily : []).map((row) => {
+    const source = byDate.get(row.date);
+    return source ? apply(row, source) : row;
+  });
+  const monthTotals = new Map();
+  for (const row of realization.daily) {
+    const month = monthKey(row.date);
+    const bucket = monthTotals.get(month) || emptyOzonRealizationBucket(month);
+    addOzonRealizationBucket(bucket, row);
+    monthTotals.set(month, bucket);
+  }
+  next.months = (Array.isArray(next.months) ? next.months : []).map((row) => {
+    const source = monthTotals.get(row.monthKey);
+    return source ? apply(row, materializeOzonRealizationBucket(source)) : row;
+  });
+  next.totals = apply(next.totals || {}, realization.totals);
+  next.source = {
+    ...(next.source || {}),
+    realizationEndpoint: realization.endpoint,
+    realizationRows: numberOrZero(realization.totals?.rowCount)
+  };
+  next.diagnostics = {
+    ...(next.diagnostics || {}),
+    realizationWarnings: realization.warnings || []
+  };
+  return next;
+}
+
 async function buildOzonFinanceSummaryAuto(options) {
   const sourceMode = String(options.ozonFinanceSource || 'auto').toLowerCase();
+  const withRealization = async (summary) => {
+    if (summary?.source?.sourceMode !== 'api') return summary;
+    const realization = await fetchOzonFinanceRealizationByDay(options);
+    return mergeOzonRealizationIntoFinance(summary, realization);
+  };
   if (sourceMode === 'file') return buildOzonFinanceSummary(options);
   try {
     const apiSummary = await buildOzonFinanceSummaryFromApi(options);
-    if (apiSummary.status === 'ok' || sourceMode === 'api') return apiSummary;
+    if (apiSummary.status === 'ok' || sourceMode === 'api') return withRealization(apiSummary);
   } catch (error) {
     if (sourceMode === 'api') throw error;
     const fileSummary = buildOzonFinanceSummary(options);

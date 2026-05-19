@@ -3543,6 +3543,12 @@ function normalizeIuQuarterSummaryPayload(quarter = {}) {
 
 const OZON_FINANCE_UI_FIELDS = [
   'salesGross',
+  'realizationRevenue',
+  'discountBonus',
+  'partnerPrograms',
+  'realizationSalesGross',
+  'realizationReturnRevenue',
+  'realizationReturnBonus',
   'returnsGross',
   'ozonReward',
   'deliveryServices',
@@ -3956,8 +3962,10 @@ function ozonPlanFactDailyRows(model, context = {}) {
   const dailyTargetAds = dailyTargetGmv * targetDrr;
   let cumulativeTargetGmv = 0;
   let cumulativeFactGmv = 0;
+  let cumulativeSppBuyouts = 0;
   let cumulativeTargetAds = 0;
   let cumulativeFactAds = 0;
+  let cumulativeIuSppAds = 0;
   return dates.map((date) => {
     const rows = activePlanRows.filter((row) => row.date === date);
     const total = rows.reduce((sum, row) => {
@@ -3997,16 +4005,22 @@ function ozonPlanFactDailyRows(model, context = {}) {
     const smartAds = numberOrZero(smart.ads);
     const factGmv = smartRevenue || numberOrZero(total.revenue);
     const factAds = smartAds || numberOrZero(total.ads);
+    const financeAds = Math.abs(numberOrZero(finance.ads));
+    const sppBuyouts = numberOrZero(finance.realizationRevenue) || smartGmv || numberOrZero(total.gmv);
+    const iuSppAds = financeAds || factAds;
     cumulativeTargetGmv += dailyTargetGmv;
     cumulativeFactGmv += factGmv;
+    cumulativeSppBuyouts += sppBuyouts;
     cumulativeTargetAds += dailyTargetAds;
     cumulativeFactAds += factAds;
+    cumulativeIuSppAds += iuSppAds;
     return {
       date,
       period: `${String(date).slice(8, 10)}.${String(date).slice(5, 7)}`,
       dailyTargetGmv,
       factGmv,
       factRevenue: factGmv,
+      sppBuyouts,
       totalRevenue: numberOrZero(total.revenue),
       totalGmv: numberOrZero(total.gmv),
       totalAds: numberOrZero(total.ads),
@@ -4014,13 +4028,18 @@ function ozonPlanFactDailyRows(model, context = {}) {
       completion: dailyTargetGmv > 0 ? factGmv / dailyTargetGmv : null,
       cumulativeTargetGmv,
       cumulativeFactGmv,
+      cumulativeSppBuyouts,
       cumulativeGmvDelta: cumulativeFactGmv - cumulativeTargetGmv,
       cumulativeGmvCompletion: cumulativeTargetGmv > 0 ? cumulativeFactGmv / cumulativeTargetGmv : null,
       dailyTargetAds,
       adsBoth: factAds,
+      iuSppAds,
       adsDeltaDaily: factAds - dailyTargetAds,
       cumulativeTargetAds,
       cumulativeFactAds,
+      cumulativeIuSppAds,
+      iuSppPct: sppBuyouts > 0 ? iuSppAds / sppBuyouts : null,
+      cumulativeIuSppPct: cumulativeSppBuyouts > 0 ? cumulativeIuSppAds / cumulativeSppBuyouts : null,
       cumulativeAdsDelta: cumulativeFactAds - cumulativeTargetAds,
       cumulativeAdsCompletion: cumulativeTargetAds > 0 ? cumulativeFactAds / cumulativeTargetAds : null,
       targetAdsByFact: factGmv * targetDrr,
@@ -4041,6 +4060,9 @@ function ozonPlanFactDailyRows(model, context = {}) {
       smartShareGmv: smartGmv || factGmv * smartShare,
       financeAccrued: numberOrZero(finance.accruedNet),
       financeSales: numberOrZero(finance.salesGross),
+      financeRealizationRevenue: numberOrZero(finance.realizationRevenue),
+      financeDiscountBonus: numberOrZero(finance.discountBonus),
+      financePartnerPrograms: numberOrZero(finance.partnerPrograms),
       financeAds: Math.abs(numberOrZero(finance.ads))
     };
   });
@@ -4070,7 +4092,7 @@ function renderOzonIuAccountCards(model, context = {}) {
 }
 
 function renderOzonIuPlanFactTable(model, context = {}) {
-  const rows = ozonPlanFactDailyRows(model, context);
+  const rows = Array.isArray(context.rows) ? context.rows : ozonPlanFactDailyRows(model, context);
   return `
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
@@ -4087,13 +4109,16 @@ function renderOzonIuPlanFactTable(model, context = {}) {
               <th>Дата</th>
               <th>Smart план / день</th>
               <th>Smart факт / день</th>
+              <th>Выкупы с СПП / день</th>
               <th>Smart план накоп.</th>
               <th>Smart факт накоп.</th>
+              <th>Выкупы с СПП накоп.</th>
               <th>Δ Smart накоп.</th>
               <th>Smart реклама план / день</th>
               <th>Smart реклама факт / день</th>
               <th>Smart реклама план накоп.</th>
               <th>Smart реклама факт накоп.</th>
+              <th>ИУ СПП накоп.</th>
               <th>Δ Smart рекламы накоп.</th>
               <th>Реком. Smart реклама / день</th>
               <th>ДРР факт</th>
@@ -4105,18 +4130,21 @@ function renderOzonIuPlanFactTable(model, context = {}) {
                 <td><strong>${escapeHtml(row.period || row.date)}</strong><div class="muted small">${escapeHtml(row.date)}</div></td>
                 <td>${fmt.money(row.dailyTargetGmv)}</td>
                 <td>${fmt.money(row.factGmv)}</td>
+                <td>${fmt.money(row.sppBuyouts)}</td>
                 <td>${fmt.money(row.cumulativeTargetGmv)}</td>
                 <td>${fmt.money(row.cumulativeFactGmv)}</td>
+                <td>${fmt.money(row.cumulativeSppBuyouts)}</td>
                 <td>${badge(fmt.money(row.cumulativeGmvDelta), iuDrrToneForRevenueDelta(row.cumulativeGmvDelta))}<div class="muted small">${row.cumulativeGmvCompletion != null ? fmt.pct(row.cumulativeGmvCompletion) : '—'}</div></td>
                 <td>${fmt.money(row.dailyTargetAds)}</td>
                 <td>${fmt.money(row.adsBoth)}</td>
                 <td>${fmt.money(row.cumulativeTargetAds)}</td>
                 <td>${fmt.money(row.cumulativeFactAds)}</td>
+                <td>${row.cumulativeIuSppPct != null ? fmt.pct(row.cumulativeIuSppPct) : '—'}</td>
                 <td>${badge(fmt.money(row.cumulativeAdsDelta), iuDrrToneForDelta(row.cumulativeAdsDelta))}<div class="muted small">${row.cumulativeAdsCompletion != null ? fmt.pct(row.cumulativeAdsCompletion) : '—'}</div></td>
                 <td>${numberOrZero(row.forecastDailyAds) ? fmt.money(row.forecastDailyAds) : '—'}</td>
                 <td>${row.drr != null ? fmt.pct(row.drr) : '—'}</td>
               </tr>
-            `).join('') || '<tr><td colspan="13">Нет данных Ozon по выбранному месяцу.</td></tr>'}
+            `).join('') || '<tr><td colspan="16">Нет данных Ozon по выбранному месяцу.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -5262,10 +5290,20 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   `;
   void ozonFinanceSourceLabel;
   const ozonIuAccountCardsHtml = renderOzonIuAccountCards(model, { smartShare: ozonSmartShare, targetDrr: ozonTargetDrr });
-  const ozonPlanFactTableHtml = renderOzonIuPlanFactTable(model, {
+  const ozonPlanFactRows = ozonPlanFactDailyRows(model, {
     monthTargetGmv: ozonMonthTargetGmv,
     smartShare: ozonSmartShare,
     targetDrr: ozonTargetDrr
+  });
+  const ozonPlanFactLastRow = ozonPlanFactRows[ozonPlanFactRows.length - 1] || {};
+  const ozonSppBuyoutsToDate = numberOrZero(ozonPlanFactLastRow.cumulativeSppBuyouts);
+  const ozonIuSppAdsToDate = numberOrZero(ozonPlanFactLastRow.cumulativeIuSppAds);
+  const ozonIuSppToDate = ozonSppBuyoutsToDate > 0 ? ozonIuSppAdsToDate / ozonSppBuyoutsToDate : null;
+  const ozonPlanFactTableHtml = renderOzonIuPlanFactTable(model, {
+    monthTargetGmv: ozonMonthTargetGmv,
+    smartShare: ozonSmartShare,
+    targetDrr: ozonTargetDrr,
+    rows: ozonPlanFactRows
   });
   const formatOzonSummaryValue = (row, value) => {
     if (value === null || value === undefined || value === '') return '—';
@@ -5297,6 +5335,17 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       completion: ozonAdsCompletionToDate,
       delta: ozonAdsDeltaToDate,
       tone: iuDrrToneForDelta(ozonAdsDeltaToDate)
+    },
+    {
+      label: 'ИУ СПП Ozon',
+      detail: `реклама ${fmt.money(ozonIuSppAdsToDate)} / выкупы с СПП ${fmt.money(ozonSppBuyoutsToDate)}`,
+      type: 'rate',
+      monthPlan: ozonAdRevKpiRate,
+      plan: ozonAdRevKpiRate,
+      fact: ozonIuSppToDate,
+      completionLabel: ozonIuSppToDate == null ? '—' : (ozonIuSppToDate <= ozonAdRevKpiRate ? 'в норме' : 'выше цели'),
+      delta: ozonIuSppToDate == null ? null : ozonIuSppToDate - ozonAdRevKpiRate,
+      tone: ozonIuSppToDate == null ? 'info' : (ozonIuSppToDate <= ozonAdRevKpiRate ? 'ok' : 'warn')
     },
     {
       label: 'ДРР / AdRev KPI',

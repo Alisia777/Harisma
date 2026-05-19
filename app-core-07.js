@@ -4051,9 +4051,6 @@ function renderOzonIuPlanFactTable(model, context = {}) {
               <th>Реклама факт накоп.</th>
               <th>Δ рекламы накоп.</th>
               <th>ДРР факт</th>
-              <th>Smart 40%</th>
-              <th>Начислено Finance</th>
-              <th>Реклама Finance</th>
             </tr>
           </thead>
           <tbody>
@@ -4071,11 +4068,8 @@ function renderOzonIuPlanFactTable(model, context = {}) {
                 <td>${fmt.money(row.cumulativeFactAds)}</td>
                 <td>${badge(fmt.money(row.cumulativeAdsDelta), iuDrrToneForDelta(row.cumulativeAdsDelta))}<div class="muted small">${row.cumulativeAdsCompletion != null ? fmt.pct(row.cumulativeAdsCompletion) : '—'}</div></td>
                 <td>${row.drr != null ? fmt.pct(row.drr) : '—'}</td>
-                <td>${fmt.money(row.smartShareAds)}</td>
-                <td>${fmt.money(row.financeAccrued)}</td>
-                <td>${fmt.money(row.financeAds)}</td>
               </tr>
-            `).join('') || '<tr><td colspan="15">Нет данных Ozon по выбранному месяцу.</td></tr>'}
+            `).join('') || '<tr><td colspan="12">Нет данных Ozon по выбранному месяцу.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -4675,13 +4669,7 @@ function iuDrrExportRows(rows, model) {
       cumulative_ads_completion_pct: row.cumulativeAdsCompletion != null ? Math.round(Number(row.cumulativeAdsCompletion) * 10000) / 100 : '',
       fact_drr_pct: row.drr != null ? Math.round(Number(row.drr) * 10000) / 100 : '',
       target_ads_by_fact: row.targetAdsByFact,
-      ads_reserve: row.adsReserve,
-      smart_share_pct: Math.round(smartShare * 10000) / 100,
-      smart_share_ads: row.smartShareAds,
-      smart_share_gmv: row.smartShareGmv,
-      finance_accrued: row.financeAccrued,
-      finance_sales: row.financeSales,
-      finance_ads: row.financeAds
+      ads_reserve: row.adsReserve
     }));
   }
   return rows.map((row) => ({
@@ -4743,13 +4731,7 @@ function downloadIuDrrExcel(model) {
       ['cumulative_fact_ads', 'Реклама факт накопительно'],
       ['cumulative_ads_delta', 'Отклонение рекламы накопительно'],
       ['cumulative_ads_completion_pct', 'Реклама выполнение накопительно, %'],
-      ['fact_drr_pct', 'ДРР факт, %'],
-      ['smart_share_pct', 'Наша доля Smart, %'],
-      ['smart_share_ads', 'Smart 40% реклама'],
-      ['smart_share_gmv', 'Smart 40% GMV'],
-      ['finance_accrued', 'Начислено Finance'],
-      ['finance_sales', 'Продажи Finance'],
-      ['finance_ads', 'Реклама Finance']
+      ['fact_drr_pct', 'ДРР факт, %']
     ], rows, `iu-drr-ozon-${model.selectedMonth || todayIso()}.xls`);
     return;
     downloadLaunchesHtmlTable([
@@ -5194,8 +5176,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       </div>
     </div>
   `;
-  const ozonFinanceDailyTableHtml = renderOzonFinanceDailyTable(model, ozonFinanceSourceLabel);
-  const ozonFinanceSkuTableHtml = renderOzonFinanceSkuTable(model);
+  void ozonFinanceSourceLabel;
   const ozonIuAccountCardsHtml = renderOzonIuAccountCards(model, { smartShare: ozonSmartShare, targetDrr: ozonTargetDrr });
   const ozonPlanFactTableHtml = renderOzonIuPlanFactTable(model, {
     monthTargetGmv: ozonMonthTargetGmv,
@@ -5256,9 +5237,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
         </table>
       </div>
       <div class="muted small" style="margin-top:10px">
-        Smart 40%: реклама ${fmt.money(ozonSmartShareAds)}, GMV ${fmt.money(ozonSmartShareGmv)} ·
-        Finance API: начислено ${fmt.money(ozonFinanceMonth.accruedNet)}, реклама ${fmt.money(ozonAdsAbs)} ·
-        контроль со скрином ${ozonControlDelta === null || ozonControlDelta === undefined ? '—' : fmt.money(ozonControlDelta)}
+        Источник факта: Ozon API и Ozon dashboard. Техническая сверка начислений убрана из формы, чтобы не смешивать ее с план-фактом.
       </div>
     </div>
   `;
@@ -5266,7 +5245,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     <div class="section-title">
       <div>
         <h2>${escapeHtml(platformMeta.title)}</h2>
-        <p>${isOzonView ? `Ozon Finance: начислено, реклама и ДРР приходят из Ozon API; Excel остается только fallback/контроль. План ИУ идет на оба кабинета, Smart считаем нашей долей ${fmt.pct(ozonSmartShare)}.` : 'WB: выполнение ИУ, ДРР без Внешки и дневная детализация каналов рекламы.'}</p>
+        <p>${isOzonView ? 'План-факт Ozon по двум кабинетам: оборот, реклама, выполнение и отклонение от плана.' : 'WB: выполнение ИУ, ДРР без Внешки и дневная детализация каналов рекламы.'}</p>
       </div>
       <div class="badge-stack" ${isOzonView ? 'style="display:none"' : ''}>
         ${isOzonView ? badge('Ozon', 'info') : iuDrrSourceBadge(model)}
@@ -5290,7 +5269,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     ${isOzonView ? ozonReadableSummaryHtml : selectedKpisHtml}
     ${isOzonView ? '' : chartsHtml}
     ${channelRowsHtml}
-    ${isOzonView ? `${ozonPlanFactTableHtml}${ozonFinanceDailyTableHtml}${ozonFinanceSkuTableHtml}` : dailyTableHtml}
+    ${isOzonView ? ozonPlanFactTableHtml : dailyTableHtml}
 
     ${!isOzonView && sourceWarnings.length ? `
       <div class="card" style="margin-top:14px">

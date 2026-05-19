@@ -49,6 +49,16 @@ trap {
 
 Acquire-SyncLock
 
+function Stop-ProcessTree {
+  param([int]$ProcessId)
+
+  $children = Get-CimInstance Win32_Process -Filter "ParentProcessId=$ProcessId" -ErrorAction SilentlyContinue
+  foreach ($child in @($children)) {
+    Stop-ProcessTree -ProcessId $child.ProcessId
+  }
+  Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue
+}
+
 function Invoke-NodeStep {
   param(
     [Parameter(Mandatory = $true)]
@@ -56,7 +66,8 @@ function Invoke-NodeStep {
     [Parameter(Mandatory = $true)]
     [string[]]$Arguments,
     [int]$Attempts = 2,
-    [int]$RetryDelaySeconds = 20
+    [int]$RetryDelaySeconds = 20,
+    [int]$TimeoutSeconds = 1800
   )
 
   for ($attempt = 1; $attempt -le $Attempts; $attempt += 1) {
@@ -64,14 +75,28 @@ function Invoke-NodeStep {
     $tempStdout = [System.IO.Path]::GetTempFileName()
     $tempStderr = [System.IO.Path]::GetTempFileName()
     try {
-      $process = Start-Process -FilePath $nodeExe -ArgumentList $Arguments -NoNewWindow -Wait -PassThru -RedirectStandardOutput $tempStdout -RedirectStandardError $tempStderr
+      $process = Start-Process -FilePath $nodeExe -ArgumentList $Arguments -NoNewWindow -PassThru -RedirectStandardOutput $tempStdout -RedirectStandardError $tempStderr
+      if ($TimeoutSeconds -gt 0) {
+        $timeoutMs = [int][Math]::Min([int]::MaxValue, [double]$TimeoutSeconds * 1000)
+        $exited = $process.WaitForExit($timeoutMs)
+        if (-not $exited) {
+          Write-Warning "[sync] $StepName exceeded timeout ${TimeoutSeconds}s; stopping process tree $($process.Id)."
+          Stop-ProcessTree -ProcessId $process.Id
+          $process.WaitForExit()
+          $exitCode = 124
+        } else {
+          $exitCode = if ($null -eq $process.ExitCode) { 0 } else { $process.ExitCode }
+        }
+      } else {
+        $process.WaitForExit()
+        $exitCode = if ($null -eq $process.ExitCode) { 0 } else { $process.ExitCode }
+      }
       if (Test-Path -LiteralPath $tempStdout) {
         Get-Content -LiteralPath $tempStdout -ErrorAction SilentlyContinue | ForEach-Object { Write-Output $_ }
       }
       if (Test-Path -LiteralPath $tempStderr) {
         Get-Content -LiteralPath $tempStderr -ErrorAction SilentlyContinue | ForEach-Object { Write-Output $_ }
       }
-      $exitCode = if ($null -eq $process.ExitCode) { 0 } else { $process.ExitCode }
     } finally {
       Remove-Item -LiteralPath $tempStdout -Force -ErrorAction SilentlyContinue
       Remove-Item -LiteralPath $tempStderr -Force -ErrorAction SilentlyContinue
@@ -396,7 +421,7 @@ if ($wbAdsDryRunFlag) {
 Write-Output "[sync] WB ads build phase started"
 $wbAdsRefreshSucceeded = $false
 try {
-  Invoke-NodeStep -StepName "WB ads build" -Arguments $wbAdsArguments -Attempts 2 -RetryDelaySeconds 60
+  Invoke-NodeStep -StepName "WB ads build" -Arguments $wbAdsArguments -Attempts 2 -RetryDelaySeconds 60 -TimeoutSeconds 900
   $wbAdsRefreshSucceeded = $true
   Write-Output "[sync] WB ads build phase completed"
 } catch {

@@ -4099,9 +4099,9 @@ function renderOzonIuPlanFactTableLegacy(model, context = {}) {
               <th>Выполнение</th>
               <th>ИУ факт оба кабинета</th>
               <th>ДРР</th>
-              <th>Smart 40%</th>
-              <th>Начислено Finance</th>
-              <th>Реклама Finance</th>
+              <th>Наша доля 40%</th>
+              <th>Начислено по отчету Ozon</th>
+              <th>Реклама по отчету Ozon</th>
             </tr>
           </thead>
           <tbody>
@@ -4130,7 +4130,7 @@ function renderOzonFinanceDailyTable(model, sourceLabel = '') {
   return `
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
-        <div><h3>Ozon Finance по дням</h3><p class="small muted">${escapeHtml(sourceLabel || 'Ozon Finance')}</p></div>
+        <div><h3>Сверка начислений Ozon по дням</h3><p class="small muted">${escapeHtml(sourceLabel || 'финансовый отчет Ozon')}</p></div>
         ${badge(model.hasRows ? `${fmt.int(model.dailyRows.length)} дней` : 'нет строк', model.hasRows ? 'ok' : 'warn')}
       </div>
       <div class="table-wrap">
@@ -4166,7 +4166,7 @@ function renderOzonFinanceDailyTable(model, sourceLabel = '') {
                   <td>${fmt.money(rowOther)}</td>
                 </tr>
               `;
-            }).join('') || '<tr><td colspan="9">Нет данных Ozon Finance по выбранному месяцу.</td></tr>'}
+            }).join('') || '<tr><td colspan="9">Нет данных финансового отчета Ozon по выбранному месяцу.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -4179,7 +4179,7 @@ function renderOzonFinanceSkuTable(model) {
   return `
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
-        <div><h3>SKU Ozon Finance</h3><p class="small muted">топ по модулю начисления, остатки и цена из products CSV</p></div>
+        <div><h3>SKU по отчету Ozon</h3><p class="small muted">топ по модулю начисления, остатки и цена из products CSV</p></div>
         ${badge(`${fmt.int(rows.length)} SKU`, 'info')}
       </div>
       <div class="table-wrap">
@@ -4749,11 +4749,11 @@ function downloadIuDrrExcel(model) {
       ['target_ads_by_fact', 'Бюджет ИУ от факта'],
       ['ads_reserve', 'Резерв / перерасход ИУ'],
       ['smart_share_pct', 'Наша доля Smart, %'],
-      ['smart_share_ads', 'Smart 40% ИУ'],
-      ['smart_share_gmv', 'Smart 40% GMV'],
-      ['finance_accrued', 'Начислено Finance'],
-      ['finance_sales', 'Продажи Finance'],
-      ['finance_ads', 'Реклама Finance']
+      ['smart_share_ads', 'Наша доля 40% ИУ'],
+      ['smart_share_gmv', 'Наша доля 40% GMV'],
+      ['finance_accrued', 'Начислено по отчету Ozon'],
+      ['finance_sales', 'Продажи по отчету Ozon'],
+      ['finance_ads', 'Реклама по отчету Ozon']
     ], rows, `iu-drr-ozon-${model.selectedMonth || todayIso()}.xls`);
     return;
   }
@@ -4869,9 +4869,9 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       <div class="mini-kpi ${ozonPlanCompletionToDate != null && ozonPlanCompletionToDate >= 1 ? 'ok' : 'warn'}"><span>План-факт GMV</span><strong>${ozonPlanCompletionToDate != null ? fmt.pct(ozonPlanCompletionToDate) : '—'}</strong><span>${fmt.money(ozonFactGmvBoth)} / ${fmt.money(ozonPlanToDateGmv)}</span></div>
       <div class="mini-kpi"><span>План месяца</span><strong>${fmt.money(ozonMonthTargetGmv)}</strong><span>${fmt.pct(ozonPlanCompletionMonth)} от месяца</span></div>
       <div class="mini-kpi ${ozonPlanFactDrr != null && ozonPlanFactDrr <= ozonTargetDrr ? 'ok' : 'warn'}"><span>ИУ оба кабинета</span><strong>${fmt.money(ozonFactAdsBoth)}</strong><span>ДРР ${ozonPlanFactDrr != null ? fmt.pct(ozonPlanFactDrr) : '—'} / цель ${fmt.pct(ozonTargetDrr)}</span></div>
-      <div class="mini-kpi ok"><span>Smart 40%</span><strong>${fmt.money(ozonSmartShareAds)}</strong><span>GMV доля ${fmt.money(ozonSmartShareGmv)}</span></div>
-      <div class="mini-kpi"><span>Начислено Finance</span><strong>${fmt.money(ozonFinanceMonth.accruedNet)}</strong><span>продажи ${fmt.money(ozonFinanceMonth.salesGross)}</span></div>
-      <div class="mini-kpi ${ozonDrr != null && ozonDrr <= ozonTargetDrr ? 'ok' : 'warn'}"><span>Реклама Finance</span><strong>${fmt.money(ozonAdsAbs)}</strong><span>ДРР ${ozonDrr != null ? fmt.pct(ozonDrr) : '—'}</span></div>
+      <div class="mini-kpi ok"><span>Наша доля 40%</span><strong>${fmt.money(ozonSmartShareAds)}</strong><span>GMV доля ${fmt.money(ozonSmartShareGmv)}</span></div>
+      <div class="mini-kpi"><span>Начислено по отчету Ozon</span><strong>${fmt.money(ozonFinanceMonth.accruedNet)}</strong><span>продажи ${fmt.money(ozonFinanceMonth.salesGross)}</span></div>
+      <div class="mini-kpi ${ozonDrr != null && ozonDrr <= ozonTargetDrr ? 'ok' : 'warn'}"><span>Реклама по отчету Ozon</span><strong>${fmt.money(ozonAdsAbs)}</strong><span>ДРР ${ozonDrr != null ? fmt.pct(ozonDrr) : '—'}</span></div>
       <div class="mini-kpi ${ozonControlTone}"><span>Расхождение со скрином</span><strong>${ozonControlDelta === null || ozonControlDelta === undefined ? '—' : fmt.money(ozonControlDelta)}</strong><span>${ozonControl.sellerUiAccruedNet == null ? 'нет контроля' : fmt.money(ozonControl.sellerUiAccruedNet)}</span></div>
     </div>
   `;
@@ -4882,8 +4882,8 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       <div class="mini-kpi ${iuDrrToneForRevenueDelta(ozonPlanDeltaToDate)}"><span>Отклонение оборота</span><strong>${fmt.money(ozonPlanDeltaToDate)}</strong><span>план месяца ${fmt.money(ozonMonthTargetGmv)}</span></div>
       <div class="mini-kpi ${ozonAdsCompletionToDate != null && ozonAdsCompletionToDate <= 1 ? 'ok' : 'warn'}"><span>Реклама план-факт</span><strong>${ozonAdsCompletionToDate != null ? fmt.pct(ozonAdsCompletionToDate) : '—'}</strong><span>${fmt.money(ozonFactAdsBoth)} / ${fmt.money(ozonAdsPlanToDate)}</span></div>
       <div class="mini-kpi ${iuDrrToneForDelta(ozonAdsDeltaToDate)}"><span>Отклонение рекламы</span><strong>${fmt.money(ozonAdsDeltaToDate)}</strong><span>цель ДРР ${fmt.pct(ozonTargetDrr)}</span></div>
-      <div class="mini-kpi ok"><span>Smart 40%</span><strong>${fmt.money(ozonSmartShareAds)}</strong><span>GMV доля ${fmt.money(ozonSmartShareGmv)}</span></div>
-      <div class="mini-kpi"><span>Начислено Finance</span><strong>${fmt.money(ozonFinanceMonth.accruedNet)}</strong><span>продажи ${fmt.money(ozonFinanceMonth.salesGross)}</span></div>
+      <div class="mini-kpi ok"><span>Наша доля 40%</span><strong>${fmt.money(ozonSmartShareAds)}</strong><span>GMV доля ${fmt.money(ozonSmartShareGmv)}</span></div>
+      <div class="mini-kpi"><span>Начислено по отчету Ozon</span><strong>${fmt.money(ozonFinanceMonth.accruedNet)}</strong><span>продажи ${fmt.money(ozonFinanceMonth.salesGross)}</span></div>
       <div class="mini-kpi ${ozonControlTone}"><span>Расхождение со скрином</span><strong>${ozonControlDelta === null || ozonControlDelta === undefined ? '—' : fmt.money(ozonControlDelta)}</strong><span>${ozonControl.sellerUiAccruedNet == null ? 'нет контроля' : fmt.money(ozonControl.sellerUiAccruedNet)}</span></div>
     </div>
   `;
@@ -4911,11 +4911,11 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       </div>
       <div class="card">
         <div class="section-subhead">
-          <div><h3>Finance контроль</h3><p class="small muted">начислено, реклама и комиссии из seller finance</p></div>
+          <div><h3>Сверка начислений</h3><p class="small muted">начислено, реклама и комиссии из финансового отчета Ozon</p></div>
           ${badge(fmt.money(ozonFinanceMonth.accruedNet), 'ok')}
         </div>
         <div class="kpi-strip" style="margin-top:10px">
-          <div class="mini-kpi"><span>Реклама Finance</span><strong>${fmt.money(ozonAdsAbs)}</strong><span>ДРР ${ozonDrr != null ? fmt.pct(ozonDrr) : '—'}</span></div>
+          <div class="mini-kpi"><span>Реклама по отчету Ozon</span><strong>${fmt.money(ozonAdsAbs)}</strong><span>ДРР ${ozonDrr != null ? fmt.pct(ozonDrr) : '—'}</span></div>
           <div class="mini-kpi warn"><span>Комиссии + логистика</span><strong>${fmt.money(ozonFinanceMonth.ozonReward + ozonFinanceMonth.deliveryServices)}</strong><span>net ${fmt.money(ozonSalesNet)}</span></div>
         </div>
       </div>
@@ -4948,11 +4948,11 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       </div>
       <div class="card">
         <div class="section-subhead">
-          <div><h3>Finance контроль</h3><p class="small muted">начислено, реклама и комиссии из Ozon API finance</p></div>
+          <div><h3>Сверка начислений</h3><p class="small muted">начислено, реклама и комиссии из финансового API Ozon</p></div>
           ${badge(fmt.money(ozonFinanceMonth.accruedNet), 'ok')}
         </div>
         <div class="kpi-strip" style="margin-top:10px">
-          <div class="mini-kpi"><span>Реклама Finance</span><strong>${fmt.money(ozonAdsAbs)}</strong><span>ДРР ${ozonDrr != null ? fmt.pct(ozonDrr) : '—'}</span></div>
+          <div class="mini-kpi"><span>Реклама по отчету Ozon</span><strong>${fmt.money(ozonAdsAbs)}</strong><span>ДРР ${ozonDrr != null ? fmt.pct(ozonDrr) : '—'}</span></div>
           <div class="mini-kpi warn"><span>Комиссии + логистика</span><strong>${fmt.money(ozonFinanceMonth.ozonReward + ozonFinanceMonth.deliveryServices)}</strong><span>net ${fmt.money(ozonSalesNet)}</span></div>
         </div>
       </div>
@@ -5250,7 +5250,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       <div class="badge-stack" ${isOzonView ? 'style="display:none"' : ''}>
         ${isOzonView ? badge('Ozon', 'info') : iuDrrSourceBadge(model)}
         ${isOzonView
-          ? badge(ozonFinanceWindowLabel ? `finance ${ozonFinanceWindowLabel}` : 'finance без дат', ozonFinanceWindowLabel ? 'info' : 'warn')
+          ? badge(ozonFinanceWindowLabel ? `сверка ${ozonFinanceWindowLabel}` : 'сверка без дат', ozonFinanceWindowLabel ? 'info' : 'warn')
           : badge(model.payload.asOfDate ? `срез ${model.payload.asOfDate}` : 'нет даты', model.payload.asOfDate ? 'info' : 'warn')}
       </div>
     </div>

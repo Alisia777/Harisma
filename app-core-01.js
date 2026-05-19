@@ -434,6 +434,7 @@ const fmt = {
 
 function currentConfig() {
   const raw = window.APP_CONFIG || {};
+  const hasExplicitTeamMode = Object.prototype.hasOwnProperty.call(raw, 'teamMode');
   const merged = {
     ...DEFAULT_APP_CONFIG,
     ...raw,
@@ -441,7 +442,8 @@ function currentConfig() {
     supabase: { ...DEFAULT_APP_CONFIG.supabase, ...(raw.supabase || {}) }
   };
   const missingRemote = merged.teamMode !== 'supabase' || !merged.supabase?.url || !merged.supabase?.anonKey;
-  if (missingRemote && !isLocalHost()) {
+  const explicitLocalMode = hasExplicitTeamMode && String(raw.teamMode || '').trim().toLowerCase() === 'local';
+  if (missingRemote && !explicitLocalMode) {
     return {
       ...merged,
       ...RUNTIME_SUPABASE_FALLBACK,

@@ -2,7 +2,11 @@ param(
   [string]$TaskName = "Portal Google Sheet Sync 10AM",
   [string]$RunAt = "10:00",
   [ValidateSet("S4U", "Interactive")]
-  [string]$LogonType = "S4U"
+  [string]$LogonType = "S4U",
+  [ValidateSet("Highest", "Limited")]
+  [string]$RunLevel = "Limited",
+  [bool]$EnableLogonCatchup = $true,
+  [string]$LogonCatchupDelay = "PT5M"
 )
 
 $ErrorActionPreference = "Stop"
@@ -19,12 +23,18 @@ $triggerTime = [DateTime]::Today.Add([TimeSpan]::Parse($RunAt))
 $actionArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$runnerPath`""
 
 $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $actionArgs -WorkingDirectory $repoRoot
-$trigger = New-ScheduledTaskTrigger -Daily -At $triggerTime
-$principal = New-ScheduledTaskPrincipal -UserId $currentUser -LogonType $LogonType -RunLevel Highest
+$dailyTrigger = New-ScheduledTaskTrigger -Daily -At $triggerTime
+$triggers = @($dailyTrigger)
+if ($EnableLogonCatchup) {
+  $logonTrigger = New-ScheduledTaskTrigger -AtLogOn
+  $logonTrigger.Delay = $LogonCatchupDelay
+  $triggers += $logonTrigger
+}
+$principal = New-ScheduledTaskPrincipal -UserId $currentUser -LogonType $LogonType -RunLevel $RunLevel
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -WakeToRun
-$description = "Ежедневно обновляет портал из Google Sheets, сохраняет историю срезов по датам и пишет логи в .altea-google-sheet-sync-output."
+$description = "Daily portal sync from Google Sheets; keeps dated JSON history and logs in .altea-google-sheet-sync-output."
 
-$task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Description $description
+$task = New-ScheduledTask -Action $action -Trigger $triggers -Principal $principal -Settings $settings -Description $description
 Register-ScheduledTask -TaskName $TaskName -InputObject $task -Force | Out-Null
 
 $registeredTask = Get-ScheduledTask -TaskName $TaskName
@@ -37,6 +47,7 @@ $taskInfo = Get-ScheduledTaskInfo -TaskName $TaskName
   State = $registeredTask.State
   LastRunTime = $taskInfo.LastRunTime
   NextRunTime = $taskInfo.NextRunTime
+  TriggerCount = @($registeredTask.Triggers).Count
   Action = $registeredTask.Actions.Execute
   Arguments = $registeredTask.Actions.Arguments
 }

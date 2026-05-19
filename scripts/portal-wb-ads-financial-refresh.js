@@ -163,6 +163,36 @@ function summarizeItemSeries(itemSeries, platformKey) {
     }));
 }
 
+function mergeFinancialPlatformSeries(existingSeries, summarizedSeries) {
+  const byDate = new Map();
+  for (const point of Array.isArray(existingSeries) ? existingSeries : []) {
+    const date = isoDate(point.date || point.label);
+    if (!date) continue;
+    byDate.set(date, { ...point, date, label: date });
+  }
+  for (const point of Array.isArray(summarizedSeries) ? summarizedSeries : []) {
+    const date = isoDate(point.date || point.label);
+    if (!date) continue;
+    const current = byDate.get(date) || { date, label: date };
+    byDate.set(date, {
+      ...current,
+      date,
+      label: date,
+      views: Math.max(numberOrZero(current.views), numberOrZero(point.views)),
+      clicks: Math.max(numberOrZero(current.clicks), numberOrZero(point.clicks)),
+      spend: roundMoney(Math.max(numberOrZero(current.spend), numberOrZero(point.spend))),
+      orders: Math.max(numberOrZero(current.orders), numberOrZero(point.orders)),
+      revenue: roundMoney(Math.max(numberOrZero(current.revenue), numberOrZero(point.revenue)))
+    });
+  }
+  const rows = [...byDate.values()].sort((left, right) => left.date.localeCompare(right.date));
+  const latestIndex = rows.length - 1;
+  return rows.map((point, index) => ({
+    ...point,
+    dayOffset: latestIndex - index
+  }));
+}
+
 function totalsFromSeries(series) {
   return series.reduce((acc, row) => {
     acc.views += numberOrZero(row.views);
@@ -273,9 +303,12 @@ function applyFinancialRows(payload, financialRows, diagnostics, options) {
 
   const platforms = Array.isArray(payload.platforms) ? payload.platforms : [];
   const platformMap = new Map(platforms.map((platform) => [normalizePlatformKey(platform.key || platform.platformKey), { ...platform }]));
-  const wbSeries = summarizeItemSeries(payload.itemSeries, 'wb');
-  const wbTotals = totalsFromSeries(wbSeries);
   const wbTemplate = platformMap.get('wb') || { key: 'wb', platformKey: 'wb', label: 'WB' };
+  const wbSeries = mergeFinancialPlatformSeries(
+    Array.isArray(wbTemplate.series) ? wbTemplate.series : [],
+    summarizeItemSeries(payload.itemSeries, 'wb')
+  );
+  const wbTotals = totalsFromSeries(wbSeries);
   platformMap.set('wb', { ...wbTemplate, key: 'wb', platformKey: 'wb', label: wbTemplate.label || 'WB', ...wbTotals, series: wbSeries });
 
   const nonAllPlatforms = [...platformMap.entries()].filter(([key]) => key && key !== 'all').map(([, platform]) => platform);

@@ -5202,13 +5202,73 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     smartShare: ozonSmartShare,
     targetDrr: ozonTargetDrr
   });
+  const ozonSummaryRows = [
+    {
+      label: 'Оборот',
+      detail: `план месяца ${fmt.money(ozonMonthTargetGmv)}`,
+      plan: ozonPlanToDateGmv,
+      fact: ozonFactGmvBoth,
+      completion: ozonPlanCompletionToDate,
+      delta: ozonPlanDeltaToDate,
+      tone: iuDrrToneForRevenueDelta(ozonPlanDeltaToDate)
+    },
+    {
+      label: 'Реклама',
+      detail: `цель ДРР ${fmt.pct(ozonTargetDrr)}`,
+      plan: ozonAdsPlanToDate,
+      fact: ozonFactAdsBoth,
+      completion: ozonAdsCompletionToDate,
+      delta: ozonAdsDeltaToDate,
+      tone: iuDrrToneForDelta(ozonAdsDeltaToDate)
+    }
+  ];
+  const ozonReadableSummaryHtml = `
+    <div class="card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Итог Ozon на дату</h3>
+          <p class="small muted">${fmt.int(ozonElapsedDays)} из ${fmt.int(ozonDaysInMonth)} дней месяца. Сверху только план, факт и отклонение; детализация ниже.</p>
+        </div>
+        ${badge(ozonFinanceWindowLabel || model.selectedMonth, 'info')}
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Показатель</th>
+              <th>План к дате</th>
+              <th>Факт</th>
+              <th>Выполнение</th>
+              <th>Отклонение</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${ozonSummaryRows.map((row) => `
+              <tr>
+                <td><strong>${escapeHtml(row.label)}</strong><div class="muted small">${escapeHtml(row.detail)}</div></td>
+                <td>${fmt.money(row.plan)}</td>
+                <td>${fmt.money(row.fact)}</td>
+                <td>${row.completion != null ? fmt.pct(row.completion) : '—'}</td>
+                <td>${badge(fmt.money(row.delta), row.tone)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="muted small" style="margin-top:10px">
+        Smart 40%: реклама ${fmt.money(ozonSmartShareAds)}, GMV ${fmt.money(ozonSmartShareGmv)} ·
+        Finance API: начислено ${fmt.money(ozonFinanceMonth.accruedNet)}, реклама ${fmt.money(ozonAdsAbs)} ·
+        контроль со скрином ${ozonControlDelta === null || ozonControlDelta === undefined ? '—' : fmt.money(ozonControlDelta)}
+      </div>
+    </div>
+  `;
   root.innerHTML = `
     <div class="section-title">
       <div>
         <h2>${escapeHtml(platformMeta.title)}</h2>
         <p>${isOzonView ? `Ozon Finance: начислено, реклама и ДРР приходят из Ozon API; Excel остается только fallback/контроль. План ИУ идет на оба кабинета, Smart считаем нашей долей ${fmt.pct(ozonSmartShare)}.` : 'WB: выполнение ИУ, ДРР без Внешки и дневная детализация каналов рекламы.'}</p>
       </div>
-      <div class="badge-stack">
+      <div class="badge-stack" ${isOzonView ? 'style="display:none"' : ''}>
         ${isOzonView ? badge('Ozon', 'info') : iuDrrSourceBadge(model)}
         ${isOzonView
           ? badge(ozonFinanceWindowLabel ? `finance ${ozonFinanceWindowLabel}` : 'finance без дат', ozonFinanceWindowLabel ? 'info' : 'warn')
@@ -5227,10 +5287,10 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       ${isOzonView ? '' : '<button class="quick-chip" type="button" data-iu-drr-ads>Рекламная воронка</button>'}
     </div>
 
-    ${isOzonView ? ozonFinanceKpisHtml : selectedKpisHtml}
-    ${isOzonView ? ozonFinanceChartsHtml : chartsHtml}
+    ${isOzonView ? ozonReadableSummaryHtml : selectedKpisHtml}
+    ${isOzonView ? '' : chartsHtml}
     ${channelRowsHtml}
-    ${isOzonView ? `${ozonIuAccountCardsHtml}${ozonPlanFactTableHtml}${ozonFinanceDailyTableHtml}${ozonFinanceSkuTableHtml}` : dailyTableHtml}
+    ${isOzonView ? `${ozonPlanFactTableHtml}${ozonFinanceDailyTableHtml}${ozonFinanceSkuTableHtml}` : dailyTableHtml}
 
     ${!isOzonView && sourceWarnings.length ? `
       <div class="card" style="margin-top:14px">

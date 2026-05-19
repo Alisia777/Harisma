@@ -3982,6 +3982,9 @@ function ozonPlanFactDailyRows(model, context = {}) {
         target.revenue += numberOrZero(source.revenue);
         target.gmv += numberOrZero(source.gmv);
         target.ads += numberOrZero(source.ads);
+        target.deltaToTargetSpend = numberOrZero(target.deltaToTargetSpend) + numberOrZero(source.deltaToTargetSpend);
+        target.cumulativeAds = numberOrZero(source.cumulativeAds) || numberOrZero(target.cumulativeAds);
+        target.forecastDailyAds = numberOrZero(target.forecastDailyAds) + numberOrZero(source.forecastDailyAds);
         target.label = source.label || target.label;
         accountBreakdown[key] = target;
       }
@@ -3989,8 +3992,11 @@ function ozonPlanFactDailyRows(model, context = {}) {
     const finance = financeByDate.get(date) || {};
     const primary = accountBreakdown.primary || {};
     const smart = accountBreakdown.smart || {};
-    const factGmv = numberOrZero(total.gmv);
-    const factAds = numberOrZero(total.ads);
+    const smartRevenue = numberOrZero(smart.revenue);
+    const smartGmv = numberOrZero(smart.gmv);
+    const smartAds = numberOrZero(smart.ads);
+    const factGmv = smartRevenue || numberOrZero(total.revenue);
+    const factAds = smartAds || numberOrZero(total.ads);
     cumulativeTargetGmv += dailyTargetGmv;
     cumulativeFactGmv += factGmv;
     cumulativeTargetAds += dailyTargetAds;
@@ -4000,7 +4006,10 @@ function ozonPlanFactDailyRows(model, context = {}) {
       period: `${String(date).slice(8, 10)}.${String(date).slice(5, 7)}`,
       dailyTargetGmv,
       factGmv,
-      factRevenue: total.revenue,
+      factRevenue: factGmv,
+      totalRevenue: numberOrZero(total.revenue),
+      totalGmv: numberOrZero(total.gmv),
+      totalAds: numberOrZero(total.ads),
       planDeltaGmv: factGmv - dailyTargetGmv,
       completion: dailyTargetGmv > 0 ? factGmv / dailyTargetGmv : null,
       cumulativeTargetGmv,
@@ -4016,20 +4025,20 @@ function ozonPlanFactDailyRows(model, context = {}) {
       cumulativeAdsCompletion: cumulativeTargetAds > 0 ? cumulativeFactAds / cumulativeTargetAds : null,
       targetAdsByFact: factGmv * targetDrr,
       adsReserve: factGmv * targetDrr - factAds,
-      dashboardAdsDelta: total.deltaToTargetSpend,
-      dashboardCumulativeAds: total.cumulativeAds,
-      forecastDailyAds: total.forecastDailyAds,
+      dashboardAdsDelta: numberOrZero(smart.deltaToTargetSpend || total.deltaToTargetSpend),
+      dashboardCumulativeAds: numberOrZero(smart.cumulativeAds || total.cumulativeAds),
+      forecastDailyAds: numberOrZero(smart.forecastDailyAds || total.forecastDailyAds),
       drr: factGmv > 0 ? factAds / factGmv : null,
       primaryRevenue: numberOrZero(primary.revenue),
       primaryGmv: numberOrZero(primary.gmv),
       primaryAds: numberOrZero(primary.ads),
-      smartRevenue: numberOrZero(smart.revenue),
-      smartGmv: numberOrZero(smart.gmv),
-      smartAds: numberOrZero(smart.ads),
-      smartDrrRevenue: numberOrZero(smart.revenue) > 0 ? numberOrZero(smart.ads) / numberOrZero(smart.revenue) : null,
-      smartDrrGmv: numberOrZero(smart.gmv) > 0 ? numberOrZero(smart.ads) / numberOrZero(smart.gmv) : null,
-      smartShareAds: factAds * smartShare,
-      smartShareGmv: factGmv * smartShare,
+      smartRevenue,
+      smartGmv,
+      smartAds,
+      smartDrrRevenue: smartRevenue > 0 ? smartAds / smartRevenue : null,
+      smartDrrGmv: smartGmv > 0 ? smartAds / smartGmv : null,
+      smartShareAds: smartAds || factAds * smartShare,
+      smartShareGmv: smartGmv || factGmv * smartShare,
       financeAccrued: numberOrZero(finance.accruedNet),
       financeSales: numberOrZero(finance.salesGross),
       financeAds: Math.abs(numberOrZero(finance.ads))
@@ -4067,7 +4076,7 @@ function renderOzonIuPlanFactTable(model, context = {}) {
       <div class="section-subhead">
         <div>
           <h3>Форма ИУ Ozon: план-факт</h3>
-          <p class="small muted">GMV и реклама по двум кабинетам; выручка Smart вынесена отдельной сверочной колонкой.</p>
+          <p class="small muted">Smart: дневной план/факт по обороту и рекламе, накопительный план/факт и отклонение.</p>
         </div>
         ${badge(rows.length ? `${fmt.int(rows.length)} дней` : 'нет строк', rows.length ? 'ok' : 'warn')}
       </div>
@@ -4076,18 +4085,17 @@ function renderOzonIuPlanFactTable(model, context = {}) {
           <thead>
             <tr>
               <th>Дата</th>
-              <th>GMV план / день</th>
-              <th>GMV факт оба ЛК / день</th>
-              <th>Смарт выручка / день</th>
-              <th>GMV план накоп.</th>
-              <th>GMV факт накоп.</th>
-              <th>Δ GMV накоп.</th>
-              <th>Реклама план / день</th>
-              <th>Реклама факт / день</th>
-              <th>Реклама план накоп.</th>
-              <th>Реклама факт накоп.</th>
-              <th>Δ рекламы накоп.</th>
-              <th>Реком. реклама / день</th>
+              <th>Smart план / день</th>
+              <th>Smart факт / день</th>
+              <th>Smart план накоп.</th>
+              <th>Smart факт накоп.</th>
+              <th>Δ Smart накоп.</th>
+              <th>Smart реклама план / день</th>
+              <th>Smart реклама факт / день</th>
+              <th>Smart реклама план накоп.</th>
+              <th>Smart реклама факт накоп.</th>
+              <th>Δ Smart рекламы накоп.</th>
+              <th>Реком. Smart реклама / день</th>
               <th>ДРР факт</th>
             </tr>
           </thead>
@@ -4096,8 +4104,7 @@ function renderOzonIuPlanFactTable(model, context = {}) {
               <tr>
                 <td><strong>${escapeHtml(row.period || row.date)}</strong><div class="muted small">${escapeHtml(row.date)}</div></td>
                 <td>${fmt.money(row.dailyTargetGmv)}</td>
-                <td>${fmt.money(row.factGmv)}${numberOrZero(row.primaryGmv) || numberOrZero(row.smartGmv) ? `<div class="muted small">Биг-Л ${fmt.money(row.primaryGmv)} · Смарт GMV ${fmt.money(row.smartGmv)}</div>` : ''}</td>
-                <td>${numberOrZero(row.smartRevenue) ? fmt.money(row.smartRevenue) : '—'}${numberOrZero(row.smartAds) ? `<div class="muted small">ИУ ${fmt.money(row.smartAds)}</div>` : ''}</td>
+                <td>${fmt.money(row.factGmv)}</td>
                 <td>${fmt.money(row.cumulativeTargetGmv)}</td>
                 <td>${fmt.money(row.cumulativeFactGmv)}</td>
                 <td>${badge(fmt.money(row.cumulativeGmvDelta), iuDrrToneForRevenueDelta(row.cumulativeGmvDelta))}<div class="muted small">${row.cumulativeGmvCompletion != null ? fmt.pct(row.cumulativeGmvCompletion) : '—'}</div></td>
@@ -4109,7 +4116,7 @@ function renderOzonIuPlanFactTable(model, context = {}) {
                 <td>${numberOrZero(row.forecastDailyAds) ? fmt.money(row.forecastDailyAds) : '—'}</td>
                 <td>${row.drr != null ? fmt.pct(row.drr) : '—'}</td>
               </tr>
-            `).join('') || '<tr><td colspan="14">Нет данных Ozon по выбранному месяцу.</td></tr>'}
+            `).join('') || '<tr><td colspan="13">Нет данных Ozon по выбранному месяцу.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -4685,7 +4692,8 @@ function iuDrrExportRows(rows, model) {
     const planMonth = model.ozonPlanMonth || ozonPlanMonthSummary(model.payload.ozonPlan || {}, model.selectedMonth);
     const targetDrr = numberOrZero(planMonth.totals?.targetDrr) || 0.25;
     const smartShare = numberOrZero(planMonth.allocation?.smartShare || 0.4);
-    const monthTargetGmv = numberOrZero(planMonth.monthlyTargetGmv || model.payload.ozonPlan?.monthlyTargets?.[model.selectedMonth]);
+    const fullMonthTargetGmv = numberOrZero(planMonth.monthlyTargetGmv || model.payload.ozonPlan?.monthlyTargets?.[model.selectedMonth]);
+    const monthTargetGmv = fullMonthTargetGmv * smartShare;
     const monthTargetAds = monthTargetGmv * targetDrr;
     const contractKpis = model.payload.ozonPlan?.contractKpis || {};
     const adRevKpiRate = numberOrZero(contractKpis.adRevKpiRate) || targetDrr;
@@ -4700,13 +4708,9 @@ function iuDrrExportRows(rows, model) {
       adrev_kpi_pct: Math.round(adRevKpiRate * 10000) / 100,
       spp_pct: sppRate ? Math.round(sppRate * 10000) / 100 : '',
       daily_target_gmv: row.dailyTargetGmv,
-      fact_gmv_both_accounts: row.factGmv,
-      primary_revenue: row.primaryRevenue,
-      primary_gmv: row.primaryGmv,
-      primary_ads: row.primaryAds,
-      smart_revenue: row.smartRevenue,
+      smart_revenue: row.factGmv,
       smart_gmv: row.smartGmv,
-      smart_ads: row.smartAds,
+      smart_ads: row.adsBoth,
       smart_drr_revenue_pct: row.smartDrrRevenue != null ? Math.round(Number(row.smartDrrRevenue) * 10000) / 100 : '',
       smart_drr_gmv_pct: row.smartDrrGmv != null ? Math.round(Number(row.smartDrrGmv) * 10000) / 100 : '',
       gmv_delta: row.planDeltaGmv,
@@ -4717,7 +4721,7 @@ function iuDrrExportRows(rows, model) {
       completion_pct: row.completion != null ? Math.round(Number(row.completion) * 10000) / 100 : '',
       target_drr_pct: Math.round(targetDrr * 10000) / 100,
       daily_target_ads: row.dailyTargetAds,
-      ads_fact_both_accounts: row.adsBoth,
+      smart_ads_fact: row.adsBoth,
       ads_delta_daily: row.adsDeltaDaily,
       cumulative_target_ads: row.cumulativeTargetAds,
       cumulative_fact_ads: row.cumulativeFactAds,
@@ -4778,25 +4782,26 @@ function downloadIuDrrExcel(model) {
       ['platform', 'Площадка'],
       ['date', 'Дата'],
       ['period', 'Период'],
-      ['month_target_gmv', 'Оборот план / месяц'],
-      ['month_target_ads', 'Реклама план / месяц'],
+      ['month_target_gmv', 'Smart план / месяц'],
+      ['month_target_ads', 'Smart реклама план / месяц'],
       ['adrev_kpi_pct', 'AdRev KPI / цель ДРР, %'],
       ['spp_pct', 'СПП по договору, %'],
-      ['daily_target_gmv', 'Оборот план / день'],
-      ['fact_gmv_both_accounts', 'Оборот факт / день'],
-      ['cumulative_target_gmv', 'Оборот план накопительно'],
-      ['cumulative_fact_gmv', 'Оборот факт накопительно'],
-      ['cumulative_gmv_delta', 'Отклонение оборота накопительно'],
-      ['cumulative_gmv_completion_pct', 'Оборот выполнение накопительно, %'],
+      ['daily_target_gmv', 'Smart план / день'],
+      ['smart_revenue', 'Smart факт / день'],
+      ['smart_gmv', 'Smart GMV / день'],
+      ['cumulative_target_gmv', 'Smart план накопительно'],
+      ['cumulative_fact_gmv', 'Smart факт накопительно'],
+      ['cumulative_gmv_delta', 'Отклонение Smart накопительно'],
+      ['cumulative_gmv_completion_pct', 'Smart выполнение накопительно, %'],
       ['daily_target_ads', 'Реклама план / день'],
-      ['ads_fact_both_accounts', 'Реклама факт / день'],
+      ['smart_ads_fact', 'Smart реклама факт / день'],
       ['cumulative_target_ads', 'Реклама план накопительно'],
       ['cumulative_fact_ads', 'Реклама факт накопительно'],
       ['cumulative_ads_delta', 'Отклонение рекламы накопительно'],
       ['cumulative_ads_completion_pct', 'Реклама выполнение накопительно, %'],
-      ['dashboard_ads_delta', 'Дельта рекламы из дашборда Ozon'],
-      ['dashboard_cumulative_ads', 'Реклама накопительно из дашборда Ozon'],
-      ['forecast_daily_ads', 'Реком. реклама / день из дашборда Ozon'],
+      ['dashboard_ads_delta', 'Дельта Smart-рекламы из дашборда Ozon'],
+      ['dashboard_cumulative_ads', 'Smart-реклама накопительно из дашборда Ozon'],
+      ['forecast_daily_ads', 'Реком. Smart-реклама / день из дашборда Ozon'],
       ['fact_drr_pct', 'ДРР факт, %']
     ], rows, `iu-drr-ozon-${model.selectedMonth || todayIso()}.xls`);
     return;
@@ -4899,12 +4904,23 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   const ozonSppRate = numberOrZero(ozonContractKpis.sppRate);
   const ozonTargetSpendByFact = numberOrZero(ozonFinanceMonth.salesGross) * ozonTargetDrr;
   const ozonSpendReserve = ozonTargetSpendByFact - ozonAdsAbs;
-  const ozonMonthTargetGmv = numberOrZero(ozonPlanMonth.monthlyTargetGmv || ozonPlan.monthlyTargets?.[model.selectedMonth] || month.iuRevenueOzonPlan);
+  const ozonFullMonthTargetGmv = numberOrZero(ozonPlanMonth.monthlyTargetGmv || ozonPlan.monthlyTargets?.[model.selectedMonth] || month.iuRevenueOzonPlan);
+  const ozonSmartShare = numberOrZero(ozonAllocation.smartShare || 0.4);
+  const ozonMonthTargetGmv = ozonFullMonthTargetGmv * ozonSmartShare;
+  const ozonSmartDailyRows = (ozonPlan.daily || [])
+    .filter((row) => row.monthKey === model.selectedMonth)
+    .map((row) => ({ date: row.date, ...(row.accountBreakdown?.smart || {}) }))
+    .filter((row) => numberOrZero(row.revenue) || numberOrZero(row.gmv) || numberOrZero(row.ads));
+  const ozonSmartRevenue = ozonSmartDailyRows.reduce((sum, row) => sum + numberOrZero(row.revenue), 0);
+  const ozonSmartGmv = ozonSmartDailyRows.reduce((sum, row) => sum + numberOrZero(row.gmv), 0);
+  const ozonSmartAds = ozonSmartDailyRows.reduce((sum, row) => sum + numberOrZero(row.ads), 0);
   const ozonDaysInMonth = daysInMonthKey(model.selectedMonth);
-  const ozonElapsedDays = numberOrZero(ozonFinance.window?.days) || new Set((ozonPlan.daily || []).filter((row) => row.monthKey === model.selectedMonth && (numberOrZero(row.gmv) || numberOrZero(row.ads))).map((row) => row.date)).size;
+  const ozonElapsedDays = new Set(ozonSmartDailyRows.map((row) => row.date)).size
+    || numberOrZero(ozonFinance.window?.days)
+    || new Set((ozonPlan.daily || []).filter((row) => row.monthKey === model.selectedMonth && (numberOrZero(row.gmv) || numberOrZero(row.ads))).map((row) => row.date)).size;
   const ozonPlanToDateGmv = ozonDaysInMonth > 0 ? ozonMonthTargetGmv * Math.min(ozonElapsedDays || ozonDaysInMonth, ozonDaysInMonth) / ozonDaysInMonth : 0;
-  const ozonFactGmvBoth = numberOrZero(ozonPlanTotals.gmv || ozonFinanceMonth.salesGross);
-  const ozonFactAdsBoth = numberOrZero(ozonPlanTotals.ads || ozonAdsAbs);
+  const ozonFactGmvBoth = numberOrZero(ozonSmartRevenue || ozonAllocation.smartAllocatedRevenue || ozonPlanTotals.revenue || ozonFinanceMonth.salesGross);
+  const ozonFactAdsBoth = numberOrZero(ozonSmartAds || ozonAllocation.smartAllocatedAds || ozonPlanTotals.ads || ozonAdsAbs);
   const ozonPlanCompletionToDate = ozonPlanToDateGmv > 0 ? ozonFactGmvBoth / ozonPlanToDateGmv : null;
   const ozonPlanCompletionMonth = ozonMonthTargetGmv > 0 ? ozonFactGmvBoth / ozonMonthTargetGmv : null;
   const ozonPlanDeltaToDate = ozonFactGmvBoth - ozonPlanToDateGmv;
@@ -4915,10 +4931,8 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   const ozonAdsCompletionToDate = ozonAdsPlanToDate > 0 ? ozonFactAdsBoth / ozonAdsPlanToDate : null;
   const ozonPlanAdBudgetByFact = ozonFactGmvBoth * ozonTargetDrr;
   const ozonPlanAdReserve = ozonPlanAdBudgetByFact - ozonFactAdsBoth;
-  const ozonBothAccountsAds = numberOrZero(ozonAllocation.totalAds || ozonPlanTotals.ads);
-  const ozonSmartShare = numberOrZero(ozonAllocation.smartShare || 0.4);
-  const ozonSmartShareAds = numberOrZero(ozonAllocation.smartAllocatedAds || (ozonBothAccountsAds * ozonSmartShare));
-  const ozonSmartShareGmv = numberOrZero(ozonAllocation.smartAllocatedGmv || (ozonFactGmvBoth * ozonSmartShare));
+  const ozonSmartShareAds = ozonFactAdsBoth;
+  const ozonSmartShareGmv = numberOrZero(ozonSmartGmv || ozonAllocation.smartAllocatedGmv || (ozonFactGmvBoth * ozonSmartShare));
   const ozonFinanceApiSourceLabel = ozonFinance.source?.sourceMode === 'api'
     ? [
       `Ozon API ${ozonFinance.source?.endpoint || '/v3/finance/transaction/list'}`,
@@ -5265,8 +5279,8 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   };
   const ozonSummaryRows = [
     {
-      label: 'Оборот',
-      detail: `план месяца ${fmt.money(ozonMonthTargetGmv)}`,
+      label: 'Smart оборот',
+      detail: `план Smart на месяц ${fmt.money(ozonMonthTargetGmv)}`,
       monthPlan: ozonMonthTargetGmv,
       plan: ozonPlanToDateGmv,
       fact: ozonFactGmvBoth,
@@ -5275,8 +5289,8 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       tone: iuDrrToneForRevenueDelta(ozonPlanDeltaToDate)
     },
     {
-      label: 'Реклама',
-      detail: `месячный план ${fmt.money(ozonAdsPlanMonth)}`,
+      label: 'Smart реклама',
+      detail: `план Smart на месяц ${fmt.money(ozonAdsPlanMonth)}`,
       monthPlan: ozonAdsPlanMonth,
       plan: ozonAdsPlanToDate,
       fact: ozonFactAdsBoth,
@@ -5300,8 +5314,8 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
         <div>
-          <h3>Итог Ozon на дату</h3>
-          <p class="small muted">${fmt.int(ozonElapsedDays)} из ${fmt.int(ozonDaysInMonth)} дней месяца. Сверху только план, факт и отклонение; детализация ниже.</p>
+          <h3>Итог Ozon Smart на дату</h3>
+          <p class="small muted">${fmt.int(ozonElapsedDays)} из ${fmt.int(ozonDaysInMonth)} дней месяца. Сверху только Smart-план, Smart-факт и отклонение; детализация ниже.</p>
         </div>
         ${badge(ozonFinanceWindowLabel || model.selectedMonth, 'info')}
       </div>
@@ -5332,7 +5346,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
         </table>
       </div>
       <div class="muted small" style="margin-top:10px">
-        Источник факта: Ozon API и Ozon dashboard. Проверка договора из Excel: GMV KPI, РКО, PI к WB self wallet 1.00 и AdRev KPI для сохранения СПП.
+        Источник факта: Smart-блок в Ozon dashboard. Проверка договора из Excel: GMV KPI, РКО, PI к WB self wallet 1.00 и AdRev KPI для сохранения СПП.
       </div>
     </div>
   `;
@@ -5340,7 +5354,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     <div class="section-title">
       <div>
         <h2>${escapeHtml(platformMeta.title)}</h2>
-        <p>${isOzonView ? 'План-факт Ozon по двум кабинетам: оборот, реклама, выполнение и отклонение от плана.' : 'WB: выполнение ИУ, ДРР без Внешки и дневная детализация каналов рекламы.'}</p>
+        <p>${isOzonView ? 'План-факт Ozon по Smart: оборот, реклама, выполнение и отклонение от плана.' : 'WB: выполнение ИУ, ДРР без Внешки и дневная детализация каналов рекламы.'}</p>
       </div>
       <div class="badge-stack" ${isOzonView ? 'style="display:none"' : ''}>
         ${isOzonView ? badge('Ozon', 'info') : iuDrrSourceBadge(model)}

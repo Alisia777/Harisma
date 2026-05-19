@@ -4750,8 +4750,15 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   const ozonSmartShare = numberOrZero(ozonAllocation.smartShare || 0.4);
   const ozonSmartShareAds = numberOrZero(ozonAllocation.smartAllocatedAds || (ozonBothAccountsAds * ozonSmartShare));
   const ozonSmartShareGmv = numberOrZero(ozonAllocation.smartAllocatedGmv || (ozonFactGmvBoth * ozonSmartShare));
+  const ozonFinanceApiSourceLabel = ozonFinance.source?.sourceMode === 'api'
+    ? [
+      `Ozon API ${ozonFinance.source?.endpoint || '/v3/finance/transaction/list'}`,
+      ozonFinance.source?.fetchedRows ? `${fmt.int(ozonFinance.source.fetchedRows)} rows` : '',
+      ozonFinance.source?.apiRowCount && ozonFinance.source.apiRowCount !== ozonFinance.source.fetchedRows ? `API row_count ${fmt.int(ozonFinance.source.apiRowCount)}` : ''
+    ].filter(Boolean).join(' · ')
+    : '';
   const ozonFinanceSourceLabel = [
-    ozonFinance.source?.financeFile,
+    ozonFinanceApiSourceLabel || ozonFinance.source?.financeFile,
     ozonFinance.source?.productsFile,
     ozonPlan.source?.planFile
   ].filter(Boolean).join(' + ');
@@ -5033,7 +5040,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     <div class="section-title">
       <div>
         <h2>${escapeHtml(platformMeta.title)}</h2>
-        <p>${isOzonView ? `Ozon Finance: начислено, реклама и ДРР взяты из строк finance-выгрузки; план ИУ идет на оба кабинета, Smart считаем нашей долей ${fmt.pct(ozonSmartShare)}.` : 'WB: выполнение ИУ, ДРР без Внешки и дневная детализация каналов рекламы.'}</p>
+        <p>${isOzonView ? `Ozon Finance: начислено, реклама и ДРР приходят из Ozon API; Excel остается только fallback/контроль. План ИУ идет на оба кабинета, Smart считаем нашей долей ${fmt.pct(ozonSmartShare)}.` : 'WB: выполнение ИУ, ДРР без Внешки и дневная детализация каналов рекламы.'}</p>
       </div>
       <div class="badge-stack">
         ${isOzonView ? badge('Ozon', 'info') : iuDrrSourceBadge(model)}

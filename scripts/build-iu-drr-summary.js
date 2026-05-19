@@ -7,6 +7,8 @@ const XLSX = require('xlsx');
 const DEFAULT_PLAN_PCT = 0.08;
 const DEFAULT_OZON_PLAN_PCT = 0.25;
 const DEFAULT_OZON_SMART_SHARE = 0.4;
+const OZON_API_BASE_URL = 'https://api-seller.ozon.ru';
+const OZON_FINANCE_TRANSACTION_PAGE_SIZE = 1000;
 const OZON_FINANCE_FIELDS = [
   'salesGross',
   'returnsGross',
@@ -166,6 +168,15 @@ function isoDate(value) {
   if (match) return `${match[1]}-${match[2]}-${match[3]}`;
   const stamp = Date.parse(raw);
   return Number.isFinite(stamp) ? new Date(stamp).toISOString().slice(0, 10) : '';
+}
+
+function todayDateKey() {
+  const date = new Date();
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0')
+  ].join('-');
 }
 
 function dateFromCell(value, yearHint = '') {
@@ -479,6 +490,12 @@ function ozonFinanceLeftoverGroup(type) {
   const raw = normalizeTextKey(type);
   const decoded = normalizeTextKey(decodeOzonLowByteText(type));
   const text = `${raw} ${decoded}`;
+  if (/costperclick|promotion|advertising|premium|installment|cashback|badge|sellerinstallment/.test(text)) return 'ads';
+  if (/compensat|decompensat/.test(text)) return 'compensations';
+  if (/fbo|warehouse|storage|supply|crossdocking|cargo|shortage|surplus|expiration|package|disposal|spoiling|spoilage|shipment|dropoff|directflow|fulfillment|movement/.test(text)) {
+    return 'fboServices';
+  }
+  if (/acquiring|earlypayment|flexiblepayment|partner/.test(text)) return 'partnerServices';
   if (
     /оплата.?за.?клик|продвижение|реклама|premium|рассроч|бонусы.?продавца|бейдж/.test(text)
     || raw.includes('70 :;8:')
@@ -735,6 +752,314 @@ function buildOzonFinanceSummary(options) {
       warnings: missing.length ? [`Missing required Ozon Finance headers: ${missing.join(', ')}`] : []
     }
   };
+}
+
+function classifyOzonApiServiceAsDelivery(serviceName = '') {
+  const text = normalizeTextKey(serviceName);
+  return /delivery|returnflow|lastmile|logistic|logistics|handover|directflowlogistic/.test(text);
+}
+
+function ozonFinancePartsFromApiOperation(operation = {}) {
+  const services = Array.isArray(operation.services) ? operation.services : [];
+  const items = Array.isArray(operation.items) ? operation.items : [];
+  const serviceDelivery = services
+    .filter((service) => classifyOzonApiServiceAsDelivery(service?.name))
+    .reduce((sum, service) => sum + moneyOrZero(service?.price), 0);
+  const gross = moneyOrZero(operation.accruals_for_sale);
+  const total = moneyOrZero(operation.amount);
+  const reward = moneyOrZero(operation.sale_commission);
+  const type = [
+    operation.operation_type,
+    operation.operation_type_name,
+    operation.type
+  ].map((value) => String(value || '').trim()).filter(Boolean).join(' | ');
+  const leftoverRaw = total - gross - reward - serviceDelivery;
+  const leftover = Math.abs(leftoverRaw) < 0.005 ? 0 : leftoverRaw;
+  const firstItem = items[0] || {};
+  const parts = {
+    type,
+    date: isoDate(operation.operation_date),
+    sku: normalizeSkuKey(firstItem.sku),
+    article: '',
+    name: String(firstItem.name || operation.operation_type_name || operation.operation_type || '').trim(),
+    quantity: items.length || 0,
+    salesGross: gross > 0 ? gross : 0,
+    returnsGross: gross < 0 ? gross : 0,
+    ozonReward: reward,
+    deliveryServices: serviceDelivery,
+    partnerServices: 0,
+    fboServices: 0,
+    ads: 0,
+    otherServices: 0,
+    compensations: 0,
+    accruedNet: total
+  };
+  parts[ozonFinanceLeftoverGroup(type)] += leftover;
+  return parts;
+}
+
+function materializeOzonFinanceSummaryFromParts(options, partsRows, source, warnings = []) {
+  const productMaps = buildOzonProductMaps(options.ozonProductsPath);
+  const totals = emptyOzonFinanceBucket('total', 'Ozon accrued');
+  const daily = new Map();
+  const months = new Map();
+  const groups = new Map();
+  const sku = new Map();
+  const categories = new Map();
+  const types = new Map();
+  let nonSkuRowCount = 0;
+  let unmappedSkuRows = 0;
+
+  for (const parts of partsRows) {
+    if (!parts.date && !parts.type && !parts.sku && !parts.article && !parts.accruedNet) continue;
+    addOzonFinanceParts(totals, parts);
+    if (parts.date) {
+      const current = daily.get(parts.date) || emptyOzonFinanceBucket(parts.date, parts.date);
+      addOzonFinanceParts(current, parts);
+      daily.set(parts.date, current);
+      const month = monthKey(parts.date);
+      const monthBucket = months.get(month) || emptyOzonFinanceBucket(month, month);
+      addOzonFinanceParts(monthBucket, parts);
+      months.set(month, monthBucket);
+    }
+    for (const key of OZON_FINANCE_FIELDS.filter((field) => field !== 'accruedNet')) {
+      const value = numberOrZero(parts[key]);
+      if (!value) continue;
+      const groupBucket = groups.get(key) || emptyOzonFinanceBucket(key, OZON_FINANCE_GROUP_LABELS[key] || key);
+      groupBucket.rowCount += 1;
+      groupBucket[key] += value;
+      groupBucket.accruedNet += value;
+      groups.set(key, groupBucket);
+    }
+    const typeKey = parts.type || 'No type';
+    const typeBucket = types.get(typeKey) || emptyOzonFinanceBucket(typeKey, typeKey);
+    addOzonFinanceParts(typeBucket, parts);
+    types.set(typeKey, typeBucket);
+
+    const product = productForOzonFinanceRow(parts, productMaps);
+    if (parts.sku || parts.article) {
+      const skuKey = parts.sku || parts.article;
+      const skuBucket = sku.get(skuKey) || {
+        ...emptyOzonFinanceBucket(skuKey, parts.article || skuKey),
+        sku: parts.sku,
+        article: parts.article || product?.article || '',
+        name: parts.name,
+        productName: product?.name || parts.name,
+        category: product?.category || '',
+        productType: product?.productType || '',
+        status: product?.status || '',
+        ozonProductId: product?.ozonProductId || '',
+        fboStock: product?.fboStock || 0,
+        fbsStock: product?.fbsStock || 0,
+        realFbsStock: product?.realFbsStock || 0,
+        availableStock: product?.availableStock || 0,
+        reservedStock: product?.reservedStock || 0,
+        ownReservedStock: product?.ownReservedStock || 0,
+        price: product?.price || 0,
+        unmapped: !product
+      };
+      if (!skuBucket.productName && product?.name) skuBucket.productName = product.name;
+      if (!skuBucket.name && parts.name) skuBucket.name = parts.name;
+      addOzonFinanceParts(skuBucket, parts);
+      sku.set(skuKey, skuBucket);
+      if (!product) unmappedSkuRows += 1;
+
+      const categoryKey = product?.category || 'Unmapped';
+      const categoryBucket = categories.get(categoryKey) || emptyOzonFinanceBucket(categoryKey, categoryKey);
+      addOzonFinanceParts(categoryBucket, parts);
+      categories.set(categoryKey, categoryBucket);
+    } else {
+      nonSkuRowCount += 1;
+    }
+  }
+
+  const rowsAccruedNet = roundMoney(totals.accruedNet);
+  const sellerUiAccruedNet = options.ozonFinanceControlTotal ? roundMoney(options.ozonFinanceControlTotal) : null;
+  const materializedTotals = materializeOzonFinanceBucket(totals);
+  const sellerUiBreakdown = sellerUiAccruedNet === OZON_FINANCE_SELLER_UI_CONTROL_BREAKDOWN.accruedNet
+    ? { ...OZON_FINANCE_SELLER_UI_CONTROL_BREAKDOWN }
+    : {};
+  const groupDeltas = Object.fromEntries(OZON_FINANCE_FIELDS
+    .filter((field) => field !== 'quantity')
+    .filter((field) => sellerUiBreakdown[field] !== undefined)
+    .map((field) => [field, {
+      rowsValue: roundMoney(materializedTotals[field]),
+      sellerUiValue: roundMoney(sellerUiBreakdown[field]),
+      delta: roundMoney(materializedTotals[field] - sellerUiBreakdown[field])
+    }]));
+
+  return {
+    status: 'ok',
+    source: {
+      ...source,
+      productsPath: options.ozonProductsPath || '',
+      productsFile: options.ozonProductsPath ? path.basename(options.ozonProductsPath) : '',
+      productRows: productMaps.rows,
+      sourceRows: partsRows.length
+    },
+    window: {
+      from: [...daily.keys()].sort()[0] || '',
+      to: [...daily.keys()].sort().pop() || '',
+      days: daily.size
+    },
+    totals: materializedTotals,
+    daily: [...daily.values()]
+      .sort((left, right) => left.key.localeCompare(right.key))
+      .map((bucket) => materializeOzonFinanceBucket({ ...bucket, date: bucket.key, period: periodLabel(bucket.key), monthKey: monthKey(bucket.key) })),
+    months: [...months.values()]
+      .sort((left, right) => left.key.localeCompare(right.key))
+      .map((bucket) => materializeOzonFinanceBucket({ ...bucket, monthKey: bucket.key })),
+    groups: [...groups.values()]
+      .map(materializeOzonFinanceBucket)
+      .sort((left, right) => Math.abs(right.accruedNet) - Math.abs(left.accruedNet)),
+    sku: [...sku.values()]
+      .map((bucket) => ({
+        ...materializeOzonFinanceBucket(bucket),
+        fboStock: roundMoney(bucket.fboStock),
+        fbsStock: roundMoney(bucket.fbsStock),
+        realFbsStock: roundMoney(bucket.realFbsStock),
+        availableStock: roundMoney(bucket.availableStock),
+        reservedStock: roundMoney(bucket.reservedStock),
+        ownReservedStock: roundMoney(bucket.ownReservedStock),
+        price: roundMoney(bucket.price)
+      }))
+      .sort((left, right) => Math.abs(right.accruedNet) - Math.abs(left.accruedNet)),
+    categories: [...categories.values()]
+      .map(materializeOzonFinanceBucket)
+      .sort((left, right) => Math.abs(right.accruedNet) - Math.abs(left.accruedNet)),
+    types: [...types.values()]
+      .map(materializeOzonFinanceBucket)
+      .sort((left, right) => Math.abs(right.accruedNet) - Math.abs(left.accruedNet)),
+    control: {
+      rowsAccruedNet,
+      sellerUiAccruedNet,
+      deltaToSellerUi: sellerUiAccruedNet === null ? null : roundMoney(rowsAccruedNet - sellerUiAccruedNet),
+      sellerUiBreakdown,
+      groupDeltas
+    },
+    diagnostics: {
+      missingHeaders: [],
+      nonSkuRowCount,
+      unmappedSkuRows,
+      deliveryColumns: 0,
+      warnings
+    }
+  };
+}
+
+async function ozonApiRequest(options, endpoint, body) {
+  const response = await fetch(`${options.ozonApiBaseUrl}${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Client-Id': options.ozonClientId,
+      'Api-Key': options.ozonApiKey,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+  const text = await response.text();
+  let payload = null;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch (_error) {
+    payload = null;
+  }
+  if (!response.ok) {
+    throw new Error(`Ozon API ${endpoint} failed: HTTP ${response.status} ${text.slice(0, 500)}`);
+  }
+  return payload || {};
+}
+
+async function fetchOzonFinanceApiOperations(options) {
+  const pageSize = Math.max(1, Math.min(1000, Math.trunc(numberOrZero(options.ozonFinanceApiPageSize || OZON_FINANCE_TRANSACTION_PAGE_SIZE))));
+  const operations = [];
+  let pageCount = 1;
+  let rowCount = 0;
+  for (let page = 1; page <= pageCount; page += 1) {
+    const payload = await ozonApiRequest(options, '/v3/finance/transaction/list', {
+      filter: {
+        date: {
+          from: `${options.ozonFinanceApiFrom}T00:00:00.000Z`,
+          to: `${options.ozonFinanceApiTo}T23:59:59.999Z`
+        },
+        operation_type: [],
+        posting_number: '',
+        transaction_type: 'all'
+      },
+      page,
+      page_size: pageSize
+    });
+    const result = payload.result || {};
+    if (page === 1) {
+      pageCount = Math.max(1, Math.trunc(numberOrZero(result.page_count || 1)));
+      rowCount = Math.trunc(numberOrZero(result.row_count || 0));
+    }
+    operations.push(...(Array.isArray(result.operations) ? result.operations : []));
+  }
+  return { operations, pageCount, rowCount, pageSize };
+}
+
+async function buildOzonFinanceSummaryFromApi(options) {
+  if (!options.ozonClientId || !options.ozonApiKey) {
+    return {
+      status: 'missing',
+      source: { sourceMode: 'api', endpoint: '/v3/finance/transaction/list', sourceRows: 0 },
+      totals: materializeOzonFinanceBucket(emptyOzonFinanceBucket('total', 'Ozon accrued')),
+      daily: [],
+      months: [],
+      groups: [],
+      sku: [],
+      categories: [],
+      types: [],
+      control: {
+        rowsAccruedNet: 0,
+        sellerUiAccruedNet: roundMoney(options.ozonFinanceControlTotal),
+        deltaToSellerUi: options.ozonFinanceControlTotal ? roundMoney(0 - options.ozonFinanceControlTotal) : null
+      },
+      diagnostics: { warnings: ['Ozon API credentials are not set'] }
+    };
+  }
+  const fetched = await fetchOzonFinanceApiOperations(options);
+  const partsRows = fetched.operations.map(ozonFinancePartsFromApiOperation);
+  return materializeOzonFinanceSummaryFromParts(options, partsRows, {
+    sourceMode: 'api',
+    endpoint: '/v3/finance/transaction/list',
+    apiBaseUrl: options.ozonApiBaseUrl,
+    from: options.ozonFinanceApiFrom,
+    to: options.ozonFinanceApiTo,
+    apiRowCount: fetched.rowCount,
+    fetchedRows: fetched.operations.length,
+    pageCount: fetched.pageCount,
+    pageSize: fetched.pageSize
+  }, fetched.operations.length === fetched.rowCount ? [] : [
+    `Ozon API row_count ${fetched.rowCount} differs from fetched rows ${fetched.operations.length}; finance data may have changed during pagination.`
+  ]);
+}
+
+async function buildOzonFinanceSummaryAuto(options) {
+  const sourceMode = String(options.ozonFinanceSource || 'auto').toLowerCase();
+  if (sourceMode === 'file') return buildOzonFinanceSummary(options);
+  try {
+    const apiSummary = await buildOzonFinanceSummaryFromApi(options);
+    if (apiSummary.status === 'ok' || sourceMode === 'api') return apiSummary;
+  } catch (error) {
+    if (sourceMode === 'api') throw error;
+    const fileSummary = buildOzonFinanceSummary(options);
+    fileSummary.diagnostics = {
+      ...(fileSummary.diagnostics || {}),
+      warnings: [
+        ...((fileSummary.diagnostics || {}).warnings || []),
+        `Ozon API fallback to file: ${error?.message || String(error)}`
+      ]
+    };
+    fileSummary.source = {
+      ...(fileSummary.source || {}),
+      sourceMode: 'file-fallback',
+      apiError: error?.message || String(error)
+    };
+    return fileSummary;
+  }
+  return buildOzonFinanceSummary(options);
 }
 
 function findSheetRowsByName(workbookRows, pattern, fallbackIndex = 0) {
@@ -1088,6 +1413,8 @@ function resolveOptions(args) {
   const baseDataDir = path.resolve(args['base-data-dir'] || path.join(process.cwd(), 'data'));
   const outputDir = args['output-dir'] ? path.resolve(args['output-dir']) : '';
   const mirrorDataDir = path.resolve(args['mirror-data-dir'] || process.env.ALTEA_PORTAL_FALLBACK_DIR || baseDataDir);
+  const apiTo = isoDate(args['ozon-finance-api-to'] || args.to || args['date-to']) || todayDateKey();
+  const apiFrom = isoDate(args['ozon-finance-api-from'] || args.from || args['date-from']) || `${apiTo.slice(0, 7)}-01`;
   const ozonFinancePath = args['ozon-finance-file']
     ? path.resolve(args['ozon-finance-file'])
     : findNewestDownloadFile((name) => /^Отчет по товарам за период .*\.xlsx$/i.test(name));
@@ -1113,7 +1440,14 @@ function resolveOptions(args) {
     ozonProductsPath,
     ozonPlanPath,
     ozonFinanceControlTotal: moneyOrZero(args['ozon-finance-control-total'] || process.env.ALTEA_OZON_FINANCE_CONTROL_TOTAL),
-    ozonSmartShare: roundRate(args['ozon-smart-share'] || process.env.ALTEA_OZON_SMART_SHARE || DEFAULT_OZON_SMART_SHARE)
+    ozonSmartShare: roundRate(args['ozon-smart-share'] || process.env.ALTEA_OZON_SMART_SHARE || DEFAULT_OZON_SMART_SHARE),
+    ozonFinanceSource: String(args['ozon-finance-source'] || process.env.ALTEA_OZON_FINANCE_SOURCE || 'auto').trim().toLowerCase(),
+    ozonClientId: String(args['ozon-client-id'] || process.env.ALTEA_OZON_CLIENT_ID || '').trim(),
+    ozonApiKey: String(args['ozon-api-key'] || process.env.ALTEA_OZON_API_KEY || '').trim(),
+    ozonApiBaseUrl: String(args['ozon-api-base-url'] || process.env.ALTEA_OZON_API_BASE_URL || OZON_API_BASE_URL).replace(/\/+$/, ''),
+    ozonFinanceApiFrom: apiFrom,
+    ozonFinanceApiTo: apiTo,
+    ozonFinanceApiPageSize: Math.max(1, Math.min(1000, Math.trunc(numberOrZero(args['ozon-finance-api-page-size'] || OZON_FINANCE_TRANSACTION_PAGE_SIZE))))
   };
 }
 
@@ -1637,13 +1971,13 @@ function buildChannelRows(dailyRows, adsSummary = {}, wbFeedbacksSummary = {}) {
   })).sort((left, right) => right.spend - left.spend || left.label.localeCompare(right.label, 'ru'));
 }
 
-function buildPayload(options) {
+async function buildPayload(options) {
   const platformTrends = readLayer(options, 'platform_trends.json', { platforms: [] });
   const iuPlan = readLayer(options, 'iu_plan.json', { months: {} });
   const adsSummary = readLayer(options, 'ads_summary.json', { platforms: [], itemSeries: [] });
   const wbFeedbacksSummary = readLayer(options, 'wb_feedbacks_summary.json', { reviewsForPoints: {}, daily: [], cards: [] });
   const ozonPlan = buildOzonPlanDashboardSummary(options);
-  const ozonFinance = buildOzonFinanceSummary(options);
+  const ozonFinance = await buildOzonFinanceSummaryAuto(options);
   const dailyRows = buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, options);
   const months = buildMonthRows(dailyRows, iuPlan);
   const contractPeriods = buildContractPeriodRows(dailyRows);
@@ -1663,6 +1997,8 @@ function buildPayload(options) {
       platformTrendsGeneratedAt: platformTrends.generatedAt || '',
       adsSummaryGeneratedAt: adsSummary.generatedAt || '',
       wbFeedbacksGeneratedAt: wbFeedbacksSummary.generatedAt || '',
+      ozonFinanceSourceMode: ozonFinance.source?.sourceMode || '',
+      ozonFinanceEndpoint: ozonFinance.source?.endpoint || '',
       ozonFinanceFile: ozonFinance.source?.financeFile || '',
       ozonProductsFile: ozonFinance.source?.productsFile || '',
       ozonPlanFile: ozonPlan.source?.planFile || '',
@@ -1732,9 +2068,9 @@ function writeOutputs(payload, options) {
   return files;
 }
 
-function main() {
+async function main() {
   const options = resolveOptions(parseArgs(process.argv));
-  const payload = buildPayload(options);
+  const payload = await buildPayload(options);
   const writtenFiles = options.dryRun ? [] : writeOutputs(payload, options);
   const currentMonthKey = payload.kpis?.monthKey || '';
   const ozonPlanMonthForLog = (payload.ozonPlan?.monthly || []).find((month) => month.monthKey === currentMonthKey)
@@ -1750,6 +2086,9 @@ function main() {
     drrWb: payload.kpis?.drrWb ?? null,
     ozonFinance: {
       status: payload.ozonFinance?.status || '',
+      sourceMode: payload.ozonFinance?.source?.sourceMode || '',
+      apiRowCount: payload.ozonFinance?.source?.apiRowCount || 0,
+      fetchedRows: payload.ozonFinance?.source?.fetchedRows || 0,
       sourceRows: payload.ozonFinance?.source?.sourceRows || 0,
       accruedNet: payload.ozonFinance?.totals?.accruedNet || 0,
       sellerUiAccruedNet: payload.ozonFinance?.control?.sellerUiAccruedNet ?? null,
@@ -1769,4 +2108,7 @@ function main() {
   }, null, 2));
 }
 
-main();
+main().catch((error) => {
+  console.error(error?.stack || String(error));
+  process.exitCode = 1;
+});

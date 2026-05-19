@@ -185,20 +185,34 @@
       if (!silent && typeof updateSyncBadge === 'function') updateSyncBadge();
 
       const taskRows = await queryRemoteHotfix(TABLES.tasks);
-      const [commentResult, decisionResult, ownerResult] = await Promise.allSettled([
+      const repricerControlsPromise = typeof queryRemoteRepricerControls === 'function'
+        ? queryRemoteRepricerControls()
+        : Promise.resolve(null);
+      const [commentResult, decisionResult, ownerResult, repricerControlsResult] = await Promise.allSettled([
         queryRemoteHotfix(TABLES.comments),
         queryRemoteHotfix(TABLES.decisions),
-        queryRemoteHotfix(TABLES.owners)
+        queryRemoteHotfix(TABLES.owners),
+        repricerControlsPromise
       ]);
 
       const commentRows = commentResult.status === 'fulfilled' ? (commentResult.value || []) : [];
       const decisionRows = decisionResult.status === 'fulfilled' ? (decisionResult.value || []) : [];
       const ownerRows = ownerResult.status === 'fulfilled' ? (ownerResult.value || []) : [];
-      const softErrors = [commentResult, decisionResult, ownerResult]
+      const repricerControlsLoaded = repricerControlsResult.status === 'fulfilled';
+      const repricerControls = repricerControlsLoaded ? (repricerControlsResult.value || null) : null;
+      const softErrors = [commentResult, decisionResult, ownerResult, repricerControlsResult]
         .filter((result) => result.status !== 'fulfilled')
         .map((result) => result.reason?.message || String(result.reason || 'Неизвестная ошибка'))
         .filter(Boolean);
-      const remoteEmpty = !taskRows.length && !commentRows.length && !decisionRows.length && !ownerRows.length;
+      app.team.lastPullCoverage = {
+        ...(app.team.lastPullCoverage || {}),
+        tasks: true,
+        comments: commentResult.status === 'fulfilled',
+        decisions: decisionResult.status === 'fulfilled',
+        owners: ownerResult.status === 'fulfilled',
+        repricerControls: repricerControlsLoaded
+      };
+      const remoteEmpty = !taskRows.length && !commentRows.length && !decisionRows.length && !ownerRows.length && !repricerControls;
 
       if (!remoteEmpty) {
         const previousStorage = app.storage && typeof app.storage === 'object' ? app.storage : {};
@@ -212,6 +226,9 @@
         app.storage = typeof completePortalStorage === 'function'
           ? completePortalStorage(remoteStorage, previousStorage)
           : remoteStorage;
+        if (repricerControls && typeof applyRepricerControlsPayload === 'function') {
+          applyRepricerControlsPayload(repricerControls);
+        }
         if (typeof applyOwnerOverridesToSkus === 'function') applyOwnerOverridesToSkus();
         if (typeof saveLocalStorage === 'function') saveLocalStorage();
       }

@@ -5113,6 +5113,8 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   function dashboardTaskWorkstreamKey(task) {
     const raw = String(task?.platform || '').trim().toLowerCase();
     const text = `${raw} ${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''} ${task?.entityLabel || ''}`.toLowerCase();
+    const direct = canonicalDashboardPlatformKey(raw);
+    if (['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'].includes(direct)) return direct;
     if (['wb+ozon', 'wb + ozon', 'cross', 'common', 'shared', 'general', 'all'].includes(raw)) return 'cross';
     if (/(^|\\W)wb($|\\W)|wildberries|вб/.test(text)) return 'wb';
     if (/ozon|озон/.test(text)) return 'ozon';
@@ -5536,14 +5538,16 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     if (!raw) return '';
     if (raw.includes('золотое яблоко') || raw.includes('goldapple') || raw.includes('gold apple') || raw.includes('золот') || raw.includes('зя')) return 'goldapple';
     if (raw.includes("л'этуаль") || raw.includes('летуаль') || raw.includes('letual') || raw.includes('letu')) return 'letu';
-    if (raw.includes('магнит маркет') || raw.includes('магнитмаркет') || raw.includes('магнит') || raw.includes('magnit') || raw.includes('mm')) return 'magnit';
-    if (raw.includes('яндекс') || raw.includes('я.маркет') || raw.includes('я маркет') || raw.includes('ям') || raw.includes('ym') || raw.includes('yandex')) return 'ya';
+    if (raw.includes('магнит маркет') || raw.includes('магнитмаркет') || raw.includes('магнит') || raw.includes('magnit') || /(^|[^a-z0-9])mm([^a-z0-9]|$)/.test(raw)) return 'magnit';
+    if (/(^|[^a-z0-9])ya([^a-z0-9]|$)/.test(raw) || raw.includes('ya_market') || raw.includes('yandex_market') || raw.includes('yandexmarket') || raw.includes('яндекс') || raw.includes('я.маркет') || raw.includes('я маркет') || raw.includes('ям') || raw.includes('ym') || raw.includes('yandex')) return 'ya';
     return '';
   }
 
   function dashboardTaskWorkstreamKey(task) {
     const raw = String(task?.platform || '').trim().toLowerCase();
     const text = `${raw} ${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''} ${task?.entityLabel || ''}`.toLowerCase();
+    const direct = canonicalDashboardPlatformKey(raw);
+    if (['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'].includes(direct)) return direct;
     if (['wb+ozon', 'wb + ozon', 'cross', 'common', 'shared', 'general', 'all'].includes(raw)) return 'cross';
     if (/(^|\W)wb($|\W)|wildberries|вб/.test(text)) return 'wb';
     if (/ozon|озон/.test(text)) return 'ozon';
@@ -5554,6 +5558,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
 
   function dashboardControlPlatformKey(platformKey) {
     const key = canonicalDashboardPlatformKey(platformKey);
+    if (['ya', 'goldapple', 'letu', 'magnit', 'wb', 'ozon', 'all'].includes(key)) return key;
     return 'all';
   }
 

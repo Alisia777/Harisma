@@ -6,6 +6,43 @@ const XLSX = require('xlsx');
 
 const DEFAULT_PLAN_PCT = 0.08;
 const DEFAULT_OZON_PLAN_PCT = 0.25;
+const DEFAULT_OZON_SMART_SHARE = 0.4;
+const OZON_FINANCE_FIELDS = [
+  'salesGross',
+  'returnsGross',
+  'ozonReward',
+  'deliveryServices',
+  'partnerServices',
+  'fboServices',
+  'ads',
+  'otherServices',
+  'compensations',
+  'accruedNet'
+];
+const OZON_FINANCE_GROUP_LABELS = {
+  salesGross: 'Продажи',
+  returnsGross: 'Возвраты',
+  ozonReward: 'Вознаграждение Ozon',
+  deliveryServices: 'Услуги доставки',
+  partnerServices: 'Услуги партнеров',
+  fboServices: 'Услуги FBO',
+  ads: 'Продвижение и реклама',
+  otherServices: 'Другие услуги и штрафы',
+  compensations: 'Компенсации и декомпенсации',
+  accruedNet: 'Начислено'
+};
+const OZON_FINANCE_SELLER_UI_CONTROL_BREAKDOWN = {
+  salesGross: 25966472,
+  returnsGross: -89593,
+  ozonReward: -6057377,
+  deliveryServices: -2860744,
+  partnerServices: -527010,
+  fboServices: -578774,
+  ads: -6054621,
+  otherServices: -130371,
+  compensations: -486,
+  accruedNet: 9667496
+};
 const WB_CONTRACT = {
   seller: 'ООО "СМАРТ-СЭЙЛ"',
   source: '2_Соглашение_по_Программе_сотрудничества_2026_на_год_СМАРТ_01_03.docx',
@@ -90,6 +127,17 @@ function writeJson(filePath, payload) {
 
 function numberOrZero(value) {
   const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function moneyOrZero(value) {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  if (value === null || value === undefined) return 0;
+  const normalized = String(value)
+    .replace(/\s+/g, '')
+    .replace(',', '.')
+    .replace(/[^0-9.+-]/g, '');
+  const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
@@ -235,12 +283,673 @@ function findExistingPath(candidates = []) {
   return '';
 }
 
+function findNewestDownloadFile(predicate) {
+  try {
+    const entries = fs.readdirSync(DOWNLOADS_ROOT, { withFileTypes: true });
+    return entries
+      .filter((entry) => entry.isFile() && predicate(entry.name))
+      .map((entry) => {
+        const filePath = path.join(DOWNLOADS_ROOT, entry.name);
+        return { filePath, mtimeMs: fs.statSync(filePath).mtimeMs };
+      })
+      .sort((left, right) => right.mtimeMs - left.mtimeMs)[0]?.filePath || '';
+  } catch (_error) {
+    return '';
+  }
+}
+
+function findNewestFileInDirs(dirs, predicate) {
+  const matches = [];
+  for (const dir of dirs) {
+    try {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (!entry.isFile() || !predicate(entry.name)) continue;
+        const filePath = path.join(dir, entry.name);
+        matches.push({ filePath, mtimeMs: fs.statSync(filePath).mtimeMs });
+      }
+    } catch (_error) {
+      // Optional source folders may not exist.
+    }
+  }
+  return matches.sort((left, right) => right.mtimeMs - left.mtimeMs)[0]?.filePath || '';
+}
+
 function readWorkbookRows(filePath) {
   if (!filePath || !fs.existsSync(filePath)) return [];
   const workbook = XLSX.readFile(filePath, { cellDates: false });
   const sheetName = workbook.SheetNames[0];
   if (!sheetName) return [];
   return XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: null, raw: true });
+}
+
+function normalizeTextKey(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/ё/g, 'е')
+    .replace(/\s+/g, ' ');
+}
+
+function decodeOzonLowByteText(value) {
+  return String(value || '').replace(/[\s\S]/g, (char) => {
+    const code = char.charCodeAt(0);
+    if (code === 0x01) return 'Ё';
+    if (code === 0x51) return 'ё';
+    if (code >= 0x10 && code <= 0x4f) return String.fromCharCode(0x0400 + code);
+    return char;
+  });
+}
+
+function normalizeSkuKey(value) {
+  return String(value || '').trim().replace(/^'+/, '').trim();
+}
+
+function findHeaderIndex(headers, patterns) {
+  const normalized = headers.map((header) => normalizeTextKey(header));
+  for (const pattern of patterns) {
+    const index = normalized.findIndex((header) => pattern.test(header));
+    if (index >= 0) return index;
+  }
+  return -1;
+}
+
+function parseDelimitedLine(line, separator = ';') {
+  const result = [];
+  let current = '';
+  let quoted = false;
+  for (let index = 0; index < String(line).length; index += 1) {
+    const char = line[index];
+    if (char === '"') {
+      if (quoted && line[index + 1] === '"') {
+        current += '"';
+        index += 1;
+      } else {
+        quoted = !quoted;
+      }
+      continue;
+    }
+    if (char === separator && !quoted) {
+      result.push(current);
+      current = '';
+      continue;
+    }
+    current += char;
+  }
+  result.push(current);
+  return result;
+}
+
+function readSemicolonCsvRows(filePath) {
+  if (!filePath || !fs.existsSync(filePath)) return [];
+  const text = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
+  const lines = text.split(/\r?\n/).filter((line) => line.trim());
+  return lines.map((line) => parseDelimitedLine(line, ';'));
+}
+
+function getRowValue(row, index) {
+  return index >= 0 ? row?.[index] : null;
+}
+
+function buildOzonProductMaps(filePath) {
+  const rows = readSemicolonCsvRows(filePath);
+  if (!rows.length) return { bySku: new Map(), byArticle: new Map(), rows: 0 };
+  const headers = rows[0] || [];
+  const index = {
+    article: findHeaderIndex(headers, [/^артикул$/i]),
+    productId: findHeaderIndex(headers, [/ozon product id/i]),
+    sku: findHeaderIndex(headers, [/^sku$/i]),
+    name: findHeaderIndex(headers, [/название товара/i]),
+    category: findHeaderIndex(headers, [/^категория$/i]),
+    type: findHeaderIndex(headers, [/^тип$/i]),
+    status: findHeaderIndex(headers, [/статус товара/i]),
+    fboStock: findHeaderIndex(headers, [/доступно к продаже по схеме fbo/i]),
+    reservedStock: findHeaderIndex(headers, [/^зарезервировано/i]),
+    fbsStock: findHeaderIndex(headers, [/доступно к продаже по схеме fbs/i]),
+    realFbsStock: findHeaderIndex(headers, [/доступно к продаже по схеме realfbs/i]),
+    ownReservedStock: findHeaderIndex(headers, [/зарезервировано на моих складах/i]),
+    price: findHeaderIndex(headers, [/текущая цена/i])
+  };
+  const bySku = new Map();
+  const byArticle = new Map();
+  for (const row of rows.slice(1)) {
+    const sku = normalizeSkuKey(getRowValue(row, index.sku));
+    const article = normalizeSkuKey(getRowValue(row, index.article));
+    const item = {
+      article,
+      ozonProductId: normalizeSkuKey(getRowValue(row, index.productId)),
+      sku,
+      name: String(getRowValue(row, index.name) || '').trim(),
+      category: String(getRowValue(row, index.category) || '').trim(),
+      productType: String(getRowValue(row, index.type) || '').trim(),
+      status: String(getRowValue(row, index.status) || '').trim(),
+      fboStock: moneyOrZero(getRowValue(row, index.fboStock)),
+      reservedStock: moneyOrZero(getRowValue(row, index.reservedStock)),
+      fbsStock: moneyOrZero(getRowValue(row, index.fbsStock)),
+      realFbsStock: moneyOrZero(getRowValue(row, index.realFbsStock)),
+      ownReservedStock: moneyOrZero(getRowValue(row, index.ownReservedStock)),
+      price: moneyOrZero(getRowValue(row, index.price))
+    };
+    item.availableStock = item.fboStock + item.fbsStock + item.realFbsStock;
+    if (sku && !bySku.has(sku)) bySku.set(sku, item);
+    if (article && !byArticle.has(article.toLowerCase())) byArticle.set(article.toLowerCase(), item);
+  }
+  return { bySku, byArticle, rows: Math.max(0, rows.length - 1) };
+}
+
+function emptyOzonFinanceBucket(key = '', label = '') {
+  return {
+    key,
+    label,
+    rowCount: 0,
+    quantity: 0,
+    salesGross: 0,
+    returnsGross: 0,
+    ozonReward: 0,
+    deliveryServices: 0,
+    partnerServices: 0,
+    fboServices: 0,
+    ads: 0,
+    otherServices: 0,
+    compensations: 0,
+    accruedNet: 0
+  };
+}
+
+function addOzonFinanceParts(bucket, parts) {
+  bucket.rowCount += 1;
+  bucket.quantity += numberOrZero(parts.quantity);
+  for (const key of OZON_FINANCE_FIELDS) {
+    bucket[key] += numberOrZero(parts[key]);
+  }
+  return bucket;
+}
+
+function materializeOzonFinanceBucket(bucket) {
+  const result = { ...bucket };
+  for (const key of OZON_FINANCE_FIELDS) result[key] = roundMoney(result[key]);
+  result.quantity = roundMoney(result.quantity);
+  return result;
+}
+
+function deliveryColumnsTotal(row, indexes) {
+  return indexes.deliveryColumns.reduce((sum, index) => sum + moneyOrZero(getRowValue(row, index)), 0);
+}
+
+function ozonFinanceLeftoverGroup(type) {
+  const raw = normalizeTextKey(type);
+  const decoded = normalizeTextKey(decodeOzonLowByteText(type));
+  const text = `${raw} ${decoded}`;
+  if (
+    /оплата.?за.?клик|продвижение|реклама|premium|рассроч|бонусы.?продавца|бейдж/.test(text)
+    || raw.includes('70 :;8:')
+    || raw.includes('70 70:07')
+    || raw.includes('5:;0<0 2 a5b8')
+  ) return 'ads';
+  if (/компенсац|декомпенсац/.test(text)) return 'compensations';
+  if (/fbo|склад|склада|грузомест|кросс.?докинг|поставк|вывоз|утилизац|сроков.?годности|упаковк|брак|излишк|бронированию.?места|слот/.test(text)) {
+    return 'fboServices';
+  }
+  if (/эквайринг|досрочн|гибкий.?график|партнер|партнёр/.test(text)) {
+    return 'partnerServices';
+  }
+  return 'otherServices';
+}
+
+function ozonFinanceIndexes(headers) {
+  const detectedDeliveryColumns = [
+    [/сборка заказа/i],
+    [/обработка отправления/i],
+    [/^магистраль$/i],
+    [/последняя миля/i],
+    [/обратная магистраль/i],
+    [/обработка возврата/i],
+    [/обработка отмененного/i],
+    [/обработка невыкупленного/i],
+    [/^логистика$/i],
+    [/обратная логистика/i]
+  ].map((patterns) => findHeaderIndex(headers, patterns)).filter((index) => index >= 0);
+  const withFallback = (value, fallback) => (value >= 0 ? value : fallback);
+  const deliveryColumns = detectedDeliveryColumns.length ? detectedDeliveryColumns : [12, 13, 14, 15, 16, 17, 18, 19, 20, 23];
+  return {
+    date: withFallback(findHeaderIndex(headers, [/дата начисления/i]), 0),
+    type: withFallback(findHeaderIndex(headers, [/тип начисления/i]), 1),
+    sku: withFallback(findHeaderIndex(headers, [/^sku$/i]), 5),
+    article: withFallback(findHeaderIndex(headers, [/^артикул$/i]), 6),
+    name: withFallback(findHeaderIndex(headers, [/название товара или услуги/i, /название товара/i]), 7),
+    quantity: withFallback(findHeaderIndex(headers, [/^количество$/i]), 8),
+    gross: withFallback(findHeaderIndex(headers, [/за продажу.*возврат.*вычета/i, /до вычета комиссий/i]), 9),
+    reward: withFallback(findHeaderIndex(headers, [/^вознаграждение ozon$/i]), 11),
+    total: withFallback(findHeaderIndex(headers, [/итого.*руб/i, /^итого$/i]), 24),
+    deliveryColumns
+  };
+}
+
+function ozonFinancePartsFromRow(row, indexes) {
+  const gross = moneyOrZero(getRowValue(row, indexes.gross));
+  const total = moneyOrZero(getRowValue(row, indexes.total));
+  const reward = moneyOrZero(getRowValue(row, indexes.reward));
+  const deliveryServices = deliveryColumnsTotal(row, indexes);
+  const salesGross = gross > 0 ? gross : 0;
+  const returnsGross = gross < 0 ? gross : 0;
+  const type = String(getRowValue(row, indexes.type) || '').trim();
+  const leftoverRaw = total - gross - reward - deliveryServices;
+  const leftover = Math.abs(leftoverRaw) < 0.005 ? 0 : leftoverRaw;
+  const parts = {
+    type,
+    date: isoDate(getRowValue(row, indexes.date)),
+    sku: normalizeSkuKey(getRowValue(row, indexes.sku)),
+    article: normalizeSkuKey(getRowValue(row, indexes.article)),
+    name: String(getRowValue(row, indexes.name) || '').trim(),
+    quantity: moneyOrZero(getRowValue(row, indexes.quantity)),
+    salesGross,
+    returnsGross,
+    ozonReward: reward,
+    deliveryServices,
+    partnerServices: 0,
+    fboServices: 0,
+    ads: 0,
+    otherServices: 0,
+    compensations: 0,
+    accruedNet: total
+  };
+  parts[ozonFinanceLeftoverGroup(type)] += leftover;
+  return parts;
+}
+
+function productForOzonFinanceRow(parts, productMaps) {
+  return productMaps.bySku.get(parts.sku)
+    || productMaps.byArticle.get(String(parts.article || '').toLowerCase())
+    || null;
+}
+
+function buildOzonFinanceSummary(options) {
+  const financePath = options.ozonFinancePath || '';
+  if (!financePath || !fs.existsSync(financePath)) {
+    return {
+      status: 'missing',
+      source: { financePath, productsPath: options.ozonProductsPath || '', productRows: 0 },
+      totals: materializeOzonFinanceBucket(emptyOzonFinanceBucket('total', 'Начислено Ozon')),
+      daily: [],
+      months: [],
+      groups: [],
+      sku: [],
+      categories: [],
+      types: [],
+      control: {
+        rowsAccruedNet: 0,
+        sellerUiAccruedNet: roundMoney(options.ozonFinanceControlTotal),
+        deltaToSellerUi: options.ozonFinanceControlTotal ? roundMoney(0 - options.ozonFinanceControlTotal) : null
+      },
+      diagnostics: { warnings: ['Ozon Finance workbook not found'] }
+    };
+  }
+  const rows = readWorkbookRows(financePath);
+  const headers = rows[0] || [];
+  const indexes = ozonFinanceIndexes(headers);
+  const required = ['date', 'type', 'gross', 'reward', 'total'];
+  const missing = required.filter((key) => indexes[key] < 0);
+  const productMaps = buildOzonProductMaps(options.ozonProductsPath);
+  const totals = emptyOzonFinanceBucket('total', 'Начислено Ozon');
+  const daily = new Map();
+  const months = new Map();
+  const groups = new Map();
+  const sku = new Map();
+  const categories = new Map();
+  const types = new Map();
+  let nonSkuRowCount = 0;
+  let unmappedSkuRows = 0;
+  if (!missing.length) {
+    for (const row of rows.slice(1)) {
+      const parts = ozonFinancePartsFromRow(row, indexes);
+      if (!parts.date && !parts.type && !parts.sku && !parts.article && !parts.accruedNet) continue;
+      addOzonFinanceParts(totals, parts);
+      if (parts.date) {
+        const current = daily.get(parts.date) || emptyOzonFinanceBucket(parts.date, parts.date);
+        addOzonFinanceParts(current, parts);
+        daily.set(parts.date, current);
+        const month = monthKey(parts.date);
+        const monthBucket = months.get(month) || emptyOzonFinanceBucket(month, month);
+        addOzonFinanceParts(monthBucket, parts);
+        months.set(month, monthBucket);
+      }
+      for (const key of OZON_FINANCE_FIELDS.filter((field) => field !== 'accruedNet')) {
+        const value = numberOrZero(parts[key]);
+        if (!value) continue;
+        const groupBucket = groups.get(key) || emptyOzonFinanceBucket(key, OZON_FINANCE_GROUP_LABELS[key] || key);
+        groupBucket.rowCount += 1;
+        groupBucket[key] += value;
+        groupBucket.accruedNet += value;
+        groups.set(key, groupBucket);
+      }
+      const typeKey = parts.type || 'Без типа';
+      const typeBucket = types.get(typeKey) || emptyOzonFinanceBucket(typeKey, typeKey);
+      addOzonFinanceParts(typeBucket, parts);
+      types.set(typeKey, typeBucket);
+
+      const product = productForOzonFinanceRow(parts, productMaps);
+      if (parts.sku || parts.article) {
+        const skuKey = parts.sku || parts.article;
+        const skuBucket = sku.get(skuKey) || {
+          ...emptyOzonFinanceBucket(skuKey, parts.article || skuKey),
+          sku: parts.sku,
+          article: parts.article,
+          name: parts.name,
+          productName: product?.name || parts.name,
+          category: product?.category || '',
+          productType: product?.productType || '',
+          status: product?.status || '',
+          ozonProductId: product?.ozonProductId || '',
+          fboStock: product?.fboStock || 0,
+          fbsStock: product?.fbsStock || 0,
+          realFbsStock: product?.realFbsStock || 0,
+          availableStock: product?.availableStock || 0,
+          reservedStock: product?.reservedStock || 0,
+          ownReservedStock: product?.ownReservedStock || 0,
+          price: product?.price || 0,
+          unmapped: !product
+        };
+        if (!skuBucket.productName && product?.name) skuBucket.productName = product.name;
+        if (!skuBucket.name && parts.name) skuBucket.name = parts.name;
+        addOzonFinanceParts(skuBucket, parts);
+        sku.set(skuKey, skuBucket);
+        if (!product) unmappedSkuRows += 1;
+
+        const categoryKey = product?.category || 'Без категории';
+        const categoryBucket = categories.get(categoryKey) || emptyOzonFinanceBucket(categoryKey, categoryKey);
+        addOzonFinanceParts(categoryBucket, parts);
+        categories.set(categoryKey, categoryBucket);
+      } else {
+        nonSkuRowCount += 1;
+      }
+    }
+  }
+  const rowsAccruedNet = roundMoney(totals.accruedNet);
+  const sellerUiAccruedNet = options.ozonFinanceControlTotal ? roundMoney(options.ozonFinanceControlTotal) : null;
+  const materializedTotals = materializeOzonFinanceBucket(totals);
+  const sellerUiBreakdown = sellerUiAccruedNet === OZON_FINANCE_SELLER_UI_CONTROL_BREAKDOWN.accruedNet
+    ? { ...OZON_FINANCE_SELLER_UI_CONTROL_BREAKDOWN }
+    : {};
+  const groupDeltas = Object.fromEntries(OZON_FINANCE_FIELDS
+    .filter((field) => field !== 'quantity')
+    .filter((field) => sellerUiBreakdown[field] !== undefined)
+    .map((field) => [field, {
+      rowsValue: roundMoney(materializedTotals[field]),
+      sellerUiValue: roundMoney(sellerUiBreakdown[field]),
+      delta: roundMoney(materializedTotals[field] - sellerUiBreakdown[field])
+    }]));
+  return {
+    status: missing.length ? 'error' : 'ok',
+    source: {
+      financePath,
+      financeFile: path.basename(financePath),
+      productsPath: options.ozonProductsPath || '',
+      productsFile: options.ozonProductsPath ? path.basename(options.ozonProductsPath) : '',
+      productRows: productMaps.rows,
+      sourceRows: Math.max(0, rows.length - 1)
+    },
+    window: {
+      from: [...daily.keys()].sort()[0] || '',
+      to: [...daily.keys()].sort().pop() || '',
+      days: daily.size
+    },
+    totals: materializedTotals,
+    daily: [...daily.values()]
+      .sort((left, right) => left.key.localeCompare(right.key))
+      .map((bucket) => materializeOzonFinanceBucket({ ...bucket, date: bucket.key, period: periodLabel(bucket.key), monthKey: monthKey(bucket.key) })),
+    months: [...months.values()]
+      .sort((left, right) => left.key.localeCompare(right.key))
+      .map((bucket) => materializeOzonFinanceBucket({ ...bucket, monthKey: bucket.key })),
+    groups: [...groups.values()]
+      .map(materializeOzonFinanceBucket)
+      .sort((left, right) => Math.abs(right.accruedNet) - Math.abs(left.accruedNet)),
+    sku: [...sku.values()]
+      .map((bucket) => ({
+        ...materializeOzonFinanceBucket(bucket),
+        fboStock: roundMoney(bucket.fboStock),
+        fbsStock: roundMoney(bucket.fbsStock),
+        realFbsStock: roundMoney(bucket.realFbsStock),
+        availableStock: roundMoney(bucket.availableStock),
+        reservedStock: roundMoney(bucket.reservedStock),
+        ownReservedStock: roundMoney(bucket.ownReservedStock),
+        price: roundMoney(bucket.price)
+      }))
+      .sort((left, right) => Math.abs(right.accruedNet) - Math.abs(left.accruedNet)),
+    categories: [...categories.values()]
+      .map(materializeOzonFinanceBucket)
+      .sort((left, right) => Math.abs(right.accruedNet) - Math.abs(left.accruedNet)),
+    types: [...types.values()]
+      .map(materializeOzonFinanceBucket)
+      .sort((left, right) => Math.abs(right.accruedNet) - Math.abs(left.accruedNet)),
+    control: {
+      rowsAccruedNet,
+      sellerUiAccruedNet,
+      deltaToSellerUi: sellerUiAccruedNet === null ? null : roundMoney(rowsAccruedNet - sellerUiAccruedNet),
+      sellerUiBreakdown,
+      groupDeltas
+    },
+    diagnostics: {
+      missingHeaders: missing,
+      nonSkuRowCount,
+      unmappedSkuRows,
+      deliveryColumns: indexes.deliveryColumns.length,
+      warnings: missing.length ? [`Missing required Ozon Finance headers: ${missing.join(', ')}`] : []
+    }
+  };
+}
+
+function findSheetRowsByName(workbookRows, pattern, fallbackIndex = 0) {
+  const found = Object.entries(workbookRows).find(([name]) => pattern.test(String(name || '')));
+  return found?.[1] || Object.values(workbookRows)[fallbackIndex] || [];
+}
+
+function readWorkbookSheets(filePath) {
+  if (!filePath || !fs.existsSync(filePath)) return {};
+  const workbook = XLSX.readFile(filePath, { cellDates: false });
+  return Object.fromEntries(workbook.SheetNames.map((sheetName) => [
+    sheetName,
+    XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: null, raw: true })
+  ]));
+}
+
+function buildOzonPlanDashboardSummary(options) {
+  const planPath = options.ozonPlanPath || '';
+  if (!planPath || !fs.existsSync(planPath)) {
+    return {
+      status: 'missing',
+      source: { planPath, planFile: '' },
+      monthlyTargets: {},
+      accounts: [],
+      daily: [],
+      monthly: [],
+      totals: { revenue: 0, gmv: 0, ads: 0, targetDrr: DEFAULT_OZON_PLAN_PCT, deltaToTargetSpend: 0 },
+      allocation: {
+        method: 'both_accounts_smart_share',
+        scope: 'all_accounts',
+        smartShare: DEFAULT_OZON_SMART_SHARE,
+        totalAds: 0,
+        smartAllocatedAds: 0,
+        otherAllocatedAds: 0
+      }
+    };
+  }
+  const sheets = readWorkbookSheets(planPath);
+  const conditionRows = findSheetRowsByName(sheets, /Условия|услов/i, 0);
+  const dashboardRows = findSheetRowsByName(sheets, /Дашборд|dashboard/i, 1);
+  const monthlyTargets = {};
+  for (let rowIndex = 0; rowIndex < conditionRows.length; rowIndex += 1) {
+    const row = conditionRows[rowIndex] || [];
+    if (normalizeTextKey(row[0]) !== 'gmv dr') continue;
+    const header = conditionRows[rowIndex - 1] || [];
+    for (let col = 1; col < row.length; col += 1) {
+      const label = String(header[col] || '').trim();
+      const match = label.match(/(?:plan|fact)\s+(\d{2})\/(\d{2})/i);
+      if (!match) continue;
+      monthlyTargets[`20${match[2]}-${match[1]}`] = roundMoney(row[col]);
+    }
+  }
+  const sections = [
+    { key: 'primary', label: 'Кабинет 1', start: 0 },
+    { key: 'smart', label: 'Смарт', start: 22 }
+  ];
+  const accountMaps = new Map(sections.map((section) => [section.key, {
+    key: section.key,
+    label: section.label,
+    rowCount: 0,
+    revenue: 0,
+    gmv: 0,
+    ads: 0,
+    deltaToTargetSpend: 0,
+    targetDrr: DEFAULT_OZON_PLAN_PCT
+  }]));
+  const dailyMap = new Map();
+  for (const row of dashboardRows.slice(5)) {
+    for (const section of sections) {
+      const offset = section.start;
+      const date = isoDate(row[offset]);
+      if (!date) continue;
+      const revenue = moneyOrZero(row[offset + 1]);
+      const gmv = moneyOrZero(row[offset + 2]);
+      const ads = moneyOrZero(row[offset + 11]);
+      const drr = moneyOrZero(row[offset + 12]);
+      const targetDrr = moneyOrZero(row[offset + 13]) || DEFAULT_OZON_PLAN_PCT;
+      const deltaToTargetSpend = moneyOrZero(row[offset + 15]);
+      const point = {
+        date,
+        monthKey: monthKey(date),
+        accountKey: section.key,
+        accountLabel: section.label,
+        revenue: roundMoney(revenue),
+        gmv: roundMoney(gmv),
+        ads: roundMoney(ads),
+        drr: drr || (revenue > 0 ? roundRate(ads / revenue) : null),
+        targetDrr,
+        deltaToTargetSpend: roundMoney(deltaToTargetSpend)
+      };
+      dailyMap.set(`${section.key}|${date}`, point);
+      const account = accountMaps.get(section.key);
+      account.rowCount += 1;
+      account.revenue += revenue;
+      account.gmv += gmv;
+      account.ads += ads;
+      account.deltaToTargetSpend += deltaToTargetSpend;
+      account.targetDrr = targetDrr;
+    }
+  }
+  const dailyRows = [...dailyMap.values()].sort((left, right) => left.date.localeCompare(right.date) || left.accountKey.localeCompare(right.accountKey));
+  const dailyTotals = [...new Set(dailyRows.map((row) => row.date).filter(Boolean))].sort().map((date) => {
+    const dateRows = dailyRows.filter((row) => row.date === date);
+    const targetDrr = dateRows.map((row) => numberOrZero(row.targetDrr)).find((value) => value > 0) || DEFAULT_OZON_PLAN_PCT;
+    const totalsForDate = dateRows.reduce((sum, row) => {
+      sum.revenue += numberOrZero(row.revenue);
+      sum.gmv += numberOrZero(row.gmv);
+      sum.ads += numberOrZero(row.ads);
+      sum.deltaToTargetSpend += numberOrZero(row.deltaToTargetSpend);
+      return sum;
+    }, { revenue: 0, gmv: 0, ads: 0, targetDrr, deltaToTargetSpend: 0 });
+    return {
+      date,
+      monthKey: monthKey(date),
+      rowCount: dateRows.length,
+      revenue: roundMoney(totalsForDate.revenue),
+      gmv: roundMoney(totalsForDate.gmv),
+      ads: roundMoney(totalsForDate.ads),
+      drrRevenue: totalsForDate.revenue > 0 ? roundRate(totalsForDate.ads / totalsForDate.revenue) : null,
+      drrGmv: totalsForDate.gmv > 0 ? roundRate(totalsForDate.ads / totalsForDate.gmv) : null,
+      targetDrr,
+      deltaToTargetSpend: roundMoney(totalsForDate.deltaToTargetSpend)
+    };
+  });
+  const accounts = [...accountMaps.values()].map((account) => ({
+    ...account,
+    revenue: roundMoney(account.revenue),
+    gmv: roundMoney(account.gmv),
+    ads: roundMoney(account.ads),
+    deltaToTargetSpend: roundMoney(account.deltaToTargetSpend),
+    drrRevenue: account.revenue > 0 ? roundRate(account.ads / account.revenue) : null,
+    drrGmv: account.gmv > 0 ? roundRate(account.ads / account.gmv) : null
+  }));
+  const totals = accounts.reduce((sum, account) => {
+    sum.revenue += numberOrZero(account.revenue);
+    sum.gmv += numberOrZero(account.gmv);
+    sum.ads += numberOrZero(account.ads);
+    sum.deltaToTargetSpend += numberOrZero(account.deltaToTargetSpend);
+    return sum;
+  }, { revenue: 0, gmv: 0, ads: 0, targetDrr: accounts[0]?.targetDrr || DEFAULT_OZON_PLAN_PCT, deltaToTargetSpend: 0 });
+  totals.revenue = roundMoney(totals.revenue);
+  totals.gmv = roundMoney(totals.gmv);
+  totals.ads = roundMoney(totals.ads);
+  totals.deltaToTargetSpend = roundMoney(totals.deltaToTargetSpend);
+  totals.drrRevenue = totals.revenue > 0 ? roundRate(totals.ads / totals.revenue) : null;
+  totals.drrGmv = totals.gmv > 0 ? roundRate(totals.ads / totals.gmv) : null;
+  const smartShare = numberOrZero(options.ozonSmartShare) > 0 ? numberOrZero(options.ozonSmartShare) : DEFAULT_OZON_SMART_SHARE;
+  const buildAllocation = (sourceTotals) => ({
+    method: 'both_accounts_smart_share',
+    scope: 'all_accounts',
+    smartShare: roundRate(smartShare),
+    totalAds: roundMoney(sourceTotals.ads),
+    smartAllocatedAds: roundMoney(sourceTotals.ads * smartShare),
+    otherAllocatedAds: roundMoney(sourceTotals.ads * (1 - smartShare)),
+    totalRevenue: roundMoney(sourceTotals.revenue),
+    smartAllocatedRevenue: roundMoney(sourceTotals.revenue * smartShare),
+    otherAllocatedRevenue: roundMoney(sourceTotals.revenue * (1 - smartShare)),
+    totalGmv: roundMoney(sourceTotals.gmv),
+    smartAllocatedGmv: roundMoney(sourceTotals.gmv * smartShare),
+    otherAllocatedGmv: roundMoney(sourceTotals.gmv * (1 - smartShare))
+  });
+  const allocation = buildAllocation(totals);
+  const monthly = [...new Set(dailyRows.map((row) => row.monthKey).filter(Boolean))].sort().map((month) => {
+    const monthRows = dailyRows.filter((row) => row.monthKey === month);
+    const monthAccounts = sections.map((section) => {
+      const accountRows = monthRows.filter((row) => row.accountKey === section.key);
+      const account = accountRows.reduce((sum, row) => {
+        sum.rowCount += 1;
+        sum.revenue += numberOrZero(row.revenue);
+        sum.gmv += numberOrZero(row.gmv);
+        sum.ads += numberOrZero(row.ads);
+        sum.deltaToTargetSpend += numberOrZero(row.deltaToTargetSpend);
+        sum.targetDrr = numberOrZero(row.targetDrr) || sum.targetDrr || DEFAULT_OZON_PLAN_PCT;
+        return sum;
+      }, { key: section.key, label: section.label, rowCount: 0, revenue: 0, gmv: 0, ads: 0, deltaToTargetSpend: 0, targetDrr: DEFAULT_OZON_PLAN_PCT });
+      return {
+        ...account,
+        revenue: roundMoney(account.revenue),
+        gmv: roundMoney(account.gmv),
+        ads: roundMoney(account.ads),
+        deltaToTargetSpend: roundMoney(account.deltaToTargetSpend),
+        drrRevenue: account.revenue > 0 ? roundRate(account.ads / account.revenue) : null,
+        drrGmv: account.gmv > 0 ? roundRate(account.ads / account.gmv) : null
+      };
+    });
+    const monthTotals = monthAccounts.reduce((sum, account) => {
+      sum.revenue += numberOrZero(account.revenue);
+      sum.gmv += numberOrZero(account.gmv);
+      sum.ads += numberOrZero(account.ads);
+      sum.deltaToTargetSpend += numberOrZero(account.deltaToTargetSpend);
+      return sum;
+    }, { revenue: 0, gmv: 0, ads: 0, targetDrr: monthAccounts[0]?.targetDrr || DEFAULT_OZON_PLAN_PCT, deltaToTargetSpend: 0 });
+    monthTotals.revenue = roundMoney(monthTotals.revenue);
+    monthTotals.gmv = roundMoney(monthTotals.gmv);
+    monthTotals.ads = roundMoney(monthTotals.ads);
+    monthTotals.deltaToTargetSpend = roundMoney(monthTotals.deltaToTargetSpend);
+    monthTotals.drrRevenue = monthTotals.revenue > 0 ? roundRate(monthTotals.ads / monthTotals.revenue) : null;
+    monthTotals.drrGmv = monthTotals.gmv > 0 ? roundRate(monthTotals.ads / monthTotals.gmv) : null;
+    return {
+      monthKey: month,
+      monthlyTargetGmv: roundMoney(monthlyTargets[month]),
+      totals: monthTotals,
+      allocation: buildAllocation(monthTotals)
+    };
+  });
+  return {
+    status: 'ok',
+    source: { planPath, planFile: path.basename(planPath) },
+    monthlyTargets,
+    accounts: [],
+    daily: dailyTotals,
+    monthly,
+    totals,
+    allocation
+  };
 }
 
 function readQuarterReportRows(filePath, from, to) {
@@ -379,6 +1088,18 @@ function resolveOptions(args) {
   const baseDataDir = path.resolve(args['base-data-dir'] || path.join(process.cwd(), 'data'));
   const outputDir = args['output-dir'] ? path.resolve(args['output-dir']) : '';
   const mirrorDataDir = path.resolve(args['mirror-data-dir'] || process.env.ALTEA_PORTAL_FALLBACK_DIR || baseDataDir);
+  const ozonFinancePath = args['ozon-finance-file']
+    ? path.resolve(args['ozon-finance-file'])
+    : findNewestDownloadFile((name) => /^Отчет по товарам за период .*\.xlsx$/i.test(name));
+  const ozonProductsPath = args['ozon-products-file']
+    ? path.resolve(args['ozon-products-file'])
+    : findNewestDownloadFile((name) => /^products.*\.csv$/i.test(name));
+  const ozonPlanPath = args['ozon-plan-file']
+    ? path.resolve(args['ozon-plan-file'])
+    : findNewestFileInDirs(
+      [DOWNLOADS_ROOT, path.join(DOWNLOADS_ROOT, 'Telegram Desktop')],
+      (name) => /^Дашборд.*ИУ.*Оз.*\.xlsx$/i.test(name)
+    );
   return {
     dryRun: Boolean(args.dryRun),
     inputDir,
@@ -387,7 +1108,12 @@ function resolveOptions(args) {
     mirrorDataDir,
     mirrorLocalFallback: Boolean(args.mirrorLocalFallback),
     from: isoDate(args.from || args['date-from']),
-    to: isoDate(args.to || args['date-to'])
+    to: isoDate(args.to || args['date-to']),
+    ozonFinancePath,
+    ozonProductsPath,
+    ozonPlanPath,
+    ozonFinanceControlTotal: moneyOrZero(args['ozon-finance-control-total'] || process.env.ALTEA_OZON_FINANCE_CONTROL_TOTAL),
+    ozonSmartShare: roundRate(args['ozon-smart-share'] || process.env.ALTEA_OZON_SMART_SHARE || DEFAULT_OZON_SMART_SHARE)
   };
 }
 
@@ -916,6 +1642,8 @@ function buildPayload(options) {
   const iuPlan = readLayer(options, 'iu_plan.json', { months: {} });
   const adsSummary = readLayer(options, 'ads_summary.json', { platforms: [], itemSeries: [] });
   const wbFeedbacksSummary = readLayer(options, 'wb_feedbacks_summary.json', { reviewsForPoints: {}, daily: [], cards: [] });
+  const ozonPlan = buildOzonPlanDashboardSummary(options);
+  const ozonFinance = buildOzonFinanceSummary(options);
   const dailyRows = buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, options);
   const months = buildMonthRows(dailyRows, iuPlan);
   const contractPeriods = buildContractPeriodRows(dailyRows);
@@ -935,6 +1663,9 @@ function buildPayload(options) {
       platformTrendsGeneratedAt: platformTrends.generatedAt || '',
       adsSummaryGeneratedAt: adsSummary.generatedAt || '',
       wbFeedbacksGeneratedAt: wbFeedbacksSummary.generatedAt || '',
+      ozonFinanceFile: ozonFinance.source?.financeFile || '',
+      ozonProductsFile: ozonFinance.source?.productsFile || '',
+      ozonPlanFile: ozonPlan.source?.planFile || '',
       adsSourceMode: adsSummary.sourceMode || adsSummary.source || ''
     },
     window: {
@@ -953,6 +1684,8 @@ function buildPayload(options) {
     planPctDefault: DEFAULT_PLAN_PCT,
     ozonPlanPctDefault: DEFAULT_OZON_PLAN_PCT,
     kpis: currentMonth,
+    ozonPlan,
+    ozonFinance,
     wbQuarter,
     quarterSummary: wbQuarter,
     contractPeriods,
@@ -963,6 +1696,7 @@ function buildPayload(options) {
       adsSourceMode: adsSummary.sourceMode || adsSummary.source || '',
       adsDiagnostics: adsSummary.diagnostics || {},
       wbFeedbacksDiagnostics: wbFeedbacksSummary.diagnostics || {},
+      ozonFinanceDiagnostics: ozonFinance.diagnostics || {},
       reviewPointsSource: wbFeedbacksSummary?.reviewsForPoints?.sourceStatus || '',
       noSourceChannels,
       unmatchedNmIds: adsSummary.diagnostics?.unmatchedNmIds || [],
@@ -1002,14 +1736,34 @@ function main() {
   const options = resolveOptions(parseArgs(process.argv));
   const payload = buildPayload(options);
   const writtenFiles = options.dryRun ? [] : writeOutputs(payload, options);
+  const currentMonthKey = payload.kpis?.monthKey || '';
+  const ozonPlanMonthForLog = (payload.ozonPlan?.monthly || []).find((month) => month.monthKey === currentMonthKey)
+    || (payload.ozonPlan?.monthly || []).find((month) => month.monthKey === '2026-05')
+    || {};
   console.log(JSON.stringify({
     dryRun: options.dryRun,
     asOfDate: payload.asOfDate,
     window: payload.window,
-    currentMonth: payload.kpis?.monthKey || '',
+    currentMonth: currentMonthKey,
     revenueFact: payload.kpis?.iuRevenueFactToDate || 0,
     spendFact: payload.kpis?.spendFact || 0,
     drrWb: payload.kpis?.drrWb ?? null,
+    ozonFinance: {
+      status: payload.ozonFinance?.status || '',
+      sourceRows: payload.ozonFinance?.source?.sourceRows || 0,
+      accruedNet: payload.ozonFinance?.totals?.accruedNet || 0,
+      sellerUiAccruedNet: payload.ozonFinance?.control?.sellerUiAccruedNet ?? null,
+      deltaToSellerUi: payload.ozonFinance?.control?.deltaToSellerUi ?? null
+    },
+    ozonPlan: {
+      status: payload.ozonPlan?.status || '',
+      planFile: payload.ozonPlan?.source?.planFile || '',
+      mayTarget: payload.ozonPlan?.monthlyTargets?.['2026-05'] || 0,
+      smartGmv: ozonPlanMonthForLog.allocation?.smartAllocatedGmv || 0,
+      smartAds: ozonPlanMonthForLog.allocation?.smartAllocatedAds || 0,
+      bothAccountsAds: ozonPlanMonthForLog.allocation?.totalAds || ozonPlanMonthForLog.totals?.ads || 0,
+      smartShareAds: ozonPlanMonthForLog.allocation?.smartAllocatedAds || 0
+    },
     dailyRows: payload.daily.length,
     writtenFiles
   }, null, 2));

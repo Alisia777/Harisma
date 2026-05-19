@@ -3541,6 +3541,126 @@ function normalizeIuQuarterSummaryPayload(quarter = {}) {
     : {};
 }
 
+const OZON_FINANCE_UI_FIELDS = [
+  'salesGross',
+  'returnsGross',
+  'ozonReward',
+  'deliveryServices',
+  'partnerServices',
+  'fboServices',
+  'ads',
+  'otherServices',
+  'compensations',
+  'accruedNet'
+];
+
+function normalizeOzonFinanceBucket(row = {}) {
+  const normalized = {
+    ...row,
+    key: String(row?.key || row?.date || row?.monthKey || row?.sku || row?.article || ''),
+    label: String(row?.label || row?.name || row?.productName || row?.date || row?.monthKey || row?.sku || ''),
+    date: String(row?.date || row?.key || '').slice(0, 10),
+    monthKey: String(row?.monthKey || row?.date || row?.key || '').slice(0, 7),
+    period: String(row?.period || row?.date || row?.key || ''),
+    rowCount: numberOrZero(row?.rowCount),
+    quantity: numberOrZero(row?.quantity)
+  };
+  OZON_FINANCE_UI_FIELDS.forEach((field) => {
+    normalized[field] = numberOrZero(row?.[field]);
+  });
+  normalized.adsDrr = normalized.salesGross > 0 ? Math.abs(normalized.ads) / normalized.salesGross : null;
+  normalized.adsAbs = Math.abs(normalized.ads);
+  normalized.commissionPct = normalized.salesGross > 0 ? Math.abs(normalized.ozonReward) / normalized.salesGross : null;
+  normalized.logisticsPct = normalized.salesGross > 0 ? Math.abs(normalized.deliveryServices) / normalized.salesGross : null;
+  return normalized;
+}
+
+function normalizeOzonFinancePayload(payload = {}) {
+  const daily = Array.isArray(payload.daily) ? payload.daily.map(normalizeOzonFinanceBucket).filter((row) => row.date) : [];
+  const months = Array.isArray(payload.months) ? payload.months.map(normalizeOzonFinanceBucket).filter((row) => row.monthKey) : [];
+  return {
+    ...payload,
+    status: payload.status || '',
+    source: payload.source || {},
+    window: payload.window || {},
+    totals: normalizeOzonFinanceBucket(payload.totals || {}),
+    daily,
+    months,
+    groups: Array.isArray(payload.groups) ? payload.groups.map(normalizeOzonFinanceBucket) : [],
+    sku: Array.isArray(payload.sku) ? payload.sku.map((row) => ({
+      ...normalizeOzonFinanceBucket(row),
+      sku: String(row?.sku || ''),
+      article: String(row?.article || ''),
+      productName: String(row?.productName || row?.name || ''),
+      category: String(row?.category || ''),
+      productType: String(row?.productType || ''),
+      status: String(row?.status || ''),
+      ozonProductId: String(row?.ozonProductId || ''),
+      fboStock: numberOrZero(row?.fboStock),
+      fbsStock: numberOrZero(row?.fbsStock),
+      realFbsStock: numberOrZero(row?.realFbsStock),
+      availableStock: numberOrZero(row?.availableStock),
+      reservedStock: numberOrZero(row?.reservedStock),
+      price: numberOrZero(row?.price),
+      unmapped: Boolean(row?.unmapped)
+    })) : [],
+    categories: Array.isArray(payload.categories) ? payload.categories.map(normalizeOzonFinanceBucket) : [],
+    types: Array.isArray(payload.types) ? payload.types.map(normalizeOzonFinanceBucket) : [],
+    control: {
+      rowsAccruedNet: numberOrZero(payload.control?.rowsAccruedNet),
+      sellerUiAccruedNet: payload.control?.sellerUiAccruedNet === null || payload.control?.sellerUiAccruedNet === undefined
+        ? null
+        : numberOrZero(payload.control.sellerUiAccruedNet),
+      deltaToSellerUi: payload.control?.deltaToSellerUi === null || payload.control?.deltaToSellerUi === undefined
+        ? null
+        : numberOrZero(payload.control.deltaToSellerUi)
+    },
+    diagnostics: payload.diagnostics || {}
+  };
+}
+
+function ozonFinanceMonthSummary(ozonFinance, selectedMonth) {
+  const month = (ozonFinance.months || []).find((row) => row.monthKey === selectedMonth)
+    || normalizeOzonFinanceBucket({ ...ozonFinance.totals, monthKey: selectedMonth });
+  return month;
+}
+
+function daysInMonthKey(monthKey = '') {
+  const [year, month] = String(monthKey || '').split('-').map((part) => Number(part));
+  if (!year || !month) return 30;
+  return new Date(year, month, 0).getDate();
+}
+
+function ozonPlanMonthSummary(ozonPlan = {}, selectedMonth = '') {
+  const monthly = (ozonPlan.monthly || []).find((row) => row.monthKey === selectedMonth);
+  if (monthly) return monthly;
+  const rows = (ozonPlan.daily || []).filter((row) => row.monthKey === selectedMonth);
+  const totals = rows.reduce((sum, row) => {
+    sum.revenue += numberOrZero(row.revenue);
+    sum.gmv += numberOrZero(row.gmv);
+    sum.ads += numberOrZero(row.ads);
+    sum.targetDrr = numberOrZero(row.targetDrr) || sum.targetDrr || 0.25;
+    return sum;
+  }, { revenue: 0, gmv: 0, ads: 0, targetDrr: 0.25 });
+  totals.drrGmv = totals.gmv > 0 ? totals.ads / totals.gmv : null;
+  totals.drrRevenue = totals.revenue > 0 ? totals.ads / totals.revenue : null;
+  const smartShare = numberOrZero(ozonPlan.allocation?.smartShare || 0.4);
+  return {
+    monthKey: selectedMonth,
+    monthlyTargetGmv: numberOrZero(ozonPlan.monthlyTargets?.[selectedMonth]),
+    accounts: [],
+    totals,
+    allocation: {
+      smartShare,
+      totalAds: totals.ads,
+      smartAllocatedAds: totals.ads * smartShare,
+      otherAllocatedAds: totals.ads * (1 - smartShare),
+      totalGmv: totals.gmv,
+      smartAllocatedGmv: totals.gmv * smartShare
+    }
+  };
+}
+
 function normalizeIuDrrSummaryPayload(payload = {}) {
   const daily = Array.isArray(payload.daily) ? payload.daily.map((row) => ({
     ...row,
@@ -3618,6 +3738,7 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
   const months = Array.isArray(payload.months) ? payload.months : [];
   const channels = Array.isArray(payload.channels) ? payload.channels : [];
   const quarterSummary = normalizeIuQuarterSummaryPayload(payload.quarterSummary || payload.wbQuarter || {});
+  const ozonFinance = normalizeOzonFinancePayload(payload.ozonFinance || {});
   return {
     ...payload,
     generatedAt: payload.generatedAt || '',
@@ -3625,6 +3746,7 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
     daily,
     months,
     channels,
+    ozonFinance,
     quarterSummary,
     wbQuarter: quarterSummary,
     diagnostics: payload.diagnostics || {}
@@ -3660,16 +3782,20 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
   const selectedMonth = filters.month === 'latest' || !filters.month ? latestMonth : filters.month;
   const selectedPlatform = filters.platform === 'ozon' ? 'ozon' : 'wb';
   const quarterSummary = normalized.quarterSummary || normalized.wbQuarter || {};
-  const dailyRows = normalized.daily.filter((row) => row.monthKey === selectedMonth);
+  const iuDailyRows = normalized.daily.filter((row) => row.monthKey === selectedMonth);
+  const ozonFinanceDailyRows = (normalized.ozonFinance?.daily || []).filter((row) => row.monthKey === selectedMonth);
+  const dailyRows = selectedPlatform === 'ozon' && ozonFinanceDailyRows.length ? ozonFinanceDailyRows : iuDailyRows;
   const rawMonthSummary = (normalized.months || []).find((month) => month.monthKey === selectedMonth) || {};
-  const wbRevenueFactToDate = dailyRows.reduce((sum, row) => sum + numberOrZero(row.iuRevenueWb || row.iuOrdersRevenueWb), 0);
-  const wbOrdersRevenueToDate = dailyRows.reduce((sum, row) => sum + numberOrZero(row.ordersRevenueWb), 0);
-  const wbTargetToDate = dailyRows.reduce((sum, row) => sum + numberOrZero(row.iuTargetRevenueWb), 0);
-  const wbPlanSpendToDate = dailyRows.reduce((sum, row) => sum + numberOrZero(row.iuPlanSpendWb), 0);
-  const wbSpendFactToDate = dailyRows.reduce((sum, row) => sum + numberOrZero(row.spendFact), 0);
+  const wbRevenueFactToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuRevenueWb || row.iuOrdersRevenueWb), 0);
+  const wbOrdersRevenueToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.ordersRevenueWb), 0);
+  const wbTargetToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuTargetRevenueWb), 0);
+  const wbPlanSpendToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuPlanSpendWb), 0);
+  const wbSpendFactToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.spendFact), 0);
   const wbRevenueDeltaToDate = wbRevenueFactToDate - wbTargetToDate;
   const wbSpendDeltaToDate = wbSpendFactToDate - wbPlanSpendToDate;
-  const monthSummary = {
+  const ozonFinanceMonth = ozonFinanceMonthSummary(normalized.ozonFinance || {}, selectedMonth);
+  const ozonPlanMonth = ozonPlanMonthSummary(normalized.ozonPlan || {}, selectedMonth);
+  const baseMonthSummary = {
     ...rawMonthSummary,
     iuRevenueWbPlanToDate: wbTargetToDate || rawMonthSummary.iuRevenueWbPlanToDate,
     targetRevenueWb: wbTargetToDate || rawMonthSummary.targetRevenueWb,
@@ -3687,6 +3813,27 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
     drrWb: wbRevenueFactToDate > 0 ? wbSpendFactToDate / wbRevenueFactToDate : rawMonthSummary.drrWb,
     ordersAdPct: wbOrdersRevenueToDate > 0 ? wbSpendFactToDate / wbOrdersRevenueToDate : rawMonthSummary.ordersAdPct
   };
+  const monthSummary = selectedPlatform === 'ozon' && numberOrZero(ozonFinanceMonth.accruedNet) ? {
+    ...baseMonthSummary,
+    ozonFinance: ozonFinanceMonth,
+    iuRevenueOzonFactToDate: ozonFinanceMonth.accruedNet,
+    revenueOzon: ozonFinanceMonth.salesGross + ozonFinanceMonth.returnsGross,
+    targetRevenueOzon: baseMonthSummary.targetRevenueOzon || baseMonthSummary.iuRevenueOzonPlanToDate,
+    revenueOzonDelta: ozonFinanceMonth.accruedNet - numberOrZero(baseMonthSummary.iuRevenueOzonPlanToDate || baseMonthSummary.targetRevenueOzon),
+    revenueOzonDeltaPct: numberOrZero(baseMonthSummary.iuRevenueOzonPlanToDate || baseMonthSummary.targetRevenueOzon) > 0
+      ? (ozonFinanceMonth.accruedNet - numberOrZero(baseMonthSummary.iuRevenueOzonPlanToDate || baseMonthSummary.targetRevenueOzon)) / numberOrZero(baseMonthSummary.iuRevenueOzonPlanToDate || baseMonthSummary.targetRevenueOzon)
+      : null,
+    iuRevenueOzonCompletionToDate: numberOrZero(baseMonthSummary.iuRevenueOzonPlanToDate || baseMonthSummary.targetRevenueOzon) > 0
+      ? ozonFinanceMonth.accruedNet / numberOrZero(baseMonthSummary.iuRevenueOzonPlanToDate || baseMonthSummary.targetRevenueOzon)
+      : null,
+    spendFactOzon: Math.abs(ozonFinanceMonth.ads),
+    iuAdsFactOzonToDate: Math.abs(ozonFinanceMonth.ads),
+    drrOzon: ozonFinanceMonth.salesGross > 0 ? Math.abs(ozonFinanceMonth.ads) / ozonFinanceMonth.salesGross : null,
+    spendDeltaOzon: Math.abs(ozonFinanceMonth.ads) - numberOrZero(baseMonthSummary.iuAdsOzonPlanToDate || baseMonthSummary.planSpendOzon),
+    spendDeltaOzonPct: numberOrZero(baseMonthSummary.iuAdsOzonPlanToDate || baseMonthSummary.planSpendOzon) > 0
+      ? (Math.abs(ozonFinanceMonth.ads) - numberOrZero(baseMonthSummary.iuAdsOzonPlanToDate || baseMonthSummary.planSpendOzon)) / numberOrZero(baseMonthSummary.iuAdsOzonPlanToDate || baseMonthSummary.planSpendOzon)
+      : null
+  } : baseMonthSummary;
   const channelRows = (normalized.channels || []).map((channel) => ({
     ...channel,
     spend: numberOrZero(channel.spend)
@@ -3702,6 +3849,12 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
     dailyRows,
     monthSummary,
     channelRows,
+    ozonFinance: normalized.ozonFinance || {},
+    ozonFinanceMonth,
+    ozonPlanMonth,
+    ozonFinanceSkuRows: selectedPlatform === 'ozon'
+      ? (normalized.ozonFinance?.sku || []).filter((row) => row.monthKey === selectedMonth || !row.monthKey).slice(0, 60)
+      : [],
     hasRows: dailyRows.length > 0
   };
 }
@@ -3721,27 +3874,31 @@ function iuDrrToneForRevenueDelta(value) {
 function iuDrrPlatformMeta(model) {
   const month = model.monthSummary || {};
   const isOzon = model.selectedPlatform === 'ozon';
+  const finance = isOzon ? (month.ozonFinance || model.ozonFinanceMonth || {}) : {};
+  const ozonPlanToDate = numberOrZero(month.iuRevenueOzonPlanToDate || month.targetRevenueOzon);
+  const ozonAccrued = numberOrZero(finance.accruedNet);
+  const ozonAds = Math.abs(numberOrZero(finance.ads || month.spendFactOzon));
   return {
     key: isOzon ? 'ozon' : 'wb',
     label: isOzon ? 'Ozon' : 'WB',
-    title: isOzon ? 'ИУ Ozon' : 'ИУ WB / ДРР WB',
+    title: isOzon ? 'ИУ Ozon: план-факт' : 'ИУ WB / ДРР WB',
     completion: isOzon ? month.iuRevenueOzonCompletionToDate : month.iuRevenueWbCompletionToDate,
-    fact: isOzon ? (month.iuRevenueOzonFactToDate || month.revenueOzon) : (month.iuRevenueWbFactToDate || month.revenueWb),
-    planToDate: isOzon ? month.iuRevenueOzonPlanToDate : month.iuRevenueWbPlanToDate,
-    targetRevenue: isOzon ? (month.targetRevenueOzon || month.iuRevenueOzonPlanToDate) : (month.targetRevenueWb || month.iuRevenueWbPlanToDate),
-    revenueDelta: isOzon ? month.revenueOzonDelta : month.revenueWbDelta,
+    fact: isOzon ? ozonAccrued : (month.iuRevenueWbFactToDate || month.revenueWb),
+    planToDate: isOzon ? ozonPlanToDate : month.iuRevenueWbPlanToDate,
+    targetRevenue: isOzon ? ozonPlanToDate : (month.targetRevenueWb || month.iuRevenueWbPlanToDate),
+    revenueDelta: isOzon ? (ozonAccrued - ozonPlanToDate) : month.revenueWbDelta,
     revenueDeltaPct: isOzon ? month.revenueOzonDeltaPct : month.revenueWbDeltaPct,
-    sparkKey: isOzon ? 'revenueOzon' : 'iuRevenueWb',
+    sparkKey: isOzon ? 'accruedNet' : 'iuRevenueWb',
     tableTargetKey: isOzon ? 'targetRevenueOzon' : 'iuTargetRevenueWb',
-    tableRevenueKey: isOzon ? 'revenueOzon' : 'iuRevenueWb',
+    tableRevenueKey: isOzon ? 'accruedNet' : 'iuRevenueWb',
     tableDeltaKey: isOzon ? 'revenueOzonDelta' : 'iuRevenueWbDelta',
     tableDeltaPctKey: isOzon ? 'revenueOzonDeltaPct' : 'iuRevenueWbDeltaPct',
     tableCompletionKey: isOzon ? 'revenueOzonCompletionPct' : 'iuRevenueWbCompletionPct',
     adsPlanPct: isOzon ? month.planPctOzon : month.planPct,
     adsPlan: isOzon ? month.iuAdsOzonPlanToDate : month.iuAdsPlanToDate,
     adsPlanMonth: isOzon ? month.iuAdsOzonPlan : month.iuAdsPlan,
-    adsFact: isOzon ? (month.iuAdsFactOzonToDate || month.spendFactOzon) : month.spendFact,
-    adsFactPct: isOzon ? month.drrOzon : month.drrWb,
+    adsFact: isOzon ? ozonAds : month.spendFact,
+    adsFactPct: isOzon ? (numberOrZero(finance.salesGross) > 0 ? ozonAds / numberOrZero(finance.salesGross) : month.drrOzon) : month.drrWb,
     adsCompletion: isOzon ? month.iuAdsCompletionOzonToDate : month.iuAdsCompletionToDate,
     adsDelta: isOzon ? month.spendDeltaOzon : month.spendDelta,
     adsDeltaPct: isOzon ? month.spendDeltaOzonPct : month.spendDeltaPct,
@@ -3775,6 +3932,221 @@ function iuDrrSparkline(rows, key, tone = 'ok') {
     <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(key)}" style="width:100%;height:120px">
       <polyline points="${points}" fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>
     </svg>
+  `;
+}
+
+function ozonPlanFactDailyRows(model, context = {}) {
+  const selectedMonth = model.selectedMonth || '';
+  const planRows = (model.payload.ozonPlan?.daily || []).filter((row) => row.monthKey === selectedMonth);
+  const activePlanRows = planRows.filter((row) => numberOrZero(row.revenue) || numberOrZero(row.gmv) || numberOrZero(row.ads));
+  const financeRows = (model.ozonFinance?.daily || []).filter((row) => row.monthKey === selectedMonth);
+  const financeByDate = new Map(financeRows.map((row) => [row.date, row]));
+  const dates = [...new Set([
+    ...activePlanRows.map((row) => row.date),
+    ...financeRows.map((row) => row.date)
+  ].filter(Boolean))].sort();
+  const monthTargetGmv = numberOrZero(context.monthTargetGmv);
+  const targetDrr = numberOrZero(context.targetDrr || 0.25);
+  const smartShare = numberOrZero(context.smartShare || 0.4);
+  const daysInMonth = daysInMonthKey(selectedMonth);
+  const dailyTargetGmv = daysInMonth > 0 ? monthTargetGmv / daysInMonth : 0;
+  return dates.map((date) => {
+    const rows = activePlanRows.filter((row) => row.date === date);
+    const total = rows.reduce((sum, row) => {
+      sum.revenue += numberOrZero(row.revenue);
+      sum.gmv += numberOrZero(row.gmv);
+      sum.ads += numberOrZero(row.ads);
+      return sum;
+    }, { revenue: 0, gmv: 0, ads: 0 });
+    const finance = financeByDate.get(date) || {};
+    const factGmv = numberOrZero(total.gmv || finance.salesGross);
+    const factAds = numberOrZero(total.ads || Math.abs(numberOrZero(finance.ads)));
+    return {
+      date,
+      period: `${String(date).slice(8, 10)}.${String(date).slice(5, 7)}`,
+      dailyTargetGmv,
+      factGmv,
+      factRevenue: total.revenue,
+      planDeltaGmv: factGmv - dailyTargetGmv,
+      completion: dailyTargetGmv > 0 ? factGmv / dailyTargetGmv : null,
+      adsBoth: factAds,
+      targetAdsByFact: factGmv * targetDrr,
+      adsReserve: factGmv * targetDrr - factAds,
+      drr: factGmv > 0 ? factAds / factGmv : null,
+      smartShareAds: factAds * smartShare,
+      smartShareGmv: factGmv * smartShare,
+      financeAccrued: numberOrZero(finance.accruedNet),
+      financeSales: numberOrZero(finance.salesGross),
+      financeAds: Math.abs(numberOrZero(finance.ads))
+    };
+  });
+}
+
+function renderOzonIuAccountCards(model, context = {}) {
+  const planMonth = model.ozonPlanMonth || {};
+  const totals = planMonth.totals || {};
+  const allocation = planMonth.allocation || {};
+  const smartShare = numberOrZero(context.smartShare || allocation.smartShare || 0.4);
+  const targetDrr = numberOrZero(context.targetDrr || planMonth.totals?.targetDrr || 0.25);
+  const drr = numberOrZero(totals.gmv) > 0 ? numberOrZero(totals.ads) / numberOrZero(totals.gmv) : totals.drrGmv;
+  return `
+    <div class="dashboard-grid-3" style="margin-top:14px">
+      <div class="mini-kpi ${drr != null && drr <= targetDrr ? 'ok' : 'warn'}">
+        <span>ИУ общий контур</span>
+        <strong>${fmt.money(totals.ads)}</strong>
+        <span>GMV ${fmt.money(totals.gmv)} · ДРР ${drr != null ? fmt.pct(drr) : '—'}</span>
+      </div>
+      <div class="mini-kpi ok">
+        <span>Наша доля Smart ${fmt.pct(smartShare)}</span>
+        <strong>${fmt.money(allocation.smartAllocatedAds)}</strong>
+        <span>GMV доля ${fmt.money(allocation.smartAllocatedGmv)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderOzonIuPlanFactTable(model, context = {}) {
+  const rows = ozonPlanFactDailyRows(model, context);
+  return `
+    <div class="card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Форма ИУ Ozon: план-факт</h3>
+          <p class="small muted">План GMV по месяцу, факт и ИУ по двум кабинетам; Smart показываем отдельной нашей долей 40%.</p>
+        </div>
+        ${badge(rows.length ? `${fmt.int(rows.length)} дней` : 'нет строк', rows.length ? 'ok' : 'warn')}
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>План GMV / день</th>
+              <th>Факт GMV оба кабинета</th>
+              <th>Δ к плану</th>
+              <th>Выполнение</th>
+              <th>ИУ факт оба кабинета</th>
+              <th>ДРР</th>
+              <th>Smart 40%</th>
+              <th>Начислено Finance</th>
+              <th>Реклама Finance</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((row) => `
+              <tr>
+                <td><strong>${escapeHtml(row.period || row.date)}</strong><div class="muted small">${escapeHtml(row.date)}</div></td>
+                <td>${fmt.money(row.dailyTargetGmv)}</td>
+                <td>${fmt.money(row.factGmv)}</td>
+                <td>${badge(fmt.money(row.planDeltaGmv), iuDrrToneForRevenueDelta(row.planDeltaGmv))}</td>
+                <td>${row.completion != null ? fmt.pct(row.completion) : '—'}</td>
+                <td>${fmt.money(row.adsBoth)}</td>
+                <td>${row.drr != null ? fmt.pct(row.drr) : '—'}</td>
+                <td>${fmt.money(row.smartShareAds)}</td>
+                <td>${fmt.money(row.financeAccrued)}</td>
+                <td>${fmt.money(row.financeAds)}</td>
+              </tr>
+            `).join('') || '<tr><td colspan="10">Нет данных Ozon по выбранному месяцу.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderOzonFinanceDailyTable(model, sourceLabel = '') {
+  return `
+    <div class="card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div><h3>Ozon Finance по дням</h3><p class="small muted">${escapeHtml(sourceLabel || 'Ozon Finance')}</p></div>
+        ${badge(model.hasRows ? `${fmt.int(model.dailyRows.length)} дней` : 'нет строк', model.hasRows ? 'ok' : 'warn')}
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Начислено</th>
+              <th>Продажи</th>
+              <th>Возвраты</th>
+              <th>Реклама</th>
+              <th>ДРР</th>
+              <th>Комиссии</th>
+              <th>Логистика</th>
+              <th>Прочие услуги</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(model.dailyRows || []).map((row) => {
+              const rowAds = Math.abs(numberOrZero(row.ads));
+              const rowDrr = numberOrZero(row.salesGross) > 0 ? rowAds / numberOrZero(row.salesGross) : null;
+              const rowOther = numberOrZero(row.partnerServices) + numberOrZero(row.fboServices) + numberOrZero(row.otherServices) + numberOrZero(row.compensations);
+              return `
+                <tr>
+                  <td><strong>${escapeHtml(row.period || row.date)}</strong><div class="muted small">${escapeHtml(row.date)}</div></td>
+                  <td>${fmt.money(row.accruedNet)}</td>
+                  <td>${fmt.money(row.salesGross)}</td>
+                  <td>${fmt.money(row.returnsGross)}</td>
+                  <td>${fmt.money(rowAds)}</td>
+                  <td>${rowDrr != null ? fmt.pct(rowDrr) : '—'}</td>
+                  <td>${fmt.money(row.ozonReward)}</td>
+                  <td>${fmt.money(row.deliveryServices)}</td>
+                  <td>${fmt.money(rowOther)}</td>
+                </tr>
+              `;
+            }).join('') || '<tr><td colspan="9">Нет данных Ozon Finance по выбранному месяцу.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderOzonFinanceSkuTable(model) {
+  const rows = Array.isArray(model.ozonFinanceSkuRows) ? model.ozonFinanceSkuRows : [];
+  return `
+    <div class="card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div><h3>SKU Ozon Finance</h3><p class="small muted">топ по модулю начисления, остатки и цена из products CSV</p></div>
+        ${badge(`${fmt.int(rows.length)} SKU`, 'info')}
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>SKU / артикул</th>
+              <th>Категория</th>
+              <th>Начислено</th>
+              <th>Продажи</th>
+              <th>Реклама</th>
+              <th>Комиссии</th>
+              <th>Логистика</th>
+              <th>Остаток</th>
+              <th>Цена</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((row) => `
+              <tr>
+                <td>
+                  <strong>${escapeHtml(row.article || row.sku || '—')}</strong>
+                  <div class="muted small">${escapeHtml(row.productName || row.name || '')}</div>
+                  ${row.unmapped ? badge('unmapped', 'warn') : ''}
+                </td>
+                <td>${escapeHtml(row.category || '—')}<div class="muted small">${escapeHtml(row.productType || '')}</div></td>
+                <td>${fmt.money(row.accruedNet)}</td>
+                <td>${fmt.money(row.salesGross + row.returnsGross)}</td>
+                <td>${fmt.money(Math.abs(numberOrZero(row.ads)))}</td>
+                <td>${fmt.money(row.ozonReward)}</td>
+                <td>${fmt.money(row.deliveryServices)}</td>
+                <td>${fmt.int(row.availableStock)}<div class="muted small">FBO ${fmt.int(row.fboStock)} / FBS ${fmt.int(row.fbsStock)}</div></td>
+                <td>${fmt.money(row.price)}</td>
+              </tr>
+            `).join('') || '<tr><td colspan="9">Нет SKU-детализации.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
   `;
 }
 
@@ -4198,23 +4570,30 @@ function renderWbCardRating(rootId = 'view-wb-rating') {
 
 function iuDrrExportRows(rows, model) {
   if (model.selectedPlatform === 'ozon') {
-    return rows.map((row) => ({
+    const planMonth = model.ozonPlanMonth || ozonPlanMonthSummary(model.payload.ozonPlan || {}, model.selectedMonth);
+    const targetDrr = numberOrZero(planMonth.totals?.targetDrr) || 0.25;
+    const smartShare = numberOrZero(planMonth.allocation?.smartShare || 0.4);
+    const monthTargetGmv = numberOrZero(planMonth.monthlyTargetGmv || model.payload.ozonPlan?.monthlyTargets?.[model.selectedMonth]);
+    return ozonPlanFactDailyRows(model, { monthTargetGmv, smartShare, targetDrr }).map((row) => ({
       month: model.selectedMonth,
       platform: 'Ozon',
       date: row.date,
       period: row.period || row.date,
-      target_revenue_ozon: row.targetRevenueOzon,
-      revenue_ozon: row.revenueOzon,
-      revenue_ozon_delta: row.revenueOzonDelta,
-      revenue_ozon_delta_pct: row.revenueOzonDeltaPct != null ? Math.round(Number(row.revenueOzonDeltaPct) * 10000) / 100 : '',
-      completion_pct: row.revenueOzonCompletionPct != null ? Math.round(Number(row.revenueOzonCompletionPct) * 10000) / 100 : '',
-      plan_ads_pct_ozon: row.planPctOzon != null ? Math.round(Number(row.planPctOzon) * 10000) / 100 : '',
-      plan_spend_ozon: row.planSpendOzon,
-      spend_fact_ozon: row.spendFactOzon,
-      fact_drr_ozon_pct: row.factPctOzon != null ? Math.round(Number(row.factPctOzon) * 10000) / 100 : '',
-      spend_delta_ozon: row.spendDeltaOzon,
-      spend_delta_ozon_pct: row.spendDeltaOzonPct != null ? Math.round(Number(row.spendDeltaOzonPct) * 10000) / 100 : '',
-      ozon_ads_source: row.ozonAdsFactMode
+      daily_target_gmv: row.dailyTargetGmv,
+      fact_gmv_both_accounts: row.factGmv,
+      gmv_delta: row.planDeltaGmv,
+      completion_pct: row.completion != null ? Math.round(Number(row.completion) * 10000) / 100 : '',
+      target_drr_pct: Math.round(targetDrr * 10000) / 100,
+      ads_fact_both_accounts: row.adsBoth,
+      fact_drr_pct: row.drr != null ? Math.round(Number(row.drr) * 10000) / 100 : '',
+      target_ads_by_fact: row.targetAdsByFact,
+      ads_reserve: row.adsReserve,
+      smart_share_pct: Math.round(smartShare * 10000) / 100,
+      smart_share_ads: row.smartShareAds,
+      smart_share_gmv: row.smartShareGmv,
+      finance_accrued: row.financeAccrued,
+      finance_sales: row.financeSales,
+      finance_ads: row.financeAds
     }));
   }
   return rows.map((row) => ({
@@ -4264,18 +4643,21 @@ function downloadIuDrrExcel(model) {
       ['platform', 'Площадка'],
       ['date', 'Дата'],
       ['period', 'Период'],
-      ['target_revenue_ozon', 'Целевой оборот Ozon'],
-      ['revenue_ozon', 'Продажи. Фактический оборот Ozon'],
-      ['revenue_ozon_delta', 'Разница оборота Ozon'],
-      ['revenue_ozon_delta_pct', 'Разница оборота Ozon, %'],
-      ['completion_pct', 'Выполнение Ozon, %'],
-      ['plan_ads_pct_ozon', 'Реклама Ozon. План в %'],
-      ['plan_spend_ozon', 'План расхода Ozon'],
-      ['spend_fact_ozon', 'Реклама Ozon. Расчетный расход'],
-      ['fact_drr_ozon_pct', 'Реклама Ozon. Расчетная ставка, %'],
-      ['spend_delta_ozon', 'Дельта расчетного расхода Ozon'],
-      ['spend_delta_ozon_pct', 'Дельта расчетного расхода Ozon, %'],
-      ['ozon_ads_source', 'Источник/модель рекламы Ozon']
+      ['daily_target_gmv', 'План GMV / день'],
+      ['fact_gmv_both_accounts', 'Факт GMV оба кабинета'],
+      ['gmv_delta', 'Дельта GMV к плану'],
+      ['completion_pct', 'Выполнение, %'],
+      ['target_drr_pct', 'Целевой ДРР, %'],
+      ['ads_fact_both_accounts', 'ИУ факт оба кабинета'],
+      ['fact_drr_pct', 'Факт ДРР, %'],
+      ['target_ads_by_fact', 'Бюджет ИУ от факта'],
+      ['ads_reserve', 'Резерв / перерасход ИУ'],
+      ['smart_share_pct', 'Наша доля Smart, %'],
+      ['smart_share_ads', 'Smart 40% ИУ'],
+      ['smart_share_gmv', 'Smart 40% GMV'],
+      ['finance_accrued', 'Начислено Finance'],
+      ['finance_sales', 'Продажи Finance'],
+      ['finance_ads', 'Реклама Finance']
     ], rows, `iu-drr-ozon-${model.selectedMonth || todayIso()}.xls`);
     return;
   }
@@ -4332,6 +4714,95 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     ...(model.payload.diagnostics?.noSourceChannels || []).map((item) => `${item}: нет источника`),
     ...(model.payload.diagnostics?.unmatchedNmIds || []).slice(0, 5).map((item) => `nmId ${item.nmId}: не сопоставлен`)
   ];
+  const ozonFinance = model.ozonFinance || {};
+  const ozonFinanceMonth = model.ozonFinanceMonth || {};
+  const ozonPlan = model.payload.ozonPlan || {};
+  const ozonPlanMonth = model.ozonPlanMonth || ozonPlanMonthSummary(ozonPlan, model.selectedMonth);
+  const ozonPlanTotals = ozonPlanMonth.totals || ozonPlan.totals || {};
+  const ozonAllocation = ozonPlanMonth.allocation || ozonPlan.allocation || {};
+  const ozonControl = ozonFinance.control || {};
+  const ozonSalesNet = numberOrZero(ozonFinanceMonth.salesGross) + numberOrZero(ozonFinanceMonth.returnsGross);
+  const ozonAdsAbs = Math.abs(numberOrZero(ozonFinanceMonth.ads));
+  const ozonDrr = numberOrZero(ozonFinanceMonth.salesGross) > 0 ? ozonAdsAbs / numberOrZero(ozonFinanceMonth.salesGross) : null;
+  const ozonControlDelta = ozonControl.deltaToSellerUi;
+  const ozonControlTone = ozonControlDelta === null || ozonControlDelta === undefined
+    ? 'info'
+    : Math.abs(numberOrZero(ozonControlDelta)) <= 1000 ? 'ok' : 'warn';
+  const ozonTargetDrr = numberOrZero(ozonPlanTotals.targetDrr)
+    || numberOrZero((ozonPlan.accounts || []).find((account) => account.key === 'smart')?.targetDrr)
+    || numberOrZero(month.planPctOzon)
+    || 0.25;
+  const ozonTargetSpendByFact = numberOrZero(ozonFinanceMonth.salesGross) * ozonTargetDrr;
+  const ozonSpendReserve = ozonTargetSpendByFact - ozonAdsAbs;
+  const ozonMonthTargetGmv = numberOrZero(ozonPlanMonth.monthlyTargetGmv || ozonPlan.monthlyTargets?.[model.selectedMonth] || month.iuRevenueOzonPlan);
+  const ozonDaysInMonth = daysInMonthKey(model.selectedMonth);
+  const ozonElapsedDays = numberOrZero(ozonFinance.window?.days) || new Set((ozonPlan.daily || []).filter((row) => row.monthKey === model.selectedMonth && (numberOrZero(row.gmv) || numberOrZero(row.ads))).map((row) => row.date)).size;
+  const ozonPlanToDateGmv = ozonDaysInMonth > 0 ? ozonMonthTargetGmv * Math.min(ozonElapsedDays || ozonDaysInMonth, ozonDaysInMonth) / ozonDaysInMonth : 0;
+  const ozonFactGmvBoth = numberOrZero(ozonPlanTotals.gmv || ozonFinanceMonth.salesGross);
+  const ozonFactAdsBoth = numberOrZero(ozonPlanTotals.ads || ozonAdsAbs);
+  const ozonPlanCompletionToDate = ozonPlanToDateGmv > 0 ? ozonFactGmvBoth / ozonPlanToDateGmv : null;
+  const ozonPlanCompletionMonth = ozonMonthTargetGmv > 0 ? ozonFactGmvBoth / ozonMonthTargetGmv : null;
+  const ozonPlanDeltaToDate = ozonFactGmvBoth - ozonPlanToDateGmv;
+  const ozonPlanFactDrr = ozonFactGmvBoth > 0 ? ozonFactAdsBoth / ozonFactGmvBoth : null;
+  const ozonPlanAdBudgetByFact = ozonFactGmvBoth * ozonTargetDrr;
+  const ozonPlanAdReserve = ozonPlanAdBudgetByFact - ozonFactAdsBoth;
+  const ozonBothAccountsAds = numberOrZero(ozonAllocation.totalAds || ozonPlanTotals.ads);
+  const ozonSmartShare = numberOrZero(ozonAllocation.smartShare || 0.4);
+  const ozonSmartShareAds = numberOrZero(ozonAllocation.smartAllocatedAds || (ozonBothAccountsAds * ozonSmartShare));
+  const ozonSmartShareGmv = numberOrZero(ozonAllocation.smartAllocatedGmv || (ozonFactGmvBoth * ozonSmartShare));
+  const ozonFinanceSourceLabel = [
+    ozonFinance.source?.financeFile,
+    ozonFinance.source?.productsFile,
+    ozonPlan.source?.planFile
+  ].filter(Boolean).join(' + ');
+  const ozonFinanceWindowLabel = ozonFinance.window?.from && ozonFinance.window?.to
+    ? `${ozonFinance.window.from}–${ozonFinance.window.to}`
+    : '';
+  const ozonFinanceKpisHtml = `
+    <div class="kpi-strip" style="margin-top:14px">
+      <div class="mini-kpi ${ozonPlanCompletionToDate != null && ozonPlanCompletionToDate >= 1 ? 'ok' : 'warn'}"><span>План-факт GMV</span><strong>${ozonPlanCompletionToDate != null ? fmt.pct(ozonPlanCompletionToDate) : '—'}</strong><span>${fmt.money(ozonFactGmvBoth)} / ${fmt.money(ozonPlanToDateGmv)}</span></div>
+      <div class="mini-kpi"><span>План месяца</span><strong>${fmt.money(ozonMonthTargetGmv)}</strong><span>${fmt.pct(ozonPlanCompletionMonth)} от месяца</span></div>
+      <div class="mini-kpi ${ozonPlanFactDrr != null && ozonPlanFactDrr <= ozonTargetDrr ? 'ok' : 'warn'}"><span>ИУ оба кабинета</span><strong>${fmt.money(ozonFactAdsBoth)}</strong><span>ДРР ${ozonPlanFactDrr != null ? fmt.pct(ozonPlanFactDrr) : '—'} / цель ${fmt.pct(ozonTargetDrr)}</span></div>
+      <div class="mini-kpi ok"><span>Smart 40%</span><strong>${fmt.money(ozonSmartShareAds)}</strong><span>GMV доля ${fmt.money(ozonSmartShareGmv)}</span></div>
+      <div class="mini-kpi"><span>Начислено Finance</span><strong>${fmt.money(ozonFinanceMonth.accruedNet)}</strong><span>продажи ${fmt.money(ozonFinanceMonth.salesGross)}</span></div>
+      <div class="mini-kpi ${ozonDrr != null && ozonDrr <= ozonTargetDrr ? 'ok' : 'warn'}"><span>Реклама Finance</span><strong>${fmt.money(ozonAdsAbs)}</strong><span>ДРР ${ozonDrr != null ? fmt.pct(ozonDrr) : '—'}</span></div>
+      <div class="mini-kpi ${ozonControlTone}"><span>Расхождение со скрином</span><strong>${ozonControlDelta === null || ozonControlDelta === undefined ? '—' : fmt.money(ozonControlDelta)}</strong><span>${ozonControl.sellerUiAccruedNet == null ? 'нет контроля' : fmt.money(ozonControl.sellerUiAccruedNet)}</span></div>
+    </div>
+  `;
+  const ozonFinanceChartsHtml = `
+    <div class="dashboard-grid-3" style="margin-top:14px">
+      <div class="card">
+        <div class="section-subhead">
+          <div><h3>План-факт GMV</h3><p class="small muted">${fmt.int(ozonElapsedDays)} из ${fmt.int(ozonDaysInMonth)} дней месяца</p></div>
+          ${badge(ozonPlanCompletionToDate != null ? fmt.pct(ozonPlanCompletionToDate) : '—', ozonPlanCompletionToDate != null && ozonPlanCompletionToDate >= 1 ? 'ok' : 'warn')}
+        </div>
+        <div class="kpi-strip" style="margin-top:10px">
+          <div class="mini-kpi"><span>Факт GMV</span><strong>${fmt.money(ozonFactGmvBoth)}</strong><span>оба кабинета</span></div>
+          <div class="mini-kpi"><span>План к дате</span><strong>${fmt.money(ozonPlanToDateGmv)}</strong><span>${fmt.money(ozonPlanDeltaToDate)}</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-subhead">
+          <div><h3>ИУ и ДРР</h3><p class="small muted">факт двух кабинетов против целевой ставки</p></div>
+          ${badge(ozonPlanFactDrr != null ? fmt.pct(ozonPlanFactDrr) : '—', ozonPlanFactDrr != null && ozonPlanFactDrr <= ozonTargetDrr ? 'ok' : 'warn')}
+        </div>
+        <div class="kpi-strip" style="margin-top:10px">
+          <div class="mini-kpi"><span>ИУ факт</span><strong>${fmt.money(ozonFactAdsBoth)}</strong><span>резерв ${fmt.money(ozonPlanAdReserve)}</span></div>
+          <div class="mini-kpi"><span>Бюджет от факта</span><strong>${fmt.money(ozonPlanAdBudgetByFact)}</strong><span>${fmt.pct(ozonTargetDrr)} от GMV</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-subhead">
+          <div><h3>Finance контроль</h3><p class="small muted">начислено, реклама и комиссии из seller finance</p></div>
+          ${badge(fmt.money(ozonFinanceMonth.accruedNet), 'ok')}
+        </div>
+        <div class="kpi-strip" style="margin-top:10px">
+          <div class="mini-kpi"><span>Реклама Finance</span><strong>${fmt.money(ozonAdsAbs)}</strong><span>ДРР ${ozonDrr != null ? fmt.pct(ozonDrr) : '—'}</span></div>
+          <div class="mini-kpi warn"><span>Комиссии + логистика</span><strong>${fmt.money(ozonFinanceMonth.ozonReward + ozonFinanceMonth.deliveryServices)}</strong><span>net ${fmt.money(ozonSalesNet)}</span></div>
+        </div>
+      </div>
+    </div>
+  `;
   const platformSwitchHtml = `
     <div class="badge-stack">
       <button class="quick-chip ${model.selectedPlatform === 'wb' ? 'active' : ''}" type="button" data-iu-drr-platform="wb" aria-pressed="${model.selectedPlatform === 'wb'}">ВБ</button>
@@ -4550,19 +5021,29 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       </div>
     </div>
   `;
+  const ozonFinanceDailyTableHtml = renderOzonFinanceDailyTable(model, ozonFinanceSourceLabel);
+  const ozonFinanceSkuTableHtml = renderOzonFinanceSkuTable(model);
+  const ozonIuAccountCardsHtml = renderOzonIuAccountCards(model, { smartShare: ozonSmartShare, targetDrr: ozonTargetDrr });
+  const ozonPlanFactTableHtml = renderOzonIuPlanFactTable(model, {
+    monthTargetGmv: ozonMonthTargetGmv,
+    smartShare: ozonSmartShare,
+    targetDrr: ozonTargetDrr
+  });
   root.innerHTML = `
     <div class="section-title">
       <div>
         <h2>${escapeHtml(platformMeta.title)}</h2>
-        <p>${isOzonView ? `Ozon: оборот, план рекламы и расчетный расход ${fmt.pct(platformMeta.adsPlanPct)}; фактические затраты из Ozon Ads пока не подключены.` : 'WB: выполнение ИУ, ДРР без Внешки и дневная детализация каналов рекламы.'}</p>
+        <p>${isOzonView ? `Ozon Finance: начислено, реклама и ДРР взяты из строк finance-выгрузки; план ИУ идет на оба кабинета, Smart считаем нашей долей ${fmt.pct(ozonSmartShare)}.` : 'WB: выполнение ИУ, ДРР без Внешки и дневная детализация каналов рекламы.'}</p>
       </div>
       <div class="badge-stack">
         ${isOzonView ? badge('Ozon', 'info') : iuDrrSourceBadge(model)}
-        ${badge(model.payload.asOfDate ? `срез ${model.payload.asOfDate}` : 'нет даты', model.payload.asOfDate ? 'info' : 'warn')}
+        ${isOzonView
+          ? badge(ozonFinanceWindowLabel ? `finance ${ozonFinanceWindowLabel}` : 'finance без дат', ozonFinanceWindowLabel ? 'info' : 'warn')
+          : badge(model.payload.asOfDate ? `срез ${model.payload.asOfDate}` : 'нет даты', model.payload.asOfDate ? 'info' : 'warn')}
       </div>
     </div>
 
-    ${quarterSummaryHtml}
+    ${isOzonView ? '' : quarterSummaryHtml}
 
     <div class="control-filters" style="margin-top:12px">
       <select id="iuDrrMonth">
@@ -4573,10 +5054,10 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       ${isOzonView ? '' : '<button class="quick-chip" type="button" data-iu-drr-ads>Рекламная воронка</button>'}
     </div>
 
-    ${selectedKpisHtml}
-    ${chartsHtml}
+    ${isOzonView ? ozonFinanceKpisHtml : selectedKpisHtml}
+    ${isOzonView ? ozonFinanceChartsHtml : chartsHtml}
     ${channelRowsHtml}
-    ${dailyTableHtml}
+    ${isOzonView ? `${ozonIuAccountCardsHtml}${ozonPlanFactTableHtml}${ozonFinanceDailyTableHtml}${ozonFinanceSkuTableHtml}` : dailyTableHtml}
 
     ${!isOzonView && sourceWarnings.length ? `
       <div class="card" style="margin-top:14px">

@@ -3639,9 +3639,12 @@ function ozonPlanMonthSummary(ozonPlan = {}, selectedMonth = '') {
     sum.revenue += numberOrZero(row.revenue);
     sum.gmv += numberOrZero(row.gmv);
     sum.ads += numberOrZero(row.ads);
+    sum.deltaToTargetSpend += numberOrZero(row.deltaToTargetSpend);
+    sum.cumulativeAds = numberOrZero(row.cumulativeAds) || sum.cumulativeAds;
+    sum.forecastDailyAds = numberOrZero(row.forecastDailyAds) || sum.forecastDailyAds;
     sum.targetDrr = numberOrZero(row.targetDrr) || sum.targetDrr || 0.25;
     return sum;
-  }, { revenue: 0, gmv: 0, ads: 0, targetDrr: 0.25 });
+  }, { revenue: 0, gmv: 0, ads: 0, deltaToTargetSpend: 0, cumulativeAds: 0, forecastDailyAds: 0, targetDrr: 0.25 });
   totals.drrGmv = totals.gmv > 0 ? totals.ads / totals.gmv : null;
   totals.drrRevenue = totals.revenue > 0 ? totals.ads / totals.revenue : null;
   const smartShare = numberOrZero(ozonPlan.allocation?.smartShare || 0.4);
@@ -3961,8 +3964,11 @@ function ozonPlanFactDailyRows(model, context = {}) {
       sum.revenue += numberOrZero(row.revenue);
       sum.gmv += numberOrZero(row.gmv);
       sum.ads += numberOrZero(row.ads);
+      sum.deltaToTargetSpend += numberOrZero(row.deltaToTargetSpend);
+      sum.cumulativeAds += numberOrZero(row.cumulativeAds);
+      sum.forecastDailyAds += numberOrZero(row.forecastDailyAds);
       return sum;
-    }, { revenue: 0, gmv: 0, ads: 0 });
+    }, { revenue: 0, gmv: 0, ads: 0, deltaToTargetSpend: 0, cumulativeAds: 0, forecastDailyAds: 0 });
     const finance = financeByDate.get(date) || {};
     const factGmv = numberOrZero(total.gmv);
     const factAds = numberOrZero(total.ads);
@@ -3991,6 +3997,9 @@ function ozonPlanFactDailyRows(model, context = {}) {
       cumulativeAdsCompletion: cumulativeTargetAds > 0 ? cumulativeFactAds / cumulativeTargetAds : null,
       targetAdsByFact: factGmv * targetDrr,
       adsReserve: factGmv * targetDrr - factAds,
+      dashboardAdsDelta: total.deltaToTargetSpend,
+      dashboardCumulativeAds: total.cumulativeAds,
+      forecastDailyAds: total.forecastDailyAds,
       drr: factGmv > 0 ? factAds / factGmv : null,
       smartShareAds: factAds * smartShare,
       smartShareGmv: factGmv * smartShare,
@@ -4050,6 +4059,7 @@ function renderOzonIuPlanFactTable(model, context = {}) {
               <th>Реклама план накоп.</th>
               <th>Реклама факт накоп.</th>
               <th>Δ рекламы накоп.</th>
+              <th>Реком. реклама / день</th>
               <th>ДРР факт</th>
             </tr>
           </thead>
@@ -4067,9 +4077,10 @@ function renderOzonIuPlanFactTable(model, context = {}) {
                 <td>${fmt.money(row.cumulativeTargetAds)}</td>
                 <td>${fmt.money(row.cumulativeFactAds)}</td>
                 <td>${badge(fmt.money(row.cumulativeAdsDelta), iuDrrToneForDelta(row.cumulativeAdsDelta))}<div class="muted small">${row.cumulativeAdsCompletion != null ? fmt.pct(row.cumulativeAdsCompletion) : '—'}</div></td>
+                <td>${numberOrZero(row.forecastDailyAds) ? fmt.money(row.forecastDailyAds) : '—'}</td>
                 <td>${row.drr != null ? fmt.pct(row.drr) : '—'}</td>
               </tr>
-            `).join('') || '<tr><td colspan="12">Нет данных Ozon по выбранному месяцу.</td></tr>'}
+            `).join('') || '<tr><td colspan="13">Нет данных Ozon по выбранному месяцу.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -4646,11 +4657,19 @@ function iuDrrExportRows(rows, model) {
     const targetDrr = numberOrZero(planMonth.totals?.targetDrr) || 0.25;
     const smartShare = numberOrZero(planMonth.allocation?.smartShare || 0.4);
     const monthTargetGmv = numberOrZero(planMonth.monthlyTargetGmv || model.payload.ozonPlan?.monthlyTargets?.[model.selectedMonth]);
+    const monthTargetAds = monthTargetGmv * targetDrr;
+    const contractKpis = model.payload.ozonPlan?.contractKpis || {};
+    const adRevKpiRate = numberOrZero(contractKpis.adRevKpiRate) || targetDrr;
+    const sppRate = numberOrZero(contractKpis.sppRate);
     return ozonPlanFactDailyRows(model, { monthTargetGmv, smartShare, targetDrr }).map((row) => ({
       month: model.selectedMonth,
       platform: 'Ozon',
       date: row.date,
       period: row.period || row.date,
+      month_target_gmv: monthTargetGmv,
+      month_target_ads: monthTargetAds,
+      adrev_kpi_pct: Math.round(adRevKpiRate * 10000) / 100,
+      spp_pct: sppRate ? Math.round(sppRate * 10000) / 100 : '',
       daily_target_gmv: row.dailyTargetGmv,
       fact_gmv_both_accounts: row.factGmv,
       gmv_delta: row.planDeltaGmv,
@@ -4667,6 +4686,9 @@ function iuDrrExportRows(rows, model) {
       cumulative_fact_ads: row.cumulativeFactAds,
       cumulative_ads_delta: row.cumulativeAdsDelta,
       cumulative_ads_completion_pct: row.cumulativeAdsCompletion != null ? Math.round(Number(row.cumulativeAdsCompletion) * 10000) / 100 : '',
+      dashboard_ads_delta: row.dashboardAdsDelta,
+      dashboard_cumulative_ads: row.dashboardCumulativeAds,
+      forecast_daily_ads: row.forecastDailyAds,
       fact_drr_pct: row.drr != null ? Math.round(Number(row.drr) * 10000) / 100 : '',
       target_ads_by_fact: row.targetAdsByFact,
       ads_reserve: row.adsReserve
@@ -4719,6 +4741,10 @@ function downloadIuDrrExcel(model) {
       ['platform', 'Площадка'],
       ['date', 'Дата'],
       ['period', 'Период'],
+      ['month_target_gmv', 'Оборот план / месяц'],
+      ['month_target_ads', 'Реклама план / месяц'],
+      ['adrev_kpi_pct', 'AdRev KPI / цель ДРР, %'],
+      ['spp_pct', 'СПП по договору, %'],
       ['daily_target_gmv', 'Оборот план / день'],
       ['fact_gmv_both_accounts', 'Оборот факт / день'],
       ['cumulative_target_gmv', 'Оборот план накопительно'],
@@ -4731,6 +4757,9 @@ function downloadIuDrrExcel(model) {
       ['cumulative_fact_ads', 'Реклама факт накопительно'],
       ['cumulative_ads_delta', 'Отклонение рекламы накопительно'],
       ['cumulative_ads_completion_pct', 'Реклама выполнение накопительно, %'],
+      ['dashboard_ads_delta', 'Дельта рекламы из дашборда Ozon'],
+      ['dashboard_cumulative_ads', 'Реклама накопительно из дашборда Ozon'],
+      ['forecast_daily_ads', 'Реком. реклама / день из дашборда Ozon'],
       ['fact_drr_pct', 'ДРР факт, %']
     ], rows, `iu-drr-ozon-${model.selectedMonth || todayIso()}.xls`);
     return;
@@ -4813,6 +4842,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   const ozonFinance = model.ozonFinance || {};
   const ozonFinanceMonth = model.ozonFinanceMonth || {};
   const ozonPlan = model.payload.ozonPlan || {};
+  const ozonContractKpis = ozonPlan.contractKpis || {};
   const ozonPlanMonth = model.ozonPlanMonth || ozonPlanMonthSummary(ozonPlan, model.selectedMonth);
   const ozonPlanTotals = ozonPlanMonth.totals || ozonPlan.totals || {};
   const ozonAllocation = ozonPlanMonth.allocation || ozonPlan.allocation || {};
@@ -4828,6 +4858,8 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     || numberOrZero((ozonPlan.accounts || []).find((account) => account.key === 'smart')?.targetDrr)
     || numberOrZero(month.planPctOzon)
     || 0.25;
+  const ozonAdRevKpiRate = numberOrZero(ozonContractKpis.adRevKpiRate) || ozonTargetDrr;
+  const ozonSppRate = numberOrZero(ozonContractKpis.sppRate);
   const ozonTargetSpendByFact = numberOrZero(ozonFinanceMonth.salesGross) * ozonTargetDrr;
   const ozonSpendReserve = ozonTargetSpendByFact - ozonAdsAbs;
   const ozonMonthTargetGmv = numberOrZero(ozonPlanMonth.monthlyTargetGmv || ozonPlan.monthlyTargets?.[model.selectedMonth] || month.iuRevenueOzonPlan);
@@ -4841,6 +4873,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   const ozonPlanDeltaToDate = ozonFactGmvBoth - ozonPlanToDateGmv;
   const ozonPlanFactDrr = ozonFactGmvBoth > 0 ? ozonFactAdsBoth / ozonFactGmvBoth : null;
   const ozonAdsPlanToDate = ozonPlanToDateGmv * ozonTargetDrr;
+  const ozonAdsPlanMonth = ozonMonthTargetGmv * ozonTargetDrr;
   const ozonAdsDeltaToDate = ozonFactAdsBoth - ozonAdsPlanToDate;
   const ozonAdsCompletionToDate = ozonAdsPlanToDate > 0 ? ozonFactAdsBoth / ozonAdsPlanToDate : null;
   const ozonPlanAdBudgetByFact = ozonFactGmvBoth * ozonTargetDrr;
@@ -5183,10 +5216,21 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     smartShare: ozonSmartShare,
     targetDrr: ozonTargetDrr
   });
+  const formatOzonSummaryValue = (row, value) => {
+    if (value === null || value === undefined || value === '') return '—';
+    return row.type === 'rate' ? fmt.pct(value) : fmt.money(value);
+  };
+  const formatOzonSummaryDelta = (row, value) => {
+    if (value === null || value === undefined || value === '') return '—';
+    if (row.type !== 'rate') return fmt.money(value);
+    const points = Math.round(numberOrZero(value) * 10000) / 100;
+    return `${points > 0 ? '+' : ''}${points} п.п.`;
+  };
   const ozonSummaryRows = [
     {
       label: 'Оборот',
       detail: `план месяца ${fmt.money(ozonMonthTargetGmv)}`,
+      monthPlan: ozonMonthTargetGmv,
       plan: ozonPlanToDateGmv,
       fact: ozonFactGmvBoth,
       completion: ozonPlanCompletionToDate,
@@ -5195,12 +5239,24 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     },
     {
       label: 'Реклама',
-      detail: `цель ДРР ${fmt.pct(ozonTargetDrr)}`,
+      detail: `месячный план ${fmt.money(ozonAdsPlanMonth)}`,
+      monthPlan: ozonAdsPlanMonth,
       plan: ozonAdsPlanToDate,
       fact: ozonFactAdsBoth,
       completion: ozonAdsCompletionToDate,
       delta: ozonAdsDeltaToDate,
       tone: iuDrrToneForDelta(ozonAdsDeltaToDate)
+    },
+    {
+      label: 'ДРР / AdRev KPI',
+      detail: `договорная цель ${fmt.pct(ozonAdRevKpiRate)}${ozonSppRate ? `, СПП ${fmt.pct(ozonSppRate)}` : ''}`,
+      type: 'rate',
+      monthPlan: ozonAdRevKpiRate,
+      plan: ozonAdRevKpiRate,
+      fact: ozonPlanFactDrr,
+      completionLabel: ozonPlanFactDrr == null ? '—' : (ozonPlanFactDrr <= ozonAdRevKpiRate ? 'в норме' : 'выше цели'),
+      delta: ozonPlanFactDrr == null ? null : ozonPlanFactDrr - ozonAdRevKpiRate,
+      tone: ozonPlanFactDrr == null ? 'info' : (ozonPlanFactDrr <= ozonAdRevKpiRate ? 'ok' : 'warn')
     }
   ];
   const ozonReadableSummaryHtml = `
@@ -5217,6 +5273,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
           <thead>
             <tr>
               <th>Показатель</th>
+              <th>План месяца</th>
               <th>План к дате</th>
               <th>Факт</th>
               <th>Выполнение</th>
@@ -5227,17 +5284,18 @@ function renderIuDrr(rootId = 'view-iu-drr') {
             ${ozonSummaryRows.map((row) => `
               <tr>
                 <td><strong>${escapeHtml(row.label)}</strong><div class="muted small">${escapeHtml(row.detail)}</div></td>
-                <td>${fmt.money(row.plan)}</td>
-                <td>${fmt.money(row.fact)}</td>
-                <td>${row.completion != null ? fmt.pct(row.completion) : '—'}</td>
-                <td>${badge(fmt.money(row.delta), row.tone)}</td>
+                <td>${formatOzonSummaryValue(row, row.monthPlan)}</td>
+                <td>${formatOzonSummaryValue(row, row.plan)}</td>
+                <td>${formatOzonSummaryValue(row, row.fact)}</td>
+                <td>${row.completionLabel || (row.completion != null ? fmt.pct(row.completion) : '—')}</td>
+                <td>${badge(formatOzonSummaryDelta(row, row.delta), row.tone)}</td>
               </tr>
             `).join('')}
           </tbody>
         </table>
       </div>
       <div class="muted small" style="margin-top:10px">
-        Источник факта: Ozon API и Ozon dashboard. Техническая сверка начислений убрана из формы, чтобы не смешивать ее с план-фактом.
+        Источник факта: Ozon API и Ozon dashboard. Проверка договора из Excel: GMV KPI, РКО, PI к WB self wallet 1.00 и AdRev KPI для сохранения СПП.
       </div>
     </div>
   `;

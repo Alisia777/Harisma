@@ -28,9 +28,10 @@ try {
   exit $exitCode
 } catch {
   $message = [string]$_.Exception.Message
-  if ($message -like "*another portal sync seems to be running*") {
+  $details = [string]$_
+  if ($message -like "*another portal sync seems to be running*" -or $details -like "*another portal sync seems to be running*") {
     Write-LogLine "Scheduled portal sync skipped: another sync is already running."
-    Write-LogLine $message
+    Write-LogLine $(if ($message) { $message } else { $details })
     exit 0
   }
   Write-LogLine "Scheduled portal sync failed: $message"

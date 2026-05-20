@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-05-20T11:31:07.819Z",
+  "generatedAt": "2026-05-20T12:25:21.083Z",
   "status": "warning",
   "publish": {
     "allowed": true,
@@ -9,7 +9,7 @@
       "Unmapped API SKU revenue: 15302999.",
       "SKU without owner or registry mapping: 3."
     ],
-    "checkedAt": "2026-05-20T11:31:07.819Z"
+    "checkedAt": "2026-05-20T12:25:21.083Z"
   },
   "freshness": {
     "maxDate": "2026-05-19",
@@ -60,9 +60,9 @@
     },
     "repricer": {
       "exists": true,
-      "rows": 302,
-      "generatedAt": "2026-05-19T10:52:47.444Z",
-      "asOfDate": "2026-05-19",
+      "rows": 199,
+      "generatedAt": "2026-05-20T09:07:42.076Z",
+      "asOfDate": "2026-05-20",
       "revenue": 0
     },
     "smart_price_overlay": {
@@ -124,7 +124,7 @@
     "oos_control": {
       "exists": true,
       "rows": 37,
-      "generatedAt": "2026-05-20T11:31:07.611Z",
+      "generatedAt": "2026-05-20T12:25:20.685Z",
       "asOfDate": "2026-05-19",
       "revenue": 0
     },
@@ -145,7 +145,7 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-05-20T11:28:21.456Z",
+      "generatedAt": "2026-05-20T12:25:20.808Z",
       "asOfDate": "2026-05-19",
       "revenue": 15302999
     },
@@ -180,7 +180,7 @@
     "sku_matrix": {
       "exists": true,
       "rows": 89,
-      "generatedAt": "2026-05-20T11:28:21.528Z",
+      "generatedAt": "2026-05-20T12:25:20.880Z",
       "asOfDate": "2026-05-20",
       "revenue": 0
     },
@@ -331,7 +331,9 @@
         "previousRevenue": 0,
         "revenueRatio": 1
       }
-    ]
+    ],
+    "markedAt": "2026-05-20T12:25:21.272Z",
+    "copied": 25
   },
   "checks": [
     {

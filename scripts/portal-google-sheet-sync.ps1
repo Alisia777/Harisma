@@ -411,9 +411,10 @@ if ($ProfileDir) {
   $kzParams.ProfileDir = $ProfileDir
 }
 
-if ($DryRun) {
-  $kzParams.DryRun = $true
-}
+# Keep the nested KZ step build-only. The full portal upload below publishes
+# product_leaderboard and product_leaderboard_history together with the other
+# snapshots; uploading the large history here can strand the main sync midway.
+$kzParams.DryRun = $true
 
 Write-Output "[sync] product leaderboard sync started"
 & $kzSyncScript @kzParams

@@ -2282,30 +2282,30 @@ function portalHealthChangesHtml(diff = {}) {
 
 function portalHealthRulesHtml(rules = portalDataRules()) {
   return `
-    <details class="card sku-plan-fact-card" data-health-rules>
+    <details class="card sku-plan-fact-card" data-health-rules open>
       <summary style="cursor:pointer;font-weight:800">Правила тревог и автозадач</summary>
-      <form class="grid cards" style="margin-top:12px" data-health-rules-form>
-        <label class="mini-kpi">
+      <form class="data-health-rules-form" data-health-rules-form novalidate>
+        <label class="mini-kpi data-health-rule-field">
           <span>Товар закончится, дней</span>
-          <input name="stockRiskDays" type="number" min="1" max="180" step="1" value="${escapeHtml(rules.stockRiskDays)}">
+          <input name="stockRiskDays" type="text" inputmode="numeric" pattern="[0-9\\s,.]*" autocomplete="off" value="${escapeHtml(rules.stockRiskDays)}">
           <span>для “Заказа товара” и общей очереди</span>
         </label>
-        <label class="mini-kpi">
+        <label class="mini-kpi data-health-rule-field">
           <span>Критичная сумма, ₽</span>
-          <input name="criticalRevenueRub" type="number" min="0" step="10000" value="${escapeHtml(rules.criticalRevenueRub)}">
+          <input name="criticalRevenueRub" type="text" inputmode="numeric" pattern="[0-9\\s,.]*" autocomplete="off" value="${escapeHtml(rules.criticalRevenueRub)}">
           <span>выше этой суммы проблема становится критичной</span>
         </label>
-        <label class="mini-kpi">
+        <label class="mini-kpi data-health-rule-field">
           <span>Просрочка источника, дней</span>
-          <input name="staleSourceDays" type="number" min="0" max="14" step="1" value="${escapeHtml(rules.staleSourceDays)}">
+          <input name="staleSourceDays" type="text" inputmode="numeric" pattern="[0-9\\s,.]*" autocomplete="off" value="${escapeHtml(rules.staleSourceDays)}">
           <span>порог для утренней проверки свежести</span>
         </label>
-        <label class="mini-kpi">
+        <label class="mini-kpi data-health-rule-field">
           <span>Автозадач за раз</span>
-          <input name="autoTaskLimit" type="number" min="1" max="50" step="1" value="${escapeHtml(rules.autoTaskLimit)}">
+          <input name="autoTaskLimit" type="text" inputmode="numeric" pattern="[0-9\\s,.]*" autocomplete="off" value="${escapeHtml(rules.autoTaskLimit)}">
           <span>чтобы не плодить лишнее</span>
         </label>
-        <div class="quick-actions" style="align-self:end">
+        <div class="quick-actions data-health-rules-actions">
           <button class="quick-chip" type="submit">Сохранить правила</button>
         </div>
       </form>

@@ -4003,11 +4003,20 @@ function ozonPlanFactDailyRows(model, context = {}) {
     const smartRevenue = numberOrZero(smart.revenue);
     const smartGmv = numberOrZero(smart.gmv);
     const smartAds = numberOrZero(smart.ads);
-    const factGmv = smartRevenue || numberOrZero(total.revenue);
-    const factAds = smartAds || numberOrZero(total.ads);
     const financeAds = Math.abs(numberOrZero(finance.ads));
+    const financeRealization = numberOrZero(finance.realizationSalesGross)
+      || numberOrZero(finance.realizationRevenue) + numberOrZero(finance.discountBonus) + numberOrZero(finance.partnerPrograms);
+    const financeSalesNet = numberOrZero(finance.salesGross) + numberOrZero(finance.returnsGross);
+    const financeFactGmv = financeRealization || financeSalesNet;
+    const hasDashboardFact = rows.some((row) => numberOrZero(row.revenue) || numberOrZero(row.gmv) || numberOrZero(row.ads));
+    const hasFinanceFact = numberOrZero(finance.rowCount) > 0 || financeFactGmv > 0 || financeAds > 0;
+    const usesFinanceFallback = !hasDashboardFact && hasFinanceFact;
+    const isPartialFinanceDay = usesFinanceFallback && !financeRealization;
+    const factGmv = smartRevenue || numberOrZero(total.revenue) || financeFactGmv;
+    const factAds = smartAds || numberOrZero(total.ads) || financeAds;
     const noSppBuyouts = numberOrZero(finance.realizationSalesGross)
       || numberOrZero(finance.realizationRevenue) + numberOrZero(finance.discountBonus) + numberOrZero(finance.partnerPrograms)
+      || financeSalesNet
       || smartGmv
       || numberOrZero(total.gmv);
     const noSppAds = financeAds || factAds;
@@ -4066,7 +4075,10 @@ function ozonPlanFactDailyRows(model, context = {}) {
       financeRealizationRevenue: numberOrZero(finance.realizationRevenue),
       financeDiscountBonus: numberOrZero(finance.discountBonus),
       financePartnerPrograms: numberOrZero(finance.partnerPrograms),
-      financeAds: Math.abs(numberOrZero(finance.ads))
+      financeAds: Math.abs(numberOrZero(finance.ads)),
+      source: usesFinanceFallback ? 'ozon_finance_api' : (hasDashboardFact ? 'ozon_dashboard' : 'missing'),
+      sourceLabel: usesFinanceFallback ? 'Ozon Finance API' : (hasDashboardFact ? 'Ozon dashboard' : ''),
+      isPartial: Boolean(isPartialFinanceDay)
     };
   });
 }
@@ -4130,7 +4142,11 @@ function renderOzonIuPlanFactTable(model, context = {}) {
           <tbody>
             ${rows.map((row) => `
               <tr>
-                <td><strong>${escapeHtml(row.period || row.date)}</strong><div class="muted small">${escapeHtml(row.date)}</div></td>
+                <td>
+                  <strong>${escapeHtml(row.period || row.date)}</strong>
+                  <div class="muted small">${escapeHtml(row.date)}</div>
+                  ${row.source === 'ozon_finance_api' ? `<div class="badge-stack" style="margin-top:4px">${badge(row.isPartial ? 'API частично' : 'API факт', row.isPartial ? 'warn' : 'info')}</div>` : ''}
+                </td>
                 <td>${fmt.money(row.dailyTargetGmv)}</td>
                 <td>${fmt.money(row.factGmv)}</td>
                 <td>${fmt.money(row.noSppBuyouts)}</td>
@@ -4938,6 +4954,12 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   const ozonFullMonthTargetGmv = numberOrZero(ozonPlanMonth.monthlyTargetGmv || ozonPlan.monthlyTargets?.[model.selectedMonth] || month.iuRevenueOzonPlan);
   const ozonSmartShare = numberOrZero(ozonAllocation.smartShare || 0.4);
   const ozonMonthTargetGmv = ozonFullMonthTargetGmv * ozonSmartShare;
+  const ozonPlanFactRows = ozonPlanFactDailyRows(model, {
+    monthTargetGmv: ozonMonthTargetGmv,
+    smartShare: ozonSmartShare,
+    targetDrr: ozonTargetDrr
+  });
+  const ozonPlanFactLastRow = ozonPlanFactRows[ozonPlanFactRows.length - 1] || {};
   const ozonSmartDailyRows = (ozonPlan.daily || [])
     .filter((row) => row.monthKey === model.selectedMonth)
     .map((row) => ({ date: row.date, ...(row.accountBreakdown?.smart || {}) }))
@@ -4946,19 +4968,27 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   const ozonSmartGmv = ozonSmartDailyRows.reduce((sum, row) => sum + numberOrZero(row.gmv), 0);
   const ozonSmartAds = ozonSmartDailyRows.reduce((sum, row) => sum + numberOrZero(row.ads), 0);
   const ozonDaysInMonth = daysInMonthKey(model.selectedMonth);
-  const ozonElapsedDays = new Set(ozonSmartDailyRows.map((row) => row.date)).size
+  const ozonElapsedDays = ozonPlanFactRows.length
+    || new Set(ozonSmartDailyRows.map((row) => row.date)).size
     || numberOrZero(ozonFinance.window?.days)
     || new Set((ozonPlan.daily || []).filter((row) => row.monthKey === model.selectedMonth && (numberOrZero(row.gmv) || numberOrZero(row.ads))).map((row) => row.date)).size;
-  const ozonPlanToDateGmv = ozonDaysInMonth > 0 ? ozonMonthTargetGmv * Math.min(ozonElapsedDays || ozonDaysInMonth, ozonDaysInMonth) / ozonDaysInMonth : 0;
-  const ozonFactGmvBoth = numberOrZero(ozonSmartRevenue || ozonAllocation.smartAllocatedRevenue || ozonPlanTotals.revenue || ozonFinanceMonth.salesGross);
-  const ozonFactAdsBoth = numberOrZero(ozonSmartAds || ozonAllocation.smartAllocatedAds || ozonPlanTotals.ads || ozonAdsAbs);
+  const ozonPlanToDateGmv = numberOrZero(ozonPlanFactLastRow.cumulativeTargetGmv)
+    || (ozonDaysInMonth > 0 ? ozonMonthTargetGmv * Math.min(ozonElapsedDays || ozonDaysInMonth, ozonDaysInMonth) / ozonDaysInMonth : 0);
+  const ozonFactGmvBoth = numberOrZero(ozonPlanFactLastRow.cumulativeFactGmv)
+    || numberOrZero(ozonSmartRevenue || ozonAllocation.smartAllocatedRevenue || ozonPlanTotals.revenue || ozonFinanceMonth.salesGross);
+  const ozonFactAdsBoth = numberOrZero(ozonPlanFactLastRow.cumulativeFactAds)
+    || numberOrZero(ozonSmartAds || ozonAllocation.smartAllocatedAds || ozonPlanTotals.ads || ozonAdsAbs);
   const ozonPlanCompletionToDate = ozonPlanToDateGmv > 0 ? ozonFactGmvBoth / ozonPlanToDateGmv : null;
   const ozonPlanCompletionMonth = ozonMonthTargetGmv > 0 ? ozonFactGmvBoth / ozonMonthTargetGmv : null;
-  const ozonPlanDeltaToDate = ozonFactGmvBoth - ozonPlanToDateGmv;
+  const ozonPlanDeltaToDate = ozonPlanFactLastRow.cumulativeGmvDelta !== undefined
+    ? numberOrZero(ozonPlanFactLastRow.cumulativeGmvDelta)
+    : ozonFactGmvBoth - ozonPlanToDateGmv;
   const ozonPlanFactDrr = ozonFactGmvBoth > 0 ? ozonFactAdsBoth / ozonFactGmvBoth : null;
   const ozonAdsPlanToDate = ozonPlanToDateGmv * ozonTargetDrr;
   const ozonAdsPlanMonth = ozonMonthTargetGmv * ozonTargetDrr;
-  const ozonAdsDeltaToDate = ozonFactAdsBoth - ozonAdsPlanToDate;
+  const ozonAdsDeltaToDate = ozonPlanFactLastRow.cumulativeAdsDelta !== undefined
+    ? numberOrZero(ozonPlanFactLastRow.cumulativeAdsDelta)
+    : ozonFactAdsBoth - ozonAdsPlanToDate;
   const ozonAdsCompletionToDate = ozonAdsPlanToDate > 0 ? ozonFactAdsBoth / ozonAdsPlanToDate : null;
   const ozonPlanAdBudgetByFact = ozonFactGmvBoth * ozonTargetDrr;
   const ozonPlanAdReserve = ozonPlanAdBudgetByFact - ozonFactAdsBoth;
@@ -5293,12 +5323,6 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   `;
   void ozonFinanceSourceLabel;
   const ozonIuAccountCardsHtml = renderOzonIuAccountCards(model, { smartShare: ozonSmartShare, targetDrr: ozonTargetDrr });
-  const ozonPlanFactRows = ozonPlanFactDailyRows(model, {
-    monthTargetGmv: ozonMonthTargetGmv,
-    smartShare: ozonSmartShare,
-    targetDrr: ozonTargetDrr
-  });
-  const ozonPlanFactLastRow = ozonPlanFactRows[ozonPlanFactRows.length - 1] || {};
   const ozonNoSppBuyoutsToDate = numberOrZero(ozonPlanFactLastRow.cumulativeNoSppBuyouts);
   const ozonNoSppAdsToDate = numberOrZero(ozonPlanFactLastRow.cumulativeNoSppAds);
   const ozonNoSppDrrToDate = ozonNoSppBuyoutsToDate > 0 ? ozonNoSppAdsToDate / ozonNoSppBuyoutsToDate : null;

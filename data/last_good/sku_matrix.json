@@ -1,0 +1,3394 @@
+{
+  "schema": "portal-sku-matrix-v1",
+  "generatedAt": "2026-05-20T09:09:43.158Z",
+  "source": {
+    "skus": 89,
+    "aliases": 0,
+    "ignored": 0,
+    "dataQualityGeneratedAt": "2026-05-19T11:03:45.405Z"
+  },
+  "summary": {
+    "skuCount": 89,
+    "activeSkuCount": 63,
+    "aliasCount": 0,
+    "ignoredApiSkuCount": 0,
+    "apiUnmappedCount": 142,
+    "duplicateRiskCount": 0,
+    "duplicateRiskOverage": 0,
+    "missingOwnerCount": 9,
+    "issueCount": 176,
+    "problemStateCounts": {
+      "ok": 80,
+      "missing_owner": 9,
+      "has_warning": 9,
+      "api_unmapped": 1
+    }
+  },
+  "problemStates": {
+    "ok": {
+      "label": "В матрице",
+      "tone": "ok"
+    },
+    "missing_owner": {
+      "label": "Нет owner",
+      "tone": "warn"
+    },
+    "has_critical_issue": {
+      "label": "Есть критичная ошибка",
+      "tone": "danger"
+    },
+    "has_warning": {
+      "label": "Есть замечание",
+      "tone": "warn"
+    },
+    "api_unmapped": {
+      "label": "API SKU без пары",
+      "tone": "danger"
+    },
+    "ignored": {
+      "label": "API SKU в ignore",
+      "tone": ""
+    },
+    "duplicate_risk": {
+      "label": "Риск дубля выручки",
+      "tone": "danger"
+    }
+  },
+  "items": [
+    {
+      "articleKey": "alteya_beauty_brows_box",
+      "article": "alteya_beauty_brows_box",
+      "name": "Уход за бровями набор Гель для бровей + сыворотка для ресниц, набор для бровей и ресниц, Алтея",
+      "owner": "Олеся",
+      "status": "Вывод",
+      "registryStatus": "На вывод",
+      "brand": "Алтея",
+      "category": "Декоративная косметика",
+      "type": "Набор для бровей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "alteya_young_skin_box",
+      "article": "alteya_young_skin_box",
+      "name": "Подарочный набор для женщин. Набор для лица уходовый косметический бьюти Young Skin Box Алтея",
+      "owner": "Олеся",
+      "status": "Вывод",
+      "registryStatus": "На вывод",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Набор уходовой косметики",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "b_kompleks_bad_60tabl",
+      "article": "b_kompleks_BAD_60tabl",
+      "name": "Витамины группы В комплекс Алтея 60 жевательных таблеток",
+      "owner": "Светлана",
+      "status": "Вывод",
+      "registryStatus": "На вывод",
+      "brand": "Алтея",
+      "category": "БАДы и витамины",
+      "type": "Витаминный комплекс",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "berberin_laif_bad_60caps",
+      "article": "berberin_laif_BAD_60caps",
+      "name": "Берберин + хром + коэнзим + B6 для похудения, контроль аппетита и веса, Алтея, Берберин Лайф, 60 капсул",
+      "owner": "Олеся",
+      "status": "Вывод",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Парафармацевтика",
+      "type": "Пищевая добавка",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "chudofrukt_bad_60caps",
+      "article": "chudofrukt_BAD_60caps",
+      "name": "Таблетки для похудения, жиросжигатель детокс для снижения веса, Алтея, Чудофрукт, 60 капсул",
+      "owner": "Светлана",
+      "status": "Вывод",
+      "registryStatus": "На вывод",
+      "brand": "Алтея",
+      "category": "БАДы и витамины",
+      "type": "БАД для снижения веса",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "curly_method_300ml",
+      "article": "curly_method_300ml",
+      "name": "Кудрявый метод Крем для кудрявых и вьющихся волос Алтея 300 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Крем для волос",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "ekdisteron_ultra_man_60caps",
+      "article": "ekdisteron_ultra_man_60caps",
+      "name": "Тестостерон для мужчин, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер Алтея 60 капсул",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Спортивное питание",
+      "type": "Средства для повышения тестостерона",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "enzim_pudra_80gr",
+      "article": "enzim_pudra_80gr",
+      "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
+      "owner": "Мария",
+      "status": "Вывод",
+      "registryStatus": "На вывод",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Средство для умывания",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "enzim_pudra_80gr_v2",
+      "article": "enzim_pudra_80gr_v2",
+      "name": "Энзимная пудра для умывания тела и лица, от прыщей, Алтея, 80г",
+      "owner": "Мария",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Средство для умывания",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "frutaksa_bad_200gr",
+      "article": "frutaksa_BAD_200gr",
+      "name": "Жиросжигатель, детокс, Алтея, Алтея, Фрутакса, 200 грамм",
+      "owner": "Светлана",
+      "status": "Вывод",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "БАДы и витамины",
+      "type": "БАД для снижения веса",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "frutalika_bad_60caps",
+      "article": "frutalika_BAD_60caps",
+      "name": "Пиколинат хрома для похудения, детокс, жиросжигатель, Алтея, Фруталика, 60 капсул",
+      "owner": "Светлана",
+      "status": "Вывод",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "БАДы и витамины",
+      "type": "БАД для снижения веса",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "gel_antiakne_20ml",
+      "article": "gel_antiakne_20ml",
+      "name": "Точечный крем от прыщей. Корректор точечный против прыщей, крем от акне. Салициловая кислота, азелаиновая кислота Алтея 20 мл",
+      "owner": "Олеся",
+      "status": "Вывод",
+      "registryStatus": "На вывод",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "gel_antiakne_20ml_v2",
+      "article": "gel_antiakne_20ml_v2",
+      "name": "Крем от прыщей точечный/против прыщей, от акне комедонов угрей черных точек, средство для подростков, для проблемной кожи, гель от прыщей на лице cалициловая, азелаиновая кислота. Алтея 20 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "gel_brows_5ml",
+      "article": "gel_brows_5ml",
+      "name": "Гель для бровей с коллагеном и эластином, фиксация на 24 часа, Алтея, 5 мл",
+      "owner": "Олеся",
+      "status": "Вывод",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Декоративная косметика",
+      "type": "Гель для бровей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "gel_dlya_britya_300ml",
+      "article": "gel_dlya_britya_300ml",
+      "name": "Гель для бритья мужской без пены охлаждающий с ментолом Алтея 300 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Средства для бритья и груминг",
+      "type": "Средство для бритья",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "gel_dlya_brovei_6ml",
+      "article": "gel_dlya_brovei_6ml",
+      "name": "Гель для бровей с эффектом ламинирования, Алтея, 6 мл",
+      "owner": "Олеся",
+      "status": "Вывод",
+      "registryStatus": "Под вопросом",
+      "brand": "Алтея",
+      "category": "Декоративная косметика",
+      "type": "Гель для бровей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "gel_for_men_3_in_1_1000ml",
+      "article": "gel_for_men_3_in_1_1000ml",
+      "name": "Гель для душа мужской парфюмированный Алтея 1000 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Средства для гигиены тела",
+      "type": "Средство для душа",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "gel_parfum_tabacco_vanille_450ml",
+      "article": "gel_parfum_tabacco_vanille_450ml",
+      "name": "Гель для душа женский парфюмированный Tobacco Vanille, Алтея, 450 мл",
+      "owner": "Олеся",
+      "status": "Вывод",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Средства для гигиены тела",
+      "type": "Средство для душа",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "gidrofilnoe_maslo_150ml",
+      "article": "gidrofilnoe_maslo_150ml",
+      "name": "Гидрофильное масло для снятия макияжа с лавандой, Алтея , 150 мл",
+      "owner": "Мария",
+      "status": "На вывод",
+      "registryStatus": "На вывод",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Средство для умывания",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "glikiron_bad_60caps",
+      "article": "glikiron_BAD_60caps",
+      "name": "Гликирон БАД для профилактики диабета контроль аппетита",
+      "owner": "Светлана",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "БАДы и витамины",
+      "type": "БАД для ускорения обмена веществ",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "i_am_alpha_bad_60caps",
+      "article": "i_am_alpha_BAD_60caps",
+      "name": "Тестостерон для мужчин I am alpha Алтея 60 капсул, экдистерон для потенции и мышц спортивный, цинк, тестобустер, витамины для мужчин, бустер",
+      "owner": "Светлана",
+      "status": "Вывод",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Спортивное питание",
+      "type": "Средства для повышения тестостерона",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "indolakt_bad_60caps",
+      "article": "indolakt_BAD_60caps",
+      "name": "Индол 3 карбинол брокколи витамины с зеленым чаем Алтея, Индолакт, 60 капсул",
+      "owner": "Светлана",
+      "status": "Под вопросом",
+      "registryStatus": "Под вопросом",
+      "brand": "Алтея",
+      "category": "Парафармацевтика",
+      "type": "Пищевая добавка",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "insulight_bad_60caps",
+      "article": "insulight_BAD_60caps",
+      "name": "Витамины для диабетиков, для профилактики от сахарного диабета, Алтея, Инсулайт, 60 капсул",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Парафармацевтика",
+      "type": "Пищевая добавка",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "intimvita_200ml",
+      "article": "intimvita_200ml",
+      "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 200 мл",
+      "owner": "Олеся",
+      "status": "Вывод",
+      "registryStatus": "На вывод",
+      "brand": "Алтея",
+      "category": "Средства для гигиены тела",
+      "type": "Средство для интимной гигиены",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "intimvita_300ml",
+      "article": "intimvita_300ml",
+      "name": "Гель для интимной гигиены с молочной кислотой, Алтея, Интимвита, 300 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Средства для гигиены тела",
+      "type": "Средство для интимной гигиены",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "krem-filler_15ml",
+      "article": "krem-filler_15ml",
+      "name": "Питательный крем для лица антивозрастной, Крем филлер вокруг глаз, с коллагеном с ниацинамидом, Алтея, 15 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Под вопросом",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Стик",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "krem_buster_250ml",
+      "article": "krem_buster_250ml",
+      "name": "Антицеллюлитный крем гель для тела от целлюлита Алтея 250 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "krem_dlya_ruk_75ml",
+      "article": "krem_dlya_ruk_75ml",
+      "name": "Крем для рук ламеллярный с мочевиной 3%, увлажняющий и питательный, Алтея, 75 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "krem_dlya_vek_30ml",
+      "article": "krem_dlya_vek_30ml",
+      "name": "Крем для век и кожи вокруг глаз Жидкие патчи для глаз Алтея 30 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "krem_ot_rastyazhek",
+      "article": "krem_ot_rastyazhek",
+      "name": "Крем/масло от растяжек для беременных и подростков с эластином, Алтея, 200 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "krem_spf50_50ml",
+      "article": "krem_spf50_50ml",
+      "name": "СПФ для лица База под макияж увлажняющая с SPF 50 для лица Крем солнцезащитный, крем-флюид, Алтея, 50 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Новинка",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Средство солнцезащитное",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "kremshelk_100ml",
+      "article": "kremshelk_100ml",
+      "name": "Крем с мочевиной 10% увлажняющий для рук и тела, от трещин на пятках и сухости, 100 мл, Алтея",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "krovavii_piling_30ml",
+      "article": "krovavii_piling_30ml",
+      "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Пилинг",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "limfaks_bad_30caps",
+      "article": "limfaks_BAD_30caps",
+      "name": "Биологически активная добавка к пище: \"Комплекс для здоровья лимфатической системы\" Лимфакс",
+      "owner": "Светлана",
+      "status": "Под вопросом",
+      "registryStatus": "Под вопросом",
+      "brand": "Алтея",
+      "category": "БАДы и витамины",
+      "type": "БАД для поддержания иммунитета",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "maska-batter_250ml",
+      "article": "maska-batter_250ml",
+      "name": "Маска для волос с кератином восстанавливающая увлажняющая, Алтея, 250 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Маска для волос",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "maska-batter_500ml",
+      "article": "maska-batter_500ml",
+      "name": "Маска для волос с кератином увлажняющая 500мл Алтея",
+      "owner": "",
+      "status": "Актуальный",
+      "registryStatus": "Новинка",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Маска для волос",
+      "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "sku_missing_owner",
+          "platform": "",
+          "revenue": 0,
+          "units": 0,
+          "message": "SKU без owner"
+        }
+      ]
+    },
+    {
+      "articleKey": "maska-batter_dlya_rosta_500ml",
+      "article": "maska-batter_dlya_rosta_500ml",
+      "name": "Маска для роста волос с перцем, средство для роста волос, для укрепления, Алтея 500мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Маска для волос",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "maska_dlya_lica_100ml",
+      "article": "maska_dlya_lica_100ml",
+      "name": "Маска для лица очищающая и увлажняющая , для сужения пор Алтея 100 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Маска косметическая",
+      "type": "Маска косметическая",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "maslo_dlya_borodi_50ml",
+      "article": "maslo_dlya_borodi_50ml",
+      "name": "Масло для роста бороды, средство для роста, уход за бородой, смягчающее, Алтея, 50 мл",
+      "owner": "Мария",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Средства для бритья и груминг",
+      "type": "Средство для ухода за бородой",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "maslo_dlya_volos_parf_110ml",
+      "article": "maslo_dlya_volos_parf_110ml",
+      "name": "Масло для волос парфюмированное, сыворотка для волос Tom Ford Lost Cherry, Алтея, 110 мл",
+      "owner": "Мария",
+      "status": "Вывод",
+      "registryStatus": "На вывод",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Масло для волос",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "maslo_dlya_volos_parf_110ml_",
+      "article": "maslo_dlya_volos_parf_110ml_",
+      "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
+      "owner": "Мария",
+      "status": "Вывод",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Масло для волос",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "matte_wax_50ml",
+      "article": "matte_wax_50ml",
+      "name": "Гель-воск для волос сверхсильная фиксация Алтея 50 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Воск для волос",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "menoflavon_bad_60caps",
+      "article": "menoflavon_BAD_60caps",
+      "name": "Фитоэстрогены для женщин, от приливов при климаксе, при менопаузе, Алтея, Мено Флавон, 60 капсул",
+      "owner": "Светлана",
+      "status": "Под вопросом",
+      "registryStatus": "На вывод",
+      "brand": "Алтея",
+      "category": "БАДы и витамины",
+      "type": "БАД при гинекологических нарушениях",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "monarda_30ml",
+      "article": "monarda_30ml",
+      "name": "Масло монарды и экстракт зеленого чая для ногтей, универсальное, Алтея, 30 мл",
+      "owner": "Мария",
+      "status": "Вывод",
+      "registryStatus": "На вывод",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Средство для ногтей и кутикулы",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "nabor_penka_dlya_resnic",
+      "article": "nabor_penka_dlya_resnic",
+      "name": "Пенка для нарощенных ресниц и для бровей, для умывания и очищения ресниц Алтея 150 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "На вывод",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Средство для снятия макияжа",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "nabor_remuver_40ml",
+      "article": "nabor_remuver_40ml",
+      "name": "Ремувер для удаления кутикулы, Алтея, 40 мл",
+      "owner": "Мария",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Средство для ногтей и кутикулы",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "nabor_remuver_40ml_1_1",
+      "article": "nabor_remuver_40ml_1_1",
+      "name": "Ремувер для удаления кутикулы, Алтея, 40 мл х 2",
+      "owner": "Мария",
+      "status": "Вывод",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Средство для ногтей и кутикулы",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "nabor_remuver_kremovii",
+      "article": "nabor_remuver_kremovii",
+      "name": "Ремувер для снятия ресниц, Алтея, 18г",
+      "owner": "Мария",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Декоративная косметика",
+      "type": "Средство для наращивания ресниц",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "penka_160ml",
+      "article": "penka_160ml",
+      "name": "Мицеллярная пенка для умывания лица, для снятия макияжа, средство для снятия макияжа, Алтея, 160",
+      "owner": "Олеся",
+      "status": "Вывод",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Средство для снятия макияжа",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "penka_kudryavii_metod_150ml",
+      "article": "penka_kudryavii_metod_150ml",
+      "name": "Кудрявый метод Пенка для укладки кудрявых волос Алтея 150 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Пенка для волос",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "piling_100ml",
+      "article": "piling_100ml",
+      "name": "Пилинг для кожи головы профессиональный скраб от перхоти, Алтея, 100 мл",
+      "owner": "Олеся",
+      "status": "Вывод",
+      "registryStatus": "На вывод",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Пилинг для кожи головы",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "pink_pepper_50ml",
+      "article": "pink_pepper_50ml",
+      "name": "Крем для лица матирующий с ниацинамидом дневной база под макияж Алтея 50 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "pirantoks_bad_60caps",
+      "article": "pirantoks_BAD_60caps",
+      "name": "Антипаразитарный комплекс от глистов, очищение организма от паразитов, черный орех детокс, Алтея, Пирантокс, 60 капсул",
+      "owner": "Светлана",
+      "status": "Вывод",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "БАДы и витамины",
+      "type": "БАД для ЖКТ",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "relaksinol_bad_60caps",
+      "article": "relaksinol_BAD_60caps",
+      "name": "Магний В6 с лавандой, Алтея, Релаксинол, 60 капсул",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "На вывод",
+      "brand": "Алтея",
+      "category": "Парафармацевтика",
+      "type": "Пищевая добавка",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "remuver_40ml",
+      "article": "remuver_40ml",
+      "name": "",
+      "owner": "",
+      "status": "Вывод",
+      "registryStatus": "Вывод",
+      "brand": "Алтея",
+      "category": "",
+      "type": "",
+      "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "sku_missing_owner",
+          "platform": "",
+          "revenue": 0,
+          "units": 0,
+          "message": "SKU без owner"
+        }
+      ]
+    },
+    {
+      "articleKey": "retiderm_50ml",
+      "article": "retiderm_50ml",
+      "name": "Крем для лица с ретинолом 0.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретидерм, 50 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "retinait_krem_01_50ml",
+      "article": "retinait_krem_01_50ml",
+      "name": "Крем для лица с ретинолом и церамидами 50 мл Ретинайт",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Новинка",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "retinait_krem_025_50ml",
+      "article": "retinait_krem_025_50ml",
+      "name": "Крем для лица с липосомальным ретинолом 0,25% Ретинайт",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "retinait_krem_05_50ml",
+      "article": "retinait_krem_05_50ml",
+      "name": "Крем для лица с липосомальным ретинолом 0,5% Ретинайт",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "retinait_krem_1_50ml",
+      "article": "retinait_krem_1_50ml",
+      "name": "Крем для лица с липосомальным ретинолом 1% Ретинайт",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "retinait_krem_1_5_50ml",
+      "article": "retinait_krem_1_5_50ml",
+      "name": "Крем для лица с ретинолом 1.5, антивозрастной, против морщин, сыворотка от морщин и пигментных пятен, Алтея, Ретинайт, 50 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Новинка",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "retinait_syvorotka_025_30ml",
+      "article": "retinait_syvorotka_025_30ml",
+      "name": "Сыворотка с ретинолом 0,25% для лица от морщин антивозрастная Алтея 30 мл",
+      "owner": "",
+      "status": "Новинка",
+      "registryStatus": "Новинка",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Сыворотка для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "sku_missing_owner",
+          "platform": "",
+          "revenue": 0,
+          "units": 0,
+          "message": "SKU без owner"
+        }
+      ]
+    },
+    {
+      "articleKey": "retinait_syvorotka_05_30ml",
+      "article": "retinait_syvorotka_05_30ml",
+      "name": "Сыворотка для лица с ретинолом омолаживающая",
+      "owner": "",
+      "status": "Новинка",
+      "registryStatus": "Новинка",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Сыворотка для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "sku_missing_owner",
+          "platform": "",
+          "revenue": 0,
+          "units": 0,
+          "message": "SKU без owner"
+        }
+      ]
+    },
+    {
+      "articleKey": "retinait_syvorotka_1_30ml",
+      "article": "retinait_syvorotka_1_30ml",
+      "name": "Сыворотка с ретинолом 1% для лица от морщин антивозрастная Алтея 30 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Сыворотка для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "retinol_boost_krem_dlya_vek_30ml",
+      "article": "retinol_boost_krem_dlya_vek_30ml",
+      "name": "Крем c ретинолом для век антивозрастной для кожи и кожи вокруг глаз, Алтея, 30мл",
+      "owner": "Олеся",
+      "status": "Новинка",
+      "registryStatus": "Новинка",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "retinol_full_journey",
+      "article": "Retinol_Full_Journey",
+      "name": "Набор уходовой косметики для лица антивозрастной",
+      "owner": "",
+      "status": "Нет в спецификации",
+      "registryStatus": "Нет в спецификации",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "sku_missing_owner",
+          "platform": "",
+          "revenue": 0,
+          "units": 0,
+          "message": "SKU без owner"
+        }
+      ]
+    },
+    {
+      "articleKey": "retinol_start_kit",
+      "article": "Retinol_Start_Kit",
+      "name": "Набор уходовой косметики для лица с ретинолом",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Новинка",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Крем для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "revmastop_bad_60caps",
+      "article": "revmastop_BAD_60caps",
+      "name": "Глюкозамин хондроитин МСМ для суставов и связок Ревмастоп Алтея 60 капсул",
+      "owner": "Светлана",
+      "status": "Под вопросом",
+      "registryStatus": "На вывод",
+      "brand": "Алтея",
+      "category": "БАДы и витамины",
+      "type": "БАД для костей и суставов",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "shampun_dlya_rosta_250ml",
+      "article": "shampun_dlya_rosta_250ml",
+      "name": "Шампунь лечебный для роста волос, против выпадения, с красным перцем профессиональный, Алтея, 250 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Шампунь для волос",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "shampun_protiv_perhoti_250ml",
+      "article": "shampun_protiv_perhoti_250ml",
+      "name": "Шампунь от перхоти лечебный с климбазолом Алтея, 250мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Шампунь для волос",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "silk_hair_300ml",
+      "article": "silk_hair_300ml",
+      "name": "Кудрявый метод Kрем для волос разглаживающий, праймер кондиционер реконструктор, флюид для непослушных или кудрявых волос для кончиков Султан 300мл Алтея",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Крем для волос",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "skrab_babl_gam_200ml",
+      "article": "skrab_babl_gam_200ml",
+      "name": "Скраб пилинг для кожи головы, Алтея, 200 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Скраб для кожи головы",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "solevoy_sprei_200ml",
+      "article": "solevoy_sprei_200ml",
+      "name": "Солевой спрей для волос/ текстурайзер для объема и укладки волос с фиксацией Алтея 200 мл",
+      "owner": "Мария",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Спрей для укладки волос",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "spicul_gel_mask_75ml",
+      "article": "spicul_gel_mask_75ml",
+      "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
+      "owner": "",
+      "status": "Новинка",
+      "registryStatus": "Новинка",
+      "brand": "Алтея",
+      "category": "Маска косметическая",
+      "type": "Маска косметическая",
+      "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "sku_missing_owner",
+          "platform": "",
+          "revenue": 0,
+          "units": 0,
+          "message": "SKU без owner"
+        }
+      ]
+    },
+    {
+      "articleKey": "spiculboost_30ml",
+      "article": "spiculboost_30ml",
+      "name": "Сыворотка для лица с микроиглами и коллагеном",
+      "owner": "",
+      "status": "Нет в спецификации",
+      "registryStatus": "Нет в спецификации",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Сыворотка для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "sku_missing_owner",
+          "platform": "",
+          "revenue": 0,
+          "units": 0,
+          "message": "SKU без owner"
+        }
+      ]
+    },
+    {
+      "articleKey": "sprei_buster_100ml",
+      "article": "sprei_buster_100ml",
+      "name": "Спрей для роста волос и от выпадения волос никотиновая кислота перец размарин Алтея 100 мл",
+      "owner": "Мария",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Сыворотка для волос",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "stik_ot_mozoley",
+      "article": "stik_ot_mozoley",
+      "name": "Карандаш от мозолей, стик от натирания, мозольный пластырь, Алтея, 20 г",
+      "owner": "Олеся",
+      "status": "Вывод",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Стик",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "strong_hair",
+      "article": "Strong_Hair",
+      "name": "Набор для волос шампунь + маска для роста волос",
+      "owner": "",
+      "status": "Нет в спецификации",
+      "registryStatus": "Нет в спецификации",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Косметический набор для волос",
+      "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "sku_missing_owner",
+          "platform": "",
+          "revenue": 0,
+          "units": 0,
+          "message": "SKU без owner"
+        }
+      ]
+    },
+    {
+      "articleKey": "syvorotka_dlya_lica_30ml",
+      "article": "syvorotka_dlya_lica_30ml",
+      "name": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Сыворотка для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "syvorotka_dlya_lica_30ml_v2",
+      "article": "syvorotka_dlya_lica_30ml_v2",
+      "name": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Новинка",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Сыворотка для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "syvorotka_dlya_rosta_6ml",
+      "article": "syvorotka_dlya_rosta_6ml",
+      "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
+      "owner": "Олеся",
+      "status": "Вывод",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Средства по уходу за бровями и ресницами",
+      "type": "Средство для роста ресниц и бровей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "syvorotka_dlya_rosta_6ml_v2",
+      "article": "syvorotka_dlya_rosta_6ml_v2",
+      "name": "Сыворотка для роста ресниц и бровей, гель для роста, Алтея, 6 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Средства по уходу за бровями и ресницами",
+      "type": "Средство для роста ресниц и бровей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "syvorotka_guk_30ml",
+      "article": "syvorotka_guk_30ml",
+      "name": "Сыворотка для лица с витамином с, увлажняющая осветляющая с гиалуроновой кислотой, Алтея, 30 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Сыворотка для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "syvorotka_niacin_05_30ml",
+      "article": "syvorotka_niacin_05_30ml",
+      "name": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
+      "owner": "",
+      "status": "Новинка",
+      "registryStatus": "Новинка",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Сыворотка для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "missing_owner",
+        "has_warning"
+      ],
+      "problemState": "missing_owner",
+      "problemLabel": "Нет owner",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "sku_missing_owner",
+          "platform": "",
+          "revenue": 0,
+          "units": 0,
+          "message": "SKU без owner"
+        }
+      ]
+    },
+    {
+      "articleKey": "telomeras_60caps",
+      "article": "telomeras_60caps",
+      "name": "Теломераза NMN ТА-65 Алтея 60 капсул",
+      "owner": "Светлана",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Парафармацевтика",
+      "type": "Пищевая добавка",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "termo_sprei_200ml",
+      "article": "termo_sprei_200ml",
+      "name": "Термозащита Спрей для волос 17 в 1 восстанавливающий с кератином, Алтея, 200 мл",
+      "owner": "Мария",
+      "status": "Под вопросом",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Спрей для ухода за волосами",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "tonik_dlya_lica_200ml",
+      "article": "tonik_dlya_lica_200ml",
+      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек для подростков с гликолевой салициловой кислотой, центеллой, ниацинамидом, Алтея 200 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "Косметика для ухода",
+      "type": "Тоник для ухода за кожей",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "vosk_stik_15ml",
+      "article": "vosk_stik_15ml",
+      "name": "Воск стик для укладки и фиксации волос Алтея 15 мл",
+      "owner": "Олеся",
+      "status": "Актуальный",
+      "registryStatus": "Новинка",
+      "brand": "Алтея",
+      "category": "Косметика для ухода за волосами",
+      "type": "Воск для волос",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "т-34_bad_60caps",
+      "article": "Т-34_BAD_60caps",
+      "name": "Возбудитель для мужчин, БАД Т-34 возбуждающие для потенции, эрекции, 60 капсул",
+      "owner": "Светлана",
+      "status": "Вывод",
+      "registryStatus": "Актуально",
+      "brand": "Алтея",
+      "category": "БАДы и витамины",
+      "type": "БАД при эректильной дисфункции",
+      "aliases": [],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    }
+  ],
+  "apiUnmapped": [
+    {
+      "platform": "ozon",
+      "api_sku": "sustalit_75ml",
+      "name": "sustalit_75ml",
+      "revenue": 889055,
+      "units": 1581,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "kavmaz",
+      "name": "kavmaz",
+      "revenue": 574402,
+      "units": 1144,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "sustalit_75ml",
+      "name": "sustalit_75ml",
+      "revenue": 403865,
+      "units": 480,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "kavmaz_60ml",
+      "name": "kavmaz_60ml",
+      "revenue": 392303,
+      "units": 347,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "activeprost",
+      "name": "activeprost",
+      "revenue": 381743,
+      "units": 858,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "uromax",
+      "name": "uromax",
+      "revenue": 380397,
+      "units": 502,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "vetonus",
+      "name": "vetonus",
+      "revenue": 340473,
+      "units": 1147,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "artoks",
+      "name": "artoks",
+      "revenue": 338616,
+      "units": 397,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "artoks",
+      "name": "artoks",
+      "revenue": 335162,
+      "units": 485,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "trezvin",
+      "name": "trezvin",
+      "revenue": 331917,
+      "units": 745,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "allicil_gribok15ml",
+      "name": "allicil_gribok15ml",
+      "revenue": 320970,
+      "units": 558,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "sanatsin",
+      "name": "sanatsin",
+      "revenue": 272130,
+      "units": 482,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "uromax_1_1",
+      "name": "uromax_1_1",
+      "revenue": 271094,
+      "units": 242,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "synergel_60ml",
+      "name": "synergel_60ml",
+      "revenue": 270013,
+      "units": 406,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "micardinforte",
+      "name": "micardinforte",
+      "revenue": 267324,
+      "units": 578,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "kardicin_1_1_1",
+      "name": "kardicin_1_1_1",
+      "revenue": 264777,
+      "units": 179,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "uhovit",
+      "name": "uhovit",
+      "revenue": 249998,
+      "units": 205,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "arterol_1_1_1",
+      "name": "arterol_1_1_1",
+      "revenue": 244172,
+      "units": 185,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "kavmaz_60ml",
+      "name": "kavmaz_60ml",
+      "revenue": 241803,
+      "units": 312,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "micardin_1_1",
+      "name": "micardin_1_1",
+      "revenue": 233071,
+      "units": 189,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "artoks_1_1",
+      "name": "artoks_1_1",
+      "revenue": 217438,
+      "units": 181,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "urinofix",
+      "name": "urinofix",
+      "revenue": 216193,
+      "units": 276,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "insulight",
+      "name": "insulight",
+      "revenue": 212404,
+      "units": 255,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "wbbiotrin_1_1_1",
+      "name": "wbbiotrin_1_1_1",
+      "revenue": 204487,
+      "units": 132,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "sanatsin_1_1",
+      "name": "sanatsin_1_1",
+      "revenue": 195119,
+      "units": 234,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "cardicin_BAD_60caps",
+      "name": "cardicin_BAD_60caps",
+      "revenue": 190379,
+      "units": 169,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "yagodniy_spas",
+      "name": "yagodniy_spas",
+      "revenue": 187628,
+      "units": 295,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "synergel_60ml",
+      "name": "synergel_60ml",
+      "revenue": 186393,
+      "units": 203,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "wbmicelix",
+      "name": "wbmicelix",
+      "revenue": 172171,
+      "units": 470,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "trezax",
+      "name": "trezax",
+      "revenue": 161853,
+      "units": 281,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "gemorekt",
+      "name": "gemorekt",
+      "revenue": 160479,
+      "units": 305,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "insulight_1_1",
+      "name": "insulight_1_1",
+      "revenue": 158517,
+      "units": 138,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "mycoplax",
+      "name": "mycoplax",
+      "revenue": 146034,
+      "units": 193,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "cardicin_bad_60caps",
+      "name": "cardicin_bad_60caps",
+      "revenue": 145872,
+      "units": 107,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "kavmaz",
+      "name": "kavmaz",
+      "revenue": 140407,
+      "units": 175,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "micolan",
+      "name": "micolan",
+      "revenue": 136955,
+      "units": 390,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "kinzhal",
+      "name": "kinzhal",
+      "revenue": 135696,
+      "units": 181,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "urofol",
+      "name": "urofol",
+      "revenue": 133045,
+      "units": 226,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "wbsinergel",
+      "name": "wbsinergel",
+      "revenue": 126699,
+      "units": 194,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "vetonus_100ml",
+      "name": "vetonus_100ml",
+      "revenue": 119909,
+      "units": 277,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "pantogor_100ml",
+      "name": "pantogor_100ml",
+      "revenue": 118905,
+      "units": 154,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "pantogor_100ml",
+      "name": "pantogor_100ml",
+      "revenue": 117213,
+      "units": 107,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-17"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "ekzifol",
+      "name": "ekzifol",
+      "revenue": 109429,
+      "units": 165,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "wbmicardinforte",
+      "name": "wbmicardinforte",
+      "revenue": 106151,
+      "units": 163,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "sanatsin",
+      "name": "sanatsin",
+      "revenue": 99138,
+      "units": 125,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "artoks_75ml",
+      "name": "artoks_75ml",
+      "revenue": 98502,
+      "units": 108,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "kavmaz_40ml_1_1",
+      "name": "kavmaz_40ml_1_1",
+      "revenue": 98258,
+      "units": 76,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "yagodniy_spas_1_1",
+      "name": "yagodniy_spas_1_1",
+      "revenue": 97898,
+      "units": 79,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "sustalit",
+      "name": "sustalit",
+      "revenue": 97125,
+      "units": 136,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "kardicin_1_1",
+      "name": "kardicin_1_1",
+      "revenue": 95493,
+      "units": 107,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "kinzhal_1_1",
+      "name": "kinzhal_1_1",
+      "revenue": 94222,
+      "units": 93,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "mycoplax",
+      "name": "mycoplax",
+      "revenue": 92986,
+      "units": 182,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "oftalmol",
+      "name": "oftalmol",
+      "revenue": 91789,
+      "units": 126,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "wbsinergel",
+      "name": "wbsinergel",
+      "revenue": 86416,
+      "units": 173,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "dardrakona_1_1",
+      "name": "dardrakona_1_1",
+      "revenue": 80840,
+      "units": 129,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "urolgan",
+      "name": "urolgan",
+      "revenue": 78711,
+      "units": 202,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "sinergel_30ml_1_1",
+      "name": "sinergel_30ml_1_1",
+      "revenue": 78512,
+      "units": 55,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "okospas",
+      "name": "okospas",
+      "revenue": 75230,
+      "units": 123,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "chudogrib",
+      "name": "chudogrib",
+      "revenue": 74238,
+      "units": 101,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "sustalit",
+      "name": "sustalit",
+      "revenue": 73853,
+      "units": 122,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "urinofix",
+      "name": "urinofix",
+      "revenue": 72944,
+      "units": 115,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "otivin",
+      "name": "otivin",
+      "revenue": 66586,
+      "units": 86,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "uromax",
+      "name": "uromax",
+      "revenue": 64730,
+      "units": 91,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "artoks_75ml",
+      "name": "artoks_75ml",
+      "revenue": 63676,
+      "units": 49,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "kavmaz_40ml_1_1",
+      "name": "kavmaz_40ml_1_1",
+      "revenue": 63080,
+      "units": 37,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "brutalax",
+      "name": "brutalax",
+      "revenue": 62349,
+      "units": 175,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "micardin",
+      "name": "micardin",
+      "revenue": 60694,
+      "units": 91,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "wbbiotrin_1_1",
+      "name": "wbbiotrin_1_1",
+      "revenue": 59222,
+      "units": 57,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "daoshen",
+      "name": "daoshen",
+      "revenue": 56723,
+      "units": 78,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "arterol",
+      "name": "arterol",
+      "revenue": 56054,
+      "units": 92,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "pantogor",
+      "name": "pantogor",
+      "revenue": 52881,
+      "units": 89,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "sinergel_30ml_1_1",
+      "name": "sinergel_30ml_1_1",
+      "revenue": 51538,
+      "units": 58,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "daoshen_75ml",
+      "name": "daoshen_75ml",
+      "revenue": 51340,
+      "units": 49,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "otivin",
+      "name": "otivin",
+      "revenue": 49650,
+      "units": 86,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "kardicin",
+      "name": "kardicin",
+      "revenue": 48890,
+      "units": 121,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-17"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "ekzifol",
+      "name": "ekzifol",
+      "revenue": 47693,
+      "units": 165,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "gemorekt",
+      "name": "gemorekt",
+      "revenue": 47338,
+      "units": 71,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "varifit_1_1",
+      "name": "varifit_1_1",
+      "revenue": 46929,
+      "units": 83,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "wbgetsizegel",
+      "name": "wbgetsizegel",
+      "revenue": 46171,
+      "units": 134,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "daoshen",
+      "name": "daoshen",
+      "revenue": 45368,
+      "units": 74,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "sustalit_30ml_1_1",
+      "name": "sustalit_30ml_1_1",
+      "revenue": 44584,
+      "units": 33,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "vetonus",
+      "name": "vetonus",
+      "revenue": 43285,
+      "units": 57,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "dardrakona",
+      "name": "dardrakona",
+      "revenue": 42861,
+      "units": 72,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "dardrakona_1_1",
+      "name": "dardrakona_1_1",
+      "revenue": 42468,
+      "units": 38,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "wbgetsize",
+      "name": "wbgetsize",
+      "revenue": 42083,
+      "units": 72,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "psoral_50ml",
+      "name": "psoral_50ml",
+      "revenue": 41332,
+      "units": 64,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "osteofast",
+      "name": "osteofast",
+      "revenue": 40496,
+      "units": 84,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "varifit",
+      "name": "varifit",
+      "revenue": 38835,
+      "units": 56,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "vetonus_100ml",
+      "name": "vetonus_100ml",
+      "revenue": 37839,
+      "units": 35,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "wbpantogor_1_1",
+      "name": "wbpantogor_1_1",
+      "revenue": 37430,
+      "units": 32,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "sanatsin_1_1",
+      "name": "sanatsin_1_1",
+      "revenue": 36627,
+      "units": 14,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "wbmicelix_1_1",
+      "name": "wbmicelix_1_1",
+      "revenue": 35068,
+      "units": 45,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "trezor",
+      "name": "trezor",
+      "revenue": 33437,
+      "units": 60,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "osteofast",
+      "name": "osteofast",
+      "revenue": 33205,
+      "units": 42,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "wboptitrin",
+      "name": "wboptitrin",
+      "revenue": 32060,
+      "units": 90,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "daoshen_75ml",
+      "name": "daoshen_75ml",
+      "revenue": 30278,
+      "units": 32,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "varifit",
+      "name": "varifit",
+      "revenue": 30254,
+      "units": 54,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "allicil_gribok15ml",
+      "name": "allicil_gribok15ml",
+      "revenue": 25236,
+      "units": 77,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "vetonus_1_1",
+      "name": "vetonus_1_1",
+      "revenue": 24543,
+      "units": 22,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "psoral",
+      "name": "psoral",
+      "revenue": 23853,
+      "units": 40,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "khvoinitsa",
+      "name": "khvoinitsa",
+      "revenue": 23373,
+      "units": 50,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "dardrakona_75ml",
+      "name": "dardrakona_75ml",
+      "revenue": 23363,
+      "units": 29,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "erobrut",
+      "name": "erobrut",
+      "revenue": 20707,
+      "units": 39,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "psoral_50ml",
+      "name": "psoral_50ml",
+      "revenue": 20044,
+      "units": 23,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "vetonus_1_1",
+      "name": "vetonus_1_1",
+      "revenue": 19058,
+      "units": 28,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "wbbiotrin",
+      "name": "wbbiotrin",
+      "revenue": 17774,
+      "units": 17,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "papiderm",
+      "name": "papiderm",
+      "revenue": 16808,
+      "units": 44,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "okucin",
+      "name": "okucin",
+      "revenue": 16643,
+      "units": 37,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "dolgar",
+      "name": "dolgar",
+      "revenue": 16434,
+      "units": 45,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "arterol_1_1",
+      "name": "arterol_1_1",
+      "revenue": 15883,
+      "units": 18,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "khvoinitsa_1_1",
+      "name": "khvoinitsa_1_1",
+      "revenue": 15757,
+      "units": 25,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "dolgar",
+      "name": "dolgar",
+      "revenue": 15551,
+      "units": 22,
+      "firstDate": "2026-05-03",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "uromax_1_1",
+      "name": "uromax_1_1",
+      "revenue": 15232,
+      "units": 8,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-15"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "activeprost",
+      "name": "activeprost",
+      "revenue": 14392,
+      "units": 20,
+      "firstDate": "2026-05-04",
+      "lastDate": "2026-05-16"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "glukofol",
+      "name": "glukofol",
+      "revenue": 14313,
+      "units": 38,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "fruitalica",
+      "name": "fruitalica",
+      "revenue": 12932,
+      "units": 34,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "dardrakona",
+      "name": "dardrakona",
+      "revenue": 12599,
+      "units": 16,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-16"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "mycoplax_1_1",
+      "name": "mycoplax_1_1",
+      "revenue": 10964,
+      "units": 6,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-17"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "urolgan",
+      "name": "urolgan",
+      "revenue": 10951,
+      "units": 22,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "glikiron",
+      "name": "glikiron",
+      "revenue": 10821,
+      "units": 28,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "khvoinitsa_1_1",
+      "name": "khvoinitsa_1_1",
+      "revenue": 10280,
+      "units": 8,
+      "firstDate": "2026-05-04",
+      "lastDate": "2026-05-14"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "wowglam",
+      "name": "wowglam",
+      "revenue": 10086,
+      "units": 7,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "micardin_1_1_1",
+      "name": "micardin_1_1_1",
+      "revenue": 9876,
+      "units": 5,
+      "firstDate": "2026-05-03",
+      "lastDate": "2026-05-06"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "wbbiotrin_1_1_1",
+      "name": "wbbiotrin_1_1_1",
+      "revenue": 9385,
+      "units": 6,
+      "firstDate": "2026-05-05",
+      "lastDate": "2026-05-11"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "psoral",
+      "name": "psoral",
+      "revenue": 8751,
+      "units": 11,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "mycoplax_1_1",
+      "name": "mycoplax_1_1",
+      "revenue": 8460,
+      "units": 10,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "wbgetsizegel",
+      "name": "wbgetsizegel",
+      "revenue": 6882,
+      "units": 15,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "wbvaritox",
+      "name": "wbvaritox",
+      "revenue": 6484,
+      "units": 9,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-14"
+    },
+    {
+      "platform": "goldapple",
+      "api_sku": "psoral_50ml",
+      "name": "Крем специального назначения «Псоридонт» 50 мл",
+      "revenue": 4464,
+      "units": 4,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "artoks_1_1",
+      "name": "artoks_1_1",
+      "revenue": 4379,
+      "units": 3,
+      "firstDate": "2026-05-04",
+      "lastDate": "2026-05-17"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "erobrut",
+      "name": "erobrut",
+      "revenue": 4222,
+      "units": 6,
+      "firstDate": "2026-05-08",
+      "lastDate": "2026-05-16"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "wbpantogor_1_1",
+      "name": "wbpantogor_1_1",
+      "revenue": 3242,
+      "units": 2,
+      "firstDate": "2026-05-10",
+      "lastDate": "2026-05-13"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "varifit_1_1",
+      "name": "varifit_1_1",
+      "revenue": 2629,
+      "units": 2,
+      "firstDate": "2026-05-11",
+      "lastDate": "2026-05-12"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "dardrakona_75ml",
+      "name": "dardrakona_75ml",
+      "revenue": 1340,
+      "units": 4,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "khvoinitsa",
+      "name": "khvoinitsa",
+      "revenue": 1252,
+      "units": 2,
+      "firstDate": "2026-05-05",
+      "lastDate": "2026-05-08"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "4094166081",
+      "name": "4094166081",
+      "revenue": 1077,
+      "units": 1,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-05"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "wbgetsize",
+      "name": "wbgetsize",
+      "revenue": 984,
+      "units": 1,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-02"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "4281043558",
+      "name": "4281043558",
+      "revenue": 793,
+      "units": 1,
+      "firstDate": "2026-05-15",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "t34poten10caps",
+      "name": "t34poten10caps",
+      "revenue": 665,
+      "units": 1,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "wbalkotoxic",
+      "name": "wbalkotoxic",
+      "revenue": 511,
+      "units": 1,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-18"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "otz_fbs6_curly_method_300ml",
+      "name": "otz_fbs6_curly_method_300ml",
+      "revenue": 367,
+      "units": 1,
+      "firstDate": "2026-05-06",
+      "lastDate": "2026-05-06"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "4143253129",
+      "name": "4143253129",
+      "revenue": 240,
+      "units": 1,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-15"
+    }
+  ],
+  "duplicateRisks": [],
+  "ignoredApiSku": [],
+  "indexes": {
+    "byArticleKey": {
+      "alteya_beauty_brows_box": 0,
+      "alteya_young_skin_box": 1,
+      "b_kompleks_bad_60tabl": 2,
+      "berberin_laif_bad_60caps": 3,
+      "chudofrukt_bad_60caps": 4,
+      "curly_method_300ml": 5,
+      "ekdisteron_ultra_man_60caps": 6,
+      "enzim_pudra_80gr": 7,
+      "enzim_pudra_80gr_v2": 8,
+      "frutaksa_bad_200gr": 9,
+      "frutalika_bad_60caps": 10,
+      "gel_antiakne_20ml": 11,
+      "gel_antiakne_20ml_v2": 12,
+      "gel_brows_5ml": 13,
+      "gel_dlya_britya_300ml": 14,
+      "gel_dlya_brovei_6ml": 15,
+      "gel_for_men_3_in_1_1000ml": 16,
+      "gel_parfum_tabacco_vanille_450ml": 17,
+      "gidrofilnoe_maslo_150ml": 18,
+      "glikiron_bad_60caps": 19,
+      "i_am_alpha_bad_60caps": 20,
+      "indolakt_bad_60caps": 21,
+      "insulight_bad_60caps": 22,
+      "intimvita_200ml": 23,
+      "intimvita_300ml": 24,
+      "krem-filler_15ml": 25,
+      "krem_buster_250ml": 26,
+      "krem_dlya_ruk_75ml": 27,
+      "krem_dlya_vek_30ml": 28,
+      "krem_ot_rastyazhek": 29,
+      "krem_spf50_50ml": 30,
+      "kremshelk_100ml": 31,
+      "krovavii_piling_30ml": 32,
+      "limfaks_bad_30caps": 33,
+      "maska-batter_250ml": 34,
+      "maska-batter_500ml": 35,
+      "maska-batter_dlya_rosta_500ml": 36,
+      "maska_dlya_lica_100ml": 37,
+      "maslo_dlya_borodi_50ml": 38,
+      "maslo_dlya_volos_parf_110ml": 39,
+      "maslo_dlya_volos_parf_110ml_": 40,
+      "matte_wax_50ml": 41,
+      "menoflavon_bad_60caps": 42,
+      "monarda_30ml": 43,
+      "nabor_penka_dlya_resnic": 44,
+      "nabor_remuver_40ml": 45,
+      "nabor_remuver_40ml_1_1": 46,
+      "nabor_remuver_kremovii": 47,
+      "penka_160ml": 48,
+      "penka_kudryavii_metod_150ml": 49,
+      "piling_100ml": 50,
+      "pink_pepper_50ml": 51,
+      "pirantoks_bad_60caps": 52,
+      "relaksinol_bad_60caps": 53,
+      "remuver_40ml": 54,
+      "retiderm_50ml": 55,
+      "retinait_krem_01_50ml": 56,
+      "retinait_krem_025_50ml": 57,
+      "retinait_krem_05_50ml": 58,
+      "retinait_krem_1_50ml": 59,
+      "retinait_krem_1_5_50ml": 60,
+      "retinait_syvorotka_025_30ml": 61,
+      "retinait_syvorotka_05_30ml": 62,
+      "retinait_syvorotka_1_30ml": 63,
+      "retinol_boost_krem_dlya_vek_30ml": 64,
+      "retinol_full_journey": 65,
+      "retinol_start_kit": 66,
+      "revmastop_bad_60caps": 67,
+      "shampun_dlya_rosta_250ml": 68,
+      "shampun_protiv_perhoti_250ml": 69,
+      "silk_hair_300ml": 70,
+      "skrab_babl_gam_200ml": 71,
+      "solevoy_sprei_200ml": 72,
+      "spicul_gel_mask_75ml": 73,
+      "spiculboost_30ml": 74,
+      "sprei_buster_100ml": 75,
+      "stik_ot_mozoley": 76,
+      "strong_hair": 77,
+      "syvorotka_dlya_lica_30ml": 78,
+      "syvorotka_dlya_lica_30ml_v2": 79,
+      "syvorotka_dlya_rosta_6ml": 80,
+      "syvorotka_dlya_rosta_6ml_v2": 81,
+      "syvorotka_guk_30ml": 82,
+      "syvorotka_niacin_05_30ml": 83,
+      "telomeras_60caps": 84,
+      "termo_sprei_200ml": 85,
+      "tonik_dlya_lica_200ml": 86,
+      "vosk_stik_15ml": 87,
+      "т-34_bad_60caps": 88
+    },
+    "aliasToArticleKey": {}
+  }
+}

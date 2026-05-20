@@ -1,0 +1,11 @@
+{
+  "schema": "sku-api-ignore-v1",
+  "columns": [
+    "platform",
+    "api_sku",
+    "status",
+    "note"
+  ],
+  "ignored": [],
+  "description": "API SKU values intentionally excluded from alias cleanup. Use for rows that should not be mapped to skus.json."
+}

@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-05-16T08:02:41.647Z",
+  "generatedAt": "2026-05-19T10:50:58.728Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
   "sourceFormat": "google-csv-export",
   "sheetName": "Sheet1",
   "matchField": "Наименование как в ЛК -> article/articleKey",
-  "sheetRowCount": 296,
+  "sheetRowCount": 297,
   "matchedRowCount": 83,
   "matchedSkuCount": 81,
   "unmatchedSourceKeys": [
@@ -37,10 +37,10 @@
     "harly_ear_drops"
   ],
   "summary": {
-    "stockWarehouse": 306564,
+    "stockWarehouse": 275381,
     "accepted": 2004215,
-    "shippedOzon": 524547,
-    "shippedWB": 1172569
+    "shippedOzon": 526958,
+    "shippedWB": 1201341
   },
   "rows": [
     {
@@ -89,9 +89,9 @@
     },
     {
       "articleKey": "berberin_laif_bad_60caps",
-      "stockWarehouse": 4326,
+      "stockWarehouse": 4254,
       "accepted": 15187,
-      "shippedOzon": 7086,
+      "shippedOzon": 7158,
       "shippedWB": 3775,
       "sourceKeys": [
         "berberin_laif_BAD_60caps"
@@ -111,9 +111,9 @@
     },
     {
       "articleKey": "curly_method_300ml",
-      "stockWarehouse": 7263,
+      "stockWarehouse": 7043,
       "accepted": 78098,
-      "shippedOzon": 16423,
+      "shippedOzon": 16643,
       "shippedWB": 54412,
       "sourceKeys": [
         "curly_method_300ml"
@@ -122,9 +122,9 @@
     },
     {
       "articleKey": "ekdisteron_ultra_man_60caps",
-      "stockWarehouse": 2054,
+      "stockWarehouse": 1934,
       "accepted": 7887,
-      "shippedOzon": 3683,
+      "shippedOzon": 3803,
       "shippedWB": 2150,
       "sourceKeys": [
         "ekdisteron_ultra_man_60caps"
@@ -144,9 +144,9 @@
     },
     {
       "articleKey": "enzim_pudra_80gr_v2",
-      "stockWarehouse": 3821,
+      "stockWarehouse": 3781,
       "accepted": 15377,
-      "shippedOzon": 2848,
+      "shippedOzon": 2888,
       "shippedWB": 8708,
       "sourceKeys": [
         "enzim_pudra_80gr_v2"
@@ -166,9 +166,9 @@
     },
     {
       "articleKey": "frutalika_bad_60caps",
-      "stockWarehouse": 601,
+      "stockWarehouse": 571,
       "accepted": 2088,
-      "shippedOzon": 323,
+      "shippedOzon": 353,
       "shippedWB": 1164,
       "sourceKeys": [
         "frutalika_BAD_60caps"
@@ -188,10 +188,10 @@
     },
     {
       "articleKey": "gel_antiakne_20ml_v2",
-      "stockWarehouse": 3449,
+      "stockWarehouse": 714,
       "accepted": 97394,
-      "shippedOzon": 14428,
-      "shippedWB": 79517,
+      "shippedOzon": 14683,
+      "shippedWB": 81997,
       "sourceKeys": [
         "gel_antiakne_20ml_v2"
       ],
@@ -210,9 +210,9 @@
     },
     {
       "articleKey": "gel_dlya_britya_300ml",
-      "stockWarehouse": 1501,
+      "stockWarehouse": 1456,
       "accepted": 8043,
-      "shippedOzon": 3652,
+      "shippedOzon": 3697,
       "shippedWB": 2890,
       "sourceKeys": [
         "gel_dlya_britya_300ml"
@@ -232,9 +232,9 @@
     },
     {
       "articleKey": "gel_for_men_3_in_1_1000ml",
-      "stockWarehouse": 1586,
+      "stockWarehouse": 1566,
       "accepted": 14795,
-      "shippedOzon": 5913,
+      "shippedOzon": 5933,
       "shippedWB": 7296,
       "sourceKeys": [
         "gel_for_men_3_in_1_1000ml"
@@ -254,9 +254,9 @@
     },
     {
       "articleKey": "glikiron_bad_60caps",
-      "stockWarehouse": 3129,
+      "stockWarehouse": 3119,
       "accepted": 9181,
-      "shippedOzon": 3308,
+      "shippedOzon": 3318,
       "shippedWB": 2744,
       "sourceKeys": [
         "glikiron",
@@ -288,9 +288,9 @@
     },
     {
       "articleKey": "insulight_bad_60caps",
-      "stockWarehouse": 14512,
+      "stockWarehouse": 14428,
       "accepted": 124424,
-      "shippedOzon": 43900,
+      "shippedOzon": 43984,
       "shippedWB": 66012,
       "sourceKeys": [
         "insulight",
@@ -333,10 +333,10 @@
     },
     {
       "articleKey": "krem_dlya_ruk_75ml",
-      "stockWarehouse": 5154,
+      "stockWarehouse": 4851,
       "accepted": 22556,
-      "shippedOzon": 11070,
-      "shippedWB": 6332,
+      "shippedOzon": 11229,
+      "shippedWB": 6476,
       "sourceKeys": [
         "krem_dlya_ruk_75ml"
       ],
@@ -344,9 +344,9 @@
     },
     {
       "articleKey": "krem_dlya_vek_30ml",
-      "stockWarehouse": 7837,
+      "stockWarehouse": 7802,
       "accepted": 23230,
-      "shippedOzon": 3950,
+      "shippedOzon": 3985,
       "shippedWB": 11443,
       "sourceKeys": [
         "krem_dlya_vek_30ml"
@@ -355,10 +355,10 @@
     },
     {
       "articleKey": "krem_ot_rastyazhek",
-      "stockWarehouse": 7473,
+      "stockWarehouse": 7218,
       "accepted": 48136,
-      "shippedOzon": 10338,
-      "shippedWB": 30325,
+      "shippedOzon": 10393,
+      "shippedWB": 30525,
       "sourceKeys": [
         "krem_ot_rastyazhek"
       ],
@@ -366,10 +366,10 @@
     },
     {
       "articleKey": "krem_spf50_50ml",
-      "stockWarehouse": 10378,
+      "stockWarehouse": 10234,
       "accepted": 30241,
       "shippedOzon": 10791,
-      "shippedWB": 9072,
+      "shippedWB": 9216,
       "sourceKeys": [
         "krem_spf50_50ml"
       ],
@@ -388,10 +388,10 @@
     },
     {
       "articleKey": "kremshelk_100ml",
-      "stockWarehouse": 11221,
+      "stockWarehouse": 1371,
       "accepted": 43932,
       "shippedOzon": 4853,
-      "shippedWB": 27858,
+      "shippedWB": 37708,
       "sourceKeys": [
         "kremshelk_100ml_"
       ],
@@ -399,10 +399,10 @@
     },
     {
       "articleKey": "krovavii_piling_30ml",
-      "stockWarehouse": 18388,
+      "stockWarehouse": 15126,
       "accepted": 112210,
-      "shippedOzon": 19679,
-      "shippedWB": 74143,
+      "shippedOzon": 19869,
+      "shippedWB": 77215,
       "sourceKeys": [
         "krovavii_piling_30ml"
       ],
@@ -410,9 +410,9 @@
     },
     {
       "articleKey": "limfaks_bad_30caps",
-      "stockWarehouse": 1198,
+      "stockWarehouse": 1041,
       "accepted": 24603,
-      "shippedOzon": 6090,
+      "shippedOzon": 6247,
       "shippedWB": 17315,
       "sourceKeys": [
         "limfaks_BAD_30caps"
@@ -421,10 +421,10 @@
     },
     {
       "articleKey": "maska_dlya_lica_100ml",
-      "stockWarehouse": 2260,
+      "stockWarehouse": 566,
       "accepted": 35705,
-      "shippedOzon": 8281,
-      "shippedWB": 25164,
+      "shippedOzon": 8311,
+      "shippedWB": 26828,
       "sourceKeys": [
         "maska_dlya_lica_100ml"
       ],
@@ -432,9 +432,9 @@
     },
     {
       "articleKey": "maska-batter_250ml",
-      "stockWarehouse": 12437,
+      "stockWarehouse": 12417,
       "accepted": 40660,
-      "shippedOzon": 8328,
+      "shippedOzon": 8348,
       "shippedWB": 19895,
       "sourceKeys": [
         "maska-batter_250ml"
@@ -443,9 +443,9 @@
     },
     {
       "articleKey": "maska-batter_500ml",
-      "stockWarehouse": 2948,
+      "stockWarehouse": 2933,
       "accepted": 7000,
-      "shippedOzon": 2072,
+      "shippedOzon": 2087,
       "shippedWB": 1980,
       "sourceKeys": [
         "maska-batter_500ml"
@@ -454,10 +454,10 @@
     },
     {
       "articleKey": "maska-batter_dlya_rosta_500ml",
-      "stockWarehouse": 4682,
+      "stockWarehouse": 4572,
       "accepted": 25864,
-      "shippedOzon": 6943,
-      "shippedWB": 14239,
+      "shippedOzon": 6963,
+      "shippedWB": 14329,
       "sourceKeys": [
         "maska-batter_dlya_rosta_500ml"
       ],
@@ -498,9 +498,9 @@
     },
     {
       "articleKey": "menoflavon_bad_60caps",
-      "stockWarehouse": 1252,
+      "stockWarehouse": 1110,
       "accepted": 7851,
-      "shippedOzon": 2743,
+      "shippedOzon": 2885,
       "shippedWB": 3856,
       "sourceKeys": [
         "menoflavon_BAD_60caps"
@@ -542,9 +542,9 @@
     },
     {
       "articleKey": "nabor_remuver_kremovii",
-      "stockWarehouse": 5786,
+      "stockWarehouse": 5771,
       "accepted": 54358,
-      "shippedOzon": 23906,
+      "shippedOzon": 23921,
       "shippedWB": 24666,
       "sourceKeys": [
         "nabor_remuver_kremovii"
@@ -597,9 +597,9 @@
     },
     {
       "articleKey": "relaksinol_bad_60caps",
-      "stockWarehouse": 4206,
+      "stockWarehouse": 4089,
       "accepted": 10182,
-      "shippedOzon": 0,
+      "shippedOzon": 117,
       "shippedWB": 5976,
       "sourceKeys": [
         "relaksinol_BAD_60caps"
@@ -608,9 +608,9 @@
     },
     {
       "articleKey": "retiderm_50ml",
-      "stockWarehouse": 19683,
+      "stockWarehouse": 19588,
       "accepted": 305718,
-      "shippedOzon": 45516,
+      "shippedOzon": 45611,
       "shippedWB": 240519,
       "sourceKeys": [
         "retiderm_50ml"
@@ -619,9 +619,9 @@
     },
     {
       "articleKey": "retinait_krem_01_50ml",
-      "stockWarehouse": 6098,
+      "stockWarehouse": 6078,
       "accepted": 12902,
-      "shippedOzon": 2196,
+      "shippedOzon": 2216,
       "shippedWB": 4608,
       "sourceKeys": [
         "retinait_krem_01_50ml"
@@ -641,9 +641,9 @@
     },
     {
       "articleKey": "retinait_krem_05_50ml",
-      "stockWarehouse": 10128,
+      "stockWarehouse": 10098,
       "accepted": 35184,
-      "shippedOzon": 8244,
+      "shippedOzon": 8274,
       "shippedWB": 16812,
       "sourceKeys": [
         "retinait_krem_05_50ml"
@@ -652,9 +652,9 @@
     },
     {
       "articleKey": "retinait_krem_1_5_50ml",
-      "stockWarehouse": 13808,
+      "stockWarehouse": 13793,
       "accepted": 35930,
-      "shippedOzon": 8298,
+      "shippedOzon": 8313,
       "shippedWB": 13824,
       "sourceKeys": [
         "retinait_krem_1_5_50ml"
@@ -663,9 +663,9 @@
     },
     {
       "articleKey": "retinait_krem_1_50ml",
-      "stockWarehouse": 25704,
+      "stockWarehouse": 25689,
       "accepted": 68132,
-      "shippedOzon": 10080,
+      "shippedOzon": 10095,
       "shippedWB": 32348,
       "sourceKeys": [
         "retinait_krem_1_50ml"
@@ -696,10 +696,10 @@
     },
     {
       "articleKey": "retinait_syvorotka_1_30ml",
-      "stockWarehouse": 16278,
+      "stockWarehouse": 14425,
       "accepted": 58934,
-      "shippedOzon": 5568,
-      "shippedWB": 37088,
+      "shippedOzon": 5693,
+      "shippedWB": 38816,
       "sourceKeys": [
         "retinait_syvorotka_1_30ml"
       ],
@@ -707,10 +707,10 @@
     },
     {
       "articleKey": "retinol_boost_krem_dlya_vek_30ml",
-      "stockWarehouse": 8097,
+      "stockWarehouse": 1105,
       "accepted": 29605,
-      "shippedOzon": 5908,
-      "shippedWB": 15600,
+      "shippedOzon": 5988,
+      "shippedWB": 22512,
       "sourceKeys": [
         "retinol_boost_krem_dlya_vek_30ml"
       ],
@@ -729,10 +729,10 @@
     },
     {
       "articleKey": "shampun_dlya_rosta_250ml",
-      "stockWarehouse": 6796,
+      "stockWarehouse": 6566,
       "accepted": 38190,
-      "shippedOzon": 17836,
-      "shippedWB": 13054,
+      "shippedOzon": 17866,
+      "shippedWB": 13254,
       "sourceKeys": [
         "shampun_dlya_rosta_250ml"
       ],
@@ -751,9 +751,9 @@
     },
     {
       "articleKey": "silk_hair_300ml",
-      "stockWarehouse": 9130,
+      "stockWarehouse": 9020,
       "accepted": 30820,
-      "shippedOzon": 5645,
+      "shippedOzon": 5755,
       "shippedWB": 16045,
       "sourceKeys": [
         "silk_hair_300ml"
@@ -784,10 +784,10 @@
     },
     {
       "articleKey": "spicul_gel_mask_75ml",
-      "stockWarehouse": 1906,
+      "stockWarehouse": 1474,
       "accepted": 7710,
       "shippedOzon": 1760,
-      "shippedWB": 4044,
+      "shippedWB": 4476,
       "sourceKeys": [
         "spicul_gel_mask_75ml"
       ],
@@ -795,9 +795,9 @@
     },
     {
       "articleKey": "spiculboost_30ml",
-      "stockWarehouse": 1127,
+      "stockWarehouse": 1107,
       "accepted": 7161,
-      "shippedOzon": 1634,
+      "shippedOzon": 1654,
       "shippedWB": 4400,
       "sourceKeys": [
         "spiculboost_30ml"
@@ -806,10 +806,10 @@
     },
     {
       "articleKey": "sprei_buster_100ml",
-      "stockWarehouse": 6342,
+      "stockWarehouse": 4998,
       "accepted": 29592,
       "shippedOzon": 9550,
-      "shippedWB": 13700,
+      "shippedWB": 15044,
       "sourceKeys": [
         "sprei_buster_100ml"
       ],
@@ -883,10 +883,10 @@
     },
     {
       "articleKey": "syvorotka_niacin_05_30ml",
-      "stockWarehouse": 1001,
+      "stockWarehouse": 469,
       "accepted": 13162,
-      "shippedOzon": 2529,
-      "shippedWB": 9632,
+      "shippedOzon": 2549,
+      "shippedWB": 10144,
       "sourceKeys": [
         "syvorotka_niacin_05_30ml"
       ],

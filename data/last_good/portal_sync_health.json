@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-05-20T09:09:46.768Z",
+  "generatedAt": "2026-05-20T09:34:13.639Z",
   "status": "warning",
   "publish": {
     "allowed": true,
@@ -9,7 +9,7 @@
       "Unmapped API SKU revenue: 15302999.",
       "SKU without owner or registry mapping: 9."
     ],
-    "checkedAt": "2026-05-20T09:09:46.768Z"
+    "checkedAt": "2026-05-20T09:34:13.639Z"
   },
   "freshness": {
     "maxDate": "2026-05-19",
@@ -144,10 +144,10 @@
     },
     "portal_data_quarantine": {
       "exists": true,
-      "rows": 44,
-      "generatedAt": "2026-05-19T11:03:47.572Z",
-      "asOfDate": "2026-05-19",
-      "revenue": 10802661
+      "rows": 51,
+      "generatedAt": "2026-05-20T09:18:31.507Z",
+      "asOfDate": "2026-05-20",
+      "revenue": 12083407
     },
     "sku_aliases": {
       "exists": true,
@@ -180,8 +180,8 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-05-19T11:03:47.573Z",
-      "asOfDate": "2026-05-19",
+      "generatedAt": "2026-05-20T09:18:31.507Z",
+      "asOfDate": "2026-05-20",
       "revenue": 0
     }
   },
@@ -263,9 +263,55 @@
     "apiUnmappedHighRevenueCount": 51
   },
   "lastGood": {
-    "exists": false,
-    "generatedAt": "",
-    "comparisons": []
+    "exists": true,
+    "generatedAt": "2026-05-20T09:18:31.686Z",
+    "comparisons": [
+      {
+        "snapshot": "skus",
+        "rows": 89,
+        "previousRows": 89,
+        "rowRatio": 1,
+        "revenue": 0,
+        "previousRevenue": 0,
+        "revenueRatio": 1
+      },
+      {
+        "snapshot": "platform_trends",
+        "rows": 7,
+        "previousRows": 7,
+        "rowRatio": 1,
+        "revenue": 330771169,
+        "previousRevenue": 330771169,
+        "revenueRatio": 1
+      },
+      {
+        "snapshot": "order_procurement",
+        "rows": 1857,
+        "previousRows": 1857,
+        "rowRatio": 1,
+        "revenue": 0,
+        "previousRevenue": 0,
+        "revenueRatio": 1
+      },
+      {
+        "snapshot": "warehouse_stock_overlay",
+        "rows": 81,
+        "previousRows": 81,
+        "rowRatio": 1,
+        "revenue": 0,
+        "previousRevenue": 0,
+        "revenueRatio": 1
+      },
+      {
+        "snapshot": "sku_matrix",
+        "rows": 89,
+        "previousRows": 89,
+        "rowRatio": 1,
+        "revenue": 0,
+        "previousRevenue": 0,
+        "revenueRatio": 1
+      }
+    ]
   },
   "checks": [
     {

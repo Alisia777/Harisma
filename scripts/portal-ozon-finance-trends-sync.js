@@ -54,6 +54,16 @@ function addDays(dateKey, delta) {
   return date.toISOString().slice(0, 10);
 }
 
+function localDateKey(offsetDays = 0) {
+  const date = new Date();
+  date.setDate(date.getDate() + offsetDays);
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0')
+  ].join('-');
+}
+
 function enumerateDates(from, to) {
   const result = [];
   for (let cursor = from; cursor && to && cursor <= to; cursor = addDays(cursor, 1)) {
@@ -77,7 +87,10 @@ function hasMetric(row, index) {
 
 function resolveOptions(args) {
   const root = process.cwd();
-  const to = isoDate(args.to || args['date-to'] || new Date().toISOString().slice(0, 10));
+  const settlementHour = Math.max(0, Math.min(23, Math.trunc(numberOrZero(args['settlement-hour'] || process.env.ALTEA_OZON_SETTLEMENT_HOUR || 10))));
+  const explicitTo = isoDate(args.to || args['date-to']);
+  const autoLagDays = new Date().getHours() < settlementHour ? 2 : 1;
+  const to = explicitTo || localDateKey(-autoLagDays);
   const from = isoDate(args.from || args['date-from'] || `${to.slice(0, 7)}-01`);
   return {
     clientId: String(args['client-id'] || process.env.ALTEA_OZON_CLIENT_ID || '').trim(),
@@ -89,6 +102,11 @@ function resolveOptions(args) {
     sourceMode: ['all', 'matched'].includes(String(args['source-mode'] || '').trim())
       ? String(args['source-mode']).trim()
       : 'all',
+    settlementHour,
+    autoLagDays,
+    explicitTo: Boolean(explicitTo),
+    partialRefreshRecentDays: Math.max(0, Math.trunc(numberOrZero(args['partial-refresh-recent-days'] || 2))),
+    partialRefreshMinRatio: Math.max(0.1, Math.min(1, numberOrZero(args['partial-refresh-min-ratio'] || 0.75))),
     from,
     to
   };
@@ -327,8 +345,7 @@ function platformMap(platformTrends) {
 
 function mergeAllSeries(platforms) {
   const dateSet = new Set();
-  const sourceKeys = Array.from(platforms.keys()).filter((key) => key && key !== 'all');
-  for (const key of sourceKeys) {
+  for (const key of ['wb', 'ozon', 'ya']) {
     for (const point of platforms.get(key)?.series || []) {
       const date = isoDate(point?.label || point?.date);
       if (date) dateSet.add(date);
@@ -361,6 +378,17 @@ function mergeAllSeries(platforms) {
       estimatedMargin: Number(total.estimatedMargin.toFixed(4))
     };
   });
+}
+
+function latestDateFromPlatforms(platforms) {
+  let latest = '';
+  for (const platform of platforms.values()) {
+    for (const point of Array.isArray(platform?.series) ? platform.series : []) {
+      const date = isoDate(point?.label || point?.date);
+      if (date && date > latest) latest = date;
+    }
+  }
+  return latest;
 }
 
 function buildDayBuckets(rows, skus, dateKey, apiOk = true, productInfoBySku = new Map()) {
@@ -543,6 +571,17 @@ function materializePoint(dateKey, bucket, mode, fallbackPoint = null, dayOffset
   };
 }
 
+function shouldPreserveFallbackPoint(dateKey, selected, fallbackPoint, options) {
+  if (!fallbackPoint || !dateKey || !options) return false;
+  const daysFromWindowEnd = Math.round((new Date(`${options.to}T00:00:00Z`) - new Date(`${dateKey}T00:00:00Z`)) / 86400000);
+  if (daysFromWindowEnd < 0 || daysFromWindowEnd > options.partialRefreshRecentDays) return false;
+  const freshRevenue = numberOrZero(selected?.revenue);
+  const existingRevenue = numberOrZero(fallbackPoint?.revenue);
+  if (!(existingRevenue > 0)) return false;
+  if (freshRevenue <= 0) return true;
+  return freshRevenue < existingRevenue * options.partialRefreshMinRatio;
+}
+
 async function fetchExistingPoints(options) {
   const existing = readJson(options.inputPath, { platforms: [] });
   const platform = (Array.isArray(existing?.platforms) ? existing.platforms : []).find((item) => String(item?.key || '').trim() === 'ozon');
@@ -678,7 +717,13 @@ async function main() {
     const fallbackPoint = existingWarningDates.has(dateKey) ? null : existingOzonSeries.get(dateKey) || null;
     const selected = selectedMode === 'matched' ? bucket.matched : bucket.all;
     if (!bucket.apiOk && selected.sourceRows === 0 && !fallbackPoint) return null;
-    const point = materializePoint(dateKey, bucket, selectedMode, fallbackPoint, 0);
+    const preserveFallback = shouldPreserveFallbackPoint(dateKey, selected, fallbackPoint, options);
+    if (preserveFallback) {
+      warnings.push(`${dateKey}: preserved existing Ozon point because fresh API revenue ${roundMoney(selected.revenue)} is below ${Math.round(options.partialRefreshMinRatio * 100)}% of existing ${roundMoney(fallbackPoint.revenue)}`);
+    }
+    const point = preserveFallback
+      ? { ...clonePoint(fallbackPoint), label: dateKey }
+      : materializePoint(dateKey, bucket, selectedMode, fallbackPoint, 0);
     return { dateKey, point };
   }).filter(Boolean);
   const series = rawSeries.map(({ dateKey, point }, index) => {
@@ -694,33 +739,12 @@ async function main() {
       estimatedMargin: Number(point.estimatedMargin.toFixed(4))
     };
   });
-  const mergedOzonByDate = new Map(existingOzonSeries);
-  for (const point of series) {
-    const date = isoDate(point?.label || point?.date);
-    if (date) mergedOzonByDate.set(date, clonePoint(point));
-  }
-  const ozonSeries = Array.from(mergedOzonByDate.entries())
-    .sort(([left], [right]) => left.localeCompare(right))
-    .map(([date, point], index, items) => ({
-      dayOffset: items.length - 1 - index,
-      label: date,
-      units: Number(numberOrZero(point.units).toFixed(4)),
-      ordersUnits: Number(numberOrZero(point.ordersUnits ?? point.units).toFixed(4)),
-      deliveredUnits: Number(numberOrZero(point.deliveredUnits).toFixed(4)),
-      revenue: Number(numberOrZero(point.revenue).toFixed(4)),
-      ordersRevenue: Number(numberOrZero(point.ordersRevenue ?? point.revenue).toFixed(4)),
-      estimatedMargin: Number(numberOrZero(point.estimatedMargin).toFixed(4))
-    }));
 
-  const latestMarketplaceDate = ozonSeries.map((item) => item.label).filter(Boolean).sort().pop() || existing.latestMarketplaceDate || '';
-  const platforms = (Array.isArray(existing?.platforms) ? existing.platforms : [])
-    .filter((platform) => String(platform?.key || '').trim() !== 'all');
-  for (const key of ['wb', 'ozon', 'ya']) {
-    if (!platforms.some((platform) => String(platform?.key || '').trim() === key)) {
-      platforms.push(existingPlatforms.get(key) || { key, label: key, series: [] });
-    }
-  }
+  const ozonLatestMarketplaceDate = series.map((item) => item.label).filter(Boolean).sort().pop() || '';
+  const platforms = ['wb', 'ozon', 'ya', 'all']
+    .map((key) => existingPlatforms.get(key) || { key, label: key, series: [] });
   const ozonIndex = platforms.findIndex((platform) => String(platform?.key || '').trim() === 'ozon');
+  const ozonSeries = series;
   if (ozonIndex >= 0) {
     platforms[ozonIndex] = {
       key: 'ozon',
@@ -741,6 +765,7 @@ async function main() {
     label: 'Все площадки',
     series: mergeAllSeries(platformMapNext)
   });
+  const latestMarketplaceDate = latestDateFromPlatforms(platformMapNext) || ozonLatestMarketplaceDate || existing.latestMarketplaceDate || '';
 
   const ordered = ['wb', 'ozon', 'ya', 'all']
     .map((key) => platformMapNext.get(key) || { key, label: key, series: [] });
@@ -771,7 +796,14 @@ async function main() {
       dimension: ANALYTICS_DIMENSION.join(','),
       revenueField: 'orders_revenue',
       unitsField: 'ordered_units',
-      deliveredUnitsField: 'delivered_units'
+      deliveredUnitsField: 'delivered_units',
+      settlementHour: options.settlementHour,
+      autoLagDays: options.explicitTo ? 0 : options.autoLagDays,
+      explicitTo: options.explicitTo,
+      partialRefreshGuard: {
+        recentDays: options.partialRefreshRecentDays,
+        minRatio: options.partialRefreshMinRatio
+      }
     },
     extraMarketplace: {
       ...existingExtraMarketplace,

@@ -1,5 +1,5 @@
 param(
-  [string]$EarliestRun = "10:05",
+  [string]$EarliestRun = "10:00",
   [string]$LogDir = ""
 )
 
@@ -12,6 +12,27 @@ $today = Get-Date -Format "yyyy-MM-dd"
 $cutoff = [DateTime]::Today.Add([TimeSpan]::Parse($EarliestRun))
 
 if ((Get-Date) -lt $cutoff) {
+  exit 0
+}
+
+function Test-PortalDataFreshEnough {
+  $healthPath = Join-Path $repoRoot "data\portal_sync_health.json"
+  if (-not (Test-Path -LiteralPath $healthPath)) {
+    return $false
+  }
+
+  try {
+    $health = Get-Content -LiteralPath $healthPath -Raw | ConvertFrom-Json
+    $maxDate = [string]$health.freshness.maxDate
+    $publishAllowed = [bool]$health.publish.allowed
+    $expectedDate = (Get-Date).Date.AddDays(-1).ToString("yyyy-MM-dd")
+    return $publishAllowed -and -not [string]::IsNullOrWhiteSpace($maxDate) -and ($maxDate -ge $expectedDate)
+  } catch {
+    return $false
+  }
+}
+
+if (Test-PortalDataFreshEnough) {
   exit 0
 }
 

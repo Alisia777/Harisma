@@ -857,11 +857,23 @@ async function loadExternalAdsWorkbook(options, diagnostics) {
   const exportUrl = exportUrlForSheet(options.externalAdsUrl);
   diagnostics.externalAds.source = 'google-sheet';
   diagnostics.externalAds.sourceUrl = options.externalAdsUrl;
-  const response = await fetch(exportUrl, { redirect: 'follow' });
-  if (!response.ok) throw new Error(`external ads Google export failed with HTTP ${response.status}`);
-  const buffer = Buffer.from(await response.arrayBuffer());
-  diagnostics.externalAds.downloadedBytes = buffer.length;
-  return XLSX.read(buffer, { type: 'buffer' });
+  const timeoutMs = Math.max(1000, numberOrZero(options.requestTimeoutMs) || 60000);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(exportUrl, { redirect: 'follow', signal: controller.signal });
+    if (!response.ok) throw new Error(`external ads Google export failed with HTTP ${response.status}`);
+    const buffer = Buffer.from(await response.arrayBuffer());
+    diagnostics.externalAds.downloadedBytes = buffer.length;
+    return XLSX.read(buffer, { type: 'buffer' });
+  } catch (error) {
+    if (error?.name === 'AbortError' || error?.code === 'ABORT_ERR') {
+      throw new Error(`external ads Google export timed out after ${timeoutMs}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function buildExternalAdsRows(options, diagnostics) {

@@ -75,6 +75,16 @@ function addDays(dateKey, delta) {
   return date.toISOString().slice(0, 10);
 }
 
+function localDateKey(offsetDays = 0) {
+  const date = new Date();
+  date.setDate(date.getDate() + offsetDays);
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0')
+  ].join('-');
+}
+
 function enumerateDates(from, to) {
   const result = [];
   for (let cursor = from; cursor && to && cursor <= to; cursor = addDays(cursor, 1)) {
@@ -272,7 +282,10 @@ async function createAndDownloadWbFunnelReport(options, startDate, endDate) {
 
 function resolveOptions(args) {
   const root = process.cwd();
-  const to = isoDate(args.to || args['date-to'] || new Date().toISOString().slice(0, 10));
+  const settlementHour = Math.max(0, Math.min(23, Math.trunc(numberOrZero(args['settlement-hour'] || process.env.ALTEA_WB_SETTLEMENT_HOUR || 10))));
+  const explicitTo = isoDate(args.to || args['date-to']);
+  const autoLagDays = new Date().getHours() < settlementHour ? 2 : 1;
+  const to = explicitTo || localDateKey(-autoLagDays);
   const from = isoDate(args.from || args['date-from'] || `${to.slice(0, 7)}-01`);
   return {
     token:
@@ -287,6 +300,11 @@ function resolveOptions(args) {
     skusPath: path.resolve(args['skus-file'] || path.join(root, 'data', 'skus.json')),
     inputPath: path.resolve(args['input-file'] || path.join(root, 'data', 'platform_trends.json')),
     outputPath: path.resolve(args['output-file'] || path.join(root, 'data', 'platform_trends.json')),
+    settlementHour,
+    autoLagDays,
+    explicitTo: Boolean(explicitTo),
+    partialRefreshRecentDays: Math.max(0, Math.trunc(numberOrZero(args['partial-refresh-recent-days'] || 2))),
+    partialRefreshMinRatio: Math.max(0.1, Math.min(1, numberOrZero(args['partial-refresh-min-ratio'] || 0.75))),
     from,
     to
   };
@@ -451,6 +469,17 @@ function platformMap(platformTrends) {
   return map;
 }
 
+function latestDateFromPlatforms(platforms) {
+  let latest = '';
+  for (const platform of platforms.values()) {
+    for (const point of Array.isArray(platform?.series) ? platform.series : []) {
+      const date = isoDate(point?.label || point?.date);
+      if (date && date > latest) latest = date;
+    }
+  }
+  return latest;
+}
+
 function mergeAllSeries(platforms) {
   const officialFinanceTurnoverForPoint = (key, point) => {
     const sellerSummary = point?.wbSellerSummary && typeof point.wbSellerSummary === 'object'
@@ -535,6 +564,17 @@ function mergeEstimatedMarginFallback(series, fallbackSeries) {
 
 function seriesHasPositiveMargin(series) {
   return Array.isArray(series) && series.some((point) => numberOrZero(point?.estimatedMargin) > 0);
+}
+
+function shouldPreserveFallbackPoint(dateKey, freshPoint, fallbackPoint, options) {
+  if (!fallbackPoint || !dateKey || !options) return false;
+  const daysFromWindowEnd = Math.round((new Date(`${options.to}T00:00:00Z`) - new Date(`${dateKey}T00:00:00Z`)) / 86400000);
+  if (daysFromWindowEnd < 0 || daysFromWindowEnd > options.partialRefreshRecentDays) return false;
+  const freshRevenue = numberOrZero(freshPoint?.revenue);
+  const existingRevenue = numberOrZero(fallbackPoint?.revenue);
+  if (!(existingRevenue > 0)) return false;
+  if (freshRevenue <= 0) return true;
+  return freshRevenue < existingRevenue * options.partialRefreshMinRatio;
 }
 
 function wbPlatformFromSnapshot(snapshot) {
@@ -1142,11 +1182,26 @@ async function main() {
     ? existingWbPlatform.series
     : (stagedWbPlatform?.series || existingWbPlatform?.series || []);
   const hasFreshWbData = wb.diagnostics.positiveRows > 0;
-  const wbSeries = hasFreshWbData && wb.series.length
+  const freshWbSeries = hasFreshWbData && wb.series.length
     ? wb.series
     : Array.isArray(existingWbPlatform?.series) && existingWbPlatform.series.length
       ? existingWbPlatform.series
       : wb.series;
+  const fallbackByDate = new Map((Array.isArray(existingWbPlatform?.series) ? existingWbPlatform.series : [])
+    .map((point) => [isoDate(point?.label || point?.date), point])
+    .filter(([date]) => date));
+  const partialWarnings = [];
+  const wbSeries = (Array.isArray(freshWbSeries) ? freshWbSeries : []).map((point) => {
+    const date = isoDate(point?.label || point?.date);
+    const fallback = fallbackByDate.get(date) || null;
+    if (!shouldPreserveFallbackPoint(date, point, fallback, options)) return point;
+    partialWarnings.push(`${date}: preserved existing WB point because fresh revenue ${Math.round(numberOrZero(point.revenue))} is below ${Math.round(options.partialRefreshMinRatio * 100)}% of existing ${Math.round(numberOrZero(fallback.revenue))}`);
+    return {
+      ...fallback,
+      label: date,
+      date: fallback.date || date
+    };
+  });
   const wbSeriesWithMargin = wb.diagnostics.matchedRows === 0 && marginFallbackSeries.length
     ? mergeEstimatedMarginFallback(wbSeries, marginFallbackSeries)
     : wbSeries;
@@ -1165,11 +1220,11 @@ async function main() {
 
   const ordered = ['wb', 'ozon', 'ya', 'all']
     .map((key) => platforms.get(key) || { key, label: PLATFORM_LABELS[key] || key, series: [] });
-  const latestMarketplaceDate = [...wbSeriesFinal]
+  const wbLatestMarketplaceDate = [...wbSeriesFinal]
     .reverse()
     .find((item) => numberOrZero(item?.revenue) > 0 || numberOrZero(item?.units) > 0)?.label
-    || existing.latestMarketplaceDate
     || '';
+  const latestMarketplaceDate = latestDateFromPlatforms(platforms) || wbLatestMarketplaceDate || existing.latestMarketplaceDate || '';
   const hasFinanceSkuLayer = Boolean(financeReference.articleLayer?.articles?.length);
   const wbSourceArticles = hasFinanceSkuLayer ? financeReference.articleLayer.articles : wb.articles;
   const wbSourceSeries = hasFinanceSkuLayer
@@ -1203,6 +1258,13 @@ async function main() {
       financeArticleRows: financeReference.articleLayer?.articles?.length || 0,
       financeArticleSourceRows: financeReference.articleLayer?.diagnostics?.sourceRows || 0,
       financeArticleMatchedRows: financeReference.articleLayer?.diagnostics?.matchedRows || 0,
+      settlementHour: options.settlementHour,
+      autoLagDays: options.explicitTo ? 0 : options.autoLagDays,
+      explicitTo: options.explicitTo,
+      partialRefreshGuard: {
+        recentDays: options.partialRefreshRecentDays,
+        minRatio: options.partialRefreshMinRatio
+      },
       pageCount: wbReport.diagnostics.pageCount,
       fetchedRows: wbReport.diagnostics.fetchedRows,
       revenueField: 'ordersSumRub',
@@ -1241,6 +1303,13 @@ async function main() {
     payload.wbApiDirect.warnings = [
       ...(payload.wbApiDirect.warnings || []),
       'WB analytics CSV API returned no rows for the requested date range; existing WB series was preserved.'
+    ];
+  }
+
+  if (partialWarnings.length) {
+    payload.wbApiDirect.warnings = [
+      ...(payload.wbApiDirect.warnings || []),
+      ...partialWarnings
     ];
   }
 

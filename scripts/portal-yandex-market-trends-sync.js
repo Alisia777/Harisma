@@ -94,13 +94,26 @@ function addDays(dateKey, delta) {
   return date.toISOString().slice(0, 10);
 }
 
+function localDateKey(offsetDays = 0) {
+  const date = new Date();
+  date.setDate(date.getDate() + offsetDays);
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0')
+  ].join('-');
+}
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function resolveOptions(args) {
   const root = process.cwd();
-  const to = isoDate(args.to || args['date-to'] || new Date().toISOString().slice(0, 10));
+  const settlementHour = Math.max(0, Math.min(23, Math.trunc(numberOrZero(args['settlement-hour'] || process.env.ALTEA_YM_SETTLEMENT_HOUR || 10))));
+  const explicitTo = isoDate(args.to || args['date-to']);
+  const autoLagDays = new Date().getHours() < settlementHour ? 2 : 1;
+  const to = explicitTo || localDateKey(-autoLagDays);
   const from = isoDate(args.from || args['date-from'] || `${to.slice(0, 7)}-01`);
   return {
     command: args.command || 'sync',
@@ -109,10 +122,14 @@ function resolveOptions(args) {
     businessId: normalizeText(args['business-id'] || process.env.ALTEA_YM_BUSINESS_ID || ''),
     apiBaseUrl: normalizeText(args['api-base-url'] || API_BASE_URL).replace(/\/+$/, ''),
     skusPath: path.resolve(args['skus-file'] || path.join(root, 'data', 'skus.json')),
+    skuAliasPath: path.resolve(args['sku-alias-file'] || path.join(root, 'data', 'sku_aliases.json')),
     inputPath: path.resolve(args['input-file'] || path.join(root, 'data', 'platform_trends.json')),
     outputPath: path.resolve(args['output-file'] || path.join(root, 'data', 'platform_trends.json')),
     pollAttempts: Math.max(1, Math.trunc(numberOrZero(args['poll-attempts'] || 80))),
     pollIntervalMs: Math.max(1000, Math.trunc(numberOrZero(args['poll-interval-ms'] || 10000))),
+    settlementHour,
+    autoLagDays,
+    explicitTo: Boolean(explicitTo),
     from,
     to
   };
@@ -306,24 +323,103 @@ async function generateShowsSalesReport(options, identity) {
   throw new Error(`Yandex Market report was not ready in time: ${JSON.stringify(latest).slice(0, 700)}`);
 }
 
-function skuMaps(skus) {
+function canonicalAliasPlatform(value) {
+  const raw = normalizeKey(value);
+  if (!raw || ['all', 'any', '*'].includes(raw)) return 'all';
+  if (['ya', 'ym', 'yandex', 'yandexmarket', '\u044f\u043c\u0430\u0440\u043a\u0435\u0442'].includes(raw)) return 'ym';
+  if (['wb', 'wildberries'].includes(raw)) return 'wb';
+  if (['oz', 'ozon'].includes(raw)) return 'ozon';
+  if (['ga', 'goldapple', 'zya', '\u0437\u044f', '\u0437\u043e\u043b\u043e\u0442\u043e\u0435\u044f\u0431\u043b\u043e\u043a\u043e'].includes(raw)) return 'ga';
+  if (['letu', 'letual', '\u043b\u0435\u0442\u0443\u0430\u043b\u044c', '\u043b\u044d\u0442\u0443\u0430\u043b\u044c'].includes(raw)) return 'letu';
+  if (['mm', 'magnit', 'magnitmarket', '\u043c\u0430\u0433\u043d\u0438\u0442\u043c\u0430\u0440\u043a\u0435\u0442'].includes(raw)) return 'mm';
+  return raw;
+}
+
+function aliasPlatformMatches(value, platform) {
+  const aliasPlatform = canonicalAliasPlatform(value);
+  const targetPlatform = canonicalAliasPlatform(platform);
+  return aliasPlatform === 'all' || aliasPlatform === targetPlatform;
+}
+
+function skuAliasRows(payload = {}) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.aliases)) return payload.aliases;
+  if (payload.aliases && typeof payload.aliases === 'object') {
+    return Object.entries(payload.aliases).flatMap(([targetSku, aliases]) => {
+      if (Array.isArray(aliases)) return aliases.map((alias) => ({ targetSku, ...(typeof alias === 'object' ? alias : { alias }) }));
+      if (aliases && typeof aliases === 'object') return Object.entries(aliases).map(([platform, alias]) => ({ targetSku, platform, alias }));
+      return [{ targetSku, alias: aliases }];
+    });
+  }
+  return [];
+}
+
+function activeSkuAliasRows(payload = {}) {
+  return skuAliasRows(payload).filter((row) => {
+    const status = normalizeKey(row?.status ?? row?.active ?? 'active');
+    return !['0', 'false', 'no', 'off', 'disabled', 'inactive', 'deleted', 'remove', 'ignore', 'skip'].includes(status);
+  });
+}
+
+function firstTextValue(row, names) {
+  for (const name of names) {
+    const value = normalizeText(row?.[name]);
+    if (value) return value;
+  }
+  return '';
+}
+
+function skuLookupTokens(sku = {}, platform = 'ym') {
+  const values = [
+    sku.articleKey,
+    sku.article,
+    sku.sku,
+    sku.vendorCode,
+    sku.supplierArticle,
+    sku.nmId,
+    sku.nmID,
+    sku.barcode,
+    sku?.ym?.offerId,
+    sku?.ym?.offer_id,
+    sku?.ya?.offerId,
+    sku?.ya?.offer_id,
+    sku?.yandex?.offerId,
+    sku?.yandex?.offer_id
+  ];
+  if (Array.isArray(sku.aliases)) {
+    sku.aliases.forEach((alias) => {
+      if (typeof alias === 'string') {
+        values.push(alias);
+        return;
+      }
+      if (!aliasPlatformMatches(alias?.platform || alias?.marketplace || alias?.sourcePlatform, platform)) return;
+      values.push(alias?.value, alias?.alias, alias?.sku, alias?.article, alias?.articleKey, alias?.offerId, alias?.offer_id, alias?.vendorCode);
+    });
+  }
+  Object.entries(sku.platformAliases || {}).forEach(([aliasPlatform, aliases]) => {
+    if (!aliasPlatformMatches(aliasPlatform, platform)) return;
+    if (Array.isArray(aliases)) values.push(...aliases);
+    else values.push(aliases);
+  });
+  return values;
+}
+
+function skuMaps(skus, skuAliases = {}, platform = 'ym') {
   const byArticle = new Map();
   for (const sku of Array.isArray(skus) ? skus : []) {
-    for (const value of [
-      sku?.articleKey,
-      sku?.article,
-      sku?.sku,
-      sku?.vendorCode,
-      sku?.ym?.offerId,
-      sku?.ym?.offer_id,
-      sku?.ya?.offerId,
-      sku?.ya?.offer_id,
-      sku?.yandex?.offerId,
-      sku?.yandex?.offer_id
-    ]) {
+    for (const value of skuLookupTokens(sku, platform)) {
       const key = normalizeKey(value);
       if (key && !byArticle.has(key)) byArticle.set(key, sku);
     }
+  }
+  for (const row of activeSkuAliasRows(skuAliases)) {
+    const rowPlatform = firstTextValue(row, ['platform', 'marketplace', 'source_platform', 'sourcePlatform']);
+    if (!aliasPlatformMatches(rowPlatform, platform)) continue;
+    const targetToken = normalizeKey(firstTextValue(row, ['target_sku', 'targetSku', 'target', 'portal_sku', 'article_key', 'articleKey', 'sku']));
+    const aliasValue = firstTextValue(row, ['api_sku', 'apiSku', 'api_article', 'alias', 'value', 'source_sku', 'marketplace_sku', 'external_sku', 'offer_id', 'offerId', 'vendor_code', 'vendorCode']);
+    const aliasToken = normalizeKey(aliasValue);
+    const targetSku = byArticle.get(targetToken);
+    if (targetSku && aliasToken && !byArticle.has(aliasToken)) byArticle.set(aliasToken, targetSku);
   }
   return { byArticle };
 }
@@ -520,11 +616,23 @@ function materializeArticles(articleMap) {
     .sort((left, right) => String(left.articleKey || '').localeCompare(String(right.articleKey || ''), 'ru'));
 }
 
-function buildYandexLayer(rows, skus) {
-  const maps = skuMaps(skus);
+function buildYandexLayer(rows, skus, skuAliases = {}) {
+  const maps = skuMaps(skus, skuAliases, 'ym');
   const articleMap = new Map();
   const seriesByDate = new Map();
-  const diagnostics = { sourceRows: 0, matchedRows: 0, skippedRows: 0 };
+  const diagnostics = {
+    sourceRows: 0,
+    matchedRows: 0,
+    unmatchedRows: 0,
+    skippedRows: 0,
+    sourceUnits: 0,
+    matchedUnits: 0,
+    unmatchedUnits: 0,
+    sourceRevenue: 0,
+    matchedRevenue: 0,
+    unmatchedRevenue: 0,
+    unmatchedSamples: []
+  };
 
   for (const row of Array.isArray(rows) ? rows : []) {
     const offerId = normalizeText(row.offerId || row.OFFER_ID || row.shopSku || row.SHOP_SKU || row.sku || row.SKU);
@@ -547,7 +655,26 @@ function buildYandexLayer(rows, skus) {
     }
     const sku = maps.byArticle.get(normalizeKey(offerId)) || null;
     diagnostics.sourceRows += 1;
-    if (sku) diagnostics.matchedRows += 1;
+    diagnostics.sourceUnits += ordersUnits;
+    diagnostics.sourceRevenue += revenue;
+    if (!sku) {
+      diagnostics.unmatchedRows += 1;
+      diagnostics.unmatchedUnits += ordersUnits;
+      diagnostics.unmatchedRevenue += revenue;
+      if (diagnostics.unmatchedSamples.length < 50) {
+        diagnostics.unmatchedSamples.push({
+          offerId,
+          date: dateKey,
+          units: ordersUnits,
+          revenue,
+          name: normalizeText(row.offerName || row.OFFER_NAME)
+        });
+      }
+      continue;
+    }
+    diagnostics.matchedRows += 1;
+    diagnostics.matchedUnits += ordersUnits;
+    diagnostics.matchedRevenue += revenue;
     addArticlePoint(articleMap, sku, offerId, row);
 
     const point = seriesByDate.get(dateKey) || {
@@ -705,13 +832,25 @@ function updatePlatformTrends(existing, layer, options, identities) {
       identities: identities.length,
       sourceRows: layer.diagnostics.sourceRows,
       matchedRows: layer.diagnostics.matchedRows,
+      unmatchedRows: layer.diagnostics.unmatchedRows,
       skippedRows: layer.diagnostics.skippedRows,
       matchRate: layer.diagnostics.sourceRows > 0 ? Number((layer.diagnostics.matchedRows / layer.diagnostics.sourceRows).toFixed(4)) : 0,
+      sourceRevenue: Number(numberOrZero(layer.diagnostics.sourceRevenue).toFixed(4)),
+      matchedRevenue: Number(numberOrZero(layer.diagnostics.matchedRevenue).toFixed(4)),
+      unmatchedRevenue: Number(numberOrZero(layer.diagnostics.unmatchedRevenue).toFixed(4)),
+      sourceUnits: Number(numberOrZero(layer.diagnostics.sourceUnits).toFixed(4)),
+      matchedUnits: Number(numberOrZero(layer.diagnostics.matchedUnits).toFixed(4)),
+      unmatchedUnits: Number(numberOrZero(layer.diagnostics.unmatchedUnits).toFixed(4)),
+      unmatchedSamples: layer.diagnostics.unmatchedSamples,
+      settlementHour: options.settlementHour,
+      autoLagDays: options.explicitTo ? 0 : options.autoLagDays,
+      explicitTo: options.explicitTo,
       reportFormat: 'JSON',
       grouping: 'OFFERS',
       sourceMode: 'yandex-market-api-direct-sku',
       revenueField: 'orderItemsTotalAmount',
-      unitsField: 'orderItems'
+      unitsField: 'orderItems',
+      strictSkuMatch: true
     },
     extraMarketplace: {
       ...existingExtraMarketplace,
@@ -725,6 +864,7 @@ function updatePlatformTrends(existing, layer, options, identities) {
           supportKey: 'ym',
           source: 'partner-api:/v2/reports/shows-sales',
           sourceMode: 'yandex-market-api-direct-sku',
+          strictSkuMatch: true,
           from: options.from,
           to: options.to,
           articles: layer.articles
@@ -745,6 +885,7 @@ async function main() {
   }
 
   const skus = readJson(options.skusPath, []);
+  const skuAliases = readJson(options.skuAliasPath, { aliases: [] });
   const identities = await discoverIdentities(options);
   if (!identities.length) {
     console.warn('Yandex Market campaignId/businessId was not found. Preserve existing platform_trends.json and skip Yandex refresh.');
@@ -756,7 +897,7 @@ async function main() {
   for (const identity of identities) {
     rows.push(...await generateShowsSalesReport(options, identity));
   }
-  const layer = buildYandexLayer(rows, skus);
+  const layer = buildYandexLayer(rows, skus, skuAliases);
   const payload = updatePlatformTrends(existing, layer, options, identities);
   writeJson(options.outputPath, payload);
   console.log(JSON.stringify({
@@ -766,7 +907,10 @@ async function main() {
     identities: identities.length,
     sourceRows: layer.diagnostics.sourceRows,
     matchedRows: layer.diagnostics.matchedRows,
+    unmatchedRows: layer.diagnostics.unmatchedRows,
     skippedRows: layer.diagnostics.skippedRows,
+    matchedRevenue: Number(numberOrZero(layer.diagnostics.matchedRevenue).toFixed(4)),
+    unmatchedRevenue: Number(numberOrZero(layer.diagnostics.unmatchedRevenue).toFixed(4)),
     articleRows: layer.articles.length,
     sourceMode: 'yandex-market-api-direct-sku'
   }, null, 2));

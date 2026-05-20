@@ -24,11 +24,35 @@ function Acquire-SyncLock {
   if (Test-Path -LiteralPath $script:syncLockPath) {
     $lockItem = Get-Item -LiteralPath $script:syncLockPath -ErrorAction SilentlyContinue
     $lockAgeHours = if ($lockItem) { ((Get-Date) - $lockItem.LastWriteTime).TotalHours } else { 0 }
-    if ($lockItem -and $lockAgeHours -lt 6) {
-      $lockText = Get-Content -LiteralPath $script:syncLockPath -Raw -ErrorAction SilentlyContinue
+    $lockText = Get-Content -LiteralPath $script:syncLockPath -Raw -ErrorAction SilentlyContinue
+    $lockPayload = $null
+    try {
+      if (-not [string]::IsNullOrWhiteSpace($lockText)) {
+        $lockPayload = $lockText | ConvertFrom-Json
+      }
+    } catch {
+      $lockPayload = $null
+    }
+
+    $lockPid = 0
+    if ($lockPayload -and $lockPayload.pid) {
+      $lockPid = [int]$lockPayload.pid
+    }
+    $lockProcess = if ($lockPid -gt 0) { Get-Process -Id $lockPid -ErrorAction SilentlyContinue } else { $null }
+
+    if ($lockItem -and $lockAgeHours -lt 6 -and $lockProcess) {
       throw "[sync] another portal sync seems to be running; lock age $([math]::Round($lockAgeHours, 2))h. $lockText"
     }
-    Write-Warning "[sync] stale lock removed: $script:syncLockPath"
+
+    if ($lockItem -and $lockAgeHours -lt 6 -and $lockPid -le 0) {
+      throw "[sync] portal sync lock exists but does not contain a process id; lock age $([math]::Round($lockAgeHours, 2))h. $lockText"
+    }
+
+    if ($lockPid -gt 0 -and -not $lockProcess) {
+      Write-Warning "[sync] dead lock removed for exited process ${lockPid}: $script:syncLockPath"
+    } else {
+      Write-Warning "[sync] stale lock removed: $script:syncLockPath"
+    }
     Remove-Item -LiteralPath $script:syncLockPath -Force -ErrorAction SilentlyContinue
   }
 

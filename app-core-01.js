@@ -1288,12 +1288,8 @@ function parseChunkedSnapshotKey(snapshotKey = '') {
   };
 }
 
-function decodeChunkedPortalSnapshots(data) {
-  const rows = {};
-  const rowFreshness = {};
-  const chunkGroups = new Map();
-
-  const snapshotRowStamp = (row) => Math.max(
+function portalSnapshotRowStamp(row) {
+  return Math.max(
     parseFreshStamp(row?.updated_at),
     parseFreshStamp(row?.generated_at),
     parseFreshStamp(row?.updatedAt),
@@ -1303,10 +1299,16 @@ function decodeChunkedPortalSnapshots(data) {
     parseFreshStamp(row?.payload?.asOfDate),
     parseFreshStamp(row?.payload?.dataFreshness?.asOfDate)
   );
+}
+
+function decodeChunkedPortalSnapshots(data) {
+  const rows = {};
+  const rowFreshness = {};
+  const chunkGroups = new Map();
 
   const rememberRow = (snapshotKey, row) => {
     if (!snapshotKey) return;
-    const freshness = snapshotRowStamp(row);
+    const freshness = portalSnapshotRowStamp(row);
     if (rowFreshness[snapshotKey] !== undefined && rowFreshness[snapshotKey] > freshness) return;
     rowFreshness[snapshotKey] = freshness;
     rows[snapshotKey] = row?.payload;
@@ -1423,6 +1425,7 @@ async function fetchPortalSnapshotRowsByKeys(snapshotKeys) {
     url.searchParams.set('select', 'snapshot_key,payload,generated_at,updated_at,payload_hash');
     url.searchParams.set('brand', `eq.${requestConfig.brand}`);
     url.searchParams.set('snapshot_key', batch.length === 1 ? `eq.${batch[0]}` : `in.(${batch.join(',')})`);
+    url.searchParams.set('order', 'generated_at.desc');
     const response = await withTimeout(
       fetch(url.toString(), { headers: requestConfig.headers }),
       PORTAL_SNAPSHOT_REQUEST_TIMEOUT_MS,
@@ -1451,7 +1454,10 @@ async function loadPortalSnapshotPayloadByKey(snapshotKey) {
   portalSnapshotState.promises[cacheKey] = (async () => {
     try {
       const baseRows = await fetchPortalSnapshotRowsByKeys([snapshotKey]);
-      const basePayload = baseRows.find((row) => row?.snapshot_key === snapshotKey)?.payload;
+      const baseRow = baseRows
+        .filter((row) => row?.snapshot_key === snapshotKey)
+        .sort((left, right) => portalSnapshotRowStamp(right) - portalSnapshotRowStamp(left))[0];
+      const basePayload = baseRow?.payload;
       let rows = baseRows;
       if (basePayload?.chunked === true) {
         const partKeys = snapshotPartKeys(snapshotKey, basePayload.chunk_count || basePayload.chunkCount);

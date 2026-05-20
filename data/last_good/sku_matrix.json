@@ -1,26 +1,26 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-05-20T09:09:43.158Z",
+  "generatedAt": "2026-05-20T10:28:58.191Z",
   "source": {
     "skus": 89,
     "aliases": 0,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-05-19T11:03:45.405Z"
+    "dataQualityGeneratedAt": "2026-05-20T10:28:58.115Z"
   },
   "summary": {
     "skuCount": 89,
     "activeSkuCount": 63,
     "aliasCount": 0,
     "ignoredApiSkuCount": 0,
-    "apiUnmappedCount": 142,
+    "apiUnmappedCount": 151,
     "duplicateRiskCount": 0,
     "duplicateRiskOverage": 0,
-    "missingOwnerCount": 9,
-    "issueCount": 176,
+    "missingOwnerCount": 3,
+    "issueCount": 255,
     "problemStateCounts": {
-      "ok": 80,
-      "missing_owner": 9,
-      "has_warning": 9,
+      "ok": 71,
+      "has_warning": 18,
+      "missing_owner": 3,
       "api_unmapped": 1
     }
   },
@@ -88,14 +88,23 @@
       "type": "Набор уходовой косметики",
       "aliases": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
+        }
+      ]
     },
     {
       "articleKey": "b_kompleks_bad_60tabl",
@@ -130,14 +139,23 @@
       "type": "Пищевая добавка",
       "aliases": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
+        }
+      ]
     },
     {
       "articleKey": "chudofrukt_bad_60caps",
@@ -151,14 +169,23 @@
       "type": "БАД для снижения веса",
       "aliases": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
+        }
+      ]
     },
     {
       "articleKey": "curly_method_300ml",
@@ -214,14 +241,23 @@
       "type": "Средство для умывания",
       "aliases": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
+        }
+      ]
     },
     {
       "articleKey": "enzim_pudra_80gr_v2",
@@ -445,14 +481,23 @@
       "type": "Средство для умывания",
       "aliases": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
+        }
+      ]
     },
     {
       "articleKey": "glikiron_bad_60caps",
@@ -592,14 +637,23 @@
       "type": "Стик",
       "aliases": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
+        }
+      ]
     },
     {
       "articleKey": "krem_buster_250ml",
@@ -794,7 +848,7 @@
       "articleKey": "maska-batter_500ml",
       "article": "maska-batter_500ml",
       "name": "Маска для волос с кератином увлажняющая 500мл Алтея",
-      "owner": "",
+      "owner": "[object Object]",
       "status": "Актуальный",
       "registryStatus": "Новинка",
       "brand": "Алтея",
@@ -802,24 +856,14 @@
       "type": "Маска для волос",
       "aliases": [],
       "problemStates": [
-        "missing_owner",
-        "has_warning"
+        "ok"
       ],
-      "problemState": "missing_owner",
-      "problemLabel": "Нет owner",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "criticalIssueCount": 0,
-      "issues": [
-        {
-          "severity": "warning",
-          "type": "sku_missing_owner",
-          "platform": "",
-          "revenue": 0,
-          "units": 0,
-          "message": "SKU без owner"
-        }
-      ]
+      "issues": []
     },
     {
       "articleKey": "maska-batter_dlya_rosta_500ml",
@@ -896,14 +940,23 @@
       "type": "Масло для волос",
       "aliases": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
+        }
+      ]
     },
     {
       "articleKey": "maslo_dlya_volos_parf_110ml_",
@@ -917,14 +970,23 @@
       "type": "Масло для волос",
       "aliases": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
+        }
+      ]
     },
     {
       "articleKey": "matte_wax_50ml",
@@ -980,14 +1042,23 @@
       "type": "Средство для ногтей и кутикулы",
       "aliases": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
+        }
+      ]
     },
     {
       "articleKey": "nabor_penka_dlya_resnic",
@@ -1001,14 +1072,23 @@
       "type": "Средство для снятия макияжа",
       "aliases": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
+        }
+      ]
     },
     {
       "articleKey": "nabor_remuver_40ml",
@@ -1085,14 +1165,23 @@
       "type": "Средство для снятия макияжа",
       "aliases": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
+        }
+      ]
     },
     {
       "articleKey": "penka_kudryavii_metod_150ml",
@@ -1127,14 +1216,23 @@
       "type": "Пилинг для кожи головы",
       "aliases": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
+        }
+      ]
     },
     {
       "articleKey": "pink_pepper_50ml",
@@ -1169,14 +1267,23 @@
       "type": "БАД для ЖКТ",
       "aliases": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
+        }
+      ]
     },
     {
       "articleKey": "relaksinol_bad_60caps",
@@ -1217,7 +1324,7 @@
       "problemState": "missing_owner",
       "problemLabel": "Нет owner",
       "problemTone": "warn",
-      "issueCount": 1,
+      "issueCount": 2,
       "criticalIssueCount": 0,
       "issues": [
         {
@@ -1227,6 +1334,14 @@
           "revenue": 0,
           "units": 0,
           "message": "SKU без owner"
+        },
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
         }
       ]
     },
@@ -1360,7 +1475,7 @@
       "articleKey": "retinait_syvorotka_025_30ml",
       "article": "retinait_syvorotka_025_30ml",
       "name": "Сыворотка с ретинолом 0,25% для лица от морщин антивозрастная Алтея 30 мл",
-      "owner": "",
+      "owner": "[object Object]",
       "status": "Новинка",
       "registryStatus": "Новинка",
       "brand": "Алтея",
@@ -1368,30 +1483,20 @@
       "type": "Сыворотка для ухода за кожей",
       "aliases": [],
       "problemStates": [
-        "missing_owner",
-        "has_warning"
+        "ok"
       ],
-      "problemState": "missing_owner",
-      "problemLabel": "Нет owner",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "criticalIssueCount": 0,
-      "issues": [
-        {
-          "severity": "warning",
-          "type": "sku_missing_owner",
-          "platform": "",
-          "revenue": 0,
-          "units": 0,
-          "message": "SKU без owner"
-        }
-      ]
+      "issues": []
     },
     {
       "articleKey": "retinait_syvorotka_05_30ml",
       "article": "retinait_syvorotka_05_30ml",
       "name": "Сыворотка для лица с ретинолом омолаживающая",
-      "owner": "",
+      "owner": "[object Object]",
       "status": "Новинка",
       "registryStatus": "Новинка",
       "brand": "Алтея",
@@ -1399,24 +1504,14 @@
       "type": "Сыворотка для ухода за кожей",
       "aliases": [],
       "problemStates": [
-        "missing_owner",
-        "has_warning"
+        "ok"
       ],
-      "problemState": "missing_owner",
-      "problemLabel": "Нет owner",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "criticalIssueCount": 0,
-      "issues": [
-        {
-          "severity": "warning",
-          "type": "sku_missing_owner",
-          "platform": "",
-          "revenue": 0,
-          "units": 0,
-          "message": "SKU без owner"
-        }
-      ]
+      "issues": []
     },
     {
       "articleKey": "retinait_syvorotka_1_30ml",
@@ -1478,7 +1573,7 @@
       "problemState": "missing_owner",
       "problemLabel": "Нет owner",
       "problemTone": "warn",
-      "issueCount": 1,
+      "issueCount": 2,
       "criticalIssueCount": 0,
       "issues": [
         {
@@ -1488,6 +1583,14 @@
           "revenue": 0,
           "units": 0,
           "message": "SKU без owner"
+        },
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
         }
       ]
     },
@@ -1524,14 +1627,23 @@
       "type": "БАД для костей и суставов",
       "aliases": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
+        }
+      ]
     },
     {
       "articleKey": "shampun_dlya_rosta_250ml",
@@ -1642,7 +1754,7 @@
       "articleKey": "spicul_gel_mask_75ml",
       "article": "spicul_gel_mask_75ml",
       "name": "Гелевая маска для лица со спикулами 3000 ppm и микроиглами",
-      "owner": "",
+      "owner": "[object Object]",
       "status": "Новинка",
       "registryStatus": "Новинка",
       "brand": "Алтея",
@@ -1650,30 +1762,20 @@
       "type": "Маска косметическая",
       "aliases": [],
       "problemStates": [
-        "missing_owner",
-        "has_warning"
+        "ok"
       ],
-      "problemState": "missing_owner",
-      "problemLabel": "Нет owner",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "criticalIssueCount": 0,
-      "issues": [
-        {
-          "severity": "warning",
-          "type": "sku_missing_owner",
-          "platform": "",
-          "revenue": 0,
-          "units": 0,
-          "message": "SKU без owner"
-        }
-      ]
+      "issues": []
     },
     {
       "articleKey": "spiculboost_30ml",
       "article": "spiculboost_30ml",
       "name": "Сыворотка для лица с микроиглами и коллагеном",
-      "owner": "",
+      "owner": "[object Object]",
       "status": "Нет в спецификации",
       "registryStatus": "Нет в спецификации",
       "brand": "Алтея",
@@ -1681,24 +1783,14 @@
       "type": "Сыворотка для ухода за кожей",
       "aliases": [],
       "problemStates": [
-        "missing_owner",
-        "has_warning"
+        "ok"
       ],
-      "problemState": "missing_owner",
-      "problemLabel": "Нет owner",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "criticalIssueCount": 0,
-      "issues": [
-        {
-          "severity": "warning",
-          "type": "sku_missing_owner",
-          "platform": "",
-          "revenue": 0,
-          "units": 0,
-          "message": "SKU без owner"
-        }
-      ]
+      "issues": []
     },
     {
       "articleKey": "sprei_buster_100ml",
@@ -1760,7 +1852,7 @@
       "problemState": "missing_owner",
       "problemLabel": "Нет owner",
       "problemTone": "warn",
-      "issueCount": 1,
+      "issueCount": 2,
       "criticalIssueCount": 0,
       "issues": [
         {
@@ -1770,6 +1862,14 @@
           "revenue": 0,
           "units": 0,
           "message": "SKU без owner"
+        },
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
         }
       ]
     },
@@ -1806,14 +1906,23 @@
       "type": "Сыворотка для ухода за кожей",
       "aliases": [],
       "problemStates": [
-        "ok"
+        "has_warning"
       ],
-      "problemState": "ok",
-      "problemLabel": "В матрице",
-      "problemTone": "ok",
-      "issueCount": 0,
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
       "criticalIssueCount": 0,
-      "issues": []
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_owner_row",
+          "platform": "wb",
+          "revenue": 0,
+          "units": 0,
+          "message": "WB SKU is present in portal but absent in owner distribution workbook"
+        }
+      ]
     },
     {
       "articleKey": "syvorotka_dlya_rosta_6ml",
@@ -1882,7 +1991,7 @@
       "articleKey": "syvorotka_niacin_05_30ml",
       "article": "syvorotka_niacin_05_30ml",
       "name": "сыворотка для лица с ниацинамидом 5% от прыщей и акне антивозрастная от пигментных пятен увлажняющая Алтея",
-      "owner": "",
+      "owner": "[object Object]",
       "status": "Новинка",
       "registryStatus": "Новинка",
       "brand": "Алтея",
@@ -1890,24 +1999,14 @@
       "type": "Сыворотка для ухода за кожей",
       "aliases": [],
       "problemStates": [
-        "missing_owner",
-        "has_warning"
+        "ok"
       ],
-      "problemState": "missing_owner",
-      "problemLabel": "Нет owner",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
       "criticalIssueCount": 0,
-      "issues": [
-        {
-          "severity": "warning",
-          "type": "sku_missing_owner",
-          "platform": "",
-          "revenue": 0,
-          "units": 0,
-          "message": "SKU без owner"
-        }
-      ]
+      "issues": []
     },
     {
       "articleKey": "telomeras_60caps",
@@ -2020,514 +2119,541 @@
       "platform": "ozon",
       "api_sku": "sustalit_75ml",
       "name": "sustalit_75ml",
-      "revenue": 889055,
-      "units": 1581,
+      "revenue": 925051,
+      "units": 1634,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "kavmaz",
       "name": "kavmaz",
-      "revenue": 574402,
-      "units": 1144,
+      "revenue": 608912,
+      "units": 1214,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "sustalit_75ml",
       "name": "sustalit_75ml",
-      "revenue": 403865,
-      "units": 480,
+      "revenue": 429844,
+      "units": 518,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "kavmaz_60ml",
       "name": "kavmaz_60ml",
-      "revenue": 392303,
-      "units": 347,
+      "revenue": 411277,
+      "units": 368,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "activeprost",
       "name": "activeprost",
-      "revenue": 381743,
-      "units": 858,
+      "revenue": 405532,
+      "units": 913,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "uromax",
       "name": "uromax",
-      "revenue": 380397,
-      "units": 502,
+      "revenue": 404273,
+      "units": 526,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "vetonus",
-      "name": "vetonus",
-      "revenue": 340473,
-      "units": 1147,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "artoks",
-      "name": "artoks",
-      "revenue": 338616,
-      "units": 397,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "artoks",
-      "name": "artoks",
-      "revenue": 335162,
-      "units": 485,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "trezvin",
       "name": "trezvin",
-      "revenue": 331917,
-      "units": 745,
+      "revenue": 356014,
+      "units": 814,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "vetonus",
+      "name": "vetonus",
+      "revenue": 355590,
+      "units": 1194,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "artoks",
+      "name": "artoks",
+      "revenue": 352690,
+      "units": 418,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "artoks",
+      "name": "artoks",
+      "revenue": 349317,
+      "units": 504,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "allicil_gribok15ml",
       "name": "allicil_gribok15ml",
-      "revenue": 320970,
-      "units": 558,
+      "revenue": 346191,
+      "units": 614,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "sanatsin",
-      "name": "sanatsin",
-      "revenue": 272130,
-      "units": 482,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "uromax_1_1",
       "name": "uromax_1_1",
-      "revenue": 271094,
-      "units": 242,
+      "revenue": 286284,
+      "units": 252,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "synergel_60ml",
       "name": "synergel_60ml",
-      "revenue": 270013,
-      "units": 406,
+      "revenue": 286163,
+      "units": 431,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "micardinforte",
       "name": "micardinforte",
-      "revenue": 267324,
-      "units": 578,
+      "revenue": 282164,
+      "units": 618,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "kardicin_1_1_1",
       "name": "kardicin_1_1_1",
-      "revenue": 264777,
-      "units": 179,
+      "revenue": 277055,
+      "units": 186,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "sanatsin",
+      "name": "sanatsin",
+      "revenue": 274950,
+      "units": 488,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "uhovit",
       "name": "uhovit",
-      "revenue": 249998,
-      "units": 205,
+      "revenue": 260968,
+      "units": 216,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "arterol_1_1_1",
       "name": "arterol_1_1_1",
-      "revenue": 244172,
-      "units": 185,
+      "revenue": 257228,
+      "units": 195,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "kavmaz_60ml",
       "name": "kavmaz_60ml",
-      "revenue": 241803,
-      "units": 312,
+      "revenue": 252275,
+      "units": 326,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "micardin_1_1",
       "name": "micardin_1_1",
-      "revenue": 233071,
-      "units": 189,
+      "revenue": 243726,
+      "units": 200,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "artoks_1_1",
-      "name": "artoks_1_1",
-      "revenue": 217438,
-      "units": 181,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "urinofix",
       "name": "urinofix",
-      "revenue": 216193,
-      "units": 276,
+      "revenue": 224936,
+      "units": 290,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
-      "api_sku": "insulight",
-      "name": "insulight",
-      "revenue": 212404,
-      "units": 255,
+      "api_sku": "artoks_1_1",
+      "name": "artoks_1_1",
+      "revenue": 224746,
+      "units": 187,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "wbbiotrin_1_1_1",
       "name": "wbbiotrin_1_1_1",
-      "revenue": 204487,
-      "units": 132,
+      "revenue": 219531,
+      "units": 144,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
-      "api_sku": "sanatsin_1_1",
-      "name": "sanatsin_1_1",
-      "revenue": 195119,
-      "units": 234,
+      "api_sku": "insulight",
+      "name": "insulight",
+      "revenue": 219340,
+      "units": 262,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "cardicin_BAD_60caps",
       "name": "cardicin_BAD_60caps",
-      "revenue": 190379,
-      "units": 169,
+      "revenue": 201629,
+      "units": 178,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "yagodniy_spas",
-      "name": "yagodniy_spas",
-      "revenue": 187628,
-      "units": 295,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "synergel_60ml",
       "name": "synergel_60ml",
-      "revenue": 186393,
-      "units": 203,
+      "revenue": 197987,
+      "units": 219,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "yagodniy_spas",
+      "name": "yagodniy_spas",
+      "revenue": 196624,
+      "units": 308,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "sanatsin_1_1",
+      "name": "sanatsin_1_1",
+      "revenue": 196215,
+      "units": 236,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "wbmicelix",
       "name": "wbmicelix",
-      "revenue": 172171,
-      "units": 470,
+      "revenue": 190208,
+      "units": 529,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "trezax",
       "name": "trezax",
-      "revenue": 161853,
-      "units": 281,
+      "revenue": 174777,
+      "units": 299,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "gemorekt",
-      "name": "gemorekt",
-      "revenue": 160479,
-      "units": 305,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "insulight_1_1",
       "name": "insulight_1_1",
-      "revenue": 158517,
-      "units": 138,
+      "revenue": 167744,
+      "units": 146,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "gemorekt",
+      "name": "gemorekt",
+      "revenue": 163079,
+      "units": 309,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "mycoplax",
       "name": "mycoplax",
-      "revenue": 146034,
-      "units": 193,
+      "revenue": 152051,
+      "units": 203,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "cardicin_bad_60caps",
-      "name": "cardicin_bad_60caps",
-      "revenue": 145872,
-      "units": 107,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "kavmaz",
       "name": "kavmaz",
-      "revenue": 140407,
-      "units": 175,
+      "revenue": 150102,
+      "units": 190,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
-      "platform": "ozon",
-      "api_sku": "micolan",
-      "name": "micolan",
-      "revenue": 136955,
-      "units": 390,
+      "platform": "wb",
+      "api_sku": "cardicin_bad_60caps",
+      "name": "cardicin_bad_60caps",
+      "revenue": 149178,
+      "units": 110,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "kinzhal",
-      "name": "kinzhal",
-      "revenue": 135696,
-      "units": 181,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "urofol",
       "name": "urofol",
-      "revenue": 133045,
-      "units": 226,
+      "revenue": 147943,
+      "units": 250,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "kinzhal",
+      "name": "kinzhal",
+      "revenue": 143076,
+      "units": 191,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "micolan",
+      "name": "micolan",
+      "revenue": 140889,
+      "units": 397,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "wbsinergel",
       "name": "wbsinergel",
-      "revenue": 126699,
-      "units": 194,
+      "revenue": 135663,
+      "units": 211,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "vetonus_100ml",
       "name": "vetonus_100ml",
-      "revenue": 119909,
-      "units": 277,
+      "revenue": 134117,
+      "units": 314,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "pantogor_100ml",
       "name": "pantogor_100ml",
-      "revenue": 118905,
-      "units": 154,
+      "revenue": 125469,
+      "units": 160,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "pantogor_100ml",
       "name": "pantogor_100ml",
-      "revenue": 117213,
-      "units": 107,
+      "revenue": 118068,
+      "units": 108,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-17"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "ekzifol",
       "name": "ekzifol",
-      "revenue": 109429,
-      "units": 165,
+      "revenue": 115673,
+      "units": 177,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "wbmicardinforte",
       "name": "wbmicardinforte",
-      "revenue": 106151,
-      "units": 163,
+      "revenue": 109287,
+      "units": 169,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "sanatsin",
-      "name": "sanatsin",
-      "revenue": 99138,
-      "units": 125,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "artoks_75ml",
       "name": "artoks_75ml",
-      "revenue": 98502,
-      "units": 108,
+      "revenue": 105031,
+      "units": 115,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "kavmaz_40ml_1_1",
-      "name": "kavmaz_40ml_1_1",
-      "revenue": 98258,
-      "units": 76,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "yagodniy_spas_1_1",
-      "name": "yagodniy_spas_1_1",
-      "revenue": 97898,
-      "units": 79,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "sustalit",
-      "name": "sustalit",
-      "revenue": 97125,
-      "units": 136,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "kardicin_1_1",
       "name": "kardicin_1_1",
-      "revenue": 95493,
-      "units": 107,
+      "revenue": 104663,
+      "units": 117,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "kavmaz_40ml_1_1",
+      "name": "kavmaz_40ml_1_1",
+      "revenue": 103509,
+      "units": 80,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "sustalit",
+      "name": "sustalit",
+      "revenue": 102280,
+      "units": 145,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "sanatsin",
+      "name": "sanatsin",
+      "revenue": 101672,
+      "units": 129,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "kinzhal_1_1",
       "name": "kinzhal_1_1",
-      "revenue": 94222,
-      "units": 93,
+      "revenue": 101418,
+      "units": 100,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "yagodniy_spas_1_1",
+      "name": "yagodniy_spas_1_1",
+      "revenue": 100998,
+      "units": 81,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "mycoplax",
       "name": "mycoplax",
-      "revenue": 92986,
-      "units": 182,
+      "revenue": 98017,
+      "units": 192,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "oftalmol",
       "name": "oftalmol",
-      "revenue": 91789,
-      "units": 126,
+      "revenue": 96544,
+      "units": 134,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "wbsinergel",
       "name": "wbsinergel",
-      "revenue": 86416,
-      "units": 173,
+      "revenue": 87822,
+      "units": 175,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "dardrakona_1_1",
-      "name": "dardrakona_1_1",
-      "revenue": 80840,
-      "units": 129,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "urolgan",
       "name": "urolgan",
-      "revenue": 78711,
-      "units": 202,
+      "revenue": 87295,
+      "units": 224,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "dardrakona_1_1",
+      "name": "dardrakona_1_1",
+      "revenue": 83669,
+      "units": 132,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "sinergel_30ml_1_1",
       "name": "sinergel_30ml_1_1",
-      "revenue": 78512,
-      "units": 55,
+      "revenue": 80837,
+      "units": 57,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "sustalit",
+      "name": "sustalit",
+      "revenue": 78179,
+      "units": 129,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "chudogrib",
+      "name": "chudogrib",
+      "revenue": 78078,
+      "units": 106,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "urinofix",
+      "name": "urinofix",
+      "revenue": 76786,
+      "units": 120,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -2536,115 +2662,115 @@
       "revenue": 75230,
       "units": 123,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "chudogrib",
-      "name": "chudogrib",
-      "revenue": 74238,
-      "units": 101,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "sustalit",
-      "name": "sustalit",
-      "revenue": 73853,
-      "units": 122,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "urinofix",
-      "name": "urinofix",
-      "revenue": 72944,
-      "units": 115,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "otivin",
-      "name": "otivin",
-      "revenue": 66586,
-      "units": 86,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "uromax",
-      "name": "uromax",
-      "revenue": 64730,
-      "units": 91,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "artoks_75ml",
       "name": "artoks_75ml",
-      "revenue": 63676,
-      "units": 49,
+      "revenue": 72323,
+      "units": 57,
       "firstDate": "2026-05-02",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
-      "api_sku": "kavmaz_40ml_1_1",
-      "name": "kavmaz_40ml_1_1",
-      "revenue": 63080,
-      "units": 37,
+      "api_sku": "otivin",
+      "name": "otivin",
+      "revenue": 70387,
+      "units": 92,
       "firstDate": "2026-05-02",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "uromax",
+      "name": "uromax",
+      "revenue": 67487,
+      "units": 96,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "brutalax",
       "name": "brutalax",
-      "revenue": 62349,
-      "units": 175,
+      "revenue": 64693,
+      "units": 183,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "kavmaz_40ml_1_1",
+      "name": "kavmaz_40ml_1_1",
+      "revenue": 64433,
+      "units": 38,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "micardin",
       "name": "micardin",
-      "revenue": 60694,
-      "units": 91,
+      "revenue": 64374,
+      "units": 98,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "wbbiotrin_1_1",
       "name": "wbbiotrin_1_1",
-      "revenue": 59222,
-      "units": 57,
+      "revenue": 63450,
+      "units": 61,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "sinergel_30ml_1_1",
+      "name": "sinergel_30ml_1_1",
+      "revenue": 60358,
+      "units": 68,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "daoshen",
       "name": "daoshen",
-      "revenue": 56723,
-      "units": 78,
+      "revenue": 59725,
+      "units": 83,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "arterol",
       "name": "arterol",
-      "revenue": 56054,
-      "units": 92,
+      "revenue": 57791,
+      "units": 95,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "daoshen_75ml",
+      "name": "daoshen_75ml",
+      "revenue": 53911,
+      "units": 52,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "ekzifol",
+      "name": "ekzifol",
+      "revenue": 53483,
+      "units": 186,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -2653,34 +2779,25 @@
       "revenue": 52881,
       "units": 89,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "sinergel_30ml_1_1",
-      "name": "sinergel_30ml_1_1",
-      "revenue": 51538,
-      "units": 58,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "daoshen_75ml",
-      "name": "daoshen_75ml",
-      "revenue": 51340,
-      "units": 49,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "otivin",
       "name": "otivin",
-      "revenue": 49650,
-      "units": 86,
+      "revenue": 52150,
+      "units": 90,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "gemorekt",
+      "name": "gemorekt",
+      "revenue": 50054,
+      "units": 76,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -2689,79 +2806,70 @@
       "revenue": 48890,
       "units": 121,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-17"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "ekzifol",
-      "name": "ekzifol",
-      "revenue": 47693,
-      "units": 165,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "gemorekt",
-      "name": "gemorekt",
-      "revenue": 47338,
-      "units": 71,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "varifit_1_1",
       "name": "varifit_1_1",
-      "revenue": 46929,
-      "units": 83,
+      "revenue": 48843,
+      "units": 86,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "wbgetsizegel",
-      "name": "wbgetsizegel",
-      "revenue": 46171,
-      "units": 134,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "daoshen",
-      "name": "daoshen",
-      "revenue": 45368,
-      "units": 74,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "sustalit_30ml_1_1",
       "name": "sustalit_30ml_1_1",
-      "revenue": 44584,
-      "units": 33,
+      "revenue": 47712,
+      "units": 36,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
-      "platform": "wb",
-      "api_sku": "vetonus",
-      "name": "vetonus",
-      "revenue": 43285,
-      "units": 57,
+      "platform": "ozon",
+      "api_sku": "wbgetsizegel",
+      "name": "wbgetsizegel",
+      "revenue": 47303,
+      "units": 138,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "daoshen",
+      "name": "daoshen",
+      "revenue": 46080,
+      "units": 75,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "dardrakona",
       "name": "dardrakona",
-      "revenue": 42861,
-      "units": 72,
+      "revenue": 45816,
+      "units": 77,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "vetonus",
+      "name": "vetonus",
+      "revenue": 43894,
+      "units": 58,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "osteofast",
+      "name": "osteofast",
+      "revenue": 43765,
+      "units": 91,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
@@ -2779,7 +2887,7 @@
       "revenue": 42083,
       "units": 72,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -2788,34 +2896,34 @@
       "revenue": 41332,
       "units": 64,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "osteofast",
-      "name": "osteofast",
-      "revenue": 40496,
-      "units": 84,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "varifit",
       "name": "varifit",
-      "revenue": 38835,
-      "units": 56,
+      "revenue": 41128,
+      "units": 60,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "sanatsin_1_1",
+      "name": "sanatsin_1_1",
+      "revenue": 40906,
+      "units": 16,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "vetonus_100ml",
       "name": "vetonus_100ml",
-      "revenue": 37839,
-      "units": 35,
+      "revenue": 38696,
+      "units": 36,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -2824,16 +2932,16 @@
       "revenue": 37430,
       "units": 32,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
-      "platform": "wb",
-      "api_sku": "sanatsin_1_1",
-      "name": "sanatsin_1_1",
-      "revenue": 36627,
-      "units": 14,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-18"
+      "platform": "ozon",
+      "api_sku": "trezor",
+      "name": "trezor",
+      "revenue": 35993,
+      "units": 66,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -2842,70 +2950,70 @@
       "revenue": 35068,
       "units": 45,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "trezor",
-      "name": "trezor",
-      "revenue": 33437,
-      "units": 60,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "osteofast",
-      "name": "osteofast",
-      "revenue": 33205,
-      "units": 42,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "wboptitrin",
       "name": "wboptitrin",
-      "revenue": 32060,
-      "units": 90,
+      "revenue": 34058,
+      "units": 96,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "osteofast",
+      "name": "osteofast",
+      "revenue": 33884,
+      "units": 43,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "goldapple",
+      "api_sku": "maska_dlya_lica_100m",
+      "name": "Продукция косметическая для ухода за кожей, в том числе в наборах: Маска для проблемной кожи лица м",
+      "revenue": 32799,
+      "units": 33,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "daoshen_75ml",
       "name": "daoshen_75ml",
-      "revenue": 30278,
-      "units": 32,
+      "revenue": 32260,
+      "units": 34,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "varifit",
       "name": "varifit",
-      "revenue": 30254,
-      "units": 54,
+      "revenue": 31324,
+      "units": 56,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "allicil_gribok15ml",
-      "name": "allicil_gribok15ml",
-      "revenue": 25236,
-      "units": 77,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "vetonus_1_1",
       "name": "vetonus_1_1",
-      "revenue": 24543,
-      "units": 22,
+      "revenue": 27302,
+      "units": 25,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "allicil_gribok15ml",
+      "name": "allicil_gribok15ml",
+      "revenue": 26244,
+      "units": 80,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -2914,7 +3022,7 @@
       "revenue": 23853,
       "units": 40,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -2923,34 +3031,70 @@
       "revenue": 23373,
       "units": 50,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "dardrakona_75ml",
       "name": "dardrakona_75ml",
-      "revenue": 23363,
+      "revenue": 23365,
       "units": 29,
       "firstDate": "2026-05-02",
       "lastDate": "2026-05-18"
     },
     {
+      "platform": "goldapple",
+      "api_sku": "retinait_krem_025_50",
+      "name": "Крем с липомосомальным ретинолом (0,1% - 3%), торговая марка Алтея",
+      "revenue": 22392,
+      "units": 19,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
+    },
+    {
       "platform": "ozon",
       "api_sku": "erobrut",
       "name": "erobrut",
-      "revenue": 20707,
-      "units": 39,
+      "revenue": 22207,
+      "units": 42,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "goldapple",
+      "api_sku": "retinait_syvorotka_1",
+      "name": "РЕТИНАЙТ сыворотка для лица 30 мл",
+      "revenue": 21801,
+      "units": 17,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "psoral_50ml",
       "name": "psoral_50ml",
-      "revenue": 20044,
-      "units": 23,
+      "revenue": 20714,
+      "units": 24,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "wbbiotrin",
+      "name": "wbbiotrin",
+      "revenue": 19874,
+      "units": 20,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "dolgar",
+      "name": "dolgar",
+      "revenue": 19754,
+      "units": 55,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -2959,16 +3103,16 @@
       "revenue": 19058,
       "units": 28,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
-      "platform": "ozon",
-      "api_sku": "wbbiotrin",
-      "name": "wbbiotrin",
-      "revenue": 17774,
-      "units": 17,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "platform": "wb",
+      "api_sku": "dolgar",
+      "name": "dolgar",
+      "revenue": 18532,
+      "units": 27,
+      "firstDate": "2026-05-03",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -2977,7 +3121,7 @@
       "revenue": 16808,
       "units": 44,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -2986,16 +3130,7 @@
       "revenue": 16643,
       "units": 37,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "dolgar",
-      "name": "dolgar",
-      "revenue": 16434,
-      "units": 45,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -3004,7 +3139,7 @@
       "revenue": 15883,
       "units": 18,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -3013,16 +3148,7 @@
       "revenue": 15757,
       "units": 25,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "dolgar",
-      "name": "dolgar",
-      "revenue": 15551,
-      "units": 22,
-      "firstDate": "2026-05-03",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
@@ -3037,37 +3163,46 @@
       "platform": "wb",
       "api_sku": "activeprost",
       "name": "activeprost",
-      "revenue": 14392,
-      "units": 20,
+      "revenue": 15004,
+      "units": 21,
       "firstDate": "2026-05-04",
-      "lastDate": "2026-05-16"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "glukofol",
       "name": "glukofol",
-      "revenue": 14313,
-      "units": 38,
+      "revenue": 14502,
+      "units": 39,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
       "api_sku": "fruitalica",
       "name": "fruitalica",
-      "revenue": 12932,
-      "units": 34,
+      "revenue": 13707,
+      "units": 37,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
       "api_sku": "dardrakona",
       "name": "dardrakona",
-      "revenue": 12599,
-      "units": 16,
+      "revenue": 13229,
+      "units": 17,
       "firstDate": "2026-05-02",
-      "lastDate": "2026-05-16"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "ozon",
+      "api_sku": "glikiron",
+      "name": "glikiron",
+      "revenue": 11623,
+      "units": 30,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
@@ -3082,18 +3217,9 @@
       "platform": "wb",
       "api_sku": "urolgan",
       "name": "urolgan",
-      "revenue": 10951,
+      "revenue": 10952,
       "units": 22,
       "firstDate": "2026-05-02",
-      "lastDate": "2026-05-18"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "glikiron",
-      "name": "glikiron",
-      "revenue": 10821,
-      "units": 28,
-      "firstDate": "2026-05-01",
       "lastDate": "2026-05-18"
     },
     {
@@ -3112,7 +3238,7 @@
       "revenue": 10086,
       "units": 7,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
@@ -3136,10 +3262,10 @@
       "platform": "wb",
       "api_sku": "psoral",
       "name": "psoral",
-      "revenue": 8751,
-      "units": 11,
+      "revenue": 9372,
+      "units": 12,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -3148,7 +3274,16 @@
       "revenue": 8460,
       "units": 10,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "wbvaritox",
+      "name": "wbvaritox",
+      "revenue": 7042,
+      "units": 10,
+      "firstDate": "2026-05-02",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
@@ -3161,12 +3296,39 @@
     },
     {
       "platform": "wb",
-      "api_sku": "wbvaritox",
-      "name": "wbvaritox",
-      "revenue": 6484,
-      "units": 9,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-14"
+      "api_sku": "erobrut",
+      "name": "erobrut",
+      "revenue": 4847,
+      "units": 7,
+      "firstDate": "2026-05-08",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "goldapple",
+      "api_sku": "shampun_dlya_rosta_2",
+      "name": "Шампунь для роста волос, от выпадения волос профессиональный, Алтея, 250 мл",
+      "revenue": 4823,
+      "units": 7,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "goldapple",
+      "api_sku": "retinait_krem_05_50m",
+      "name": "Ретинайт 0,5 экспресс-омоложение Anti-Age Липосомальный комплекс ретинола 0,5 + Ниацинамид 50 мл",
+      "revenue": 4533,
+      "units": 5,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "goldapple",
+      "api_sku": "maslo_dlya_borodi_50",
+      "name": "Средство косметическое для ухода за волосами: масло для бороды, маркировка: Алтея.",
+      "revenue": 4532,
+      "units": 6,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "goldapple",
@@ -3175,7 +3337,7 @@
       "revenue": 4464,
       "units": 4,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
@@ -3188,12 +3350,21 @@
     },
     {
       "platform": "wb",
-      "api_sku": "erobrut",
-      "name": "erobrut",
-      "revenue": 4222,
-      "units": 6,
-      "firstDate": "2026-05-08",
-      "lastDate": "2026-05-16"
+      "api_sku": "varifit_1_1",
+      "name": "varifit_1_1",
+      "revenue": 3880,
+      "units": 3,
+      "firstDate": "2026-05-11",
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "goldapple",
+      "api_sku": "shampun_protiv_perho",
+      "name": "Шампунь от перхоти лечебный с климбазолом Алтея, 250мл",
+      "revenue": 3745,
+      "units": 5,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
@@ -3205,13 +3376,13 @@
       "lastDate": "2026-05-13"
     },
     {
-      "platform": "wb",
-      "api_sku": "varifit_1_1",
-      "name": "varifit_1_1",
-      "revenue": 2629,
+      "platform": "goldapple",
+      "api_sku": "tonik_dlya_lica_200m",
+      "name": "Тоник для лица очищающий, увлажняющий тонер, лосьон от пигментации, от прыщей и акне, черных точек д",
+      "revenue": 1414,
       "units": 2,
-      "firstDate": "2026-05-11",
-      "lastDate": "2026-05-12"
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -3220,7 +3391,7 @@
       "revenue": 1340,
       "units": 4,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",
@@ -3265,7 +3436,16 @@
       "revenue": 665,
       "units": 1,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
+    },
+    {
+      "platform": "goldapple",
+      "api_sku": "nabor_penka_dlya_res",
+      "name": "Пенка для очищения ресниц, торговая марка Алтея.",
+      "revenue": 659,
+      "units": 1,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "ozon",
@@ -3274,7 +3454,7 @@
       "revenue": 511,
       "units": 1,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-18"
+      "lastDate": "2026-05-19"
     },
     {
       "platform": "wb",

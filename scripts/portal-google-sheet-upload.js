@@ -31,6 +31,7 @@ const SNAPSHOT_KEYS = [
   'sku_alias_ignore',
   'sku_alias_audit',
   'sku_matrix',
+  'wb_owner_distribution_audit',
   'portal_sync_health'
 ];
 const INLINE_BODY_LIMIT = 18000;

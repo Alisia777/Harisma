@@ -602,6 +602,51 @@ function writeAliasReviewCsv(filePath, issues = [], skus = []) {
   return rows.length;
 }
 
+function buildWbOwnerDistributionQuality(audit = {}) {
+  const missingInPortal = Array.isArray(audit.missingInPortal) ? audit.missingInPortal : [];
+  const missingInDistribution = Array.isArray(audit.missingInDistribution) ? audit.missingInDistribution : [];
+  const issues = [
+    ...missingInPortal.map((row) => ({
+      severity: 'warning',
+      type: 'wb_owner_distribution_missing_in_portal',
+      dataset: 'wb_owner_distribution',
+      platform: 'wb',
+      platformLabel: 'WB',
+      articleKey: row.articleKey || row.sourceArticle || '',
+      name: row.sourceArticle || row.articleKey || '',
+      owner: row.ownerWb || '',
+      revenue: Math.round(numberOrZero(row.revenue)),
+      units: Math.round(numberOrZero(row.units)),
+      message: 'SKU is present in WB owner distribution but absent in portal skus.json',
+      action: 'Add SKU or alias to portal registry, or remove it from WB owner distribution.'
+    })),
+    ...missingInDistribution.map((row) => ({
+      severity: 'warning',
+      type: 'wb_owner_distribution_missing_owner_row',
+      dataset: 'wb_owner_distribution',
+      platform: 'wb',
+      platformLabel: 'WB',
+      articleKey: row.articleKey || row.article || '',
+      name: row.name || row.articleKey || '',
+      owner: row.ownerWb || '',
+      revenue: 0,
+      units: 0,
+      message: 'WB SKU is present in portal but absent in owner distribution workbook',
+      action: 'Add this SKU to WB owner distribution or confirm it is no longer managed in WB.'
+    }))
+  ];
+  return {
+    issues,
+    summary: {
+      sourceGeneratedAt: audit.generatedAt || '',
+      matchedSkuCount: numberOrZero(audit.summary?.matchedSkuCount),
+      updatedOwnerCount: numberOrZero(audit.summary?.updatedOwnerCount),
+      missingInPortalCount: missingInPortal.length,
+      missingInDistributionCount: missingInDistribution.length
+    }
+  };
+}
+
 function buildReport(options) {
   const files = {
     dashboard: readSnapshot(options, 'dashboard', {}),
@@ -612,7 +657,8 @@ function buildReport(options) {
     adsSummary: readSnapshot(options, 'ads_summary', {}),
     iuDrr: readSnapshot(options, 'iu_drr_summary', {}),
     skuAliases: readSnapshot(options, 'sku_aliases', { schema: 'sku-api-aliases-v1', aliases: [] }),
-    skuAliasIgnore: readSnapshot(options, 'sku_alias_ignore', { schema: 'sku-api-ignore-v1', ignored: [] })
+    skuAliasIgnore: readSnapshot(options, 'sku_alias_ignore', { schema: 'sku-api-ignore-v1', ignored: [] }),
+    wbOwnerDistributionAudit: readSnapshot(options, 'wb_owner_distribution_audit', {})
   };
 
   const maxDate = dateKey(files.platformTrends?.latestMarketplaceDate)
@@ -623,13 +669,15 @@ function buildReport(options) {
   const freshnessQuality = buildFreshnessQuality(files);
   const ownerQuality = buildOwnerQuality(Array.isArray(files.skus) ? files.skus : []);
   const warehouseQuality = buildWarehouseQuality(files.warehouse);
+  const wbOwnerDistributionQuality = buildWbOwnerDistributionQuality(files.wbOwnerDistributionAudit);
 
   const allIssues = [
     ...apiQuality.issues,
     ...orderQuality.issues,
     ...freshnessQuality.issues,
     ...ownerQuality.issues,
-    ...warehouseQuality.issues
+    ...warehouseQuality.issues,
+    ...wbOwnerDistributionQuality.issues
   ].sort((a, b) => {
     const rank = { critical: 0, warning: 1, info: 2 };
     return (rank[a.severity] ?? 9) - (rank[b.severity] ?? 9) || numberOrZero(b.revenue) - numberOrZero(a.revenue);
@@ -652,7 +700,11 @@ function buildReport(options) {
     skuAliasCount: activeSkuAliasRows(files.skuAliases).length,
     orderNoStockNeedRows: orderQuality.summary.noStockNeedRows,
     skuMissingOwner: ownerQuality.summary.missingOwner,
-    warehouseUnmatchedRows: warehouseQuality.summary.unmatchedRows
+    warehouseUnmatchedRows: warehouseQuality.summary.unmatchedRows,
+    wbOwnerMatchedSku: wbOwnerDistributionQuality.summary.matchedSkuCount,
+    wbOwnerUpdatedSku: wbOwnerDistributionQuality.summary.updatedOwnerCount,
+    wbOwnerMissingInPortal: wbOwnerDistributionQuality.summary.missingInPortalCount,
+    wbOwnerMissingInDistribution: wbOwnerDistributionQuality.summary.missingInDistributionCount
   };
 
   return {
@@ -664,6 +716,7 @@ function buildReport(options) {
     orderSummary: orderQuality.summary,
     ownerSummary: ownerQuality.summary,
     warehouseSummary: warehouseQuality.summary,
+    wbOwnerDistributionSummary: wbOwnerDistributionQuality.summary,
     _sourceSkus: Array.isArray(files.skus) ? files.skus : [],
     issues: allIssues.slice(0, options.issueLimit)
   };

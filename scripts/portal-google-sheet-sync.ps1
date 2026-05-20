@@ -306,6 +306,23 @@ Write-Output "[sync] build phase started (expected dryRun=true in JSON summary b
 Invoke-NodeStep -StepName "Google sheet data build" -Arguments $buildArguments -Attempts 2 -RetryDelaySeconds 30
 Write-Output "[sync] build phase completed"
 
+Write-Output "[sync] WB owner distribution import started"
+try {
+  Invoke-NodeStep -StepName "WB owner distribution import" -Arguments @(
+    "scripts/import-wb-owner-distribution.js",
+    "--input-dir",
+    $resolvedOutputDir,
+    "--base-data-dir",
+    "data",
+    "--output-dir",
+    $resolvedOutputDir,
+    "--mirror-local-fallback"
+  ) -Attempts 1 -RetryDelaySeconds 10
+  Write-Output "[sync] WB owner distribution import completed"
+} catch {
+  Write-Warning "[sync] WB owner distribution import failed, continuing with owners from the main sheet: $($_.Exception.Message)"
+}
+
 Write-Output "[sync] order procurement build phase started"
 Invoke-NodeStep -StepName "order procurement build" -Arguments @("scripts/build-order-procurement-layer.js") -Attempts 2 -RetryDelaySeconds 20
 
@@ -700,6 +717,10 @@ if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "sku_alias_audit.json")
 
 if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "sku_matrix.json")) {
   $snapshotNames += "sku_matrix"
+}
+
+if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "wb_owner_distribution_audit.json")) {
+  $snapshotNames += "wb_owner_distribution_audit"
 }
 
 $snapshotList = ($snapshotNames | Select-Object -Unique) -join ","

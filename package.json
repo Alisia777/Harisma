@@ -18,6 +18,7 @@
     "portal:repricer-rebuild": "node scripts/build-legacy-repricer-layer.js",
     "portal:data-quality": "node scripts/build-portal-data-quality-report.js --input-dir data --base-data-dir data --output-dir data",
     "portal:sku-matrix": "node scripts/build-sku-matrix-layer.js --input-dir data --base-data-dir data --output-dir data",
+    "portal:wb-owner-import": "node scripts/import-wb-owner-distribution.js --input-dir data --base-data-dir data --output-dir data --mirror-local-fallback",
     "portal:sku-alias-import": "node scripts/import-sku-alias-review.js",
     "portal:snapshot-pull": "node scripts/portal-snapshot-pull.js",
     "portal:sync-health": "node scripts/portal-sync-health.js --input-dir data --base-data-dir data --output-dir data",

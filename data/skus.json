@@ -21,7 +21,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -116,7 +116,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -132,7 +132,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 97,
+      "appliedAt": "2026-05-20T10:28:51.551Z"
+    }
   },
   {
     "article": "alteya_young_skin_box",
@@ -291,7 +297,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -386,7 +392,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -402,7 +408,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 126,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "berberin_laif_BAD_60caps",
@@ -698,7 +710,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -795,7 +807,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -811,7 +823,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 3,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "ekdisteron_ultra_man_60caps",
@@ -835,7 +853,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -930,7 +948,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -946,7 +964,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 92,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "enzim_pudra_80gr",
@@ -1105,7 +1129,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1202,7 +1226,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1218,7 +1242,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 27,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "frutaksa_BAD_200gr",
@@ -1242,7 +1272,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1339,7 +1369,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1355,7 +1385,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 67,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "frutalika_BAD_60caps",
@@ -1379,7 +1415,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1474,7 +1510,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1490,7 +1526,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 69,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "gel_antiakne_20ml",
@@ -1514,7 +1556,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1611,7 +1653,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1627,7 +1669,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 44,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "gel_antiakne_20ml_v2",
@@ -1651,7 +1699,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1748,7 +1796,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1764,7 +1812,13 @@
       "mm": "Кремы"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 1,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "gel_brows_5ml",
@@ -1788,7 +1842,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1883,7 +1937,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1899,7 +1953,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 51,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "gel_dlya_britya_300ml",
@@ -1923,7 +1983,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2018,7 +2078,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2034,7 +2094,13 @@
       "mm": "Средства до и после бритья"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 111,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "gel_dlya_brovei_6ml",
@@ -2058,7 +2124,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Под вопросом",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2153,7 +2219,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2169,7 +2235,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 45,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "gel_for_men_3_in_1_1000ml",
@@ -2193,7 +2265,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2288,7 +2360,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2304,7 +2376,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 95,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "gel_parfum_tabacco_vanille_450ml",
@@ -2328,7 +2406,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2423,7 +2501,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2439,7 +2517,13 @@
       "mm": "Гели для душа"
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 103,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "gidrofilnoe_maslo_150ml",
@@ -2598,7 +2682,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2693,7 +2777,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2709,7 +2793,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 80,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "i_am_alpha_BAD_60caps",
@@ -2733,7 +2823,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2828,7 +2918,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2844,7 +2934,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 96,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "indolakt_BAD_60caps",
@@ -2868,7 +2964,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Под вопросом",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2963,7 +3059,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2979,7 +3075,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 58,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "insulight_BAD_60caps",
@@ -3003,7 +3105,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3098,7 +3200,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3114,7 +3216,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 35,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "intimvita_200ml",
@@ -3138,7 +3246,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3233,7 +3341,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3249,7 +3357,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 91,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "intimvita_300ml",
@@ -3273,7 +3387,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3368,7 +3482,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3384,7 +3498,13 @@
       "mm": "Средства для интимной гигиены"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 112,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "krem-filler_15ml",
@@ -3543,7 +3663,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3640,7 +3760,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3656,7 +3776,13 @@
       "mm": "Крем для ухода за кожей"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 29,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "krem_dlya_ruk_75ml",
@@ -3680,7 +3806,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3775,7 +3901,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3791,7 +3917,13 @@
       "mm": "Кремы для рук"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 50,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "krem_dlya_vek_30ml",
@@ -3815,7 +3947,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3912,7 +4044,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3928,7 +4060,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 17,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "krem_ot_rastyazhek",
@@ -3952,7 +4090,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4049,7 +4187,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4065,7 +4203,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 11,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "krem_spf50_50ml",
@@ -4089,7 +4233,7 @@
       "source": "Рабочий спецификации · Реестр",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4186,7 +4330,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4202,7 +4346,13 @@
       "mm": "Солнцезащитные средства"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 16,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "kremshelk_100ml",
@@ -4226,7 +4376,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4323,7 +4473,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4339,7 +4489,13 @@
       "mm": "Кремы для тела"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 15,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "krovavii_piling_30ml",
@@ -4363,7 +4519,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4460,7 +4616,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4476,7 +4632,13 @@
       "mm": "Скрабы и пилинг"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 5,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "limfaks_BAD_30caps",
@@ -4500,7 +4662,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Под вопросом",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4597,7 +4759,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4613,7 +4775,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 7,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "maska-batter_250ml",
@@ -4637,7 +4805,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4734,7 +4902,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4750,7 +4918,13 @@
       "mm": "Маски"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 57,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "maska-batter_500ml",
@@ -4770,11 +4944,23 @@
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Есть внешний трафик КЗ; Owner не закреплён",
     "owner": {
-      "name": "",
+      "name": {
+        "name": "",
+        "source": "Рабочий спецификации · Реестр",
+        "registryStatus": "Новинка",
+        "byPlatform": {
+          "wb": "",
+          "ozon": "Александр Озон",
+          "ym": "Анна",
+          "ga": "Екатерина",
+          "letu": "Екатерина",
+          "mm": "Екатерина"
+        }
+      },
       "source": "Рабочий спецификации · Реестр",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4871,7 +5057,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4887,7 +5073,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 65,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "maska-batter_dlya_rosta_500ml",
@@ -4911,7 +5103,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5008,7 +5200,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5024,7 +5216,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 18,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "maska_dlya_lica_100ml",
@@ -5048,7 +5246,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5145,7 +5343,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5161,7 +5359,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 24,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "maslo_dlya_borodi_50ml",
@@ -5185,7 +5389,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5280,7 +5484,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5296,7 +5500,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 31,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "maslo_dlya_volos_parf_110ml",
@@ -5455,7 +5665,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5550,7 +5760,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5566,7 +5776,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 71,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "matte_wax_50ml",
@@ -5590,7 +5806,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5685,7 +5901,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5701,7 +5917,13 @@
       "mm": "Воск"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 107,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "menoflavon_BAD_60caps",
@@ -5725,7 +5947,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5820,7 +6042,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5836,7 +6058,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 64,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "monarda_30ml",
@@ -6130,7 +6358,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6225,7 +6453,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6241,7 +6469,13 @@
       "mm": "Уход за кутикулой"
     },
     "costPrice": null,
-    "sheetStatus": "Перерабатываем"
+    "sheetStatus": "Перерабатываем",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 28,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "nabor_remuver_40ml_1_1",
@@ -6265,7 +6499,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6360,7 +6594,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6376,7 +6610,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 94,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "nabor_remuver_kremovii",
@@ -6400,7 +6640,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6495,7 +6735,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6511,7 +6751,13 @@
       "mm": "Средства для ухода за ресницами"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 38,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "penka_160ml",
@@ -6672,7 +6918,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6769,7 +7015,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6785,7 +7031,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 14,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "piling_100ml",
@@ -6944,7 +7196,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7041,7 +7293,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7057,7 +7309,13 @@
       "mm": "Кремы для лица"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 26,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "pirantoks_BAD_60caps",
@@ -7216,7 +7474,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7313,7 +7571,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7329,7 +7587,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 83,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "remuver_40ml",
@@ -7488,7 +7752,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7585,7 +7849,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7601,7 +7865,13 @@
       "mm": "Кремы для лица"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 2,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "retinait_krem_01_50ml",
@@ -7625,7 +7895,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7722,7 +7992,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7738,7 +8008,13 @@
       "mm": "Кремы для лица"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 42,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "retinait_krem_025_50ml",
@@ -7762,7 +8038,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7860,7 +8136,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7876,7 +8152,13 @@
       "mm": "Кремы для лица"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 21,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "retinait_krem_05_50ml",
@@ -7900,7 +8182,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7998,7 +8280,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8014,7 +8296,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 19,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "retinait_krem_1_50ml",
@@ -8038,7 +8326,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8136,7 +8424,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8152,7 +8440,13 @@
       "mm": "Кремы для лица"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 8,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "retinait_krem_1_5_50ml",
@@ -8176,7 +8470,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8273,7 +8567,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8289,7 +8583,13 @@
       "mm": "Кремы для лица"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 13,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "retinait_syvorotka_025_30ml",
@@ -8309,11 +8609,23 @@
     "focusScore": 2,
     "focusReasons": "Отрицательная маржа Ozon; Owner не закреплён",
     "owner": {
-      "name": "",
+      "name": {
+        "name": "",
+        "source": null,
+        "registryStatus": null,
+        "byPlatform": {
+          "wb": "",
+          "ozon": "Даша",
+          "ym": "",
+          "ga": "",
+          "letu": "",
+          "mm": ""
+        }
+      },
       "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -8408,7 +8720,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -8424,7 +8736,13 @@
       "mm": "Сыворотки"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 34,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "retinait_syvorotka_05_30ml",
@@ -8444,11 +8762,23 @@
     "focusScore": 0,
     "focusReasons": "Owner не закреплён",
     "owner": {
-      "name": "",
+      "name": {
+        "name": "",
+        "source": null,
+        "registryStatus": null,
+        "byPlatform": {
+          "wb": "",
+          "ozon": "Даша",
+          "ym": "",
+          "ga": "",
+          "letu": "",
+          "mm": ""
+        }
+      },
       "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -8543,7 +8873,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -8559,7 +8889,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Новинка"
+    "sheetStatus": "Новинка",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 20,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "retinait_syvorotka_1_30ml",
@@ -8583,7 +8919,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8680,7 +9016,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8696,7 +9032,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 6,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "retinol_boost_krem_dlya_vek_30ml",
@@ -8720,7 +9062,7 @@
       "source": "manual override 2026-04",
       "registryStatus": null,
       "byPlatform": {
-        "wb": "",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -8815,7 +9157,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -8831,7 +9173,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Новинка"
+    "sheetStatus": "Новинка",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 9,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "Retinol_Full_Journey",
@@ -8990,7 +9338,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -9085,7 +9433,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -9101,7 +9449,13 @@
       "mm": "Наборы средств для лица"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 117,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "revmastop_BAD_60caps",
@@ -9260,7 +9614,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9357,7 +9711,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9373,7 +9727,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 52,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "shampun_protiv_perhoti_250ml",
@@ -9397,7 +9757,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9494,7 +9854,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9510,7 +9870,13 @@
       "mm": "Шампуни"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 70,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "silk_hair_300ml",
@@ -9534,7 +9900,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9631,7 +9997,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9647,7 +10013,13 @@
       "mm": "Кремы"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 61,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "skrab_babl_gam_200ml",
@@ -9671,7 +10043,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9768,7 +10140,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9784,7 +10156,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 101,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "solevoy_sprei_200ml",
@@ -9808,7 +10186,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9905,7 +10283,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9921,7 +10299,13 @@
       "mm": "Спреи"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 23,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "spicul_gel_mask_75ml",
@@ -9941,11 +10325,23 @@
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": "",
+      "name": {
+        "name": "",
+        "source": null,
+        "registryStatus": null,
+        "byPlatform": {
+          "wb": "",
+          "ozon": "Даша",
+          "ym": "",
+          "ga": "",
+          "letu": "",
+          "mm": ""
+        }
+      },
       "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -10040,7 +10436,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -10056,7 +10452,13 @@
       "mm": "Маски"
     },
     "costPrice": 0,
-    "sheetStatus": "Новинка"
+    "sheetStatus": "Новинка",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 129,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "spiculboost_30ml",
@@ -10076,11 +10478,23 @@
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": "",
+      "name": {
+        "name": "",
+        "source": null,
+        "registryStatus": null,
+        "byPlatform": {
+          "wb": "",
+          "ozon": "Даша",
+          "ym": "",
+          "ga": "",
+          "letu": "",
+          "mm": ""
+        }
+      },
       "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -10175,7 +10589,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -10191,7 +10605,13 @@
       "mm": "Сыворотки"
     },
     "costPrice": null,
-    "sheetStatus": "Новинка"
+    "sheetStatus": "Новинка",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 22,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "sprei_buster_100ml",
@@ -10215,7 +10635,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10312,7 +10732,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10328,7 +10748,13 @@
       "mm": "Спреи уходовые"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 10,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "stik_ot_mozoley",
@@ -10352,7 +10778,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10447,7 +10873,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10463,7 +10889,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 124,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "Strong_Hair",
@@ -10622,7 +11054,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10719,7 +11151,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10735,7 +11167,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 4,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "syvorotka_dlya_lica_30ml_v2",
@@ -10894,7 +11332,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10989,7 +11427,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11005,7 +11443,13 @@
       "mm": "Средства для ухода за ресницами"
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 105,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "syvorotka_dlya_rosta_6ml_v2",
@@ -11029,7 +11473,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11124,7 +11568,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11140,7 +11584,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 37,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "syvorotka_guk_30ml",
@@ -11164,7 +11614,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11259,7 +11709,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11275,7 +11725,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 53,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "syvorotka_niacin_05_30ml",
@@ -11295,11 +11751,23 @@
     "focusScore": 0,
     "focusReasons": "Owner не закреплён",
     "owner": {
-      "name": "",
+      "name": {
+        "name": "",
+        "source": null,
+        "registryStatus": null,
+        "byPlatform": {
+          "wb": "",
+          "ozon": "Даша",
+          "ym": "",
+          "ga": "",
+          "letu": "",
+          "mm": ""
+        }
+      },
       "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -11394,7 +11862,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -11410,7 +11878,13 @@
       "mm": "Сыворотки"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 12,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "telomeras_60caps",
@@ -11434,7 +11908,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11529,7 +12003,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11545,7 +12019,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 25,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "termo_sprei_200ml",
@@ -11569,7 +12049,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11664,7 +12144,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11680,7 +12160,13 @@
       "mm": "Спреи"
     },
     "costPrice": null,
-    "sheetStatus": "Под вопросом"
+    "sheetStatus": "Под вопросом",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 39,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "tonik_dlya_lica_200ml",
@@ -11704,7 +12190,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11799,7 +12285,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11815,7 +12301,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 54,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "vosk_stik_15ml",
@@ -11839,7 +12331,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11936,7 +12428,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11952,7 +12444,13 @@
       "mm": "Средства для укладки"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Лапыгин Максим",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 77,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   },
   {
     "article": "Т-34_BAD_60caps",
@@ -11976,7 +12474,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12071,7 +12569,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12087,6 +12585,12 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Васильева Мария",
+      "sourceFile": "распределение артикулов.xlsx",
+      "sourceRow": 127,
+      "appliedAt": "2026-05-20T10:28:51.552Z"
+    }
   }
 ]

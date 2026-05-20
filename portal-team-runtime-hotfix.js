@@ -91,6 +91,26 @@
     return Boolean(app?.team?.ready && (app.team.accessToken || app.team.client));
   }
 
+  function syncedItemStampHotfix(item = {}) {
+    const value = item.updatedAt || item.updated_at || item.createdAt || item.created_at || '';
+    const stamp = Date.parse(String(value || ''));
+    return Number.isFinite(stamp) ? stamp : 0;
+  }
+
+  function mergeRemoteListWithLocalHotfix(localItems = [], remoteItems = [], normalizeFn = (item) => item, keyFn = (item) => item?.id) {
+    const merged = new Map();
+    [...(Array.isArray(remoteItems) ? remoteItems : []), ...(Array.isArray(localItems) ? localItems : [])]
+      .map((item) => normalizeFn(item))
+      .filter(Boolean)
+      .forEach((item) => {
+        const key = String(keyFn(item) || '').trim();
+        if (!key) return;
+        const current = merged.get(key);
+        if (!current || syncedItemStampHotfix(item) >= syncedItemStampHotfix(current)) merged.set(key, item);
+      });
+    return [...merged.values()].sort((a, b) => syncedItemStampHotfix(b) - syncedItemStampHotfix(a));
+  }
+
   function mergeRemoteTasksWithLocalHotfix(remoteTasks = []) {
     const app = appState();
     const normalize = typeof normalizeStorageTasks === 'function'
@@ -104,7 +124,9 @@
       if (task?.id) merged.set(task.id, task);
     });
     normalize(remoteTasks || [], 'manual').forEach((task) => {
-      if (task?.id) merged.set(task.id, task);
+      if (!task?.id) return;
+      const current = merged.get(task.id);
+      if (!current || syncedItemStampHotfix(task) >= syncedItemStampHotfix(current)) merged.set(task.id, task);
     });
     return sort([...merged.values()]);
   }
@@ -219,9 +241,14 @@
         const remoteStorage = {
           ...previousStorage,
           tasks: mergeRemoteTasksWithLocalHotfix(taskRows.map(fromRemoteTask)),
-          comments: commentRows.map(fromRemoteComment),
-          decisions: decisionRows.map(fromRemoteDecision),
-          ownerOverrides: ownerRows.map(fromRemoteOwner)
+          comments: mergeRemoteListWithLocalHotfix(previousStorage.comments || [], commentRows.map(fromRemoteComment), normalizeComment),
+          decisions: mergeRemoteListWithLocalHotfix(previousStorage.decisions || [], decisionRows.map(fromRemoteDecision), normalizeDecision),
+          ownerOverrides: mergeRemoteListWithLocalHotfix(
+            previousStorage.ownerOverrides || [],
+            ownerRows.map(fromRemoteOwner),
+            normalizeOwnerOverride,
+            (item) => item.articleKey
+          )
         };
         app.storage = typeof completePortalStorage === 'function'
           ? completePortalStorage(remoteStorage, previousStorage)
@@ -319,7 +346,7 @@
     }
   }
 
-  const AUTO_PULL_INTERVAL_MS = 15000;
+  const AUTO_PULL_INTERVAL_MS = 120000;
   const AUTO_SNAPSHOT_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
   let autoPullTimer = 0;
   let autoPullInFlight = false;
@@ -350,7 +377,8 @@
       }
 
       const changed = await refreshFn({ rerender: false });
-      if (changed) {
+      const allowRerender = Boolean(options && options.rerender === true);
+      if (changed && allowRerender) {
         const activeView = String(app.activeView || '').trim();
         if (activeView === 'sku-plan-fact' && typeof window.refreshSkuPlanFactData === 'function') {
           await window.refreshSkuPlanFactData(null, 'view-sku-plan-fact');
@@ -377,7 +405,9 @@
     autoPullInFlight = true;
     try {
       const activeView = String(app.activeView || '').trim();
-      await pullRemoteStateHotfix(activeView !== 'sku-plan-fact', { silent: reason === 'interval' });
+      const taskModalOpen = document.getElementById('taskModal')?.classList.contains('open');
+      const allowRerender = false;
+      await pullRemoteStateHotfix(allowRerender, { silent: reason === 'interval' || taskModalOpen });
       await maybeAutoRefreshSnapshotsHotfix(reason);
     } catch (error) {
       console.warn('[portal-team-runtime-hotfix:auto-pull]', reason, error);

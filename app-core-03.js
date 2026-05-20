@@ -83,7 +83,8 @@ function remoteTaskRow(task) {
     source: task.source,
     entity_label: task.entityLabel || '',
     auto_code: task.autoCode || '',
-    created_at: task.createdAt || new Date().toISOString()
+    created_at: task.createdAt || new Date().toISOString(),
+    updated_at: task.updatedAt || new Date().toISOString()
   };
 }
 
@@ -103,7 +104,8 @@ function fromRemoteTask(row) {
     source: row.source || 'manual',
     entityLabel: row.entity_label,
     autoCode: row.auto_code,
-    createdAt: row.created_at
+    createdAt: row.created_at,
+    updatedAt: row.updated_at || row.created_at
   };
 }
 
@@ -732,13 +734,35 @@ function hasRemoteStore() {
   return Boolean(state.team.ready && (state.team.client || state.team.accessToken));
 }
 
+function syncedItemStamp(item = {}) {
+  const value = item.updatedAt || item.updated_at || item.createdAt || item.created_at || '';
+  const stamp = Date.parse(String(value || ''));
+  return Number.isFinite(stamp) ? stamp : 0;
+}
+
+function mergeRemoteListWithLocal(localItems = [], remoteItems = [], normalizeFn = (item) => item, keyFn = (item) => item?.id) {
+  const merged = new Map();
+  [...(Array.isArray(remoteItems) ? remoteItems : []), ...(Array.isArray(localItems) ? localItems : [])]
+    .map((item) => normalizeFn(item))
+    .filter(Boolean)
+    .forEach((item) => {
+      const key = String(keyFn(item) || '').trim();
+      if (!key) return;
+      const current = merged.get(key);
+      if (!current || syncedItemStamp(item) >= syncedItemStamp(current)) merged.set(key, item);
+    });
+  return [...merged.values()].sort((a, b) => syncedItemStamp(b) - syncedItemStamp(a));
+}
+
 function mergeRemoteTasksWithLocal(remoteTasks = []) {
   const merged = new Map();
   normalizeStorageTasks(state.storage.tasks || [], 'manual').forEach((task) => {
     if (task?.id) merged.set(task.id, task);
   });
   normalizeStorageTasks(remoteTasks || [], 'manual').forEach((task) => {
-    if (task?.id) merged.set(task.id, task);
+    if (!task?.id) return;
+    const current = merged.get(task.id);
+    if (!current || syncedItemStamp(task) >= syncedItemStamp(current)) merged.set(task.id, task);
   });
   return sortTasks([...merged.values()]);
 }
@@ -924,9 +948,14 @@ async function pullRemoteState(rerender = true) {
     const remoteEmpty = !hasKnownRemoteData;
     if (!remoteEmpty) {
       state.storage.tasks = mergeRemoteTasksWithLocal(manualTaskRows.map(fromRemoteTask));
-      if (commentsLoaded) state.storage.comments = commentRows.map(fromRemoteComment);
-      if (decisionsLoaded) state.storage.decisions = decisionRows.map(fromRemoteDecision);
-      if (ownersLoaded) state.storage.ownerOverrides = ownerRows.map(fromRemoteOwner);
+      if (commentsLoaded) state.storage.comments = mergeRemoteListWithLocal(state.storage.comments || [], commentRows.map(fromRemoteComment), normalizeComment);
+      if (decisionsLoaded) state.storage.decisions = mergeRemoteListWithLocal(state.storage.decisions || [], decisionRows.map(fromRemoteDecision), normalizeDecision);
+      if (ownersLoaded) state.storage.ownerOverrides = mergeRemoteListWithLocal(
+        state.storage.ownerOverrides || [],
+        ownerRows.map(fromRemoteOwner),
+        normalizeOwnerOverride,
+        (item) => item.articleKey
+      );
       if (attachmentsLoaded) state.storage.taskAttachments = attachmentRows.map(fromRemoteTaskAttachment).filter((item) => item.taskId && item.objectPath);
       if (repricerControls) applyRepricerControlsPayload(repricerControls);
       applyOwnerOverridesToSkus();

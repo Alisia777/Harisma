@@ -25,6 +25,7 @@
     "data/order_procurement.json": "order_procurement",
     "data/order_procurement_wb.json": "order_procurement_wb",
     "data/order_procurement_ozon.json": "order_procurement_ozon",
+    "data/oos_control.json": "oos_control",
     "data/warehouse_stock_overlay.json": "warehouse_stock_overlay",
     "data/portal_data_quality.json": "portal_data_quality",
     "data/portal_data_quarantine.json": "portal_data_quarantine",
@@ -72,6 +73,13 @@
     summary: {},
     issues: [],
     freshness: []
+  };
+  var OOS_CONTROL_FALLBACK = {
+    schema: "portal-oos-control-v1",
+    generatedAt: "",
+    summary: {},
+    rows: [],
+    history: { days: [] }
   };
   var ALLOWED_SNAPSHOT_KEYS = Object.keys(PATH_MAP).reduce(function (acc, path) {
     var key = PATH_MAP[path];
@@ -172,6 +180,9 @@
       });
       return score;
     }
+    if (snapshotKey === "oos_control") {
+      return Math.max(score, parseFreshStamp(payload.dataFreshness && payload.dataFreshness.dataDate), parseFreshStamp(payload.summary && payload.summary.dataDate), parseFreshStamp(payload.generatedAt));
+    }
     return score;
   }
 
@@ -250,6 +261,9 @@
     }
     if (snapshotKey === "order_procurement" || snapshotKey === "order_procurement_wb" || snapshotKey === "order_procurement_ozon" || snapshotKey === "warehouse_stock_overlay") {
       return Array.isArray(payload && payload.rows);
+    }
+    if (snapshotKey === "oos_control") {
+      return payload && typeof payload === "object" && !Array.isArray(payload) && Array.isArray(payload.rows);
     }
     if (snapshotKey === "logistics") {
       return Array.isArray(payload && payload.allRows) && payload.allRows.length > 0
@@ -645,6 +659,7 @@
       loadSnapshotAwareJson("data/order_procurement.json", { generatedAt: "", rows: [] }, true),
       loadSnapshotAwareJson("data/order_procurement_wb.json", { generatedAt: "", rows: [] }, true),
       loadSnapshotAwareJson("data/order_procurement_ozon.json", { generatedAt: "", rows: [] }, true),
+      loadSnapshotAwareJson("data/oos_control.json", OOS_CONTROL_FALLBACK, true),
       loadSnapshotAwareJson("data/warehouse_stock_overlay.json", { generatedAt: "", rows: [] }, true)
     ]);
     var dashboard = results[0];
@@ -675,7 +690,8 @@
     var orderProcurement = results[25];
     var orderProcurementWb = results[26];
     var orderProcurementOzon = results[27];
-    var warehouseStockOverlay = results[28];
+    var oosControl = results[28];
+    var warehouseStockOverlay = results[29];
     var changed = false;
 
     if (typeof state === "object" && state) {
@@ -760,6 +776,9 @@
       var nextOrderProcurementOzon = orderProcurementOzon && typeof orderProcurementOzon === "object"
         ? orderProcurementOzon
         : (state.orderProcurementOzon || { generatedAt: "", rows: [] });
+      var nextOosControl = oosControl && typeof oosControl === "object"
+        ? oosControl
+        : (state.oosControl || OOS_CONTROL_FALLBACK);
       var nextWarehouseStockOverlay = warehouseStockOverlay && typeof warehouseStockOverlay === "object"
         ? warehouseStockOverlay
         : (state.warehouseStockOverlay || { generatedAt: "", rows: [] });
@@ -880,6 +899,10 @@
       }
       if (payloadChanged("order_procurement_ozon", state.orderProcurementOzon, nextOrderProcurementOzon)) {
         state.orderProcurementOzon = nextOrderProcurementOzon;
+        changed = true;
+      }
+      if (payloadChanged("oos_control", state.oosControl, nextOosControl)) {
+        state.oosControl = nextOosControl;
         changed = true;
       }
       if (payloadChanged("warehouse_stock_overlay", state.warehouseStockOverlay, nextWarehouseStockOverlay)) {

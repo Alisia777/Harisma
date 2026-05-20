@@ -2602,7 +2602,7 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
       <div class="mini-kpi"><span>Ignore</span><strong>${fmt.int(matrixSummary.ignoredApiSkuCount || skuPlanFactIgnorePayloadRows(state.skuAliasIgnore || {}).length)}</strong><span>закреплено</span></div>
     </div>
 
-    <div class="two-col" style="margin-top:14px">
+    <div class="dashboard-grid-3" style="margin-top:14px">
       ${changeHtml}
       ${rulesHtml}
     </div>
@@ -3254,6 +3254,48 @@ function oosControlTaskStatusOptions(selected) {
     .join('');
 }
 
+function oosControlHasRemoteStore() {
+  if (typeof hasRemoteStore === 'function') return hasRemoteStore();
+  return Boolean(state.team?.ready && (state.team.accessToken || state.team.client));
+}
+
+function oosControlCanUseRemote() {
+  try {
+    const cfg = typeof currentConfig === 'function' ? currentConfig() : (window.APP_CONFIG || {});
+    return Boolean(cfg?.teamMode === 'supabase' && cfg?.supabase?.url && cfg?.supabase?.anonKey);
+  } catch {
+    return false;
+  }
+}
+
+async function oosControlEnsureRemoteReady() {
+  if (oosControlHasRemoteStore()) return true;
+  if (!oosControlCanUseRemote() || typeof initTeamStore !== 'function') return false;
+  await initTeamStore();
+  return oosControlHasRemoteStore();
+}
+
+function oosControlTeamNotice() {
+  const remoteReady = oosControlHasRemoteStore();
+  const canUseRemote = oosControlCanUseRemote();
+  const note = String(state.team?.note || '').trim();
+  if (remoteReady) {
+    return `
+      <div class="notice ok">
+        <strong>Командная база подключена.</strong>
+        <div class="muted small" style="margin-top:4px">${escapeHtml(note || 'OOS-задачи и контрмеры сохраняются для всей команды.')}</div>
+      </div>
+    `;
+  }
+  return `
+    <div class="notice danger">
+      <strong>Командная база задач не подключена.</strong>
+      <div class="muted small" style="margin-top:4px">${escapeHtml(canUseRemote ? (note || 'Портал попробует переподключиться перед сохранением OOS-задачи.') : 'Сейчас сохранение останется только в этом браузере.')}</div>
+      ${canUseRemote ? '<div class="actions" style="margin-top:8px;justify-content:flex-start"><button class="quick-chip" type="button" data-oos-reconnect-team>Подключить командную базу</button></div>' : ''}
+    </div>
+  `;
+}
+
 function oosControlFilteredRows() {
   const rows = oosControlRows();
   const filters = oosControlFilters();
@@ -3358,6 +3400,7 @@ function summarizeOosControlPlatforms(rows) {
 function renderOosControlGroupSummary(payload = {}) {
   const byPlatform = Array.isArray(payload.byPlatform) ? payload.byPlatform.slice(0, 6) : [];
   const byOwner = Array.isArray(payload.byOwner) ? payload.byOwner.slice(0, 6) : [];
+  const byDepartment = Array.isArray(payload.byDepartment) ? payload.byDepartment.slice(0, 6) : [];
   const renderLine = (item) => `
     <div class="alert-row">
       <div>
@@ -3376,6 +3419,87 @@ function renderOosControlGroupSummary(payload = {}) {
       <div class="card">
         <div class="section-subhead"><h3>По owner</h3>${badge(`${fmt.int(byOwner.length)} owner`)}</div>
         <div class="alert-stack">${byOwner.map(renderLine).join('') || '<div class="empty">Нет сигналов</div>'}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderOosControlGroupSummary(payload = {}) {
+  const byPlatform = Array.isArray(payload.byPlatform) ? payload.byPlatform.slice(0, 6) : [];
+  const byDepartment = Array.isArray(payload.byDepartment) ? payload.byDepartment.slice(0, 6) : [];
+  const byOwner = Array.isArray(payload.byOwner) ? payload.byOwner.slice(0, 6) : [];
+  const renderLine = (item) => `
+    <div class="alert-row">
+      <div>
+        <strong>${escapeHtml(item.label || item.key || '-')}</strong>
+        <div class="muted small">${fmt.int(item.total || 0)} строк · риск ${fmt.money(item.revenueAtRiskDay || 0)}</div>
+      </div>
+      <div class="badge-stack">${item.oos ? badge(`${fmt.int(item.oos)} OOS`, 'danger') : ''}${item.risk ? badge(`${fmt.int(item.risk)} скоро`, 'warn') : ''}</div>
+    </div>
+  `;
+  const renderCard = (title, items, chip) => `
+    <div class="card">
+      <div class="section-subhead"><h3>${escapeHtml(title)}</h3>${badge(chip)}</div>
+      <div class="alert-stack">${items.map(renderLine).join('') || '<div class="empty">Нет сигналов</div>'}</div>
+    </div>
+  `;
+  return `
+    <div class="dashboard-grid-3" style="margin-top:14px">
+      ${renderCard('По площадкам', byPlatform, `${fmt.int(byPlatform.length)} контуров`)}
+      ${renderCard('По отделам', byDepartment, `${fmt.int(byDepartment.length)} отделов`)}
+      ${renderCard('По owner', byOwner, `${fmt.int(byOwner.length)} owner`)}
+    </div>
+  `;
+}
+
+function renderOosControlMonthlyHistory(payload = {}) {
+  const summary = payload.summary || {};
+  const monthKey = String(summary.monthKey || '').trim();
+  const days = (Array.isArray(payload.history?.days) ? payload.history.days : [])
+    .filter((item) => !monthKey || String(item?.date || '').startsWith(monthKey))
+    .sort((left, right) => String(right.date || '').localeCompare(String(left.date || '')))
+    .slice(0, 14);
+  const taskRows = oosControlRows().map((row) => ({ row, task: oosControlTaskFor(row) }));
+  const taskCount = taskRows.filter((item) => item.task).length;
+  const noTaskCount = Math.max(0, taskRows.length - taskCount);
+  const noReasonCount = taskRows.filter((item) => item.task && !/Причина:|РџСЂРёС‡РёРЅР°:/i.test(String(item.task.reason || ''))).length;
+  const noActionCount = taskRows.filter((item) => item.task && !String(item.task.nextAction || '').trim()).length;
+  return `
+    <div class="two-col" style="margin-top:14px">
+      <div class="card">
+        <div class="section-subhead">
+          <h3>Месяц OOS</h3>
+          <div class="badge-stack">${badge(monthKey || 'месяц')}${badge(`${fmt.int(days.length)} дн.`)}</div>
+        </div>
+        <div class="dashboard-grid-3" style="margin-top:10px">
+          <div class="mini-kpi danger"><span>Потеря OOS за месяц</span><strong>${fmt.money(summary.lostRevenueMonth || 0)}</strong><span>фактический аут</span></div>
+          <div class="mini-kpi warn"><span>Риск выручки за месяц</span><strong>${fmt.money(summary.revenueAtRiskMonth || 0)}</strong><span>аут + скоро аут</span></div>
+          <div class="mini-kpi"><span>Новых сигналов</span><strong>${fmt.int(summary.newIssues || 0)}</strong><span>за сегодня</span></div>
+        </div>
+        <div class="table-wrap" style="margin-top:12px">
+          <table>
+            <thead><tr><th>Дата</th><th>OOS</th><th>Риск</th><th>Потеря / день</th><th>Риск / день</th></tr></thead>
+            <tbody>
+              ${days.map((day) => `
+                <tr>
+                  <td><strong>${escapeHtml(day.date || '')}</strong></td>
+                  <td>${fmt.int(day.oosCount || 0)}</td>
+                  <td>${fmt.int(day.oosSoonCount || day.riskCount || 0)}</td>
+                  <td>${fmt.money(day.lostRevenueDay || 0)}</td>
+                  <td>${fmt.money(day.revenueAtRiskDay || 0)}</td>
+                </tr>
+              `).join('') || '<tr><td colspan="5"><div class="empty">История начнет накапливаться после ежедневных синхронизаций</div></td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-subhead"><h3>Дисциплина контура</h3>${badge(`${fmt.int(taskCount)} с задачей`)}</div>
+        <div class="alert-stack">
+          <div class="alert-row"><div><strong>Без задачи</strong><div class="muted small">Нужно назначить отдел и контрмеру</div></div>${badge(fmt.int(noTaskCount), noTaskCount ? 'warn' : 'ok')}</div>
+          <div class="alert-row"><div><strong>Без причины</strong><div class="muted small">Закрывать нельзя без комментария отдела</div></div>${badge(fmt.int(noReasonCount), noReasonCount ? 'warn' : 'ok')}</div>
+          <div class="alert-row"><div><strong>Без контрмеры</strong><div class="muted small">Должен быть следующий шаг</div></div>${badge(fmt.int(noActionCount), noActionCount ? 'warn' : 'ok')}</div>
+        </div>
       </div>
     </div>
   `;
@@ -3447,6 +3571,10 @@ async function oosControlSaveTask(issueKey, rootId) {
   const actionInput = String(form?.querySelector('[data-oos-action]')?.value || row.recommendation || '').trim();
   const statusInput = String(form?.querySelector('[data-oos-status]')?.value || 'new').trim();
   const dueInput = String(form?.querySelector('[data-oos-due]')?.value || oosControlDue(row)).trim();
+  if (statusInput === 'done' && (!reasonInput || !actionInput)) {
+    window.alert('Чтобы закрыть OOS, заполни причину отдела и контрмеру.');
+    return null;
+  }
   const existing = oosControlTaskFor(row);
   const now = new Date().toISOString();
   const reason = [
@@ -3481,16 +3609,27 @@ async function oosControlSaveTask(issueKey, rootId) {
   if (index >= 0) state.storage.tasks.splice(index, 1, task);
   else state.storage.tasks.unshift(task);
   if (typeof saveLocalStorage === 'function') saveLocalStorage();
+  let remoteReady = false;
   try {
-    if (typeof persistTask === 'function') await persistTask(task);
+    remoteReady = await oosControlEnsureRemoteReady();
+  } catch (error) {
+    console.error(error);
+    remoteReady = false;
+  }
+  try {
+    if (remoteReady && typeof persistTask === 'function') await persistTask(task);
     if (typeof createTaskHistoryEntry === 'function') {
       await createTaskHistoryEntry(task.id, existing ? 'updated' : 'created', existing ? 'OOS-контрмера обновлена.' : 'Задача создана из OOS контроля.');
+    }
+    if (!remoteReady && typeof setAppError === 'function') {
+      setAppError('OOS-задача сохранена локально. Командная база не подключилась, поэтому коллеги увидят ее после синхронизации JSON или восстановления Supabase.');
     }
   } catch (error) {
     console.error(error);
     if (typeof setAppError === 'function') setAppError(`OOS задача сохранена локально, но Supabase не ответил: ${error.message}`);
   }
   renderOosControl(rootId);
+  if (!remoteReady) return task;
   if (typeof setAppError === 'function') setAppError(`OOS задача сохранена: ${task.title}`);
   return task;
 }
@@ -3522,6 +3661,17 @@ function bindOosControl(root, rootId) {
     await ensureViewData('oos-control');
     renderOosControl(rootId);
   });
+  root.querySelector('[data-oos-reconnect-team]')?.addEventListener('click', async () => {
+    try {
+      if (typeof setAppError === 'function') setAppError('Подключаем командную базу для OOS...');
+      await oosControlEnsureRemoteReady();
+      if (typeof pullRemoteState === 'function' && oosControlHasRemoteStore()) await pullRemoteState(false);
+    } catch (error) {
+      console.error(error);
+      if (typeof setAppError === 'function') setAppError(`Командная база не подключилась: ${error.message || error}`);
+    }
+    renderOosControl(rootId);
+  });
 }
 
 function renderOosControl(rootId = 'view-oos-control') {
@@ -3545,8 +3695,10 @@ function renderOosControl(rootId = 'view-oos-control') {
       </div>
     </div>
     ${oosControlFreshnessNotice(payload)}
+    ${oosControlTeamNotice()}
     ${renderOosControlKpis(summary)}
     ${renderOosControlGroupSummary(payload)}
+    ${renderOosControlMonthlyHistory(payload)}
     ${renderOosControlFilters(rows, filters)}
     <div class="card sku-plan-fact-card" style="margin-top:14px">
       <div class="section-subhead">

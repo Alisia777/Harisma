@@ -230,12 +230,13 @@ async function createComment(payload) {
   } catch (error) {
     console.error(error);
   }
+  return comment;
 }
 
 async function createTaskHistoryEntry(taskId, kind, text, payload = {}) {
   const task = getTask(taskId);
   if (!task || !String(text || '').trim()) return;
-  await createComment({
+  return createComment({
     articleKey: task.articleKey || '',
     author: payload.author || state.team.member.name || task.owner || 'Команда',
     team: payload.team || teamMemberLabel(),
@@ -377,6 +378,7 @@ async function createDecision(payload) {
 
 async function createManualTask(payload) {
   const skipRerender = Boolean(payload?.skipRerender);
+  const now = new Date().toISOString();
   const task = normalizeTask({
     id: uid('task'),
     source: 'manual',
@@ -390,7 +392,9 @@ async function createManualTask(payload) {
     due: payload.due || plusDays(3),
     status: 'new',
     nextAction: String(payload.nextAction || '').trim(),
-    reason: String(payload.reason || '').trim()
+    reason: String(payload.reason || '').trim(),
+    createdAt: now,
+    updatedAt: now
   }, 'manual');
   state.storage.tasks.unshift(task);
   saveLocalStorage();
@@ -415,7 +419,8 @@ async function takeAutoTask(taskId) {
     id: uid('task'),
     source: 'manual',
     status: 'in_progress',
-    owner: task.owner || ownerName(getSku(task.articleKey)) || ''
+    owner: task.owner || ownerName(getSku(task.articleKey)) || '',
+    updatedAt: new Date().toISOString()
   }, 'manual');
   state.storage.tasks.unshift(manual);
   saveLocalStorage();
@@ -444,7 +449,8 @@ async function ensureTaskRecordForUpdate(taskId) {
     ...sourceTask,
     id: normalizedTaskId,
     source: 'manual',
-    createdAt: sourceTask.createdAt || new Date().toISOString()
+    createdAt: sourceTask.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }, 'manual');
 
   state.storage.tasks.unshift(materialized);
@@ -468,6 +474,7 @@ async function updateTaskRecord(taskId, patch = {}) {
     id: current.id,
     source: current.source,
     createdAt: current.createdAt,
+    updatedAt: new Date().toISOString(),
     articleKey: patch.articleKey !== undefined ? patch.articleKey : current.articleKey
   }, current.source || 'manual');
 
@@ -715,6 +722,7 @@ function rerenderCurrentView() {
   applyOwnerOverridesToSkus();
   const renderPlan = [
     ['view-data-health', 'Здоровье данных', () => { if (typeof renderPortalDataHealth === 'function') renderPortalDataHealth('view-data-health'); }],
+    ['view-oos-control', 'OOS контроль', () => { if (typeof renderOosControl === 'function') renderOosControl('view-oos-control'); }],
     ['view-sku-contour', 'Контур SKU', () => renderSkuContour('view-sku-contour')],
     ['view-sku-plan-fact', 'План-факт SKU', () => renderSkuPlanFact('view-sku-plan-fact')],
     ['view-wb-rating', 'Рейтинг карточек', () => renderWbCardRating('view-wb-rating')],
@@ -866,20 +874,41 @@ async function init() {
     });
 
   try {
+    const cloneBootFallback = (value) => {
+      if (value === null || value === undefined) return value;
+      try {
+        return JSON.parse(JSON.stringify(value));
+      } catch {
+        return value;
+      }
+    };
+    const loadBootJsonOrFallback = async (path, fallback, label = path) => {
+      try {
+        if (typeof loadJson === 'function') return await loadJson(path);
+        return await loadJsonOrFallback(path, fallback, label);
+      } catch (error) {
+        console.error(error);
+        if (typeof registerDataWarning === 'function') {
+          registerDataWarning(`${label}: ${error.message || 'Не удалось загрузить данные'}`);
+        } else if (Array.isArray(state.boot.dataWarnings)) {
+          state.boot.dataWarnings.push(`${label}: ${error.message || 'Не удалось загрузить данные'}`);
+        }
+        return cloneBootFallback(fallback);
+      }
+    };
     const local = loadLocalStorage();
-    const [dashboard, skus, seed, productLeaderboard, productLeaderboardHistory, skuAliases, skuAliasIgnore, skuAliasAudit, skuMatrix, syncHealth, portalDataQuality, portalDataQuarantine] = await Promise.all([
-      loadJsonOrFallback('data/dashboard.json', { cards: [], generatedAt: '' }, 'Дашборд'),
-      loadJsonOrFallback('data/skus.json', [], 'SKU'),
-      loadJsonOrFallback('data/seed_comments.json', { comments: [], tasks: [] }, 'Seed comments'),
-      loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
-      loadJsonOrFallback('data/product_leaderboard_history.json', [], 'История продуктового лидерборда'),
-      loadJsonOrFallback('data/sku_aliases.json', { schema: 'sku-api-aliases-v1', aliases: [] }, 'SKU aliases'),
-      loadJsonOrFallback('data/sku_alias_ignore.json', { schema: 'sku-api-ignore-v1', ignored: [] }, 'SKU alias ignore'),
-      loadJsonOrFallback('data/sku_alias_audit.json', { schema: 'sku-alias-audit-v1', events: [] }, 'SKU alias audit'),
-      loadJsonOrFallback('data/sku_matrix.json', { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } }, 'SKU matrix'),
-      loadJsonOrFallback('data/portal_sync_health.json', { schema: 'portal-sync-health-v1', status: '', publish: { allowed: true, blockingReasons: [], warnings: [] }, sources: {}, quality: {} }, 'Состояние sync'),
-      loadJsonOrFallback('data/portal_data_quality.json', { generatedAt: '', status: '', summary: {}, issues: [] }, 'Контроль данных'),
-      loadJsonOrFallback('data/portal_data_quarantine.json', { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] }, 'Карантин данных')
+    const [dashboard, skus, seed, productLeaderboard, skuAliases, skuAliasIgnore, skuAliasAudit, skuMatrix, syncHealth, portalDataQuality, portalDataQuarantine] = await Promise.all([
+      loadBootJsonOrFallback('data/dashboard.json', { cards: [], generatedAt: '' }, 'Дашборд'),
+      loadBootJsonOrFallback('data/skus.json', [], 'SKU'),
+      loadBootJsonOrFallback('data/seed_comments.json', { comments: [], tasks: [] }, 'Seed comments'),
+      loadBootJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
+      loadBootJsonOrFallback('data/sku_aliases.json', { schema: 'sku-api-aliases-v1', aliases: [] }, 'SKU aliases'),
+      loadBootJsonOrFallback('data/sku_alias_ignore.json', { schema: 'sku-api-ignore-v1', ignored: [] }, 'SKU alias ignore'),
+      loadBootJsonOrFallback('data/sku_alias_audit.json', { schema: 'sku-alias-audit-v1', events: [] }, 'SKU alias audit'),
+      loadBootJsonOrFallback('data/sku_matrix.json', { schema: 'portal-sku-matrix-v1', summary: {}, items: [], apiUnmapped: [], ignoredApiSku: [], indexes: { byArticleKey: {}, aliasToArticleKey: {} } }, 'SKU matrix'),
+      loadBootJsonOrFallback('data/portal_sync_health.json', { schema: 'portal-sync-health-v1', status: '', publish: { allowed: true, blockingReasons: [], warnings: [] }, sources: {}, quality: {} }, 'Состояние sync'),
+      loadBootJsonOrFallback('data/portal_data_quality.json', { generatedAt: '', status: '', summary: {}, issues: [] }, 'Контроль данных'),
+      loadBootJsonOrFallback('data/portal_data_quarantine.json', { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] }, 'Карантин данных')
     ]);
 
     state.dashboard = dashboard || { cards: [] };
@@ -890,7 +919,7 @@ async function init() {
     state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
       ? normalizeProductLeaderboardPayload(productLeaderboard)
       : (productLeaderboard || { generatedAt: '', items: [], summary: {} });
-    state.productLeaderboardHistory = Array.isArray(productLeaderboardHistory) ? productLeaderboardHistory : [];
+    state.productLeaderboardHistory = [];
     state.skuAliases = skuAliases && typeof skuAliases === 'object'
       ? skuAliases
       : { schema: 'sku-api-aliases-v1', aliases: [] };
@@ -912,7 +941,7 @@ async function init() {
     state.portalDataQuarantine = portalDataQuarantine && typeof portalDataQuarantine === 'object'
       ? portalDataQuarantine
       : { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] };
-    state.boot.lazyReady.productLeaderboard = true;
+    state.boot.lazyReady.productLeaderboard = false;
     state.repricer = { generatedAt: '', summary: {}, rows: [] };
     if (!state.orderCalc.articleKey) state.orderCalc.articleKey = state.skus[0]?.articleKey || '';
     if (!state.orderCalc.daysToNextReceipt) state.orderCalc.daysToNextReceipt = String(Math.round(numberOrZero(state.skus[0]?.leadTimeDays) || 30));
@@ -953,6 +982,12 @@ async function init() {
     rerenderCurrentView();
     setView(resolveInitialView(), { persist: true, syncHash: true });
     if (typeof window.portalStartOperationalAutoRefresh === 'function') window.portalStartOperationalAutoRefresh();
+    window.setTimeout(() => {
+      if (typeof ensureViewData !== 'function') return;
+      ['sku-plan-fact', 'oos-control'].forEach((viewKey) => {
+        ensureViewData(viewKey).catch((error) => console.warn('[portal-prefetch]', viewKey, error));
+      });
+    }, 800);
     if (state.boot.dataWarnings.length) setAppError(`Часть данных загружена с исправлениями: ${state.boot.dataWarnings[0]}`);
     else setAppError('');
   } catch (error) {

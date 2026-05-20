@@ -30,6 +30,7 @@
     'order_procurement',
     'order_procurement_wb',
     'order_procurement_ozon',
+    'oos_control',
     'warehouse_stock_overlay'
   ];
   const VIEW_SNAPSHOT_KEYS = {
@@ -37,6 +38,7 @@
     repricer: ['prices', 'smart_price_workbench', 'smart_price_overlay', 'price_workbench_support'],
     order: ['logistics', 'order_procurement', 'order_procurement_wb', 'order_procurement_ozon', 'warehouse_stock_overlay'],
     'ads-funnel': ['ads_summary', 'smart_price_overlay', 'iu_drr_summary'],
+    'oos-control': ['oos_control', 'order_procurement', 'portal_sync_health', 'portal_data_quality', 'smart_price_overlay'],
     'sku-plan-fact': ['smart_price_workbench', 'smart_price_overlay', 'price_workbench_support', 'ads_summary', 'iu_drr_summary', 'portal_data_quality', 'sku_aliases', 'sku_alias_ignore', 'sku_alias_audit', 'sku_matrix'],
     'iu-drr': ['iu_drr_summary', 'ads_summary', 'wb_feedbacks_summary'],
     'wb-rating': ['wb_feedbacks_summary', 'iu_drr_summary']
@@ -71,6 +73,7 @@
     order_procurement: 'orderProcurementData',
     order_procurement_wb: 'orderProcurementWb',
     order_procurement_ozon: 'orderProcurementOzon',
+    oos_control: 'oosControl',
     warehouse_stock_overlay: 'warehouseStockOverlay'
   };
   const FALLBACK_CONFIG = {
@@ -190,6 +193,10 @@
       return score;
     }
 
+    if (snapshotKey === 'oos_control') {
+      return bumpFreshness(score, payload.dataFreshness?.dataDate || payload.summary?.dataDate || payload.generatedAt);
+    }
+
     if (snapshotKey === 'skus' && Array.isArray(payload)) {
       payload.forEach((item) => {
         score = bumpFreshness(score, item?.updatedAt || item?.updated_at || item?.createdAt);
@@ -249,6 +256,10 @@
       return score;
     }
 
+    if (snapshotKey === 'oos_control') {
+      return bumpFreshness(score, payload.dataFreshness?.dataDate || payload.summary?.dataDate || payload.generatedAt);
+    }
+
     return score;
   }
 
@@ -296,12 +307,16 @@
     if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon') {
       return Array.isArray(payload?.rows);
     }
+    if (snapshotKey === 'oos_control') return typeof payload === 'object' && payload !== null && Array.isArray(payload?.rows);
     if (snapshotKey === 'warehouse_stock_overlay') return Array.isArray(payload?.rows);
     return typeof payload === 'object' && payload !== null && Object.keys(payload).length > 0;
   }
 
   function normalizeBadge(noteText) {
     if (typeof state !== 'object' || !state || !state.team) return;
+    const mode = String(state.team.mode || '');
+    const hasSession = Boolean(state.team.ready || state.team.accessToken || state.team.client);
+    if (hasSession || mode === 'pending' || mode === 'ready' || mode === 'error') return;
     state.team.mode = 'local';
     state.team.ready = false;
     state.team.note = noteText || 'Локальный режим · витрина из Supabase';
@@ -503,8 +518,9 @@
     return decodeChunkedSnapshotRows(rows);
   };
 
-  function applySnapshots(rows) {
+  function applySnapshots(rows, options = {}) {
     if (typeof state !== 'object' || !state || !Array.isArray(rows) || !rows.length) return false;
+    const allowRerender = Boolean(options && options.rerender === true);
     let applied = false;
     for (const row of rows) {
       const target = SNAPSHOT_TO_STATE[row?.snapshot_key];
@@ -538,21 +554,23 @@
     if (/Ошибка|Supabase|база пока без решений|ценовой контур/i.test(note)) {
       normalizeBadge('Локальный режим · витрина из Supabase');
     }
-    try {
-      if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
-      if (state.activeSku && typeof renderSkuModal === 'function') renderSkuModal(state.activeSku);
-    } catch (error) {
-      console.warn('[portal-supabase-snapshot-hotfix] rerender', error);
+    if (allowRerender) {
+      try {
+        if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
+        if (state.activeSku && typeof renderSkuModal === 'function') renderSkuModal(state.activeSku);
+      } catch (error) {
+        console.warn('[portal-supabase-snapshot-hotfix] rerender', error);
+      }
     }
     return true;
   }
 
-  async function refreshSnapshots() {
+  async function refreshSnapshots(options = {}) {
     if (snapshotRefreshInFlight) return;
     snapshotRefreshInFlight = true;
     try {
       const rows = await fetchSnapshots();
-      if (applySnapshots(rows)) {
+      if (applySnapshots(rows, options)) {
         window.__ALTEA_SUPABASE_SNAPSHOT_READY__ = true;
         if (typeof window.__alteaInvalidateDeferredData === 'function') {
           try {
@@ -600,13 +618,13 @@
     if (scheduledRefreshTimer) window.clearTimeout(scheduledRefreshTimer);
     scheduledRefreshTimer = window.setTimeout(() => {
       scheduledRefreshTimer = 0;
-      refreshSnapshots().catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', reason, error));
+      refreshSnapshots({ rerender: reason === 'manual' }).catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', reason, error));
     }, delay);
   }
   window.__ALTEA_SCHEDULE_SUPABASE_SNAPSHOT_REFRESH__ = scheduleRefresh;
-  [180, 1200, 3600, 9000, 18000, 30000, 45000, 60000, 90000].forEach((delay) => {
+  [1200].forEach((delay) => {
     window.setTimeout(() => {
-      refreshSnapshots().catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', error));
+      refreshSnapshots({ rerender: false }).catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', error));
     }, delay);
   });
   window.setInterval(() => scheduleRefresh('interval'), AUTO_REFRESH_INTERVAL_MS);
@@ -614,5 +632,5 @@
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) scheduleRefresh('visible', 120);
   });
-  refreshSnapshots().catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', error));
+  refreshSnapshots({ rerender: false }).catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', error));
 })();

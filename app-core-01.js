@@ -21,6 +21,7 @@
   syncHealth: { schema: 'portal-sync-health-v1', status: '', publish: { allowed: true, blockingReasons: [], warnings: [] }, sources: {}, quality: {} },
   portalDataQuality: { generatedAt: '', status: '', summary: {}, issues: [] },
   portalDataQuarantine: { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] },
+  oosControl: { schema: 'portal-oos-control-v1', generatedAt: '', summary: {}, rows: [], history: { days: [] } },
   launches: [],
   meetings: [],
   documents: { groups: [] },
@@ -103,6 +104,13 @@
   iuDrrFilters: {
     month: 'latest'
   },
+  oosControlFilters: {
+    search: '',
+    platform: 'all',
+    owner: 'all',
+    department: 'all',
+    status: 'active'
+  },
   skuPlanFactFilters: {
     search: '',
     owner: 'all',
@@ -150,6 +158,7 @@
       adsFunnel: false,
       iuDrr: false,
       skuPlanFact: false,
+      oosControl: false,
       meetings: false,
       documents: false,
       repricer: false
@@ -191,6 +200,7 @@ const VIEW_TITLES = {
   control: 'Задачи',
   skus: 'Реестр СКЮ',
   'data-health': 'Здоровье данных',
+  'oos-control': 'OOS контроль',
   'sku-contour': 'Контур SKU',
   launches: 'Продукт / новинки',
   'ads-funnel': 'Рекламная воронка',
@@ -209,7 +219,8 @@ const VIEW_DATA_REQUIREMENTS = {
   'iu-drr': 'iuDrr',
   'sku-plan-fact': 'skuPlanFact',
   'sku-contour': 'skuPlanFact',
-  'data-health': 'skuPlanFact',
+  'data-health': '',
+  'oos-control': 'oosControl',
   'wb-rating': 'iuDrr',
   'product-leaderboard': 'productLeaderboard',
   'launch-control': 'launches',
@@ -387,6 +398,7 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/order_procurement.json': 'order_procurement',
   'data/order_procurement_wb.json': 'order_procurement_wb',
   'data/order_procurement_ozon.json': 'order_procurement_ozon',
+  'data/oos_control.json': 'oos_control',
   'data/warehouse_stock_overlay.json': 'warehouse_stock_overlay',
   'data/portal_data_quality.json': 'portal_data_quality',
   'data/portal_data_quarantine.json': 'portal_data_quarantine',
@@ -579,6 +591,11 @@ function payloadFreshnessScore(snapshotKey, payload) {
     return score;
   }
 
+  if (snapshotKey === 'oos_control') {
+    score = bumpFreshness(score, payload.dataFreshness?.dataDate || payload.summary?.dataDate);
+    return score;
+  }
+
   if (snapshotKey === 'warehouse_stock_overlay') {
     (payload.rows || []).forEach((item) => {
       score = bumpFreshness(score, item?.updatedAt || item?.updated_at || payload.generatedAt);
@@ -655,6 +672,10 @@ function payloadDataFreshnessScore(snapshotKey, payload) {
 
   if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon') {
     return bumpFreshness(score, payload.window?.to);
+  }
+
+  if (snapshotKey === 'oos_control') {
+    return bumpFreshness(score, payload.dataFreshness?.dataDate || payload.summary?.dataDate || payload.generatedAt);
   }
 
   if (snapshotKey === 'portal_data_quality') {
@@ -1226,6 +1247,9 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
   }
   if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon' || snapshotKey === 'warehouse_stock_overlay') {
     return Array.isArray(payload?.rows) && payload.rows.length > 0;
+  }
+  if (snapshotKey === 'oos_control') {
+    return typeof payload === 'object' && payload !== null && Array.isArray(payload.rows);
   }
   if (snapshotKey === 'portal_data_quality') {
     return typeof payload?.summary === 'object' && payload.summary !== null;
@@ -2699,6 +2723,16 @@ const LAZY_DATA_LOADERS = {
       ? wbFeedbacks
       : { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] };
   },
+  oosControl: async () => {
+    const payload = await loadJsonOrFallback(
+      'data/oos_control.json',
+      { schema: 'portal-oos-control-v1', generatedAt: '', summary: {}, rows: [], history: { days: [] } },
+      'OOS контроль'
+    );
+    state.oosControl = payload && typeof payload === 'object'
+      ? payload
+      : { schema: 'portal-oos-control-v1', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
+  },
   skuPlanFact: async () => {
     const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, summary, skuAliases, skuAliasIgnore, skuAliasAudit] = await Promise.all([
       loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
@@ -2773,9 +2807,20 @@ const LAZY_DATA_LOADERS = {
       : { schema: 'sku-alias-audit-v1', events: [] };
   },
   productLeaderboard: async () => {
+    const loadLocalProductData = async (path, fallback, label) => {
+      try {
+        return await loadJson(path);
+      } catch (error) {
+        console.error(error);
+        registerDataWarning(`${label}: ${error.message || 'Не удалось загрузить данные'}`);
+        return cloneFallback(fallback);
+      }
+    };
     const [payload, history] = await Promise.all([
-      loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
-      loadJsonOrFallback('data/product_leaderboard_history.json', [], 'История продуктового лидерборда')
+      Array.isArray(state.productLeaderboard?.items) && state.productLeaderboard.items.length
+        ? Promise.resolve(state.productLeaderboard)
+        : loadLocalProductData('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
+      loadLocalProductData('data/product_leaderboard_history.json', [], 'История продуктового лидерборда')
     ]);
     state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
       ? normalizeProductLeaderboardPayload(payload)

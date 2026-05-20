@@ -34,8 +34,8 @@ const SNAPSHOT_KEYS = [
   'portal_sync_health'
 ];
 const INLINE_BODY_LIMIT = 18000;
-const DEFAULT_CHUNK_SIZE = 12000;
-const LARGE_LOGISTICS_CHUNK_SIZE = 16000;
+const DEFAULT_CHUNK_SIZE = 500000;
+const LARGE_LOGISTICS_CHUNK_SIZE = 500000;
 
 function parseArgs(argv) {
   const args = {};

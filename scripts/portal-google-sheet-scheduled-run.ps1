@@ -27,7 +27,13 @@ try {
   Write-LogLine "Scheduled portal sync finished with exit code $exitCode."
   exit $exitCode
 } catch {
-  Write-LogLine "Scheduled portal sync failed: $($_.Exception.Message)"
+  $message = [string]$_.Exception.Message
+  if ($message -like "*another portal sync seems to be running*") {
+    Write-LogLine "Scheduled portal sync skipped: another sync is already running."
+    Write-LogLine $message
+    exit 0
+  }
+  Write-LogLine "Scheduled portal sync failed: $message"
   Write-LogLine $_.ScriptStackTrace
   exit 1
 }

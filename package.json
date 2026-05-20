@@ -14,6 +14,7 @@
     "portal:leaderboard-history-rebuild": "node scripts/build-product-leaderboard-history.js",
     "portal:smart-price-sync": "node scripts/portal-smart-price-overlay-sync.js sync",
     "portal:order-procurement-rebuild": "node scripts/build-order-procurement-layer.js",
+    "portal:oos-control": "node scripts/build-oos-control-layer.js --input-dir data --base-data-dir data --output-dir data",
     "portal:prices-rebuild": "node scripts/build-legacy-prices-layer.js",
     "portal:repricer-rebuild": "node scripts/build-legacy-repricer-layer.js",
     "portal:data-quality": "node scripts/build-portal-data-quality-report.js --input-dir data --base-data-dir data --output-dir data",

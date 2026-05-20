@@ -1648,6 +1648,7 @@ function skuContourIssueRows(model = {}) {
       else if (keys.some((key) => aliasKeys.has(key))) status = 'applied';
       else if (keys.some((key) => quarantineKeys.has(key))) status = 'quarantine';
       else if (type.includes('aggregate') || type.includes('агрегат') || type.includes('выше')) status = 'blocked';
+      else if (type.includes('wb_owner_distribution')) status = 'new';
       else if (issue.severity === 'warning' || issue.severity === 'warn') status = 'warning';
       return {
         key: `${issue.type || ''}|${issue.platform || ''}|${apiSku}|${Math.round(numberOrZero(issue.revenue))}`,
@@ -2730,6 +2731,8 @@ function renderSkuContour(rootId = 'view-sku-contour') {
   const skuHealthProblems = (skuHealth.checks || []).filter((check) => check.status && check.status !== 'ok');
   const quality = state.portalDataQuality?.summary || model.quality || {};
   const quarantine = state.portalDataQuarantine?.summary || {};
+  const wbMissingInDistribution = numberOrZero(quality.wbOwnerMissingInDistribution || state.portalDataQuality?.wbOwnerDistributionSummary?.missingInDistributionCount || 0);
+  const wbMissingInPortal = numberOrZero(quality.wbOwnerMissingInPortal || state.portalDataQuality?.wbOwnerDistributionSummary?.missingInPortalCount || 0);
   const auditEvents = skuPlanFactAuditEvents(state.skuAliasAudit || {}).slice(0, 8);
   const latestRollbackEvent = skuContourLatestRollbackableEvent();
   const allIssueRows = skuContourIssueRows(model);
@@ -2805,6 +2808,7 @@ function renderSkuContour(rootId = 'view-sku-contour') {
           ${badge(healthMeta.label, healthMeta.tone)}
           ${skuHealth.status ? badge(`SKU contour: ${skuHealth.status}`, skuHealth.status === 'ok' ? 'ok' : skuHealth.status === 'blocked' ? 'danger' : 'warn') : ''}
           ${badge(`${fmt.int(quality.apiUnmappedUniqueSku || matrixSummary.apiUnmappedCount || 0)} API без пары`, (quality.apiUnmappedUniqueSku || matrixSummary.apiUnmappedCount) ? 'warn' : 'ok')}
+          ${badge(`${fmt.int(wbMissingInDistribution)} WB вне распределения`, wbMissingInDistribution ? 'warn' : 'ok')}
           ${badge(`${fmt.int(quarantine.rows || 0)} в карантине`, quarantine.rows ? 'danger' : 'ok')}
           ${badge(fmt.money(quality.apiUnmappedRevenue || 0), quality.apiUnmappedRevenue ? 'warn' : 'ok')}
         </div>
@@ -2816,6 +2820,8 @@ function renderSkuContour(rootId = 'view-sku-contour') {
       <div class="mini-kpi warn"><span>Alias</span><strong>${fmt.int(matrixSummary.aliasCount || skuPlanFactAliasRows(state.skuAliases || {}).length)}</strong><span>общий справочник</span></div>
       <div class="mini-kpi"><span>Ignore</span><strong>${fmt.int(matrixSummary.ignoredApiSkuCount || skuPlanFactIgnorePayloadRows(state.skuAliasIgnore || {}).length)}</strong><span>осознанно не маппим</span></div>
       <div class="mini-kpi danger"><span>API без пары</span><strong>${fmt.int(matrixSummary.apiUnmappedCount || quality.apiUnmappedPlatformRows || 0)}</strong><span>из API источников</span></div>
+      <div class="mini-kpi warn"><span>WB контур</span><strong>${fmt.int(wbMissingInDistribution)}</strong><span>есть в портале, нет в распределении</span></div>
+      <div class="mini-kpi warn"><span>WB распределение</span><strong>${fmt.int(wbMissingInPortal)}</strong><span>есть в файле, нет в реестре</span></div>
       <div class="mini-kpi warn"><span>Без owner</span><strong>${fmt.int(matrixSummary.missingOwnerCount || quality.skuMissingOwner || 0)}</strong><span>реестр / матрица</span></div>
       <div class="mini-kpi"><span>Аудит</span><strong>${fmt.int(auditEvents.length)}</strong><span>последние применения</span></div>
     </div>
@@ -3166,6 +3172,414 @@ function downloadSkuPlanFactQualityExcel(model) {
     return;
   }
   downloadLaunchesHtmlTable(skuPlanFactQualityExportColumns(), rows, `sku-plan-fact-data-quality-${model.monthKey}.xls`);
+}
+
+const OOS_CONTROL_STATUS_META = {
+  oos: { label: 'OOS', tone: 'danger', priority: 'critical' },
+  critical: { label: 'Критично', tone: 'danger', priority: 'critical' },
+  risk: { label: 'OOS скоро <10 д', tone: 'warn', priority: 'high' },
+  watch: { label: 'Наблюдать', tone: 'info', priority: 'medium' }
+};
+
+const OOS_CONTROL_TASK_STATUSES = ['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision', 'done'];
+
+function oosControlPayload() {
+  return state.oosControl && typeof state.oosControl === 'object'
+    ? state.oosControl
+    : { schema: 'portal-oos-control-v1', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
+}
+
+function oosControlRows() {
+  const payload = oosControlPayload();
+  return Array.isArray(payload.rows) ? payload.rows : [];
+}
+
+function oosControlFilters() {
+  state.oosControlFilters = state.oosControlFilters && typeof state.oosControlFilters === 'object'
+    ? state.oosControlFilters
+    : {};
+  return {
+    search: String(state.oosControlFilters.search || '').trim(),
+    platform: String(state.oosControlFilters.platform || 'all'),
+    owner: String(state.oosControlFilters.owner || 'all'),
+    department: String(state.oosControlFilters.department || 'all'),
+    status: String(state.oosControlFilters.status || 'active')
+  };
+}
+
+function oosControlTaskFor(row = {}) {
+  const taskId = String(row.taskId || '').trim();
+  if (!taskId) return null;
+  return (state.storage?.tasks || []).find((task) => task.id === taskId) || null;
+}
+
+function oosControlTaskStatusLabel(task) {
+  if (!task) return 'Нет задачи';
+  const meta = TASK_STATUS_META[task.status] || TASK_STATUS_META.new;
+  return meta.label || task.status || 'Задача';
+}
+
+function oosControlStatusTone(status = '') {
+  return OOS_CONTROL_STATUS_META[status]?.tone || '';
+}
+
+function oosControlPriority(row = {}) {
+  return OOS_CONTROL_STATUS_META[row.status]?.priority || (row.severity === 'critical' ? 'critical' : 'high');
+}
+
+function oosControlDue(row = {}) {
+  if (row.status === 'oos' || row.status === 'critical') return plusDays(1);
+  if (row.status === 'risk') return plusDays(2);
+  return plusDays(5);
+}
+
+function oosControlUnique(rows, key) {
+  return [...new Set(rows.map((row) => String(row?.[key] || '').trim()).filter(Boolean))]
+    .sort((left, right) => left.localeCompare(right, 'ru'));
+}
+
+function oosControlOptions(values, selected, allLabel) {
+  return [
+    `<option value="all" ${selected === 'all' ? 'selected' : ''}>${escapeHtml(allLabel)}</option>`,
+    ...values.map((value) => `<option value="${escapeHtml(value)}" ${selected === value ? 'selected' : ''}>${escapeHtml(value)}</option>`)
+  ].join('');
+}
+
+function oosControlTaskStatusOptions(selected) {
+  return OOS_CONTROL_TASK_STATUSES
+    .map((status) => {
+      const meta = TASK_STATUS_META[status] || { label: status };
+      return `<option value="${escapeHtml(status)}" ${selected === status ? 'selected' : ''}>${escapeHtml(meta.label || status)}</option>`;
+    })
+    .join('');
+}
+
+function oosControlFilteredRows() {
+  const rows = oosControlRows();
+  const filters = oosControlFilters();
+  const search = filters.search.toLowerCase();
+  return rows.filter((row) => {
+    const task = oosControlTaskFor(row);
+    if (filters.platform !== 'all' && row.platform !== filters.platform) return false;
+    if (filters.owner !== 'all' && row.owner !== filters.owner) return false;
+    if (filters.department !== 'all' && row.department !== filters.department) return false;
+    if (filters.status === 'has_task' && !task) return false;
+    if (filters.status === 'no_task' && task) return false;
+    if (!['active', 'all', 'has_task', 'no_task'].includes(filters.status) && row.status !== filters.status) return false;
+    if (search) {
+      const haystack = [
+        row.article,
+        row.name,
+        row.platformLabel,
+        row.place,
+        row.owner,
+        row.department,
+        row.statusLabel,
+        task?.title,
+        task?.reason,
+        task?.nextAction
+      ].filter(Boolean).join(' ').toLowerCase();
+      if (!haystack.includes(search)) return false;
+    }
+    return true;
+  });
+}
+
+function oosControlFreshnessNotice(payload) {
+  const freshness = payload.dataFreshness || {};
+  const status = freshness.status || payload.summary?.dataStatus || 'unknown';
+  const tone = status === 'ok' ? 'ok' : status === 'stale' ? 'danger' : 'warn';
+  const text = freshness.message || (status === 'ok' ? 'Данные свежие.' : 'Свежесть данных нужно проверить.');
+  const details = [
+    freshness.dataDate ? `факт до ${freshness.dataDate}` : '',
+    freshness.expectedFactDate ? `ожидается ${freshness.expectedFactDate}` : '',
+    payload.generatedAt ? `сборка ${fmt.date(payload.generatedAt)}` : ''
+  ].filter(Boolean).join(' · ');
+  return `
+    <div class="notice ${tone}">
+      <strong>${escapeHtml(text)}</strong>
+      <div class="muted small" style="margin-top:4px">${escapeHtml(details || 'Дата факта не определена')}</div>
+    </div>
+  `;
+}
+
+function renderOosControlKpis(summary = {}) {
+  return `
+    <div class="dashboard-grid-4" style="margin-top:14px">
+      <div class="mini-kpi danger"><span>OOS сейчас</span><strong>${fmt.int(summary.oosCount || 0)}</strong><span>нулевой остаток</span></div>
+      <div class="mini-kpi warn"><span>OOS скоро &lt;10 д</span><strong>${fmt.int(summary.oosSoonCount || summary.riskCount || 0)}</strong><span>активные / новинки</span></div>
+      <div class="mini-kpi"><span>SKU в очереди</span><strong>${fmt.int(summary.skuCount || 0)}</strong><span>только активные статусы</span></div>
+      <div class="mini-kpi"><span>Выручка под риском / день</span><strong>${fmt.money(summary.revenueAtRiskDay || 0)}</strong><span>по текущему темпу</span></div>
+    </div>
+  `;
+}
+
+function renderOosControlFilters(rows, filters) {
+  const platformOptions = [
+    `<option value="all" ${filters.platform === 'all' ? 'selected' : ''}>Все площадки</option>`,
+    ...summarizeOosControlPlatforms(rows).map((item) => (
+      `<option value="${escapeHtml(item.key)}" ${filters.platform === item.key ? 'selected' : ''}>${escapeHtml(item.label)}</option>`
+    ))
+  ].join('');
+  const ownerOptions = oosControlOptions(oosControlUnique(rows, 'owner'), filters.owner, 'Все owner');
+  const departmentOptions = oosControlOptions(oosControlUnique(rows, 'department'), filters.department, 'Все отделы');
+  return `
+    <div class="card sku-plan-fact-card" style="margin-top:14px">
+      <div class="grid sku-plan-fact-filters" style="grid-template-columns:1.4fr repeat(4,minmax(0,180px));gap:10px">
+        <label><span class="label">Поиск</span><input data-oos-filter="search" value="${escapeHtml(filters.search)}" placeholder="SKU, склад, owner, мера"></label>
+        <label><span class="label">Сигнал</span>
+          <select data-oos-filter="status">
+            <option value="active" ${filters.status === 'active' ? 'selected' : ''}>Все активные</option>
+            <option value="oos" ${filters.status === 'oos' ? 'selected' : ''}>Только OOS</option>
+            <option value="critical" ${filters.status === 'critical' ? 'selected' : ''}>Критично</option>
+            <option value="risk" ${filters.status === 'risk' ? 'selected' : ''}>OOS скоро &lt;10 д</option>
+            <option value="watch" ${filters.status === 'watch' ? 'selected' : ''}>Наблюдать</option>
+            <option value="has_task" ${filters.status === 'has_task' ? 'selected' : ''}>С задачей</option>
+            <option value="no_task" ${filters.status === 'no_task' ? 'selected' : ''}>Без задачи</option>
+          </select>
+        </label>
+        <label><span class="label">Площадка</span><select data-oos-filter="platform">${platformOptions}</select></label>
+        <label><span class="label">Owner</span><select data-oos-filter="owner">${ownerOptions}</select></label>
+        <label><span class="label">Отдел</span><select data-oos-filter="department">${departmentOptions}</select></label>
+      </div>
+    </div>
+  `;
+}
+
+function summarizeOosControlPlatforms(rows) {
+  const map = new Map();
+  rows.forEach((row) => {
+    if (!row.platform) return;
+    if (!map.has(row.platform)) map.set(row.platform, { key: row.platform, label: row.platformLabel || row.platform });
+  });
+  return [...map.values()].sort((left, right) => left.label.localeCompare(right.label, 'ru'));
+}
+
+function renderOosControlGroupSummary(payload = {}) {
+  const byPlatform = Array.isArray(payload.byPlatform) ? payload.byPlatform.slice(0, 6) : [];
+  const byOwner = Array.isArray(payload.byOwner) ? payload.byOwner.slice(0, 6) : [];
+  const renderLine = (item) => `
+    <div class="alert-row">
+      <div>
+        <strong>${escapeHtml(item.label || item.key || '—')}</strong>
+        <div class="muted small">${fmt.int(item.total || 0)} строк · риск ${fmt.money(item.revenueAtRiskDay || 0)}</div>
+      </div>
+      <div class="badge-stack">${item.oos ? badge(`${fmt.int(item.oos)} OOS`, 'danger') : ''}${item.risk ? badge(`${fmt.int(item.risk)} скоро`, 'warn') : ''}</div>
+    </div>
+  `;
+  return `
+    <div class="two-col" style="margin-top:14px">
+      <div class="card">
+        <div class="section-subhead"><h3>По площадкам</h3>${badge(`${fmt.int(byPlatform.length)} контуров`)}</div>
+        <div class="alert-stack">${byPlatform.map(renderLine).join('') || '<div class="empty">Нет сигналов</div>'}</div>
+      </div>
+      <div class="card">
+        <div class="section-subhead"><h3>По owner</h3>${badge(`${fmt.int(byOwner.length)} owner`)}</div>
+        <div class="alert-stack">${byOwner.map(renderLine).join('') || '<div class="empty">Нет сигналов</div>'}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderOosControlRow(row) {
+  const task = oosControlTaskFor(row);
+  const taskStatus = task?.status || 'new';
+  const reasonValue = task?.reason || '';
+  const actionValue = task?.nextAction || row.recommendation || '';
+  const dueValue = task?.due || oosControlDue(row);
+  const taskBadge = task
+    ? badge(oosControlTaskStatusLabel(task), TASK_STATUS_META[task.status]?.kind || '')
+    : badge('нет задачи', 'warn');
+  return `
+    <tr>
+      <td>
+        <div><strong>${linkToSku(row.articleKey || row.article, row.article || row.articleKey)}</strong></div>
+        <div class="muted small">${escapeHtml(row.name || '')}</div>
+        <div class="badge-stack" style="margin-top:6px">${badge(row.platformLabel || row.platform)}${badge(row.place || 'склад')}</div>
+      </td>
+      <td>
+        <div class="badge-stack">${badge(row.statusLabel || row.status, oosControlStatusTone(row.status))}${row.lifecycleLabel ? badge(row.lifecycleLabel, row.lifecycleStatus === 'new' ? 'info' : 'ok') : ''}${taskBadge}</div>
+        <div class="muted small" style="margin-top:6px">с ${escapeHtml(row.firstSeenDate || 'сегодня')} · ${fmt.int(row.daysOpen || 1)} дн.</div>
+      </td>
+      <td>
+        <strong>${fmt.int(row.inStock)}</strong>
+        <div class="muted small">транзит ${fmt.int(row.inTransit)} · заявка ${fmt.int(row.inRequest)}</div>
+      </td>
+      <td>
+        <strong>${row.turnoverDays === null || row.turnoverDays === undefined ? '—' : fmt.num(row.turnoverDays, 1)}</strong>
+        <div class="muted small">шт/день ${fmt.num(row.avgDaily || 0, 1)}</div>
+      </td>
+      <td>
+        <strong>${fmt.money(row.revenueAtRiskDay || 0)}</strong>
+        <div class="muted small">потеря OOS ${fmt.money(row.lostRevenueDay || 0)}</div>
+      </td>
+      <td>
+        <strong>${escapeHtml(row.owner || 'Без owner')}</strong>
+        <div class="muted small">${escapeHtml(row.department || 'Команда')}</div>
+      </td>
+      <td style="min-width:420px">
+        <div class="grid" style="grid-template-columns:minmax(0,140px) minmax(0,1fr);gap:8px" data-oos-task-form="${escapeHtml(row.issueKey)}">
+          <select data-oos-department>
+            ${['Закуп', 'Логистика', 'Производство', 'Команда MP', 'Маркетплейс / логистика', 'Реклама', 'Цены'].map((item) => (
+              `<option value="${escapeHtml(item)}" ${item === row.department ? 'selected' : ''}>${escapeHtml(item)}</option>`
+            )).join('')}
+          </select>
+          <input data-oos-reason value="${escapeHtml(reasonValue)}" placeholder="Причина / комментарий">
+          <select data-oos-status>${oosControlTaskStatusOptions(taskStatus)}</select>
+          <input data-oos-action value="${escapeHtml(actionValue)}" placeholder="Контрмера / следующий шаг">
+          <input type="date" data-oos-due value="${escapeHtml(dueValue)}">
+          <div class="actions" style="justify-content:flex-start">
+            <button class="quick-chip" type="button" data-oos-save="${escapeHtml(row.issueKey)}">Сохранить</button>
+            ${task ? `<button class="quick-chip" type="button" data-open-task="${escapeHtml(task.id)}">Открыть</button>` : ''}
+          </div>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+async function oosControlSaveTask(issueKey, rootId) {
+  const row = oosControlRows().find((item) => item.issueKey === issueKey);
+  if (!row) return null;
+  const form = document.querySelector(`[data-oos-task-form="${CSS.escape(issueKey)}"]`);
+  const department = String(form?.querySelector('[data-oos-department]')?.value || row.department || 'Закуп').trim();
+  const reasonInput = String(form?.querySelector('[data-oos-reason]')?.value || '').trim();
+  const actionInput = String(form?.querySelector('[data-oos-action]')?.value || row.recommendation || '').trim();
+  const statusInput = String(form?.querySelector('[data-oos-status]')?.value || 'new').trim();
+  const dueInput = String(form?.querySelector('[data-oos-due]')?.value || oosControlDue(row)).trim();
+  const existing = oosControlTaskFor(row);
+  const now = new Date().toISOString();
+  const reason = [
+    `OOS сигнал: ${row.statusLabel || row.status}`,
+    `Отдел: ${department}`,
+    reasonInput ? `Причина: ${reasonInput}` : '',
+    `SKU/склад: ${row.platformLabel || row.platform} / ${row.place}`,
+    `Остаток ${fmt.int(row.inStock)}, покрытие ${row.turnoverDays === null || row.turnoverDays === undefined ? '—' : fmt.num(row.turnoverDays, 1)} дн., риск ${fmt.money(row.revenueAtRiskDay || 0)}/день`,
+    `[oos:${row.issueKey}]`
+  ].filter(Boolean).join('. ');
+  const task = normalizeTask({
+    id: row.taskId || existing?.id || uid('task-oos'),
+    source: 'manual',
+    autoCode: 'oos_control',
+    articleKey: row.articleKey || row.article || '',
+    entityLabel: `${row.platformLabel || row.platform} / ${row.place} / ${row.name || row.article}`,
+    title: `${row.status === 'oos' ? 'OOS' : 'Риск OOS'}: ${row.platformLabel || row.platform} · ${row.article || row.articleKey}`,
+    type: 'supply',
+    priority: oosControlPriority(row),
+    platform: row.platform || 'cross',
+    owner: row.owner === 'Без owner' ? '' : row.owner,
+    due: dueInput,
+    status: statusInput,
+    nextAction: actionInput,
+    reason,
+    createdAt: existing?.createdAt || now,
+    updatedAt: now
+  }, 'manual');
+  state.storage = state.storage || {};
+  state.storage.tasks = Array.isArray(state.storage.tasks) ? state.storage.tasks : [];
+  const index = state.storage.tasks.findIndex((item) => item.id === task.id);
+  if (index >= 0) state.storage.tasks.splice(index, 1, task);
+  else state.storage.tasks.unshift(task);
+  if (typeof saveLocalStorage === 'function') saveLocalStorage();
+  try {
+    if (typeof persistTask === 'function') await persistTask(task);
+    if (typeof createTaskHistoryEntry === 'function') {
+      await createTaskHistoryEntry(task.id, existing ? 'updated' : 'created', existing ? 'OOS-контрмера обновлена.' : 'Задача создана из OOS контроля.');
+    }
+  } catch (error) {
+    console.error(error);
+    if (typeof setAppError === 'function') setAppError(`OOS задача сохранена локально, но Supabase не ответил: ${error.message}`);
+  }
+  renderOosControl(rootId);
+  if (typeof setAppError === 'function') setAppError(`OOS задача сохранена: ${task.title}`);
+  return task;
+}
+
+function bindOosControl(root, rootId) {
+  root.querySelectorAll('[data-oos-filter]').forEach((control) => {
+    const eventName = control.tagName === 'INPUT' ? 'input' : 'change';
+    control.addEventListener(eventName, () => {
+      state.oosControlFilters = state.oosControlFilters || {};
+      state.oosControlFilters[control.dataset.oosFilter] = control.value;
+      renderOosControl(rootId);
+    });
+  });
+  root.querySelectorAll('[data-oos-save]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const original = button.textContent;
+      button.disabled = true;
+      button.textContent = 'Сохраняем...';
+      try {
+        await oosControlSaveTask(button.dataset.oosSave, rootId);
+      } finally {
+        button.disabled = false;
+        button.textContent = original || 'Сохранить';
+      }
+    });
+  });
+  root.querySelector('[data-oos-reload]')?.addEventListener('click', async () => {
+    state.boot.lazyReady.oosControl = false;
+    await ensureViewData('oos-control');
+    renderOosControl(rootId);
+  });
+}
+
+function renderOosControl(rootId = 'view-oos-control') {
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  const payload = oosControlPayload();
+  const rows = oosControlRows();
+  const filters = oosControlFilters();
+  const filteredRows = oosControlFilteredRows();
+  const summary = payload.summary || {};
+  root.innerHTML = `
+    <div class="page-head">
+      <div>
+        <h1>OOS контроль</h1>
+        <p>Ежедневная очередь рисков аута: SKU, площадка, склад, owner, причина, контрмера и командная задача.</p>
+      </div>
+      <div class="actions">
+        ${badge(`факт до ${escapeHtml(summary.dataDate || payload.dataFreshness?.dataDate || '—')}`, summary.dataStatus === 'ok' ? 'ok' : 'warn')}
+        ${badge(`${fmt.int(filteredRows.length)} из ${fmt.int(rows.length)} строк`)}
+        <button class="quick-chip" type="button" data-oos-reload>Обновить экран</button>
+      </div>
+    </div>
+    ${oosControlFreshnessNotice(payload)}
+    ${renderOosControlKpis(summary)}
+    ${renderOosControlGroupSummary(payload)}
+    ${renderOosControlFilters(rows, filters)}
+    <div class="card sku-plan-fact-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Очередь OOS / риск аута</h3>
+          <p class="small muted">Сохраняй причину и контрмеру прямо в строке: портал создаст или обновит задачу в командной базе.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(summary.newIssues || 0)} новых`, (summary.newIssues || 0) ? 'warn' : '')}
+          ${badge(`${fmt.int(summary.resolvedToday || 0)} закрылись`, (summary.resolvedToday || 0) ? 'ok' : '')}
+        </div>
+      </div>
+      <div class="table-wrap sku-plan-fact-table" style="margin-top:12px">
+        <table>
+          <thead>
+            <tr>
+              <th>SKU / склад</th>
+              <th>Сигнал</th>
+              <th>Остаток</th>
+              <th>Покрытие</th>
+              <th>Риск выручки</th>
+              <th>Owner / отдел</th>
+              <th>Причина и контрмера</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredRows.map(renderOosControlRow).join('') || '<tr><td colspan="7"><div class="empty">Нет строк под текущие фильтры</div></td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  bindOosControl(root, rootId);
 }
 
 function skuPlanFactDownloadJson(filename, payload) {
@@ -4224,16 +4638,6 @@ async function portalMaybeAutoRefreshOperationalData(reason = 'auto', options = 
 function portalStartOperationalAutoRefresh() {
   if (portalOperationalAutoRefreshStarted) return;
   portalOperationalAutoRefreshStarted = true;
-  window.setInterval(() => {
-    void portalMaybeAutoRefreshOperationalData('timer');
-  }, PORTAL_OPERATIONAL_AUTO_REFRESH_INTERVAL_MS);
-  window.addEventListener('focus', () => {
-    void portalMaybeAutoRefreshOperationalData('focus');
-  });
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) void portalMaybeAutoRefreshOperationalData('visible');
-  });
-  void portalMaybeAutoRefreshOperationalData('boot');
 }
 
 function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
@@ -4403,6 +4807,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
 window.renderSkuPlanFact = renderSkuPlanFact;
 window.renderSkuContour = renderSkuContour;
 window.renderPortalDataHealth = renderPortalDataHealth;
+window.renderOosControl = renderOosControl;
 window.skuContourIssueRows = skuContourIssueRows;
 window.skuContourIssueIsResolved = skuContourIssueIsResolved;
 window.portalHealthIssueRows = portalHealthIssueRows;

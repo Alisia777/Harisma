@@ -382,6 +382,25 @@ if ($priceRefreshSucceeded) {
   Write-Warning "[sync] price/repricer layer files were not refreshed and will not be re-uploaded."
 }
 
+$oosControlArguments = @(
+  "scripts/build-oos-control-layer.js",
+  "--input-dir",
+  $resolvedOutputDir,
+  "--base-data-dir",
+  "data",
+  "--output-dir",
+  $resolvedOutputDir,
+  "--mirror-local-fallback"
+)
+
+Write-Output "[sync] OOS control build started"
+try {
+  Invoke-NodeStep -StepName "OOS control build" -Arguments $oosControlArguments -Attempts 2 -RetryDelaySeconds 20
+  Write-Output "[sync] OOS control build completed"
+} catch {
+  Write-Warning "[sync] OOS control build failed, but the portal sync will continue: $($_.Exception.Message)"
+}
+
 $kzSyncScript = Join-Path $PSScriptRoot "portal-kz-product-leaderboard-sync.ps1"
 $kzParams = @{
   OutputDir = $resolvedOutputDir
@@ -670,6 +689,12 @@ $snapshotNames = @(
   "order_procurement_wb",
   "order_procurement_ozon"
 )
+
+if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "oos_control.json")) {
+  $snapshotNames += "oos_control"
+} else {
+  Write-Warning "[sync] optional snapshot oos_control is absent and will not be uploaded."
+}
 
 if ($priceRefreshSucceeded) {
   foreach ($priceSnapshot in @("prices", "repricer", "smart_price_overlay", "smart_price_workbench", "price_workbench_support")) {

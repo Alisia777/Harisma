@@ -19,6 +19,7 @@ const SNAPSHOT_NAMES = [
   'order_procurement',
   'order_procurement_wb',
   'order_procurement_ozon',
+  'oos_control',
   'iu_drr_summary',
   'wb_feedbacks_summary',
   'portal_data_quality',
@@ -155,6 +156,7 @@ function latestPayloadDate(name, payload) {
   if (name === 'iu_drr_summary') return dateKey(payload.asOfDate || payload.window?.to || payload.generatedAt);
   if (name === 'wb_feedbacks_summary') return dateKey(payload.window?.to || payload.asOfDate || payload.generatedAt);
   if (name.startsWith('order_procurement')) return dateKey(payload.window?.to || payload.generatedAt);
+  if (name === 'oos_control') return dateKey(payload.dataFreshness?.dataDate || payload.summary?.dataDate || payload.generatedAt);
   if (name === 'warehouse_stock_overlay') return dateKey(payload.asOfDate || payload.generatedAt);
   if (name === 'portal_data_quality') return dateKey(payload.summary?.maxDate || payload.generatedAt);
   if (name === 'portal_sync_health') return dateKey(payload.generatedAt);
@@ -363,6 +365,9 @@ function buildHealth(options) {
   if (numberOrZero(qualitySummary.skuMissingOwner) > 0) {
     warnings.push(`SKU without owner or registry mapping: ${Math.round(numberOrZero(qualitySummary.skuMissingOwner))}.`);
   }
+  if (!sources.oos_control?.exists || sources.oos_control.rows <= 0) {
+    warnings.push('OOS control snapshot is missing or empty; daily OOS queue will not be visible.');
+  }
 
   const maxDate = qualitySummary.maxDate || sources.platform_trends.asOfDate || sources.dashboard.asOfDate;
   const maxDateAge = daysOld(maxDate, options.now);
@@ -373,7 +378,7 @@ function buildHealth(options) {
   const lastGood = loadLastGoodManifest(options);
   const comparisons = [];
   if (lastGood.exists && lastGood.manifest?.metrics) {
-    ['skus', 'platform_trends', 'order_procurement', 'warehouse_stock_overlay', 'sku_matrix'].forEach((name) => {
+    ['skus', 'platform_trends', 'order_procurement', 'warehouse_stock_overlay', 'sku_matrix', 'oos_control'].forEach((name) => {
       const current = sources[name] || {};
       const previous = lastGood.manifest.metrics[name] || {};
       const previousRows = numberOrZero(previous.rows);

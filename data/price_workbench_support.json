@@ -129,13 +129,13 @@
           "article": "retiderm_50ml",
           "manualMinPrice": 329.4629236117244,
           "manualMaxPrice": 988.3887708351733,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1497,
-            "maxPrice": 1504,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 329.4629236117244,
+            "maxPrice": 988.3887708351733,
+            "workingZoneFrom": 329.4629236117244,
+            "workingZoneTo": 988.3887708351733
           }
         },
         {
@@ -264,13 +264,13 @@
           "article": "krovavii_piling_30ml",
           "manualMinPrice": 384.2457173356442,
           "manualMaxPrice": 1152.7371520069325,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 814,
-            "maxPrice": 1340,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 384.2457173356442,
+            "maxPrice": 1152.7371520069325,
+            "workingZoneFrom": 384.2457173356442,
+            "workingZoneTo": 1152.7371520069325
           }
         },
         {
@@ -399,13 +399,13 @@
           "article": "retinait_krem_1_50ml",
           "manualMinPrice": 347.538737288302,
           "manualMaxPrice": 1042.616211864906,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 2252,
-            "maxPrice": 2284,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 347.538737288302,
+            "maxPrice": 1042.616211864906,
+            "workingZoneFrom": 347.538737288302,
+            "workingZoneTo": 1042.616211864906
           }
         },
         {
@@ -534,13 +534,13 @@
           "article": "retinait_syvorotka_1_30ml",
           "manualMinPrice": 492.0508667904001,
           "manualMaxPrice": 1476.1526003712004,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1453,
-            "maxPrice": 1464,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 492.0508667904001,
+            "maxPrice": 1476.1526003712004,
+            "workingZoneFrom": 492.0508667904001,
+            "workingZoneTo": 1476.1526003712004
           }
         },
         {
@@ -669,13 +669,13 @@
           "article": "syvorotka_dlya_lica_30ml",
           "manualMinPrice": 525.1062454835642,
           "manualMaxPrice": 1575.3187364506925,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1496,
-            "maxPrice": 1504,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 525.1062454835642,
+            "maxPrice": 1575.3187364506925,
+            "workingZoneFrom": 525.1062454835642,
+            "workingZoneTo": 1575.3187364506925
           }
         },
         {
@@ -804,13 +804,13 @@
           "article": "maska_dlya_lica_100ml",
           "manualMinPrice": 351.569298755724,
           "manualMaxPrice": 1054.707896267172,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 809,
-            "maxPrice": 2433,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 351.569298755724,
+            "maxPrice": 1054.707896267172,
+            "workingZoneFrom": 351.569298755724,
+            "workingZoneTo": 1054.707896267172
           }
         },
         {
@@ -939,13 +939,13 @@
           "article": "gel_antiakne_20ml_v2",
           "manualMinPrice": 286.1195777533697,
           "manualMaxPrice": 858.3587332601091,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 551,
-            "maxPrice": 619,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 286.1195777533697,
+            "maxPrice": 858.3587332601091,
+            "workingZoneFrom": 286.1195777533697,
+            "workingZoneTo": 858.3587332601091
           }
         },
         {
@@ -1074,13 +1074,13 @@
           "article": "penka_kudryavii_metod_150ml",
           "manualMinPrice": 480.89617473444594,
           "manualMaxPrice": 1442.6885242033377,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1030,
-            "maxPrice": 1823,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 480.89617473444594,
+            "maxPrice": 1442.6885242033377,
+            "workingZoneFrom": 480.89617473444594,
+            "workingZoneTo": 1442.6885242033377
           }
         },
         {
@@ -1209,13 +1209,13 @@
           "article": "curly_method_300ml",
           "manualMinPrice": 462.77193575801635,
           "manualMaxPrice": 1388.3158072740491,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 951,
-            "maxPrice": 1348,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 462.77193575801635,
+            "maxPrice": 1388.3158072740491,
+            "workingZoneFrom": 462.77193575801635,
+            "workingZoneTo": 1388.3158072740491
           }
         },
         {
@@ -1344,13 +1344,13 @@
           "article": "retinait_krem_05_50ml",
           "manualMinPrice": 380.02567124312765,
           "manualMaxPrice": 1140.077013729383,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1595,
-            "maxPrice": 1617,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 380.02567124312765,
+            "maxPrice": 1140.077013729383,
+            "workingZoneFrom": 380.02567124312765,
+            "workingZoneTo": 1140.077013729383
           }
         },
         {
@@ -1479,13 +1479,13 @@
           "article": "retinait_krem_025_50ml",
           "manualMinPrice": 305.6610925378369,
           "manualMaxPrice": 916.9832776135107,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1622,
-            "maxPrice": 1633,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 305.6610925378369,
+            "maxPrice": 916.9832776135107,
+            "workingZoneFrom": 305.6610925378369,
+            "workingZoneTo": 916.9832776135107
           }
         },
         {
@@ -1614,13 +1614,13 @@
           "article": "kremshelk_100ml",
           "manualMinPrice": 307.4085315388035,
           "manualMaxPrice": 922.2255946164105,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 656,
-            "maxPrice": 665,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 307.4085315388035,
+            "maxPrice": 922.2255946164105,
+            "workingZoneFrom": 307.4085315388035,
+            "workingZoneTo": 922.2255946164105
           }
         },
         {
@@ -1749,13 +1749,13 @@
           "article": "krem_ot_rastyazhek",
           "manualMinPrice": 463.2010797637986,
           "manualMaxPrice": 1389.6032392913958,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 904,
-            "maxPrice": 914,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 463.2010797637986,
+            "maxPrice": 1389.6032392913958,
+            "workingZoneFrom": 463.2010797637986,
+            "workingZoneTo": 1389.6032392913958
           }
         },
         {
@@ -1884,13 +1884,13 @@
           "article": "silk_hair_300ml",
           "manualMinPrice": 458.0280802507078,
           "manualMaxPrice": 1374.0842407521234,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 735,
-            "maxPrice": 815,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 458.0280802507078,
+            "maxPrice": 1374.0842407521234,
+            "workingZoneFrom": 458.0280802507078,
+            "workingZoneTo": 1374.0842407521234
           }
         },
         {
@@ -2019,13 +2019,13 @@
           "article": "sprei_buster_100ml",
           "manualMinPrice": 464.8201637512987,
           "manualMaxPrice": 1394.4604912538962,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 969,
-            "maxPrice": 987,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 464.8201637512987,
+            "maxPrice": 1394.4604912538962,
+            "workingZoneFrom": 464.8201637512987,
+            "workingZoneTo": 1394.4604912538962
           }
         },
         {
@@ -2154,13 +2154,13 @@
           "article": "krem_dlya_vek_30ml",
           "manualMinPrice": 439.6967459065859,
           "manualMaxPrice": 1319.0902377197576,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 877,
-            "maxPrice": 1221,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 439.6967459065859,
+            "maxPrice": 1319.0902377197576,
+            "workingZoneFrom": 439.6967459065859,
+            "workingZoneTo": 1319.0902377197576
           }
         },
         {
@@ -2289,13 +2289,13 @@
           "article": "maska-batter_dlya_rosta_500ml",
           "manualMinPrice": 474.12286283060695,
           "manualMaxPrice": 1422.368588491821,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 962,
-            "maxPrice": 974,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 474.12286283060695,
+            "maxPrice": 1422.368588491821,
+            "workingZoneFrom": 474.12286283060695,
+            "workingZoneTo": 1422.368588491821
           }
         },
         {
@@ -2424,13 +2424,13 @@
           "article": "solevoy_sprei_200ml",
           "manualMinPrice": 336.87991927332007,
           "manualMaxPrice": 1010.6397578199602,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 810,
-            "maxPrice": 818,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 336.87991927332007,
+            "maxPrice": 1010.6397578199602,
+            "workingZoneFrom": 336.87991927332007,
+            "workingZoneTo": 1010.6397578199602
           }
         },
         {
@@ -2559,13 +2559,13 @@
           "article": "krem_buster_250ml",
           "manualMinPrice": 446.96585022146445,
           "manualMaxPrice": 1340.8975506643933,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 779,
-            "maxPrice": 788,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 446.96585022146445,
+            "maxPrice": 1340.8975506643933,
+            "workingZoneFrom": 446.96585022146445,
+            "workingZoneTo": 1340.8975506643933
           }
         },
         {
@@ -2694,13 +2694,13 @@
           "article": "insulight_bad_60caps",
           "manualMinPrice": 527.098467418297,
           "manualMaxPrice": 1581.295402254891,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1028,
-            "maxPrice": 1039,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 527.098467418297,
+            "maxPrice": 1581.295402254891,
+            "workingZoneFrom": 527.098467418297,
+            "workingZoneTo": 1581.295402254891
           }
         },
         {
@@ -2829,13 +2829,13 @@
           "article": "pink_pepper_50ml",
           "manualMinPrice": 515.9318436451202,
           "manualMaxPrice": 1547.7955309353606,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 842,
-            "maxPrice": 854,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 515.9318436451202,
+            "maxPrice": 1547.7955309353606,
+            "workingZoneFrom": 515.9318436451202,
+            "workingZoneTo": 1547.7955309353606
           }
         },
         {
@@ -2964,13 +2964,13 @@
           "article": "relaksinol_bad_60caps",
           "manualMinPrice": 563.5110014572128,
           "manualMaxPrice": 1690.5330043716385,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 552,
-            "maxPrice": 555,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 563.5110014572128,
+            "maxPrice": 1690.5330043716385,
+            "workingZoneFrom": 563.5110014572128,
+            "workingZoneTo": 1690.5330043716385
           }
         },
         {
@@ -3099,13 +3099,13 @@
           "article": "shampun_dlya_rosta_250ml",
           "manualMinPrice": 402.29264377113117,
           "manualMaxPrice": 1206.8779313133934,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 799,
-            "maxPrice": 824,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 402.29264377113117,
+            "maxPrice": 1206.8779313133934,
+            "workingZoneFrom": 402.29264377113117,
+            "workingZoneTo": 1206.8779313133934
           }
         },
         {
@@ -3234,13 +3234,13 @@
           "article": "maslo_dlya_borodi_50ml",
           "manualMinPrice": 382.1819052526741,
           "manualMaxPrice": 1146.5457157580222,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 604,
-            "maxPrice": 606,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 382.1819052526741,
+            "maxPrice": 1146.5457157580222,
+            "workingZoneFrom": 382.1819052526741,
+            "workingZoneTo": 1146.5457157580222
           }
         },
         {
@@ -3369,13 +3369,13 @@
           "article": "gel_antiakne_20ml",
           "manualMinPrice": 278.61323384884264,
           "manualMaxPrice": 835.839701546528,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 573,
-            "maxPrice": 586,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 278.61323384884264,
+            "maxPrice": 835.839701546528,
+            "workingZoneFrom": 278.61323384884264,
+            "workingZoneTo": 835.839701546528
           }
         },
         {
@@ -3505,13 +3505,13 @@
           "article": "nabor_remuver_40ml",
           "manualMinPrice": 198.64464857060264,
           "manualMaxPrice": 595.933945711808,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 541,
-            "maxPrice": 566,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 198.64464857060264,
+            "maxPrice": 595.933945711808,
+            "workingZoneFrom": 198.64464857060264,
+            "workingZoneTo": 595.933945711808
           }
         },
         {
@@ -3639,13 +3639,13 @@
           "article": "cardicin_bad_60caps",
           "manualMinPrice": 721.4117239539966,
           "manualMaxPrice": 2164.23517186199,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1142,
-            "maxPrice": 1150,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 721.4117239539966,
+            "maxPrice": 2164.23517186199,
+            "workingZoneFrom": 721.4117239539966,
+            "workingZoneTo": 2164.23517186199
           }
         },
         {
@@ -3774,13 +3774,13 @@
           "article": "krem_dlya_ruk_75ml",
           "manualMinPrice": 280.6326478897025,
           "manualMaxPrice": 841.8979436691076,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 563,
-            "maxPrice": 610,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 280.6326478897025,
+            "maxPrice": 841.8979436691076,
+            "workingZoneFrom": 280.6326478897025,
+            "workingZoneTo": 841.8979436691076
           }
         },
         {
@@ -3910,13 +3910,13 @@
           "article": "termo_sprei_200ml",
           "manualMinPrice": 397.17333150641764,
           "manualMaxPrice": 1191.519994519253,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1016,
-            "maxPrice": 1016,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 397.17333150641764,
+            "maxPrice": 1191.519994519253,
+            "workingZoneFrom": 397.17333150641764,
+            "workingZoneTo": 1191.519994519253
           }
         },
         {
@@ -4045,13 +4045,13 @@
           "article": "maska-batter_250ml",
           "manualMinPrice": 424.5194005506813,
           "manualMaxPrice": 1273.5582016520439,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 866,
-            "maxPrice": 1369,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 424.5194005506813,
+            "maxPrice": 1273.5582016520439,
+            "workingZoneFrom": 424.5194005506813,
+            "workingZoneTo": 1273.5582016520439
           }
         },
         {
@@ -4180,13 +4180,13 @@
           "article": "nabor_remuver_kremovii",
           "manualMinPrice": 365.23104676750546,
           "manualMaxPrice": 1095.6931403025164,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 625,
-            "maxPrice": 643,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 365.23104676750546,
+            "maxPrice": 1095.6931403025164,
+            "workingZoneFrom": 365.23104676750546,
+            "workingZoneTo": 1095.6931403025164
           }
         },
         {
@@ -4315,13 +4315,13 @@
           "article": "shampun_protiv_perhoti_250ml",
           "manualMinPrice": 370.33189934050444,
           "manualMaxPrice": 1110.9956980215134,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 815,
-            "maxPrice": 867,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 370.33189934050444,
+            "maxPrice": 1110.9956980215134,
+            "workingZoneFrom": 370.33189934050444,
+            "workingZoneTo": 1110.9956980215134
           }
         },
         {
@@ -4450,13 +4450,13 @@
           "article": "telomeras_60caps",
           "manualMinPrice": 1903.428348210959,
           "manualMaxPrice": 5710.2850446328775,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 2483,
-            "maxPrice": 2521,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 1903.428348210959,
+            "maxPrice": 5710.2850446328775,
+            "workingZoneFrom": 1903.428348210959,
+            "workingZoneTo": 5710.2850446328775
           }
         },
         {
@@ -4585,13 +4585,13 @@
           "article": "syvorotka_guk_30ml",
           "manualMinPrice": 303.65992424528764,
           "manualMaxPrice": 910.979772735863,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 773,
-            "maxPrice": 1321,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 303.65992424528764,
+            "maxPrice": 910.979772735863,
+            "workingZoneFrom": 303.65992424528764,
+            "workingZoneTo": 910.979772735863
           }
         },
         {
@@ -4721,13 +4721,13 @@
           "article": "gel_dlya_britya_300ml",
           "manualMinPrice": 451.95669306476907,
           "manualMaxPrice": 1355.8700791943072,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 940,
-            "maxPrice": 1050,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 451.95669306476907,
+            "maxPrice": 1355.8700791943072,
+            "workingZoneFrom": 451.95669306476907,
+            "workingZoneTo": 1355.8700791943072
           }
         },
         {
@@ -4856,13 +4856,13 @@
           "article": "chudofrukt_bad_60caps",
           "manualMinPrice": 464.72908811646624,
           "manualMaxPrice": 1394.1872643493987,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 294,
-            "maxPrice": 309,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 464.72908811646624,
+            "maxPrice": 1394.1872643493987,
+            "workingZoneFrom": 464.72908811646624,
+            "workingZoneTo": 1394.1872643493987
           }
         },
         {
@@ -4991,13 +4991,13 @@
           "article": "enzim_pudra_80gr_v2",
           "manualMinPrice": 438.08999317508983,
           "manualMaxPrice": 1314.2699795252695,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 958,
-            "maxPrice": 1047,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 438.08999317508983,
+            "maxPrice": 1314.2699795252695,
+            "workingZoneFrom": 438.08999317508983,
+            "workingZoneTo": 1314.2699795252695
           }
         },
         {
@@ -5126,13 +5126,13 @@
           "article": "syvorotka_dlya_rosta_6ml_v2",
           "manualMinPrice": 180.0387483517483,
           "manualMaxPrice": 540.1162450552449,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 927,
-            "maxPrice": 2485,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 180.0387483517483,
+            "maxPrice": 540.1162450552449,
+            "workingZoneFrom": 180.0387483517483,
+            "workingZoneTo": 540.1162450552449
           }
         },
         {
@@ -5261,13 +5261,13 @@
           "article": "menoflavon_bad_60caps",
           "manualMinPrice": 527.8411677802557,
           "manualMaxPrice": 1583.523503340767,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 934,
-            "maxPrice": 936,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 527.8411677802557,
+            "maxPrice": 1583.523503340767,
+            "workingZoneFrom": 527.8411677802557,
+            "workingZoneTo": 1583.523503340767
           }
         },
         {
@@ -5396,13 +5396,13 @@
           "article": "gel_dlya_brovei_6ml",
           "manualMinPrice": 285.3253056717654,
           "manualMaxPrice": 855.9759170152963,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 411,
-            "maxPrice": 516,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 285.3253056717654,
+            "maxPrice": 855.9759170152963,
+            "workingZoneFrom": 285.3253056717654,
+            "workingZoneTo": 855.9759170152963
           }
         },
         {
@@ -5531,13 +5531,13 @@
           "article": "matte_wax_50ml",
           "manualMinPrice": 412.7687341866778,
           "manualMaxPrice": 1238.3062025600334,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 886,
-            "maxPrice": 900,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 412.7687341866778,
+            "maxPrice": 1238.3062025600334,
+            "workingZoneFrom": 412.7687341866778,
+            "workingZoneTo": 1238.3062025600334
           }
         },
         {
@@ -5666,13 +5666,13 @@
           "article": "tonik_dlya_lica_200ml",
           "manualMinPrice": 370.85487903583424,
           "manualMaxPrice": 1112.5646371075027,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 538,
-            "maxPrice": 540,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 370.85487903583424,
+            "maxPrice": 1112.5646371075027,
+            "workingZoneFrom": 370.85487903583424,
+            "workingZoneTo": 1112.5646371075027
           }
         },
         {
@@ -5801,13 +5801,13 @@
           "article": "skrab_babl_gam_200ml",
           "manualMinPrice": 460.918284283139,
           "manualMaxPrice": 1382.754852849417,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 796,
-            "maxPrice": 846,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 460.918284283139,
+            "maxPrice": 1382.754852849417,
+            "workingZoneFrom": 460.918284283139,
+            "workingZoneTo": 1382.754852849417
           }
         },
         {
@@ -5936,13 +5936,13 @@
           "article": "b_kompleks_bad_60tabl",
           "manualMinPrice": 403.6861125666565,
           "manualMaxPrice": 1211.0583376999696,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 417,
-            "maxPrice": 424,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 403.6861125666565,
+            "maxPrice": 1211.0583376999696,
+            "workingZoneFrom": 403.6861125666565,
+            "workingZoneTo": 1211.0583376999696
           }
         },
         {
@@ -6071,13 +6071,13 @@
           "article": "frutaksa_bad_200gr",
           "manualMinPrice": 665.9132813600255,
           "manualMaxPrice": 1997.7398440800766,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 735,
-            "maxPrice": 746,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 665.9132813600255,
+            "maxPrice": 1997.7398440800766,
+            "workingZoneFrom": 665.9132813600255,
+            "workingZoneTo": 1997.7398440800766
           }
         },
         {
@@ -6330,13 +6330,13 @@
           "article": "penka_160ml",
           "manualMinPrice": 415.7867923652105,
           "manualMaxPrice": 1247.3603770956315,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 705,
-            "maxPrice": 729,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 415.7867923652105,
+            "maxPrice": 1247.3603770956315,
+            "workingZoneFrom": 415.7867923652105,
+            "workingZoneTo": 1247.3603770956315
           }
         },
         {
@@ -6465,13 +6465,13 @@
           "article": "indolakt_bad_60caps",
           "manualMinPrice": 612.1038503484406,
           "manualMaxPrice": 1836.3115510453217,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1086,
-            "maxPrice": 1095,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 612.1038503484406,
+            "maxPrice": 1836.3115510453217,
+            "workingZoneFrom": 612.1038503484406,
+            "workingZoneTo": 1836.3115510453217
           }
         },
         {
@@ -6600,149 +6600,13 @@
           "article": "gel_for_men_3_in_1_1000ml",
           "manualMinPrice": 421.6385637445758,
           "manualMaxPrice": 1264.9156912337273,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 814,
-            "maxPrice": 890,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
-          }
-        },
-        {
-          "articleKey": "maslo_dlya_volos_parf_110ml_",
-          "name": "Масло для волос несмываемое профессиональное Tom Ford L",
-          "owner": null,
-          "segment": "CORE",
-          "abc": "C",
-          "allowedMarginPct": -0.19924480954095158,
-          "requiredPriceForProfitability": 1063.337265359762,
-          "historicalMinProfitablePrice": null,
-          "hardMinPrice": null,
-          "minPrice": 432.69230120127,
-          "maxPrice": 1298.07690360381,
-          "workingZoneFrom": 432.69230120127,
-          "workingZoneTo": 1298.07690360381,
-          "actualMonths": [
-            {
-              "monthKey": "2026-01",
-              "days": 31,
-              "units": 30,
-              "revenue": 23305.11,
-              "avgPrice": 776.837,
-              "marginPct": -0.09745982747989596,
-              "source": "raw_q1_wb"
-            },
-            {
-              "monthKey": "2026-02",
-              "days": 28,
-              "units": 52,
-              "revenue": 47289.29,
-              "avgPrice": 909.4094230769231,
-              "marginPct": -0.05428786822555379,
-              "source": "raw_q1_wb"
-            },
-            {
-              "monthKey": "2026-03",
-              "days": 31,
-              "units": 178,
-              "revenue": 142695.02,
-              "avgPrice": 801.657415730337,
-              "marginPct": -0.2639073397305668,
-              "source": "raw_q1_wb"
-            }
-          ],
-          "planMonths": [
-            {
-              "monthKey": "2026-04",
-              "days": 30,
-              "units": 215,
-              "revenue": 167708,
-              "avgPrice": 780,
-              "source": "plan_workbook_2026"
-            },
-            {
-              "monthKey": "2026-05",
-              "days": 31,
-              "units": 215,
-              "revenue": 167708,
-              "avgPrice": 780,
-              "source": "plan_workbook_2026"
-            },
-            {
-              "monthKey": "2026-06",
-              "days": 30,
-              "units": 215,
-              "revenue": 167708,
-              "avgPrice": 780,
-              "source": "plan_workbook_2026"
-            },
-            {
-              "monthKey": "2026-07",
-              "days": 31,
-              "units": 218,
-              "revenue": 170224,
-              "avgPrice": 780,
-              "source": "plan_workbook_2026"
-            },
-            {
-              "monthKey": "2026-08",
-              "days": 31,
-              "units": 218,
-              "revenue": 170224,
-              "avgPrice": 780,
-              "source": "plan_workbook_2026"
-            },
-            {
-              "monthKey": "2026-09",
-              "days": 30,
-              "units": 219,
-              "revenue": 170565,
-              "avgPrice": 778,
-              "source": "plan_workbook_2026"
-            },
-            {
-              "monthKey": "2026-10",
-              "days": 31,
-              "units": 231,
-              "revenue": 179331,
-              "avgPrice": 778,
-              "source": "plan_workbook_2026"
-            },
-            {
-              "monthKey": "2026-11",
-              "days": 30,
-              "units": 243,
-              "revenue": 189412,
-              "avgPrice": 781,
-              "source": "plan_workbook_2026"
-            },
-            {
-              "monthKey": "2026-12",
-              "days": 31,
-              "units": 258,
-              "revenue": 201006,
-              "avgPrice": 780,
-              "source": "plan_workbook_2026"
-            }
-          ],
-          "summary": null,
-          "sellerSummary": null,
-          "marketArticleId": 423392974,
-          "productStatus": "Актуально",
-          "historicalMaxPrice": 909.4094230769231,
-          "historyQuality": "средняя",
-          "statusComment": "исторический max ниже безубыточности",
-          "article": "maslo_dlya_volos_parf_110ml",
-          "manualMinPrice": 432.69230120127,
-          "manualMaxPrice": 1298.07690360381,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
-          "minMaxPrevious": {
-            "minPrice": 520.3432580643788,
-            "maxPrice": 1561.0297741931363,
-            "workingZoneFrom": 520.3432580643788,
-            "workingZoneTo": 1561.0297741931363
+            "minPrice": 421.6385637445758,
+            "maxPrice": 1264.9156912337273,
+            "workingZoneFrom": 421.6385637445758,
+            "workingZoneTo": 1264.9156912337273
           }
         },
         {
@@ -6871,13 +6735,13 @@
           "article": "gel_brows_5ml",
           "manualMinPrice": 267.5272288234696,
           "manualMaxPrice": 802.5816864704088,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 600,
-            "maxPrice": 666,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 267.5272288234696,
+            "maxPrice": 802.5816864704088,
+            "workingZoneFrom": 267.5272288234696,
+            "workingZoneTo": 802.5816864704088
           }
         },
         {
@@ -7006,13 +6870,13 @@
           "article": "frutalika_bad_60caps",
           "manualMinPrice": 470.29920687446713,
           "manualMaxPrice": 1410.8976206234015,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 544,
-            "maxPrice": 577,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 470.29920687446713,
+            "maxPrice": 1410.8976206234015,
+            "workingZoneFrom": 470.29920687446713,
+            "workingZoneTo": 1410.8976206234015
           }
         },
         {
@@ -7142,13 +7006,13 @@
           "article": "i_am_alpha_bad_60caps",
           "manualMinPrice": 870.7644517822049,
           "manualMaxPrice": 2612.2933553466146,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 992,
-            "maxPrice": 992,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 870.7644517822049,
+            "maxPrice": 2612.2933553466146,
+            "workingZoneFrom": 870.7644517822049,
+            "workingZoneTo": 2612.2933553466146
           }
         },
         {
@@ -7277,13 +7141,13 @@
           "article": "glikiron_bad_60caps",
           "manualMinPrice": 472.0019243021984,
           "manualMaxPrice": 1416.0057729065952,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 899,
-            "maxPrice": 988,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 472.0019243021984,
+            "maxPrice": 1416.0057729065952,
+            "workingZoneFrom": 472.0019243021984,
+            "workingZoneTo": 1416.0057729065952
           }
         },
         {
@@ -7412,13 +7276,13 @@
           "article": "syvorotka_dlya_rosta_6ml",
           "manualMinPrice": 180.26326648822268,
           "manualMaxPrice": 540.789799464668,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 722,
-            "maxPrice": 790,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 180.26326648822268,
+            "maxPrice": 540.789799464668,
+            "workingZoneFrom": 180.26326648822268,
+            "workingZoneTo": 540.789799464668
           }
         },
         {
@@ -7671,13 +7535,13 @@
           "article": "stik_ot_mozoley",
           "manualMinPrice": 400.17473448842674,
           "manualMaxPrice": 1200.5242034652802,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 267,
-            "maxPrice": 267,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 400.17473448842674,
+            "maxPrice": 1200.5242034652802,
+            "workingZoneFrom": 400.17473448842674,
+            "workingZoneTo": 1200.5242034652802
           }
         },
         {
@@ -7806,13 +7670,13 @@
           "article": "nabor_remuver_40ml_1_1",
           "manualMinPrice": 397.5539249675344,
           "manualMaxPrice": 1192.6617749026032,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 661,
-            "maxPrice": 662,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 397.5539249675344,
+            "maxPrice": 1192.6617749026032,
+            "workingZoneFrom": 397.5539249675344,
+            "workingZoneTo": 1192.6617749026032
           }
         },
         {
@@ -8064,13 +7928,13 @@
           "article": "gel_parfum_tabacco_vanille_450ml",
           "manualMinPrice": 414.5637511609371,
           "manualMaxPrice": 1243.6912534828114,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 779,
-            "maxPrice": 779,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 414.5637511609371,
+            "maxPrice": 1243.6912534828114,
+            "workingZoneFrom": 414.5637511609371,
+            "workingZoneTo": 1243.6912534828114
           }
         },
         {
@@ -8199,13 +8063,13 @@
           "article": "alteya_beauty_brows_box",
           "manualMinPrice": 545.7185244355426,
           "manualMaxPrice": 1637.1555733066277,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 831,
-            "maxPrice": 840,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 545.7185244355426,
+            "maxPrice": 1637.1555733066277,
+            "workingZoneFrom": 545.7185244355426,
+            "workingZoneTo": 1637.1555733066277
           }
         },
         {
@@ -8335,13 +8199,13 @@
           "article": "ekdisteron_ultra_man_60caps",
           "manualMinPrice": 582.2580368283608,
           "manualMaxPrice": 1746.7741104850825,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1289,
-            "maxPrice": 1289,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 582.2580368283608,
+            "maxPrice": 1746.7741104850825,
+            "workingZoneFrom": 582.2580368283608,
+            "workingZoneTo": 1746.7741104850825
           }
         },
         {
@@ -8471,13 +8335,13 @@
           "article": "intimvita_300ml",
           "manualMinPrice": 379.7347786697502,
           "manualMaxPrice": 1139.2043360092507,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1193,
-            "maxPrice": 1193,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 379.7347786697502,
+            "maxPrice": 1139.2043360092507,
+            "workingZoneFrom": 379.7347786697502,
+            "workingZoneTo": 1139.2043360092507
           }
         },
         {
@@ -8607,13 +8471,13 @@
           "article": "т-34_bad_60caps",
           "manualMinPrice": 786.4337223251562,
           "manualMaxPrice": 2359.3011669754687,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 775,
-            "maxPrice": 785,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 786.4337223251562,
+            "maxPrice": 2359.3011669754687,
+            "workingZoneFrom": 786.4337223251562,
+            "workingZoneTo": 2359.3011669754687
           }
         },
         {
@@ -8992,13 +8856,13 @@
           "article": "limfaks_bad_30caps",
           "manualMinPrice": 406.0937368951095,
           "manualMaxPrice": 1218.2812106853285,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 675,
-            "maxPrice": 954,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 406.0937368951095,
+            "maxPrice": 1218.2812106853285,
+            "workingZoneFrom": 406.0937368951095,
+            "workingZoneTo": 1218.2812106853285
           }
         },
         {
@@ -9127,13 +8991,13 @@
           "article": "intimvita_200ml",
           "manualMinPrice": 314.97411222734644,
           "manualMaxPrice": 944.9223366820393,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 384,
-            "maxPrice": 426,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 314.97411222734644,
+            "maxPrice": 944.9223366820393,
+            "workingZoneFrom": 314.97411222734644,
+            "workingZoneTo": 944.9223366820393
           }
         },
         {
@@ -9270,10 +9134,10 @@
           "requiredPriceForProfitability": 352.5820912767187,
           "historicalMinProfitablePrice": null,
           "hardMinPrice": null,
-          "minPrice": 353,
-          "maxPrice": 353,
-          "workingZoneFrom": null,
-          "workingZoneTo": null,
+          "minPrice": 432.69230120127,
+          "maxPrice": 1298.07690360381,
+          "workingZoneFrom": 432.69230120127,
+          "workingZoneTo": 1298.07690360381,
           "actualMonths": [
             {
               "monthKey": "2026-01",
@@ -9383,7 +9247,41 @@
           "productStatus": "На вывод",
           "historicalMaxPrice": 215,
           "historyQuality": "очень низкая",
-          "statusComment": "исторический max ниже безубыточности; низкий объем (6 шт.)"
+          "statusComment": "исторический max ниже безубыточности; низкий объем (6 шт.)",
+          "article": "maslo_dlya_volos_parf_110ml",
+          "manualMinPrice": 432.69230120127,
+          "manualMaxPrice": 1298.07690360381,
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T11:12:48.468Z",
+          "minMaxPrevious": {
+            "minPrice": 432.69230120127,
+            "maxPrice": 1298.07690360381,
+            "workingZoneFrom": 432.69230120127,
+            "workingZoneTo": 1298.07690360381
+          },
+          "minMaxMergedAt": "2026-05-20T11:12:48.468Z",
+          "minMaxMergedCanonical": "maslo_dlya_volos_parf_110ml",
+          "mergedArticleKeys": [
+            "maslo_dlya_volos_parf_110ml_"
+          ],
+          "mergedMinMaxAliases": [
+            "maslo_dlya_volos_parf_110ml_"
+          ],
+          "mergedMinMaxRows": [
+            {
+              "fileName": "price_workbench_support.json",
+              "index": 49,
+              "articleKey": "maslo_dlya_volos_parf_110ml_",
+              "article": "maslo_dlya_volos_parf_110ml",
+              "name": "Масло для волос несмываемое профессиональное Tom Ford L",
+              "marketArticleId": 423392974,
+              "currentPrice": "",
+              "currentClientPrice": "",
+              "previousMinPrice": 520.3432580643788,
+              "previousMaxPrice": 1561.0297741931363,
+              "minMaxSource": "Мин макс ВБ 2.xlsx"
+            }
+          ]
         },
         {
           "articleKey": "piling_100ml",
@@ -9760,13 +9658,13 @@
           "article": "retinait_krem_1_5_50ml",
           "manualMinPrice": 401.5067079980702,
           "manualMaxPrice": 1204.5201239942107,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1960,
-            "maxPrice": 2008,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 401.5067079980702,
+            "maxPrice": 1204.5201239942107,
+            "workingZoneFrom": 401.5067079980702,
+            "workingZoneTo": 1204.5201239942107
           }
         },
         {
@@ -9895,13 +9793,13 @@
           "article": "krem_spf50_50ml",
           "manualMinPrice": 463.5742265981553,
           "manualMaxPrice": 1390.7226797944659,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1215,
-            "maxPrice": 1459,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 463.5742265981553,
+            "maxPrice": 1390.7226797944659,
+            "workingZoneFrom": 463.5742265981553,
+            "workingZoneTo": 1390.7226797944659
           }
         },
         {
@@ -10030,13 +9928,13 @@
           "article": "retinait_krem_01_50ml",
           "manualMinPrice": 394.04113886394555,
           "manualMaxPrice": 1182.1234165918368,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1785,
-            "maxPrice": 2245,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 394.04113886394555,
+            "maxPrice": 1182.1234165918368,
+            "workingZoneFrom": 394.04113886394555,
+            "workingZoneTo": 1182.1234165918368
           }
         },
         {
@@ -10165,13 +10063,13 @@
           "article": "vosk_stik_15ml",
           "manualMinPrice": 303.04429673503216,
           "manualMaxPrice": 909.1328902050965,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 719,
-            "maxPrice": 903,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 303.04429673503216,
+            "maxPrice": 909.1328902050965,
+            "workingZoneFrom": 303.04429673503216,
+            "workingZoneTo": 909.1328902050965
           }
         },
         {
@@ -10300,13 +10198,13 @@
           "article": "maska-batter_500ml",
           "manualMinPrice": 505.0435397904806,
           "manualMaxPrice": 1515.1306193714418,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1795,
-            "maxPrice": 2930,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 505.0435397904806,
+            "maxPrice": 1515.1306193714418,
+            "workingZoneFrom": 505.0435397904806,
+            "workingZoneTo": 1515.1306193714418
           }
         },
         {
@@ -10434,13 +10332,13 @@
           "article": "retinol_start_kit",
           "manualMinPrice": 711.1666596560539,
           "manualMaxPrice": 2133.4999789681615,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.911Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 2500,
-            "maxPrice": 2500,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 711.1666596560539,
+            "maxPrice": 2133.4999789681615,
+            "workingZoneFrom": 711.1666596560539,
+            "workingZoneTo": 2133.4999789681615
           }
         },
         {
@@ -40449,10 +40347,18 @@
       ]
     }
   },
-  "minMaxImportAppliedAt": "2026-05-20T06:44:11.912Z",
+  "minMaxImportAppliedAt": "2026-05-20T11:12:48.468Z",
   "minMaxImportSources": [
-    "Мин макс ВБ.xlsx",
-    "Озон мин_макс.xlsx",
-    "Мин максы.xlsx"
+    "Мин макс ВБ 2.xlsx"
+  ],
+  "minMaxMergeAppliedAt": "2026-05-20T11:12:48.468Z",
+  "minMaxMergedPairs": [
+    {
+      "canonical": "maslo_dlya_volos_parf_110ml",
+      "alias": "maslo_dlya_volos_parf_110ml_",
+      "minPrice": 432.69230120127,
+      "maxPrice": 1298.07690360381,
+      "appliedAt": "2026-05-20T11:12:48.468Z"
+    }
   ]
 }

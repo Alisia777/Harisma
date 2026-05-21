@@ -565,13 +565,13 @@
           "maxPrice": 988.3887708351733,
           "manualMinPrice": 329.4629236117244,
           "manualMaxPrice": 988.3887708351733,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1497,
-            "maxPrice": null,
-            "workingZoneFrom": 1497,
-            "workingZoneTo": 1504
+            "minPrice": 329.4629236117244,
+            "maxPrice": 988.3887708351733,
+            "workingZoneFrom": 329.4629236117244,
+            "workingZoneTo": 988.3887708351733
           }
         },
         {
@@ -1127,13 +1127,13 @@
           "maxPrice": 1152.7371520069325,
           "manualMinPrice": 384.2457173356442,
           "manualMaxPrice": 1152.7371520069325,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 814,
-            "maxPrice": null,
-            "workingZoneFrom": 814,
-            "workingZoneTo": 1340
+            "minPrice": 384.2457173356442,
+            "maxPrice": 1152.7371520069325,
+            "workingZoneFrom": 384.2457173356442,
+            "workingZoneTo": 1152.7371520069325
           }
         },
         {
@@ -1689,13 +1689,13 @@
           "maxPrice": 1042.616211864906,
           "manualMinPrice": 347.538737288302,
           "manualMaxPrice": 1042.616211864906,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 2252,
-            "maxPrice": null,
-            "workingZoneFrom": 2252,
-            "workingZoneTo": 2284
+            "minPrice": 347.538737288302,
+            "maxPrice": 1042.616211864906,
+            "workingZoneFrom": 347.538737288302,
+            "workingZoneTo": 1042.616211864906
           }
         },
         {
@@ -2251,13 +2251,13 @@
           "maxPrice": 1054.707896267172,
           "manualMinPrice": 351.569298755724,
           "manualMaxPrice": 1054.707896267172,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 809,
-            "maxPrice": null,
-            "workingZoneFrom": 809,
-            "workingZoneTo": 2433
+            "minPrice": 351.569298755724,
+            "maxPrice": 1054.707896267172,
+            "workingZoneFrom": 351.569298755724,
+            "workingZoneTo": 1054.707896267172
           }
         },
         {
@@ -2813,13 +2813,13 @@
           "maxPrice": 1476.1526003712004,
           "manualMinPrice": 492.0508667904001,
           "manualMaxPrice": 1476.1526003712004,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1453,
-            "maxPrice": null,
-            "workingZoneFrom": 1453,
-            "workingZoneTo": 1464
+            "minPrice": 492.0508667904001,
+            "maxPrice": 1476.1526003712004,
+            "workingZoneFrom": 492.0508667904001,
+            "workingZoneTo": 1476.1526003712004
           }
         },
         {
@@ -3375,13 +3375,13 @@
           "maxPrice": 858.3587332601091,
           "manualMinPrice": 286.1195777533697,
           "manualMaxPrice": 858.3587332601091,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 551,
-            "maxPrice": null,
-            "workingZoneFrom": 551,
-            "workingZoneTo": 619
+            "minPrice": 286.1195777533697,
+            "maxPrice": 858.3587332601091,
+            "workingZoneFrom": 286.1195777533697,
+            "workingZoneTo": 858.3587332601091
           }
         },
         {
@@ -3937,13 +3937,13 @@
           "maxPrice": 1575.3187364506925,
           "manualMinPrice": 525.1062454835642,
           "manualMaxPrice": 1575.3187364506925,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1496,
-            "maxPrice": null,
-            "workingZoneFrom": 1496,
-            "workingZoneTo": 1504
+            "minPrice": 525.1062454835642,
+            "maxPrice": 1575.3187364506925,
+            "workingZoneFrom": 525.1062454835642,
+            "workingZoneTo": 1575.3187364506925
           }
         },
         {
@@ -4499,13 +4499,13 @@
           "maxPrice": 1388.3158072740491,
           "manualMinPrice": 462.77193575801635,
           "manualMaxPrice": 1388.3158072740491,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 951,
-            "maxPrice": null,
-            "workingZoneFrom": 951,
-            "workingZoneTo": 1348
+            "minPrice": 462.77193575801635,
+            "maxPrice": 1388.3158072740491,
+            "workingZoneFrom": 462.77193575801635,
+            "workingZoneTo": 1388.3158072740491
           }
         },
         {
@@ -5061,13 +5061,13 @@
           "maxPrice": 1204.5201239942107,
           "manualMinPrice": 401.5067079980702,
           "manualMaxPrice": 1204.5201239942107,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1960,
-            "maxPrice": null,
-            "workingZoneFrom": 1960,
-            "workingZoneTo": 2008
+            "minPrice": 401.5067079980702,
+            "maxPrice": 1204.5201239942107,
+            "workingZoneFrom": 401.5067079980702,
+            "workingZoneTo": 1204.5201239942107
           }
         },
         {
@@ -5623,13 +5623,13 @@
           "maxPrice": 1442.6885242033377,
           "manualMinPrice": 480.89617473444594,
           "manualMaxPrice": 1442.6885242033377,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1030,
-            "maxPrice": null,
-            "workingZoneFrom": 1030,
-            "workingZoneTo": 1823
+            "minPrice": 480.89617473444594,
+            "maxPrice": 1442.6885242033377,
+            "workingZoneFrom": 480.89617473444594,
+            "workingZoneTo": 1442.6885242033377
           }
         },
         {
@@ -6185,13 +6185,13 @@
           "maxPrice": 1140.077013729383,
           "manualMinPrice": 380.02567124312765,
           "manualMaxPrice": 1140.077013729383,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1595,
-            "maxPrice": null,
-            "workingZoneFrom": 1595,
-            "workingZoneTo": 1617
+            "minPrice": 380.02567124312765,
+            "maxPrice": 1140.077013729383,
+            "workingZoneFrom": 380.02567124312765,
+            "workingZoneTo": 1140.077013729383
           }
         },
         {
@@ -6747,13 +6747,13 @@
           "maxPrice": 922.2255946164105,
           "manualMinPrice": 307.4085315388035,
           "manualMaxPrice": 922.2255946164105,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 656,
-            "maxPrice": null,
-            "workingZoneFrom": 656,
-            "workingZoneTo": 665
+            "minPrice": 307.4085315388035,
+            "maxPrice": 922.2255946164105,
+            "workingZoneFrom": 307.4085315388035,
+            "workingZoneTo": 922.2255946164105
           }
         },
         {
@@ -7309,13 +7309,13 @@
           "maxPrice": 916.9832776135107,
           "manualMinPrice": 305.6610925378369,
           "manualMaxPrice": 916.9832776135107,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1622,
-            "maxPrice": null,
-            "workingZoneFrom": 1622,
-            "workingZoneTo": 1633
+            "minPrice": 305.6610925378369,
+            "maxPrice": 916.9832776135107,
+            "workingZoneFrom": 305.6610925378369,
+            "workingZoneTo": 916.9832776135107
           }
         },
         {
@@ -7871,13 +7871,13 @@
           "maxPrice": 1394.4604912538962,
           "manualMinPrice": 464.8201637512987,
           "manualMaxPrice": 1394.4604912538962,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 969,
-            "maxPrice": null,
-            "workingZoneFrom": 969,
-            "workingZoneTo": 987
+            "minPrice": 464.8201637512987,
+            "maxPrice": 1394.4604912538962,
+            "workingZoneFrom": 464.8201637512987,
+            "workingZoneTo": 1394.4604912538962
           }
         },
         {
@@ -8433,13 +8433,13 @@
           "maxPrice": 1390.7226797944659,
           "manualMinPrice": 463.5742265981553,
           "manualMaxPrice": 1390.7226797944659,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1215,
-            "maxPrice": null,
-            "workingZoneFrom": 1215,
-            "workingZoneTo": 1459
+            "minPrice": 463.5742265981553,
+            "maxPrice": 1390.7226797944659,
+            "workingZoneFrom": 463.5742265981553,
+            "workingZoneTo": 1390.7226797944659
           }
         },
         {
@@ -8995,13 +8995,13 @@
           "maxPrice": 1389.6032392913958,
           "manualMinPrice": 463.2010797637986,
           "manualMaxPrice": 1389.6032392913958,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 904,
-            "maxPrice": null,
-            "workingZoneFrom": 904,
-            "workingZoneTo": 914
+            "minPrice": 463.2010797637986,
+            "maxPrice": 1389.6032392913958,
+            "workingZoneFrom": 463.2010797637986,
+            "workingZoneTo": 1389.6032392913958
           }
         },
         {
@@ -9557,13 +9557,13 @@
           "maxPrice": 1374.0842407521234,
           "manualMinPrice": 458.0280802507078,
           "manualMaxPrice": 1374.0842407521234,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 735,
-            "maxPrice": null,
-            "workingZoneFrom": 735,
-            "workingZoneTo": 815
+            "minPrice": 458.0280802507078,
+            "maxPrice": 1374.0842407521234,
+            "workingZoneFrom": 458.0280802507078,
+            "workingZoneTo": 1374.0842407521234
           }
         },
         {
@@ -10119,13 +10119,13 @@
           "maxPrice": 1319.0902377197576,
           "manualMinPrice": 439.6967459065859,
           "manualMaxPrice": 1319.0902377197576,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 877,
-            "maxPrice": null,
-            "workingZoneFrom": 877,
-            "workingZoneTo": 1221
+            "minPrice": 439.6967459065859,
+            "maxPrice": 1319.0902377197576,
+            "workingZoneFrom": 439.6967459065859,
+            "workingZoneTo": 1319.0902377197576
           }
         },
         {
@@ -10681,13 +10681,13 @@
           "maxPrice": 835.839701546528,
           "manualMinPrice": 278.61323384884264,
           "manualMaxPrice": 835.839701546528,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 573,
-            "maxPrice": null,
-            "workingZoneFrom": 573,
-            "workingZoneTo": 586
+            "minPrice": 278.61323384884264,
+            "maxPrice": 835.839701546528,
+            "workingZoneFrom": 278.61323384884264,
+            "workingZoneTo": 835.839701546528
           }
         },
         {
@@ -11243,13 +11243,13 @@
           "maxPrice": 1010.6397578199602,
           "manualMinPrice": 336.87991927332007,
           "manualMaxPrice": 1010.6397578199602,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 810,
-            "maxPrice": null,
-            "workingZoneFrom": 810,
-            "workingZoneTo": 818
+            "minPrice": 336.87991927332007,
+            "maxPrice": 1010.6397578199602,
+            "workingZoneFrom": 336.87991927332007,
+            "workingZoneTo": 1010.6397578199602
           }
         },
         {
@@ -11805,13 +11805,13 @@
           "maxPrice": 1422.368588491821,
           "manualMinPrice": 474.12286283060695,
           "manualMaxPrice": 1422.368588491821,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 962,
-            "maxPrice": null,
-            "workingZoneFrom": 962,
-            "workingZoneTo": 974
+            "minPrice": 474.12286283060695,
+            "maxPrice": 1422.368588491821,
+            "workingZoneFrom": 474.12286283060695,
+            "workingZoneTo": 1422.368588491821
           }
         },
         {
@@ -12367,13 +12367,13 @@
           "maxPrice": 1690.5330043716385,
           "manualMinPrice": 563.5110014572128,
           "manualMaxPrice": 1690.5330043716385,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 552,
-            "maxPrice": null,
-            "workingZoneFrom": 552,
-            "workingZoneTo": 555
+            "minPrice": 563.5110014572128,
+            "maxPrice": 1690.5330043716385,
+            "workingZoneFrom": 563.5110014572128,
+            "workingZoneTo": 1690.5330043716385
           }
         },
         {
@@ -12929,13 +12929,13 @@
           "maxPrice": 1182.1234165918368,
           "manualMinPrice": 394.04113886394555,
           "manualMaxPrice": 1182.1234165918368,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1785,
-            "maxPrice": null,
-            "workingZoneFrom": 1785,
-            "workingZoneTo": 2245
+            "minPrice": 394.04113886394555,
+            "maxPrice": 1182.1234165918368,
+            "workingZoneFrom": 394.04113886394555,
+            "workingZoneTo": 1182.1234165918368
           }
         },
         {
@@ -13491,13 +13491,13 @@
           "maxPrice": 1340.8975506643933,
           "manualMinPrice": 446.96585022146445,
           "manualMaxPrice": 1340.8975506643933,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 779,
-            "maxPrice": null,
-            "workingZoneFrom": 779,
-            "workingZoneTo": 788
+            "minPrice": 446.96585022146445,
+            "maxPrice": 1340.8975506643933,
+            "workingZoneFrom": 446.96585022146445,
+            "workingZoneTo": 1340.8975506643933
           }
         },
         {
@@ -14053,13 +14053,13 @@
           "maxPrice": 1547.7955309353606,
           "manualMinPrice": 515.9318436451202,
           "manualMaxPrice": 1547.7955309353606,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 842,
-            "maxPrice": null,
-            "workingZoneFrom": 842,
-            "workingZoneTo": 854
+            "minPrice": 515.9318436451202,
+            "maxPrice": 1547.7955309353606,
+            "workingZoneFrom": 515.9318436451202,
+            "workingZoneTo": 1547.7955309353606
           }
         },
         {
@@ -14615,13 +14615,13 @@
           "maxPrice": 1581.295402254891,
           "manualMinPrice": 527.098467418297,
           "manualMaxPrice": 1581.295402254891,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1028,
-            "maxPrice": null,
-            "workingZoneFrom": 1028,
-            "workingZoneTo": 1039
+            "minPrice": 527.098467418297,
+            "maxPrice": 1581.295402254891,
+            "workingZoneFrom": 527.098467418297,
+            "workingZoneTo": 1581.295402254891
           }
         },
         {
@@ -15177,13 +15177,13 @@
           "maxPrice": 1146.5457157580222,
           "manualMinPrice": 382.1819052526741,
           "manualMaxPrice": 1146.5457157580222,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 604,
-            "maxPrice": null,
-            "workingZoneFrom": 604,
-            "workingZoneTo": 606
+            "minPrice": 382.1819052526741,
+            "maxPrice": 1146.5457157580222,
+            "workingZoneFrom": 382.1819052526741,
+            "workingZoneTo": 1146.5457157580222
           }
         },
         {
@@ -15739,13 +15739,13 @@
           "maxPrice": 1206.8779313133934,
           "manualMinPrice": 402.29264377113117,
           "manualMaxPrice": 1206.8779313133934,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 799,
-            "maxPrice": null,
-            "workingZoneFrom": 799,
-            "workingZoneTo": 824
+            "minPrice": 402.29264377113117,
+            "maxPrice": 1206.8779313133934,
+            "workingZoneFrom": 402.29264377113117,
+            "workingZoneTo": 1206.8779313133934
           }
         },
         {
@@ -16301,13 +16301,13 @@
           "maxPrice": 595.933945711808,
           "manualMinPrice": 198.64464857060264,
           "manualMaxPrice": 595.933945711808,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 541,
-            "maxPrice": null,
-            "workingZoneFrom": 541,
-            "workingZoneTo": 566
+            "minPrice": 198.64464857060264,
+            "maxPrice": 595.933945711808,
+            "workingZoneFrom": 198.64464857060264,
+            "workingZoneTo": 595.933945711808
           }
         },
         {
@@ -16863,13 +16863,13 @@
           "maxPrice": 540.1162450552449,
           "manualMinPrice": 180.0387483517483,
           "manualMaxPrice": 540.1162450552449,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 927,
-            "maxPrice": null,
-            "workingZoneFrom": 927,
-            "workingZoneTo": 2485
+            "minPrice": 180.0387483517483,
+            "maxPrice": 540.1162450552449,
+            "workingZoneFrom": 180.0387483517483,
+            "workingZoneTo": 540.1162450552449
           }
         },
         {
@@ -17425,13 +17425,13 @@
           "maxPrice": 841.8979436691076,
           "manualMinPrice": 280.6326478897025,
           "manualMaxPrice": 841.8979436691076,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 563,
-            "maxPrice": null,
-            "workingZoneFrom": 563,
-            "workingZoneTo": 610
+            "minPrice": 280.6326478897025,
+            "maxPrice": 841.8979436691076,
+            "workingZoneFrom": 280.6326478897025,
+            "workingZoneTo": 841.8979436691076
           }
         },
         {
@@ -17987,13 +17987,13 @@
           "maxPrice": 1394.1872643493987,
           "manualMinPrice": 464.72908811646624,
           "manualMaxPrice": 1394.1872643493987,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 294,
-            "maxPrice": null,
-            "workingZoneFrom": 294,
-            "workingZoneTo": 309
+            "minPrice": 464.72908811646624,
+            "maxPrice": 1394.1872643493987,
+            "workingZoneFrom": 464.72908811646624,
+            "workingZoneTo": 1394.1872643493987
           }
         },
         {
@@ -18239,13 +18239,13 @@
           "maxPrice": 2164.23517186199,
           "manualMinPrice": 721.4117239539966,
           "manualMaxPrice": 2164.23517186199,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1142,
-            "maxPrice": null,
-            "workingZoneFrom": 1142,
-            "workingZoneTo": 1150
+            "minPrice": 721.4117239539966,
+            "maxPrice": 2164.23517186199,
+            "workingZoneFrom": 721.4117239539966,
+            "workingZoneTo": 2164.23517186199
           }
         },
         {
@@ -18801,13 +18801,13 @@
           "maxPrice": 1191.519994519253,
           "manualMinPrice": 397.17333150641764,
           "manualMaxPrice": 1191.519994519253,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1016,
-            "maxPrice": null,
-            "workingZoneFrom": 1016,
-            "workingZoneTo": 1016
+            "minPrice": 397.17333150641764,
+            "maxPrice": 1191.519994519253,
+            "workingZoneFrom": 397.17333150641764,
+            "workingZoneTo": 1191.519994519253
           }
         },
         {
@@ -19363,13 +19363,13 @@
           "maxPrice": 1273.5582016520439,
           "manualMinPrice": 424.5194005506813,
           "manualMaxPrice": 1273.5582016520439,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 866,
-            "maxPrice": null,
-            "workingZoneFrom": 866,
-            "workingZoneTo": 1369
+            "minPrice": 424.5194005506813,
+            "maxPrice": 1273.5582016520439,
+            "workingZoneFrom": 424.5194005506813,
+            "workingZoneTo": 1273.5582016520439
           }
         },
         {
@@ -19925,13 +19925,13 @@
           "maxPrice": 1095.6931403025164,
           "manualMinPrice": 365.23104676750546,
           "manualMaxPrice": 1095.6931403025164,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 625,
-            "maxPrice": null,
-            "workingZoneFrom": 625,
-            "workingZoneTo": 643
+            "minPrice": 365.23104676750546,
+            "maxPrice": 1095.6931403025164,
+            "workingZoneFrom": 365.23104676750546,
+            "workingZoneTo": 1095.6931403025164
           }
         },
         {
@@ -20487,13 +20487,13 @@
           "maxPrice": 855.9759170152963,
           "manualMinPrice": 285.3253056717654,
           "manualMaxPrice": 855.9759170152963,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 411,
-            "maxPrice": null,
-            "workingZoneFrom": 411,
-            "workingZoneTo": 516
+            "minPrice": 285.3253056717654,
+            "maxPrice": 855.9759170152963,
+            "workingZoneFrom": 285.3253056717654,
+            "workingZoneTo": 855.9759170152963
           }
         },
         {
@@ -21049,13 +21049,13 @@
           "maxPrice": 909.1328902050965,
           "manualMinPrice": 303.04429673503216,
           "manualMaxPrice": 909.1328902050965,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 719,
-            "maxPrice": null,
-            "workingZoneFrom": 719,
-            "workingZoneTo": 903
+            "minPrice": 303.04429673503216,
+            "maxPrice": 909.1328902050965,
+            "workingZoneFrom": 303.04429673503216,
+            "workingZoneTo": 909.1328902050965
           }
         },
         {
@@ -21611,13 +21611,13 @@
           "maxPrice": 1110.9956980215134,
           "manualMinPrice": 370.33189934050444,
           "manualMaxPrice": 1110.9956980215134,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 815,
-            "maxPrice": null,
-            "workingZoneFrom": 815,
-            "workingZoneTo": 867
+            "minPrice": 370.33189934050444,
+            "maxPrice": 1110.9956980215134,
+            "workingZoneFrom": 370.33189934050444,
+            "workingZoneTo": 1110.9956980215134
           }
         },
         {
@@ -22173,13 +22173,13 @@
           "maxPrice": 910.979772735863,
           "manualMinPrice": 303.65992424528764,
           "manualMaxPrice": 910.979772735863,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 773,
-            "maxPrice": null,
-            "workingZoneFrom": 773,
-            "workingZoneTo": 1321
+            "minPrice": 303.65992424528764,
+            "maxPrice": 910.979772735863,
+            "workingZoneFrom": 303.65992424528764,
+            "workingZoneTo": 910.979772735863
           }
         },
         {
@@ -22735,13 +22735,13 @@
           "maxPrice": 5710.2850446328775,
           "manualMinPrice": 1903.428348210959,
           "manualMaxPrice": 5710.2850446328775,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 2483,
-            "maxPrice": null,
-            "workingZoneFrom": 2483,
-            "workingZoneTo": 2521
+            "minPrice": 1903.428348210959,
+            "maxPrice": 5710.2850446328775,
+            "workingZoneFrom": 1903.428348210959,
+            "workingZoneTo": 5710.2850446328775
           }
         },
         {
@@ -23297,13 +23297,13 @@
           "maxPrice": 1515.1306193714418,
           "manualMinPrice": 505.0435397904806,
           "manualMaxPrice": 1515.1306193714418,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1795,
-            "maxPrice": null,
-            "workingZoneFrom": 1795,
-            "workingZoneTo": 2930
+            "minPrice": 505.0435397904806,
+            "maxPrice": 1515.1306193714418,
+            "workingZoneFrom": 505.0435397904806,
+            "workingZoneTo": 1515.1306193714418
           }
         },
         {
@@ -23859,13 +23859,13 @@
           "maxPrice": 1355.8700791943072,
           "manualMinPrice": 451.95669306476907,
           "manualMaxPrice": 1355.8700791943072,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 940,
-            "maxPrice": null,
-            "workingZoneFrom": 940,
-            "workingZoneTo": 1050
+            "minPrice": 451.95669306476907,
+            "maxPrice": 1355.8700791943072,
+            "workingZoneFrom": 451.95669306476907,
+            "workingZoneTo": 1355.8700791943072
           }
         },
         {
@@ -24421,13 +24421,13 @@
           "maxPrice": 1314.2699795252695,
           "manualMinPrice": 438.08999317508983,
           "manualMaxPrice": 1314.2699795252695,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 958,
-            "maxPrice": null,
-            "workingZoneFrom": 958,
-            "workingZoneTo": 1047
+            "minPrice": 438.08999317508983,
+            "maxPrice": 1314.2699795252695,
+            "workingZoneFrom": 438.08999317508983,
+            "workingZoneTo": 1314.2699795252695
           }
         },
         {
@@ -24983,13 +24983,13 @@
           "maxPrice": 1112.5646371075027,
           "manualMinPrice": 370.85487903583424,
           "manualMaxPrice": 1112.5646371075027,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 538,
-            "maxPrice": null,
-            "workingZoneFrom": 538,
-            "workingZoneTo": 540
+            "minPrice": 370.85487903583424,
+            "maxPrice": 1112.5646371075027,
+            "workingZoneFrom": 370.85487903583424,
+            "workingZoneTo": 1112.5646371075027
           }
         },
         {
@@ -25545,13 +25545,13 @@
           "maxPrice": 802.5816864704088,
           "manualMinPrice": 267.5272288234696,
           "manualMaxPrice": 802.5816864704088,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 600,
-            "maxPrice": null,
-            "workingZoneFrom": 600,
-            "workingZoneTo": 666
+            "minPrice": 267.5272288234696,
+            "maxPrice": 802.5816864704088,
+            "workingZoneFrom": 267.5272288234696,
+            "workingZoneTo": 802.5816864704088
           }
         },
         {
@@ -26107,13 +26107,13 @@
           "maxPrice": 1583.523503340767,
           "manualMinPrice": 527.8411677802557,
           "manualMaxPrice": 1583.523503340767,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 934,
-            "maxPrice": null,
-            "workingZoneFrom": 934,
-            "workingZoneTo": 936
+            "minPrice": 527.8411677802557,
+            "maxPrice": 1583.523503340767,
+            "workingZoneFrom": 527.8411677802557,
+            "workingZoneTo": 1583.523503340767
           }
         },
         {
@@ -26669,13 +26669,13 @@
           "maxPrice": 1382.754852849417,
           "manualMinPrice": 460.918284283139,
           "manualMaxPrice": 1382.754852849417,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 796,
-            "maxPrice": null,
-            "workingZoneFrom": 796,
-            "workingZoneTo": 846
+            "minPrice": 460.918284283139,
+            "maxPrice": 1382.754852849417,
+            "workingZoneFrom": 460.918284283139,
+            "workingZoneTo": 1382.754852849417
           }
         },
         {
@@ -27231,566 +27231,13 @@
           "maxPrice": 1238.3062025600334,
           "manualMinPrice": 412.7687341866778,
           "manualMaxPrice": 1238.3062025600334,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 886,
-            "maxPrice": null,
-            "workingZoneFrom": 886,
-            "workingZoneTo": 900
-          }
-        },
-        {
-          "marketplace": "wb",
-          "articleKey": "maslo_dlya_volos_parf_110ml_",
-          "article": "maslo_dlya_volos_parf_110ml_",
-          "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
-          "owner": "Мария",
-          "status": "Актуально",
-          "segment": "CORE",
-          "abc": "C",
-          "allowedMarginPct": -0.13855167847867217,
-          "marginTotalPct": -0.4951,
-          "avgMargin7dPct": -0.4951,
-          "turnoverCurrentDays": 208.8947,
-          "currentFillPrice": 780,
-          "currentClientPrice": 504.99999997200007,
-          "currentSppPct": 0.3525641026,
-          "seedTargetFillPrice": 780,
-          "seedTargetClientPrice": 504.99999997200007,
-          "seedReason": "Стратегия не применяется: SKU со статусом Вывод не подлежит автокоррекции цены.",
-          "requiredPriceForProfitability": 1063.337265359762,
-          "requiredPriceForMargin": 864.0742536193015,
-          "minPrice": 432.69230120127,
-          "basePrice": 820.3439230769231,
-          "workingZoneFrom": 432.69230120127,
-          "workingZoneTo": 1298.07690360381,
-          "hardMinPrice": 1063.337265359762,
-          "stock": 1490,
-          "historyFreshnessDate": "2026-04-19",
-          "historyNote": "WB: после 31.03 дневная линия достроена из текущего среза. Продажи по дням в свежем пакете пока не пришли.",
-          "planMonthKey": "2026-04",
-          "planMonthLabel": "Апрель 2026",
-          "planMonthDays": 30,
-          "planMonthUnits": 215,
-          "planMonthCheck": 780,
-          "planMonthRevenue": 167708,
-          "planMonthContentUnits": 0,
-          "monthly": [
-            {
-              "date": "2026-03-01",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-02",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-03",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-04",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-05",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-06",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-07",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-08",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-09",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-10",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-11",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-12",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-13",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-14",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-15",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-16",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-17",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-18",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-19",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-20",
-              "turnoverDays": 211.68,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-21",
-              "turnoverDays": 211.28210525714286,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-22",
-              "turnoverDays": 210.8842105142857,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-23",
-              "turnoverDays": 210.48631577142856,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-24",
-              "turnoverDays": 210.08842102857145,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-25",
-              "turnoverDays": 209.6905262857143,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-26",
-              "turnoverDays": 209.29263154285715,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-27",
-              "turnoverDays": 208.8947368,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-28",
-              "turnoverDays": 208.8947368,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-29",
-              "turnoverDays": 208.8947368,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-30",
-              "turnoverDays": 208.8947368,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-03-31",
-              "turnoverDays": 208.8947368,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-01",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-02",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-03",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-04",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-05",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-06",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-07",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-08",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-09",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-10",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-11",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-12",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-13",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-14",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-15",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-16",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-17",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-18",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-19",
-              "turnoverDays": 208.8947,
-              "price": 780,
-              "clientPrice": 504.99999997200007,
-              "sppPct": 0.3525641026,
-              "ordersUnits": null,
-              "deliveredUnits": null,
-              "revenue": null
-            },
-            {
-              "date": "2026-04-23"
-            }
-          ],
-          "maxPrice": 1298.07690360381,
-          "manualMinPrice": 432.69230120127,
-          "manualMaxPrice": 1298.07690360381,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
-          "minMaxPrevious": {
-            "minPrice": 520.3432580643788,
-            "maxPrice": 1561.0297741931363,
-            "workingZoneFrom": 520.3432580643788,
-            "workingZoneTo": 1561.0297741931363
+            "minPrice": 412.7687341866778,
+            "maxPrice": 1238.3062025600334,
+            "workingZoneFrom": 412.7687341866778,
+            "workingZoneTo": 1238.3062025600334
           }
         },
         {
@@ -28346,13 +27793,13 @@
           "maxPrice": 1264.9156912337273,
           "manualMinPrice": 421.6385637445758,
           "manualMaxPrice": 1264.9156912337273,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 814,
-            "maxPrice": null,
-            "workingZoneFrom": 814,
-            "workingZoneTo": 890
+            "minPrice": 421.6385637445758,
+            "maxPrice": 1264.9156912337273,
+            "workingZoneFrom": 421.6385637445758,
+            "workingZoneTo": 1264.9156912337273
           }
         },
         {
@@ -28908,13 +28355,13 @@
           "maxPrice": 1997.7398440800766,
           "manualMinPrice": 665.9132813600255,
           "manualMaxPrice": 1997.7398440800766,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 735,
-            "maxPrice": null,
-            "workingZoneFrom": 735,
-            "workingZoneTo": 746
+            "minPrice": 665.9132813600255,
+            "maxPrice": 1997.7398440800766,
+            "workingZoneFrom": 665.9132813600255,
+            "workingZoneTo": 1997.7398440800766
           }
         },
         {
@@ -30528,13 +29975,13 @@
           "maxPrice": 1211.0583376999696,
           "manualMinPrice": 403.6861125666565,
           "manualMaxPrice": 1211.0583376999696,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 417,
-            "maxPrice": null,
-            "workingZoneFrom": 417,
-            "workingZoneTo": 424
+            "minPrice": 403.6861125666565,
+            "maxPrice": 1211.0583376999696,
+            "workingZoneFrom": 403.6861125666565,
+            "workingZoneTo": 1211.0583376999696
           }
         },
         {
@@ -31090,13 +30537,13 @@
           "maxPrice": 1836.3115510453217,
           "manualMinPrice": 612.1038503484406,
           "manualMaxPrice": 1836.3115510453217,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1086,
-            "maxPrice": null,
-            "workingZoneFrom": 1086,
-            "workingZoneTo": 1095
+            "minPrice": 612.1038503484406,
+            "maxPrice": 1836.3115510453217,
+            "workingZoneFrom": 612.1038503484406,
+            "workingZoneTo": 1836.3115510453217
           }
         },
         {
@@ -31536,13 +30983,13 @@
           "maxPrice": 1247.3603770956315,
           "manualMinPrice": 415.7867923652105,
           "manualMaxPrice": 1247.3603770956315,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 705,
-            "maxPrice": null,
-            "workingZoneFrom": 705,
-            "workingZoneTo": 729
+            "minPrice": 415.7867923652105,
+            "maxPrice": 1247.3603770956315,
+            "workingZoneFrom": 415.7867923652105,
+            "workingZoneTo": 1247.3603770956315
           }
         },
         {
@@ -32098,13 +31545,13 @@
           "maxPrice": 1410.8976206234015,
           "manualMinPrice": 470.29920687446713,
           "manualMaxPrice": 1410.8976206234015,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 544,
-            "maxPrice": null,
-            "workingZoneFrom": 544,
-            "workingZoneTo": 577
+            "minPrice": 470.29920687446713,
+            "maxPrice": 1410.8976206234015,
+            "workingZoneFrom": 470.29920687446713,
+            "workingZoneTo": 1410.8976206234015
           }
         },
         {
@@ -32660,13 +32107,13 @@
           "maxPrice": 1243.6912534828114,
           "manualMinPrice": 414.5637511609371,
           "manualMaxPrice": 1243.6912534828114,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 779,
-            "maxPrice": null,
-            "workingZoneFrom": 779,
-            "workingZoneTo": 779
+            "minPrice": 414.5637511609371,
+            "maxPrice": 1243.6912534828114,
+            "workingZoneFrom": 414.5637511609371,
+            "workingZoneTo": 1243.6912534828114
           }
         },
         {
@@ -33222,13 +32669,13 @@
           "maxPrice": 1200.5242034652802,
           "manualMinPrice": 400.17473448842674,
           "manualMaxPrice": 1200.5242034652802,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 267,
-            "maxPrice": null,
-            "workingZoneFrom": 267,
-            "workingZoneTo": 267
+            "minPrice": 400.17473448842674,
+            "maxPrice": 1200.5242034652802,
+            "workingZoneFrom": 400.17473448842674,
+            "workingZoneTo": 1200.5242034652802
           }
         },
         {
@@ -33784,13 +33231,13 @@
           "maxPrice": 1416.0057729065952,
           "manualMinPrice": 472.0019243021984,
           "manualMaxPrice": 1416.0057729065952,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 899,
-            "maxPrice": null,
-            "workingZoneFrom": 899,
-            "workingZoneTo": 988
+            "minPrice": 472.0019243021984,
+            "maxPrice": 1416.0057729065952,
+            "workingZoneFrom": 472.0019243021984,
+            "workingZoneTo": 1416.0057729065952
           }
         },
         {
@@ -34346,13 +33793,13 @@
           "maxPrice": 1139.2043360092507,
           "manualMinPrice": 379.7347786697502,
           "manualMaxPrice": 1139.2043360092507,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1193,
-            "maxPrice": null,
-            "workingZoneFrom": 1193,
-            "workingZoneTo": 1193
+            "minPrice": 379.7347786697502,
+            "maxPrice": 1139.2043360092507,
+            "workingZoneFrom": 379.7347786697502,
+            "workingZoneTo": 1139.2043360092507
           }
         },
         {
@@ -34908,13 +34355,13 @@
           "maxPrice": 2612.2933553466146,
           "manualMinPrice": 870.7644517822049,
           "manualMaxPrice": 2612.2933553466146,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 992,
-            "maxPrice": null,
-            "workingZoneFrom": 992,
-            "workingZoneTo": 992
+            "minPrice": 870.7644517822049,
+            "maxPrice": 2612.2933553466146,
+            "workingZoneFrom": 870.7644517822049,
+            "workingZoneTo": 2612.2933553466146
           }
         },
         {
@@ -35470,13 +34917,13 @@
           "maxPrice": 540.789799464668,
           "manualMinPrice": 180.26326648822268,
           "manualMaxPrice": 540.789799464668,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 722,
-            "maxPrice": null,
-            "workingZoneFrom": 722,
-            "workingZoneTo": 790
+            "minPrice": 180.26326648822268,
+            "maxPrice": 540.789799464668,
+            "workingZoneFrom": 180.26326648822268,
+            "workingZoneTo": 540.789799464668
           }
         },
         {
@@ -36497,13 +35944,13 @@
           "maxPrice": 1746.7741104850825,
           "manualMinPrice": 582.2580368283608,
           "manualMaxPrice": 1746.7741104850825,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 1289,
-            "maxPrice": null,
-            "workingZoneFrom": 1289,
-            "workingZoneTo": 1289
+            "minPrice": 582.2580368283608,
+            "maxPrice": 1746.7741104850825,
+            "workingZoneFrom": 582.2580368283608,
+            "workingZoneTo": 1746.7741104850825
           }
         },
         {
@@ -37059,13 +36506,13 @@
           "maxPrice": 1192.6617749026032,
           "manualMinPrice": 397.5539249675344,
           "manualMaxPrice": 1192.6617749026032,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 661,
-            "maxPrice": null,
-            "workingZoneFrom": 661,
-            "workingZoneTo": 662
+            "minPrice": 397.5539249675344,
+            "maxPrice": 1192.6617749026032,
+            "workingZoneFrom": 397.5539249675344,
+            "workingZoneTo": 1192.6617749026032
           }
         },
         {
@@ -37621,13 +37068,13 @@
           "maxPrice": 1637.1555733066277,
           "manualMinPrice": 545.7185244355426,
           "manualMaxPrice": 1637.1555733066277,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 831,
-            "maxPrice": null,
-            "workingZoneFrom": 831,
-            "workingZoneTo": 840
+            "minPrice": 545.7185244355426,
+            "maxPrice": 1637.1555733066277,
+            "workingZoneFrom": 545.7185244355426,
+            "workingZoneTo": 1637.1555733066277
           }
         },
         {
@@ -38183,13 +37630,13 @@
           "maxPrice": 2359.3011669754687,
           "manualMinPrice": 786.4337223251562,
           "manualMaxPrice": 2359.3011669754687,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 775,
-            "maxPrice": null,
-            "workingZoneFrom": 775,
-            "workingZoneTo": 785
+            "minPrice": 786.4337223251562,
+            "maxPrice": 2359.3011669754687,
+            "workingZoneFrom": 786.4337223251562,
+            "workingZoneTo": 2359.3011669754687
           }
         },
         {
@@ -39473,13 +38920,13 @@
           "maxPrice": 2133.4999789681615,
           "manualMinPrice": 711.1666596560539,
           "manualMaxPrice": 2133.4999789681615,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 2500,
-            "maxPrice": null,
-            "workingZoneFrom": 2500,
-            "workingZoneTo": 2500
+            "minPrice": 711.1666596560539,
+            "maxPrice": 2133.4999789681615,
+            "workingZoneFrom": 711.1666596560539,
+            "workingZoneTo": 2133.4999789681615
           }
         },
         {
@@ -40035,13 +39482,13 @@
           "maxPrice": 1258.6533427287034,
           "manualMinPrice": 419.5511142429011,
           "manualMaxPrice": 1258.6533427287034,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 230,
-            "maxPrice": null,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 419.5511142429011,
+            "maxPrice": 1258.6533427287034,
+            "workingZoneFrom": 419.5511142429011,
+            "workingZoneTo": 1258.6533427287034
           }
         },
         {
@@ -40597,13 +40044,13 @@
           "maxPrice": 1352.8869307116831,
           "manualMinPrice": 450.9623102372277,
           "manualMaxPrice": 1352.8869307116831,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 248,
-            "maxPrice": null,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 450.9623102372277,
+            "maxPrice": 1352.8869307116831,
+            "workingZoneFrom": 450.9623102372277,
+            "workingZoneTo": 1352.8869307116831
           }
         },
         {
@@ -41159,13 +40606,13 @@
           "maxPrice": 1546.2375425947907,
           "manualMinPrice": 515.4125141982636,
           "manualMaxPrice": 1546.2375425947907,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 232,
-            "maxPrice": null,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 515.4125141982636,
+            "maxPrice": 1546.2375425947907,
+            "workingZoneFrom": 515.4125141982636,
+            "workingZoneTo": 1546.2375425947907
           }
         },
         {
@@ -41721,13 +41168,13 @@
           "maxPrice": 1230.8887641787283,
           "manualMinPrice": 410.29625472624275,
           "manualMaxPrice": 1230.8887641787283,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 233,
-            "maxPrice": null,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 410.29625472624275,
+            "maxPrice": 1230.8887641787283,
+            "workingZoneFrom": 410.29625472624275,
+            "workingZoneTo": 1230.8887641787283
           }
         },
         {
@@ -42283,13 +41730,13 @@
           "maxPrice": 1218.2812106853285,
           "manualMinPrice": 406.0937368951095,
           "manualMaxPrice": 1218.2812106853285,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 675,
-            "maxPrice": null,
-            "workingZoneFrom": 675,
-            "workingZoneTo": 954
+            "minPrice": 406.0937368951095,
+            "maxPrice": 1218.2812106853285,
+            "workingZoneFrom": 406.0937368951095,
+            "workingZoneTo": 1218.2812106853285
           }
         },
         {
@@ -42845,13 +42292,13 @@
           "maxPrice": 944.9223366820393,
           "manualMinPrice": 314.97411222734644,
           "manualMaxPrice": 944.9223366820393,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 384,
-            "maxPrice": null,
-            "workingZoneFrom": 384,
-            "workingZoneTo": 426
+            "minPrice": 314.97411222734644,
+            "maxPrice": 944.9223366820393,
+            "workingZoneFrom": 314.97411222734644,
+            "workingZoneTo": 944.9223366820393
           }
         },
         {
@@ -43779,10 +43226,10 @@
           "seedReason": "Стратегия не применяется: SKU со статусом Вывод не подлежит автокоррекции цены.",
           "requiredPriceForProfitability": 352.5820912767187,
           "requiredPriceForMargin": 201.53815157642086,
-          "minPrice": 353,
+          "minPrice": 432.69230120127,
           "basePrice": 212.66666666666666,
-          "workingZoneFrom": 353,
-          "workingZoneTo": 353,
+          "workingZoneFrom": 432.69230120127,
+          "workingZoneTo": 1298.07690360381,
           "hardMinPrice": 352.5820912767187,
           "stock": 0,
           "historyFreshnessDate": "2026-04-19",
@@ -44307,7 +43754,41 @@
           "costRub": 149.62,
           "costPrice": 149.62,
           "costSource": "sebes_import_2026-05-18",
-          "costImportedAt": "2026-05-18T14:34:19.064Z"
+          "costImportedAt": "2026-05-18T14:34:19.064Z",
+          "maxPrice": 1298.07690360381,
+          "manualMinPrice": 432.69230120127,
+          "manualMaxPrice": 1298.07690360381,
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T11:12:48.468Z",
+          "minMaxPrevious": {
+            "minPrice": 432.69230120127,
+            "maxPrice": 1298.07690360381,
+            "workingZoneFrom": 432.69230120127,
+            "workingZoneTo": 1298.07690360381
+          },
+          "minMaxMergedAt": "2026-05-20T11:12:48.468Z",
+          "minMaxMergedCanonical": "maslo_dlya_volos_parf_110ml",
+          "mergedArticleKeys": [
+            "maslo_dlya_volos_parf_110ml_"
+          ],
+          "mergedMinMaxAliases": [
+            "maslo_dlya_volos_parf_110ml_"
+          ],
+          "mergedMinMaxRows": [
+            {
+              "fileName": "smart_price_workbench.json",
+              "index": 49,
+              "articleKey": "maslo_dlya_volos_parf_110ml_",
+              "article": "maslo_dlya_volos_parf_110ml_",
+              "name": "Масло для волос несмываемое профессиональное Tom Ford Lost Cherry, Алтея, 110 мл",
+              "marketArticleId": "",
+              "currentPrice": 780,
+              "currentClientPrice": 504.99999997200007,
+              "previousMinPrice": 520.3432580643788,
+              "previousMaxPrice": 1561.0297741931363,
+              "minMaxSource": "Мин макс ВБ 2.xlsx"
+            }
+          ]
         },
         {
           "marketplace": "wb",
@@ -46328,10 +45809,10 @@
           "seedReason": "Стратегия не применяется: SKU со статусом Нет в спецификации не подлежит автокоррекции цены.",
           "requiredPriceForProfitability": null,
           "requiredPriceForMargin": null,
-          "minPrice": 0,
+          "minPrice": 1476,
           "basePrice": 6000,
-          "workingZoneFrom": null,
-          "workingZoneTo": null,
+          "workingZoneFrom": 1476,
+          "workingZoneTo": 3000,
           "hardMinPrice": null,
           "stock": 0,
           "historyFreshnessDate": "2026-04-19",
@@ -46542,7 +46023,18 @@
           "costRub": 324.07,
           "costPrice": 324.07,
           "costSource": "sebes_import_2026-05-18",
-          "costImportedAt": "2026-05-18T14:34:19.064Z"
+          "costImportedAt": "2026-05-18T14:34:19.064Z",
+          "maxPrice": 3000,
+          "manualMinPrice": 1476,
+          "manualMaxPrice": 3000,
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
+          "minMaxPrevious": {
+            "minPrice": 0,
+            "maxPrice": null,
+            "workingZoneFrom": null,
+            "workingZoneTo": null
+          }
         },
         {
           "marketplace": "wb",
@@ -47454,13 +46946,13 @@
           "maxPrice": 1377.0211150365494,
           "manualMinPrice": 459.00703834551643,
           "manualMaxPrice": 1377.0211150365494,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 0,
-            "maxPrice": null,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 459.00703834551643,
+            "maxPrice": 1377.0211150365494,
+            "workingZoneFrom": 459.00703834551643,
+            "workingZoneTo": 1377.0211150365494
           }
         },
         {
@@ -47706,13 +47198,13 @@
           "maxPrice": 1719.9389271177765,
           "manualMinPrice": 573.3129757059255,
           "manualMaxPrice": 1719.9389271177765,
-          "minMaxSource": "Мин макс ВБ.xlsx",
-          "minMaxImportedAt": "2026-05-20T06:44:11.877Z",
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
           "minMaxPrevious": {
-            "minPrice": 0,
-            "maxPrice": null,
-            "workingZoneFrom": null,
-            "workingZoneTo": null
+            "minPrice": 573.3129757059255,
+            "maxPrice": 1719.9389271177765,
+            "workingZoneFrom": 573.3129757059255,
+            "workingZoneTo": 1719.9389271177765
           }
         },
         {
@@ -47736,10 +47228,10 @@
           "seedReason": "Стратегия не применяется: SKU со статусом Нет в спецификации не подлежит автокоррекции цены.",
           "requiredPriceForProfitability": null,
           "requiredPriceForMargin": null,
-          "minPrice": 0,
+          "minPrice": 1376,
           "basePrice": 3000,
-          "workingZoneFrom": null,
-          "workingZoneTo": null,
+          "workingZoneFrom": 1376,
+          "workingZoneTo": 3000,
           "hardMinPrice": null,
           "stock": 0,
           "historyFreshnessDate": "2026-04-19",
@@ -47950,7 +47442,18 @@
           "costRub": 286.12,
           "costPrice": 286.12,
           "costSource": "sebes_import_2026-05-18",
-          "costImportedAt": "2026-05-18T14:34:19.064Z"
+          "costImportedAt": "2026-05-18T14:34:19.064Z",
+          "maxPrice": 3000,
+          "manualMinPrice": 1376,
+          "manualMaxPrice": 3000,
+          "minMaxSource": "Мин макс ВБ 2.xlsx",
+          "minMaxImportedAt": "2026-05-20T10:50:00.382Z",
+          "minMaxPrevious": {
+            "minPrice": 0,
+            "maxPrice": null,
+            "workingZoneFrom": null,
+            "workingZoneTo": null
+          }
         },
         {
           "marketplace": "wb",
@@ -199200,10 +198703,18 @@
   "costImportAppliedAt": "2026-05-18T14:34:19.064Z",
   "costImportSource": "sebes_import_clean.csv",
   "costImportRows": 284,
-  "minMaxImportAppliedAt": "2026-05-20T06:44:11.878Z",
+  "minMaxImportAppliedAt": "2026-05-20T11:12:48.468Z",
   "minMaxImportSources": [
-    "Мин макс ВБ.xlsx",
-    "Озон мин_макс.xlsx",
-    "Мин максы.xlsx"
+    "Мин макс ВБ 2.xlsx"
+  ],
+  "minMaxMergeAppliedAt": "2026-05-20T11:12:48.468Z",
+  "minMaxMergedPairs": [
+    {
+      "canonical": "maslo_dlya_volos_parf_110ml",
+      "alias": "maslo_dlya_volos_parf_110ml_",
+      "minPrice": 432.69230120127,
+      "maxPrice": 1298.07690360381,
+      "appliedAt": "2026-05-20T11:12:48.468Z"
+    }
   ]
 }

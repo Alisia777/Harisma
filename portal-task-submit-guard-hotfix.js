@@ -116,7 +116,7 @@
 
   function installCreateTaskGuard() {
     const original = window.createManualTask || (typeof createManualTask === 'function' ? createManualTask : null);
-    if (typeof original !== 'function' || original.__alteaTaskSubmitGuarded) return;
+    if (typeof original !== 'function' || original.__alteaTaskSubmitGuarded) return Boolean(original?.__alteaTaskSubmitGuarded);
 
     const guarded = async function guardedCreateManualTask(payload = {}) {
       const key = payloadKey(payload);
@@ -144,8 +144,12 @@
 
     window.createManualTask = guarded;
     try { createManualTask = guarded; } catch {}
+    return true;
   }
 
   installFormGuard();
   installCreateTaskGuard();
+  window.addEventListener('load', installCreateTaskGuard, { once: true });
+  const guardTimer = window.setInterval(installCreateTaskGuard, 500);
+  window.setTimeout(() => window.clearInterval(guardTimer), 30000);
 })();

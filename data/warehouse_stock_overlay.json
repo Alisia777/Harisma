@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-05-19T10:50:58.728Z",
+  "generatedAt": "2026-05-21T07:33:47.279Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
   "sourceFormat": "google-csv-export",
   "sheetName": "Sheet1",
   "matchField": "Наименование как в ЛК -> article/articleKey",
-  "sheetRowCount": 297,
+  "sheetRowCount": 296,
   "matchedRowCount": 83,
   "matchedSkuCount": 81,
   "unmatchedSourceKeys": [
@@ -37,8 +37,8 @@
     "harly_ear_drops"
   ],
   "summary": {
-    "stockWarehouse": 275381,
-    "accepted": 2004215,
+    "stockWarehouse": 305036,
+    "accepted": 2033870,
     "shippedOzon": 526958,
     "shippedWB": 1201341
   },
@@ -388,8 +388,8 @@
     },
     {
       "articleKey": "kremshelk_100ml",
-      "stockWarehouse": 1371,
-      "accepted": 43932,
+      "stockWarehouse": 10491,
+      "accepted": 53052,
       "shippedOzon": 4853,
       "shippedWB": 37708,
       "sourceKeys": [
@@ -410,8 +410,8 @@
     },
     {
       "articleKey": "limfaks_bad_30caps",
-      "stockWarehouse": 1041,
-      "accepted": 24603,
+      "stockWarehouse": 21576,
+      "accepted": 45138,
       "shippedOzon": 6247,
       "shippedWB": 17315,
       "sourceKeys": [

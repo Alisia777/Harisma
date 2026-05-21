@@ -27,6 +27,16 @@
             headers: { 'Content-Type': 'application/json; charset=utf-8' }
           }));
         }
+        if (
+          url.hostname.endsWith('.supabase.co') &&
+          url.pathname.includes('/portal_data_snapshots') &&
+          String(url.searchParams.get('snapshot_key') || '').includes('__part__')
+        ) {
+          return Promise.resolve(new Response('[]', {
+            status: 200,
+            headers: { 'Content-Type': 'application/json; charset=utf-8' }
+          }));
+        }
       } catch {
         // Fall through to the real request.
       }

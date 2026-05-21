@@ -52,7 +52,7 @@
     repricer: ['repricer'],
     'sku-plan-fact': ['planFact'],
     'sku-contour': ['planFact'],
-    'oos-control': ['planFact'],
+    'oos-control': [],
     skus: ['skus']
   };
 

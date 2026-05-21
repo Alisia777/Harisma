@@ -9,6 +9,7 @@
   const FULL_PREFIX = 'altea:render-budget:';
 
   let skuLastBudget = null;
+  let pricesLastBudget = null;
   let skuScheduled = false;
   let pricesScheduled = false;
 
@@ -231,7 +232,39 @@
     ensureObserver(root, '__alteaPricesBudgetObserver', schedulePricesApply);
     const tbody = root.querySelector('.pw-table tbody');
     const anchor = root.querySelector('.pw-table-head') || root.querySelector('.pw-card h2') || root.querySelector('.pw-card');
-    trimRows(root, tbody, PRICES_VIEW, PRICES_LIMIT, '\u0441\u0442\u0440\u043e\u043a \u043f\u0440\u0430\u0439\u0441-\u0432\u043e\u0440\u043a\u0431\u0435\u043d\u0447\u0430', anchor);
+    const knownTotal = pricesLastBudget && pricesLastBudget.total;
+    trimRows(root, tbody, PRICES_VIEW, PRICES_LIMIT, '\u0441\u0442\u0440\u043e\u043a \u043f\u0440\u0430\u0439\u0441-\u0432\u043e\u0440\u043a\u0431\u0435\u043d\u0447\u0430', anchor, knownTotal);
+  }
+
+  function looksLikePriceRows(rows) {
+    if (!rows || rows.length <= PRICES_LIMIT) return false;
+    const row = rows[0];
+    return !!(row && typeof row === 'object' && row.articleKey && row.market && ('currentFillPrice' in row || 'repricerDisplay' in row));
+  }
+
+  function renderWithPriceBudget(originalRender, thisArg, args) {
+    if (isFull(PRICES_VIEW)) {
+      pricesLastBudget = null;
+      return originalRender.apply(thisArg, args);
+    }
+
+    const originalMap = Array.prototype.map;
+    let applied = false;
+    Array.prototype.map = function (callback, mapThisArg) {
+      if (!applied && looksLikePriceRows(this)) {
+        pricesLastBudget = { visible: PRICES_LIMIT, total: this.length };
+        applied = true;
+        return originalMap.call(this.slice(0, PRICES_LIMIT), callback, mapThisArg);
+      }
+      return originalMap.call(this, callback, mapThisArg);
+    };
+
+    try {
+      return originalRender.apply(thisArg, args);
+    } finally {
+      Array.prototype.map = originalMap;
+      if (!applied) pricesLastBudget = null;
+    }
   }
 
   function hookPrices() {
@@ -243,7 +276,7 @@
 
     const originalRender = window.renderPriceWorkbench;
     function wrappedRenderPriceWorkbench() {
-      const result = originalRender.apply(this, arguments);
+      const result = renderWithPriceBudget(originalRender, this, arguments);
       window.requestAnimationFrame(applyPricesBudgetDom);
       window.setTimeout(applyPricesBudgetDom, 0);
       return result;

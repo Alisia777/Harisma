@@ -24,10 +24,12 @@
     ],
     control: [
       'portal-control-center-v2-hotfix.js?v=20260521prod1',
+      'portal-control-marketplace-scope-hotfix.js?v=20260521scope1',
       'portal-form-visual-refine.js?v=20260521prod1'
     ],
     executive: [
       'portal-executive-lite-guard.js?v=20260521prod1',
+      'portal-control-marketplace-scope-hotfix.js?v=20260521scope1',
       'portal-form-visual-refine.js?v=20260521prod1'
     ],
     workflow: [
@@ -69,8 +71,8 @@
 
   const SIDEBAR_LABELS = {
     'oos-control': {
-      title: 'OOS \u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c',
-      subtitle: '\u0410\u0443\u0442\u044b \u00b7 \u043f\u043e\u0442\u0435\u0440\u0438 \u00b7 \u043c\u0435\u0440\u044b'
+      title: 'OOS контроль',
+      subtitle: 'Ауты · потери · меры'
     }
   };
 
@@ -110,7 +112,7 @@
       script.src = src;
       script.async = false;
       script.onload = () => resolve(script);
-      script.onerror = () => reject(new Error(`\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c ${src}`));
+      script.onerror = () => reject(new Error(`Не удалось загрузить ${src}`));
       (document.head || document.body || document.documentElement).appendChild(script);
     });
     scriptPromises.set(src, promise);

@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { execFileSync } = require('child_process');
+const XLSX = require('xlsx');
 
 const API_BASE_URL = 'https://api.partner.market.yandex.ru';
 const PLATFORM_LABELS = {
@@ -64,6 +65,14 @@ function numberOrZero(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function asBool(value, fallback = false) {
+  const raw = normalizeText(value).toLowerCase();
+  if (!raw) return fallback;
+  if (['1', 'true', 'yes', 'y', 'on'].includes(raw)) return true;
+  if (['0', 'false', 'no', 'n', 'off'].includes(raw)) return false;
+  return fallback;
+}
+
 function firstNumber(...values) {
   for (const value of values) {
     const parsed = Number(value);
@@ -115,12 +124,14 @@ function resolveOptions(args) {
   const autoLagDays = new Date().getHours() < settlementHour ? 2 : 1;
   const to = explicitTo || localDateKey(-autoLagDays);
   const from = isoDate(args.from || args['date-from'] || `${to.slice(0, 7)}-01`);
+  const reportFile = normalizeText(args['report-file'] || args['local-report-file'] || process.env.ALTEA_YM_SALES_FUNNEL_FILE || '');
   return {
     command: args.command || 'sync',
     apiKey: normalizeText(args['api-key'] || process.env.ALTEA_YM_API_KEY || ''),
     campaignId: normalizeText(args['campaign-id'] || process.env.ALTEA_YM_CAMPAIGN_ID || ''),
     businessId: normalizeText(args['business-id'] || process.env.ALTEA_YM_BUSINESS_ID || ''),
     apiBaseUrl: normalizeText(args['api-base-url'] || API_BASE_URL).replace(/\/+$/, ''),
+    localReportPath: reportFile ? path.resolve(reportFile) : '',
     skusPath: path.resolve(args['skus-file'] || path.join(root, 'data', 'skus.json')),
     skuAliasPath: path.resolve(args['sku-alias-file'] || path.join(root, 'data', 'sku_aliases.json')),
     inputPath: path.resolve(args['input-file'] || path.join(root, 'data', 'platform_trends.json')),
@@ -130,6 +141,9 @@ function resolveOptions(args) {
     settlementHour,
     autoLagDays,
     explicitTo: Boolean(explicitTo),
+    partialRefreshRecentDays: Math.max(0, Math.trunc(numberOrZero(args['partial-refresh-recent-days'] || process.env.ALTEA_YM_PARTIAL_REFRESH_RECENT_DAYS || 2))),
+    partialRefreshMinRatio: Math.max(0.1, Math.min(1, numberOrZero(args['partial-refresh-min-ratio'] || process.env.ALTEA_YM_PARTIAL_REFRESH_MIN_RATIO || 0.75))),
+    allowStaleLocalReport: asBool(args['allow-stale-report'] || process.env.ALTEA_YM_ALLOW_STALE_REPORT, false),
     from,
     to
   };
@@ -218,6 +232,88 @@ function parseCsv(text) {
   return body.map((cells) => Object.fromEntries(header.map((name, index) => [name, cells[index] ?? ''])));
 }
 
+const SALES_FUNNEL_XLSX_COLUMNS = {
+  day: ['day', 'date', '\u0414\u0435\u043d\u044c'],
+  offerId: ['offerId', 'offer_id', 'shopSku', 'sku', '\u0412\u0430\u0448 SKU'],
+  offerName: ['offerName', 'name', '\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0442\u043e\u0432\u0430\u0440\u0430'],
+  shows: ['shows', 'SHOWS', '\u041f\u043e\u043a\u0430\u0437\u044b \u043c\u043e\u0438\u0445 \u0442\u043e\u0432\u0430\u0440\u043e\u0432, \u0448\u0442.'],
+  clicks: ['clicks', 'CLICKS', '\u041a\u043b\u0438\u043a\u0438 \u043f\u043e \u0442\u043e\u0432\u0430\u0440\u0430\u043c, \u0448\u0442.'],
+  toCart: ['toCart', 'TO_CART', '\u0414\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0438\u044f \u0432 \u043a\u043e\u0440\u0437\u0438\u043d\u0443, \u0448\u0442.'],
+  orderItems: ['orderItems', 'ORDER_ITEMS', '\u0417\u0430\u043a\u0430\u0437\u0430\u043d\u043d\u044b\u0435 \u0442\u043e\u0432\u0430\u0440\u044b, \u0448\u0442.'],
+  orderItemsTotalAmount: ['orderItemsTotalAmount', 'ORDER_ITEMS_TOTAL_AMOUNT', '\u0417\u0430\u043a\u0430\u0437\u0430\u043d\u043e \u0442\u043e\u0432\u0430\u0440\u043e\u0432 \u043d\u0430 \u0441\u0443\u043c\u043c\u0443, \u20bd'],
+  orderItemsDeliveredCount: ['orderItemsDeliveredCount', 'ORDER_ITEMS_DELIVERED_COUNT', '\u0414\u043e\u0441\u0442\u0430\u0432\u043b\u0435\u043d\u043e \u0437\u0430 \u043f\u0435\u0440\u0438\u043e\u0434, \u0448\u0442.'],
+  orderItemsDeliveredTotalAmount: ['orderItemsDeliveredTotalAmount', 'ORDER_ITEMS_DELIVERED_TOTAL_AMOUNT', '\u0414\u043e\u0441\u0442\u0430\u0432\u043b\u0435\u043d\u043e \u0437\u0430 \u043f\u0435\u0440\u0438\u043e\u0434 \u043d\u0430 \u0441\u0443\u043c\u043c\u0443, \u20bd'],
+  orderItemsCanceledCount: ['orderItemsCanceledCount', 'ORDER_ITEMS_CANCELED_COUNT', '\u041e\u0442\u043c\u0435\u043d\u044b \u0438 \u043d\u0435\u0432\u044b\u043a\u0443\u043f\u044b \u0437\u0430 \u043f\u0435\u0440\u0438\u043e\u0434, \u0448\u0442.'],
+  orderItemsReturnedCount: ['orderItemsReturnedCount', 'ORDER_ITEMS_RETURNED_COUNT', '\u0412\u043e\u0437\u0432\u0440\u0430\u0449\u0451\u043d\u043d\u044b\u0435 \u0442\u043e\u0432\u0430\u0440\u044b \u0437\u0430 \u043f\u0435\u0440\u0438\u043e\u0434, \u0448\u0442.']
+};
+
+function findHeaderIndex(header, candidates) {
+  const lookup = new Map();
+  header.forEach((cell, index) => {
+    const key = normalizeKey(cell);
+    if (key && !lookup.has(key)) lookup.set(key, index);
+  });
+  for (const candidate of candidates) {
+    const key = normalizeKey(candidate);
+    if (lookup.has(key)) return lookup.get(key);
+  }
+  return -1;
+}
+
+function parseSalesFunnelXlsx(filePath) {
+  const workbook = XLSX.readFile(filePath, { cellDates: true });
+  const sheetName = workbook.SheetNames.find((name) => normalizeKey(name).includes(normalizeKey('\u0410\u043d\u0430\u043b\u0438\u0442\u0438\u043a\u0430 \u043f\u0440\u043e\u0434\u0430\u0436'))) || workbook.SheetNames[0];
+  if (!sheetName) return [];
+  const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, raw: false, defval: '' });
+  const header = rows.find((row) => Array.isArray(row) && row.some((cell) => normalizeText(cell)));
+  if (!header) return [];
+  const startIndex = rows.indexOf(header) + 1;
+  const indexes = Object.fromEntries(Object.entries(SALES_FUNNEL_XLSX_COLUMNS).map(([field, candidates]) => [
+    field,
+    findHeaderIndex(header, candidates)
+  ]));
+  if (indexes.day < 0 || indexes.offerId < 0) {
+    throw new Error(`Yandex Market sales funnel XLSX does not contain required columns day/offerId: ${filePath}`);
+  }
+  const cell = (row, field) => (indexes[field] >= 0 ? row[indexes[field]] : '');
+  return rows.slice(startIndex)
+    .map((row) => ({
+      day: cell(row, 'day'),
+      offerId: cell(row, 'offerId'),
+      offerName: cell(row, 'offerName'),
+      shows: cell(row, 'shows'),
+      clicks: cell(row, 'clicks'),
+      toCart: cell(row, 'toCart'),
+      orderItems: cell(row, 'orderItems'),
+      orderItemsTotalAmount: cell(row, 'orderItemsTotalAmount'),
+      orderItemsDeliveredCount: cell(row, 'orderItemsDeliveredCount'),
+      orderItemsDeliveredTotalAmount: cell(row, 'orderItemsDeliveredTotalAmount'),
+      orderItemsCanceledCount: cell(row, 'orderItemsCanceledCount'),
+      orderItemsReturnedCount: cell(row, 'orderItemsReturnedCount')
+    }))
+    .filter((row) => normalizeText(row.day) && normalizeText(row.offerId));
+}
+
+function rowDateBounds(rows) {
+  const dates = (Array.isArray(rows) ? rows : [])
+    .map((row) => reportRowDate(row))
+    .filter(Boolean)
+    .sort();
+  return {
+    earliest: dates[0] || '',
+    latest: dates[dates.length - 1] || ''
+  };
+}
+
+function filterRowsByDate(rows, from, to) {
+  const start = isoDate(from);
+  const end = isoDate(to);
+  return (Array.isArray(rows) ? rows : []).filter((row) => {
+    const date = reportRowDate(row);
+    return date && (!start || date >= start) && (!end || date <= end);
+  });
+}
+
 async function yandexRequest(options, apiPath, requestOptions = {}) {
   const url = new URL(`${options.apiBaseUrl}${apiPath}`);
   Object.entries(requestOptions.query || {}).forEach(([key, value]) => {
@@ -251,9 +347,13 @@ async function downloadAndParseReport(fileUrl) {
   const extractDir = path.join(tmpDir, 'out');
   unzipWithPowerShell(zipPath, extractDir);
   const files = [];
-  collectFiles(extractDir, /\.(json|csv)$/i, files);
+  collectFiles(extractDir, /\.(json|csv|xlsx)$/i, files);
   const rows = [];
   for (const filePath of files) {
+    if (/\.xlsx$/i.test(filePath)) {
+      rows.push(...parseSalesFunnelXlsx(filePath));
+      continue;
+    }
     const text = fs.readFileSync(filePath, 'utf8');
     if (/\.csv$/i.test(filePath)) {
       rows.push(...parseCsv(text));
@@ -523,7 +623,7 @@ function addArticlePoint(map, sku, fallbackKey, row) {
   if (sku) item.matchedRows += 1;
 
   const ordersUnits = numberOrZero(row.orderItems ?? row.ORDER_ITEMS);
-  const revenue = numberOrZero(row.orderItemsTotalAmount ?? row.ORDER_ITEMS_TOTAL_AMOUNT);
+  const ordersRevenue = numberOrZero(row.orderItemsTotalAmount ?? row.ORDER_ITEMS_TOTAL_AMOUNT);
   const deliveredUnits = numberOrZero(row.orderItemsDeliveredCount ?? row.ORDER_ITEMS_DELIVERED_COUNT);
   const deliveredRevenue = numberOrZero(row.orderItemsDeliveredTotalAmount ?? row.ORDER_ITEMS_DELIVERED_TOTAL_AMOUNT);
   const cancellationsUnits = numberOrZero(row.orderItemsCanceledCount ?? row.ORDER_ITEMS_CANCELED_COUNT);
@@ -531,6 +631,8 @@ function addArticlePoint(map, sku, fallbackKey, row) {
   const adsImpressions = numberOrZero(row.shows ?? row.SHOWS);
   const adsClicks = numberOrZero(row.clicks ?? row.CLICKS);
   const addToCart = numberOrZero(row.toCart ?? row.TO_CART);
+  const units = deliveredUnits;
+  const revenue = deliveredRevenue;
   const estimatedMargin = marginForSku(sku) > 0 ? revenue * marginForSku(sku) : 0;
 
   const point = item.dailyByDate.get(dateKey) || {
@@ -548,10 +650,10 @@ function addArticlePoint(map, sku, fallbackKey, row) {
     addToCart: 0,
     estimatedMargin: 0
   };
-  point.units += ordersUnits;
+  point.units += units;
   point.ordersUnits += ordersUnits;
   point.revenue += revenue;
-  point.ordersRevenue += revenue;
+  point.ordersRevenue += ordersRevenue;
   point.deliveredUnits += deliveredUnits;
   point.deliveredRevenue += deliveredRevenue;
   point.cancellationsUnits += cancellationsUnits;
@@ -560,18 +662,19 @@ function addArticlePoint(map, sku, fallbackKey, row) {
   point.adsClicks += adsClicks;
   point.addToCart += addToCart;
   point.estimatedMargin += estimatedMargin;
-  if (point.ordersUnits > 0 && point.revenue > 0) point.price = point.revenue / point.ordersUnits;
+  if (point.units > 0 && point.revenue > 0) point.price = point.revenue / point.units;
   item.dailyByDate.set(dateKey, point);
   return true;
 }
 
 function roundPoint(point, latestIndex, index) {
   const ordersUnits = numberOrZero(point.ordersUnits ?? point.units);
+  const units = numberOrZero(point.units);
   const revenue = numberOrZero(point.revenue);
   return {
     date: point.date,
     dayOffset: latestIndex - index,
-    units: Number(numberOrZero(point.units).toFixed(4)),
+    units: Number(units.toFixed(4)),
     ordersUnits: Number(ordersUnits.toFixed(4)),
     revenue: Number(revenue.toFixed(4)),
     ordersRevenue: Number(numberOrZero(point.ordersRevenue ?? point.revenue).toFixed(4)),
@@ -583,7 +686,7 @@ function roundPoint(point, latestIndex, index) {
     adsClicks: Number(numberOrZero(point.adsClicks).toFixed(4)),
     addToCart: Number(numberOrZero(point.addToCart).toFixed(4)),
     estimatedMargin: Number(numberOrZero(point.estimatedMargin).toFixed(4)),
-    price: ordersUnits > 0 ? Number((revenue / ordersUnits).toFixed(4)) : 0
+    price: units > 0 ? Number((revenue / units).toFixed(4)) : 0
   };
 }
 
@@ -626,11 +729,17 @@ function buildYandexLayer(rows, skus, skuAliases = {}) {
     unmatchedRows: 0,
     skippedRows: 0,
     sourceUnits: 0,
+    sourceOrdersUnits: 0,
     matchedUnits: 0,
+    matchedOrdersUnits: 0,
     unmatchedUnits: 0,
+    unmatchedOrdersUnits: 0,
     sourceRevenue: 0,
+    sourceOrdersRevenue: 0,
     matchedRevenue: 0,
+    matchedOrdersRevenue: 0,
     unmatchedRevenue: 0,
+    unmatchedOrdersRevenue: 0,
     unmatchedSamples: []
   };
 
@@ -642,10 +751,12 @@ function buildYandexLayer(rows, skus, skuAliases = {}) {
       continue;
     }
     const ordersUnits = numberOrZero(row.orderItems ?? row.ORDER_ITEMS);
-    const revenue = numberOrZero(row.orderItemsTotalAmount ?? row.ORDER_ITEMS_TOTAL_AMOUNT);
-    const deliveredRevenue = numberOrZero(row.orderItemsDeliveredTotalAmount ?? row.ORDER_ITEMS_DELIVERED_TOTAL_AMOUNT);
+    const ordersRevenue = numberOrZero(row.orderItemsTotalAmount ?? row.ORDER_ITEMS_TOTAL_AMOUNT);
     const deliveredUnits = numberOrZero(row.orderItemsDeliveredCount ?? row.ORDER_ITEMS_DELIVERED_COUNT);
-    const hasBusinessMetric = ordersUnits || revenue || deliveredUnits || deliveredRevenue
+    const deliveredRevenue = numberOrZero(row.orderItemsDeliveredTotalAmount ?? row.ORDER_ITEMS_DELIVERED_TOTAL_AMOUNT);
+    const units = deliveredUnits;
+    const revenue = deliveredRevenue;
+    const hasBusinessMetric = ordersUnits || ordersRevenue || deliveredUnits || deliveredRevenue
       || numberOrZero(row.shows ?? row.SHOWS)
       || numberOrZero(row.clicks ?? row.CLICKS)
       || numberOrZero(row.toCart ?? row.TO_CART);
@@ -655,39 +766,56 @@ function buildYandexLayer(rows, skus, skuAliases = {}) {
     }
     const sku = maps.byArticle.get(normalizeKey(offerId)) || null;
     diagnostics.sourceRows += 1;
-    diagnostics.sourceUnits += ordersUnits;
+    diagnostics.sourceUnits += units;
+    diagnostics.sourceOrdersUnits += ordersUnits;
     diagnostics.sourceRevenue += revenue;
+    diagnostics.sourceOrdersRevenue += ordersRevenue;
+
+    const point = seriesByDate.get(dateKey) || {
+      label: dateKey,
+      date: dateKey,
+      units: 0,
+      ordersUnits: 0,
+      deliveredUnits: 0,
+      revenue: 0,
+      ordersRevenue: 0,
+      deliveredRevenue: 0,
+      estimatedMargin: 0
+    };
+    point.units += units;
+    point.ordersUnits += ordersUnits;
+    point.deliveredUnits += deliveredUnits;
+    point.revenue += revenue;
+    point.ordersRevenue += ordersRevenue;
+    point.deliveredRevenue += deliveredRevenue;
+    seriesByDate.set(dateKey, point);
+
     if (!sku) {
       diagnostics.unmatchedRows += 1;
-      diagnostics.unmatchedUnits += ordersUnits;
+      diagnostics.unmatchedUnits += units;
+      diagnostics.unmatchedOrdersUnits += ordersUnits;
       diagnostics.unmatchedRevenue += revenue;
+      diagnostics.unmatchedOrdersRevenue += ordersRevenue;
       if (diagnostics.unmatchedSamples.length < 50) {
         diagnostics.unmatchedSamples.push({
           offerId,
           date: dateKey,
-          units: ordersUnits,
+          units,
+          ordersUnits,
           revenue,
+          ordersRevenue,
           name: normalizeText(row.offerName || row.OFFER_NAME)
         });
       }
       continue;
     }
     diagnostics.matchedRows += 1;
-    diagnostics.matchedUnits += ordersUnits;
+    diagnostics.matchedUnits += units;
+    diagnostics.matchedOrdersUnits += ordersUnits;
     diagnostics.matchedRevenue += revenue;
+    diagnostics.matchedOrdersRevenue += ordersRevenue;
     addArticlePoint(articleMap, sku, offerId, row);
-
-    const point = seriesByDate.get(dateKey) || {
-      label: dateKey,
-      date: dateKey,
-      units: 0,
-      revenue: 0,
-      estimatedMargin: 0
-    };
-    point.units += ordersUnits;
-    point.revenue += revenue;
     point.estimatedMargin += sku && marginForSku(sku) > 0 ? revenue * marginForSku(sku) : 0;
-    seriesByDate.set(dateKey, point);
   }
 
   const series = Array.from(seriesByDate.values())
@@ -697,8 +825,13 @@ function buildYandexLayer(rows, skus, skuAliases = {}) {
       label: point.label,
       date: point.date,
       units: Number(numberOrZero(point.units).toFixed(4)),
+      ordersUnits: Number(numberOrZero(point.ordersUnits).toFixed(4)),
+      deliveredUnits: Number(numberOrZero(point.deliveredUnits).toFixed(4)),
       revenue: Number(numberOrZero(point.revenue).toFixed(4)),
-      estimatedMargin: Number(numberOrZero(point.estimatedMargin).toFixed(4))
+      ordersRevenue: Number(numberOrZero(point.ordersRevenue).toFixed(4)),
+      deliveredRevenue: Number(numberOrZero(point.deliveredRevenue).toFixed(4)),
+      estimatedMargin: Number(numberOrZero(point.estimatedMargin).toFixed(4)),
+      price: numberOrZero(point.units) > 0 ? Number((numberOrZero(point.revenue) / numberOrZero(point.units)).toFixed(4)) : 0
     }));
 
   return {
@@ -716,17 +849,36 @@ function platformMap(platformTrends) {
   return map;
 }
 
-function replaceSeriesWindow(existingSeries, freshSeries, from, to) {
+function shouldPreserveExistingPoint(dateKey, freshPoint, existingPoint, options) {
+  if (!options?.partialRefreshGuardEnabled || !existingPoint || !dateKey) return false;
+  const daysFromWindowEnd = Math.round((new Date(`${options.to}T00:00:00Z`) - new Date(`${dateKey}T00:00:00Z`)) / 86400000);
+  if (daysFromWindowEnd < 0 || daysFromWindowEnd > options.partialRefreshRecentDays) return false;
+  const freshRevenue = numberOrZero(freshPoint?.revenue);
+  const existingRevenue = numberOrZero(existingPoint?.revenue);
+  if (!(existingRevenue > 0)) return false;
+  if (freshRevenue <= 0) return true;
+  return freshRevenue < existingRevenue * options.partialRefreshMinRatio;
+}
+
+function replaceSeriesWindow(existingSeries, freshSeries, from, to, options = {}, warnings = []) {
   const byDate = new Map();
+  const existingByDate = new Map();
   for (const point of Array.isArray(existingSeries) ? existingSeries : []) {
     const date = isoDate(point?.label || point?.date);
+    if (date) existingByDate.set(date, { ...point, label: date, date });
     if (!date || (date >= from && date <= to)) continue;
     byDate.set(date, { ...point, label: date, date });
   }
   for (const point of Array.isArray(freshSeries) ? freshSeries : []) {
     const date = isoDate(point?.label || point?.date);
     if (!date) continue;
-    byDate.set(date, { ...point, label: date, date });
+    const existingPoint = existingByDate.get(date);
+    if (shouldPreserveExistingPoint(date, point, existingPoint, options)) {
+      warnings.push(`${date}: preserved existing Yandex Market point because fresh delivered revenue ${Number(numberOrZero(point?.revenue).toFixed(2))} is below ${Math.round(options.partialRefreshMinRatio * 100)}% of existing ${Number(numberOrZero(existingPoint?.revenue).toFixed(2))}`);
+      byDate.set(date, existingPoint);
+    } else {
+      byDate.set(date, { ...point, label: date, date });
+    }
   }
   const list = Array.from(byDate.values()).sort((left, right) => isoDate(left.label || left.date).localeCompare(isoDate(right.label || right.date)));
   const latestIndex = list.length - 1;
@@ -736,7 +888,11 @@ function replaceSeriesWindow(existingSeries, freshSeries, from, to) {
     label: isoDate(point.label || point.date),
     date: isoDate(point.date || point.label),
     units: Number(numberOrZero(point.units).toFixed(4)),
+    ordersUnits: Number(numberOrZero(point.ordersUnits).toFixed(4)),
+    deliveredUnits: Number(numberOrZero(point.deliveredUnits).toFixed(4)),
     revenue: Number(numberOrZero(point.revenue).toFixed(4)),
+    ordersRevenue: Number(numberOrZero(point.ordersRevenue).toFixed(4)),
+    deliveredRevenue: Number(numberOrZero(point.deliveredRevenue).toFixed(4)),
     estimatedMargin: Number(numberOrZero(point.estimatedMargin).toFixed(4))
   }));
 }
@@ -788,14 +944,21 @@ function latestDateFromPlatforms(platforms) {
   return dates.sort().pop() || '';
 }
 
-function updatePlatformTrends(existing, layer, options, identities) {
+function updatePlatformTrends(existing, layer, options, identities, sourceInfo = {}) {
   const platforms = platformMap(existing);
   const existingYa = platforms.get('ya') || { key: 'ya', label: PLATFORM_LABELS.ya, series: [] };
+  const warnings = [];
+  const revenueField = 'orderItemsDeliveredTotalAmount';
+  const previousRevenueField = normalizeText(existing?.yandexMarketApiDirect?.revenueField);
+  const partialOptions = {
+    ...options,
+    partialRefreshGuardEnabled: previousRevenueField === revenueField
+  };
   platforms.set('ya', {
     ...existingYa,
     key: 'ya',
     label: existingYa.label || PLATFORM_LABELS.ya,
-    series: replaceSeriesWindow(existingYa.series, layer.series, options.from, options.to)
+    series: replaceSeriesWindow(existingYa.series, layer.series, options.from, options.to, partialOptions, warnings)
   });
   platforms.set('all', {
     ...(platforms.get('all') || {}),
@@ -826,9 +989,11 @@ function updatePlatformTrends(existing, layer, options, identities) {
     note: 'Marketplace facts refreshed from API-backed platform_trends.json with Yandex Market direct SKU layer.',
     platforms: ordered,
     yandexMarketApiDirect: {
-      source: 'partner-api:/v2/reports/shows-sales',
+      source: sourceInfo.source || 'partner-api:/v2/reports/shows-sales',
       from: options.from,
       to: options.to,
+      rowDateFrom: sourceInfo.rowDateFrom || '',
+      rowDateTo: sourceInfo.rowDateTo || '',
       identities: identities.length,
       sourceRows: layer.diagnostics.sourceRows,
       matchedRows: layer.diagnostics.matchedRows,
@@ -836,21 +1001,36 @@ function updatePlatformTrends(existing, layer, options, identities) {
       skippedRows: layer.diagnostics.skippedRows,
       matchRate: layer.diagnostics.sourceRows > 0 ? Number((layer.diagnostics.matchedRows / layer.diagnostics.sourceRows).toFixed(4)) : 0,
       sourceRevenue: Number(numberOrZero(layer.diagnostics.sourceRevenue).toFixed(4)),
+      sourceOrdersRevenue: Number(numberOrZero(layer.diagnostics.sourceOrdersRevenue).toFixed(4)),
       matchedRevenue: Number(numberOrZero(layer.diagnostics.matchedRevenue).toFixed(4)),
+      matchedOrdersRevenue: Number(numberOrZero(layer.diagnostics.matchedOrdersRevenue).toFixed(4)),
       unmatchedRevenue: Number(numberOrZero(layer.diagnostics.unmatchedRevenue).toFixed(4)),
+      unmatchedOrdersRevenue: Number(numberOrZero(layer.diagnostics.unmatchedOrdersRevenue).toFixed(4)),
       sourceUnits: Number(numberOrZero(layer.diagnostics.sourceUnits).toFixed(4)),
+      sourceOrdersUnits: Number(numberOrZero(layer.diagnostics.sourceOrdersUnits).toFixed(4)),
       matchedUnits: Number(numberOrZero(layer.diagnostics.matchedUnits).toFixed(4)),
+      matchedOrdersUnits: Number(numberOrZero(layer.diagnostics.matchedOrdersUnits).toFixed(4)),
       unmatchedUnits: Number(numberOrZero(layer.diagnostics.unmatchedUnits).toFixed(4)),
+      unmatchedOrdersUnits: Number(numberOrZero(layer.diagnostics.unmatchedOrdersUnits).toFixed(4)),
       unmatchedSamples: layer.diagnostics.unmatchedSamples,
       settlementHour: options.settlementHour,
       autoLagDays: options.explicitTo ? 0 : options.autoLagDays,
       explicitTo: options.explicitTo,
-      reportFormat: 'JSON',
+      reportFormat: sourceInfo.reportFormat || 'JSON',
       grouping: 'OFFERS',
       sourceMode: 'yandex-market-api-direct-sku',
-      revenueField: 'orderItemsTotalAmount',
-      unitsField: 'orderItems',
-      strictSkuMatch: true
+      revenueField,
+      ordersRevenueField: 'orderItemsTotalAmount',
+      unitsField: 'orderItemsDeliveredCount',
+      ordersUnitsField: 'orderItems',
+      platformTotalsIncludeUnmatched: true,
+      articleStrictSkuMatch: true,
+      partialRefreshGuard: {
+        recentDays: options.partialRefreshRecentDays,
+        minRatio: options.partialRefreshMinRatio,
+        enabled: partialOptions.partialRefreshGuardEnabled
+      },
+      warnings
     },
     extraMarketplace: {
       ...existingExtraMarketplace,
@@ -862,11 +1042,15 @@ function updatePlatformTrends(existing, layer, options, identities) {
           key: 'ya',
           label: PLATFORM_LABELS.ya,
           supportKey: 'ym',
-          source: 'partner-api:/v2/reports/shows-sales',
+          source: sourceInfo.source || 'partner-api:/v2/reports/shows-sales',
           sourceMode: 'yandex-market-api-direct-sku',
-          strictSkuMatch: true,
+          articleStrictSkuMatch: true,
+          revenueField,
+          ordersRevenueField: 'orderItemsTotalAmount',
+          platformTotalsIncludeUnmatched: true,
           from: options.from,
           to: options.to,
+          warnings,
           articles: layer.articles
         }
       }
@@ -878,7 +1062,7 @@ async function main() {
   const options = resolveOptions(parseArgs(process.argv));
   if (options.command !== 'sync') throw new Error(`Unsupported command: ${options.command}`);
   const existing = readJson(options.inputPath, { platforms: [] });
-  if (!options.apiKey) {
+  if (!options.apiKey && !options.localReportPath) {
     console.warn('Yandex Market API key is not set. Preserve existing platform_trends.json and skip Yandex refresh.');
     if (options.inputPath !== options.outputPath) writeJson(options.outputPath, existing);
     return;
@@ -886,33 +1070,80 @@ async function main() {
 
   const skus = readJson(options.skusPath, []);
   const skuAliases = readJson(options.skuAliasPath, { aliases: [] });
-  const identities = await discoverIdentities(options);
-  if (!identities.length) {
+  const identities = options.localReportPath
+    ? [
+        ...(options.businessId ? [{ businessId: options.businessId }] : []),
+        ...(options.campaignId ? options.campaignId.split(',').map((campaignId) => ({ campaignId: normalizeText(campaignId) })).filter((identity) => identity.campaignId) : [])
+      ]
+    : await discoverIdentities(options);
+  if (!identities.length && !options.localReportPath) {
     console.warn('Yandex Market campaignId/businessId was not found. Preserve existing platform_trends.json and skip Yandex refresh.');
     if (options.inputPath !== options.outputPath) writeJson(options.outputPath, existing);
     return;
   }
 
-  const rows = [];
-  for (const identity of identities) {
-    rows.push(...await generateShowsSalesReport(options, identity));
+  let sourceRows = [];
+  let sourceInfo = {
+    source: 'partner-api:/v2/reports/shows-sales',
+    reportFormat: 'JSON'
+  };
+  if (options.localReportPath) {
+    if (!fs.existsSync(options.localReportPath)) throw new Error(`Yandex Market local sales funnel report not found: ${options.localReportPath}`);
+    sourceRows = /\.xlsx$/i.test(options.localReportPath)
+      ? parseSalesFunnelXlsx(options.localReportPath)
+      : (() => {
+          const text = fs.readFileSync(options.localReportPath, 'utf8');
+          return /\.csv$/i.test(options.localReportPath) ? parseCsv(text) : collectObjects(JSON.parse(text));
+        })();
+    sourceInfo = {
+      source: `local-file:${path.basename(options.localReportPath)}`,
+      reportFormat: path.extname(options.localReportPath).replace(/^\./, '').toUpperCase() || 'LOCAL'
+    };
+  } else {
+    for (const identity of identities) {
+      sourceRows.push(...await generateShowsSalesReport(options, identity));
+    }
+  }
+
+  const sourceBounds = rowDateBounds(sourceRows);
+  const rows = filterRowsByDate(sourceRows, options.from, options.to);
+  const filteredBounds = rowDateBounds(rows);
+  sourceInfo = {
+    ...sourceInfo,
+    rowDateFrom: filteredBounds.earliest,
+    rowDateTo: filteredBounds.latest,
+    sourceRowDateFrom: sourceBounds.earliest,
+    sourceRowDateTo: sourceBounds.latest
+  };
+
+  if (!rows.length) {
+    throw new Error(`Yandex Market report has no rows in requested window ${options.from}..${options.to}; source window ${sourceBounds.earliest || '?'}..${sourceBounds.latest || '?'}`);
+  }
+  if (options.localReportPath && !options.allowStaleLocalReport && filteredBounds.latest && filteredBounds.latest < options.to) {
+    throw new Error(`Yandex Market local report is stale for requested window: latest ${filteredBounds.latest}, expected ${options.to}. Use --allow-stale-report only for manual backfill.`);
   }
   const layer = buildYandexLayer(rows, skus, skuAliases);
-  const payload = updatePlatformTrends(existing, layer, options, identities);
+  const payload = updatePlatformTrends(existing, layer, options, identities, sourceInfo);
   writeJson(options.outputPath, payload);
   console.log(JSON.stringify({
     outputPath: options.outputPath,
     generatedAt: payload.generatedAt,
     latestMarketplaceDate: payload.latestMarketplaceDate,
+    source: sourceInfo.source,
+    rowDateFrom: sourceInfo.rowDateFrom,
+    rowDateTo: sourceInfo.rowDateTo,
     identities: identities.length,
     sourceRows: layer.diagnostics.sourceRows,
     matchedRows: layer.diagnostics.matchedRows,
     unmatchedRows: layer.diagnostics.unmatchedRows,
     skippedRows: layer.diagnostics.skippedRows,
     matchedRevenue: Number(numberOrZero(layer.diagnostics.matchedRevenue).toFixed(4)),
+    sourceRevenue: Number(numberOrZero(layer.diagnostics.sourceRevenue).toFixed(4)),
+    sourceOrdersRevenue: Number(numberOrZero(layer.diagnostics.sourceOrdersRevenue).toFixed(4)),
     unmatchedRevenue: Number(numberOrZero(layer.diagnostics.unmatchedRevenue).toFixed(4)),
     articleRows: layer.articles.length,
-    sourceMode: 'yandex-market-api-direct-sku'
+    sourceMode: 'yandex-market-api-direct-sku',
+    revenueField: 'orderItemsDeliveredTotalAmount'
   }, null, 2));
 }
 

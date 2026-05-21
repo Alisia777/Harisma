@@ -447,13 +447,13 @@ function platformMonthlyTotals(rawRows, asOfDate) {
         adsSpend: 0,
         adsSpendPriority: 0
       };
-      if (metric === 'orders_units') setMonthlyMetric(current, 'units', value, 3);
-      else if (metric === 'delivered_units') setMonthlyMetric(current, 'units', value, 2);
+      if (metric === 'orders_units') setMonthlyMetric(current, 'units', value, platformKey === 'ya' ? 2 : 3);
+      else if (metric === 'delivered_units') setMonthlyMetric(current, 'units', value, platformKey === 'ya' ? 3 : 2);
       else if (metric === 'buyout_units') setMonthlyMetric(current, 'units', value, 1);
 
-      if (metric === 'orders_revenue') setMonthlyMetric(current, 'revenue', value, 3);
+      if (metric === 'orders_revenue') setMonthlyMetric(current, 'revenue', value, platformKey === 'ya' ? 2 : 3);
       else if (metric === 'buyout_revenue') setMonthlyMetric(current, 'revenue', value, 2);
-      else if (metric === 'delivered_revenue') setMonthlyMetric(current, 'revenue', value, 1);
+      else if (metric === 'delivered_revenue') setMonthlyMetric(current, 'revenue', value, platformKey === 'ya' ? 3 : 1);
       else if (metric === 'net_payout') {
         setMonthlyMetric(current, 'revenue', value, 0);
         setMonthlyMetric(current, 'estimatedMargin', value, 3);
@@ -530,15 +530,20 @@ function platformMonthlyTotals(rawRows, asOfDate) {
     for (const month of monthList) {
       const days = daysCoveredForMonth(month.monthKey, asOfDate);
       if (!days) continue;
-      const revenue = month.ordersRevenue || month.buyoutRevenue || month.netPayout || 0;
+      const revenue = platformKey === 'ya'
+        ? (month.deliveredRevenue || month.ordersRevenue || month.buyoutRevenue || month.netPayout || 0)
+        : (month.ordersRevenue || month.buyoutRevenue || month.netPayout || 0);
       const estimatedMargin = month.netPayout > 0
         ? month.netPayout
-        : month.buyoutRevenue > 0 && month.adsSpend > 0
+        : platformKey === 'ya' && revenue > 0 && month.adsSpend > 0
+          ? Math.max(0, revenue - month.adsSpend)
+          : month.buyoutRevenue > 0 && month.adsSpend > 0
           ? Math.max(0, month.buyoutRevenue - month.adsSpend)
           : month.ordersRevenue > 0 && month.adsSpend > 0
             ? Math.max(0, month.ordersRevenue - month.adsSpend)
             : null;
-      const dailyUnits = distributeMonthlyValue(month.ordersUnits, days);
+      const unitTotal = platformKey === 'ya' ? (month.deliveredUnits || month.ordersUnits) : month.ordersUnits;
+      const dailyUnits = distributeMonthlyValue(unitTotal, days);
       const dailyRevenue = distributeMonthlyValue(revenue, days);
       const dailyMargin = estimatedMargin != null ? distributeMonthlyValue(estimatedMargin, days) : [];
       const bounds = monthRange(month.monthKey);

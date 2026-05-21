@@ -4,6 +4,7 @@
 
   const RENDER_BUDGET_SRC = 'portal-live-render-budget.js?v=20260521budget1';
   const LAUNCH_BUDGET_SRC = 'portal-live-launch-budget.js?v=20260521launchbudget2';
+  const TABLE_BUDGET_SRC = 'portal-live-table-budget.js?v=20260521tablebudget1';
   const BUNDLES = {
     dashboard: [
       'portal-dashboard-calendar-stability-hotfix.js?v=20260521prod1',
@@ -77,7 +78,7 @@
       script.src = src;
       script.async = false;
       script.onload = () => resolve(script);
-      script.onerror = () => reject(new Error(`Не удалось загрузить ${src}`));
+      script.onerror = () => reject(new Error(`\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c ${src}`));
       (document.head || document.body || document.documentElement).appendChild(script);
     });
     scriptPromises.set(src, promise);
@@ -97,6 +98,7 @@
   function loadRenderBudget() {
     return loadScript(RENDER_BUDGET_SRC)
       .then(() => loadScript(LAUNCH_BUDGET_SRC))
+      .then(() => loadScript(TABLE_BUDGET_SRC))
       .then(rerenderAfterBudgetLoad)
       .catch((error) => console.warn('[portal-live-render-budget]', error));
   }

@@ -13,7 +13,7 @@
     'launch-control': [TABLE_BUDGET_SRC],
     'ads-funnel': [TABLE_BUDGET_SRC],
     order: [RENDER_BUDGET_SRC],
-    repricer: [RENDER_BUDGET_SRC],
+    repricer: [RENDER_BUDGET_SRC, LAUNCH_BUDGET_SRC],
     launches: [LAUNCH_BUDGET_SRC]
   };
   const BUNDLES = {

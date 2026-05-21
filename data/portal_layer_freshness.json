@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-21T11:00:31.543Z",
+  "generatedAt": "2026-05-21T11:01:17.802Z",
   "expectedDate": "2026-05-20",
   "publish": {
     "allowed": true,
@@ -487,16 +487,18 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 24121,
-      "sourceMtime": "2026-05-21T11:00:16.996Z",
+      "sourceBytes": 22186,
+      "sourceMtime": "2026-05-21T11:00:31.543Z",
       "rowCount": 32,
-      "generatedAt": "2026-05-21T11:00:16.995Z",
+      "generatedAt": "2026-05-21T11:00:31.543Z",
       "freshness": {
         "date": "2026-05-20",
         "source": "expectedDate",
         "value": "2026-05-20"
       },
-      "deployMissing": true
+      "deployBytes": 22186,
+      "deployMtime": "2026-05-21T11:00:31.543Z",
+      "deployMatchesSource": true
     },
     {
       "name": "sku_aliases",

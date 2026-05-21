@@ -125,6 +125,31 @@
     }
   }
 
+  function expandRepricerFullRender() {
+    try {
+      window.sessionStorage.setItem('altea:render-budget:repricer', 'full');
+    } catch (error) {
+      // Session storage can be unavailable in hardened browsers.
+    }
+    try {
+      if (typeof REPRICER_ROWS_CACHE !== 'undefined' && REPRICER_ROWS_CACHE) {
+        REPRICER_ROWS_CACHE.signature = '';
+        REPRICER_ROWS_CACHE.rows = null;
+      }
+    } catch (error) {
+      // Repricer cache may not be loaded yet.
+    }
+    const root = document.getElementById('view-repricer');
+    if (root) root.dataset.repricerRenderSignature = '';
+    if (typeof window.renderRepricer === 'function') {
+      window.renderRepricer();
+      return;
+    }
+    if (typeof window.rerenderCurrentView === 'function') {
+      window.rerenderCurrentView();
+    }
+  }
+
   document.addEventListener('click', (event) => {
     const button = event.target?.closest?.('[data-altea-render-budget-expand="launches"]');
     if (!button) return;
@@ -133,9 +158,17 @@
     rerenderLaunches();
   }, true);
 
+  document.addEventListener('click', (event) => {
+    const button = event.target?.closest?.('[data-altea-render-budget-expand="repricer"]');
+    if (!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    expandRepricerFullRender();
+  }, true);
+
   patchLaunches();
   window.setTimeout(patchLaunches, 0);
   window.setTimeout(patchLaunches, 800);
   document.addEventListener('DOMContentLoaded', patchLaunches);
-  window.__ALTEA_LAUNCH_BUDGET_VERSION__ = '20260521launchbudget1';
+  window.__ALTEA_LAUNCH_BUDGET_VERSION__ = '20260521launchbudget2';
 })();

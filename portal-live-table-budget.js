@@ -4,14 +4,23 @@
 
   const SKU_VIEW = 'sku-plan-fact';
   const PRICES_VIEW = 'prices';
-  const SKU_LIMIT = 60;
-  const PRICES_LIMIT = 80;
+  const SKU_CONTOUR_VIEW = 'sku-contour';
+  const SKUS_VIEW = 'skus';
+  const LAUNCH_CONTROL_VIEW = 'launch-control';
+  const ADS_FUNNEL_VIEW = 'ads-funnel';
+  const SKU_LIMIT = 36;
+  const PRICES_LIMIT = 45;
+  const SKU_CONTOUR_LIMIT = 45;
+  const SKUS_LIMIT = 35;
+  const LAUNCH_CONTROL_LIMIT = 10;
+  const ADS_FUNNEL_LIMIT = 80;
   const FULL_PREFIX = 'altea:render-budget:';
 
   let skuLastBudget = null;
   let pricesLastBudget = null;
   let skuScheduled = false;
   let pricesScheduled = false;
+  let skuContourScheduled = false;
 
   function storageGet(key) {
     try {
@@ -157,11 +166,39 @@
     window.setTimeout(applyPricesBudgetDom, 0);
   }
 
+  function scheduleSkuContourApply() {
+    if (skuContourScheduled) return;
+    skuContourScheduled = true;
+    const run = () => {
+      skuContourScheduled = false;
+      applySkuContourBudgetDom();
+    };
+    Promise.resolve().then(run);
+    window.requestAnimationFrame(applySkuContourBudgetDom);
+    window.setTimeout(applySkuContourBudgetDom, 0);
+  }
+
   function ensureObserver(root, key, callback) {
     if (!root || root[key]) return;
     const observer = new MutationObserver(() => callback());
     observer.observe(root, { childList: true, subtree: true });
     root[key] = observer;
+  }
+
+  function afterFrame(callback) {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(callback));
+  }
+
+  function installStrictWrapper(name, factory) {
+    const current = window[name];
+    if (typeof current !== 'function') return false;
+    if (current.__alteaTableBudgetStrictWrapped) return true;
+    const original = current.__alteaRenderBudgetOriginal || current.__alteaOriginalRender || current;
+    const wrapped = factory(original);
+    wrapped.__alteaTableBudgetStrictWrapped = true;
+    wrapped.__alteaOriginalRender = original;
+    window[name] = wrapped;
+    return true;
   }
 
   function skuBudgetModel(model) {
@@ -236,6 +273,18 @@
     trimRows(root, tbody, PRICES_VIEW, PRICES_LIMIT, '\u0441\u0442\u0440\u043e\u043a \u043f\u0440\u0430\u0439\u0441-\u0432\u043e\u0440\u043a\u0431\u0435\u043d\u0447\u0430', anchor, knownTotal);
   }
 
+  function applySkuContourBudgetDom() {
+    const root = document.getElementById('view-sku-contour');
+    if (!root) return;
+    ensureStyles();
+    ensureObserver(root, '__alteaSkuContourBudgetObserver', scheduleSkuContourApply);
+    const tbodies = Array.from(root.querySelectorAll('.data-table tbody'));
+    const tbody = tbodies.sort((left, right) => tableRows(right).length - tableRows(left).length)[0];
+    const card = tbody && tbody.closest('.sku-plan-fact-card');
+    const anchor = card && (card.querySelector('.section-subhead') || card.firstElementChild) || root.querySelector('.section-title') || root.firstElementChild;
+    trimRows(root, tbody, SKU_CONTOUR_VIEW, SKU_CONTOUR_LIMIT, '\u0441\u0442\u0440\u043e\u043a \u043a\u043e\u043d\u0442\u0443\u0440\u0430 SKU', anchor);
+  }
+
   function looksLikePriceRows(rows) {
     if (!rows || rows.length <= PRICES_LIMIT) return false;
     const row = rows[0];
@@ -288,6 +337,96 @@
     return true;
   }
 
+  function hookSkuRegistryStrict() {
+    return installStrictWrapper('renderSkuRegistry', (originalRender) => function tableBudgetRenderSkuRegistry() {
+      if (isFull(SKUS_VIEW) || typeof window.getFilteredSkus !== 'function') {
+        return originalRender.apply(this, arguments);
+      }
+      const originalGetFilteredSkus = window.getFilteredSkus;
+      let total = 0;
+      let visible = 0;
+      window.getFilteredSkus = function tableBudgetGetFilteredSkus() {
+        const items = originalGetFilteredSkus.apply(this, arguments);
+        if (!Array.isArray(items)) return items;
+        total = items.length;
+        visible = Math.min(total, SKUS_LIMIT);
+        return items.slice(0, SKUS_LIMIT);
+      };
+      try {
+        return originalRender.apply(this, arguments);
+      } finally {
+        window.getFilteredSkus = originalGetFilteredSkus;
+        afterFrame(() => {
+          const root = document.getElementById('view-skus');
+          const anchor = root && (root.querySelector('.section-title') || root.firstElementChild);
+          placeNotice(root, SKUS_VIEW, visible, total, '\u0441\u0442\u0440\u043e\u043a \u0440\u0435\u0435\u0441\u0442\u0440\u0430 SKU', anchor);
+        });
+      }
+    });
+  }
+
+  function hookLaunchControlStrict() {
+    return installStrictWrapper('renderLaunchControl', (originalRender) => function tableBudgetRenderLaunchControl() {
+      if (isFull(LAUNCH_CONTROL_VIEW) || typeof window.getLaunchViewModel !== 'function') {
+        return originalRender.apply(this, arguments);
+      }
+      const originalGetLaunchViewModel = window.getLaunchViewModel;
+      let total = 0;
+      let visible = 0;
+      window.getLaunchViewModel = function tableBudgetGetLaunchViewModel() {
+        const model = originalGetLaunchViewModel.apply(this, arguments);
+        const filteredItems = Array.isArray(model && model.filteredItems) ? model.filteredItems : [];
+        total = filteredItems.length;
+        visible = Math.min(total, LAUNCH_CONTROL_LIMIT);
+        return Object.assign({}, model, {
+          filteredItems: filteredItems.slice(0, LAUNCH_CONTROL_LIMIT),
+          upcomingItems: Array.isArray(model && model.upcomingItems) ? model.upcomingItems.slice(0, 6) : model && model.upcomingItems,
+          sections: Array.isArray(model && model.sections)
+            ? model.sections.map((section) => Object.assign({}, section, { items: (section.items || []).slice(0, 4) }))
+            : model && model.sections
+        });
+      };
+      try {
+        return originalRender.apply(this, arguments);
+      } finally {
+        window.getLaunchViewModel = originalGetLaunchViewModel;
+        afterFrame(() => {
+          const root = document.getElementById('view-launch-control');
+          const anchor = root && (root.querySelector('.section-title') || root.firstElementChild);
+          placeNotice(root, LAUNCH_CONTROL_VIEW, visible, total, '\u043f\u043e\u0437\u0438\u0446\u0438\u0439 \u0437\u0430\u043f\u0443\u0441\u043a\u0430', anchor);
+        });
+      }
+    });
+  }
+
+  function hookAdsFunnelStrict() {
+    return installStrictWrapper('renderAdsFunnel', (originalRender) => function tableBudgetRenderAdsFunnel() {
+      if (isFull(ADS_FUNNEL_VIEW) || typeof window.adsFunnelBuildModel !== 'function') {
+        return originalRender.apply(this, arguments);
+      }
+      const originalBuildModel = window.adsFunnelBuildModel;
+      let total = 0;
+      let visible = 0;
+      window.adsFunnelBuildModel = function tableBudgetAdsFunnelBuildModel() {
+        const model = originalBuildModel.apply(this, arguments);
+        const rows = Array.isArray(model && model.rows) ? model.rows : [];
+        total = rows.length;
+        visible = Math.min(total, ADS_FUNNEL_LIMIT);
+        return Object.assign({}, model, { rows: rows.slice(0, ADS_FUNNEL_LIMIT) });
+      };
+      try {
+        return originalRender.apply(this, arguments);
+      } finally {
+        window.adsFunnelBuildModel = originalBuildModel;
+        afterFrame(() => {
+          const root = document.getElementById('view-ads-funnel');
+          const anchor = root && (root.querySelector('.section-title') || root.firstElementChild);
+          placeNotice(root, ADS_FUNNEL_VIEW, visible, total, '\u0441\u0442\u0440\u043e\u043a \u0440\u0435\u043a\u043b\u0430\u043c\u043d\u043e\u0439 \u0432\u043e\u0440\u043e\u043d\u043a\u0438', anchor);
+        });
+      }
+    });
+  }
+
   function rerenderView(view) {
     if (view === SKU_VIEW && typeof window.renderSkuPlanFact === 'function') {
       window.renderSkuPlanFact('view-sku-plan-fact');
@@ -297,6 +436,22 @@
       window.renderPriceWorkbench();
       return;
     }
+    if (view === SKU_CONTOUR_VIEW && typeof window.renderSkuContour === 'function') {
+      window.renderSkuContour('view-sku-contour');
+      return;
+    }
+    if (view === SKUS_VIEW && typeof window.renderSkuRegistry === 'function') {
+      window.renderSkuRegistry();
+      return;
+    }
+    if (view === LAUNCH_CONTROL_VIEW && typeof window.renderLaunchControl === 'function') {
+      window.renderLaunchControl();
+      return;
+    }
+    if (view === ADS_FUNNEL_VIEW && typeof window.renderAdsFunnel === 'function') {
+      window.renderAdsFunnel();
+      return;
+    }
     if (typeof window.rerenderCurrentView === 'function') window.rerenderCurrentView();
   }
 
@@ -304,7 +459,7 @@
     const button = event.target.closest && event.target.closest('[data-altea-render-budget-expand]');
     if (!button) return;
     const view = button.dataset.alteaRenderBudgetExpand;
-    if (view !== SKU_VIEW && view !== PRICES_VIEW) return;
+    if (view !== SKU_VIEW && view !== PRICES_VIEW && view !== SKU_CONTOUR_VIEW && view !== SKUS_VIEW && view !== LAUNCH_CONTROL_VIEW && view !== ADS_FUNNEL_VIEW) return;
     event.preventDefault();
     event.stopPropagation();
     setFull(view);
@@ -316,9 +471,13 @@
   function hookAll() {
     const skuReady = hookSkuPlanFact();
     const pricesReady = hookPrices();
+    const skusReady = hookSkuRegistryStrict();
+    const launchControlReady = hookLaunchControlStrict();
+    const adsFunnelReady = hookAdsFunnelStrict();
     if (!isFull(SKU_VIEW)) applySkuBudgetDom();
     if (!isFull(PRICES_VIEW)) applyPricesBudgetDom();
-    return skuReady && pricesReady;
+    if (!isFull(SKU_CONTOUR_VIEW)) applySkuContourBudgetDom();
+    return skuReady && pricesReady && skusReady && launchControlReady && adsFunnelReady;
   }
 
   window.__alteaApplyTableBudgets = hookAll;

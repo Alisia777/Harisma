@@ -56,12 +56,33 @@
     skus: ['skus']
   };
 
+  const SIDEBAR_LABELS = {
+    'oos-control': {
+      title: 'OOS \u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c',
+      subtitle: '\u0410\u0443\u0442\u044b \u00b7 \u043f\u043e\u0442\u0435\u0440\u0438 \u00b7 \u043c\u0435\u0440\u044b'
+    }
+  };
+
   const scriptPromises = new Map();
   let renderBudgetRerenderScheduled = false;
 
   function existingScript(src) {
     const base = String(src || '').split('?')[0];
     return Array.from(document.scripts || []).find((script) => String(script.src || '').includes(base));
+  }
+
+  function setText(node, value) {
+    if (node && value) node.textContent = value;
+  }
+
+  function syncSidebarLabels() {
+    Object.keys(SIDEBAR_LABELS).forEach((view) => {
+      const button = document.querySelector(`.nav-btn[data-view="${view}"]`);
+      const label = SIDEBAR_LABELS[view];
+      if (!button || !label) return;
+      setText(button.querySelector('span'), label.title);
+      setText(button.querySelector('small'), label.subtitle);
+    });
   }
 
   function loadScript(src) {
@@ -89,6 +110,7 @@
     if (renderBudgetRerenderScheduled) return;
     renderBudgetRerenderScheduled = true;
     const rerender = () => {
+      syncSidebarLabels();
       if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
     };
     window.setTimeout(rerender, 80);
@@ -96,6 +118,7 @@
   }
 
   function loadRenderBudget() {
+    syncSidebarLabels();
     return loadScript(RENDER_BUDGET_SRC)
       .then(() => loadScript(LAUNCH_BUDGET_SRC))
       .then(() => loadScript(TABLE_BUDGET_SRC))
@@ -113,12 +136,14 @@
   }
 
   function loadViewHotfixes(view, options = {}) {
+    syncSidebarLabels();
     const bundleKeys = VIEW_BUNDLES[view] || [];
     let chain = loadRenderBudget();
     bundleKeys.forEach((bundleKey) => {
       chain = chain.then(() => loadBundle(bundleKey));
     });
     return chain.then(() => {
+      syncSidebarLabels();
       if (options.rerender !== false && typeof rerenderCurrentView === 'function') {
         rerenderCurrentView();
       }
@@ -132,6 +157,7 @@
   }
 
   function scheduleForView(view) {
+    syncSidebarLabels();
     loadRenderBudget();
     if (!view) return;
     if (view === 'dashboard') {
@@ -153,10 +179,14 @@
   }, true);
 
   window.addEventListener('altea:viewchange', (event) => {
+    syncSidebarLabels();
     scheduleForView(event.detail && event.detail.view);
   });
 
   loadRenderBudget();
+  syncSidebarLabels();
+  window.setTimeout(syncSidebarLabels, 300);
+  window.setTimeout(syncSidebarLabels, 1200);
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => scheduleForView(activeView()), { once: true });

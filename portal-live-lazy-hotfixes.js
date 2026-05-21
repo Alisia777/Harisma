@@ -5,17 +5,17 @@
   const RENDER_BUDGET_SRC = 'portal-live-render-budget.js?v=20260521budget1';
   const LAUNCH_BUDGET_SRC = 'portal-live-launch-budget.js?v=20260521launchbudget2';
   const TABLE_BUDGET_SRC = 'portal-live-table-budget.js?v=20260521tablebudget3';
-  const BUDGET_VIEWS = new Set([
-    'sku-plan-fact',
-    'prices',
-    'sku-contour',
-    'skus',
-    'launch-control',
-    'ads-funnel',
-    'order',
-    'repricer',
-    'launches'
-  ]);
+  const VIEW_BUDGET_SCRIPTS = {
+    'sku-plan-fact': [TABLE_BUDGET_SRC],
+    prices: [TABLE_BUDGET_SRC],
+    'sku-contour': [TABLE_BUDGET_SRC],
+    skus: [TABLE_BUDGET_SRC],
+    'launch-control': [TABLE_BUDGET_SRC],
+    'ads-funnel': [TABLE_BUDGET_SRC],
+    order: [RENDER_BUDGET_SRC],
+    repricer: [RENDER_BUDGET_SRC],
+    launches: [LAUNCH_BUDGET_SRC]
+  };
   const BUNDLES = {
     dashboard: [
       'portal-dashboard-calendar-stability-hotfix.js?v=20260521prod1',
@@ -130,10 +130,13 @@
 
   function loadRenderBudget(view) {
     syncSidebarLabels();
-    if (!BUDGET_VIEWS.has(String(view || ''))) return Promise.resolve();
-    return loadScript(RENDER_BUDGET_SRC)
-      .then(() => loadScript(LAUNCH_BUDGET_SRC))
-      .then(() => loadScript(TABLE_BUDGET_SRC))
+    const scripts = VIEW_BUDGET_SCRIPTS[String(view || '')] || [];
+    if (!scripts.length) return Promise.resolve();
+    let chain = Promise.resolve();
+    scripts.forEach((src) => {
+      chain = chain.then(() => loadScript(src));
+    });
+    return chain
       .then(rerenderAfterBudgetLoad)
       .catch((error) => console.warn('[portal-live-render-budget]', error));
   }

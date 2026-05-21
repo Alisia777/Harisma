@@ -55,6 +55,7 @@
   };
 
   const scriptPromises = new Map();
+  let renderBudgetRerenderScheduled = false;
 
   function existingScript(src) {
     const base = String(src || '').split('?')[0];
@@ -83,6 +84,8 @@
   }
 
   function rerenderAfterBudgetLoad() {
+    if (renderBudgetRerenderScheduled) return;
+    renderBudgetRerenderScheduled = true;
     const rerender = () => {
       if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
     };

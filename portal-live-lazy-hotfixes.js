@@ -4,7 +4,7 @@
 
   const RENDER_BUDGET_SRC = 'portal-live-render-budget.js?v=20260521budget1';
   const LAUNCH_BUDGET_SRC = 'portal-live-launch-budget.js?v=20260521launchbudget2';
-  const TABLE_BUDGET_SRC = 'portal-live-table-budget.js?v=20260521tablebudget1';
+  const TABLE_BUDGET_SRC = 'portal-live-table-budget.js?v=20260521tablebudget2';
   const BUNDLES = {
     dashboard: [
       'portal-dashboard-calendar-stability-hotfix.js?v=20260521prod1',

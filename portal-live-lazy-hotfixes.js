@@ -5,6 +5,17 @@
   const RENDER_BUDGET_SRC = 'portal-live-render-budget.js?v=20260521budget1';
   const LAUNCH_BUDGET_SRC = 'portal-live-launch-budget.js?v=20260521launchbudget2';
   const TABLE_BUDGET_SRC = 'portal-live-table-budget.js?v=20260521tablebudget3';
+  const BUDGET_VIEWS = new Set([
+    'sku-plan-fact',
+    'prices',
+    'sku-contour',
+    'skus',
+    'launch-control',
+    'ads-funnel',
+    'order',
+    'repricer',
+    'launches'
+  ]);
   const BUNDLES = {
     dashboard: [
       'portal-dashboard-calendar-stability-hotfix.js?v=20260521prod1',
@@ -117,8 +128,9 @@
     window.setTimeout(rerender, 1200);
   }
 
-  function loadRenderBudget() {
+  function loadRenderBudget(view) {
     syncSidebarLabels();
+    if (!BUDGET_VIEWS.has(String(view || ''))) return Promise.resolve();
     return loadScript(RENDER_BUDGET_SRC)
       .then(() => loadScript(LAUNCH_BUDGET_SRC))
       .then(() => loadScript(TABLE_BUDGET_SRC))
@@ -138,7 +150,7 @@
   function loadViewHotfixes(view, options = {}) {
     syncSidebarLabels();
     const bundleKeys = VIEW_BUNDLES[view] || [];
-    let chain = loadRenderBudget();
+    let chain = loadRenderBudget(view);
     bundleKeys.forEach((bundleKey) => {
       chain = chain.then(() => loadBundle(bundleKey));
     });
@@ -156,9 +168,12 @@
     return active ? String(active.id || '').replace(/^view-/, '') : '';
   }
 
+  function requestedView() {
+    return String(window.location.hash || '').replace(/^#/, '').trim();
+  }
+
   function scheduleForView(view) {
     syncSidebarLabels();
-    loadRenderBudget();
     if (!view) return;
     if (view === 'dashboard') {
       const run = () => {
@@ -183,14 +198,15 @@
     scheduleForView(event.detail && event.detail.view);
   });
 
-  loadRenderBudget();
   syncSidebarLabels();
   window.setTimeout(syncSidebarLabels, 300);
   window.setTimeout(syncSidebarLabels, 1200);
 
+  if (requestedView()) scheduleForView(requestedView());
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => scheduleForView(activeView()), { once: true });
+    document.addEventListener('DOMContentLoaded', () => scheduleForView(requestedView() || activeView()), { once: true });
   } else {
-    scheduleForView(activeView());
+    scheduleForView(requestedView() || activeView());
   }
 })();

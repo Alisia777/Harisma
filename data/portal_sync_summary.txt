@@ -1,11 +1,11 @@
 Portal sync health: warning
-Generated: 2026-05-20T12:25:21.083Z
+Generated: 2026-05-21T08:40:37.629Z
 Publish allowed: yes
-Max data date: 2026-05-19
+Max data date: 2026-05-20
 
 Blocking reasons:
 - none
 
 Warnings:
-- Unmapped API SKU revenue: 15302999.
+- Unmapped API SKU revenue: 16048702.
 - SKU without owner or registry mapping: 3.

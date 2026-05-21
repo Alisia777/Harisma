@@ -28,6 +28,7 @@
           }));
         }
         if (
+          window.__ALTEA_BLOCK_SUPABASE_SNAPSHOT_PARTS__ === true &&
           url.hostname.endsWith('.supabase.co') &&
           url.pathname.includes('/portal_data_snapshots') &&
           String(url.searchParams.get('snapshot_key') || '').includes('__part__')

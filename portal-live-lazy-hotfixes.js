@@ -2,6 +2,7 @@
   if (window.__ALTEA_LIVE_LAZY_HOTFIXES_20260521__) return;
   window.__ALTEA_LIVE_LAZY_HOTFIXES_20260521__ = true;
 
+  const RENDER_BUDGET_SRC = 'portal-live-render-budget.js?v=20260521budget1';
   const BUNDLES = {
     dashboard: [
       'portal-dashboard-calendar-stability-hotfix.js?v=20260521prod1',
@@ -81,6 +82,20 @@
     return promise;
   }
 
+  function rerenderAfterBudgetLoad() {
+    const rerender = () => {
+      if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
+    };
+    window.setTimeout(rerender, 80);
+    window.setTimeout(rerender, 1200);
+  }
+
+  function loadRenderBudget() {
+    return loadScript(RENDER_BUDGET_SRC)
+      .then(rerenderAfterBudgetLoad)
+      .catch((error) => console.warn('[portal-live-render-budget]', error));
+  }
+
   function loadBundle(bundleKey) {
     const scripts = BUNDLES[bundleKey] || [];
     let chain = Promise.resolve();
@@ -92,7 +107,7 @@
 
   function loadViewHotfixes(view, options = {}) {
     const bundleKeys = VIEW_BUNDLES[view] || [];
-    let chain = Promise.resolve();
+    let chain = loadRenderBudget();
     bundleKeys.forEach((bundleKey) => {
       chain = chain.then(() => loadBundle(bundleKey));
     });
@@ -110,6 +125,7 @@
   }
 
   function scheduleForView(view) {
+    loadRenderBudget();
     if (!view) return;
     if (view === 'dashboard') {
       const run = () => {
@@ -132,6 +148,8 @@
   window.addEventListener('altea:viewchange', (event) => {
     scheduleForView(event.detail && event.detail.view);
   });
+
+  loadRenderBudget();
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => scheduleForView(activeView()), { once: true });

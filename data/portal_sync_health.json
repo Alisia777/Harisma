@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-05-21T08:40:37.629Z",
+  "generatedAt": "2026-05-21T14:10:01.752Z",
   "status": "warning",
   "publish": {
     "allowed": true,
@@ -9,7 +9,7 @@
       "Unmapped API SKU revenue: 16048702.",
       "SKU without owner or registry mapping: 3."
     ],
-    "checkedAt": "2026-05-21T08:40:37.629Z"
+    "checkedAt": "2026-05-21T14:10:01.752Z"
   },
   "freshness": {
     "maxDate": "2026-05-20",
@@ -18,7 +18,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-05-21T08:40:37.623Z",
+      "checkedAt": "2026-05-21T14:10:01.743Z",
       "settlementHour": 10,
       "expectedDate": "2026-05-20",
       "maxDate": "2026-05-20",
@@ -65,7 +65,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-05-21T08:40:37.628Z",
+      "checkedAt": "2026-05-21T14:10:01.748Z",
       "expectedDate": "2026-05-20",
       "adsSummaryWindowTo": "2026-05-20",
       "iuDrrWindowTo": "2026-05-20",
@@ -116,14 +116,14 @@
     "platform_trends": {
       "exists": true,
       "rows": 7,
-      "generatedAt": "2026-05-21T07:35:26.434Z",
+      "generatedAt": "2026-05-21T14:08:56.026Z",
       "asOfDate": "2026-05-20",
-      "revenue": 344960307
+      "revenue": 343080661
     },
     "ads_summary": {
       "exists": true,
       "rows": 7,
-      "generatedAt": "2026-05-21T08:02:34.167Z",
+      "generatedAt": "2026-05-21T14:08:56.168Z",
       "asOfDate": "2026-05-20",
       "revenue": 0
     },
@@ -151,7 +151,7 @@
     "smart_price_overlay": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-05-21T07:36:05.604Z",
+      "generatedAt": "2026-05-21T14:08:56.381Z",
       "asOfDate": "2026-05-20",
       "revenue": 0
     },
@@ -235,7 +235,7 @@
     "portal_data_quarantine": {
       "exists": true,
       "rows": 52,
-      "generatedAt": "2026-05-21T08:39:53.753Z",
+      "generatedAt": "2026-05-21T08:40:37.623Z",
       "asOfDate": "2026-05-21",
       "revenue": 12783990
     },
@@ -270,7 +270,7 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-05-21T08:39:53.759Z",
+      "generatedAt": "2026-05-21T08:40:37.629Z",
       "asOfDate": "2026-05-21",
       "revenue": 0
     }
@@ -358,7 +358,7 @@
   },
   "lastGood": {
     "exists": true,
-    "generatedAt": "2026-05-21T08:39:53.975Z",
+    "generatedAt": "2026-05-21T08:40:37.845Z",
     "comparisons": [
       {
         "snapshot": "skus",
@@ -374,9 +374,9 @@
         "rows": 7,
         "previousRows": 7,
         "rowRatio": 1,
-        "revenue": 344960307,
+        "revenue": 343080661,
         "previousRevenue": 344960307,
-        "revenueRatio": 1
+        "revenueRatio": 0.9945511238195878
       },
       {
         "snapshot": "order_procurement",
@@ -414,9 +414,7 @@
         "previousRevenue": 0,
         "revenueRatio": 1
       }
-    ],
-    "markedAt": "2026-05-21T08:40:37.845Z",
-    "copied": 25
+    ]
   },
   "checks": [
     {

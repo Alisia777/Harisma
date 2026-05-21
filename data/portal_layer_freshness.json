@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-21T11:01:17.802Z",
+  "generatedAt": "2026-05-21T14:10:09.998Z",
   "expectedDate": "2026-05-20",
   "publish": {
     "allowed": true,
@@ -69,10 +69,10 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 23200249,
-      "sourceMtime": "2026-05-21T07:35:26.737Z",
+      "sourceBytes": 23336888,
+      "sourceMtime": "2026-05-21T14:08:56.585Z",
       "rowCount": 0,
-      "generatedAt": "2026-05-21T07:35:26.434Z",
+      "generatedAt": "2026-05-21T14:08:56.026Z",
       "freshness": {
         "date": "2026-05-20",
         "source": "latestMarketplaceDate",
@@ -80,7 +80,7 @@
       },
       "deployBytes": 23200249,
       "deployMtime": "2026-05-21T07:35:26.737Z",
-      "deployMatchesSource": true
+      "deployMatchesSource": false
     },
     {
       "name": "platform_plan",
@@ -184,10 +184,10 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 21722427,
-      "sourceMtime": "2026-05-21T08:02:34.311Z",
+      "sourceBytes": 3765151,
+      "sourceMtime": "2026-05-21T14:08:56.599Z",
       "rowCount": 0,
-      "generatedAt": "2026-05-21T08:02:34.167Z",
+      "generatedAt": "2026-05-21T14:08:56.168Z",
       "freshness": {
         "date": "2026-05-20",
         "source": "asOfDate",
@@ -195,7 +195,7 @@
       },
       "deployBytes": 21722427,
       "deployMtime": "2026-05-21T08:02:34.311Z",
-      "deployMatchesSource": true
+      "deployMatchesSource": false
     },
     {
       "name": "iu_drr_summary",
@@ -285,7 +285,7 @@
         "source": "generatedAt",
         "value": "2026-05-21T07:36:16.394Z"
       },
-      "ageDays": 0.14,
+      "ageDays": 0.27,
       "maxAgeDays": 10,
       "deployBytes": 216455,
       "deployMtime": "2026-05-21T07:36:16.396Z",
@@ -310,7 +310,7 @@
         "source": "fileMtime",
         "value": "2026-05-21T07:36:16.581Z"
       },
-      "ageDays": 0.14,
+      "ageDays": 0.27,
       "maxAgeDays": 10,
       "deployBytes": 4109022,
       "deployMtime": "2026-05-21T07:36:16.581Z",
@@ -442,17 +442,17 @@
       "warnings": [],
       "blockingReasons": [],
       "sourceBytes": 19218,
-      "sourceMtime": "2026-05-21T08:40:37.846Z",
+      "sourceMtime": "2026-05-21T14:10:01.753Z",
       "rowCount": 52,
-      "generatedAt": "2026-05-21T08:40:37.623Z",
+      "generatedAt": "2026-05-21T14:10:01.742Z",
       "freshness": {
         "date": "2026-05-21",
         "source": "generatedAt",
-        "value": "2026-05-21T08:40:37.623Z"
+        "value": "2026-05-21T14:10:01.742Z"
       },
       "deployBytes": 19218,
       "deployMtime": "2026-05-21T08:40:37.846Z",
-      "deployMatchesSource": true
+      "deployMatchesSource": false
     },
     {
       "name": "portal_sync_health",
@@ -464,10 +464,10 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 14288,
-      "sourceMtime": "2026-05-21T08:40:37.845Z",
+      "sourceBytes": 14243,
+      "sourceMtime": "2026-05-21T14:10:01.753Z",
       "rowCount": 0,
-      "generatedAt": "2026-05-21T08:40:37.629Z",
+      "generatedAt": "2026-05-21T14:10:01.752Z",
       "freshness": {
         "date": "2026-05-20",
         "source": "freshness.maxDate",
@@ -475,7 +475,7 @@
       },
       "deployBytes": 14288,
       "deployMtime": "2026-05-21T08:40:37.845Z",
-      "deployMatchesSource": true
+      "deployMatchesSource": false
     },
     {
       "name": "portal_layer_freshness",
@@ -487,17 +487,17 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 22186,
-      "sourceMtime": "2026-05-21T11:00:31.543Z",
+      "sourceBytes": 22269,
+      "sourceMtime": "2026-05-21T11:01:17.803Z",
       "rowCount": 32,
-      "generatedAt": "2026-05-21T11:00:31.543Z",
+      "generatedAt": "2026-05-21T11:01:17.802Z",
       "freshness": {
         "date": "2026-05-20",
         "source": "expectedDate",
         "value": "2026-05-20"
       },
-      "deployBytes": 22186,
-      "deployMtime": "2026-05-21T11:00:31.543Z",
+      "deployBytes": 22269,
+      "deployMtime": "2026-05-21T11:01:17.803Z",
       "deployMatchesSource": true
     },
     {
@@ -519,7 +519,7 @@
         "source": "fileMtime",
         "value": "2026-05-21T07:28:22.000Z"
       },
-      "ageDays": 0.15,
+      "ageDays": 0.28,
       "maxAgeDays": 2,
       "deployBytes": 332,
       "deployMtime": "2026-05-19T10:45:57.306Z",
@@ -544,7 +544,7 @@
         "source": "fileMtime",
         "value": "2026-05-21T07:28:22.001Z"
       },
-      "ageDays": 0.15,
+      "ageDays": 0.28,
       "maxAgeDays": 2,
       "deployBytes": 260,
       "deployMtime": "2026-05-19T10:45:57.310Z",
@@ -569,7 +569,7 @@
         "source": "fileMtime",
         "value": "2026-05-21T07:28:22.002Z"
       },
-      "ageDays": 0.15,
+      "ageDays": 0.28,
       "maxAgeDays": 2,
       "deployBytes": 74,
       "deployMtime": "2026-05-19T10:45:57.311Z",
@@ -677,10 +677,10 @@
       "ok": true,
       "warnings": [],
       "blockingReasons": [],
-      "sourceBytes": 2349102,
-      "sourceMtime": "2026-05-21T07:36:12.801Z",
+      "sourceBytes": 11937649,
+      "sourceMtime": "2026-05-21T14:08:56.637Z",
       "rowCount": 0,
-      "generatedAt": "2026-05-21T07:36:05.604Z",
+      "generatedAt": "2026-05-21T14:08:56.381Z",
       "freshness": {
         "date": "2026-05-20",
         "source": "asOfDate",
@@ -688,7 +688,7 @@
       },
       "deployBytes": 2349102,
       "deployMtime": "2026-05-21T07:36:12.801Z",
-      "deployMatchesSource": true
+      "deployMatchesSource": false
     },
     {
       "name": "smart_price_workbench",
@@ -709,7 +709,7 @@
         "source": "generatedAt",
         "value": "2026-05-18T14:34:19.064Z"
       },
-      "ageDays": 0.99,
+      "ageDays": 1.12,
       "maxAgeDays": 3,
       "deployBytes": 6389973,
       "deployMtime": "2026-05-20T11:12:48.525Z",
@@ -734,7 +734,7 @@
         "source": "generatedAt",
         "value": "2026-04-20T14:28:01.203171Z"
       },
-      "ageDays": 0.99,
+      "ageDays": 1.12,
       "maxAgeDays": 3,
       "deployBytes": 1367212,
       "deployMtime": "2026-05-20T11:12:48.537Z",

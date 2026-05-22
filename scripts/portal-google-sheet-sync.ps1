@@ -983,3 +983,4 @@ try {
 Write-Output "[sync] full portal sync completed"
 Schedule-FailedStepRetry
 Remove-SyncLock
+exit 0

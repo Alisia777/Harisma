@@ -108,7 +108,7 @@ function Assert-LayerAuditAllowed {
 }
 
 $resolvedSourceDir = Resolve-RepoPath -PathValue $SourceDir -DefaultValue ".altea-google-sheet-sync-output"
-$resolvedDeployDir = Resolve-RepoPath -PathValue $DeployDir -DefaultValue ".codex-harisma-git"
+$resolvedDeployDir = Resolve-RepoPath -PathValue $DeployDir -DefaultValue ".codex-minmax-publish"
 $deployDataDir = Join-Path $resolvedDeployDir "data"
 $gitExe = Resolve-GitPath -RequestedGitPath $GitPath
 $manifestPath = Join-Path $repoRoot "scripts\portal-layer-manifest.json"

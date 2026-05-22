@@ -170,6 +170,84 @@
 
   window.closeTaskWithReport = window.finalCloseTaskWithReport;
 
+  function activeTaskId() {
+    try {
+      const app = appState();
+      return String(app?.activeTaskId || '').trim();
+    } catch {
+      return '';
+    }
+  }
+
+  function looksLikeRopSubmitForm(form) {
+    if (!form || form.nodeType !== 1) return false;
+    const id = String(form.id || '').trim();
+    if (id === 'taskSubmitToRopForm') return true;
+    if (id !== 'taskCloseForm') return false;
+    const text = String(form.closest('.card')?.textContent || form.textContent || '');
+    return text.includes('РОП') || /\bROP\b/i.test(text);
+  }
+
+  function formButton(form) {
+    return form?.querySelector?.('button[type="submit"], input[type="submit"]') || null;
+  }
+
+  async function runGuardedFormSubmit(form, action) {
+    if (!form || form.dataset.workflowResilientSending === '1') return;
+    const taskId = activeTaskId();
+    const data = new FormData(form);
+    const report = String(data.get('report') || data.get('comment') || '').trim();
+    if (!taskId) throw new Error('Task is not selected.');
+    if ((action === 'submit' || action === 'final') && !report) {
+      form.querySelector('textarea[name="report"]')?.focus();
+      return;
+    }
+
+    const button = formButton(form);
+    const initialText = button?.textContent || button?.value || '';
+    form.dataset.workflowResilientSending = '1';
+    if (button) {
+      button.disabled = true;
+      if ('value' in button && button.tagName === 'INPUT') button.value = 'Saving...';
+      else button.textContent = 'Saving...';
+    }
+    try {
+      let updated = null;
+      if (action === 'submit') updated = await window.submitTaskForRopApproval(taskId, report);
+      else if (action === 'approve') updated = await window.approveTaskByRop(taskId, report);
+      else if (action === 'final') updated = await window.finalCloseTaskWithReport(taskId, report);
+      if (!updated) throw new Error('Task state was not updated.');
+      try {
+        if (typeof window.renderTaskModal === 'function') window.renderTaskModal(taskId);
+      } catch {}
+    } finally {
+      form.dataset.workflowResilientSending = '0';
+      if (button && button.isConnected) {
+        button.disabled = false;
+        if ('value' in button && button.tagName === 'INPUT') button.value = initialText || 'Submit';
+        else button.textContent = initialText || 'Submit';
+      }
+    }
+  }
+
+  document.addEventListener('submit', (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    let action = '';
+    if (looksLikeRopSubmitForm(form)) action = 'submit';
+    else if (form.id === 'taskRopApproveForm') action = 'approve';
+    else if (form.id === 'taskFinalCloseForm') action = 'final';
+    if (!action) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+    runGuardedFormSubmit(form, action).catch((error) => {
+      console.error('[task-workflow-resilient] guarded submit', error);
+      window.alert(error?.message || 'Task was saved locally, but the shared layer needs a retry.');
+    });
+  }, true);
+
   try { submitTaskForRopApproval = window.submitTaskForRopApproval; } catch {}
   try { approveTaskByRop = window.approveTaskByRop; } catch {}
   try { returnTaskToWork = window.returnTaskToWork; } catch {}

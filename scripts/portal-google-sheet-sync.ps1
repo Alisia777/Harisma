@@ -972,7 +972,7 @@ Write-Output "[sync] static data publish started"
 try {
   Invoke-PowerShellStep -StepName "static data publish" -ScriptPath (Join-Path $PSScriptRoot "portal-static-data-publish.ps1") -Parameters @{
     SourceDir = $resolvedOutputDir
-    DeployDir = ".codex-harisma-git"
+    DeployDir = ".codex-minmax-publish"
   }
   Write-Output "[sync] static data publish completed"
 } catch {

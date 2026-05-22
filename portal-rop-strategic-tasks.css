@@ -9,7 +9,14 @@
 .rop-strategic-filters{display:grid;grid-template-columns:minmax(220px,1.6fr) repeat(4,minmax(140px,1fr));gap:10px}
 .rop-strategic-owner-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .rop-owner-card{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.022);padding:12px;display:flex;flex-direction:column;gap:10px}
+.rop-filter-tile,.rop-owner-card[role=button],.rop-owner-card .chip{cursor:pointer}
+.rop-filter-tile{appearance:none;text-align:left;color:inherit;font:inherit}
+.rop-filter-tile:hover,.rop-owner-card[role=button]:hover{border-color:rgba(212,164,74,.52);background:rgba(212,164,74,.075)}
+.rop-filter-tile.active,.rop-owner-card.active{border-color:rgba(212,164,74,.72);box-shadow:inset 0 0 0 1px rgba(212,164,74,.18),0 0 0 1px rgba(212,164,74,.1);background:rgba(212,164,74,.09)}
+.rop-owner-card .chip{font:inherit;color:inherit}
+.rop-owner-card .chip:hover{border-color:rgba(212,164,74,.58);color:#fff7e6}
 .rop-owner-card.is-risk{border-color:rgba(212,164,74,.34);background:rgba(212,164,74,.045)}
+.rop-owner-card.active.is-risk{border-color:rgba(212,164,74,.72);background:rgba(212,164,74,.09)}
 .rop-owner-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .rop-owner-card h3{margin:0;color:#fff7e6;font-size:18px;line-height:1.15}
 .rop-owner-card p{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.35}

@@ -114,7 +114,7 @@
   async function loadRopData() {
     if (ropData) return ropData;
     if (!dataPromise) {
-      dataPromise = fetch(`${DATA_PATH}?v=20260522strategic2`, { cache: 'no-store' })
+      dataPromise = fetch(`${DATA_PATH}?v=20260522strategic3`, { cache: 'no-store' })
         .then((response) => {
           if (!response.ok) throw new Error(`Не удалось загрузить ${DATA_PATH}`);
           return response.json();
@@ -249,6 +249,7 @@
       if (filters.owner !== 'all' && row.owner !== filters.owner) return false;
       if (filters.platform !== 'all' && row.platformKey !== filters.platform && row.platform !== filters.platform) return false;
       if (filters.priority !== 'all' && row.priority !== filters.priority) return false;
+      if (filters.status === 'overdue') return isOverdueDate(row.due, row.status);
       if (filters.status === 'active' && !isActive(row.status)) return false;
       if (filters.status !== 'all' && filters.status !== 'active' && row.status !== filters.status) return false;
       return true;
@@ -327,6 +328,7 @@
         <select data-rop-filter="status">
           <option value="active" ${filters.status === 'active' ? 'selected' : ''}>Активные</option>
           <option value="all" ${filters.status === 'all' ? 'selected' : ''}>Все статусы</option>
+          <option value="overdue" ${filters.status === 'overdue' ? 'selected' : ''}>Просроченные</option>
           ${STATUS_ORDER.map((key) => `<option value="${key}" ${filters.status === key ? 'selected' : ''}>${html(statusMeta(key).label)}</option>`).join('')}
         </select>
         <select data-rop-filter="priority">
@@ -338,26 +340,38 @@
   }
 
   function renderKpiStrip(summary, payload) {
+    const filters = strategicState().filters;
+    const isGlobal = filters.owner === 'all' && filters.platform === 'all' && !filters.search;
+    const tile = (kind, tone, label, value, caption, active) => `
+      <button class="mini-kpi ${tone || ''} rop-filter-tile ${active ? 'active' : ''}" type="button" data-rop-quick-filter="${kind}" aria-pressed="${active ? 'true' : 'false'}">
+        <span>${label}</span>
+        <strong>${value}</strong>
+        <span>${caption}</span>
+      </button>
+    `;
     return `
       <div class="kpi-strip">
-        <div class="mini-kpi"><span>Всего</span><strong>${intFmt(summary.total)}</strong><span>стратегических задач</span></div>
-        <div class="mini-kpi warn"><span>Активно</span><strong>${intFmt(summary.active)}</strong><span>в работе до ${html(payload.targetDate || '2026-06-05')}</span></div>
-        <div class="mini-kpi danger"><span>Критично</span><strong>${intFmt(summary.critical)}</strong><span>реклама, данные, коммуникации</span></div>
-        <div class="mini-kpi danger"><span>Просрочено</span><strong>${intFmt(summary.overdue)}</strong><span>нужен апдейт срока</span></div>
-        <div class="mini-kpi warn"><span>Блокеры</span><strong>${intFmt(summary.blocked)}</strong><span>ждет функций или площадку</span></div>
-        <div class="mini-kpi"><span>Готовность</span><strong>${intFmt(summary.progress)}%</strong><span>${intFmt(summary.done)} закрыто</span></div>
+        ${tile('all', '', 'Всего', intFmt(summary.total), 'стратегических задач', isGlobal && filters.status === 'all' && filters.priority === 'all')}
+        ${tile('active', 'warn', 'Активно', intFmt(summary.active), `в работе до ${html(payload.targetDate || '2026-06-05')}`, filters.status === 'active' && filters.priority === 'all')}
+        ${tile('critical', 'danger', 'Критично', intFmt(summary.critical), 'реклама, данные, коммуникации', filters.status === 'active' && filters.priority === 'critical')}
+        ${tile('overdue', 'danger', 'Просрочено', intFmt(summary.overdue), 'нужен апдейт срока', filters.status === 'overdue')}
+        ${tile('blocked', 'warn', 'Блокеры', intFmt(summary.blocked), 'ждет функций или площадку', filters.status === 'waiting_team')}
+        ${tile('done', '', 'Готовность', `${intFmt(summary.progress)}%`, `${intFmt(summary.done)} закрыто`, filters.status === 'done')}
       </div>
     `;
   }
 
   function renderOwnerCards(rows) {
+    const filters = strategicState().filters;
     const owners = [...new Set(rows.map((row) => row.owner).filter(Boolean))];
+    const filterChip = (label, tone, owner, mode) => `<button class="chip ${tone || ''}" type="button" data-rop-owner-filter="${html(owner)}" data-rop-owner-mode="${mode}">${html(label)}</button>`;
     return `
       <div class="rop-strategic-owner-grid">
         ${owners.map((owner) => {
           const model = ownerSummary(rows, owner);
+          const active = filters.owner === owner;
           return `
-            <div class="rop-owner-card ${model.overdue || model.critical ? 'is-risk' : ''}">
+            <div class="rop-owner-card ${model.overdue || model.critical ? 'is-risk' : ''} ${active ? 'active' : ''}" role="button" tabindex="0" data-rop-owner-filter="${html(owner)}" data-rop-owner-mode="active" aria-pressed="${active ? 'true' : 'false'}">
               <div class="rop-owner-card-head">
                 <div>
                   <h3>${html(owner)}</h3>
@@ -367,9 +381,9 @@
               </div>
               <div class="rop-progress"><span style="width:${Math.max(4, model.progress)}%"></span></div>
               <div class="badge-stack">
-                ${chip(`${intFmt(model.total)} задач`)}
-                ${chip(`${intFmt(model.critical)} крит.`, model.critical ? 'danger' : 'ok')}
-                ${chip(`${intFmt(model.overdue)} проср.`, model.overdue ? 'danger' : 'ok')}
+                ${filterChip(`${intFmt(model.total)} задач`, '', owner, 'all')}
+                ${filterChip(`${intFmt(model.critical)} крит.`, model.critical ? 'danger' : 'ok', owner, 'critical')}
+                ${filterChip(`${intFmt(model.overdue)} проср.`, model.overdue ? 'danger' : 'ok', owner, 'overdue')}
               </div>
             </div>
           `;
@@ -727,6 +741,67 @@
     }
   }
 
+  function applyStrategicQuickFilter(kind) {
+    const filters = strategicState().filters;
+    const mode = String(kind || 'active');
+    if (mode === 'all') {
+      filters.search = '';
+      filters.owner = 'all';
+      filters.platform = 'all';
+      filters.status = 'all';
+      filters.priority = 'all';
+      return;
+    }
+    if (mode === 'active') {
+      filters.status = 'active';
+      filters.priority = 'all';
+      return;
+    }
+    if (mode === 'critical') {
+      filters.status = 'active';
+      filters.priority = 'critical';
+      return;
+    }
+    if (mode === 'overdue') {
+      filters.status = 'overdue';
+      filters.priority = 'all';
+      return;
+    }
+    if (mode === 'blocked') {
+      filters.status = 'waiting_team';
+      filters.priority = 'all';
+      return;
+    }
+    if (mode === 'done') {
+      filters.status = 'done';
+      filters.priority = 'all';
+    }
+  }
+
+  function applyStrategicOwnerFilter(owner, mode) {
+    const filters = strategicState().filters;
+    const nextOwner = String(owner || 'all');
+    const nextMode = String(mode || 'active');
+    filters.owner = nextMode === 'active' && filters.owner === nextOwner ? 'all' : nextOwner;
+    if (nextMode === 'all') {
+      filters.status = 'all';
+      filters.priority = 'all';
+      return;
+    }
+    if (nextMode === 'critical') {
+      filters.status = 'active';
+      filters.priority = 'critical';
+      return;
+    }
+    if (nextMode === 'overdue') {
+      filters.status = 'overdue';
+      filters.priority = 'all';
+      return;
+    }
+    filters.status = 'active';
+    filters.priority = 'all';
+  }
+
   function installListeners() {
     if (window.__ALTEA_ROP_STRATEGIC_LISTENERS__) return;
     window.__ALTEA_ROP_STRATEGIC_LISTENERS__ = true;
@@ -748,11 +823,33 @@
         return;
       }
 
+      const quickFilter = event.target.closest('[data-rop-quick-filter]');
+      if (quickFilter) {
+        applyStrategicQuickFilter(quickFilter.dataset.ropQuickFilter);
+        renderStrategicScreen(document.getElementById('view-control'));
+        return;
+      }
+
+      const ownerFilter = event.target.closest('[data-rop-owner-filter]');
+      if (ownerFilter) {
+        applyStrategicOwnerFilter(ownerFilter.dataset.ropOwnerFilter, ownerFilter.dataset.ropOwnerMode);
+        renderStrategicScreen(document.getElementById('view-control'));
+        return;
+      }
+
       const tab = event.target.closest('[data-rop-tab]');
       if (tab) {
         strategicState().tab = tab.dataset.ropTab || 'tasks';
         renderStrategicScreen(document.getElementById('view-control'));
       }
+    });
+
+    document.body.addEventListener('keydown', (event) => {
+      const ownerCard = event.target.closest('.rop-owner-card[data-rop-owner-filter]');
+      if (!ownerCard || event.target !== ownerCard) return;
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      ownerCard.click();
     });
 
     document.body.addEventListener('input', (event) => {

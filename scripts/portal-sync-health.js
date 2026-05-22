@@ -19,6 +19,7 @@ const SNAPSHOT_NAMES = [
   'order_procurement',
   'order_procurement_wb',
   'order_procurement_ozon',
+  'order_procurement_ym',
   'oos_control',
   'iu_drr_summary',
   'wb_feedbacks_summary',
@@ -44,6 +45,10 @@ const REQUIRED_SNAPSHOTS = [
 const LAST_GOOD_MANIFEST = 'manifest.json';
 const DEFAULT_MIN_ROWS_RATIO = 0.55;
 const DEFAULT_MIN_REVENUE_RATIO = 0.60;
+const DEFAULT_COMPLETENESS_MIN_RATIO = 0.55;
+const DEFAULT_COMPLETENESS_LOOKBACK_DAYS = 7;
+const DEFAULT_COMPLETENESS_MIN_BASELINE_REVENUE = 100000;
+const DEFAULT_COMPLETENESS_MIN_BASELINE_UNITS = 50;
 
 function parseArgs(argv) {
   const args = {};
@@ -70,6 +75,11 @@ function resolveOptions(args) {
   const inputDir = path.resolve(args['input-dir'] || path.join(root, '.altea-google-sheet-sync-output'));
   const baseDataDir = path.resolve(args['base-data-dir'] || path.join(root, 'data'));
   const outputDir = path.resolve(args['output-dir'] || inputDir);
+  const settlementHour = Math.max(0, Math.min(23, Math.trunc(numberOrZero(args['settlement-hour'] || process.env.ALTEA_PORTAL_SETTLEMENT_HOUR || 10))));
+  const completenessPlatforms = String(args['completeness-platforms'] || process.env.ALTEA_PORTAL_COMPLETENESS_PLATFORMS || 'wb,ozon')
+    .split(',')
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
   return {
     inputDir,
     baseDataDir,
@@ -80,6 +90,14 @@ function resolveOptions(args) {
     minRowsRatio: Number(args['min-rows-ratio'] || DEFAULT_MIN_ROWS_RATIO),
     minRevenueRatio: Number(args['min-revenue-ratio'] || DEFAULT_MIN_REVENUE_RATIO),
     staleWarnDays: Number(args['stale-warn-days'] || 3),
+    settlementHour,
+    expectedDate: dateKey(args['expected-date'] || ''),
+    completenessGuardEnabled: String(args['disable-completeness-guard'] || process.env.ALTEA_PORTAL_DISABLE_COMPLETENESS_GUARD || '').trim() !== '1',
+    completenessPlatforms,
+    completenessMinRatio: Number(args['completeness-min-ratio'] || process.env.ALTEA_PORTAL_COMPLETENESS_MIN_RATIO || DEFAULT_COMPLETENESS_MIN_RATIO),
+    completenessLookbackDays: Math.max(1, Math.trunc(numberOrZero(args['completeness-lookback-days'] || process.env.ALTEA_PORTAL_COMPLETENESS_LOOKBACK_DAYS || DEFAULT_COMPLETENESS_LOOKBACK_DAYS))),
+    completenessMinBaselineRevenue: numberOrZero(args['completeness-min-baseline-revenue'] || process.env.ALTEA_PORTAL_COMPLETENESS_MIN_BASELINE_REVENUE || DEFAULT_COMPLETENESS_MIN_BASELINE_REVENUE),
+    completenessMinBaselineUnits: numberOrZero(args['completeness-min-baseline-units'] || process.env.ALTEA_PORTAL_COMPLETENESS_MIN_BASELINE_UNITS || DEFAULT_COMPLETENESS_MIN_BASELINE_UNITS),
     now: args.now ? new Date(args.now) : new Date()
   };
 }
@@ -127,6 +145,208 @@ function daysOld(value, now) {
 
 function latestDate(values) {
   return (values || []).map(dateKey).filter(Boolean).sort().pop() || '';
+}
+
+function localDateKey(offsetDays = 0, now = new Date()) {
+  const date = new Date(now.getTime());
+  date.setDate(date.getDate() + offsetDays);
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0')
+  ].join('-');
+}
+
+function pointDate(point = {}) {
+  return dateKey(point.date || point.label);
+}
+
+function pointRevenue(point = {}) {
+  return numberOrZero(point.revenue ?? point.ordersRevenue ?? point.salesRevenue ?? point.factRevenue);
+}
+
+function pointUnits(point = {}) {
+  return numberOrZero(point.units ?? point.ordersUnits ?? point.deliveredUnits ?? point.quantity);
+}
+
+function median(values) {
+  const sorted = values.map(numberOrZero).filter((value) => value > 0).sort((left, right) => left - right);
+  if (!sorted.length) return 0;
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
+function platformByKey(platformTrends = {}, key = '') {
+  return (Array.isArray(platformTrends.platforms) ? platformTrends.platforms : [])
+    .find((platform) => String(platform?.key || platform?.platformKey || '').trim().toLowerCase() === key);
+}
+
+function buildCompletenessGuard(options, snapshots, maxDate) {
+  const expectedDate = options.expectedDate || localDateKey(options.now.getHours() < options.settlementHour ? -2 : -1, options.now);
+  const guard = {
+    enabled: options.completenessGuardEnabled,
+    status: 'ok',
+    checkedAt: new Date().toISOString(),
+    settlementHour: options.settlementHour,
+    expectedDate,
+    maxDate: maxDate || '',
+    minRatio: options.completenessMinRatio,
+    lookbackDays: options.completenessLookbackDays,
+    minBaselineRevenue: options.completenessMinBaselineRevenue,
+    minBaselineUnits: options.completenessMinBaselineUnits,
+    platforms: options.completenessPlatforms,
+    blockingReasons: [],
+    warnings: [],
+    checks: []
+  };
+  if (!guard.enabled) {
+    guard.status = 'disabled';
+    return guard;
+  }
+  if (!expectedDate) {
+    guard.status = 'warning';
+    guard.warnings.push('Freshness completeness guard could not resolve expected marketplace date.');
+    return guard;
+  }
+
+  if (!maxDate || maxDate < expectedDate) {
+    guard.blockingReasons.push(`Marketplace data is behind the expected cutoff date (${maxDate || 'unknown'} < ${expectedDate}).`);
+  }
+
+  const platformTrends = snapshots.platform_trends || {};
+  for (const key of options.completenessPlatforms) {
+    const platform = platformByKey(platformTrends, key);
+    const label = platform?.label || key;
+    const series = (Array.isArray(platform?.series) ? platform.series : [])
+      .map((point) => ({
+        date: pointDate(point),
+        revenue: pointRevenue(point),
+        units: pointUnits(point)
+      }))
+      .filter((point) => point.date)
+      .sort((left, right) => left.date.localeCompare(right.date));
+    const latest = latestDate(series.map((point) => point.date));
+    const target = series.find((point) => point.date === expectedDate) || null;
+    const baselineRows = series
+      .filter((point) => point.date < expectedDate && (point.revenue > 0 || point.units > 0))
+      .slice(-options.completenessLookbackDays);
+    const baselineRevenue = median(baselineRows.map((point) => point.revenue));
+    const baselineUnits = median(baselineRows.map((point) => point.units));
+    const currentRevenue = target ? target.revenue : 0;
+    const currentUnits = target ? target.units : 0;
+    const revenueRatio = baselineRevenue > 0 ? currentRevenue / baselineRevenue : null;
+    const unitsRatio = baselineUnits > 0 ? currentUnits / baselineUnits : null;
+    const check = {
+      platform: key,
+      label,
+      status: 'ok',
+      expectedDate,
+      latestDate: latest,
+      currentRevenue,
+      baselineRevenueMedian: Math.round(baselineRevenue * 100) / 100,
+      revenueRatio: revenueRatio === null ? null : Number(revenueRatio.toFixed(4)),
+      currentUnits,
+      baselineUnitsMedian: Math.round(baselineUnits * 100) / 100,
+      unitsRatio: unitsRatio === null ? null : Number(unitsRatio.toFixed(4)),
+      baselineDays: baselineRows.length
+    };
+
+    if (!platform) {
+      check.status = 'blocked';
+      guard.blockingReasons.push(`Marketplace completeness guard: platform ${key} is missing from platform_trends.`);
+    } else if (latest < expectedDate) {
+      check.status = 'blocked';
+      guard.blockingReasons.push(`Marketplace completeness guard: ${label} has no data for expected date ${expectedDate} (latest ${latest || 'unknown'}).`);
+    } else if (!target) {
+      check.status = 'blocked';
+      guard.blockingReasons.push(`Marketplace completeness guard: ${label} is missing expected date ${expectedDate}.`);
+    } else if (baselineRevenue >= options.completenessMinBaselineRevenue) {
+      const revenueTooLow = currentRevenue <= 0 || revenueRatio < options.completenessMinRatio;
+      const unitsComparable = baselineUnits >= options.completenessMinBaselineUnits;
+      const unitsTooLow = !unitsComparable || currentUnits <= 0 || unitsRatio < options.completenessMinRatio;
+      if (revenueTooLow && unitsTooLow) {
+        check.status = 'blocked';
+        guard.blockingReasons.push(`Marketplace completeness guard: ${label} data for ${expectedDate} looks partial (revenue ${Math.round(currentRevenue)} is ${Math.round((revenueRatio || 0) * 100)}% of recent median ${Math.round(baselineRevenue)}).`);
+      }
+    } else {
+      check.status = 'warning';
+      guard.warnings.push(`Marketplace completeness guard: not enough ${label} baseline revenue to validate ${expectedDate}.`);
+    }
+    guard.checks.push(check);
+  }
+
+  guard.status = guard.blockingReasons.length ? 'blocked' : (guard.warnings.length ? 'warning' : 'ok');
+  return guard;
+}
+
+function buildFreshnessDependencyGuard(options, snapshots, expectedDate) {
+  const adsSummary = snapshots.ads_summary || {};
+  const iuDrr = snapshots.iu_drr_summary || {};
+  const adsWindowTo = dateKey(adsSummary.window?.to || adsSummary.asOfDate || adsSummary.diagnostics?.sourceWindow?.to);
+  const iuWindowTo = dateKey(iuDrr.window?.to || iuDrr.asOfDate);
+  const iuAdsWindowTo = dateKey(iuDrr.diagnostics?.adsDiagnostics?.sourceWindow?.to);
+  const iuDailyLatest = latestDate((Array.isArray(iuDrr.daily) ? iuDrr.daily : [])
+    .map((row) => dateKey(row?.date))
+    .filter(Boolean));
+  const guard = {
+    status: 'ok',
+    checkedAt: new Date().toISOString(),
+    expectedDate: expectedDate || '',
+    adsSummaryWindowTo: adsWindowTo,
+    iuDrrWindowTo: iuWindowTo,
+    iuDrrAdsWindowTo: iuAdsWindowTo,
+    iuDrrDailyLatest: iuDailyLatest,
+    blockingReasons: [],
+    warnings: [],
+    checks: []
+  };
+
+  function addCheck(name, ok, message, details = {}, okMessage = 'Freshness dependency is aligned.') {
+    const status = ok ? 'ok' : 'blocked';
+    guard.checks.push({ name, status, message: ok ? okMessage : message, ...details });
+    if (!ok) guard.blockingReasons.push(message);
+  }
+
+  if (adsWindowTo && iuAdsWindowTo) {
+    addCheck(
+      'iu-drr-ads-window-after-ads-summary',
+      iuAdsWindowTo >= adsWindowTo,
+      `IU/DRR WB ads window is behind ads_summary (${iuAdsWindowTo} < ${adsWindowTo}); rebuild iu_drr_summary after ads_summary.`,
+      { adsWindowTo, iuAdsWindowTo },
+      `IU/DRR WB ads window covers ads_summary through ${iuAdsWindowTo}.`
+    );
+  } else if (adsWindowTo && !iuAdsWindowTo) {
+    guard.warnings.push('IU/DRR WB ads source window is missing; dashboard may hide recent advertising days.');
+    guard.checks.push({
+      name: 'iu-drr-ads-window-present',
+      status: 'warning',
+      message: 'IU/DRR WB ads source window is missing.',
+      adsWindowTo,
+      iuAdsWindowTo
+    });
+  }
+
+  if (expectedDate) {
+    addCheck(
+      'iu-drr-daily-expected-date',
+      Boolean(iuDailyLatest && iuDailyLatest >= expectedDate),
+      `IU/DRR daily rows are behind the expected cutoff date (${iuDailyLatest || 'unknown'} < ${expectedDate}).`,
+      { iuDailyLatest, expectedDate },
+      `IU/DRR daily rows cover expected date ${expectedDate}.`
+    );
+    if (adsWindowTo && adsWindowTo >= expectedDate) {
+      addCheck(
+        'iu-drr-ads-window-expected-date',
+        Boolean(iuAdsWindowTo && iuAdsWindowTo >= expectedDate),
+        `IU/DRR WB ads window is behind the expected cutoff date (${iuAdsWindowTo || 'unknown'} < ${expectedDate}).`,
+        { iuAdsWindowTo, expectedDate },
+        `IU/DRR WB ads window covers expected date ${expectedDate}.`
+      );
+    }
+  }
+
+  guard.status = guard.blockingReasons.length ? 'blocked' : (guard.warnings.length ? 'warning' : 'ok');
+  return guard;
 }
 
 function rowCount(payload) {
@@ -370,6 +590,18 @@ function buildHealth(options) {
   }
 
   const maxDate = qualitySummary.maxDate || sources.platform_trends.asOfDate || sources.dashboard.asOfDate;
+  const completenessGuard = buildCompletenessGuard(options, snapshots, maxDate);
+  for (const reason of completenessGuard.blockingReasons) blockingReasons.push(reason);
+  for (const warning of completenessGuard.warnings) warnings.push(warning);
+  for (const check of completenessGuard.checks) {
+    checks.push({ name: `freshness-completeness:${check.platform}`, status: check.status, ...check });
+  }
+  const dependencyGuard = buildFreshnessDependencyGuard(options, snapshots, completenessGuard.expectedDate);
+  for (const reason of dependencyGuard.blockingReasons) blockingReasons.push(reason);
+  for (const warning of dependencyGuard.warnings) warnings.push(warning);
+  for (const check of dependencyGuard.checks) {
+    checks.push({ name: `freshness-dependency:${check.name}`, status: check.status, ...check });
+  }
   const maxDateAge = daysOld(maxDate, options.now);
   if (maxDateAge !== null && maxDateAge > options.staleWarnDays) {
     warnings.push(`Marketplace data looks stale: ${maxDate}, ${maxDateAge} day(s) old.`);
@@ -420,7 +652,10 @@ function buildHealth(options) {
     },
     freshness: {
       maxDate,
-      maxDateAgeDays: maxDateAge
+      maxDateAgeDays: maxDateAge,
+      expectedDate: completenessGuard.expectedDate,
+      completenessGuard,
+      dependencyGuard
     },
     sources,
     skuContour,

@@ -303,7 +303,7 @@ function orderProcurementBuildCommentMap() {
 
 function buildOrderProcurementModel() {
   const orderState = ensureOrderProcurementState();
-  const platform = orderState.platform === 'ozon' ? 'ozon' : 'wb';
+  const platform = ['ozon', 'ym'].includes(orderState.platform) ? orderState.platform : 'wb';
   const days = clampOrderProcurementDays(orderState.days);
   const searchQuery = String(orderState.search || '').trim().toLowerCase();
   const mode = String(orderState.mode || 'all');
@@ -351,7 +351,7 @@ function buildOrderProcurementModel() {
       acceptedFromSupplier: orderProcurementNumber(warehouse.accepted),
       shippedFromWarehouse: platform === 'ozon'
         ? orderProcurementNumber(warehouse.shippedOzon)
-        : orderProcurementNumber(warehouse.shippedWB),
+        : (platform === 'wb' ? orderProcurementNumber(warehouse.shippedWB) : 0),
       hasInboundWarehouse: Boolean(warehouse.hasInboundWarehouse),
       totalNeed: 0,
       rawTotalNeed: 0,
@@ -547,7 +547,7 @@ function buildOrderProcurementModel() {
 
   return {
     platform,
-    platformLabel: platform === 'ozon' ? 'OZ' : 'WB',
+    platformLabel: platform === 'ozon' ? 'OZ' : (platform === 'ym' ? 'YM' : 'WB'),
     days,
     searchQuery,
     mode,
@@ -958,6 +958,7 @@ function renderOrderProcurement(model) {
             <div class="altea-order-procurement__platforms">
               <button type="button" class="altea-order-procurement__platform-btn ${model.platform === 'wb' ? 'is-active' : ''}" data-altea-order-platform="wb">WB</button>
               <button type="button" class="altea-order-procurement__platform-btn ${model.platform === 'ozon' ? 'is-active' : ''}" data-altea-order-platform="ozon">OZ</button>
+              <button type="button" class="altea-order-procurement__platform-btn ${model.platform === 'ym' ? 'is-active' : ''}" data-altea-order-platform="ym">YM</button>
             </div>
           </div>
 
@@ -1128,7 +1129,7 @@ function bindOrderProcurement(root) {
   root.querySelectorAll('[data-altea-order-platform]').forEach((button) => {
     button.addEventListener('click', () => {
       const orderState = ensureOrderProcurementState();
-      orderState.platform = button.dataset.alteaOrderPlatform === 'ozon' ? 'ozon' : 'wb';
+      orderState.platform = ['ozon', 'ym'].includes(button.dataset.alteaOrderPlatform) ? button.dataset.alteaOrderPlatform : 'wb';
       orderState.place = 'all';
       orderState.placeSelection = [];
       renderOrderCalculator();

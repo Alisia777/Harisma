@@ -24,6 +24,8 @@ const SNAPSHOT_KEYS = [
   'order_procurement',
   'order_procurement_wb',
   'order_procurement_ozon',
+  'order_procurement_ym',
+  'oos_control',
   'warehouse_stock_overlay',
   'portal_data_quality',
   'portal_data_quarantine',
@@ -32,6 +34,7 @@ const SNAPSHOT_KEYS = [
   'sku_alias_audit',
   'sku_matrix',
   'wb_owner_distribution_audit',
+  'portal_layer_freshness',
   'portal_sync_health'
 ];
 const INLINE_BODY_LIMIT = 18000;

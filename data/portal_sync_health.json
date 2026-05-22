@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-05-22T07:24:03.744Z",
+  "generatedAt": "2026-05-22T14:43:08.075Z",
   "status": "warning",
   "publish": {
     "allowed": true,
@@ -9,7 +9,7 @@
       "Unmapped API SKU revenue: 16789813.",
       "SKU without owner or registry mapping: 3."
     ],
-    "checkedAt": "2026-05-22T07:24:03.744Z"
+    "checkedAt": "2026-05-22T14:43:08.075Z"
   },
   "freshness": {
     "maxDate": "2026-05-21",
@@ -18,7 +18,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-05-22T07:24:03.738Z",
+      "checkedAt": "2026-05-22T14:43:08.069Z",
       "settlementHour": 10,
       "expectedDate": "2026-05-21",
       "maxDate": "2026-05-21",
@@ -65,7 +65,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-05-22T07:24:03.744Z",
+      "checkedAt": "2026-05-22T14:43:08.074Z",
       "expectedDate": "2026-05-21",
       "adsSummaryWindowTo": "2026-05-21",
       "iuDrrWindowTo": "2026-05-21",
@@ -130,7 +130,7 @@
     "iu_plan": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-05-22T07:08:40.919Z",
+      "generatedAt": "2026-05-22T11:41:18.183Z",
       "asOfDate": "2026-05-22",
       "revenue": 0
     },
@@ -204,6 +204,13 @@
       "asOfDate": "2026-05-22",
       "revenue": 0
     },
+    "order_procurement_ym": {
+      "exists": true,
+      "rows": 987,
+      "generatedAt": "2026-05-22T14:42:44.101Z",
+      "asOfDate": "2026-05-22",
+      "revenue": 0
+    },
     "oos_control": {
       "exists": true,
       "rows": 34,
@@ -214,7 +221,7 @@
     "iu_drr_summary": {
       "exists": true,
       "rows": 21,
-      "generatedAt": "2026-05-22T07:23:18.373Z",
+      "generatedAt": "2026-05-22T11:42:31.431Z",
       "asOfDate": "2026-05-21",
       "revenue": 0
     },
@@ -235,7 +242,7 @@
     "portal_data_quarantine": {
       "exists": true,
       "rows": 54,
-      "generatedAt": "2026-05-22T07:23:20.142Z",
+      "generatedAt": "2026-05-22T14:23:35.289Z",
       "asOfDate": "2026-05-22",
       "revenue": 13587864
     },
@@ -270,7 +277,7 @@
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-05-22T07:23:20.149Z",
+      "generatedAt": "2026-05-22T14:23:35.300Z",
       "asOfDate": "2026-05-22",
       "revenue": 0
     }
@@ -358,12 +365,12 @@
   },
   "lastGood": {
     "exists": true,
-    "generatedAt": "2026-05-21T08:40:37.845Z",
+    "generatedAt": "2026-05-22T09:24:16.552Z",
     "comparisons": [
       {
         "snapshot": "skus",
         "rows": 89,
-        "previousRows": 89,
+        "previousRows": 0,
         "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
@@ -372,17 +379,17 @@
       {
         "snapshot": "platform_trends",
         "rows": 7,
-        "previousRows": 7,
+        "previousRows": 0,
         "rowRatio": 1,
         "revenue": 357488478,
-        "previousRevenue": 344960307,
-        "revenueRatio": 1.036317717562792
+        "previousRevenue": 0,
+        "revenueRatio": 1
       },
       {
         "snapshot": "order_procurement",
         "rows": 1863,
-        "previousRows": 1842,
-        "rowRatio": 1.011400651465798,
+        "previousRows": 0,
+        "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
         "revenueRatio": 1
@@ -390,7 +397,7 @@
       {
         "snapshot": "warehouse_stock_overlay",
         "rows": 81,
-        "previousRows": 81,
+        "previousRows": 0,
         "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
@@ -399,7 +406,7 @@
       {
         "snapshot": "sku_matrix",
         "rows": 89,
-        "previousRows": 89,
+        "previousRows": 0,
         "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
@@ -408,15 +415,13 @@
       {
         "snapshot": "oos_control",
         "rows": 34,
-        "previousRows": 34,
+        "previousRows": 0,
         "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
         "revenueRatio": 1
       }
-    ],
-    "markedAt": "2026-05-22T07:24:05.591Z",
-    "copied": 25
+    ]
   },
   "checks": [
     {

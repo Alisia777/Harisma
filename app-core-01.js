@@ -398,6 +398,7 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/order_procurement.json': 'order_procurement',
   'data/order_procurement_wb.json': 'order_procurement_wb',
   'data/order_procurement_ozon.json': 'order_procurement_ozon',
+  'data/order_procurement_ym.json': 'order_procurement_ym',
   'data/oos_control.json': 'oos_control',
   'data/warehouse_stock_overlay.json': 'warehouse_stock_overlay',
   'data/portal_data_quality.json': 'portal_data_quality',
@@ -586,7 +587,7 @@ function payloadFreshnessScore(snapshotKey, payload) {
     return score;
   }
 
-  if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon') {
+  if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon' || snapshotKey === 'order_procurement_ym') {
     score = bumpFreshness(score, payload.window?.to);
     return score;
   }
@@ -670,7 +671,7 @@ function payloadDataFreshnessScore(snapshotKey, payload) {
     return score;
   }
 
-  if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon') {
+  if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon' || snapshotKey === 'order_procurement_ym') {
     return bumpFreshness(score, payload.window?.to);
   }
 
@@ -1245,7 +1246,7 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
   if (snapshotKey === 'product_leaderboard_history') {
     return Array.isArray(payload) && payload.length > 0;
   }
-  if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon' || snapshotKey === 'warehouse_stock_overlay') {
+  if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon' || snapshotKey === 'order_procurement_ym' || snapshotKey === 'warehouse_stock_overlay') {
     return Array.isArray(payload?.rows) && payload.rows.length > 0;
   }
   if (snapshotKey === 'oos_control') {

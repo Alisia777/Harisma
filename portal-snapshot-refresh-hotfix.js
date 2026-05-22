@@ -22,10 +22,11 @@
     "data/smart_price_overlay.json": "smart_price_overlay",
     "data/price_workbench_support.json": "price_workbench_support",
     "data/repricer.json": "repricer",
-    "data/order_procurement.json": "order_procurement",
-    "data/order_procurement_wb.json": "order_procurement_wb",
-    "data/order_procurement_ozon.json": "order_procurement_ozon",
-    "data/oos_control.json": "oos_control",
+  "data/order_procurement.json": "order_procurement",
+  "data/order_procurement_wb.json": "order_procurement_wb",
+  "data/order_procurement_ozon.json": "order_procurement_ozon",
+  "data/order_procurement_ym.json": "order_procurement_ym",
+  "data/oos_control.json": "oos_control",
     "data/warehouse_stock_overlay.json": "warehouse_stock_overlay",
     "data/portal_data_quality.json": "portal_data_quality",
     "data/portal_data_quarantine.json": "portal_data_quarantine",
@@ -259,7 +260,7 @@
     if (snapshotKey === "repricer") {
       return Array.isArray(payload && payload.rows) || payload && typeof payload.summary === "object";
     }
-    if (snapshotKey === "order_procurement" || snapshotKey === "order_procurement_wb" || snapshotKey === "order_procurement_ozon" || snapshotKey === "warehouse_stock_overlay") {
+  if (snapshotKey === "order_procurement" || snapshotKey === "order_procurement_wb" || snapshotKey === "order_procurement_ozon" || snapshotKey === "order_procurement_ym" || snapshotKey === "warehouse_stock_overlay") {
       return Array.isArray(payload && payload.rows);
     }
     if (snapshotKey === "oos_control") {
@@ -625,42 +626,118 @@
     return payloadLooksUsable(snapshotKey, payload) ? clone(payload) : null;
   };
 
+  var LIGHT_REFRESH_KEYS = [
+    "dashboard",
+    "skus",
+    "platform_trends",
+    "platform_plan",
+    "iu_plan",
+    "ads_summary",
+    "iu_drr_summary",
+    "wb_feedbacks_summary",
+    "portal_sync_health",
+    "portal_data_quarantine",
+    "portal_data_quality",
+    "sku_aliases",
+    "sku_alias_ignore",
+    "sku_alias_audit",
+    "sku_matrix",
+    "product_leaderboard",
+    "product_leaderboard_history",
+    "prices",
+    "smart_price_workbench",
+    "smart_price_overlay",
+    "price_workbench_support",
+    "repricer",
+    "logistics",
+    "order_procurement",
+    "order_procurement_wb",
+    "order_procurement_ozon",
+    "order_procurement_ym",
+    "oos_control",
+    "warehouse_stock_overlay"
+  ];
+  var VIEW_REFRESH_KEYS = {
+    prices: ["prices", "smart_price_workbench", "smart_price_overlay", "price_workbench_support"],
+    repricer: ["repricer", "prices", "smart_price_workbench", "smart_price_overlay", "price_workbench_support"],
+    order: ["logistics", "order_procurement", "order_procurement_wb", "order_procurement_ozon", "order_procurement_ym", "warehouse_stock_overlay"],
+    "ads-funnel": ["ads_summary", "smart_price_overlay", "iu_drr_summary"],
+    "oos-control": ["oos_control", "order_procurement", "portal_sync_health", "portal_data_quality", "smart_price_overlay"],
+    "sku-plan-fact": ["smart_price_workbench", "smart_price_overlay", "price_workbench_support", "ads_summary", "iu_drr_summary", "portal_data_quality", "sku_aliases", "sku_alias_ignore", "sku_alias_audit", "sku_matrix"],
+    "iu-drr": ["iu_drr_summary", "ads_summary", "wb_feedbacks_summary"],
+    "wb-rating": ["wb_feedbacks_summary", "iu_drr_summary"],
+    "product-leaderboard": ["product_leaderboard", "product_leaderboard_history"]
+  };
+
+  function activeRefreshView() {
+    if (typeof state === "object" && state && state.activeView) return String(state.activeView);
+    var active = document.querySelector(".view.active[id^='view-']");
+    return active ? String(active.id || "").replace(/^view-/, "") : "";
+  }
+
+  function pushUniqueKey(target, key) {
+    var clean = String(key || "").trim();
+    if (clean && target.indexOf(clean) === -1) target.push(clean);
+  }
+
+  function refreshKeysForOptions(options) {
+    if (options && (options.forceFull || options.forceAll || options.full)) return null;
+    if (typeof location !== "undefined" && new URLSearchParams(location.search || "").has("portal-refresh")) return null;
+    var keys = LIGHT_REFRESH_KEYS.slice();
+    var view = String(options && options.view || activeRefreshView() || "").trim();
+    (VIEW_REFRESH_KEYS[view] || []).forEach(function (key) { pushUniqueKey(keys, key); });
+    (options && Array.isArray(options.keys) ? options.keys : []).forEach(function (key) { pushUniqueKey(keys, key); });
+    return keys;
+  }
+
   window.__alteaRefreshSnapshotBackedState = async function refreshSnapshotBackedState(options) {
+    options = options || {};
     var rerender = !options || options.rerender !== false;
+    var refreshKeys = refreshKeysForOptions(options);
+    var shouldLoadSnapshotKey = function (key) {
+      return refreshKeys === null || refreshKeys.indexOf(key) !== -1;
+    };
     var optionalLoader = typeof optionalLoadJson === "function"
       ? optionalLoadJson
       : function () { return Promise.resolve(null); };
+    var maybeLoadSnapshotJson = function (key, path, fallback) {
+      return shouldLoadSnapshotKey(key) ? loadSnapshotAwareJson(path, fallback, true) : Promise.resolve(undefined);
+    };
+    var maybeLoadOptional = function (key, path) {
+      return shouldLoadSnapshotKey(key) ? optionalLoader(path) : Promise.resolve(undefined);
+    };
     var results = await Promise.all([
-      loadSnapshotAwareJson("data/dashboard.json", { cards: [], generatedAt: "" }, true),
-      loadSnapshotAwareJson("data/platform_trends.json", { generatedAt: "", platforms: [] }, true),
-      loadSnapshotAwareJson("data/platform_plan.json", { generatedAt: "", months: {} }, true),
-      loadSnapshotAwareJson("data/iu_plan.json", { generatedAt: "", months: {} }, true),
-      loadSnapshotAwareJson("data/logistics.json", { generatedAt: "", allRows: [], ozonClusters: [], wbWarehouses: [] }, true),
-      loadSnapshotAwareJson("data/skus.json", [], true),
-      loadSnapshotAwareJson("data/ads_summary.json", { generatedAt: "", asOfDate: "", note: "", platforms: [], itemSeries: [] }, true),
-      loadSnapshotAwareJson("data/iu_drr_summary.json", { generatedAt: "", asOfDate: "", months: [], daily: [], channels: [], diagnostics: {} }, true),
-      loadSnapshotAwareJson("data/wb_feedbacks_summary.json", { generatedAt: "", window: {}, summary: {}, cards: [], daily: [], history: [] }, true),
-      loadSnapshotAwareJson("data/product_leaderboard.json", { generatedAt: "", items: [], summary: {} }, true),
-      loadSnapshotAwareJson("data/product_leaderboard_history.json", [], true),
-      loadSnapshotAwareJson("data/prices.json", { generatedAt: "", platforms: {} }, true),
-      loadSnapshotAwareJson("data/smart_price_workbench.json", { generatedAt: "", platforms: {} }, true),
-      optionalLoader("tmp-smart_price_workbench-live.json"),
-      loadSnapshotAwareJson("data/smart_price_overlay.json", { generatedAt: "", platforms: {} }, true),
-      optionalLoader("tmp-live-repricer.json"),
-      loadSnapshotAwareJson("data/repricer.json", { generatedAt: "", summary: {}, rows: [] }, true),
-      loadSnapshotAwareJson("data/price_workbench_support.json", { generatedAt: "", platforms: {} }, true),
-      loadSnapshotAwareJson("data/portal_sync_health.json", SYNC_HEALTH_FALLBACK, true),
-      loadSnapshotAwareJson("data/portal_data_quarantine.json", DATA_QUARANTINE_FALLBACK, true),
-      loadSnapshotAwareJson("data/portal_data_quality.json", DATA_QUALITY_FALLBACK, true),
-      loadSnapshotAwareJson("data/sku_aliases.json", SKU_ALIASES_FALLBACK, true),
-      loadSnapshotAwareJson("data/sku_alias_ignore.json", SKU_ALIAS_IGNORE_FALLBACK, true),
-      loadSnapshotAwareJson("data/sku_alias_audit.json", SKU_ALIAS_AUDIT_FALLBACK, true),
-      loadSnapshotAwareJson("data/sku_matrix.json", SKU_MATRIX_FALLBACK, true),
-      loadSnapshotAwareJson("data/order_procurement.json", { generatedAt: "", rows: [] }, true),
-      loadSnapshotAwareJson("data/order_procurement_wb.json", { generatedAt: "", rows: [] }, true),
-      loadSnapshotAwareJson("data/order_procurement_ozon.json", { generatedAt: "", rows: [] }, true),
-      loadSnapshotAwareJson("data/oos_control.json", OOS_CONTROL_FALLBACK, true),
-      loadSnapshotAwareJson("data/warehouse_stock_overlay.json", { generatedAt: "", rows: [] }, true)
+      maybeLoadSnapshotJson("dashboard", "data/dashboard.json", { cards: [], generatedAt: "" }),
+      maybeLoadSnapshotJson("platform_trends", "data/platform_trends.json", { generatedAt: "", platforms: [] }),
+      maybeLoadSnapshotJson("platform_plan", "data/platform_plan.json", { generatedAt: "", months: {} }),
+      maybeLoadSnapshotJson("iu_plan", "data/iu_plan.json", { generatedAt: "", months: {} }),
+      maybeLoadSnapshotJson("logistics", "data/logistics.json", { generatedAt: "", allRows: [], ozonClusters: [], wbWarehouses: [] }),
+      maybeLoadSnapshotJson("skus", "data/skus.json", []),
+      maybeLoadSnapshotJson("ads_summary", "data/ads_summary.json", { generatedAt: "", asOfDate: "", note: "", platforms: [], itemSeries: [] }),
+      maybeLoadSnapshotJson("iu_drr_summary", "data/iu_drr_summary.json", { generatedAt: "", asOfDate: "", months: [], daily: [], channels: [], diagnostics: {} }),
+      maybeLoadSnapshotJson("wb_feedbacks_summary", "data/wb_feedbacks_summary.json", { generatedAt: "", window: {}, summary: {}, cards: [], daily: [], history: [] }),
+      maybeLoadSnapshotJson("product_leaderboard", "data/product_leaderboard.json", { generatedAt: "", items: [], summary: {} }),
+      maybeLoadSnapshotJson("product_leaderboard_history", "data/product_leaderboard_history.json", []),
+      maybeLoadSnapshotJson("prices", "data/prices.json", { generatedAt: "", platforms: {} }),
+      maybeLoadSnapshotJson("smart_price_workbench", "data/smart_price_workbench.json", { generatedAt: "", platforms: {} }),
+      maybeLoadOptional("smart_price_workbench", "tmp-smart_price_workbench-live.json"),
+      maybeLoadSnapshotJson("smart_price_overlay", "data/smart_price_overlay.json", { generatedAt: "", platforms: {} }),
+      maybeLoadOptional("repricer", "tmp-live-repricer.json"),
+      maybeLoadSnapshotJson("repricer", "data/repricer.json", { generatedAt: "", summary: {}, rows: [] }),
+      maybeLoadSnapshotJson("price_workbench_support", "data/price_workbench_support.json", { generatedAt: "", platforms: {} }),
+      maybeLoadSnapshotJson("portal_sync_health", "data/portal_sync_health.json", SYNC_HEALTH_FALLBACK),
+      maybeLoadSnapshotJson("portal_data_quarantine", "data/portal_data_quarantine.json", DATA_QUARANTINE_FALLBACK),
+      maybeLoadSnapshotJson("portal_data_quality", "data/portal_data_quality.json", DATA_QUALITY_FALLBACK),
+      maybeLoadSnapshotJson("sku_aliases", "data/sku_aliases.json", SKU_ALIASES_FALLBACK),
+      maybeLoadSnapshotJson("sku_alias_ignore", "data/sku_alias_ignore.json", SKU_ALIAS_IGNORE_FALLBACK),
+      maybeLoadSnapshotJson("sku_alias_audit", "data/sku_alias_audit.json", SKU_ALIAS_AUDIT_FALLBACK),
+      maybeLoadSnapshotJson("sku_matrix", "data/sku_matrix.json", SKU_MATRIX_FALLBACK),
+      maybeLoadSnapshotJson("order_procurement", "data/order_procurement.json", { generatedAt: "", rows: [] }),
+      maybeLoadSnapshotJson("order_procurement_wb", "data/order_procurement_wb.json", { generatedAt: "", rows: [] }),
+      maybeLoadSnapshotJson("order_procurement_ozon", "data/order_procurement_ozon.json", { generatedAt: "", rows: [] }),
+      maybeLoadSnapshotJson("order_procurement_ym", "data/order_procurement_ym.json", { generatedAt: "", rows: [] }),
+      maybeLoadSnapshotJson("oos_control", "data/oos_control.json", OOS_CONTROL_FALLBACK),
+      maybeLoadSnapshotJson("warehouse_stock_overlay", "data/warehouse_stock_overlay.json", { generatedAt: "", rows: [] })
     ]);
     var dashboard = results[0];
     var platformTrends = results[1];
@@ -690,12 +767,13 @@
     var orderProcurement = results[25];
     var orderProcurementWb = results[26];
     var orderProcurementOzon = results[27];
-    var oosControl = results[28];
-    var warehouseStockOverlay = results[29];
+    var orderProcurementYm = results[28];
+    var oosControl = results[29];
+    var warehouseStockOverlay = results[30];
     var changed = false;
 
     if (typeof state === "object" && state) {
-      var nextDashboard = dashboard || { cards: [], generatedAt: "" };
+      var nextDashboard = dashboard || state.dashboard || { cards: [], generatedAt: "" };
       var nextPlatformTrends = platformTrends && typeof platformTrends === "object"
         ? platformTrends
         : (state.platformTrends || { generatedAt: "", platforms: [] });
@@ -713,33 +791,35 @@
         : (Array.isArray(state.skus) ? state.skus : []);
       var nextAdsSummary = adsSummary && typeof adsSummary === "object"
         ? adsSummary
-        : { generatedAt: "", asOfDate: "", note: "", platforms: [], itemSeries: [] };
+        : (state.adsSummary || { generatedAt: "", asOfDate: "", note: "", platforms: [], itemSeries: [] });
       var nextIuDrrSummary = iuDrrSummary && typeof iuDrrSummary === "object"
         ? iuDrrSummary
-        : { generatedAt: "", asOfDate: "", months: [], daily: [], channels: [], diagnostics: {} };
+        : (state.iuDrrSummary || { generatedAt: "", asOfDate: "", months: [], daily: [], channels: [], diagnostics: {} });
       var nextWbFeedbacks = wbFeedbacks && typeof wbFeedbacks === "object"
         ? wbFeedbacks
-        : { generatedAt: "", window: {}, summary: {}, cards: [], daily: [], history: [] };
+        : (state.wbFeedbacks || { generatedAt: "", window: {}, summary: {}, cards: [], daily: [], history: [] });
       var nextProductLeaderboard = typeof normalizeProductLeaderboardPayload === "function"
-        ? normalizeProductLeaderboardPayload(productLeaderboard || { generatedAt: "", items: [], summary: {} })
-        : (productLeaderboard || { generatedAt: "", items: [], summary: {} });
-      var nextProductLeaderboardHistory = Array.isArray(productLeaderboardHistory) ? productLeaderboardHistory : [];
-      var nextPrices = prices && typeof prices === "object" ? prices : { generatedAt: "", platforms: {} };
+        ? normalizeProductLeaderboardPayload(productLeaderboard || state.productLeaderboard || { generatedAt: "", items: [], summary: {} })
+        : (productLeaderboard || state.productLeaderboard || { generatedAt: "", items: [], summary: {} });
+      var nextProductLeaderboardHistory = Array.isArray(productLeaderboardHistory)
+        ? productLeaderboardHistory
+        : (Array.isArray(state.productLeaderboardHistory) ? state.productLeaderboardHistory : []);
+      var nextPrices = prices && typeof prices === "object" ? prices : (state.prices || { generatedAt: "", platforms: {} });
       var nextSmartPriceWorkbenchLive = smartPriceWorkbenchLive && typeof smartPriceWorkbenchLive === "object"
         ? smartPriceWorkbenchLive
-        : { generatedAt: "", platforms: {} };
+        : (state.smartPriceWorkbenchLive || { generatedAt: "", platforms: {} });
       var nextSmartPriceOverlay = smartPriceOverlay && typeof smartPriceOverlay === "object"
         ? smartPriceOverlay
-        : { generatedAt: "", platforms: {} };
+        : (state.smartPriceOverlay || { generatedAt: "", platforms: {} });
       var nextRepricerLive = repricerLive && typeof repricerLive === "object"
         ? repricerLive
-        : { generatedAt: "", rows: [] };
+        : (state.repricerLive || { generatedAt: "", rows: [] });
       var nextRepricer = repricer && typeof repricer === "object"
         ? repricer
-        : { generatedAt: "", summary: {}, rows: [] };
+        : (state.repricer || { generatedAt: "", summary: {}, rows: [] });
       var nextPriceWorkbenchSupport = priceWorkbenchSupport && typeof priceWorkbenchSupport === "object"
         ? priceWorkbenchSupport
-        : { generatedAt: "", platforms: {} };
+        : (state.priceWorkbenchSupport || { generatedAt: "", platforms: {} });
       var nextSyncHealth = syncHealth && typeof syncHealth === "object"
         ? syncHealth
         : (state.syncHealth || SYNC_HEALTH_FALLBACK);
@@ -762,8 +842,8 @@
         ? skuMatrix
         : (state.skuMatrix || SKU_MATRIX_FALLBACK);
       var nextSmartPriceWorkbenchBase = typeof mergeSmartWorkbenchPayload === "function"
-        ? mergeSmartWorkbenchPayload(smartPriceWorkbench || { generatedAt: "", platforms: {} }, nextSmartPriceWorkbenchLive)
-        : (smartPriceWorkbench || { generatedAt: "", platforms: {} });
+        ? mergeSmartWorkbenchPayload(smartPriceWorkbench || state.smartPriceWorkbenchBase || { generatedAt: "", platforms: {} }, nextSmartPriceWorkbenchLive)
+        : (smartPriceWorkbench || state.smartPriceWorkbenchBase || { generatedAt: "", platforms: {} });
       var nextSmartPriceWorkbench = typeof mergeSmartWorkbenchPriceOverlay === "function"
         ? mergeSmartWorkbenchPriceOverlay(nextSmartPriceWorkbenchBase, nextSmartPriceOverlay)
         : nextSmartPriceWorkbenchBase;
@@ -776,6 +856,9 @@
       var nextOrderProcurementOzon = orderProcurementOzon && typeof orderProcurementOzon === "object"
         ? orderProcurementOzon
         : (state.orderProcurementOzon || { generatedAt: "", rows: [] });
+      var nextOrderProcurementYm = orderProcurementYm && typeof orderProcurementYm === "object"
+        ? orderProcurementYm
+        : (state.orderProcurementYm || { generatedAt: "", rows: [] });
       var nextOosControl = oosControl && typeof oosControl === "object"
         ? oosControl
         : (state.oosControl || OOS_CONTROL_FALLBACK);
@@ -899,6 +982,10 @@
       }
       if (payloadChanged("order_procurement_ozon", state.orderProcurementOzon, nextOrderProcurementOzon)) {
         state.orderProcurementOzon = nextOrderProcurementOzon;
+        changed = true;
+      }
+      if (payloadChanged("order_procurement_ym", state.orderProcurementYm, nextOrderProcurementYm)) {
+        state.orderProcurementYm = nextOrderProcurementYm;
         changed = true;
       }
       if (payloadChanged("oos_control", state.oosControl, nextOosControl)) {

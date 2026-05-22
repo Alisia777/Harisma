@@ -1,0 +1,133 @@
+{
+  "schema": "portal-yandex-market-cluster-map-v1",
+  "generatedAt": "2026-05-22T14:10:20.690Z",
+  "source": {
+    "filePath": "C:\\Users\\artiu\\Downloads\\Telegram Desktop\\Лист Microsoft Excel (9).xlsx",
+    "sheetName": "Лист1",
+    "firstColumnHeader": "Кластер",
+    "columns": 6,
+    "rows": 5
+  },
+  "clusters": [
+    {
+      "cluster": "Москва",
+      "warehouses": [
+        {
+          "warehouseId": null,
+          "name": "МО Софьино (кроме КГТ) - 1",
+          "normalizedName": "мо софьино кроме кгт 1"
+        },
+        {
+          "warehouseId": null,
+          "name": "МО Софьино (КГТ)",
+          "normalizedName": "мо софьино кгт"
+        },
+        {
+          "warehouseId": null,
+          "name": "МО Софьино (кроме КГТ) - 2",
+          "normalizedName": "мо софьино кроме кгт 2"
+        },
+        {
+          "warehouseId": null,
+          "name": "Яндекс.Маркет (Домодедово возвратный)",
+          "normalizedName": "яндекс маркет домодедово возвратный"
+        }
+      ]
+    },
+    {
+      "cluster": "Санкт-Петербург",
+      "warehouses": [
+        {
+          "warehouseId": null,
+          "name": "ЛО Шушары",
+          "normalizedName": "ло шушары"
+        }
+      ]
+    },
+    {
+      "cluster": "Ростов",
+      "warehouses": [
+        {
+          "warehouseId": null,
+          "name": "Ростов-на-Дону-2",
+          "normalizedName": "ростов на дону 2"
+        }
+      ]
+    },
+    {
+      "cluster": "Самара",
+      "warehouses": [
+        {
+          "warehouseId": null,
+          "name": "Самара",
+          "normalizedName": "самара"
+        }
+      ]
+    },
+    {
+      "cluster": "Екатеринбург",
+      "warehouses": [
+        {
+          "warehouseId": null,
+          "name": "Екатеринбург",
+          "normalizedName": "екатеринбург"
+        }
+      ]
+    }
+  ],
+  "warehouseAliases": [
+    {
+      "cluster": "Москва",
+      "warehouseId": null,
+      "name": "МО Софьино (кроме КГТ) - 1",
+      "normalizedName": "мо софьино кроме кгт 1"
+    },
+    {
+      "cluster": "Москва",
+      "warehouseId": null,
+      "name": "МО Софьино (КГТ)",
+      "normalizedName": "мо софьино кгт"
+    },
+    {
+      "cluster": "Москва",
+      "warehouseId": null,
+      "name": "МО Софьино (кроме КГТ) - 2",
+      "normalizedName": "мо софьино кроме кгт 2"
+    },
+    {
+      "cluster": "Москва",
+      "warehouseId": null,
+      "name": "Яндекс.Маркет (Домодедово возвратный)",
+      "normalizedName": "яндекс маркет домодедово возвратный"
+    },
+    {
+      "cluster": "Санкт-Петербург",
+      "warehouseId": null,
+      "name": "ЛО Шушары",
+      "normalizedName": "ло шушары"
+    },
+    {
+      "cluster": "Ростов",
+      "warehouseId": null,
+      "name": "Ростов-на-Дону-2",
+      "normalizedName": "ростов на дону 2"
+    },
+    {
+      "cluster": "Самара",
+      "warehouseId": null,
+      "name": "Самара",
+      "normalizedName": "самара"
+    },
+    {
+      "cluster": "Екатеринбург",
+      "warehouseId": null,
+      "name": "Екатеринбург",
+      "normalizedName": "екатеринбург"
+    }
+  ],
+  "diagnostics": {
+    "clusterCount": 5,
+    "warehouseAliasCount": 8,
+    "unresolvedWarehouseIds": 8
+  }
+}

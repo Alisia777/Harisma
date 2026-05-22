@@ -6028,7 +6028,7 @@ function renderOrderCalculator() {
     });
 }
 
-const ORDER_PROCUREMENT_VERSION = '20260515warehousefilter1';
+const ORDER_PROCUREMENT_VERSION = '20260522ymstock1';
 const ORDER_PROCUREMENT_STYLE_ID = `altea-order-procurement-${ORDER_PROCUREMENT_VERSION}`;
 const ORDER_PROCUREMENT_RUNTIME = {
   renderToken: 0,
@@ -6037,7 +6037,8 @@ const ORDER_PROCUREMENT_RUNTIME = {
     warehouse: null,
     combined: null,
     wb: null,
-    ozon: null
+    ozon: null,
+    ym: null
   },
   pending: new Map(),
   lastRenderedSignature: '',
@@ -6085,6 +6086,7 @@ function orderProcurementPrimeCacheFromState() {
   );
   orderProcurementPrimeCacheSlot('wb', state.orderProcurementWb || state.orderProcurementWB || state.order_procurement_wb);
   orderProcurementPrimeCacheSlot('ozon', state.orderProcurementOzon || state.orderProcurementOZON || state.order_procurement_ozon);
+  orderProcurementPrimeCacheSlot('ym', state.orderProcurementYm || state.orderProcurementYM || state.order_procurement_ym);
 }
 
 function ensureOrderProcurementState() {
@@ -6097,7 +6099,7 @@ function ensureOrderProcurementState() {
   const orderState = { ...legacyUi, ...existingUi };
   state.orderProcurementUi = orderState;
   state.orderProcurementFilters = orderState;
-  orderState.platform = orderState.platform === 'ozon' ? 'ozon' : 'wb';
+  orderState.platform = ['ozon', 'ym'].includes(orderState.platform) ? orderState.platform : 'wb';
   orderState.days = clampOrderProcurementDays(orderState.days);
   orderState.search = String(orderState.search || '').trim();
   orderState.place = String(orderState.place || 'all').trim() || 'all';
@@ -6322,7 +6324,7 @@ function orderProcurementLoadCached(key, loader) {
 
 async function ensureOrderProcurementSources(platform = 'wb') {
   orderProcurementPrimeCacheFromState();
-  const normalizedPlatform = platform === 'ozon' ? 'ozon' : 'wb';
+  const normalizedPlatform = platform === 'ozon' || platform === 'ym' ? platform : 'wb';
   const hasPlatformRows = (payload, targetPlatform) => {
     const rows = Array.isArray(payload?.rows) ? payload.rows : [];
     if (!rows.length) return false;
@@ -6354,17 +6356,22 @@ async function ensureOrderProcurementSources(platform = 'wb') {
       if (normalizedPlatform === 'ozon' && !ORDER_PROCUREMENT_RUNTIME.cache.ozon) {
         await orderProcurementLoadCached('ozon', () => orderProcurementFetchJson(['data/order_procurement_ozon.json', 'data/order_procurement_ozon.json.gz']));
       }
-      if (!ORDER_PROCUREMENT_RUNTIME.cache.wb && !ORDER_PROCUREMENT_RUNTIME.cache.ozon) {
+      if (normalizedPlatform === 'ym' && !ORDER_PROCUREMENT_RUNTIME.cache.ym) {
+        await orderProcurementLoadCached('ym', () => orderProcurementFetchJson(['data/order_procurement_ym.json', 'data/order_procurement_ym.json.gz']));
+      }
+      if (!ORDER_PROCUREMENT_RUNTIME.cache.wb && !ORDER_PROCUREMENT_RUNTIME.cache.ozon && !ORDER_PROCUREMENT_RUNTIME.cache.ym) {
         throw combinedError;
       }
     }
   }
 
   if (!hasPlatformRows(ORDER_PROCUREMENT_RUNTIME.cache.combined, normalizedPlatform)) {
-    const cacheKey = normalizedPlatform === 'ozon' ? 'ozon' : 'wb';
+    const cacheKey = normalizedPlatform === 'ozon' ? 'ozon' : (normalizedPlatform === 'ym' ? 'ym' : 'wb');
     const paths = normalizedPlatform === 'ozon'
       ? ['data/order_procurement_ozon.json', 'data/order_procurement_ozon.json.gz']
-      : ['data/order_procurement_wb.json', 'data/order_procurement_wb.json.gz'];
+      : (normalizedPlatform === 'ym'
+        ? ['data/order_procurement_ym.json', 'data/order_procurement_ym.json.gz']
+        : ['data/order_procurement_wb.json', 'data/order_procurement_wb.json.gz']);
     if (!ORDER_PROCUREMENT_RUNTIME.cache[cacheKey]) {
       await orderProcurementLoadCached(cacheKey, () => orderProcurementFetchJson(paths));
     }
@@ -6374,8 +6381,10 @@ async function ensureOrderProcurementSources(platform = 'wb') {
 function orderProcurementCurrentPayload(platform) {
   orderProcurementPrimeCacheFromState();
   if (ORDER_PROCUREMENT_RUNTIME.cache.combined && Array.isArray(ORDER_PROCUREMENT_RUNTIME.cache.combined.rows)) {
-    const target = platform === 'ozon' ? 'ozon' : 'wb';
-    const platformPayload = target === 'ozon' ? ORDER_PROCUREMENT_RUNTIME.cache.ozon : ORDER_PROCUREMENT_RUNTIME.cache.wb;
+    const target = platform === 'ozon' || platform === 'ym' ? platform : 'wb';
+    const platformPayload = target === 'ozon'
+      ? ORDER_PROCUREMENT_RUNTIME.cache.ozon
+      : (target === 'ym' ? ORDER_PROCUREMENT_RUNTIME.cache.ym : ORDER_PROCUREMENT_RUNTIME.cache.wb);
     const combinedRows = ORDER_PROCUREMENT_RUNTIME.cache.combined.rows.filter((row) => orderProcurementNormalizeKey(row?.platform) === target);
     if (!combinedRows.length && Array.isArray(platformPayload?.rows) && platformPayload.rows.length) return platformPayload;
     return {
@@ -6384,7 +6393,9 @@ function orderProcurementCurrentPayload(platform) {
       rows: combinedRows
     };
   }
-  return platform === 'ozon' ? ORDER_PROCUREMENT_RUNTIME.cache.ozon : ORDER_PROCUREMENT_RUNTIME.cache.wb;
+  return platform === 'ozon'
+    ? ORDER_PROCUREMENT_RUNTIME.cache.ozon
+    : (platform === 'ym' ? ORDER_PROCUREMENT_RUNTIME.cache.ym : ORDER_PROCUREMENT_RUNTIME.cache.wb);
 }
 
 function orderProcurementHasReadyData() {

@@ -30,18 +30,51 @@
     'order_procurement',
     'order_procurement_wb',
     'order_procurement_ozon',
+    'order_procurement_ym',
+    'oos_control',
+    'warehouse_stock_overlay'
+  ];
+  const BOOT_SNAPSHOT_KEYS = [
+    'dashboard',
+    'skus',
+    'platform_trends',
+    'platform_plan',
+    'iu_plan',
+    'ads_summary',
+    'iu_drr_summary',
+    'wb_feedbacks_summary',
+    'portal_sync_health',
+    'portal_data_quarantine',
+    'portal_data_quality',
+    'sku_aliases',
+    'sku_alias_ignore',
+    'sku_alias_audit',
+    'sku_matrix',
+    'product_leaderboard',
+    'product_leaderboard_history',
+    'prices',
+    'smart_price_workbench',
+    'smart_price_overlay',
+    'price_workbench_support',
+    'repricer',
+    'logistics',
+    'order_procurement',
+    'order_procurement_wb',
+    'order_procurement_ozon',
+    'order_procurement_ym',
     'oos_control',
     'warehouse_stock_overlay'
   ];
   const VIEW_SNAPSHOT_KEYS = {
     prices: ['prices', 'smart_price_workbench', 'smart_price_overlay', 'price_workbench_support'],
     repricer: ['prices', 'smart_price_workbench', 'smart_price_overlay', 'price_workbench_support'],
-    order: ['logistics', 'order_procurement', 'order_procurement_wb', 'order_procurement_ozon', 'warehouse_stock_overlay'],
+    order: ['logistics', 'order_procurement', 'order_procurement_wb', 'order_procurement_ozon', 'order_procurement_ym', 'warehouse_stock_overlay'],
     'ads-funnel': ['ads_summary', 'smart_price_overlay', 'iu_drr_summary'],
     'oos-control': ['oos_control', 'order_procurement', 'portal_sync_health', 'portal_data_quality', 'smart_price_overlay'],
     'sku-plan-fact': ['smart_price_workbench', 'smart_price_overlay', 'price_workbench_support', 'ads_summary', 'iu_drr_summary', 'portal_data_quality', 'sku_aliases', 'sku_alias_ignore', 'sku_alias_audit', 'sku_matrix'],
     'iu-drr': ['iu_drr_summary', 'ads_summary', 'wb_feedbacks_summary'],
-    'wb-rating': ['wb_feedbacks_summary', 'iu_drr_summary']
+    'wb-rating': ['wb_feedbacks_summary', 'iu_drr_summary'],
+    'product-leaderboard': ['product_leaderboard', 'product_leaderboard_history']
   };
   const SNAPSHOT_TIMEOUT_MS = 60000;
   const AUTO_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
@@ -73,6 +106,7 @@
     order_procurement: 'orderProcurementData',
     order_procurement_wb: 'orderProcurementWb',
     order_procurement_ozon: 'orderProcurementOzon',
+    order_procurement_ym: 'orderProcurementYm',
     oos_control: 'oosControl',
     warehouse_stock_overlay: 'warehouseStockOverlay'
   };
@@ -108,11 +142,17 @@
     return active ? String(active.id || '').replace(/^view-/, '') : '';
   }
 
-  function keysForRefresh() {
-    const keys = SNAPSHOT_KEYS.slice();
-    const view = activeViewKey();
+  function keysForRefresh(options = {}) {
+    if (options?.forceFull || options?.forceAll || options?.full) return SNAPSHOT_KEYS.slice();
+    if (typeof location !== 'undefined' && new URLSearchParams(location.search || '').has('portal-refresh')) return SNAPSHOT_KEYS.slice();
+    const keys = BOOT_SNAPSHOT_KEYS.slice();
+    const view = String(options?.view || activeViewKey() || '').trim();
     for (const key of VIEW_SNAPSHOT_KEYS[view] || []) {
       if (!keys.includes(key)) keys.push(key);
+    }
+    for (const key of options?.keys || []) {
+      const clean = String(key || '').trim();
+      if (clean && SNAPSHOT_KEYS.includes(clean) && !keys.includes(clean)) keys.push(clean);
     }
     return keys;
   }
@@ -304,7 +344,7 @@
     if (snapshotKey === 'product_leaderboard') return Array.isArray(payload?.items);
     if (snapshotKey === 'product_leaderboard_history') return Array.isArray(payload);
     if (snapshotKey === 'repricer') return Array.isArray(payload?.rows) || typeof payload?.summary === 'object';
-    if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon') {
+  if (snapshotKey === 'order_procurement' || snapshotKey === 'order_procurement_wb' || snapshotKey === 'order_procurement_ozon' || snapshotKey === 'order_procurement_ym') {
       return Array.isArray(payload?.rows);
     }
     if (snapshotKey === 'oos_control') return typeof payload === 'object' && payload !== null && Array.isArray(payload?.rows);
@@ -511,10 +551,10 @@
     return decodeChunkedSnapshotRows(rows);
   }
 
-  fetchSnapshots = async function fetchSnapshotsSelective() {
+  fetchSnapshots = async function fetchSnapshotsSelective(options = {}) {
     const activeCfg = cfg();
     if (!activeCfg.supabase?.url || !activeCfg.supabase?.anonKey || typeof fetch !== 'function') return;
-    const rows = await fetchRowsForKeys(activeCfg, keysForRefresh());
+    const rows = await fetchRowsForKeys(activeCfg, keysForRefresh(options));
     return decodeChunkedSnapshotRows(rows);
   };
 
@@ -569,9 +609,9 @@
     if (snapshotRefreshInFlight) return;
     snapshotRefreshInFlight = true;
     try {
-      const rows = await fetchSnapshots();
+      const rows = await fetchSnapshots(options);
+      window.__ALTEA_SUPABASE_SNAPSHOT_READY__ = true;
       if (applySnapshots(rows, options)) {
-        window.__ALTEA_SUPABASE_SNAPSHOT_READY__ = true;
         if (typeof window.__alteaInvalidateDeferredData === 'function') {
           try {
             window.__alteaInvalidateDeferredData();
@@ -618,13 +658,14 @@
     if (scheduledRefreshTimer) window.clearTimeout(scheduledRefreshTimer);
     scheduledRefreshTimer = window.setTimeout(() => {
       scheduledRefreshTimer = 0;
-      refreshSnapshots({ rerender: reason === 'manual' }).catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', reason, error));
+      refreshSnapshots({ rerender: reason === 'manual', reason }).catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', reason, error));
     }, delay);
   }
   window.__ALTEA_SCHEDULE_SUPABASE_SNAPSHOT_REFRESH__ = scheduleRefresh;
   [1200].forEach((delay) => {
     window.setTimeout(() => {
-      refreshSnapshots({ rerender: false }).catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', error));
+      if (window.__ALTEA_SUPABASE_SNAPSHOT_READY__) return;
+      refreshSnapshots({ rerender: false, reason: 'boot-retry' }).catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', error));
     }, delay);
   });
   window.setInterval(() => scheduleRefresh('interval'), AUTO_REFRESH_INTERVAL_MS);
@@ -632,5 +673,5 @@
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) scheduleRefresh('visible', 120);
   });
-  refreshSnapshots({ rerender: false }).catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', error));
+  refreshSnapshots({ rerender: false, reason: 'boot' }).catch((error) => console.warn('[portal-supabase-snapshot-hotfix]', error));
 })();

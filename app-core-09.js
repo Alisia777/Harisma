@@ -932,7 +932,7 @@ function renderOrderProcurement(model) {
     : (selectedPlaceCount === 1 ? model.selectedPlaces[0] : 'Все склады');
 
   return `
-    <section class="${sectionClass}" data-altea-order-procurement data-lifecycle-blocked-rows="${orderProcurementEscape(model.lifecycleBlockedRows || 0)}" data-lifecycle-blocked-need="${orderProcurementEscape(model.lifecycleBlockedNeed || 0)}">
+    <section class="${sectionClass}" data-altea-order-procurement data-order-platform="${orderProcurementEscape(model.platform)}" data-lifecycle-blocked-rows="${orderProcurementEscape(model.lifecycleBlockedRows || 0)}" data-lifecycle-blocked-need="${orderProcurementEscape(model.lifecycleBlockedNeed || 0)}">
       <div class="card">
         <div class="section-title">
           <div>
@@ -1291,6 +1291,21 @@ function injectOrderProcurementStyles() {
       --col-inbound: 0px;
     }
 
+    .altea-order-procurement[data-order-platform="wb"] {
+      --order-active-platform-rgb: 139, 92, 246;
+      --order-active-platform-text: #f0e8ff;
+    }
+
+    .altea-order-procurement[data-order-platform="ozon"] {
+      --order-active-platform-rgb: 22, 131, 255;
+      --order-active-platform-text: #e8f4ff;
+    }
+
+    .altea-order-procurement[data-order-platform="ym"] {
+      --order-active-platform-rgb: 244, 196, 48;
+      --order-active-platform-text: #fff7df;
+    }
+
     .altea-order-procurement__toolbar {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -1600,17 +1615,18 @@ function injectOrderProcurementStyles() {
     .altea-order-procurement__cluster-card {
       padding: 14px 16px;
       border-radius: 18px;
-      border: 1px solid rgba(212, 164, 74, 0.14);
+      border: 1px solid rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.18);
       background:
+        radial-gradient(circle at top right, rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.12), transparent 46%),
         linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
         rgba(17, 14, 11, 0.96);
     }
 
     .altea-order-procurement__cluster-card.is-match,
     .altea-order-procurement__cluster-card.is-warn {
-      border-color: rgba(240, 196, 101, 0.46);
+      border-color: rgba(var(--order-active-platform-rgb, 240, 196, 101), 0.52);
       background:
-        radial-gradient(circle at top right, rgba(240, 196, 101, 0.16), transparent 46%),
+        radial-gradient(circle at top right, rgba(var(--order-active-platform-rgb, 240, 196, 101), 0.22), transparent 46%),
         rgba(25, 19, 12, 0.98);
     }
 
@@ -1685,7 +1701,9 @@ function injectOrderProcurementStyles() {
       position: sticky;
       top: 0;
       z-index: 5;
-      background: rgba(18, 14, 11, 0.98);
+      background:
+        linear-gradient(180deg, rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.08), rgba(18, 14, 11, 0.98)),
+        rgba(18, 14, 11, 0.98);
       white-space: nowrap;
     }
 
@@ -1698,12 +1716,14 @@ function injectOrderProcurementStyles() {
       text-align: center;
       font-size: 12px;
       letter-spacing: 0.04em;
+      color: var(--order-active-platform-text, #ffe2a4);
+      box-shadow: inset 0 -1px 0 rgba(var(--order-active-platform-rgb, 240, 196, 101), 0.24);
     }
 
     .altea-order-procurement__cluster-head.is-match,
     .altea-order-procurement__cluster-head.is-warn {
-      color: #ffe2a4;
-      box-shadow: inset 0 -2px 0 rgba(240, 196, 101, 0.45);
+      color: var(--order-active-platform-text, #ffe2a4);
+      box-shadow: inset 0 -2px 0 rgba(var(--order-active-platform-rgb, 240, 196, 101), 0.58);
     }
 
     .altea-order-procurement__sticky-head,
@@ -1795,13 +1815,15 @@ function injectOrderProcurementStyles() {
 
     .altea-order-procurement__cluster-cell {
       min-width: 112px;
+      background: rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.035);
+      box-shadow: inset 1px 0 0 rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.08);
       transition: background 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
     }
 
     .altea-order-procurement__cluster-cell.is-warn,
     .altea-order-procurement__cluster-cell.is-match {
-      background: rgba(240, 196, 101, 0.08);
-      box-shadow: inset 0 0 0 1px rgba(240, 196, 101, 0.13);
+      background: rgba(var(--order-active-platform-rgb, 240, 196, 101), 0.11);
+      box-shadow: inset 0 0 0 1px rgba(var(--order-active-platform-rgb, 240, 196, 101), 0.22);
     }
 
     .altea-order-procurement__cluster-cell.is-danger {
@@ -1822,6 +1844,19 @@ function injectOrderProcurementStyles() {
 
     .altea-order-procurement__table tbody tr:hover td {
       background: rgba(255, 244, 229, 0.03);
+    }
+
+    .altea-order-procurement__table tbody tr:hover .altea-order-procurement__cluster-cell {
+      background: rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.09);
+    }
+
+    .altea-order-procurement__table tbody tr:hover .altea-order-procurement__cluster-cell.is-warn,
+    .altea-order-procurement__table tbody tr:hover .altea-order-procurement__cluster-cell.is-match {
+      background: rgba(var(--order-active-platform-rgb, 240, 196, 101), 0.16);
+    }
+
+    .altea-order-procurement__table tbody tr:hover .altea-order-procurement__cluster-cell.is-danger {
+      background: rgba(255, 104, 89, 0.14);
     }
 
     .altea-order-procurement__table tbody tr:hover .altea-order-procurement__sticky-cell {

@@ -20,6 +20,8 @@ async function ensureViewData(view) {
   return pending;
 }
 
+const AUTO_RETURNS_TASKS_ENABLED = false;
+
 function withTimeout(promise, ms, label) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error(`${label} превысил ${Math.round(ms / 1000)} сек.`)), ms);
@@ -213,7 +215,114 @@ function loadLocalStorage() {
 window.normalizePortalStorageSnapshot = normalizePortalStorageSnapshot;
 window.completePortalStorage = completePortalStorage;
 
-function saveLocalStorage() {
+const STORAGE_HISTORY_KEY = `${STORAGE_KEY}-history-v1`;
+const STORAGE_HISTORY_LIMIT = 16;
+
+function portalStorageHistoryPayload(source = {}) {
+  const snapshot = normalizePortalStorageSnapshot(source);
+  return {
+    comments: snapshot.comments,
+    tasks: snapshot.tasks,
+    decisions: snapshot.decisions,
+    ownerOverrides: snapshot.ownerOverrides,
+    productLifecycleOverrides: snapshot.productLifecycleOverrides,
+    taskAttachments: snapshot.taskAttachments,
+    launchOverrides: snapshot.launchOverrides,
+    launchDeletedIds: snapshot.launchDeletedIds
+  };
+}
+
+function portalStorageHistoryHash(payload = {}) {
+  const text = JSON.stringify(payload);
+  return typeof hashString === 'function' ? hashString(text) : String(text.length);
+}
+
+function portalStorageHistoryCounts(payload = {}) {
+  return {
+    comments: Array.isArray(payload.comments) ? payload.comments.length : 0,
+    tasks: Array.isArray(payload.tasks) ? payload.tasks.length : 0,
+    decisions: Array.isArray(payload.decisions) ? payload.decisions.length : 0,
+    ownerOverrides: Array.isArray(payload.ownerOverrides) ? payload.ownerOverrides.length : 0,
+    taskAttachments: Array.isArray(payload.taskAttachments) ? payload.taskAttachments.length : 0
+  };
+}
+
+function loadPortalStorageHistory() {
+  try {
+    const raw = localStorage.getItem(STORAGE_HISTORY_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((item) => item && typeof item === 'object') : [];
+  } catch {
+    return [];
+  }
+}
+
+function savePortalStorageHistory(history = []) {
+  const normalized = Array.isArray(history) ? history.filter((item) => item && typeof item === 'object') : [];
+  for (let limit = Math.min(STORAGE_HISTORY_LIMIT, normalized.length); limit >= 1; limit -= 1) {
+    try {
+      localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(normalized.slice(0, limit)));
+      return true;
+    } catch {}
+  }
+  return false;
+}
+
+function backupPortalStorage(reason = 'save') {
+  try {
+    const payload = portalStorageHistoryPayload(state.storage || {});
+    const hash = portalStorageHistoryHash(payload);
+    const history = loadPortalStorageHistory();
+    if (history[0]?.hash === hash) return null;
+    const capturedAt = new Date().toISOString();
+    const entry = {
+      id: `storage-${capturedAt.replace(/[^0-9]/g, '').slice(0, 14)}-${hash}`,
+      capturedAt,
+      reason,
+      build: String(window.__ALTEA_PORTAL_BUILD__ || ''),
+      hash,
+      counts: portalStorageHistoryCounts(payload),
+      storage: payload
+    };
+    savePortalStorageHistory([entry, ...history.filter((item) => item?.hash !== hash)]);
+    return entry;
+  } catch (error) {
+    console.warn('[portal-storage-history] backup failed', error);
+    return null;
+  }
+}
+
+function listPortalStorageBackups() {
+  return loadPortalStorageHistory().map((item) => ({
+    id: item.id,
+    capturedAt: item.capturedAt,
+    reason: item.reason,
+    build: item.build,
+    counts: item.counts || {},
+    hash: item.hash
+  }));
+}
+
+function restorePortalStorageBackup(id) {
+  const backupId = String(id || '').trim();
+  const history = loadPortalStorageHistory();
+  const entry = history.find((item) => item?.id === backupId);
+  if (!entry?.storage) return null;
+  backupPortalStorage('before-restore');
+  state.storage = completePortalStorage(entry.storage, {});
+  saveLocalStorage({ skipBackup: true, reason: 'restore' });
+  applyOwnerOverridesToSkus();
+  rerenderCurrentView();
+  if (state.activeSku) renderSkuModal(state.activeSku);
+  return entry;
+}
+
+window.alteaListStorageBackups = listPortalStorageBackups;
+window.alteaRestoreStorageBackup = restorePortalStorageBackup;
+window.alteaBackupPortalStorage = backupPortalStorage;
+
+function saveLocalStorage(options = {}) {
+  if (!options?.skipBackup) backupPortalStorage(options?.reason || 'save');
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.storage));
   window.dispatchEvent(new CustomEvent('altea:portal-storage-updated', {
     detail: {
@@ -688,7 +797,15 @@ function inferTaskType(text = '') {
 
 function detectMarketplaceNetworkKey(text = '') {
   const raw = String(text || '').toLowerCase();
+  const compact = raw.replace(/[\s._'`"\u2019-]+/g, '');
   if (!raw) return '';
+  if (/\u0437\s*\u044f|\u0437\u044f|\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*(\u044f\u0431\u043b\u043e\u043a|\u044f\u0431\u043b)|golden\s*apple|gold[\s_-]*apple|goldapple|zya/.test(raw) || ['goldapple', 'goldenapple', 'zya', '\u0437\u044f', '\u0437\u043e\u043b\u043e\u0442\u043e\u0435\u044f\u0431\u043b\u043e\u043a\u043e'].includes(compact)) return 'goldapple';
+  if (/\u043b[\s'`\u2019.-]*[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c?|\u043b\u044d\u0442\u0443\u0430\u043b\u044c?|letual|letu|letoile|l[\s'`.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile', '\u043b\u0435\u0442\u0443\u0430\u043b\u044c', '\u043b\u0435\u0442\u0443\u0430\u043b', '\u043b\u044d\u0442\u0443\u0430\u043b\u044c', '\u043b\u044d\u0442\u0443\u0430\u043b'].includes(compact)) return 'letu';
+  if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|magnet|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'magnet', 'magnetmarket', 'mm', '\u043c\u0430\u0433\u043d\u0438\u0442', '\u043c\u0430\u0433\u043d\u0438\u0442\u043c\u0430\u0440\u043a\u0435\u0442'].includes(compact)) return 'magnit';
+  if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|yandex|(^|[^a-z0-9])(ya|ym)([^a-z0-9]|$)|(^|[^\u0430-\u044f\u04510-9])\u044f\u043c([^\u0430-\u044f\u04510-9]|$)/.test(raw)) return 'ya';
+  if (/\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*\u044f\u0431\u043b\u043e\u043a|golden\s*apple|gold[\s_-]*apple|goldapple|zya|\u0437\u044f/.test(raw) || ['goldapple', 'goldenapple', 'zya'].includes(compact)) return 'goldapple';
+  if (/\u043b['\u2019]?\s?[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c|letual|letu|letoile|l['\s.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile'].includes(compact)) return 'letu';
+  if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'mm'].includes(compact)) return 'magnit';
   if (/\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*\u044f\u0431\u043b\u043e\u043a|goldapple|gold apple|zya|\u0437\u044f/.test(raw)) return 'goldapple';
   if (/\u043b['’]?\s?[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c|letual|letu/.test(raw)) return 'letu';
   if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|(^|\W)mm($|\W)/.test(raw)) return 'magnit';
@@ -701,12 +818,44 @@ function detectMarketplaceNetworkKey(text = '') {
 }
 
 function detectTaskSpecificMarketplace(task) {
-  const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''}`;
+  const text = taskMarketplaceContext(task);
   return detectMarketplaceNetworkKey(text);
+}
+
+function marketplaceContextValue(value, depth = 0) {
+  if (value == null || depth > 2) return '';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (Array.isArray(value)) return value.map((item) => marketplaceContextValue(item, depth + 1)).filter(Boolean).join(' ');
+  if (typeof value === 'object') {
+    return Object.entries(value)
+      .filter(([key]) => !/^(history|comments|updates|logs|rawRows?|html|node|element)$/i.test(key))
+      .map(([key, item]) => `${key} ${marketplaceContextValue(item, depth + 1)}`)
+      .filter(Boolean)
+      .join(' ');
+  }
+  return '';
+}
+
+function taskMarketplaceContext(task, sku = null) {
+  const taskFields = [
+    'platform', 'marketplace', 'marketplaceKey', 'network', 'retailer', 'channel', 'market',
+    'contour', 'direction', 'workstream', 'queue', 'role', 'team', 'project', 'topic',
+    'title', 'name', 'subject', 'entityLabel', 'description', 'nextAction', 'reason',
+    'context', 'comment', 'note', 'notes', 'details', 'message', 'text', 'body',
+    'articleKey', 'sku', 'apiSku', 'tags', 'labels', 'meta', 'extra', 'payload', 'fields'
+  ];
+  const skuFields = [
+    'platform', 'marketplace', 'marketplaceKey', 'network', 'retailer', 'channel', 'market',
+    'name', 'title', 'articleKey', 'sku', 'apiSku'
+  ];
+  const taskContext = taskFields.map((key) => marketplaceContextValue(task?.[key])).join(' ');
+  const skuContext = skuFields.map((key) => marketplaceContextValue(sku?.[key])).join(' ');
+  return [taskContext, skuContext].filter(Boolean).join(' ');
 }
 
 function normalizeTaskPlatform(value, contextText = '') {
   const raw = String(value || '').trim().toLowerCase();
+  const compactRaw = raw.replace(/[\s._'`"\u2019-]+/g, '');
   const text = `${raw} ${String(contextText || '').trim().toLowerCase()}`;
 
   if (raw === 'all') return 'all';
@@ -714,11 +863,14 @@ function normalizeTaskPlatform(value, contextText = '') {
   if (['wb', 'wildberries', 'вб'].includes(raw)) return 'wb';
   if (['ozon', 'озон'].includes(raw)) return 'ozon';
   if (['wb+ozon', 'wb + ozon', 'wb_ozon', 'wb-ozon'].includes(raw)) return 'wb+ozon';
+  if (['goldapple', 'goldenapple', 'zya', 'ga'].includes(compactRaw)) return 'goldapple';
+  if (['letu', 'letual', 'letoile'].includes(compactRaw)) return 'letu';
+  if (['magnit', 'magnitmarket', 'mm'].includes(compactRaw)) return 'magnit';
   if (['ya', 'ym', 'yandex', 'yandex_market', 'yandexmarket', 'ya_market', 'ям', 'я.маркет', 'яндекс'].includes(raw)) return 'ya';
   if (['goldapple', 'ga', 'zya', 'зя'].includes(raw)) return 'goldapple';
   if (['letu', 'letual', 'летуаль'].includes(raw)) return 'letu';
   if (['magnit', 'mm'].includes(raw)) return 'magnit';
-  if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return detectMarketplaceNetworkKey(text) || 'ya';
+  if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return detectMarketplaceNetworkKey(text) || 'cross';
   if (['product', 'launch', 'launches', 'новинки', 'продукт', 'ксюша'].includes(raw)) return 'product';
   if (['executive', 'director', 'ceo', 'lead', 'директор', 'руководитель'].includes(raw)) return 'cross';
 
@@ -744,10 +896,10 @@ function controlWorkstreamMeta(key) {
 }
 
 function controlWorkstreamKey(task, sku = null) {
-  const specificMarketplace = detectTaskSpecificMarketplace(task);
+  const text = taskMarketplaceContext(task, sku);
+  const specificMarketplace = detectMarketplaceNetworkKey(text);
   if (specificMarketplace === 'goldapple' || specificMarketplace === 'letu' || specificMarketplace === 'magnit' || specificMarketplace === 'ya') return specificMarketplace;
 
-  const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''}`;
   const platform = normalizeTaskPlatform(task?.platform, text);
 
   if (platform === 'wb') return 'wb';
@@ -763,7 +915,7 @@ function controlWorkstreamKey(task, sku = null) {
 }
 
 function detectTaskPlatform(task, sku) {
-  const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''}`.toLowerCase();
+  const text = taskMarketplaceContext(task, sku).toLowerCase();
   const marketplace = detectMarketplaceNetworkKey(text);
   if (marketplace) return marketplace;
   if (task?.platform) return normalizeTaskPlatform(task.platform, text);
@@ -781,57 +933,20 @@ function detectTaskPlatform(task, sku) {
   return 'all';
 }
 
-function normalizeOwnerAssignmentTaskText(task, type) {
-  const autoCode = String(task?.autoCode || '').trim();
-  let title = String(task?.title || 'Задача без названия').trim();
-  let nextAction = String(task?.nextAction || '').trim();
-  let reason = String(task?.reason || '').trim();
-  const isOwnerAssignment = type === 'assignment' && (
-    autoCode.toLowerCase() === 'kz_owner'
-    || /^КЗ\s*:\s*назначить owner/i.test(title)
-    || /weekly\s*KZ/i.test(nextAction)
-  );
-  if (!isOwnerAssignment) return { title, nextAction, reason, autoCode };
-
-  title = title.replace(/^КЗ\s*:\s*/i, '').trim();
-  if (/^назначить owner/i.test(title)) title = 'Назначить owner по SKU';
-  nextAction = nextAction
-    .replace(/владельца карточки и weekly\s*KZ-разбор[а-яё]*/gi, 'владельца карточки и ответственного за регулярный разбор')
-    .replace(/weekly\s*KZ-разбор[а-яё]*/gi, 'регулярный разбор')
-    .replace(/weekly\s*KZ/gi, 'регулярный разбор')
-    .replace(/KZ-воронк[а-яё]*/gi, 'воронке')
-    .replace(/\bKZ\b/gi, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-  if (!nextAction) nextAction = 'Закрепить владельца карточки и ответственного за регулярный разбор, чтобы сигналы не висели без ответа.';
-  reason = reason
-    .replace(/KZ-воронк[а-яё]*/gi, 'воронке')
-    .replace(/\bKZ\b/gi, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-  return {
-    title,
-    nextAction,
-    reason,
-    autoCode: autoCode.toLowerCase() === 'kz_owner' ? 'owner_assignment' : autoCode
-  };
-}
-
 function normalizeTask(task, sourceHint = 'manual') {
   const sku = task?.articleKey ? getSku(task.articleKey) : null;
-  const rawTitle = task?.title || 'Задача без названия';
-  const type = task?.type || inferTaskType(`${rawTitle} ${task?.nextAction || ''}`);
-  const normalizedText = normalizeOwnerAssignmentTaskText(task, type);
-  const title = normalizedText.title;
+  const title = task?.title || 'Задача без названия';
+  const type = task?.type || inferTaskType(`${title} ${task?.nextAction || ''}`);
   const priority = task?.priority || (type === 'price_margin' ? 'critical' : type === 'assignment' ? 'high' : 'medium');
-  const createdAt = task?.createdAt || new Date().toISOString();
+  const createdAt = task?.createdAt || task?.created_at || new Date().toISOString();
+  const updatedAt = task?.updatedAt || task?.updated_at || createdAt;
   return {
     id: task?.id || stableId(sourceHint === 'auto' ? 'auto' : 'task', `${task?.articleKey || ''}|${title}|${task?.due || ''}|${createdAt}|${sourceHint}`),
     source: task?.source || sourceHint,
     articleKey: task?.articleKey || '',
     title,
-    nextAction: normalizedText.nextAction,
-    reason: normalizedText.reason,
+    nextAction: task?.nextAction || '',
+    reason: task?.reason || '',
     owner: canonicalOwnerName(task?.owner || ownerName(sku) || ''),
     due: task?.due || plusDays(type === 'assignment' ? 1 : 3),
     status: mapTaskStatus(task?.status),
@@ -839,8 +954,9 @@ function normalizeTask(task, sourceHint = 'manual') {
     priority,
     platform: detectTaskPlatform(task, sku),
     createdAt,
+    updatedAt,
     entityLabel: task?.entityLabel || sku?.name || title,
-    autoCode: normalizedText.autoCode || ''
+    autoCode: task?.autoCode || ''
   };
 }
 
@@ -942,6 +1058,19 @@ function renderTaskHistoryItem(item) {
   `;
 }
 
+function taskModalSelectionElement(node) {
+  if (!node) return null;
+  return node.nodeType === 1 ? node : node.parentElement;
+}
+
+function taskModalHasTextSelection(modal) {
+  const selection = window.getSelection ? window.getSelection() : null;
+  if (!selection || selection.isCollapsed || !String(selection.toString() || '').trim()) return false;
+  const anchor = taskModalSelectionElement(selection.anchorNode);
+  const focus = taskModalSelectionElement(selection.focusNode);
+  return Boolean((anchor && modal.contains(anchor)) || (focus && modal.contains(focus)));
+}
+
 function ensureTaskModal() {
   let modal = document.getElementById('taskModal');
   if (modal) return modal;
@@ -950,8 +1079,23 @@ function ensureTaskModal() {
   modal.className = 'modal';
   modal.innerHTML = '<div class="modal-card task-modal-card" id="taskModalBody"></div>';
   document.body.appendChild(modal);
+  let backdropPointerStarted = false;
+  const rememberBackdropStart = (event) => {
+    backdropPointerStarted = event.target === modal && !taskModalHasTextSelection(modal);
+  };
+  modal.addEventListener('pointerdown', rememberBackdropStart);
+  modal.addEventListener('mousedown', rememberBackdropStart);
   modal.addEventListener('click', (event) => {
-    if (event.target.id === 'taskModal') closeTaskModal();
+    if (event.target !== modal) {
+      backdropPointerStarted = false;
+      return;
+    }
+    if (!backdropPointerStarted || taskModalHasTextSelection(modal)) {
+      backdropPointerStarted = false;
+      return;
+    }
+    backdropPointerStarted = false;
+    closeTaskModal();
   });
   return modal;
 }
@@ -1145,9 +1289,9 @@ function buildAutoTasks() {
           platform,
           item: leaderboardItem,
           alerts: assignmentAlerts,
-          autoCode: 'owner_assignment',
-          title: 'Назначить owner по SKU',
-          nextAction: 'Закрепить владельца карточки и ответственного за регулярный разбор, чтобы сигналы по воронке не висели без ответа.',
+          autoCode: 'kz_owner',
+          title: 'КЗ: назначить owner по SKU',
+          nextAction: 'Закрепить владельца карточки и weekly KZ-разбора, чтобы сигналы по воронке не висели без ответа.',
           type: 'assignment'
         }));
       }
@@ -1268,7 +1412,7 @@ function buildAutoTasks() {
       }, 'auto'));
     }
 
-    if (sku?.flags?.highReturn && canRegisterAutoTask(keys, articleKey, 'returns')) {
+    if (AUTO_RETURNS_TASKS_ENABLED && sku?.flags?.highReturn && canRegisterAutoTask(keys, articleKey, 'returns')) {
       tasks.push(normalizeTask({
         id: `auto-returns-${articleKey}`,
         source: 'auto',

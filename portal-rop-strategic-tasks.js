@@ -114,7 +114,7 @@
   async function loadRopData() {
     if (ropData) return ropData;
     if (!dataPromise) {
-      dataPromise = fetch(`${DATA_PATH}?v=20260522strategic3`, { cache: 'no-store' })
+      dataPromise = fetch(`${DATA_PATH}?v=20260522strategic4`, { cache: 'no-store' })
         .then((response) => {
           if (!response.ok) throw new Error(`Не удалось загрузить ${DATA_PATH}`);
           return response.json();
@@ -216,7 +216,7 @@
         platform: seed.platform || task.platform || '',
         platformKey: seed.platformKey || task.platform || 'cross',
         kpiBlock: seed.kpiBlock || '',
-        title: task.title || seed.title || '',
+        title: seed.title || task.title || '',
         due: task.due || seed.dueDate || '',
         status: task.status || seed.status || 'new',
         priority: task.priority || seed.priority || 'high',

@@ -1,0 +1,42 @@
+.rop-strategic-launch{margin:0 0 14px;padding:12px 14px;border:1px solid rgba(212,164,74,.26);border-radius:12px;background:rgba(212,164,74,.055);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rop-strategic-launch strong{display:block;color:#fff7e6;line-height:1.2}
+.rop-strategic-launch span{display:block;margin-top:4px;color:var(--muted);font-size:12px;line-height:1.35}
+.rop-strategic-root{display:flex;flex-direction:column;gap:14px}
+.rop-strategic-root .section-title{margin-bottom:0}
+.rop-strategic-tabs,.rop-strategic-filter-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rop-strategic-tabs{padding:8px;border:1px solid rgba(212,164,74,.16);border-radius:12px;background:rgba(255,255,255,.018)}
+.rop-strategic-tabs .quick-chip.active{border-color:rgba(212,164,74,.65);background:rgba(212,164,74,.16);color:#f5ddb0}
+.rop-strategic-filters{display:grid;grid-template-columns:minmax(220px,1.6fr) repeat(4,minmax(140px,1fr));gap:10px}
+.rop-strategic-owner-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.rop-owner-card{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.022);padding:12px;display:flex;flex-direction:column;gap:10px}
+.rop-owner-card.is-risk{border-color:rgba(212,164,74,.34);background:rgba(212,164,74,.045)}
+.rop-owner-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.rop-owner-card h3{margin:0;color:#fff7e6;font-size:18px;line-height:1.15}
+.rop-owner-card p{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.35}
+.rop-progress{height:8px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
+.rop-progress span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#d4a44a,#8fd694)}
+.rop-strategic-table table{min-width:1420px}
+.rop-strategic-table tr.is-overdue td{background:rgba(210,73,73,.055)}
+.rop-strategic-table tr.is-critical td:first-child{box-shadow:inset 3px 0 0 rgba(210,73,73,.62)}
+.rop-strategic-table td{font-size:13px;line-height:1.35}
+.rop-task-title{font-weight:800;color:#fff7e6;line-height:1.35}
+.rop-task-context{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.45}
+.rop-inline-form{display:grid;grid-template-columns:minmax(110px,.8fr) minmax(125px,.7fr) minmax(130px,.8fr) minmax(180px,1.2fr) auto;gap:8px;align-items:start;min-width:650px}
+.rop-inline-form input,.rop-inline-form select{min-width:0;border-radius:10px;padding:8px 9px;font-size:12px}
+.rop-inline-form textarea{min-height:38px;height:38px;border-radius:10px;padding:8px 9px;font-size:12px;resize:vertical}
+.rop-inline-actions{display:flex;gap:6px;align-items:center;justify-content:flex-end}
+.rop-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.rop-detail-item{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.022);padding:12px;min-width:0}
+.rop-detail-item strong{display:block;color:#fff7e6;line-height:1.25}
+.rop-detail-item span{display:block;margin-top:6px;color:var(--muted);font-size:12px;line-height:1.45}
+.rop-compact-table table{min-width:1120px}
+.rop-compact-table td,.rop-compact-table th{padding:12px 10px}
+.rop-raci-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rop-raci-card{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.022);padding:12px;display:flex;flex-direction:column;gap:10px}
+.rop-raci-card h3{margin:0;color:#fff7e6;font-size:16px;line-height:1.2}
+.rop-raci-roles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.rop-raci-roles span{border:1px solid rgba(255,255,255,.07);border-radius:10px;background:rgba(0,0,0,.14);padding:8px;color:var(--muted);font-size:12px;line-height:1.35}
+.rop-raci-roles b{display:block;color:#f5ddb0;font-size:11px;text-transform:uppercase;letter-spacing:0;margin-bottom:4px}
+.rop-warning-line{border:1px solid rgba(217,151,21,.28);border-radius:12px;background:rgba(217,151,21,.075);padding:12px;color:#f3dfad;font-size:13px;line-height:1.45}
+@media (max-width:1280px){.rop-strategic-filters{grid-template-columns:1fr 1fr}.rop-strategic-owner-grid,.rop-detail-grid{grid-template-columns:1fr 1fr}.rop-raci-grid{grid-template-columns:1fr}.rop-inline-form{grid-template-columns:1fr 1fr}}
+@media (max-width:820px){.rop-strategic-launch{align-items:flex-start;flex-direction:column}.rop-strategic-filters,.rop-strategic-owner-grid,.rop-detail-grid,.rop-raci-roles,.rop-inline-form{grid-template-columns:1fr}.rop-inline-actions{justify-content:flex-start}}

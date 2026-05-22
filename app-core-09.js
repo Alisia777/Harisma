@@ -1671,6 +1671,18 @@ function injectOrderProcurementStyles() {
       margin-right: -10px;
       padding: 14px;
       overflow: hidden;
+      border-color: rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.22);
+      background:
+        radial-gradient(circle at top right, rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.10), transparent 42%),
+        rgba(20, 16, 12, 0.92);
+    }
+
+    body.v87-imperial .altea-order-procurement .card.altea-order-procurement__table-card {
+      border-color: rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.30) !important;
+      background:
+        radial-gradient(circle at top right, rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.18), transparent 38%),
+        linear-gradient(180deg, rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.050), rgba(14, 11, 9, 0.96)),
+        rgba(20, 16, 12, 0.96) !important;
     }
 
     .altea-order-procurement__table-wrap {
@@ -1695,6 +1707,18 @@ function injectOrderProcurementStyles() {
       padding: 10px 11px;
       border-bottom: 1px solid rgba(212, 164, 74, 0.10);
       vertical-align: top;
+    }
+
+    .altea-order-procurement__table tbody td {
+      background:
+        linear-gradient(90deg, rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.090), rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.035)),
+        rgba(14, 11, 9, 0.96);
+    }
+
+    .altea-order-procurement__table tbody tr:nth-child(even) td {
+      background:
+        linear-gradient(90deg, rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.105), rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.042)),
+        rgba(14, 11, 9, 0.96);
     }
 
     .altea-order-procurement__table thead th {
@@ -1730,8 +1754,10 @@ function injectOrderProcurementStyles() {
     .altea-order-procurement__sticky-cell {
       position: sticky;
       z-index: 7;
-      background: rgba(17, 14, 11, 0.985);
-      box-shadow: 1px 0 0 rgba(212, 164, 74, 0.08);
+      background:
+        linear-gradient(90deg, rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.080), rgba(17, 14, 11, 0.985)),
+        rgba(17, 14, 11, 0.985);
+      box-shadow: 1px 0 0 rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.14);
     }
 
     .altea-order-procurement__sticky-head {
@@ -1771,6 +1797,21 @@ function injectOrderProcurementStyles() {
       left: calc(var(--col-sku) + var(--col-article) + var(--col-warehouse) + var(--col-inbound));
       min-width: var(--col-total);
       width: var(--col-total);
+      background:
+        linear-gradient(90deg, rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.14), rgba(28, 22, 16, 0.985)),
+        rgba(28, 22, 16, 0.985);
+    }
+
+    .altea-order-procurement__table tbody .altea-order-procurement__sticky-cell {
+      background:
+        linear-gradient(90deg, rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.110), rgba(17, 14, 11, 0.985)),
+        rgba(17, 14, 11, 0.985);
+    }
+
+    .altea-order-procurement__table tbody .altea-order-procurement__sticky-cell--total {
+      background:
+        linear-gradient(90deg, rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.180), rgba(28, 22, 16, 0.985)),
+        rgba(28, 22, 16, 0.985);
     }
 
     .altea-order-procurement__sticky-cell strong {
@@ -1815,15 +1856,19 @@ function injectOrderProcurementStyles() {
 
     .altea-order-procurement__cluster-cell {
       min-width: 112px;
-      background: rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.035);
-      box-shadow: inset 1px 0 0 rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.08);
+      background:
+        linear-gradient(180deg, rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.090), rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.040)),
+        rgba(15, 12, 10, 0.96);
+      box-shadow: inset 1px 0 0 rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.14);
       transition: background 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
     }
 
     .altea-order-procurement__cluster-cell.is-warn,
     .altea-order-procurement__cluster-cell.is-match {
-      background: rgba(var(--order-active-platform-rgb, 240, 196, 101), 0.11);
-      box-shadow: inset 0 0 0 1px rgba(var(--order-active-platform-rgb, 240, 196, 101), 0.22);
+      background:
+        linear-gradient(180deg, rgba(var(--order-active-platform-rgb, 240, 196, 101), 0.18), rgba(var(--order-active-platform-rgb, 240, 196, 101), 0.08)),
+        rgba(18, 14, 10, 0.96);
+      box-shadow: inset 0 0 0 1px rgba(var(--order-active-platform-rgb, 240, 196, 101), 0.30);
     }
 
     .altea-order-procurement__cluster-cell.is-danger {
@@ -1843,16 +1888,22 @@ function injectOrderProcurementStyles() {
     }
 
     .altea-order-procurement__table tbody tr:hover td {
-      background: rgba(255, 244, 229, 0.03);
+      background:
+        linear-gradient(90deg, rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.095), rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.035)),
+        rgba(20, 16, 12, 0.98);
     }
 
     .altea-order-procurement__table tbody tr:hover .altea-order-procurement__cluster-cell {
-      background: rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.09);
+      background:
+        linear-gradient(180deg, rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.14), rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.065)),
+        rgba(20, 16, 12, 0.98);
     }
 
     .altea-order-procurement__table tbody tr:hover .altea-order-procurement__cluster-cell.is-warn,
     .altea-order-procurement__table tbody tr:hover .altea-order-procurement__cluster-cell.is-match {
-      background: rgba(var(--order-active-platform-rgb, 240, 196, 101), 0.16);
+      background:
+        linear-gradient(180deg, rgba(var(--order-active-platform-rgb, 240, 196, 101), 0.23), rgba(var(--order-active-platform-rgb, 240, 196, 101), 0.11)),
+        rgba(20, 16, 12, 0.98);
     }
 
     .altea-order-procurement__table tbody tr:hover .altea-order-procurement__cluster-cell.is-danger {
@@ -1860,7 +1911,9 @@ function injectOrderProcurementStyles() {
     }
 
     .altea-order-procurement__table tbody tr:hover .altea-order-procurement__sticky-cell {
-      background: rgba(28, 22, 16, 0.98);
+      background:
+        linear-gradient(90deg, rgba(var(--order-active-platform-rgb, 212, 164, 74), 0.12), rgba(28, 22, 16, 0.98)),
+        rgba(28, 22, 16, 0.98);
     }
 
     .altea-order-procurement__empty {

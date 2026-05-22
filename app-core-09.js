@@ -941,7 +941,7 @@ function renderOrderProcurement(model) {
           </div>
           <div class="badge-stack">
             ${orderProcurementBadge(buildLabel, 'ok')}
-            ${orderProcurementBadge(`Площадка: ${model.platformLabel}`, model.platform === 'wb' ? 'ok' : 'info')}
+            ${orderProcurementBadge(`Площадка: ${model.platformLabel}`, `platform-badge platform-${model.platform}`)}
             ${orderProcurementBadge(`Оборачиваемость: ${model.days} дн.`, 'info')}
             ${orderProcurementBadge(`Срез: ${range}`, 'info')}
           </div>
@@ -953,7 +953,7 @@ function renderOrderProcurement(model) {
             <input id="alteaOrderTargetDays" type="number" min="1" max="180" step="1" value="${orderProcurementEscape(model.days)}">
           </label>
 
-          <div class="altea-order-procurement__field">
+          <div class="altea-order-procurement__field altea-order-procurement__field--platform">
             <span>Площадка</span>
             <div class="altea-order-procurement__platforms">
               <button type="button" class="altea-order-procurement__platform-btn ${model.platform === 'wb' ? 'is-active' : ''}" data-altea-order-platform="wb">WB</button>
@@ -1412,7 +1412,6 @@ function injectOrderProcurementStyles() {
       box-shadow: inset 0 0 0 1px rgba(240, 196, 101, 0.14);
     }
 
-    .altea-order-procurement__platforms,
     .altea-order-procurement__actions {
       display: flex;
       gap: 8px;
@@ -1424,27 +1423,123 @@ function injectOrderProcurementStyles() {
       justify-content: flex-end;
     }
 
+    .altea-order-procurement__field--platform {
+      min-width: 206px;
+    }
+
+    .altea-order-procurement__platforms {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(48px, 1fr));
+      gap: 8px;
+      align-items: stretch;
+      width: min(100%, 224px);
+    }
+
     .altea-order-procurement__platform-btn {
-      min-width: 70px;
-      padding: 10px 14px;
+      --order-platform-rgb: 212, 164, 74;
+      display: inline-flex;
+      min-width: 0;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px;
       border-radius: 999px;
-      border: 1px solid rgba(212, 164, 74, 0.22);
-      background: rgba(18, 14, 10, 0.92);
-      color: #fff1dd;
-      font: inherit;
+      border: 1px solid rgba(var(--order-platform-rgb), 0.30);
+      background:
+        radial-gradient(circle at 28% 0, rgba(var(--order-platform-rgb), 0.16), transparent 34%),
+        rgba(18, 14, 10, 0.92) !important;
+      color: #fff1dd !important;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
       cursor: pointer;
-      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+    }
+
+    .altea-order-procurement__platform-btn[data-altea-order-platform="wb"] {
+      --order-platform-rgb: 139, 92, 246;
+    }
+
+    .altea-order-procurement__platform-btn[data-altea-order-platform="ozon"] {
+      --order-platform-rgb: 22, 131, 255;
+    }
+
+    .altea-order-procurement__platform-btn[data-altea-order-platform="ym"] {
+      --order-platform-rgb: 244, 196, 48;
     }
 
     .altea-order-procurement__platform-btn:hover {
       transform: translateY(-1px);
-      border-color: rgba(212, 164, 74, 0.44);
+      border-color: rgba(var(--order-platform-rgb), 0.58);
+      background:
+        radial-gradient(circle at 28% 0, rgba(var(--order-platform-rgb), 0.24), transparent 34%),
+        rgba(24, 19, 14, 0.94) !important;
     }
 
     .altea-order-procurement__platform-btn.is-active {
-      background: linear-gradient(135deg, rgba(212, 164, 74, 0.30), rgba(101, 67, 33, 0.56));
-      border-color: rgba(240, 196, 101, 0.60);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+      background:
+        radial-gradient(circle at 24% 0, rgba(255, 255, 255, 0.22), transparent 32%),
+        linear-gradient(180deg, rgba(var(--order-platform-rgb), 0.82), rgba(var(--order-platform-rgb), 0.40)) !important;
+      border-color: rgba(var(--order-platform-rgb), 0.86) !important;
+      color: #fff !important;
+      text-shadow: 0 1px 10px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 14px 30px rgba(var(--order-platform-rgb), 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    }
+
+    body.v87-imperial.theme-sand-dark .altea-order-procurement .altea-order-procurement__platform-btn {
+      background:
+        radial-gradient(circle at 28% 0, rgba(var(--order-platform-rgb), 0.16), transparent 34%),
+        rgba(18, 14, 10, 0.92) !important;
+      color: #fff1dd !important;
+    }
+
+    body.v87-imperial.theme-sand-dark .altea-order-procurement .altea-order-procurement__platform-btn:hover {
+      background:
+        radial-gradient(circle at 28% 0, rgba(var(--order-platform-rgb), 0.24), transparent 34%),
+        rgba(24, 19, 14, 0.94) !important;
+    }
+
+    body.v87-imperial.theme-sand-dark .altea-order-procurement .altea-order-procurement__platform-btn.is-active {
+      background:
+        radial-gradient(circle at 24% 0, rgba(255, 255, 255, 0.22), transparent 32%),
+        linear-gradient(180deg, rgba(var(--order-platform-rgb), 0.82), rgba(var(--order-platform-rgb), 0.40)) !important;
+      border-color: rgba(var(--order-platform-rgb), 0.86) !important;
+      color: #fff !important;
+    }
+
+    body.v87-imperial.theme-sand-dark .altea-order-procurement .altea-order-procurement__platform-btn::before {
+      content: none !important;
+      display: none !important;
+    }
+
+    body.v87-imperial .altea-order-procurement .chip.platform-badge,
+    .altea-order-procurement .chip.platform-badge {
+      --order-platform-rgb: 212, 164, 74;
+      background:
+        radial-gradient(circle at 18% 0, rgba(255, 255, 255, 0.16), transparent 30%),
+        linear-gradient(180deg, rgba(var(--order-platform-rgb), 0.28), rgba(18, 14, 10, 0.88)) !important;
+      border-color: rgba(var(--order-platform-rgb), 0.58) !important;
+      color: #fff7e8 !important;
+      box-shadow: 0 10px 24px rgba(var(--order-platform-rgb), 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+    }
+
+    body.v87-imperial .altea-order-procurement .chip.platform-wb,
+    .altea-order-procurement .chip.platform-wb {
+      --order-platform-rgb: 139, 92, 246;
+    }
+
+    body.v87-imperial .altea-order-procurement .chip.platform-ozon,
+    .altea-order-procurement .chip.platform-ozon {
+      --order-platform-rgb: 22, 131, 255;
+    }
+
+    body.v87-imperial .altea-order-procurement .chip.platform-ym,
+    .altea-order-procurement .chip.platform-ym {
+      --order-platform-rgb: 244, 196, 48;
     }
 
     .altea-order-procurement__summary {

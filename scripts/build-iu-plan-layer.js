@@ -22,6 +22,8 @@ const SMART_SALE_OZON_GMV_2026 = {
   '2026-11': 126917638.188604,
   '2026-12': 143447038.351102
 };
+const WB_IU_SMART_SHARE = 0.4;
+const DOWNLOADS_ROOT = path.resolve(process.env.USERPROFILE || process.cwd(), 'Downloads');
 
 function parseArgs(argv) {
   const args = { _: [] };
@@ -49,6 +51,32 @@ function pickNewest(files) {
   return files
     .map((name) => ({ name, mtimeMs: fs.statSync(path.join(ROOT, name)).mtimeMs }))
     .sort((a, b) => b.mtimeMs - a.mtimeMs)[0]?.name || null;
+}
+
+function findNewestFileInDirs(dirs, predicate) {
+  const matches = [];
+  for (const dir of dirs) {
+    try {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (!entry.isFile() || !predicate(entry.name)) continue;
+        const filePath = path.join(dir, entry.name);
+        matches.push({ filePath, mtimeMs: fs.statSync(filePath).mtimeMs });
+      }
+    } catch (_error) {
+      // Optional source folders may not exist.
+    }
+  }
+  return matches.sort((left, right) => right.mtimeMs - left.mtimeMs)[0]?.filePath || '';
+}
+
+function detectWbIuPlanWorkbook() {
+  if (process.env.ALTEA_WB_IU_PLAN_FILE && fs.existsSync(process.env.ALTEA_WB_IU_PLAN_FILE)) {
+    return process.env.ALTEA_WB_IU_PLAN_FILE;
+  }
+  return findNewestFileInDirs(
+    [path.join(DOWNLOADS_ROOT, 'Telegram Desktop'), DOWNLOADS_ROOT],
+    (name) => /\.xlsx$/i.test(name) && /2026[_\s-]*h[_\s-]*1/i.test(String(name || '').toLowerCase())
+  );
 }
 
 function detectPlanWorkbook(candidateArg) {
@@ -89,6 +117,33 @@ function cell(sheet, ref) {
   return sheet[ref] ? sheet[ref].v : null;
 }
 
+function isoDate(value) {
+  if (!value && value !== 0) return '';
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+  const text = String(value || '').trim();
+  const direct = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (direct) return `${direct[1]}-${direct[2]}-${direct[3]}`;
+  const dotted = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})$/);
+  if (dotted) {
+    const year = dotted[3].length === 2 ? `20${dotted[3]}` : dotted[3];
+    return `${year}-${String(dotted[2]).padStart(2, '0')}-${String(dotted[1]).padStart(2, '0')}`;
+  }
+  return '';
+}
+
+function money(value) {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  if (value === null || value === undefined) return 0;
+  const parsed = Number(String(value).replace(/\s+/g, '').replace(/,/g, '').replace(/[^\d.-]/g, ''));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function roundMoney(value) {
+  return Math.round(num(value) * 100) / 100;
+}
+
 function monthLabel(header, year) {
   const text = String(header || '').trim();
   return text ? `${text} ${year}` : `${year}`;
@@ -97,10 +152,13 @@ function monthLabel(header, year) {
 function selectPlanSheet(sheetNames) {
   const names = Array.isArray(sheetNames) ? sheetNames : [];
   if (!names.length) return '';
+
   const exact = names.find((name) => /^01[_\s-]/.test(String(name || '')));
   if (exact) return exact;
+
   const numeric = names.find((name) => /^\d{2}[_\s-]/.test(String(name || '')));
   if (numeric) return numeric;
+
   return names[0];
 }
 
@@ -210,6 +268,90 @@ function detectSmartSaleOzonPlan(candidateArg, year) {
   };
 }
 
+function buildWbDailyPlan() {
+  const workbookPath = detectWbIuPlanWorkbook();
+  if (!workbookPath) {
+    return {
+      status: 'missing',
+      sourceWorkbook: '',
+      share: WB_IU_SMART_SHARE,
+      rows: 0,
+      from: '',
+      to: '',
+      daily: [],
+      monthly: {}
+    };
+  }
+
+  const workbook = XLSX.readFile(workbookPath, { cellDates: true });
+  const sheetName = workbook.SheetNames[0];
+  const rows = sheetName
+    ? XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, raw: false, defval: '' }).slice(1)
+    : [];
+  const daily = [];
+  const monthly = {};
+
+  rows.forEach((row) => {
+    const date = isoDate(row?.[0]);
+    if (!date) return;
+    const month = date.slice(0, 7);
+    const gmvPlanGross = money(row?.[3]);
+    const adsPlanGross = money(row?.[6]);
+    if (gmvPlanGross <= 0 && adsPlanGross <= 0) return;
+    const point = {
+      date,
+      monthKey: month,
+      gmvPlanGross: roundMoney(gmvPlanGross),
+      adsPlanGross: roundMoney(adsPlanGross),
+      gmvPlanOur: roundMoney(gmvPlanGross * WB_IU_SMART_SHARE),
+      adsPlanOur: roundMoney(adsPlanGross * WB_IU_SMART_SHARE),
+      share: WB_IU_SMART_SHARE
+    };
+    daily.push(point);
+    const bucket = monthly[month] || {
+      monthKey: month,
+      days: 0,
+      from: date,
+      to: date,
+      gmvPlanGross: 0,
+      adsPlanGross: 0,
+      gmvPlanOur: 0,
+      adsPlanOur: 0
+    };
+    bucket.days += 1;
+    bucket.from = date < bucket.from ? date : bucket.from;
+    bucket.to = date > bucket.to ? date : bucket.to;
+    bucket.gmvPlanGross += gmvPlanGross;
+    bucket.adsPlanGross += adsPlanGross;
+    bucket.gmvPlanOur += gmvPlanGross * WB_IU_SMART_SHARE;
+    bucket.adsPlanOur += adsPlanGross * WB_IU_SMART_SHARE;
+    monthly[month] = bucket;
+  });
+
+  Object.keys(monthly).forEach((month) => {
+    const bucket = monthly[month];
+    bucket.gmvPlanGross = roundMoney(bucket.gmvPlanGross);
+    bucket.adsPlanGross = roundMoney(bucket.adsPlanGross);
+    bucket.gmvPlanOur = roundMoney(bucket.gmvPlanOur);
+    bucket.adsPlanOur = roundMoney(bucket.adsPlanOur);
+    bucket.adsPlanRate = bucket.gmvPlanOur > 0 ? bucket.adsPlanOur / bucket.gmvPlanOur : null;
+  });
+
+  daily.sort((left, right) => left.date.localeCompare(right.date));
+  return {
+    status: daily.length ? 'loaded' : 'empty',
+    sourceWorkbook: path.basename(workbookPath),
+    sourcePath: workbookPath,
+    sourceSheet: sheetName || '',
+    share: WB_IU_SMART_SHARE,
+    rows: daily.length,
+    from: daily[0]?.date || '',
+    to: daily[daily.length - 1]?.date || '',
+    daily,
+    monthly
+  };
+}
+
 function buildPayload(workbookPath, args = {}) {
   const wb = XLSX.readFile(workbookPath);
   const sheetName = selectPlanSheet(wb.SheetNames);
@@ -262,13 +404,15 @@ function buildPayload(workbookPath, args = {}) {
     generatedAt: new Date().toISOString(),
     sourceWorkbook: path.basename(workbookPath),
     sourceSheet: sheetName,
+    planYear: year,
     ozonSourceWorkbook: smartSaleOzonPlan?.sourceWorkbook || '',
     ozonSourceSheet: smartSaleOzonPlan?.sourceSheet || '',
-    planYear: year,
-    note: 'IU WB plan comes from the plan workbook. Ozon GMV DR and AR rate come from the Smart-Sale IU plan when available.',
+    note: 'IU WB plan comes from the plan workbook. Ozon GMV DR and AR rate come from the Smart-Sale IU plan when available. WB daily plan is parsed from the IU WB daily workbook and multiplied by the Smart-Sale 40% share.',
     assumptions: {
-      ozonIuAdsRate
+      ozonIuAdsRate,
+      wbIuOurShare: WB_IU_SMART_SHARE
     },
+    wbDailyPlan: buildWbDailyPlan(),
     months
   };
 }

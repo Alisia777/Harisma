@@ -781,10 +781,47 @@ function detectTaskPlatform(task, sku) {
   return 'all';
 }
 
+function normalizeOwnerAssignmentTaskText(task, type) {
+  const autoCode = String(task?.autoCode || '').trim();
+  let title = String(task?.title || 'Задача без названия').trim();
+  let nextAction = String(task?.nextAction || '').trim();
+  let reason = String(task?.reason || '').trim();
+  const isOwnerAssignment = type === 'assignment' && (
+    autoCode.toLowerCase() === 'kz_owner'
+    || /^КЗ\s*:\s*назначить owner/i.test(title)
+    || /weekly\s*KZ/i.test(nextAction)
+  );
+  if (!isOwnerAssignment) return { title, nextAction, reason, autoCode };
+
+  title = title.replace(/^КЗ\s*:\s*/i, '').trim();
+  if (/^назначить owner/i.test(title)) title = 'Назначить owner по SKU';
+  nextAction = nextAction
+    .replace(/weekly\s*KZ-разбор[а-яё]*/gi, 'регулярный разбор')
+    .replace(/weekly\s*KZ/gi, 'регулярный разбор')
+    .replace(/KZ-воронк[а-яё]*/gi, 'воронке')
+    .replace(/\bKZ\b/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  if (!nextAction) nextAction = 'Закрепить владельца карточки и ответственного за регулярный разбор, чтобы сигналы не висели без ответа.';
+  reason = reason
+    .replace(/KZ-воронк[а-яё]*/gi, 'воронке')
+    .replace(/\bKZ\b/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  return {
+    title,
+    nextAction,
+    reason,
+    autoCode: autoCode.toLowerCase() === 'kz_owner' ? 'owner_assignment' : autoCode
+  };
+}
+
 function normalizeTask(task, sourceHint = 'manual') {
   const sku = task?.articleKey ? getSku(task.articleKey) : null;
-  const title = task?.title || 'Задача без названия';
-  const type = task?.type || inferTaskType(`${title} ${task?.nextAction || ''}`);
+  const rawTitle = task?.title || 'Задача без названия';
+  const type = task?.type || inferTaskType(`${rawTitle} ${task?.nextAction || ''}`);
+  const normalizedText = normalizeOwnerAssignmentTaskText(task, type);
+  const title = normalizedText.title;
   const priority = task?.priority || (type === 'price_margin' ? 'critical' : type === 'assignment' ? 'high' : 'medium');
   const createdAt = task?.createdAt || new Date().toISOString();
   return {
@@ -792,8 +829,8 @@ function normalizeTask(task, sourceHint = 'manual') {
     source: task?.source || sourceHint,
     articleKey: task?.articleKey || '',
     title,
-    nextAction: task?.nextAction || '',
-    reason: task?.reason || '',
+    nextAction: normalizedText.nextAction,
+    reason: normalizedText.reason,
     owner: canonicalOwnerName(task?.owner || ownerName(sku) || ''),
     due: task?.due || plusDays(type === 'assignment' ? 1 : 3),
     status: mapTaskStatus(task?.status),
@@ -802,7 +839,7 @@ function normalizeTask(task, sourceHint = 'manual') {
     platform: detectTaskPlatform(task, sku),
     createdAt,
     entityLabel: task?.entityLabel || sku?.name || title,
-    autoCode: task?.autoCode || ''
+    autoCode: normalizedText.autoCode || ''
   };
 }
 
@@ -1107,9 +1144,9 @@ function buildAutoTasks() {
           platform,
           item: leaderboardItem,
           alerts: assignmentAlerts,
-          autoCode: 'kz_owner',
-          title: 'КЗ: назначить owner по SKU',
-          nextAction: 'Закрепить владельца карточки и weekly KZ-разбора, чтобы сигналы по воронке не висели без ответа.',
+          autoCode: 'owner_assignment',
+          title: 'Назначить owner по SKU',
+          nextAction: 'Закрепить владельца карточки и ответственного за регулярный разбор, чтобы сигналы по воронке не висели без ответа.',
           type: 'assignment'
         }));
       }

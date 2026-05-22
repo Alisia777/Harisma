@@ -136,6 +136,25 @@ function Invoke-NodeStep {
   }
 }
 
+function Invoke-PowerShellStep {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$StepName,
+    [Parameter(Mandatory = $true)]
+    [string]$ScriptPath,
+    [hashtable]$Parameters = @{}
+  )
+
+  Write-Output "[sync] $StepName started"
+  $global:LASTEXITCODE = 0
+  & $ScriptPath @Parameters 2>&1 | ForEach-Object { Write-Output ([string]$_) }
+  $exitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
+  if ($exitCode -ne 0) {
+    throw "$StepName failed with exit code $exitCode"
+  }
+  Write-Output "[sync] $StepName completed"
+}
+
 function Set-ProcessEnvFallback {
   param(
     [Parameter(Mandatory = $true)]
@@ -163,6 +182,121 @@ function Set-ProcessEnvFallback {
 
 $resolvedOutputDir = if ($OutputDir) { $OutputDir } else { ".altea-google-sheet-sync-output" }
 New-Item -ItemType Directory -Path $resolvedOutputDir -Force | Out-Null
+$script:retrySteps = @()
+
+function Add-RetryStep {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Id,
+    [Parameter(Mandatory = $true)]
+    [string]$Name,
+    [string]$Message = ""
+  )
+
+  if ($script:retrySteps | Where-Object { $_.id -eq $Id }) {
+    return
+  }
+
+  $script:retrySteps += [ordered]@{
+    id = $Id
+    name = $Name
+    message = $Message
+    failedAt = (Get-Date).ToString("o")
+  }
+}
+
+function Schedule-FailedStepRetry {
+  if ($DryRun -or -not $script:retrySteps.Count) {
+    return
+  }
+
+  $retryScript = Join-Path $PSScriptRoot "portal-google-sheet-retry-failed.ps1"
+  if (-not (Test-Path -LiteralPath $retryScript)) {
+    Write-Warning "[sync] failed-step retry script is missing: $retryScript"
+    return
+  }
+
+  $retryDir = Join-Path $resolvedOutputDir "retry"
+  New-Item -ItemType Directory -Path $retryDir -Force | Out-Null
+  $runStamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+  $retryAfter = (Get-Date).AddHours(2)
+  $manifestPath = Join-Path $retryDir "failed-steps-$runStamp.json"
+  $taskName = "Portal Failed Step Retry $runStamp"
+  $manifest = [ordered]@{
+    schema = "portal-failed-step-retry-v1"
+    generatedAt = (Get-Date).ToString("o")
+    retryAfter = $retryAfter.ToString("o")
+    retryDelayHours = 2
+    cwd = $repoRoot
+    outputDir = $resolvedOutputDir
+    profileDir = $ProfileDir
+    inputXlsx = $InputXlsx
+    steps = $script:retrySteps
+  }
+  $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath -Encoding UTF8
+
+  $actionArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$retryScript`" -Manifest `"$manifestPath`" -LogDir `"$resolvedOutputDir`" -TaskName `"$taskName`""
+  $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $actionArgs -WorkingDirectory $repoRoot
+  $trigger = New-ScheduledTaskTrigger -Once -At $retryAfter
+  $principal = New-ScheduledTaskPrincipal -UserId ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType S4U -RunLevel Limited
+  $settings = New-ScheduledTaskSettingsSet `
+    -StartWhenAvailable `
+    -AllowStartIfOnBatteries `
+    -DontStopIfGoingOnBatteries `
+    -ExecutionTimeLimit (New-TimeSpan -Hours 4)
+
+  try {
+    $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Description "One-shot retry for failed non-blocking portal sync steps."
+    Register-ScheduledTask -TaskName $taskName -InputObject $task -Force -ErrorAction Stop | Out-Null
+    Write-Output "[sync] scheduled failed-step retry at $($retryAfter.ToString("yyyy-MM-dd HH:mm:ss")): $($script:retrySteps.id -join ', ')"
+    return
+  } catch {
+    Write-Warning "[sync] failed to register scheduled retry task: $($_.Exception.Message)"
+  }
+
+  try {
+    $delaySeconds = [Math]::Max(60, [int][Math]::Round(($retryAfter - (Get-Date)).TotalSeconds))
+    $command = "Start-Sleep -Seconds $delaySeconds; & `"$retryScript`" -Manifest `"$manifestPath`" -LogDir `"$resolvedOutputDir`""
+    $encoded = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($command))
+    Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -EncodedCommand $encoded" -WorkingDirectory $repoRoot -WindowStyle Hidden | Out-Null
+    Write-Output "[sync] scheduled failed-step retry via background sleeper at $($retryAfter.ToString("yyyy-MM-dd HH:mm:ss")): $($script:retrySteps.id -join ', ')"
+  } catch {
+    Write-Warning "[sync] failed to start fallback retry sleeper: $($_.Exception.Message)"
+    Write-Warning "[sync] failed-step retry manifest was still written: $manifestPath"
+  }
+}
+
+function Invoke-MinMaxImportIfAvailable {
+  param([string]$StageName)
+
+  $minMaxScript = Join-Path $PSScriptRoot "import-repricer-min-max.js"
+  $minMaxInputDir = Join-Path (Split-Path -Parent $repoRoot) "Мин Макс"
+  if (-not (Test-Path -LiteralPath $minMaxScript)) {
+    Write-Warning "[sync] repricer MIN/MAX import skipped ($StageName): script is missing: $minMaxScript"
+    return
+  }
+  if (-not (Test-Path -LiteralPath $minMaxInputDir)) {
+    Write-Warning "[sync] repricer MIN/MAX import skipped ($StageName): input dir is missing: $minMaxInputDir"
+    return
+  }
+
+  Write-Output "[sync] repricer MIN/MAX import ($StageName) started"
+  try {
+    Invoke-NodeStep -StepName "repricer MIN/MAX import ($StageName)" -Arguments @(
+      "scripts/import-repricer-min-max.js",
+      "--input-dir",
+      $minMaxInputDir,
+      "--data-dir",
+      "data",
+      "--export-dir",
+      "exports"
+    ) -Attempts 1 -RetryDelaySeconds 10
+    Write-Output "[sync] repricer MIN/MAX import ($StageName) completed"
+  } catch {
+    Add-RetryStep -Id "repricer-minmax-$StageName" -Name "repricer MIN/MAX import ($StageName)" -Message ([string]$_.Exception.Message)
+    Write-Warning "[sync] repricer MIN/MAX import ($StageName) failed, continuing with existing price layers: $($_.Exception.Message)"
+  }
+}
 
 Write-Output "[sync] shared SKU alias snapshots pull started"
 try {
@@ -175,6 +309,7 @@ try {
   ) -Attempts 2 -RetryDelaySeconds 20
   Write-Output "[sync] shared SKU alias snapshots pull completed"
 } catch {
+  Add-RetryStep -Id "sku-alias-snapshots" -Name "shared SKU alias snapshots pull" -Message ([string]$_.Exception.Message)
   Write-Warning "[sync] shared SKU alias snapshots pull failed, continuing with local data files: $($_.Exception.Message)"
 }
 
@@ -242,6 +377,7 @@ try {
   ) -Attempts 1 -RetryDelaySeconds 20
   Write-Output "[sync] Yandex Market analytics refresh completed"
 } catch {
+  Add-RetryStep -Id "yandex-market" -Name "Yandex Market analytics refresh" -Message ([string]$_.Exception.Message)
   Write-Warning "[sync] Yandex Market analytics refresh failed, but the portal sync will continue: $($_.Exception.Message)"
 }
 
@@ -278,6 +414,7 @@ try {
   Invoke-NodeStep -StepName "extra marketplace merge" -Arguments $extraMarketplaceMergeArguments -Attempts 3 -RetryDelaySeconds 20
   Write-Output "[sync] extra marketplace merge completed"
 } catch {
+  Add-RetryStep -Id "extra-marketplace-merge" -Name "extra marketplace merge" -Message ([string]$_.Exception.Message)
   Write-Warning "[sync] extra marketplace merge failed, but the portal sync will continue: $($_.Exception.Message)"
 }
 
@@ -320,6 +457,7 @@ try {
   ) -Attempts 1 -RetryDelaySeconds 10
   Write-Output "[sync] WB owner distribution import completed"
 } catch {
+  Add-RetryStep -Id "wb-owner-distribution" -Name "WB owner distribution import" -Message ([string]$_.Exception.Message)
   Write-Warning "[sync] WB owner distribution import failed, continuing with owners from the main sheet: $($_.Exception.Message)"
 }
 
@@ -353,6 +491,8 @@ if ($ProfileDir) {
 
 $priceArguments += "--dry-run"
 
+Invoke-MinMaxImportIfAvailable -StageName "pre-price-build"
+
 Write-Output "[sync] smart_price_overlay build phase started"
 try {
   Invoke-NodeStep -StepName "smart_price_overlay build" -Arguments $priceArguments -Attempts 2 -RetryDelaySeconds 30
@@ -360,10 +500,13 @@ try {
   $priceRefreshSucceeded = $true
 } catch {
   $priceRefreshSucceeded = $false
+  Add-RetryStep -Id "smart-price" -Name "smart_price_overlay build" -Message ([string]$_.Exception.Message)
   Write-Warning "[sync] smart_price_overlay build failed, but the portal sync will continue: $($_.Exception.Message)"
 }
 
 if ($priceRefreshSucceeded) {
+  Invoke-MinMaxImportIfAvailable -StageName "post-price-build"
+
   $priceLayerFiles = @(
     "prices.json",
     "repricer.json",
@@ -398,6 +541,7 @@ try {
   Invoke-NodeStep -StepName "OOS control build" -Arguments $oosControlArguments -Attempts 2 -RetryDelaySeconds 20
   Write-Output "[sync] OOS control build completed"
 } catch {
+  Add-RetryStep -Id "oos-control" -Name "OOS control build" -Message ([string]$_.Exception.Message)
   Write-Warning "[sync] OOS control build failed, but the portal sync will continue: $($_.Exception.Message)"
 }
 
@@ -420,6 +564,7 @@ Write-Output "[sync] product leaderboard sync started"
 & $kzSyncScript @kzParams
 $kzExitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
 if ($kzExitCode -ne 0) {
+  Add-RetryStep -Id "product-leaderboard" -Name "product leaderboard sync" -Message "exit code $kzExitCode"
   Write-Warning "[sync] product leaderboard sync failed with exit code $kzExitCode. Continuing portal sync without leaderboard refresh."
 } else {
   Write-Output "[sync] product leaderboard sync completed"
@@ -486,6 +631,7 @@ try {
   $wbAdsRefreshSucceeded = $true
   Write-Output "[sync] WB ads build phase completed"
 } catch {
+  Add-RetryStep -Id "wb-ads" -Name "WB ads build" -Message ([string]$_.Exception.Message)
   Write-Warning "[sync] WB ads build failed, but the portal sync will continue so price/repricer/order layers can still be uploaded: $($_.Exception.Message)"
 }
 
@@ -511,6 +657,7 @@ try {
   $iuDrrRefreshSucceeded = $true
   Write-Output "[sync] IU/DRR summary build phase completed"
 } catch {
+  Add-RetryStep -Id "iu-drr" -Name "IU/DRR summary build" -Message ([string]$_.Exception.Message)
   Write-Warning "[sync] IU/DRR summary build failed, but the portal sync will continue with the last usable summary if present: $($_.Exception.Message)"
 }
 
@@ -543,6 +690,7 @@ try {
   $wbFeedbackRefreshSucceeded = $true
   Write-Output "[sync] WB feedbacks/questions sync completed"
 } catch {
+  Add-RetryStep -Id "wb-feedbacks" -Name "WB feedbacks/questions sync" -Message ([string]$_.Exception.Message)
   Write-Warning "[sync] WB feedbacks/questions sync failed, but the portal sync will continue with the last usable feedback layer if present: $($_.Exception.Message)"
 }
 
@@ -553,6 +701,7 @@ if ($wbFeedbackRefreshSucceeded) {
     $iuDrrRefreshSucceeded = $true
     Write-Output "[sync] IU/DRR summary rebuild with WB feedbacks completed"
   } catch {
+    Add-RetryStep -Id "iu-drr-with-feedbacks" -Name "IU/DRR summary rebuild with WB feedbacks" -Message ([string]$_.Exception.Message)
     Write-Warning "[sync] IU/DRR summary rebuild with WB feedbacks failed, but the portal sync will continue with the last usable summary if present: $($_.Exception.Message)"
   }
 } else {
@@ -575,6 +724,7 @@ try {
   Invoke-NodeStep -StepName "data quality report build" -Arguments $dataQualityArguments -Attempts 2 -RetryDelaySeconds 20
   Write-Output "[sync] data quality report build completed"
 } catch {
+  Add-RetryStep -Id "data-quality" -Name "data quality report build" -Message ([string]$_.Exception.Message)
   Write-Warning "[sync] data quality report build failed, but the portal sync will continue: $($_.Exception.Message)"
 }
 
@@ -606,6 +756,7 @@ try {
   Invoke-NodeStep -StepName "SKU matrix build" -Arguments $skuMatrixArguments -Attempts 2 -RetryDelaySeconds 20
   Write-Output "[sync] SKU matrix build completed"
 } catch {
+  Add-RetryStep -Id "sku-matrix" -Name "SKU matrix build" -Message ([string]$_.Exception.Message)
   Write-Warning "[sync] SKU matrix build failed, but the portal sync will continue: $($_.Exception.Message)"
 }
 
@@ -623,6 +774,23 @@ $syncHealthArguments = @(
 Write-Output "[sync] sync health build started"
 Invoke-NodeStep -StepName "sync health build" -Arguments $syncHealthArguments -Attempts 1 -RetryDelaySeconds 10
 Write-Output "[sync] sync health build completed"
+
+$layerAuditArguments = @(
+  "scripts/portal-layer-audit.js",
+  "--input-dir",
+  $resolvedOutputDir,
+  "--base-data-dir",
+  "data",
+  "--output-dir",
+  $resolvedOutputDir,
+  "--manifest",
+  "scripts/portal-layer-manifest.json",
+  "--mirror-local-fallback"
+)
+
+Write-Output "[sync] portal layer audit started"
+Invoke-NodeStep -StepName "portal layer audit" -Arguments $layerAuditArguments -Attempts 1 -RetryDelaySeconds 10
+Write-Output "[sync] portal layer audit completed"
 
 $metaPath = Join-Path $resolvedOutputDir "meta.json"
 if (Test-Path -LiteralPath $metaPath) {
@@ -652,6 +820,17 @@ if (Test-Path -LiteralPath $syncHealthPath) {
   Write-Output "[sync] health status: $($syncHealth.status); publish allowed: $publishAllowed"
 }
 
+$layerAuditPath = Join-Path $resolvedOutputDir "portal_layer_freshness.json"
+if (Test-Path -LiteralPath $layerAuditPath) {
+  $layerAudit = Get-Content -LiteralPath $layerAuditPath -Raw | ConvertFrom-Json
+  $layerPublishAllowed = [bool]$layerAudit.publish.allowed
+  if (-not $layerPublishAllowed) {
+    $publishAllowed = $false
+    $publishBlockReasons += @($layerAudit.publish.blockingReasons)
+  }
+  Write-Output "[sync] layer audit publish allowed: $layerPublishAllowed"
+}
+
 if ($DryRun) {
   Remove-SyncLock
   exit 0
@@ -660,9 +839,15 @@ if ($DryRun) {
 if (-not $publishAllowed) {
   Write-Warning "[sync] publish blocked by sync health. Main snapshots and logistics upload will be skipped."
   $publishBlockReasons | ForEach-Object { Write-Warning "[sync] block reason: $_" }
+  if (-not $script:retrySteps.Count) {
+    Add-RetryStep -Id "full-sync" -Name "full portal sync retry after health block" -Message (($publishBlockReasons | Where-Object { $_ }) -join "; ")
+  }
   $healthSnapshots = @("portal_sync_health")
   if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_data_quarantine.json")) {
     $healthSnapshots += "portal_data_quarantine"
+  }
+  if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_layer_freshness.json")) {
+    $healthSnapshots += "portal_layer_freshness"
   }
   Invoke-NodeStep -StepName "sync health upload" -Arguments @(
     "scripts/portal-google-sheet-upload.js",
@@ -671,6 +856,7 @@ if (-not $publishAllowed) {
     "--snapshot",
     (($healthSnapshots | Select-Object -Unique) -join ",")
   )
+  Schedule-FailedStepRetry
   Remove-SyncLock
   exit 0
 }
@@ -729,6 +915,10 @@ if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_sync_health.jso
   $snapshotNames += "portal_sync_health"
 }
 
+if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "portal_layer_freshness.json")) {
+  $snapshotNames += "portal_layer_freshness"
+}
+
 if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "sku_aliases.json")) {
   $snapshotNames += "sku_aliases"
 }
@@ -778,5 +968,18 @@ Invoke-NodeStep -StepName "sync health final upload" -Arguments @(
   "portal_sync_health"
 )
 
+Write-Output "[sync] static data publish started"
+try {
+  Invoke-PowerShellStep -StepName "static data publish" -ScriptPath (Join-Path $PSScriptRoot "portal-static-data-publish.ps1") -Parameters @{
+    SourceDir = $resolvedOutputDir
+    DeployDir = ".codex-harisma-git"
+  }
+  Write-Output "[sync] static data publish completed"
+} catch {
+  Add-RetryStep -Id "static-data-publish" -Name "static portal data publish" -Message ([string]$_.Exception.Message)
+  Write-Warning "[sync] static data publish failed, but retry will be scheduled: $($_.Exception.Message)"
+}
+
 Write-Output "[sync] full portal sync completed"
+Schedule-FailedStepRetry
 Remove-SyncLock

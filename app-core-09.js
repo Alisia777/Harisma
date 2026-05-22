@@ -1424,15 +1424,16 @@ function injectOrderProcurementStyles() {
     }
 
     .altea-order-procurement__field--platform {
-      min-width: 206px;
+      min-width: 188px;
     }
 
     .altea-order-procurement__platforms {
       display: grid;
       grid-template-columns: repeat(3, minmax(48px, 1fr));
-      gap: 8px;
+      gap: 7px;
       align-items: stretch;
-      width: min(100%, 224px);
+      width: min(100%, 188px);
+      max-width: 188px;
     }
 
     .altea-order-procurement__platform-btn {
@@ -1442,7 +1443,7 @@ function injectOrderProcurementStyles() {
       min-height: 40px;
       align-items: center;
       justify-content: center;
-      padding: 0 12px;
+      padding: 0 10px;
       border-radius: 999px;
       border: 1px solid rgba(var(--order-platform-rgb), 0.30);
       background:

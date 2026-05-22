@@ -796,6 +796,7 @@ function normalizeOwnerAssignmentTaskText(task, type) {
   title = title.replace(/^КЗ\s*:\s*/i, '').trim();
   if (/^назначить owner/i.test(title)) title = 'Назначить owner по SKU';
   nextAction = nextAction
+    .replace(/владельца карточки и weekly\s*KZ-разбор[а-яё]*/gi, 'владельца карточки и ответственного за регулярный разбор')
     .replace(/weekly\s*KZ-разбор[а-яё]*/gi, 'регулярный разбор')
     .replace(/weekly\s*KZ/gi, 'регулярный разбор')
     .replace(/KZ-воронк[а-яё]*/gi, 'воронке')

@@ -3,6 +3,7 @@
   window.__ALTEA_TASK_WORKFLOW_RESILIENT_20260521__ = true;
 
   const RETRY_DELAYS = [3000, 10000, 30000, 60000, 120000];
+  const PENDING_KEY = 'altea_task_workflow_pending_v1';
 
   function appState() {
     try {
@@ -25,6 +26,83 @@
     }
   }
 
+  function readPending() {
+    try {
+      const parsed = JSON.parse(window.localStorage?.getItem(PENDING_KEY) || '{}');
+      return {
+        tasks: parsed && typeof parsed.tasks === 'object' && parsed.tasks ? parsed.tasks : {},
+        comments: parsed && typeof parsed.comments === 'object' && parsed.comments ? parsed.comments : {}
+      };
+    } catch {
+      return { tasks: {}, comments: {} };
+    }
+  }
+
+  function writePending(pending) {
+    try {
+      window.localStorage?.setItem(PENDING_KEY, JSON.stringify({
+        tasks: pending?.tasks || {},
+        comments: pending?.comments || {}
+      }));
+    } catch (error) {
+      console.error('[task-workflow-resilient] pending save', error);
+    }
+  }
+
+  function pendingBucket(kind) {
+    return kind === 'comment' ? 'comments' : 'tasks';
+  }
+
+  function rememberPending(kind, item) {
+    const id = String(item?.id || '').trim();
+    if (!id) return;
+    const pending = readPending();
+    pending[pendingBucket(kind)][id] = { ...item };
+    writePending(pending);
+  }
+
+  function forgetPending(kind, id) {
+    const key = String(id || '').trim();
+    if (!key) return;
+    const pending = readPending();
+    delete pending[pendingBucket(kind)][key];
+    writePending(pending);
+  }
+
+  function applyPendingWorkflow() {
+    const app = appState();
+    if (!app?.storage) return false;
+    const pending = readPending();
+    let changed = false;
+
+    app.storage.tasks = Array.isArray(app.storage.tasks) ? app.storage.tasks : [];
+    Object.values(pending.tasks || {}).forEach((task) => {
+      if (!task?.id) return;
+      const index = app.storage.tasks.findIndex((item) => String(item?.id || '') === String(task.id));
+      if (index >= 0) Object.assign(app.storage.tasks[index], task);
+      else app.storage.tasks.unshift({ ...task });
+      changed = true;
+    });
+
+    app.storage.comments = Array.isArray(app.storage.comments) ? app.storage.comments : [];
+    Object.values(pending.comments || {}).forEach((comment) => {
+      if (!comment?.id) return;
+      const exists = app.storage.comments.some((item) => String(item?.id || '') === String(comment.id));
+      if (!exists) {
+        app.storage.comments.push({ ...comment });
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      try {
+        if (typeof window.invalidateControlTaskCache === 'function') window.invalidateControlTaskCache();
+      } catch {}
+      saveNow();
+    }
+    return changed;
+  }
+
   function schedulePersist(kind, item, attempt = 0) {
     const fn = kind === 'comment'
       ? (window.persistComment || (typeof persistComment === 'function' ? persistComment : null))
@@ -32,11 +110,32 @@
     if (typeof fn !== 'function' || !item) return;
     Promise.resolve()
       .then(() => fn(item))
+      .then(() => forgetPending(kind, item.id))
       .catch((error) => {
         console.error(`[task-workflow-resilient] ${kind} persist`, error);
         const delay = RETRY_DELAYS[attempt];
         if (delay) window.setTimeout(() => schedulePersist(kind, item, attempt + 1), delay);
       });
+  }
+
+  function flushPendingWorkflow() {
+    const pending = readPending();
+    Object.values(pending.tasks || {}).forEach((task) => schedulePersist('task', task));
+    Object.values(pending.comments || {}).forEach((comment) => schedulePersist('comment', comment));
+  }
+
+  function wrapPullRemoteState() {
+    const original = window.pullRemoteState || (typeof pullRemoteState === 'function' ? pullRemoteState : null);
+    if (typeof original !== 'function' || original.__taskWorkflowPendingWrapped) return;
+    const wrapped = async function pullRemoteStateWithWorkflowPending(...args) {
+      const result = await original.apply(this, args);
+      applyPendingWorkflow();
+      return result;
+    };
+    wrapped.__taskWorkflowPendingWrapped = true;
+    wrapped.__taskWorkflowPendingOriginal = original;
+    window.pullRemoteState = wrapped;
+    try { pullRemoteState = wrapped; } catch {}
   }
 
   function getTaskFromAnyLayer(taskId) {
@@ -81,6 +180,7 @@
     try {
       if (typeof window.invalidateControlTaskCache === 'function') window.invalidateControlTaskCache();
     } catch {}
+    rememberPending('task', task);
     saveNow();
     schedulePersist('task', task);
     try {
@@ -115,6 +215,7 @@
       createdAt: new Date().toISOString()
     };
     app.storage.comments.unshift(comment);
+    rememberPending('comment', comment);
     saveNow();
     schedulePersist('comment', comment);
   }
@@ -247,6 +348,11 @@
       window.alert(error?.message || 'Task was saved locally, but the shared layer needs a retry.');
     });
   }, true);
+
+  applyPendingWorkflow();
+  flushPendingWorkflow();
+  wrapPullRemoteState();
+  window.setTimeout(wrapPullRemoteState, 1000);
 
   try { submitTaskForRopApproval = window.submitTaskForRopApproval; } catch {}
   try { approveTaskByRop = window.approveTaskByRop; } catch {}

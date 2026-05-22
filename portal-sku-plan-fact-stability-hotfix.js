@@ -18,8 +18,22 @@
     return window.SKU_PLAN_FACT_PLATFORM_LABELS?.[platform] || String(platform || '').toUpperCase();
   }
 
+  function visiblePlanFactPlatforms(current = filters()) {
+    const all = planFactPlatforms();
+    const selected = String(current.platform || 'all').trim();
+    return selected && selected !== 'all' && all.includes(selected) ? [selected] : all;
+  }
+
+  function normalizeVisibleSort(current, visiblePlatforms) {
+    if (!current || !Array.isArray(visiblePlatforms) || !visiblePlatforms.length) return;
+    if (planFactPlatforms().includes(current.sort) && !visiblePlatforms.includes(current.sort)) {
+      current.sort = visiblePlatforms[0] || 'gap';
+      current.sortDir = defaultSortDir(current.sort);
+    }
+  }
+
   function sortKeys() {
-    return ['article', 'owner', ...planFactPlatforms(), 'gap', 'avgCheck', 'turnover', 'ad'];
+    return ['article', 'owner', ...visiblePlanFactPlatforms(), 'gap', 'avgCheck', 'turnover', 'ad'];
   }
 
   function appState() {
@@ -83,7 +97,7 @@
     return skuPlanFactBuildModel();
   }
 
-  function valueForSort(row, key) {
+  function valueForSort(row, key, visiblePlatforms = visiblePlanFactPlatforms()) {
     if (key === 'article') return row.article || row.articleKey || '';
     if (key === 'owner') return row.owner || '';
     if (key === 'completion') return row.completionToDate;
@@ -93,7 +107,7 @@
     if (planFactPlatforms().includes(key)) return row.platforms?.[key]?.factRevenue ?? row[key]?.factRevenue;
     if (key === 'avgCheck') return row.factUnits > 0 ? row.factRevenue / row.factUnits : null;
     if (key === 'turnover') {
-      const values = planFactPlatforms()
+      const values = visiblePlatforms
         .map((platform) => row.platforms?.[platform]?.turnoverDays ?? row[platform]?.turnoverDays)
         .filter((value) => Number.isFinite(Number(value)));
       return values.length ? values.reduce((sum, value) => sum + Number(value), 0) / values.length : null;
@@ -114,14 +128,50 @@
     return String(leftValue).localeCompare(String(rightValue), 'ru', { numeric: true, sensitivity: 'base' });
   }
 
-  function sortRows(rows) {
+  function sortRows(rows, visiblePlatforms = visiblePlanFactPlatforms()) {
     const current = filters();
+    normalizeVisibleSort(current, visiblePlatforms);
     const sort = current.sort || 'gap';
     const direction = current.sortDir || defaultSortDir(sort);
     return [...(rows || [])].sort((left, right) => {
-      const result = compareValues(valueForSort(left, sort), valueForSort(right, sort));
+      const result = compareValues(valueForSort(left, sort, visiblePlatforms), valueForSort(right, sort, visiblePlatforms));
       return direction === 'desc' ? -result : result;
     });
+  }
+
+  function num(value) {
+    return typeof numberOrZero === 'function' ? numberOrZero(value) : (Number(value) || 0);
+  }
+
+  function metricForPlatform(row, platform) {
+    return row?.platforms?.[platform] || row?.[platform] || null;
+  }
+
+  function projectRowForPlatforms(row, visiblePlatforms) {
+    if (!row || visiblePlatforms.length === planFactPlatforms().length) return row;
+    const metrics = visiblePlatforms.map((platform) => metricForPlatform(row, platform)).filter(Boolean);
+    const projected = { ...row };
+    projected.planRevenue = metrics.reduce((sum, metric) => sum + num(metric.planRevenue), 0);
+    projected.planToDateRevenue = metrics.reduce((sum, metric) => sum + num(metric.planToDateRevenue), 0);
+    projected.factRevenue = metrics.reduce((sum, metric) => sum + num(metric.factRevenue), 0);
+    projected.planUnits = metrics.reduce((sum, metric) => sum + num(metric.planUnits), 0);
+    projected.factUnits = metrics.reduce((sum, metric) => sum + num(metric.factUnits), 0);
+    projected.adSpend = metrics.reduce((sum, metric) => sum + num(metric.adSpend), 0);
+    projected.stock = metrics.reduce((sum, metric) => sum + num(metric.stock), 0);
+    const turnoverValues = metrics.map((metric) => metric.turnoverDays).filter((value) => Number.isFinite(Number(value)));
+    projected.turnoverDays = turnoverValues.length
+      ? turnoverValues.reduce((sum, value) => sum + Number(value), 0) / turnoverValues.length
+      : null;
+    projected.completionToDate = projected.planToDateRevenue > 0 ? projected.factRevenue / projected.planToDateRevenue : null;
+    projected.completionMonth = projected.planRevenue > 0 ? projected.factRevenue / projected.planRevenue : null;
+    projected.gapToDate = projected.factRevenue - projected.planToDateRevenue;
+    projected.factAvgCheck = projected.factUnits > 0 ? projected.factRevenue / projected.factUnits : null;
+    projected.drr = projected.factRevenue > 0 ? projected.adSpend / projected.factRevenue : null;
+    return projected;
+  }
+
+  function projectRowsForPlatforms(rows, visiblePlatforms) {
+    return (rows || []).map((row) => projectRowForPlatforms(row, visiblePlatforms));
   }
 
   function kpiHtml(label, value, hint, tone) {
@@ -135,14 +185,125 @@
     `;
   }
 
+  function stableSortHeaderHtml(key, label) {
+    const current = filters();
+    const active = current.sort === key;
+    const mark = active ? (current.sortDir === 'asc' ? '↑' : '↓') : '';
+    const ariaSort = active ? (current.sortDir === 'asc' ? 'ascending' : 'descending') : 'none';
+    return `
+      <th class="${active ? 'is-sorted' : ''}" aria-sort="${ariaSort}">
+        <button class="table-sort-btn" type="button" data-sku-stable-sort="${escapeHtml(key)}">
+          <span>${escapeHtml(label)}</span><span class="sort-mark">${mark}</span>
+        </button>
+      </th>
+    `;
+  }
+
+  function bindHeaderSort(host) {
+    host.querySelectorAll('[data-sku-stable-sort]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const current = filters();
+        const key = button.dataset.skuStableSort;
+        if (current.sort === key) current.sortDir = current.sortDir === 'asc' ? 'desc' : 'asc';
+        else {
+          current.sort = key;
+          current.sortDir = defaultSortDir(key);
+        }
+        renderStableBody();
+      });
+    });
+  }
+
+  function renderTableHeader(host, visiblePlatforms) {
+    const header = host?.querySelector?.('.sku-plan-fact-table thead tr');
+    if (!header) return;
+    header.innerHTML = [
+      stableSortHeaderHtml('article', 'SKU'),
+      stableSortHeaderHtml('owner', 'Owner'),
+      ...visiblePlatforms.map((platform) => stableSortHeaderHtml(platform, `${planFactPlatformLabel(platform)} факт / план`)),
+      stableSortHeaderHtml('gap', 'Итого'),
+      stableSortHeaderHtml('avgCheck', 'Средний чек'),
+      stableSortHeaderHtml('turnover', 'Оборачиваемость'),
+      stableSortHeaderHtml('ad', 'Реклама / ДРР')
+    ].join('');
+    bindHeaderSort(host);
+  }
+
+  function platformAvgCheckLines(row, visiblePlatforms) {
+    return visiblePlatforms.map((platform) => {
+      const metric = metricForPlatform(row, platform);
+      const label = planFactPlatformLabel(platform);
+      return `
+        <div>${escapeHtml(label)}: <strong>${fmt.money(metric?.factAvgCheck)}</strong> <span class="muted small">план ${fmt.money(metric?.planAvgCheck)}</span></div>
+      `;
+    }).join('');
+  }
+
+  function platformTurnoverLines(row, visiblePlatforms) {
+    return visiblePlatforms.map((platform) => {
+      const metric = metricForPlatform(row, platform);
+      const label = planFactPlatformLabel(platform);
+      return `
+        <div>${escapeHtml(label)}: <strong>${fmt.num(metric?.turnoverDays, 1)}</strong> дн. <span class="muted small">${fmt.int(metric?.stock)} шт.</span></div>
+      `;
+    }).join('');
+  }
+
+  function platformAdLines(row, visiblePlatforms) {
+    return visiblePlatforms.map((platform) => {
+      const metric = metricForPlatform(row, platform);
+      return `${escapeHtml(planFactPlatformLabel(platform))} ${fmt.money(metric?.adSpend)}`;
+    }).join(' · ');
+  }
+
+  function stableRowHtml(row, model, visiblePlatforms) {
+    const totalTone = typeof skuPlanFactTone === 'function' ? skuPlanFactTone(row.completionToDate) : '';
+    const planDrrByPlatform = model.planDrrByPlatform || {};
+    const articleTitle = row.article || row.articleKey;
+    const problemMeta = row.matrixProblemMeta || (typeof skuMatrixProblemMeta === 'function' ? skuMatrixProblemMeta(row.matrixProblemState || 'ok') : null);
+    const problemBadge = problemMeta && row.matrixProblemState && row.matrixProblemState !== 'ok'
+      ? badge(problemMeta.label, problemMeta.tone || 'warn')
+      : '';
+    const articleHtml = row.syntheticUnmapped
+      ? `<strong>${escapeHtml(articleTitle)}</strong><div class="badge-stack" style="margin-top:6px">${badge(row.status || 'API SKU без пары', 'warn')}</div>`
+      : linkToSku(row.articleKey, articleTitle);
+    const openAttr = row.syntheticUnmapped ? '' : ` data-open-sku="${escapeHtml(row.articleKey)}"`;
+    const selectedPlanDrr = visiblePlatforms.length === 1
+      ? (planDrrByPlatform[visiblePlatforms[0]] ?? model.planDrrWb)
+      : model.planDrrWb;
+    const drrLabel = visiblePlatforms.length === 1 ? `ДРР ${planFactPlatformLabel(visiblePlatforms[0])}` : 'ДРР total';
+    return `
+      <tr class="sku-plan-fact-row ${row.syntheticUnmapped ? 'is-unmapped' : ''}"${openAttr}>
+        <td>${articleHtml}<div class="muted small">${escapeHtml(row.name)}</div></td>
+        <td><strong>${escapeHtml(row.owner)}</strong><div class="muted small">${escapeHtml(row.status)}</div>${problemBadge ? `<div class="badge-stack" style="margin-top:6px">${problemBadge}</div>` : ''}</td>
+        ${visiblePlatforms.map((platform) => `<td>${skuPlanFactPlatformCell(metricForPlatform(row, platform), planDrrByPlatform[platform] ?? null)}</td>`).join('')}
+        <td>
+          <strong>${fmt.money(row.factRevenue)}</strong>
+          <div class="muted small">план к дате ${fmt.money(row.planToDateRevenue)}</div>
+          <div class="badge-stack" style="margin-top:6px">${badge(fmt.pct(row.completionToDate), totalTone)}<span class="chip ${row.gapToDate < 0 ? 'danger' : 'ok'}">${fmt.money(row.gapToDate)}</span></div>
+        </td>
+        <td>${platformAvgCheckLines(row, visiblePlatforms)}</td>
+        <td>${platformTurnoverLines(row, visiblePlatforms)}</td>
+        <td>
+          <strong>${fmt.money(row.adSpend)}</strong>
+          <div class="muted small">${platformAdLines(row, visiblePlatforms)}</div>
+          <div class="${row.drr !== null && selectedPlanDrr !== null && row.drr > selectedPlanDrr ? 'danger-text' : ''}">${escapeHtml(drrLabel)} ${fmt.pct(row.drr)}</div>
+        </td>
+      </tr>
+    `;
+  }
+
   function renderStableBody() {
     const host = root();
     if (!host) return;
     const model = buildModel();
     if (!model) return;
     const current = filters();
-    const rows = sortRows(model.rows);
+    const visiblePlatforms = visiblePlanFactPlatforms(current);
+    normalizeVisibleSort(current, visiblePlatforms);
+    const rows = sortRows(projectRowsForPlatforms(model.rows, visiblePlatforms), visiblePlatforms);
     model.rows = rows;
+    model.visiblePlatforms = visiblePlatforms;
     const totals = rows.reduce((acc, row) => {
       acc.planRevenue += row.planRevenue || 0;
       acc.planToDateRevenue += row.planToDateRevenue || 0;
@@ -159,11 +320,12 @@
     totals.gapToDate = totals.factRevenue - totals.planToDateRevenue;
     totals.drr = totals.factRevenue > 0 ? totals.adSpend / totals.factRevenue : null;
 
+    renderTableHeader(host, visiblePlatforms);
     const body = host.querySelector('.sku-plan-fact-table tbody');
-    if (body && typeof skuPlanFactRowHtml === 'function') {
-      const tableColspan = 2 + planFactPlatforms().length + 4;
+    if (body) {
+      const tableColspan = 2 + visiblePlatforms.length + 4;
       body.innerHTML = rows.length
-        ? rows.map((row) => skuPlanFactRowHtml(row, model)).join('')
+        ? rows.map((row) => stableRowHtml(row, model, visiblePlatforms)).join('')
         : `<tr><td colspan="${tableColspan}"><div class="empty">По текущим фильтрам нет SKU.</div></td></tr>`;
     }
 
@@ -278,12 +440,10 @@
   }
 
   function ensureSortHeaders(host) {
-    const labels = ['SKU', 'Owner', ...planFactPlatforms().map((platform) => `${planFactPlatformLabel(platform)} факт / план`), 'Итого', 'Средний чек', 'Оборачиваемость', 'Реклама / ДРР'];
-    host.querySelectorAll('.sku-plan-fact-table thead th').forEach((th, index) => {
-      const key = sortKeys()[index];
-      if (!key || th.querySelector('[data-sku-stable-sort]')) return;
-      th.innerHTML = `<button class="table-sort-btn" type="button" data-sku-stable-sort="${key}"><span>${labels[index]}</span><span class="sort-mark"></span></button>`;
-    });
+    const current = filters();
+    const visiblePlatforms = visiblePlanFactPlatforms(current);
+    normalizeVisibleSort(current, visiblePlatforms);
+    renderTableHeader(host, visiblePlatforms);
     updateSortHeaders();
   }
 

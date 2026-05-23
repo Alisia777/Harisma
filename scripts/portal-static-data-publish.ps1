@@ -107,6 +107,25 @@ function Assert-LayerAuditAllowed {
   }
 }
 
+function Invoke-GitCommand {
+  param([string[]]$Arguments)
+
+  $previousErrorActionPreference = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    $global:LASTEXITCODE = 0
+    & $gitExe @Arguments 2>&1 | ForEach-Object {
+      Write-Output ([string]$_)
+    }
+    if ($null -eq $LASTEXITCODE) {
+      return 0
+    }
+    return [int]$LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+  }
+}
+
 $resolvedSourceDir = Resolve-RepoPath -PathValue $SourceDir -DefaultValue ".altea-google-sheet-sync-output"
 $resolvedDeployDir = Resolve-RepoPath -PathValue $DeployDir -DefaultValue ".codex-minmax-publish"
 $deployDataDir = Join-Path $resolvedDeployDir "data"
@@ -234,13 +253,13 @@ if ($copied.Count -eq 0) {
 }
 
 $relativePaths = $copied | ForEach-Object { "data/$($_)" } | Select-Object -Unique
-& $gitExe -C $resolvedDeployDir add -- $relativePaths
-if ($LASTEXITCODE -ne 0) {
+$gitAddArgs = @("-C", $resolvedDeployDir, "add", "--") + @($relativePaths)
+$gitExitCode = Invoke-GitCommand -Arguments $gitAddArgs
+if ($gitExitCode -ne 0) {
   throw "git add failed for static portal data."
 }
 
-& $gitExe -C $resolvedDeployDir diff --cached --quiet -- data
-$diffExit = $LASTEXITCODE
+$diffExit = Invoke-GitCommand -Arguments @("-C", $resolvedDeployDir, "diff", "--cached", "--quiet", "--", "data")
 if ($diffExit -eq 0) {
   Write-Output "[static-publish] copied files produced no staged git diff."
   [ordered]@{
@@ -268,14 +287,14 @@ $message = if ([string]::IsNullOrWhiteSpace($CommitMessage)) {
   $CommitMessage
 }
 
-& $gitExe -C $resolvedDeployDir commit -m $message
-if ($LASTEXITCODE -ne 0) {
+$gitExitCode = Invoke-GitCommand -Arguments @("-C", $resolvedDeployDir, "commit", "-m", $message)
+if ($gitExitCode -ne 0) {
   throw "git commit failed for static portal data."
 }
 
 if (-not $NoPush) {
-  & $gitExe -C $resolvedDeployDir push origin main
-  if ($LASTEXITCODE -ne 0) {
+  $gitExitCode = Invoke-GitCommand -Arguments @("-C", $resolvedDeployDir, "push", "origin", "main")
+  if ($gitExitCode -ne 0) {
     throw "git push failed for static portal data."
   }
 }

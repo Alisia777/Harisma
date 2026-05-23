@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-22T07:05:54.061Z",
+  "generatedAt": "2026-05-23T08:42:33.178Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
@@ -37,8 +37,8 @@
     "harly_ear_drops"
   ],
   "summary": {
-    "stockWarehouse": 305036,
-    "accepted": 2033870,
+    "stockWarehouse": 368578,
+    "accepted": 2097412,
     "shippedOzon": 526958,
     "shippedWB": 1201341
   },
@@ -111,8 +111,8 @@
     },
     {
       "articleKey": "curly_method_300ml",
-      "stockWarehouse": 7043,
-      "accepted": 78098,
+      "stockWarehouse": 15443,
+      "accepted": 86498,
       "shippedOzon": 16643,
       "shippedWB": 54412,
       "sourceKeys": [
@@ -188,8 +188,8 @@
     },
     {
       "articleKey": "gel_antiakne_20ml_v2",
-      "stockWarehouse": 714,
-      "accepted": 97394,
+      "stockWarehouse": 35992,
+      "accepted": 132672,
       "shippedOzon": 14683,
       "shippedWB": 81997,
       "sourceKeys": [
@@ -333,8 +333,8 @@
     },
     {
       "articleKey": "krem_dlya_ruk_75ml",
-      "stockWarehouse": 4851,
-      "accepted": 22556,
+      "stockWarehouse": 10056,
+      "accepted": 27761,
       "shippedOzon": 11229,
       "shippedWB": 6476,
       "sourceKeys": [
@@ -388,8 +388,8 @@
     },
     {
       "articleKey": "kremshelk_100ml",
-      "stockWarehouse": 10491,
-      "accepted": 53052,
+      "stockWarehouse": 16571,
+      "accepted": 59132,
       "shippedOzon": 4853,
       "shippedWB": 37708,
       "sourceKeys": [
@@ -399,8 +399,8 @@
     },
     {
       "articleKey": "krovavii_piling_30ml",
-      "stockWarehouse": 15126,
-      "accepted": 112210,
+      "stockWarehouse": 19026,
+      "accepted": 116110,
       "shippedOzon": 19869,
       "shippedWB": 77215,
       "sourceKeys": [
@@ -696,8 +696,8 @@
     },
     {
       "articleKey": "retinait_syvorotka_1_30ml",
-      "stockWarehouse": 14425,
-      "accepted": 58934,
+      "stockWarehouse": 17024,
+      "accepted": 61533,
       "shippedOzon": 5693,
       "shippedWB": 38816,
       "sourceKeys": [
@@ -839,8 +839,8 @@
     },
     {
       "articleKey": "syvorotka_dlya_lica_30ml_v2",
-      "stockWarehouse": 8484,
-      "accepted": 30194,
+      "stockWarehouse": 10564,
+      "accepted": 32274,
       "shippedOzon": 4518,
       "shippedWB": 17192,
       "sourceKeys": [

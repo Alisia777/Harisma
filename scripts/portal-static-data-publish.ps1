@@ -5,7 +5,10 @@ param(
   [string]$CommitMessage = "",
   [switch]$NoPush,
   [switch]$DryRun,
-  [switch]$ForceOlder
+  [switch]$ForceOlder,
+  [string]$LiveHealthUrl = "",
+  [int]$LiveVerifyAttempts = 1,
+  [int]$LiveVerifyDelaySeconds = 30
 )
 
 $ErrorActionPreference = "Stop"
@@ -107,23 +110,106 @@ function Assert-LayerAuditAllowed {
   }
 }
 
-function Invoke-GitCommand {
+function Invoke-GitCommandResult {
   param([string[]]$Arguments)
 
   $previousErrorActionPreference = $ErrorActionPreference
   $ErrorActionPreference = "Continue"
+  $output = New-Object System.Collections.Generic.List[string]
   try {
     $global:LASTEXITCODE = 0
     & $gitExe @Arguments 2>&1 | ForEach-Object {
-      Write-Output ([string]$_)
+      [void]$output.Add([string]$_)
     }
-    if ($null -eq $LASTEXITCODE) {
-      return 0
+    $exitCode = if ($null -eq $LASTEXITCODE) {
+      0
+    } else {
+      [int]$LASTEXITCODE
     }
-    return [int]$LASTEXITCODE
+    return [pscustomobject]@{
+      ExitCode = $exitCode
+      Output = [string[]]$output.ToArray()
+    }
   } finally {
     $ErrorActionPreference = $previousErrorActionPreference
   }
+}
+
+function Write-GitCommandOutput {
+  param([string[]]$Lines)
+
+  foreach ($line in @($Lines)) {
+    if (-not [string]::IsNullOrWhiteSpace($line)) {
+      Write-Host $line
+    }
+  }
+}
+
+function Invoke-GitCommand {
+  param([string[]]$Arguments)
+
+  $result = Invoke-GitCommandResult -Arguments $Arguments
+  Write-GitCommandOutput -Lines $result.Output
+  return [int]$result.ExitCode
+}
+
+function Invoke-StaticGitPush {
+  param([string]$Reason = "")
+
+  if ($NoPush) {
+    return
+  }
+
+  $reasonText = if ([string]::IsNullOrWhiteSpace($Reason)) { "static data" } else { $Reason }
+  Write-Output "[static-publish] git push origin main ($reasonText)."
+  $gitExitCode = Invoke-GitCommand -Arguments @("-C", $resolvedDeployDir, "push", "origin", "main")
+  if ($gitExitCode -ne 0) {
+    throw "git push failed for static portal data."
+  }
+  $script:StaticPushAttempted = $true
+}
+
+function Assert-LiveHealthFresh {
+  param([string]$ExpectedMaxDate)
+
+  if ($NoPush -or [string]::IsNullOrWhiteSpace($LiveHealthUrl) -or [string]::IsNullOrWhiteSpace($ExpectedMaxDate) -or $LiveVerifyAttempts -le 0) {
+    return
+  }
+
+  $delaySeconds = [Math]::Max(1, $LiveVerifyDelaySeconds)
+  $lastMessage = ""
+  for ($attempt = 1; $attempt -le $LiveVerifyAttempts; $attempt += 1) {
+    try {
+      $separator = if ($LiveHealthUrl.Contains("?")) { "&" } else { "?" }
+      $cacheBustUrl = "{0}{1}t={2}" -f $LiveHealthUrl, $separator, ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds())
+      $health = Invoke-RestMethod -Uri $cacheBustUrl -Method Get -TimeoutSec 25 -Headers @{ "Cache-Control" = "no-cache" }
+      $liveMaxDate = [string]$health.freshness.maxDate
+      $publishAllowed = [bool]$health.publish.allowed
+      $generatedAt = [string]$health.generatedAt
+      Write-Output "[static-publish] live health attempt $attempt/${LiveVerifyAttempts}: maxDate=$liveMaxDate; publishAllowed=$publishAllowed; expected=$ExpectedMaxDate"
+      if ($publishAllowed -and -not [string]::IsNullOrWhiteSpace($liveMaxDate) -and $liveMaxDate -ge $ExpectedMaxDate) {
+        $script:LiveHealthVerified = [ordered]@{
+          ok = $true
+          url = $LiveHealthUrl
+          maxDate = $liveMaxDate
+          expectedMaxDate = $ExpectedMaxDate
+          generatedAt = $generatedAt
+          attempts = $attempt
+        }
+        return
+      }
+      $lastMessage = "live maxDate '$liveMaxDate' is behind expected '$ExpectedMaxDate'"
+    } catch {
+      $lastMessage = [string]$_.Exception.Message
+      Write-Warning "[static-publish] live health attempt $attempt/$LiveVerifyAttempts failed: $lastMessage"
+    }
+
+    if ($attempt -lt $LiveVerifyAttempts) {
+      Start-Sleep -Seconds $delaySeconds
+    }
+  }
+
+  throw "Live portal did not reach static health maxDate $ExpectedMaxDate after $LiveVerifyAttempts attempts: $lastMessage"
 }
 
 $resolvedSourceDir = Resolve-RepoPath -PathValue $SourceDir -DefaultValue ".altea-google-sheet-sync-output"
@@ -131,6 +217,8 @@ $resolvedDeployDir = Resolve-RepoPath -PathValue $DeployDir -DefaultValue ".code
 $deployDataDir = Join-Path $resolvedDeployDir "data"
 $gitExe = Resolve-GitPath -RequestedGitPath $GitPath
 $manifestPath = Join-Path $repoRoot "scripts\portal-layer-manifest.json"
+$script:StaticPushAttempted = $false
+$script:LiveHealthVerified = $null
 
 if (-not (Test-Path -LiteralPath $resolvedSourceDir)) {
   throw "Source data dir not found: $resolvedSourceDir"
@@ -238,9 +326,12 @@ if ($DryRun) {
 
 if ($copied.Count -eq 0) {
   Write-Output "[static-publish] no static data changes to copy."
+  Invoke-StaticGitPush -Reason "no file changes; checking unpublished commits"
+  Assert-LiveHealthFresh -ExpectedMaxDate $healthMaxDate
   [ordered]@{
     ok = $true
     changed = $false
+    pushAttempted = $script:StaticPushAttempted
     sourceDir = $resolvedSourceDir
     deployDir = $resolvedDeployDir
     copied = $copied
@@ -248,6 +339,7 @@ if ($copied.Count -eq 0) {
     missing = $missing
     olderSkipped = $olderSkipped
     healthMaxDate = $healthMaxDate
+    liveHealth = $script:LiveHealthVerified
   } | ConvertTo-Json -Depth 8
   exit 0
 }
@@ -262,14 +354,18 @@ if ($gitExitCode -ne 0) {
 $diffExit = Invoke-GitCommand -Arguments @("-C", $resolvedDeployDir, "diff", "--cached", "--quiet", "--", "data")
 if ($diffExit -eq 0) {
   Write-Output "[static-publish] copied files produced no staged git diff."
+  Invoke-StaticGitPush -Reason "no staged diff; checking unpublished commits"
+  Assert-LiveHealthFresh -ExpectedMaxDate $healthMaxDate
   [ordered]@{
     ok = $true
     changed = $false
+    pushAttempted = $script:StaticPushAttempted
     copied = $copied
     skipped = $skipped
     missing = $missing
     olderSkipped = $olderSkipped
     healthMaxDate = $healthMaxDate
+    liveHealth = $script:LiveHealthVerified
   } | ConvertTo-Json -Depth 8
   exit 0
 }
@@ -292,17 +388,14 @@ if ($gitExitCode -ne 0) {
   throw "git commit failed for static portal data."
 }
 
-if (-not $NoPush) {
-  $gitExitCode = Invoke-GitCommand -Arguments @("-C", $resolvedDeployDir, "push", "origin", "main")
-  if ($gitExitCode -ne 0) {
-    throw "git push failed for static portal data."
-  }
-}
+Invoke-StaticGitPush -Reason "new static data commit"
+Assert-LiveHealthFresh -ExpectedMaxDate $healthMaxDate
 
 [ordered]@{
   ok = $true
   changed = $true
-  pushed = (-not $NoPush)
+  pushed = $script:StaticPushAttempted
+  pushAttempted = $script:StaticPushAttempted
   commitMessage = $message
   sourceDir = $resolvedSourceDir
   deployDir = $resolvedDeployDir
@@ -311,4 +404,5 @@ if (-not $NoPush) {
   missing = $missing
   olderSkipped = $olderSkipped
   healthMaxDate = $healthMaxDate
+  liveHealth = $script:LiveHealthVerified
 } | ConvertTo-Json -Depth 8

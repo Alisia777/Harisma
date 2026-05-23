@@ -2,7 +2,8 @@ param(
   [switch]$DryRun,
   [string]$InputXlsx = "",
   [string]$ProfileDir = "",
-  [string]$OutputDir = ""
+  [string]$OutputDir = "",
+  [string]$LiveHealthUrl = "https://xn--80aocfomk2b.xn--p1ai/data/portal_sync_health.json"
 )
 
 $ErrorActionPreference = "Stop"
@@ -973,6 +974,9 @@ try {
   Invoke-PowerShellStep -StepName "static data publish" -ScriptPath (Join-Path $PSScriptRoot "portal-static-data-publish.ps1") -Parameters @{
     SourceDir = $resolvedOutputDir
     DeployDir = ".codex-minmax-publish"
+    LiveHealthUrl = $LiveHealthUrl
+    LiveVerifyAttempts = 5
+    LiveVerifyDelaySeconds = 30
   }
   Write-Output "[sync] static data publish completed"
 } catch {

@@ -2,7 +2,8 @@ param(
   [Parameter(Mandatory = $true)]
   [string]$Manifest,
   [string]$LogDir = "",
-  [string]$TaskName = ""
+  [string]$TaskName = "",
+  [string]$LiveHealthUrl = "https://xn--80aocfomk2b.xn--p1ai/data/portal_sync_health.json"
 )
 
 $ErrorActionPreference = "Stop"
@@ -257,6 +258,9 @@ function Invoke-StaticDataPublish {
   Invoke-PowerShellStep -StepName "static data retry publish" -ScriptPath (Join-Path $PSScriptRoot "portal-static-data-publish.ps1") -Parameters @{
     SourceDir = $resolvedOutputDir
     DeployDir = ".codex-minmax-publish"
+    LiveHealthUrl = $LiveHealthUrl
+    LiveVerifyAttempts = 5
+    LiveVerifyDelaySeconds = 30
   }
 }
 
@@ -265,7 +269,7 @@ function Invoke-RetryStep {
 
   switch ($StepId) {
     "full-sync" {
-      $parameters = @{}
+      $parameters = @{ LiveHealthUrl = $LiveHealthUrl }
       if (-not [string]::IsNullOrWhiteSpace($profileDir)) {
         $parameters.ProfileDir = $profileDir
       }

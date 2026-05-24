@@ -9,6 +9,7 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $runnerPath = Join-Path $PSScriptRoot "portal-google-sheet-scheduled-run.ps1"
 $resolvedLogDir = if ($LogDir) { $LogDir } else { Join-Path $repoRoot ".altea-google-sheet-sync-output" }
+$syncLockPath = Join-Path $repoRoot ".portal-google-sheet-sync.lock"
 $today = Get-Date -Format "yyyy-MM-dd"
 $cutoff = [DateTime]::Today.Add([TimeSpan]::Parse($EarliestRun))
 
@@ -62,7 +63,45 @@ function Test-PortalDataFreshEnough {
     -and (Test-LiveHealthFreshEnough -Url $LiveHealthUrl)
 }
 
+function Test-SyncAlreadyRunning {
+  if (-not (Test-Path -LiteralPath $syncLockPath)) {
+    return $false
+  }
+
+  try {
+    $lockItem = Get-Item -LiteralPath $syncLockPath -ErrorAction Stop
+    $lockText = Get-Content -LiteralPath $syncLockPath -Raw -ErrorAction Stop
+    $lockPayload = $null
+    if (-not [string]::IsNullOrWhiteSpace($lockText)) {
+      $lockPayload = $lockText | ConvertFrom-Json
+    }
+
+    $lockPid = 0
+    if ($lockPayload -and $lockPayload.pid) {
+      $lockPid = [int]$lockPayload.pid
+    }
+    if ($lockPid -le 0) {
+      return $false
+    }
+
+    $lockProcess = Get-Process -Id $lockPid -ErrorAction SilentlyContinue
+    $lockAgeHours = ((Get-Date) - $lockItem.LastWriteTime).TotalHours
+    if ($lockProcess -and $lockAgeHours -lt 6) {
+      Write-Output "[catchup] portal sync is already running; pid=$lockPid, lockAgeHours=$([math]::Round($lockAgeHours, 2))."
+      return $true
+    }
+  } catch {
+    return $false
+  }
+
+  return $false
+}
+
 if (Test-PortalDataFreshEnough) {
+  exit 0
+}
+
+if (Test-SyncAlreadyRunning) {
   exit 0
 }
 

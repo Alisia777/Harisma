@@ -36,6 +36,13 @@ function renderSkuModal(articleKey) {
   const lifecycleReason = currentLifecycle.note || currentLifecycle.reason || currentLifecycle.description || '';
   const ownerSelectOptions = [...new Set([currentOwner, ...owners].filter(Boolean))]
     .sort((a, b) => a.localeCompare(b, 'ru'));
+  const ownerRoleOptions = ['Owner SKU', 'price owner', 'WB owner', 'Ozon owner', 'Я.Маркет owner', 'Supply owner', 'Контент owner', 'Трафик owner', 'Репрайсер owner'];
+  const productStatusLabels = new Set(['Актуально', 'На вывод', 'Новинка', 'Под вопросом']);
+  const savedOwnerRole = String(currentOwnerOverride.ownerRole || '').trim();
+  const currentOwnerRole = savedOwnerRole && !productStatusLabels.has(savedOwnerRole)
+    ? savedOwnerRole
+    : (sku?.owner?.name ? 'Owner SKU' : '');
+  const ownerRoleSelectOptions = [...new Set([currentOwnerRole, ...ownerRoleOptions].filter(Boolean))];
   const completion = currentCompletionSnapshot(sku);
   const currentPlanUnits = firstFiniteValue(sku?.planFact?.planApr26Units);
   const currentFactUnits = firstFiniteValue(
@@ -137,7 +144,9 @@ function renderSkuModal(articleKey) {
         <datalist id="skuOwnerList">${ownerSelectOptions.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
         <form id="ownerForm" class="form-grid compact">
           <input name="ownerName" list="skuOwnerList" autocomplete="off" spellcheck="false" placeholder="Кто owner" value="${escapeHtml(currentOwner || '')}">
-          <input name="ownerRole" autocomplete="off" spellcheck="false" placeholder="Роль / зона" value="${escapeHtml(currentOwnerOverride.ownerRole || (sku?.owner?.name ? (sku?.owner?.registryStatus || 'Owner SKU') : (sku?.owner?.registryStatus || '')))}">
+          <select name="ownerRole">
+            ${ownerRoleSelectOptions.map((role) => `<option value="${escapeHtml(role)}" ${role === currentOwnerRole ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}
+          </select>
           <textarea name="note" rows="3" placeholder="Что важно по закреплению / передаче SKU">${escapeHtml(currentOwnerOverride.note || '')}</textarea>
           <div class="quick-actions">
             <button class="btn" type="submit">Сохранить owner</button>

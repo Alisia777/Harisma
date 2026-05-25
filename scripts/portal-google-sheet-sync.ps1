@@ -375,7 +375,7 @@ try {
   Invoke-NodeStep -StepName "Yandex Market analytics refresh" -Arguments @(
     "scripts/portal-yandex-market-trends-sync.js",
     "sync"
-  ) -Attempts 1 -RetryDelaySeconds 20
+  ) -Attempts 1 -RetryDelaySeconds 20 -TimeoutSeconds 2700
   Write-Output "[sync] Yandex Market analytics refresh completed"
 } catch {
   Add-RetryStep -Id "yandex-market" -Name "Yandex Market analytics refresh" -Message ([string]$_.Exception.Message)

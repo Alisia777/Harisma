@@ -138,6 +138,8 @@ function resolveOptions(args) {
     outputPath: path.resolve(args['output-file'] || path.join(root, 'data', 'platform_trends.json')),
     pollAttempts: Math.max(1, Math.trunc(numberOrZero(args['poll-attempts'] || 80))),
     pollIntervalMs: Math.max(1000, Math.trunc(numberOrZero(args['poll-interval-ms'] || 10000))),
+    rateLimitAttempts: Math.max(1, Math.trunc(numberOrZero(args['rate-limit-attempts'] || process.env.ALTEA_YM_RATE_LIMIT_ATTEMPTS || 3))),
+    rateLimitExtraDelayMs: Math.max(0, Math.trunc(numberOrZero(args['rate-limit-extra-delay-ms'] || process.env.ALTEA_YM_RATE_LIMIT_EXTRA_DELAY_MS || 30000))),
     settlementHour,
     autoLagDays,
     explicitTo: Boolean(explicitTo),
@@ -319,23 +321,51 @@ async function yandexRequest(options, apiPath, requestOptions = {}) {
   Object.entries(requestOptions.query || {}).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value));
   });
-  const response = await fetch(url, {
-    method: requestOptions.method || 'GET',
-    headers: {
-      'Api-Key': options.apiKey,
-      'Content-Type': 'application/json'
-    },
-    body: requestOptions.body === undefined ? undefined : JSON.stringify(requestOptions.body)
-  });
-  const text = await response.text();
-  let payload = null;
-  try {
-    payload = text ? JSON.parse(text) : null;
-  } catch {
-    payload = null;
+  const attempts = Math.max(1, Math.trunc(numberOrZero(requestOptions.rateLimitAttempts || options.rateLimitAttempts || 1)));
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const response = await fetch(url, {
+      method: requestOptions.method || 'GET',
+      headers: {
+        'Api-Key': options.apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: requestOptions.body === undefined ? undefined : JSON.stringify(requestOptions.body)
+    });
+    const text = await response.text();
+    let payload = null;
+    try {
+      payload = text ? JSON.parse(text) : null;
+    } catch {
+      payload = null;
+    }
+    if (response.ok) return payload;
+
+    const retryDelayMs = yandexRateLimitDelayMs(response.status, apiPath, text, options);
+    if (retryDelayMs > 0 && attempt < attempts) {
+      console.warn(`[ym] ${apiPath} hit rate limit (HTTP ${response.status}). Waiting ${Math.round(retryDelayMs / 1000)} sec before retry ${attempt + 1}/${attempts}.`);
+      await sleep(retryDelayMs);
+      continue;
+    }
+    throw new Error(`Yandex Market API ${apiPath}: HTTP ${response.status} ${text.slice(0, 700)}`);
   }
-  if (!response.ok) throw new Error(`Yandex Market API ${apiPath}: HTTP ${response.status} ${text.slice(0, 700)}`);
-  return payload;
+  throw new Error(`Yandex Market API ${apiPath}: request did not complete`);
+}
+
+function yandexRateLimitDelayMs(status, apiPath, responseText, options) {
+  if (Number(status) !== 420 && Number(status) !== 429) return 0;
+  const raw = normalizeText(responseText);
+  let delayMs = 0;
+  const match = raw.match(/(\d+)\s*(seconds?|sec|secs|minutes?|mins?|hours?|hrs?)/i);
+  if (match) {
+    const amount = Number(match[1]);
+    const unit = String(match[2] || '').toLowerCase();
+    if (unit.startsWith('hour') || unit.startsWith('hr')) delayMs = amount * 60 * 60 * 1000;
+    else if (unit.startsWith('minute') || unit.startsWith('min')) delayMs = amount * 60 * 1000;
+    else delayMs = amount * 1000;
+  }
+  if (!delayMs && /\/reports\/shows-sales\/generate/i.test(apiPath)) delayMs = 6 * 60 * 1000;
+  if (!delayMs) delayMs = 60 * 1000;
+  return delayMs + Math.max(0, numberOrZero(options?.rateLimitExtraDelayMs));
 }
 
 async function downloadAndParseReport(fileUrl) {
@@ -1149,5 +1179,5 @@ async function main() {
 
 main().catch((error) => {
   console.error(error?.stack || String(error));
-  process.exitCode = 1;
+  process.exit(1);
 });

@@ -288,7 +288,7 @@ function Invoke-RetryStep {
       Invoke-Upload @("sku_aliases", "sku_alias_ignore", "sku_alias_audit", "sku_matrix")
     }
     "yandex-market" {
-      Invoke-NodeStep -StepName "Yandex Market analytics retry" -Arguments @("scripts/portal-yandex-market-trends-sync.js", "sync") -Attempts 1 -RetryDelaySeconds 20 -TimeoutSeconds 1800
+      Invoke-NodeStep -StepName "Yandex Market analytics retry" -Arguments @("scripts/portal-yandex-market-trends-sync.js", "sync") -Attempts 1 -RetryDelaySeconds 20 -TimeoutSeconds 2700
       Copy-DataFilesToOutput @("platform_trends.json")
       Invoke-GoogleSheetBuild
       Invoke-Upload @("dashboard", "platform_trends")

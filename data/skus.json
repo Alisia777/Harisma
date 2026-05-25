@@ -21,7 +21,6 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -116,7 +115,6 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -134,10 +132,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 97,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "clearedAt": "2026-05-25T15:09:56.109Z",
+      "reason": "missing_in_distribution"
     }
   },
   {
@@ -162,7 +160,6 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -257,7 +254,6 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -273,7 +269,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "clearedAt": "2026-05-25T15:09:56.109Z",
+      "reason": "missing_in_distribution"
+    }
   },
   {
     "article": "b_kompleks_BAD_60tabl",
@@ -297,7 +299,6 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -392,7 +393,6 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -410,10 +410,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 126,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "clearedAt": "2026-05-25T15:09:56.109Z",
+      "reason": "missing_in_distribution"
     }
   },
   {
@@ -438,7 +438,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -533,7 +533,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -549,7 +549,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 38,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
+    }
   },
   {
     "article": "chudofrukt_BAD_60caps",
@@ -573,7 +579,6 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -670,7 +675,6 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -686,7 +690,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "clearedAt": "2026-05-25T15:09:56.109Z",
+      "reason": "missing_in_distribution"
+    }
   },
   {
     "article": "curly_method_300ml",
@@ -710,7 +720,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -807,7 +817,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -825,10 +835,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 3,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 2,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -853,7 +863,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -948,7 +958,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -966,10 +976,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 92,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 69,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -994,7 +1004,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1089,7 +1099,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1105,7 +1115,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 159,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
+    }
   },
   {
     "article": "enzim_pudra_80gr_v2",
@@ -1129,7 +1145,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1226,7 +1242,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1244,10 +1260,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 27,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 118,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -1272,7 +1288,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1369,7 +1385,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1387,10 +1403,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 67,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 90,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -1415,7 +1431,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1510,7 +1526,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1528,10 +1544,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 69,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 110,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -1556,7 +1572,6 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1653,7 +1668,6 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1671,10 +1685,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 44,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "clearedAt": "2026-05-25T15:09:56.109Z",
+      "reason": "missing_in_distribution"
     }
   },
   {
@@ -1699,7 +1713,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1796,7 +1810,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1814,10 +1828,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 1,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 9,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -1842,7 +1856,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1937,7 +1951,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1955,10 +1969,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 51,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 83,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -1983,7 +1997,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2078,7 +2092,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2096,10 +2110,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 111,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 42,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -2124,7 +2138,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Под вопросом",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2219,7 +2233,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2237,10 +2251,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 45,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 30,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -2265,7 +2279,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2360,7 +2374,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2378,10 +2392,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 95,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 43,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -2406,7 +2420,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2501,7 +2515,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2519,10 +2533,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 103,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 122,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -2547,7 +2561,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -2642,7 +2656,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -2658,7 +2672,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 149,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
+    }
   },
   {
     "article": "glikiron_BAD_60caps",
@@ -2682,7 +2702,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2777,7 +2797,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2795,10 +2815,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 80,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 146,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -2823,7 +2843,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2918,7 +2938,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2936,10 +2956,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 96,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 24,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -2964,7 +2984,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Под вопросом",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3059,7 +3079,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3077,10 +3097,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 58,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 91,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -3105,7 +3125,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3200,7 +3220,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3218,10 +3238,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 35,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 65,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -3246,7 +3266,6 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Кирилл",
         "ozon": "",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3341,7 +3360,6 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
       "ozon": "",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3359,10 +3377,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 91,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "clearedAt": "2026-05-25T15:09:56.109Z",
+      "reason": "missing_in_distribution"
     }
   },
   {
@@ -3387,7 +3405,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3482,7 +3500,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3500,10 +3518,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 112,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 128,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -3528,7 +3546,6 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Под вопросом",
       "byPlatform": {
-        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3623,7 +3640,6 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3639,7 +3655,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "clearedAt": "2026-05-25T15:09:56.109Z",
+      "reason": "missing_in_distribution"
+    }
   },
   {
     "article": "krem_buster_250ml",
@@ -3663,7 +3685,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3760,7 +3782,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3778,10 +3800,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 29,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 51,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -3806,7 +3828,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3901,7 +3923,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3919,10 +3941,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 50,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 32,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -3947,7 +3969,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4044,7 +4066,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4062,10 +4084,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 17,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 46,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -4090,7 +4112,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4187,7 +4209,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4205,10 +4227,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 11,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 14,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -4233,7 +4255,7 @@
       "source": "Рабочий спецификации · Реестр",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4330,7 +4352,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4348,10 +4370,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 16,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 5,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -4376,7 +4398,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4473,7 +4495,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4491,10 +4513,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 15,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 28,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -4519,7 +4541,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4616,7 +4638,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4634,10 +4656,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 5,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 6,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -4662,7 +4684,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Под вопросом",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4759,7 +4781,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4777,10 +4799,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 7,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 13,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -4805,7 +4827,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4902,7 +4924,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4920,10 +4942,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 57,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 108,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -4948,7 +4970,7 @@
       "source": "Рабочий спецификации · Реестр",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5045,7 +5067,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5063,10 +5085,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 65,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 26,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -5091,7 +5113,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5188,7 +5210,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5206,10 +5228,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 18,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 25,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -5234,7 +5256,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5331,7 +5353,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5349,10 +5371,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 24,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 114,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -5377,7 +5399,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5472,7 +5494,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5490,10 +5512,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 31,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 86,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -5518,7 +5540,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5613,7 +5635,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5629,7 +5651,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 160,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
+    }
   },
   {
     "article": "maslo_dlya_volos_parf_110ml_",
@@ -5653,7 +5681,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5748,7 +5776,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5766,10 +5794,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 71,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 112,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -5794,7 +5822,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5889,7 +5917,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5907,10 +5935,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 107,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 73,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -5935,7 +5963,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6030,7 +6058,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6048,10 +6076,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 64,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 66,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -6211,7 +6239,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6306,7 +6334,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6322,7 +6350,13 @@
       "mm": "Пенка для умывания"
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 36,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
+    }
   },
   {
     "article": "nabor_remuver_40ml",
@@ -6346,7 +6380,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6441,7 +6475,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6459,10 +6493,10 @@
     "costPrice": null,
     "sheetStatus": "Перерабатываем",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 28,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 54,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -6487,7 +6521,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6582,7 +6616,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6600,10 +6634,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 94,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 153,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -6628,7 +6662,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6723,7 +6757,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6741,10 +6775,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 38,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 15,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -6769,7 +6803,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6866,7 +6900,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6882,7 +6916,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 121,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
+    }
   },
   {
     "article": "penka_kudryavii_metod_150ml",
@@ -6906,7 +6946,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7003,7 +7043,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7021,10 +7061,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 14,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 113,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -7049,7 +7089,6 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7144,7 +7183,6 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7160,7 +7198,13 @@
       "mm": "Скрабы и пилинги"
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "clearedAt": "2026-05-25T15:09:56.109Z",
+      "reason": "missing_in_distribution"
+    }
   },
   {
     "article": "pink_pepper_50ml",
@@ -7184,7 +7228,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7281,7 +7325,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7299,10 +7343,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 26,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 59,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -7327,7 +7371,6 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7422,7 +7465,6 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7438,7 +7480,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "clearedAt": "2026-05-25T15:09:56.109Z",
+      "reason": "missing_in_distribution"
+    }
   },
   {
     "article": "relaksinol_BAD_60caps",
@@ -7462,7 +7510,6 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7559,7 +7606,6 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7577,10 +7623,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 83,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "clearedAt": "2026-05-25T15:09:56.109Z",
+      "reason": "missing_in_distribution"
     }
   },
   {
@@ -7740,7 +7786,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7837,7 +7883,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7855,10 +7901,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 2,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 3,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -7883,7 +7929,6 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7980,7 +8025,6 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7998,10 +8042,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 42,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "clearedAt": "2026-05-25T15:09:56.109Z",
+      "reason": "missing_in_distribution"
     }
   },
   {
@@ -8026,7 +8070,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8124,7 +8168,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8142,10 +8186,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 21,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 35,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -8170,7 +8214,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8268,7 +8312,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8286,10 +8330,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 19,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 12,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -8314,7 +8358,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8412,7 +8456,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8430,10 +8474,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
       "sourceRow": 8,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -8458,7 +8502,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8555,7 +8599,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8573,10 +8617,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 13,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 7,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -8742,7 +8786,7 @@
       "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -8837,7 +8881,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -8855,10 +8899,10 @@
     "costPrice": null,
     "sheetStatus": "Новинка",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 20,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 40,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -8883,7 +8927,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8980,7 +9024,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8998,10 +9042,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 6,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 21,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -9026,7 +9070,7 @@
       "source": "manual override 2026-04",
       "registryStatus": null,
       "byPlatform": {
-        "wb": "",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -9121,7 +9165,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -9139,10 +9183,10 @@
     "costPrice": null,
     "sheetStatus": "Новинка",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 9,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 11,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -9443,7 +9487,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9538,7 +9582,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9554,7 +9598,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Под вопросом"
+    "sheetStatus": "Под вопросом",
+    "wbOwnerDistribution": {
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 127,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
+    }
   },
   {
     "article": "shampun_dlya_rosta_250ml",
@@ -9578,7 +9628,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9675,7 +9725,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9693,10 +9743,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 52,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 10,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -9721,7 +9771,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9818,7 +9868,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9836,10 +9886,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 70,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 34,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -9864,7 +9914,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9961,7 +10011,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9979,10 +10029,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 61,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 33,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -10007,7 +10057,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10104,7 +10154,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10122,10 +10172,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 101,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 111,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -10150,7 +10200,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10247,7 +10297,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10265,10 +10315,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 23,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 22,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -10293,7 +10343,7 @@
       "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -10388,7 +10438,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -10406,10 +10456,10 @@
     "costPrice": 0,
     "sheetStatus": "Новинка",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 129,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 161,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -10575,7 +10625,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10672,7 +10722,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10690,10 +10740,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 10,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 16,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -10718,7 +10768,6 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10813,7 +10862,6 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10831,10 +10879,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 124,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "clearedAt": "2026-05-25T15:09:56.109Z",
+      "reason": "missing_in_distribution"
     }
   },
   {
@@ -10994,7 +11042,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11091,7 +11139,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11109,10 +11157,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 4,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 71,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -11137,7 +11185,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11232,7 +11280,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11248,7 +11296,13 @@
       "mm": "Сыворотки"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 4,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
+    }
   },
   {
     "article": "syvorotka_dlya_rosta_6ml",
@@ -11272,7 +11326,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11367,7 +11421,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11385,10 +11439,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 105,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 158,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -11413,7 +11467,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11508,7 +11562,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11526,10 +11580,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 37,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 18,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -11554,7 +11608,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11649,7 +11703,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11667,10 +11721,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
       "sourceRow": 53,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -11836,7 +11890,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11931,7 +11985,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11949,10 +12003,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 25,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 64,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -11977,7 +12031,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12072,7 +12126,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12090,10 +12144,10 @@
     "costPrice": null,
     "sheetStatus": "Под вопросом",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 39,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 105,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -12118,7 +12172,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12213,7 +12267,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12231,10 +12285,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 54,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 85,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -12259,7 +12313,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12356,7 +12410,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12374,10 +12428,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 77,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 67,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   },
   {
@@ -12402,7 +12456,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12497,7 +12551,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12515,10 +12569,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 127,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные все МП (1).xlsx",
+      "sourceRow": 151,
+      "appliedAt": "2026-05-25T15:09:56.109Z"
     }
   }
 ]

@@ -41,7 +41,8 @@ function resolveOptions(args) {
     inputDir: path.resolve(args['input-dir'] || path.join(root, '.altea-google-sheet-sync-output')),
     baseDataDir: path.resolve(args['base-data-dir'] || path.join(root, 'data')),
     outputDir: path.resolve(args['output-dir'] || args['input-dir'] || path.join(root, '.altea-google-sheet-sync-output')),
-    mirrorLocalFallback: Boolean(args['mirror-local-fallback'])
+    mirrorLocalFallback: Boolean(args['mirror-local-fallback']),
+    clearMissingDistribution: Boolean(args['clear-missing-distribution'])
   };
 }
 
@@ -91,9 +92,80 @@ function normalizeOwner(value) {
     .trim();
 }
 
+const OWNER_CANONICAL_NAMES = new Map([
+  ['\u0430\u0440\u0442\u0435\u043c', '\u0410\u0440\u0442\u0435\u043c'],
+  ['\u0430\u0440\u0442\u0451\u043c', '\u0410\u0440\u0442\u0435\u043c'],
+  ['\u0434\u0430\u0440\u044c\u044f', '\u0414\u0430\u0448\u0430'],
+  ['\u0434\u0430\u0448\u0430', '\u0414\u0430\u0448\u0430'],
+  ['\u0435\u043a\u0430\u0442\u0435\u0440\u0438\u043d\u0430', '\u0415\u043a\u0430\u0442\u0435\u0440\u0438\u043d\u0430'],
+  ['\u043a\u0438\u0440\u0438\u043b\u043b', '\u041a\u0438\u0440\u0438\u043b\u043b'],
+  ['\u043a\u0441\u0435\u043d\u0438\u044f', '\u041a\u0441\u0435\u043d\u0438\u044f'],
+  ['\u043c\u0430\u043a\u0441\u0438\u043c', '\u041c\u0430\u043a\u0441\u0438\u043c'],
+  ['\u043c\u0430\u0440\u0438\u044f', '\u041c\u0430\u0440\u0438\u044f'],
+  ['\u043e\u043b\u0435\u0441\u044f', '\u041e\u043b\u0435\u0441\u044f'],
+  ['\u0441\u0432\u0435\u0442\u043b\u0430\u043d\u0430', '\u0421\u0432\u0435\u0442\u043b\u0430\u043d\u0430']
+]);
+
+const OWNER_NAME_ALIASES = new Map([
+  ['\u0432\u0430\u0441\u0438\u043b\u044c\u0435\u0432\u0430 \u043c\u0430\u0440\u0438\u044f', '\u041c\u0430\u0440\u0438\u044f'],
+  ['\u043c\u0430\u0440\u0438\u044f \u0432\u0430\u0441\u0438\u043b\u044c\u0435\u0432\u0430', '\u041c\u0430\u0440\u0438\u044f'],
+  ['\u043b\u0430\u043f\u044b\u0433\u0438\u043d \u043c\u0430\u043a\u0441\u0438\u043c', '\u041c\u0430\u043a\u0441\u0438\u043c'],
+  ['\u043c\u0430\u043a\u0441\u0438\u043c \u043b\u0430\u043f\u044b\u0433\u0438\u043d', '\u041c\u0430\u043a\u0441\u0438\u043c']
+]);
+
+function canonicalOwnerName(value = '') {
+  const normalized = normalizeOwner(value);
+  if (!normalized) return '';
+  const lowered = normalized.toLowerCase();
+  if (OWNER_NAME_ALIASES.has(lowered)) return OWNER_NAME_ALIASES.get(lowered);
+  if (OWNER_CANONICAL_NAMES.has(lowered)) return OWNER_CANONICAL_NAMES.get(lowered);
+  const [firstToken = ''] = normalized.split(' ');
+  const firstTokenLowered = firstToken.toLowerCase();
+  if (OWNER_CANONICAL_NAMES.has(firstTokenLowered)) return OWNER_CANONICAL_NAMES.get(firstTokenLowered);
+  return normalized;
+}
+
+function normalizeHeader(value) {
+  return normalizeOwner(value)
+    .toLowerCase()
+    .replace(/\u0451/g, '\u0435')
+    .replace(/[^\p{L}0-9]+/gu, '');
+}
+
+function findDistributionColumns(rows = []) {
+  const scanLimit = Math.min(rows.length, 10);
+  for (let rowIndex = 0; rowIndex < scanLimit; rowIndex += 1) {
+    const headers = (rows[rowIndex] || []).map(normalizeHeader);
+    const articleIndex = headers.findIndex((header) => (
+      header === 'sku'
+      || header === 'article'
+      || header === 'articlekey'
+      || header.includes('\u0430\u0440\u0442\u0438\u043a\u0443\u043b')
+    ));
+    const ownerIndex = headers.findIndex((header) => (
+      header === 'ownerwb'
+      || header === 'wbowner'
+      || header === '\u0432\u0431owner'
+      || header === 'ownerwildberries'
+      || (
+        header.includes('\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d')
+        && (
+          header.includes('\u0432\u0431')
+          || header.includes('wb')
+          || header.includes('wildberries')
+        )
+      )
+    ));
+    if (articleIndex >= 0 && ownerIndex >= 0) {
+      return { articleIndex, ownerIndex, headerRowIndex: rowIndex };
+    }
+  }
+  return { articleIndex: 0, ownerIndex: 1, headerRowIndex: -1 };
+}
+
 function readDistribution(filePath) {
   if (!filePath) {
-    return { rows: [], sheetName: '', duplicates: [] };
+    return { rows: [], sheetName: '', duplicates: [], columns: { articleIndex: 0, ownerIndex: 1, headerRowIndex: -1 } };
   }
   const workbook = xlsx.readFile(filePath, { cellDates: true });
   const sheetName = workbook.SheetNames[0];
@@ -103,26 +175,32 @@ function readDistribution(filePath) {
     raw: false,
     blankrows: false
   });
+  const columns = findDistributionColumns(rows);
   const byArticle = new Map();
   const duplicates = [];
   rows.forEach((row, index) => {
-    const article = normalizeArticle(row[0]);
-    const owner = normalizeOwner(row[1]);
+    if (index === columns.headerRowIndex) return;
+    const article = normalizeArticle(row[columns.articleIndex]);
+    const owner = canonicalOwnerName(row[columns.ownerIndex]);
     if (!article || !owner) return;
     const payload = {
       sourceRow: index + 1,
       article,
-      sourceArticle: String(row[0] ?? '').trim(),
+      sourceArticle: String(row[columns.articleIndex] ?? '').trim(),
       owner
     };
-    if (byArticle.has(article)) duplicates.push({ ...payload, previousOwner: byArticle.get(article).owner });
+    if (byArticle.has(article)) {
+      const previousOwner = byArticle.get(article).owner;
+      duplicates.push({ ...payload, previousOwner, conflict: previousOwner !== owner });
+    }
     byArticle.set(article, payload);
   });
   return {
     sheetName,
     sourceRowCount: rows.length,
     rows: [...byArticle.values()],
-    duplicates
+    duplicates,
+    columns
   };
 }
 
@@ -218,6 +296,7 @@ function applyDistribution(options) {
 
   let updatedOwnerCount = 0;
   let unchangedOwnerCount = 0;
+  let clearedMissingDistributionOwnerCount = 0;
   const matched = [];
   const missingInDistribution = [];
   const ownerCounts = {};
@@ -236,6 +315,28 @@ function applyDistribution(options) {
         status: sku.status || sku.registryStatus || '',
         stock: Math.round(Number(sku.wb?.stock || 0))
       });
+      if (options.clearMissingDistribution && previousOwner) {
+        clearedMissingDistributionOwnerCount += 1;
+        const ownersByPlatform = { ...(sku.ownersByPlatform || {}) };
+        delete ownersByPlatform.wb;
+        const ownerObject = typeof sku.owner === 'object' && sku.owner ? sku.owner : {};
+        const ownerByPlatform = { ...(ownerObject.byPlatform || {}) };
+        delete ownerByPlatform.wb;
+        return {
+          ...sku,
+          ownersByPlatform,
+          owner: {
+            ...ownerObject,
+            byPlatform: ownerByPlatform
+          },
+          wbOwnerDistribution: {
+            owner: '',
+            sourceFile: path.basename(options.inputXlsx),
+            clearedAt: new Date().toISOString(),
+            reason: 'missing_in_distribution'
+          }
+        };
+      }
       return sku;
     }
 
@@ -286,7 +387,11 @@ function applyDistribution(options) {
       sheetName: distribution.sheetName,
       sourceRowCount: distribution.sourceRowCount,
       mappedRowCount: distribution.rows.length,
-      duplicateCount: distribution.duplicates.length
+      duplicateCount: distribution.duplicates.length,
+      duplicateConflictCount: distribution.duplicates.filter((item) => item.conflict).length,
+      articleColumnIndex: distribution.columns.articleIndex,
+      ownerColumnIndex: distribution.columns.ownerIndex,
+      headerRowIndex: distribution.columns.headerRowIndex
     },
     summary: {
       portalSkuCount: skus.length,
@@ -294,6 +399,7 @@ function applyDistribution(options) {
       matchedSkuCount: matched.length,
       updatedOwnerCount,
       unchangedOwnerCount,
+      clearedMissingDistributionOwnerCount,
       missingInPortalCount: missingInPortal.length,
       missingInDistributionCount: missingInDistribution.length,
       ownerCounts

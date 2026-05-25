@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v1",
-  "generatedAt": "2026-05-25T07:26:09.053Z",
+  "generatedAt": "2026-05-25T15:10:13.763Z",
   "title": "OOS control",
   "rules": {
     "soonDays": 10,
@@ -10,11 +10,11 @@
     ]
   },
   "dataFreshness": {
-    "status": "stale",
-    "dataDate": "2026-05-23",
+    "status": "ok",
+    "dataDate": "2026-05-24",
     "expectedFactDate": "2026-05-24",
     "sourceGeneratedAt": "2026-05-25T07:25:21.432Z",
-    "message": "Данные отстают: факт до 2026-05-23, ожидается минимум 2026-05-24.",
+    "message": "Данные свежие: факт до 2026-05-24.",
     "orderProcurementGeneratedAt": "2026-05-25T07:25:21.432Z",
     "orderWindow": {
       "from": "2026-04-28",
@@ -22,11 +22,11 @@
     },
     "smartPriceGeneratedAt": "2026-05-25T07:25:54.653Z",
     "sources": {
-      "orderProcurement": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\order_procurement.json",
-      "skus": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\skus.json",
-      "smartPriceOverlay": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\smart_price_overlay.json",
-      "syncHealth": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\portal_sync_health.json",
-      "portalDataQuality": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\portal_data_quality.json"
+      "orderProcurement": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-minmax-publish\\data\\order_procurement.json",
+      "skus": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-minmax-publish\\data\\skus.json",
+      "smartPriceOverlay": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-minmax-publish\\data\\smart_price_overlay.json",
+      "syncHealth": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-minmax-publish\\data\\portal_sync_health.json",
+      "portalDataQuality": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-minmax-publish\\data\\portal_data_quality.json"
     }
   },
   "summary": {
@@ -48,8 +48,8 @@
     "owners": 2,
     "skuCount": 1,
     "placeCount": 38,
-    "dataStatus": "stale",
-    "dataDate": "2026-05-23",
+    "dataStatus": "ok",
+    "dataDate": "2026-05-24",
     "expectedFactDate": "2026-05-24"
   },
   "byPlatform": [

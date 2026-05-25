@@ -41,32 +41,17 @@ function Write-LogLine {
   Add-LogContent -Message $line
 }
 
-function Append-LogFile {
-  param([string]$PathValue)
-  if ([string]::IsNullOrWhiteSpace($PathValue) -or -not (Test-Path -LiteralPath $PathValue)) {
-    return
-  }
-
-  Get-Content -LiteralPath $PathValue -ErrorAction SilentlyContinue | ForEach-Object {
-    Write-Output $_
-    Add-LogContent -Message ([string]$_)
-  }
-}
-
-$tempOutput = [System.IO.Path]::GetTempFileName()
 try {
   Write-LogLine "Scheduled portal sync started."
-  try {
-    $global:LASTEXITCODE = 0
-    & $syncScript *>&1 | Set-Content -LiteralPath $tempOutput -Encoding UTF8
-    $exitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
-    Append-LogFile -PathValue $tempOutput
-    Write-LogLine "Scheduled portal sync finished with exit code $exitCode."
-    exit $exitCode
-  } catch {
-    Append-LogFile -PathValue $tempOutput
-    throw $_
+  $global:LASTEXITCODE = 0
+  & $syncScript *>&1 | ForEach-Object {
+    $line = [string]$_
+    Write-Output $line
+    Add-LogContent -Message $line
   }
+  $exitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
+  Write-LogLine "Scheduled portal sync finished with exit code $exitCode."
+  exit $exitCode
 } catch {
   $message = [string]$_.Exception.Message
   $details = [string]$_
@@ -78,6 +63,4 @@ try {
   Write-LogLine "Scheduled portal sync failed: $message"
   Write-LogLine $_.ScriptStackTrace
   exit 1
-} finally {
-  Remove-Item -LiteralPath $tempOutput -Force -ErrorAction SilentlyContinue
 }

@@ -103,6 +103,73 @@
     return changed;
   }
 
+  function parseTaskLog(text) {
+    const raw = String(text || '');
+    const match = raw.match(/\[\[task:([^\]]+)\]\]\s*\[\[kind:([^\]]+)\]\]\s*([\s\S]*)/);
+    if (!match) return null;
+    return {
+      taskId: String(match[1] || '').trim(),
+      kind: String(match[2] || '').trim(),
+      text: String(match[3] || '').trim()
+    };
+  }
+
+  function workflowIntent(message) {
+    const text = String(message || '').trim().toLowerCase();
+    if (!text) return '';
+    if (text.includes('руководитель финально закрыл') || text.includes('задача закрыта с отчётом') || text.includes('задача закрыта с отчетом') || text.includes('подтверждено из простого экрана')) return 'done';
+    if (text.includes('роп вернул') && text.includes('в работу')) return 'in_progress';
+    if (text.includes('роп согласовал') && text.includes('руководителю')) return 'waiting_decision';
+    if (text.includes('исполнитель сдал') && text.includes('роп')) return 'waiting_rop';
+    return '';
+  }
+
+  function commentTime(comment, fallbackIndex) {
+    const stamp = Date.parse(comment?.createdAt || comment?.created_at || '');
+    return Number.isFinite(stamp) ? stamp : fallbackIndex;
+  }
+
+  function latestWorkflowIntentByTask() {
+    const app = appState();
+    const comments = Array.isArray(app?.storage?.comments) ? app.storage.comments : [];
+    const latest = new Map();
+    comments.forEach((comment, index) => {
+      const parsed = parseTaskLog(comment?.text);
+      if (!parsed?.taskId) return;
+      const intent = workflowIntent(parsed.text);
+      if (!intent) return;
+      const weight = commentTime(comment, index);
+      const previous = latest.get(parsed.taskId);
+      if (!previous || weight >= previous.weight) {
+        latest.set(parsed.taskId, {
+          intent,
+          weight,
+          text: parsed.text,
+          createdAt: comment?.createdAt || comment?.created_at || ''
+        });
+      }
+    });
+    return latest;
+  }
+
+  function reconcileClosedTasksFromHistory() {
+    const app = appState();
+    if (!app?.storage) return false;
+    const latest = latestWorkflowIntentByTask();
+    let changed = false;
+    latest.forEach((entry, taskId) => {
+      if (entry.intent !== 'done') return;
+      const task = materializeTask(taskId);
+      if (!task || task.status === 'done') return;
+      task.status = 'done';
+      task.updatedAt = entry.createdAt || new Date().toISOString();
+      task.updated_at = task.updatedAt;
+      renderAfterTaskChange(task);
+      changed = true;
+    });
+    return changed;
+  }
+
   function schedulePersist(kind, item, attempt = 0) {
     const fn = kind === 'comment'
       ? (window.persistComment || (typeof persistComment === 'function' ? persistComment : null))
@@ -130,6 +197,7 @@
     const wrapped = async function pullRemoteStateWithWorkflowPending(...args) {
       const result = await original.apply(this, args);
       applyPendingWorkflow();
+      reconcileClosedTasksFromHistory();
       return result;
     };
     wrapped.__taskWorkflowPendingWrapped = true;
@@ -270,6 +338,7 @@
   };
 
   window.closeTaskWithReport = window.finalCloseTaskWithReport;
+  window.__alteaReconcileClosedTasksFromHistory = reconcileClosedTasksFromHistory;
 
   function activeTaskId() {
     try {
@@ -350,9 +419,14 @@
   }, true);
 
   applyPendingWorkflow();
+  reconcileClosedTasksFromHistory();
   flushPendingWorkflow();
   wrapPullRemoteState();
   window.setTimeout(wrapPullRemoteState, 1000);
+  window.setTimeout(reconcileClosedTasksFromHistory, 1500);
+  window.setTimeout(reconcileClosedTasksFromHistory, 5000);
+  const reconcileTimer = window.setInterval(reconcileClosedTasksFromHistory, 3000);
+  window.setTimeout(() => window.clearInterval(reconcileTimer), 30000);
 
   try { submitTaskForRopApproval = window.submitTaskForRopApproval; } catch {}
   try { approveTaskByRop = window.approveTaskByRop; } catch {}

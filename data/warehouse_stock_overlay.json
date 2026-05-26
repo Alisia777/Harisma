@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-05-25T07:23:23.771Z",
+  "generatedAt": "2026-05-26T07:40:38.005Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
   "sourceFormat": "google-csv-export",
   "sheetName": "Sheet1",
   "matchField": "Наименование как в ЛК -> article/articleKey",
-  "sheetRowCount": 296,
+  "sheetRowCount": 299,
   "matchedRowCount": 83,
   "matchedSkuCount": 81,
   "unmatchedSourceKeys": [
@@ -393,7 +393,7 @@
       "shippedOzon": 5445,
       "shippedWB": 37708,
       "sourceKeys": [
-        "kremshelk_100ml_"
+        "kremshelk_100ml"
       ],
       "sourceRowCount": 1
     },

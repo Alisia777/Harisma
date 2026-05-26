@@ -1621,12 +1621,13 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options, warehou
   }
 
   function applyCoverage(bucket, stockField, avgField) {
+    const demandReliable = bucket?.demandReliable !== false;
     const stock = numberOrZero(bucket?.[stockField]);
     const avgDaily = numberOrZero(bucket?.[avgField]);
-    bucket.coverageDays = avgDaily > 0 ? Number((stock / avgDaily).toFixed(2)) : null;
-    bucket.targetNeed7 = projectedNeed(avgDaily, stock, 7);
-    bucket.targetNeed14 = projectedNeed(avgDaily, stock, 14);
-    bucket.targetNeed28 = projectedNeed(avgDaily, stock, 28);
+    bucket.coverageDays = demandReliable && avgDaily > 0 ? Number((stock / avgDaily).toFixed(2)) : null;
+    bucket.targetNeed7 = demandReliable ? projectedNeed(avgDaily, stock, 7) : null;
+    bucket.targetNeed14 = demandReliable ? projectedNeed(avgDaily, stock, 14) : null;
+    bucket.targetNeed28 = demandReliable ? projectedNeed(avgDaily, stock, 28) : null;
     return bucket;
   }
 
@@ -1658,6 +1659,8 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options, warehou
         targetNeed7: 0,
         targetNeed14: 0,
         targetNeed28: 0,
+        demandSource: 'sku-turnover',
+        demandReliable: false,
         skuKeys: new Set()
       };
       bucket.stock += wbStock;
@@ -1675,14 +1678,16 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options, warehou
         inRequest: 0,
         avgDaily: wbAvgDaily,
         turnoverDays: wbTurnoverDays,
-        targetNeed7: projectedNeed(wbAvgDaily, wbStock, 7),
-        targetNeed14: projectedNeed(wbAvgDaily, wbStock, 14),
-        targetNeed28: projectedNeed(wbAvgDaily, wbStock, 28),
+        targetNeed7: null,
+        targetNeed14: null,
+        targetNeed28: null,
         localShare: null,
         sourceValue: 'sku-turnover',
-        sales7: projectedUnits(wbAvgDaily, 7),
-        sales14: projectedUnits(wbAvgDaily, 14),
-        sales28: projectedUnits(wbAvgDaily, 28),
+        demandSource: 'sku-turnover',
+        demandReliable: false,
+        sales7: null,
+        sales14: null,
+        sales28: null,
         planMonth
       });
     }
@@ -1704,6 +1709,8 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options, warehou
         targetNeed7: 0,
         targetNeed14: 0,
         targetNeed28: 0,
+        demandSource: 'sku-turnover',
+        demandReliable: false,
         skuKeys: new Set()
       };
       clusterBucket.available += ozonStock;
@@ -1727,6 +1734,8 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options, warehou
         targetNeed7: 0,
         targetNeed14: 0,
         targetNeed28: 0,
+        demandSource: 'sku-turnover',
+        demandReliable: false,
         skuKeys: new Set()
       };
       warehouseBucket.available += ozonStock;
@@ -1745,14 +1754,16 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options, warehou
         inRequest: 0,
         avgDaily: ozonAvgDaily,
         turnoverDays: ozonTurnoverDays,
-        targetNeed7: projectedNeed(ozonAvgDaily, ozonStock, 7),
-        targetNeed14: projectedNeed(ozonAvgDaily, ozonStock, 14),
-        targetNeed28: projectedNeed(ozonAvgDaily, ozonStock, 28),
+        targetNeed7: null,
+        targetNeed14: null,
+        targetNeed28: null,
         localShare: null,
         sourceValue: 'sku-turnover',
-        sales7: projectedUnits(ozonAvgDaily, 7),
-        sales14: projectedUnits(ozonAvgDaily, 14),
-        sales28: projectedUnits(ozonAvgDaily, 28),
+        demandSource: 'sku-turnover',
+        demandReliable: false,
+        sales7: null,
+        sales14: null,
+        sales28: null,
         planMonth
       });
     }
@@ -1771,14 +1782,16 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options, warehou
         inRequest: 0,
         avgDaily: ymAvgDaily,
         turnoverDays: ymTurnoverDays,
-        targetNeed7: projectedNeed(ymAvgDaily, yandexStock, 7),
-        targetNeed14: projectedNeed(ymAvgDaily, yandexStock, 14),
-        targetNeed28: projectedNeed(ymAvgDaily, yandexStock, 28),
+        targetNeed7: null,
+        targetNeed14: null,
+        targetNeed28: null,
         localShare: null,
         sourceValue: 'sku-turnover',
-        sales7: projectedUnits(ymAvgDaily, 7),
-        sales14: projectedUnits(ymAvgDaily, 14),
-        sales28: projectedUnits(ymAvgDaily, 28),
+        demandSource: 'sku-turnover',
+        demandReliable: false,
+        sales7: null,
+        sales14: null,
+        sales28: null,
         planMonth
       });
     }
@@ -1796,7 +1809,7 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options, warehou
     .map((item) => applyCoverage(item, 'available', 'avgDailyUnits28'))
     .map((item) => ({ ...item, skuCount: item.skuKeys.size, skuKeys: undefined }))
     .sort((left, right) => right.available - left.available);
-  const riskRows = detailedRows.filter((row) => Number.isFinite(row.turnoverDays) && row.turnoverDays < 14);
+  const riskRows = detailedRows.filter((row) => row.demandReliable !== false && Number.isFinite(row.turnoverDays) && row.turnoverDays < 14);
   const compactRowMap = new Map();
   for (const row of detailedRows) {
     const rowKey = `${row.platform}::${row.place}::${row.article}`;
@@ -1808,12 +1821,18 @@ function buildLogistics(baseLogistics, skus, factLogisticsRows, options, warehou
       inTransit: 0,
       inRequest: 0,
       avgDaily: 0,
-      turnoverDays: null
+      turnoverDays: null,
+      sourceValue: row.sourceValue || null,
+      demandSource: row.demandSource || row.sourceValue || null,
+      demandReliable: row.demandReliable !== false
     };
     current.inStock += numberOrZero(row.inStock);
     current.inTransit += numberOrZero(row.inTransit);
     current.inRequest += numberOrZero(row.inRequest);
     current.avgDaily += numberOrZero(row.avgDaily);
+    current.sourceValue = current.sourceValue || row.sourceValue || null;
+    current.demandSource = current.demandSource || row.demandSource || row.sourceValue || null;
+    current.demandReliable = current.demandReliable !== false && row.demandReliable !== false;
     if (Number.isFinite(numberOrZero(row.turnoverDays)) && numberOrZero(row.turnoverDays) > 0) {
       current.turnoverDays = current.turnoverDays == null
         ? numberOrZero(row.turnoverDays)

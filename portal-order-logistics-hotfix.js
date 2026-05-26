@@ -324,17 +324,33 @@
     return supportMap;
   }
 
+  function hasOwnMetric(row, key) {
+    if (!row || !Object.prototype.hasOwnProperty.call(row, key)) return false;
+    const value = row[key];
+    return value !== null && value !== undefined && value !== '';
+  }
+
+  function demandReliable(row) {
+    const source = String(row?.demandSource || row?.sourceValue || '').trim().toLowerCase();
+    return row?.demandReliable !== false && source !== 'sku-turnover';
+  }
+
   function getOrdersForPeriod(row, targetDays) {
-    const exact = toNumber(row?.[`sales${targetDays}`]);
-    if (exact > 0) return Math.ceil(exact);
+    const exactKey = `sales${targetDays}`;
+    const exact = hasOwnMetric(row, exactKey) ? toNumber(row?.[exactKey]) : null;
+    if (exact !== null) return exact > 0 ? Math.ceil(exact) : 0;
+    if (!demandReliable(row)) return null;
     const avgDaily = toNumber(row?.avgDaily ?? row?.avgDailyUnits28 ?? row?.avgDailyUnits);
     return Math.ceil(Math.max(0, avgDaily * targetDays));
   }
 
   function getClusterNeedForTarget(row, targetDays) {
-    const exactNeed = toNumber(row?.[`targetNeed${targetDays}`]);
-    if (exactNeed > 0) return Math.ceil(exactNeed);
+    const exactNeedKey = `targetNeed${targetDays}`;
+    const exactNeed = hasOwnMetric(row, exactNeedKey) ? toNumber(row?.[exactNeedKey]) : null;
+    if (exactNeed !== null) return exactNeed > 0 ? Math.ceil(exactNeed) : 0;
+    if (!demandReliable(row)) return null;
     const demand = getOrdersForPeriod(row, targetDays);
+    if (demand == null) return null;
     const stock = toNumber(row?.inStock ?? row?.available ?? row?.stock);
     const transit = toNumber(row?.inTransit) + toNumber(row?.inRequest);
     return Math.max(0, Math.ceil(demand - stock - transit));

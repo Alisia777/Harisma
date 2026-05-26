@@ -148,6 +148,17 @@ function projectedNeed(avgDaily, stock, days) {
   return Math.max(0, Math.ceil((avgDaily * days) - numberOrZero(stock)));
 }
 
+function hasOwnMetric(row, key) {
+  if (!row || !Object.prototype.hasOwnProperty.call(row, key)) return false;
+  const value = row[key];
+  return value !== null && value !== undefined && value !== '';
+}
+
+function isSkuTurnoverFallback(row) {
+  const source = String(row?.demandSource || row?.sourceValue || '').trim().toLowerCase();
+  return row?.demandReliable === false || source === 'sku-turnover';
+}
+
 function buildRow(sourceRow, sku, monthField) {
   const platform = normalizePlatform(sourceRow?.platform);
   if (!platform || platform === 'ym') return null;
@@ -158,6 +169,11 @@ function buildRow(sourceRow, sku, monthField) {
   const avgDaily = numberOrZero(sourceRow?.avgDaily);
   const inStock = numberOrZero(sourceRow?.inStock);
   const planMonth = numberOrNull(sourceRow?.planMonth ?? sku?.planFact?.[monthField]);
+  const skuTurnoverFallback = isSkuTurnoverFallback(sourceRow);
+  const metricOrProjected = (key, days, projector) => {
+    if (hasOwnMetric(sourceRow, key)) return numberOrZero(sourceRow[key]);
+    return skuTurnoverFallback ? null : projector(avgDaily, days);
+  };
 
   return {
     platform: platformLabel(platform),
@@ -170,12 +186,15 @@ function buildRow(sourceRow, sku, monthField) {
     inRequest: numberOrZero(sourceRow?.inRequest),
     avgDaily,
     turnoverDays: numberOrNull(sourceRow?.turnoverDays),
-    sales7: numberOrZero(sourceRow?.sales7 ?? projectedUnits(avgDaily, 7)),
-    sales14: numberOrZero(sourceRow?.sales14 ?? projectedUnits(avgDaily, 14)),
-    sales28: numberOrZero(sourceRow?.sales28 ?? projectedUnits(avgDaily, 28)),
-    targetNeed7: numberOrZero(sourceRow?.targetNeed7 ?? projectedNeed(avgDaily, inStock, 7)),
-    targetNeed14: numberOrZero(sourceRow?.targetNeed14 ?? projectedNeed(avgDaily, inStock, 14)),
-    targetNeed28: numberOrZero(sourceRow?.targetNeed28 ?? projectedNeed(avgDaily, inStock, 28)),
+    sourceValue: normalizeText(sourceRow?.sourceValue),
+    demandSource: normalizeText(sourceRow?.demandSource || sourceRow?.sourceValue),
+    demandReliable: !skuTurnoverFallback,
+    sales7: metricOrProjected('sales7', 7, projectedUnits),
+    sales14: metricOrProjected('sales14', 14, projectedUnits),
+    sales28: metricOrProjected('sales28', 28, projectedUnits),
+    targetNeed7: metricOrProjected('targetNeed7', 7, (daily, days) => projectedNeed(daily, inStock, days)),
+    targetNeed14: metricOrProjected('targetNeed14', 14, (daily, days) => projectedNeed(daily, inStock, days)),
+    targetNeed28: metricOrProjected('targetNeed28', 28, (daily, days) => projectedNeed(daily, inStock, days)),
     planMonth
   };
 }

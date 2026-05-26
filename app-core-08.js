@@ -6028,7 +6028,7 @@ function renderOrderCalculator() {
     });
 }
 
-const ORDER_PROCUREMENT_VERSION = '20260522ymstock1';
+const ORDER_PROCUREMENT_VERSION = '20260526orderfallback1';
 const ORDER_PROCUREMENT_STYLE_ID = `altea-order-procurement-${ORDER_PROCUREMENT_VERSION}`;
 const ORDER_PROCUREMENT_RUNTIME = {
   renderToken: 0,
@@ -6186,8 +6186,10 @@ function orderProcurementTurnoverTone(value) {
 }
 
 function orderProcurementTurnoverBadge(value) {
-  if (!Number.isFinite(Number(value))) return orderProcurementBadge('n/a', 'info');
-  return orderProcurementBadge(`${fmt.num(value, 1)} РґРЅ.`, orderProcurementTurnoverTone(value));
+  if (value === null || value === undefined || value === '') return orderProcurementBadge('n/a', 'info');
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return orderProcurementBadge('n/a', 'info');
+  return orderProcurementBadge(`${fmt.num(numeric, 1)} \u0434\u043d.`, orderProcurementTurnoverTone(numeric));
 }
 
 function orderProcurementFormatDateTime(value) {

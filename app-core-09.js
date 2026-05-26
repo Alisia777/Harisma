@@ -14,7 +14,33 @@ function orderProcurementMetricKnown(value) {
 
 function orderProcurementDemandReliable(row) {
   const source = String(row?.demandSource || row?.sourceValue || '').trim().toLowerCase();
-  return row?.demandReliable !== false && source !== 'sku-turnover';
+  if (row?.demandReliable === false || source === 'sku-turnover') return false;
+  return !orderProcurementLooksProjectedFromTurnover(row);
+}
+
+function orderProcurementCloseEnough(left, right, tolerance = 0.05) {
+  const a = Number(left);
+  const b = Number(right);
+  return Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= tolerance;
+}
+
+function orderProcurementLooksProjectedFromTurnover(row) {
+  const avgDaily = orderProcurementNumber(row?.avgDaily);
+  const stock = orderProcurementNumber(row?.inStock);
+  const turnover = Number(row?.turnoverDays);
+  if (!(avgDaily > 0) || !(stock > 0) || !(turnover > 0)) return false;
+  if (!orderProcurementCloseEnough(stock / avgDaily, turnover, 0.08)) return false;
+
+  const projectedSales = [7, 14, 28].every((days) => {
+    const value = row?.[`sales${days}`];
+    return orderProcurementMetricKnown(value) && orderProcurementCloseEnough(value, avgDaily * days, 0.75);
+  });
+  if (!projectedSales) return false;
+
+  const need28 = row?.targetNeed28;
+  if (!orderProcurementMetricKnown(need28)) return true;
+  const projectedNeed28 = Math.max(0, Math.ceil((avgDaily * 28) - stock - orderProcurementNumber(row?.inTransit) - orderProcurementNumber(row?.inRequest)));
+  return orderProcurementCloseEnough(need28, projectedNeed28, 1);
 }
 
 function orderProcurementUnavailableLabel() {
@@ -32,24 +58,24 @@ function orderProcurementOptionalNeedBadge(value) {
 }
 
 function orderProcurementOrdersForDays(row, days) {
+  if (!orderProcurementDemandReliable(row)) return null;
   const direct = orderProcurementReadMetric(row, days, {
     7: 'sales7',
     14: 'sales14',
     28: 'sales28'
   });
   if (direct !== null) return direct;
-  if (!orderProcurementDemandReliable(row)) return null;
   return Math.ceil(Math.max(0, orderProcurementNumber(row?.avgDaily) * days));
 }
 
 function orderProcurementNeedForDays(row, days) {
+  if (!orderProcurementDemandReliable(row)) return null;
   const direct = orderProcurementReadMetric(row, days, {
     7: 'targetNeed7',
     14: 'targetNeed14',
     28: 'targetNeed28'
   });
   if (direct !== null && direct >= 0) return direct;
-  if (!orderProcurementDemandReliable(row)) return null;
 
   const orders = orderProcurementOrdersForDays(row, days);
   if (!orderProcurementMetricKnown(orders)) return null;

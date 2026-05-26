@@ -1225,7 +1225,11 @@ function ensureTaskModal() {
 }
 
 function storedTaskKeys() {
-  return new Set(state.storage.tasks.filter(isTaskActive).map((task) => `${task.articleKey}|${task.type}`));
+  return new Set((state.storage.tasks || [])
+    // Completed saved tasks are still deliberate outcomes and should suppress duplicate auto tasks.
+    .map((task) => normalizeTask(task, task?.source || 'manual'))
+    .filter((task) => task.articleKey && task.type)
+    .map((task) => `${task.articleKey}|${task.type}`));
 }
 
 function buildAutoTasks() {

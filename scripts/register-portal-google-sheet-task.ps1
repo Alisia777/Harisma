@@ -62,7 +62,7 @@ function New-PortalTaskSettings {
 
 $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 $triggerTime = [DateTime]::Today.Add([TimeSpan]::Parse($RunAt))
-$actionArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$catchupPath`" -EarliestRun `"$RunAt`""
+$actionArgs = "-WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File `"$catchupPath`" -EarliestRun `"$RunAt`""
 
 $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $actionArgs -WorkingDirectory $repoRoot
 $dailyTrigger = New-ScheduledTaskTrigger -Daily -At $triggerTime
@@ -87,7 +87,7 @@ try {
   $registrationMode = "schtasks"
   $safeCatchupPath = Get-TaskSafePath -Path $catchupPath
   $safeRunAt = $RunAt.Trim('"')
-  $taskRun = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File $safeCatchupPath -EarliestRun $safeRunAt"
+  $taskRun = "powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File $safeCatchupPath -EarliestRun $safeRunAt"
   if ($taskRun.Length -gt 261) {
     throw "schtasks /TR would be $($taskRun.Length) characters, over the 261 character limit: $taskRun"
   }

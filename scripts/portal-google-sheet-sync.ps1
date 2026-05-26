@@ -92,11 +92,29 @@ function Invoke-NodeStep {
     [string[]]$Arguments,
     [int]$Attempts = 2,
     [int]$RetryDelaySeconds = 20,
-    [int]$TimeoutSeconds = 1800
+    [int]$TimeoutSeconds = 1800,
+    [switch]$StreamOutput
   )
 
   for ($attempt = 1; $attempt -le $Attempts; $attempt += 1) {
     Write-Output "[sync] $StepName attempt $attempt/$Attempts"
+    if ($StreamOutput) {
+      $global:LASTEXITCODE = 0
+      & $nodeExe @Arguments 2>&1 | ForEach-Object {
+        Write-Output ([string]$_)
+      }
+      $exitCode = if ($null -eq $LASTEXITCODE) { 0 } else { [int]$LASTEXITCODE }
+      if ($exitCode -eq 0) {
+        return
+      }
+      if ($attempt -ge $Attempts) {
+        throw "$StepName failed with exit code $exitCode"
+      }
+      Write-Output "[sync] $StepName failed with exit code $exitCode. Retrying in $RetryDelaySeconds sec."
+      Start-Sleep -Seconds $RetryDelaySeconds
+      continue
+    }
+
     $tempStdout = [System.IO.Path]::GetTempFileName()
     $tempStderr = [System.IO.Path]::GetTempFileName()
     try {
@@ -236,7 +254,7 @@ function Schedule-FailedStepRetry {
   }
   $manifest | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath -Encoding UTF8
 
-  $actionArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$retryScript`" -Manifest `"$manifestPath`" -LogDir `"$resolvedOutputDir`" -TaskName `"$taskName`""
+  $actionArgs = "-WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File `"$retryScript`" -Manifest `"$manifestPath`" -LogDir `"$resolvedOutputDir`" -TaskName `"$taskName`""
   $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $actionArgs -WorkingDirectory $repoRoot
   $trigger = New-ScheduledTaskTrigger -Once -At $retryAfter
   $principal = New-ScheduledTaskPrincipal -UserId ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType S4U -RunLevel Limited
@@ -375,7 +393,7 @@ try {
   Invoke-NodeStep -StepName "Yandex Market analytics refresh" -Arguments @(
     "scripts/portal-yandex-market-trends-sync.js",
     "sync"
-  ) -Attempts 1 -RetryDelaySeconds 20 -TimeoutSeconds 2700
+  ) -Attempts 1 -RetryDelaySeconds 20 -TimeoutSeconds 2700 -StreamOutput
   Write-Output "[sync] Yandex Market analytics refresh completed"
 } catch {
   Add-RetryStep -Id "yandex-market" -Name "Yandex Market analytics refresh" -Message ([string]$_.Exception.Message)

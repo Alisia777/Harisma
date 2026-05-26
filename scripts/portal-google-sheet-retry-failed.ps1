@@ -41,11 +41,29 @@ function Invoke-NodeStep {
     [string[]]$Arguments,
     [int]$Attempts = 1,
     [int]$RetryDelaySeconds = 60,
-    [int]$TimeoutSeconds = 1800
+    [int]$TimeoutSeconds = 1800,
+    [switch]$StreamOutput
   )
 
   for ($attempt = 1; $attempt -le $Attempts; $attempt += 1) {
     Write-LogLine "[retry] $StepName attempt $attempt/$Attempts"
+    if ($StreamOutput) {
+      $global:LASTEXITCODE = 0
+      & $nodeExe @Arguments 2>&1 | ForEach-Object {
+        Write-LogLine ([string]$_)
+      }
+      $exitCode = if ($null -eq $LASTEXITCODE) { 0 } else { [int]$LASTEXITCODE }
+      if ($exitCode -eq 0) {
+        return
+      }
+      if ($attempt -ge $Attempts) {
+        throw "$StepName failed with exit code $exitCode"
+      }
+      Write-LogLine "[retry] $StepName failed with exit code $exitCode. Retrying in $RetryDelaySeconds sec."
+      Start-Sleep -Seconds $RetryDelaySeconds
+      continue
+    }
+
     $tempStdout = [System.IO.Path]::GetTempFileName()
     $tempStderr = [System.IO.Path]::GetTempFileName()
     try {
@@ -288,7 +306,7 @@ function Invoke-RetryStep {
       Invoke-Upload @("sku_aliases", "sku_alias_ignore", "sku_alias_audit", "sku_matrix")
     }
     "yandex-market" {
-      Invoke-NodeStep -StepName "Yandex Market analytics retry" -Arguments @("scripts/portal-yandex-market-trends-sync.js", "sync") -Attempts 1 -RetryDelaySeconds 20 -TimeoutSeconds 2700
+      Invoke-NodeStep -StepName "Yandex Market analytics retry" -Arguments @("scripts/portal-yandex-market-trends-sync.js", "sync") -Attempts 1 -RetryDelaySeconds 20 -TimeoutSeconds 2700 -StreamOutput
       Copy-DataFilesToOutput @("platform_trends.json")
       Invoke-GoogleSheetBuild
       Invoke-Upload @("dashboard", "platform_trends")

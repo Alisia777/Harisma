@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v1",
-  "generatedAt": "2026-05-25T15:10:13.763Z",
+  "generatedAt": "2026-05-26T06:17:06.346Z",
   "title": "OOS control",
   "rules": {
     "soonDays": 10,
@@ -10,11 +10,11 @@
     ]
   },
   "dataFreshness": {
-    "status": "ok",
+    "status": "stale",
     "dataDate": "2026-05-24",
-    "expectedFactDate": "2026-05-24",
+    "expectedFactDate": "2026-05-25",
     "sourceGeneratedAt": "2026-05-25T07:25:21.432Z",
-    "message": "Данные свежие: факт до 2026-05-24.",
+    "message": "Данные отстают: факт до 2026-05-24, ожидается минимум 2026-05-25.",
     "orderProcurementGeneratedAt": "2026-05-25T07:25:21.432Z",
     "orderWindow": {
       "from": "2026-04-28",
@@ -30,7 +30,7 @@
     }
   },
   "summary": {
-    "date": "2026-05-25",
+    "date": "2026-05-26",
     "totalIssues": 38,
     "oosCount": 0,
     "criticalCount": 0,
@@ -41,16 +41,16 @@
     "revenueAtRiskDay": 3617399,
     "monthKey": "2026-05",
     "lostRevenueMonth": 0,
-    "revenueAtRiskMonth": 20584975,
+    "revenueAtRiskMonth": 24202374,
     "newIssues": 0,
     "reopenedIssues": 0,
     "resolvedToday": 0,
     "owners": 2,
     "skuCount": 1,
     "placeCount": 38,
-    "dataStatus": "ok",
+    "dataStatus": "stale",
     "dataDate": "2026-05-24",
-    "expectedFactDate": "2026-05-24"
+    "expectedFactDate": "2026-05-25"
   },
   "byPlatform": [
     {
@@ -150,8 +150,8 @@
       "revenueAtRiskDay": 594585,
       "recommendation": "Сформировать контрмеру по остатку WB / Екатеринбург - Перспективная 14: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -191,8 +191,8 @@
       "revenueAtRiskDay": 493901,
       "recommendation": "Сформировать контрмеру по остатку WB / Невинномысск: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -232,8 +232,8 @@
       "revenueAtRiskDay": 270949,
       "recommendation": "Сформировать контрмеру по остатку WB / Рязань (Тюшевское): заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -273,8 +273,8 @@
       "revenueAtRiskDay": 250570,
       "recommendation": "Сформировать контрмеру по остатку WB / Коледино: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -314,8 +314,8 @@
       "revenueAtRiskDay": 224427,
       "recommendation": "Сформировать контрмеру по остатку WB / Владимир WB: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -355,8 +355,8 @@
       "revenueAtRiskDay": 181928,
       "recommendation": "Сформировать контрмеру по остатку WB / Краснодар: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -396,8 +396,8 @@
       "revenueAtRiskDay": 164902,
       "recommendation": "Сформировать контрмеру по остатку WB / Казань: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -437,8 +437,8 @@
       "revenueAtRiskDay": 146937,
       "recommendation": "Сформировать контрмеру по остатку WB / Склад СПБ Шушары Московское: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -478,8 +478,8 @@
       "revenueAtRiskDay": 141038,
       "recommendation": "Сформировать контрмеру по остатку WB / Новосемейкино: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -519,8 +519,8 @@
       "revenueAtRiskDay": 139027,
       "recommendation": "Сформировать контрмеру по остатку WB / Тула: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -560,8 +560,8 @@
       "revenueAtRiskDay": 120124,
       "recommendation": "Сформировать контрмеру по остатку WB / Сарапул WB: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -601,8 +601,8 @@
       "revenueAtRiskDay": 117710,
       "recommendation": "Сформировать контрмеру по остатку WB / Котовск: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -642,8 +642,8 @@
       "revenueAtRiskDay": 83087,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Москва, МО и Дальние регионы: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -683,8 +683,8 @@
       "revenueAtRiskDay": 69312,
       "recommendation": "Сформировать контрмеру по остатку WB / Пенза WB: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -724,8 +724,8 @@
       "revenueAtRiskDay": 61082,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Астана: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -765,8 +765,8 @@
       "revenueAtRiskDay": 61082,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Казахстан: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -806,8 +806,8 @@
       "revenueAtRiskDay": 44489,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Кавказ: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -847,8 +847,8 @@
       "revenueAtRiskDay": 41292,
       "recommendation": "Сформировать контрмеру по остатку WB / Волгоград: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -888,8 +888,8 @@
       "revenueAtRiskDay": 38237,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Ярославль: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -929,8 +929,8 @@
       "revenueAtRiskDay": 36313,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Юг: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -970,8 +970,8 @@
       "revenueAtRiskDay": 34750,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Урал: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-23",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 3,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 4,
       "isNew": false,
       "isReopened": false
     },
@@ -1011,8 +1011,8 @@
       "revenueAtRiskDay": 32826,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Саратов: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1052,8 +1052,8 @@
       "revenueAtRiskDay": 32585,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Уфа: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1093,8 +1093,8 @@
       "revenueAtRiskDay": 29361,
       "recommendation": "Сформировать контрмеру по остатку WB / Воронеж WB: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1134,8 +1134,8 @@
       "revenueAtRiskDay": 28738,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Екатеринбург: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-25",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 1,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 2,
       "isNew": false,
       "isReopened": false
     },
@@ -1175,8 +1175,8 @@
       "revenueAtRiskDay": 28016,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Невинномысск: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1216,8 +1216,8 @@
       "revenueAtRiskDay": 25251,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Казань: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1257,8 +1257,8 @@
       "revenueAtRiskDay": 25010,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Санкт-Петербург и СЗО: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1298,8 +1298,8 @@
       "revenueAtRiskDay": 22605,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Ростов: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1339,8 +1339,8 @@
       "revenueAtRiskDay": 18758,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Воронеж: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1380,8 +1380,8 @@
       "revenueAtRiskDay": 16473,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Махачкала: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1421,8 +1421,8 @@
       "revenueAtRiskDay": 13708,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Краснодар: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1462,8 +1462,8 @@
       "revenueAtRiskDay": 10822,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Самара: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1503,8 +1503,8 @@
       "revenueAtRiskDay": 7215,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Оренбург: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-25",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 1,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 2,
       "isNew": false,
       "isReopened": false
     },
@@ -1544,8 +1544,8 @@
       "revenueAtRiskDay": 6012,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Пермь: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-23",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 3,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 4,
       "isNew": false,
       "isReopened": false
     },
@@ -1585,8 +1585,8 @@
       "revenueAtRiskDay": 3607,
       "recommendation": "Сформировать контрмеру по остатку Ozon / Тверь: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-25",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 1,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 2,
       "isNew": false,
       "isReopened": false
     },
@@ -1626,8 +1626,8 @@
       "revenueAtRiskDay": 536,
       "recommendation": "Сформировать контрмеру по остатку WB / Актобе: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-20",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 6,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 7,
       "isNew": false,
       "isReopened": false
     },
@@ -1667,8 +1667,8 @@
       "revenueAtRiskDay": 134,
       "recommendation": "Сформировать контрмеру по остатку WB / Электросталь: заказ, перемещение или лимит продаж.",
       "firstSeenDate": "2026-05-25",
-      "lastSeenDate": "2026-05-25",
-      "daysOpen": 1,
+      "lastSeenDate": "2026-05-26",
+      "daysOpen": 2,
       "isNew": false,
       "isReopened": false
     }
@@ -1740,10 +1740,21 @@
         "watchCount": 0,
         "lostRevenueDay": 0,
         "revenueAtRiskDay": 3617399
+      },
+      {
+        "date": "2026-05-26",
+        "totalIssues": 38,
+        "oosCount": 0,
+        "criticalCount": 0,
+        "riskCount": 38,
+        "oosSoonCount": 38,
+        "watchCount": 0,
+        "lostRevenueDay": 0,
+        "revenueAtRiskDay": 3617399
       }
     ],
     "latest": {
-      "date": "2026-05-25",
+      "date": "2026-05-26",
       "totalIssues": 38,
       "oosCount": 0,
       "criticalCount": 0,
@@ -1767,8 +1778,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -1784,8 +1795,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -1801,8 +1812,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -1818,8 +1829,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -1835,8 +1846,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -1852,8 +1863,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -1869,8 +1880,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -1886,8 +1897,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -1903,8 +1914,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -1920,8 +1931,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -1937,8 +1948,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -1954,8 +1965,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -1971,8 +1982,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -1988,8 +1999,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2005,8 +2016,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2022,8 +2033,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2039,8 +2050,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2056,8 +2067,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2073,8 +2084,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2090,8 +2101,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2107,8 +2118,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-23",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 3,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 4,
         "resolvedDate": ""
       },
       {
@@ -2124,8 +2135,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2141,8 +2152,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2158,8 +2169,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2175,8 +2186,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-25",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 1,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 2,
         "resolvedDate": ""
       },
       {
@@ -2192,8 +2203,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2209,8 +2220,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2226,8 +2237,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2243,8 +2254,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2260,8 +2271,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2277,8 +2288,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2294,8 +2305,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2311,8 +2322,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2328,8 +2339,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-25",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 1,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 2,
         "resolvedDate": ""
       },
       {
@@ -2345,8 +2356,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-23",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 3,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 4,
         "resolvedDate": ""
       },
       {
@@ -2362,8 +2373,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-25",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 1,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 2,
         "resolvedDate": ""
       },
       {
@@ -2379,8 +2390,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-20",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 6,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 7,
         "resolvedDate": ""
       },
       {
@@ -2396,8 +2407,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-05-25",
-        "lastSeenDate": "2026-05-25",
-        "daysOpen": 1,
+        "lastSeenDate": "2026-05-26",
+        "daysOpen": 2,
         "resolvedDate": ""
       },
       {

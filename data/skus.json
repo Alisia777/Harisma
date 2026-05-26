@@ -25,7 +25,8 @@
         "ym": "Анна",
         "ga": "Екатерина",
         "letu": "Екатерина",
-        "mm": "Екатерина"
+        "mm": "Екатерина",
+        "wb": "Мария"
       }
     },
     "traffic": {
@@ -119,7 +120,8 @@
       "ym": "Анна",
       "ga": "Екатерина",
       "letu": "Екатерина",
-      "mm": "Екатерина"
+      "mm": "Екатерина",
+      "wb": "Мария"
     },
     "categoriesByPlatform": {
       "wb": "Гели для бровей",
@@ -132,10 +134,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "clearedAt": "2026-05-25T15:09:56.109Z",
-      "reason": "missing_in_distribution"
+      "owner": "Мария",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 3,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -164,7 +166,8 @@
         "ym": "Анна",
         "ga": "Екатерина",
         "letu": "Екатерина",
-        "mm": "Екатерина"
+        "mm": "Екатерина",
+        "wb": "Мария"
       }
     },
     "traffic": {
@@ -258,7 +261,8 @@
       "ym": "Анна",
       "ga": "Екатерина",
       "letu": "Екатерина",
-      "mm": "Екатерина"
+      "mm": "Екатерина",
+      "wb": "Мария"
     },
     "categoriesByPlatform": {
       "wb": "Сыворотки",
@@ -271,10 +275,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "clearedAt": "2026-05-25T15:09:56.109Z",
-      "reason": "missing_in_distribution"
+      "owner": "Мария",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 4,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -303,7 +307,8 @@
         "ym": "Анна",
         "ga": "Екатерина",
         "letu": "Екатерина",
-        "mm": "Екатерина"
+        "mm": "Екатерина",
+        "wb": "Максим"
       }
     },
     "traffic": {
@@ -397,7 +402,8 @@
       "ym": "Анна",
       "ga": "Екатерина",
       "letu": "Екатерина",
-      "mm": "Екатерина"
+      "mm": "Екатерина",
+      "wb": "Максим"
     },
     "categoriesByPlatform": {
       "wb": "БАДы",
@@ -410,10 +416,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "clearedAt": "2026-05-25T15:09:56.109Z",
-      "reason": "missing_in_distribution"
+      "owner": "Максим",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 5,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -552,9 +558,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 38,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 6,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -583,7 +589,8 @@
         "ym": "Анна",
         "ga": "Екатерина",
         "letu": "Екатерина",
-        "mm": "Екатерина"
+        "mm": "Екатерина",
+        "wb": "Максим"
       }
     },
     "traffic": {
@@ -679,7 +686,8 @@
       "ym": "Анна",
       "ga": "Екатерина",
       "letu": "Екатерина",
-      "mm": "Екатерина"
+      "mm": "Екатерина",
+      "wb": "Максим"
     },
     "categoriesByPlatform": {
       "wb": "Жиросжигатели",
@@ -692,10 +700,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "clearedAt": "2026-05-25T15:09:56.109Z",
-      "reason": "missing_in_distribution"
+      "owner": "Максим",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 7,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -836,9 +844,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 2,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 8,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -977,9 +985,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 69,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 9,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -1118,9 +1126,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 159,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 10,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -1261,9 +1269,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 118,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 11,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -1404,9 +1412,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 90,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 12,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -1545,9 +1553,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 110,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 13,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -1576,7 +1584,8 @@
         "ym": "Анна",
         "ga": "Екатерина",
         "letu": "Екатерина",
-        "mm": "Екатерина"
+        "mm": "Екатерина",
+        "wb": "Мария"
       }
     },
     "traffic": {
@@ -1672,7 +1681,8 @@
       "ym": "Анна",
       "ga": "Екатерина",
       "letu": "Екатерина",
-      "mm": "Екатерина"
+      "mm": "Екатерина",
+      "wb": "Мария"
     },
     "categoriesByPlatform": {
       "wb": "Гели",
@@ -1685,10 +1695,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "clearedAt": "2026-05-25T15:09:56.109Z",
-      "reason": "missing_in_distribution"
+      "owner": "Мария",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 14,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -1829,9 +1839,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 9,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 15,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -1970,9 +1980,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 83,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 16,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -2111,9 +2121,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 42,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 17,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -2252,9 +2262,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 30,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 18,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -2393,9 +2403,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 43,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 19,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -2534,9 +2544,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 122,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 20,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -2675,9 +2685,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 149,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 21,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -2816,9 +2826,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 146,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 22,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -2957,9 +2967,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 24,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 23,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -3098,9 +3108,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 91,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 24,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -3239,9 +3249,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 65,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 25,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -3270,7 +3280,8 @@
         "ym": "Анна",
         "ga": "Екатерина",
         "letu": "Екатерина",
-        "mm": "Екатерина"
+        "mm": "Екатерина",
+        "wb": "Максим"
       }
     },
     "traffic": {
@@ -3364,7 +3375,8 @@
       "ym": "Анна",
       "ga": "Екатерина",
       "letu": "Екатерина",
-      "mm": "Екатерина"
+      "mm": "Екатерина",
+      "wb": "Максим"
     },
     "categoriesByPlatform": {
       "wb": "Гели",
@@ -3377,10 +3389,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "clearedAt": "2026-05-25T15:09:56.109Z",
-      "reason": "missing_in_distribution"
+      "owner": "Максим",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 26,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -3519,9 +3531,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 128,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 27,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -3550,7 +3562,8 @@
         "ym": "Анна",
         "ga": "Екатерина",
         "letu": "Екатерина",
-        "mm": "Екатерина"
+        "mm": "Екатерина",
+        "wb": "Мария"
       }
     },
     "traffic": {
@@ -3644,7 +3657,8 @@
       "ym": "Анна",
       "ga": "Екатерина",
       "letu": "Екатерина",
-      "mm": "Екатерина"
+      "mm": "Екатерина",
+      "wb": "Мария"
     },
     "categoriesByPlatform": {
       "wb": "",
@@ -3657,10 +3671,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "clearedAt": "2026-05-25T15:09:56.109Z",
-      "reason": "missing_in_distribution"
+      "owner": "Мария",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 33,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -3801,9 +3815,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 51,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 28,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -3942,9 +3956,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 32,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 29,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -4085,9 +4099,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 46,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 30,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -4228,9 +4242,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 14,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 31,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -4371,9 +4385,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 5,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 32,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -4514,9 +4528,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 28,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 34,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -4657,9 +4671,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 6,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 35,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -4800,9 +4814,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 13,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 36,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -4943,9 +4957,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 108,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 38,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -5086,9 +5100,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 26,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 39,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -5229,9 +5243,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 25,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 40,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -5372,9 +5386,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 114,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 37,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -5513,9 +5527,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 86,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 41,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -5654,9 +5668,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 160,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 42,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -5795,9 +5809,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 112,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 43,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -5936,9 +5950,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 73,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 44,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -6077,9 +6091,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 66,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 45,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -6104,7 +6118,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "",
+        "wb": "Максим",
         "ozon": "",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6199,7 +6213,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Максим",
       "ozon": "",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6215,7 +6229,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Максим",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 46,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
+    }
   },
   {
     "article": "nabor_penka_dlya_resnic",
@@ -6353,9 +6373,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 36,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 47,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -6494,9 +6514,9 @@
     "sheetStatus": "Перерабатываем",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 54,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 48,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -6635,9 +6655,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 153,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 49,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -6776,9 +6796,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 15,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 50,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -6919,9 +6939,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 121,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 51,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -7062,9 +7082,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 113,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 52,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -7093,7 +7113,8 @@
         "ym": "Анна",
         "ga": "Екатерина",
         "letu": "Екатерина",
-        "mm": "Екатерина"
+        "mm": "Екатерина",
+        "wb": "Мария"
       }
     },
     "traffic": {
@@ -7187,7 +7208,8 @@
       "ym": "Анна",
       "ga": "Екатерина",
       "letu": "Екатерина",
-      "mm": "Екатерина"
+      "mm": "Екатерина",
+      "wb": "Мария"
     },
     "categoriesByPlatform": {
       "wb": "Пилинг",
@@ -7200,10 +7222,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "clearedAt": "2026-05-25T15:09:56.109Z",
-      "reason": "missing_in_distribution"
+      "owner": "Мария",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 53,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -7344,9 +7366,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 59,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 54,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -7375,7 +7397,8 @@
         "ym": "Анна",
         "ga": "Екатерина",
         "letu": "Екатерина",
-        "mm": "Екатерина"
+        "mm": "Екатерина",
+        "wb": "Максим"
       }
     },
     "traffic": {
@@ -7469,7 +7492,8 @@
       "ym": "Анна",
       "ga": "Екатерина",
       "letu": "Екатерина",
-      "mm": "Екатерина"
+      "mm": "Екатерина",
+      "wb": "Максим"
     },
     "categoriesByPlatform": {
       "wb": "Травяные сборы",
@@ -7482,10 +7506,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "clearedAt": "2026-05-25T15:09:56.109Z",
-      "reason": "missing_in_distribution"
+      "owner": "Максим",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 55,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -7514,7 +7538,8 @@
         "ym": "Анна",
         "ga": "Екатерина",
         "letu": "Екатерина",
-        "mm": "Екатерина"
+        "mm": "Екатерина",
+        "wb": "Максим"
       }
     },
     "traffic": {
@@ -7610,7 +7635,8 @@
       "ym": "Анна",
       "ga": "Екатерина",
       "letu": "Екатерина",
-      "mm": "Екатерина"
+      "mm": "Екатерина",
+      "wb": "Максим"
     },
     "categoriesByPlatform": {
       "wb": "Комплексные пищевые добавки",
@@ -7623,10 +7649,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "clearedAt": "2026-05-25T15:09:56.109Z",
-      "reason": "missing_in_distribution"
+      "owner": "Максим",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 56,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -7647,11 +7673,23 @@
     "focusScore": 3,
     "focusReasons": "Низкий остаток; WB ниже min price; Ozon ниже min price; Owner не закреплён",
     "owner": {
-      "name": "",
+      "name": {
+        "name": "",
+        "source": null,
+        "registryStatus": null,
+        "byPlatform": {
+          "wb": "",
+          "ozon": "Александр Озон",
+          "ym": "Анна",
+          "ga": "Екатерина",
+          "letu": "Екатерина",
+          "mm": "Екатерина"
+        }
+      },
       "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7746,7 +7784,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7762,7 +7800,13 @@
       "mm": ""
     },
     "costPrice": null,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "wbOwnerDistribution": {
+      "owner": "Мария",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 57,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
+    }
   },
   {
     "article": "retiderm_50ml",
@@ -7902,9 +7946,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 3,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 58,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -7933,7 +7977,8 @@
         "ym": "Анна",
         "ga": "Екатерина",
         "letu": "Екатерина",
-        "mm": "Екатерина"
+        "mm": "Екатерина",
+        "wb": "Мария"
       }
     },
     "traffic": {
@@ -8029,7 +8074,8 @@
       "ym": "Анна",
       "ga": "Екатерина",
       "letu": "Екатерина",
-      "mm": "Екатерина"
+      "mm": "Екатерина",
+      "wb": "Мария"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -8042,10 +8088,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "clearedAt": "2026-05-25T15:09:56.109Z",
-      "reason": "missing_in_distribution"
+      "owner": "Мария",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 59,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -8187,9 +8233,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 35,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 60,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -8331,9 +8377,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 12,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 61,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -8475,9 +8521,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 8,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 63,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -8618,9 +8664,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 7,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 62,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -8645,7 +8691,7 @@
       "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -8740,7 +8786,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -8758,10 +8804,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 34,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 64,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -8900,9 +8946,9 @@
     "sheetStatus": "Новинка",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 40,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 65,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -9043,9 +9089,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 21,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 66,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -9184,9 +9230,9 @@
     "sheetStatus": "Новинка",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 11,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 67,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -9207,11 +9253,23 @@
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": "",
+      "name": {
+        "name": "",
+        "source": null,
+        "registryStatus": null,
+        "byPlatform": {
+          "wb": "",
+          "ozon": "Даша",
+          "ym": "",
+          "ga": "",
+          "letu": "",
+          "mm": ""
+        }
+      },
       "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -9306,7 +9364,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -9322,7 +9380,13 @@
       "mm": "Наборы средств для лица"
     },
     "costPrice": null,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "wbOwnerDistribution": {
+      "owner": "Мария",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 68,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
+    }
   },
   {
     "article": "Retinol_Start_Kit",
@@ -9346,7 +9410,7 @@
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -9441,7 +9505,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -9459,10 +9523,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Васильева Мария",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 117,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Мария",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 69,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -9601,9 +9665,9 @@
     "sheetStatus": "Под вопросом",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 127,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 70,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -9744,9 +9808,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 10,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 71,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -9887,9 +9951,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 34,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 72,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -10030,9 +10094,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 33,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 73,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -10173,9 +10237,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 111,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 74,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -10316,9 +10380,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 22,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 75,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -10457,9 +10521,9 @@
     "sheetStatus": "Новинка",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 161,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 76,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -10484,7 +10548,7 @@
       "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -10579,7 +10643,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -10597,10 +10661,10 @@
     "costPrice": null,
     "sheetStatus": "Новинка",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 22,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 77,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -10741,9 +10805,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 16,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 78,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -10772,7 +10836,8 @@
         "ym": "Анна",
         "ga": "Екатерина",
         "letu": "Екатерина",
-        "mm": "Екатерина"
+        "mm": "Екатерина",
+        "wb": "Максим"
       }
     },
     "traffic": {
@@ -10866,7 +10931,8 @@
       "ym": "Анна",
       "ga": "Екатерина",
       "letu": "Екатерина",
-      "mm": "Екатерина"
+      "mm": "Екатерина",
+      "wb": "Максим"
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -10879,10 +10945,10 @@
     "costPrice": null,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
-      "owner": "",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "clearedAt": "2026-05-25T15:09:56.109Z",
-      "reason": "missing_in_distribution"
+      "owner": "Максим",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 79,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -11158,9 +11224,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 71,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 81,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -11299,9 +11365,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 4,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 82,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -11440,9 +11506,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 158,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 83,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -11581,9 +11647,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 18,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 84,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -11722,9 +11788,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 53,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 85,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -11749,7 +11815,7 @@
       "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "",
+        "wb": "Максим",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -11844,7 +11910,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Максим",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -11862,10 +11928,10 @@
     "costPrice": null,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
-      "owner": "Лапыгин Максим",
-      "sourceFile": "распределение артикулов.xlsx",
-      "sourceRow": 12,
-      "appliedAt": "2026-05-25T07:25:22.693Z"
+      "owner": "Максим",
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 86,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -12004,9 +12070,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 64,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 87,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -12145,9 +12211,9 @@
     "sheetStatus": "Под вопросом",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 105,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 88,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -12286,9 +12352,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 85,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 89,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -12429,9 +12495,9 @@
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Максим",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 67,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 90,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   },
   {
@@ -12570,9 +12636,9 @@
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Мария",
-      "sourceFile": "ответственные все МП (1).xlsx",
-      "sourceRow": 151,
-      "appliedAt": "2026-05-25T15:09:56.109Z"
+      "sourceFile": "ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "sourceRow": 2,
+      "appliedAt": "2026-05-26T06:16:49.320Z"
     }
   }
 ]

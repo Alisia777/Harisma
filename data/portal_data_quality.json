@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-26T06:17:06.559Z",
+  "generatedAt": "2026-05-26T06:55:23.316Z",
   "status": "critical",
   "summary": {
     "issueCount": 180,
@@ -18,7 +18,7 @@
     "skuMissingOwner": 1,
     "warehouseUnmatchedRows": 25,
     "wbOwnerMatchedSku": 88,
-    "wbOwnerUpdatedSku": 19,
+    "wbOwnerUpdatedSku": 0,
     "wbOwnerMissingInPortal": 0,
     "wbOwnerMissingInDistribution": 1
   },
@@ -184,9 +184,9 @@
     "unmatchedRows": 25
   },
   "wbOwnerDistributionSummary": {
-    "sourceGeneratedAt": "2026-05-26T06:16:49.320Z",
+    "sourceGeneratedAt": "2026-05-26T06:54:19.427Z",
     "matchedSkuCount": 88,
-    "updatedOwnerCount": 19,
+    "updatedOwnerCount": 0,
     "missingInPortalCount": 0,
     "missingInDistributionCount": 1
   },

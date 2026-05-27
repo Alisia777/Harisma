@@ -427,16 +427,32 @@ function applyOwnerOverridesToSkus() {
     if (override) {
       const assignedOwnerName = canonicalOwnerName(override.ownerName || '');
       const hasAssignedOwner = Boolean(assignedOwnerName);
+      const baseOwnerByPlatform = typeof normalizeOwnerOverridePlatforms === 'function'
+        ? normalizeOwnerOverridePlatforms({
+          ...(sku.ownersByPlatform || {}),
+          ...(baseOwner.byPlatform || {})
+        })
+        : { ...(sku.ownersByPlatform || {}), ...(baseOwner.byPlatform || {}) };
+      const overrideOwnerByPlatform = typeof normalizeOwnerOverridePlatforms === 'function'
+        ? normalizeOwnerOverridePlatforms(override.ownerByPlatform || {})
+        : { ...(override.ownerByPlatform || {}) };
+      const ownerByPlatform = {
+        ...baseOwnerByPlatform,
+        ...overrideOwnerByPlatform
+      };
+      const hasPlatformOwner = Object.keys(ownerByPlatform).length > 0;
       sku.owner = {
         ...baseOwner,
         name: hasAssignedOwner ? assignedOwnerName : '',
-        source: hasAssignedOwner ? 'Командное закрепление' : '',
+        byPlatform: hasPlatformOwner ? ownerByPlatform : baseOwner.byPlatform,
+        source: (hasAssignedOwner || hasPlatformOwner) ? 'Командное закрепление' : '',
         registryStatus: hasAssignedOwner
           ? (override.ownerRole || baseOwner.registryStatus || '')
           : (override.ownerRole || '')
       };
+      if (hasPlatformOwner) sku.ownersByPlatform = ownerByPlatform;
       sku.flags = sku.flags || {};
-      sku.flags.assigned = hasAssignedOwner;
+      sku.flags.assigned = hasAssignedOwner || hasPlatformOwner;
     } else {
       sku.owner = baseOwner;
       sku.flags = sku.flags || {};

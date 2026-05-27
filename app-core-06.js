@@ -181,6 +181,24 @@ function registryOwnerByMarket(sku, market = '') {
   ).trim();
 }
 
+function registryDisplayOwner(sku, market = state.filters.market) {
+  const normalizedMarket = String(market || 'all').toLowerCase();
+  if (REGISTRY_MARKET_SUPPORT_KEYS[normalizedMarket]) {
+    return canonicalOwnerName(registryOwnerByMarket(sku, normalizedMarket) || '');
+  }
+  return ownerName(sku);
+}
+
+function registryHasOwner(sku) {
+  return Boolean(registryDisplayOwner(sku));
+}
+
+function registryOwnerCell(sku) {
+  const owner = registryDisplayOwner(sku);
+  if (!owner) return `<div class="owner-cell"><strong>Не закреплён</strong><div class="muted small">Нужно назначить owner</div></div>`;
+  return `<div class="owner-cell"><strong>${escapeHtml(owner)}</strong><div class="muted small">${escapeHtml(skuOperationalStatusMeta(sku).label || '—')}</div></div>`;
+}
+
 function filterSkuByMarket(sku) {
   const market = String(state.filters.market || 'all').toLowerCase();
   if (market === 'wb') return Boolean(sku?.flags?.hasWB || registryOwnerByMarket(sku, market));
@@ -221,13 +239,29 @@ function getFilteredSkus(taskMap = null) {
     const matrixProblemState = typeof skuMatrixProblemState === 'function' ? skuMatrixProblemState(sku) : 'ok';
     const matrixProblemMeta = typeof skuMatrixProblemMeta === 'function' ? skuMatrixProblemMeta(matrixProblemState) : null;
     const lifecycle = skuLifecycleMetaForRegistry(sku);
-    const hay = [sku.article, sku.articleKey, sku.name, sku.brand, sku.category, sku.segment, ownerName(sku), sku.status, lifecycle?.label, lifecycle?.reason, sku.focusReasons, matrixProblemMeta?.label].filter(Boolean).join(' ').toLowerCase();
+    const hay = [
+      sku.article,
+      sku.articleKey,
+      sku.name,
+      sku.brand,
+      sku.category,
+      sku.segment,
+      registryDisplayOwner(sku),
+      ownerName(sku),
+      ...Object.values(sku?.ownersByPlatform || {}),
+      ...Object.values(sku?.owner?.byPlatform || {}),
+      sku.status,
+      lifecycle?.label,
+      lifecycle?.reason,
+      sku.focusReasons,
+      matrixProblemMeta?.label
+    ].filter(Boolean).join(' ').toLowerCase();
     if (q && !hay.includes(q)) return false;
-    if (state.filters.owner !== 'all' && ownerName(sku) !== state.filters.owner) return false;
+    if (state.filters.owner !== 'all' && registryDisplayOwner(sku) !== state.filters.owner) return false;
     if (state.filters.segment !== 'all' && sku.segment !== state.filters.segment) return false;
     if (state.filters.lifecycle !== 'all' && (lifecycle?.key || 'active') !== state.filters.lifecycle) return false;
-    if (state.filters.assignment === 'assigned' && !ownerName(sku)) return false;
-    if (state.filters.assignment === 'unassigned' && ownerName(sku)) return false;
+    if (state.filters.assignment === 'assigned' && !registryHasOwner(sku)) return false;
+    if (state.filters.assignment === 'unassigned' && registryHasOwner(sku)) return false;
     if (state.filters.traffic === 'any' && !sku?.flags?.hasExternalTraffic) return false;
     if (state.filters.traffic === 'kz' && !sku?.flags?.hasKZ) return false;
     if (state.filters.traffic === 'vk' && !sku?.flags?.hasVK) return false;
@@ -253,7 +287,7 @@ function getFilteredSkus(taskMap = null) {
       case 'extVK':
         return sku?.flags?.hasVK;
       case 'unassigned':
-        return !ownerName(sku);
+        return !registryHasOwner(sku);
       case 'matrixIssue':
         return matrixProblemState && matrixProblemState !== 'ok';
       default:
@@ -274,7 +308,11 @@ function renderSkuRegistry() {
   const skuTaskMap = buildSkuRegistryTaskMap();
   state.filters.lifecycle = state.filters.lifecycle || 'all';
   const items = getFilteredSkus(skuTaskMap);
-  const owners = [...new Set(state.skus.map((sku) => ownerName(sku)).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
+  const owners = [...new Set(state.skus
+    .filter((sku) => filterSkuByMarket(sku))
+    .map((sku) => registryDisplayOwner(sku))
+    .filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'ru'));
   const segments = [...new Set(state.skus.map((sku) => sku.segment).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
   const lifecycleCounts = new Map();
   state.skus.forEach((sku) => {
@@ -288,7 +326,7 @@ function renderSkuRegistry() {
       return { key, label: meta.label || key, count: lifecycleCounts.get(key) || 0, tone: meta.tone || '' };
     })
     .filter((item) => item.count > 0 || item.key === state.filters.lifecycle || item.key === 'active');
-  const assignedCount = items.filter((sku) => ownerName(sku)).length;
+  const assignedCount = items.filter((sku) => registryHasOwner(sku)).length;
   const unassignedCount = items.length - assignedCount;
   const kzCount = items.filter((sku) => sku?.flags?.hasKZ).length;
   const vkCount = items.filter((sku) => sku?.flags?.hasVK).length;
@@ -308,7 +346,7 @@ function renderSkuRegistry() {
       <td>${linkToSku(sku.articleKey, sku.article || sku.articleKey)}</td>
       <td><div><strong>${escapeHtml(sku.name || 'Без названия')}</strong></div><div class="muted small">${escapeHtml(sku.category || sku.segment || '—')}</div></td>
       <td>${skuOperationalStatus(sku)}${matrixBadge}</td>
-      <td>${ownerCell(sku)}</td>
+      <td>${registryOwnerCell(sku)}</td>
       <td>${trafficBadges(sku, 'нет')}</td>
       <td>${renderSkuTaskSummary(sku, task)}</td>
       <td>${nextTaskForSku(sku.articleKey)?.due ? escapeHtml(nextTaskForSku(sku.articleKey).due) : '—'}</td>
@@ -403,7 +441,11 @@ function renderSkuRegistry() {
   document.getElementById('skuFocusFilter').addEventListener('change', (e) => { state.filters.focus = e.target.value; renderSkuRegistry(); });
   document.getElementById('skuTrafficFilter').addEventListener('change', (e) => { state.filters.traffic = e.target.value; renderSkuRegistry(); });
   document.getElementById('skuAssignmentFilter').addEventListener('change', (e) => { state.filters.assignment = e.target.value; renderSkuRegistry(); });
-  root.querySelectorAll('[data-market-filter]').forEach((btn) => btn.addEventListener('click', (e) => { state.filters.market = e.currentTarget.dataset.marketFilter; renderSkuRegistry(); }));
+  root.querySelectorAll('[data-market-filter]').forEach((btn) => btn.addEventListener('click', (e) => {
+    state.filters.market = e.currentTarget.dataset.marketFilter;
+    state.filters.owner = 'all';
+    renderSkuRegistry();
+  }));
 }
 
 function metricRow(label, value, kind = '') {

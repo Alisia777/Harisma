@@ -186,11 +186,38 @@ function registryDisplayOwner(sku, market = state.filters.market) {
   if (REGISTRY_MARKET_SUPPORT_KEYS[normalizedMarket]) {
     return canonicalOwnerName(registryOwnerByMarket(sku, normalizedMarket) || '');
   }
+  const selectedOwner = canonicalOwnerName(state.filters.owner || '');
+  if (selectedOwner && selectedOwner !== 'all' && registryOwnerMatches(sku, selectedOwner, 'all')) {
+    return selectedOwner;
+  }
   return ownerName(sku);
 }
 
+function registryOwnersForFilter(sku, market = state.filters.market) {
+  const normalizedMarket = String(market || 'all').toLowerCase();
+  const owners = [];
+  const addOwner = (value) => {
+    const owner = canonicalOwnerName(value || '');
+    if (owner && !owners.includes(owner)) owners.push(owner);
+  };
+  if (REGISTRY_MARKET_SUPPORT_KEYS[normalizedMarket]) {
+    addOwner(registryOwnerByMarket(sku, normalizedMarket));
+    return owners;
+  }
+  addOwner(ownerName(sku));
+  Object.values(sku?.ownersByPlatform || {}).forEach(addOwner);
+  Object.values(sku?.owner?.byPlatform || {}).forEach(addOwner);
+  return owners;
+}
+
+function registryOwnerMatches(sku, owner, market = state.filters.market) {
+  const selectedOwner = canonicalOwnerName(owner || '');
+  if (!selectedOwner || selectedOwner === 'all') return true;
+  return registryOwnersForFilter(sku, market).includes(selectedOwner);
+}
+
 function registryHasOwner(sku) {
-  return Boolean(registryDisplayOwner(sku));
+  return registryOwnersForFilter(sku).length > 0;
 }
 
 function registryOwnerCell(sku) {
@@ -257,7 +284,7 @@ function getFilteredSkus(taskMap = null) {
       matrixProblemMeta?.label
     ].filter(Boolean).join(' ').toLowerCase();
     if (q && !hay.includes(q)) return false;
-    if (state.filters.owner !== 'all' && registryDisplayOwner(sku) !== state.filters.owner) return false;
+    if (state.filters.owner !== 'all' && !registryOwnerMatches(sku, state.filters.owner)) return false;
     if (state.filters.segment !== 'all' && sku.segment !== state.filters.segment) return false;
     if (state.filters.lifecycle !== 'all' && (lifecycle?.key || 'active') !== state.filters.lifecycle) return false;
     if (state.filters.assignment === 'assigned' && !registryHasOwner(sku)) return false;
@@ -310,7 +337,7 @@ function renderSkuRegistry() {
   const items = getFilteredSkus(skuTaskMap);
   const owners = [...new Set(state.skus
     .filter((sku) => filterSkuByMarket(sku))
-    .map((sku) => registryDisplayOwner(sku))
+    .flatMap((sku) => registryOwnersForFilter(sku))
     .filter(Boolean))]
     .sort((a, b) => a.localeCompare(b, 'ru'));
   const segments = [...new Set(state.skus.map((sku) => sku.segment).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));

@@ -1568,7 +1568,7 @@
       "plan_completion_feb26_pct": 0.3244,
       "total_mp_stock": 9203,
       "content_romi": 91.145,
-      "owner_name": "Олеся",
+      "owner_name": "Мария",
       "external_kz_flag": 1,
       "external_vk_flag": 0
     },
@@ -1620,7 +1620,7 @@
       "plan_completion_feb26_pct": 0.3523,
       "total_mp_stock": 763,
       "content_romi": null,
-      "owner_name": "Олеся",
+      "owner_name": "Максим",
       "external_kz_flag": 0,
       "external_vk_flag": 0
     },
@@ -1659,7 +1659,7 @@
       "plan_completion_feb26_pct": 0.3203,
       "total_mp_stock": 6986,
       "content_romi": 353.345,
-      "owner_name": "Олеся",
+      "owner_name": "Мария",
       "external_kz_flag": 1,
       "external_vk_flag": 0
     },
@@ -1685,7 +1685,7 @@
       "plan_completion_feb26_pct": 0.373,
       "total_mp_stock": 2452,
       "content_romi": 336.99,
-      "owner_name": "Олеся",
+      "owner_name": "Максим",
       "external_kz_flag": 1,
       "external_vk_flag": 0
     },
@@ -1698,7 +1698,7 @@
       "plan_completion_feb26_pct": 0.373,
       "total_mp_stock": 3935,
       "content_romi": 424.545,
-      "owner_name": "Олеся",
+      "owner_name": "Мария",
       "external_kz_flag": 1,
       "external_vk_flag": 0
     },
@@ -1737,7 +1737,7 @@
       "plan_completion_feb26_pct": 0.3319,
       "total_mp_stock": 4254,
       "content_romi": null,
-      "owner_name": "Олеся",
+      "owner_name": "Мария",
       "external_kz_flag": 1,
       "external_vk_flag": 0
     },
@@ -1750,7 +1750,7 @@
       "plan_completion_feb26_pct": 0.3333,
       "total_mp_stock": 1,
       "content_romi": null,
-      "owner_name": "Олеся",
+      "owner_name": "Мария",
       "external_kz_flag": 0,
       "external_vk_flag": 0
     }
@@ -1765,7 +1765,7 @@
       "content_revenue": 5607137.34,
       "content_posts": 1599,
       "content_clicks": 79455,
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "gel_antiakne_20ml_v2",
@@ -1787,7 +1787,7 @@
       "content_revenue": 1884996.33,
       "content_posts": 479,
       "content_clicks": 17112,
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "curly_method_300ml",
@@ -1798,7 +1798,7 @@
       "content_revenue": 1595093.81,
       "content_posts": 475,
       "content_clicks": 24799,
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "penka_kudryavii_metod_150ml",
@@ -1809,7 +1809,7 @@
       "content_revenue": 1117825.21,
       "content_posts": 298,
       "content_clicks": 13100,
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "retiderm_50ml",
@@ -1820,7 +1820,7 @@
       "content_revenue": 389710.12,
       "content_posts": 126,
       "content_clicks": 26279,
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "maska_dlya_lica_100ml",
@@ -1831,7 +1831,7 @@
       "content_revenue": 317327.45,
       "content_posts": 41,
       "content_clicks": 21949,
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "maska-batter_dlya_rosta_500ml",
@@ -1842,7 +1842,7 @@
       "content_revenue": 252024.28,
       "content_posts": 102,
       "content_clicks": 3892,
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "retinol_boost_krem_dlya_vek_30ml",
@@ -1864,7 +1864,7 @@
       "content_revenue": 1926499.82,
       "content_posts": 1197,
       "content_clicks": 32080,
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "retinait_krem_1_50ml",
@@ -1875,7 +1875,7 @@
       "content_revenue": 65382.03,
       "content_posts": 21,
       "content_clicks": 724,
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "syvorotka_niacin_05_30ml",
@@ -1976,7 +1976,7 @@
       "plan_completion_feb26_pct": 0.3203,
       "total_mp_stock": 6986,
       "negative_margin_flag": 0,
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "matte_wax_50ml",
@@ -1998,7 +1998,7 @@
       "plan_completion_feb26_pct": 0.3244,
       "total_mp_stock": 9203,
       "negative_margin_flag": 1,
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "solevoy_sprei_200ml",
@@ -2020,7 +2020,7 @@
       "plan_completion_feb26_pct": 0.3319,
       "total_mp_stock": 4254,
       "negative_margin_flag": 0,
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     }
   ],
   "toWork": [
@@ -2085,7 +2085,7 @@
       "wb_margin_pct": 0.5005,
       "ozon_margin_pct": -0.1979,
       "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов; Есть внешний трафик КЗ",
-      "owner_name": "Олеся",
+      "owner_name": "Мария",
       "external_kz_flag": 1,
       "external_vk_flag": 0
     },
@@ -2098,7 +2098,7 @@
       "wb_margin_pct": 0.3548,
       "ozon_margin_pct": -0.336,
       "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon",
-      "owner_name": "Олеся",
+      "owner_name": "Максим",
       "external_kz_flag": 0,
       "external_vk_flag": 0
     },
@@ -2267,7 +2267,7 @@
       "returns_units": 732,
       "returns_count": 732,
       "top_return_reason": "Покупатель отменил заказ",
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "krovavii_piling_30ml",
@@ -2276,7 +2276,7 @@
       "returns_units": 541,
       "returns_count": 541,
       "top_return_reason": "Покупатель отменил заказ: нашел дешевле",
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "maska_dlya_lica_100ml",
@@ -2285,7 +2285,7 @@
       "returns_units": 355,
       "returns_count": 355,
       "top_return_reason": "Покупатель отказался при вручении: товар не подошел",
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "gel_dlya_brovei_6ml",
@@ -2303,7 +2303,7 @@
       "returns_units": 330,
       "returns_count": 330,
       "top_return_reason": "Покупатель отказался при вручении: товар не подошел",
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "retinait_krem_1_5_50ml",
@@ -2312,7 +2312,7 @@
       "returns_units": 298,
       "returns_count": 298,
       "top_return_reason": "Покупатель отменил заказ: нашел дешевле",
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "syvorotka_dlya_lica_30ml",
@@ -2321,7 +2321,7 @@
       "returns_units": 263,
       "returns_count": 263,
       "top_return_reason": "Покупатель отменил заказ: нашел дешевле",
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "krem_spf50_50ml",
@@ -2339,7 +2339,7 @@
       "returns_units": 228,
       "returns_count": 228,
       "top_return_reason": "Покупатель отменил заказ",
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "sprei_buster_100ml",
@@ -2357,7 +2357,7 @@
       "returns_units": 181,
       "returns_count": 181,
       "top_return_reason": "Покупатель отменил заказ",
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     }
   ],
   "unassigned": [

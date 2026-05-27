@@ -2992,7 +2992,26 @@ function adsFunnelOzonPlanPct(dateKey = '') {
   return pct || 0.25;
 }
 
-function adsFunnelModeledOzonRows(existingItems = []) {
+function adsFunnelPlatformPointMap(rawPlatforms = [], platformKey = 'ozon') {
+  const targetKey = adsFunnelNormalizePlatformKey(platformKey);
+  const platform = (Array.isArray(rawPlatforms) ? rawPlatforms : Object.values(rawPlatforms || {}))
+    .find((item) => adsFunnelNormalizePlatformKey(item?.platformKey || item?.platform || item?.key || item?.id || item?.label) === targetKey);
+  const map = new Map();
+  (Array.isArray(platform?.series) ? platform.series : []).forEach((point) => {
+    const date = String(point?.date || point?.day || point?.label || '').slice(0, 10);
+    if (!date) return;
+    map.set(date, {
+      views: numberOrZero(point?.views),
+      clicks: numberOrZero(point?.clicks),
+      spend: numberOrZero(point?.spend),
+      orders: numberOrZero(point?.orders),
+      revenue: numberOrZero(point?.revenue)
+    });
+  });
+  return map;
+}
+
+function adsFunnelModeledOzonRows(existingItems = [], rawPlatforms = []) {
   const existingKeys = new Set(
     existingItems
       .filter((item) => adsFunnelNormalizePlatformKey(item?.platformKey || item?.platform || item?.channel || item?.market) === 'ozon')
@@ -3003,6 +3022,7 @@ function adsFunnelModeledOzonRows(existingItems = []) {
       })
       .filter((key) => !key.endsWith('::'))
   );
+  const platformPointMap = adsFunnelPlatformPointMap(rawPlatforms, 'ozon');
   const skuMap = adsFunnelSkuByArticleKey();
   const rows = [];
   adsFunnelOverlayRows('ozon').forEach((sourceRow, rowIndex) => {
@@ -3020,6 +3040,7 @@ function adsFunnelModeledOzonRows(existingItems = []) {
       const orders = numberOrZero(point?.ordersUnits ?? point?.deliveredUnits ?? point?.units);
       if (revenue <= 0 && orders <= 0) return;
       const planPct = adsFunnelOzonPlanPct(date);
+      const weight = revenue > 0 ? revenue : (orders > 0 ? orders : 1);
       rows.push({
         date,
         platformKey: 'ozon',
@@ -3036,9 +3057,32 @@ function adsFunnelModeledOzonRows(existingItems = []) {
         channel: 'Ozon modeled ads',
         sourceMode: 'modeled_from_ozon_marketplace_revenue',
         modelRate: planPct,
+        modelWeight: weight,
         rowKey: `ozon-modeled-${rowIndex}-${pointIndex}`
       });
     });
+  });
+  const rowsByDate = new Map();
+  rows.forEach((row) => {
+    const dateRows = rowsByDate.get(row.date) || [];
+    dateRows.push(row);
+    rowsByDate.set(row.date, dateRows);
+  });
+  rowsByDate.forEach((dateRows, date) => {
+    const point = platformPointMap.get(date);
+    if (!point || (point.views <= 0 && point.clicks <= 0)) return;
+    const totalWeight = dateRows.reduce((sum, row) => sum + numberOrZero(row.modelWeight), 0);
+    dateRows.forEach((row) => {
+      const share = totalWeight > 0 ? numberOrZero(row.modelWeight) / totalWeight : 1 / Math.max(1, dateRows.length);
+      row.views = point.views > 0 ? point.views * share : 0;
+      row.clicks = point.clicks > 0 ? point.clicks * share : 0;
+      row.sourceMode = 'modeled_from_ozon_marketplace_revenue_with_platform_reach';
+      row.platformViewsClicksModeled = true;
+      delete row.modelWeight;
+    });
+  });
+  rows.forEach((row) => {
+    delete row.modelWeight;
   });
   return rows;
 }
@@ -3056,7 +3100,7 @@ function normalizeAdsSummaryPayload(payload = {}) {
     ? payload.platforms
     : Object.values(payload.platforms || {});
   const rawItems = Array.isArray(payload.itemSeries) ? payload.itemSeries : [];
-  const modeledOzonRows = adsFunnelModeledOzonRows(rawItems);
+  const modeledOzonRows = adsFunnelModeledOzonRows(rawItems, rawPlatforms);
   const platforms = rawPlatforms.map((platform) => {
     const key = adsFunnelNormalizePlatformKey(platform?.platformKey || platform?.platform || platform?.key || platform?.id || platform?.label);
     const series = Array.isArray(platform?.series)

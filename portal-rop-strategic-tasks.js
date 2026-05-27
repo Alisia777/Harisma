@@ -193,11 +193,16 @@
   }
 
   function allPortalTasks() {
-    try {
-      if (typeof getAllTasks === 'function') return getAllTasks();
-    } catch (error) {}
     const st = appState();
-    return Array.isArray(st?.storage?.tasks) ? st.storage.tasks : [];
+    const stored = Array.isArray(st?.storage?.tasks) ? st.storage.tasks : [];
+    try {
+      if (typeof getAllTasks === 'function') {
+        const ids = new Set(stored.map((task) => String(task?.id || '')));
+        const runtime = (getAllTasks() || []).filter((task) => !ids.has(String(task?.id || '')));
+        return [...stored, ...runtime];
+      }
+    } catch (error) {}
+    return stored;
   }
 
   function runtimeTaskFor(seed) {

@@ -892,6 +892,13 @@
     return `auto|${taskMeaningKey(task)}`;
   }
 
+  function isStrategicControlTask(task) {
+    const source = String(task?.source || '').trim().toLowerCase();
+    const autoCode = String(task?.autoCode || '').trim().toLowerCase();
+    const id = String(task?.id || '').trim().toLowerCase();
+    return source === 'strategic' || autoCode === 'rop_strategic' || id.startsWith('rop-');
+  }
+
   function shouldPreferTask(candidate, current) {
     if (!current) return true;
     const candidateManual = candidate?.source !== 'auto';
@@ -905,13 +912,14 @@
   }
 
   function dedupeControlTasks(tasks) {
+    const controlTasks = (tasks || []).filter((task) => !isStrategicControlTask(task));
     const manualMeaningKeys = new Set(
-      (tasks || [])
+      controlTasks
         .filter((task) => task?.source !== 'auto' && isTaskActive(task))
         .map(taskMeaningKey)
     );
     const byKey = new Map();
-    for (const task of tasks || []) {
+    for (const task of controlTasks) {
       if (task?.source === 'auto' && manualMeaningKeys.has(taskMeaningKey(task))) continue;
       const key = taskDedupeKey(task);
       const existing = byKey.get(key);
@@ -1210,7 +1218,7 @@
 
   async function cleanupControlTasks() {
     const rawTasks = typeof originalGetAllTasks === 'function' ? originalGetAllTasks() : getAllTasksDeduped();
-    const active = (rawTasks || []).filter(isTaskActive);
+    const active = (rawTasks || []).filter((task) => !isStrategicControlTask(task) && isTaskActive(task));
     const byKey = new Map();
     const updates = [];
 

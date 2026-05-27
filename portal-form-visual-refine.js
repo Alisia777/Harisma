@@ -915,17 +915,23 @@
   }
 
   function controlSimpleAllTasks() {
+    const visible = (tasks) => (tasks || []).filter((taskItem) => {
+      const source = String(taskItem?.source || '').trim().toLowerCase();
+      const autoCode = String(taskItem?.autoCode || '').trim().toLowerCase();
+      const id = String(taskItem?.id || '').trim().toLowerCase();
+      return source !== 'strategic' && autoCode !== 'rop_strategic' && !id.startsWith('rop-');
+    });
     try {
       if (typeof getControlSnapshot === 'function') {
         const snapshot = getControlSnapshot();
-        if (Array.isArray(snapshot?.tasks)) return snapshot.tasks;
-        if (Array.isArray(snapshot?.active)) return snapshot.active;
+        if (Array.isArray(snapshot?.tasks)) return visible(snapshot.tasks);
+        if (Array.isArray(snapshot?.active)) return visible(snapshot.active);
       }
     } catch {}
     try {
-      if (typeof getAllTasks === 'function') return getAllTasks();
+      if (typeof getAllTasks === 'function') return visible(getAllTasks());
     } catch {}
-    return Array.isArray(state?.storage?.tasks) ? state.storage.tasks : [];
+    return visible(Array.isArray(state?.storage?.tasks) ? state.storage.tasks : []);
   }
 
   function controlSimpleStatus(taskItem) {
@@ -1378,7 +1384,7 @@
     const boardHtml = data.selected === 'all'
       ? controlSimpleWorkstreamBoard(data)
       : `<div class="control-simple-board">${CONTROL_SIMPLE_QUEUES.map(([key, title, hint]) => controlSimpleQueuePanel(key, title, hint, data.buckets[key] || [])).join('')}</div>`;
-    root.dataset.controlSimple = '20260527autosignalowners1';
+    root.dataset.controlSimple = '20260527strategicisolate1';
     root.innerHTML = `
       <div class="section-title control-simple-title">
         <div><h2>Задачи</h2><div class="control-simple-title-copy">${escapeHtml(CONTROL_SIMPLE_TITLE)}</div></div>

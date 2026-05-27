@@ -810,6 +810,7 @@ function repricerApplyConfidence(side) {
   const cooldownAge = repricerAgeDays(side.lastPriceChangeDate);
   const hasReliableCost = Boolean(side.rawCostPresent) || side.economicFloorSource === 'fee_stack' || side.economicFloorSource === 'snapshot_guard';
 
+  if (side.minMaxOnlyRow) repricerAddReason(red, 'MIN/MAX без фактов WB');
   if (side.outOfSpec || side.criticalGate === 'SKIP') repricerAddReason(red, 'строка вне спецификации');
   if (side.criticalGate === 'BLOCK') repricerAddReason(red, 'нет обязательных входов');
   if (currentPrice <= 0) repricerAddReason(red, 'нет текущей цены');
@@ -1003,6 +1004,21 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const status = productLifecycle?.label || productLifecycle?.status || fallbackStatus;
   const sourceMode = String(sourceRow.sourceMode || '').trim();
   const clientOnlyMarketFacts = sourceMode === 'wb-market-facts-client-only';
+  const minMaxMaterialized = Boolean(sourceRow?.minMaxMaterialized || supportRow?.minMaxMaterialized || priceRow?.minMaxMaterialized || legacySide?.minMaxMaterialized || liveSide?.minMaxMaterialized);
+  const legacyMinMaxOnly = Boolean(legacySide?.minMaxMaterialized)
+    && numberOrZero(legacySide?.currentPrice) <= 0
+    && numberOrZero(legacySide?.recPrice) <= 0
+    && numberOrZero(legacySide?.liveRecPrice) <= 0
+    && numberOrZero(legacySide?.stock) <= 0;
+  const legacyCurrentPriceInput = legacyMinMaxOnly ? null : legacySide?.currentPrice;
+  const legacyStockInput = legacyMinMaxOnly ? null : legacySide?.stock;
+  const legacyTurnoverInput = legacyMinMaxOnly ? null : legacySide?.turnoverDays;
+  const legacyLiveReferenceInput = legacyMinMaxOnly ? null : repricerFirstFilledNumber(legacySide?.liveRecPrice, legacySide?.recPrice);
+  const marketCurrentPriceValues = [sourceRow.currentFillPrice, sourceRow.currentPrice, priceRow?.currentPrice, supportRow?.currentExportPrice, skuSide?.currentPrice, liveSide?.currentPrice];
+  const marketStockValues = [sourceRow.stockRepricer, sourceRow.stock, skuSide?.stockRepricer, skuSide?.stockProducts, skuSide?.stock, liveSide?.stock];
+  const minMaxOnlyRow = minMaxMaterialized
+    && !marketCurrentPriceValues.some(repricerHasValue)
+    && !marketStockValues.some(repricerHasValue);
   const role = context.role || repricerSuggestedRole(status, sourceRow.segment);
   const launchReady = normalizeRepricerLaunchReady(context.launchReady || repricerDefaultLaunchReady(status));
   const brandRule = repricerBrandRule(brand, settings);
@@ -1013,7 +1029,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const skuBasePrice = repricerFirstFilledNumber(skuSide?.basePrice);
   const skuCapPrice = repricerFirstPositiveNumber(skuSide?.maxPrice, skuSide?.stretchCap);
   const sourceHasLiveCurrentPrice = String(sourceRow.currentSellerPriceSource || sourceRow.currentPriceSource || '').trim().toLowerCase() === 'live';
-  const currentPricePresent = [sourceRow.currentFillPrice, sourceRow.currentPrice, priceRow?.currentPrice, supportRow?.currentExportPrice, skuSide?.currentPrice, legacySide?.currentPrice, liveSide?.currentPrice].some(repricerHasValue);
+  const currentPricePresent = [...marketCurrentPriceValues, legacyCurrentPriceInput].some(repricerHasValue);
   const hardFloorPresent = [
     sourceRow.hardMinPrice,
     sourceRow.requiredPriceForProfitability,
@@ -1057,7 +1073,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
                 ? supportRow.currentExportPrice
                 : (skuSide?.currentPrice != null
                   ? skuSide.currentPrice
-                  : (legacySide?.currentPrice != null ? legacySide.currentPrice : liveSide?.currentPrice)))))))
+                  : (legacyCurrentPriceInput != null ? legacyCurrentPriceInput : liveSide?.currentPrice)))))))
   );
   const currentClientPrice = repricerFirstFilledNumber(
     priceRow?.currentClientPrice,
@@ -1342,7 +1358,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     skuSide?.stockRepricer,
     skuSide?.stockProducts,
     skuSide?.stock,
-    legacySide?.stock,
+    legacyStockInput,
     liveSide?.stock
   );
   const ordersDaily = numberOrZero(skuFact?.orders?.units) / 27;
@@ -1350,11 +1366,11 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const leadTimeDays = numberOrZero(skuFact?.leadTimeDays);
   let turnoverSource = sourceRow.turnoverCurrentDays != null
     ? 'workbench'
-    : (skuSide?.turnoverDays != null ? 'order' : (legacySide?.turnoverDays != null ? 'legacy' : (liveSide?.turnoverDays != null ? 'live' : '')));
+    : (skuSide?.turnoverDays != null ? 'order' : (legacyTurnoverInput != null ? 'legacy' : (liveSide?.turnoverDays != null ? 'live' : '')));
   let turnoverDays = numberOrZero(
     sourceRow.turnoverCurrentDays != null
       ? sourceRow.turnoverCurrentDays
-      : (skuSide?.turnoverDays != null ? skuSide.turnoverDays : (legacySide?.turnoverDays != null ? legacySide.turnoverDays : liveSide?.turnoverDays))
+      : (skuSide?.turnoverDays != null ? skuSide.turnoverDays : (legacyTurnoverInput != null ? legacyTurnoverInput : liveSide?.turnoverDays))
   );
   if (turnoverDays <= 0 && stock > 0 && ordersDaily > 0) {
     turnoverDays = stock / ordersDaily;
@@ -1384,7 +1400,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     && !currentPricePresent
     && !pricingProxyPresent
     && numberOrZero(stock) <= 0;
-  let criticalGate = outOfSpec ? 'SKIP' : ((!currentPricePresent || !pricingProxyPresent) ? 'BLOCK' : 'OK');
+  let criticalGate = outOfSpec ? 'SKIP' : ((minMaxOnlyRow || !currentPricePresent || !pricingProxyPresent) ? 'BLOCK' : 'OK');
   let launchHold = '';
   let oosFlag = '';
   let turnoverAction = 'KEEP';
@@ -1405,7 +1421,9 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   }
   if (modeCode === 'AUTO' && !autopriceAllowed) reasons.push('autoprice disabled by status');
   if (modeCode === 'LAUNCH' && !launchAllowed) reasons.push('launch disabled by status');
-  if (stock <= 0) {
+  if (minMaxOnlyRow) {
+    reasons.push('MIN/MAX загружен из файла, факты WB по цене и остатку не найдены');
+  } else if (stock <= 0) {
     oosFlag = 'OOS';
     reasons.push('stock_total <= 0');
   } else if (turnoverDays > 0 && oosDays > 0 && turnoverDays <= oosDays) {
@@ -1556,6 +1574,12 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     currentPrice,
       currentClientPrice,
       sourceMode,
+      minMaxSource: sourceRow.minMaxSource || supportRow?.minMaxSource || priceRow?.minMaxSource || legacySide?.minMaxSource || liveSide?.minMaxSource || '',
+      minMaxImportedAt: sourceRow.minMaxImportedAt || supportRow?.minMaxImportedAt || priceRow?.minMaxImportedAt || legacySide?.minMaxImportedAt || liveSide?.minMaxImportedAt || '',
+      minMaxMaterialized,
+      minMaxMaterializedFrom: sourceRow.minMaxMaterializedFrom || supportRow?.minMaxMaterializedFrom || priceRow?.minMaxMaterializedFrom || legacySide?.minMaxMaterializedFrom || liveSide?.minMaxMaterializedFrom || '',
+      minMaxMaterializedMatchType: sourceRow.minMaxMaterializedMatchType || supportRow?.minMaxMaterializedMatchType || priceRow?.minMaxMaterializedMatchType || legacySide?.minMaxMaterializedMatchType || liveSide?.minMaxMaterializedMatchType || '',
+      minMaxOnlyRow,
       recommendedPrice,
     preAlignPrice,
     cappedPrice,
@@ -1668,7 +1692,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     launchAllowed,
     volumePushAllowed,
     alignmentApplied: false,
-    liveReferencePrice: repricerFirstFilledNumber(liveSide?.recPrice, legacySide?.liveRecPrice, legacySide?.recPrice),
+    liveReferencePrice: repricerFirstFilledNumber(liveSide?.recPrice, legacyLiveReferenceInput),
     liveTargetDays: repricerFirstFilledNumber(liveSide?.targetTurnoverDays, legacySide?.targetTurnoverDays),
     liveStrategy: liveSide?.strategy || legacySide?.strategy || '',
     liveReason: liveSide?.reason || legacySide?.reason || '',
@@ -2438,6 +2462,13 @@ function repricerExplainSideAction(side) {
       hint: 'По SKU не хватает спецификации. В выгрузку лучше не отправлять.'
     };
   }
+  if (side?.minMaxOnlyRow) {
+    return {
+      tone: 'warn',
+      title: 'MIN/MAX загружен',
+      hint: 'Коридор есть, но нет текущей цены и остатков WB. В выгрузку не отправляем до обновления фактов.'
+    };
+  }
   if (side?.criticalGate === 'BLOCK' || side?.reasonCode === 'BLOCK') {
     return {
       tone: 'danger',
@@ -2542,6 +2573,7 @@ function renderRepricerSide(title, side) {
     confidenceBadge,
     lifecycleBadge,
     badge(`действие: ${repricerTurnoverActionLabel(side.turnoverAction)}`, side.criticalGate === 'BLOCK' ? 'danger' : 'info'),
+    side.minMaxOnlyRow ? badge('MIN/MAX без фактов', 'warn') : '',
     side.autopriceAllowed ? badge('авторежим: включен', 'ok') : badge('авторежим: выключен', 'warn'),
     side.economicFloorSource === 'snapshot_fallback' ? badge('себестоимость: нет', 'warn') : badge('себестоимость: есть', 'ok'),
     side.launchHold ? badge('стоп до READY', 'warn') : '',

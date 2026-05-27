@@ -300,6 +300,19 @@ function capRecommendation(recPrice, minPrice, upperCap) {
 function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRootGeneratedAt) {
   if (!sourceRow && !priceRow && !liveSide) return null;
 
+  const minMaxMaterialized = Boolean(sourceRow?.minMaxMaterialized || supportRow?.minMaxMaterialized || priceRow?.minMaxMaterialized || liveSide?.minMaxMaterialized);
+  const currentPriceFact = numberValue(
+    sourceRow?.currentFillPrice,
+    sourceRow?.currentPrice,
+    priceRow?.currentPrice,
+    liveSide?.currentPrice
+  );
+  const stockFact = numberValue(
+    sourceRow?.stockRepricer,
+    sourceRow?.stock,
+    liveSide?.stock
+  );
+  const minMaxOnlyRow = minMaxMaterialized && !(currentPriceFact > 0) && stockFact === null;
   const currentPrice = positiveValue(
     sourceRow?.currentFillPrice,
     sourceRow?.currentPrice,
@@ -348,8 +361,7 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
   const stock = numberValue(
     sourceRow?.stockRepricer,
     sourceRow?.stock,
-    liveSide?.stock,
-    0
+    liveSide?.stock
   ) || 0;
   const turnoverDays = numberValue(
     sourceRow?.currentTurnoverDays,
@@ -371,18 +383,20 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     liveSide?.marginNoAdsMinPct,
     0.15
   );
-  const strategy = inferStrategy(currentPrice, recPrice, stock, minPrice);
-  const inferredReason = inferReason({
-    sourceRow,
-    supportRow,
-    priceRow,
-    currentPrice,
-    recPrice,
-    minPrice,
-    strategy,
-    stock,
-    liveSide: liveSide ? { ...liveSide, generatedAt: liveRootGeneratedAt } : null
-  });
+  const strategy = minMaxOnlyRow ? 'BLOCK' : inferStrategy(currentPrice, recPrice, stock, minPrice);
+  const inferredReason = minMaxOnlyRow
+    ? 'MIN/MAX loaded from import; WB current price and stock facts are missing.'
+    : inferReason({
+      sourceRow,
+      supportRow,
+      priceRow,
+      currentPrice,
+      recPrice,
+      minPrice,
+      strategy,
+      stock,
+      liveSide: liveSide ? { ...liveSide, generatedAt: liveRootGeneratedAt } : null
+    });
   let reason = inferredReason;
   if (recGuard.capApplied) {
     const capSourceLabel = sourceRow?.workingZoneTo
@@ -437,9 +451,10 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     allowedMarginPct: thresholdMarginPct === null ? null : thresholdMarginPct,
     minMaxSource: textValue(sourceRow?.minMaxSource, supportRow?.minMaxSource, priceRow?.minMaxSource, liveSide?.minMaxSource),
     minMaxImportedAt: textValue(sourceRow?.minMaxImportedAt, supportRow?.minMaxImportedAt, priceRow?.minMaxImportedAt, liveSide?.minMaxImportedAt),
-    minMaxMaterialized: Boolean(sourceRow?.minMaxMaterialized || supportRow?.minMaxMaterialized || priceRow?.minMaxMaterialized || liveSide?.minMaxMaterialized),
+    minMaxMaterialized,
     minMaxMaterializedFrom: textValue(sourceRow?.minMaxMaterializedFrom, supportRow?.minMaxMaterializedFrom, priceRow?.minMaxMaterializedFrom, liveSide?.minMaxMaterializedFrom),
     minMaxMaterializedMatchType: textValue(sourceRow?.minMaxMaterializedMatchType, supportRow?.minMaxMaterializedMatchType, priceRow?.minMaxMaterializedMatchType, liveSide?.minMaxMaterializedMatchType),
+    minMaxOnlyRow,
     manualMinPrice: firstNumber(sourceRow?.manualMinPrice, supportRow?.manualMinPrice, priceRow?.manualMinPrice, liveSide?.manualMinPrice),
     manualMaxPrice: firstNumber(sourceRow?.manualMaxPrice, supportRow?.manualMaxPrice, priceRow?.manualMaxPrice, liveSide?.manualMaxPrice),
     manualClientMinPrice: firstNumber(sourceRow?.manualClientMinPrice, supportRow?.manualClientMinPrice, priceRow?.manualClientMinPrice, liveSide?.manualClientMinPrice),

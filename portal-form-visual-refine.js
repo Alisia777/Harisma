@@ -1013,16 +1013,48 @@
     return fallback && fallback !== '[object Object]' ? fallback : 'all';
   }
 
-  function controlSimpleOwnerOptions(allTasks = []) {
+  function controlSimpleOwnerOptions(allTasks = [], includeGlobal = true) {
     const set = new Set();
     (allTasks || []).forEach((taskItem) => set.add(controlSimpleOwnerValue(taskItem)));
-    try {
-      owners().forEach((name) => {
-        const normalized = controlSimpleOwnerFilterValue(name);
-        if (normalized && normalized !== 'all' && normalized !== '[object Object]') set.add(normalized);
-      });
-    } catch {}
+    if (includeGlobal) {
+      try {
+        owners().forEach((name) => {
+          const normalized = controlSimpleOwnerFilterValue(name);
+          if (normalized && normalized !== 'all' && normalized !== '[object Object]') set.add(normalized);
+        });
+      } catch {}
+    }
     return [...set].filter(Boolean).sort((a, b) => a.localeCompare(b, 'ru'));
+  }
+
+  function controlSimpleScopeOwner(scope, key) {
+    const bucket = state?.controlFilters?.[scope] || {};
+    const selected = controlSimpleOwnerFilterValue(bucket[key] || 'all');
+    return selected === '[object Object]' ? 'all' : selected;
+  }
+
+  function controlSimpleSetScopeOwner(scope, key, value) {
+    state.controlFilters = state.controlFilters || {};
+    state.controlFilters[scope] = state.controlFilters[scope] && typeof state.controlFilters[scope] === 'object'
+      ? state.controlFilters[scope]
+      : {};
+    state.controlFilters[scope][key] = controlSimpleOwnerFilterValue(value || 'all');
+  }
+
+  function controlSimpleFilterByOwner(tasks = [], ownerFilter = 'all') {
+    return ownerFilter && ownerFilter !== 'all'
+      ? (tasks || []).filter((taskItem) => controlSimpleOwnerValue(taskItem) === ownerFilter)
+      : (tasks || []);
+  }
+
+  function controlSimpleOwnerSelectHtml(tasks = [], selected = 'all', dataAttr = '', key = '') {
+    const options = controlSimpleOwnerOptions(tasks, false).filter((name) => name && name !== '[object Object]');
+    if (!options.length) return '';
+    return `
+      <select class="control-simple-owner-select" ${dataAttr}="${escapeHtml(key)}" aria-label="Ответственный">
+        <option value="all" ${selected === 'all' ? 'selected' : ''}>Все ответственные</option>
+        ${options.map((name) => `<option value="${escapeHtml(name)}" ${selected === name ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}
+      </select>`;
   }
 
   function controlSimpleDepartmentKey(taskItem) {
@@ -1140,11 +1172,14 @@
   function controlSimpleWorkstreamPanel(key, tasks) {
     const meta = CONTROL_SIMPLE_META[key] || CONTROL_SIMPLE_META.cross;
     const expanded = state?.controlFilters?.taskSimpleExpandedPlatform === key;
-    const sorted = controlSimpleSort(tasks || []);
+    const laneOwner = controlSimpleScopeOwner('laneOwnerFilters', key);
+    const scopedTasks = controlSimpleFilterByOwner(tasks || [], laneOwner);
+    const sorted = controlSimpleSort(scopedTasks);
     const visible = sorted.slice(0, expanded ? 999 : 6);
     const hidden = Math.max(0, sorted.length - visible.length);
     const counts = controlSimpleWorkstreamCounts(sorted);
     const tone = counts.overdue ? 'danger' : counts.sent || counts.noOwner ? 'warn' : counts.active ? 'info' : 'ok';
+    const ownerSelect = controlSimpleOwnerSelectHtml(tasks || [], laneOwner, 'data-control-simple-lane-owner', key);
     return `
       <section class="control-simple-workstream-lane ${counts.active ? '' : 'is-empty'}" data-platform="${escapeHtml(key)}" data-control-simple-workstream-lane="${escapeHtml(key)}">
         <div class="control-simple-workstream-lane-head">
@@ -1158,6 +1193,7 @@
             ${counts.noOwner ? badge(`${fmt.int(counts.noOwner)} без owner`, 'warn') : ''}
           </div>
         </div>
+        ${ownerSelect ? `<div class="control-simple-channel-filter">${ownerSelect}</div>` : ''}
         <div class="control-simple-workstream-note">
           ${counts.active
             ? `Показываем только задачи этого контура. Остальные площадки не смешиваются с ${meta.label}.`
@@ -1252,11 +1288,14 @@
   }
 
   function controlSimpleQueuePanel(key, title, hint, tasks) {
-    const visible = tasks;
+    const queueOwner = controlSimpleScopeOwner('queueOwnerFilters', key);
+    const visible = controlSimpleFilterByOwner(tasks || [], queueOwner);
     const tone = key === 'sent' ? 'warn' : key === 'signals' ? 'info' : key === 'confirmed' ? 'ok' : '';
+    const ownerSelect = controlSimpleOwnerSelectHtml(tasks || [], queueOwner, 'data-control-simple-queue-owner', key);
     return `
       <section class="control-simple-queue" data-control-simple-queue="${escapeHtml(key)}">
-        <div class="control-simple-queue-head"><div><span>${escapeHtml(hint)}</span><strong>${escapeHtml(title)}</strong></div>${badge(fmt.int(tasks.length), tone)}</div>
+        <div class="control-simple-queue-head"><div><span>${escapeHtml(hint)}</span><strong>${escapeHtml(title)}</strong></div>${badge(queueOwner === 'all' ? fmt.int(tasks.length) : `${fmt.int(visible.length)} / ${fmt.int(tasks.length)}`, tone)}</div>
+        ${ownerSelect ? `<div class="control-simple-channel-filter">${ownerSelect}</div>` : ''}
         <div class="control-simple-list">
           ${visible.length ? visible.map(controlSimpleTaskCard).join('') : '<div class="control-simple-empty">Пусто. Здесь не горит.</div>'}
         </div>
@@ -1339,7 +1378,7 @@
     const boardHtml = data.selected === 'all'
       ? controlSimpleWorkstreamBoard(data)
       : `<div class="control-simple-board">${CONTROL_SIMPLE_QUEUES.map(([key, title, hint]) => controlSimpleQueuePanel(key, title, hint, data.buckets[key] || [])).join('')}</div>`;
-    root.dataset.controlSimple = '20260527taskfilters1';
+    root.dataset.controlSimple = '20260527autosignalowners1';
     root.innerHTML = `
       <div class="section-title control-simple-title">
         <div><h2>Задачи</h2><div class="control-simple-title-copy">${escapeHtml(CONTROL_SIMPLE_TITLE)}</div></div>
@@ -1383,6 +1422,14 @@
       state.controlFilters.taskSimpleWorkspaceChosen = true;
       controlRefined();
     });
+    root.querySelectorAll('[data-control-simple-queue-owner]').forEach((select) => select.addEventListener('change', (event) => {
+      controlSimpleSetScopeOwner('queueOwnerFilters', event.currentTarget.dataset.controlSimpleQueueOwner || '', event.currentTarget.value || 'all');
+      controlRefined();
+    }));
+    root.querySelectorAll('[data-control-simple-lane-owner]').forEach((select) => select.addEventListener('change', (event) => {
+      controlSimpleSetScopeOwner('laneOwnerFilters', event.currentTarget.dataset.controlSimpleLaneOwner || '', event.currentTarget.value || 'all');
+      controlRefined();
+    }));
     root.querySelectorAll('[data-control-simple-direction]').forEach((button) => button.addEventListener('click', () => {
       const key = controlSimpleNormalizeDirection(button.dataset.controlSimpleDirection);
       state.controlFilters.platform = key;

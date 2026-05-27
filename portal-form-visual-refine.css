@@ -97,6 +97,8 @@
 .control-simple-queue-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:9px}
 .control-simple-queue-head span:first-child{display:block;color:var(--muted);font-size:11px;line-height:1.25}
 .control-simple-queue-head strong{display:block;margin-top:3px;color:#fff7e6;font-size:15px;line-height:1.15}
+.control-simple-channel-filter{margin:0 0 8px}
+.control-simple-owner-select{width:100%;min-width:0;border-radius:9px;border:1px solid rgba(212,164,74,.18);background:rgba(0,0,0,.24);color:#fff7e6;padding:8px 9px;font-size:12px;line-height:1.2}
 .control-simple-list{display:flex;flex-direction:column;gap:8px}
 .control-simple-task{position:relative;border:1px solid rgba(255,255,255,.07);border-left-color:var(--platform-strong,rgba(255,255,255,.14));border-radius:9px;background:rgba(255,255,255,.025);overflow:hidden}
 .control-simple-task::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--platform-color,#d4a44a);opacity:.82}

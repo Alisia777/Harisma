@@ -11,12 +11,21 @@ const DEFAULT_REPORT_PATH = path.join(ROOT, '.codex-temp-wb-minmax-import-report
 
 const TARGETS = [
   { file: path.join(ROOT, 'data', 'smart_price_workbench.json'), platform: 'wb', shape: 'platformRows' },
-  { file: path.join(ROOT, 'data', 'smart_price_overlay.json'), platform: 'wb', shape: 'platformRows' },
-  { file: path.join(ROOT, 'data', 'prices.json'), platform: 'wb', shape: 'platformRows' },
+  { file: path.join(ROOT, 'data', 'smart_price_overlay.json'), platform: 'wb', shape: 'platformRows', materializeMissing: true },
+  { file: path.join(ROOT, 'data', 'prices.json'), platform: 'wb', shape: 'platformRows', materializeMissing: true },
   { file: path.join(ROOT, 'data', 'price_workbench_support.json'), platform: 'wb', shape: 'platformRows' },
   { file: path.join(ROOT, 'data', 'price_workbench_support.compact.json'), platform: 'wb', shape: 'objectRows', format: 'compact' },
   { file: path.join(ROOT, 'data', 'price_workbench_support.dashboard-compact.json'), platform: 'wb', shape: 'objectRows', format: 'compact' },
   { file: path.join(ROOT, 'data', 'price_workbench_support.minified.full.json'), platform: 'wb', shape: 'objectRows', format: 'compact' }
+];
+
+const SOURCE_FILES = [
+  path.join(ROOT, 'data', 'prices.json'),
+  path.join(ROOT, 'data', 'smart_price_overlay.json'),
+  path.join(ROOT, 'data', 'smart_price_workbench.json'),
+  path.join(ROOT, 'data', 'price_workbench_support.json'),
+  path.join(ROOT, 'data', 'price_workbench_support.compact.json'),
+  path.join(ROOT, 'data', 'price_workbench_support.minified.full.json')
 ];
 
 function parseArgs(argv) {
@@ -167,6 +176,15 @@ function assignPrice(row, correction, sourceName, importedAt) {
   return true;
 }
 
+function dateOnly(value) {
+  return String(value || '').slice(0, 10);
+}
+
+function readJsonIfExists(filePath) {
+  if (!fs.existsSync(filePath)) return null;
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
 function rowsForTarget(payload, target) {
   const bucket = payload?.platforms?.[target.platform];
   const rows = bucket?.rows;
@@ -180,6 +198,150 @@ function rowsForTarget(payload, target) {
   return [];
 }
 
+function platformRowEntries(payload = {}, platform = 'wb') {
+  const rows = payload?.platforms?.[platform]?.rows;
+  if (!rows) return [];
+  if (Array.isArray(rows)) return rows.map((row) => ({ row, objectKey: '' }));
+  if (typeof rows === 'object') {
+    return Object.entries(rows).map(([objectKey, row]) => ({ row, objectKey }));
+  }
+  return [];
+}
+
+function addSource(index, row, objectKey, platform, sourceFile) {
+  const keys = candidateKeys(row, objectKey);
+  keys.forEach((key) => {
+    const exactKey = String(key).trim().toLowerCase();
+    const normalizedKey = normalizeKey(key);
+    if (!exactKey) return;
+    const source = { row, objectKey, platform, sourceFile };
+    const exactList = index.exact.get(exactKey) || [];
+    exactList.push(source);
+    index.exact.set(exactKey, exactList);
+    if (normalizedKey) {
+      const normalizedList = index.normalized.get(normalizedKey) || [];
+      normalizedList.push(source);
+      index.normalized.set(normalizedKey, normalizedList);
+    }
+  });
+}
+
+function buildSourceIndex() {
+  const index = { exact: new Map(), normalized: new Map() };
+  SOURCE_FILES.forEach((filePath) => {
+    const payload = readJsonIfExists(filePath);
+    if (!payload?.platforms) return;
+    Object.keys(payload.platforms).forEach((platform) => {
+      platformRowEntries(payload, platform).forEach(({ row, objectKey }) => {
+        addSource(index, row, objectKey, platform, path.relative(ROOT, filePath));
+      });
+    });
+  });
+  return index;
+}
+
+function sourceScore(source, platform) {
+  if (!source) return 0;
+  let score = source.platform === platform ? 100 : 10;
+  const name = path.basename(source.sourceFile || '');
+  if (source.platform === platform && name === 'prices.json') score += 20;
+  if (source.platform === platform && name === 'smart_price_overlay.json') score += 15;
+  if (source.platform === platform && name === 'smart_price_workbench.json') score += 12;
+  if (source.row?.name) score += 3;
+  if (source.row?.owner) score += 2;
+  if (Number(source.row?.currentPrice) > 0 || Number(source.row?.currentFillPrice) > 0) score += 1;
+  return score;
+}
+
+function chooseBestSource(sources = [], platform = 'wb') {
+  return sources
+    .filter(Boolean)
+    .sort((left, right) => sourceScore(right, platform) - sourceScore(left, platform))[0] || null;
+}
+
+function sourceForCorrection(correction, sourceIndex, platform) {
+  const exactSources = sourceIndex.exact.get(correction.exactKey) || [];
+  const exact = chooseBestSource(exactSources, platform);
+  if (exact) return { ...exact, matchType: 'materialized-exact', matchedBy: correction.vendorCode };
+
+  const normalizedSources = sourceIndex.normalized.get(correction.normalizedKey) || [];
+  if (normalizedSources.length === 1) {
+    return { ...normalizedSources[0], matchType: 'materialized-normalized', matchedBy: correction.vendorCode };
+  }
+
+  if (/^wb[a-zа-я0-9]/i.test(correction.vendorCode)) {
+    const withoutPrefix = correction.vendorCode.replace(/^wb/i, '');
+    const prefixedSource = chooseBestSource(sourceIndex.exact.get(withoutPrefix.toLowerCase()) || [], platform);
+    if (prefixedSource) {
+      return { ...prefixedSource, matchType: 'materialized-wb-prefix', matchedBy: withoutPrefix };
+    }
+  }
+
+  return null;
+}
+
+function positiveNumber(...values) {
+  for (const value of values) {
+    const parsed = parseNumber(value);
+    if (parsed !== null && parsed > 0) return parsed;
+  }
+  return null;
+}
+
+function buildMaterializedRow(correction, source, target, sourceName, importedAt) {
+  const row = source?.row || {};
+  const samePlatform = source?.platform === target.platform;
+  const currentPrice = samePlatform
+    ? positiveNumber(row.currentFillPrice, row.currentPrice, row.price)
+    : null;
+  const currentClientPrice = samePlatform
+    ? positiveNumber(row.currentClientPrice, row.buyerPrice, row.clientPrice, currentPrice)
+    : null;
+  const generatedDate = dateOnly(importedAt);
+  const result = {
+    articleKey: correction.vendorCode,
+    article: correction.vendorCode,
+    name: row.name || '',
+    owner: row.owner || '',
+    platform: target.platform,
+    marketplace: target.platform,
+    status: row.status || row.productStatus || '',
+    sourceMode: samePlatform ? (row.sourceMode || `${target.platform}-minmax-import`) : `${target.platform}-minmax-import`,
+    sourceSheet: sourceName,
+    valueDate: samePlatform ? (row.valueDate || row.currentPriceDate || row.historyFreshnessDate || generatedDate) : generatedDate,
+    currentPriceDate: samePlatform ? (row.currentPriceDate || row.valueDate || row.historyFreshnessDate || generatedDate) : generatedDate,
+    historyFreshnessDate: samePlatform ? (row.historyFreshnessDate || row.currentPriceDate || row.valueDate || generatedDate) : generatedDate,
+    currentFillPrice: currentPrice,
+    currentPrice,
+    currentClientPrice,
+    currentSppPct: samePlatform ? (row.currentSppPct ?? null) : null,
+    currentTurnoverDays: samePlatform ? (row.currentTurnoverDays ?? null) : null,
+    minPrice: correction.minPrice,
+    maxPrice: correction.maxPrice,
+    hardMinPrice: samePlatform ? (row.hardMinPrice ?? null) : null,
+    workingZoneFrom: correction.minPrice,
+    workingZoneTo: correction.maxPrice,
+    basePrice: samePlatform ? (row.basePrice ?? null) : null,
+    daily: samePlatform && Array.isArray(row.daily) ? row.daily : [],
+    manualMinPrice: correction.minPrice,
+    manualMaxPrice: correction.maxPrice,
+    minMaxSource: sourceName,
+    minMaxImportedAt: importedAt,
+    minMaxMaterialized: true,
+    minMaxMaterializedFrom: source?.sourceFile || '',
+    minMaxMaterializedMatchType: source?.matchType || 'materialized-empty'
+  };
+
+  return result;
+}
+
+function rowContainer(payload, target) {
+  const bucket = payload?.platforms?.[target.platform];
+  const rows = bucket?.rows;
+  if (Array.isArray(rows)) return rows;
+  return null;
+}
+
 function writeJson(filePath, value, format = 'pretty') {
   const text = format === 'compact'
     ? JSON.stringify(value)
@@ -187,7 +349,7 @@ function writeJson(filePath, value, format = 'pretty') {
   fs.writeFileSync(filePath, text, 'utf8');
 }
 
-function updateTarget(target, corrections, sourceName, importedAt) {
+function updateTarget(target, corrections, sourceName, importedAt, sourceIndex) {
   if (!fs.existsSync(target.file)) {
     if (target.optional) {
       return { file: target.file, skipped: true, reason: 'missing optional file' };
@@ -200,6 +362,7 @@ function updateTarget(target, corrections, sourceName, importedAt) {
   const matchedVendorCodes = new Set();
   const matchedRows = [];
   let changedRows = 0;
+  let materializedRows = 0;
 
   entries.forEach(({ row, objectKey }) => {
     const resolved = resolveCorrection(row, objectKey, corrections);
@@ -218,7 +381,29 @@ function updateTarget(target, corrections, sourceName, importedAt) {
     });
   });
 
-  if (changedRows > 0) {
+  const rows = rowContainer(payload, target);
+  if (target.materializeMissing && rows) {
+    corrections.parsedRows.forEach((correction) => {
+      if (matchedVendorCodes.has(correction.vendorCode)) return;
+      const source = sourceForCorrection(correction, sourceIndex, target.platform);
+      const newRow = buildMaterializedRow(correction, source, target, sourceName, importedAt);
+      rows.push(newRow);
+      matchedVendorCodes.add(correction.vendorCode);
+      materializedRows += 1;
+      matchedRows.push({
+        articleKey: newRow.articleKey,
+        vendorCode: correction.vendorCode,
+        matchType: source?.matchType || 'materialized-empty',
+        matchedBy: source?.matchedBy || '',
+        minPrice: correction.minPrice,
+        maxPrice: correction.maxPrice,
+        changed: true,
+        materialized: true
+      });
+    });
+  }
+
+  if (changedRows > 0 || materializedRows > 0) {
     payload.minMaxImportAppliedAt = importedAt;
     payload.minMaxImportSource = sourceName;
     if (/smart_price_workbench|smart_price_overlay|prices/i.test(path.basename(target.file))) {
@@ -236,6 +421,7 @@ function updateTarget(target, corrections, sourceName, importedAt) {
     rowsSeen: entries.length,
     matchedRows: matchedRows.length,
     changedRows,
+    materializedRows,
     missingVendorCodes,
     matchedSample: matchedRows.slice(0, 10)
   };
@@ -248,7 +434,8 @@ function main() {
   const sourceName = path.basename(workbookPath);
   const importedAt = new Date().toISOString();
   const corrections = readCorrections(workbookPath);
-  const reports = TARGETS.map((target) => updateTarget(target, corrections, sourceName, importedAt));
+  const sourceIndex = buildSourceIndex();
+  const reports = TARGETS.map((target) => updateTarget(target, corrections, sourceName, importedAt, sourceIndex));
   const report = {
     workbookPath,
     sourceName,
@@ -272,6 +459,7 @@ function main() {
       rowsSeen: item.rowsSeen,
       matchedRows: item.matchedRows,
       changedRows: item.changedRows,
+      materializedRows: item.materializedRows,
       missingCount: item.missingVendorCodes ? item.missingVendorCodes.length : undefined
     })),
     reportPath

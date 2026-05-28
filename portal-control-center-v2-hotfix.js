@@ -41,6 +41,8 @@
   const originalGetSkuComments = typeof getSkuComments === 'function' ? getSkuComments : null;
   let controlTaskCacheVersion = 0;
   let controlSnapshotCache = { key: '', value: null };
+  const taskTransitionPromises = new Map();
+  const finalCloseTaskPromises = new Map();
 
   function parseTaskLogComment(comment) {
     const match = String(comment?.text || '').match(/^\[\[task:([^\]]+)\]\]\s*\[\[kind:([^\]]+)\]\]\s*/i);
@@ -54,7 +56,15 @@
 
   function inferMarketplacePlatform(text) {
     const raw = String(text || '').trim().toLowerCase();
+    const compact = raw.replace(/[\s._'`"\u2019-]+/g, '');
     if (!raw) return '';
+    if (/\u0437\s*\u044f|\u0437\u044f|\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*(\u044f\u0431\u043b\u043e\u043a|\u044f\u0431\u043b)|golden\s*apple|gold[\s_-]*apple|goldapple|zya/.test(raw) || ['goldapple', 'goldenapple', 'zya', '\u0437\u044f', '\u0437\u043e\u043b\u043e\u0442\u043e\u0435\u044f\u0431\u043b\u043e\u043a\u043e'].includes(compact)) return 'goldapple';
+    if (/\u043b[\s'`\u2019.-]*[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c?|\u043b\u044d\u0442\u0443\u0430\u043b\u044c?|letual|letu|letoile|l[\s'`.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile', '\u043b\u0435\u0442\u0443\u0430\u043b\u044c', '\u043b\u0435\u0442\u0443\u0430\u043b', '\u043b\u044d\u0442\u0443\u0430\u043b\u044c', '\u043b\u044d\u0442\u0443\u0430\u043b'].includes(compact)) return 'letu';
+    if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|magnet|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'magnet', 'magnetmarket', 'mm', '\u043c\u0430\u0433\u043d\u0438\u0442', '\u043c\u0430\u0433\u043d\u0438\u0442\u043c\u0430\u0440\u043a\u0435\u0442'].includes(compact)) return 'magnit';
+    if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|yandex|(^|[^a-z0-9])(ya|ym)([^a-z0-9]|$)|(^|[^\u0430-\u044f\u04510-9])\u044f\u043c([^\u0430-\u044f\u04510-9]|$)/.test(raw)) return 'ya';
+    if (/\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*\u044f\u0431\u043b\u043e\u043a|golden\s*apple|gold[\s_-]*apple|goldapple|zya|\u0437\u044f/.test(raw) || ['goldapple', 'goldenapple', 'zya'].includes(compact)) return 'goldapple';
+    if (/\u043b['\u2019]?\s?[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c|letual|letu|letoile|l['\s.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile'].includes(compact)) return 'letu';
+    if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'mm'].includes(compact)) return 'magnit';
     if (/\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*\u044f\u0431\u043b\u043e\u043a|goldapple|gold apple|zya|\u0437\u044f/.test(raw)) return 'goldapple';
     if (/\u043b['’]?\s?[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c|letual|letu/.test(raw)) return 'letu';
     if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|(^|\W)mm($|\W)/.test(raw)) return 'magnit';
@@ -64,12 +74,16 @@
 
   function normalizeTaskPlatform(value, contextText) {
     const raw = String(value || '').trim().toLowerCase();
+    const compactRaw = raw.replace(/[\s._'`"\u2019-]+/g, '');
     const text = `${raw} ${String(contextText || '').trim().toLowerCase()}`;
     if (raw === 'cross' || raw === 'common' || raw === 'general' || raw === 'shared') return 'cross';
-    if (raw === 'retail') return inferMarketplacePlatform(contextText) || 'ya';
+    if (raw === 'retail') return inferMarketplacePlatform(contextText) || 'cross';
     if (raw === 'wb') return 'wb';
     if (raw === 'ozon') return 'ozon';
     if (raw === 'wb+ozon' || raw === 'wb + ozon' || raw === 'all') return 'cross';
+    if (['goldapple', 'goldenapple', 'zya', 'ga'].includes(compactRaw)) return 'goldapple';
+    if (['letu', 'letual', 'letoile'].includes(compactRaw)) return 'letu';
+    if (['magnit', 'magnitmarket', 'mm'].includes(compactRaw)) return 'magnit';
     if (/золот[а-я\s-]*яблок|goldapple|gold apple|zya|зя/.test(text)) return 'goldapple';
     if (/л[еэ]туал|летуаль|letual|letu/.test(text)) return 'letu';
     if (/магнит|magnit|mm/.test(text)) return 'magnit';
@@ -90,8 +104,39 @@
     const roleMeta = CONTROL_ROLE_PRESETS.find((item) => item.key === role);
     if (roleMeta && roleMeta.platform !== 'all') return roleMeta.platform;
     const raw = String(state?.controlFilters?.platform || 'all').trim().toLowerCase();
-    if (raw === 'retail') return 'ya';
+    if (raw === 'retail') return 'all';
     return CONTROL_WORKSTREAM_META[raw] ? raw : 'all';
+  }
+
+  function marketplaceContextValue(value, depth = 0) {
+    if (value == null || depth > 2) return '';
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value);
+    if (Array.isArray(value)) return value.map((item) => marketplaceContextValue(item, depth + 1)).filter(Boolean).join(' ');
+    if (typeof value === 'object') {
+      return Object.entries(value)
+        .filter(([key]) => !/^(history|comments|updates|logs|rawRows?|html|node|element)$/i.test(key))
+        .map(([key, item]) => `${key} ${marketplaceContextValue(item, depth + 1)}`)
+        .filter(Boolean)
+        .join(' ');
+    }
+    return '';
+  }
+
+  function taskMarketplaceContext(task, sku = null) {
+    const taskFields = [
+      'platform', 'marketplace', 'marketplaceKey', 'network', 'retailer', 'channel', 'market',
+      'contour', 'direction', 'workstream', 'queue', 'role', 'team', 'project', 'topic',
+      'title', 'name', 'subject', 'entityLabel', 'description', 'nextAction', 'reason',
+      'context', 'comment', 'note', 'notes', 'details', 'message', 'text', 'body',
+      'articleKey', 'sku', 'apiSku', 'tags', 'labels', 'meta', 'extra', 'payload', 'fields'
+    ];
+    const skuFields = [
+      'platform', 'marketplace', 'marketplaceKey', 'network', 'retailer', 'channel', 'market',
+      'name', 'title', 'articleKey', 'sku', 'apiSku'
+    ];
+    const taskContext = taskFields.map((key) => marketplaceContextValue(task?.[key])).join(' ');
+    const skuContext = skuFields.map((key) => marketplaceContextValue(sku?.[key])).join(' ');
+    return [taskContext, skuContext].filter(Boolean).join(' ');
   }
 
   function currentPeopleRole() {
@@ -114,19 +159,13 @@
   }
 
   function controlWorkstreamKey(task, sku) {
-    const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''}`;
-    const specificMarketplace = inferMarketplacePlatform(text);
-    if (specificMarketplace === 'goldapple' || specificMarketplace === 'letu' || specificMarketplace === 'magnit' || specificMarketplace === 'ya') return specificMarketplace;
-
+    const text = taskMarketplaceContext(task, sku);
     const platform = normalizeTaskPlatform(task?.platform, text);
-    if (platform === 'wb') return 'wb';
-    if (platform === 'ozon') return 'ozon';
     if (platform === 'wb') return 'wb';
     if (platform === 'ozon') return 'ozon';
     if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'magnit') return platform;
     if (platform === 'product') return platform;
-    if (platform === 'retail') return 'ya';
-    if (platform === 'cross') return 'cross';
+    if (platform === 'retail') return 'cross';
     if (platform === 'cross') return 'cross';
     if (sku?.flags?.toWorkWB && !sku?.flags?.toWorkOzon) return 'wb';
     if (sku?.flags?.toWorkOzon && !sku?.flags?.toWorkWB) return 'ozon';
@@ -207,6 +246,19 @@
     `;
   }
 
+  function taskModalSelectionElement(node) {
+    if (!node) return null;
+    return node.nodeType === 1 ? node : node.parentElement;
+  }
+
+  function taskModalHasTextSelection(modal) {
+    const selection = window.getSelection ? window.getSelection() : null;
+    if (!selection || selection.isCollapsed || !String(selection.toString() || '').trim()) return false;
+    const anchor = taskModalSelectionElement(selection.anchorNode);
+    const focus = taskModalSelectionElement(selection.focusNode);
+    return Boolean((anchor && modal.contains(anchor)) || (focus && modal.contains(focus)));
+  }
+
   function ensureTaskModal() {
     let modal = document.getElementById('taskModal');
     if (modal) return modal;
@@ -215,8 +267,23 @@
     modal.className = 'modal';
     modal.innerHTML = '<div class="modal-card task-modal-card" id="taskModalBody"></div>';
     document.body.appendChild(modal);
+    let backdropPointerStarted = false;
+    const rememberBackdropStart = (event) => {
+      backdropPointerStarted = event.target === modal && !taskModalHasTextSelection(modal);
+    };
+    modal.addEventListener('pointerdown', rememberBackdropStart);
+    modal.addEventListener('mousedown', rememberBackdropStart);
     modal.addEventListener('click', (event) => {
-      if (event.target.id === 'taskModal') closeTaskModal();
+      if (event.target !== modal) {
+        backdropPointerStarted = false;
+        return;
+      }
+      if (!backdropPointerStarted || taskModalHasTextSelection(modal)) {
+        backdropPointerStarted = false;
+        return;
+      }
+      backdropPointerStarted = false;
+      closeTaskModal();
     });
     return modal;
   }
@@ -229,7 +296,7 @@
   async function createTaskHistoryEntry(taskId, kind, text, payload) {
     const task = getTask(taskId);
     if (!task || !String(text || '').trim()) return;
-    await createComment({
+    return createComment({
       articleKey: task.articleKey || '',
       author: payload?.author || state.team.member.name || task.owner || 'Команда',
       team: payload?.team || teamMemberLabel(),
@@ -242,6 +309,7 @@
     const changes = [];
     if (before.title !== after.title) changes.push(`заголовок → ${after.title}`);
     if ((before.owner || '') !== (after.owner || '')) changes.push(`owner → ${after.owner || 'Без owner'}`);
+    if ((before.coOwner || '') !== (after.coOwner || '')) changes.push(`соисполнитель → ${after.coOwner || '—'}`);
     if ((before.due || '') !== (after.due || '')) changes.push(`срок → ${after.due || '—'}`);
     if (before.status !== after.status) changes.push(`статус → ${(TASK_STATUS_META[after.status] || TASK_STATUS_META.new).label}`);
     if (before.priority !== after.priority) changes.push(`приоритет → ${(PRIORITY_META[after.priority] || PRIORITY_META.medium).label}`);
@@ -254,6 +322,7 @@
   }
 
   async function createManualTaskV2(payload) {
+    const now = new Date().toISOString();
     const task = normalizeTask({
       id: uid('task'),
       source: 'manual',
@@ -264,10 +333,13 @@
       priority: payload.priority,
       platform: payload.platform,
       owner: String(payload.owner || '').trim(),
+      coOwner: String(payload.coOwner || payload.co_owner || '').trim(),
       due: payload.due || plusDays(3),
       status: 'new',
       nextAction: String(payload.nextAction || '').trim(),
-      reason: String(payload.reason || '').trim()
+      reason: String(payload.reason || '').trim(),
+      createdAt: now,
+      updatedAt: now
     }, 'manual');
     state.storage.tasks.unshift(task);
     invalidateControlTaskCache();
@@ -277,7 +349,7 @@
     } catch (error) {
       console.error(error);
     }
-    await createTaskHistoryEntry(task.id, 'created', `Задача создана${task.owner ? ` · owner ${task.owner}` : ''}${task.due ? ` · срок ${task.due}` : ''}.`);
+    await createTaskHistoryEntry(task.id, 'created', `Задача создана${task.owner ? ` · owner ${task.owner}` : ''}${task.coOwner ? ` · соисполнитель ${task.coOwner}` : ''}${task.due ? ` · срок ${task.due}` : ''}.`);
     if (!payload?.skipRerender) {
       rerenderCurrentView();
       if (state.activeSku === task.articleKey) renderSkuModal(task.articleKey);
@@ -295,7 +367,8 @@
       id: uid('task'),
       source: 'manual',
       status: 'in_progress',
-      owner: task.owner || ownerName(getSku(task.articleKey)) || ''
+      owner: task.owner || ownerName(getSku(task.articleKey)) || '',
+      updatedAt: new Date().toISOString()
     }, 'manual');
     state.storage.tasks.unshift(manual);
     invalidateControlTaskCache();
@@ -327,7 +400,8 @@
       ...sourceTask,
       id: normalizedTaskId,
       source: 'manual',
-      createdAt: sourceTask.createdAt || new Date().toISOString()
+      createdAt: sourceTask.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }, 'manual');
 
     state.storage.tasks.unshift(materialized);
@@ -350,6 +424,7 @@
       id: current.id,
       source: current.source,
       createdAt: current.createdAt,
+      updatedAt: new Date().toISOString(),
       articleKey: patch && patch.articleKey !== undefined ? patch.articleKey : current.articleKey
     }, current.source || 'manual');
     Object.assign(current, updated);
@@ -373,53 +448,168 @@
     return updateTaskRecord(taskId, { status });
   }
 
+  const TASK_PERSIST_RETRY_DELAYS = [3000, 10000, 30000, 60000];
+
+  function taskPersistStamp(task) {
+    const stamp = Date.parse(String(task?.updatedAt || task?.updated_at || task?.createdAt || ''));
+    return Number.isFinite(stamp) ? stamp : 0;
+  }
+
+  function latestTaskForPersist(task) {
+    const id = String(task?.id || '').trim();
+    if (!id) return task;
+    const current = (state.storage.tasks || []).find((item) => String(item?.id || '').trim() === id);
+    if (!current) return task;
+    return taskPersistStamp(current) >= taskPersistStamp(task) ? current : task;
+  }
+
+  function scheduleTaskPersistRetry(task, attempt) {
+    const delay = TASK_PERSIST_RETRY_DELAYS[attempt];
+    if (!delay) return;
+    window.setTimeout(() => persistTaskInBackground(latestTaskForPersist(task), attempt + 1), delay);
+  }
+
+  function persistTaskInBackground(task, attempt = 0) {
+    const taskForPersist = latestTaskForPersist(task);
+    try {
+      Promise.resolve(persistTask(taskForPersist)).catch((error) => {
+        console.error(error);
+        scheduleTaskPersistRetry(taskForPersist, attempt);
+      });
+    } catch (error) {
+      console.error(error);
+      scheduleTaskPersistRetry(taskForPersist, attempt);
+    }
+  }
+
+  function createTaskHistoryInBackground(taskId, kind, text) {
+    if (!text) return;
+    try {
+      Promise.resolve(createTaskHistoryEntry(taskId, kind, text)).catch((error) => console.error(error));
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function transitionTaskLocalFirst(taskId, status, historyEntries = []) {
+    const normalizedTaskId = String(taskId || '').trim();
+    if (!normalizedTaskId) return null;
+    const transitionKey = `${normalizedTaskId}:${status}`;
+    if (taskTransitionPromises.has(transitionKey)) return taskTransitionPromises.get(transitionKey);
+
+    const transitionPromise = (async () => {
+      const task = await ensureTaskRecordForUpdate(normalizedTaskId);
+      if (!task) return null;
+
+      const before = { ...task };
+      const updated = normalizeTask({
+        ...task,
+        status,
+        id: task.id,
+        source: task.source,
+        createdAt: task.createdAt,
+        updatedAt: new Date().toISOString(),
+        articleKey: task.articleKey
+      }, task.source || 'manual');
+      Object.assign(task, updated);
+      invalidateControlTaskCache();
+      saveLocalStorage();
+
+      persistTaskInBackground(task);
+
+      const historyMessage = buildTaskUpdateMessage(before, task);
+      if (historyMessage) createTaskHistoryInBackground(normalizedTaskId, task.status !== before.status ? 'status' : 'updated', historyMessage);
+      for (const entry of historyEntries || []) {
+        createTaskHistoryInBackground(normalizedTaskId, entry.kind || 'comment', entry.text || '');
+      }
+
+      rerenderCurrentView();
+      if (state.activeSku === task.articleKey) renderSkuModal(task.articleKey);
+      return task;
+    })().finally(() => {
+      taskTransitionPromises.delete(transitionKey);
+    });
+
+    taskTransitionPromises.set(transitionKey, transitionPromise);
+    return transitionPromise;
+  }
+
   async function closeTaskWithReport(taskId, report) {
-    const task = await updateTaskRecord(taskId, { status: 'done' });
-    if (!task) return null;
-    await createTaskHistoryEntry(taskId, 'report', `Задача закрыта с отчётом: ${report}`);
-    return task;
+    return transitionTaskLocalFirst(taskId, 'done', [
+      { kind: 'report', text: `Задача закрыта с отчётом: ${report}` }
+    ]);
   }
 
   async function submitTaskForRopApproval(taskId, report) {
-    const task = await updateTaskRecord(taskId, { status: 'waiting_rop' });
-    if (!task) return null;
-    await createTaskHistoryEntry(taskId, 'report', `\u0418\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c \u0441\u0434\u0430\u043b \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0438 \u043f\u0435\u0440\u0435\u0434\u0430\u043b \u0437\u0430\u0434\u0430\u0447\u0443 \u0420\u041e\u041f\u0443 \u043d\u0430 \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u0438\u0435: ${report}`);
-    return task;
+    return transitionTaskLocalFirst(taskId, 'waiting_rop', [
+      { kind: 'report', text: `\u0418\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c \u0441\u0434\u0430\u043b \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0438 \u043f\u0435\u0440\u0435\u0434\u0430\u043b \u0437\u0430\u0434\u0430\u0447\u0443 \u0420\u041e\u041f\u0443 \u043d\u0430 \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u0438\u0435: ${report}` }
+    ]);
   }
 
   async function approveTaskByRop(taskId, comment) {
-    const task = await updateTaskRecord(taskId, { status: 'waiting_decision' });
-    if (!task) return null;
     const note = String(comment || '').trim();
-    await createTaskHistoryEntry(
-      taskId,
-      'status',
-      note
-        ? `\u0420\u041e\u041f \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043b \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0438 \u043f\u0435\u0440\u0435\u0434\u0430\u043b \u0437\u0430\u0434\u0430\u0447\u0443 \u0440\u0443\u043a\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044e: ${note}`
-        : '\u0420\u041e\u041f \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043b \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0438 \u043f\u0435\u0440\u0435\u0434\u0430\u043b \u0437\u0430\u0434\u0430\u0447\u0443 \u0440\u0443\u043a\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044e \u043d\u0430 \u0444\u0438\u043d\u0430\u043b\u044c\u043d\u043e\u0435 \u0437\u0430\u043a\u0440\u044b\u0442\u0438\u0435.'
-    );
-    return task;
+    return transitionTaskLocalFirst(taskId, 'waiting_decision', [
+      {
+        kind: 'status',
+        text: note
+          ? `\u0420\u041e\u041f \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043b \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0438 \u043f\u0435\u0440\u0435\u0434\u0430\u043b \u0437\u0430\u0434\u0430\u0447\u0443 \u0440\u0443\u043a\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044e: ${note}`
+          : '\u0420\u041e\u041f \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043b \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0438 \u043f\u0435\u0440\u0435\u0434\u0430\u043b \u0437\u0430\u0434\u0430\u0447\u0443 \u0440\u0443\u043a\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044e \u043d\u0430 \u0444\u0438\u043d\u0430\u043b\u044c\u043d\u043e\u0435 \u0437\u0430\u043a\u0440\u044b\u0442\u0438\u0435.'
+      }
+    ]);
   }
 
   async function returnTaskToWork(taskId, comment) {
-    const task = await updateTaskRecord(taskId, { status: 'in_progress' });
-    if (!task) return null;
     const note = String(comment || '').trim();
-    await createTaskHistoryEntry(
-      taskId,
-      'comment',
-      note
-        ? `\u0420\u041e\u041f \u0432\u0435\u0440\u043d\u0443\u043b \u0437\u0430\u0434\u0430\u0447\u0443 \u0432 \u0440\u0430\u0431\u043e\u0442\u0443: ${note}`
-        : '\u0420\u041e\u041f \u0432\u0435\u0440\u043d\u0443\u043b \u0437\u0430\u0434\u0430\u0447\u0443 \u0432 \u0440\u0430\u0431\u043e\u0442\u0443.'
-    );
-    return task;
+    return transitionTaskLocalFirst(taskId, 'in_progress', [
+      {
+        kind: 'comment',
+        text: note
+          ? `\u0420\u041e\u041f \u0432\u0435\u0440\u043d\u0443\u043b \u0437\u0430\u0434\u0430\u0447\u0443 \u0432 \u0440\u0430\u0431\u043e\u0442\u0443: ${note}`
+          : '\u0420\u041e\u041f \u0432\u0435\u0440\u043d\u0443\u043b \u0437\u0430\u0434\u0430\u0447\u0443 \u0432 \u0440\u0430\u0431\u043e\u0442\u0443.'
+      }
+    ]);
   }
 
   async function finalCloseTaskWithReport(taskId, report) {
-    const task = await updateTaskRecord(taskId, { status: 'done' });
-    if (!task) return null;
-    await createTaskHistoryEntry(taskId, 'report', `\u0420\u0443\u043a\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c \u0444\u0438\u043d\u0430\u043b\u044c\u043d\u043e \u0437\u0430\u043a\u0440\u044b\u043b \u0437\u0430\u0434\u0430\u0447\u0443: ${report}`);
-    return task;
+    const normalizedTaskId = String(taskId || '').trim();
+    if (!normalizedTaskId) return null;
+    if (finalCloseTaskPromises.has(normalizedTaskId)) return finalCloseTaskPromises.get(normalizedTaskId);
+
+    const closePromise = (async () => {
+      const task = await ensureTaskRecordForUpdate(normalizedTaskId);
+      if (!task) return null;
+
+      const before = { ...task };
+      const updated = normalizeTask({
+        ...task,
+        status: 'done',
+        id: task.id,
+        source: task.source,
+        createdAt: task.createdAt,
+        updatedAt: new Date().toISOString(),
+        articleKey: task.articleKey
+      }, task.source || 'manual');
+      Object.assign(task, updated);
+      invalidateControlTaskCache();
+      saveLocalStorage();
+
+      persistTaskInBackground(task);
+
+      const historyMessage = buildTaskUpdateMessage(before, task);
+      if (historyMessage) {
+        Promise.resolve(createTaskHistoryEntry(normalizedTaskId, 'status', historyMessage)).catch((error) => console.error(error));
+      }
+      Promise.resolve(createTaskHistoryEntry(normalizedTaskId, 'report', `\u0420\u0443\u043a\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c \u0444\u0438\u043d\u0430\u043b\u044c\u043d\u043e \u0437\u0430\u043a\u0440\u044b\u043b \u0437\u0430\u0434\u0430\u0447\u0443: ${report}`)).catch((error) => console.error(error));
+
+      rerenderCurrentView();
+      if (state.activeSku === task.articleKey) renderSkuModal(task.articleKey);
+      return task;
+    })().finally(() => {
+      finalCloseTaskPromises.delete(normalizedTaskId);
+    });
+
+    finalCloseTaskPromises.set(normalizedTaskId, closePromise);
+    return closePromise;
   }
 
   function lifecycleStage(status) {
@@ -892,13 +1082,6 @@
     return `auto|${taskMeaningKey(task)}`;
   }
 
-  function isStrategicControlTask(task) {
-    const source = String(task?.source || '').trim().toLowerCase();
-    const autoCode = String(task?.autoCode || '').trim().toLowerCase();
-    const id = String(task?.id || '').trim().toLowerCase();
-    return source === 'strategic' || autoCode === 'rop_strategic' || id.startsWith('rop-');
-  }
-
   function shouldPreferTask(candidate, current) {
     if (!current) return true;
     const candidateManual = candidate?.source !== 'auto';
@@ -912,14 +1095,13 @@
   }
 
   function dedupeControlTasks(tasks) {
-    const controlTasks = (tasks || []).filter((task) => !isStrategicControlTask(task));
     const manualMeaningKeys = new Set(
-      controlTasks
+      (tasks || [])
         .filter((task) => task?.source !== 'auto' && isTaskActive(task))
         .map(taskMeaningKey)
     );
     const byKey = new Map();
-    for (const task of controlTasks) {
+    for (const task of tasks || []) {
       if (task?.source === 'auto' && manualMeaningKeys.has(taskMeaningKey(task))) continue;
       const key = taskDedupeKey(task);
       const existing = byKey.get(key);
@@ -1218,7 +1400,7 @@
 
   async function cleanupControlTasks() {
     const rawTasks = typeof originalGetAllTasks === 'function' ? originalGetAllTasks() : getAllTasksDeduped();
-    const active = (rawTasks || []).filter((task) => !isStrategicControlTask(task) && isTaskActive(task));
+    const active = (rawTasks || []).filter(isTaskActive);
     const byKey = new Map();
     const updates = [];
 
@@ -1387,6 +1569,7 @@
           <input name="title" placeholder="Что нужно сделать" required>
           <div class="compact-row">
             <input name="owner" list="generalTaskOwnerList" placeholder="Кто ведёт задачу">
+            <input name="coOwner" list="generalTaskOwnerList" placeholder="Соисполнитель">
             <input name="due" type="date" value="${plusDays(2)}">
           </div>
           ${fixedPlatform
@@ -1435,7 +1618,7 @@
     const owners = ownerOptions();
     const approvalCount = tasks.filter((task) => task.status === 'waiting_rop' || task.status === 'waiting_decision').length;
     const selectedWorkstreamRaw = String(state?.controlFilters?.platform || '').trim().toLowerCase();
-    const selectedWorkstream = selectedWorkstreamRaw === 'retail' ? 'ya' : (CONTROL_WORKSTREAM_META[selectedWorkstreamRaw] ? selectedWorkstreamRaw : 'all');
+    const selectedWorkstream = selectedWorkstreamRaw === 'retail' ? 'all' : (CONTROL_WORKSTREAM_META[selectedWorkstreamRaw] ? selectedWorkstreamRaw : 'all');
     const firstTwoCol = root.querySelector('.two-col');
     const firstRowCards = firstTwoCol ? Array.from(firstTwoCol.children).filter((node) => node.classList?.contains('card')) : [];
 
@@ -1575,6 +1758,7 @@
         priority: form.get('priority') || 'high',
         platform: form.get('platform') || 'cross',
         owner: form.get('owner'),
+        coOwner: form.get('coOwner'),
         due: form.get('due'),
         nextAction: form.get('nextAction'),
         reason: form.get('reason')
@@ -1595,6 +1779,7 @@
         priority: form.get('priority') || 'high',
         platform: form.get('platform') || (selectedWorkstream !== 'all' ? selectedWorkstream : 'cross'),
         owner: form.get('owner'),
+        coOwner: form.get('coOwner'),
         due: form.get('due'),
         nextAction: form.get('nextAction'),
         reason: form.get('reason')

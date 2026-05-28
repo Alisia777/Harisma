@@ -73,7 +73,7 @@ function remoteTaskRow(task) {
     article_key: task.articleKey,
     title: task.title,
     next_action: task.nextAction || '',
-    reason: task.reason || '',
+    reason: typeof composeTaskReason === 'function' ? composeTaskReason(task.reason || '', task.coOwner || '') : (task.reason || ''),
     owner: task.owner || '',
     due: task.due || null,
     status: task.status,
@@ -619,6 +619,31 @@ async function signInTeamViaRest() {
 
 async function signInTeamAnonymously() {
   const cfg = currentConfig();
+  const cacheKey = 'altea-team-anon-session-v1';
+  const readCachedSession = () => {
+    try {
+      const cached = JSON.parse(window.sessionStorage?.getItem(cacheKey) || 'null');
+      if (!cached || cached.url !== cfg.supabase?.url || cached.anonKey !== cfg.supabase?.anonKey) return null;
+      if (!cached.access_token || Number(cached.expiresAt || 0) <= Date.now() + 60000) return null;
+      return { access_token: cached.access_token, user: cached.user || null };
+    } catch {
+      return null;
+    }
+  };
+  const writeCachedSession = (payload, expiresAt) => {
+    try {
+      if (!payload?.access_token) return;
+      window.sessionStorage?.setItem(cacheKey, JSON.stringify({
+        url: cfg.supabase?.url || '',
+        anonKey: cfg.supabase?.anonKey || '',
+        access_token: payload.access_token,
+        user: payload.user || null,
+        expiresAt: Number(expiresAt) || Date.now() + 45 * 60 * 1000
+      }));
+    } catch {}
+  };
+  const cached = readCachedSession();
+  if (cached) return cached;
   if (window.supabase?.createClient) {
     const client = window.supabase.createClient(cfg.supabase.url, cfg.supabase.anonKey, {
       auth: {
@@ -630,12 +655,16 @@ async function signInTeamAnonymously() {
     });
     const response = await client.auth.signInAnonymously();
     if (response?.error) throw response.error;
-    return {
+    const payload = {
       access_token: response?.data?.session?.access_token || '',
       user: response?.data?.user || null
     };
+    writeCachedSession(payload, Number(response?.data?.session?.expires_at || 0) * 1000);
+    return payload;
   }
-  return signInTeamViaRest();
+  const payload = await signInTeamViaRest();
+  writeCachedSession(payload, Date.now() + Number(payload?.expires_in || 2700) * 1000);
+  return payload;
 }
 
 function createRestTeamClient() {

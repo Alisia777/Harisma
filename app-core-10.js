@@ -322,6 +322,7 @@ function buildTaskUpdateMessage(before, after) {
   const changes = [];
   if (before.title !== after.title) changes.push(`заголовок → ${after.title}`);
   if ((before.owner || '') !== (after.owner || '')) changes.push(`owner → ${after.owner || 'Без owner'}`);
+  if ((before.coOwner || '') !== (after.coOwner || '')) changes.push(`соисполнитель → ${after.coOwner || '—'}`);
   if ((before.due || '') !== (after.due || '')) changes.push(`срок → ${after.due || '—'}`);
   if (before.status !== after.status) changes.push(`статус → ${(TASK_STATUS_META[after.status] || TASK_STATUS_META.new).label}`);
   if (before.priority !== after.priority) changes.push(`приоритет → ${(PRIORITY_META[after.priority] || PRIORITY_META.medium).label}`);
@@ -389,6 +390,7 @@ async function createManualTask(payload) {
     priority: payload.priority,
     platform: payload.platform,
     owner: String(payload.owner || '').trim(),
+    coOwner: String(payload.coOwner || payload.co_owner || '').trim(),
     due: payload.due || plusDays(3),
     status: 'new',
     nextAction: String(payload.nextAction || '').trim(),
@@ -403,7 +405,7 @@ async function createManualTask(payload) {
   } catch (error) {
     console.error(error);
   }
-  await createTaskHistoryEntry(task.id, 'created', `Задача создана${task.owner ? ` · owner ${task.owner}` : ''}${task.due ? ` · срок ${task.due}` : ''}.`);
+  await createTaskHistoryEntry(task.id, 'created', `Задача создана${task.owner ? ` · owner ${task.owner}` : ''}${task.coOwner ? ` · соисполнитель ${task.coOwner}` : ''}${task.due ? ` · срок ${task.due}` : ''}.`);
   if (!skipRerender) {
     rerenderCurrentView();
     if (state.activeSku === task.articleKey) renderSkuModal(task.articleKey);
@@ -718,7 +720,120 @@ function ensureSkuContourShell() {
   }
 }
 
+function portalAttrSelector(name, value) {
+  return `[${name}="${String(value || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"]`;
+}
+
+function capturePortalScrollState() {
+  const scrollRoot = document.scrollingElement || document.documentElement;
+  const activeView = typeof normalizePortalView === 'function'
+    ? normalizePortalView(state.activeView || 'dashboard')
+    : (state.activeView || 'dashboard');
+  const viewRoot = document.getElementById(`view-${activeView}`);
+  const snapshot = {
+    view: activeView,
+    x: window.scrollX || scrollRoot?.scrollLeft || 0,
+    y: window.scrollY || scrollRoot?.scrollTop || 0,
+    tableWraps: [],
+    anchor: null,
+    modal: null
+  };
+  if (viewRoot) {
+    snapshot.tableWraps = Array.from(viewRoot.querySelectorAll('.table-wrap')).map((element, index) => ({
+      index,
+      left: element.scrollLeft || 0,
+      top: element.scrollTop || 0
+    }));
+  }
+  if (activeView === 'product-leaderboard' && viewRoot) {
+    const primaryCandidates = Array.from(viewRoot.querySelectorAll('[data-product-row], [data-open-sku]'));
+    const fallbackCandidates = Array.from(viewRoot.querySelectorAll('.card, .section-title'));
+    const candidates = primaryCandidates.length ? primaryCandidates : fallbackCandidates;
+    for (const element of candidates) {
+      const rect = element.getBoundingClientRect();
+      if (rect.bottom <= 80 || rect.top >= window.innerHeight - 80) continue;
+      const row = element.closest('[data-product-row]');
+      const skuLink = element.closest('[data-open-sku]');
+      if (row?.dataset.productRow) {
+        snapshot.anchor = {
+          selector: portalAttrSelector('data-product-row', row.dataset.productRow),
+          top: row.getBoundingClientRect().top
+        };
+      } else if (skuLink?.dataset.openSku) {
+        snapshot.anchor = {
+          selector: portalAttrSelector('data-open-sku', skuLink.dataset.openSku),
+          top: skuLink.getBoundingClientRect().top
+        };
+      } else {
+        const index = candidates.indexOf(element);
+        if (index >= 0) {
+          element.setAttribute('data-portal-scroll-anchor', String(index));
+          snapshot.anchor = {
+            selector: portalAttrSelector('data-portal-scroll-anchor', index),
+            top: rect.top
+          };
+        }
+      }
+      break;
+    }
+  }
+  const modal = document.getElementById('skuModal');
+  const modalBody = document.getElementById('skuModalBody');
+  if (modal?.classList.contains('open')) {
+    snapshot.modal = {
+      articleKey: state.activeSku || '',
+      modalTop: modal.scrollTop || 0,
+      bodyTop: modalBody?.scrollTop || 0
+    };
+  }
+  return snapshot;
+}
+
+function restorePortalScrollState(snapshot) {
+  if (!snapshot) return;
+  const restore = () => {
+    const activeView = typeof normalizePortalView === 'function'
+      ? normalizePortalView(state.activeView || 'dashboard')
+      : (state.activeView || 'dashboard');
+    if (activeView === snapshot.view) {
+      let restoredByAnchor = false;
+      if (snapshot.anchor?.selector) {
+        const target = document.querySelector(snapshot.anchor.selector);
+        if (target) {
+          const delta = target.getBoundingClientRect().top - snapshot.anchor.top;
+          if (Math.abs(delta) > 1) window.scrollTo(snapshot.x, (window.scrollY || 0) + delta);
+          restoredByAnchor = true;
+        }
+      }
+      if (!restoredByAnchor) window.scrollTo(snapshot.x, snapshot.y);
+      const viewRoot = document.getElementById(`view-${activeView}`);
+      if (viewRoot && Array.isArray(snapshot.tableWraps)) {
+        const wraps = Array.from(viewRoot.querySelectorAll('.table-wrap'));
+        snapshot.tableWraps.forEach((item) => {
+          const element = wraps[item.index];
+          if (!element) return;
+          element.scrollLeft = item.left || 0;
+          element.scrollTop = item.top || 0;
+        });
+      }
+    }
+    if (snapshot.modal) {
+      const modal = document.getElementById('skuModal');
+      const modalBody = document.getElementById('skuModalBody');
+      if (modal?.classList.contains('open') && (!snapshot.modal.articleKey || snapshot.modal.articleKey === state.activeSku)) {
+        modal.scrollTop = snapshot.modal.modalTop || 0;
+        if (modalBody) modalBody.scrollTop = snapshot.modal.bodyTop || 0;
+      }
+    }
+  };
+  window.requestAnimationFrame(() => {
+    restore();
+    window.setTimeout(restore, 80);
+  });
+}
+
 function rerenderCurrentView() {
+  const scrollSnapshot = capturePortalScrollState();
   applyOwnerOverridesToSkus();
   const renderPlan = [
     ['view-data-health', 'Здоровье данных', () => { if (typeof renderPortalDataHealth === 'function') renderPortalDataHealth('view-data-health'); }],
@@ -763,6 +878,7 @@ function rerenderCurrentView() {
   if (errors.length) setAppError(`Портал загрузил не всё: ${errors[0]}`);
   else if (Array.isArray(state.boot?.dataWarnings) && state.boot.dataWarnings.length) setAppError(`Предупреждение по данным: ${state.boot.dataWarnings[0]}`);
   else setAppError('');
+  restorePortalScrollState(scrollSnapshot);
 }
 
 function setAppError(message = '') {
@@ -979,7 +1095,6 @@ async function init() {
     applyOwnerOverridesToSkus();
     mergeSeedStorage(seed || {});
     state.boot.dataReady = true;
-    rerenderCurrentView();
     setView(resolveInitialView(), { persist: true, syncHash: true });
     if (typeof window.portalStartOperationalAutoRefresh === 'function') window.portalStartOperationalAutoRefresh();
     window.setTimeout(() => {

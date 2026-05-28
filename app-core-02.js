@@ -534,29 +534,6 @@ function ownerName(sku) {
   return localOwner || skuMatrixOwnerName(sku, '');
 }
 
-function taskOwnerForPlatform(sku, platform = '') {
-  const normalizedPlatform = String(platform || '').trim().toLowerCase();
-  if (normalizedPlatform === 'wb+ozon') return ownerName(sku);
-  const ownerPlatform = normalizedPlatform === 'goldapple'
-    ? 'ga'
-    : normalizedPlatform === 'magnit'
-      ? 'mm'
-      : normalizedPlatform;
-  return platformOwnerName(sku, ownerPlatform) || ownerName(sku);
-}
-
-function autoTaskPlatformKeys(platform = '') {
-  const normalized = normalizeTaskPlatform(platform);
-  if (normalized === 'wb+ozon') return ['wb', 'ozon'];
-  if (normalized && normalized !== 'all') return [normalized];
-  return ['*'];
-}
-
-function autoTaskPlatformId(platform = '') {
-  const key = autoTaskPlatformKeys(platform)[0] || 'all';
-  return key === '*' ? 'all' : key.replace(/[^a-z0-9]+/g, '-');
-}
-
 function ownerOptions() {
   const pool = new Set();
   const addOwner = (value) => {
@@ -576,9 +553,38 @@ function ownerOptions() {
     }
   }
   for (const item of state.storage.ownerOverrides || []) addOwner(item.ownerName);
-  for (const task of state.storage.tasks || []) addOwner(task.owner);
+  for (const task of state.storage.tasks || []) {
+    addOwner(task.owner);
+    addOwner(task.coOwner);
+  }
   addOwner(state.team.member?.name);
   return [...pool].sort((a, b) => a.localeCompare(b, 'ru'));
+}
+
+const TASK_COOWNER_REASON_RE = /\[\[coOwner:([^\]]+)\]\]/g;
+
+function parseTaskReasonMeta(reasonValue = '') {
+  let coOwner = '';
+  const reason = String(reasonValue || '')
+    .replace(TASK_COOWNER_REASON_RE, (_match, payload) => {
+      try {
+        coOwner = canonicalOwnerName(decodeURIComponent(payload) || '');
+      } catch {
+        coOwner = canonicalOwnerName(payload || '');
+      }
+      return '';
+    })
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  return { reason, coOwner };
+}
+
+function composeTaskReason(reasonValue = '', coOwnerValue = '') {
+  const cleanReason = parseTaskReasonMeta(reasonValue).reason;
+  const coOwner = canonicalOwnerName(coOwnerValue || '');
+  if (!coOwner) return cleanReason;
+  const marker = `[[coOwner:${encodeURIComponent(coOwner)}]]`;
+  return [cleanReason, marker].filter(Boolean).join('\n');
 }
 
 function ownerCell(sku) {
@@ -979,14 +985,25 @@ function normalizeTask(task, sourceHint = 'manual') {
   const priority = task?.priority || (type === 'price_margin' ? 'critical' : type === 'assignment' ? 'high' : 'medium');
   const createdAt = task?.createdAt || task?.created_at || new Date().toISOString();
   const updatedAt = task?.updatedAt || task?.updated_at || createdAt;
+  const parsedReason = parseTaskReasonMeta(task?.reason || '');
+  const coOwner = canonicalOwnerName(
+    task?.coOwner
+    || task?.co_owner
+    || task?.secondaryOwner
+    || task?.secondary_owner
+    || task?.collaborator
+    || parsedReason.coOwner
+    || ''
+  );
   return {
     id: task?.id || stableId(sourceHint === 'auto' ? 'auto' : 'task', `${task?.articleKey || ''}|${title}|${task?.due || ''}|${createdAt}|${sourceHint}`),
     source: task?.source || sourceHint,
     articleKey: task?.articleKey || '',
     title,
     nextAction: task?.nextAction || '',
-    reason: task?.reason || '',
+    reason: parsedReason.reason,
     owner: canonicalOwnerName(task?.owner || ownerName(sku) || ''),
+    coOwner,
     due: task?.due || plusDays(type === 'assignment' ? 1 : 3),
     status: mapTaskStatus(task?.status),
     type,
@@ -1033,10 +1050,19 @@ function taskTypeBadge(task) {
   return badge(TASK_TYPE_META[task?.type] || TASK_TYPE_META.general, kind);
 }
 
+function taskProductStatusBadge(task) {
+  const sku = task?.articleKey ? getSku(task.articleKey) : null;
+  if (!sku) return '';
+  const meta = typeof skuOperationalStatusMeta === 'function'
+    ? skuOperationalStatusMeta(sku)
+    : (typeof productLifecycleForSku === 'function' ? productLifecycleForSku(sku) : null);
+  const label = meta?.label || sku?.status || '';
+  if (!label) return '';
+  return badge(label, meta?.tone || meta?.kind || 'info');
+}
+
 function taskSourceBadge(task) {
-  if (task?.source === 'auto') return badge('авто-сигнал', 'info');
-  if (task?.source === 'seed') return badge('seed');
-  return badge('ручная', 'ok');
+  return taskProductStatusBadge(task);
 }
 
 function taskPlatformBadge(task) {
@@ -1140,29 +1166,13 @@ function ensureTaskModal() {
 }
 
 function storedTaskKeys() {
-  const keys = new Set();
-  (state.storage.tasks || [])
-    // Completed saved tasks are still deliberate outcomes and should suppress duplicate auto tasks.
-    .map((task) => normalizeTask(task, task?.source || 'manual'))
-    .filter((task) => task.articleKey && task.type)
-    .forEach((task) => {
-      autoTaskPlatformKeys(task.platform).forEach((platformKey) => {
-        keys.add(`${task.articleKey}|${task.type}|${platformKey}`);
-      });
-    });
-  return keys;
+  return new Set(state.storage.tasks.filter(isTaskActive).map((task) => `${task.articleKey}|${task.type}`));
 }
 
-function canRegisterAutoTask(keys, articleKey, type, platform = '') {
-  const normalizedArticle = String(articleKey || '').trim();
-  const normalizedType = String(type || '').trim();
-  if (!normalizedArticle || !normalizedType) return false;
-  const prefix = `${normalizedArticle}|${normalizedType}|`;
-  const platformKeys = autoTaskPlatformKeys(platform);
-  if (keys.has(`${prefix}*`)) return false;
-  if (platformKeys.includes('*') && [...keys].some((key) => key.startsWith(prefix))) return false;
-  if (platformKeys.some((platformKey) => keys.has(`${prefix}${platformKey}`))) return false;
-  platformKeys.forEach((platformKey) => keys.add(`${prefix}${platformKey}`));
+function canRegisterAutoTask(keys, articleKey, type) {
+  const key = `${articleKey}|${type}`;
+  if (!articleKey || keys.has(key)) return false;
+  keys.add(key);
   return true;
 }
 
@@ -1283,7 +1293,7 @@ function buildLeaderboardAutoTask({
   const reason = weekLabel ? `${weekLabel}: ${summary}` : summary;
 
   return normalizeTask({
-    id: `auto-${autoCode}-${autoTaskPlatformId(platform)}-${articleKey}`,
+    id: `auto-${autoCode}-${articleKey}`,
     source: 'auto',
     autoCode,
     articleKey,
@@ -1298,13 +1308,6 @@ function buildLeaderboardAutoTask({
     platform,
     entityLabel: item?.name || title
   }, 'auto');
-}
-
-function autoTaskPlatformsForSku(sku) {
-  if (sku?.flags?.toWorkWB && sku?.flags?.toWorkOzon) return ['wb', 'ozon'];
-  const platform = sku?.flags?.toWorkWB ? 'wb' : sku?.flags?.toWorkOzon ? 'ozon' : detectTaskPlatform({}, sku);
-  const keys = autoTaskPlatformKeys(platform).filter((key) => key !== '*');
-  return keys.length ? keys : [platform || 'all'];
 }
 
 function buildAutoTasks() {
@@ -1325,8 +1328,11 @@ function buildAutoTasks() {
 
   for (const sku of state.skus) {
     const articleKey = sku.articleKey;
-    const autoPlatforms = autoTaskPlatformsForSku(sku);
-    const exitSku = String(sku?.status || '').toLowerCase().includes('вывод');
+    const owner = ownerName(sku);
+    const platform = sku?.flags?.toWorkWB && sku?.flags?.toWorkOzon ? 'wb+ozon' : sku?.flags?.toWorkWB ? 'wb' : sku?.flags?.toWorkOzon ? 'ozon' : detectTaskPlatform({}, sku);
+    const lifecycleKey = String(sku?.productLifecycle?.key || (typeof productLifecycleForSku === 'function' ? productLifecycleForSku(sku)?.key : '') || '').toLowerCase();
+    const exitSku = ['exit', 'archived'].includes(lifecycleKey) || /вывод|вывед/.test(String(sku?.status || '').toLowerCase());
+    if (exitSku) continue;
     const needsOwnerSignal = !sku?.flags?.assigned && (
       sku?.flags?.toWorkWB
       || sku?.flags?.toWorkOzon
@@ -1341,12 +1347,9 @@ function buildAutoTasks() {
     );
     const leaderboardItem = leaderboardMap.get(String(articleKey || '').trim().toLowerCase()) || null;
 
-    for (const platform of autoPlatforms) {
-    const owner = taskOwnerForPlatform(sku, platform);
-
     if (leaderboardFresh && leaderboardItem?.inPortal !== false) {
       const assignmentAlerts = leaderboardAlertsForFamilies(leaderboardItem, 'ownership');
-      if (assignmentAlerts.length && canRegisterAutoTask(keys, articleKey, 'assignment', platform)) {
+      if (assignmentAlerts.length && canRegisterAutoTask(keys, articleKey, 'assignment')) {
         tasks.push(buildLeaderboardAutoTask({
           articleKey,
           owner: '',
@@ -1361,7 +1364,7 @@ function buildAutoTasks() {
       }
 
       const economicsAlerts = leaderboardAlertsForFamilies(leaderboardItem, 'economics');
-      if (leaderboardHasEscalation(economicsAlerts) && canRegisterAutoTask(keys, articleKey, 'price_margin', platform)) {
+      if (leaderboardHasEscalation(economicsAlerts) && canRegisterAutoTask(keys, articleKey, 'price_margin')) {
         tasks.push(buildLeaderboardAutoTask({
           articleKey,
           owner,
@@ -1370,13 +1373,13 @@ function buildAutoTasks() {
           alerts: economicsAlerts,
           autoCode: 'kz_economics',
           title: 'КЗ: разобрать цену и экономику',
-          nextAction: 'Проверить ROMI, ДРР, цену, оффер и unit-экономику. Зафиксировать, что меняем в карточке или промо.',
+          nextAction: 'Сверить цену витрины, ДРР/ROMI и unit-маржу. В апдейте выбрать решение: цена, промо, карточка или без изменений.',
           type: 'price_margin'
         }));
       }
 
       const contentAlerts = leaderboardAlertsForFamilies(leaderboardItem, 'card');
-      if (leaderboardHasEscalation(contentAlerts) && canRegisterAutoTask(keys, articleKey, 'content', platform)) {
+      if (leaderboardHasEscalation(contentAlerts) && canRegisterAutoTask(keys, articleKey, 'content')) {
         tasks.push(buildLeaderboardAutoTask({
           articleKey,
           owner,
@@ -1391,7 +1394,7 @@ function buildAutoTasks() {
       }
 
       const trafficAlerts = leaderboardAlertsForFamilies(leaderboardItem, ['traffic', 'sales']);
-      if (!exitSku && leaderboardHasEscalation(trafficAlerts) && canRegisterAutoTask(keys, articleKey, 'traffic', platform)) {
+      if (!exitSku && leaderboardHasEscalation(trafficAlerts) && canRegisterAutoTask(keys, articleKey, 'traffic')) {
         tasks.push(buildLeaderboardAutoTask({
           articleKey,
           owner,
@@ -1406,9 +1409,9 @@ function buildAutoTasks() {
       }
     }
 
-    if ((sku?.flags?.toWorkWB || sku?.flags?.toWorkOzon || sku?.flags?.toWork) && canRegisterAutoTask(keys, articleKey, 'price_margin', platform)) {
+    if ((sku?.flags?.toWorkWB || sku?.flags?.toWorkOzon || sku?.flags?.toWork) && canRegisterAutoTask(keys, articleKey, 'price_margin')) {
       tasks.push(normalizeTask({
-        id: `auto-price-${autoTaskPlatformId(platform)}-${articleKey}`,
+        id: `auto-price-${articleKey}`,
         source: 'auto',
         autoCode: 'price_margin',
         articleKey,
@@ -1422,9 +1425,9 @@ function buildAutoTasks() {
         priority: 'critical',
         platform
       }, 'auto'));
-    } else if (sku?.flags?.negativeMargin && canRegisterAutoTask(keys, articleKey, 'price_margin', platform)) {
+    } else if (sku?.flags?.negativeMargin && canRegisterAutoTask(keys, articleKey, 'price_margin')) {
       tasks.push(normalizeTask({
-        id: `auto-neg-${autoTaskPlatformId(platform)}-${articleKey}`,
+        id: `auto-neg-${articleKey}`,
         source: 'auto',
         autoCode: 'negative_margin',
         articleKey,
@@ -1440,9 +1443,9 @@ function buildAutoTasks() {
       }, 'auto'));
     }
 
-    if (sku?.flags?.lowStock && !exitSku && canRegisterAutoTask(keys, articleKey, 'supply', platform)) {
+    if (sku?.flags?.lowStock && !exitSku && canRegisterAutoTask(keys, articleKey, 'supply')) {
       tasks.push(normalizeTask({
-        id: `auto-stock-${autoTaskPlatformId(platform)}-${articleKey}`,
+        id: `auto-stock-${articleKey}`,
         source: 'auto',
         autoCode: 'low_stock',
         articleKey,
@@ -1458,9 +1461,9 @@ function buildAutoTasks() {
       }, 'auto'));
     }
 
-    if (needsOwnerSignal && canRegisterAutoTask(keys, articleKey, 'assignment', platform)) {
+    if (needsOwnerSignal && canRegisterAutoTask(keys, articleKey, 'assignment')) {
       tasks.push(normalizeTask({
-        id: `auto-owner-${autoTaskPlatformId(platform)}-${articleKey}`,
+        id: `auto-owner-${articleKey}`,
         source: 'auto',
         autoCode: 'assignment',
         articleKey,
@@ -1476,9 +1479,9 @@ function buildAutoTasks() {
       }, 'auto'));
     }
 
-    if (AUTO_RETURNS_TASKS_ENABLED && sku?.flags?.highReturn && canRegisterAutoTask(keys, articleKey, 'returns', platform)) {
+    if (AUTO_RETURNS_TASKS_ENABLED && sku?.flags?.highReturn && canRegisterAutoTask(keys, articleKey, 'returns')) {
       tasks.push(normalizeTask({
-        id: `auto-returns-${autoTaskPlatformId(platform)}-${articleKey}`,
+        id: `auto-returns-${articleKey}`,
         source: 'auto',
         autoCode: 'returns',
         articleKey,
@@ -1492,7 +1495,6 @@ function buildAutoTasks() {
         priority: 'medium',
         platform
       }, 'auto'));
-    }
     }
   }
 

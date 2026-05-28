@@ -28,17 +28,77 @@
   const baseTaskModal = typeof window.renderTaskModal === 'function' ? window.renderTaskModal : null;
   const baseControl = typeof window.renderControlCenter === 'function' ? window.renderControlCenter : null;
   const baseExecutive = typeof window.renderExecutive === 'function' ? window.renderExecutive : null;
+  const stepSubmitInFlight = new Set();
+  const stepApproveInFlight = new Set();
+  const stepReturnInFlight = new Set();
+  const finalCloseInFlight = new Set();
 
   const meta = (k) => WS[k] || WS.cross;
   const task = (id) => typeof getTask === 'function' ? getTask(id) : null;
   const history = (id) => typeof getTaskHistory === 'function' ? getTaskHistory(id) : [];
   const owners = () => typeof ownerOptions === 'function' ? ownerOptions() : [];
+  const inferMarketplaceKey = (value) => {
+    const raw = String(value || '').trim().toLowerCase();
+    const compact = raw.replace(/[\s._'`"\u2019-]+/g, '');
+    if (!raw) return '';
+    if (/\u0437\s*\u044f|\u0437\u044f|\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*(\u044f\u0431\u043b\u043e\u043a|\u044f\u0431\u043b)|golden\s*apple|gold[\s_-]*apple|goldapple|zya/.test(raw) || ['goldapple', 'goldenapple', 'zya', '\u0437\u044f', '\u0437\u043e\u043b\u043e\u0442\u043e\u0435\u044f\u0431\u043b\u043e\u043a\u043e'].includes(compact)) return 'goldapple';
+    if (/\u043b[\s'`\u2019.-]*[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c?|\u043b\u044d\u0442\u0443\u0430\u043b\u044c?|letual|letu|letoile|l[\s'`.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile', '\u043b\u0435\u0442\u0443\u0430\u043b\u044c', '\u043b\u0435\u0442\u0443\u0430\u043b', '\u043b\u044d\u0442\u0443\u0430\u043b\u044c', '\u043b\u044d\u0442\u0443\u0430\u043b'].includes(compact)) return 'letu';
+    if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|magnet|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'magnet', 'magnetmarket', 'mm', '\u043c\u0430\u0433\u043d\u0438\u0442', '\u043c\u0430\u0433\u043d\u0438\u0442\u043c\u0430\u0440\u043a\u0435\u0442'].includes(compact)) return 'magnit';
+    if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|yandex|(^|[^a-z0-9])(ya|ym)([^a-z0-9]|$)|(^|[^\u0430-\u044f\u04510-9])\u044f\u043c([^\u0430-\u044f\u04510-9]|$)/.test(raw)) return 'ya';
+    if (/\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*\u044f\u0431\u043b\u043e\u043a|golden\s*apple|gold[\s_-]*apple|goldapple|zya|\u0437\u044f/.test(raw) || ['goldapple', 'goldenapple', 'zya'].includes(compact)) return 'goldapple';
+    if (/\u043b['\u2019]?\s?[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c|letual|letu|letoile|l['\s.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile'].includes(compact)) return 'letu';
+    if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'mm'].includes(compact)) return 'magnit';
+    if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|\u044f\u043c|ym|yandex/.test(raw)) return 'ya';
+    return '';
+  };
   const normPlatform = (v) => {
     const raw = String(v || '').trim().toLowerCase();
-    if (raw === 'retail') return 'ya';
+    const compact = raw.replace(/[\s._'`"\u2019-]+/g, '');
+    if (raw === 'retail') return 'cross';
+    if (['goldapple', 'goldenapple', 'zya', 'ga'].includes(compact)) return 'goldapple';
+    if (['letu', 'letual', 'letoile'].includes(compact)) return 'letu';
+    if (['magnit', 'magnitmarket', 'mm'].includes(compact)) return 'magnit';
     return ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'cross'].includes(raw) ? raw : 'cross';
   };
   const stage = (s) => s === 'waiting_decision' ? 3 : s === 'waiting_rop' ? 2 : 1;
+
+  function taskPeopleLine(taskItem) {
+    const owner = String(taskItem?.owner || '').trim() || 'без owner';
+    const coOwner = String(taskItem?.coOwner || '').trim();
+    return coOwner ? `${owner} + ${coOwner}` : owner;
+  }
+
+  function taskCreatedLabel(taskItem, compact = false) {
+    const raw = taskItem?.createdAt || taskItem?.created_at || '';
+    if (!raw) return compact ? 'без даты' : '—';
+    if (!compact && typeof fmt !== 'undefined' && typeof fmt.date === 'function') return fmt.date(raw);
+    const date = new Date(raw);
+    if (Number.isNaN(date.getTime())) return String(raw).slice(0, 10) || (compact ? 'без даты' : '—');
+    return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+  }
+
+  function taskProductStatusLabel(taskItem) {
+    const sku = taskItem?.articleKey && typeof getSku === 'function' ? getSku(taskItem.articleKey) : null;
+    if (!sku) return '';
+    const meta = typeof skuOperationalStatusMeta === 'function'
+      ? skuOperationalStatusMeta(sku)
+      : (typeof productLifecycleForSku === 'function' ? productLifecycleForSku(sku) : null);
+    return meta?.label || sku?.status || '';
+  }
+
+  function taskContextCard(taskItem) {
+    const sku = taskItem?.articleKey && typeof getSku === 'function' ? getSku(taskItem.articleKey) : null;
+    const productStatus = taskProductStatusLabel(taskItem);
+    return `
+      <div class="card subtle">
+        <h3>Контекст</h3>
+        ${metricRow('Owner', escapeHtml(taskPeopleLine(taskItem)))}
+        ${metricRow('Срок', escapeHtml(taskItem?.due || '—'))}
+        ${metricRow('Поставлена', escapeHtml(taskCreatedLabel(taskItem)))}
+        ${productStatus ? metricRow('Статус товара', escapeHtml(productStatus)) : ''}
+        ${metricRow('SKU / тема', sku ? escapeHtml(sku.article || sku.articleKey) : escapeHtml(taskItem?.entityLabel || 'Общая задача'))}
+      </div>`;
+  }
 
   function normalizeMultilineTaskText(value) {
     return String(value || '')
@@ -306,16 +366,10 @@
           <div class="ui-group">
             <div class="ui-group-head"><strong>Основное</strong><span>Что это за задача, кто её ведёт и какой следующий шаг ждём.</span></div>
             <label class="ui-field"><span class="ui-label">Название задачи</span><input name="title" value="${escapeHtml(taskItem.title || '')}" required></label>
-            <div class="ui-grid-2">
+            <div class="ui-grid-3">
               <label class="ui-field"><span class="ui-label">Owner</span><input name="owner" list="taskOwnerList" value="${escapeHtml(taskItem.owner || '')}" placeholder="Кто ведёт"></label>
+              <label class="ui-field"><span class="ui-label">Соисполнитель</span><input name="coOwner" list="taskOwnerList" value="${escapeHtml(taskItem.coOwner || '')}" placeholder="Второй менеджер"></label>
               <label class="ui-field"><span class="ui-label">Срок</span><input name="due" type="date" value="${escapeHtml(taskItem.due || '')}"></label>
-            </div>
-            <div class="task-due-modal-quick">
-              <span>Быстрый срок</span>
-              <button class="btn ghost small-btn" type="button" data-task-modal-due="0">Сегодня</button>
-              <button class="btn ghost small-btn" type="button" data-task-modal-due="1">+1 день</button>
-              <button class="btn ghost small-btn" type="button" data-task-modal-due="3">+3 дня</button>
-              <button class="btn ghost small-btn" type="button" data-task-modal-due="7">+7 дней</button>
             </div>
             <label class="ui-field"><span class="ui-label">Следующий шаг</span><textarea name="nextAction" rows="3" placeholder="Что делаем дальше">${escapeHtml(taskItem.nextAction || '')}</textarea></label>
           </div>
@@ -363,8 +417,7 @@
       <div class="card">
         <div class="section-subhead">
           <div>
-            <h3>История и апдейты</h3>
-            <p class="small muted">Историю не убирали. Просто разделили экран на спокойную ленту сверху и форму нового апдейта снизу.</p>
+            <h3>Апдейты</h3>
           </div>
           ${badge(`${fmt.int(items.length)} записей`, items.length ? 'info' : 'ok')}
         </div>
@@ -401,6 +454,7 @@
             <label class="ui-field"><span class="ui-label">Название задачи</span><input name="title" placeholder="Что нужно сделать" required></label>
             <div class="ui-grid-3">
               <label class="ui-field"><span class="ui-label">Owner</span><input name="owner" list="generalTaskOwnerList" placeholder="Кто ведёт задачу"></label>
+              <label class="ui-field"><span class="ui-label">Соисполнитель</span><input name="coOwner" list="generalTaskOwnerList" placeholder="Второй менеджер"></label>
               <label class="ui-field"><span class="ui-label">Срок</span><input name="due" type="date" value="${plusDays(2)}"></label>
           ${fixed ? `<div class="ui-note"><strong>Контур задачи</strong>${escapeHtml(meta(platform).label)}<input type="hidden" name="platform" value="${escapeHtml(platform)}"></div>` : `<label class="ui-field"><span class="ui-label">Контур</span><select name="platform"><option value="cross" ${platform === 'cross' ? 'selected' : ''}>Общий контур</option><option value="wb">РОП WB</option><option value="ozon">РОП Ozon</option><option value="ya">Я.Маркет</option><option value="goldapple">Золотое яблоко</option><option value="letu">Л'Этуаль</option><option value="magnit">Магнит Маркет</option><option value="product">Продукт / новинки</option></select></label>`}
             </div>
@@ -436,6 +490,7 @@
         title: form.get('title'),
         entityLabel: form.get('entityLabel'),
         owner: form.get('owner'),
+        coOwner: form.get('coOwner'),
         due: form.get('due'),
         status: form.get('status'),
         priority: form.get('priority'),
@@ -470,7 +525,9 @@
       submitToRopForm.dataset.ropSubmitBound = '1';
       submitToRopForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        if (submitToRopForm.dataset.sending === '1') return;
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+        if (submitToRopForm.dataset.sending === '1' || stepSubmitInFlight.has(taskId)) return;
         const form = new FormData(event.currentTarget);
         const report = String(form.get('report') || '').trim();
         if (!report) {
@@ -575,6 +632,7 @@
         title: form.get('title'),
         entityLabel: form.get('entityLabel'),
         owner: form.get('owner'),
+        coOwner: form.get('coOwner'),
         due: form.get('due'),
         status: form.get('status'),
         priority: form.get('priority'),
@@ -642,7 +700,9 @@
       submitToRopForm.dataset.ropSubmitBound = '1';
       submitToRopForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        if (submitToRopForm.dataset.sending === '1') return;
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+        if (submitToRopForm.dataset.sending === '1' || stepSubmitInFlight.has(taskId)) return;
         const form = new FormData(event.currentTarget);
         const report = String(form.get('report') || '').trim();
         if (!report) {
@@ -652,10 +712,11 @@
         const submitButton = event.currentTarget.querySelector('button[type="submit"]');
         const initialText = submitButton?.textContent || '';
         try {
+          stepSubmitInFlight.add(taskId);
           submitToRopForm.dataset.sending = '1';
           if (submitButton) {
             submitButton.disabled = true;
-            submitButton.textContent = 'Saving...';
+            submitButton.textContent = 'Передаём РОПу...';
           }
           const submitFn = typeof window.submitTaskForRopApproval === 'function'
             ? window.submitTaskForRopApproval
@@ -663,14 +724,12 @@
           if (typeof submitFn !== 'function') throw new Error('Submit function is unavailable.');
           const updatedTask = await submitFn(taskId, report);
           if (!updatedTask) throw new Error('Task state was not synced.');
-          if (typeof pullRemoteState === 'function') {
-            try { await pullRemoteState(false); } catch (error) { console.error(error); }
-          }
           renderTaskModal(taskId);
         } catch (error) {
           console.error(error);
           alert(error?.message || 'Failed to send task to ROP.');
         } finally {
+          stepSubmitInFlight.delete(taskId);
           submitToRopForm.dataset.sending = '0';
           if (submitButton && submitButton.isConnected) {
             submitButton.disabled = false;
@@ -683,8 +742,19 @@
     const ropApproveForm = body.querySelector('#taskRopApproveForm');
     bindOnce(ropApproveForm, 'boundRopApproveRefine', async (event) => {
       event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+      if (ropApproveForm.dataset.sending === '1' || stepApproveInFlight.has(taskId)) return;
       const form = new FormData(event.currentTarget);
+      const submitButton = event.currentTarget.querySelector('button[type="submit"]');
+      const initialText = submitButton?.textContent || '';
       try {
+        stepApproveInFlight.add(taskId);
+        ropApproveForm.dataset.sending = '1';
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent = 'Передаём руководителю...';
+        }
         const approveFn = typeof window.approveTaskByRop === 'function'
           ? window.approveTaskByRop
           : (typeof approveTaskByRop === 'function' ? approveTaskByRop : null);
@@ -694,13 +764,17 @@
           alert('Status was not synced. Refresh and retry.');
           return;
         }
-        if (typeof pullRemoteState === 'function') {
-          try { await pullRemoteState(false); } catch (error) { console.error(error); }
-        }
         renderTaskModal(taskId);
       } catch (error) {
         console.error(error);
         alert(error?.message || 'Approval failed. Refresh and retry.');
+      } finally {
+        stepApproveInFlight.delete(taskId);
+        ropApproveForm.dataset.sending = '0';
+        if (submitButton && submitButton.isConnected) {
+          submitButton.disabled = false;
+          submitButton.textContent = initialText || 'Передать руководителю';
+        }
       }
     });
 
@@ -708,8 +782,14 @@
     if (returnButton && returnButton.dataset.boundReturnRefine !== '1') {
       returnButton.dataset.boundReturnRefine = '1';
       returnButton.addEventListener('click', async () => {
+        if (returnButton.dataset.sending === '1' || stepReturnInFlight.has(taskId)) return;
         const comment = String(body.querySelector('#taskRopApproveForm textarea[name="comment"]')?.value || '').trim();
+        const initialText = returnButton.textContent || '';
         try {
+          stepReturnInFlight.add(taskId);
+          returnButton.dataset.sending = '1';
+          returnButton.disabled = true;
+          returnButton.textContent = 'Возвращаем...';
           const returnFn = typeof window.returnTaskToWork === 'function'
             ? window.returnTaskToWork
             : (typeof returnTaskToWork === 'function' ? returnTaskToWork : null);
@@ -719,13 +799,17 @@
             alert('Task was not returned in shared layer. Refresh and retry.');
             return;
           }
-          if (typeof pullRemoteState === 'function') {
-            try { await pullRemoteState(false); } catch (error) { console.error(error); }
-          }
           renderTaskModal(taskId);
         } catch (error) {
           console.error(error);
           alert(error?.message || 'Failed to return task to work.');
+        } finally {
+          stepReturnInFlight.delete(taskId);
+          returnButton.dataset.sending = '0';
+          if (returnButton.isConnected) {
+            returnButton.disabled = false;
+            returnButton.textContent = initialText || 'Вернуть в работу';
+          }
         }
       });
     }
@@ -733,10 +817,21 @@
     const finalCloseForm = body.querySelector('#taskFinalCloseForm');
     bindOnce(finalCloseForm, 'boundFinalRefine', async (event) => {
       event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+      if (finalCloseForm.dataset.sending === '1' || finalCloseInFlight.has(taskId)) return;
       const form = new FormData(event.currentTarget);
       const report = String(form.get('report') || '').trim();
       if (!report) return;
+      const submitButton = event.currentTarget.querySelector('button[type="submit"]');
+      const initialText = submitButton?.textContent || '';
       try {
+        finalCloseInFlight.add(taskId);
+        finalCloseForm.dataset.sending = '1';
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent = 'Закрываем...';
+        }
         const closeFn = typeof window.closeTaskWithReport === 'function'
           ? window.closeTaskWithReport
           : (typeof closeTaskWithReport === 'function' ? closeTaskWithReport : null);
@@ -746,13 +841,17 @@
           alert('Task was not closed in shared layer. Refresh and retry.');
           return;
         }
-        if (typeof pullRemoteState === 'function') {
-          try { await pullRemoteState(false); } catch (error) { console.error(error); }
-        }
         renderTaskModal(taskId);
       } catch (error) {
         console.error(error);
         alert(error?.message || 'Final close failed. Refresh and retry.');
+      } finally {
+        finalCloseInFlight.delete(taskId);
+        finalCloseForm.dataset.sending = '0';
+        if (submitButton && submitButton.isConnected) {
+          submitButton.disabled = false;
+          submitButton.textContent = initialText || 'Закрыть задачу финально';
+        }
       }
     });
   }
@@ -760,26 +859,21 @@
   function taskModalRefined(taskId, skipRemoteSync = false) {
     if (!baseTaskModal) return;
     baseTaskModal(taskId);
-    if (!skipRemoteSync && typeof hasRemoteStore === 'function' && hasRemoteStore() && typeof pullRemoteState === 'function') {
-      Promise.resolve()
-        .then(() => pullRemoteState(false))
-        .then(() => {
-          if (state?.activeTaskId === taskId) taskModalRefined(taskId, true);
-        })
-        .catch((error) => console.error(error));
-    }
     const taskItem = task(taskId);
     const body = document.getElementById('taskModalBody');
     if (!taskItem || !body) return;
     ensureTaskShareButton(taskId, body);
     const cardsRoot = body.querySelector('.two-col');
     const cards = cardsRoot ? Array.from(cardsRoot.children).filter((node) => node.classList?.contains('card')) : [];
-    const closeCard = body.querySelector('#taskCloseForm')?.closest('.card');
-    if (closeCard) closeCard.outerHTML = lifecycle(taskItem);
+    const lifecycleCard = body.querySelector('#taskFinalCloseForm, #taskRopApproveForm, #taskSubmitToRopForm, #taskCloseForm')?.closest('.card');
+    if (lifecycleCard) lifecycleCard.outerHTML = lifecycle(taskItem);
+    const summaryGrid = body.querySelector('.kv-3');
+    if (summaryGrid) {
+      summaryGrid.innerHTML = taskContextCard(taskItem);
+      summaryGrid.style.gridTemplateColumns = 'minmax(0, 1fr)';
+    }
     if (cards[0]) cards[0].outerHTML = editCard(taskItem, owners());
     if (cards[1]) cards[1].outerHTML = updatesCard(taskItem, history(taskId));
-    const noteBoxes = body.querySelectorAll('.kv-3 .note-box');
-    if (noteBoxes[1]) noteBoxes[1].textContent = 'Маршрут задачи сохранён целиком: исполнитель → РОП → руководитель.';
     bindTaskModal(taskId, body);
   }
 
@@ -880,22 +974,12 @@
   ];
   const CONTROL_SIMPLE_ACTIVE = new Set(['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision']);
   const CONTROL_SIMPLE_SENT = new Set(['waiting_team', 'waiting_rop', 'waiting_decision']);
-  const CONTROL_SIMPLE_DEPARTMENTS = [
-    ['all', 'Все отделы'],
-    ['marketing', 'Маркетолог'],
-    ['content', 'Контент / карточка'],
-    ['price', 'Цена / экономика'],
-    ['supply', 'Supply / остатки'],
-    ['product', 'Продукт / новинки'],
-    ['analytics', 'Аналитика'],
-    ['assignment', 'Ответственные'],
-    ['general', 'Общие']
-  ];
-  const CONTROL_SIMPLE_DEPARTMENT_META = Object.fromEntries(CONTROL_SIMPLE_DEPARTMENTS.map(([key, label]) => [key, { label }]));
 
   function controlSimpleNormalizeDirection(value) {
     const raw = String(value || 'all').trim().toLowerCase();
-    if (raw === 'retail') return 'ya';
+    const inferred = inferMarketplaceKey(raw);
+    if (inferred) return inferred;
+    if (raw === 'retail') return 'cross';
     if (['wb+ozon', 'common', 'general', 'shared'].includes(raw)) return 'cross';
     return CONTROL_SIMPLE_META[raw] ? raw : 'all';
   }
@@ -915,23 +999,17 @@
   }
 
   function controlSimpleAllTasks() {
-    const visible = (tasks) => (tasks || []).filter((taskItem) => {
-      const source = String(taskItem?.source || '').trim().toLowerCase();
-      const autoCode = String(taskItem?.autoCode || '').trim().toLowerCase();
-      const id = String(taskItem?.id || '').trim().toLowerCase();
-      return source !== 'strategic' && autoCode !== 'rop_strategic' && !id.startsWith('rop-');
-    });
     try {
       if (typeof getControlSnapshot === 'function') {
         const snapshot = getControlSnapshot();
-        if (Array.isArray(snapshot?.tasks)) return visible(snapshot.tasks);
-        if (Array.isArray(snapshot?.active)) return visible(snapshot.active);
+        if (Array.isArray(snapshot?.tasks)) return snapshot.tasks;
+        if (Array.isArray(snapshot?.active)) return snapshot.active;
       }
     } catch {}
     try {
-      if (typeof getAllTasks === 'function') return visible(getAllTasks());
+      if (typeof getAllTasks === 'function') return getAllTasks();
     } catch {}
-    return visible(Array.isArray(state?.storage?.tasks) ? state.storage.tasks : []);
+    return Array.isArray(state?.storage?.tasks) ? state.storage.tasks : [];
   }
 
   function controlSimpleStatus(taskItem) {
@@ -958,15 +1036,52 @@
     }
   }
 
+  function marketplaceContextValue(value, depth = 0) {
+    if (value == null || depth > 2) return '';
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value);
+    if (Array.isArray(value)) return value.map((item) => marketplaceContextValue(item, depth + 1)).filter(Boolean).join(' ');
+    if (typeof value === 'object') {
+      return Object.entries(value)
+        .filter(([key]) => !/^(history|comments|updates|logs|rawRows?|html|node|element)$/i.test(key))
+        .map(([key, item]) => `${key} ${marketplaceContextValue(item, depth + 1)}`)
+        .filter(Boolean)
+        .join(' ');
+    }
+    return '';
+  }
+
+  function controlSimpleTaskContext(taskItem, sku = null) {
+    const taskFields = [
+      'platform', 'marketplace', 'marketplaceKey', 'network', 'retailer', 'channel', 'market',
+      'contour', 'direction', 'workstream', 'queue', 'role', 'team', 'project', 'topic',
+      'title', 'name', 'subject', 'entityLabel', 'description', 'nextAction', 'reason',
+      'context', 'comment', 'note', 'notes', 'details', 'message', 'text', 'body',
+      'articleKey', 'sku', 'apiSku', 'tags', 'labels', 'meta', 'extra', 'payload', 'fields'
+    ];
+    const skuFields = [
+      'platform', 'marketplace', 'marketplaceKey', 'network', 'retailer', 'channel', 'market',
+      'name', 'title', 'articleKey', 'sku', 'apiSku'
+    ];
+    const taskContext = taskFields.map((key) => marketplaceContextValue(taskItem?.[key])).join(' ');
+    const skuContext = skuFields.map((key) => marketplaceContextValue(sku?.[key])).join(' ');
+    return [taskContext, skuContext].filter(Boolean).join(' ');
+  }
+
   function controlSimpleDirectionKey(taskItem) {
     const sku = controlSimpleSku(taskItem);
+    const context = controlSimpleTaskContext(taskItem, sku);
+    const inferred = inferMarketplaceKey(context);
+    if (inferred) return inferred;
     try {
       if (typeof controlWorkstreamKey === 'function') {
         const key = controlSimpleNormalizeDirection(controlWorkstreamKey(taskItem, sku));
         if (key !== 'all') return key;
       }
     } catch {}
-    const raw = `${taskItem?.platform || ''} ${taskItem?.title || ''} ${taskItem?.nextAction || ''} ${taskItem?.reason || ''} ${taskItem?.entityLabel || ''}`.toLowerCase();
+    const raw = context.toLowerCase();
+    if (/\u0437\s*\u044f|\u0437\u044f|\u0437\u043e\u043b\u043e\u0442|gold|zya/.test(raw)) return 'goldapple';
+    if (/\u043b[\s'`\u2019.-]*[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b|letu|letoile|l[\s'`.-]*etoile/.test(raw)) return 'letu';
+    if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|magnet/.test(raw)) return 'magnit';
     if (raw.includes('ozon') || raw.includes('озон')) return 'ozon';
     if (raw.includes('wb') || raw.includes('wildberries') || raw.includes('вб')) return 'wb';
     if (raw.includes('yandex') || raw.includes('яндекс') || raw.includes('я.маркет')) return 'ya';
@@ -993,125 +1108,6 @@
     return 'new';
   }
 
-  function controlSimpleOwnerValue(taskItem) {
-    const source = taskItem?.owner;
-    const raw = source && typeof source === 'object'
-      ? (source.name || source.ownerName || source.owner || source.label || source.title || '')
-      : (source || '');
-    try {
-      if (typeof canonicalOwnerName === 'function') {
-        const normalized = canonicalOwnerName(raw);
-        return normalized && normalized !== '[object Object]' ? normalized : 'Без owner';
-      }
-    } catch {}
-    const fallback = String(raw || '').trim();
-    return fallback && fallback !== '[object Object]' ? fallback : 'Без owner';
-  }
-
-  function controlSimpleOwnerFilterValue(value) {
-    try {
-      if (typeof canonicalOwnerName === 'function') {
-        const normalized = canonicalOwnerName(value);
-        return normalized && normalized !== '[object Object]' ? normalized : 'all';
-      }
-    } catch {}
-    const fallback = String(value || 'all').trim();
-    return fallback && fallback !== '[object Object]' ? fallback : 'all';
-  }
-
-  function controlSimpleOwnerOptions(allTasks = [], includeGlobal = true) {
-    const set = new Set();
-    (allTasks || []).forEach((taskItem) => set.add(controlSimpleOwnerValue(taskItem)));
-    if (includeGlobal) {
-      try {
-        owners().forEach((name) => {
-          const normalized = controlSimpleOwnerFilterValue(name);
-          if (normalized && normalized !== 'all' && normalized !== '[object Object]') set.add(normalized);
-        });
-      } catch {}
-    }
-    return [...set].filter(Boolean).sort((a, b) => a.localeCompare(b, 'ru'));
-  }
-
-  function controlSimpleScopeOwner(scope, key) {
-    const bucket = state?.controlFilters?.[scope] || {};
-    const selected = controlSimpleOwnerFilterValue(bucket[key] || 'all');
-    return selected === '[object Object]' ? 'all' : selected;
-  }
-
-  function controlSimpleSetScopeOwner(scope, key, value) {
-    state.controlFilters = state.controlFilters || {};
-    state.controlFilters[scope] = state.controlFilters[scope] && typeof state.controlFilters[scope] === 'object'
-      ? state.controlFilters[scope]
-      : {};
-    state.controlFilters[scope][key] = controlSimpleOwnerFilterValue(value || 'all');
-  }
-
-  function controlSimpleFilterByOwner(tasks = [], ownerFilter = 'all') {
-    return ownerFilter && ownerFilter !== 'all'
-      ? (tasks || []).filter((taskItem) => controlSimpleOwnerValue(taskItem) === ownerFilter)
-      : (tasks || []);
-  }
-
-  function controlSimpleOwnerSelectHtml(tasks = [], selected = 'all', dataAttr = '', key = '') {
-    const options = controlSimpleOwnerOptions(tasks, false).filter((name) => name && name !== '[object Object]');
-    if (!options.length) return '';
-    return `
-      <select class="control-simple-owner-select" ${dataAttr}="${escapeHtml(key)}" aria-label="Ответственный">
-        <option value="all" ${selected === 'all' ? 'selected' : ''}>Все ответственные</option>
-        ${options.map((name) => `<option value="${escapeHtml(name)}" ${selected === name ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}
-      </select>`;
-  }
-
-  function controlSimpleDepartmentKey(taskItem) {
-    const type = String(taskItem?.type || '').trim().toLowerCase();
-    const text = `${taskItem?.title || ''} ${taskItem?.nextAction || ''} ${taskItem?.reason || ''} ${taskItem?.entityLabel || ''} ${taskItem?.autoCode || ''}`.toLowerCase();
-    if (type === 'price_margin') return 'price';
-    if (type === 'supply') return 'supply';
-    if (type === 'content') return 'content';
-    if (type === 'launch') return 'product';
-    if (type === 'assignment') return 'assignment';
-    if (type === 'traffic') return 'marketing';
-    if (/контент|карточк|seo|инфограф|фото|фотос|оффер|креатив|отзыв|описан/.test(text)) return 'content';
-    if (/остат|oos|поставк|склад|stock|min stock|отгруз|логист|пополн|налич/.test(text)) return 'supply';
-    if (/(^|\W)(рк|rk)($|\W)|реклам|трафик|воронк|кампан|ставк|бюджет|дд?р|drr|romi|ctr|cpc|aov|cr|scale|no-scale|промо|ключев|запрос|конкурент/.test(text)) return 'marketing';
-    if (/цен|марж|экономик|unit|прибыл|profit|stop-price|min price|target price|коридор/.test(text)) return 'price';
-    if (/новин|launch|запуск|t-14|t-7/.test(text)) return 'product';
-    if (/owner|ответствен|закреп|команд|sla|action plan|владел/.test(text)) return 'assignment';
-    if (/аналитик|дашборд|scorecard|отч[её]т|метрик|p&l|kpi|план\/факт/.test(text)) return 'analytics';
-    return 'general';
-  }
-
-  function controlSimpleDepartmentLabel(key) {
-    return CONTROL_SIMPLE_DEPARTMENT_META[key]?.label || CONTROL_SIMPLE_DEPARTMENT_META.general.label;
-  }
-
-  function controlSimpleTaskHaystack(taskItem) {
-    const sku = controlSimpleSku(taskItem);
-    const direction = CONTROL_SIMPLE_META[controlSimpleDirectionKey(taskItem)] || CONTROL_SIMPLE_META.cross;
-    return [
-      taskItem?.title,
-      taskItem?.nextAction,
-      taskItem?.reason,
-      taskItem?.owner,
-      taskItem?.articleKey,
-      taskItem?.entityLabel,
-      sku?.article,
-      sku?.name,
-      sku?.category,
-      direction.label,
-      direction.hint,
-      controlSimpleDepartmentLabel(controlSimpleDepartmentKey(taskItem))
-    ].filter(Boolean).join(' ').toLowerCase();
-  }
-
-  function controlSimpleMatchesCommonFilters(taskItem, search, ownerFilter, departmentFilter) {
-    if (ownerFilter && ownerFilter !== 'all' && controlSimpleOwnerValue(taskItem) !== ownerFilter) return false;
-    if (departmentFilter && departmentFilter !== 'all' && controlSimpleDepartmentKey(taskItem) !== departmentFilter) return false;
-    if (search && !controlSimpleTaskHaystack(taskItem).includes(search)) return false;
-    return true;
-  }
-
   function controlSimpleUrgency(taskItem) {
     let score = 0;
     if (controlSimpleIsOverdue(taskItem)) score += 80;
@@ -1132,36 +1128,25 @@
 
   function controlSimpleModel() {
     const search = String(state?.controlFilters?.search || '').trim().toLowerCase();
-    const ownerFilter = controlSimpleOwnerFilterValue(state?.controlFilters?.owner || 'all');
-    const departmentFilter = String(state?.controlFilters?.department || 'all').trim().toLowerCase();
     const allTasks = controlSimpleAllTasks().filter((taskItem) => !controlSimpleIsCancelled(taskItem));
-    const filteredBase = allTasks.filter((taskItem) => controlSimpleMatchesCommonFilters(taskItem, search, ownerFilter, departmentFilter));
     const counts = Object.fromEntries(CONTROL_SIMPLE_DIRECTIONS.map(([key]) => [key, 0]));
-    counts.all = filteredBase.length;
-    filteredBase.forEach((taskItem) => {
+    counts.all = allTasks.length;
+    allTasks.forEach((taskItem) => {
       const key = controlSimpleDirectionKey(taskItem);
       counts[key] = (counts[key] || 0) + 1;
     });
     const selected = controlSimpleSelectedDirection(counts);
-    const tasks = filteredBase.filter((taskItem) => selected === 'all' || controlSimpleDirectionKey(taskItem) === selected);
+    const tasks = allTasks
+      .filter((taskItem) => selected === 'all' || controlSimpleDirectionKey(taskItem) === selected)
+      .filter((taskItem) => {
+        if (!search) return true;
+        return `${taskItem?.title || ''} ${taskItem?.entityLabel || ''} ${taskItem?.articleKey || ''} ${taskItem?.owner || ''} ${taskItem?.nextAction || ''} ${taskItem?.reason || ''}`.toLowerCase().includes(search);
+      });
     const buckets = Object.fromEntries(CONTROL_SIMPLE_QUEUES.map(([key]) => [key, []]));
     tasks.forEach((taskItem) => buckets[controlSimpleQueueKey(taskItem)]?.push(taskItem));
     Object.keys(buckets).forEach((key) => { buckets[key] = controlSimpleSort(buckets[key]); });
     const active = tasks.filter(controlSimpleIsActive);
-    return {
-      selected,
-      counts,
-      tasks,
-      buckets,
-      active,
-      allTasks,
-      filteredBase,
-      ownerFilter,
-      departmentFilter,
-      ownerOptions: controlSimpleOwnerOptions(allTasks),
-      overdue: active.filter(controlSimpleIsOverdue),
-      noOwner: active.filter((taskItem) => !taskItem?.owner)
-    };
+    return { selected, counts, tasks, buckets, active, overdue: active.filter(controlSimpleIsOverdue), noOwner: active.filter((taskItem) => !taskItem?.owner) };
   }
 
   function controlSimpleWorkstreamCounts(tasks) {
@@ -1178,14 +1163,11 @@
   function controlSimpleWorkstreamPanel(key, tasks) {
     const meta = CONTROL_SIMPLE_META[key] || CONTROL_SIMPLE_META.cross;
     const expanded = state?.controlFilters?.taskSimpleExpandedPlatform === key;
-    const laneOwner = controlSimpleScopeOwner('laneOwnerFilters', key);
-    const scopedTasks = controlSimpleFilterByOwner(tasks || [], laneOwner);
-    const sorted = controlSimpleSort(scopedTasks);
+    const sorted = controlSimpleSort(tasks || []);
     const visible = sorted.slice(0, expanded ? 999 : 6);
     const hidden = Math.max(0, sorted.length - visible.length);
     const counts = controlSimpleWorkstreamCounts(sorted);
     const tone = counts.overdue ? 'danger' : counts.sent || counts.noOwner ? 'warn' : counts.active ? 'info' : 'ok';
-    const ownerSelect = controlSimpleOwnerSelectHtml(tasks || [], laneOwner, 'data-control-simple-lane-owner', key);
     return `
       <section class="control-simple-workstream-lane ${counts.active ? '' : 'is-empty'}" data-platform="${escapeHtml(key)}" data-control-simple-workstream-lane="${escapeHtml(key)}">
         <div class="control-simple-workstream-lane-head">
@@ -1199,7 +1181,6 @@
             ${counts.noOwner ? badge(`${fmt.int(counts.noOwner)} без owner`, 'warn') : ''}
           </div>
         </div>
-        ${ownerSelect ? `<div class="control-simple-channel-filter">${ownerSelect}</div>` : ''}
         <div class="control-simple-workstream-note">
           ${counts.active
             ? `Показываем только задачи этого контура. Остальные площадки не смешиваются с ${meta.label}.`
@@ -1275,17 +1256,17 @@
     const tone = controlSimpleIsOverdue(taskItem) || taskItem?.priority === 'critical' ? 'danger' : CONTROL_SIMPLE_SENT.has(controlSimpleStatus(taskItem)) ? 'warn' : controlSimpleIsDone(taskItem) ? 'ok' : '';
     const directionKey = controlSimpleDirectionKey(taskItem);
     const direction = CONTROL_SIMPLE_META[directionKey] || CONTROL_SIMPLE_META.cross;
-    const department = controlSimpleDepartmentLabel(controlSimpleDepartmentKey(taskItem));
+    const productStatus = taskProductStatusLabel(taskItem);
     return `
       <div class="control-simple-task ${tone ? `is-${tone}` : ''}" data-platform="${escapeHtml(directionKey)}">
         <button class="control-simple-task-main" type="button" data-control-simple-open-task="${escapeHtml(id)}">
           <strong>${escapeHtml(taskItem?.title || taskItem?.entityLabel || taskItem?.articleKey || 'Задача')}</strong>
-          <span>${escapeHtml(controlSimpleOwnerValue(taskItem))} · ${escapeHtml(taskItem?.due || 'без срока')}</span>
+          <span>${escapeHtml(taskPeopleLine(taskItem))} · срок ${escapeHtml(taskItem?.due || 'без срока')} · пост. ${escapeHtml(taskCreatedLabel(taskItem, true))}</span>
           ${next ? `<em>${escapeHtml(next.slice(0, 112))}${next.length > 112 ? '...' : ''}</em>` : ''}
         </button>
         <div class="control-simple-task-foot">
           <span>${escapeHtml(direction.label)}</span>
-          <span>${escapeHtml(department)}</span>
+          ${productStatus ? `<span>${escapeHtml(productStatus)}</span>` : ''}
           <span>${escapeHtml(controlSimpleStatusText(taskItem))}</span>
           <span>${escapeHtml(controlSimplePriorityText(taskItem))}</span>
           <span class="control-simple-actions"><button class="btn small-btn ghost" type="button" data-control-simple-open-task="${escapeHtml(id)}">Открыть</button>${controlSimpleAction(taskItem)}</span>
@@ -1294,14 +1275,11 @@
   }
 
   function controlSimpleQueuePanel(key, title, hint, tasks) {
-    const queueOwner = controlSimpleScopeOwner('queueOwnerFilters', key);
-    const visible = controlSimpleFilterByOwner(tasks || [], queueOwner);
+    const visible = tasks;
     const tone = key === 'sent' ? 'warn' : key === 'signals' ? 'info' : key === 'confirmed' ? 'ok' : '';
-    const ownerSelect = controlSimpleOwnerSelectHtml(tasks || [], queueOwner, 'data-control-simple-queue-owner', key);
     return `
       <section class="control-simple-queue" data-control-simple-queue="${escapeHtml(key)}">
-        <div class="control-simple-queue-head"><div><span>${escapeHtml(hint)}</span><strong>${escapeHtml(title)}</strong></div>${badge(queueOwner === 'all' ? fmt.int(tasks.length) : `${fmt.int(visible.length)} / ${fmt.int(tasks.length)}`, tone)}</div>
-        ${ownerSelect ? `<div class="control-simple-channel-filter">${ownerSelect}</div>` : ''}
+        <div class="control-simple-queue-head"><div><span>${escapeHtml(hint)}</span><strong>${escapeHtml(title)}</strong></div>${badge(fmt.int(tasks.length), tone)}</div>
         <div class="control-simple-list">
           ${visible.length ? visible.map(controlSimpleTaskCard).join('') : '<div class="control-simple-empty">Пусто. Здесь не горит.</div>'}
         </div>
@@ -1317,6 +1295,7 @@
           <input name="title" placeholder="Что нужно сделать" required>
           <select name="platform">${CONTROL_SIMPLE_DIRECTIONS.filter(([key]) => key !== 'all').map(([key, label]) => `<option value="${escapeHtml(key)}" ${direction === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select>
           <input name="owner" list="controlSimpleOwnerList" placeholder="Кто делает">
+          <input name="coOwner" list="controlSimpleOwnerList" placeholder="Соисполнитель">
           <input name="due" type="date" value="${plusDays(2)}">
           <select name="type"><option value="general">Общее</option><option value="price_margin">Цена / маржа</option><option value="traffic">Трафик</option><option value="content">Контент</option><option value="supply">Остатки</option><option value="launch">Новинка</option><option value="assignment">Назначение owner</option></select>
           <select name="priority"><option value="high">Высокий</option><option value="medium">Средний</option><option value="critical">Критично</option><option value="low">Низкий</option></select>
@@ -1372,6 +1351,7 @@
     state.controlFilters = state.controlFilters || {};
     if (state.controlFilters.taskSimpleFullMode) {
       if (baseControl) baseControl();
+      root.querySelector('#controlSourceFilter')?.remove();
       root.insertAdjacentHTML('afterbegin', `<div class="control-simple-return"><button class="btn primary" type="button" data-control-simple-return>Вернуться к рабочему виду</button>${badge('все поля', 'warn')}</div>`);
       root.querySelector('[data-control-simple-return]')?.addEventListener('click', () => {
         state.controlFilters.taskSimpleFullMode = false;
@@ -1384,7 +1364,7 @@
     const boardHtml = data.selected === 'all'
       ? controlSimpleWorkstreamBoard(data)
       : `<div class="control-simple-board">${CONTROL_SIMPLE_QUEUES.map(([key, title, hint]) => controlSimpleQueuePanel(key, title, hint, data.buckets[key] || [])).join('')}</div>`;
-    root.dataset.controlSimple = '20260527strategicisolate1';
+    root.dataset.controlSimple = '20260516taskworkspace3';
     root.innerHTML = `
       <div class="section-title control-simple-title">
         <div><h2>Задачи</h2><div class="control-simple-title-copy">${escapeHtml(CONTROL_SIMPLE_TITLE)}</div></div>
@@ -1394,13 +1374,6 @@
         ${controlSimpleWorkspacePanel(data)}
         <div class="control-simple-topbar">
           <input id="controlSimpleSearch" value="${escapeHtml(state.controlFilters.search || '')}" placeholder="Поиск по задаче, SKU, owner">
-          <select id="controlSimpleOwnerFilter" aria-label="Ответственный">
-            <option value="all" ${data.ownerFilter === 'all' ? 'selected' : ''}>Все ответственные</option>
-            ${data.ownerOptions.map((name) => `<option value="${escapeHtml(name)}" ${data.ownerFilter === name ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}
-          </select>
-          <select id="controlSimpleDepartmentFilter" aria-label="Отдел">
-            ${CONTROL_SIMPLE_DEPARTMENTS.map(([key, label]) => `<option value="${escapeHtml(key)}" ${data.departmentFilter === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}
-          </select>
           <div class="badge-stack"><button class="btn primary" type="button" data-control-simple-create-toggle>Поставить задачу</button><button class="btn ghost" type="button" data-control-simple-full>Все поля</button></div>
         </div>
         <div class="control-simple-summary">
@@ -1415,27 +1388,6 @@
       state.controlFilters.search = event.target.value;
       controlRefined();
     });
-    root.querySelector('#controlSimpleOwnerFilter')?.addEventListener('change', (event) => {
-      state.controlFilters.owner = controlSimpleOwnerFilterValue(event.target.value || 'all');
-      state.controlFilters.taskSimpleExpandedPlatform = '';
-      state.controlFilters.taskSimpleWorkspaceChosen = true;
-      controlRefined();
-    });
-    root.querySelector('#controlSimpleDepartmentFilter')?.addEventListener('change', (event) => {
-      const value = String(event.target.value || 'all').trim().toLowerCase();
-      state.controlFilters.department = CONTROL_SIMPLE_DEPARTMENT_META[value] ? value : 'all';
-      state.controlFilters.taskSimpleExpandedPlatform = '';
-      state.controlFilters.taskSimpleWorkspaceChosen = true;
-      controlRefined();
-    });
-    root.querySelectorAll('[data-control-simple-queue-owner]').forEach((select) => select.addEventListener('change', (event) => {
-      controlSimpleSetScopeOwner('queueOwnerFilters', event.currentTarget.dataset.controlSimpleQueueOwner || '', event.currentTarget.value || 'all');
-      controlRefined();
-    }));
-    root.querySelectorAll('[data-control-simple-lane-owner]').forEach((select) => select.addEventListener('change', (event) => {
-      controlSimpleSetScopeOwner('laneOwnerFilters', event.currentTarget.dataset.controlSimpleLaneOwner || '', event.currentTarget.value || 'all');
-      controlRefined();
-    }));
     root.querySelectorAll('[data-control-simple-direction]').forEach((button) => button.addEventListener('click', () => {
       const key = controlSimpleNormalizeDirection(button.dataset.controlSimpleDirection);
       state.controlFilters.platform = key;
@@ -1464,7 +1416,19 @@
       if (id && typeof renderTaskModal === 'function') renderTaskModal(id);
     }));
     root.querySelectorAll('[data-control-simple-action]').forEach((button) => button.addEventListener('click', async () => {
-      await controlSimpleRunAction(button.dataset.controlSimpleAction, button.dataset.taskId);
+      if (button.dataset.sending === '1') return;
+      const initialText = button.textContent || '';
+      button.dataset.sending = '1';
+      button.disabled = true;
+      try {
+        await controlSimpleRunAction(button.dataset.controlSimpleAction, button.dataset.taskId);
+      } finally {
+        button.dataset.sending = '0';
+        if (button.isConnected) {
+          button.disabled = false;
+          button.textContent = initialText;
+        }
+      }
     }));
     root.querySelector('#controlSimpleCreateForm')?.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -1477,6 +1441,7 @@
         priority: form.get('priority') || 'high',
         platform: form.get('platform') || data.selected || 'cross',
         owner: form.get('owner'),
+        coOwner: form.get('coOwner'),
         due: form.get('due'),
         nextAction: form.get('nextAction'),
         reason: 'Создано из простого экрана задач'

@@ -155,12 +155,10 @@ function buildSkuLookup(skus = []) {
 function buildKnownSkuSet(skus = [], skuAliases = {}) {
   const set = new Set();
   skus.forEach((sku) => skuLookupTokens(sku).forEach((token) => set.add(token)));
-  const lookup = buildSkuLookup(skus);
   activeSkuAliasRows(skuAliases).forEach((row) => {
     const targetToken = normalizeToken(row?.target_sku ?? row?.targetSku ?? row?.target ?? '');
     const apiToken = normalizeToken(row?.api_sku ?? row?.apiSku ?? row?.alias ?? row?.value ?? '');
     if (!targetToken || !apiToken) return;
-    if (!lookup.has(targetToken)) return;
     set.add(apiToken);
   });
   return set;

@@ -4077,11 +4077,16 @@ function skuPlanFactPrepareAliasImport(rows = [], currentAliases = {}, currentIg
       return;
     }
     const target = skuLookup.get(skuPlanFactToken(targetSku));
+    const canonicalTargetSku = target?.articleKey || target?.article || targetSku;
     if (!target) {
-      errorRows.push({ rowNumber, apiSku, platform, targetSku, reason: 'target_sku not found in skus.json' });
-      return;
+      validationWarnings.push({
+        rowNumber,
+        apiSku,
+        platform,
+        targetSku: canonicalTargetSku,
+        reason: 'target_sku not found in skus.json; alias will be saved as a matrix-only mapping'
+      });
     }
-    const canonicalTargetSku = target.articleKey || target.article || targetSku;
     const canonicalTargetToken = skuPlanFactToken(canonicalTargetSku);
     const uploadApiKey = skuPlanFactAliasApiKey(platform, apiSku);
     const uploadConflict = uploadApiTargets.get(uploadApiKey);
@@ -4096,10 +4101,12 @@ function skuPlanFactPrepareAliasImport(rows = [], currentAliases = {}, currentIg
     }
     uploadApiTargets.set(uploadApiKey, { targetToken: canonicalTargetToken, targetSku: canonicalTargetSku });
 
-    const owner = skuPlanFactOwnerTextForSku(target);
-    const registryStatus = skuPlanFactRegistryStatusText(target);
-    if (!owner || /^без owner$/i.test(owner) || /не\s*в\s*реестре/i.test(registryStatus)) {
-      validationWarnings.push({ rowNumber, apiSku, platform, targetSku: canonicalTargetSku, reason: 'target_sku has no owner or is not in registry' });
+    if (target) {
+      const owner = skuPlanFactOwnerTextForSku(target);
+      const registryStatus = skuPlanFactRegistryStatusText(target);
+      if (!owner || /^без owner$/i.test(owner) || /не\s*в\s*реестре/i.test(registryStatus)) {
+        validationWarnings.push({ rowNumber, apiSku, platform, targetSku: canonicalTargetSku, reason: 'target_sku has no owner or is not in registry' });
+      }
     }
     const nextAliasCount = (existingTargetAliasCounts.get(canonicalTargetToken) || 0) + 1;
     if (nextAliasCount > 50 && (nextAliasCount === 51 || nextAliasCount % 25 === 0)) {

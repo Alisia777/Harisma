@@ -1,6 +1,392 @@
 {
   "schema": "sku-api-aliases-v1",
-  "aliases": [],
+  "aliases": [
+    {
+      "target_sku": "197804490",
+      "platform": "all",
+      "api_sku": "sustalit_75ml",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "222209699",
+      "platform": "all",
+      "api_sku": "kavmaz",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "223763365",
+      "platform": "all",
+      "api_sku": "kavmaz_60ml",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "40812096",
+      "platform": "all",
+      "api_sku": "artoks",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "234145577",
+      "platform": "all",
+      "api_sku": "uromax",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "103709897",
+      "platform": "all",
+      "api_sku": "activeprost",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "192907992",
+      "platform": "all",
+      "api_sku": "synergel_60ml",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "144854900",
+      "platform": "all",
+      "api_sku": "vetonus",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "151393048",
+      "platform": "all",
+      "api_sku": "allicil_gribok15ml",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "174464512",
+      "platform": "all",
+      "api_sku": "cardicin_bad_60caps",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "525496523",
+      "platform": "all",
+      "api_sku": "uromax_1_1",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "34285227",
+      "platform": "all",
+      "api_sku": "sanatsin",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "312910723",
+      "platform": "all",
+      "api_sku": "urinofix",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "260515862",
+      "platform": "all",
+      "api_sku": "mycoplax",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "172162756",
+      "platform": "wb",
+      "api_sku": "micardin_1_1",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "172161991",
+      "platform": "all",
+      "api_sku": "wbbiotrin_1_1_1",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "17905393",
+      "platform": "all",
+      "api_sku": "wbsinergel",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "172161336",
+      "platform": "all",
+      "api_sku": "artoks_1_1",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "234208976",
+      "platform": "all",
+      "api_sku": "gemorekt",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "192909505",
+      "platform": "all",
+      "api_sku": "pantogor_100ml",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "176855721",
+      "platform": "all",
+      "api_sku": "sanatsin_1_1",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "109014186",
+      "platform": "all",
+      "api_sku": "sustalit",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "234150851",
+      "platform": "all",
+      "api_sku": "ekzifol",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "192906679",
+      "platform": "all",
+      "api_sku": "artoks_75ml",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "136138948",
+      "platform": "all",
+      "api_sku": "otivin",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "202337451",
+      "platform": "all",
+      "api_sku": "vetonus_100ml",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "318414683",
+      "platform": "all",
+      "api_sku": "sinergel_30ml_1_1",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "304495569",
+      "platform": "all",
+      "api_sku": "kavmaz_40ml_1_1",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "223155748",
+      "platform": "all",
+      "api_sku": "urolgan",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "176862987",
+      "platform": "all",
+      "api_sku": "dardrakona_1_1",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "75182069",
+      "platform": "all",
+      "api_sku": "daoshen",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "39234691",
+      "platform": "wb",
+      "api_sku": "wbmicardinforte",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "197568699",
+      "platform": "all",
+      "api_sku": "daoshen_75ml",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "34282538",
+      "platform": "wb",
+      "api_sku": "micardin",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "260523262",
+      "platform": "all",
+      "api_sku": "osteofast",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "234147545",
+      "platform": "all",
+      "api_sku": "varifit",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "44552189",
+      "platform": "all",
+      "api_sku": "dardrakona",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "186794178",
+      "platform": "all",
+      "api_sku": "psoral_50ml",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "17891620",
+      "platform": "all",
+      "api_sku": "wbgetsizegel",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "525497365",
+      "platform": "all",
+      "api_sku": "varifit_1_1",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "18953630",
+      "platform": "all",
+      "api_sku": "dolgar",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "176859687",
+      "platform": "all",
+      "api_sku": "vetonus_1_1",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "318415062",
+      "platform": "wb",
+      "api_sku": "sustalit_30ml_1_1",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "17907051",
+      "platform": "all",
+      "api_sku": "wbgetsize",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "136537336",
+      "platform": "all",
+      "api_sku": "psoral",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "172163562",
+      "platform": "all",
+      "api_sku": "wbpantogor_1_1",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "176858863",
+      "platform": "all",
+      "api_sku": "khvoinitsa_1_1",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "197567632",
+      "platform": "all",
+      "api_sku": "dardrakona_75ml",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "312907312",
+      "platform": "all",
+      "api_sku": "erobrut",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "104628658",
+      "platform": "all",
+      "api_sku": "khvoinitsa",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "172162757",
+      "platform": "wb",
+      "api_sku": "micardin_1_1_1",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "525495859",
+      "platform": "all",
+      "api_sku": "mycoplax_1_1",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "17904962",
+      "platform": "wb",
+      "api_sku": "wbvaritox",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "150790885",
+      "platform": "all",
+      "api_sku": "t34poten10caps",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    },
+    {
+      "target_sku": "439446390",
+      "platform": "wb",
+      "api_sku": "otz_fbs6_curly_method_300ml",
+      "status": "active",
+      "note": "Добавить строку в dim_sku_aliases или завести SKU в реестре"
+    }
+  ],
   "columns": [
     "target_sku",
     "platform",
@@ -8,5 +394,6 @@
     "status",
     "note"
   ],
-  "description": "Optional local mapping for API SKU values that must be attached to portal articleKey values. Prefer the Google Sheet tab dim_sku_aliases for team-managed mappings."
+  "description": "Optional local mapping for API SKU values that must be attached to portal articleKey values. Prefer the Google Sheet tab dim_sku_aliases for team-managed mappings.",
+  "updatedAt": "2026-05-28T12:16:56.440Z"
 }

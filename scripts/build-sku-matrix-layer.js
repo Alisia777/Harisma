@@ -247,8 +247,18 @@ function buildMatrix(options) {
   const byArticleKey = {};
   items.forEach((item, index) => { if (item.articleKey) byArticleKey[item.articleKey] = index; });
 
+  const ignoredKeys = new Set(ignored.map((row) => aliasKey(row.platform || 'all', row.api_sku || row.apiSku || row.alias || row.value || '')));
+  const activeAliasKeys = new Set(Object.keys(aliasToArticleKey));
   const apiUnmapped = (quality.issues || [])
     .filter((issue) => issue.type === 'api_sku_unmapped')
+    .filter((issue) => {
+      const platform = platformKey(issue.platform || '') || issue.platform || 'all';
+      const apiSku = issue.articleKey || '';
+      return !ignoredKeys.has(aliasKey(platform, apiSku))
+        && !ignoredKeys.has(aliasKey('all', apiSku))
+        && !activeAliasKeys.has(aliasKey(platform, apiSku))
+        && !activeAliasKeys.has(aliasKey('all', apiSku));
+    })
     .map((issue) => ({
       platform: platformKey(issue.platform || '') || issue.platform || '',
       api_sku: issue.articleKey || '',

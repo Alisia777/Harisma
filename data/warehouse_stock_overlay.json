@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-27T07:08:20.227Z",
+  "generatedAt": "2026-05-28T07:08:05.496Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
@@ -37,8 +37,8 @@
     "harly_ear_drops"
   ],
   "summary": {
-    "stockWarehouse": 331969,
-    "accepted": 2104423,
+    "stockWarehouse": 346589,
+    "accepted": 2119043,
     "shippedOzon": 560350,
     "shippedWB": 1211569
   },
@@ -111,8 +111,8 @@
     },
     {
       "articleKey": "curly_method_300ml",
-      "stockWarehouse": 9025,
-      "accepted": 86498,
+      "stockWarehouse": 11425,
+      "accepted": 88898,
       "shippedOzon": 21261,
       "shippedWB": 56212,
       "sourceKeys": [
@@ -399,8 +399,8 @@
     },
     {
       "articleKey": "krovavii_piling_30ml",
-      "stockWarehouse": 12988,
-      "accepted": 116110,
+      "stockWarehouse": 15588,
+      "accepted": 118710,
       "shippedOzon": 22067,
       "shippedWB": 81055,
       "sourceKeys": [
@@ -696,8 +696,8 @@
     },
     {
       "articleKey": "retinait_syvorotka_1_30ml",
-      "stockWarehouse": 15711,
-      "accepted": 61533,
+      "stockWarehouse": 16751,
+      "accepted": 62573,
       "shippedOzon": 7006,
       "shippedWB": 38816,
       "sourceKeys": [
@@ -839,8 +839,8 @@
     },
     {
       "articleKey": "syvorotka_dlya_lica_30ml_v2",
-      "stockWarehouse": 4694,
-      "accepted": 32274,
+      "stockWarehouse": 13274,
+      "accepted": 40854,
       "shippedOzon": 8852,
       "shippedWB": 18728,
       "sourceKeys": [

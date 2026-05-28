@@ -32,6 +32,7 @@
   const stepApproveInFlight = new Set();
   const stepReturnInFlight = new Set();
   const finalCloseInFlight = new Set();
+  let controlSimpleCreateRequested = false;
 
   const meta = (k) => WS[k] || WS.cross;
   const task = (id) => typeof getTask === 'function' ? getTask(id) : null;
@@ -988,12 +989,7 @@
     if (role !== 'all' && role !== 'cross') return role;
     const platform = controlSimpleNormalizeDirection(filters.platform || 'all');
     if (platform !== 'all') return platform;
-    if (filters.taskSimpleWorkspaceChosen) return 'all';
-    if (counts && typeof counts === 'object') {
-      const firstWithWork = CONTROL_SIMPLE_WORKSPACE_ORDER.find((key) => Number(counts[key] || 0) > 0);
-      if (firstWithWork) return firstWithWork;
-    }
-    return 'wb';
+    return 'all';
   }
 
   function controlSimpleAllTasks() {
@@ -1272,6 +1268,35 @@
       </div>`;
   }
 
+  function controlSimpleTaskRow(taskItem) {
+    const id = controlSimpleTaskId(taskItem);
+    const next = String(taskItem?.nextAction || taskItem?.reason || '').trim();
+    const directionKey = controlSimpleDirectionKey(taskItem);
+    const direction = CONTROL_SIMPLE_META[directionKey] || CONTROL_SIMPLE_META.cross;
+    const productStatus = taskProductStatusLabel(taskItem);
+    const tone = controlSimpleIsOverdue(taskItem) || taskItem?.priority === 'critical' ? 'danger' : CONTROL_SIMPLE_SENT.has(controlSimpleStatus(taskItem)) ? 'warn' : controlSimpleIsDone(taskItem) ? 'ok' : '';
+    return `
+      <div class="control-simple-task-row ${tone ? `is-${tone}` : ''}" data-platform="${escapeHtml(directionKey)}">
+        <button class="control-simple-task-row-main" type="button" data-control-simple-open-task="${escapeHtml(id)}">
+          <strong>${escapeHtml(taskItem?.title || taskItem?.entityLabel || taskItem?.articleKey || 'Задача')}</strong>
+          <span>${escapeHtml(taskPeopleLine(taskItem))} · срок ${escapeHtml(taskItem?.due || 'без срока')} · пост. ${escapeHtml(taskCreatedLabel(taskItem, true))}</span>
+          ${next ? `<em>${escapeHtml(next.slice(0, 180))}${next.length > 180 ? '...' : ''}</em>` : ''}
+        </button>
+        <div class="control-simple-task-row-side">
+          <div class="badge-stack">
+            <span class="chip">${escapeHtml(direction.label)}</span>
+            ${productStatus ? `<span class="chip">${escapeHtml(productStatus)}</span>` : ''}
+            <span class="chip">${escapeHtml(controlSimpleStatusText(taskItem))}</span>
+            <span class="chip">${escapeHtml(controlSimplePriorityText(taskItem))}</span>
+          </div>
+          <div class="control-simple-actions">
+            <button class="btn small-btn ghost" type="button" data-control-simple-open-task="${escapeHtml(id)}">Открыть</button>
+            ${controlSimpleAction(taskItem)}
+          </div>
+        </div>
+      </div>`;
+  }
+
   function controlSimpleQueuePanel(key, title, hint, tasks) {
     const visible = tasks;
     const tone = key === 'sent' ? 'warn' : key === 'signals' ? 'info' : key === 'confirmed' ? 'ok' : '';
@@ -1287,6 +1312,28 @@
   function controlSimpleVisibleQueues(data) {
     const nonEmpty = CONTROL_SIMPLE_QUEUES.filter(([key]) => (data.buckets[key] || []).length);
     return nonEmpty.length ? nonEmpty : [CONTROL_SIMPLE_QUEUES[0]];
+  }
+
+  function controlSimpleFocusedBoard(data) {
+    const rows = controlSimpleSort(data.tasks || []);
+    return `
+      <section class="control-simple-focus-board">
+        <div class="control-simple-focus-head">
+          <strong>${fmt.int(rows.length)} задач</strong>
+          <span>${escapeHtml((CONTROL_SIMPLE_META[data.selected] || CONTROL_SIMPLE_META.cross).label)}</span>
+        </div>
+        <div class="control-simple-focus-list">
+          ${rows.length ? rows.map(controlSimpleTaskRow).join('') : '<div class="control-simple-empty">По этой площадке задач нет.</div>'}
+        </div>
+      </section>`;
+  }
+
+  function controlSimplePickPlatformHint(data) {
+    return `
+      <div class="control-simple-pick-hint">
+        <strong>Выберите площадку выше.</strong>
+        <span>Задачи откроются отдельным рабочим списком, без смешивания контуров.</span>
+      </div>`;
   }
 
   function controlSimpleSummary(data) {
@@ -1328,8 +1375,18 @@
 
   function controlSimpleWorkspacePanel(data) {
     const selectedMeta = CONTROL_SIMPLE_META[data.selected] || CONTROL_SIMPLE_META.cross;
+    if (data.selected !== 'all') {
+      return `
+        <div class="control-simple-workspace is-focused" data-platform="${escapeHtml(data.selected)}">
+          <div class="control-simple-selected">
+            <span>Открыта площадка</span>
+            <strong>${escapeHtml(selectedMeta.label)}</strong>
+          </div>
+          <button class="btn ghost small-btn" type="button" data-control-simple-direction="all">Сменить площадку</button>
+        </div>`;
+    }
     const selectedText = data.selected === 'all'
-      ? 'Все площадки ниже разделены на отдельные колонки. Ничего не смешивается в одну очередь.'
+      ? 'Выберите площадку, чтобы открыть её задачи отдельным списком.'
       : `Открыта площадка ${selectedMeta.label}. Остальные задачи скрыты, чтобы не мешали работе.`;
     return `
       <div class="control-simple-workspace">
@@ -1363,12 +1420,15 @@
     if (state.controlFilters.taskSimpleFullMode) {
       state.controlFilters.taskSimpleFullMode = false;
     }
+    if (state.controlFilters.taskSimpleCreateOpen && !controlSimpleCreateRequested) {
+      state.controlFilters.taskSimpleCreateOpen = false;
+    }
 
     const data = controlSimpleModel();
     const boardHtml = data.selected === 'all'
-      ? controlSimpleWorkstreamBoard(data)
-      : `<div class="control-simple-board">${controlSimpleVisibleQueues(data).map(([key, title, hint]) => controlSimpleQueuePanel(key, title, hint, data.buckets[key] || [])).join('')}</div>`;
-    root.dataset.controlSimple = '20260528taskfeedback2';
+      ? controlSimplePickPlatformHint(data)
+      : controlSimpleFocusedBoard(data);
+    root.dataset.controlSimple = '20260528taskfeedback3';
     root.innerHTML = `
       <div class="section-title control-simple-title">
         <div><h2>Задачи</h2><div class="control-simple-title-copy">${escapeHtml(CONTROL_SIMPLE_TITLE)}</div></div>
@@ -1395,6 +1455,8 @@
       state.controlFilters.peopleRole = key === 'all' || key === 'cross' ? 'leader' : key;
       state.controlFilters.taskSimpleWorkspaceChosen = true;
       state.controlFilters.taskSimpleExpandedPlatform = '';
+      state.controlFilters.taskSimpleCreateOpen = false;
+      controlSimpleCreateRequested = false;
       state.controlFilters.status = 'active';
       state.controlFilters.horizon = 'all';
       state.controlFilters.source = 'all';
@@ -1402,6 +1464,7 @@
     }));
     root.querySelector('[data-control-simple-create-toggle]')?.addEventListener('click', () => {
       state.controlFilters.taskSimpleCreateOpen = !state.controlFilters.taskSimpleCreateOpen;
+      controlSimpleCreateRequested = Boolean(state.controlFilters.taskSimpleCreateOpen);
       controlRefined();
     });
     root.querySelectorAll('[data-control-simple-expand-platform]').forEach((button) => button.addEventListener('click', () => {
@@ -1444,6 +1507,7 @@
         reason: 'Создано из простого экрана задач'
       });
       state.controlFilters.taskSimpleCreateOpen = false;
+      controlSimpleCreateRequested = false;
       controlRefined();
       if (created?.id && typeof renderTaskModal === 'function') renderTaskModal(created.id);
     });

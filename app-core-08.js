@@ -680,14 +680,19 @@ function repricerSourceSummary(candidates, target, fallback = '') {
 
 function repricerProtectRecommendedPrice(side, notePrefix = '') {
   if (!side || side.criticalGate === 'SKIP') return side;
-  const floor = Math.max(
-    numberOrZero(side.effectiveFloor),
-    numberOrZero(side.hardFloor),
-    numberOrZero(side.b2bFloor),
-    numberOrZero(side.economicFloor),
-    numberOrZero(side.skuMinPrice),
-    numberOrZero(side.override?.floorPrice)
-  );
+  const overrideFloor = numberOrZero(side.override?.floorPrice);
+  const importedFloor = numberOrZero(side.manualMinPrice);
+  const floor = overrideFloor > 0
+    ? overrideFloor
+    : (importedFloor > 0
+      ? importedFloor
+      : Math.max(
+        numberOrZero(side.effectiveFloor),
+        numberOrZero(side.hardFloor),
+        numberOrZero(side.b2bFloor),
+        numberOrZero(side.economicFloor),
+        numberOrZero(side.skuMinPrice)
+      ));
   const cap = numberOrZero(side.capPrice) > 0 ? Math.max(numberOrZero(side.capPrice), floor) : 0;
   let nextPrice = numberOrZero(side.recommendedPrice);
   const notes = [];
@@ -918,15 +923,20 @@ function repricerApplyOutlierGuard(row) {
 function repricerFinalizeSide(side) {
   if (!side) return null;
   const rawPrice = numberOrZero(side.recommendedPrice);
-  const guardFloor = Math.ceil(Math.max(
-    numberOrZero(side.finalGuardFloor),
-    numberOrZero(side.effectiveFloor),
-    numberOrZero(side.hardFloor),
-    numberOrZero(side.b2bFloor),
-    numberOrZero(side.economicFloor),
-    numberOrZero(side.skuMinPrice),
-    numberOrZero(side.override?.floorPrice)
-  ));
+  const overrideFloor = numberOrZero(side.override?.floorPrice);
+  const importedFloor = numberOrZero(side.manualMinPrice);
+  const guardFloor = Math.ceil(overrideFloor > 0
+    ? overrideFloor
+    : (importedFloor > 0
+      ? importedFloor
+      : Math.max(
+        numberOrZero(side.finalGuardFloor),
+        numberOrZero(side.effectiveFloor),
+        numberOrZero(side.hardFloor),
+        numberOrZero(side.b2bFloor),
+        numberOrZero(side.economicFloor),
+        numberOrZero(side.skuMinPrice)
+      )));
   const rawGuardCap = numberOrZero(side.finalGuardCap) > 0
     ? Math.floor(Math.max(numberOrZero(side.finalGuardCap), numberOrZero(side.effectiveFloor)))
     : 0;
@@ -1100,6 +1110,24 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const seedTargetSource = seedTargetCandidate?.source || '';
   const seedTargetPrice = numberOrZero(seedTargetCandidate?.value);
   const rawManagedBasePrice = repricerFirstFilledNumber(corridor?.basePrice, skuBasePrice, seedTargetPrice, legacySide?.basePrice, currentPrice);
+  const importedManualFloor = repricerFirstPositiveNumber(
+    sourceRow.manualMinPrice,
+    supportRow?.manualMinPrice,
+    priceRow?.manualMinPrice,
+    legacySide?.manualMinPrice,
+    liveSide?.manualMinPrice,
+    skuSide?.manualMinPrice
+  );
+  const importedManualCap = repricerFirstPositiveNumber(
+    sourceRow.manualMaxPrice,
+    supportRow?.manualMaxPrice,
+    priceRow?.manualMaxPrice,
+    legacySide?.manualMaxPrice,
+    liveSide?.manualMaxPrice,
+    skuSide?.manualMaxPrice
+  );
+  const overrideFloor = numberOrZero(override?.floorPrice);
+  const manualFloor = overrideFloor > 0 ? overrideFloor : importedManualFloor;
   const sourceFloorCandidate = Math.max(
     numberOrZero(sourceRow.hardMinPrice),
     numberOrZero(sourceRow.requiredPriceForProfitability),
@@ -1182,19 +1210,20 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const economicFloorSourceLabel = economicFloorSource === 'fee_stack'
     ? 'economic_fee_stack'
     : (economicFloorSource === 'snapshot_guard' ? 'economic_snapshot_guard' : 'economic_snapshot_fallback');
-  const effectiveFloor = Math.max(hardFloor, b2bFloor, economicFloor, numberOrZero(override?.floorPrice));
+  const effectiveFloor = manualFloor > 0 ? manualFloor : Math.max(hardFloor, b2bFloor, economicFloor);
   const manualPromoRequestedPrice = numberOrZero(override?.promoPrice);
   const manualPromoWindow = repricerPromoWindow(override);
   const manualPromoConfigured = Boolean(override?.promoActive) && manualPromoRequestedPrice > 0;
   const manualPromoActive = manualPromoConfigured && manualPromoWindow.active;
   const manualPromoLabel = String(override?.promoLabel || '').trim();
   const effectiveFloorCandidates = [
+    { label: 'override_floor', value: overrideFloor },
+    { label: 'imported_min', value: importedManualFloor },
     { label: hardFloorSourceSummary || 'hard_floor', value: hardFloor },
     { label: 'b2b_floor', value: b2bFloor },
-    { label: economicFloorSourceLabel, value: economicFloor },
-    { label: 'override_floor', value: numberOrZero(override?.floorPrice) }
+    { label: economicFloorSourceLabel, value: economicFloor }
   ];
-  const effectiveFloorSourceSummary = repricerSourceSummary(effectiveFloorCandidates, effectiveFloor, effectiveFloor > 0 ? economicFloorSourceLabel : '');
+  const effectiveFloorSourceSummary = repricerSourceSummary(effectiveFloorCandidates, effectiveFloor, effectiveFloor > 0 ? (overrideFloor > 0 ? 'override_floor' : (importedManualFloor > 0 ? 'imported_min' : economicFloorSourceLabel)) : '');
   const promoFloor = Math.max(numberOrZero(corridor?.promoFloor), effectiveFloor);
   const promoFloorSourceSummary = repricerSourceSummary([
     { label: 'corridor_promo_floor', value: numberOrZero(corridor?.promoFloor) },
@@ -1500,7 +1529,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   recommendedPrice = Math.max(cappedPrice, effectiveFloor);
   reasonCode = turnoverAction;
 
-  if (recommendedPrice < economicFloor) {
+  if (!(manualFloor > 0) && recommendedPrice < economicFloor) {
     recommendedPrice = economicFloor;
     reasons.push('подняли до economic floor');
   }
@@ -1580,6 +1609,12 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
       minMaxMaterializedFrom: sourceRow.minMaxMaterializedFrom || supportRow?.minMaxMaterializedFrom || priceRow?.minMaxMaterializedFrom || legacySide?.minMaxMaterializedFrom || liveSide?.minMaxMaterializedFrom || '',
       minMaxMaterializedMatchType: sourceRow.minMaxMaterializedMatchType || supportRow?.minMaxMaterializedMatchType || priceRow?.minMaxMaterializedMatchType || legacySide?.minMaxMaterializedMatchType || liveSide?.minMaxMaterializedMatchType || '',
       minMaxOnlyRow,
+      minPrice: repricerFirstPositiveNumber(sourceRow.minPrice, sourceRow.workingZoneFrom, supportRow?.minPrice, supportRow?.workingZoneFrom, priceRow?.minPrice, priceRow?.workingZoneFrom, legacySide?.minPrice, legacySide?.workingZoneFrom, liveSide?.minPrice, liveSide?.workingZoneFrom, skuMinPrice),
+      maxPrice: repricerFirstPositiveNumber(sourceRow.maxPrice, sourceRow.workingZoneTo, supportRow?.maxPrice, supportRow?.workingZoneTo, priceRow?.maxPrice, priceRow?.workingZoneTo, legacySide?.maxPrice, legacySide?.workingZoneTo, legacySide?.upperCap, liveSide?.maxPrice, liveSide?.workingZoneTo, importedManualCap),
+      workingZoneFrom: repricerFirstPositiveNumber(sourceRow.workingZoneFrom, supportRow?.workingZoneFrom, priceRow?.workingZoneFrom, legacySide?.workingZoneFrom, liveSide?.workingZoneFrom, importedManualFloor),
+      workingZoneTo: repricerFirstPositiveNumber(sourceRow.workingZoneTo, supportRow?.workingZoneTo, priceRow?.workingZoneTo, legacySide?.workingZoneTo, liveSide?.workingZoneTo, importedManualCap),
+      manualMinPrice: importedManualFloor,
+      manualMaxPrice: importedManualCap,
       recommendedPrice,
     preAlignPrice,
     cappedPrice,

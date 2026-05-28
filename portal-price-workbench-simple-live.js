@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_MINMAXQUEUE1__) return;
+  if (window.__ALTEA_PRICE_SIMPLE_RENDERER_20260528_MINMAXIMPORT1__) return;
+  window.__ALTEA_PRICE_SIMPLE_RENDERER_20260528_MINMAXIMPORT1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_MINMAXQUEUE1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_STATUS_EDIT1__ = true;
   window.__ALTEA_PRICE_SIMPLE_RENDERER_20260518_ZEROFIX1__ = true;
@@ -805,8 +806,12 @@
     var syncedCorridor = findRepricerCorridor(targetMarket, articleKey);
     var syncedRow = findRepricerRow(articleKey);
     var syncedSide = syncedRow ? (targetMarket === "wb" ? syncedRow.wb : syncedRow.ozon) : null;
-    var syncedManualMin = moneyRound(syncedOverride && syncedOverride.floorPrice);
-    var syncedManualMax = moneyRound(syncedOverride && syncedOverride.capPrice);
+    var syncedOverrideMin = moneyRound(syncedOverride && syncedOverride.floorPrice);
+    var syncedOverrideMax = moneyRound(syncedOverride && syncedOverride.capPrice);
+    var syncedImportedMin = moneyRound(syncedSide && syncedSide.manualMinPrice);
+    var syncedImportedMax = moneyRound(syncedSide && syncedSide.manualMaxPrice);
+    var syncedManualMin = syncedOverrideMin != null && syncedOverrideMin > 0 ? syncedOverrideMin : syncedImportedMin;
+    var syncedManualMax = syncedOverrideMax != null && syncedOverrideMax > 0 ? syncedOverrideMax : syncedImportedMax;
     var syncedCorridorMin = Math.max(
       firstPositive(syncedCorridor && syncedCorridor.hardFloor),
       firstPositive(syncedCorridor && syncedCorridor.b2bFloor)
@@ -838,8 +843,8 @@
       corridorMax: syncedCorridorMax,
       effectiveMin: syncedEffectiveMin,
       effectiveMax: syncedEffectiveMax,
-      minSource: syncedManualMin != null && syncedManualMin > 0 ? "ручной" : (syncedCorridorMin != null ? "коридор" : "расчет"),
-      maxSource: syncedManualMax != null && syncedManualMax > 0 ? "ручной" : (syncedCorridorMax != null ? "коридор" : "расчет")
+      minSource: syncedOverrideMin != null && syncedOverrideMin > 0 ? "ручной" : (syncedImportedMin != null && syncedImportedMin > 0 ? "импорт" : (syncedCorridorMin != null ? "коридор" : "расчет")),
+      maxSource: syncedOverrideMax != null && syncedOverrideMax > 0 ? "ручной" : (syncedImportedMax != null && syncedImportedMax > 0 ? "импорт" : (syncedCorridorMax != null ? "коридор" : "расчет"))
     };
     var override = findRepricerOverride(targetMarket, articleKey);
     var row = findRepricerRow(articleKey);
@@ -869,14 +874,26 @@
   }
 
   function mergeRowPriceBounds(bounds, row) {
+    var fallbackManualMin = firstPositive(row && row.manualMinPrice);
+    var fallbackManualMax = firstPositive(row && row.manualMaxPrice);
     var fallbackMin = Math.max(
       firstPositive(row && row.minPrice),
-      firstPositive(row && row.hardMinPrice),
-      firstPositive(row && row.workingZoneFrom)
+      firstPositive(row && row.workingZoneFrom),
+      firstPositive(row && row.hardMinPrice)
     );
     var fallbackMax = firstPositive(row && row.maxPrice, row && row.workingZoneTo);
-    if (!(fallbackMin > 0) && !(fallbackMax > 0)) return bounds;
+    if (!(fallbackManualMin > 0) && !(fallbackManualMax > 0) && !(fallbackMin > 0) && !(fallbackMax > 0)) return bounds;
     var next = bounds ? Object.assign({}, bounds) : {};
+    if ((next.effectiveMin == null || !(Number(next.effectiveMin) > 0)) && fallbackManualMin > 0) {
+      next.effectiveMin = moneyRound(fallbackManualMin);
+      next.manualMin = moneyRound(fallbackManualMin);
+      next.minSource = row && row.minMaxSource ? "импорт" : "ручной";
+    }
+    if ((next.effectiveMax == null || !(Number(next.effectiveMax) > 0)) && fallbackManualMax > 0) {
+      next.effectiveMax = moneyRound(fallbackManualMax);
+      next.manualMax = moneyRound(fallbackManualMax);
+      next.maxSource = row && row.minMaxSource ? "импорт" : "ручной";
+    }
     if ((next.effectiveMin == null || !(Number(next.effectiveMin) > 0)) && fallbackMin > 0) {
       next.effectiveMin = moneyRound(fallbackMin);
       next.minSource = row && row.marginSource === "prices.json" ? "prices" : "snapshot";
@@ -1901,6 +1918,9 @@
       minPrice: firstPositive(priceRow && priceRow.minPrice, overlayRow && overlayRow.minPrice, source && source.minPrice, liveRow && liveRow.minPrice) || null,
       hardMinPrice: firstPositive(priceRow && priceRow.hardMinPrice, overlayRow && overlayRow.hardMinPrice, source && source.hardMinPrice, liveRow && liveRow.hardMinPrice) || null,
       maxPrice: firstPositive(priceRow && priceRow.maxPrice, overlayRow && overlayRow.maxPrice, source && source.maxPrice, liveRow && liveRow.maxPrice) || null,
+      manualMinPrice: firstPositive(priceRow && priceRow.manualMinPrice, overlayRow && overlayRow.manualMinPrice, source && source.manualMinPrice, liveRow && liveRow.manualMinPrice) || null,
+      manualMaxPrice: firstPositive(priceRow && priceRow.manualMaxPrice, overlayRow && overlayRow.manualMaxPrice, source && source.manualMaxPrice, liveRow && liveRow.manualMaxPrice) || null,
+      minMaxSource: (priceRow && priceRow.minMaxSource) || (overlayRow && overlayRow.minMaxSource) || (source && source.minMaxSource) || (liveRow && liveRow.minMaxSource) || "",
       workingZoneFrom: firstPositive(priceRow && priceRow.workingZoneFrom, overlayRow && overlayRow.workingZoneFrom, source && source.workingZoneFrom, liveRow && liveRow.workingZoneFrom) || null,
       workingZoneTo: firstPositive(priceRow && priceRow.workingZoneTo, overlayRow && overlayRow.workingZoneTo, source && source.workingZoneTo, liveRow && liveRow.workingZoneTo) || null,
       marginSource: priceRow ? "prices.json" : (overlayRow && overlayRow.marginSource || source.marginSource || ""),

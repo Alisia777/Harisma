@@ -469,13 +469,19 @@
   function resolvedRepricerSidePrice(side) {
     var price = moneyRound(side && (side.finalPrice != null ? side.finalPrice : (side.recommendedPrice != null ? side.recommendedPrice : side.recPrice)));
     if (price == null || price <= 0) return null;
-    var floor = Math.max(
-      firstPositive(side && side.effectiveFloor),
-      firstPositive(side && side.hardFloor),
-      firstPositive(side && side.economicFloor),
-      firstPositive(side && side.minPrice),
-      firstPositive(side && side.finalGuardFloor)
-    );
+    var importedFloor = firstPositive(side && side.manualMinPrice);
+    var overrideFloor = firstPositive(side && side.override && side.override.floorPrice);
+    var floor = overrideFloor > 0
+      ? overrideFloor
+      : (importedFloor > 0
+        ? importedFloor
+        : Math.max(
+          firstPositive(side && side.effectiveFloor),
+          firstPositive(side && side.hardFloor),
+          firstPositive(side && side.economicFloor),
+          firstPositive(side && side.minPrice),
+          firstPositive(side && side.finalGuardFloor)
+        ));
     var cap = firstPositive(side && side.finalGuardCap, side && side.capPrice, side && side.upperCap, side && side.workingZoneTo);
     if (cap > 0 && !(floor > 0 && cap + 0.001 < floor) && price > cap + 0.001) price = moneyRound(cap);
     if (floor > 0 && price + 0.001 < floor) price = moneyRound(floor);

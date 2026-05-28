@@ -331,6 +331,13 @@ body.v87-imperial.theme-sand-dark .sku-pill {
   border-color: rgba(221, 192, 138, 0.18) !important;
 }
 
+body.v87-imperial .control-simple-platform-chip,
+body.v87-imperial.theme-sand-dark .control-simple-platform-chip {
+  background: var(--platform-soft, rgba(255, 255, 255, 0.025)) !important;
+  border-color: var(--platform-border, rgba(255, 255, 255, 0.08)) !important;
+  color: #fff7e6 !important;
+}
+
 body.v87-imperial.theme-sand-dark .pw-kz-badge.ok,
 body.v87-imperial.theme-sand-dark .chip.ok {
   background: rgba(136, 176, 138, 0.14) !important;

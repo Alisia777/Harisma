@@ -1284,7 +1284,7 @@
         </button>
         <div class="control-simple-task-row-side">
           <div class="badge-stack">
-            <span class="chip">${escapeHtml(direction.label)}</span>
+            <span class="chip control-simple-platform-chip" data-platform="${escapeHtml(directionKey)}">${escapeHtml(direction.label)}</span>
             ${productStatus ? `<span class="chip">${escapeHtml(productStatus)}</span>` : ''}
             <span class="chip">${escapeHtml(controlSimpleStatusText(taskItem))}</span>
             <span class="chip">${escapeHtml(controlSimplePriorityText(taskItem))}</span>
@@ -1378,11 +1378,13 @@
     if (data.selected !== 'all') {
       return `
         <div class="control-simple-workspace is-focused" data-platform="${escapeHtml(data.selected)}">
-          <div class="control-simple-selected">
-            <span>Открыта площадка</span>
-            <strong>${escapeHtml(selectedMeta.label)}</strong>
+          <div class="control-simple-workspace-head">
+            <div class="control-simple-selected">
+              <span>${escapeHtml(selectedMeta.hint)}</span>
+              <strong>${escapeHtml(selectedMeta.label)}</strong>
+            </div>
           </div>
-          <button class="btn ghost small-btn" type="button" data-control-simple-direction="all">Сменить площадку</button>
+          <div class="control-simple-directions is-compact">${CONTROL_SIMPLE_DIRECTION_RENDER_ORDER.map((key) => controlSimpleDirectionButton(key, data)).join('')}</div>
         </div>`;
     }
     const selectedText = data.selected === 'all'
@@ -1428,7 +1430,7 @@
     const boardHtml = data.selected === 'all'
       ? controlSimplePickPlatformHint(data)
       : controlSimpleFocusedBoard(data);
-    root.dataset.controlSimple = '20260528taskfeedback3';
+    root.dataset.controlSimple = '20260528taskfeedback4';
     root.innerHTML = `
       <div class="section-title control-simple-title">
         <div><h2>Задачи</h2><div class="control-simple-title-copy">${escapeHtml(CONTROL_SIMPLE_TITLE)}</div></div>

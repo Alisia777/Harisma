@@ -228,6 +228,25 @@
     return badge(task?.entityLabel || 'Общая задача', 'info');
   }
 
+  function taskCreatedLabel(task) {
+    const raw = task?.createdAt || task?.created_at || '';
+    return raw && typeof fmt !== 'undefined' && typeof fmt.date === 'function' ? fmt.date(raw) : (raw ? String(raw).slice(0, 10) : '—');
+  }
+
+  function taskProductStatusLabel(task, sku) {
+    const product = sku || (task?.articleKey && typeof getSku === 'function' ? getSku(task.articleKey) : null);
+    if (!product) return '';
+    const meta = typeof skuOperationalStatusMeta === 'function'
+      ? skuOperationalStatusMeta(product)
+      : (typeof productLifecycleForSku === 'function' ? productLifecycleForSku(product) : null);
+    return meta?.label || product?.status || '';
+  }
+
+  function taskProductStatusBadge(task, sku) {
+    const label = taskProductStatusLabel(task, sku);
+    return label ? badge(label, 'info') : '';
+  }
+
   function taskHistoryBadge(kind) {
     const meta = TASK_LOG_META[kind] || TASK_LOG_META.comment;
     return badge(meta.label, meta.tone);
@@ -710,16 +729,17 @@
     const body = document.getElementById('taskModalBody');
     const owners = ownerOptions();
     const history = getTaskHistory(taskId);
+    const productStatus = taskProductStatusLabel(task, sku);
     const historyHtml = history.length
       ? history.map(renderTaskHistoryItem).join('')
-      : `<div class="comment-item"><div class="head"><strong>Портал</strong>${taskHistoryBadge('created')}</div><div class="muted small">${fmt.date(task.createdAt)}</div><p>Задача уже есть в контуре. Дальше все апдейты и отчёты будут появляться здесь.</p></div>`;
+      : `<div class="control-simple-empty">Пока нет записей.</div>`;
 
     body.innerHTML = `
       <div class="modal-head">
         <div>
           <div class="muted small">${escapeHtml(controlWorkstreamMeta(controlWorkstreamKey(task, sku)).label)} · ${escapeHtml(task.entityLabel || taskHeadline(task))}</div>
           <h2>${escapeHtml(taskHeadline(task))}</h2>
-          <div class="badge-stack">${taskStatusBadge(task)}${taskPriorityBadge(task)}${taskTypeBadge(task)}${taskPlatformBadge(task)}${taskSourceBadge(task)}</div>
+          <div class="badge-stack">${taskStatusBadge(task)}${taskPriorityBadge(task)}${taskTypeBadge(task)}${taskPlatformBadge(task)}${taskProductStatusBadge(task, sku)}</div>
         </div>
         <div class="badge-stack">
           ${sku ? `<button class="btn ghost" type="button" data-open-sku="${escapeHtml(sku.articleKey)}">Открыть SKU</button>` : ''}
@@ -732,17 +752,9 @@
           <h3>Контекст</h3>
           ${metricRow('Owner', escapeHtml(task.owner || 'Не назначен'))}
           ${metricRow('Срок', escapeHtml(task.due || '—'))}
-          ${metricRow('Источник', escapeHtml(task.source || 'manual'))}
+          ${metricRow('Поставлена', escapeHtml(taskCreatedLabel(task)))}
+          ${productStatus ? metricRow('Статус товара', escapeHtml(productStatus)) : ''}
           ${metricRow('SKU / тема', sku ? escapeHtml(sku.article || sku.articleKey) : escapeHtml(task.entityLabel || 'Общая задача'))}
-        </div>
-        <div class="card subtle">
-          <h3>Что делаем сейчас</h3>
-          <div class="note-box">${escapeHtml(task.nextAction || 'Нужно описать следующий шаг')}</div>
-          <div class="muted small" style="margin-top:10px">${escapeHtml(task.reason || 'Причина / контекст пока не заполнены')}</div>
-        </div>
-        <div class="card subtle">
-          <h3>Как закрывать</h3>
-          <div class="note-box">Маркетолог закрывает задачу коротким отчётом: что сделал, какой результат получил и где лежит ссылка / артефакт.</div>
         </div>
       </div>
 
@@ -751,7 +763,6 @@
           <div class="section-subhead">
             <div>
               <h3>Редактировать задачу</h3>
-              <p class="small muted">Из карточки можно менять owner, сроки, следующий шаг, приоритет и статус.</p>
             </div>
             ${task.articleKey ? taskEntityLine(task, sku) : badge('Общая задача', 'info')}
           </div>
@@ -760,6 +771,7 @@
             <input name="title" value="${escapeHtml(task.title || '')}" required>
             <input name="entityLabel" value="${escapeHtml(task.entityLabel || '')}" placeholder="Проект / тема">
             <input name="owner" list="taskOwnerList" value="${escapeHtml(task.owner || '')}" placeholder="Кто ведёт">
+            <input name="coOwner" list="taskOwnerList" value="${escapeHtml(task.coOwner || '')}" placeholder="Соисполнитель">
             <input name="due" type="date" value="${escapeHtml(task.due || '')}">
             <select name="status">${Object.entries(TASK_STATUS_META).map(([value, meta]) => `<option value="${value}" ${task.status === value ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}</select>
             <select name="priority">${Object.entries(PRIORITY_META).map(([value, meta]) => `<option value="${value}" ${task.priority === value ? 'selected' : ''}>${escapeHtml(meta.label)}</option>`).join('')}</select>
@@ -773,7 +785,7 @@
               <option value="letu" ${normalizeTaskPlatform(task.platform) === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
               <option value="magnit" ${normalizeTaskPlatform(task.platform) === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
             </select>
-            <textarea name="nextAction" rows="4" placeholder="Следующее действие">${escapeHtml(task.nextAction || '')}</textarea>
+            <textarea name="nextAction" rows="4" placeholder="Действие">${escapeHtml(task.nextAction || '')}</textarea>
             <textarea name="reason" rows="4" placeholder="Контекст / почему задача возникла">${escapeHtml(task.reason || '')}</textarea>
             <button class="btn primary" type="submit">Сохранить изменения</button>
           </form>
@@ -782,8 +794,7 @@
         <div class="card">
           <div class="section-subhead">
             <div>
-              <h3>Комментарии и история</h3>
-              <p class="small muted">Здесь видны все апдейты, обсуждение и отчёты по закрытию.</p>
+              <h3>Апдейты</h3>
             </div>
             ${badge(`${fmt.int(history.length)} записей`, history.length ? 'info' : 'ok')}
           </div>
@@ -823,6 +834,7 @@
         title: form.get('title'),
         entityLabel: form.get('entityLabel'),
         owner: form.get('owner'),
+        coOwner: form.get('coOwner'),
         due: form.get('due'),
         status: form.get('status'),
         priority: form.get('priority'),
@@ -892,6 +904,7 @@
           title: form.get('title'),
           entityLabel: form.get('entityLabel'),
           owner: form.get('owner'),
+          coOwner: form.get('coOwner'),
           due: form.get('due'),
           status: form.get('status'),
           priority: form.get('priority'),
@@ -975,9 +988,9 @@
           </div>
           ${taskStatusBadge(task)}
         </div>
-        <div class="meta">${taskPriorityBadge(task)}${taskTypeBadge(task)}${taskPlatformBadge(task)}${taskSourceBadge(task)}</div>
+        <div class="meta">${taskPriorityBadge(task)}${taskTypeBadge(task)}${taskPlatformBadge(task)}${taskProductStatusBadge(task, sku)}</div>
         ${task.reason ? `<div class="muted small">${escapeHtml(task.reason)}</div>` : ''}
-        ${task.nextAction ? `<div><strong class="small">Следующее действие</strong><div class="muted small" style="margin-top:4px">${escapeHtml(task.nextAction)}</div></div>` : ''}
+        ${task.nextAction ? `<div class="muted small">${escapeHtml(task.nextAction)}</div>` : ''}
         <div class="foot">
           <div class="muted small">${escapeHtml(task.owner || 'Без owner')} · срок ${escapeHtml(task.due || '—')}</div>
           <div class="actions">${controls}</div>
@@ -1005,7 +1018,6 @@
         <div class="section-subhead">
           <div>
             <h3>Быстрая правка</h3>
-            <p class="small muted">Снаружи оставили только ключевое: заголовок, owner, срок и ближайший шаг.</p>
           </div>
           ${task.articleKey ? taskEntityLine(task, getSku(task.articleKey)) : badge('Общая задача', 'info')}
         </div>
@@ -1014,16 +1026,10 @@
           <input name="title" value="${escapeHtml(task.title || '')}" required>
           <div class="compact-row">
             <input name="owner" list="taskOwnerList" value="${escapeHtml(task.owner || '')}" placeholder="Кто ведёт">
+            <input name="coOwner" list="taskOwnerList" value="${escapeHtml(task.coOwner || '')}" placeholder="Соисполнитель">
             <input name="due" type="date" value="${escapeHtml(task.due || '')}">
           </div>
-          <div class="task-due-modal-quick">
-            <span>Быстрый срок</span>
-            <button class="btn ghost small-btn" type="button" data-task-modal-due="0">Сегодня</button>
-            <button class="btn ghost small-btn" type="button" data-task-modal-due="1">+1 день</button>
-            <button class="btn ghost small-btn" type="button" data-task-modal-due="3">+3 дня</button>
-            <button class="btn ghost small-btn" type="button" data-task-modal-due="7">+7 дней</button>
-          </div>
-          <textarea name="nextAction" rows="3" placeholder="Следующий шаг">${escapeHtml(task.nextAction || '')}</textarea>
+          <textarea name="nextAction" rows="3" placeholder="Действие">${escapeHtml(task.nextAction || '')}</textarea>
           <details class="compact-details">
             <summary>Дополнительно: статус, контур и контекст</summary>
             <div class="form-grid compact" style="margin-top:10px">
@@ -1040,9 +1046,10 @@
               <option value="letu" ${normalizeTaskPlatform(task.platform) === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
               <option value="magnit" ${normalizeTaskPlatform(task.platform) === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
             </select>
-            <textarea name="nextAction" rows="4" placeholder="Следующее действие">${escapeHtml(task.nextAction || '')}</textarea>
             <textarea name="reason" rows="4" placeholder="Контекст / почему задача возникла">${escapeHtml(task.reason || '')}</textarea>
-            <button class="btn primary" type="submit">Сохранить изменения</button>
+            </div>
+          </details>
+          <button class="btn primary" type="submit">Сохранить изменения</button>
           </form>
       </div>
     `;
@@ -1051,18 +1058,16 @@
   function renderTaskUpdatesCard(task, history) {
     const historyHtml = history.length
       ? history.map(renderTaskHistoryItem).join('')
-      : `<div class="comment-item"><div class="head"><strong>Портал</strong>${taskHistoryBadge('created')}</div><div class="muted small">${fmt.date(task.createdAt)}</div><p>Пока нет апдейтов. Первая короткая запись появится здесь.</p></div>`;
+      : `<div class="control-simple-empty">Пока нет записей.</div>`;
     return `
       <div class="card">
         <div class="section-subhead">
           <div>
-            <h3>Апдейты и история</h3>
-            <p class="small muted">Один короткий апдейт = одна ясная точка синхрона для команды.</p>
+            <h3>Апдейты</h3>
           </div>
           ${badge(`${fmt.int(history.length)} записей`, history.length ? 'info' : 'ok')}
         </div>
-        <div class="quick-note ok">Пишем кратко: что сделано, что мешает и что нужно от других.</div>
-        <div class="compact-history" style="margin-top:12px">${historyHtml}</div>
+        <div class="compact-history">${historyHtml}</div>
         <form id="taskCommentForm" class="form-stack" style="margin-top:12px">
           <textarea name="text" rows="3" placeholder="Короткий апдейт по задаче" required></textarea>
           <button class="btn" type="submit">Сохранить апдейт</button>
@@ -1298,15 +1303,10 @@
           <div class="task-lazy-title">${escapeHtml(task.title || 'Задача')}</div>
           <div class="muted small">${escapeHtml(entity)} · ${escapeHtml(task.owner || 'Без owner')} · срок ${escapeHtml(task.due || '—')}</div>
           <div class="task-lazy-next">${escapeHtml(task.nextAction || task.reason || 'Нужен короткий следующий шаг.')}</div>
-          <div class="badge-stack">${taskPriorityBadge(task)}${taskStatusBadge(task)}${taskPlatformBadge(task)}${taskSourceBadge(task)}</div>
+          <div class="badge-stack">${taskPriorityBadge(task)}${taskStatusBadge(task)}${taskPlatformBadge(task)}${taskProductStatusBadge(task, getSku(task.articleKey))}</div>
         </div>
         <div class="task-lazy-actions">
           ${ownerQuick}
-          <div class="task-due-quick">
-            <button class="btn ghost small-btn" type="button" data-task-due-fast="${escapeHtml(task.id)}" data-days="1">+1д</button>
-            <button class="btn ghost small-btn" type="button" data-task-due-fast="${escapeHtml(task.id)}" data-days="3">+3д</button>
-            <button class="btn ghost small-btn" type="button" data-task-due-fast="${escapeHtml(task.id)}" data-days="7">+7д</button>
-          </div>
           ${primaryAction}
           <button class="btn ghost small-btn" type="button" data-open-task="${escapeHtml(task.id)}">Карточка</button>
         </div>

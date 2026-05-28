@@ -7,6 +7,7 @@
   let baseRerenderCurrentView = null;
   let searchTimer = 0;
   let forceRender = false;
+  let exportLockedUntil = 0;
 
   function planFactPlatforms() {
     return Array.isArray(window.SKU_PLAN_FACT_PLATFORMS) && window.SKU_PLAN_FACT_PLATFORMS.length
@@ -461,6 +462,32 @@
     });
   }
 
+  function exportPlanFact(button) {
+    const now = Date.now();
+    if (now < exportLockedUntil) return;
+    exportLockedUntil = now + 1200;
+    const originalText = button?.textContent || '';
+    try {
+      if (button) {
+        button.disabled = true;
+        button.textContent = 'Готовим Excel...';
+      }
+      const model = buildModel();
+      if (model && typeof downloadSkuPlanFactExcel === 'function') {
+        model.rows = sortRows(model.rows);
+        downloadSkuPlanFactExcel(model);
+      }
+    } finally {
+      window.setTimeout(() => {
+        exportLockedUntil = 0;
+        if (button) {
+          button.disabled = false;
+          button.textContent = originalText || 'Выгрузить в Excel';
+        }
+      }, 1200);
+    }
+  }
+
   function bindControls(host) {
     const search = replaceWithoutListeners(host.querySelector('#skuPlanFactSearch'));
     const date = replaceWithoutListeners(host.querySelector('#skuPlanFactDate'));
@@ -511,13 +538,11 @@
         renderStableBody();
       });
     }
-    if (exportButton) exportButton.addEventListener('click', () => {
-      const model = buildModel();
-      if (model && typeof downloadSkuPlanFactExcel === 'function') {
-        model.rows = sortRows(model.rows);
-        downloadSkuPlanFactExcel(model);
-      }
-    });
+    if (exportButton) exportButton.onclick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      exportPlanFact(event.currentTarget);
+    };
     if (refreshButton) refreshButton.addEventListener('click', (event) => refreshData(event.currentTarget));
 
     host.querySelectorAll('[data-sku-stable-sort]').forEach((button) => {

@@ -32,12 +32,21 @@
     });
   }
 
+  function isGoldAppleText(raw, flat) {
+    if (['goldapple', 'goldenapple', 'ga', 'zya', 'зя', 'золотоеяблоко'].includes(flat)) return true;
+    return /\b(?:golden\s*apple|gold\s*apple)\b/.test(raw)
+      || /(^|[^a-zа-я0-9])z\s*y\s*a([^a-zа-я0-9]|$)/i.test(raw)
+      || /(^|[^a-zа-я0-9])з\s*я([^a-zа-я0-9]|$)/i.test(raw)
+      || /золот[а-я\s-]*яблок/i.test(raw);
+  }
+
   function retailKeys(value) {
     const raw = lower(value);
     const flat = compact(raw);
     const keys = [];
-    if (raw.includes('яндекс') || raw.includes('я.маркет') || flat.includes('ямаркет') || flat === 'ям' || flat === 'ya' || flat === 'ym' || flat.includes('yandex')) keys.push('ya');
-    if (raw.includes('золот') || flat.includes('зя') || flat.includes('gold') || flat.includes('zya')) keys.push('goldapple');
+    if (raw.includes('яндекс') || raw.includes('я.маркет') || flat.includes('ямаркет') || flat === 'ям' || flat === 'ya' || flat === 'ym' || flat.includes('yandex')
+      || /(^|[^a-zа-я0-9])(ya|ym|ям)(?=$|[^a-zа-я0-9])/i.test(raw)) keys.push('ya');
+    if (isGoldAppleText(raw, flat)) keys.push('goldapple');
     if (flat.includes('лету') || flat.includes('лэту') || flat.includes('letu') || flat.includes('letoile') || flat.includes('letoil')) keys.push('letu');
     if (flat.includes('магнит') || flat.includes('magnit') || flat.includes('magnet')) keys.push('magnit');
     return unique(keys);
@@ -70,6 +79,14 @@
     return Array.isArray(window.state?.storage?.tasks) ? window.state.storage.tasks : [];
   }
 
+  function taskSku(task) {
+    try {
+      return typeof window.getSku === 'function' ? window.getSku(task?.articleKey) : null;
+    } catch {
+      return null;
+    }
+  }
+
   function fmtInt(value) {
     try {
       return Number(value || 0).toLocaleString('ru-RU');
@@ -84,6 +101,13 @@
     const counts = Object.fromEntries(TARGETS.map((key) => [key, 0]));
     allTasks().forEach((task) => {
       if (lower(task?.status) === 'cancelled') return;
+      if (typeof window.controlWorkstreamKey === 'function') {
+        const key = lower(window.controlWorkstreamKey(task, taskSku(task)));
+        if (TARGETS.includes(key)) {
+          counts[key] = (counts[key] || 0) + 1;
+        }
+        return;
+      }
       explicitPlatformKeys(task).forEach((key) => {
         counts[key] = (counts[key] || 0) + 1;
       });

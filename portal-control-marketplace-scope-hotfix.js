@@ -39,10 +39,21 @@
     const raw = lower(value);
     const flat = compact(raw);
     const keys = [];
-    if (raw.includes('яндекс') || raw.includes('я.маркет') || flat.includes('ямаркет') || flat === 'ям' || flat === 'ya' || flat === 'ym' || flat.includes('yandex')) keys.push('ya');
-    if (raw.includes('золот') || flat.includes('зя') || flat.includes('gold') || flat.includes('zya')) keys.push('goldapple');
+    if (raw.includes('яндекс') || raw.includes('я.маркет') || flat.includes('ямаркет') || flat === 'ям' || flat === 'ya' || flat === 'ym' || flat.includes('yandex')
+      || /(^|[^a-zа-я0-9])(ya|ym|ям)(?=$|[^a-zа-я0-9])/i.test(raw)) keys.push('ya');
+    if (raw.includes('золот') || flat === 'зя' || flat.includes('gold') || flat === 'zya') keys.push('goldapple');
     if (flat.includes('лету') || flat.includes('лэту') || flat.includes('letu') || flat.includes('letoile') || flat.includes('letoil')) keys.push('letu');
     if (flat.includes('магнит') || flat.includes('magnit') || flat.includes('magnet')) keys.push('magnit');
+    return unique(keys);
+  }
+
+  function textPlatformKeys(value) {
+    const raw = lower(value);
+    const keys = [];
+    if (/(^|[^a-zа-я0-9])wb(?=$|[^a-zа-я0-9])|wildberries|(^|[^а-я0-9])вб(?=$|[^а-я0-9])/i.test(raw)) keys.push('wb');
+    if (/ozon|озон/.test(raw)) keys.push('ozon');
+    retailKeys(raw).forEach((key) => keys.push(key));
+    if (/продукт|новин|launch|ксюш/.test(raw)) keys.push('product');
     return unique(keys);
   }
 
@@ -70,6 +81,31 @@
     ].filter(Boolean).join(' ');
   }
 
+  function correctedGoldapplePlatform(task, sku) {
+    const direct = explicitKeys(task?.platform);
+    if (direct.length !== 1 || direct[0] !== 'goldapple') return '';
+
+    const titleKeys = textPlatformKeys([task?.title, task?.name, task?.subject, task?.articleKey].filter(Boolean).join(' '))
+      .filter((key) => key !== 'goldapple');
+    if (titleKeys.length === 1) return titleKeys[0];
+
+    const marker = lower([task?.entityLabel, task?.project, task?.topic].filter(Boolean).join(' '));
+    if (/^wb[\s-]/i.test(marker)) return 'wb';
+    if (/^oz[\s-]|^ozon[\s-]/i.test(marker)) return 'ozon';
+    if (/^mix[\s-]/i.test(marker)) return 'cross';
+
+    const contextKeys = textPlatformKeys([
+      task?.marketplace, task?.marketplaceKey, task?.network, task?.retailer, task?.channel, task?.market,
+      task?.entityLabel, task?.direction, task?.workstream, task?.queue, task?.project, task?.topic,
+      task?.nextAction, task?.reason,
+      sku?.platform, sku?.marketplace, sku?.marketplaceKey, sku?.name, sku?.articleKey
+    ].filter(Boolean).join(' '));
+    const nonGold = contextKeys.filter((key) => key !== 'goldapple');
+    if (nonGold.length === 1 && !contextKeys.includes('goldapple')) return nonGold[0];
+    if (nonGold.length > 1) return 'cross';
+    return '';
+  }
+
   function selectedScope() {
     const filters = (typeof state === 'object' && state && state.controlFilters) ? state.controlFilters : {};
     const role = lower(filters.peopleRole);
@@ -86,6 +122,8 @@
   }
 
   function patchedControlWorkstreamKey(task, sku) {
+    const correctedGold = correctedGoldapplePlatform(task, sku);
+    if (correctedGold) return correctedGold;
     const direct = explicitKeys(task?.platform);
     if (direct.length) return choose(direct);
     const retail = retailKeys(contextText(task, sku));
@@ -102,7 +140,7 @@
   }
 
   function loadDirectionCounts() {
-    const src = 'portal-control-direction-counts-hotfix.js?v=20260521scope2';
+    const src = 'portal-control-direction-counts-hotfix.js?v=20260529taskzya1';
     const base = src.split('?')[0];
     if (Array.from(document.scripts || []).some((script) => String(script.src || '').includes(base))) return;
     const script = document.createElement('script');

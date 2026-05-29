@@ -840,18 +840,26 @@ function inferTaskType(text = '') {
   return 'general';
 }
 
+function isGoldAppleMarketplaceText(raw = '', compact = '') {
+  const text = String(raw || '').toLowerCase();
+  const flat = String(compact || text.replace(/[\s._'`"\u2019-]+/g, '')).toLowerCase();
+  if (['goldapple', 'goldenapple', 'zya', '\u0437\u044f', '\u0437\u043e\u043b\u043e\u0442\u043e\u0435\u044f\u0431\u043b\u043e\u043a\u043e'].includes(flat)) return true;
+  if (/(^|[^a-z0-9\u0430-\u044f\u0451])(?:z\s*y\s*a|\u0437\s*\u044f)(?=$|[^a-z0-9\u0430-\u044f\u0451])/i.test(text)) return true;
+  return /\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*(\u044f\u0431\u043b\u043e\u043a|\u044f\u0431\u043b)|golden\s*apple|gold[\s_-]*apple|goldapple/i.test(text);
+}
+
 function detectMarketplaceNetworkKey(text = '') {
   const raw = String(text || '').toLowerCase();
   const compact = raw.replace(/[\s._'`"\u2019-]+/g, '');
   if (!raw) return '';
-  if (/\u0437\s*\u044f|\u0437\u044f|\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*(\u044f\u0431\u043b\u043e\u043a|\u044f\u0431\u043b)|golden\s*apple|gold[\s_-]*apple|goldapple|zya/.test(raw) || ['goldapple', 'goldenapple', 'zya', '\u0437\u044f', '\u0437\u043e\u043b\u043e\u0442\u043e\u0435\u044f\u0431\u043b\u043e\u043a\u043e'].includes(compact)) return 'goldapple';
+  if (isGoldAppleMarketplaceText(raw, compact)) return 'goldapple';
   if (/\u043b[\s'`\u2019.-]*[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c?|\u043b\u044d\u0442\u0443\u0430\u043b\u044c?|letual|letu|letoile|l[\s'`.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile', '\u043b\u0435\u0442\u0443\u0430\u043b\u044c', '\u043b\u0435\u0442\u0443\u0430\u043b', '\u043b\u044d\u0442\u0443\u0430\u043b\u044c', '\u043b\u044d\u0442\u0443\u0430\u043b'].includes(compact)) return 'letu';
   if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|magnet|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'magnet', 'magnetmarket', 'mm', '\u043c\u0430\u0433\u043d\u0438\u0442', '\u043c\u0430\u0433\u043d\u0438\u0442\u043c\u0430\u0440\u043a\u0435\u0442'].includes(compact)) return 'magnit';
   if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|yandex|(^|[^a-z0-9])(ya|ym)([^a-z0-9]|$)|(^|[^\u0430-\u044f\u04510-9])\u044f\u043c([^\u0430-\u044f\u04510-9]|$)/.test(raw)) return 'ya';
-  if (/\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*\u044f\u0431\u043b\u043e\u043a|golden\s*apple|gold[\s_-]*apple|goldapple|zya|\u0437\u044f/.test(raw) || ['goldapple', 'goldenapple', 'zya'].includes(compact)) return 'goldapple';
+  if (isGoldAppleMarketplaceText(raw, compact)) return 'goldapple';
   if (/\u043b['\u2019]?\s?[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c|letual|letu|letoile|l['\s.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile'].includes(compact)) return 'letu';
   if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'mm'].includes(compact)) return 'magnit';
-  if (/\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*\u044f\u0431\u043b\u043e\u043a|goldapple|gold apple|zya|\u0437\u044f/.test(raw)) return 'goldapple';
+  if (isGoldAppleMarketplaceText(raw, compact)) return 'goldapple';
   if (/\u043b['’]?\s?[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c|letual|letu/.test(raw)) return 'letu';
   if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|(^|\W)mm($|\W)/.test(raw)) return 'magnit';
   if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|\u044f\u043c|ym|yandex/.test(raw)) return 'ya';
@@ -859,6 +867,49 @@ function detectMarketplaceNetworkKey(text = '') {
   if (raw.includes("л'этуаль") || raw.includes('летуаль') || raw.includes('letual') || raw.includes('letu')) return 'letu';
   if (raw.includes('магнит маркет') || raw.includes('магнитмаркет') || raw.includes('магнит') || raw.includes('magnit') || raw.includes('mm')) return 'magnit';
   if (raw.includes('яндекс') || raw.includes('я.маркет') || raw.includes('я маркет') || raw.includes('ям') || raw.includes('ym') || raw.includes('yandex')) return 'ya';
+  return '';
+}
+
+function detectMarketplaceKeyList(text = '') {
+  const raw = String(text || '').toLowerCase();
+  const compact = raw.replace(/[\s._'`"\u2019-]+/g, '');
+  const keys = [];
+  const push = (key) => {
+    if (key && !keys.includes(key)) keys.push(key);
+  };
+  if (/(^|[^a-zа-я0-9])wb(?=$|[^a-zа-я0-9])|wildberries|(^|[^а-я0-9])вб(?=$|[^а-я0-9])/i.test(raw)) push('wb');
+  if (/ozon|озон/.test(raw)) push('ozon');
+  if (/яндекс|я[.\s-]?маркет|yandex|(^|[^a-zа-я0-9])(ya|ym|ям)(?=$|[^a-zа-я0-9])/i.test(raw)) push('ya');
+  if (isGoldAppleMarketplaceText(raw, compact)) push('goldapple');
+  if (/л[\s'`\u2019.-]*[еэ]туал|летуаль?|лэтуаль?|letual|letu|letoile|l[\s'`.-]*etoile/.test(raw)) push('letu');
+  if (/магнит|magnit|magnet|(^|\W)mm($|\W)/.test(raw)) push('magnit');
+  if (/продукт|новин|launch|ксюш/.test(raw)) push('product');
+  return keys;
+}
+
+function detectCorrectedGoldappleTaskPlatform(task, sku = null) {
+  const platform = String(task?.platform || '').trim().toLowerCase();
+  const compactPlatform = platform.replace(/[\s._'`"\u2019-]+/g, '');
+  if (!['goldapple', 'goldenapple', 'zya', 'ga', 'зя', 'золотоеяблоко'].includes(compactPlatform)) return '';
+
+  const titleKeys = detectMarketplaceKeyList([task?.title, task?.name, task?.subject, task?.articleKey].filter(Boolean).join(' '))
+    .filter((key) => key !== 'goldapple');
+  if (titleKeys.length === 1) return titleKeys[0];
+
+  const marker = String([task?.entityLabel, task?.project, task?.topic].filter(Boolean).join(' ')).trim().toLowerCase();
+  if (/^wb[\s-]/i.test(marker)) return 'wb';
+  if (/^oz[\s-]|^ozon[\s-]/i.test(marker)) return 'ozon';
+  if (/^mix[\s-]/i.test(marker)) return 'cross';
+
+  const contextKeys = detectMarketplaceKeyList([
+    task?.marketplace, task?.marketplaceKey, task?.network, task?.retailer, task?.channel, task?.market,
+    task?.entityLabel, task?.direction, task?.workstream, task?.queue, task?.project, task?.topic,
+    task?.nextAction, task?.reason,
+    sku?.platform, sku?.marketplace, sku?.marketplaceKey, sku?.name, sku?.articleKey
+  ].filter(Boolean).join(' '));
+  const nonGold = contextKeys.filter((key) => key !== 'goldapple');
+  if (nonGold.length === 1 && !contextKeys.includes('goldapple')) return nonGold[0];
+  if (nonGold.length > 1) return 'cross';
   return '';
 }
 
@@ -941,6 +992,9 @@ function controlWorkstreamMeta(key) {
 }
 
 function controlWorkstreamKey(task, sku = null) {
+  const correctedGoldapplePlatform = detectCorrectedGoldappleTaskPlatform(task, sku);
+  if (correctedGoldapplePlatform) return correctedGoldapplePlatform;
+
   const text = taskMarketplaceContext(task, sku);
   const specificMarketplace = detectMarketplaceNetworkKey(text);
   if (specificMarketplace === 'goldapple' || specificMarketplace === 'letu' || specificMarketplace === 'magnit' || specificMarketplace === 'ya') return specificMarketplace;
@@ -960,6 +1014,9 @@ function controlWorkstreamKey(task, sku = null) {
 }
 
 function detectTaskPlatform(task, sku) {
+  const correctedGoldapplePlatform = detectCorrectedGoldappleTaskPlatform(task, sku);
+  if (correctedGoldapplePlatform) return correctedGoldapplePlatform;
+
   const text = taskMarketplaceContext(task, sku).toLowerCase();
   const marketplace = detectMarketplaceNetworkKey(text);
   if (marketplace) return marketplace;

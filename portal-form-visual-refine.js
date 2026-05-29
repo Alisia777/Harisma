@@ -37,15 +37,22 @@
   const task = (id) => typeof getTask === 'function' ? getTask(id) : null;
   const history = (id) => typeof getTaskHistory === 'function' ? getTaskHistory(id) : [];
   const owners = () => typeof ownerOptions === 'function' ? ownerOptions() : [];
+  const isGoldAppleSignal = (raw = '', compact = '') => {
+    const text = String(raw || '').toLowerCase();
+    const flat = String(compact || text.replace(/[\s._'`"\u2019-]+/g, '')).toLowerCase();
+    if (['goldapple', 'goldenapple', 'zya', '\u0437\u044f', '\u0437\u043e\u043b\u043e\u0442\u043e\u0435\u044f\u0431\u043b\u043e\u043a\u043e'].includes(flat)) return true;
+    if (/(^|[^a-z0-9\u0430-\u044f\u0451])(?:z\s*y\s*a|\u0437\s*\u044f)(?=$|[^a-z0-9\u0430-\u044f\u0451])/i.test(text)) return true;
+    return /\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*(\u044f\u0431\u043b\u043e\u043a|\u044f\u0431\u043b)|golden\s*apple|gold[\s_-]*apple|goldapple/i.test(text);
+  };
   const inferMarketplaceKey = (value) => {
     const raw = String(value || '').trim().toLowerCase();
     const compact = raw.replace(/[\s._'`"\u2019-]+/g, '');
     if (!raw) return '';
-    if (/\u0437\s*\u044f|\u0437\u044f|\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*(\u044f\u0431\u043b\u043e\u043a|\u044f\u0431\u043b)|golden\s*apple|gold[\s_-]*apple|goldapple|zya/.test(raw) || ['goldapple', 'goldenapple', 'zya', '\u0437\u044f', '\u0437\u043e\u043b\u043e\u0442\u043e\u0435\u044f\u0431\u043b\u043e\u043a\u043e'].includes(compact)) return 'goldapple';
+    if (isGoldAppleSignal(raw, compact)) return 'goldapple';
     if (/\u043b[\s'`\u2019.-]*[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c?|\u043b\u044d\u0442\u0443\u0430\u043b\u044c?|letual|letu|letoile|l[\s'`.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile', '\u043b\u0435\u0442\u0443\u0430\u043b\u044c', '\u043b\u0435\u0442\u0443\u0430\u043b', '\u043b\u044d\u0442\u0443\u0430\u043b\u044c', '\u043b\u044d\u0442\u0443\u0430\u043b'].includes(compact)) return 'letu';
     if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|magnet|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'magnet', 'magnetmarket', 'mm', '\u043c\u0430\u0433\u043d\u0438\u0442', '\u043c\u0430\u0433\u043d\u0438\u0442\u043c\u0430\u0440\u043a\u0435\u0442'].includes(compact)) return 'magnit';
     if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|yandex|(^|[^a-z0-9])(ya|ym)([^a-z0-9]|$)|(^|[^\u0430-\u044f\u04510-9])\u044f\u043c([^\u0430-\u044f\u04510-9]|$)/.test(raw)) return 'ya';
-    if (/\u0437\u043e\u043b\u043e\u0442[\u0430-\u044f\u0451\s-]*\u044f\u0431\u043b\u043e\u043a|golden\s*apple|gold[\s_-]*apple|goldapple|zya|\u0437\u044f/.test(raw) || ['goldapple', 'goldenapple', 'zya'].includes(compact)) return 'goldapple';
+    if (isGoldAppleSignal(raw, compact)) return 'goldapple';
     if (/\u043b['\u2019]?\s?[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b\u044c|letual|letu|letoile|l['\s.-]*etoile/.test(raw) || ['letu', 'letual', 'letoile'].includes(compact)) return 'letu';
     if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|(^|\W)mm($|\W)/.test(raw) || ['magnit', 'magnitmarket', 'mm'].includes(compact)) return 'magnit';
     if (/\u044f\u043d\u0434\u0435\u043a\u0441|\u044f[.\s-]?\u043c\u0430\u0440\u043a\u0435\u0442|\u044f\u043c|ym|yandex/.test(raw)) return 'ya';
@@ -71,12 +78,10 @@
   function taskCreatedLabel(taskItem, compact = false) {
     const raw = taskItem?.createdAt || taskItem?.created_at || '';
     if (!raw) return compact ? 'без даты' : '—';
+    if (!compact && typeof fmt !== 'undefined' && typeof fmt.date === 'function') return fmt.date(raw);
     const date = new Date(raw);
     if (Number.isNaN(date.getTime())) return String(raw).slice(0, 10) || (compact ? 'без даты' : '—');
-    const options = compact
-      ? { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }
-      : { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-    return date.toLocaleString('ru-RU', options).replace(',', '');
+    return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
   }
 
   function taskProductStatusLabel(taskItem) {
@@ -359,23 +364,24 @@
         <div class="section-subhead">
           <div>
             <h3>Редактировать задачу</h3>
+            <p class="small muted">Из карточки можно менять owner, сроки, следующий шаг, приоритет и статус.</p>
           </div>
           ${taskItem.articleKey ? taskEntityLine(taskItem, getSku(taskItem.articleKey)) : badge('Общая задача', 'info')}
         </div>
         <datalist id="taskOwnerList">${ownerItems.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
         <form id="taskEditForm" class="form-stack">
           <div class="ui-group">
-            <div class="ui-group-head"><strong>Основное</strong></div>
+            <div class="ui-group-head"><strong>Основное</strong><span>Что это за задача, кто её ведёт и какой следующий шаг ждём.</span></div>
             <label class="ui-field"><span class="ui-label">Название задачи</span><input name="title" value="${escapeHtml(taskItem.title || '')}" required></label>
             <div class="ui-grid-3">
               <label class="ui-field"><span class="ui-label">Owner</span><input name="owner" list="taskOwnerList" value="${escapeHtml(taskItem.owner || '')}" placeholder="Кто ведёт"></label>
               <label class="ui-field"><span class="ui-label">Соисполнитель</span><input name="coOwner" list="taskOwnerList" value="${escapeHtml(taskItem.coOwner || '')}" placeholder="Второй менеджер"></label>
               <label class="ui-field"><span class="ui-label">Срок</span><input name="due" type="date" value="${escapeHtml(taskItem.due || '')}"></label>
             </div>
-            <label class="ui-field"><span class="ui-label">Действие</span><textarea name="nextAction" rows="3" placeholder="Что делаем дальше">${escapeHtml(taskItem.nextAction || '')}</textarea></label>
+            <label class="ui-field"><span class="ui-label">Следующий шаг</span><textarea name="nextAction" rows="3" placeholder="Что делаем дальше">${escapeHtml(taskItem.nextAction || '')}</textarea></label>
           </div>
           <div class="ui-group">
-            <div class="ui-group-head"><strong>Контур и контекст</strong></div>
+            <div class="ui-group-head"><strong>Контур и контекст</strong><span>Отдельно выбираем площадку, статус и приоритет, чтобы задачи не смешивались.</span></div>
             <label class="ui-field"><span class="ui-label">Контур</span><select name="platform">
               <option value="cross" ${currentPlatform === 'cross' ? 'selected' : ''}>Общий контур</option>
               <option value="wb" ${currentPlatform === 'wb' ? 'selected' : ''}>РОП WB</option>
@@ -413,7 +419,7 @@
         </div>
         <div class="muted small">${fmt.date(item.createdAt)}</div>
         <p>${escapeHtml(item.text || '—')}</p>
-      </div>`).join('') : `<div class="control-simple-empty">Пока нет записей.</div>`;
+      </div>`).join('') : `<div class="comment-item"><div class="head"><strong>Портал</strong>${badge('Создана', 'info')}</div><div class="muted small">${fmt.date(taskItem.createdAt)}</div><p>История пока пустая. Первый апдейт появится здесь.</p></div>`;
     return `
       <div class="card">
         <div class="section-subhead">
@@ -425,7 +431,7 @@
         <div class="ui-stack">
           <div class="compact-history">${rows}</div>
           <div class="ui-group">
-            <div class="ui-group-head"><strong>Новый апдейт</strong></div>
+            <div class="ui-group-head"><strong>Новый апдейт</strong><span>Коротко зафиксируй факт, блокер или следующий шаг по задаче.</span></div>
             <form id="taskCommentForm" class="form-stack">
               <label class="ui-field"><span class="ui-label">Комментарий</span><textarea name="text" rows="3" placeholder="Например: обновили карточку, ждём макет, согласовали цену" required></textarea></label>
               <button class="btn" type="submit">Сохранить апдейт</button>
@@ -444,13 +450,14 @@
         <div class="section-subhead">
           <div>
             <h3>Поставить новую задачу</h3>
+            <p class="small muted">Функционал не сокращали: все поля сохранены, просто теперь они на виду и сгруппированы по смыслу.</p>
           </div>
           ${badge(`${fmt.int(approvalCount)} на согласовании`, approvalCount ? 'warn' : 'ok')}
         </div>
         <datalist id="generalTaskOwnerList">${ownerItems.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
         <form id="generalTaskForm" class="form-stack">
           <div class="ui-group">
-            <div class="ui-group-head"><strong>Основное</strong></div>
+            <div class="ui-group-head"><strong>Основное</strong><span>Что делаем, кто отвечает, в каком контуре живёт задача и какой первый шаг нужен сразу.</span></div>
             <label class="ui-field"><span class="ui-label">Название задачи</span><input name="title" placeholder="Что нужно сделать" required></label>
             <div class="ui-grid-3">
               <label class="ui-field"><span class="ui-label">Owner</span><input name="owner" list="generalTaskOwnerList" placeholder="Кто ведёт задачу"></label>
@@ -462,7 +469,7 @@
             <label class="ui-field"><span class="ui-label">Артикулы для массовой постановки</span><textarea name="articleKeys" rows="4" placeholder="По одному SKU на строку, можно вставить столбец из Excel&#10;Пример:&#10;curly_method_300ml&#10;retinait_krem_05_50ml"></textarea><span class="ui-hint">Если поле заполнено, будет создана отдельная задача на каждый SKU.</span></label>
           </div>
           <div class="ui-group">
-            <div class="ui-group-head"><strong>Контекст и классификация</strong></div>
+            <div class="ui-group-head"><strong>Контекст и классификация</strong><span>Тема, тип, приоритет и пояснение по задаче остаются в карточке и видны сразу.</span></div>
             <div class="ui-grid-3">
               <label class="ui-field"><span class="ui-label">Тема / проект</span><input name="entityLabel" placeholder="Проект / тема / блок" value="${escapeHtml(entity)}"></label>
               <label class="ui-field"><span class="ui-label">Приоритет</span><select name="priority">${Object.entries(PRIORITY_META).map(([value, item]) => `<option value="${value}" ${value === 'high' ? 'selected' : ''}>${escapeHtml(item.label)}</option>`).join('')}</select></label>
@@ -966,11 +973,11 @@
   const CONTROL_SIMPLE_WORKSPACE_ORDER = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'cross'];
   const CONTROL_SIMPLE_DIRECTION_RENDER_ORDER = ['all', ...CONTROL_SIMPLE_WORKSPACE_ORDER];
   const CONTROL_SIMPLE_QUEUES = [
-    ['new', 'Новые задачи', ''],
-    ['signals', 'Автосигналы', ''],
-    ['common', 'Задачи общие', ''],
-    ['sent', 'Отправленные', ''],
-    ['confirmed', 'Подтвержденные', '']
+    ['new', 'Новые задачи', 'Что взять в работу сейчас'],
+    ['signals', 'Автосигналы', 'Портал нашёл риск сам'],
+    ['common', 'Задачи общие', 'Без привязки к одной карточке'],
+    ['sent', 'Отправленные', 'Ждут РОПа, отдела или финала'],
+    ['confirmed', 'Подтвержденные', 'Уже закрыто и зафиксировано']
   ];
   const CONTROL_SIMPLE_ACTIVE = new Set(['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision']);
   const CONTROL_SIMPLE_SENT = new Set(['waiting_team', 'waiting_rop', 'waiting_decision']);
@@ -1070,16 +1077,16 @@
   function controlSimpleDirectionKey(taskItem) {
     const sku = controlSimpleSku(taskItem);
     const context = controlSimpleTaskContext(taskItem, sku);
-    const inferred = inferMarketplaceKey(context);
-    if (inferred) return inferred;
     try {
       if (typeof controlWorkstreamKey === 'function') {
         const key = controlSimpleNormalizeDirection(controlWorkstreamKey(taskItem, sku));
         if (key !== 'all') return key;
       }
     } catch {}
+    const inferred = inferMarketplaceKey(context);
+    if (inferred) return inferred;
     const raw = context.toLowerCase();
-    if (/\u0437\s*\u044f|\u0437\u044f|\u0437\u043e\u043b\u043e\u0442|gold|zya/.test(raw)) return 'goldapple';
+    if (isGoldAppleSignal(raw)) return 'goldapple';
     if (/\u043b[\s'`\u2019.-]*[\u0435\u044d]\u0442\u0443\u0430\u043b|\u043b\u0435\u0442\u0443\u0430\u043b|letu|letoile|l[\s'`.-]*etoile/.test(raw)) return 'letu';
     if (/\u043c\u0430\u0433\u043d\u0438\u0442|magnit|magnet/.test(raw)) return 'magnit';
     if (raw.includes('ozon') || raw.includes('озон')) return 'ozon';
@@ -1261,12 +1268,11 @@
       <div class="control-simple-task ${tone ? `is-${tone}` : ''}" data-platform="${escapeHtml(directionKey)}">
         <button class="control-simple-task-main" type="button" data-control-simple-open-task="${escapeHtml(id)}">
           <strong>${escapeHtml(taskItem?.title || taskItem?.entityLabel || taskItem?.articleKey || 'Задача')}</strong>
-          <span>${escapeHtml(taskPeopleLine(taskItem))} · срок ${escapeHtml(taskItem?.due || 'без срока')}</span>
+          <span>${escapeHtml(taskPeopleLine(taskItem))} · срок ${escapeHtml(taskItem?.due || 'без срока')} · пост. ${escapeHtml(taskCreatedLabel(taskItem, true))}</span>
           ${next ? `<em>${escapeHtml(next.slice(0, 112))}${next.length > 112 ? '...' : ''}</em>` : ''}
         </button>
         <div class="control-simple-task-foot">
           <span>${escapeHtml(direction.label)}</span>
-          <span class="control-simple-created-chip">пришла ${escapeHtml(taskCreatedLabel(taskItem, true))}</span>
           ${productStatus ? `<span>${escapeHtml(productStatus)}</span>` : ''}
           <span>${escapeHtml(controlSimpleStatusText(taskItem))}</span>
           <span>${escapeHtml(controlSimplePriorityText(taskItem))}</span>
@@ -1280,31 +1286,18 @@
     const tone = key === 'sent' ? 'warn' : key === 'signals' ? 'info' : key === 'confirmed' ? 'ok' : '';
     return `
       <section class="control-simple-queue" data-control-simple-queue="${escapeHtml(key)}">
-        <div class="control-simple-queue-head"><div>${hint ? `<span>${escapeHtml(hint)}</span>` : ''}<strong>${escapeHtml(title)}</strong></div>${badge(fmt.int(tasks.length), tone)}</div>
+        <div class="control-simple-queue-head"><div><span>${escapeHtml(hint)}</span><strong>${escapeHtml(title)}</strong></div>${badge(fmt.int(tasks.length), tone)}</div>
         <div class="control-simple-list">
           ${visible.length ? visible.map(controlSimpleTaskCard).join('') : '<div class="control-simple-empty">Пусто. Здесь не горит.</div>'}
         </div>
       </section>`;
   }
 
-  function controlSimpleVisibleQueues(data) {
-    const nonEmpty = CONTROL_SIMPLE_QUEUES.filter(([key]) => (data.buckets[key] || []).length);
-    return nonEmpty.length ? nonEmpty : [CONTROL_SIMPLE_QUEUES[0]];
-  }
-
-  function controlSimpleSummary(data) {
-    const items = CONTROL_SIMPLE_QUEUES
-      .map(([key, title]) => ({ key, title, count: (data.buckets[key] || []).length }))
-      .filter((item) => item.count > 0);
-    if (!items.length) return '';
-    return `<div class="control-simple-summary">${items.map((item) => `<span><b>${fmt.int(item.count)}</b> ${escapeHtml(item.title.toLowerCase())}</span>`).join('')}</div>`;
-  }
-
   function controlSimpleCreateForm(selected) {
     const direction = selected && selected !== 'all' && CONTROL_SIMPLE_META[selected] ? selected : 'cross';
     return `
       <details class="control-simple-create" ${state?.controlFilters?.taskSimpleCreateOpen ? 'open' : ''}>
-        <summary><span><strong>Поставить задачу</strong></span></summary>
+        <summary><span><strong>Поставить задачу</strong><em>что сделать, кому, срок</em></span>${badge('короткая форма', 'info')}</summary>
         <form id="controlSimpleCreateForm" class="control-simple-form">
           <input name="title" placeholder="Что нужно сделать" required>
           <select name="platform">${CONTROL_SIMPLE_DIRECTIONS.filter(([key]) => key !== 'all').map(([key, label]) => `<option value="${escapeHtml(key)}" ${direction === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select>
@@ -1364,14 +1357,21 @@
     if (!root) return;
     state.controlFilters = state.controlFilters || {};
     if (state.controlFilters.taskSimpleFullMode) {
-      state.controlFilters.taskSimpleFullMode = false;
+      if (baseControl) baseControl();
+      root.querySelector('#controlSourceFilter')?.remove();
+      root.insertAdjacentHTML('afterbegin', `<div class="control-simple-return"><button class="btn primary" type="button" data-control-simple-return>Вернуться к рабочему виду</button>${badge('все поля', 'warn')}</div>`);
+      root.querySelector('[data-control-simple-return]')?.addEventListener('click', () => {
+        state.controlFilters.taskSimpleFullMode = false;
+        controlRefined();
+      });
+      return;
     }
 
     const data = controlSimpleModel();
     const boardHtml = data.selected === 'all'
       ? controlSimpleWorkstreamBoard(data)
-      : `<div class="control-simple-board">${controlSimpleVisibleQueues(data).map(([key, title, hint]) => controlSimpleQueuePanel(key, title, hint, data.buckets[key] || [])).join('')}</div>`;
-    root.dataset.controlSimple = '20260528taskfeedback5';
+      : `<div class="control-simple-board">${CONTROL_SIMPLE_QUEUES.map(([key, title, hint]) => controlSimpleQueuePanel(key, title, hint, data.buckets[key] || [])).join('')}</div>`;
+    root.dataset.controlSimple = '20260516taskworkspace3';
     root.innerHTML = `
       <div class="section-title control-simple-title">
         <div><h2>Задачи</h2><div class="control-simple-title-copy">${escapeHtml(CONTROL_SIMPLE_TITLE)}</div></div>
@@ -1381,11 +1381,14 @@
         ${controlSimpleWorkspacePanel(data)}
         <div class="control-simple-topbar">
           <input id="controlSimpleSearch" value="${escapeHtml(state.controlFilters.search || '')}" placeholder="Поиск по задаче, SKU, owner">
-          <div class="badge-stack"><button class="btn primary" type="button" data-control-simple-create-toggle>Поставить задачу</button></div>
+          <div class="badge-stack"><button class="btn primary" type="button" data-control-simple-create-toggle>Поставить задачу</button><button class="btn ghost" type="button" data-control-simple-full>Все поля</button></div>
         </div>
-        ${controlSimpleSummary(data)}
+        <div class="control-simple-summary">
+          <span><b>${fmt.int(data.buckets.new.length)}</b> новые</span><span><b>${fmt.int(data.buckets.signals.length)}</b> автосигналы</span><span><b>${fmt.int(data.buckets.common.length)}</b> общие</span><span><b>${fmt.int(data.buckets.sent.length)}</b> отправленные</span><span><b>${fmt.int(data.buckets.confirmed.length)}</b> подтвержденные</span>
+        </div>
         ${controlSimpleCreateForm(data.selected)}
         ${boardHtml}
+        <div class="control-simple-legend"><strong>Статусы:</strong><span>Новые = ещё не сданы</span><span>Автосигналы = нашёл портал</span><span>Общие = без SKU или общий контур</span><span>Отправленные = ждут согласования</span><span>Подтвержденные = done</span></div>
       </div>`;
 
     root.querySelector('#controlSimpleSearch')?.addEventListener('input', (event) => {
@@ -1405,6 +1408,10 @@
     }));
     root.querySelector('[data-control-simple-create-toggle]')?.addEventListener('click', () => {
       state.controlFilters.taskSimpleCreateOpen = !state.controlFilters.taskSimpleCreateOpen;
+      controlRefined();
+    });
+    root.querySelector('[data-control-simple-full]')?.addEventListener('click', () => {
+      state.controlFilters.taskSimpleFullMode = true;
       controlRefined();
     });
     root.querySelectorAll('[data-control-simple-expand-platform]').forEach((button) => button.addEventListener('click', () => {

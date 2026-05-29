@@ -1,4 +1,5 @@
 function renderSkuModal(articleKey) {
+  const previousActiveSku = state.activeSku || '';
   const sku = getSku(articleKey);
   if (!sku) return;
   const resolvedArticleKey = skuPrimaryKey(sku, articleKey);
@@ -6,6 +7,12 @@ function renderSkuModal(articleKey) {
 
   const body = document.getElementById('skuModalBody');
   const modal = document.getElementById('skuModal');
+  const previousModalScroll = modal?.classList.contains('open') && previousActiveSku === resolvedArticleKey
+    ? {
+        modalTop: modal.scrollTop || 0,
+        bodyTop: body?.scrollTop || 0
+      }
+    : null;
   const comments = getSkuComments(resolvedArticleKey);
   const decisions = getSkuDecisions(resolvedArticleKey);
   const tasks = getSkuControlTasks(resolvedArticleKey);
@@ -36,13 +43,6 @@ function renderSkuModal(articleKey) {
   const lifecycleReason = currentLifecycle.note || currentLifecycle.reason || currentLifecycle.description || '';
   const ownerSelectOptions = [...new Set([currentOwner, ...owners].filter(Boolean))]
     .sort((a, b) => a.localeCompare(b, 'ru'));
-  const ownerRoleOptions = ['Owner SKU', 'price owner', 'WB owner', 'Ozon owner', 'Я.Маркет owner', 'Supply owner', 'Контент owner', 'Трафик owner', 'Репрайсер owner'];
-  const productStatusLabels = new Set(['Актуально', 'На вывод', 'Новинка', 'Под вопросом']);
-  const savedOwnerRole = String(currentOwnerOverride.ownerRole || '').trim();
-  const currentOwnerRole = savedOwnerRole && !productStatusLabels.has(savedOwnerRole)
-    ? savedOwnerRole
-    : (sku?.owner?.name ? 'Owner SKU' : '');
-  const ownerRoleSelectOptions = [...new Set([currentOwnerRole, ...ownerRoleOptions].filter(Boolean))];
   const completion = currentCompletionSnapshot(sku);
   const currentPlanUnits = firstFiniteValue(sku?.planFact?.planApr26Units);
   const currentFactUnits = firstFiniteValue(
@@ -144,9 +144,7 @@ function renderSkuModal(articleKey) {
         <datalist id="skuOwnerList">${ownerSelectOptions.map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
         <form id="ownerForm" class="form-grid compact">
           <input name="ownerName" list="skuOwnerList" autocomplete="off" spellcheck="false" placeholder="Кто owner" value="${escapeHtml(currentOwner || '')}">
-          <select name="ownerRole">
-            ${ownerRoleSelectOptions.map((role) => `<option value="${escapeHtml(role)}" ${role === currentOwnerRole ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}
-          </select>
+          <input name="ownerRole" autocomplete="off" spellcheck="false" placeholder="Роль / зона" value="${escapeHtml(currentOwnerOverride.ownerRole || (sku?.owner?.name ? (sku?.owner?.registryStatus || 'Owner SKU') : (sku?.owner?.registryStatus || '')))}">
           <textarea name="note" rows="3" placeholder="Что важно по закреплению / передаче SKU">${escapeHtml(currentOwnerOverride.note || '')}</textarea>
           <div class="quick-actions">
             <button class="btn" type="submit">Сохранить owner</button>
@@ -239,6 +237,12 @@ function renderSkuModal(articleKey) {
   body.innerHTML = safeUiMarkup(modalMarkup);
 
   modal.classList.add('open');
+  if (previousModalScroll) {
+    window.requestAnimationFrame(() => {
+      modal.scrollTop = previousModalScroll.modalTop || 0;
+      if (body) body.scrollTop = previousModalScroll.bodyTop || 0;
+    });
+  }
 
   body.querySelector('#manualTaskForm').addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -2958,135 +2962,6 @@ function adsFunnelRate(numerator, denominator) {
   return top / bottom;
 }
 
-function adsFunnelOverlayRows(platformKey = 'ozon') {
-  const payload = state.smartPriceOverlay || {};
-  const bucket = payload?.platforms?.[platformKey] || payload?.[platformKey];
-  if (Array.isArray(bucket?.rows)) return bucket.rows;
-  if (Array.isArray(bucket)) return bucket;
-  return [];
-}
-
-function adsFunnelSkuByArticleKey() {
-  const map = new Map();
-  (state.skus || []).forEach((sku) => {
-    const key = String(sku?.articleKey || sku?.article || '').trim().toLowerCase();
-    if (key) map.set(key, sku);
-  });
-  return map;
-}
-
-function adsFunnelOzonPlanPct(dateKey = '') {
-  const monthKey = String(dateKey || '').slice(0, 7);
-  const daily = (state.iuDrrSummary?.daily || []).find((row) => String(row?.date || '').slice(0, 10) === dateKey) || {};
-  const month = (state.iuDrrSummary?.months || []).find((row) => {
-    const key = String(row?.monthKey || row?.month || row?.date || '').slice(0, 7);
-    return key && key === monthKey;
-  }) || {};
-  const candidates = [
-    daily.planPctOzon,
-    month.planPctOzon,
-    state.iuDrrSummary?.ozonPlanPctDefault,
-    0.25
-  ];
-  const pct = candidates.map(Number).find((value) => Number.isFinite(value) && value > 0);
-  return pct || 0.25;
-}
-
-function adsFunnelPlatformPointMap(rawPlatforms = [], platformKey = 'ozon') {
-  const targetKey = adsFunnelNormalizePlatformKey(platformKey);
-  const platform = (Array.isArray(rawPlatforms) ? rawPlatforms : Object.values(rawPlatforms || {}))
-    .find((item) => adsFunnelNormalizePlatformKey(item?.platformKey || item?.platform || item?.key || item?.id || item?.label) === targetKey);
-  const map = new Map();
-  (Array.isArray(platform?.series) ? platform.series : []).forEach((point) => {
-    const date = String(point?.date || point?.day || point?.label || '').slice(0, 10);
-    if (!date) return;
-    map.set(date, {
-      views: numberOrZero(point?.views),
-      clicks: numberOrZero(point?.clicks),
-      spend: numberOrZero(point?.spend),
-      orders: numberOrZero(point?.orders),
-      revenue: numberOrZero(point?.revenue)
-    });
-  });
-  return map;
-}
-
-function adsFunnelModeledOzonRows(existingItems = [], rawPlatforms = []) {
-  const existingKeys = new Set(
-    existingItems
-      .filter((item) => adsFunnelNormalizePlatformKey(item?.platformKey || item?.platform || item?.channel || item?.market) === 'ozon')
-      .map((item) => {
-        const date = String(item?.date || item?.day || item?.label || '').slice(0, 10);
-        const articleKey = String(item?.articleKey || item?.offer_id || item?.offerId || item?.article || item?.sku || '').trim().toLowerCase();
-        return `${date}::${articleKey}`;
-      })
-      .filter((key) => !key.endsWith('::'))
-  );
-  const platformPointMap = adsFunnelPlatformPointMap(rawPlatforms, 'ozon');
-  const skuMap = adsFunnelSkuByArticleKey();
-  const rows = [];
-  adsFunnelOverlayRows('ozon').forEach((sourceRow, rowIndex) => {
-    const articleKey = String(sourceRow?.articleKey || sourceRow?.article || '').trim();
-    if (!articleKey) return;
-    const sku = skuMap.get(articleKey.toLowerCase()) || {};
-    const owner = sourceRow?.owner || sku?.ownersByPlatform?.ozon || sku?.owner?.byPlatform?.ozon || sku?.owner?.name || '';
-    const dailyRows = Array.isArray(sourceRow?.daily) ? sourceRow.daily : [];
-    dailyRows.forEach((point, pointIndex) => {
-      const date = String(point?.date || point?.day || point?.label || '').slice(0, 10);
-      if (!date) return;
-      const key = `${date}::${articleKey.toLowerCase()}`;
-      if (existingKeys.has(key)) return;
-      const revenue = numberOrZero(point?.revenue);
-      const orders = numberOrZero(point?.ordersUnits ?? point?.deliveredUnits ?? point?.units);
-      if (revenue <= 0 && orders <= 0) return;
-      const planPct = adsFunnelOzonPlanPct(date);
-      const weight = revenue > 0 ? revenue : (orders > 0 ? orders : 1);
-      rows.push({
-        date,
-        platformKey: 'ozon',
-        articleKey,
-        article: sourceRow?.article || articleKey,
-        offerId: articleKey,
-        name: sourceRow?.name || sku?.name || sourceRow?.article || articleKey,
-        owner,
-        views: 0,
-        clicks: 0,
-        spend: revenue * planPct,
-        orders,
-        revenue,
-        channel: 'Ozon modeled ads',
-        sourceMode: 'modeled_from_ozon_marketplace_revenue',
-        modelRate: planPct,
-        modelWeight: weight,
-        rowKey: `ozon-modeled-${rowIndex}-${pointIndex}`
-      });
-    });
-  });
-  const rowsByDate = new Map();
-  rows.forEach((row) => {
-    const dateRows = rowsByDate.get(row.date) || [];
-    dateRows.push(row);
-    rowsByDate.set(row.date, dateRows);
-  });
-  rowsByDate.forEach((dateRows, date) => {
-    const point = platformPointMap.get(date);
-    if (!point || (point.views <= 0 && point.clicks <= 0)) return;
-    const totalWeight = dateRows.reduce((sum, row) => sum + numberOrZero(row.modelWeight), 0);
-    dateRows.forEach((row) => {
-      const share = totalWeight > 0 ? numberOrZero(row.modelWeight) / totalWeight : 1 / Math.max(1, dateRows.length);
-      row.views = point.views > 0 ? point.views * share : 0;
-      row.clicks = point.clicks > 0 ? point.clicks * share : 0;
-      row.sourceMode = 'modeled_from_ozon_marketplace_revenue_with_platform_reach';
-      row.platformViewsClicksModeled = true;
-      delete row.modelWeight;
-    });
-  });
-  rows.forEach((row) => {
-    delete row.modelWeight;
-  });
-  return rows;
-}
-
 function adsFunnelLatestDate(items = [], fallback = '') {
   const dates = items
     .map((item) => String(item?.date || item?.day || item?.label || '').slice(0, 10))
@@ -3100,7 +2975,6 @@ function normalizeAdsSummaryPayload(payload = {}) {
     ? payload.platforms
     : Object.values(payload.platforms || {});
   const rawItems = Array.isArray(payload.itemSeries) ? payload.itemSeries : [];
-  const modeledOzonRows = adsFunnelModeledOzonRows(rawItems, rawPlatforms);
   const platforms = rawPlatforms.map((platform) => {
     const key = adsFunnelNormalizePlatformKey(platform?.platformKey || platform?.platform || platform?.key || platform?.id || platform?.label);
     const series = Array.isArray(platform?.series)
@@ -3125,7 +2999,7 @@ function normalizeAdsSummaryPayload(payload = {}) {
       series
     };
   });
-  const itemSeries = [...rawItems, ...modeledOzonRows].map((item) => {
+  const itemSeries = rawItems.map((item) => {
     const dateKey = item?.date || item?.day || item?.label || '';
     const platformKey = adsFunnelNormalizePlatformKey(item?.platformKey || item?.platform || item?.channel || item?.market);
     return {
@@ -3143,17 +3017,13 @@ function normalizeAdsSummaryPayload(payload = {}) {
       revenue: numberOrZero(item?.revenue)
     };
   });
-  const noteParts = [payload.note || ''];
-  if (modeledOzonRows.length) {
-    noteParts.push('Ozon восстановлен расчетно из Ozon-продаж по SKU: расход = оборот Ozon × плановый ДРР Ozon.');
-  }
   return {
     generatedAt: payload.generatedAt || '',
     asOfDate: adsFunnelLatestDate(itemSeries, payload.asOfDate || ''),
-    note: noteParts.filter(Boolean).join(' '),
+    note: payload.note || '',
     platforms,
     itemSeries,
-    modeledOzonRows: modeledOzonRows.length
+    modeledOzonRows: 0
   };
 }
 
@@ -3161,6 +3031,7 @@ function getAdsFunnelFilters() {
   state.adsFunnelFilters = state.adsFunnelFilters || {};
   state.adsFunnelFilters.search = state.adsFunnelFilters.search || '';
   state.adsFunnelFilters.platform = adsFunnelNormalizePlatformKey(state.adsFunnelFilters.platform || 'all');
+  if (!['wb', 'ozon'].includes(state.adsFunnelFilters.platform)) state.adsFunnelFilters.platform = 'wb';
   state.adsFunnelFilters.horizon = String(state.adsFunnelFilters.horizon || '28');
   state.adsFunnelFilters.sort = state.adsFunnelFilters.sort || 'spend';
   state.adsFunnelFilters.sortDir = state.adsFunnelFilters.sortDir === 'asc' ? 'asc' : 'desc';
@@ -3173,6 +3044,304 @@ function adsFunnelHorizonDays(value = '28') {
   if (key === '14') return 14;
   if (key === '28') return 28;
   return null;
+}
+
+const ADS_DAILY_METRICS = [
+  { key: 'events', label: 'События', formula: 'задачи / изменения', format: 'events', row: 1 },
+  { key: 'spend', label: 'Расходы (реклама), ₽', formula: 'реклама', format: 'money', row: 2 },
+  { key: 'views', label: 'Показы (реклама), шт', formula: 'реклама', format: 'int', row: 3 },
+  { key: 'clicks', label: 'Клики, шт', formula: 'воронка', format: 'int', row: 4 },
+  { key: 'ctr', label: 'Конверсия в клик (CTR), %', formula: 'клики / показы', format: 'pct', row: 5 },
+  { key: 'cpc', label: 'Стоимость клика (CPC), ₽', formula: 'расход / клики', format: 'money', row: 6 },
+  { key: 'orders', label: 'Заказы, шт', formula: 'воронка', format: 'int', row: 7 },
+  { key: 'cr', label: 'Конверсия в заказ (CR), %', formula: 'заказы / клики', format: 'pct', row: 8 },
+  { key: 'cpo', label: 'Стоимость заказа (CPO), ₽', formula: 'расход / заказы', format: 'money', row: 9 },
+  { key: 'revenue', label: 'Выручка с рекламы, ₽', formula: 'воронка', format: 'money', row: 10 },
+  { key: 'drr', label: 'ДРР, %', formula: 'расход / выручка', format: 'pct', row: 11 },
+  { key: 'romi', label: 'ROMI, %', formula: '(выручка - расход) / расход', format: 'pct', row: 12 }
+];
+
+function adsFunnelDateKey(value = '') {
+  const direct = String(value || '').slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(direct)) return direct;
+  const stamp = parseFreshStamp(value);
+  if (!Number.isFinite(stamp) || stamp <= 0) return '';
+  const date = new Date(stamp);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function adsFunnelDateShort(value = '') {
+  const key = adsFunnelDateKey(value);
+  if (!key) return '—';
+  return `${key.slice(8, 10)}.${key.slice(5, 7)}`;
+}
+
+function adsFunnelPlatformRgb(key = 'wb') {
+  return adsFunnelNormalizePlatformKey(key) === 'ozon' ? [42, 139, 242] : [128, 86, 214];
+}
+
+function adsFunnelPlatformTone(key = 'wb') {
+  return adsFunnelNormalizePlatformKey(key) === 'ozon' ? 'info' : 'warn';
+}
+
+function adsFunnelEmptyPoint(dateKey = '') {
+  return { dateKey, views: 0, clicks: 0, spend: 0, orders: 0, revenue: 0 };
+}
+
+function adsFunnelAddPoint(target, source = {}) {
+  target.views += numberOrZero(source.views);
+  target.clicks += numberOrZero(source.clicks);
+  target.spend += numberOrZero(source.spend);
+  target.orders += numberOrZero(source.orders);
+  target.revenue += numberOrZero(source.revenue);
+  return target;
+}
+
+function adsFunnelMetricValue(metricKey, point = {}) {
+  if (metricKey === 'views') return point.views;
+  if (metricKey === 'clicks') return point.clicks;
+  if (metricKey === 'spend') return point.spend;
+  if (metricKey === 'orders') return point.orders;
+  if (metricKey === 'revenue') return point.revenue;
+  if (metricKey === 'ctr') return adsFunnelRate(point.clicks, point.views);
+  if (metricKey === 'cr') return adsFunnelRate(point.orders, point.clicks);
+  if (metricKey === 'cpc') return adsFunnelRate(point.spend, point.clicks);
+  if (metricKey === 'cpo') return adsFunnelRate(point.spend, point.orders);
+  if (metricKey === 'drr') return adsFunnelRate(point.spend, point.revenue);
+  if (metricKey === 'romi') return point.spend > 0 ? (point.revenue - point.spend) / point.spend : null;
+  return null;
+}
+
+function adsFunnelFormatMetric(metric, value) {
+  if (metric.format === 'events') return '';
+  if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return '—';
+  if (metric.format === 'money') return fmt.money(value);
+  if (metric.format === 'int') return fmt.int(value);
+  if (metric.format === 'pct') return fmt.pct(value);
+  return fmt.num(value, 1);
+}
+
+function adsFunnelAverageMetric(metric, values = []) {
+  const numeric = values.filter((value) => Number.isFinite(Number(value)));
+  if (!numeric.length) return null;
+  return numeric.reduce((sum, value) => sum + Number(value), 0) / numeric.length;
+}
+
+function adsFunnelHeatStyle(metric, value, stats, platformKey) {
+  if (metric.format === 'events' || value === null || value === undefined || !Number.isFinite(Number(value))) return '';
+  const numeric = Number(value);
+  const min = Number.isFinite(stats?.min) ? stats.min : 0;
+  const max = Number.isFinite(stats?.max) ? stats.max : 0;
+  const spread = Math.max(0.000001, max - min);
+  const intensity = max <= min ? (Math.abs(numeric) > 0 ? 0.42 : 0) : Math.max(0, Math.min(1, (numeric - min) / spread));
+  const rgb = metric.key === 'romi' && numeric < 0 ? [210, 73, 73] : adsFunnelPlatformRgb(platformKey);
+  const alpha = Math.min(0.76, 0.08 + (intensity * 0.58));
+  return `--ads-cell-rgb:${rgb.join(',')};--ads-cell-alpha:${alpha.toFixed(3)}`;
+}
+
+function adsFunnelSearchHaystack(row = {}) {
+  return [
+    row.articleKey, row.article, row.name, row.owner, row.campaignName, row.campaignId, row.channel, row.nmId
+  ].filter(Boolean).join(' ').toLowerCase();
+}
+
+function adsFunnelPlatformMatches(rowPlatform, selectedPlatform) {
+  return adsFunnelNormalizePlatformKey(rowPlatform) === adsFunnelNormalizePlatformKey(selectedPlatform);
+}
+
+function adsFunnelTaskPlatform(task, fallbackText = '') {
+  try {
+    if (typeof controlWorkstreamKey === 'function') {
+      const key = adsFunnelNormalizePlatformKey(controlWorkstreamKey(task, typeof getSku === 'function' ? getSku(task?.articleKey) : null));
+      if (['wb', 'ozon'].includes(key)) return key;
+    }
+  } catch {}
+  const text = String(fallbackText || '').toLowerCase();
+  if (/(^|[^a-zа-я0-9])wb(?=$|[^a-zа-я0-9])|wildberries|(^|[^а-я0-9])вб(?=$|[^а-я0-9])/.test(text)) return 'wb';
+  if (/ozon|озон/.test(text)) return 'ozon';
+  return '';
+}
+
+function adsFunnelEventDateKey(item = {}, dateSet = new Set()) {
+  const candidates = [item.doneAt, item.completedAt, item.due, item.updatedAt, item.updated_at, item.createdAt, item.created_at, item.date]
+    .map(adsFunnelDateKey)
+    .filter(Boolean);
+  return candidates.find((date) => dateSet.has(date)) || '';
+}
+
+function adsFunnelEventLabel(value = '') {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!text) return 'Событие';
+  return text.length > 46 ? `${text.slice(0, 43)}...` : text;
+}
+
+function adsFunnelCollectEvents(platformKey, dateKeys = [], searchNeedle = '') {
+  const dateSet = new Set(dateKeys);
+  const eventsByDate = Object.fromEntries(dateKeys.map((date) => [date, []]));
+  const needle = String(searchNeedle || '').trim().toLowerCase();
+  const eventRe = /слайд|фото|карточ|контент|seo|описан|рк|кампан|ставк|бюдж|реклам|цена|промо|обложк|инфограф/i;
+  const pushEvent = (dateKey, label, source = '') => {
+    if (!dateKey || !eventsByDate[dateKey]) return;
+    const list = eventsByDate[dateKey];
+    const cleanLabel = adsFunnelEventLabel(label);
+    if (!cleanLabel || list.some((item) => item.label === cleanLabel)) return;
+    if (list.length < 4) list.push({ label: cleanLabel, source });
+  };
+
+  let tasks = [];
+  try {
+    tasks = typeof getAllTasks === 'function' ? getAllTasks() : [];
+  } catch {
+    tasks = [];
+  }
+  const taskById = new Map();
+  tasks.forEach((task) => {
+    const text = [
+      task?.platform, task?.marketplace, task?.entityLabel, task?.title, task?.nextAction, task?.reason,
+      task?.description, task?.articleKey, task?.owner
+    ].filter(Boolean).join(' ');
+    if (!eventRe.test(text)) return;
+    if (needle && !text.toLowerCase().includes(needle)) return;
+    if (adsFunnelTaskPlatform(task, text) !== platformKey) return;
+    const dateKey = adsFunnelEventDateKey(task, dateSet);
+    if (!dateKey) return;
+    taskById.set(String(task?.id || ''), task);
+    pushEvent(dateKey, task?.title || task?.entityLabel || task?.nextAction || task?.reason || 'Изменение', task?.owner || '');
+  });
+
+  const historyItems = Array.isArray(state?.storage?.taskHistory) ? state.storage.taskHistory : [];
+  historyItems.forEach((item) => {
+    const task = taskById.get(String(item?.taskId || item?.task_id || '')) || null;
+    const text = [
+      item?.label, item?.message, item?.comment, item?.note, item?.kind,
+      task?.platform, task?.entityLabel, task?.title, task?.nextAction, task?.reason, task?.articleKey
+    ].filter(Boolean).join(' ');
+    if (!eventRe.test(text)) return;
+    if (needle && !text.toLowerCase().includes(needle)) return;
+    if (adsFunnelTaskPlatform(task || {}, text) !== platformKey) return;
+    const dateKey = adsFunnelEventDateKey(item, dateSet);
+    pushEvent(dateKey, item?.message || item?.comment || item?.label || task?.title || 'Изменение', item?.kind || '');
+  });
+
+  return eventsByDate;
+}
+
+function adsFunnelBuildDailyMatrixModel(payload = state.adsSummary || {}) {
+  const filters = getAdsFunnelFilters();
+  const normalized = normalizeAdsSummaryPayload(payload || {});
+  const platformKey = ['wb', 'ozon'].includes(filters.platform) ? filters.platform : 'wb';
+  const horizonDays = adsFunnelHorizonDays(filters.horizon);
+  const searchNeedle = String(filters.search || '').trim().toLowerCase();
+  const platform = normalized.platforms.find((item) => adsFunnelNormalizePlatformKey(item.key) === platformKey) || { series: [] };
+  const platformRows = Array.isArray(platform.series) ? platform.series : [];
+  const itemRowsForPlatform = normalized.itemSeries.filter((row) => adsFunnelPlatformMatches(row.platformKey, platformKey));
+  const allDateKeys = [...new Set([
+    ...platformRows.map((point) => adsFunnelDateKey(point.dateKey || point.date || point.label)),
+    ...itemRowsForPlatform.map((row) => adsFunnelDateKey(row.dateKey || row.date || row.label))
+  ].filter(Boolean))].sort();
+  const latestDate = allDateKeys[allDateKeys.length - 1] || adsFunnelDateKey(normalized.asOfDate || normalized.generatedAt);
+  const latestStamp = parseFreshStamp(latestDate);
+  const minStamp = horizonDays && latestStamp ? latestStamp - ((horizonDays - 1) * 86400000) : 0;
+  const dateKeys = allDateKeys.filter((dateKey) => {
+    if (!horizonDays || !latestStamp) return true;
+    const stamp = parseFreshStamp(dateKey);
+    return stamp >= minStamp && stamp <= latestStamp;
+  });
+  const daily = Object.fromEntries(dateKeys.map((dateKey) => [dateKey, adsFunnelEmptyPoint(dateKey)]));
+  let matchedRows = [];
+  if (searchNeedle) {
+    matchedRows = itemRowsForPlatform.filter((row) => dateKeys.includes(adsFunnelDateKey(row.dateKey)) && adsFunnelSearchHaystack(row).includes(searchNeedle));
+    matchedRows.forEach((row) => {
+      const dateKey = adsFunnelDateKey(row.dateKey);
+      if (daily[dateKey]) adsFunnelAddPoint(daily[dateKey], row);
+    });
+  } else {
+    platformRows.forEach((point) => {
+      const dateKey = adsFunnelDateKey(point.dateKey || point.date || point.label);
+      if (daily[dateKey]) adsFunnelAddPoint(daily[dateKey], point);
+    });
+  }
+  const points = dateKeys.map((dateKey) => daily[dateKey] || adsFunnelEmptyPoint(dateKey));
+  const totals = points.reduce((acc, point) => adsFunnelAddPoint(acc, point), adsFunnelEmptyPoint('total'));
+  const eventsByDate = adsFunnelCollectEvents(platformKey, dateKeys, searchNeedle);
+  const tableRows = ADS_DAILY_METRICS.map((metric) => {
+    if (metric.format === 'events') {
+      const eventCounts = dateKeys.map((dateKey) => (eventsByDate[dateKey] || []).length);
+      return { metric, values: eventCounts, average: eventCounts.reduce((sum, count) => sum + count, 0), min: 0, max: Math.max(0, ...eventCounts) };
+    }
+    const values = points.map((point) => adsFunnelMetricValue(metric.key, point));
+    const numeric = values.filter((value) => Number.isFinite(Number(value))).map(Number);
+    return {
+      metric,
+      values,
+      average: adsFunnelAverageMetric(metric, values),
+      min: numeric.length ? Math.min(...numeric) : 0,
+      max: numeric.length ? Math.max(...numeric) : 0
+    };
+  });
+  const uniqueSku = new Set(matchedRows.map((row) => row.articleKey || row.article || row.name).filter(Boolean));
+  return {
+    payload: normalized,
+    filters,
+    platformKey,
+    platformLabel: adsFunnelPlatformLabel(platformKey),
+    dateKeys,
+    points,
+    totals,
+    summary: {
+      ...totals,
+      ctr: adsFunnelMetricValue('ctr', totals),
+      cr: adsFunnelMetricValue('cr', totals),
+      cpc: adsFunnelMetricValue('cpc', totals),
+      cpo: adsFunnelMetricValue('cpo', totals),
+      drr: adsFunnelMetricValue('drr', totals),
+      romi: adsFunnelMetricValue('romi', totals)
+    },
+    tableRows,
+    eventsByDate,
+    eventCount: Object.values(eventsByDate).reduce((sum, list) => sum + list.length, 0),
+    searchNeedle,
+    matchedRows,
+    uniqueSkuCount: uniqueSku.size,
+    horizonDays,
+    horizonLabel: horizonDays ? `${horizonDays} дней` : 'весь период',
+    minDateLabel: dateKeys[0] ? adsFunnelDateShort(dateKeys[0]) : '—',
+    maxDateLabel: dateKeys[dateKeys.length - 1] ? adsFunnelDateShort(dateKeys[dateKeys.length - 1]) : '—'
+  };
+}
+
+function adsFunnelHeatmapExportRows(model) {
+  return model.tableRows.map((row) => {
+    const result = {
+      platform: model.platformLabel,
+      metric: row.metric.label,
+      formula: row.metric.formula,
+      average: row.metric.format === 'events' ? row.average : adsFunnelFormatMetric(row.metric, row.average)
+    };
+    model.dateKeys.forEach((dateKey, index) => {
+      if (row.metric.format === 'events') {
+        result[dateKey] = (model.eventsByDate[dateKey] || []).map((event) => event.label).join('; ');
+      } else {
+        result[dateKey] = adsFunnelFormatMetric(row.metric, row.values[index]);
+      }
+    });
+    return result;
+  });
+}
+
+function downloadAdsFunnelHeatmapExcel(model) {
+  const rows = adsFunnelHeatmapExportRows(model);
+  if (!rows.length) {
+    window.alert('Нет строк для выгрузки.');
+    return;
+  }
+  downloadLaunchesHtmlTable([
+    ['platform', 'Площадка'],
+    ['metric', 'Метрика'],
+    ['formula', 'Расчет'],
+    ['average', 'Среднее / всего'],
+    ...model.dateKeys.map((dateKey) => [dateKey, dateKey])
+  ], rows, `ads-control-${model.platformKey}-${todayIso()}.xls`);
 }
 
 function adsFunnelBuildModel(payload = state.adsSummary || {}) {
@@ -3375,150 +3544,124 @@ function downloadAdsFunnelExcel(model) {
 function renderAdsFunnel(rootId = 'view-ads-funnel') {
   const root = document.getElementById(rootId);
   if (!root) return;
-  const model = adsFunnelBuildModel(state.adsSummary || {});
-  const sortIndicator = (key) => {
-    if (model.filters.sort !== key) return '';
-    return model.filters.sortDir === 'asc' ? ' ↑' : ' ↓';
+  const model = adsFunnelBuildDailyMatrixModel(state.adsSummary || {});
+  const rgb = adsFunnelPlatformRgb(model.platformKey);
+  const dateRangeLine = model.dateKeys.length
+    ? `${escapeHtml(model.minDateLabel)} — ${escapeHtml(model.maxDateLabel)}`
+    : 'нет дат';
+  const scopeLabel = model.searchNeedle
+    ? `${fmt.int(model.uniqueSkuCount)} SKU · ${fmt.int(model.matchedRows.length)} строк`
+    : 'вся площадка';
+  const platformButtons = ['wb', 'ozon'].map((key) => {
+    const active = model.platformKey === key;
+    const label = adsFunnelPlatformLabel(key);
+    const tone = adsFunnelPlatformTone(key);
+    return `
+      <button class="ads-control-platform ${active ? 'active' : ''}" type="button" data-ads-platform="${escapeHtml(key)}" aria-pressed="${active}">
+        <span>${escapeHtml(label)}</span>
+        <strong>${escapeHtml(key === 'wb' ? 'Wildberries' : 'Ozon')}</strong>
+        ${badge(tone === 'info' ? 'синий контур' : 'фиолетовый контур', tone)}
+      </button>`;
+  }).join('');
+  const renderCell = (row, dateKey, index) => {
+    if (row.metric.format === 'events') {
+      const events = model.eventsByDate[dateKey] || [];
+      return `
+        <td class="ads-event-day ${events.length ? 'has-events' : ''}">
+          ${events.length
+            ? `<div class="ads-event-stack">${events.map((event) => `<span title="${escapeHtml(event.label)}">${escapeHtml(event.label)}</span>`).join('')}</div>`
+            : '<span class="muted">—</span>'}
+        </td>`;
+    }
+    const value = row.values[index];
+    const style = adsFunnelHeatStyle(row.metric, value, row, model.platformKey);
+    const tone = row.metric.key === 'romi' && Number(value) < 0 ? 'is-bad' : '';
+    return `<td class="ads-heat-cell ${tone}" style="${style}" title="${escapeHtml(row.metric.label)} · ${escapeHtml(dateKey)}">${adsFunnelFormatMetric(row.metric, value)}</td>`;
   };
-  const sortHeader = (label, key) => `
-    <th
-      data-ads-sort="${escapeHtml(key)}"
-      style="cursor:pointer;user-select:none"
-      title="Сортировка как в Excel: первый клик по колонке — от большего к меньшему, второй — в обратную сторону."
-    >${escapeHtml(label)}${sortIndicator(key)}</th>
-  `;
-  const dateRangeLine = model.horizonDays
-    ? `${model.minDateLabel} — ${model.maxDateLabel}`
-    : `${model.maxDateLabel}`;
-  const emptyState = model.latestStamp
-    ? 'В выбранном фильтре нет SKU-строк рекламы. Сбросьте фильтры или проверьте, что itemSeries заполнен в ads_summary.'
-    : 'Рекламный слой пуст: в ads_summary пока нет дат и строк. После публикации bridge-среза здесь появится внутренняя реклама.';
 
-  const platformChipsHtml = `
-    <div class="ads-platform-switch" role="group" aria-label="Площадка">
-      ${model.platformOptions.map((option) => `
-        <button
-          class="quick-chip ads-platform-chip ${model.filters.platform === option.key ? 'active' : ''}"
-          type="button"
-          data-ads-platform="${escapeHtml(option.key)}"
-          data-platform="${escapeHtml(option.key)}"
-          aria-pressed="${model.filters.platform === option.key}"
-        >${escapeHtml(option.label)}</button>
-      `).join('')}
-    </div>
-  `;
-
-  root.dataset.platform = model.platformFilter || 'all';
+  root.dataset.platform = model.platformKey;
+  root.style.setProperty('--ads-platform-rgb', rgb.join(','));
 
   root.innerHTML = `
-    <div class="section-title">
-      <div>
-        <h2>Рекламная воронка</h2>
-        <p>Отдельный слой внутренней рекламы: показы, клики, заказы, затраты и ДРР по SKU. Здесь не используется недельный КЗ-лист.</p>
-      </div>
-      <div class="badge-stack">
-        ${badge(model.payload.asOfDate ? `Срез ${model.payload.asOfDate}` : 'Без даты среза', model.payload.asOfDate ? 'info' : 'warn')}
-        ${badge(`Период ${escapeHtml(model.horizonLabel)}`, 'info')}
-        ${badge(`${fmt.int(model.rows.length)} SKU`, model.rows.length ? 'ok' : 'warn')}
-        ${badge(model.platformLabel, 'info')}
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="section-subhead">
+    <div class="ads-control-shell">
+      <div class="section-title">
         <div>
-          <h3>Фильтры и источник</h3>
-          <p class="small muted">Диапазон воронки: ${escapeHtml(dateRangeLine)}. Источник: data/ads_summary.json${model.payload.generatedAt ? ` · выгружено ${escapeHtml(fmt.date(model.payload.generatedAt))}` : ''}.</p>
-        </div>
-        <div class="quick-actions">
-          <button class="quick-chip" type="button" data-ads-export>Выгрузить в Excel</button>
-        </div>
-      </div>
-      <div class="control-filters" style="margin-top:12px">
-        <input id="adsFunnelSearch" placeholder="Поиск по SKU, названию, owner…" value="${escapeHtml(model.filters.search)}">
-        ${platformChipsHtml}
-        <select id="adsFunnelHorizon">
-          <option value="7" ${model.filters.horizon === '7' ? 'selected' : ''}>Последние 7 дней</option>
-          <option value="14" ${model.filters.horizon === '14' ? 'selected' : ''}>Последние 14 дней</option>
-          <option value="28" ${model.filters.horizon === '28' ? 'selected' : ''}>Последние 28 дней</option>
-          <option value="all" ${model.filters.horizon === 'all' ? 'selected' : ''}>Весь период</option>
-        </select>
-        <select id="adsFunnelSort">
-          <option value="spend" ${model.filters.sort === 'spend' ? 'selected' : ''}>Сортировка: затраты</option>
-          <option value="revenue" ${model.filters.sort === 'revenue' ? 'selected' : ''}>Сортировка: выручка</option>
-          <option value="orders" ${model.filters.sort === 'orders' ? 'selected' : ''}>Сортировка: заказы</option>
-          <option value="clicks" ${model.filters.sort === 'clicks' ? 'selected' : ''}>Сортировка: клики</option>
-          <option value="views" ${model.filters.sort === 'views' ? 'selected' : ''}>Сортировка: показы</option>
-          <option value="drr" ${model.filters.sort === 'drr' ? 'selected' : ''}>Сортировка: ДРР</option>
-          <option value="ctr" ${model.filters.sort === 'ctr' ? 'selected' : ''}>Сортировка: CTR</option>
-          <option value="cr" ${model.filters.sort === 'cr' ? 'selected' : ''}>Сортировка: CR</option>
-          <option value="cpc" ${model.filters.sort === 'cpc' ? 'selected' : ''}>Сортировка: CPC</option>
-          <option value="cpo" ${model.filters.sort === 'cpo' ? 'selected' : ''}>Сортировка: CPO</option>
-        </select>
-      </div>
-      ${model.payload.note ? `<div class="muted small" style="margin-top:10px">${escapeHtml(model.payload.note)}</div>` : ''}
-    </div>
-
-    <div class="kpi-strip" style="margin-top:14px">
-      <div class="mini-kpi"><span>Показы</span><strong>${fmt.int(model.summary.views)}</strong><span>после фильтра</span></div>
-      <div class="mini-kpi"><span>Клики</span><strong>${fmt.int(model.summary.clicks)}</strong><span>CTR ${fmt.pct(model.summary.ctr)}</span></div>
-      <div class="mini-kpi"><span>Заказы</span><strong>${fmt.int(model.summary.orders)}</strong><span>CR ${fmt.pct(model.summary.cr)}</span></div>
-      <div class="mini-kpi"><span>Затраты</span><strong>${fmt.money(model.summary.spend)}</strong><span>CPC ${model.summary.cpc === null ? '—' : fmt.money(model.summary.cpc)}</span></div>
-      <div class="mini-kpi"><span>Выручка</span><strong>${fmt.money(model.summary.revenue)}</strong><span>ДРР ${fmt.pct(model.summary.drr)}</span></div>
-    </div>
-
-    <div class="card" style="margin-top:14px">
-      <div class="section-subhead">
-        <div>
-          <h3>SKU и внутренняя реклама</h3>
-          <p class="small muted">Каждая строка агрегируется по выбранному периоду. Площадки внутри строки показывают, где у SKU был рекламный факт.</p>
+          <h2>Контроль РК</h2>
+          <p>Дневная динамика рекламы: расходы, показы, клики, заказы, ДРР и события в одной тепловой таблице.</p>
         </div>
         <div class="badge-stack">
-          ${badge(`SKU ${fmt.int(model.rows.length)}`, model.rows.length ? 'info' : 'warn')}
+          ${badge(model.payload.asOfDate ? `срез ${model.payload.asOfDate}` : 'без даты среза', model.payload.asOfDate ? 'info' : 'warn')}
+          ${badge(`период ${escapeHtml(model.horizonLabel)}`, 'info')}
+          ${badge(model.platformLabel, adsFunnelPlatformTone(model.platformKey))}
+          ${badge(`событий ${fmt.int(model.eventCount)}`, model.eventCount ? 'warn' : 'ok')}
         </div>
       </div>
-      <div class="table-wrap" style="margin-top:12px">
-        <table>
-          <thead>
-            <tr>
-              <th>SKU / товар</th>
-              <th>Owner</th>
-              <th>Площадки</th>
-              ${sortHeader('Показы', 'views')}
-              ${sortHeader('Клики', 'clicks')}
-              ${sortHeader('CTR', 'ctr')}
-              ${sortHeader('Заказы', 'orders')}
-              ${sortHeader('CR', 'cr')}
-              ${sortHeader('Затраты', 'spend')}
-              ${sortHeader('CPC', 'cpc')}
-              ${sortHeader('CPO', 'cpo')}
-              ${sortHeader('Выручка', 'revenue')}
-              ${sortHeader('ДРР', 'drr')}
-            </tr>
-          </thead>
-          <tbody>
-            ${model.rows.map((row) => `
+
+      <div class="ads-control-toolbar">
+        <div class="ads-control-platforms" role="group" aria-label="Площадка">
+          ${platformButtons}
+        </div>
+        <div class="ads-control-filters">
+          <input id="adsFunnelSearch" placeholder="SKU, артикул, кампания или событие" value="${escapeHtml(model.filters.search)}">
+          <select id="adsFunnelHorizon">
+            <option value="7" ${model.filters.horizon === '7' ? 'selected' : ''}>7 дней</option>
+            <option value="14" ${model.filters.horizon === '14' ? 'selected' : ''}>14 дней</option>
+            <option value="28" ${model.filters.horizon === '28' ? 'selected' : ''}>28 дней</option>
+            <option value="all" ${model.filters.horizon === 'all' ? 'selected' : ''}>Весь период</option>
+          </select>
+          <button class="quick-chip" type="button" data-ads-refresh>Обновить данные</button>
+          <button class="quick-chip portal-action-primary" type="button" data-ads-export>Выгрузить Excel</button>
+        </div>
+        <div class="ads-control-source">
+          <span>Источник: data/ads_summary.json</span>
+          <strong>${escapeHtml(dateRangeLine)}</strong>
+          <span>${escapeHtml(scopeLabel)}${model.payload.generatedAt ? ` · обновлено ${escapeHtml(fmt.date(model.payload.generatedAt))}` : ''}</span>
+        </div>
+      </div>
+
+      <div class="ads-control-kpis">
+        <div class="mini-kpi"><span>Расход</span><strong>${fmt.money(model.summary.spend)}</strong><span>${escapeHtml(model.platformLabel)}</span></div>
+        <div class="mini-kpi"><span>Показы</span><strong>${fmt.int(model.summary.views)}</strong><span>CTR ${fmt.pct(model.summary.ctr)}</span></div>
+        <div class="mini-kpi"><span>Клики</span><strong>${fmt.int(model.summary.clicks)}</strong><span>CPC ${model.summary.cpc === null ? '—' : fmt.money(model.summary.cpc)}</span></div>
+        <div class="mini-kpi"><span>Заказы</span><strong>${fmt.int(model.summary.orders)}</strong><span>CR ${fmt.pct(model.summary.cr)}</span></div>
+        <div class="mini-kpi"><span>ДРР</span><strong>${fmt.pct(model.summary.drr)}</strong><span>ROMI ${fmt.pct(model.summary.romi)}</span></div>
+      </div>
+
+      <div class="ads-control-table-card">
+        <div class="section-subhead">
+          <div>
+            <h3>Динамика по дням</h3>
+            <p class="small muted">Цвет ячейки усиливается вместе со значением метрики. Строка событий показывает, что меняли в этот день.</p>
+          </div>
+          <div class="badge-stack">
+            ${badge(`${fmt.int(model.dateKeys.length)} дней`, model.dateKeys.length ? 'info' : 'warn')}
+            ${model.searchNeedle ? badge('фильтр SKU / событие', 'warn') : badge('площадка целиком', 'ok')}
+          </div>
+        </div>
+        <div class="table-wrap ads-control-table-wrap">
+          <table class="ads-control-heatmap">
+            <thead>
               <tr>
-                <td>
-                  <div><strong>${row.articleKey ? linkToSku(row.articleKey, row.articleKey) : escapeHtml(row.article || row.name)}</strong></div>
-                  <div class="muted small">${escapeHtml(row.name || row.article || row.articleKey || '—')}</div>
-                </td>
-                <td>${row.owner ? badge(row.owner, 'info') : badge('Без owner', 'warn')}</td>
-                <td><div class="badge-stack">${[...row.platforms].map((platform) => `<span class="chip ads-platform-pill" data-platform="${escapeHtml(platform)}">${escapeHtml(adsFunnelPlatformLabel(platform))}</span>`).join('')}</div></td>
-                <td>${fmt.int(row.views)}</td>
-                <td>${fmt.int(row.clicks)}</td>
-                <td>${fmt.pct(row.ctr)}</td>
-                <td>${fmt.int(row.orders)}</td>
-                <td>${fmt.pct(row.cr)}</td>
-                <td>${fmt.money(row.spend)}</td>
-                <td>${row.cpc === null ? '—' : fmt.money(row.cpc)}</td>
-                <td>${row.cpo === null ? '—' : fmt.money(row.cpo)}</td>
-                <td>${fmt.money(row.revenue)}</td>
-                <td>${fmt.pct(row.drr)}</td>
+                <th class="ads-sticky ads-col-index">№</th>
+                <th class="ads-sticky ads-col-metric">Метрика</th>
+                <th class="ads-sticky ads-col-formula">Расчет</th>
+                <th class="ads-sticky ads-col-average">Среднее</th>
+                ${model.dateKeys.map((dateKey) => `<th class="ads-date-col"><span>${escapeHtml(adsFunnelDateShort(dateKey))}</span><small>${escapeHtml(dateKey.slice(0, 4))}</small></th>`).join('')}
               </tr>
-            `).join('') || `<tr><td colspan="13"><div class="empty">${escapeHtml(emptyState)}</div></td></tr>`}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              ${model.tableRows.map((row) => `
+                <tr class="${row.metric.format === 'events' ? 'ads-events-row' : ''}">
+                  <td class="ads-sticky ads-col-index">${fmt.int(row.metric.row)}</td>
+                  <td class="ads-sticky ads-col-metric"><strong>${escapeHtml(row.metric.label)}</strong></td>
+                  <td class="ads-sticky ads-col-formula">${escapeHtml(row.metric.formula)}</td>
+                  <td class="ads-sticky ads-col-average">${row.metric.format === 'events' ? fmt.int(row.average) : adsFunnelFormatMetric(row.metric, row.average)}</td>
+                  ${model.dateKeys.map((dateKey, index) => renderCell(row, dateKey, index)).join('')}
+                </tr>
+              `).join('') || `<tr><td colspan="4"><div class="empty">Нет данных по выбранному периоду.</div></td></tr>`}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   `;
@@ -3533,35 +3676,32 @@ function renderAdsFunnel(rootId = 'view-ads-funnel') {
       rerenderCurrentView();
     });
   });
-  root.querySelector('#adsFunnelPlatform')?.addEventListener('change', (event) => {
-    getAdsFunnelFilters().platform = adsFunnelNormalizePlatformKey(event.target.value);
-    rerenderCurrentView();
-  });
   root.querySelector('#adsFunnelHorizon')?.addEventListener('change', (event) => {
     getAdsFunnelFilters().horizon = String(event.target.value || '28');
     rerenderCurrentView();
   });
-  root.querySelector('#adsFunnelSort')?.addEventListener('change', (event) => {
-    getAdsFunnelFilters().sort = String(event.target.value || 'spend');
-    getAdsFunnelFilters().sortDir = 'desc';
-    rerenderCurrentView();
-  });
-  root.querySelectorAll('[data-ads-sort]').forEach((cell) => {
-    cell.addEventListener('click', () => {
-      const nextSort = String(cell.getAttribute('data-ads-sort') || '').trim();
-      if (!nextSort) return;
-      const adsFilters = getAdsFunnelFilters();
-      if (adsFilters.sort === nextSort) {
-        adsFilters.sortDir = adsFilters.sortDir === 'desc' ? 'asc' : 'desc';
-      } else {
-        adsFilters.sort = nextSort;
-        adsFilters.sortDir = 'desc';
-      }
+  root.querySelector('[data-ads-refresh]')?.addEventListener('click', async (event) => {
+    const button = event.currentTarget;
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Обновляю...';
+    try {
+      if (state.boot?.lazyReady) state.boot.lazyReady.adsFunnel = false;
+      if (state.boot?.lazyLoads) delete state.boot.lazyLoads.adsFunnel;
+      if (typeof ensureViewData === 'function') await ensureViewData('ads-funnel');
       rerenderCurrentView();
-    });
+    } catch (error) {
+      console.error(error);
+      if (typeof setAppError === 'function') setAppError(`Не удалось обновить контроль РК: ${error.message}`);
+    } finally {
+      if (button.isConnected) {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }
   });
   root.querySelector('[data-ads-export]')?.addEventListener('click', () => {
-    downloadAdsFunnelExcel(model);
+    downloadAdsFunnelHeatmapExcel(model);
   });
 }
 
@@ -3974,6 +4114,26 @@ function iuDrrSourceBadge(model) {
   if (/fixture/.test(mode)) return badge('Excel fixture', 'warn');
   if (mode) return badge(mode, 'warn');
   return badge('нет факта WB', 'danger');
+}
+
+function iuDrrWbAdsWindowTo(model = {}) {
+  return String(model?.payload?.diagnostics?.adsDiagnostics?.sourceWindow?.to || '').slice(0, 10);
+}
+
+function iuDrrHasWbAdsFact(row = {}) {
+  return numberOrZero(row.sourceRows) > 0
+    || numberOrZero(row.wbPromotion) > 0
+    || numberOrZero(row.adsViews) > 0
+    || numberOrZero(row.adsClicks) > 0
+    || numberOrZero(row.adsOrders) > 0;
+}
+
+function iuDrrIsWbAdsIncomplete(row = {}, model = {}) {
+  const date = String(row?.date || '').slice(0, 10);
+  const sourceTo = iuDrrWbAdsWindowTo(model);
+  if (!date || !sourceTo || date <= sourceTo) return false;
+  if (!(numberOrZero(row.revenueWb) > 0 || numberOrZero(row.iuRevenueWb) > 0 || numberOrZero(row.ordersRevenueWb) > 0)) return false;
+  return !iuDrrHasWbAdsFact(row);
 }
 
 function iuDrrSparkline(rows, key, tone = 'ok') {
@@ -4981,6 +5141,8 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     ...(model.payload.diagnostics?.noSourceChannels || []).map((item) => `${item}: нет источника`),
     ...(model.payload.diagnostics?.unmatchedNmIds || []).slice(0, 5).map((item) => `nmId ${item.nmId}: не сопоставлен`)
   ];
+  const wbAdsWindowTo = iuDrrWbAdsWindowTo(model);
+  const wbAdsIncompleteRows = isOzonView ? [] : model.dailyRows.filter((row) => iuDrrIsWbAdsIncomplete(row, model));
   const ozonFinance = model.ozonFinance || {};
   const ozonFinanceMonth = model.ozonFinanceMonth || {};
   const ozonPlan = model.payload.ozonPlan || {};
@@ -5277,6 +5439,20 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       `).join('')}
     </div>
   `;
+  const wbAdsLagNoticeHtml = !isOzonView && wbAdsIncompleteRows.length ? `
+    <div class="card subtle" style="margin-top:14px; border-left:4px solid var(--warn, #d18b00)">
+      <div class="section-subhead">
+        <div>
+          <h3>WB Ads не закрыт за последний день</h3>
+          <p class="small muted">Оборот WB уже загружен, а WB Promotion API пока отдал рекламный факт только до ${escapeHtml(wbAdsWindowTo || 'предыдущего дня')}.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(wbAdsIncompleteRows.length)} дн. без рекламного факта`, 'warn')}
+          ${badge(`ожидаем WB API`, 'info')}
+        </div>
+      </div>
+    </div>
+  ` : '';
   const dailyTableHtml = isOzonView ? `
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
@@ -5300,7 +5476,9 @@ function renderIuDrr(rootId = 'view-iu-drr') {
             </tr>
           </thead>
           <tbody>
-            ${model.dailyRows.map((row) => `
+            ${model.dailyRows.map((row) => {
+              const wbAdsIncomplete = iuDrrIsWbAdsIncomplete(row, model);
+              return `
               <tr>
                 <td><strong>${escapeHtml(row.period || row.date)}</strong><div class="muted small">${escapeHtml(row.date)}</div></td>
                 <td>${fmt.money(row.targetRevenueOzon)}</td>
@@ -5313,7 +5491,8 @@ function renderIuDrr(rootId = 'view-iu-drr') {
                 <td>${row.factPctOzon != null ? fmt.pct(row.factPctOzon) : '—'}</td>
                 <td>${badge(fmt.money(row.spendDeltaOzon), iuDrrToneForDelta(row.spendDeltaOzon))}</td>
               </tr>
-            `).join('') || '<tr><td colspan="10">Нет данных по выбранному месяцу.</td></tr>'}
+            `;
+            }).join('') || '<tr><td colspan="10">Нет данных по выбранному месяцу.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -5507,6 +5686,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     ${isOzonView ? ozonReadableSummaryHtml : selectedKpisHtml}
     ${isOzonView ? '' : chartsHtml}
     ${channelRowsHtml}
+    ${wbAdsLagNoticeHtml}
     ${isOzonView ? ozonPlanFactTableHtml : dailyTableHtml}
 
     ${!isOzonView && sourceWarnings.length ? `
@@ -5736,7 +5916,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
               const signalMeta = productLeaderboardSignalMeta(item.signal);
               const topAlerts = (item.diagnostics?.alerts || []).slice(0, 2);
               return `
-                <tr>
+                <tr data-product-row="${escapeHtml(item.articleKey || item.id || item.article || item.name)}">
                   <td>
                     <div><strong>${item.articleKey ? linkToSku(item.articleKey, item.articleKey) : escapeHtml(item.article || item.name)}</strong></div>
                     <div class="muted small">${escapeHtml(item.name)}</div>

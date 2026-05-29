@@ -203,7 +203,7 @@ const VIEW_TITLES = {
   'oos-control': 'OOS контроль',
   'sku-contour': 'Контур SKU',
   launches: 'Продукт / новинки',
-  'ads-funnel': 'Рекламная воронка',
+  'ads-funnel': 'Контроль РК',
   'iu-drr': 'ИУ / ДРР',
   'sku-plan-fact': 'План-факт SKU',
   'wb-rating': 'Рейтинг карточек',
@@ -2677,7 +2677,7 @@ const LAZY_DATA_LOADERS = {
       loadJsonOrFallback(
         'data/ads_summary.json',
         { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
-        'Рекламная воронка'
+        'Контроль РК'
       ),
       loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU'),
       loadJsonOrFallback(
@@ -2706,7 +2706,7 @@ const LAZY_DATA_LOADERS = {
       loadJsonOrFallback(
         'data/ads_summary.json',
         { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
-        'Рекламная воронка'
+        'Контроль РК'
       ),
       loadJsonOrFallback(
         'data/wb_feedbacks_summary.json',

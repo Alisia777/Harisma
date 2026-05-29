@@ -841,7 +841,7 @@ function rerenderCurrentView() {
     ['view-sku-contour', 'Контур SKU', () => renderSkuContour('view-sku-contour')],
     ['view-sku-plan-fact', 'План-факт SKU', () => renderSkuPlanFact('view-sku-plan-fact')],
     ['view-wb-rating', 'Рейтинг карточек', () => renderWbCardRating('view-wb-rating')],
-    ['view-ads-funnel', 'Рекламная воронка', () => renderAdsFunnel('view-ads-funnel')],
+    ['view-ads-funnel', 'Контроль РК', () => renderAdsFunnel('view-ads-funnel')],
     ['view-iu-drr', 'ИУ / ДРР', () => renderIuDrr('view-iu-drr')],
     ['view-dashboard', 'Дашборд', renderDashboardView],
     ['view-documents', 'Документы', renderDocuments],

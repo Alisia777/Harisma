@@ -1,6 +1,6 @@
 {
   "schema": "portal-wb-owner-distribution-audit-v1",
-  "generatedAt": "2026-05-28T07:09:45.551Z",
+  "generatedAt": "2026-05-29T09:41:30.555Z",
   "source": {
     "file": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\распределение артикулов.xlsx",
     "sheetName": "Лист1",
@@ -677,8 +677,8 @@
       "sourceArticle": "kavmaz_60ml",
       "articleKey": "kavmaz_60ml",
       "ownerWb": "Васильева Мария",
-      "revenue": 570618,
-      "units": 508,
+      "revenue": 607198,
+      "units": 541,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -686,8 +686,8 @@
       "sourceArticle": "artoks",
       "articleKey": "artoks",
       "ownerWb": "Лапыгин Максим",
-      "revenue": 478067,
-      "units": 571,
+      "revenue": 505908,
+      "units": 605,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -695,8 +695,8 @@
       "sourceArticle": "sustalit_75ml",
       "articleKey": "sustalit_75ml",
       "ownerWb": "Васильева Мария",
-      "revenue": 655630,
-      "units": 775,
+      "revenue": 708613,
+      "units": 839,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -704,7 +704,7 @@
       "sourceArticle": "pantogor_100ml",
       "articleKey": "pantogor_100ml",
       "ownerWb": "Васильева Мария",
-      "revenue": 121895,
+      "revenue": 121896,
       "units": 112,
       "message": "API SKU не найден в skus.json/алиасах"
     },
@@ -713,8 +713,8 @@
       "sourceArticle": "synergel_60ml",
       "articleKey": "synergel_60ml",
       "ownerWb": "Васильева Мария",
-      "revenue": 261881,
-      "units": 291,
+      "revenue": 288892,
+      "units": 321,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -722,8 +722,8 @@
       "sourceArticle": "kavmaz",
       "articleKey": "kavmaz",
       "ownerWb": "Васильева Мария",
-      "revenue": 194694,
-      "units": 244,
+      "revenue": 205078,
+      "units": 257,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -740,8 +740,8 @@
       "sourceArticle": "cardicin_BAD_60caps",
       "articleKey": "cardicin_bad_60caps",
       "ownerWb": "Лапыгин Максим",
-      "revenue": 202284,
-      "units": 151,
+      "revenue": 210048,
+      "units": 157,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -749,8 +749,8 @@
       "sourceArticle": "mycoplax",
       "articleKey": "mycoplax",
       "ownerWb": "Васильева Мария",
-      "revenue": 226138,
-      "units": 305,
+      "revenue": 251083,
+      "units": 340,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -758,8 +758,8 @@
       "sourceArticle": "sinergel_30ml_1_1",
       "articleKey": "sinergel_30ml_1_1",
       "ownerWb": "Васильева Мария",
-      "revenue": 105541,
-      "units": 75,
+      "revenue": 106884,
+      "units": 76,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -767,8 +767,8 @@
       "sourceArticle": "urinofix",
       "articleKey": "urinofix",
       "ownerWb": "Лапыгин Максим",
-      "revenue": 306207,
-      "units": 391,
+      "revenue": 329142,
+      "units": 421,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -776,8 +776,8 @@
       "sourceArticle": "micardin_1_1",
       "articleKey": "micardin_1_1",
       "ownerWb": "Васильева Мария",
-      "revenue": 311223,
-      "units": 257,
+      "revenue": 317202,
+      "units": 262,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -785,8 +785,8 @@
       "sourceArticle": "wbsinergel",
       "articleKey": "wbsinergel",
       "ownerWb": "Васильева Мария",
-      "revenue": 192258,
-      "units": 291,
+      "revenue": 203839,
+      "units": 309,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -803,8 +803,8 @@
       "sourceArticle": "wbmicardinforte",
       "articleKey": "wbmicardinforte",
       "ownerWb": "Васильева Мария",
-      "revenue": 134611,
-      "units": 207,
+      "revenue": 140382,
+      "units": 216,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -812,8 +812,8 @@
       "sourceArticle": "ekzifol",
       "articleKey": "ekzifol",
       "ownerWb": "Васильева Мария",
-      "revenue": 163497,
-      "units": 246,
+      "revenue": 175455,
+      "units": 265,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -821,8 +821,8 @@
       "sourceArticle": "allicil_gribok15ml",
       "articleKey": "allicil_gribok15ml",
       "ownerWb": "Васильева Мария",
-      "revenue": 491441,
-      "units": 877,
+      "revenue": 506663,
+      "units": 905,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -830,8 +830,8 @@
       "sourceArticle": "sanatsin",
       "articleKey": "sanatsin",
       "ownerWb": "Лапыгин Максим",
-      "revenue": 142414,
-      "units": 183,
+      "revenue": 149498,
+      "units": 192,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -839,7 +839,7 @@
       "sourceArticle": "sanatsin_1_1",
       "articleKey": "sanatsin_1_1",
       "ownerWb": "Лапыгин Максим",
-      "revenue": 59343,
+      "revenue": 59348,
       "units": 22,
       "message": "API SKU не найден в skus.json/алиасах"
     },
@@ -848,8 +848,8 @@
       "sourceArticle": "artoks_75ml",
       "articleKey": "artoks_75ml",
       "ownerWb": "Васильева Мария",
-      "revenue": 89482,
-      "units": 69,
+      "revenue": 96146,
+      "units": 74,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -857,8 +857,8 @@
       "sourceArticle": "micardin",
       "articleKey": "micardin",
       "ownerWb": "Васильева Мария",
-      "revenue": 115300,
-      "units": 187,
+      "revenue": 130478,
+      "units": 215,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -866,8 +866,8 @@
       "sourceArticle": "otivin",
       "articleKey": "otivin",
       "ownerWb": "Лапыгин Максим",
-      "revenue": 90625,
-      "units": 120,
+      "revenue": 95515,
+      "units": 126,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -875,8 +875,8 @@
       "sourceArticle": "daoshen_75ml",
       "articleKey": "daoshen_75ml",
       "ownerWb": "Васильева Мария",
-      "revenue": 73652,
-      "units": 71,
+      "revenue": 76844,
+      "units": 74,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -884,8 +884,8 @@
       "sourceArticle": "uromax",
       "articleKey": "uromax",
       "ownerWb": "Лапыгин Максим",
-      "revenue": 84060,
-      "units": 121,
+      "revenue": 86042,
+      "units": 124,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -893,8 +893,8 @@
       "sourceArticle": "osteofast",
       "articleKey": "osteofast",
       "ownerWb": "Васильева Мария",
-      "revenue": 50222,
-      "units": 63,
+      "revenue": 52658,
+      "units": 66,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -902,8 +902,8 @@
       "sourceArticle": "sustalit_30ml_1_1",
       "articleKey": "sustalit_30ml_1_1",
       "ownerWb": "Васильева Мария",
-      "revenue": 52653,
-      "units": 40,
+      "revenue": 55335,
+      "units": 42,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -911,8 +911,8 @@
       "sourceArticle": "daoshen",
       "articleKey": "daoshen",
       "ownerWb": "Васильева Мария",
-      "revenue": 94558,
-      "units": 126,
+      "revenue": 106355,
+      "units": 142,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -920,8 +920,8 @@
       "sourceArticle": "micardin_1_1_1",
       "articleKey": "micardin_1_1_1",
       "ownerWb": "Васильева Мария",
-      "revenue": 28624,
-      "units": 15,
+      "revenue": 48647,
+      "units": 25,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -929,7 +929,7 @@
       "sourceArticle": "vetonus_100ml",
       "articleKey": "vetonus_100ml",
       "ownerWb": "Васильева Мария",
-      "revenue": 41075,
+      "revenue": 41076,
       "units": 38,
       "message": "API SKU не найден в skus.json/алиасах"
     },
@@ -938,8 +938,8 @@
       "sourceArticle": "varifit",
       "articleKey": "varifit",
       "ownerWb": "Васильева Мария",
-      "revenue": 64481,
-      "units": 93,
+      "revenue": 67360,
+      "units": 97,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -947,8 +947,8 @@
       "sourceArticle": "psoral_50ml",
       "articleKey": "psoral_50ml",
       "ownerWb": "Васильева Мария",
-      "revenue": 30458,
-      "units": 35,
+      "revenue": 33904,
+      "units": 39,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -956,8 +956,8 @@
       "sourceArticle": "dardrakona_1_1",
       "articleKey": "dardrakona_1_1",
       "ownerWb": "Васильева Мария",
-      "revenue": 58594,
-      "units": 52,
+      "revenue": 61901,
+      "units": 55,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -965,8 +965,8 @@
       "sourceArticle": "gemorekt",
       "articleKey": "gemorekt",
       "ownerWb": "Васильева Мария",
-      "revenue": 72504,
-      "units": 108,
+      "revenue": 77952,
+      "units": 116,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -974,8 +974,8 @@
       "sourceArticle": "vetonus_1_1",
       "articleKey": "vetonus_1_1",
       "ownerWb": "Васильева Мария",
-      "revenue": 37682,
-      "units": 34,
+      "revenue": 38866,
+      "units": 35,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -983,8 +983,8 @@
       "sourceArticle": "sustalit",
       "articleKey": "sustalit",
       "ownerWb": "Васильева Мария",
-      "revenue": 139341,
-      "units": 195,
+      "revenue": 151514,
+      "units": 212,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -992,8 +992,8 @@
       "sourceArticle": "vetonus",
       "articleKey": "vetonus",
       "ownerWb": "Васильева Мария",
-      "revenue": 61283,
-      "units": 79,
+      "revenue": 64954,
+      "units": 84,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1001,8 +1001,8 @@
       "sourceArticle": "dardrakona_75ml",
       "articleKey": "dardrakona_75ml",
       "ownerWb": "Васильева Мария",
-      "revenue": 34354,
-      "units": 45,
+      "revenue": 44615,
+      "units": 61,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1010,8 +1010,8 @@
       "sourceArticle": "uromax_1_1",
       "articleKey": "uromax_1_1",
       "ownerWb": "Лапыгин Максим",
-      "revenue": 20003,
-      "units": 11,
+      "revenue": 23462,
+      "units": 13,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1028,8 +1028,8 @@
       "sourceArticle": "dolgar",
       "articleKey": "dolgar",
       "ownerWb": "Васильева Мария",
-      "revenue": 21513,
-      "units": 31,
+      "revenue": 22201,
+      "units": 32,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1037,8 +1037,8 @@
       "sourceArticle": "psoral",
       "articleKey": "psoral",
       "ownerWb": "Васильева Мария",
-      "revenue": 21951,
-      "units": 29,
+      "revenue": 23452,
+      "units": 31,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1046,8 +1046,8 @@
       "sourceArticle": "dardrakona",
       "articleKey": "dardrakona",
       "ownerWb": "Васильева Мария",
-      "revenue": 17101,
-      "units": 22,
+      "revenue": 22439,
+      "units": 29,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1055,8 +1055,8 @@
       "sourceArticle": "activeprost",
       "articleKey": "activeprost",
       "ownerWb": "Лапыгин Максим",
-      "revenue": 17968,
-      "units": 25,
+      "revenue": 21905,
+      "units": 30,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1073,8 +1073,8 @@
       "sourceArticle": "erobrut",
       "articleKey": "erobrut",
       "ownerWb": "Лапыгин Максим",
-      "revenue": 5603,
-      "units": 8,
+      "revenue": 6407,
+      "units": 9,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1091,8 +1091,8 @@
       "sourceArticle": "wbvaritox",
       "articleKey": "wbvaritox",
       "ownerWb": "Васильева Мария",
-      "revenue": 15291,
-      "units": 20,
+      "revenue": 18015,
+      "units": 24,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1100,8 +1100,8 @@
       "sourceArticle": "wbgetsizegel",
       "articleKey": "wbgetsizegel",
       "ownerWb": "Васильева Мария",
-      "revenue": 10650,
-      "units": 24,
+      "revenue": 11492,
+      "units": 26,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1109,8 +1109,8 @@
       "sourceArticle": "khvoinitsa_1_1",
       "articleKey": "khvoinitsa_1_1",
       "ownerWb": "Васильева Мария",
-      "revenue": 12847,
-      "units": 10,
+      "revenue": 19235,
+      "units": 15,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1118,8 +1118,8 @@
       "sourceArticle": "khvoinitsa",
       "articleKey": "khvoinitsa",
       "ownerWb": "Васильева Мария",
-      "revenue": 3661,
-      "units": 5,
+      "revenue": 4362,
+      "units": 6,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1145,8 +1145,8 @@
       "sourceArticle": "wbpantogor_1_1",
       "articleKey": "wbpantogor_1_1",
       "ownerWb": "Васильева Мария",
-      "revenue": 3242,
-      "units": 2,
+      "revenue": 4520,
+      "units": 3,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -1163,8 +1163,8 @@
       "sourceArticle": "urolgan",
       "articleKey": "urolgan",
       "ownerWb": "Лапыгин Максим",
-      "revenue": 14609,
-      "units": 29,
+      "revenue": 15116,
+      "units": 30,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {

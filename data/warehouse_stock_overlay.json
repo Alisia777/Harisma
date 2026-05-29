@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-28T07:08:05.496Z",
+  "generatedAt": "2026-05-29T09:39:47.582Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
@@ -37,8 +37,8 @@
     "harly_ear_drops"
   ],
   "summary": {
-    "stockWarehouse": 346589,
-    "accepted": 2119043,
+    "stockWarehouse": 372152,
+    "accepted": 2144606,
     "shippedOzon": 560350,
     "shippedWB": 1211569
   },
@@ -188,8 +188,8 @@
     },
     {
       "articleKey": "gel_antiakne_20ml_v2",
-      "stockWarehouse": 34187,
-      "accepted": 132672,
+      "stockWarehouse": 40148,
+      "accepted": 138633,
       "shippedOzon": 16488,
       "shippedWB": 81997,
       "sourceKeys": [
@@ -355,8 +355,8 @@
     },
     {
       "articleKey": "krem_ot_rastyazhek",
-      "stockWarehouse": 6914,
-      "accepted": 48136,
+      "stockWarehouse": 9516,
+      "accepted": 50738,
       "shippedOzon": 10697,
       "shippedWB": 30525,
       "sourceKeys": [
@@ -564,8 +564,8 @@
     },
     {
       "articleKey": "penka_kudryavii_metod_150ml",
-      "stockWarehouse": 5854,
-      "accepted": 25278,
+      "stockWarehouse": 9454,
+      "accepted": 28878,
       "shippedOzon": 3987,
       "shippedWB": 15437,
       "sourceKeys": [
@@ -707,8 +707,8 @@
     },
     {
       "articleKey": "retinol_boost_krem_dlya_vek_30ml",
-      "stockWarehouse": 1444,
-      "accepted": 31216,
+      "stockWarehouse": 14844,
+      "accepted": 44616,
       "shippedOzon": 7260,
       "shippedWB": 22512,
       "sourceKeys": [

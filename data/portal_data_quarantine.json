@@ -1,13 +1,13 @@
 {
   "schema": "portal-data-quarantine-v1",
-  "generatedAt": "2026-05-29T10:05:56.004Z",
+  "generatedAt": "2026-05-29T12:08:10.943Z",
   "reason": "Rows that need review before the data contour can be trusted.",
   "summary": {
-    "rows": 64,
-    "revenue": 19020417,
+    "rows": 63,
+    "revenue": 18772520,
     "overage": 0,
     "apiSumAboveAggregateCount": 0,
-    "apiUnmappedHighRevenueCount": 64
+    "apiUnmappedHighRevenueCount": 63
   },
   "rows": [
     {
@@ -385,19 +385,6 @@
       "aggregateRevenue": 0,
       "overage": 0,
       "units": 404,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "type": "api_sku_unmapped",
-      "severity": "critical",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "insulight_1_1",
-      "name": "insulight_1_1",
-      "revenue": 247897,
-      "aggregateRevenue": 0,
-      "overage": 0,
-      "units": 212,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {

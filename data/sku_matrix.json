@@ -1,22 +1,22 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-05-29T09:59:41.315Z",
+  "generatedAt": "2026-05-29T12:01:56.038Z",
   "source": {
     "skus": 89,
     "aliases": 13,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-05-29T09:59:41.078Z"
+    "dataQualityGeneratedAt": "2026-05-29T11:59:48.066Z"
   },
   "summary": {
     "skuCount": 89,
     "activeSkuCount": 63,
     "aliasCount": 13,
     "ignoredApiSkuCount": 0,
-    "apiUnmappedCount": 143,
+    "apiUnmappedCount": 142,
     "duplicateRiskCount": 0,
     "duplicateRiskOverage": 0,
     "missingOwnerCount": 0,
-    "issueCount": 244,
+    "issueCount": 243,
     "problemStateCounts": {
       "ok": 71,
       "has_warning": 18,
@@ -2448,15 +2448,6 @@
       "name": "trezax",
       "revenue": 249007,
       "units": 404,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "insulight_1_1",
-      "name": "insulight_1_1",
-      "revenue": 247897,
-      "units": 212,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-28"
     },

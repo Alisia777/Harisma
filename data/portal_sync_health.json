@@ -1,14 +1,14 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-05-29T10:05:56.011Z",
+  "generatedAt": "2026-05-29T12:08:10.950Z",
   "status": "warning",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
     "warnings": [
-      "Unmapped API SKU revenue: 21969153."
+      "Unmapped API SKU revenue: 21721256."
     ],
-    "checkedAt": "2026-05-29T10:05:56.011Z"
+    "checkedAt": "2026-05-29T12:08:10.950Z"
   },
   "freshness": {
     "maxDate": "2026-05-28",
@@ -17,7 +17,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-05-29T10:05:56.005Z",
+      "checkedAt": "2026-05-29T12:08:10.944Z",
       "settlementHour": 10,
       "expectedDate": "2026-05-28",
       "maxDate": "2026-05-28",
@@ -64,7 +64,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-05-29T10:05:56.010Z",
+      "checkedAt": "2026-05-29T12:08:10.949Z",
       "expectedDate": "2026-05-28",
       "adsSummaryWindowTo": "2026-05-28",
       "iuDrrWindowTo": "2026-05-28",
@@ -234,16 +234,16 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-05-29T09:59:41.078Z",
+      "generatedAt": "2026-05-29T11:59:48.066Z",
       "asOfDate": "2026-05-28",
-      "revenue": 21969153
+      "revenue": 21721256
     },
     "portal_data_quarantine": {
       "exists": true,
-      "rows": 64,
-      "generatedAt": "2026-05-29T09:59:41.894Z",
+      "rows": 63,
+      "generatedAt": "2026-05-29T09:31:28.503Z",
       "asOfDate": "2026-05-29",
-      "revenue": 19020417
+      "revenue": 18430587
     },
     "sku_aliases": {
       "exists": true,
@@ -269,14 +269,14 @@
     "sku_matrix": {
       "exists": true,
       "rows": 89,
-      "generatedAt": "2026-05-29T09:59:41.315Z",
+      "generatedAt": "2026-05-29T12:01:56.038Z",
       "asOfDate": "2026-05-29",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-05-29T09:59:41.903Z",
+      "generatedAt": "2026-05-29T09:31:28.509Z",
       "asOfDate": "2026-05-29",
       "revenue": 0
     }
@@ -330,18 +330,18 @@
     ]
   },
   "quality": {
-    "issueCount": 244,
-    "criticalCount": 64,
+    "issueCount": 243,
+    "criticalCount": 63,
     "warningCount": 180,
     "monthKey": "2026-05",
     "maxDate": "2026-05-28",
-    "apiUnmappedPlatformRows": 143,
-    "apiUnmappedUniqueSku": 93,
-    "apiUnmappedRevenue": 21969153,
+    "apiUnmappedPlatformRows": 142,
+    "apiUnmappedUniqueSku": 92,
+    "apiUnmappedRevenue": 21721256,
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 0,
     "apiSumAboveAggregateOverage": 0,
-    "skuAliasCount": 0,
+    "skuAliasCount": 13,
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 0,
     "warehouseUnmatchedRows": 25,
@@ -356,20 +356,20 @@
     "overage": 0
   },
   "quarantine": {
-    "rows": 64,
-    "revenue": 19020417,
+    "rows": 63,
+    "revenue": 18772520,
     "overage": 0,
     "apiSumAboveAggregateCount": 0,
-    "apiUnmappedHighRevenueCount": 64
+    "apiUnmappedHighRevenueCount": 63
   },
   "lastGood": {
     "exists": true,
-    "generatedAt": "2026-05-29T09:31:28.512Z",
+    "generatedAt": "2026-05-29T10:05:56.329Z",
     "comparisons": [
       {
         "snapshot": "skus",
         "rows": 89,
-        "previousRows": 0,
+        "previousRows": 89,
         "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
@@ -378,16 +378,16 @@
       {
         "snapshot": "platform_trends",
         "rows": 7,
-        "previousRows": 0,
+        "previousRows": 7,
         "rowRatio": 1,
         "revenue": 499272366,
-        "previousRevenue": 0,
+        "previousRevenue": 499272366,
         "revenueRatio": 1
       },
       {
         "snapshot": "order_procurement",
         "rows": 1952,
-        "previousRows": 0,
+        "previousRows": 1952,
         "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
@@ -396,7 +396,7 @@
       {
         "snapshot": "warehouse_stock_overlay",
         "rows": 81,
-        "previousRows": 0,
+        "previousRows": 81,
         "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
@@ -405,7 +405,7 @@
       {
         "snapshot": "sku_matrix",
         "rows": 89,
-        "previousRows": 0,
+        "previousRows": 89,
         "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
@@ -414,15 +414,15 @@
       {
         "snapshot": "oos_control",
         "rows": 46,
-        "previousRows": 0,
+        "previousRows": 46,
         "rowRatio": 1,
         "revenue": 0,
         "previousRevenue": 0,
         "revenueRatio": 1
       }
     ],
-    "markedAt": "2026-05-29T10:05:56.329Z",
-    "copied": 25
+    "markedAt": "2026-05-29T12:08:10.952Z",
+    "copied": 2
   },
   "checks": [
     {

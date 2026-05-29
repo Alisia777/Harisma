@@ -3480,7 +3480,7 @@ function skuPlanFactRowHtml(row, model) {
   const openAttr = row.syntheticUnmapped ? '' : ` data-open-sku="${escapeHtml(row.articleKey)}"`;
   const attention = skuPlanFactAttentionScore(row) > 0 || (metric.completionToDate !== null && (metric.completionToDate < 0.9 || metric.completionToDate > 1.2));
   return `
-    <tr class="sku-plan-fact-row ${row.syntheticUnmapped ? 'is-unmapped' : ''} ${attention ? 'is-attention' : ''}"${openAttr}>
+    <tr class="sku-plan-fact-row ${row.syntheticUnmapped ? 'is-unmapped' : ''} ${attention ? 'is-attention' : ''}" style="${skuPlanFactCardStyle(metric.tonePlatform || metric.platform, metric.completionToDate)}"${openAttr}>
       <td>${articleHtml}<div class="muted small">${escapeHtml(row.name)}</div></td>
       <td><strong>${escapeHtml(row.owner)}</strong><div class="muted small">${escapeHtml(row.status)}</div>${problemBadge ? `<div class="badge-stack" style="margin-top:6px">${problemBadge}</div>` : ''}</td>
       <td>${skuPlanFactPlatformScopeHtml(row, model)}</td>
@@ -5493,8 +5493,6 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
       </div>
       <div class="footer-note">Клик по строке открывает карточку SKU для смены owner и рабочих комментариев.</div>
     </div>
-    ${skuPlanFactReconciliationHtml(model.reconciliation || [])}
-    ${skuPlanFactDataQualityHtml(model)}
     </div>
   `;
 

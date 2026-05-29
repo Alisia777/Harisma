@@ -456,9 +456,21 @@ function skuPlanFactPlanFromRows(rows = [], monthKey = '') {
   return result;
 }
 
+function skuPlanFactDailyArrayFromMap(map = new Map()) {
+  return [...map.entries()]
+    .map(([date, value]) => ({
+      date,
+      revenue: numberOrZero(value?.revenue),
+      units: numberOrZero(value?.units)
+    }))
+    .filter((item) => item.date && (item.revenue > 0 || item.units > 0))
+    .sort((left, right) => left.date.localeCompare(right.date));
+}
+
 function skuPlanFactFactFromRows(rows = [], monthKey = '', maxFactDate = '') {
-  const result = { units: 0, revenue: 0, avgCheck: null, source: '' };
+  const result = { units: 0, revenue: 0, avgCheck: null, source: '', daily: [] };
   const seenDaily = new Set();
+  const dailyMap = new Map();
   const monthEnd = `${monthKey}-${String(skuPlanFactMonthDays(monthKey)).padStart(2, '0')}`;
   const allowMonthlyFallback = !maxFactDate || maxFactDate >= monthEnd;
   rows.forEach((row, rowIndex) => {
@@ -474,18 +486,30 @@ function skuPlanFactFactFromRows(rows = [], monthKey = '', maxFactDate = '') {
       const revenue = numberOrZero(item.revenue);
       result.units += units;
       result.revenue += revenue;
+      const dailyRow = dailyMap.get(date) || { units: 0, revenue: 0 };
+      dailyRow.units += units;
+      dailyRow.revenue += revenue;
+      dailyMap.set(date, dailyRow);
     });
     (row.actualMonths || []).forEach((item) => {
       if (String(item?.monthKey || '').slice(0, 7) !== monthKey) return;
       if (!allowMonthlyFallback) return;
       if (result.revenue > 0 || result.units > 0) return;
-      result.units += numberOrZero(item.units);
-      result.revenue += numberOrZero(item.revenue);
+      const units = numberOrZero(item.units);
+      const revenue = numberOrZero(item.revenue);
+      result.units += units;
+      result.revenue += revenue;
+      const fallbackDate = maxFactDate || monthEnd;
+      const dailyRow = dailyMap.get(fallbackDate) || { units: 0, revenue: 0 };
+      dailyRow.units += units;
+      dailyRow.revenue += revenue;
+      dailyMap.set(fallbackDate, dailyRow);
       if (!result.source && item.source) result.source = item.source;
     });
     if (!result.source && row.sourceMode) result.source = row.sourceMode;
   });
   result.avgCheck = result.units > 0 ? result.revenue / result.units : null;
+  result.daily = skuPlanFactDailyArrayFromMap(dailyMap);
   return result;
 }
 
@@ -519,6 +543,13 @@ function skuPlanFactScaleMetricFact(metric = null, ratio = 1, reconciliation = n
   metric.factRevenue = rawFactRevenue * ratio;
   metric.factUnits = rawFactUnits * ratio;
   metric.factAvgCheck = metric.factUnits > 0 ? metric.factRevenue / metric.factUnits : null;
+  if (Array.isArray(metric.factDaily)) {
+    metric.factDaily = metric.factDaily.map((item) => ({
+      ...item,
+      revenue: numberOrZero(item.revenue) * ratio,
+      units: numberOrZero(item.units) * ratio
+    }));
+  }
   metric.reconciledFact = true;
   metric.reconciliationRatio = ratio;
   metric.reconciliation = reconciliation;
@@ -584,6 +615,10 @@ function skuPlanFactBlankMetric(platform = '') {
     turnoverDays: null,
     stock: null,
     marginPct: null,
+    marginRub: null,
+    factDaily: [],
+    scoreHistory: [],
+    completionDelta: null,
     currentPrice: null,
     currentClientPrice: null,
     currentFillPrice: null,
@@ -722,19 +757,27 @@ function skuPlanFactAdIndex(monthKey, maxFactDate = '') {
     const token = skuPlanFactArticleToken(item);
     if (!token) return;
     const key = `${platform}|${token}`;
-    const row = map.get(key) || { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0 };
+    const row = map.get(key) || { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0, daily: new Map() };
     row.spend += numberOrZero(item.spend);
     row.views += numberOrZero(item.views);
     row.clicks += numberOrZero(item.clicks);
     row.orders += numberOrZero(item.orders);
     row.revenue += numberOrZero(item.revenue);
+    const dailyRow = row.daily.get(date) || { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0 };
+    dailyRow.spend += numberOrZero(item.spend);
+    dailyRow.views += numberOrZero(item.views);
+    dailyRow.clicks += numberOrZero(item.clicks);
+    dailyRow.orders += numberOrZero(item.orders);
+    dailyRow.revenue += numberOrZero(item.revenue);
+    row.daily.set(date, dailyRow);
     map.set(key, row);
   });
   return map;
 }
 
 function skuPlanFactAdForSku(adIndex, platform = '', sku = {}) {
-  const result = { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0 };
+  const result = { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0, daily: [] };
+  const dailyMap = new Map();
   skuPlanFactSkuLookupTokens(sku, platform).forEach((token) => {
     const item = adIndex.get(`${platform}|${token}`);
     if (!item) return;
@@ -743,7 +786,19 @@ function skuPlanFactAdForSku(adIndex, platform = '', sku = {}) {
     result.clicks += numberOrZero(item.clicks);
     result.orders += numberOrZero(item.orders);
     result.revenue += numberOrZero(item.revenue);
+    (item.daily instanceof Map ? [...item.daily.entries()] : []).forEach(([date, value]) => {
+      const dailyRow = dailyMap.get(date) || { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0 };
+      dailyRow.spend += numberOrZero(value?.spend);
+      dailyRow.views += numberOrZero(value?.views);
+      dailyRow.clicks += numberOrZero(value?.clicks);
+      dailyRow.orders += numberOrZero(value?.orders);
+      dailyRow.revenue += numberOrZero(value?.revenue);
+      dailyMap.set(date, dailyRow);
+    });
   });
+  result.daily = [...dailyMap.entries()]
+    .map(([date, value]) => ({ date, ...value }))
+    .sort((left, right) => left.date.localeCompare(right.date));
   return result;
 }
 
@@ -788,6 +843,55 @@ function skuPlanFactPlatformAllocationWeight(metric = {}, platformPriceProxy = 0
   return 1;
 }
 
+function skuPlanFactBuildScoreHistory(metric = {}, monthKey = '') {
+  const daily = Array.isArray(metric.factDaily) ? metric.factDaily : [];
+  if (!daily.length) {
+    return metric.factRevenue > 0 || metric.planToDateRevenue > 0
+      ? [{
+        date: monthKey ? `${monthKey}-${String(Math.max(1, Math.round(metric.planToDateRevenue > 0 && metric.planRevenue > 0 ? metric.planToDateRevenue / metric.planRevenue * skuPlanFactMonthDays(monthKey) : 1))).padStart(2, '0')}` : '',
+        revenue: numberOrZero(metric.factRevenue),
+        units: numberOrZero(metric.factUnits),
+        planToDateRevenue: numberOrZero(metric.planToDateRevenue),
+        completionToDate: metric.completionToDate ?? null
+      }]
+      : [];
+  }
+  const monthDays = Math.max(1, skuPlanFactMonthDays(monthKey));
+  let revenue = 0;
+  let units = 0;
+  return daily.map((item) => {
+    revenue += numberOrZero(item.revenue);
+    units += numberOrZero(item.units);
+    const day = Math.min(monthDays, Math.max(1, Number(String(item.date || '').slice(8, 10)) || 1));
+    const planToDateRevenue = numberOrZero(metric.planRevenue) > 0 ? numberOrZero(metric.planRevenue) * day / monthDays : 0;
+    return {
+      date: item.date || '',
+      revenue,
+      units,
+      planToDateRevenue,
+      completionToDate: planToDateRevenue > 0 ? revenue / planToDateRevenue : null
+    };
+  });
+}
+
+function skuPlanFactCompletionDelta(history = []) {
+  const points = (history || []).filter((item) => item.completionToDate !== null && item.completionToDate !== undefined);
+  if (points.length < 2) return null;
+  return points[points.length - 1].completionToDate - points[points.length - 2].completionToDate;
+}
+
+function skuPlanFactMergeDailyIntoMap(map = new Map(), daily = [], scale = 1) {
+  (daily || []).forEach((item) => {
+    const date = String(item?.date || '').slice(0, 10);
+    if (!date) return;
+    const row = map.get(date) || { units: 0, revenue: 0 };
+    row.units += numberOrZero(item.units) * scale;
+    row.revenue += numberOrZero(item.revenue) * scale;
+    map.set(date, row);
+  });
+  return map;
+}
+
 function skuPlanFactFinalizePlatformMetric(metric = {}, monthKey = '', elapsedDays = 0) {
   if (!metric || typeof metric !== 'object') return metric;
   const days = Math.max(1, skuPlanFactMonthDays(monthKey));
@@ -810,6 +914,10 @@ function skuPlanFactFinalizePlatformMetric(metric = {}, monthKey = '', elapsedDa
   metric.gapToDate = metric.factRevenue - metric.planToDateRevenue;
   metric.drr = metric.factRevenue > 0 ? metric.adSpend / metric.factRevenue : null;
   metric.adsDrr = metric.adRevenue > 0 ? metric.adSpend / metric.adRevenue : null;
+  metric.marginPct = skuPlanFactNormalizeRatio(metric.marginPct);
+  metric.marginRub = metric.marginPct === null ? null : metric.factRevenue * metric.marginPct;
+  metric.scoreHistory = skuPlanFactBuildScoreHistory(metric, monthKey);
+  metric.completionDelta = skuPlanFactCompletionDelta(metric.scoreHistory);
   return metric;
 }
 
@@ -916,6 +1024,7 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
     factUnits: fact.units,
     factRevenue: fact.revenue,
     factAvgCheck: fact.avgCheck,
+    factDaily: fact.daily || [],
     completionToDate: planToDateRevenue > 0 ? fact.revenue / planToDateRevenue : null,
     completionMonth: plan.revenue > 0 ? fact.revenue / plan.revenue : null,
     gapToDate: fact.revenue - planToDateRevenue,
@@ -924,6 +1033,7 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
     adClicks: ad.clicks,
     adOrders: ad.orders,
     adRevenue: ad.revenue,
+    adDaily: ad.daily || [],
     drr: fact.revenue > 0 ? ad.spend / fact.revenue : null,
     adsDrr: ad.revenue > 0 ? ad.spend / ad.revenue : null,
     turnoverDays,
@@ -985,6 +1095,14 @@ function skuPlanFactFinalizeRow(row = {}, monthKey = '', elapsedDays = 0) {
     acc.factUnits += numberOrZero(metric.factUnits);
     acc.factRevenue += numberOrZero(metric.factRevenue);
     acc.adSpend += numberOrZero(metric.adSpend);
+    skuPlanFactMergeDailyIntoMap(acc.dailyMap, metric.factDaily);
+    const marginPct = skuPlanFactNormalizeRatio(metric.marginPct);
+    const marginWeight = numberOrZero(metric.factRevenue) || numberOrZero(metric.planToDateRevenue) || numberOrZero(metric.planRevenue);
+    if (marginPct !== null && marginWeight > 0) {
+      acc.marginValue += marginPct * marginWeight;
+      acc.marginWeight += marginWeight;
+    }
+    if (skuPlanFactPlatformHasActivity(metric)) acc.activePlatforms += 1;
     acc.hasPlanOrFact = acc.hasPlanOrFact || Boolean(
       metric?.hasSource
       || numberOrZero(metric.planUnits) > 0
@@ -994,7 +1112,7 @@ function skuPlanFactFinalizeRow(row = {}, monthKey = '', elapsedDays = 0) {
       || numberOrZero(metric.adSpend) > 0
     );
     return acc;
-  }, { planUnits: 0, planRevenue: 0, planToDateRevenue: 0, factUnits: 0, factRevenue: 0, adSpend: 0, hasPlanOrFact: false });
+  }, { planUnits: 0, planRevenue: 0, planToDateRevenue: 0, factUnits: 0, factRevenue: 0, adSpend: 0, marginValue: 0, marginWeight: 0, activePlatforms: 0, dailyMap: new Map(), hasPlanOrFact: false });
   row.planUnits = totals.planUnits;
   row.planRevenue = totals.planRevenue;
   row.planToDateRevenue = totals.planToDateRevenue;
@@ -1006,6 +1124,12 @@ function skuPlanFactFinalizeRow(row = {}, monthKey = '', elapsedDays = 0) {
   row.gapToDate = row.factRevenue - row.planToDateRevenue;
   row.adSpend = totals.adSpend;
   row.drr = row.factRevenue > 0 ? row.adSpend / row.factRevenue : null;
+  row.marginPct = totals.marginWeight > 0 ? totals.marginValue / totals.marginWeight : null;
+  row.marginRub = row.marginPct === null ? null : row.factRevenue * row.marginPct;
+  row.activePlatformCount = totals.activePlatforms;
+  row.factDaily = skuPlanFactDailyArrayFromMap(totals.dailyMap);
+  row.scoreHistory = skuPlanFactBuildScoreHistory(row, monthKey);
+  row.completionDelta = skuPlanFactCompletionDelta(row.scoreHistory);
   row.hasPlanOrFact = totals.hasPlanOrFact;
   return row;
 }
@@ -1026,16 +1150,18 @@ function skuPlanFactMarkDuplicateRiskRows(rows = []) {
 }
 
 function skuPlanFactDefaultSortDir(sort = '') {
-  const numericSorts = new Set(['fact', 'plan', 'drr', 'avgCheck', 'turnover', 'ad', ...SKU_PLAN_FACT_PLATFORMS]);
+  const numericSorts = new Set(['fact', 'plan', 'drr', 'avgCheck', 'turnover', 'ad', 'margin', 'platform', 'action', ...SKU_PLAN_FACT_PLATFORMS]);
   return numericSorts.has(sort) ? 'desc' : 'asc';
 }
 
 function skuPlanFactSortValue(row, sort = '') {
   if (sort === 'article') return row.article || row.articleKey || '';
   if (sort === 'owner') return row.owner || '';
+  if (sort === 'platform') return row.activePlatformCount || 0;
   if (sort === 'completion') return row.completionToDate;
   if (sort === 'fact') return row.factRevenue;
   if (sort === 'plan') return row.planRevenue;
+  if (sort === 'margin') return row.marginPct;
   if (sort === 'drr') return row.drr;
   if (SKU_PLAN_FACT_PLATFORMS.includes(sort)) return row.platforms?.[sort]?.factRevenue ?? row[sort]?.factRevenue;
   if (sort === 'avgCheck') return row.factUnits > 0 ? row.factRevenue / row.factUnits : null;
@@ -1046,6 +1172,7 @@ function skuPlanFactSortValue(row, sort = '') {
     return values.length ? values.reduce((sum, value) => sum + Number(value), 0) / values.length : null;
   }
   if (sort === 'ad') return row.adSpend;
+  if (sort === 'action') return skuPlanFactAttentionScore(row);
   return row.gapToDate;
 }
 
@@ -1072,6 +1199,27 @@ function skuPlanFactSortRows(rows, sort, sortDir) {
   });
 }
 
+function skuPlanFactRowMatchesFilters(row = {}, filters = {}, options = {}) {
+  const checkPlatform = options.platform !== false;
+  if (filters.owner !== 'all' && row.owner !== filters.owner) return false;
+  if (filters.status === 'active' && String(row.status || '').toLowerCase().includes('вывод')) return false;
+  if (filters.status === 'with_plan' && row.planRevenue <= 0) return false;
+  if (filters.status === 'under_plan' && !(row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue)) return false;
+  if (filters.status === 'no_fact' && !(row.planRevenue > 0 && row.factRevenue <= 0)) return false;
+  if (filters.status === 'unmapped' && !row.syntheticUnmapped) return false;
+  if (filters.status === 'matrix_problem' && (row.matrixProblemState === 'ok' || !row.matrixProblemState)) return false;
+  if (filters.status === 'missing_owner' && row.matrixProblemState !== 'missing_owner' && row.owner !== 'Без owner') return false;
+  if (filters.status === 'duplicate_risk' && !row.duplicateRisk) return false;
+  if (checkPlatform && filters.platform !== 'all' && !skuPlanFactPlatformHasActivity(row.platforms?.[filters.platform] || row[filters.platform])) return false;
+  const search = String(filters.search || '').trim().toLowerCase();
+  if (!search) return true;
+  return [row.articleKey, row.article, row.name, row.owner, row.status, row.matrixProblemMeta?.label]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+    .includes(search);
+}
+
 function skuPlanFactBuildModel() {
   const filters = skuPlanFactFilters();
   const indexes = skuPlanFactBuildIndexes();
@@ -1093,25 +1241,8 @@ function skuPlanFactBuildModel() {
   SKU_PLAN_FACT_PLATFORMS.forEach((platform) => skuPlanFactAllocatePlatformPlan(rows, monthKey, platform, elapsedDays));
   rows.forEach((row) => skuPlanFactFinalizeRow(row, monthKey, elapsedDays));
   const owners = [...new Set(rows.map((row) => row.owner).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
-  const search = String(filters.search || '').trim().toLowerCase();
-  const filteredRows = rows.filter((row) => {
-    if (filters.owner !== 'all' && row.owner !== filters.owner) return false;
-    if (filters.status === 'active' && String(row.status || '').toLowerCase().includes('вывод')) return false;
-    if (filters.status === 'with_plan' && row.planRevenue <= 0) return false;
-    if (filters.status === 'under_plan' && !(row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue)) return false;
-    if (filters.status === 'no_fact' && !(row.planRevenue > 0 && row.factRevenue <= 0)) return false;
-    if (filters.status === 'unmapped' && !row.syntheticUnmapped) return false;
-    if (filters.status === 'matrix_problem' && (row.matrixProblemState === 'ok' || !row.matrixProblemState)) return false;
-    if (filters.status === 'missing_owner' && row.matrixProblemState !== 'missing_owner' && row.owner !== 'Без owner') return false;
-    if (filters.status === 'duplicate_risk' && !row.duplicateRisk) return false;
-    if (filters.platform !== 'all' && !skuPlanFactPlatformHasActivity(row.platforms?.[filters.platform] || row[filters.platform])) return false;
-    if (!search) return true;
-    return [row.articleKey, row.article, row.name, row.owner, row.status, row.matrixProblemMeta?.label]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
-      .includes(search);
-  });
+  const platformBaseRows = rows.filter((row) => skuPlanFactRowMatchesFilters(row, filters, { platform: false }));
+  const filteredRows = platformBaseRows.filter((row) => skuPlanFactRowMatchesFilters(row, filters));
   const sortedRows = skuPlanFactSortRows(filteredRows, filters.sort, filters.sortDir);
   const unmappedRows = rows.filter((row) => row.syntheticUnmapped);
   const unmappedRevenue = unmappedRows.reduce((sum, row) => sum + numberOrZero(row.factRevenue), 0);
@@ -1123,15 +1254,23 @@ function skuPlanFactBuildModel() {
     acc.planUnits += row.planUnits;
     acc.factUnits += row.factUnits;
     acc.adSpend += row.adSpend;
+    const marginPct = skuPlanFactNormalizeRatio(row.marginPct);
+    const marginWeight = numberOrZero(row.factRevenue) || numberOrZero(row.planToDateRevenue) || numberOrZero(row.planRevenue);
+    if (marginPct !== null && marginWeight > 0) {
+      acc.marginValue += marginPct * marginWeight;
+      acc.marginWeight += marginWeight;
+    }
     if (row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue) acc.underPlan += 1;
     if (row.planRevenue > 0 && row.factRevenue <= 0) acc.noFact += 1;
     return acc;
-  }, { planRevenue: 0, planToDateRevenue: 0, factRevenue: 0, planUnits: 0, factUnits: 0, adSpend: 0, underPlan: 0, noFact: 0 });
+  }, { planRevenue: 0, planToDateRevenue: 0, factRevenue: 0, planUnits: 0, factUnits: 0, adSpend: 0, marginValue: 0, marginWeight: 0, underPlan: 0, noFact: 0 });
   totals.completionToDate = totals.planToDateRevenue > 0 ? totals.factRevenue / totals.planToDateRevenue : null;
   totals.completionMonth = totals.planRevenue > 0 ? totals.factRevenue / totals.planRevenue : null;
   totals.gapToDate = totals.factRevenue - totals.planToDateRevenue;
   totals.avgCheck = totals.factUnits > 0 ? totals.factRevenue / totals.factUnits : null;
   totals.drr = totals.factRevenue > 0 ? totals.adSpend / totals.factRevenue : null;
+  totals.marginPct = totals.marginWeight > 0 ? totals.marginValue / totals.marginWeight : null;
+  totals.marginRub = totals.marginPct === null ? null : totals.factRevenue * totals.marginPct;
   return {
     filters,
     months,
@@ -1145,6 +1284,7 @@ function skuPlanFactBuildModel() {
     elapsedDays,
     rows: sortedRows,
     allRows: rows,
+    platformBaseRows,
     owners,
     platforms: SKU_PLAN_FACT_PLATFORMS,
     platformLabels: SKU_PLAN_FACT_PLATFORM_LABELS,
@@ -1498,6 +1638,31 @@ function skuContourDecisionCardsHtml() {
       `).join('')}
     </div>
   `;
+}
+
+function skuPlanFactNormalizeRatio(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return null;
+  return Math.abs(numeric) > 2 ? numeric / 100 : numeric;
+}
+
+function skuPlanFactMarginTone(value) {
+  const ratio = skuPlanFactNormalizeRatio(value);
+  if (ratio === null) return '';
+  if (ratio < 0.15) return 'danger';
+  if (ratio < 0.28) return 'warn';
+  return 'ok';
+}
+
+function skuPlanFactAttentionScore(row = {}) {
+  let score = 0;
+  if (row.matrixProblemState && row.matrixProblemState !== 'ok') score += 10;
+  if (row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue) score += 5;
+  if (row.completionToDate !== null && row.completionToDate > 1.2) score += 3;
+  if (skuPlanFactNormalizeRatio(row.marginPct) !== null && skuPlanFactNormalizeRatio(row.marginPct) < 0.15) score += 4;
+  if (row.drr !== null && row.drr > 0.25) score += 2;
+  return score;
 }
 
 function skuContourGuideHtml() {
@@ -1858,14 +2023,33 @@ const PORTAL_DATA_RULE_DEFAULTS = {
   autoTaskLimit: 10
 };
 
+const PORTAL_DATA_RULE_LIMITS = {
+  stockRiskDays: { min: 1, max: 180 },
+  criticalRevenueRub: { min: 0 },
+  staleSourceDays: { min: 0, max: 14 },
+  autoTaskLimit: { min: 1, max: 50 }
+};
+
+function portalNormalizeDataRuleValue(key, value, fallback) {
+  if (value === null || value === undefined || value === '') return fallback;
+  const parsed = Number(String(value).replace(/\s+/g, '').replace(',', '.'));
+  if (!Number.isFinite(parsed)) return fallback;
+  const limits = PORTAL_DATA_RULE_LIMITS[key] || {};
+  const min = Number.isFinite(Number(limits.min)) ? Number(limits.min) : 0;
+  const max = Number.isFinite(Number(limits.max)) ? Number(limits.max) : null;
+  let next = Math.round(parsed);
+  if (next < min) next = min;
+  if (max !== null && next > max) next = max;
+  return next;
+}
+
 function portalDataRules() {
   const raw = state.storage?.portalDataRules && typeof state.storage.portalDataRules === 'object'
     ? state.storage.portalDataRules
     : {};
   const next = { ...PORTAL_DATA_RULE_DEFAULTS };
   Object.keys(next).forEach((key) => {
-    const value = Number(raw[key]);
-    if (Number.isFinite(value) && value >= 0) next[key] = value;
+    next[key] = portalNormalizeDataRuleValue(key, raw[key], next[key]);
   });
   return next;
 }
@@ -1878,8 +2062,7 @@ function portalSaveDataRules(raw = {}) {
   const current = portalDataRules();
   const next = { ...current };
   Object.keys(PORTAL_DATA_RULE_DEFAULTS).forEach((key) => {
-    const value = Number(raw[key]);
-    if (Number.isFinite(value) && value >= 0) next[key] = Math.round(value);
+    next[key] = portalNormalizeDataRuleValue(key, raw[key], current[key]);
   });
   state.storage = state.storage || {};
   state.storage.portalDataRules = next;
@@ -2980,9 +3163,312 @@ function skuPlanFactPlatformAvgCheckLines(row = {}) {
   }).join('');
 }
 
+function skuPlanFactCompletionLevel(value) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return 0;
+  const ratio = Number(value);
+  if (ratio >= 1.2) return 5;
+  if (ratio >= 1) return 4;
+  if (ratio >= 0.8) return 3;
+  if (ratio >= 0.5) return 2;
+  return ratio > 0 ? 1 : 0;
+}
+
+function skuPlanFactPlatformHue(platform = '') {
+  return {
+    wb: 275,
+    ozon: 212,
+    ya: 42,
+    goldapple: 146,
+    letu: 330,
+    magnit: 4
+  }[platform] ?? 205;
+}
+
+function skuPlanFactCardStyle(platform = '', completion = null) {
+  const level = skuPlanFactCompletionLevel(completion);
+  const ratio = completion === null || completion === undefined || !Number.isFinite(Number(completion))
+    ? 0.12
+    : Math.min(1.35, Math.max(0.05, Number(completion)));
+  const fill = 0.08 + Math.min(0.34, ratio * 0.24);
+  const rowFill = Math.min(0.12, fill * 0.32);
+  const border = 0.18 + Math.min(0.5, ratio * 0.3);
+  const glow = 0.04 + Math.min(0.18, ratio * 0.12);
+  const progress = Math.min(100, Math.max(0, ratio * 100));
+  return `--pf-hue:${skuPlanFactPlatformHue(platform)};--pf-fill:${fill.toFixed(3)};--pf-row-fill:${rowFill.toFixed(3)};--pf-border:${border.toFixed(3)};--pf-glow:${glow.toFixed(3)};--pf-progress:${progress.toFixed(1)}%;--pf-level:${level}`;
+}
+
+function skuPlanFactPlatformSummary(model = {}, platform = '') {
+  const rows = model.platformBaseRows || model.allRows || [];
+  const summary = rows.reduce((acc, row) => {
+    const metric = row.platforms?.[platform] || row[platform] || null;
+    if (!skuPlanFactPlatformHasActivity(metric)) return acc;
+    acc.planRevenue += numberOrZero(metric.planRevenue);
+    acc.planToDateRevenue += numberOrZero(metric.planToDateRevenue);
+    acc.factRevenue += numberOrZero(metric.factRevenue);
+    acc.planUnits += numberOrZero(metric.planUnits);
+    acc.factUnits += numberOrZero(metric.factUnits);
+    acc.adSpend += numberOrZero(metric.adSpend);
+    acc.rows += 1;
+    if (numberOrZero(metric.planToDateRevenue) > 0 && numberOrZero(metric.factRevenue) < numberOrZero(metric.planToDateRevenue)) acc.underPlan += 1;
+    skuPlanFactMergeDailyIntoMap(acc.dailyMap, metric.factDaily);
+    const marginPct = skuPlanFactNormalizeRatio(metric.marginPct);
+    const marginWeight = numberOrZero(metric.factRevenue) || numberOrZero(metric.planToDateRevenue) || numberOrZero(metric.planRevenue);
+    if (marginPct !== null && marginWeight > 0) {
+      acc.marginValue += marginPct * marginWeight;
+      acc.marginWeight += marginWeight;
+    }
+    return acc;
+  }, { platform, rows: 0, underPlan: 0, planRevenue: 0, planToDateRevenue: 0, factRevenue: 0, planUnits: 0, factUnits: 0, adSpend: 0, marginValue: 0, marginWeight: 0, dailyMap: new Map() });
+  summary.label = skuPlanFactPlatformLabel(platform);
+  summary.completionToDate = summary.planToDateRevenue > 0 ? summary.factRevenue / summary.planToDateRevenue : null;
+  summary.completionMonth = summary.planRevenue > 0 ? summary.factRevenue / summary.planRevenue : null;
+  summary.gapToDate = summary.factRevenue - summary.planToDateRevenue;
+  summary.drr = summary.factRevenue > 0 ? summary.adSpend / summary.factRevenue : null;
+  summary.marginPct = summary.marginWeight > 0 ? summary.marginValue / summary.marginWeight : null;
+  summary.marginRub = summary.marginPct === null ? null : summary.factRevenue * summary.marginPct;
+  summary.factDaily = skuPlanFactDailyArrayFromMap(summary.dailyMap);
+  summary.scoreHistory = skuPlanFactBuildScoreHistory(summary, model.monthKey || '');
+  summary.completionDelta = skuPlanFactCompletionDelta(summary.scoreHistory);
+  return summary;
+}
+
+function skuPlanFactHistoryTapeHtml(history = [], platform = '', options = {}) {
+  const points = (history || [])
+    .filter((item) => item.completionToDate !== null && item.completionToDate !== undefined)
+    .slice(options.compact ? -4 : -5);
+  if (!points.length) return '';
+  return `
+    <span class="sku-score-tape ${options.compact ? 'compact' : ''}" style="${skuPlanFactCardStyle(platform, points[points.length - 1]?.completionToDate)}">
+      ${points.map((item) => {
+        const day = String(item.date || '').slice(8, 10) || '•';
+        return `<span title="${escapeHtml(item.date || '')}"><b>${escapeHtml(day)}</b><em>${fmt.pct(item.completionToDate)}</em></span>`;
+      }).join('')}
+    </span>
+  `;
+}
+
+function skuPlanFactDeltaHtml(delta = null) {
+  if (delta === null || delta === undefined || !Number.isFinite(Number(delta))) return '';
+  const value = Number(delta);
+  const sign = value > 0 ? '+' : '';
+  const tone = value > 0 ? 'ok-text' : (value < 0 ? 'danger-text' : 'muted');
+  return `<em class="${tone}">Δ ${sign}${(value * 100).toFixed(1)} п.п.</em>`;
+}
+
+function skuPlanFactDominantPlatform(row = {}) {
+  const item = SKU_PLAN_FACT_PLATFORMS
+    .map((platform) => ({ platform, metric: row.platforms?.[platform] || row[platform] || null }))
+    .filter((entry) => skuPlanFactPlatformHasActivity(entry.metric))
+    .sort((left, right) => numberOrZero(right.metric?.factRevenue) - numberOrZero(left.metric?.factRevenue))[0];
+  return item?.platform || 'all';
+}
+
+function skuPlanFactHealthBarHtml(config = {}) {
+  const platform = config.platform || 'all';
+  const rawValue = Number(config.valueRatio);
+  const ratio = Number.isFinite(rawValue) ? rawValue : 0;
+  const width = Math.min(100, Math.max(0, ratio * 100));
+  const tone = config.tone || '';
+  return `
+    <div class="sku-health ${tone}" style="${skuPlanFactCardStyle(platform, ratio)}">
+      <div class="sku-health__head">
+        <span>${escapeHtml(config.label || '')}</span>
+        <strong>${config.valueHtml || escapeHtml(config.valueText || '')}</strong>
+      </div>
+      <span class="sku-health__bar"><i style="width:${width.toFixed(1)}%"></i><em>${escapeHtml(config.barText || config.valueText || '')}</em></span>
+      ${config.historyHtml || ''}
+      ${(config.metaHtml || config.subText) ? `<div class="sku-health__meta">${config.metaHtml || `<em>${escapeHtml(config.subText || '')}</em>`}</div>` : ''}
+    </div>
+  `;
+}
+
+function skuPlanFactPlatformBoardHtml(model = {}) {
+  const activePlatform = model.filters?.platform || 'all';
+  return `
+    <div class="sku-plan-platform-board">
+      ${(model.platforms || SKU_PLAN_FACT_PLATFORMS).map((platform) => {
+        const summary = skuPlanFactPlatformSummary(model, platform);
+        const level = skuPlanFactCompletionLevel(summary.completionToDate);
+        const active = activePlatform === platform;
+        return `
+          <button class="sku-plan-platform-card level-${level} ${active ? 'active' : ''}" type="button" data-sku-plan-fact-platform-card="${escapeHtml(platform)}" aria-pressed="${active ? 'true' : 'false'}" style="${skuPlanFactCardStyle(platform, summary.completionToDate)}">
+            <span class="sku-plan-platform-card__top">
+              <strong>${escapeHtml(summary.label)}</strong>
+              <em>${fmt.int(summary.rows)} SKU</em>
+            </span>
+            <span class="sku-plan-platform-card__value">${fmt.pct(summary.completionToDate)}</span>
+            <span class="sku-plan-platform-card__meta">${fmt.money(summary.factRevenue)} / ${fmt.money(summary.planToDateRevenue)}</span>
+            <span class="sku-plan-platform-card__bar"><i></i></span>
+            ${skuPlanFactHistoryTapeHtml(summary.scoreHistory, platform, { compact: true })}
+            <span class="sku-plan-platform-card__foot">
+              <b class="${skuPlanFactDeltaClass(summary.gapToDate)}">${fmt.money(summary.gapToDate)}</b>
+              <span>${skuPlanFactDeltaHtml(summary.completionDelta) || `<em>${fmt.int(summary.underPlan)} ниже плана</em>`}</span>
+            </span>
+          </button>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function skuPlanFactDisplayMetric(row = {}, model = {}) {
+  const platform = model.filters?.platform || 'all';
+  if (platform !== 'all') {
+    const metric = row.platforms?.[platform] || row[platform] || {};
+    return {
+      platform,
+      label: skuPlanFactPlatformLabel(platform),
+      planRevenue: numberOrZero(metric.planRevenue),
+      planToDateRevenue: numberOrZero(metric.planToDateRevenue),
+      factRevenue: numberOrZero(metric.factRevenue),
+      planUnits: numberOrZero(metric.planUnits),
+      planToDateUnits: numberOrZero(metric.planToDateUnits),
+      factUnits: numberOrZero(metric.factUnits),
+      completionToDate: metric.completionToDate ?? null,
+      gapToDate: numberOrZero(metric.gapToDate),
+      adSpend: numberOrZero(metric.adSpend),
+      drr: metric.drr ?? null,
+      marginPct: skuPlanFactNormalizeRatio(metric.marginPct),
+      marginRub: metric.marginRub ?? (skuPlanFactNormalizeRatio(metric.marginPct) === null ? null : numberOrZero(metric.factRevenue) * skuPlanFactNormalizeRatio(metric.marginPct)),
+      scoreHistory: metric.scoreHistory || [],
+      completionDelta: metric.completionDelta ?? null,
+      stock: metric.stock ?? null,
+      turnoverDays: metric.turnoverDays ?? null,
+      tonePlatform: platform
+    };
+  }
+  const dominantPlatform = skuPlanFactDominantPlatform(row);
+  return {
+    platform: 'all',
+    label: 'Итого',
+    planRevenue: row.planRevenue,
+    planToDateRevenue: row.planToDateRevenue,
+    factRevenue: row.factRevenue,
+    planUnits: row.planUnits,
+    planToDateUnits: row.planUnits > 0 && row.planRevenue > 0 ? row.planUnits * row.planToDateRevenue / row.planRevenue : 0,
+    factUnits: row.factUnits,
+    completionToDate: row.completionToDate,
+    gapToDate: row.gapToDate,
+    adSpend: row.adSpend,
+    drr: row.drr,
+    marginPct: skuPlanFactNormalizeRatio(row.marginPct),
+    marginRub: row.marginRub,
+    scoreHistory: row.scoreHistory || [],
+    completionDelta: row.completionDelta ?? null,
+    stock: null,
+    turnoverDays: null,
+    tonePlatform: dominantPlatform
+  };
+}
+
+function skuPlanFactProgressHtml(value) {
+  const ratio = value === null || value === undefined || !Number.isFinite(Number(value)) ? 0 : Number(value);
+  const width = Math.min(100, Math.max(0, ratio * 100));
+  return `<span class="sku-plan-fact-progress"><i style="width:${width.toFixed(1)}%"></i></span>`;
+}
+
+function skuPlanFactCompletionHtml(metric = {}) {
+  const platform = metric.tonePlatform || metric.platform || 'all';
+  return skuPlanFactHealthBarHtml({
+    platform,
+    label: 'Выполнение',
+    valueRatio: metric.completionToDate,
+    valueText: fmt.pct(metric.completionToDate),
+    barText: fmt.pct(metric.completionToDate),
+    tone: skuPlanFactTone(metric.completionToDate),
+    historyHtml: skuPlanFactHistoryTapeHtml(metric.scoreHistory, platform, { compact: true }),
+    metaHtml: `
+      <b class="${skuPlanFactDeltaClass(metric.gapToDate)}">${fmt.money(metric.gapToDate)}</b>
+      ${skuPlanFactDeltaHtml(metric.completionDelta)}
+    `
+  });
+}
+
+function skuPlanFactPlatformScopeHtml(row = {}, model = {}) {
+  const activePlatform = model.filters?.platform || 'all';
+  if (activePlatform !== 'all') {
+    const metric = row.platforms?.[activePlatform] || row[activePlatform] || {};
+    return `
+      <div class="sku-plan-platform-scope">
+        <span class="chip info">${escapeHtml(skuPlanFactPlatformLabel(activePlatform))}</span>
+        <div class="muted small">${fmt.int(metric.factUnits)} шт. факт · остаток ${fmt.int(metric.stock)}</div>
+        <div class="muted small">оборач. ${fmt.num(metric.turnoverDays, 1)} дн.</div>
+      </div>
+    `;
+  }
+  const chips = SKU_PLAN_FACT_PLATFORMS
+    .map((platform) => ({ platform, metric: row.platforms?.[platform] || row[platform] || null }))
+    .filter((item) => skuPlanFactPlatformHasActivity(item.metric))
+    .sort((left, right) => numberOrZero(right.metric?.factRevenue) - numberOrZero(left.metric?.factRevenue))
+    .slice(0, 4);
+  return `
+    <div class="sku-plan-platform-minis">
+      ${chips.length ? chips.map(({ platform, metric }) => `
+        <span class="sku-plan-platform-mini level-${skuPlanFactCompletionLevel(metric.completionToDate)}" style="${skuPlanFactCardStyle(platform, metric.completionToDate)}">
+          <b>${escapeHtml(skuPlanFactPlatformLabel(platform))}</b>
+          <em>${fmt.pct(metric.completionToDate)}</em>
+        </span>
+      `).join('') : '<span class="muted small">нет активности</span>'}
+    </div>
+  `;
+}
+
+function skuPlanFactFactPlanHtml(metric = {}) {
+  const platform = metric.tonePlatform || metric.platform || 'all';
+  return skuPlanFactHealthBarHtml({
+    platform,
+    label: 'Факт / план',
+    valueRatio: metric.completionToDate,
+    valueText: fmt.pct(metric.completionToDate),
+    barText: fmt.pct(metric.completionToDate),
+    tone: skuPlanFactTone(metric.completionToDate),
+    metaHtml: `
+      <b>${fmt.money(metric.factRevenue)}</b>
+      <em>план ${fmt.money(metric.planToDateRevenue)}</em>
+      <em>${fmt.int(metric.factUnits)} / ${fmt.int(metric.planToDateUnits)} шт.</em>
+    `
+  });
+}
+
+function skuPlanFactMarginHtml(metric = {}) {
+  const marginPct = skuPlanFactNormalizeRatio(metric.marginPct);
+  const tone = skuPlanFactMarginTone(marginPct);
+  const target = 0.3;
+  return skuPlanFactHealthBarHtml({
+    platform: metric.tonePlatform || metric.platform || 'all',
+    label: 'Маржа',
+    valueRatio: marginPct === null ? 0 : marginPct / target,
+    valueText: fmt.pct(marginPct),
+    barText: fmt.pct(marginPct),
+    tone,
+    metaHtml: `<b>${fmt.money(metric.marginRub)}</b><em>цель ${fmt.pct(target)}</em>`
+  });
+}
+
+function skuPlanFactAdHtml(metric = {}, model = {}) {
+  const platform = metric.platform || 'all';
+  const tonePlatform = metric.tonePlatform || platform || 'all';
+  const limit = platform !== 'all' ? model.planDrrByPlatform?.[platform] : 0.2;
+  const drrTone = metric.drr === null
+    ? ''
+    : (limit !== null && limit !== undefined && metric.drr > limit ? 'danger-text' : (metric.drr > 0.2 ? 'warn-text' : 'ok-text'));
+  const valueRatio = metric.drr === null
+    ? 0
+    : (metric.drr <= limit ? 1 : Math.max(0.05, limit / metric.drr));
+  return skuPlanFactHealthBarHtml({
+    platform: tonePlatform,
+    label: 'ДРР',
+    valueRatio,
+    valueText: fmt.pct(metric.drr),
+    barText: fmt.pct(metric.drr),
+    tone: drrTone.includes('danger') ? 'danger' : (drrTone.includes('warn') ? 'warn' : 'ok'),
+    metaHtml: `<b>${fmt.money(metric.adSpend)}</b><em>план ${fmt.pct(limit)}</em>`
+  });
+}
+
 function skuPlanFactRowHtml(row, model) {
-  const totalTone = skuPlanFactTone(row.completionToDate);
-  const planDrrByPlatform = model.planDrrByPlatform || {};
+  const metric = skuPlanFactDisplayMetric(row, model);
+  const totalTone = skuPlanFactTone(metric.completionToDate);
   const articleTitle = row.article || row.articleKey;
   const problemMeta = row.matrixProblemMeta || (typeof skuMatrixProblemMeta === 'function' ? skuMatrixProblemMeta(row.matrixProblemState || 'ok') : null);
   const problemBadge = problemMeta && row.matrixProblemState && row.matrixProblemState !== 'ok'
@@ -2992,31 +3478,20 @@ function skuPlanFactRowHtml(row, model) {
     ? `<strong>${escapeHtml(articleTitle)}</strong><div class="badge-stack" style="margin-top:6px">${badge(row.status || SKU_PLAN_FACT_UNMAPPED_STATUS, 'warn')}</div>`
     : linkToSku(row.articleKey, articleTitle);
   const openAttr = row.syntheticUnmapped ? '' : ` data-open-sku="${escapeHtml(row.articleKey)}"`;
+  const attention = skuPlanFactAttentionScore(row) > 0 || (metric.completionToDate !== null && (metric.completionToDate < 0.9 || metric.completionToDate > 1.2));
   return `
-    <tr class="sku-plan-fact-row ${row.syntheticUnmapped ? 'is-unmapped' : ''}"${openAttr}>
+    <tr class="sku-plan-fact-row ${row.syntheticUnmapped ? 'is-unmapped' : ''} ${attention ? 'is-attention' : ''}"${openAttr}>
       <td>${articleHtml}<div class="muted small">${escapeHtml(row.name)}</div></td>
       <td><strong>${escapeHtml(row.owner)}</strong><div class="muted small">${escapeHtml(row.status)}</div>${problemBadge ? `<div class="badge-stack" style="margin-top:6px">${problemBadge}</div>` : ''}</td>
-      ${SKU_PLAN_FACT_PLATFORMS.map((platform) => `<td>${skuPlanFactPlatformCell(row.platforms?.[platform] || row[platform], planDrrByPlatform[platform] ?? null)}</td>`).join('')}
+      <td>${skuPlanFactPlatformScopeHtml(row, model)}</td>
+      <td>${skuPlanFactCompletionHtml(metric)}</td>
+      <td>${skuPlanFactFactPlanHtml(metric)}</td>
+      <td>${skuPlanFactMarginHtml(metric)}</td>
+      <td>${skuPlanFactAdHtml(metric, model)}</td>
       <td>
-        <strong>${fmt.money(row.factRevenue)}</strong>
-        <div class="muted small">план к дате ${fmt.money(row.planToDateRevenue)}</div>
-        <div class="badge-stack" style="margin-top:6px">${badge(fmt.pct(row.completionToDate), totalTone)}<span class="chip ${row.gapToDate < 0 ? 'danger' : 'ok'}">${fmt.money(row.gapToDate)}</span></div>
-      </td>
-      <td>${skuPlanFactPlatformAvgCheckLines(row)}</td>
-      <td>
-        ${SKU_PLAN_FACT_PLATFORMS.map((platform) => {
-          const metric = row.platforms?.[platform] || row[platform] || null;
-          const label = skuPlanFactPlatformLabel(platform);
-          return `<div>${escapeHtml(label)}: <strong>${fmt.num(metric?.turnoverDays, 1)}</strong> дн. <span class="muted small">${fmt.int(metric?.stock)} шт.</span></div>`;
-        }).join('')}
-      </td>
-      <td>
-        <strong>${fmt.money(row.adSpend)}</strong>
-        <div class="muted small">${SKU_PLAN_FACT_PLATFORMS.map((platform) => {
-          const metric = row.platforms?.[platform] || row[platform] || null;
-          return `${escapeHtml(skuPlanFactPlatformLabel(platform))} ${fmt.money(metric?.adSpend)}`;
-        }).join(' · ')}</div>
-        <div class="${row.drr !== null && row.drr > model.planDrrWb ? 'danger-text' : ''}">ДРР total ${fmt.pct(row.drr)}</div>
+        ${row.syntheticUnmapped
+          ? '<span class="muted small">нет карточки</span>'
+          : `<button class="sku-plan-open-card ${attention ? 'danger' : ''}" type="button" data-open-sku="${escapeHtml(row.articleKey)}" title="Открыть карточку SKU" aria-label="Открыть карточку SKU"></button>`}
       </td>
     </tr>
   `;
@@ -3045,6 +3520,8 @@ function skuPlanFactExportColumns() {
       [`completion_${suffix}_to_date_pct`, `Выполнение ${label} к дате, %`],
       [`avg_check_${suffix}_fact`, `Средний чек ${label} факт`],
       [`avg_check_${suffix}_plan`, `Средний чек ${label} план`],
+      [`margin_${suffix}_pct`, `Маржа ${label}, %`],
+      [`margin_${suffix}_rub`, `Маржа ${label}, ₽`],
       [`drr_${suffix}`, `ДРР ${label}`],
       [`ad_spend_${suffix}`, `Реклама ${label}, ₽`],
       [`turnover_${suffix}_days`, `Оборачиваемость ${label}, дн`],
@@ -3057,6 +3534,8 @@ function skuPlanFactExportColumns() {
     ['fact_total_revenue', 'Факт всего, ₽'],
     ['completion_total_to_date_pct', 'Выполнение всего к дате, %'],
     ['gap_total_to_date', 'Отклонение к дате, ₽'],
+    ['margin_total_pct', 'Маржа всего, %'],
+    ['margin_total_rub', 'Маржа всего, ₽'],
     ['drr_total', 'ДРР total']
   );
   return columns;
@@ -3085,6 +3564,8 @@ function skuPlanFactExportRows(rows, model) {
       payload[`completion_${suffix}_to_date_pct`] = metric.completionToDate === null ? '' : metric.completionToDate;
       payload[`avg_check_${suffix}_fact`] = metric.factAvgCheck === null ? '' : Math.round(metric.factAvgCheck);
       payload[`avg_check_${suffix}_plan`] = metric.planAvgCheck === null ? '' : Math.round(metric.planAvgCheck);
+      payload[`margin_${suffix}_pct`] = skuPlanFactNormalizeRatio(metric.marginPct) === null ? '' : skuPlanFactNormalizeRatio(metric.marginPct);
+      payload[`margin_${suffix}_rub`] = metric.marginRub === null || metric.marginRub === undefined ? '' : Math.round(metric.marginRub);
       payload[`drr_${suffix}`] = metric.drr === null ? '' : metric.drr;
       payload[`ad_spend_${suffix}`] = Math.round(metric.adSpend || 0);
       payload[`turnover_${suffix}_days`] = metric.turnoverDays === null ? '' : metric.turnoverDays;
@@ -3095,6 +3576,8 @@ function skuPlanFactExportRows(rows, model) {
     payload.fact_total_revenue = Math.round(row.factRevenue || 0);
     payload.completion_total_to_date_pct = row.completionToDate === null ? '' : row.completionToDate;
     payload.gap_total_to_date = Math.round(row.gapToDate || 0);
+    payload.margin_total_pct = row.marginPct === null ? '' : row.marginPct;
+    payload.margin_total_rub = row.marginRub === null ? '' : Math.round(row.marginRub || 0);
     payload.drr_total = row.drr === null ? '' : row.drr;
     return payload;
   });
@@ -3208,9 +3691,22 @@ function oosControlFilters() {
 }
 
 function oosControlTaskFor(row = {}) {
+  const tasks = Array.isArray(state.storage?.tasks) ? state.storage.tasks : [];
   const taskId = String(row.taskId || '').trim();
-  if (!taskId) return null;
-  return (state.storage?.tasks || []).find((task) => task.id === taskId) || null;
+  if (taskId) {
+    const byId = tasks.find((task) => task.id === taskId);
+    if (byId) return byId;
+  }
+  const issueKey = String(row.issueKey || '').trim();
+  if (!issueKey) return null;
+  const marker = `[oos:${issueKey}]`;
+  return tasks
+    .filter((task) => task?.autoCode === 'oos_control' && String(task.reason || '').includes(marker))
+    .sort((left, right) => {
+      const leftTime = Date.parse(left.updatedAt || left.createdAt || '') || 0;
+      const rightTime = Date.parse(right.updatedAt || right.createdAt || '') || 0;
+      return rightTime - leftTime;
+    })[0] || null;
 }
 
 function oosControlTaskStatusLabel(task) {
@@ -3562,6 +4058,90 @@ function renderOosControlRow(row) {
   `;
 }
 
+function oosControlExportColumns() {
+  return [
+    ['data_date', 'Дата среза'],
+    ['generated_at', 'Сборка данных'],
+    ['issue_key', 'OOS key'],
+    ['article', 'Артикул'],
+    ['article_key', 'SKU'],
+    ['name', 'Название'],
+    ['platform', 'Площадка'],
+    ['warehouse', 'Склад'],
+    ['signal', 'Сигнал'],
+    ['lifecycle', 'Состояние'],
+    ['in_stock', 'Остаток'],
+    ['in_transit', 'Транзит'],
+    ['in_request', 'Заявка'],
+    ['turnover_days', 'Покрытие, дней'],
+    ['avg_daily', 'Средние продажи/день'],
+    ['revenue_at_risk_day', 'Риск выручки/день'],
+    ['lost_revenue_day', 'Потеря OOS/день'],
+    ['owner', 'Owner'],
+    ['department', 'Отдел'],
+    ['task_status', 'Статус задачи'],
+    ['task_priority', 'Приоритет задачи'],
+    ['comment_reason', 'Комментарий / причина'],
+    ['next_action', 'Контрмера / следующий шаг'],
+    ['due', 'Срок'],
+    ['task_id', 'ID задачи'],
+    ['task_created_at', 'Создано/обновлено'],
+    ['recommendation', 'Рекомендация из OOS']
+  ];
+}
+
+function oosControlExportRows(rows = oosControlFilteredRows()) {
+  const payload = oosControlPayload();
+  const summary = payload.summary || {};
+  const dataDate = summary.dataDate || payload.dataFreshness?.dataDate || '';
+  return (rows || []).map((row) => {
+    const task = oosControlTaskFor(row);
+    return {
+      data_date: dataDate,
+      generated_at: payload.generatedAt || '',
+      issue_key: row.issueKey || '',
+      article: row.article || row.articleKey || '',
+      article_key: row.articleKey || '',
+      name: row.name || '',
+      platform: row.platformLabel || row.platform || '',
+      warehouse: row.place || '',
+      signal: row.statusLabel || row.status || '',
+      lifecycle: row.lifecycleLabel || '',
+      in_stock: row.inStock ?? '',
+      in_transit: row.inTransit ?? '',
+      in_request: row.inRequest ?? '',
+      turnover_days: row.turnoverDays ?? '',
+      avg_daily: row.avgDaily ?? '',
+      revenue_at_risk_day: Math.round(Number(row.revenueAtRiskDay || 0)),
+      lost_revenue_day: Math.round(Number(row.lostRevenueDay || 0)),
+      owner: row.owner || '',
+      department: row.department || '',
+      task_status: task ? oosControlTaskStatusLabel(task) : '',
+      task_priority: task ? (PRIORITY_META[task.priority]?.label || task.priority || '') : '',
+      comment_reason: task?.reason || '',
+      next_action: task?.nextAction || '',
+      due: task?.due || '',
+      task_id: task?.id || row.taskId || '',
+      task_created_at: task?.updatedAt || task?.createdAt || '',
+      recommendation: row.recommendation || ''
+    };
+  });
+}
+
+function downloadOosControlExcel(rows = oosControlFilteredRows()) {
+  const exportRows = oosControlExportRows(rows);
+  if (!exportRows.length) {
+    window.alert('По текущим фильтрам нет строк OOS для выгрузки.');
+    return;
+  }
+  const dateKey = todayIso();
+  if (typeof downloadLaunchesHtmlTable === 'function') {
+    downloadLaunchesHtmlTable(oosControlExportColumns(), exportRows, `oos-control-comments-${dateKey}.xls`);
+    return;
+  }
+  skuPlanFactDownloadJson(`oos-control-comments-${dateKey}.json`, exportRows);
+}
+
 async function oosControlSaveTask(issueKey, rootId) {
   const row = oosControlRows().find((item) => item.issueKey === issueKey);
   if (!row) return null;
@@ -3661,6 +4241,9 @@ function bindOosControl(root, rootId) {
     await ensureViewData('oos-control');
     renderOosControl(rootId);
   });
+  root.querySelector('[data-oos-export]')?.addEventListener('click', () => {
+    downloadOosControlExcel(oosControlFilteredRows());
+  });
   root.querySelector('[data-oos-reconnect-team]')?.addEventListener('click', async () => {
     try {
       if (typeof setAppError === 'function') setAppError('Подключаем командную базу для OOS...');
@@ -3691,6 +4274,7 @@ function renderOosControl(rootId = 'view-oos-control') {
       <div class="actions">
         ${badge(`факт до ${escapeHtml(summary.dataDate || payload.dataFreshness?.dataDate || '—')}`, summary.dataStatus === 'ok' ? 'ok' : 'warn')}
         ${badge(`${fmt.int(filteredRows.length)} из ${fmt.int(rows.length)} строк`)}
+        <button class="quick-chip" type="button" data-oos-export>Выгрузить OOS + комментарии</button>
         <button class="quick-chip" type="button" data-oos-reload>Обновить экран</button>
       </div>
     </div>
@@ -4077,16 +4661,11 @@ function skuPlanFactPrepareAliasImport(rows = [], currentAliases = {}, currentIg
       return;
     }
     const target = skuLookup.get(skuPlanFactToken(targetSku));
-    const canonicalTargetSku = target?.articleKey || target?.article || targetSku;
     if (!target) {
-      validationWarnings.push({
-        rowNumber,
-        apiSku,
-        platform,
-        targetSku: canonicalTargetSku,
-        reason: 'target_sku not found in skus.json; alias will be saved as a matrix-only mapping'
-      });
+      errorRows.push({ rowNumber, apiSku, platform, targetSku, reason: 'target_sku not found in skus.json' });
+      return;
     }
+    const canonicalTargetSku = target.articleKey || target.article || targetSku;
     const canonicalTargetToken = skuPlanFactToken(canonicalTargetSku);
     const uploadApiKey = skuPlanFactAliasApiKey(platform, apiSku);
     const uploadConflict = uploadApiTargets.get(uploadApiKey);
@@ -4101,12 +4680,10 @@ function skuPlanFactPrepareAliasImport(rows = [], currentAliases = {}, currentIg
     }
     uploadApiTargets.set(uploadApiKey, { targetToken: canonicalTargetToken, targetSku: canonicalTargetSku });
 
-    if (target) {
-      const owner = skuPlanFactOwnerTextForSku(target);
-      const registryStatus = skuPlanFactRegistryStatusText(target);
-      if (!owner || /^без owner$/i.test(owner) || /не\s*в\s*реестре/i.test(registryStatus)) {
-        validationWarnings.push({ rowNumber, apiSku, platform, targetSku: canonicalTargetSku, reason: 'target_sku has no owner or is not in registry' });
-      }
+    const owner = skuPlanFactOwnerTextForSku(target);
+    const registryStatus = skuPlanFactRegistryStatusText(target);
+    if (!owner || /^без owner$/i.test(owner) || /не\s*в\s*реестре/i.test(registryStatus)) {
+      validationWarnings.push({ rowNumber, apiSku, platform, targetSku: canonicalTargetSku, reason: 'target_sku has no owner or is not in registry' });
     }
     const nextAliasCount = (existingTargetAliasCounts.get(canonicalTargetToken) || 0) + 1;
     if (nextAliasCount > 50 && (nextAliasCount === 51 || nextAliasCount % 25 === 0)) {
@@ -4813,59 +5390,37 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
       : `Только ${label}`;
     return `<option value="${escapeHtml(platform)}" ${filters.platform === platform ? 'selected' : ''}>${escapeHtml(valueLabel)}</option>`;
   }).join('');
-  const sortOptions = SKU_PLAN_FACT_PLATFORMS.map((platform) => {
-    const label = skuPlanFactPlatformLabel(platform);
-    return `<option value="${escapeHtml(platform)}" ${filters.sort === platform ? 'selected' : ''}>Сортировка: ${escapeHtml(label)} факт</option>`;
-  }).join('');
   const dateAttrs = [
     model.dateMin ? `min="${escapeHtml(model.dateMin)}"` : '',
     model.dateMax ? `max="${escapeHtml(model.dateMax)}"` : ''
   ].filter(Boolean).join(' ');
-  const tableColspan = 2 + SKU_PLAN_FACT_PLATFORMS.length + 4;
+  const tableColspan = 8;
   const rowsHtml = model.rows.length
     ? model.rows.map((row) => skuPlanFactRowHtml(row, model)).join('')
     : `<tr><td colspan="${tableColspan}"><div class="empty">По текущим фильтрам нет SKU.</div></td></tr>`;
   const matrixSummary = typeof skuMatrixSummary === 'function' ? skuMatrixSummary() : {};
   const matrixGeneratedAt = state.skuMatrix?.generatedAt || state.skuMatrix?.updatedAt || '';
+  const activePlatform = filters.platform !== 'all' ? filters.platform : '';
+  const shellStyle = activePlatform ? skuPlanFactCardStyle(activePlatform, totals.completionToDate) : '';
 
   root.innerHTML = `
+    <div class="sku-plan-fact-shell ${activePlatform ? 'is-platform-drill' : ''}" data-sku-plan-active-platform="${escapeHtml(activePlatform || 'all')}" style="${shellStyle}">
     <div class="section-title">
       <div>
         <h2>План-факт SKU</h2>
-        <p>Все позиции в одном разрезе: план, факт, средний чек по площадкам, оборачиваемость, реклама и ДРР.</p>
+        <p>Рабочий срез по площадкам и артикулам: выполнение, маржа, реклама и карточка SKU в одном месте.</p>
       </div>
       <div class="badge-stack">
         ${badge(`${fmt.int(model.rows.length)} SKU`, 'info')}
         ${badge(`${fmt.int(model.unmappedCount || 0)} API без пары`, model.unmappedCount ? 'warn' : 'ok')}
-        ${badge(`${fmt.int(matrixSummary.aliasCount || 0)} alias`, matrixSummary.aliasCount ? 'ok' : '')}
+        ${badge(`маржа ${fmt.pct(totals.marginPct)}`, skuPlanFactMarginTone(totals.marginPct))}
         ${matrixSummary.duplicateRiskCount ? badge(`${fmt.int(matrixSummary.duplicateRiskCount)} риск дубля`, 'danger') : ''}
         ${badge(`матрица ${matrixGeneratedAt ? fmt.date(matrixGeneratedAt) : '—'}`, matrixGeneratedAt ? 'ok' : 'warn')}
         ${badge(`факт до ${model.maxFactDate || '—'}`, 'ok')}
-        ${badge(`план ДРР WB/Ozon ${fmt.pct(model.planDrrWb)}`)}
       </div>
     </div>
 
-    <div class="grid cards">
-      ${skuPlanFactMetricHtml('Факт оборота', fmt.money(totals.factRevenue), `план к дате ${fmt.money(totals.planToDateRevenue)}`)}
-      ${skuPlanFactMetricHtml('Выполнение к дате', fmt.pct(totals.completionToDate), `месячный план: ${fmt.pct(totals.completionMonth)}`, skuPlanFactDeltaClass(totals.completionToDate - 1))}
-      ${skuPlanFactMetricHtml('Отклонение к дате', fmt.money(totals.gapToDate), `${fmt.int(totals.underPlan)} SKU ниже плана`, skuPlanFactDeltaClass(totals.gapToDate))}
-      ${skuPlanFactMetricHtml('Средний чек', fmt.money(totals.avgCheck), `${fmt.int(totals.factUnits)} шт. факт`)}
-      ${skuPlanFactMetricHtml('Реклама / ДРР', `${fmt.money(totals.adSpend)} · ${fmt.pct(totals.drr)}`, 'по SKU из ads_summary')}
-    </div>
-    ${skuPlanFactReconciliationHtml(model.reconciliation || [])}
-    ${skuPlanFactDataQualityHtml(model)}
-
-    <div class="card sku-plan-fact-card" style="margin-top:14px">
-      <div class="section-subhead">
-        <div>
-          <h3>Таблица по позициям</h3>
-          <p class="small muted">План берём из ценового и площадочного API-слоёв, факт и рекламу - из доступных API площадок.</p>
-        </div>
-        <div class="badge-stack">
-          <button class="quick-chip" type="button" data-sku-plan-fact-refresh>Обновить данные</button>
-          <button class="quick-chip" type="button" data-sku-plan-fact-export>Выгрузить в Excel</button>
-        </div>
-      </div>
+    <div class="sku-plan-fact-toolbar">
       <div class="control-filters sku-plan-fact-filters">
         <input id="skuPlanFactSearch" placeholder="Поиск по SKU, названию, owner…" value="${escapeHtml(filters.search)}">
         <input id="skuPlanFactDate" type="date" title="Дата план-факта" aria-label="Дата план-факта" value="${escapeHtml(model.selectedDate || '')}" ${dateAttrs}>
@@ -4891,16 +5446,33 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
         <select id="skuPlanFactSort">
           <option value="gap" ${filters.sort === 'gap' ? 'selected' : ''}>Сортировка: провал к плану</option>
           <option value="completion" ${filters.sort === 'completion' ? 'selected' : ''}>Сортировка: выполнение</option>
+          <option value="margin" ${filters.sort === 'margin' ? 'selected' : ''}>Сортировка: маржа</option>
           <option value="fact" ${filters.sort === 'fact' ? 'selected' : ''}>Сортировка: факт оборота</option>
           <option value="plan" ${filters.sort === 'plan' ? 'selected' : ''}>Сортировка: план</option>
           <option value="drr" ${filters.sort === 'drr' ? 'selected' : ''}>Сортировка: ДРР</option>
-          ${sortOptions}
-          <option value="avgCheck" ${filters.sort === 'avgCheck' ? 'selected' : ''}>Сортировка: средний чек</option>
-          <option value="turnover" ${filters.sort === 'turnover' ? 'selected' : ''}>Сортировка: оборачиваемость</option>
           <option value="ad" ${filters.sort === 'ad' ? 'selected' : ''}>Сортировка: реклама</option>
           <option value="article" ${filters.sort === 'article' ? 'selected' : ''}>Сортировка: артикул</option>
           <option value="owner" ${filters.sort === 'owner' ? 'selected' : ''}>Сортировка: owner</option>
         </select>
+      </div>
+      <div class="badge-stack sku-plan-fact-actions">
+        <button class="quick-chip" type="button" data-sku-plan-fact-refresh>Обновить данные</button>
+        <button class="quick-chip" type="button" data-sku-plan-fact-export>Выгрузить в Excel</button>
+      </div>
+    </div>
+
+    ${skuPlanFactPlatformBoardHtml(model)}
+
+    <div class="card sku-plan-fact-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Таблица по позициям</h3>
+        </div>
+        <div class="badge-stack">
+          ${badge(`факт ${fmt.money(totals.factRevenue)}`, 'info')}
+          ${badge(`план к дате ${fmt.money(totals.planToDateRevenue)}`)}
+          ${badge(fmt.pct(totals.completionToDate), skuPlanFactTone(totals.completionToDate))}
+        </div>
       </div>
       <div class="table-wrap sku-plan-fact-table">
         <table>
@@ -4908,17 +5480,21 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
             <tr>
               ${skuPlanFactSortHeader('article', 'SKU')}
               ${skuPlanFactSortHeader('owner', 'Owner')}
-              ${SKU_PLAN_FACT_PLATFORMS.map((platform) => skuPlanFactSortHeader(platform, `${skuPlanFactPlatformLabel(platform)} факт / план`)).join('')}
-              ${skuPlanFactSortHeader('gap', 'Итого')}
-              ${skuPlanFactSortHeader('avgCheck', 'Средний чек')}
-              ${skuPlanFactSortHeader('turnover', 'Оборачиваемость')}
+              ${skuPlanFactSortHeader('platform', 'Площадка')}
+              ${skuPlanFactSortHeader('completion', 'Выполнение')}
+              ${skuPlanFactSortHeader('gap', 'Факт / план')}
+              ${skuPlanFactSortHeader('margin', 'Маржа')}
               ${skuPlanFactSortHeader('ad', 'Реклама / ДРР')}
+              ${skuPlanFactSortHeader('action', 'Карточка')}
             </tr>
           </thead>
           <tbody>${rowsHtml}</tbody>
         </table>
       </div>
       <div class="footer-note">Клик по строке открывает карточку SKU для смены owner и рабочих комментариев.</div>
+    </div>
+    ${skuPlanFactReconciliationHtml(model.reconciliation || [])}
+    ${skuPlanFactDataQualityHtml(model)}
     </div>
   `;
 
@@ -4932,6 +5508,15 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
   root.querySelector('#skuPlanFactSort')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'sort', event.target.value); });
   root.querySelectorAll('[data-sku-plan-fact-sort]').forEach((button) => {
     button.addEventListener('click', () => skuPlanFactToggleSort(rootId, button.dataset.skuPlanFactSort));
+  });
+  root.querySelectorAll('[data-sku-plan-fact-platform-card]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const platform = button.dataset.skuPlanFactPlatformCard || 'all';
+      const next = skuPlanFactFilters().platform === platform ? 'all' : platform;
+      skuPlanFactSetFilter(rootId, 'platform', next);
+    });
   });
   root.querySelector('[data-sku-plan-fact-refresh]')?.addEventListener('click', (event) => { refreshSkuPlanFactData(event.currentTarget, rootId); });
   root.querySelector('[data-sku-plan-fact-export]')?.addEventListener('click', () => downloadSkuPlanFactExcel(model));

@@ -114,13 +114,13 @@
   async function loadRopData() {
     if (ropData) return ropData;
     if (!dataPromise) {
-      dataPromise = fetch(`${DATA_PATH}?v=20260522strategic4`, { cache: 'no-store' })
+      dataPromise = fetch(`${DATA_PATH}?v=20260529presentation1`, { cache: 'no-store' })
         .then((response) => {
           if (!response.ok) throw new Error(`Не удалось загрузить ${DATA_PATH}`);
           return response.json();
         })
         .then((payload) => {
-          ropData = payload || { tasks: [], adPassports: [], contacts: [], raci: [] };
+          ropData = payload || { tasks: [], adPassports: [], seoContours: [], contacts: [], raci: [] };
           return ropData;
         });
     }
@@ -193,16 +193,11 @@
   }
 
   function allPortalTasks() {
-    const st = appState();
-    const stored = Array.isArray(st?.storage?.tasks) ? st.storage.tasks : [];
     try {
-      if (typeof getAllTasks === 'function') {
-        const ids = new Set(stored.map((task) => String(task?.id || '')));
-        const runtime = (getAllTasks() || []).filter((task) => !ids.has(String(task?.id || '')));
-        return [...stored, ...runtime];
-      }
+      if (typeof getAllTasks === 'function') return getAllTasks();
     } catch (error) {}
-    return stored;
+    const st = appState();
+    return Array.isArray(st?.storage?.tasks) ? st.storage.tasks : [];
   }
 
   function runtimeTaskFor(seed) {
@@ -295,19 +290,77 @@
       <div class="rop-strategic-launch" data-rop-strategic-launch>
         <div>
           <strong>Стратегические задачи РОПов до 5 июня</strong>
-          <span>${intFmt(payload?.summary?.taskCount || 23)} задач · ${intFmt(payload?.summary?.criticalCount || 8)} критичных · РК паспорта, contact log и RACI/SLA</span>
+          <span>${intFmt(payload?.summary?.taskCount || 23)} задач · ${intFmt(payload?.summary?.criticalCount || 8)} критичных · доска, РК паспорта, SEO, журнал контактов и RACI/SLA</span>
         </div>
         <button class="btn primary" type="button" data-rop-strategic-open>Открыть</button>
       </div>
     `;
   }
 
+  function renderPresentationStory(payload, rows) {
+    const summary = buildSummary(rows);
+    const example = payload?.presentationExample || {};
+    const blocks = [
+      ['Доска задач', 'задача / РОП / срок / статус / следующий шаг'],
+      ['РК паспорта', 'расход / продажи / ДРР / вклад / решение'],
+      ['SEO-контур', 'товар / запросы / позиции / клики / покупки / контент-задачи'],
+      ['Журнал контактов', 'площадка / контакт / слот / ответ / дедлайн'],
+      ['RACI/SLA', 'кто владелец, кто помогает, когда эскалация']
+    ];
+    const cardRows = [
+      ['РОП', example.rop || 'Саша / Ozon'],
+      ['Задача', example.task || 'Разобрать 2 РК и дать решение'],
+      ['Метрика', example.metric || 'ДРР, вклад, прирост по товару, блокер'],
+      ['Следующий шаг', example.nextStep || 'растим / переделываем / стоп / ждем'],
+      ['Срок', example.due || 'день 3'],
+      ['SEO', example.seo || 'есть/нет запросы, позиции, карточка']
+    ];
+    return `
+      <div class="rop-story-grid">
+        <div class="rop-story-map">
+          <div class="rop-story-head">
+            <div>
+              <span>Что зашиваем во вкладку «РОПы»</span>
+              <strong>Чтобы план жил не в презентации, а в рабочем интерфейсе</strong>
+            </div>
+            ${chip(`${intFmt(summary.active)} активных`, summary.active ? 'warn' : 'ok')}
+          </div>
+          <div class="rop-story-steps">
+            ${blocks.map(([title, caption]) => `
+              <div class="rop-story-step">
+                <strong>${html(title)}</strong>
+                <span>${html(caption)}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="rop-task-passport">
+          <div class="rop-passport-head">
+            <strong>Карточка задачи в портале</strong>
+            ${chip(example.status || 'в план', 'warn')}
+          </div>
+          <dl>
+            ${cardRows.map(([label, value]) => `
+              <div>
+                <dt>${html(label)}</dt>
+                <dd>${html(value || '—')}</dd>
+              </div>
+            `).join('')}
+          </dl>
+          <div class="rop-passport-note">Видно: кто владелец, что делаем, когда проверяем эффект.</div>
+        </div>
+      </div>
+      <div class="rop-seo-callout">SEO добавляем отдельным блоком в портал: не прятать органику в «контент», а видеть ее как рычаг роста продаж.</div>
+    `;
+  }
+
   function renderTabs() {
     const tab = strategicState().tab;
     const tabs = [
-      ['tasks', 'Задачи'],
+      ['tasks', 'Доска задач'],
       ['ads', 'РК паспорта'],
-      ['contacts', 'Contact log'],
+      ['seo', 'SEO-контур'],
+      ['contacts', 'Журнал контактов'],
       ['raci', 'RACI/SLA']
     ];
     return `
@@ -492,7 +545,13 @@
       if (filters.owner !== 'all' && item[ownerKey] !== filters.owner) return false;
       if (filters.platform !== 'all') {
         const platformKey = String(item.platform || '').toLowerCase();
-        if (!platformKey.includes(filters.platform) && !(filters.platform === 'ya' && /ям|яндекс/i.test(item.platform || ''))) return false;
+        const explicitKey = String(item.platformKey || '').toLowerCase();
+        if (
+          explicitKey !== filters.platform
+          && !explicitKey.includes(filters.platform)
+          && !platformKey.includes(filters.platform)
+          && !(filters.platform === 'ya' && /ям|яндекс/i.test(item.platform || ''))
+        ) return false;
       }
       return true;
     });
@@ -518,6 +577,41 @@
                 <td>${html(item.nextAction || item.comment || '—')}</td>
               </tr>
             `).join('') || '<tr><td colspan="6"><div class="empty">РК паспорта по этим фильтрам не найдены</div></td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function compactValue(value, empty = '—') {
+    if (value === null || value === undefined || value === '') return empty;
+    return String(value);
+  }
+
+  function renderSeoTab(payload, rows) {
+    const items = filterByOwnerAndPlatform(payload.seoContours || []);
+    return `
+      ${renderFilters(rows)}
+      <div class="rop-seo-callout">SEO смотрим рядом с РК: запросы и позиции объясняют, почему трафик превращается или не превращается в продажи.</div>
+      <div class="table-wrap rop-compact-table rop-seo-table">
+        <table>
+          <thead><tr><th>РОП</th><th>Контур</th><th>Запросы / позиции</th><th>Клики / покупки</th><th>Контент-задача</th><th>Проверка эффекта</th></tr></thead>
+          <tbody>
+            ${items.map((item) => `
+              <tr>
+                <td><strong>${html(item.rop || '—')}</strong><div class="muted small">${html(item.platform || '—')}</div></td>
+                <td><strong>${html(item.skuGroup || item.product || '—')}</strong><div class="muted small">${html(item.status || '')}</div></td>
+                <td>
+                  <div class="rop-seo-stack">
+                    <span>${html(item.queryCluster || item.queries || '—')}</span>
+                    <b>${html(item.positionSignal || item.positions || 'позиции не сняты')}</b>
+                  </div>
+                </td>
+                <td><div class="badge-stack">${chip(`Клики ${compactValue(item.clicks)}`)}${chip(`Покупки ${compactValue(item.purchases)}`)}</div></td>
+                <td>${html(item.contentTask || item.nextAction || '—')}</td>
+                <td>${chip(item.reviewDate || '—', isOverdueDate(item.reviewDate, item.status === 'done' ? 'done' : 'new') ? 'danger' : '')}<div class="muted small" style="margin-top:6px">${html(item.nextAction || '')}</div></td>
+              </tr>
+            `).join('') || '<tr><td colspan="6"><div class="empty">SEO-контур по этим фильтрам не найден</div></td></tr>'}
           </tbody>
         </table>
       </div>
@@ -576,6 +670,7 @@
   function renderCurrentTab(payload, rows) {
     const tab = strategicState().tab;
     if (tab === 'ads') return renderAdsTab(payload, rows);
+    if (tab === 'seo') return renderSeoTab(payload, rows);
     if (tab === 'contacts') return renderContactsTab(payload, rows);
     if (tab === 'raci') return renderRaciTab(payload);
     return renderTasksTab(payload, rows);
@@ -622,6 +717,7 @@
             ${chip(`${intFmt(summary.critical)} критичных`, summary.critical ? 'danger' : 'ok')}
           </div>
         </div>
+        ${renderPresentationStory(ropData, rows)}
         ${renderTabs()}
         ${renderCurrentTab(ropData, rows)}
       </div>

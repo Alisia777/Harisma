@@ -7,7 +7,7 @@
   let baseRerenderCurrentView = null;
   let searchTimer = 0;
   let forceRender = false;
-  let exportLockedUntil = 0;
+  let lastStableBodySignature = '';
 
   function planFactPlatforms() {
     return Array.isArray(window.SKU_PLAN_FACT_PLATFORMS) && window.SKU_PLAN_FACT_PLATFORMS.length
@@ -19,22 +19,8 @@
     return window.SKU_PLAN_FACT_PLATFORM_LABELS?.[platform] || String(platform || '').toUpperCase();
   }
 
-  function visiblePlanFactPlatforms(current = filters()) {
-    const all = planFactPlatforms();
-    const selected = String(current.platform || 'all').trim();
-    return selected && selected !== 'all' && all.includes(selected) ? [selected] : all;
-  }
-
-  function normalizeVisibleSort(current, visiblePlatforms) {
-    if (!current || !Array.isArray(visiblePlatforms) || !visiblePlatforms.length) return;
-    if (planFactPlatforms().includes(current.sort) && !visiblePlatforms.includes(current.sort)) {
-      current.sort = visiblePlatforms[0] || 'gap';
-      current.sortDir = defaultSortDir(current.sort);
-    }
-  }
-
   function sortKeys() {
-    return ['article', 'owner', ...visiblePlanFactPlatforms(), 'gap', 'avgCheck', 'turnover', 'ad'];
+    return ['article', 'owner', 'platform', 'completion', 'gap', 'margin', 'ad', 'action'];
   }
 
   function appState() {
@@ -76,7 +62,7 @@
   }
 
   function defaultSortDir(sort) {
-    return ['fact', 'plan', 'drr', 'avgCheck', 'turnover', 'ad', ...planFactPlatforms()].includes(sort) ? 'desc' : 'asc';
+    return ['fact', 'plan', 'drr', 'avgCheck', 'turnover', 'ad', 'margin', 'platform', 'action', ...planFactPlatforms()].includes(sort) ? 'desc' : 'asc';
   }
 
   function latestDateFromModel(model) {
@@ -98,22 +84,28 @@
     return skuPlanFactBuildModel();
   }
 
-  function valueForSort(row, key, visiblePlatforms = visiblePlanFactPlatforms()) {
+  function valueForSort(row, key) {
     if (key === 'article') return row.article || row.articleKey || '';
     if (key === 'owner') return row.owner || '';
+    if (key === 'platform') return row.activePlatformCount || 0;
     if (key === 'completion') return row.completionToDate;
     if (key === 'fact') return row.factRevenue;
     if (key === 'plan') return row.planRevenue;
+    if (key === 'margin') return row.marginPct;
     if (key === 'drr') return row.drr;
     if (planFactPlatforms().includes(key)) return row.platforms?.[key]?.factRevenue ?? row[key]?.factRevenue;
     if (key === 'avgCheck') return row.factUnits > 0 ? row.factRevenue / row.factUnits : null;
     if (key === 'turnover') {
-      const values = visiblePlatforms
+      const values = planFactPlatforms()
         .map((platform) => row.platforms?.[platform]?.turnoverDays ?? row[platform]?.turnoverDays)
         .filter((value) => Number.isFinite(Number(value)));
       return values.length ? values.reduce((sum, value) => sum + Number(value), 0) / values.length : null;
     }
     if (key === 'ad') return row.adSpend;
+    if (key === 'action') {
+      if (typeof skuPlanFactAttentionScore === 'function') return skuPlanFactAttentionScore(row);
+      return row.matrixProblemState && row.matrixProblemState !== 'ok' ? 1 : 0;
+    }
     return row.gapToDate;
   }
 
@@ -129,50 +121,14 @@
     return String(leftValue).localeCompare(String(rightValue), 'ru', { numeric: true, sensitivity: 'base' });
   }
 
-  function sortRows(rows, visiblePlatforms = visiblePlanFactPlatforms()) {
+  function sortRows(rows) {
     const current = filters();
-    normalizeVisibleSort(current, visiblePlatforms);
     const sort = current.sort || 'gap';
     const direction = current.sortDir || defaultSortDir(sort);
     return [...(rows || [])].sort((left, right) => {
-      const result = compareValues(valueForSort(left, sort, visiblePlatforms), valueForSort(right, sort, visiblePlatforms));
+      const result = compareValues(valueForSort(left, sort), valueForSort(right, sort));
       return direction === 'desc' ? -result : result;
     });
-  }
-
-  function num(value) {
-    return typeof numberOrZero === 'function' ? numberOrZero(value) : (Number(value) || 0);
-  }
-
-  function metricForPlatform(row, platform) {
-    return row?.platforms?.[platform] || row?.[platform] || null;
-  }
-
-  function projectRowForPlatforms(row, visiblePlatforms) {
-    if (!row || visiblePlatforms.length === planFactPlatforms().length) return row;
-    const metrics = visiblePlatforms.map((platform) => metricForPlatform(row, platform)).filter(Boolean);
-    const projected = { ...row };
-    projected.planRevenue = metrics.reduce((sum, metric) => sum + num(metric.planRevenue), 0);
-    projected.planToDateRevenue = metrics.reduce((sum, metric) => sum + num(metric.planToDateRevenue), 0);
-    projected.factRevenue = metrics.reduce((sum, metric) => sum + num(metric.factRevenue), 0);
-    projected.planUnits = metrics.reduce((sum, metric) => sum + num(metric.planUnits), 0);
-    projected.factUnits = metrics.reduce((sum, metric) => sum + num(metric.factUnits), 0);
-    projected.adSpend = metrics.reduce((sum, metric) => sum + num(metric.adSpend), 0);
-    projected.stock = metrics.reduce((sum, metric) => sum + num(metric.stock), 0);
-    const turnoverValues = metrics.map((metric) => metric.turnoverDays).filter((value) => Number.isFinite(Number(value)));
-    projected.turnoverDays = turnoverValues.length
-      ? turnoverValues.reduce((sum, value) => sum + Number(value), 0) / turnoverValues.length
-      : null;
-    projected.completionToDate = projected.planToDateRevenue > 0 ? projected.factRevenue / projected.planToDateRevenue : null;
-    projected.completionMonth = projected.planRevenue > 0 ? projected.factRevenue / projected.planRevenue : null;
-    projected.gapToDate = projected.factRevenue - projected.planToDateRevenue;
-    projected.factAvgCheck = projected.factUnits > 0 ? projected.factRevenue / projected.factUnits : null;
-    projected.drr = projected.factRevenue > 0 ? projected.adSpend / projected.factRevenue : null;
-    return projected;
-  }
-
-  function projectRowsForPlatforms(rows, visiblePlatforms) {
-    return (rows || []).map((row) => projectRowForPlatforms(row, visiblePlatforms));
   }
 
   function kpiHtml(label, value, hint, tone) {
@@ -186,125 +142,46 @@
     `;
   }
 
-  function stableSortHeaderHtml(key, label) {
-    const current = filters();
-    const active = current.sort === key;
-    const mark = active ? (current.sortDir === 'asc' ? '↑' : '↓') : '';
-    const ariaSort = active ? (current.sortDir === 'asc' ? 'ascending' : 'descending') : 'none';
-    return `
-      <th class="${active ? 'is-sorted' : ''}" aria-sort="${ariaSort}">
-        <button class="table-sort-btn" type="button" data-sku-stable-sort="${escapeHtml(key)}">
-          <span>${escapeHtml(label)}</span><span class="sort-mark">${mark}</span>
-        </button>
-      </th>
-    `;
-  }
-
-  function bindHeaderSort(host) {
-    host.querySelectorAll('[data-sku-stable-sort]').forEach((button) => {
-      button.addEventListener('click', () => {
-        const current = filters();
-        const key = button.dataset.skuStableSort;
-        if (current.sort === key) current.sortDir = current.sortDir === 'asc' ? 'desc' : 'asc';
-        else {
-          current.sort = key;
-          current.sortDir = defaultSortDir(key);
-        }
-        renderStableBody();
-      });
-    });
-  }
-
-  function renderTableHeader(host, visiblePlatforms) {
-    const header = host?.querySelector?.('.sku-plan-fact-table thead tr');
-    if (!header) return;
-    header.innerHTML = [
-      stableSortHeaderHtml('article', 'SKU'),
-      stableSortHeaderHtml('owner', 'Owner'),
-      ...visiblePlatforms.map((platform) => stableSortHeaderHtml(platform, `${planFactPlatformLabel(platform)} факт / план`)),
-      stableSortHeaderHtml('gap', 'Итого'),
-      stableSortHeaderHtml('avgCheck', 'Средний чек'),
-      stableSortHeaderHtml('turnover', 'Оборачиваемость'),
-      stableSortHeaderHtml('ad', 'Реклама / ДРР')
-    ].join('');
-    bindHeaderSort(host);
-  }
-
-  function platformAvgCheckLines(row, visiblePlatforms) {
-    return visiblePlatforms.map((platform) => {
-      const metric = metricForPlatform(row, platform);
-      const label = planFactPlatformLabel(platform);
-      return `
-        <div>${escapeHtml(label)}: <strong>${fmt.money(metric?.factAvgCheck)}</strong> <span class="muted small">план ${fmt.money(metric?.planAvgCheck)}</span></div>
-      `;
-    }).join('');
-  }
-
-  function platformTurnoverLines(row, visiblePlatforms) {
-    return visiblePlatforms.map((platform) => {
-      const metric = metricForPlatform(row, platform);
-      const label = planFactPlatformLabel(platform);
-      return `
-        <div>${escapeHtml(label)}: <strong>${fmt.num(metric?.turnoverDays, 1)}</strong> дн. <span class="muted small">${fmt.int(metric?.stock)} шт.</span></div>
-      `;
-    }).join('');
-  }
-
-  function platformAdLines(row, visiblePlatforms) {
-    return visiblePlatforms.map((platform) => {
-      const metric = metricForPlatform(row, platform);
-      return `${escapeHtml(planFactPlatformLabel(platform))} ${fmt.money(metric?.adSpend)}`;
-    }).join(' · ');
-  }
-
-  function stableRowHtml(row, model, visiblePlatforms) {
-    const totalTone = typeof skuPlanFactTone === 'function' ? skuPlanFactTone(row.completionToDate) : '';
-    const planDrrByPlatform = model.planDrrByPlatform || {};
-    const articleTitle = row.article || row.articleKey;
-    const problemMeta = row.matrixProblemMeta || (typeof skuMatrixProblemMeta === 'function' ? skuMatrixProblemMeta(row.matrixProblemState || 'ok') : null);
-    const problemBadge = problemMeta && row.matrixProblemState && row.matrixProblemState !== 'ok'
-      ? badge(problemMeta.label, problemMeta.tone || 'warn')
-      : '';
-    const articleHtml = row.syntheticUnmapped
-      ? `<strong>${escapeHtml(articleTitle)}</strong><div class="badge-stack" style="margin-top:6px">${badge(row.status || 'API SKU без пары', 'warn')}</div>`
-      : linkToSku(row.articleKey, articleTitle);
-    const openAttr = row.syntheticUnmapped ? '' : ` data-open-sku="${escapeHtml(row.articleKey)}"`;
-    const selectedPlanDrr = visiblePlatforms.length === 1
-      ? (planDrrByPlatform[visiblePlatforms[0]] ?? model.planDrrWb)
-      : model.planDrrWb;
-    const drrLabel = visiblePlatforms.length === 1 ? `ДРР ${planFactPlatformLabel(visiblePlatforms[0])}` : 'ДРР total';
-    return `
-      <tr class="sku-plan-fact-row ${row.syntheticUnmapped ? 'is-unmapped' : ''}"${openAttr}>
-        <td>${articleHtml}<div class="muted small">${escapeHtml(row.name)}</div></td>
-        <td><strong>${escapeHtml(row.owner)}</strong><div class="muted small">${escapeHtml(row.status)}</div>${problemBadge ? `<div class="badge-stack" style="margin-top:6px">${problemBadge}</div>` : ''}</td>
-        ${visiblePlatforms.map((platform) => `<td>${skuPlanFactPlatformCell(metricForPlatform(row, platform), planDrrByPlatform[platform] ?? null)}</td>`).join('')}
-        <td>
-          <strong>${fmt.money(row.factRevenue)}</strong>
-          <div class="muted small">план к дате ${fmt.money(row.planToDateRevenue)}</div>
-          <div class="badge-stack" style="margin-top:6px">${badge(fmt.pct(row.completionToDate), totalTone)}<span class="chip ${row.gapToDate < 0 ? 'danger' : 'ok'}">${fmt.money(row.gapToDate)}</span></div>
-        </td>
-        <td>${platformAvgCheckLines(row, visiblePlatforms)}</td>
-        <td>${platformTurnoverLines(row, visiblePlatforms)}</td>
-        <td>
-          <strong>${fmt.money(row.adSpend)}</strong>
-          <div class="muted small">${platformAdLines(row, visiblePlatforms)}</div>
-          <div class="${row.drr !== null && selectedPlanDrr !== null && row.drr > selectedPlanDrr ? 'danger-text' : ''}">${escapeHtml(drrLabel)} ${fmt.pct(row.drr)}</div>
-        </td>
-      </tr>
-    `;
-  }
-
   function renderStableBody() {
     const host = root();
     if (!host) return;
     const model = buildModel();
     if (!model) return;
     const current = filters();
-    const visiblePlatforms = visiblePlanFactPlatforms(current);
-    normalizeVisibleSort(current, visiblePlatforms);
-    const rows = sortRows(projectRowsForPlatforms(model.rows, visiblePlatforms), visiblePlatforms);
+    const rows = sortRows(model.rows);
     model.rows = rows;
-    model.visiblePlatforms = visiblePlatforms;
+    const tableWrap = host.querySelector('.sku-plan-fact-table');
+    const body = tableWrap?.querySelector('tbody');
+    const scrollSnapshot = tableWrap
+      ? { left: tableWrap.scrollLeft || 0, top: tableWrap.scrollTop || 0 }
+      : null;
+    const bodySignature = JSON.stringify({
+      filters: {
+        search: current.search || '',
+        owner: current.owner || '',
+        status: current.status || '',
+        platform: current.platform || '',
+        date: current.date || '',
+        sort: current.sort || '',
+        sortDir: current.sortDir || ''
+      },
+      selectedDate: model.selectedDate || '',
+      maxFactDate: model.maxFactDate || '',
+      rows: rows.map((row) => [
+        row.articleKey || row.article || '',
+        row.owner || '',
+        row.status || '',
+        Math.round(Number(row.factRevenue) || 0),
+        Math.round(Number(row.planToDateRevenue) || 0),
+        Math.round(Number(row.gapToDate) || 0)
+      ].join(':'))
+    });
+    if (!forceRender && body && body.dataset.skuStableSignature === bodySignature && lastStableBodySignature === bodySignature) {
+      updateSortHeaders();
+      updatePlatformShell(host, model);
+      return;
+    }
+    lastStableBodySignature = bodySignature;
     const totals = rows.reduce((acc, row) => {
       acc.planRevenue += row.planRevenue || 0;
       acc.planToDateRevenue += row.planToDateRevenue || 0;
@@ -321,13 +198,20 @@
     totals.gapToDate = totals.factRevenue - totals.planToDateRevenue;
     totals.drr = totals.factRevenue > 0 ? totals.adSpend / totals.factRevenue : null;
 
-    renderTableHeader(host, visiblePlatforms);
-    const body = host.querySelector('.sku-plan-fact-table tbody');
-    if (body) {
-      const tableColspan = 2 + visiblePlatforms.length + 4;
+    if (body && typeof skuPlanFactRowHtml === 'function') {
+      const tableColspan = 8;
       body.innerHTML = rows.length
-        ? rows.map((row) => stableRowHtml(row, model, visiblePlatforms)).join('')
+        ? rows.map((row) => skuPlanFactRowHtml(row, model)).join('')
         : `<tr><td colspan="${tableColspan}"><div class="empty">По текущим фильтрам нет SKU.</div></td></tr>`;
+      body.dataset.skuStableSignature = bodySignature;
+    }
+
+    const platformBoard = host.querySelector('.sku-plan-platform-board');
+    if (platformBoard && typeof skuPlanFactPlatformBoardHtml === 'function') {
+      const temp = document.createElement('div');
+      temp.innerHTML = skuPlanFactPlatformBoardHtml(model).trim();
+      const nextBoard = temp.firstElementChild;
+      if (nextBoard) platformBoard.replaceWith(nextBoard);
     }
 
     const cards = host.querySelector('.grid.cards');
@@ -350,7 +234,28 @@
       chip.replaceWith(nextChip);
     }
     host.querySelector('#skuPlanFactSort') && (host.querySelector('#skuPlanFactSort').value = current.sort || 'gap');
+    host.querySelector('#skuPlanFactPlatform') && (host.querySelector('#skuPlanFactPlatform').value = current.platform || 'all');
+    updatePlatformShell(host, model);
     updateSortHeaders();
+    if (tableWrap && scrollSnapshot) {
+      tableWrap.scrollLeft = scrollSnapshot.left;
+      tableWrap.scrollTop = scrollSnapshot.top;
+    }
+    bindPlatformCards(host);
+  }
+
+  function updatePlatformShell(host, model) {
+    const shell = host?.querySelector('.sku-plan-fact-shell');
+    if (!shell) return;
+    const current = filters();
+    const platform = current.platform !== 'all' ? current.platform : '';
+    shell.classList.toggle('is-platform-drill', Boolean(platform));
+    shell.dataset.skuPlanActivePlatform = platform || 'all';
+    if (platform && typeof skuPlanFactCardStyle === 'function') {
+      shell.setAttribute('style', skuPlanFactCardStyle(platform, model?.totals?.completionToDate ?? null));
+    } else {
+      shell.removeAttribute('style');
+    }
   }
 
   function replaceWithoutListeners(node) {
@@ -441,10 +346,12 @@
   }
 
   function ensureSortHeaders(host) {
-    const current = filters();
-    const visiblePlatforms = visiblePlanFactPlatforms(current);
-    normalizeVisibleSort(current, visiblePlatforms);
-    renderTableHeader(host, visiblePlatforms);
+    const labels = ['SKU', 'Owner', 'Площадка', 'Выполнение', 'Факт / план', 'Маржа', 'Реклама / ДРР', 'Карточка'];
+    host.querySelectorAll('.sku-plan-fact-table thead th').forEach((th, index) => {
+      const key = sortKeys()[index];
+      if (!key || th.querySelector('[data-sku-stable-sort]')) return;
+      th.innerHTML = `<button class="table-sort-btn" type="button" data-sku-stable-sort="${key}"><span>${labels[index]}</span><span class="sort-mark"></span></button>`;
+    });
     updateSortHeaders();
   }
 
@@ -462,30 +369,19 @@
     });
   }
 
-  function exportPlanFact(button) {
-    const now = Date.now();
-    if (now < exportLockedUntil) return;
-    exportLockedUntil = now + 1200;
-    const originalText = button?.textContent || '';
-    try {
-      if (button) {
-        button.disabled = true;
-        button.textContent = 'Готовим Excel...';
-      }
-      const model = buildModel();
-      if (model && typeof downloadSkuPlanFactExcel === 'function') {
-        model.rows = sortRows(model.rows);
-        downloadSkuPlanFactExcel(model);
-      }
-    } finally {
-      window.setTimeout(() => {
-        exportLockedUntil = 0;
-        if (button) {
-          button.disabled = false;
-          button.textContent = originalText || 'Выгрузить в Excel';
-        }
-      }, 1200);
-    }
+  function bindPlatformCards(host) {
+    host?.querySelectorAll('[data-sku-plan-fact-platform-card]').forEach((button) => {
+      if (button.dataset.skuStablePlatformBound === '1') return;
+      button.dataset.skuStablePlatformBound = '1';
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const current = filters();
+        const value = button.dataset.skuPlanFactPlatformCard || 'all';
+        current.platform = current.platform === value ? 'all' : value;
+        renderStableBody();
+      });
+    });
   }
 
   function bindControls(host) {
@@ -530,6 +426,7 @@
     if (owner) owner.addEventListener('change', (event) => { filters().owner = event.target.value; renderStableBody(); });
     if (status) status.addEventListener('change', (event) => { filters().status = event.target.value; renderStableBody(); });
     if (platform) platform.addEventListener('change', (event) => { filters().platform = event.target.value; renderStableBody(); });
+    bindPlatformCards(host);
     if (sort) {
       sort.addEventListener('change', (event) => {
         const current = filters();
@@ -538,11 +435,13 @@
         renderStableBody();
       });
     }
-    if (exportButton) exportButton.onclick = (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      exportPlanFact(event.currentTarget);
-    };
+    if (exportButton) exportButton.addEventListener('click', () => {
+      const model = buildModel();
+      if (model && typeof downloadSkuPlanFactExcel === 'function') {
+        model.rows = sortRows(model.rows);
+        downloadSkuPlanFactExcel(model);
+      }
+    });
     if (refreshButton) refreshButton.addEventListener('click', (event) => refreshData(event.currentTarget));
 
     host.querySelectorAll('[data-sku-stable-sort]').forEach((button) => {

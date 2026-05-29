@@ -5,6 +5,7 @@
   window.__ALTEA_SNAPSHOT_REFRESH_HOTFIX_20260425C__ = true;
 
   var SNAPSHOT_TABLE = "portal_data_snapshots";
+  var SNAPSHOT_REQUEST_TIMEOUT_MS = 3500;
   var PATH_MAP = {
     "data/dashboard.json": "dashboard",
     "data/skus.json": "skus",
@@ -420,13 +421,20 @@
   }
 
   async function requestSnapshotRows(url, cfg) {
+    var controller = typeof AbortController === "function" ? new AbortController() : null;
+    var timer = window.setTimeout(function () {
+      if (controller) controller.abort();
+    }, SNAPSHOT_REQUEST_TIMEOUT_MS);
     var response = await fetch(url.toString(), {
       cache: "no-store",
+      signal: controller ? controller.signal : undefined,
       headers: {
         apikey: cfg.supabase.anonKey,
         Authorization: "Bearer " + cfg.supabase.anonKey,
         Accept: "application/json"
       }
+    }).finally(function () {
+      window.clearTimeout(timer);
     });
     if (!response || !response.ok) {
       throw new Error("Supabase snapshots " + (response && response.status || "request failed"));

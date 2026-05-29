@@ -69,6 +69,9 @@ function skuPlanFactFilters() {
     platform: 'all',
     month: 'latest',
     date: '',
+    dateFrom: '',
+    dateTo: '',
+    dateMode: 'latest',
     sort: 'gap',
     sortDir: 'asc',
     ...(state.skuPlanFactFilters || {})
@@ -82,6 +85,37 @@ function skuPlanFactFilters() {
 function skuPlanFactDateKey(value = '') {
   const raw = String(value || '').slice(0, 10);
   return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : '';
+}
+
+function skuPlanFactMonthStart(monthKey = '') {
+  return monthKey ? `${monthKey}-01` : '';
+}
+
+function skuPlanFactMonthEnd(monthKey = '') {
+  return monthKey ? `${monthKey}-${String(skuPlanFactMonthDays(monthKey)).padStart(2, '0')}` : '';
+}
+
+function skuPlanFactDateSerial(date = '') {
+  const key = skuPlanFactDateKey(date);
+  if (!key) return null;
+  const [year, month, day] = key.split('-').map(Number);
+  if (!year || !month || !day) return null;
+  return Math.floor(Date.UTC(year, month - 1, day) / 86400000);
+}
+
+function skuPlanFactInclusiveDays(dateFrom = '', dateTo = '') {
+  const fromSerial = skuPlanFactDateSerial(dateFrom);
+  const toSerial = skuPlanFactDateSerial(dateTo);
+  if (fromSerial === null || toSerial === null) return 0;
+  return Math.max(1, toSerial - fromSerial + 1);
+}
+
+function skuPlanFactClampDateToRange(date = '', minDate = '', maxDate = '') {
+  let next = skuPlanFactDateKey(date);
+  if (!next) return '';
+  if (minDate && next < minDate) next = minDate;
+  if (maxDate && next > maxDate) next = maxDate;
+  return next;
 }
 
 function skuPlanFactMonthLabel(monthKey = '') {
@@ -304,7 +338,7 @@ function skuPlanFactUnmappedSkuFromRow(row = {}, token = '') {
   };
 }
 
-function skuPlanFactUnmappedSkus(indexes = {}, monthKey = '', maxFactDate = '') {
+function skuPlanFactUnmappedSkus(indexes = {}, monthKey = '', maxFactDate = '', minFactDate = '') {
   const knownTokens = skuPlanFactKnownSkuTokens();
   const ignoredTokens = skuPlanFactIgnoredSet();
   const result = new Map();
@@ -313,7 +347,7 @@ function skuPlanFactUnmappedSkus(indexes = {}, monthKey = '', maxFactDate = '') 
       const token = skuPlanFactArticleToken(row);
       if (!token || knownTokens.has(token) || result.has(token)) return;
       if (skuPlanFactIsIgnored(platform, row.articleKey || row.article || token, ignoredTokens)) return;
-      const fact = skuPlanFactFactFromRows([row], monthKey, maxFactDate);
+      const fact = skuPlanFactFactFromRows([row], monthKey, maxFactDate, minFactDate);
       if (!(numberOrZero(fact.revenue) > 0 || numberOrZero(fact.units) > 0)) return;
       result.set(token, skuPlanFactUnmappedSkuFromRow(row, token));
     });
@@ -363,7 +397,7 @@ function skuPlanFactLatestMonth(months = []) {
 
 function skuPlanFactSelectedMonth(months = []) {
   const filters = skuPlanFactFilters();
-  const dateMonth = skuPlanFactMonthFromDate(filters.date);
+  const dateMonth = skuPlanFactMonthFromDate(filters.dateTo || filters.date || filters.dateFrom);
   if (dateMonth && (!months.length || months.includes(dateMonth))) return dateMonth;
   if (filters.month && filters.month !== 'latest' && months.includes(filters.month)) return filters.month;
   return skuPlanFactLatestMonth(months);
@@ -412,14 +446,15 @@ function skuPlanFactDateBounds(indexes, months = []) {
 function skuPlanFactSelectedDate(indexes, monthKey, maxFactDate = '') {
   const filters = skuPlanFactFilters();
   const maxDate = maxFactDate || skuPlanFactMaxFactDate(indexes, monthKey);
-  const selected = skuPlanFactDateKey(filters.date);
-  const monthStart = monthKey ? `${monthKey}-01` : '';
+  const selected = skuPlanFactDateKey(filters.dateTo || filters.date);
+  const monthStart = skuPlanFactMonthStart(monthKey);
   if (selected && skuPlanFactMonthFromDate(selected) === monthKey) {
     if (monthStart && selected < monthStart) return monthStart;
     if (maxDate && selected > maxDate) return maxDate;
     return selected;
   }
   filters.date = maxDate;
+  filters.dateTo = maxDate;
   return maxDate;
 }
 
@@ -428,6 +463,29 @@ function skuPlanFactElapsedDays(monthKey, maxFactDate) {
   const factMonth = skuPlanFactMonthFromDate(maxFactDate);
   if (factMonth === monthKey) return Math.min(days, Math.max(1, Number(String(maxFactDate).slice(8, 10)) || 1));
   return days;
+}
+
+function skuPlanFactSelectedPeriod(indexes, monthKey, maxFactDate = '') {
+  const filters = skuPlanFactFilters();
+  const monthStart = skuPlanFactMonthStart(monthKey);
+  const maxDate = maxFactDate || skuPlanFactMaxFactDate(indexes, monthKey);
+  let dateTo = skuPlanFactSelectedDate(indexes, monthKey, maxDate);
+  let dateFrom = skuPlanFactDateKey(filters.dateFrom);
+  if (!dateFrom || skuPlanFactMonthFromDate(dateFrom) !== monthKey) {
+    dateFrom = monthStart;
+  }
+  dateFrom = skuPlanFactClampDateToRange(dateFrom, monthStart, dateTo || maxDate);
+  dateTo = skuPlanFactClampDateToRange(dateTo, dateFrom || monthStart, maxDate);
+  if (dateFrom && dateTo && dateFrom > dateTo) dateFrom = dateTo;
+  filters.dateFrom = dateFrom;
+  filters.dateTo = dateTo;
+  filters.date = dateTo;
+  filters.month = monthKey || (dateTo ? dateTo.slice(0, 7) : filters.month);
+  return {
+    start: dateFrom,
+    end: dateTo,
+    days: skuPlanFactInclusiveDays(dateFrom, dateTo) || skuPlanFactElapsedDays(monthKey, dateTo)
+  };
 }
 
 function skuPlanFactPlanFromRows(rows = [], monthKey = '') {
@@ -467,17 +525,19 @@ function skuPlanFactDailyArrayFromMap(map = new Map()) {
     .sort((left, right) => left.date.localeCompare(right.date));
 }
 
-function skuPlanFactFactFromRows(rows = [], monthKey = '', maxFactDate = '') {
+function skuPlanFactFactFromRows(rows = [], monthKey = '', maxFactDate = '', minFactDate = '') {
   const result = { units: 0, revenue: 0, avgCheck: null, source: '', daily: [] };
   const seenDaily = new Set();
   const dailyMap = new Map();
-  const monthEnd = `${monthKey}-${String(skuPlanFactMonthDays(monthKey)).padStart(2, '0')}`;
-  const allowMonthlyFallback = !maxFactDate || maxFactDate >= monthEnd;
+  const monthStart = skuPlanFactMonthStart(monthKey);
+  const monthEnd = skuPlanFactMonthEnd(monthKey);
+  const allowMonthlyFallback = (!maxFactDate || maxFactDate >= monthEnd) && (!minFactDate || minFactDate <= monthStart);
   rows.forEach((row, rowIndex) => {
     const daily = [...(row.daily || []), ...(row.monthly || [])];
     daily.forEach((item, itemIndex) => {
       const date = String(item?.date || '').slice(0, 10);
       if (date.slice(0, 7) !== monthKey) return;
+      if (minFactDate && date < minFactDate) return;
       if (maxFactDate && date > maxFactDate) return;
       const dedupeKey = `${row.articleKey || row.article || rowIndex}|${date}|${itemIndex}|${item.revenue}|${item.ordersUnits}`;
       if (seenDaily.has(dedupeKey)) return;
@@ -521,12 +581,13 @@ function skuPlanFactPlatformTrend(platform = '') {
   }) || null;
 }
 
-function skuPlanFactPlatformAggregateFact(platform = '', monthKey = '', maxFactDate = '') {
+function skuPlanFactPlatformAggregateFact(platform = '', monthKey = '', maxFactDate = '', minFactDate = '') {
   const result = { units: 0, revenue: 0 };
   const platformTrend = skuPlanFactPlatformTrend(platform);
   (platformTrend?.series || []).forEach((item) => {
     const date = String(item?.date || item?.label || '').slice(0, 10);
     if (skuPlanFactMonthFromDate(date) !== monthKey) return;
+    if (minFactDate && date < minFactDate) return;
     if (maxFactDate && date > maxFactDate) return;
     result.units += numberOrZero(item.ordersUnits ?? item.units);
     result.revenue += numberOrZero(item.ordersRevenue ?? item.revenue ?? item.financeTurnover);
@@ -558,10 +619,10 @@ function skuPlanFactScaleMetricFact(metric = null, ratio = 1, reconciliation = n
   }
 }
 
-function skuPlanFactReconcilePlatformFacts(rows = [], monthKey = '', maxFactDate = '') {
+function skuPlanFactReconcilePlatformFacts(rows = [], monthKey = '', maxFactDate = '', minFactDate = '') {
   const reconciliations = [];
   SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
-    const aggregate = skuPlanFactPlatformAggregateFact(platform, monthKey, maxFactDate);
+    const aggregate = skuPlanFactPlatformAggregateFact(platform, monthKey, maxFactDate, minFactDate);
     const raw = rows.reduce((acc, row) => {
       const metric = row.platforms?.[platform] || row[platform] || null;
       acc.units += numberOrZero(metric?.factUnits);
@@ -629,9 +690,9 @@ function skuPlanFactBlankMetric(platform = '') {
   };
 }
 
-function skuPlanFactAppendUnallocatedAggregateRows(rows = [], monthKey = '', maxFactDate = '') {
+function skuPlanFactAppendUnallocatedAggregateRows(rows = [], monthKey = '', maxFactDate = '', minFactDate = '') {
   SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
-    const aggregate = skuPlanFactPlatformAggregateFact(platform, monthKey, maxFactDate);
+    const aggregate = skuPlanFactPlatformAggregateFact(platform, monthKey, maxFactDate, minFactDate);
     const raw = rows.reduce((acc, row) => {
       const metric = row.platforms?.[platform] || row[platform] || null;
       acc.units += numberOrZero(metric?.factUnits);
@@ -747,11 +808,12 @@ function skuPlanFactPlatformPlanUnits(monthKey = '', platform = '') {
   );
 }
 
-function skuPlanFactAdIndex(monthKey, maxFactDate = '') {
+function skuPlanFactAdIndex(monthKey, maxFactDate = '', minFactDate = '') {
   const map = new Map();
   (state.adsSummary?.itemSeries || []).forEach((item) => {
     const date = String(item?.date || '').slice(0, 10);
     if (skuPlanFactMonthFromDate(date) !== monthKey) return;
+    if (minFactDate && date < minFactDate) return;
     if (maxFactDate && date > maxFactDate) return;
     const platform = String(item.platformKey || item.platform || 'wb').toLowerCase();
     const token = skuPlanFactArticleToken(item);
@@ -843,12 +905,31 @@ function skuPlanFactPlatformAllocationWeight(metric = {}, platformPriceProxy = 0
   return 1;
 }
 
-function skuPlanFactBuildScoreHistory(metric = {}, monthKey = '') {
-  const daily = Array.isArray(metric.factDaily) ? metric.factDaily : [];
+function skuPlanFactPeriodDayIndex(date = '', monthKey = '', periodStart = '') {
+  const start = skuPlanFactDateKey(periodStart);
+  const key = skuPlanFactDateKey(date);
+  if (start && key && skuPlanFactMonthFromDate(start) === monthKey && skuPlanFactMonthFromDate(key) === monthKey) {
+    return skuPlanFactInclusiveDays(start, key);
+  }
+  const monthDays = Math.max(1, skuPlanFactMonthDays(monthKey));
+  return Math.min(monthDays, Math.max(1, Number(String(key || date || '').slice(8, 10)) || 1));
+}
+
+function skuPlanFactBuildScoreHistory(metric = {}, monthKey = '', periodStart = '', periodEnd = '') {
+  const start = skuPlanFactDateKey(periodStart);
+  const end = skuPlanFactDateKey(periodEnd);
+  const daily = (Array.isArray(metric.factDaily) ? metric.factDaily : [])
+    .filter((item) => {
+      const date = skuPlanFactDateKey(item?.date);
+      if (!date) return false;
+      if (start && date < start) return false;
+      if (end && date > end) return false;
+      return true;
+    });
   if (!daily.length) {
     return metric.factRevenue > 0 || metric.planToDateRevenue > 0
       ? [{
-        date: monthKey ? `${monthKey}-${String(Math.max(1, Math.round(metric.planToDateRevenue > 0 && metric.planRevenue > 0 ? metric.planToDateRevenue / metric.planRevenue * skuPlanFactMonthDays(monthKey) : 1))).padStart(2, '0')}` : '',
+        date: end || (monthKey ? `${monthKey}-${String(Math.max(1, Math.round(metric.planToDateRevenue > 0 && metric.planRevenue > 0 ? metric.planToDateRevenue / metric.planRevenue * skuPlanFactMonthDays(monthKey) : 1))).padStart(2, '0')}` : ''),
         revenue: numberOrZero(metric.factRevenue),
         units: numberOrZero(metric.factUnits),
         planToDateRevenue: numberOrZero(metric.planToDateRevenue),
@@ -862,7 +943,7 @@ function skuPlanFactBuildScoreHistory(metric = {}, monthKey = '') {
   return daily.map((item) => {
     revenue += numberOrZero(item.revenue);
     units += numberOrZero(item.units);
-    const day = Math.min(monthDays, Math.max(1, Number(String(item.date || '').slice(8, 10)) || 1));
+    const day = skuPlanFactPeriodDayIndex(item.date || '', monthKey, start);
     const planToDateRevenue = numberOrZero(metric.planRevenue) > 0 ? numberOrZero(metric.planRevenue) * day / monthDays : 0;
     return {
       date: item.date || '',
@@ -892,7 +973,7 @@ function skuPlanFactMergeDailyIntoMap(map = new Map(), daily = [], scale = 1) {
   return map;
 }
 
-function skuPlanFactFinalizePlatformMetric(metric = {}, monthKey = '', elapsedDays = 0) {
+function skuPlanFactFinalizePlatformMetric(metric = {}, monthKey = '', elapsedDays = 0, periodStart = '', periodEnd = '') {
   if (!metric || typeof metric !== 'object') return metric;
   const days = Math.max(1, skuPlanFactMonthDays(monthKey));
   const planAvgCheck = Number(metric.planAvgCheck);
@@ -916,12 +997,12 @@ function skuPlanFactFinalizePlatformMetric(metric = {}, monthKey = '', elapsedDa
   metric.adsDrr = metric.adRevenue > 0 ? metric.adSpend / metric.adRevenue : null;
   metric.marginPct = skuPlanFactNormalizeRatio(metric.marginPct);
   metric.marginRub = metric.marginPct === null ? null : metric.factRevenue * metric.marginPct;
-  metric.scoreHistory = skuPlanFactBuildScoreHistory(metric, monthKey);
+  metric.scoreHistory = skuPlanFactBuildScoreHistory(metric, monthKey, periodStart, periodEnd);
   metric.completionDelta = skuPlanFactCompletionDelta(metric.scoreHistory);
   return metric;
 }
 
-function skuPlanFactAllocatePlatformPlan(rows = [], monthKey = '', platform = '', elapsedDays = 0) {
+function skuPlanFactAllocatePlatformPlan(rows = [], monthKey = '', platform = '', elapsedDays = 0, periodStart = '', periodEnd = '') {
   if (SKU_PLAN_FACT_DIRECT_PLAN_PLATFORMS.has(platform)) return;
   const totalUnits = skuPlanFactPlatformPlanUnits(monthKey, platform);
   if (!Number.isFinite(totalUnits) || totalUnits <= 0) return;
@@ -975,11 +1056,11 @@ function skuPlanFactAllocatePlatformPlan(rows = [], monthKey = '', platform = ''
     metric.planAvgCheck = priceProxy > 0 ? priceProxy : null;
     metric.planRevenue = metric.planUnits > 0 && priceProxy > 0 ? metric.planUnits * priceProxy : 0;
     metric.hasDirectPlan = false;
-    skuPlanFactFinalizePlatformMetric(metric, monthKey, elapsedDays);
+    skuPlanFactFinalizePlatformMetric(metric, monthKey, elapsedDays, periodStart, periodEnd);
   });
 }
 
-function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, elapsedDays, maxFactDate = '') {
+function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, elapsedDays, maxFactDate = '', minFactDate = '') {
   const smartRows = skuPlanFactRowsForSkuIndex(indexes.smart?.[platform], sku, platform);
   const overlayRows = skuPlanFactRowsForSkuIndex(indexes.overlay?.[platform], sku, platform);
   const supportRows = skuPlanFactRowsForSkuIndex(indexes.support?.[platform], sku, platform);
@@ -993,7 +1074,7 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
   const plan = SKU_PLAN_FACT_DIRECT_PLAN_PLATFORMS.has(platform)
     ? skuPlanFactPlanFromRows(planRows, monthKey)
     : { units: 0, revenue: 0, avgCheck: null, days: skuPlanFactMonthDays(monthKey), source: '' };
-  const fact = skuPlanFactFactFromRows(factRows, monthKey, maxFactDate);
+  const fact = skuPlanFactFactFromRows(factRows, monthKey, maxFactDate, minFactDate);
   const ad = skuPlanFactAdForSku(adIndex, platform, sku);
   const planToDateRevenue = plan.revenue > 0 ? plan.revenue * elapsedDays / Math.max(1, plan.days) : 0;
   const planToDateUnits = plan.units > 0 ? plan.units * elapsedDays / Math.max(1, plan.days) : 0;
@@ -1049,13 +1130,15 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
   };
 }
 
-function skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, maxFactDate = '') {
+function skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, maxFactDate = '', minFactDate = '') {
   const platforms = {};
   SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
     platforms[platform] = skuPlanFactFinalizePlatformMetric(
-      skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, elapsedDays, maxFactDate),
+      skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, elapsedDays, maxFactDate, minFactDate),
       monthKey,
-      elapsedDays
+      elapsedDays,
+      minFactDate,
+      maxFactDate
     );
   });
   const matrixEntry = typeof skuMatrixEntryForSku === 'function' ? skuMatrixEntryForSku(sku) : null;
@@ -1082,12 +1165,12 @@ function skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, maxFa
   SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
     row[platform] = platforms[platform];
   });
-  return skuPlanFactFinalizeRow(row, monthKey, elapsedDays);
+  return skuPlanFactFinalizeRow(row, monthKey, elapsedDays, minFactDate, maxFactDate);
 }
 
-function skuPlanFactFinalizeRow(row = {}, monthKey = '', elapsedDays = 0) {
+function skuPlanFactFinalizeRow(row = {}, monthKey = '', elapsedDays = 0, periodStart = '', periodEnd = '') {
   const platforms = SKU_PLAN_FACT_PLATFORMS.map((platform) => row.platforms?.[platform] || row[platform]).filter(Boolean);
-  platforms.forEach((metric) => skuPlanFactFinalizePlatformMetric(metric, monthKey, elapsedDays));
+  platforms.forEach((metric) => skuPlanFactFinalizePlatformMetric(metric, monthKey, elapsedDays, periodStart, periodEnd));
   const totals = platforms.reduce((acc, metric) => {
     acc.planUnits += numberOrZero(metric.planUnits);
     acc.planRevenue += numberOrZero(metric.planRevenue);
@@ -1128,7 +1211,7 @@ function skuPlanFactFinalizeRow(row = {}, monthKey = '', elapsedDays = 0) {
   row.marginRub = row.marginPct === null ? null : row.factRevenue * row.marginPct;
   row.activePlatformCount = totals.activePlatforms;
   row.factDaily = skuPlanFactDailyArrayFromMap(totals.dailyMap);
-  row.scoreHistory = skuPlanFactBuildScoreHistory(row, monthKey);
+  row.scoreHistory = skuPlanFactBuildScoreHistory(row, monthKey, periodStart, periodEnd);
   row.completionDelta = skuPlanFactCompletionDelta(row.scoreHistory);
   row.hasPlanOrFact = totals.hasPlanOrFact;
   return row;
@@ -1227,19 +1310,21 @@ function skuPlanFactBuildModel() {
   const dateBounds = skuPlanFactDateBounds(indexes, months);
   const monthKey = skuPlanFactSelectedMonth(months);
   const maxAvailableDate = skuPlanFactMaxFactDate(indexes, monthKey);
-  const selectedDate = skuPlanFactSelectedDate(indexes, monthKey, maxAvailableDate);
-  const elapsedDays = skuPlanFactElapsedDays(monthKey, selectedDate);
-  const adIndex = skuPlanFactAdIndex(monthKey, selectedDate);
+  const selectedPeriod = skuPlanFactSelectedPeriod(indexes, monthKey, maxAvailableDate);
+  const periodStart = selectedPeriod.start;
+  const selectedDate = selectedPeriod.end;
+  const elapsedDays = selectedPeriod.days;
+  const adIndex = skuPlanFactAdIndex(monthKey, selectedDate, periodStart);
   const modelSkus = [
     ...(state.skus || []),
-    ...skuPlanFactUnmappedSkus(indexes, monthKey, selectedDate)
+    ...skuPlanFactUnmappedSkus(indexes, monthKey, selectedDate, periodStart)
   ];
-  const rows = modelSkus.map((sku) => skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, selectedDate));
-  skuPlanFactAppendUnallocatedAggregateRows(rows, monthKey, selectedDate);
-  const reconciliation = skuPlanFactReconcilePlatformFacts(rows, monthKey, selectedDate);
+  const rows = modelSkus.map((sku) => skuPlanFactBuildRow(sku, monthKey, indexes, adIndex, elapsedDays, selectedDate, periodStart));
+  skuPlanFactAppendUnallocatedAggregateRows(rows, monthKey, selectedDate, periodStart);
+  const reconciliation = skuPlanFactReconcilePlatformFacts(rows, monthKey, selectedDate, periodStart);
   skuPlanFactMarkDuplicateRiskRows(rows);
-  SKU_PLAN_FACT_PLATFORMS.forEach((platform) => skuPlanFactAllocatePlatformPlan(rows, monthKey, platform, elapsedDays));
-  rows.forEach((row) => skuPlanFactFinalizeRow(row, monthKey, elapsedDays));
+  SKU_PLAN_FACT_PLATFORMS.forEach((platform) => skuPlanFactAllocatePlatformPlan(rows, monthKey, platform, elapsedDays, periodStart, selectedDate));
+  rows.forEach((row) => skuPlanFactFinalizeRow(row, monthKey, elapsedDays, periodStart, selectedDate));
   const owners = [...new Set(rows.map((row) => row.owner).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
   const platformBaseRows = rows.filter((row) => skuPlanFactRowMatchesFilters(row, filters, { platform: false }));
   const filteredRows = platformBaseRows.filter((row) => skuPlanFactRowMatchesFilters(row, filters));
@@ -1278,6 +1363,9 @@ function skuPlanFactBuildModel() {
     monthLabel: skuPlanFactMonthLabel(monthKey),
     maxFactDate: selectedDate,
     selectedDate,
+    periodStart,
+    periodEnd: selectedDate,
+    periodDays: elapsedDays,
     maxAvailableDate,
     dateMin: dateBounds.min,
     dateMax: dateBounds.max,
@@ -3227,7 +3315,7 @@ function skuPlanFactPlatformSummary(model = {}, platform = '') {
   summary.marginPct = summary.marginWeight > 0 ? summary.marginValue / summary.marginWeight : null;
   summary.marginRub = summary.marginPct === null ? null : summary.factRevenue * summary.marginPct;
   summary.factDaily = skuPlanFactDailyArrayFromMap(summary.dailyMap);
-  summary.scoreHistory = skuPlanFactBuildScoreHistory(summary, model.monthKey || '');
+  summary.scoreHistory = skuPlanFactBuildScoreHistory(summary, model.monthKey || '', model.periodStart || '', model.periodEnd || model.selectedDate || '');
   summary.completionDelta = skuPlanFactCompletionDelta(summary.scoreHistory);
   return summary;
 }
@@ -3499,6 +3587,8 @@ function skuPlanFactRowHtml(row, model) {
 
 function skuPlanFactExportColumns() {
   const columns = [
+    ['period_from', 'Период с'],
+    ['period_to', 'Период по'],
     ['month', 'Месяц'],
     ['fact_to', 'Факт по дату'],
     ['article_key', 'Article key'],
@@ -3513,11 +3603,11 @@ function skuPlanFactExportColumns() {
     const suffix = platform;
     columns.push(
       [`plan_${suffix}_revenue`, `План ${label}, ₽`],
-      [`plan_${suffix}_to_date_revenue`, `План ${label} к дате, ₽`],
+      [`plan_${suffix}_to_date_revenue`, `План ${label} за период, ₽`],
       [`fact_${suffix}_revenue`, `Факт ${label}, ₽`],
       [`plan_${suffix}_units`, `План ${label}, шт`],
       [`fact_${suffix}_units`, `Факт ${label}, шт`],
-      [`completion_${suffix}_to_date_pct`, `Выполнение ${label} к дате, %`],
+      [`completion_${suffix}_to_date_pct`, `Выполнение ${label} за период, %`],
       [`avg_check_${suffix}_fact`, `Средний чек ${label} факт`],
       [`avg_check_${suffix}_plan`, `Средний чек ${label} план`],
       [`margin_${suffix}_pct`, `Маржа ${label}, %`],
@@ -3530,10 +3620,10 @@ function skuPlanFactExportColumns() {
   });
   columns.push(
     ['plan_total_revenue', 'План всего, ₽'],
-    ['plan_total_to_date_revenue', 'План всего к дате, ₽'],
+    ['plan_total_to_date_revenue', 'План всего за период, ₽'],
     ['fact_total_revenue', 'Факт всего, ₽'],
-    ['completion_total_to_date_pct', 'Выполнение всего к дате, %'],
-    ['gap_total_to_date', 'Отклонение к дате, ₽'],
+    ['completion_total_to_date_pct', 'Выполнение всего за период, %'],
+    ['gap_total_to_date', 'Отклонение за период, ₽'],
     ['margin_total_pct', 'Маржа всего, %'],
     ['margin_total_rub', 'Маржа всего, ₽'],
     ['drr_total', 'ДРР total']
@@ -3544,6 +3634,8 @@ function skuPlanFactExportColumns() {
 function skuPlanFactExportRows(rows, model) {
   return rows.map((row) => {
     const payload = {
+      period_from: model.periodStart || model.dateMin || '',
+      period_to: model.periodEnd || model.maxFactDate || '',
       month: model.monthKey,
       fact_to: model.maxFactDate,
       article_key: row.articleKey,
@@ -5251,14 +5343,37 @@ function skuPlanFactRestoreFocus(focusState) {
 function skuPlanFactSetFilter(rootId, key, value, options = {}) {
   const filters = skuPlanFactFilters();
   let nextValue = value;
-  if (key === 'date') {
+  if (key === 'date' || key === 'dateTo') {
     nextValue = skuPlanFactDateKey(value);
     filters.month = nextValue ? nextValue.slice(0, 7) : 'latest';
+    filters.date = nextValue;
+    filters.dateTo = nextValue;
+    filters.dateMode = nextValue ? 'manual' : 'latest';
+    if (filters.dateFrom && nextValue && skuPlanFactMonthFromDate(filters.dateFrom) !== skuPlanFactMonthFromDate(nextValue)) {
+      filters.dateFrom = `${nextValue.slice(0, 7)}-01`;
+    }
+    if (filters.dateFrom && nextValue && filters.dateFrom > nextValue) {
+      filters.dateFrom = nextValue;
+    }
+    key = 'dateTo';
+  }
+  if (key === 'dateFrom') {
+    nextValue = skuPlanFactDateKey(value);
+    filters.month = nextValue ? nextValue.slice(0, 7) : filters.month;
+    filters.dateMode = nextValue ? 'manual' : 'latest';
+    if (filters.dateTo && nextValue && skuPlanFactMonthFromDate(filters.dateTo) !== skuPlanFactMonthFromDate(nextValue)) {
+      filters.dateTo = '';
+      filters.date = '';
+    }
+    if (filters.dateTo && nextValue && filters.dateTo < nextValue) {
+      filters.dateTo = nextValue;
+      filters.date = nextValue;
+    }
   }
   if (key === 'sort') {
     filters.sortDir = skuPlanFactDefaultSortDir(nextValue);
   }
-  if (filters[key] === nextValue && !options.force) return;
+  if (filters[key] === nextValue && !options.force && key !== 'dateTo' && key !== 'dateFrom') return;
   filters[key] = nextValue;
 
   const render = () => renderSkuPlanFact(rootId, { focusState: options.focusState || null });
@@ -5416,14 +5531,15 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
         ${badge(`маржа ${fmt.pct(totals.marginPct)}`, skuPlanFactMarginTone(totals.marginPct))}
         ${matrixSummary.duplicateRiskCount ? badge(`${fmt.int(matrixSummary.duplicateRiskCount)} риск дубля`, 'danger') : ''}
         ${badge(`матрица ${matrixGeneratedAt ? fmt.date(matrixGeneratedAt) : '—'}`, matrixGeneratedAt ? 'ok' : 'warn')}
-        ${badge(`факт до ${model.maxFactDate || '—'}`, 'ok')}
+        ${badge(`период ${model.periodStart || '—'} - ${model.periodEnd || model.maxFactDate || '—'}`, 'ok')}
       </div>
     </div>
 
     <div class="sku-plan-fact-toolbar">
       <div class="control-filters sku-plan-fact-filters">
         <input id="skuPlanFactSearch" placeholder="Поиск по SKU, названию, owner…" value="${escapeHtml(filters.search)}">
-        <input id="skuPlanFactDate" type="date" title="Дата план-факта" aria-label="Дата план-факта" value="${escapeHtml(model.selectedDate || '')}" ${dateAttrs}>
+        <input id="skuPlanFactDateFrom" type="date" title="Период с" aria-label="Период с" value="${escapeHtml(model.periodStart || '')}" ${dateAttrs}>
+        <input id="skuPlanFactDateTo" type="date" title="Период по" aria-label="Период по" value="${escapeHtml(model.periodEnd || model.selectedDate || '')}" ${dateAttrs}>
         <select id="skuPlanFactOwner">
           <option value="all" ${filters.owner === 'all' ? 'selected' : ''}>Все owner</option>
           ${ownerOptions}
@@ -5470,7 +5586,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
         </div>
         <div class="badge-stack">
           ${badge(`факт ${fmt.money(totals.factRevenue)}`, 'info')}
-          ${badge(`план к дате ${fmt.money(totals.planToDateRevenue)}`)}
+          ${badge(`план за период ${fmt.money(totals.planToDateRevenue)}`)}
           ${badge(fmt.pct(totals.completionToDate), skuPlanFactTone(totals.completionToDate))}
         </div>
       </div>
@@ -5499,7 +5615,8 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
   root.querySelector('#skuPlanFactSearch')?.addEventListener('input', (event) => {
     skuPlanFactSetFilter(rootId, 'search', event.target.value, { debounce: 140, focusState: skuPlanFactFocusState(event.target) });
   });
-  root.querySelector('#skuPlanFactDate')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'date', event.target.value); });
+  root.querySelector('#skuPlanFactDateFrom')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'dateFrom', event.target.value); });
+  root.querySelector('#skuPlanFactDateTo')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'dateTo', event.target.value); });
   root.querySelector('#skuPlanFactOwner')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'owner', event.target.value); });
   root.querySelector('#skuPlanFactStatus')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'status', event.target.value); });
   root.querySelector('#skuPlanFactPlatform')?.addEventListener('change', (event) => { skuPlanFactSetFilter(rootId, 'platform', event.target.value); });

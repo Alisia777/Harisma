@@ -46,6 +46,9 @@
       platform: 'all',
       month: 'latest',
       date: '',
+      dateFrom: '',
+      dateTo: '',
+      dateMode: 'latest',
       sort: 'gap',
       sortDir: 'asc',
       ...(app.skuPlanFactFilters || {})
@@ -66,15 +69,24 @@
   }
 
   function latestDateFromModel(model) {
-    const existing = dateKey(filters().date);
+    const existing = dateKey(filters().dateTo || filters().date);
     if (existing) return existing;
-    return dateKey(model?.selectedDate) || dateKey(model?.maxFactDate) || new Date().toISOString().slice(0, 10);
+    return dateKey(model?.periodEnd) || dateKey(model?.selectedDate) || dateKey(model?.maxFactDate) || new Date().toISOString().slice(0, 10);
+  }
+
+  function startDateFromModel(model) {
+    const existing = dateKey(filters().dateFrom);
+    if (existing) return existing;
+    const latest = latestDateFromModel(model);
+    return dateKey(model?.periodStart) || (latest ? `${latest.slice(0, 7)}-01` : '');
   }
 
   function resetAutoDate() {
     const current = filters();
     if (current.dateMode === 'manual') return;
     current.date = '';
+    current.dateFrom = '';
+    current.dateTo = '';
     current.month = 'latest';
     current.dateMode = 'latest';
   }
@@ -162,9 +174,13 @@
         status: current.status || '',
         platform: current.platform || '',
         date: current.date || '',
+        dateFrom: current.dateFrom || '',
+        dateTo: current.dateTo || '',
         sort: current.sort || '',
         sortDir: current.sortDir || ''
       },
+      periodStart: model.periodStart || '',
+      periodEnd: model.periodEnd || '',
       selectedDate: model.selectedDate || '',
       maxFactDate: model.maxFactDate || '',
       rows: rows.map((row) => [
@@ -226,15 +242,24 @@
       ].join('');
     }
 
-    const chip = host.querySelector('.section-title .badge-stack .chip');
-    if (chip) {
-      const nextChip = document.createElement('span');
-      nextChip.className = 'chip info';
-      nextChip.textContent = `${fmt.int(rows.length)} SKU`;
-      chip.replaceWith(nextChip);
+    const titleStack = host.querySelector('.section-title .badge-stack');
+    if (titleStack && typeof fmt === 'object') {
+      const titleChips = [...titleStack.querySelectorAll('.chip')];
+      const setChip = (match, text, tone = '') => {
+        const chip = titleChips.find((item) => match(String(item.textContent || '')));
+        if (!chip) return;
+        chip.className = `chip ${tone}`.trim();
+        chip.textContent = text;
+      };
+      setChip((text) => text.includes('SKU'), `${fmt.int(rows.length)} SKU`, 'info');
+      setChip((text) => text.includes('API'), `${fmt.int(model.unmappedCount || 0)} API без пары`, model.unmappedCount ? 'warn' : 'ok');
+      setChip((text) => text.includes('маржа'), `маржа ${fmt.pct(totals.marginPct)}`, typeof skuPlanFactMarginTone === 'function' ? skuPlanFactMarginTone(totals.marginPct) : '');
+      setChip((text) => text.includes('период') || text.includes('факт до'), `период ${model.periodStart || '—'} - ${model.periodEnd || model.maxFactDate || '—'}`, 'ok');
     }
     host.querySelector('#skuPlanFactSort') && (host.querySelector('#skuPlanFactSort').value = current.sort || 'gap');
     host.querySelector('#skuPlanFactPlatform') && (host.querySelector('#skuPlanFactPlatform').value = current.platform || 'all');
+    host.querySelector('#skuPlanFactDateFrom') && (host.querySelector('#skuPlanFactDateFrom').value = model.periodStart || current.dateFrom || '');
+    host.querySelector('#skuPlanFactDateTo') && (host.querySelector('#skuPlanFactDateTo').value = model.periodEnd || current.dateTo || current.date || '');
     updatePlatformShell(host, model);
     updateSortHeaders();
     if (tableWrap && scrollSnapshot) {
@@ -306,7 +331,33 @@
   function ensureDateControl(host, model) {
     const current = filters();
     const oldMonth = host.querySelector('#skuPlanFactMonth');
+    const rangeFrom = host.querySelector('#skuPlanFactDateFrom');
+    const rangeTo = host.querySelector('#skuPlanFactDateTo');
     const existingDate = host.querySelector('#skuPlanFactDate');
+    if (rangeFrom || rangeTo) {
+      const latest = latestDateFromModel(model);
+      const start = startDateFromModel(model);
+      const minDate = model?.dateMin || (model?.months?.length ? `${model.months[model.months.length - 1]}-01` : '');
+      const maxDate = dateKey(model?.maxAvailableDate || model?.maxFactDate || latest);
+      if (rangeFrom) {
+        rangeFrom.value = start;
+        if (minDate) rangeFrom.min = minDate;
+        if (maxDate) rangeFrom.max = maxDate;
+      }
+      if (rangeTo) {
+        rangeTo.value = latest;
+        if (minDate) rangeTo.min = minDate;
+        if (maxDate) rangeTo.max = maxDate;
+      }
+      if (current.dateMode !== 'manual') {
+        current.dateFrom = start;
+        current.dateTo = latest;
+        current.date = latest;
+        current.month = latest ? latest.slice(0, 7) : current.month;
+        current.dateMode = 'latest';
+      }
+      return;
+    }
     if (!oldMonth && existingDate) {
       if (current.dateMode !== 'manual') {
         current.dateMode = 'latest';
@@ -314,6 +365,8 @@
         if (latest) {
           existingDate.value = latest;
           current.date = latest;
+          current.dateTo = latest;
+          current.dateFrom = startDateFromModel(model);
           current.month = latest.slice(0, 7);
         }
         if (model?.months?.length) existingDate.min = `${model.months[model.months.length - 1]}-01`;
@@ -330,6 +383,8 @@
     if (model?.months?.length) input.min = `${model.months[model.months.length - 1]}-01`;
     if (dateKey(model?.maxFactDate)) input.max = dateKey(model.maxFactDate);
     current.date = input.value;
+    current.dateTo = input.value;
+    current.dateFrom = startDateFromModel(model);
     current.dateMode = current.dateMode === 'manual' ? 'manual' : 'latest';
     if (oldMonth) oldMonth.replaceWith(input);
   }
@@ -387,6 +442,8 @@
   function bindControls(host) {
     const search = replaceWithoutListeners(host.querySelector('#skuPlanFactSearch'));
     const date = replaceWithoutListeners(host.querySelector('#skuPlanFactDate'));
+    const dateFrom = replaceWithoutListeners(host.querySelector('#skuPlanFactDateFrom'));
+    const dateTo = replaceWithoutListeners(host.querySelector('#skuPlanFactDateTo'));
     const owner = replaceWithoutListeners(host.querySelector('#skuPlanFactOwner'));
     const status = replaceWithoutListeners(host.querySelector('#skuPlanFactStatus'));
     const platform = replaceWithoutListeners(host.querySelector('#skuPlanFactPlatform'));
@@ -418,8 +475,40 @@
         const next = dateKey(event.target.value);
         if (!next) return;
         current.date = next;
+        current.dateTo = next;
+        if (!current.dateFrom || current.dateFrom > next || current.dateFrom.slice(0, 7) !== next.slice(0, 7)) current.dateFrom = `${next.slice(0, 7)}-01`;
         current.month = next.slice(0, 7);
         current.dateMode = 'manual';
+        forceBaseRender();
+      });
+    }
+    if (dateFrom) {
+      dateFrom.addEventListener('change', (event) => {
+        const current = filters();
+        const next = dateKey(event.target.value);
+        if (!next) return;
+        current.dateFrom = next;
+        current.month = next.slice(0, 7);
+        current.dateMode = 'manual';
+        if (!current.dateTo || current.dateTo.slice(0, 7) !== next.slice(0, 7) || current.dateTo < next) {
+          current.dateTo = next;
+          current.date = next;
+        }
+        forceBaseRender();
+      });
+    }
+    if (dateTo) {
+      dateTo.addEventListener('change', (event) => {
+        const current = filters();
+        const next = dateKey(event.target.value);
+        if (!next) return;
+        current.date = next;
+        current.dateTo = next;
+        current.month = next.slice(0, 7);
+        current.dateMode = 'manual';
+        if (!current.dateFrom || current.dateFrom.slice(0, 7) !== next.slice(0, 7) || current.dateFrom > next) {
+          current.dateFrom = `${next.slice(0, 7)}-01`;
+        }
         forceBaseRender();
       });
     }

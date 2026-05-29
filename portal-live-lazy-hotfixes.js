@@ -41,7 +41,7 @@
     planFact: [
       'portal-smart-price-overlay-hotfix.js?v=20260521prod1',
       'portal-plan-alignment-hotfix.js?v=20260521prod1',
-      'portal-sku-plan-fact-stability-hotfix.js?v=20260529planfactgamebars1'
+      'portal-sku-plan-fact-stability-hotfix.js?v=20260529planfactperiod1'
     ],
     skus: [
       'portal-sku-registry-live-note-hotfix.js?v=20260521prod1',

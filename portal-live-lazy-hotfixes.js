@@ -25,12 +25,12 @@
     control: [
       'portal-control-center-v2-hotfix.js?v=20260529taskzya1',
       'portal-control-marketplace-scope-hotfix.js?v=20260529taskzya1',
-      'portal-form-visual-refine.js?v=20260529taskzya1'
+      'portal-form-visual-refine.js?v=20260529taskfilters1'
     ],
     executive: [
       'portal-executive-lite-guard.js?v=20260521prod1',
       'portal-control-marketplace-scope-hotfix.js?v=20260529taskzya1',
-      'portal-form-visual-refine.js?v=20260529taskzya1'
+      'portal-form-visual-refine.js?v=20260529taskfilters1'
     ],
     workflow: [
       'portal-loyalty-system-hotfix.js?v=20260521prod1'

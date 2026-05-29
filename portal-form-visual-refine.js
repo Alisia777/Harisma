@@ -982,6 +982,19 @@
   const CONTROL_SIMPLE_ACTIVE = new Set(['new', 'in_progress', 'waiting_team', 'waiting_rop', 'waiting_decision']);
   const CONTROL_SIMPLE_SENT = new Set(['waiting_team', 'waiting_rop', 'waiting_decision']);
 
+  function controlSimpleNormalizeQueue(value) {
+    const raw = String(value || 'all').trim().toLowerCase();
+    if (raw === 'all') return 'all';
+    return CONTROL_SIMPLE_QUEUES.some(([key]) => key === raw) ? raw : 'all';
+  }
+
+  function controlSimpleQueueTone(key) {
+    if (key === 'sent') return 'warn';
+    if (key === 'signals') return 'info';
+    if (key === 'confirmed') return 'ok';
+    return '';
+  }
+
   function controlSimpleNormalizeDirection(value) {
     const raw = String(value || 'all').trim().toLowerCase();
     const inferred = inferMarketplaceKey(raw);
@@ -1152,8 +1165,10 @@
     const buckets = Object.fromEntries(CONTROL_SIMPLE_QUEUES.map(([key]) => [key, []]));
     tasks.forEach((taskItem) => buckets[controlSimpleQueueKey(taskItem)]?.push(taskItem));
     Object.keys(buckets).forEach((key) => { buckets[key] = controlSimpleSort(buckets[key]); });
+    const queueFilter = controlSimpleNormalizeQueue(state?.controlFilters?.taskSimpleQueue);
+    const displayTasks = queueFilter === 'all' ? tasks : (buckets[queueFilter] || []);
     const active = tasks.filter(controlSimpleIsActive);
-    return { selected, counts, tasks, buckets, active, overdue: active.filter(controlSimpleIsOverdue), noOwner: active.filter((taskItem) => !taskItem?.owner) };
+    return { selected, queueFilter, counts, tasks, displayTasks, buckets, active, overdue: active.filter(controlSimpleIsOverdue), noOwner: active.filter((taskItem) => !taskItem?.owner) };
   }
 
   function controlSimpleWorkstreamCounts(tasks) {
@@ -1202,12 +1217,13 @@
   }
 
   function controlSimpleWorkstreamBoard(data) {
+    const boardTasks = data.displayTasks || data.tasks || [];
     const lanes = CONTROL_SIMPLE_WORKSPACE_ORDER
       .map((key) => ({
         key,
-        tasks: (data.tasks || []).filter((taskItem) => controlSimpleDirectionKey(taskItem) === key)
+        tasks: boardTasks.filter((taskItem) => controlSimpleDirectionKey(taskItem) === key)
       }))
-      .filter((lane) => lane.tasks.length || Number(data.counts?.[lane.key] || 0) > 0);
+      .filter((lane) => lane.tasks.length || (data.queueFilter === 'all' && Number(data.counts?.[lane.key] || 0) > 0));
     return `
       <div class="control-simple-platform-board">
         <div class="control-simple-platform-board-head">
@@ -1215,7 +1231,7 @@
             <span>Площадки</span>
             <strong>Каждая площадка отдельно</strong>
           </div>
-          ${badge(`${fmt.int(data.tasks.length)} задач всего`, data.tasks.length ? 'info' : 'ok')}
+          ${badge(`${fmt.int(boardTasks.length)} задач`, boardTasks.length ? 'info' : 'ok')}
         </div>
         <div class="control-simple-platform-lanes">
           ${lanes.length ? lanes.map((lane) => controlSimpleWorkstreamPanel(lane.key, lane.tasks)).join('') : '<div class="control-simple-empty">По текущему фильтру задач нет.</div>'}
@@ -1281,11 +1297,11 @@
       </div>`;
   }
 
-  function controlSimpleQueuePanel(key, title, hint, tasks) {
+  function controlSimpleQueuePanel(key, title, hint, tasks, focused = false) {
     const visible = tasks;
-    const tone = key === 'sent' ? 'warn' : key === 'signals' ? 'info' : key === 'confirmed' ? 'ok' : '';
+    const tone = controlSimpleQueueTone(key);
     return `
-      <section class="control-simple-queue" data-control-simple-queue="${escapeHtml(key)}">
+      <section class="control-simple-queue ${focused ? 'is-focused' : ''}" data-control-simple-queue="${escapeHtml(key)}">
         <div class="control-simple-queue-head"><div><span>${escapeHtml(hint)}</span><strong>${escapeHtml(title)}</strong></div>${badge(fmt.int(tasks.length), tone)}</div>
         <div class="control-simple-list">
           ${visible.length ? visible.map(controlSimpleTaskCard).join('') : '<div class="control-simple-empty">Пусто. Здесь не горит.</div>'}
@@ -1293,11 +1309,38 @@
       </section>`;
   }
 
+  function controlSimpleQueueTabs(data) {
+    const tabs = [
+      ['all', 'Все', 'Без фильтра', data.tasks.length],
+      ...CONTROL_SIMPLE_QUEUES.map(([key, title, hint]) => [key, title.replace(/\s+задачи$/i, ''), hint, (data.buckets[key] || []).length])
+    ];
+    return `
+      <div class="control-simple-filterbar">
+        <div class="control-simple-filterbar-head">
+          <strong>Фильтр задач</strong>
+          <span>${data.selected === 'all' ? 'по всем площадкам' : `по площадке ${(CONTROL_SIMPLE_META[data.selected] || CONTROL_SIMPLE_META.cross).label}`}</span>
+        </div>
+        <div class="control-simple-queue-tabs">
+          ${tabs.map(([key, title, hint, count]) => `
+            <button class="control-simple-queue-tab ${data.queueFilter === key ? 'active' : ''}" type="button" data-control-simple-queue-filter="${escapeHtml(key)}" aria-pressed="${data.queueFilter === key ? 'true' : 'false'}">
+              <span>${escapeHtml(title)}</span>
+              <b>${fmt.int(count)}</b>
+              <em>${escapeHtml(hint)}</em>
+            </button>
+          `).join('')}
+        </div>
+      </div>`;
+  }
+
   function controlSimpleCreateForm(selected) {
+    if (!state?.controlFilters?.taskSimpleCreateOpen) return '';
     const direction = selected && selected !== 'all' && CONTROL_SIMPLE_META[selected] ? selected : 'cross';
     return `
-      <details class="control-simple-create" ${state?.controlFilters?.taskSimpleCreateOpen ? 'open' : ''}>
-        <summary><span><strong>Поставить задачу</strong><em>что сделать, кому, срок</em></span>${badge('короткая форма', 'info')}</summary>
+      <section class="control-simple-create">
+        <div class="control-simple-create-head">
+          <div><strong>Поставить задачу</strong><span>что сделать, кому, срок</span></div>
+          <button class="btn ghost small-btn" type="button" data-control-simple-create-close>Скрыть</button>
+        </div>
         <form id="controlSimpleCreateForm" class="control-simple-form">
           <input name="title" placeholder="Что нужно сделать" required>
           <select name="platform">${CONTROL_SIMPLE_DIRECTIONS.filter(([key]) => key !== 'all').map(([key, label]) => `<option value="${escapeHtml(key)}" ${direction === key ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select>
@@ -1311,7 +1354,7 @@
           <button class="btn primary" type="submit">Создать</button>
         </form>
         <datalist id="controlSimpleOwnerList">${owners().map((name) => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist>
-      </details>`;
+      </section>`;
   }
 
   function controlSimpleDirectionButton(key, data) {
@@ -1370,8 +1413,11 @@
     const data = controlSimpleModel();
     const boardHtml = data.selected === 'all'
       ? controlSimpleWorkstreamBoard(data)
-      : `<div class="control-simple-board">${CONTROL_SIMPLE_QUEUES.map(([key, title, hint]) => controlSimpleQueuePanel(key, title, hint, data.buckets[key] || [])).join('')}</div>`;
-    root.dataset.controlSimple = '20260516taskworkspace3';
+      : `<div class="control-simple-board ${data.queueFilter !== 'all' ? 'is-focused' : ''}">${CONTROL_SIMPLE_QUEUES
+        .filter(([key]) => data.queueFilter === 'all' || data.queueFilter === key)
+        .map(([key, title, hint]) => controlSimpleQueuePanel(key, title, hint, data.buckets[key] || [], data.queueFilter === key))
+        .join('')}</div>`;
+    root.dataset.controlSimple = '20260529taskfilters1';
     root.innerHTML = `
       <div class="section-title control-simple-title">
         <div><h2>Задачи</h2><div class="control-simple-title-copy">${escapeHtml(CONTROL_SIMPLE_TITLE)}</div></div>
@@ -1381,14 +1427,11 @@
         ${controlSimpleWorkspacePanel(data)}
         <div class="control-simple-topbar">
           <input id="controlSimpleSearch" value="${escapeHtml(state.controlFilters.search || '')}" placeholder="Поиск по задаче, SKU, owner">
-          <div class="badge-stack"><button class="btn primary" type="button" data-control-simple-create-toggle>Поставить задачу</button><button class="btn ghost" type="button" data-control-simple-full>Все поля</button></div>
+          <div class="badge-stack"><button class="btn primary" type="button" data-control-simple-create-toggle>${state.controlFilters.taskSimpleCreateOpen ? 'Закрыть форму' : 'Поставить задачу'}</button><button class="btn ghost" type="button" data-control-simple-full>Все поля</button></div>
         </div>
-        <div class="control-simple-summary">
-          <span><b>${fmt.int(data.buckets.new.length)}</b> новые</span><span><b>${fmt.int(data.buckets.signals.length)}</b> автосигналы</span><span><b>${fmt.int(data.buckets.common.length)}</b> общие</span><span><b>${fmt.int(data.buckets.sent.length)}</b> отправленные</span><span><b>${fmt.int(data.buckets.confirmed.length)}</b> подтвержденные</span>
-        </div>
+        ${controlSimpleQueueTabs(data)}
         ${controlSimpleCreateForm(data.selected)}
         ${boardHtml}
-        <div class="control-simple-legend"><strong>Статусы:</strong><span>Новые = ещё не сданы</span><span>Автосигналы = нашёл портал</span><span>Общие = без SKU или общий контур</span><span>Отправленные = ждут согласования</span><span>Подтвержденные = done</span></div>
       </div>`;
 
     root.querySelector('#controlSimpleSearch')?.addEventListener('input', (event) => {
@@ -1401,6 +1444,7 @@
       state.controlFilters.peopleRole = key === 'all' || key === 'cross' ? 'leader' : key;
       state.controlFilters.taskSimpleWorkspaceChosen = true;
       state.controlFilters.taskSimpleExpandedPlatform = '';
+      state.controlFilters.taskSimpleQueue = 'all';
       state.controlFilters.status = 'active';
       state.controlFilters.horizon = 'all';
       state.controlFilters.source = 'all';
@@ -1410,10 +1454,19 @@
       state.controlFilters.taskSimpleCreateOpen = !state.controlFilters.taskSimpleCreateOpen;
       controlRefined();
     });
+    root.querySelector('[data-control-simple-create-close]')?.addEventListener('click', () => {
+      state.controlFilters.taskSimpleCreateOpen = false;
+      controlRefined();
+    });
     root.querySelector('[data-control-simple-full]')?.addEventListener('click', () => {
       state.controlFilters.taskSimpleFullMode = true;
       controlRefined();
     });
+    root.querySelectorAll('[data-control-simple-queue-filter]').forEach((button) => button.addEventListener('click', () => {
+      state.controlFilters.taskSimpleQueue = controlSimpleNormalizeQueue(button.dataset.controlSimpleQueueFilter);
+      state.controlFilters.taskSimpleExpandedPlatform = '';
+      controlRefined();
+    }));
     root.querySelectorAll('[data-control-simple-expand-platform]').forEach((button) => button.addEventListener('click', () => {
       state.controlFilters.taskSimpleExpandedPlatform = button.dataset.controlSimpleExpandPlatform || '';
       controlRefined();

@@ -169,6 +169,21 @@ function Invoke-StaticGitPush {
   $script:StaticPushAttempted = $true
 }
 
+function Sync-DeployBranch {
+  param([string]$Reason = "")
+
+  if ($NoPush) {
+    return
+  }
+
+  $reasonText = if ([string]::IsNullOrWhiteSpace($Reason)) { "before static publish" } else { $Reason }
+  Write-Output "[static-publish] git pull --rebase --autostash origin main ($reasonText)."
+  $gitExitCode = Invoke-GitCommand -Arguments @("-C", $resolvedDeployDir, "pull", "--rebase", "--autostash", "origin", "main")
+  if ($gitExitCode -ne 0) {
+    throw "git pull --rebase failed for static portal data."
+  }
+}
+
 function Assert-LiveHealthFresh {
   param([string]$ExpectedMaxDate)
 
@@ -213,7 +228,7 @@ function Assert-LiveHealthFresh {
 }
 
 $resolvedSourceDir = Resolve-RepoPath -PathValue $SourceDir -DefaultValue ".altea-google-sheet-sync-output"
-$resolvedDeployDir = Resolve-RepoPath -PathValue $DeployDir -DefaultValue ".codex-minmax-publish"
+$resolvedDeployDir = Resolve-RepoPath -PathValue $DeployDir -DefaultValue ".codex-rollout-main"
 $deployDataDir = Join-Path $resolvedDeployDir "data"
 $gitExe = Resolve-GitPath -RequestedGitPath $GitPath
 $manifestPath = Join-Path $repoRoot "scripts\portal-layer-manifest.json"
@@ -231,6 +246,7 @@ New-Item -ItemType Directory -Path $deployDataDir -Force | Out-Null
 $healthMaxDate = Get-HealthMaxDate -HealthPath (Join-Path $resolvedSourceDir "portal_sync_health.json")
 $layerAuditPath = Join-Path $resolvedSourceDir "portal_layer_freshness.json"
 Assert-LayerAuditAllowed -LayerAuditPath $layerAuditPath
+Sync-DeployBranch -Reason "before static data copy"
 
 if (-not (Test-Path -LiteralPath $manifestPath)) {
   throw "Layer manifest not found: $manifestPath"

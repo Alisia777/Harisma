@@ -991,7 +991,7 @@ Write-Output "[sync] static data publish started"
 try {
   Invoke-PowerShellStep -StepName "static data publish" -ScriptPath (Join-Path $PSScriptRoot "portal-static-data-publish.ps1") -Parameters @{
     SourceDir = $resolvedOutputDir
-    DeployDir = ".codex-minmax-publish"
+    DeployDir = ".codex-rollout-main"
     LiveHealthUrl = $LiveHealthUrl
     LiveVerifyAttempts = 5
     LiveVerifyDelaySeconds = 30

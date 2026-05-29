@@ -275,7 +275,7 @@ function Invoke-IuDrrBuild {
 function Invoke-StaticDataPublish {
   Invoke-PowerShellStep -StepName "static data retry publish" -ScriptPath (Join-Path $PSScriptRoot "portal-static-data-publish.ps1") -Parameters @{
     SourceDir = $resolvedOutputDir
-    DeployDir = ".codex-minmax-publish"
+    DeployDir = ".codex-rollout-main"
     LiveHealthUrl = $LiveHealthUrl
     LiveVerifyAttempts = 5
     LiveVerifyDelaySeconds = 30

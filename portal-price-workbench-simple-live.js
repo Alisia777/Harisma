@@ -2176,10 +2176,10 @@
     next.clientPriceFactDate = clientMetric.value != null ? clientMetric.date : isoDate(row.valueDate);
     next.sppFactDate = sppMetric.value != null ? sppMetric.date : isoDate(row.valueDate);
     next.turnoverFactDate = turnoverMetric.value != null ? turnoverMetric.date : isoDate(row.valueDate);
-    next.listPrice = num(row.listPrice) != null ? num(row.listPrice) : num(next.currentFillPrice);
+    next.listPrice = num(row.listPrice);
     next.listPriceFactDate = isoDate(row.listPriceDate) || next.priceFactDate || next.valueDate;
-    next.listPriceSource = String(row.listPriceSource || row.currentFillPriceSource || "").trim();
-    if (next.listPrice != null && next.currentFillPrice != null && next.listPrice > 0 && next.listPrice >= next.currentFillPrice) {
+    next.listPriceSource = String(row.listPriceSource || "").trim();
+    if (next.listPrice != null && next.currentFillPrice != null && next.listPrice > 0 && next.listPrice > next.currentFillPrice) {
       next.sellerDiscountPct = sanitizeDiscountPct(1 - (next.currentFillPrice / next.listPrice));
     } else {
       next.sellerDiscountPct = null;
@@ -2606,7 +2606,7 @@ function downloadPriceSummaryExcel(rows) {
           row.matrixProblemLabel ? '<div class="pw-mini-note"><span class="pw-badge ' + esc(row.matrixProblemTone || "warn") + '">' + esc(row.matrixProblemLabel) + '</span></div>' : '',
           renderPriceLifecycleEditor(row, true),
           '</td>',
-          '<td>', renderPriceCell(row.listPrice != null ? row.listPrice : row.currentFillPrice, row.listPriceSource, row.listPriceMode, row.listPriceFactDate || row.valueDate), '</td>',
+          '<td>', renderPriceCell(row.listPrice, row.listPriceSource, row.listPriceMode, row.listPriceFactDate || row.valueDate), '</td>',
           '<td>', renderPriceCell(row.currentFillPrice, row.currentFillPriceSource, row.currentFillPriceMode, row.priceFactDate || row.valueDate), '</td>',
           '<td>', pct(row.sellerDiscountPct), '</td>',
           '<td>', renderRepricerCell(row.repricerDisplay), '</td>',

@@ -18,8 +18,8 @@
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260428B__ = true;
   window.__ALTEA_PRICE_WORKBENCH_RUNTIME_LOADER_20260428A__ = true;
 
-  const SCRIPT_ID = 'portalPriceWorkbenchSimpleLive20260518minmaxqueue1';
-  const SRC = 'portal-price-workbench-simple-live.js?v=20260518minmaxqueue1';
+  const SCRIPT_ID = 'portalPriceWorkbenchSimpleLive20260531zerodiscount1';
+  const SRC = 'portal-price-workbench-simple-live.js?v=20260531zerodiscount1';
   const STYLE_ID = 'portalPriceWorkbenchRuntimeLoaderStyle';
 
   function ensureLoadingShell() {

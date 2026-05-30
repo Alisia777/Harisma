@@ -373,6 +373,12 @@
       });
       return;
     }
+    if (viewKey === "prices") {
+      root.querySelectorAll("[data-portal-view-guide='prices']").forEach(function (node) {
+        node.remove();
+      });
+      return;
+    }
     if (viewKey === "control" && (root.dataset.controlSimple || root.querySelector("[data-task-lazy-panel]"))) {
       var existingControlGuide = root.querySelector("[data-portal-view-guide='control']");
       if (existingControlGuide) existingControlGuide.remove();

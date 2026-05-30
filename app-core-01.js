@@ -203,7 +203,7 @@ const VIEW_TITLES = {
   'oos-control': 'OOS контроль',
   'sku-contour': 'Контур SKU',
   launches: 'Продукт / новинки',
-  'iu-drr': 'ИУ / ДРР',
+  'iu-drr': 'Показатели площадок',
   'sku-plan-fact': 'План-факт SKU',
   'wb-rating': 'Рейтинг карточек',
   'product-leaderboard': 'Продуктовый лидерборд',
@@ -2685,7 +2685,7 @@ const LAZY_DATA_LOADERS = {
       loadJsonOrFallback(
         'data/iu_drr_summary.json',
         { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
-        'ИУ / ДРР'
+        'Показатели площадок'
       )
     ]);
     state.adsSummary = payload && typeof payload === 'object'
@@ -2703,7 +2703,7 @@ const LAZY_DATA_LOADERS = {
       loadJsonOrFallback(
         'data/iu_drr_summary.json',
         { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
-        'ИУ / ДРР'
+        'Показатели площадок'
       ),
       loadJsonOrFallback(
         'data/ads_summary.json',
@@ -2752,7 +2752,7 @@ const LAZY_DATA_LOADERS = {
       loadJsonOrFallback(
         'data/iu_drr_summary.json',
         { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
-        'ИУ / ДРР'
+        'Показатели площадок'
       ),
       loadJsonOrFallback(
         'data/sku_aliases.json',

@@ -2240,7 +2240,7 @@ function rerenderCurrentView() {
     ['view-sku-contour', 'Контур SKU', () => renderSkuContour('view-sku-contour')],
     ['view-sku-plan-fact', 'План-факт SKU', () => renderSkuPlanFact('view-sku-plan-fact')],
     ['view-wb-rating', 'Рейтинг карточек', () => renderWbCardRating('view-wb-rating')],
-    ['view-iu-drr', 'ИУ / ДРР', () => renderIuDrr('view-iu-drr')],
+    ['view-iu-drr', 'Показатели площадок', () => renderIuDrr('view-iu-drr')],
     ['view-dashboard', 'Дашборд', renderDashboardView],
     ['view-documents', 'Документы', renderDocuments],
     ['view-repricer', 'Репрайсер', renderRepricer],

@@ -4085,7 +4085,7 @@ function iuDrrPlatformMeta(model) {
   return {
     key: isOzon ? 'ozon' : 'wb',
     label: isOzon ? 'Ozon' : 'WB',
-    title: isOzon ? 'ИУ Ozon: план-факт' : 'ИУ WB / ДРР WB',
+    title: isOzon ? 'Ozon' : 'WB',
     completion: isOzon ? month.iuRevenueOzonCompletionToDate : month.iuRevenueWbCompletionToDate,
     fact: isOzon ? ozonAccrued : (month.iuRevenueWbFactToDate || month.revenueWb),
     planToDate: isOzon ? ozonPlanToDate : month.iuRevenueWbPlanToDate,
@@ -4144,7 +4144,7 @@ const IU_DRR_FUNNEL_METRICS_WB = [
   { key: 'factRevenue', label: 'Факт оборота', formula: 'выкупленные продажи WB', format: 'money', row: 2, keep: true },
   { key: 'revenueCompletion', label: 'Выполнение оборота', formula: 'факт / план', format: 'pct', row: 3, keep: true },
   { key: 'revenueDelta', label: 'Отклонение оборота', formula: 'факт - план', format: 'money', row: 4, keep: true },
-  { key: 'planAds', label: 'План рекламы', formula: 'ИУ / ДРР план', format: 'money', row: 5, keep: true },
+  { key: 'planAds', label: 'План рекламы', formula: 'план рекламы', format: 'money', row: 5, keep: true },
   { key: 'factAds', label: 'Факт рекламы ДРР', formula: 'WB Promotion без внешки', format: 'money', row: 6, keep: true },
   { key: 'adsCompletion', label: 'Выполнение рекламы', formula: 'факт / план', format: 'pct', row: 7, keep: true },
   { key: 'planDrr', label: 'План ДРР', formula: 'план %', format: 'pct', row: 8, keep: true },
@@ -5928,15 +5928,11 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       </div>
     </div>
   `;
-  const platformSwitchHtml = `
-    <div class="iu-drr-platform-switch" role="group" aria-label="Площадка ИУ">
-      <button class="iu-drr-platform-chip iu-drr-platform-chip--wb ${model.selectedPlatform === 'wb' ? 'active' : ''}" type="button" data-iu-drr-platform="wb" aria-pressed="${model.selectedPlatform === 'wb'}">
-        <span>WB</span><strong>ВБ</strong>
-      </button>
-      <button class="iu-drr-platform-chip iu-drr-platform-chip--ozon ${model.selectedPlatform === 'ozon' ? 'active' : ''}" type="button" data-iu-drr-platform="ozon" aria-pressed="${model.selectedPlatform === 'ozon'}">
-        <span>Ozon</span><strong>ОЗ</strong>
-      </button>
-    </div>
+  const platformSelectHtml = `
+    <select id="iuDrrPlatform" aria-label="Площадка">
+      <option value="wb" ${model.selectedPlatform === 'wb' ? 'selected' : ''}>WB</option>
+      <option value="ozon" ${model.selectedPlatform === 'ozon' ? 'selected' : ''}>Ozon</option>
+    </select>
   `;
   const quarter = model.quarterSummary || {};
   const quarterTargetWb = numberOrZero(quarter.targetRevenueWb);
@@ -6262,12 +6258,11 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   root.innerHTML = `
     <div class="section-title iu-drr-title">
       <div>
-        <h2>${escapeHtml(platformMeta.title)}</h2>
-        <p>${isOzonView ? 'Ozon Smart: план, факт, реклама и ДРР в одном рабочем срезе.' : 'WB: план, факт, ДРР и рекламная воронка без внешки в одном рабочем срезе.'}</p>
+        <h2>Показатели площадок</h2>
       </div>
       <div class="badge-stack">
         ${badge(model.selectedMonth || 'месяц', 'info')}
-        ${badge(isOzonView ? 'Ozon Smart' : 'WB', isOzonView ? 'info' : 'warn')}
+        ${badge(platformMeta.title, isOzonView ? 'info' : 'warn')}
       </div>
     </div>
 
@@ -6277,8 +6272,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       <select id="iuDrrMonth">
         ${model.monthOptions.map((option) => `<option value="${escapeHtml(option.key)}" ${model.selectedMonth === option.key ? 'selected' : ''}>${escapeHtml(option.label)}</option>`).join('')}
       </select>
-      ${platformSwitchHtml}
-      <button class="quick-chip" type="button" data-iu-drr-export>Выгрузить в Excel</button>
+      ${platformSelectHtml}
     </div>
 
     ${isOzonView ? ozonReadableSummaryHtml : selectedKpisHtml}
@@ -6290,13 +6284,10 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     getIuDrrFilters().month = String(event.target.value || 'latest');
     rerenderCurrentView();
   });
-  root.querySelectorAll('[data-iu-drr-platform]').forEach((button) => {
-    button.addEventListener('click', () => {
-      getIuDrrFilters().platform = String(button.dataset.iuDrrPlatform || 'wb');
-      rerenderCurrentView();
-    });
+  root.querySelector('#iuDrrPlatform')?.addEventListener('change', (event) => {
+    getIuDrrFilters().platform = String(event.target.value || 'wb');
+    rerenderCurrentView();
   });
-  root.querySelector('[data-iu-drr-export]')?.addEventListener('click', () => downloadIuDrrExcel(model));
 }
 
 function renderProductLeaderboard(rootId = 'view-product-leaderboard') {

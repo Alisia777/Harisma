@@ -3,7 +3,7 @@
   window.__ALTEA_PORTAL_LAZY_RENDER_HOTFIX_20260418L__ = true;
 
   const LAZY_MODE_DELAY_MS = 9000;
-  const DASHBOARD_LOADER_VERSION = '20260418w';
+  const DASHBOARD_LOADER_VERSION = '20260515market4';
   const DASHBOARD_SCRIPT_PATH = '/portal-dashboard-interactive-hotfix.js';
   const VIEW_RENDERERS = {
     dashboard: ['view-dashboard', 'Дашборд', () => typeof renderDashboard === 'function' && renderDashboard()],
@@ -15,7 +15,7 @@
     skus: ['view-skus', 'Реестр SKU', () => typeof renderSkuRegistry === 'function' && renderSkuRegistry()],
     launches: ['view-launches', 'Продукт / Ксения', () => typeof renderLaunches === 'function' && renderLaunches()],
     'ads-funnel': ['view-ads-funnel', 'Рекламная воронка', () => typeof renderAdsFunnel === 'function' && renderAdsFunnel('view-ads-funnel')],
-    'iu-drr': ['view-iu-drr', 'ИУ / ДРР', () => typeof renderIuDrr === 'function' && renderIuDrr('view-iu-drr')],
+    'iu-drr': ['view-iu-drr', 'Показатели площадок', () => typeof renderIuDrr === 'function' && renderIuDrr('view-iu-drr')],
     'product-leaderboard': ['view-product-leaderboard', 'Продуктовый лидерборд', () => typeof renderProductLeaderboard === 'function' && renderProductLeaderboard('view-product-leaderboard')],
     'launch-control': ['view-launch-control', 'Запуск новинок', () => typeof renderLaunchControl === 'function' && renderLaunchControl()],
     meetings: ['view-meetings', 'Ритм работы', () => typeof renderMeetings === 'function' && renderMeetings()],

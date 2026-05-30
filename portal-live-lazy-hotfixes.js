@@ -28,7 +28,7 @@
       'portal-form-visual-refine.js?v=20260529taskfilters1'
     ],
     executive: [
-      'portal-executive-lite-guard.js?v=20260521prod1',
+      'portal-executive-lite-guard.js?v=20260530executiveowner1',
       'portal-control-marketplace-scope-hotfix.js?v=20260529taskzya1',
       'portal-form-visual-refine.js?v=20260529taskfilters1'
     ],
@@ -41,7 +41,7 @@
     planFact: [
       'portal-smart-price-overlay-hotfix.js?v=20260521prod1',
       'portal-plan-alignment-hotfix.js?v=20260521prod1',
-      'portal-sku-plan-fact-stability-hotfix.js?v=20260529planfactperiod1'
+      'portal-sku-plan-fact-stability-hotfix.js?v=20260529planfactplanmetrics1'
     ],
     skus: [
       'portal-sku-registry-live-note-hotfix.js?v=20260521prod1',
@@ -59,7 +59,7 @@
     launches: [],
     'launch-control': [],
     'ads-funnel': [],
-    'iu-drr': ['workflow', 'polish'],
+    'iu-drr': ['polish'],
     'wb-rating': ['polish'],
     'product-leaderboard': [],
     repricer: ['repricer'],
@@ -70,6 +70,10 @@
   };
 
   const SIDEBAR_LABELS = {
+    'iu-drr': {
+      title: 'Показатели площадок',
+      subtitle: 'WB · Ozon · план-факт'
+    },
     'oos-control': {
       title: 'OOS контроль',
       subtitle: 'Ауты · потери · меры'

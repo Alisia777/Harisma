@@ -203,7 +203,6 @@ const VIEW_TITLES = {
   'oos-control': 'OOS контроль',
   'sku-contour': 'Контур SKU',
   launches: 'Продукт / новинки',
-  'ads-funnel': 'Контроль РК',
   'iu-drr': 'ИУ / ДРР',
   'sku-plan-fact': 'План-факт SKU',
   'wb-rating': 'Рейтинг карточек',
@@ -215,7 +214,6 @@ const VIEW_TITLES = {
 const VIEW_DATA_REQUIREMENTS = {
   control: 'launches',
   launches: 'launches',
-  'ads-funnel': 'adsFunnel',
   'iu-drr': 'iuDrr',
   'sku-plan-fact': 'skuPlanFact',
   'sku-contour': 'skuPlanFact',
@@ -224,15 +222,16 @@ const VIEW_DATA_REQUIREMENTS = {
   'wb-rating': 'iuDrr',
   'product-leaderboard': 'productLeaderboard',
   'launch-control': 'launches',
-  executive: 'launches',
+  executive: 'skuPlanFact',
   meetings: 'meetings',
   documents: 'documents',
   repricer: 'repricer'
 };
-const DISABLED_VIEWS = new Set(['meetings', 'documents']);
+const DISABLED_VIEWS = new Set(['meetings', 'documents', 'ads-funnel']);
 const VIEW_REDIRECTS = {
   meetings: 'dashboard',
-  documents: 'dashboard'
+  documents: 'dashboard',
+  'ads-funnel': 'iu-drr'
 };
 
 function normalizePortalView(view = 'dashboard') {
@@ -2303,6 +2302,9 @@ const OWNER_NAME_ALIASES = new Map([
   ['екатерина доможирова', 'Екатерина'],
   ['мария васильева', 'Мария'],
   ['мария васильевна', 'Мария'],
+  ['васильева мария', 'Мария'],
+  ['лапыгин максим', 'Максим'],
+  ['максим лапыгин', 'Максим'],
   ['олеся савинова', 'Олеся']
 ]);
 

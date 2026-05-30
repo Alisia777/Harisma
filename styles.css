@@ -238,6 +238,16 @@ tr:last-child td{border-bottom:none}
 .ads-event-stack span{display:block;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid rgba(217,151,21,.35);border-radius:7px;background:rgba(217,151,21,.16);color:#ffe0a6;padding:3px 5px;font-size:11px}
 
 .iu-drr-funnel-panel{margin-top:14px;border:1px solid var(--line);border-radius:8px;background:linear-gradient(180deg,rgba(var(--iu-drr-platform-rgb,139,92,246),.08),rgba(255,255,255,.018));padding:12px;min-width:0}
+.iu-drr-title{border-color:rgba(var(--iu-drr-platform-rgb,139,92,246),.26)}
+.iu-drr-platform-switch{display:grid;grid-template-columns:repeat(2,minmax(92px,1fr));gap:8px;align-items:stretch}
+.iu-drr-platform-chip{border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.026);color:var(--text);padding:8px 10px;cursor:pointer;display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;text-align:left;min-height:44px}
+.iu-drr-platform-chip span{display:inline-grid;place-items:center;min-width:36px;height:26px;border-radius:999px;color:#fff;font-size:11px;font-weight:900}
+.iu-drr-platform-chip strong{font-size:15px;line-height:1}
+.iu-drr-platform-chip--wb{--iu-drr-chip-rgb:139,92,246}
+.iu-drr-platform-chip--ozon{--iu-drr-chip-rgb:42,139,242}
+.iu-drr-platform-chip span{background:rgba(var(--iu-drr-chip-rgb),.72)}
+.iu-drr-platform-chip:hover{border-color:rgba(var(--iu-drr-chip-rgb),.52);background:rgba(var(--iu-drr-chip-rgb),.09)}
+.iu-drr-platform-chip.active{border-color:rgba(var(--iu-drr-chip-rgb),.82);box-shadow:0 0 0 1px rgba(var(--iu-drr-chip-rgb),.24) inset;background:linear-gradient(180deg,rgba(var(--iu-drr-chip-rgb),.24),rgba(255,255,255,.025))}
 .iu-drr-funnel-cards{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:12px}
 .iu-drr-funnel-card{min-width:0;border:1px solid rgba(var(--iu-drr-platform-rgb,139,92,246),.28);border-radius:8px;background:rgba(255,255,255,.026);padding:11px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
 .iu-drr-funnel-card.ok{border-color:rgba(34,197,94,.42);background:linear-gradient(180deg,rgba(34,197,94,.16),rgba(255,255,255,.022))}
@@ -252,25 +262,33 @@ tr:last-child td{border-bottom:none}
 .iu-drr-funnel-card.warn .iu-drr-funnel-bar i{background:linear-gradient(90deg,#d97706,#fde68a)}
 .iu-drr-funnel-card.danger .iu-drr-funnel-bar i{background:linear-gradient(90deg,#dc2626,#fca5a5)}
 .iu-drr-funnel-table-wrap{margin-top:12px;border-radius:8px;overflow:auto;max-height:70vh;scrollbar-gutter:stable;background:rgba(255,255,255,.012)}
-.iu-drr-funnel-heatmap{min-width:1560px;border-collapse:separate;border-spacing:0;table-layout:fixed}
+.iu-drr-funnel-heatmap{min-width:calc(584px + (var(--iu-drr-days,31) * 104px));border-collapse:separate;border-spacing:0;table-layout:fixed}
 .iu-drr-funnel-heatmap th,.iu-drr-funnel-heatmap td{padding:8px 9px;border-right:1px solid var(--line);border-bottom:1px solid rgba(255,255,255,.055);vertical-align:middle;white-space:nowrap}
 .iu-drr-funnel-heatmap thead th{position:sticky;top:0;z-index:7;background:#161425;color:#d9e2f7;font-size:12px}
-.iu-drr-funnel-heatmap tbody td{font-size:12px;text-align:right;font-variant-numeric:tabular-nums;background:rgba(255,255,255,.014)}
-.iu-drr-funnel-heatmap .iu-drr-sticky{position:sticky;z-index:5;text-align:left;background:#141221}
-.iu-drr-funnel-heatmap thead .iu-drr-sticky{z-index:9;background:#19162a}
+.iu-drr-funnel-heatmap tbody td{position:relative;z-index:1;font-size:12px;text-align:right;font-variant-numeric:tabular-nums;background:rgba(255,255,255,.014)}
+.iu-drr-funnel-heatmap .iu-drr-sticky{position:sticky;z-index:20;text-align:left;background:#141221!important;background-clip:padding-box;box-sizing:border-box;overflow:hidden}
+.iu-drr-funnel-heatmap thead .iu-drr-sticky{z-index:32;background:#19162a!important}
 .iu-drr-col-index{left:0;width:44px;min-width:44px;max-width:44px;text-align:center!important}
-.iu-drr-col-metric{left:44px;width:220px;min-width:220px;max-width:220px}
+.iu-drr-col-metric{left:44px;width:240px;min-width:240px;max-width:240px}
 .iu-drr-col-metric strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.iu-drr-col-formula{left:264px;width:150px;min-width:150px;max-width:150px;color:var(--muted)}
-.iu-drr-col-summary{left:414px;width:126px;min-width:126px;max-width:126px;text-align:right!important}
-.iu-drr-date-col{width:100px;min-width:100px;max-width:100px;text-align:center!important}
+.iu-drr-col-formula{left:284px;width:170px;min-width:170px;max-width:170px;color:var(--muted)}
+.iu-drr-col-summary{left:454px;width:130px;min-width:130px;max-width:130px;text-align:right!important;box-shadow:10px 0 18px rgba(0,0,0,.28)}
+.iu-drr-date-col{width:104px;min-width:104px;max-width:104px;text-align:center!important}
 .iu-drr-date-col span{display:block;color:#fff}
 .iu-drr-date-col small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
 .iu-drr-heat-cell{background:rgba(var(--iu-drr-cell-rgb),var(--iu-drr-cell-alpha))!important;color:#f8fbff}
 .iu-drr-heat-cell.danger{color:#fff5f5}
 .iu-drr-heat-cell.warn{color:#fff7df}
+.iu-drr-ozon-plan-cards{margin-bottom:12px}
+.iu-drr-progress-cell{display:grid;gap:5px;min-width:96px}
+.iu-drr-progress-cell strong{font-size:13px;line-height:1;color:var(--text)}
+.iu-drr-progress-cell span{display:block;height:7px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+.iu-drr-progress-cell i{display:block;height:100%;width:var(--iu-drr-progress,0%);border-radius:inherit;background:rgba(90,150,240,.9)}
+.iu-drr-progress-cell.ok i{background:linear-gradient(90deg,#16a34a,#86efac)}
+.iu-drr-progress-cell.warn i{background:linear-gradient(90deg,#d97706,#fde68a)}
+.iu-drr-progress-cell.danger i{background:linear-gradient(90deg,#dc2626,#fca5a5)}
 @media (max-width:1200px){.iu-drr-funnel-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:720px){.iu-drr-funnel-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.iu-drr-funnel-card strong{font-size:17px}.iu-drr-funnel-panel{padding:10px}}
+@media (max-width:720px){.iu-drr-funnel-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.iu-drr-funnel-card strong{font-size:17px}.iu-drr-funnel-panel{padding:10px}.iu-drr-platform-switch{grid-template-columns:1fr}}
 
 .muted{color:var(--muted)}
 .small{font-size:12px}

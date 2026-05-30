@@ -4407,7 +4407,6 @@ function skuPlanFactPayrollKpiHtml(model = {}) {
   const forecastProgress = Number.isFinite(forecastRatio) ? Math.min(100, Math.max(0, forecastRatio * 100)) : progress;
   const hue = skuPlanFactPayrollXpHue(payroll.completionToDate);
   const brightness = (0.3 + Math.min(0.7, safeRatio * 0.5)).toFixed(3);
-  const forecastShift = forecastProgress >= 92 ? '-100%' : (forecastProgress <= 8 ? '0%' : '-50%');
   const level = skuPlanFactPayrollXpLevel(payroll.completionToDate);
   const gapText = payroll.gapToDate >= 0 ? `перевыполнение ${fmt.money(payroll.gapToDate)}` : `разрыв ${fmt.money(Math.abs(payroll.gapToDate))}`;
   const statusText = level >= 3 ? 'в плане на дату' : (level === 2 ? 'почти в плане' : 'нужно догнать');
@@ -4419,7 +4418,7 @@ function skuPlanFactPayrollKpiHtml(model = {}) {
     forecast.revenue !== null ? `Прогноз месяца: ${fmt.money(forecast.revenue)} (${fmt.pct(forecast.ratio)})` : ''
   ].filter(Boolean).join(' · ');
   return `
-    <div class="card sku-plan-fact-card salary-plan-kpi-card level-${level}" style="margin-top:14px;--xp-hue:${hue};--xp-progress:${progress.toFixed(1)}%;--xp-forecast:${forecastProgress.toFixed(1)}%;--xp-forecast-shift:${forecastShift};--xp-bright:${brightness}" title="${escapeHtml(title)}">
+    <div class="card sku-plan-fact-card salary-plan-kpi-card level-${level}" style="margin-top:14px;--xp-hue:${hue};--xp-progress:${progress.toFixed(1)}%;--xp-forecast:${forecastProgress.toFixed(1)}%;--xp-bright:${brightness}" title="${escapeHtml(title)}">
       <div class="sku-salary-xp-head">
         <div>
           <h3>${escapeHtml(payroll.displayTitle || 'Общее выполнение')}</h3>
@@ -4427,7 +4426,6 @@ function skuPlanFactPayrollKpiHtml(model = {}) {
         </div>
         <div class="badge-stack">
           ${badge(payroll.truthSource === 'iu_drr_summary' ? 'ИУ / ДРР' : 'KPI', payroll.truthSource === 'iu_drr_summary' ? 'ok' : 'info')}
-          ${badge(`${payroll.periodStart || '—'} - ${payroll.periodEnd || '—'}`, 'info')}
         </div>
       </div>
       <div class="sku-salary-xp-main">
@@ -4438,7 +4436,7 @@ function skuPlanFactPayrollKpiHtml(model = {}) {
         </div>
         <div class="sku-salary-xp-track" aria-label="Общее выполнение" title="${escapeHtml(title)}">
           <i></i>
-          <em style="left:var(--xp-forecast)">прогноз</em>
+          <span class="sku-salary-xp-forecast-mark" style="left:var(--xp-forecast)" title="Прогноз месяца"></span>
         </div>
         <div class="sku-salary-xp-delta ${payroll.gapToDate >= 0 ? 'ok' : 'danger'}">
           <span>разница к плану на дату</span>
@@ -6695,8 +6693,6 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
         </div>
         <div class="badge-stack">
           ${badge(`факт ${fmt.money(totals.factRevenue)}`, 'info')}
-          ${badge(`план за период ${fmt.money(totals.planToDateRevenue)}`)}
-          ${badge(fmt.pct(totals.completionToDate), skuPlanFactTone(totals.completionToDate))}
         </div>
       </div>
       <div class="table-wrap sku-plan-fact-table">

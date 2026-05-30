@@ -2031,6 +2031,40 @@ function renderDashboardView() {
   renderDashboard();
 }
 
+function initSidebarToggle() {
+  const shell = document.querySelector('.app-shell');
+  const toggle = document.querySelector('[data-sidebar-toggle]');
+  if (!shell || !toggle || toggle.dataset.ready === '1') return;
+  toggle.dataset.ready = '1';
+  const storageKey = 'altea.sidebarCollapsed';
+  const readCollapsed = () => {
+    try {
+      return localStorage.getItem(storageKey) === '1';
+    } catch {
+      return false;
+    }
+  };
+  const writeCollapsed = (collapsed) => {
+    try {
+      localStorage.setItem(storageKey, collapsed ? '1' : '0');
+    } catch {
+      // В приватном режиме localStorage может быть недоступен; визуальный toggle все равно работает.
+    }
+  };
+  const applyCollapsed = (collapsed) => {
+    shell.classList.toggle('sidebar-collapsed', collapsed);
+    toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    toggle.setAttribute('aria-label', collapsed ? 'Показать меню' : 'Скрыть меню');
+    toggle.title = collapsed ? 'Показать меню' : 'Скрыть меню';
+  };
+  applyCollapsed(readCollapsed());
+  toggle.addEventListener('click', () => {
+    const collapsed = !shell.classList.contains('sidebar-collapsed');
+    applyCollapsed(collapsed);
+    writeCollapsed(collapsed);
+  });
+}
+
 function ensureSkuContourShell() {
   const nav = document.querySelector('.nav');
   if (nav && !document.querySelector('.nav-btn[data-view="data-health"]')) {
@@ -2243,6 +2277,7 @@ function setAppError(message = '') {
 function attachGlobalListeners() {
   if (state.boot.listenersAttached) return;
   state.boot.listenersAttached = true;
+  initSidebarToggle();
   ensureTaskModal();
   document.querySelectorAll('.nav-btn').forEach((btn) => btn.addEventListener('click', () => setView(btn.dataset.view)));
   window.addEventListener('hashchange', () => {

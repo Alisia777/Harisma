@@ -21,18 +21,25 @@ a{color:inherit}
 button,input,select,textarea{font:inherit}
 body{min-height:100vh}
 
-.app-shell{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}
-.sidebar{padding:22px 14px 18px;border-right:1px solid var(--line);background:rgba(6,12,25,.72);backdrop-filter:blur(10px);display:flex;flex-direction:column;gap:16px}
+.app-shell{--sidebar-track:250px;display:grid;grid-template-columns:var(--sidebar-track) minmax(0,1fr);min-height:100vh;transition:grid-template-columns .22s ease}
+.app-shell.sidebar-collapsed{--sidebar-track:0px}
+.sidebar{position:sticky;top:0;height:100vh;max-height:100vh;overflow-y:auto;padding:22px 14px 18px;border-right:1px solid var(--line);background:rgba(6,12,25,.72);backdrop-filter:blur(10px);display:flex;flex-direction:column;gap:16px;transition:transform .22s ease,opacity .18s ease,border-color .18s ease}
+.app-shell.sidebar-collapsed .sidebar{transform:translateX(-260px);opacity:0;pointer-events:none;border-right-color:transparent}
 .main{padding:18px 18px 26px;min-width:0}
+.sidebar-toggle{position:fixed;left:232px;top:18px;z-index:70;width:34px;height:34px;border:1px solid var(--line);border-radius:999px;background:rgba(13,20,37,.92);color:var(--text);display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow);transition:left .22s ease,background .18s ease,border-color .18s ease,transform .18s ease}
+.sidebar-toggle:hover{background:rgba(255,255,255,.08);border-color:var(--line-strong);transform:translateY(-1px)}
+.sidebar-toggle span{font-size:21px;line-height:1;transform:translateX(-1px)}
+.app-shell.sidebar-collapsed .sidebar-toggle{left:12px}
+.app-shell.sidebar-collapsed .sidebar-toggle span{transform:translateX(1px) rotate(180deg)}
 
 .brand-block{display:flex;gap:12px;align-items:center;padding:10px 10px 14px;border-bottom:1px solid var(--line)}
 .logo-badge{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#1e3a8a,#172554);font-weight:800;letter-spacing:.04em}
 .brand-title{font-size:18px;font-weight:800}
-.brand-sub{font-size:12px;color:var(--muted)}
+.brand-sub{display:none}
 
 .nav{display:flex;flex-direction:column;gap:10px}
-.nav-btn{border:1px solid var(--line);background:rgba(255,255,255,.02);border-radius:18px;color:var(--text);text-align:left;padding:13px 14px;cursor:pointer;transition:.18s ease;display:flex;flex-direction:column;gap:4px}
-.nav-btn small{color:var(--muted)}
+.nav-btn{border:1px solid var(--line);background:rgba(255,255,255,.02);border-radius:18px;color:var(--text);text-align:left;padding:13px 14px;cursor:pointer;transition:.18s ease;display:flex;flex-direction:column;gap:0}
+.nav-btn small{display:none}
 .nav-btn:hover{transform:translateY(-1px);box-shadow:var(--shadow);border-color:var(--line-strong)}
 .nav-btn.active{background:linear-gradient(180deg,rgba(59,130,246,.14),rgba(255,255,255,.03));border-color:rgba(59,130,246,.45)}
 .sidebar-foot{padding:14px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.02)}
@@ -822,7 +829,9 @@ textarea{resize:vertical;min-height:84px}
 
 @media (max-width:1180px){
   .app-shell{grid-template-columns:1fr}
-  .sidebar{border-right:none;border-bottom:1px solid var(--line)}
+  .sidebar{position:relative;height:auto;max-height:none;border-right:none;border-bottom:1px solid var(--line)}
+  .app-shell.sidebar-collapsed .sidebar{display:none}
+  .sidebar-toggle,.app-shell.sidebar-collapsed .sidebar-toggle{left:auto;right:18px}
   .cards,.kpi-strip{grid-template-columns:repeat(3,minmax(0,1fr))}
   .executive-funnel-kpis,.executive-funnel-platform-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
   .executive-owner-hero-grid,.executive-owner-card-grid,.executive-platform-plan-board{grid-template-columns:repeat(2,minmax(0,1fr))}

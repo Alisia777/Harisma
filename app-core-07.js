@@ -5940,34 +5940,93 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   const quarterRevenueDeltaDisplay = quarterRevenueFactWb - quarterTargetWb;
   const quarterRevenueCompletionDisplay = quarterTargetWb > 0 ? quarterRevenueFactWb / quarterTargetWb : quarter.revenueCompletionPct;
   const quarterAvailable = numberOrZero(quarter.days) > 0 || quarterRevenueFactWb > 0 || numberOrZero(quarter.spendFact) > 0;
-  const quarterCompletionTone = numberOrZero(quarterRevenueCompletionDisplay) >= 1 ? 'ok' : 'warn';
-  const quarterDrrTone = quarter.factPct != null && quarter.planPct != null && quarter.factPct <= quarter.planPct ? 'ok' : 'warn';
+  const quarterCompletionTone = iuDrrFunnelCompletionTone(quarterRevenueCompletionDisplay);
+  const quarterAdsCompletionDisplay = numberOrZero(quarter.planSpendWb) > 0 ? numberOrZero(quarter.spendFact) / numberOrZero(quarter.planSpendWb) : null;
+  const quarterAdsTone = iuDrrFunnelAdsCompletionTone(quarterAdsCompletionDisplay);
+  const quarterDrrTone = iuDrrFunnelDrrTone(quarter.factPct, quarter.planPct);
+  const quarterOrdersAdTone = iuDrrFunnelDrrTone(quarter.ordersAdPct, quarter.planPct);
   const quarterRevenueTone = iuDrrToneForRevenueDelta(quarterRevenueDeltaDisplay);
-  const quarterSpendTone = iuDrrToneForDelta(quarter.spendDelta);
+  const quarterSpendTone = quarterAdsTone;
+  const quarterPeriodLabel = quarter.label || `${String(quarter.from || '').slice(8, 10)}.${String(quarter.from || '').slice(5, 7)}–${String(quarter.to || '').slice(8, 10)}.${String(quarter.to || '').slice(5, 7)}`;
+  const quarterProgressWidth = Math.min(100, Math.max(0, numberOrZero(quarterRevenueCompletionDisplay) * 100)).toFixed(1);
+  const quarterRevenueDeltaText = `${quarterRevenueDeltaDisplay >= 0 ? '+' : ''}${fmt.money(quarterRevenueDeltaDisplay)}`;
+  const quarterSpendDeltaText = `${numberOrZero(quarter.spendDelta) >= 0 ? '+' : ''}${fmt.money(quarter.spendDelta)}`;
+  const quarterGameCardsHtml = quarterAvailable ? [
+    {
+      label: 'Оборот ИУ',
+      value: fmt.pct(quarterRevenueCompletionDisplay),
+      detail: `${fmt.money(quarterRevenueFactWb)} / ${fmt.money(quarterTargetWb)}`,
+      progress: quarterRevenueCompletionDisplay,
+      tone: quarterCompletionTone
+    },
+    {
+      label: 'Дельта оборота',
+      value: quarterRevenueDeltaText,
+      detail: quarterRevenueFactWb >= quarterTargetWb ? 'выше ИУ' : 'ниже ИУ',
+      progress: quarterRevenueCompletionDisplay,
+      tone: quarterRevenueTone
+    },
+    {
+      label: 'Реклама ИУ',
+      value: fmt.pct(quarterAdsCompletionDisplay),
+      detail: `${fmt.money(quarter.spendFact)} / ${fmt.money(quarter.planSpendWb)}`,
+      progress: quarterAdsCompletionDisplay,
+      tone: quarterAdsTone
+    },
+    {
+      label: 'ДРР договор',
+      value: fmt.pct(quarter.factPct),
+      detail: `цель ${fmt.pct(quarter.planPct)}`,
+      progress: quarter.planPct > 0 && quarter.factPct != null ? quarter.factPct / quarter.planPct : null,
+      tone: quarterDrrTone
+    },
+    {
+      label: '% от заказов',
+      value: fmt.pct(quarter.ordersAdPct),
+      detail: `${fmt.money(quarter.ordersRevenueWb)}`,
+      progress: quarter.planPct > 0 && quarter.ordersAdPct != null ? quarter.ordersAdPct / quarter.planPct : null,
+      tone: quarterOrdersAdTone
+    }
+  ].map((card) => iuDrrScoreCardHtml(card, 'iu-drr-quarter-score-card')).join('') : '';
   const quarterSummaryHtml = quarterAvailable ? `
-    <div class="card subtle" style="margin-top:14px">
-      <div class="section-subhead">
+    <div class="iu-drr-quarter-card ${escapeHtml(quarterCompletionTone)}" style="--iu-quarter-progress:${quarterProgressWidth}%">
+      <div class="iu-drr-quarter-head">
         <div>
           <h3>Накопительно с 01.03</h3>
-          <p class="small muted">Факт ИУ WB сверяем с выкупленными продажами по розничным ценам из отчета WB; ДРР по договору считаем от этой базы.</p>
+          <p class="small muted">WB ИУ: оборот, реклама и ДРР в одном накопительном срезе.</p>
         </div>
         <div class="badge-stack">
-          ${badge(quarter.label || `${String(quarter.from || '').slice(8, 10)}.${String(quarter.from || '').slice(5, 7)}–${String(quarter.to || '').slice(8, 10)}.${String(quarter.to || '').slice(5, 7)}`, 'info')}
+          ${badge(quarterPeriodLabel, 'info')}
           ${badge(quarter.status === 'partial' ? 'частично' : 'готово', quarter.status === 'partial' ? 'warn' : 'ok')}
           ${badge(`${fmt.int(quarter.days || 0)} дн.`, 'info')}
-          ${badge(`План ${fmt.money(quarter.planSpendWb)}`, 'info')}
-          ${badge(`Δ ${fmt.money(quarter.spendDelta)}`, quarterSpendTone)}
         </div>
       </div>
-      <div class="kpi-strip" style="margin-top:12px">
-        <div class="mini-kpi ${quarterRevenueTone}"><span>Целевой оборот</span><strong>${fmt.money(quarterTargetWb)}</strong><span>накопительно</span></div>
-        <div class="mini-kpi ${quarterRevenueTone}"><span>Факт продаж</span><strong>${fmt.money(quarterRevenueFactWb)}</strong><span>WB buyout sales</span></div>
-        <div class="mini-kpi ${quarterCompletionTone}"><span>Выполнение</span><strong>${fmt.pct(quarterRevenueCompletionDisplay)}</strong><span>${fmt.money(quarterRevenueDeltaDisplay)}</span></div>
-        <div class="mini-kpi ${quarterSpendTone}"><span>Рекламный расход</span><strong>${fmt.money(quarter.spendFact)}</strong><span>без Внешки</span></div>
-        <div class="mini-kpi ${quarterDrrTone}"><span>ДРР по договору</span><strong>${fmt.pct(quarter.factPct)}</strong><span>${fmt.money(quarter.planSpendWb)}</span></div>
-        <div class="mini-kpi ${quarterSpendTone}"><span>% рекламный от заказов</span><strong>${fmt.pct(quarter.ordersAdPct)}</strong><span>${fmt.money(quarter.ordersRevenueWb)}</span></div>
+      <div class="iu-drr-quarter-hero">
+        <div class="iu-drr-quarter-score">
+          <span>уровень ИУ WB</span>
+          <strong>${fmt.pct(quarterRevenueCompletionDisplay)}</strong>
+          <em>${iuDrrScoreStatusLabel(quarterCompletionTone)}</em>
+        </div>
+        <div class="iu-drr-quarter-track" title="${escapeHtml(`${fmt.money(quarterRevenueFactWb)} / ${fmt.money(quarterTargetWb)}`)}">
+          <i></i>
+          <span class="iu-drr-quarter-mark mark-80">80%</span>
+          <span class="iu-drr-quarter-mark mark-90">90%</span>
+          <span class="iu-drr-quarter-mark mark-100">100%</span>
+        </div>
+        <div class="iu-drr-quarter-delta ${escapeHtml(quarterRevenueTone)}">
+          <span>разница к ИУ</span>
+          <strong>${quarterRevenueDeltaText}</strong>
+          <em>${fmt.money(quarterRevenueFactWb)} / ${fmt.money(quarterTargetWb)}</em>
+        </div>
       </div>
-      ${quarter.sourceLabel ? `<div class="muted small" style="margin-top:10px">${escapeHtml(quarter.sourceLabel)}</div>` : ''}
+      <div class="iu-drr-quarter-cards">
+        ${quarterGameCardsHtml}
+      </div>
+      <div class="iu-drr-quarter-foot">
+        <span>Реклама: ${fmt.money(quarter.spendFact)} / ${fmt.money(quarter.planSpendWb)}</span>
+        <span class="${escapeHtml(quarterAdsTone)}">выполнение ${fmt.pct(quarterAdsCompletionDisplay)}</span>
+        <span class="${escapeHtml(quarterSpendTone)}">Δ рекламы ${quarterSpendDeltaText}</span>
+      </div>
     </div>
   ` : '';
   const selectedKpisHtml = isOzonView ? `

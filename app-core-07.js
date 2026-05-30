@@ -4215,18 +4215,19 @@ const IU_DRR_FUNNEL_METRICS_OZON = [
   { key: 'adAvgOrder', label: 'Средний заказ РК', formula: 'выручка рекламы / заказы', format: 'money', row: 28, hideIfEmpty: true },
   { key: 'revenuePerMille', label: 'Выручка на 1000 показов', formula: 'выручка рекламы / показы', format: 'money', row: 29, hideIfEmpty: true },
   { key: 'orderPerMille', label: 'Заказы на 1000 показов', formula: 'заказы / показы', format: 'num', row: 30, hideIfEmpty: true },
-  { key: 'units', label: 'Выкупили, шт', formula: 'факт продаж', format: 'int', row: 31, hideIfEmpty: true },
-  { key: 'avgCheck', label: 'Средний чек', formula: 'GMV / выкупы', format: 'money', row: 32, hideIfEmpty: true },
-  { key: 'buyoutRate', label: 'Заказы → выкупы', formula: 'выкупы / заказы РК', format: 'pct', row: 33, hideIfEmpty: true },
-  { key: 'adsRevenueShare', label: 'Доля выручки РК', formula: 'выручка РК / GMV', format: 'pct', row: 34, hideIfEmpty: true },
-  { key: 'smartGmv', label: 'Smart GMV доля', formula: 'наша доля', format: 'money', row: 35, hideIfEmpty: true },
-  { key: 'smartGmvShare', label: 'Smart доля GMV', formula: 'Smart / факт GMV', format: 'pct', row: 36, hideIfEmpty: true },
-  { key: 'smartAds', label: 'Smart реклама доля', formula: 'наша доля', format: 'money', row: 37, hideIfEmpty: true },
-  { key: 'smartAdsShare', label: 'Smart доля рекламы', formula: 'Smart / реклама', format: 'pct', row: 38, hideIfEmpty: true },
-  { key: 'financeAds', label: 'Реклама из фин. API', formula: 'Ozon Finance', format: 'money', row: 39, hideIfEmpty: true },
-  { key: 'financeSales', label: 'Продажи из фин. API', formula: 'Ozon Finance', format: 'money', row: 40, hideIfEmpty: true },
-  { key: 'financeDrr', label: 'ДРР фин. API', formula: 'реклама / продажи API', format: 'pct', row: 41, hideIfEmpty: true },
-  { key: 'financeAccrued', label: 'Начислено Ozon', formula: 'Ozon Finance', format: 'money', row: 42, hideIfEmpty: true }
+  { key: 'marketplaceOrders', label: 'Заказы Ozon, шт', formula: 'заказы площадки', format: 'int', row: 31, hideIfEmpty: true },
+  { key: 'units', label: 'Выкупы Ozon, шт', formula: 'выкупы площадки', format: 'int', row: 32, hideIfEmpty: true },
+  { key: 'avgCheck', label: 'Средний чек', formula: 'GMV / выкупы', format: 'money', row: 33, hideIfEmpty: true },
+  { key: 'buyoutRate', label: 'Заказы → выкупы', formula: 'выкупы / заказы', format: 'pct', row: 34, hideIfEmpty: true },
+  { key: 'adsRevenueShare', label: 'Доля выручки РК', formula: 'выручка РК / GMV', format: 'pct', row: 35, hideIfEmpty: true },
+  { key: 'smartGmv', label: 'Smart GMV доля', formula: 'наша доля', format: 'money', row: 36, hideIfEmpty: true },
+  { key: 'smartGmvShare', label: 'Smart доля GMV', formula: 'Smart / факт GMV', format: 'pct', row: 37, hideIfEmpty: true },
+  { key: 'smartAds', label: 'Smart реклама доля', formula: 'наша доля', format: 'money', row: 38, hideIfEmpty: true },
+  { key: 'smartAdsShare', label: 'Smart доля рекламы', formula: 'Smart / реклама', format: 'pct', row: 39, hideIfEmpty: true },
+  { key: 'financeAds', label: 'Реклама из фин. API', formula: 'Ozon Finance', format: 'money', row: 40, hideIfEmpty: true },
+  { key: 'financeSales', label: 'Продажи из фин. API', formula: 'Ozon Finance', format: 'money', row: 41, hideIfEmpty: true },
+  { key: 'financeDrr', label: 'ДРР фин. API', formula: 'реклама / продажи API', format: 'pct', row: 42, hideIfEmpty: true },
+  { key: 'financeAccrued', label: 'Начислено Ozon', formula: 'Ozon Finance', format: 'money', row: 43, hideIfEmpty: true }
 ];
 
 function iuDrrFunnelRate(numerator, denominator) {
@@ -4262,7 +4263,8 @@ function iuDrrFunnelMetricValue(metric, row = {}, platformKey = 'wb', context = 
     const clicks = numberOrZero(iuRow.ozonAdsClicks);
     const orders = numberOrZero(iuRow.ozonAdsOrders);
     const adRevenue = numberOrZero(iuRow.ozonAdsRevenue);
-    const units = numberOrZero(iuRow.unitsOzon || row.unitsOzon);
+    const marketplaceOrders = numberOrZero(iuRow.ordersUnitsOzon || row.ordersUnitsOzon || iuRow.unitsOzon || row.unitsOzon);
+    const units = numberOrZero(iuRow.deliveredUnitsOzon || row.deliveredUnitsOzon);
     if (key === 'planGmv' || key === 'planRevenue') return planGmv;
     if (key === 'factGmv' || key === 'factRevenue') return factGmv;
     if (key === 'completion' || key === 'revenueCompletion') return iuDrrFunnelRate(factGmv, planGmv);
@@ -4297,9 +4299,10 @@ function iuDrrFunnelMetricValue(metric, row = {}, platformKey = 'wb', context = 
     if (key === 'adAvgOrder') return iuDrrFunnelRate(adRevenue, orders);
     if (key === 'revenuePerMille') return views > 0 ? (adRevenue / views) * 1000 : null;
     if (key === 'orderPerMille') return views > 0 ? (orders / views) * 1000 : null;
+    if (key === 'marketplaceOrders') return marketplaceOrders;
     if (key === 'units') return units;
     if (key === 'avgCheck') return iuDrrFunnelRate(factGmv, units);
-    if (key === 'buyoutRate') return iuDrrFunnelRate(units, orders);
+    if (key === 'buyoutRate') return iuDrrFunnelRate(units, marketplaceOrders);
     if (key === 'adsRevenueShare') return iuDrrFunnelRate(adRevenue, factGmv);
     if (key === 'smartGmv') return numberOrZero(row.smartGmv || row.smartShareGmv);
     if (key === 'smartGmvShare') return iuDrrFunnelRate(numberOrZero(row.smartGmv || row.smartShareGmv), factGmv);
@@ -4381,6 +4384,7 @@ function iuDrrFunnelSummaryValue(metric, rows = [], platformKey = 'wb', context 
   const clicks = sum('clicks');
   const orders = sum('orders');
   const adRevenue = sum('adRevenue');
+  const marketplaceOrders = sum('marketplaceOrders');
   const units = sum('units');
   const externalAds = sum('externalAds');
   const totalAds = platformKey === 'ozon' ? factAds : sum('totalAds');
@@ -4420,9 +4424,10 @@ function iuDrrFunnelSummaryValue(metric, rows = [], platformKey = 'wb', context 
   if (key === 'adAvgOrder') return iuDrrFunnelRate(adRevenue, orders);
   if (key === 'revenuePerMille') return views > 0 ? (adRevenue / views) * 1000 : null;
   if (key === 'orderPerMille') return views > 0 ? (orders / views) * 1000 : null;
+  if (key === 'marketplaceOrders') return marketplaceOrders;
   if (key === 'units') return units;
   if (key === 'avgCheck') return iuDrrFunnelRate(factRevenue, units);
-  if (key === 'buyoutRate') return iuDrrFunnelRate(units, orders);
+  if (key === 'buyoutRate') return iuDrrFunnelRate(units, platformKey === 'ozon' ? marketplaceOrders : orders);
   if (key === 'adsRevenueShare') return iuDrrFunnelRate(adRevenue, factRevenue);
   if (key === 'totalAds') return totalAds;
   if (key === 'internalShare') return iuDrrFunnelRate(factAds, totalAds);
@@ -4499,7 +4504,7 @@ function iuDrrFunnelHeatStyle(metric = {}, value, stats = {}, platformKey = 'wb'
   const spread = Math.max(0.000001, max - min);
   const intensity = max <= min ? (Math.abs(numeric) > 0 ? 0.48 : 0.06) : Math.max(0.04, Math.min(1, (numeric - min) / spread));
   const tone = iuDrrFunnelCellTone(metric, numeric, row, platformKey, context);
-  const forcePlatform = ['planRevenue', 'planGmv', 'planAds', 'planDrr', 'views', 'clicks', 'orders', 'adRevenue', 'wbPromotion', 'wbMedia', 'wbInfluencer', 'pvzAds', 'brandZone', 'overviews', 'reviewPoints', 'smartGmv', 'smartAds', 'financeAds', 'financeSales', 'financeAccrued', 'targetAdsByFact'].includes(metric.key);
+  const forcePlatform = ['planRevenue', 'planGmv', 'planAds', 'planDrr', 'views', 'clicks', 'orders', 'marketplaceOrders', 'adRevenue', 'wbPromotion', 'wbMedia', 'wbInfluencer', 'pvzAds', 'brandZone', 'overviews', 'reviewPoints', 'smartGmv', 'smartAds', 'financeAds', 'financeSales', 'financeAccrued', 'targetAdsByFact'].includes(metric.key);
   const rgb = forcePlatform ? iuDrrFunnelPlatformRgb(platformKey) : iuDrrFunnelToneRgb(tone, platformKey);
   const alpha = Math.min(0.78, 0.1 + (intensity * 0.6));
   return `--iu-drr-cell-rgb:${rgb.join(',')};--iu-drr-cell-alpha:${alpha.toFixed(3)}`;
@@ -4699,6 +4704,9 @@ function ozonPlanFactDailyRows(model, context = {}) {
   const activePlanRows = planRows.filter((row) => numberOrZero(row.revenue) || numberOrZero(row.gmv) || numberOrZero(row.ads));
   const financeRows = (model.ozonFinance?.daily || []).filter((row) => row.monthKey === selectedMonth);
   const financeByDate = new Map(financeRows.map((row) => [row.date, row]));
+  const iuDailyByDate = new Map((model.payload?.daily || [])
+    .filter((row) => row.monthKey === selectedMonth)
+    .map((row) => [row.date, row]));
   const dates = [...new Set([
     ...activePlanRows.map((row) => row.date),
     ...financeRows.map((row) => row.date)
@@ -4747,6 +4755,7 @@ function ozonPlanFactDailyRows(model, context = {}) {
       }
     }
     const finance = financeByDate.get(date) || {};
+    const iuDaily = iuDailyByDate.get(date) || {};
     const primary = accountBreakdown.primary || {};
     const smart = accountBreakdown.smart || {};
     const smartRevenue = numberOrZero(smart.revenue);
@@ -4819,6 +4828,8 @@ function ozonPlanFactDailyRows(model, context = {}) {
       smartDrrGmv: smartGmv > 0 ? smartAds / smartGmv : null,
       smartShareAds: smartAds || factAds * smartShare,
       smartShareGmv: smartGmv || factGmv * smartShare,
+      ordersUnitsOzon: Math.round(numberOrZero(iuDaily.ordersUnitsOzon || iuDaily.unitsOzon)),
+      deliveredUnitsOzon: Math.round(numberOrZero(iuDaily.deliveredUnitsOzon)),
       financeAccrued: numberOrZero(finance.accruedNet),
       financeSales: numberOrZero(finance.salesGross),
       financeRealizationRevenue: numberOrZero(finance.realizationRevenue),

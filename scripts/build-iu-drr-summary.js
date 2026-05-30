@@ -1734,8 +1734,12 @@ function buildPlatformDateMap(platformTrends, platformKey) {
         || point?.revenue
       )
       : numberOrZero(point.revenue);
+    const ordersUnits = numberOrZero(point.ordersUnits ?? point.units);
+    const deliveredUnits = numberOrZero(point.deliveredUnits);
     map.set(date, {
       units: numberOrZero(point.units),
+      ordersUnits,
+      deliveredUnits,
       ordersRevenue: wbOrdersRevenue,
       revenue: wbFinanceTurnover > 0 ? wbFinanceTurnover : numberOrZero(point.revenue),
       margin: wbFinancialResult > 0 ? wbFinancialResult : numberOrZero(point.estimatedMargin || point.margin),
@@ -1804,10 +1808,10 @@ function buildAdsDailyMaps(adsSummary) {
     if (!['wb', 'ozon'].includes(platformKey)) continue;
     const date = isoDate(row.date || row.day || row.label);
     if (!date) continue;
+    if (platformKey === 'ozon') continue;
     const targetMap = platformKey === 'ozon' ? ozonByDate : byDate;
     addAdsBucket(targetMap, date, row);
 
-    if (platformKey !== 'wb') continue;
     const key = `${date}|${channelKey(row.channel)}`;
     const channelCurrent = byDateChannel.get(key) || 0;
     byDateChannel.set(key, channelCurrent + numberOrZero(row.spend));
@@ -1841,7 +1845,7 @@ function planPctForMonth(iuPlan, month) {
     ? numberOrZero(source.iuAdsWb) / numberOrZero(source.iuRevenueWb)
     : DEFAULT_PLAN_PCT;
   const workbookRate = Number.isFinite(pct) && pct > 0 ? pct : DEFAULT_PLAN_PCT;
-  return numberOrZero(WB_CONTRACT.marketingRate) || workbookRate;
+  return workbookRate || numberOrZero(WB_CONTRACT.marketingRate) || DEFAULT_PLAN_PCT;
 }
 
 function ozonPlanPctForMonth(iuPlan, month) {
@@ -1964,9 +1968,9 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, 
     const targetRevenueOzon = numberOrZero(plan.dailyIuRevenueOzon);
     const revenueWbDelta = revenueWb - targetRevenueWb;
     const revenueOzonDelta = revenueOzon - targetRevenueOzon;
-    const managementPlanSpendWb = wbDailyPlanSpend || numberOrZero(plan.dailyIuAdsWb) || (targetRevenueWb * planPct);
+    const managementPlanSpendWb = numberOrZero(plan.dailyIuAdsWb) || (targetRevenueWb * planPct);
     const contractMarketingPlanWb = revenueWb * contractPlanPct;
-    const planSpendWb = wbDailyPlanSpend || contractMarketingPlanWb || managementPlanSpendWb;
+    const planSpendWb = wbDailyPlanSpend || managementPlanSpendWb || contractMarketingPlanWb;
     const planSpendOzon = numberOrZero(plan.dailyIuAdsOzon) || (targetRevenueOzon * planPctOzon);
     const spendFactOzon = hasOzonAdsFact ? numberOrZero(ozonAds.spend) : revenueOzon * planPctOzon;
     const ozonAdsFactMode = hasOzonAdsFact
@@ -2022,6 +2026,8 @@ function buildDailyRows(platformTrends, iuPlan, adsSummary, wbFeedbacksSummary, 
       revenueWbSource: wb.source || '',
       unitsWb: Math.round(numberOrZero(wb.units)),
       unitsOzon: Math.round(numberOrZero(ozon.units)),
+      ordersUnitsOzon: Math.round(numberOrZero(ozon.ordersUnits || ozon.units)),
+      deliveredUnitsOzon: Math.round(numberOrZero(ozon.deliveredUnits)),
       planPct: roundRate(planPct),
       planSpendWb: roundMoney(planSpendWb),
       contractMarketingPlanWb: roundMoney(contractMarketingPlanWb),
@@ -2093,6 +2099,16 @@ function buildMonthRows(dailyRows, iuPlan) {
     const spendDeltaIu = sumRows(rows, 'spendDeltaIu');
     const ozonAdsFactModes = Array.from(new Set(rows.map((row) => row.ozonAdsFactMode).filter(Boolean)));
     const contractMonthTargetWb = contractMonthTargetRevenueWb(month);
+    const monthlyRevenueWbPlan = Math.max(
+      numberOrZero(contractMonthTargetWb),
+      numberOrZero(plan.iuRevenueWb),
+      numberOrZero(targetRevenueWb)
+    );
+    const monthlyAdsWbPlan = Math.max(
+      numberOrZero(plan.iuAdsWb),
+      numberOrZero(planSpendWb),
+      monthlyRevenueWbPlan * planPctForMonth(iuPlan, month)
+    );
     const plannedRevenueWbToDate = targetRevenueWb;
     const plannedRevenueOzonToDate = numberOrZero(plan.dailyIuRevenueOzon) * rows.length;
     const plannedRevenueToDate = plannedRevenueWbToDate + plannedRevenueOzonToDate;
@@ -2104,11 +2120,11 @@ function buildMonthRows(dailyRows, iuPlan) {
       label: plan.label,
       daysInPlan: plan.days,
       daysInSummary: rows.length,
-      iuRevenuePlan: roundMoney(plan.iuRevenueTotal),
+      iuRevenuePlan: roundMoney(monthlyRevenueWbPlan + plan.iuRevenueOzon),
       iuRevenuePlanToDate: roundMoney(plannedRevenueToDate),
       iuRevenueFactToDate: roundMoney(revenueTotalIu),
       iuRevenueCompletionToDate: plannedRevenueToDate > 0 ? roundRate(revenueTotalIu / plannedRevenueToDate) : null,
-      iuRevenueWbPlan: roundMoney(contractMonthTargetWb || plan.iuRevenueWb),
+      iuRevenueWbPlan: roundMoney(monthlyRevenueWbPlan),
       iuRevenueWbPlanToDate: roundMoney(plannedRevenueWbToDate),
       iuRevenueWbFactToDate: roundMoney(revenueWb),
       iuRevenueWbCompletionToDate: plannedRevenueWbToDate > 0 ? roundRate(revenueWb / plannedRevenueWbToDate) : null,
@@ -2116,11 +2132,11 @@ function buildMonthRows(dailyRows, iuPlan) {
       iuRevenueOzonPlanToDate: roundMoney(plannedRevenueOzonToDate),
       iuRevenueOzonFactToDate: roundMoney(revenueOzon),
       iuRevenueOzonCompletionToDate: plannedRevenueOzonToDate > 0 ? roundRate(revenueOzon / plannedRevenueOzonToDate) : null,
-      iuAdsPlan: roundMoney((contractMonthTargetWb || plan.iuRevenueWb) * planPctForMonth(iuPlan, month)),
+      iuAdsPlan: roundMoney(monthlyAdsWbPlan),
       iuAdsPlanToDate: roundMoney(plannedAdsWbToDate),
       iuAdsOzonPlan: roundMoney(plan.iuAdsOzon),
       iuAdsOzonPlanToDate: roundMoney(plannedAdsOzonToDate),
-      iuAdsTotalPlan: roundMoney(plan.iuAdsTotal),
+      iuAdsTotalPlan: roundMoney(monthlyAdsWbPlan + plan.iuAdsOzon),
       iuAdsTotalPlanToDate: roundMoney(plannedAdsToDate),
       iuAdsFactWbToDate: roundMoney(spendFact),
       iuAdsFactWbTotalToDate: roundMoney(spendFactTotal),

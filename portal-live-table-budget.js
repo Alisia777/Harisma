@@ -1,5 +1,6 @@
 (function () {
-  if (window.__ALTEA_LIVE_TABLE_BUDGET_20260521__) return;
+  if (window.__ALTEA_LIVE_TABLE_BUDGET_20260531_NOTICE2__) return;
+  window.__ALTEA_LIVE_TABLE_BUDGET_20260531_NOTICE2__ = true;
   window.__ALTEA_LIVE_TABLE_BUDGET_20260521__ = true;
 
   const SKU_VIEW = 'sku-plan-fact';
@@ -56,8 +57,7 @@
   }
 
   function ensureStyles() {
-    if (document.getElementById('altea-live-table-budget-style')) return;
-    const style = document.createElement('style');
+    const style = document.getElementById('altea-live-table-budget-style') || document.createElement('style');
     style.id = 'altea-live-table-budget-style';
     style.textContent = [
       '#view-sku-plan-fact .sku-plan-fact-table, #view-prices .pw-table-wrap { contain: content; }',
@@ -73,7 +73,7 @@
       '.altea-render-budget-notice button:hover { filter: brightness(1.08); }',
       '@media (max-width: 720px) { .altea-render-budget-notice { grid-template-columns: 1fr; align-items: stretch; } .altea-render-budget-arrow { display: none; } .altea-render-budget-notice button { width: 100%; } }'
     ].join('\n');
-    (document.head || document.documentElement).appendChild(style);
+    if (!style.parentNode) (document.head || document.documentElement).appendChild(style);
   }
 
   function removeNotice(root, view) {

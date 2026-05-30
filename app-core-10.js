@@ -350,7 +350,7 @@ function executiveFunnelBuildPlanModel() {
       ...previous,
       search: '',
       owner: 'all',
-      status: 'active',
+      status: 'all',
       platform: 'all',
       month: 'latest',
       date: '',
@@ -385,6 +385,7 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
       if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
       const metric = row.platforms?.[platform] || row[platform] || null;
       if (!executiveFunnelPlanMetricActive(metric)) return;
+      if (platformTotals.has(platform)) executiveFunnelAddPlanMetric(platformTotals.get(platform), metric, platform, row);
       const owner = executiveFunnelOwner(row, platform);
       if (executiveFunnelOwnerIsNoise(owner, row)) {
         excluded.rows += 1;
@@ -397,7 +398,6 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
       const ownerPlatform = executiveFunnelEnsureOwnerPlatform(ownerBucket, platform);
       executiveFunnelAddPlanMetric(ownerBucket, metric, platform, row);
       executiveFunnelAddPlanMetric(ownerPlatform, metric, platform, row);
-      if (platformTotals.has(platform)) executiveFunnelAddPlanMetric(platformTotals.get(platform), metric, platform, row);
     });
   });
 
@@ -435,7 +435,23 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     .filter((row) => selectedPlatform === 'all' || row.platform === selectedPlatform)
     .filter((row) => row.factRevenue > 0 || row.planToDateRevenue > 0 || row.adSpend > 0 || row.hasPlanAdSpend);
 
-  const totals = executiveFunnelFinalizePlanBucket(ownerRows.reduce((acc, row) => {
+  const payrollYa = planModel.payrollKpi?.platforms?.ya || null;
+  if (payrollYa && (selectedPlatform === 'all' || selectedPlatform === 'ya')) {
+    let yaRow = platformRows.find((row) => row.platform === 'ya');
+    if (!yaRow) {
+      yaRow = executiveFunnelFinalizePlanBucket(executiveFunnelOwnerPlatformBucket('ya'));
+      yaRow.articleCount = 0;
+      platformRows.push(yaRow);
+    }
+    yaRow.planRevenue = executiveFunnelNumber(payrollYa.planRevenue);
+    yaRow.planToDateRevenue = executiveFunnelNumber(payrollYa.planToDateRevenue);
+    yaRow.factRevenue = executiveFunnelNumber(payrollYa.factRevenue);
+    yaRow.completionToDate = yaRow.planToDateRevenue > 0 ? yaRow.factRevenue / yaRow.planToDateRevenue : null;
+    yaRow.completionMonth = yaRow.planRevenue > 0 ? yaRow.factRevenue / yaRow.planRevenue : null;
+    yaRow.gapToDate = yaRow.factRevenue - yaRow.planToDateRevenue;
+  }
+
+  const totals = executiveFunnelFinalizePlanBucket(platformRows.reduce((acc, row) => {
     acc.planRevenue += row.planRevenue;
     acc.planToDateRevenue += row.planToDateRevenue;
     acc.factRevenue += row.factRevenue;

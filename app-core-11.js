@@ -3680,7 +3680,7 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
   `).join('');
 
   root.innerHTML = `
-    <div class="section-title">
+    <div class="section-title sku-data-title">
       <div>
         <h2>Здоровье данных</h2>
         <p>Короткий контроль утреннего sync, качества данных и проблем, которые уже влияют на расчёты.</p>
@@ -3853,14 +3853,18 @@ function renderSkuContour(rootId = 'view-sku-contour') {
   const auditEvents = skuPlanFactAuditEvents(state.skuAliasAudit || {}).slice(0, 8);
   const latestRollbackEvent = skuContourLatestRollbackableEvent();
   const allIssueRows = skuContourIssueRows(model);
+  const activeMarket = skuDataActiveMarket();
+  const scopedIssueRows = activeMarket === 'all'
+    ? allIssueRows
+    : allIssueRows.filter((row) => skuDataIssueMatchesPlatform(row, activeMarket));
   const showResolved = skuContourShowResolved();
   const onlyNew = skuContourOnlyNew();
-  const resolvedIssueCount = allIssueRows.filter(skuContourIssueIsResolved).length;
-  const newIssueCount = allIssueRows.filter((row) => row.status === 'new').length;
-  let issueRows = showResolved ? allIssueRows : allIssueRows.filter((row) => !skuContourIssueIsResolved(row));
+  const resolvedIssueCount = scopedIssueRows.filter(skuContourIssueIsResolved).length;
+  const newIssueCount = scopedIssueRows.filter((row) => row.status === 'new').length;
+  let issueRows = showResolved ? scopedIssueRows : scopedIssueRows.filter((row) => !skuContourIssueIsResolved(row));
   if (onlyNew) issueRows = issueRows.filter((row) => row.status === 'new');
   const hiddenResolvedCount = resolvedIssueCount;
-  const hiddenByCurrentFilterCount = allIssueRows.length - issueRows.length;
+  const hiddenByCurrentFilterCount = scopedIssueRows.length - issueRows.length;
   const auditIndex = skuContourAuditIndex();
   const issueHtml = issueRows.slice(0, 120).map((row) => {
     const meta = skuContourStatusMeta(row.status);
@@ -3896,9 +3900,16 @@ function renderSkuContour(rootId = 'view-sku-contour') {
       <td>${event.type === 'sku_alias_import_rollback' ? badge('откат', 'info') : event.rollback ? badge('версия', 'warn') : '<span class="muted">—</span>'}</td>
     </tr>
   `).join('');
+  const contourPlatformBoardHtml = skuDataPlatformBoardHtml(model, { activeMarket, issueRows: allIssueRows });
+  const contourGameCardsHtml = skuDataGameCardsHtml(skuDataSharedCards(
+    model,
+    activeMarket,
+    (state.skus || []).filter((sku) => skuDataSkuBelongsToPlatform(sku, activeMarket)),
+    scopedIssueRows
+  ));
 
   root.innerHTML = `
-    <div class="section-title">
+    <div class="section-title sku-data-title">
       <div>
         <h2>Контур SKU</h2>
         <p>Единое место для API SKU без пары, alias/ignore, аудита и статуса утреннего sync.</p>
@@ -3911,9 +3922,10 @@ function renderSkuContour(rootId = 'view-sku-contour') {
       </div>
     </div>
 
-    ${skuContourGuideHtml()}
+    ${contourPlatformBoardHtml}
+    ${contourGameCardsHtml}
 
-    <div class="notice ${healthMeta.notice}">
+    <div class="notice ${healthMeta.notice} sku-data-muted-noise">
       <div class="section-subhead">
         <div>
           <strong>Sync: ${escapeHtml(healthMeta.label)}</strong>
@@ -3932,7 +3944,7 @@ function renderSkuContour(rootId = 'view-sku-contour') {
       </div>
     </div>
 
-    <div class="kpi-strip" style="margin-top:14px">
+    <div class="kpi-strip sku-data-muted-noise" style="margin-top:14px">
       <div class="mini-kpi"><span>SKU</span><strong>${fmt.int(matrixSummary.skuCount || (state.skus || []).length)}</strong><span>в матрице</span></div>
       <div class="mini-kpi warn"><span>Alias</span><strong>${fmt.int(matrixSummary.aliasCount || skuPlanFactAliasRows(state.skuAliases || {}).length)}</strong><span>общий справочник</span></div>
       <div class="mini-kpi"><span>Ignore</span><strong>${fmt.int(matrixSummary.ignoredApiSkuCount || skuPlanFactIgnorePayloadRows(state.skuAliasIgnore || {}).length)}</strong><span>осознанно не маппим</span></div>
@@ -3943,7 +3955,9 @@ function renderSkuContour(rootId = 'view-sku-contour') {
       <div class="mini-kpi"><span>Аудит</span><strong>${fmt.int(auditEvents.length)}</strong><span>последние применения</span></div>
     </div>
 
-    <div class="card sku-plan-fact-card" style="margin-top:14px">
+    <details class="card sku-plan-fact-card sku-data-technical" style="margin-top:14px">
+      <summary class="sku-data-technical-summary">Разбор API SKU</summary>
+      <div class="sku-data-technical-body">
       <div class="section-subhead">
         <div>
           <h3>Форма разбора API SKU</h3>
@@ -3957,13 +3971,14 @@ function renderSkuContour(rootId = 'view-sku-contour') {
         </div>
       </div>
       ${skuPlanFactAliasImportReportHtml(state.skuPlanFactAliasImportReport || null)}
-    </div>
+      </div>
+    </details>
 
     <div class="card sku-plan-fact-card" style="margin-top:14px">
       <div class="section-subhead">
         <div>
-          <h3>Очередь ошибок и статусов</h3>
-          <p class="small muted">По умолчанию показаны только нерешённые строки. Alias и ignore сохраняются в общий контур и скрываются из рабочей очереди после применения.</p>
+          <h3>Рабочая очередь SKU</h3>
+          <p class="small muted sku-data-muted-noise">По умолчанию показаны только нерешённые строки. Alias и ignore сохраняются в общий контур и скрываются из рабочей очереди после применения.</p>
         </div>
         <div class="badge-stack">
           ${badge(`${fmt.int(issueRows.length)} в работе`, issueRows.length ? 'warn' : 'ok')}
@@ -3979,7 +3994,9 @@ function renderSkuContour(rootId = 'view-sku-contour') {
       </div>
     </div>
 
-    <div class="card sku-plan-fact-card" style="margin-top:14px">
+    <details class="card sku-plan-fact-card sku-data-technical" style="margin-top:14px">
+      <summary class="sku-data-technical-summary">Журнал API SKU</summary>
+      <div class="sku-data-technical-body">
       <div class="section-subhead">
         <div>
           <h3>Журнал по API SKU</h3>
@@ -3993,9 +4010,12 @@ function renderSkuContour(rootId = 'view-sku-contour') {
           <tbody>${journalHtml || '<tr><td colspan="6"><div class="empty">Журнал пока пуст: alias/ignore ещё не применяли через портал</div></td></tr>'}</tbody>
         </table>
       </div>
-    </div>
+      </div>
+    </details>
 
-    <div class="card sku-plan-fact-card" style="margin-top:14px">
+    <details class="card sku-plan-fact-card sku-data-technical" style="margin-top:14px">
+      <summary class="sku-data-technical-summary">Аудит применений</summary>
+      <div class="sku-data-technical-body">
       <div class="section-subhead">
         <div>
           <h3>Аудит применений</h3>
@@ -4013,10 +4033,16 @@ function renderSkuContour(rootId = 'view-sku-contour') {
           <tbody>${auditHtml || '<tr><td colspan="6"><div class="empty">Применений пока не было</div></td></tr>'}</tbody>
         </table>
       </div>
-    </div>
+      </div>
+    </details>
   `;
 
   root.querySelector('[data-sku-contour-refresh]')?.addEventListener('click', (event) => refreshSkuPlanFactData(event.currentTarget, rootId));
+  root.querySelectorAll('[data-market-filter]').forEach((button) => button.addEventListener('click', (event) => {
+    state.filters.market = event.currentTarget.dataset.marketFilter || 'all';
+    state.filters.owner = 'all';
+    renderSkuContour(rootId);
+  }));
   root.querySelector('[data-sku-contour-toggle-new]')?.addEventListener('click', () => {
     state.skuContourOnlyNew = !skuContourOnlyNew();
     renderSkuContour(rootId);
@@ -4303,6 +4329,189 @@ function skuPlanFactPlatformBoardHtml(model = {}) {
       }).join('')}
     </div>
   `;
+}
+
+function skuDataActiveMarket() {
+  state.filters = state.filters || {};
+  if (!state.filters.market) state.filters.market = 'all';
+  const market = String(state.filters.market || 'all').toLowerCase();
+  return market === 'ym' ? 'ya' : market;
+}
+
+function skuDataPlatformLabel(platform = 'all') {
+  return platform === 'all' ? 'Все площадки' : skuPlanFactPlatformLabel(platform);
+}
+
+function skuDataSkuBelongsToPlatform(sku = {}, platform = 'all') {
+  const key = String(platform || 'all').toLowerCase();
+  if (key === 'all') return true;
+  if (key === 'wb') return Boolean(sku?.flags?.hasWB || registryOwnerByMarket(sku, key));
+  if (key === 'ozon') return Boolean(sku?.flags?.hasOzon || registryOwnerByMarket(sku, key));
+  return Boolean(registryOwnerByMarket(sku, key));
+}
+
+function skuDataIssueMatchesPlatform(row = {}, platform = 'all') {
+  const key = String(platform || 'all').toLowerCase();
+  if (key === 'all') return true;
+  const keys = skuContourPlatformKeys(row.platform || 'all');
+  return keys.includes(key) || keys.includes('all');
+}
+
+function skuDataWorkFlag(sku = {}, platform = 'all') {
+  const key = String(platform || 'all').toLowerCase();
+  if (key === 'wb') return Boolean(sku?.flags?.toWorkWB || sku?.flags?.toWork);
+  if (key === 'ozon') return Boolean(sku?.flags?.toWorkOzon || sku?.flags?.toWork);
+  if (key === 'all') return Boolean(sku?.flags?.toWork || sku?.flags?.toWorkWB || sku?.flags?.toWorkOzon);
+  return Boolean(registryOwnerByMarket(sku, key) || sku?.flags?.toWork);
+}
+
+function skuDataPlatformStats(model = {}, platform = 'all', issueRows = []) {
+  const key = String(platform || 'all').toLowerCase();
+  const skus = (state.skus || []).filter((sku) => skuDataSkuBelongsToPlatform(sku, key));
+  const ownerCount = skus.filter((sku) => registryOwnersForFilter(sku, key).length > 0).length;
+  const workCount = skus.filter((sku) => skuDataWorkFlag(sku, key)).length;
+  const issues = (issueRows || []).filter((row) => skuDataIssueMatchesPlatform(row, key));
+  const summary = key === 'all'
+    ? {
+        platform: 'all',
+        label: skuDataPlatformLabel('all'),
+        rows: model.allRows?.length || skus.length,
+        completionToDate: model.totals?.completionToDate ?? null,
+        factRevenue: numberOrZero(model.totals?.factRevenue),
+        planToDateRevenue: numberOrZero(model.totals?.planToDateRevenue),
+        gapToDate: numberOrZero(model.totals?.gapToDate)
+      }
+    : skuPlanFactPlatformSummary(model, key, { scope: 'allRows' });
+  const ownerCoverage = skus.length ? ownerCount / skus.length : null;
+  const issueLoad = skus.length ? Math.min(1, issues.length / Math.max(1, skus.length)) : (issues.length ? 1 : 0);
+  const contourHealth = issues.length ? Math.max(0, 1 - issueLoad) : 1;
+  return {
+    platform: key,
+    label: skuDataPlatformLabel(key),
+    skuCount: skus.length,
+    ownerCount,
+    workCount,
+    issueCount: issues.length,
+    ownerCoverage,
+    contourHealth,
+    summary
+  };
+}
+
+function skuDataPlatformBoardHtml(model = {}, options = {}) {
+  const activeMarket = options.activeMarket || skuDataActiveMarket();
+  const issueRows = options.issueRows || [];
+  const platforms = ['all', ...SKU_PLAN_FACT_PLATFORMS];
+  return `
+    <div class="sku-data-platform-board">
+      ${platforms.map((platform) => {
+        const stats = skuDataPlatformStats(model, platform, issueRows);
+        const summary = stats.summary || {};
+        const completion = summary.completionToDate ?? stats.ownerCoverage;
+        const active = activeMarket === platform;
+        const level = skuPlanFactCompletionLevel(completion);
+        const value = summary.completionToDate !== null && summary.completionToDate !== undefined
+          ? fmt.pct(summary.completionToDate)
+          : `${fmt.int(stats.skuCount)} SKU`;
+        const meta = summary.planToDateRevenue > 0
+          ? `${fmt.money(summary.factRevenue)} / ${fmt.money(summary.planToDateRevenue)}`
+          : `${fmt.int(stats.ownerCount)} / ${fmt.int(stats.skuCount)} owner`;
+        return `
+          <button class="sku-plan-platform-card sku-data-platform-card level-${level} ${active ? 'active' : ''}" type="button" data-market-filter="${escapeHtml(platform)}" aria-pressed="${active ? 'true' : 'false'}" style="${skuPlanFactCardStyle(platform, completion)}">
+            <span class="sku-plan-platform-card__top">
+              <strong>${escapeHtml(stats.label)}</strong>
+              <em>${fmt.int(stats.skuCount)} SKU</em>
+            </span>
+            <span class="sku-plan-platform-card__value">${value}</span>
+            <span class="sku-plan-platform-card__meta">${meta}</span>
+            <span class="sku-plan-platform-card__bar"><i></i></span>
+            <span class="sku-plan-platform-card__foot">
+              <b class="${stats.issueCount ? 'danger-text' : 'ok-text'}">${stats.issueCount ? `${fmt.int(stats.issueCount)} сигналов` : 'чисто'}</b>
+              <span><em>${fmt.int(stats.workCount)} в работе</em></span>
+            </span>
+          </button>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function skuDataToneForRatio(ratio = null, reverse = false) {
+  if (ratio === null || ratio === undefined || !Number.isFinite(Number(ratio))) return '';
+  const value = Number(ratio);
+  if (reverse) {
+    if (value <= 0.05) return 'ok';
+    if (value <= 0.18) return 'warn';
+    return 'danger';
+  }
+  if (value >= 0.9) return 'ok';
+  if (value >= 0.75) return 'warn';
+  return 'danger';
+}
+
+function skuDataGameCardsHtml(cards = []) {
+  if (!cards.length) return '';
+  return `
+    <div class="sku-data-game-cards">
+      ${cards.map((card) => skuPlanFactHealthBarHtml(card)).join('')}
+    </div>
+  `;
+}
+
+function skuDataSharedCards(model = {}, activeMarket = 'all', items = [], issueRows = []) {
+  const stats = skuDataPlatformStats(model, activeMarket, issueRows);
+  const ownerCoverage = items.length ? items.filter((sku) => registryOwnersForFilter(sku, activeMarket).length > 0).length / items.length : stats.ownerCoverage;
+  const workRatio = items.length ? items.filter((sku) => skuDataWorkFlag(sku, activeMarket)).length / items.length : null;
+  const externalRatio = items.length ? items.filter((sku) => sku?.flags?.hasExternalTraffic).length / items.length : null;
+  const issueRatio = items.length ? Math.min(1, stats.issueCount / Math.max(1, items.length)) : (stats.issueCount ? 1 : 0);
+  const summary = stats.summary || {};
+  return [
+    {
+      label: 'План-факт',
+      valueRatio: summary.completionToDate ?? null,
+      valueText: summary.completionToDate == null ? '—' : fmt.pct(summary.completionToDate),
+      barText: summary.completionToDate == null ? 'нет плана' : fmt.pct(summary.completionToDate),
+      subText: `${fmt.money(summary.factRevenue || 0)} / ${fmt.money(summary.planToDateRevenue || 0)}`,
+      platform: activeMarket,
+      tone: skuDataToneForRatio(summary.completionToDate)
+    },
+    {
+      label: 'Owner',
+      valueRatio: ownerCoverage,
+      valueText: ownerCoverage == null ? '—' : fmt.pct(ownerCoverage),
+      barText: ownerCoverage == null ? '—' : fmt.pct(ownerCoverage),
+      subText: `${fmt.int(stats.ownerCount)} / ${fmt.int(stats.skuCount)} SKU`,
+      platform: activeMarket,
+      tone: skuDataToneForRatio(ownerCoverage)
+    },
+    {
+      label: 'Контур данных',
+      valueRatio: 1 - issueRatio,
+      valueText: stats.issueCount ? `${fmt.int(stats.issueCount)} сигналов` : 'чисто',
+      barText: stats.issueCount ? `${fmt.int(Math.max(0, Math.round((1 - issueRatio) * 100)))}%` : '100%',
+      subText: 'alias / API / owner',
+      platform: activeMarket,
+      tone: skuDataToneForRatio(issueRatio, true)
+    },
+    {
+      label: 'В работе',
+      valueRatio: workRatio,
+      valueText: `${fmt.int(stats.workCount)} SKU`,
+      barText: workRatio == null ? '—' : fmt.pct(workRatio),
+      subText: 'фокус по выбранной площадке',
+      platform: activeMarket,
+      tone: stats.workCount ? 'warn' : 'ok'
+    },
+    {
+      label: 'Внешний трафик',
+      valueRatio: externalRatio,
+      valueText: externalRatio == null ? '—' : fmt.pct(externalRatio),
+      barText: externalRatio == null ? '—' : fmt.pct(externalRatio),
+      subText: `${fmt.int(items.filter((sku) => sku?.flags?.hasKZ).length)} КЗ / ${fmt.int(items.filter((sku) => sku?.flags?.hasVK).length)} VK`,
+      platform: activeMarket,
+      tone: externalRatio ? 'warn' : 'ok'
+    }
+  ];
 }
 
 function skuPlanFactIuDrrPayrollMetric(model = {}, platform = '', fallback = {}) {

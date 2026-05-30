@@ -333,8 +333,19 @@ function getFilteredSkus(taskMap = null) {
 function renderSkuRegistry() {
   const root = document.getElementById('view-skus');
   const skuTaskMap = buildSkuRegistryTaskMap();
+  const skuPlanModel = typeof skuPlanFactBuildModel === 'function' ? skuPlanFactBuildModel() : {};
   state.filters.lifecycle = state.filters.lifecycle || 'all';
+  const activeMarket = typeof skuDataActiveMarket === 'function'
+    ? skuDataActiveMarket()
+    : String(state.filters.market || 'all').toLowerCase();
   const items = getFilteredSkus(skuTaskMap);
+  const registryIssueRows = typeof skuContourIssueRows === 'function' ? skuContourIssueRows(skuPlanModel) : [];
+  const registryPlatformBoardHtml = typeof skuDataPlatformBoardHtml === 'function'
+    ? skuDataPlatformBoardHtml(skuPlanModel, { activeMarket, issueRows: registryIssueRows })
+    : '';
+  const registryGameCardsHtml = typeof skuDataGameCardsHtml === 'function' && typeof skuDataSharedCards === 'function'
+    ? skuDataGameCardsHtml(skuDataSharedCards(skuPlanModel, activeMarket, items, registryIssueRows))
+    : '';
   const owners = [...new Set(state.skus
     .filter((sku) => filterSkuByMarket(sku))
     .flatMap((sku) => registryOwnersForFilter(sku))
@@ -382,11 +393,11 @@ function renderSkuRegistry() {
   }).join('');
 
   root.innerHTML = `
-    <div class="section-title">
+    <div class="section-title sku-data-title">
       <div>
-        <h2>Реестр SKU · Алтея</h2>
+        <h2>Реестр SKU</h2>
       </div>
-      <div class="badge-stack">
+      <div class="badge-stack sku-data-muted-noise">
         ${badge(`${fmt.int(items.length)} SKU`)}
         ${badge(`${fmt.int(assignedCount)} с owner`, 'ok')}
         ${badge(`${fmt.int(unassignedCount)} без owner`, unassignedCount ? 'warn' : 'ok')}
@@ -398,9 +409,8 @@ function renderSkuRegistry() {
       </div>
     </div>
 
-    <div class="market-tabs">
-      ${REGISTRY_MARKET_TABS.map((market) => `<button class="market-tab ${state.filters.market === market.key ? 'active' : ''}" data-market-filter="${escapeHtml(market.key)}">${escapeHtml(market.label)}</button>`).join('')}
-    </div>
+    ${registryPlatformBoardHtml}
+    ${registryGameCardsHtml}
 
     <div class="filters filters-advanced">
       <input id="skuSearchInput" placeholder="Поиск по артикулу, названию, категории, owner…" value="${escapeHtml(state.filters.search)}">

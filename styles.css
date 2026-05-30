@@ -416,6 +416,21 @@ textarea{resize:vertical;min-height:84px}
 .sku-plan-platform-card__bar{position:relative;display:block;height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
 .sku-plan-platform-card__bar i{display:block;width:var(--pf-progress);height:100%;border-radius:999px;background:hsl(var(--pf-hue) 92% 68% / .96)}
 .sku-plan-platform-card__foot b{font-size:12px;line-height:1.25}
+.sku-data-title p{display:none}
+.sku-data-muted-noise{display:none!important}
+.sku-data-platform-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(156px,1fr));gap:10px;margin:0 0 14px}
+.sku-data-platform-card{min-height:128px}
+.sku-data-platform-card.active{outline-width:3px;box-shadow:0 0 0 1px hsl(var(--pf-hue) 90% 70% / .55),0 16px 42px hsl(var(--pf-hue) 90% 54% / .18)}
+.sku-data-game-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:0 0 14px}
+#view-sku-contour .sku-data-game-cards,#view-skus .sku-data-game-cards{margin-top:0}
+#view-sku-contour .filters-advanced,#view-skus .filters-advanced{margin-top:10px}
+.sku-data-technical{padding:0;overflow:hidden}
+.sku-data-technical-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;padding:12px 14px;color:var(--text);font-weight:800;list-style:none}
+.sku-data-technical-summary::-webkit-details-marker{display:none}
+.sku-data-technical-summary::after{content:'+';display:grid;place-items:center;width:24px;height:24px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+.sku-data-technical[open] .sku-data-technical-summary::after{content:'-'}
+.sku-data-technical-body{padding:0 14px 14px}
+.sku-data-technical:not([open]) .sku-data-technical-body{display:none}
 .sku-plan-platform-minis{display:flex;flex-wrap:wrap;gap:6px;max-width:180px}
 .sku-plan-platform-mini{display:inline-flex;gap:5px;align-items:center;border:1px solid hsl(var(--pf-hue) 75% 58% / var(--pf-border));background:hsl(var(--pf-hue) 72% 44% / .12);border-radius:8px;padding:6px 8px;max-width:100%}
 .sku-plan-platform-mini b,.sku-plan-platform-mini em{font-size:11px;line-height:1.2;font-style:normal;white-space:nowrap}
@@ -900,6 +915,7 @@ textarea{resize:vertical;min-height:84px}
   .summary-grid,.two-col,.cards-2,.check-grid,.kv-3{grid-template-columns:1fr}
   .filters{grid-template-columns:repeat(3,minmax(0,1fr))}
   .sku-plan-platform-board{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sku-data-game-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
   .sku-plan-fact-toolbar{grid-template-columns:1fr}
   .sku-plan-fact-actions{justify-content:flex-start}
   .sku-salary-xp-main{grid-template-columns:1fr}
@@ -917,6 +933,7 @@ textarea{resize:vertical;min-height:84px}
   .main{padding:18px}
   .topbar,.section-title{flex-direction:column}
   .cards,.kpi-strip,.board-columns,.task-mini-grid,.filters,.control-filters,.pipeline-strip{grid-template-columns:1fr}
+  .sku-data-game-cards{grid-template-columns:1fr}
   .executive-funnel-kpis,.executive-funnel-platform-grid,.executive-funnel-platform-metrics,.executive-funnel-api-grid,.executive-funnel-api-row{grid-template-columns:1fr}
   .executive-owner-hero-grid,.executive-owner-card-grid,.executive-platform-plan-board,.executive-platform-plan-grid,.executive-owner-metrics,.executive-owner-toolbar{grid-template-columns:1fr}
   .sku-plan-platform-board{grid-template-columns:1fr}

@@ -15,7 +15,7 @@ window.__ALTEA_DASHBOARD_INTERACTIVE_20260514WB2__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428B__ = true;
   window.__ALTEA_DASHBOARD_INTERACTIVE_20260428A__ = true;
 
-  const VERSION = '20260516modaltable3';
+  const VERSION = '20260520stability9';
 const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   const ROOT_ID = 'portalDashboardExecutiveRoot';
   const MODAL_ID = 'portalDashboardExecutiveModal';
@@ -43,6 +43,19 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   let dashboardBootPrimed = false;
   let metricsCache = null;
   let lastDashboardRenderSignature = '';
+  let dashboardHeavyDataReady = false;
+  const EMPTY_DASHBOARD_PAYLOADS = {
+    platformTrends: { generatedAt: '', platforms: [], extraMarketplace: { generatedAt: '', asOfDate: '', platforms: {} } },
+    adsSummary: { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
+    iuDrrSummary: { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
+    prices: { generatedAt: '', platforms: {} },
+    smartPriceWorkbench: { generatedAt: '', platforms: {} },
+    smartPriceWorkbenchBase: { generatedAt: '', platforms: {} },
+    smartPriceWorkbenchLive: null,
+    smartPriceOverlay: { generatedAt: '', platforms: {} },
+    priceWorkbenchSupport: { generatedAt: '', platforms: {} },
+    orderProcurement: { generatedAt: '', rows: [] }
+  };
 
   function syncChrome() {
     document.title = 'Дом бренда Алтея · v8.7.1 Imperial';
@@ -75,6 +88,11 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     } catch {
       return value;
     }
+  };
+  const emptyDashboardPayload = (key) => cloneJson(EMPTY_DASHBOARD_PAYLOADS[key]);
+  const cachedHeavyDashboardPayload = (key) => {
+    if (!dashboardHeavyDataReady) return emptyDashboardPayload(key);
+    return current(key) || cache[key] || emptyDashboardPayload(key);
   };
   const CP1251_EXTENDED_CHARS =
     '\u0402\u0403\u201a\u0453\u201e\u2026\u2020\u2021\u20ac\u2030\u0409\u2039\u040a\u040c\u040b\u040f'
@@ -399,11 +417,12 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
         );
         const sellerTurnoverRaw = point?.wbSellerSummaryTurnoverDays ?? sellerSummary.turnoverDays;
         const sellerTurnoverDays = Number.isFinite(Number(sellerTurnoverRaw)) ? Number(sellerTurnoverRaw) : null;
+        const revenue = firstPositive(point?.ordersRevenue, point?.revenue, point?.financeTurnover);
         return {
           date: resolveSeriesDate(point, anchor),
           units: num(point?.units),
-          revenue: num(point?.revenue),
-          ordersRevenue: num(point?.revenue),
+          revenue,
+          ordersRevenue: num(point?.ordersRevenue),
           financeTurnover,
           financialResult,
           sellerTurnoverDays,
@@ -1273,6 +1292,52 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
     return totalDays > 0 ? planRevenue / totalDays : 0;
   }
 
+  const DASHBOARD_PAYROLL_PLATFORMS = ['wb', 'ozon', 'ya'];
+
+  function dashboardPayrollFactControl(rangeLike) {
+    const dashboard = current('dashboard') || {};
+    const plan = dashboard.companyPlan || {};
+    const active = plan.activeMonth;
+    if (plan.planType !== 'marketplace_salary_revenue' || !active?.monthKey) return null;
+    const activeDate = String(dashboard.dataFreshness?.asOfDate || dashboard.asOfDate || '').slice(0, 10);
+    const startKey = rangeLike?.effectiveStart ? iso(rangeLike.effectiveStart) : '';
+    const endKey = rangeLike?.effectiveEnd ? iso(rangeLike.effectiveEnd) : '';
+    if (startKey !== `${active.monthKey}-01` || endKey !== activeDate) return null;
+    const factRevenue = num(active.factRevenueToDate);
+    return factRevenue > 0 ? { monthKey: active.monthKey, factRevenue } : null;
+  }
+
+  function dashboardSeriesRevenueForRange(platformKey, rangeLike) {
+    return platformSeries(platformKey, rangeLike?.anchor)
+      .filter((point) => point.date >= rangeLike.effectiveStart && point.date <= rangeLike.effectiveEnd)
+      .reduce((sum, point) => sum + num(point.revenue), 0);
+  }
+
+  function dashboardPayrollFactScale(platformKey, rangeLike) {
+    const control = dashboardPayrollFactControl(rangeLike);
+    if (!control) return null;
+    const key = canonicalDashboardPlatformKey(platformKey);
+    const rawRevenue = key === 'all'
+      ? dashboardSeriesRevenueForRange('all', rangeLike)
+      : DASHBOARD_PAYROLL_PLATFORMS.reduce((sum, item) => sum + dashboardSeriesRevenueForRange(item, rangeLike), 0);
+    if (rawRevenue <= 0) return null;
+    return control.factRevenue / rawRevenue;
+  }
+
+  function dashboardPayrollControlledDays(days, platformKey, rangeLike) {
+    const key = canonicalDashboardPlatformKey(platformKey);
+    if (key !== 'all' && !DASHBOARD_PAYROLL_PLATFORMS.includes(key)) return days;
+    const scale = dashboardPayrollFactScale(key, rangeLike);
+    if (!scale) return days;
+    return days.map((row) => ({
+      ...row,
+      revenue: row.revenue * scale,
+      financeTurnover: row.financeTurnover * scale,
+      margin: row.margin * scale,
+      adRevenue: row.adRevenue * scale
+    }));
+  }
+
   function iuPlanMonth(date) {
     const key = monthKey(date);
     const source = current('iuPlan')?.months?.[key];
@@ -1661,7 +1726,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   function buildWindowMetric(platformKey, rangeLike, anchor, adsAnchor, issueMap) {
     const trendMap = new Map(platformSeries(platformKey, anchor).map((point) => [iso(point.date), point]));
     const adsMap = new Map(adsSeries(platformKey, adsAnchor).map((point) => [iso(point.date), point]));
-    const days = enumerateDates(rangeLike.effectiveStart, rangeLike.effectiveEnd).map((date) => {
+    let days = enumerateDates(rangeLike.effectiveStart, rangeLike.effectiveEnd).map((date) => {
       const trend = trendMap.get(iso(date)) || {};
       const ads = adsMap.get(iso(date)) || {};
       const planUnits = planUnitsForDate(date, platformKey);
@@ -1673,7 +1738,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
       const spend = num(ads.spend);
       const adRevenue = num(ads.revenue);
       const marginBase = financeTurnover > 0 ? financeTurnover : revenue;
-      const useCompanyPlanForDay = platformKey !== 'ya' && planRevenue > 0;
+      const useCompanyPlanForDay = planRevenue > 0;
       return {
         date,
         planUnits,
@@ -1692,9 +1757,10 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
         drr: adRevenue > 0 ? spend / adRevenue : null
       };
     });
+    days = dashboardPayrollControlledDays(days, platformKey, rangeLike);
     const planUnits = days.reduce((sum, row) => sum + row.planUnits, 0);
     const planRevenue = days.reduce((sum, row) => sum + row.planRevenue, 0);
-    const usesCompanyPlan = platformKey !== 'ya' && planRevenue > 0;
+    const usesCompanyPlan = planRevenue > 0;
     const planFactDays = usesCompanyPlan ? days.filter((row) => row.planRevenue > 0) : days;
     const planFactUnits = planFactDays.reduce((sum, row) => sum + row.factUnits, 0);
     const planFactRevenue = planFactDays.reduce((sum, row) => sum + row.revenue, 0);
@@ -5408,7 +5474,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
   function buildWindowMetric(platformKey, rangeLike, anchor, adsAnchor, issueMap) {
     const trendMap = new Map(platformSeries(platformKey, anchor).map((point) => [iso(point.date), point]));
     const adsMap = new Map(adsSeries(platformKey, adsAnchor).map((point) => [iso(point.date), point]));
-    const days = enumerateDates(rangeLike.effectiveStart, rangeLike.effectiveEnd).map((date) => {
+    let days = enumerateDates(rangeLike.effectiveStart, rangeLike.effectiveEnd).map((date) => {
       const trend = trendMap.get(iso(date)) || {};
       const ads = adsMap.get(iso(date)) || {};
       const planUnits = planUnitsForDate(date, platformKey);
@@ -5439,6 +5505,7 @@ const STYLE_ID = 'altea-dashboard-interactive-20260516modaltable3';
         drr: adRevenue > 0 ? spend / adRevenue : null
       };
     });
+    days = dashboardPayrollControlledDays(days, platformKey, rangeLike);
     const planUnits = days.reduce((sum, row) => sum + row.planUnits, 0);
     const planRevenue = days.reduce((sum, row) => sum + row.planRevenue, 0);
     const usesCompanyPlan = planRevenue > 0;
@@ -5947,7 +6014,7 @@ function dashboardTaskStatusChip(task) {
       return 'План держится, явных ручных вмешательств на сегодня немного.';
     }
     if (completion >= 0.9 && marginPct >= 0.25) {
-      return 'Картина рабочая: план рядом, маржа живая, ниже оставлены только точки контроля.';
+      return 'План, маржа, выручка и запас собраны в одном рабочем срезе.';
     }
     if (completion < 0.75) {
       return 'Нужен фокус: план проседает, сначала смотрим задачи и проблемные SKU.';
@@ -6063,7 +6130,7 @@ function dashboardTaskStatusChip(task) {
         <div class="portal-calm-section-head">
           <div class="portal-calm-section-copy">
             <h3>Главные графики</h3>
-            <p>Оставила только то, что быстро отвечает на вопрос “что происходит”: деньги, план, качество прибыли и запас.</p>
+            <p>Ключевые графики отвечают на главный вопрос: деньги, план, качество прибыли и запас.</p>
           </div>
           ${sectionMetaHtml(executive, [executive.compareRange ? badgeHtml(`LFL: ${executive.compareRange.label}`, executive.compareRange.clamped ? 'warn' : 'info') : badgeHtml('LFL: нет окна', 'info')])}
         </div>
@@ -7670,17 +7737,27 @@ function dashboardTaskStatusChip(task) {
       }
       return true;
     };
-    const shouldRefreshExisting = key === 'adsSummary' || key === 'iuDrrSummary';
+    const shouldRefreshExisting = key === 'platformTrends' || key === 'adsSummary' || key === 'iuDrrSummary';
     if (!forceRefresh && !shouldRefreshExisting && hasUsablePayload(existing)) return existing;
+    let snapshotPayload = null;
+    if (typeof window.__alteaLoadPortalSnapshot === 'function') {
+      try {
+        snapshotPayload = await window.__alteaLoadPortalSnapshot(path, { forceRefresh });
+      } catch (error) {
+        console.warn('[portal-dashboard-interactive] snapshot load failed', key, error);
+      }
+    }
     let response = null;
     try {
       response = await fetch(`${path}?v=${VERSION}`, { cache: 'no-store' });
     } catch (error) {
+      if (hasUsablePayload(snapshotPayload)) return snapshotPayload;
       if (hasUsablePayload(existing)) return existing;
       if (required) throw error;
       return null;
     }
     if (!response.ok) {
+      if (hasUsablePayload(snapshotPayload)) return snapshotPayload;
       if (hasUsablePayload(existing)) return existing;
       if (required) throw new Error(`Failed to load ${path}`);
       return null;
@@ -7688,7 +7765,10 @@ function dashboardTaskStatusChip(task) {
     let text = await response.text();
     if (typeof sanitizeLooseJson === 'function') text = sanitizeLooseJson(text);
     const staticPayload = JSON.parse(text);
-    const payload = chooseFreshDashboardPayload(key, existing, staticPayload);
+    const incomingPayload = hasUsablePayload(snapshotPayload)
+      ? chooseFreshDashboardPayload(key, staticPayload, snapshotPayload)
+      : staticPayload;
+    const payload = forceRefresh ? incomingPayload : chooseFreshDashboardPayload(key, existing, incomingPayload);
     cache[key] = payload;
     const app = stateRef();
     if (app && key === 'orderProcurement') {
@@ -7704,35 +7784,54 @@ function dashboardTaskStatusChip(task) {
   async function refreshData(forceRefresh = false) {
     const [
       dashboard,
-      platformTrends,
       platformPlan,
       iuPlan,
-      adsSummary,
-      iuDrrSummary,
       skus,
-      prices,
-      productLeaderboard,
-      smartPriceWorkbench,
-      smartPriceWorkbenchLive,
-      smartPriceOverlay,
-      priceWorkbenchSupport,
-      orderProcurement
+      productLeaderboard
     ] = await Promise.all([
       loadJson('dashboard', 'data/dashboard.json', true, forceRefresh),
-      loadJson('platformTrends', 'data/platform_trends.json', true, forceRefresh),
       loadJson('platformPlan', 'data/platform_plan.json', false, forceRefresh),
       loadJson('iuPlan', 'data/iu_plan.json', false, forceRefresh),
-      loadJson('adsSummary', 'data/ads_summary.json', false, forceRefresh),
-      loadJson('iuDrrSummary', 'data/iu_drr_summary.json', false, forceRefresh),
       loadJson('skus', 'data/skus.json', true, forceRefresh),
-      loadJson('prices', 'data/prices.json', false, forceRefresh),
-      loadJson('productLeaderboard', 'data/product_leaderboard.json', false, forceRefresh),
-      loadJson('smartPriceWorkbench', 'data/smart_price_workbench.json', false, forceRefresh),
-      loadJson('smartPriceWorkbenchLive', 'tmp-smart_price_workbench-live.json', false, forceRefresh),
-      loadJson('smartPriceOverlay', 'data/smart_price_overlay.json', false, forceRefresh),
-      loadJson('priceWorkbenchSupport', 'data/price_workbench_support.compact.json', false, forceRefresh),
-      loadJson('orderProcurement', 'data/order_procurement.json', false, forceRefresh)
+      loadJson('productLeaderboard', 'data/product_leaderboard.json', false, forceRefresh)
     ]);
+
+    let platformTrends = cachedHeavyDashboardPayload('platformTrends');
+    let adsSummary = cachedHeavyDashboardPayload('adsSummary');
+    let iuDrrSummary = cachedHeavyDashboardPayload('iuDrrSummary');
+    let prices = cachedHeavyDashboardPayload('prices');
+    let smartPriceWorkbench = cachedHeavyDashboardPayload('smartPriceWorkbenchBase') || cachedHeavyDashboardPayload('smartPriceWorkbench');
+    let smartPriceWorkbenchLive = cachedHeavyDashboardPayload('smartPriceWorkbenchLive');
+    let smartPriceOverlay = cachedHeavyDashboardPayload('smartPriceOverlay');
+    let priceWorkbenchSupport = cachedHeavyDashboardPayload('priceWorkbenchSupport');
+    let orderProcurement = cachedHeavyDashboardPayload('orderProcurement');
+
+    const dashboardRequiresPayrollFacts = dashboard?.companyPlan?.planType === 'marketplace_salary_revenue';
+    const loadHeavyDashboardData = Boolean(forceRefresh || window.__ALTEA_DASHBOARD_LOAD_HEAVY__ || dashboardRequiresPayrollFacts);
+    if (loadHeavyDashboardData) {
+      [
+        platformTrends,
+        adsSummary,
+        iuDrrSummary,
+        prices,
+        smartPriceWorkbench,
+        smartPriceWorkbenchLive,
+        smartPriceOverlay,
+        priceWorkbenchSupport,
+        orderProcurement
+      ] = await Promise.all([
+        loadJson('platformTrends', 'data/platform_trends.json', true, forceRefresh),
+        loadJson('adsSummary', 'data/ads_summary.json', false, forceRefresh),
+        loadJson('iuDrrSummary', 'data/iu_drr_summary.json', false, forceRefresh),
+        loadJson('prices', 'data/prices.json', false, forceRefresh),
+        loadJson('smartPriceWorkbench', 'data/smart_price_workbench.json', false, forceRefresh),
+        loadJson('smartPriceWorkbenchLive', 'tmp-smart_price_workbench-live.json', false, forceRefresh),
+        loadJson('smartPriceOverlay', 'data/smart_price_overlay.json', false, forceRefresh),
+        loadJson('priceWorkbenchSupport', 'data/price_workbench_support.compact.json', false, forceRefresh),
+        loadJson('orderProcurement', 'data/order_procurement.json', false, forceRefresh)
+      ]);
+      dashboardHeavyDataReady = true;
+    }
 
     const mergeWorkbenchPayload = typeof window.mergeSmartWorkbenchPayload === 'function'
       ? window.mergeSmartWorkbenchPayload
@@ -8196,6 +8295,11 @@ function dashboardTaskStatusChip(task) {
     const previous = executive.compareByKey.get(metric.key);
     const previousSummary = previous ? completionDetailArticleSummary(previous, previousRows, executive.compareRange || executive.range) : null;
     const completionDelta = percentagePointDelta(summary.completion, previousSummary?.completion ?? previous?.completion);
+    const metricCompletionDelta = percentagePointDelta(metric.completion, previous?.completion);
+    const metricFactRevenue = num(metric.planFactRevenue || metric.revenue);
+    const metricFactPerDay = metricUsesCompanyPlan(metric)
+      ? money(metricFactRevenue / Math.max(1, num(executive.range?.days) || (metric.days || []).length || 1))
+      : int(metric.avgUnits);
     const rows = allRows
       .map((row) => ({ ...row, planGap: num(row.actualUnitsSelected) - num(row.planUnitsSelected) }))
       .sort((left, right) => Math.abs(num(right.planGap)) - Math.abs(num(left.planGap)) || num(right.actualRevenueSelected) - num(left.actualRevenueSelected))
@@ -8237,12 +8341,12 @@ function dashboardTaskStatusChip(task) {
       subtitle: `Период: ${executive.range.effectiveLabel}. Сначала видно отклонение SKU от плана, потом дневную сверку.`,
       body: `
         <div class="portal-exec-modal-metrics">
-          ${modalSummaryCard('% выполнения', pct(summary.completion))}
-          ${modalSummaryCard('WoW', completionDelta !== null ? `${completionDelta >= 0 ? '+' : ''}${(completionDelta * 100).toFixed(1)} pp` : '—')}
-          ${modalSummaryCard('План периода', metricPlanDisplay({ ...metric, plan: summary.plan || metric.plan, planUnits: summary.planUnits || metric.planUnits, planRevenue: summary.planRevenue || metric.planRevenue }))}
-          ${modalSummaryCard('Факт периода', metricFactDisplay({ ...metric, planFactUnits: summary.factUnits, planFactRevenue: summary.factRevenue, units: summary.factUnits, revenue: summary.revenue }))}
-          ${modalSummaryCard('Факт / день', int(summary.avgUnits))}
-          ${modalSummaryCard('Выручка', money(summary.revenue))}
+          ${modalSummaryCard('% выполнения', pct(metric.completion))}
+          ${modalSummaryCard('WoW', metricCompletionDelta !== null ? `${metricCompletionDelta >= 0 ? '+' : ''}${(metricCompletionDelta * 100).toFixed(1)} pp` : '—')}
+          ${modalSummaryCard('План периода', metricPlanDisplay(metric))}
+          ${modalSummaryCard('Факт периода', metricFactDisplay(metric))}
+          ${modalSummaryCard('Факт / день', metricFactPerDay)}
+          ${modalSummaryCard('Выручка', money(metricFactRevenue))}
         </div>
         <div class="portal-exec-modal-grid portal-exec-structured-grid">
           ${dashboardTableCard(
@@ -8422,6 +8526,8 @@ function dashboardTaskStatusChip(task) {
   function isDashboardActive() {
     const app = stateRef();
     const root = document.getElementById('view-dashboard');
+    const requested = String(location.hash || '').replace(/^#/, '').trim().toLowerCase();
+    if (requested && requested !== 'dashboard') return false;
     return app?.activeView === 'dashboard' || Boolean(root?.classList.contains('active'));
   }
 
@@ -8459,6 +8565,10 @@ function dashboardTaskStatusChip(task) {
   function primeDashboard(forceRefresh = false) {
     if (!forceRefresh && dashboardBootPrimed) return;
     if (!forceRefresh && !isDashboardActive()) return;
+    if (!forceRefresh && window.__ALTEA_PRIMARY_INIT_PENDING__) {
+      window.setTimeout(() => primeDashboard(false), 260);
+      return;
+    }
     dashboardBootPrimed = true;
     scheduleApply(forceRefresh ? 240 : 140, forceRefresh);
   }
@@ -8477,9 +8587,17 @@ function dashboardTaskStatusChip(task) {
         primeDashboard(forceRefresh);
       },
       schedule(delay = 0, forceRefresh = false) {
+        if (!forceRefresh && !isDashboardActive()) return;
         scheduleApply(delay, forceRefresh);
       },
+      loadHeavy(forceRefresh = true) {
+        if (!isDashboardActive()) return Promise.resolve(false);
+        window.__ALTEA_DASHBOARD_LOAD_HEAVY__ = true;
+        dashboardBootPrimed = true;
+        return refreshData(forceRefresh).then(apply);
+      },
       applyNow(forceRefresh = false) {
+        if (!forceRefresh && !isDashboardActive()) return Promise.resolve(false);
         if (forceRefresh) dashboardBootPrimed = true;
         return refreshData(forceRefresh).then(apply);
       }

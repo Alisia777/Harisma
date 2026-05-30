@@ -20,7 +20,7 @@
     dashboard: [
       'portal-dashboard-calendar-stability-hotfix.js?v=20260521prod1',
       'portal-dashboard-prime-hotfix-20260422e.js?v=20260521prod1',
-      'portal-dashboard-interactive-hotfix.js?v=20260521prod1'
+      'portal-dashboard-interactive-hotfix.js?v=20260530dashboardpolish1'
     ],
     control: [
       'portal-control-center-v2-hotfix.js?v=20260529taskzya1',

@@ -4604,22 +4604,61 @@ function iuDrrFunnelBuildModel(model = {}, context = {}) {
   };
 }
 
+function iuDrrScoreStatusLabel(tone = 'info') {
+  if (tone === 'ok') return 'в плане';
+  if (tone === 'warn') return 'зона внимания';
+  if (tone === 'danger') return 'не в плане';
+  return 'контроль';
+}
+
+function iuDrrScoreMarks(card = {}) {
+  if (Array.isArray(card.marks) && card.marks.length) {
+    return card.marks.slice(0, 4).map((mark) => String(mark || '—'));
+  }
+  const progress = iuDrrFunnelFinite(card.progress) ? Number(card.progress) : null;
+  const value = card.value == null || card.value === '' ? '—' : String(card.value);
+  if (progress == null) return ['80%', '90%', value, '100%'];
+  return [
+    '80%',
+    '90%',
+    value,
+    progress >= 1 ? '100%+' : '100%'
+  ];
+}
+
+function iuDrrScoreCardHtml(card = {}, extraClass = '') {
+  const tone = ['ok', 'warn', 'danger', 'info'].includes(card.tone) ? card.tone : 'info';
+  const progress = iuDrrFunnelFinite(card.progress) ? Math.max(0, Math.min(1.35, Number(card.progress))) : 0;
+  const progressWidth = Math.min(100, progress * 100).toFixed(1);
+  const marks = iuDrrScoreMarks(card).map((mark) => `<span>${escapeHtml(mark)}</span>`).join('');
+  const value = card.value == null || card.value === '' ? '—' : String(card.value);
+  const label = card.label == null || card.label === '' ? 'Показатель' : String(card.label);
+  const status = card.status || iuDrrScoreStatusLabel(tone);
+  return `
+    <div class="iu-drr-funnel-card iu-drr-score-card ${escapeHtml(tone)} ${escapeHtml(extraClass)}" style="--iu-drr-progress:${progressWidth}%">
+      <div class="iu-drr-score-head">
+        <span>${escapeHtml(label)}</span>
+        <strong>${escapeHtml(value)}</strong>
+      </div>
+      <div class="iu-drr-score-track">
+        <i></i>
+        <em>${escapeHtml(value)}</em>
+      </div>
+      <div class="iu-drr-score-marks">${marks}</div>
+      <div class="iu-drr-score-foot">
+        <b>${escapeHtml(status)}</b>
+        <span>${escapeHtml(card.detail || '')}</span>
+      </div>
+    </div>
+  `;
+}
+
 function renderIuDrrFunnelPanel(funnel = {}, context = {}) {
   const rows = funnel.rows || [];
   const metricRows = funnel.metricRows || [];
   if (!rows.length || !metricRows.length) return '';
   const platformTone = funnel.platformKey === 'ozon' ? 'info' : 'warn';
-  const cardsHtml = (funnel.cards || []).map((card) => {
-    const progress = iuDrrFunnelFinite(card.progress) ? Math.max(0, Math.min(1.35, Number(card.progress))) : 0;
-    return `
-      <div class="iu-drr-funnel-card ${escapeHtml(card.tone || 'info')}" style="--iu-drr-progress:${Math.min(100, progress * 100).toFixed(1)}%">
-        <span>${escapeHtml(card.label)}</span>
-        <strong>${escapeHtml(card.value)}</strong>
-        <small>${escapeHtml(card.detail || '')}</small>
-        <div class="iu-drr-funnel-bar"><i></i></div>
-      </div>
-    `;
-  }).join('');
+  const cardsHtml = (funnel.cards || []).map((card) => iuDrrScoreCardHtml(card)).join('');
   const dateHeaders = rows.map((row) => `
     <th class="iu-drr-date-col">
       <span>${escapeHtml(row.label || row.period || '')}</span>
@@ -4893,17 +4932,6 @@ function renderOzonIuPlanFactTable(model, context = {}) {
       tone: reserveToDate >= 0 ? 'ok' : 'warn'
     }
   ];
-  const renderGameCard = (card) => {
-    const progress = iuDrrFunnelFinite(card.progress) ? Math.max(0, Math.min(1.35, Number(card.progress))) : 0;
-    return `
-      <div class="iu-drr-funnel-card ${escapeHtml(card.tone || 'info')}" style="--iu-drr-progress:${Math.min(100, progress * 100).toFixed(1)}%">
-        <span>${escapeHtml(card.label)}</span>
-        <strong>${escapeHtml(card.value)}</strong>
-        <small>${escapeHtml(card.detail || '')}</small>
-        <div class="iu-drr-funnel-bar"><i></i></div>
-      </div>
-    `;
-  };
   const progressCell = (value, tone = 'info') => {
     const progress = iuDrrFunnelFinite(value) ? Math.max(0, Math.min(1.35, Number(value))) : 0;
     return `
@@ -4922,7 +4950,7 @@ function renderOzonIuPlanFactTable(model, context = {}) {
         </div>
         ${badge(rows.length ? `${fmt.int(rows.length)} дней` : 'нет строк', rows.length ? 'ok' : 'warn')}
       </div>
-      <div class="iu-drr-funnel-cards iu-drr-ozon-plan-cards">${gameCards.map(renderGameCard).join('')}</div>
+      <div class="iu-drr-funnel-cards iu-drr-ozon-plan-cards">${gameCards.map((card) => iuDrrScoreCardHtml(card, 'iu-drr-score-card--ozon')).join('')}</div>
       <div class="table-wrap">
         <table>
           <thead>

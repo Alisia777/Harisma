@@ -6108,6 +6108,70 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       `).join('')}
     </div>
   `;
+  const wbDailyRows = model.dailyRows || [];
+  const wbPlanToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuTargetRevenueWb || row.targetRevenueWb), 0);
+  const wbFactToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuRevenueWb || row.revenueWb || row.iuOrdersRevenueWb || row.ordersRevenueWb), 0);
+  const wbCompletionToDate = wbPlanToDate > 0 ? wbFactToDate / wbPlanToDate : platformMeta.completion;
+  const wbAdsPlanToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuPlanSpendWb || row.planSpendWb), 0);
+  const wbAdsFactToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.spendFact), 0);
+  const wbAdsCompletionToDate = wbAdsPlanToDate > 0 ? wbAdsFactToDate / wbAdsPlanToDate : null;
+  const wbDrrToDate = wbFactToDate > 0 ? wbAdsFactToDate / wbFactToDate : factDrr;
+  const wbRevenueDeltaToDate = wbFactToDate - wbPlanToDate;
+  const wbAdsDeltaToDate = wbAdsFactToDate - wbAdsPlanToDate;
+  const wbExternalToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.externalAds), 0) || externalSpend;
+  const wbProgressCell = (value, tone = 'info') => {
+    const progress = iuDrrFunnelFinite(value) ? Math.max(0, Math.min(1.35, Number(value))) : 0;
+    return `
+      <div class="iu-drr-progress-cell ${escapeHtml(tone)}" style="--iu-drr-progress:${Math.min(100, progress * 100).toFixed(1)}%">
+        <strong>${value == null ? '—' : fmt.pct(value)}</strong>
+        <span><i></i></span>
+      </div>
+    `;
+  };
+  const wbPlanCardsHtml = [
+    {
+      label: 'Оборот WB',
+      value: wbCompletionToDate == null ? '—' : fmt.pct(wbCompletionToDate),
+      detail: `${fmt.money(wbFactToDate)} / ${fmt.money(wbPlanToDate)}`,
+      progress: wbCompletionToDate,
+      tone: iuDrrFunnelCompletionTone(wbCompletionToDate)
+    },
+    {
+      label: 'Реклама WB',
+      value: wbAdsCompletionToDate == null ? '—' : fmt.pct(wbAdsCompletionToDate),
+      detail: `${fmt.money(wbAdsFactToDate)} / ${fmt.money(wbAdsPlanToDate)}`,
+      progress: wbAdsCompletionToDate,
+      tone: iuDrrFunnelAdsCompletionTone(wbAdsCompletionToDate)
+    },
+    {
+      label: 'ДРР факт',
+      value: wbDrrToDate == null ? '—' : fmt.pct(wbDrrToDate),
+      detail: `цель ${fmt.pct(month.planPct)}`,
+      progress: month.planPct > 0 && wbDrrToDate != null ? wbDrrToDate / month.planPct : null,
+      tone: iuDrrFunnelDrrTone(wbDrrToDate, month.planPct)
+    },
+    {
+      label: 'Отклонение оборота',
+      value: `${wbRevenueDeltaToDate >= 0 ? '+' : ''}${fmt.money(wbRevenueDeltaToDate)}`,
+      detail: wbCompletionToDate == null ? 'нет плана' : fmt.pct(wbCompletionToDate),
+      progress: wbCompletionToDate,
+      tone: iuDrrToneForRevenueDelta(wbRevenueDeltaToDate)
+    },
+    {
+      label: 'Отклонение рекламы',
+      value: `${wbAdsDeltaToDate >= 0 ? '+' : ''}${fmt.money(wbAdsDeltaToDate)}`,
+      detail: wbAdsCompletionToDate == null ? 'нет плана' : fmt.pct(wbAdsCompletionToDate),
+      progress: wbAdsCompletionToDate,
+      tone: iuDrrFunnelAdsCompletionTone(wbAdsCompletionToDate)
+    },
+    {
+      label: 'Внешний трафик',
+      value: fmt.money(wbExternalToDate),
+      detail: 'отдельно, не в ДРР',
+      progress: null,
+      tone: wbExternalToDate > 0 ? 'warn' : 'ok'
+    }
+  ].map((card) => iuDrrScoreCardHtml(card, 'iu-drr-score-card--wb')).join('');
   const dailyTableHtml = isOzonView ? `
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
@@ -6152,9 +6216,10 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   ` : `
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
-        <div><h3>Дневная форма WB</h3><p class="small muted">Логика WB фиксированной ставки плюс детализация каналов; Внешка исключена из факта ДРР и дельты.</p></div>
+        <div><h3>Форма ИУ WB: план-факт</h3><p class="small muted">Оборот, реклама, выполнение и ДРР по дням; Внешка исключена из факта ДРР и дельты.</p></div>
         ${badge(model.hasRows ? 'готово' : 'нет строк', model.hasRows ? 'ok' : 'warn')}
       </div>
+      <div class="iu-drr-funnel-cards iu-drr-wb-plan-cards">${wbPlanCardsHtml}</div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -6163,9 +6228,11 @@ function renderIuDrr(rootId = 'view-iu-drr') {
               <th>Целевой оборот WB</th>
               <th>Продажи. Фактический оборот WB</th>
               <th>Разница оборота</th>
+              <th>Выполнение оборота</th>
               <th>Реклама. План в %</th>
               <th>План расхода</th>
               <th>Реклама. Фактические затраты</th>
+              <th>Выполнение рекламы</th>
               <th>Реклама. Факт в % по договору</th>
               <th>ВБ Продвижение</th>
               <th>ВБ Медиа</th>
@@ -6179,27 +6246,38 @@ function renderIuDrr(rootId = 'view-iu-drr') {
             </tr>
           </thead>
           <tbody>
-            ${model.dailyRows.map((row) => `
-              <tr>
-                <td><strong>${escapeHtml(row.period || row.date)}</strong><div class="muted small">${escapeHtml(row.date)}</div></td>
-                <td>${fmt.money(row.iuTargetRevenueWb || row.targetRevenueWb)}</td>
-                <td>${fmt.money(row.iuRevenueWb || row.revenueWb || row.iuOrdersRevenueWb || row.ordersRevenueWb)}</td>
-                <td>${badge(fmt.money(row.iuRevenueWbDelta), iuDrrToneForRevenueDelta(row.iuRevenueWbDelta))}</td>
-                <td>${fmt.pct(row.planPct)}</td>
-                <td>${fmt.money(row.iuPlanSpendWb || row.planSpendWb)}</td>
-                <td>${fmt.money(row.spendFact)}</td>
-                <td>${row.iuFactPct != null ? fmt.pct(row.iuFactPct) : '—'}</td>
-                <td>${fmt.money(row.wbPromotion)}</td>
-                <td>${fmt.money(row.wbMedia)}</td>
-                <td>${fmt.money(row.wbInfluencer)}</td>
-                <td>${fmt.money(row.pvzAds)}</td>
-                <td>${fmt.money(row.brandZone)}</td>
-                <td>${fmt.money(row.overviews)}</td>
-                <td>${fmt.money(row.reviewPoints)}</td>
-                <td>${fmt.money(row.externalAds)}</td>
-                <td>${badge(fmt.money(row.iuSpendDelta), iuDrrToneForDelta(row.iuSpendDelta))}</td>
-              </tr>
-            `).join('') || '<tr><td colspan="17">Нет данных по выбранному месяцу.</td></tr>'}
+            ${model.dailyRows.map((row) => {
+              const rowPlanRevenue = numberOrZero(row.iuTargetRevenueWb || row.targetRevenueWb);
+              const rowFactRevenue = numberOrZero(row.iuRevenueWb || row.revenueWb || row.iuOrdersRevenueWb || row.ordersRevenueWb);
+              const rowRevenueCompletion = rowPlanRevenue > 0 ? rowFactRevenue / rowPlanRevenue : row.iuRevenueWbCompletionPct;
+              const rowPlanAds = numberOrZero(row.iuPlanSpendWb || row.planSpendWb);
+              const rowFactAds = numberOrZero(row.spendFact);
+              const rowAdsCompletion = rowPlanAds > 0 ? rowFactAds / rowPlanAds : null;
+              const rowDrr = row.iuFactPct != null ? row.iuFactPct : (rowFactRevenue > 0 ? rowFactAds / rowFactRevenue : null);
+              return `
+                <tr>
+                  <td><strong>${escapeHtml(row.period || row.date)}</strong><div class="muted small">${escapeHtml(row.date)}</div></td>
+                  <td>${fmt.money(rowPlanRevenue)}</td>
+                  <td>${fmt.money(rowFactRevenue)}</td>
+                  <td>${badge(fmt.money(row.iuRevenueWbDelta), iuDrrToneForRevenueDelta(row.iuRevenueWbDelta))}</td>
+                  <td>${wbProgressCell(rowRevenueCompletion, iuDrrFunnelCompletionTone(rowRevenueCompletion))}</td>
+                  <td>${fmt.pct(row.planPct)}</td>
+                  <td>${fmt.money(rowPlanAds)}</td>
+                  <td>${fmt.money(rowFactAds)}</td>
+                  <td>${wbProgressCell(rowAdsCompletion, iuDrrFunnelAdsCompletionTone(rowAdsCompletion))}</td>
+                  <td>${badge(rowDrr != null ? fmt.pct(rowDrr) : '—', iuDrrFunnelDrrTone(rowDrr, row.planPct))}</td>
+                  <td>${fmt.money(row.wbPromotion)}</td>
+                  <td>${fmt.money(row.wbMedia)}</td>
+                  <td>${fmt.money(row.wbInfluencer)}</td>
+                  <td>${fmt.money(row.pvzAds)}</td>
+                  <td>${fmt.money(row.brandZone)}</td>
+                  <td>${fmt.money(row.overviews)}</td>
+                  <td>${fmt.money(row.reviewPoints)}</td>
+                  <td>${fmt.money(row.externalAds)}</td>
+                  <td>${badge(fmt.money(row.iuSpendDelta), iuDrrFunnelAdsCompletionTone(rowAdsCompletion))}</td>
+                </tr>
+              `;
+            }).join('') || '<tr><td colspan="19">Нет данных по выбранному месяцу.</td></tr>'}
           </tbody>
         </table>
       </div>

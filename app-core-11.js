@@ -1107,6 +1107,28 @@ function skuPlanFactApplyPayrollKpiToModel(model = {}) {
   if (hasIuDrrTruth && iuDrrControlledSelection) {
     model.payrollKpi.supersededByIuDrr = true;
     model.payrollKpi.truthSource = 'iu_drr_summary';
+    const payrollTruth = skuPlanFactPayrollDisplayModel(model);
+    if (payrollTruth) {
+      model.payrollKpi = payrollTruth;
+      model.totals.payrollOriginal = {
+        planRevenue: model.totals.planRevenue,
+        planToDateRevenue: model.totals.planToDateRevenue,
+        factRevenue: model.totals.factRevenue,
+        completionToDate: model.totals.completionToDate,
+        completionMonth: model.totals.completionMonth,
+        gapToDate: model.totals.gapToDate
+      };
+      model.totals.planRevenue = payrollTruth.planRevenue;
+      model.totals.planToDateRevenue = payrollTruth.planToDateRevenue;
+      model.totals.factRevenue = payrollTruth.factRevenue;
+      model.totals.completionToDate = payrollTruth.completionToDate;
+      model.totals.completionMonth = payrollTruth.completionMonth;
+      model.totals.gapToDate = payrollTruth.gapToDate;
+      model.totals.drr = model.totals.factRevenue > 0 ? numberOrZero(model.totals.adSpend) / model.totals.factRevenue : null;
+      model.totals.planDrr = model.totals.planToDateRevenue > 0 && model.totals.planAdSpend !== null && model.totals.planAdSpend !== undefined
+        ? numberOrZero(model.totals.planAdSpend) / model.totals.planToDateRevenue
+        : null;
+    }
     return model;
   }
   const rawFactRevenue = numberOrZero(model.totals.factRevenue);
@@ -4336,58 +4358,99 @@ function skuPlanFactPayrollDisplayModel(model = {}) {
     completionMonth: total.planRevenue > 0 ? total.factRevenue / total.planRevenue : null,
     gapToDate: total.factRevenue - total.planToDateRevenue,
     truthSource: 'iu_drr_summary',
-    displayTitle: 'KPI / план-факт по источнику ИУ / ДРР',
-    displayNote: 'WB и Ozon сверяются с ИУ / ДРР; Яндекс остается в зарплатном контуре.'
+    displayTitle: 'Общее выполнение',
+    displayNote: 'WB/Ozon из ИУ / ДРР, Яндекс из зарплатного прогноза.'
+  };
+}
+
+function skuPlanFactPayrollXpLevel(value) {
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return 0;
+  const ratio = Number(value);
+  if (ratio >= 1.05) return 4;
+  if (ratio >= 1) return 3;
+  if (ratio >= 0.9) return 2;
+  return 1;
+}
+
+function skuPlanFactPayrollXpHue(value) {
+  const level = skuPlanFactPayrollXpLevel(value);
+  if (level >= 3) return 145;
+  if (level === 2) return 42;
+  if (level === 1) return 5;
+  return 212;
+}
+
+function skuPlanFactPayrollForecast(payroll = {}) {
+  const elapsedDays = numberOrZero(payroll.elapsedDays);
+  const monthDays = numberOrZero(payroll.monthDays) || skuPlanFactMonthDays(payroll.monthKey || '');
+  const factRevenue = numberOrZero(payroll.factRevenue);
+  const planRevenue = numberOrZero(payroll.planRevenue);
+  if (elapsedDays <= 0 || monthDays <= 0 || factRevenue <= 0 || planRevenue <= 0) {
+    return { revenue: null, ratio: null, gap: null };
+  }
+  const revenue = factRevenue / elapsedDays * monthDays;
+  return {
+    revenue,
+    ratio: revenue / planRevenue,
+    gap: revenue - planRevenue
   };
 }
 
 function skuPlanFactPayrollKpiHtml(model = {}) {
   const payroll = skuPlanFactPayrollDisplayModel(model);
   if (!payroll) return '';
-  const channelHtml = SKU_PLAN_FACT_PAYROLL_PLATFORMS.map((platform) => {
-    const metric = payroll.platforms?.[platform] || {};
-    return `
-      <div class="mini-kpi ${skuPlanFactTone(metric.completionToDate)}">
-        <span>${escapeHtml(skuPlanFactPlatformLabel(platform))}</span>
-        <strong>${fmt.pct(metric.completionToDate)}</strong>
-        <span>${fmt.money(metric.factRevenue)} / ${fmt.money(metric.planToDateRevenue)}</span>
-      </div>
-    `;
-  }).join('');
-  const excluded = (payroll.excludedPlatforms || [])
-    .map((platform) => skuPlanFactPlatformLabel(platform))
-    .join(', ');
+  const ratio = Number(payroll.completionToDate);
+  const safeRatio = Number.isFinite(ratio) ? Math.max(0, ratio) : 0;
+  const progress = Math.min(100, safeRatio * 100);
+  const forecast = skuPlanFactPayrollForecast(payroll);
+  const forecastRatio = Number(forecast.ratio);
+  const forecastProgress = Number.isFinite(forecastRatio) ? Math.min(100, Math.max(0, forecastRatio * 100)) : progress;
+  const hue = skuPlanFactPayrollXpHue(payroll.completionToDate);
+  const brightness = (0.3 + Math.min(0.7, safeRatio * 0.5)).toFixed(3);
+  const forecastShift = forecastProgress >= 92 ? '-100%' : (forecastProgress <= 8 ? '0%' : '-50%');
+  const level = skuPlanFactPayrollXpLevel(payroll.completionToDate);
+  const gapText = payroll.gapToDate >= 0 ? `перевыполнение ${fmt.money(payroll.gapToDate)}` : `разрыв ${fmt.money(Math.abs(payroll.gapToDate))}`;
+  const statusText = level >= 3 ? 'в плане на дату' : (level === 2 ? 'почти в плане' : 'нужно догнать');
+  const title = [
+    `Факт: ${fmt.money(payroll.factRevenue)}`,
+    `План к дате: ${fmt.money(payroll.planToDateRevenue)}`,
+    `Разница к дате: ${fmt.money(payroll.gapToDate)}`,
+    `Месячный план: ${fmt.money(payroll.planRevenue)}`,
+    forecast.revenue !== null ? `Прогноз месяца: ${fmt.money(forecast.revenue)} (${fmt.pct(forecast.ratio)})` : ''
+  ].filter(Boolean).join(' · ');
   return `
-    <div class="card sku-plan-fact-card salary-plan-kpi-card" style="margin-top:14px">
-      <div class="section-subhead">
+    <div class="card sku-plan-fact-card salary-plan-kpi-card level-${level}" style="margin-top:14px;--xp-hue:${hue};--xp-progress:${progress.toFixed(1)}%;--xp-forecast:${forecastProgress.toFixed(1)}%;--xp-forecast-shift:${forecastShift};--xp-bright:${brightness}" title="${escapeHtml(title)}">
+      <div class="sku-salary-xp-head">
         <div>
-          <h3>${escapeHtml(payroll.displayTitle || 'KPI / зарплатный план')}</h3>
-          <p class="small muted">${escapeHtml(payroll.displayNote || 'Расчётный payroll-critical контур: WB, Ozon и Яндекс по выручке. B2B, Сайт и малые каналы не входят в автоматический KPI.')}</p>
+          <h3>${escapeHtml(payroll.displayTitle || 'Общее выполнение')}</h3>
+          <p class="small muted">${escapeHtml(payroll.displayNote || 'WB/Ozon из ИУ / ДРР, Яндекс из зарплатного прогноза.')}</p>
         </div>
         <div class="badge-stack">
-          ${badge(payroll.truthSource === 'iu_drr_summary' ? 'ИУ / ДРР truth' : 'payroll critical', payroll.truthSource === 'iu_drr_summary' ? 'ok' : 'danger')}
+          ${badge(payroll.truthSource === 'iu_drr_summary' ? 'ИУ / ДРР' : 'KPI', payroll.truthSource === 'iu_drr_summary' ? 'ok' : 'info')}
           ${badge(`${payroll.periodStart || '—'} - ${payroll.periodEnd || '—'}`, 'info')}
         </div>
       </div>
-      <div class="kpi-strip">
-        <div class="mini-kpi ${skuPlanFactTone(payroll.completionToDate)}">
-          <span>Выполнение KPI</span>
+      <div class="sku-salary-xp-main">
+        <div class="sku-salary-xp-score">
+          <span>уровень выполнения</span>
           <strong>${fmt.pct(payroll.completionToDate)}</strong>
-          <span>${fmt.money(payroll.factRevenue)} / ${fmt.money(payroll.planToDateRevenue)}</span>
+          <em>${escapeHtml(statusText)}</em>
         </div>
-        <div class="mini-kpi">
-          <span>План месяца</span>
-          <strong>${fmt.money(payroll.planRevenue)}</strong>
-          <span>${escapeHtml(payroll.monthKey || '')}</span>
+        <div class="sku-salary-xp-track" aria-label="Общее выполнение" title="${escapeHtml(title)}">
+          <i></i>
+          <em style="left:var(--xp-forecast)">прогноз</em>
         </div>
-        <div class="mini-kpi ${payroll.gapToDate >= 0 ? 'ok' : 'danger'}">
-          <span>Отклонение к дате</span>
-          <strong>${fmt.money(payroll.gapToDate)}</strong>
-          <span>по зарплатному контуру</span>
+        <div class="sku-salary-xp-delta ${payroll.gapToDate >= 0 ? 'ok' : 'danger'}">
+          <span>разница к плану на дату</span>
+          <strong>${escapeHtml(gapText)}</strong>
         </div>
-        ${channelHtml}
       </div>
-      <div class="footer-note">Не участвуют: ${escapeHtml(excluded || '—')}. Строки ниже остаются детализацией по SKU, контроль WB/Ozon берется из ИУ / ДРР.</div>
+      <div class="sku-salary-xp-stats">
+        <span><em>факт</em><b>${fmt.money(payroll.factRevenue)}</b></span>
+        <span><em>план к дате</em><b>${fmt.money(payroll.planToDateRevenue)}</b></span>
+        <span><em>месячный план</em><b>${fmt.money(payroll.planRevenue)}</b></span>
+        <span><em>прогноз месяца</em><b>${forecast.revenue === null ? '—' : fmt.money(forecast.revenue)}</b></span>
+      </div>
     </div>
   `;
 }

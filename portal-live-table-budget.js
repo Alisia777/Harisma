@@ -62,11 +62,16 @@
     style.textContent = [
       '#view-sku-plan-fact .sku-plan-fact-table, #view-prices .pw-table-wrap { contain: content; }',
       '#view-prices .pw-table tbody tr, #view-sku-plan-fact .sku-plan-fact-table tbody tr { content-visibility: auto; contain-intrinsic-size: 44px; }',
-      '.altea-render-budget-notice { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0; padding: 10px 12px; border: 1px solid rgba(30, 64, 175, .18); border-radius: 8px; background: rgba(239, 246, 255, .92); color: #1f2937; font-size: 13px; line-height: 1.35; }',
-      '.altea-render-budget-notice strong { font-weight: 700; color: #1d4ed8; }',
-      '.altea-render-budget-notice button { flex: 0 0 auto; border: 0; border-radius: 7px; padding: 8px 11px; background: #2563eb; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }',
-      '.altea-render-budget-notice button:hover { background: #1d4ed8; }',
-      '@media (max-width: 720px) { .altea-render-budget-notice { align-items: stretch; flex-direction: column; } .altea-render-budget-notice button { width: 100%; } }'
+      '.altea-render-budget-notice { position: relative; display: grid; grid-template-columns: minmax(0,1fr) minmax(130px,220px) auto; align-items: center; gap: 14px; margin: 14px 0 16px; padding: 12px 14px; border: 1px solid rgba(205, 164, 92, .34); border-radius: 8px; background: linear-gradient(135deg, rgba(38, 27, 17, .94), rgba(12, 9, 7, .96)); color: var(--text, #f8f1de); box-shadow: 0 16px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06); font-size: 13px; line-height: 1.35; overflow: hidden; }',
+      '.altea-render-budget-notice::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(205,164,92,.11), transparent); pointer-events: none; }',
+      '.altea-render-budget-copy { position: relative; color: rgba(248,241,222,.78); }',
+      '.altea-render-budget-notice strong { font-weight: 800; color: #f6d68f; }',
+      '.altea-render-budget-arrow { position: relative; min-height: 30px; border-radius: 999px; background: linear-gradient(90deg, rgba(205,164,92,.10), rgba(246,194,93,.36)); box-shadow: inset 0 0 0 1px rgba(246,214,143,.22), 0 0 24px rgba(205,164,92,.16); }',
+      '.altea-render-budget-arrow::before { content: ""; position: absolute; left: 14px; right: 36px; top: 50%; height: 2px; transform: translateY(-50%); border-radius: 999px; background: linear-gradient(90deg, rgba(246,214,143,.20), rgba(246,214,143,.95)); }',
+      '.altea-render-budget-arrow::after { content: ""; position: absolute; right: 16px; top: 50%; width: 12px; height: 12px; border-top: 2px solid #ffe9aa; border-right: 2px solid #ffe9aa; transform: translateY(-50%) rotate(45deg); }',
+      '.altea-render-budget-notice button { position: relative; flex: 0 0 auto; border: 1px solid rgba(255,236,184,.34); border-radius: 999px; padding: 9px 15px; background: linear-gradient(180deg, #f5d18a, #b98737); color: #160f08; font: inherit; font-weight: 900; cursor: pointer; box-shadow: 0 10px 24px rgba(185,135,55,.22); }',
+      '.altea-render-budget-notice button:hover { filter: brightness(1.08); }',
+      '@media (max-width: 720px) { .altea-render-budget-notice { grid-template-columns: 1fr; align-items: stretch; } .altea-render-budget-arrow { display: none; } .altea-render-budget-notice button { width: 100%; } }'
     ].join('\n');
     (document.head || document.documentElement).appendChild(style);
   }
@@ -92,7 +97,8 @@
       notice.dataset.alteaBudgetVisible = String(visible);
       notice.dataset.alteaBudgetTotal = String(total);
       notice.innerHTML = [
-        '<span><strong>\u041f\u043e\u043a\u0430\u0437\u0430\u043d\u044b \u043f\u0435\u0440\u0432\u044b\u0435 ' + formatNumber(visible) + '</strong> \u0438\u0437 ' + formatNumber(total) + ' ' + label + ' \u0434\u043b\u044f \u0431\u044b\u0441\u0442\u0440\u043e\u0433\u043e \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u044f \u0432\u043a\u043b\u0430\u0434\u043a\u0438. \u041f\u043e\u043b\u043d\u044b\u0439 \u0441\u043f\u0438\u0441\u043e\u043a \u0438 \u0432\u044b\u0433\u0440\u0443\u0437\u043a\u0430 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b \u043f\u043e\u0441\u043b\u0435 \u0440\u0430\u0441\u043a\u0440\u044b\u0442\u0438\u044f.</span>',
+        '<span class="altea-render-budget-copy"><strong>\u041f\u0435\u0440\u0432\u044b\u0435 ' + formatNumber(visible) + ' \u0438\u0437 ' + formatNumber(total) + '</strong> ' + label + ' \u043e\u0442\u043a\u0440\u044b\u0442\u044b \u0441\u0440\u0430\u0437\u0443. \u041f\u043e\u043b\u043d\u044b\u0439 \u0441\u043f\u0438\u0441\u043e\u043a \u0438 \u0432\u044b\u0433\u0440\u0443\u0437\u043a\u0430 - \u043f\u043e \u043a\u043d\u043e\u043f\u043a\u0435.</span>',
+        '<span class="altea-render-budget-arrow" aria-hidden="true"></span>',
         '<button type="button" data-altea-render-budget-expand="' + view + '">\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u0432\u0441\u0435</button>'
       ].join('');
     }

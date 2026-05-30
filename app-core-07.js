@@ -3050,15 +3050,16 @@ const ADS_DAILY_METRICS = [
   { key: 'events', label: 'События', formula: 'задачи / изменения', format: 'events', row: 1 },
   { key: 'spend', label: 'Расходы (реклама), ₽', formula: 'реклама', format: 'money', row: 2 },
   { key: 'views', label: 'Показы (реклама), шт', formula: 'реклама', format: 'int', row: 3 },
-  { key: 'clicks', label: 'Клики, шт', formula: 'воронка', format: 'int', row: 4 },
-  { key: 'ctr', label: 'Конверсия в клик (CTR), %', formula: 'клики / показы', format: 'pct', row: 5 },
-  { key: 'cpc', label: 'Стоимость клика (CPC), ₽', formula: 'расход / клики', format: 'money', row: 6 },
-  { key: 'orders', label: 'Заказы, шт', formula: 'воронка', format: 'int', row: 7 },
-  { key: 'cr', label: 'Конверсия в заказ (CR), %', formula: 'заказы / клики', format: 'pct', row: 8 },
-  { key: 'cpo', label: 'Стоимость заказа (CPO), ₽', formula: 'расход / заказы', format: 'money', row: 9 },
-  { key: 'revenue', label: 'Выручка с рекламы, ₽', formula: 'воронка', format: 'money', row: 10 },
-  { key: 'drr', label: 'ДРР, %', formula: 'расход / выручка', format: 'pct', row: 11 },
-  { key: 'romi', label: 'ROMI, %', formula: '(выручка - расход) / расход', format: 'pct', row: 12 }
+  { key: 'cpm', label: 'CPM, ₽', formula: 'расход / показы × 1000', format: 'money', row: 4 },
+  { key: 'clicks', label: 'Клики, шт', formula: 'воронка', format: 'int', row: 5 },
+  { key: 'ctr', label: 'Конверсия в клик (CTR), %', formula: 'клики / показы', format: 'pct', row: 6 },
+  { key: 'cpc', label: 'Стоимость клика (CPC), ₽', formula: 'расход / клики', format: 'money', row: 7 },
+  { key: 'orders', label: 'Заказы, шт', formula: 'воронка', format: 'int', row: 8 },
+  { key: 'cr', label: 'Конверсия в заказ (CR), %', formula: 'заказы / клики', format: 'pct', row: 9 },
+  { key: 'cpo', label: 'Стоимость заказа (CPO), ₽', formula: 'расход / заказы', format: 'money', row: 10 },
+  { key: 'revenue', label: 'Выручка с рекламы, ₽', formula: 'воронка', format: 'money', row: 11 },
+  { key: 'drr', label: 'ДРР, %', formula: 'расход / выручка', format: 'pct', row: 12 },
+  { key: 'romi', label: 'ROMI, %', formula: '(выручка - расход) / расход', format: 'pct', row: 13 }
 ];
 
 function adsFunnelDateKey(value = '') {
@@ -3103,6 +3104,7 @@ function adsFunnelMetricValue(metricKey, point = {}) {
   if (metricKey === 'spend') return point.spend;
   if (metricKey === 'orders') return point.orders;
   if (metricKey === 'revenue') return point.revenue;
+  if (metricKey === 'cpm') return point.views > 0 ? (point.spend / point.views) * 1000 : null;
   if (metricKey === 'ctr') return adsFunnelRate(point.clicks, point.views);
   if (metricKey === 'cr') return adsFunnelRate(point.orders, point.clicks);
   if (metricKey === 'cpc') return adsFunnelRate(point.spend, point.clicks);
@@ -4154,6 +4156,436 @@ function iuDrrSparkline(rows, key, tone = 'ok') {
     <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(key)}" style="width:100%;height:120px">
       <polyline points="${points}" fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>
     </svg>
+  `;
+}
+
+const IU_DRR_FUNNEL_METRICS_WB = [
+  { key: 'planRevenue', label: 'План оборота', formula: 'ИУ / дневная норма', format: 'money', row: 1, keep: true },
+  { key: 'factRevenue', label: 'Факт оборота', formula: 'выкупленные продажи WB', format: 'money', row: 2, keep: true },
+  { key: 'revenueCompletion', label: 'Выполнение оборота', formula: 'факт / план', format: 'pct', row: 3, keep: true },
+  { key: 'revenueDelta', label: 'Отклонение оборота', formula: 'факт - план', format: 'money', row: 4, keep: true },
+  { key: 'planAds', label: 'План рекламы', formula: 'ИУ / ДРР план', format: 'money', row: 5, keep: true },
+  { key: 'factAds', label: 'Факт рекламы ДРР', formula: 'WB Promotion без внешки', format: 'money', row: 6, keep: true },
+  { key: 'adsCompletion', label: 'Выполнение рекламы', formula: 'факт / план', format: 'pct', row: 7, keep: true },
+  { key: 'planDrr', label: 'План ДРР', formula: 'план %', format: 'pct', row: 8, keep: true },
+  { key: 'factDrr', label: 'Факт ДРР', formula: 'реклама / оборот', format: 'pct', row: 9, keep: true },
+  { key: 'drrDelta', label: 'Отклонение ДРР', formula: 'факт - план', format: 'pctPoint', row: 10, keep: true },
+  { key: 'views', label: 'Показы рекламы', formula: 'WB Ads API', format: 'int', row: 11, hideIfEmpty: true },
+  { key: 'clicks', label: 'Клики', formula: 'WB Ads API', format: 'int', row: 12, hideIfEmpty: true },
+  { key: 'ctr', label: 'CTR', formula: 'клики / показы', format: 'pct', row: 13, hideIfEmpty: true },
+  { key: 'cpm', label: 'CPM', formula: 'расход / показы × 1000', format: 'money', row: 14, hideIfEmpty: true },
+  { key: 'orders', label: 'Заказы из рекламы', formula: 'WB Ads API', format: 'int', row: 15, hideIfEmpty: true },
+  { key: 'cr', label: 'CR в заказ', formula: 'заказы / клики', format: 'pct', row: 16, hideIfEmpty: true },
+  { key: 'cpc', label: 'CPC', formula: 'расход / клики', format: 'money', row: 17, hideIfEmpty: true },
+  { key: 'cpo', label: 'CPO', formula: 'расход / заказы', format: 'money', row: 18, hideIfEmpty: true },
+  { key: 'adRevenue', label: 'Выручка с рекламы', formula: 'атрибуция WB Ads', format: 'money', row: 19, hideIfEmpty: true },
+  { key: 'romi', label: 'ROMI', formula: '(выручка - расход) / расход', format: 'pct', row: 20, hideIfEmpty: true },
+  { key: 'externalAds', label: 'Внешний трафик', formula: 'отдельно, не в ДРР', format: 'money', row: 21, hideIfEmpty: true },
+  { key: 'wbPromotion', label: 'WB Продвижение', formula: 'внутренняя реклама', format: 'money', row: 22, hideIfEmpty: true },
+  { key: 'wbMedia', label: 'WB Медиа', formula: 'канал рекламы', format: 'money', row: 23, hideIfEmpty: true },
+  { key: 'wbInfluencer', label: 'WB Инфлюенс', formula: 'канал рекламы', format: 'money', row: 24, hideIfEmpty: true },
+  { key: 'pvzAds', label: 'Реклама в ПВЗ', formula: 'канал рекламы', format: 'money', row: 25, hideIfEmpty: true },
+  { key: 'brandZone', label: 'Брендзона', formula: 'канал рекламы', format: 'money', row: 26, hideIfEmpty: true },
+  { key: 'overviews', label: 'Обзоры', formula: 'канал рекламы', format: 'money', row: 27, hideIfEmpty: true },
+  { key: 'reviewPoints', label: 'Отзывы за баллы', formula: 'WB API', format: 'money', row: 28, hideIfEmpty: true }
+];
+
+const IU_DRR_FUNNEL_METRICS_OZON = [
+  { key: 'planGmv', label: 'Smart план GMV', formula: 'дневная доля 40%', format: 'money', row: 1, keep: true },
+  { key: 'factGmv', label: 'Smart факт GMV', formula: 'два кабинета / Smart', format: 'money', row: 2, keep: true },
+  { key: 'completion', label: 'Выполнение GMV', formula: 'факт / план', format: 'pct', row: 3, keep: true },
+  { key: 'gmvDelta', label: 'Отклонение GMV', formula: 'факт - план', format: 'money', row: 4, keep: true },
+  { key: 'planAds', label: 'Smart план рекламы', formula: 'GMV × ДРР цель', format: 'money', row: 5, keep: true },
+  { key: 'factAds', label: 'Smart факт рекламы', formula: 'два кабинета / Smart', format: 'money', row: 6, keep: true },
+  { key: 'adsCompletion', label: 'Выполнение рекламы', formula: 'факт / план', format: 'pct', row: 7, keep: true },
+  { key: 'adsDelta', label: 'Отклонение рекламы', formula: 'факт - план', format: 'money', row: 8, keep: true },
+  { key: 'planDrr', label: 'Цель ДРР', formula: 'ИУ / договор', format: 'pct', row: 9, keep: true },
+  { key: 'factDrr', label: 'Факт ДРР', formula: 'реклама / GMV', format: 'pct', row: 10, keep: true },
+  { key: 'drrDelta', label: 'Отклонение ДРР', formula: 'факт - цель', format: 'pctPoint', row: 11, keep: true },
+  { key: 'noSppBuyouts', label: 'Выкупы без СПП', formula: 'база AdRev KPI', format: 'money', row: 12, keep: true },
+  { key: 'noSppDrr', label: 'ДРР без СПП', formula: 'реклама / выкупы без СПП', format: 'pct', row: 13, keep: true },
+  { key: 'targetAdsByFact', label: 'Бюджет от факта', formula: 'факт GMV × цель', format: 'money', row: 14, keep: true },
+  { key: 'adsReserve', label: 'Резерв рекламы', formula: 'бюджет - факт', format: 'money', row: 15, keep: true },
+  { key: 'views', label: 'Показы Ozon Ads', formula: 'Ozon Ads / sheets', format: 'int', row: 16, hideIfEmpty: true },
+  { key: 'clicks', label: 'Клики Ozon Ads', formula: 'Ozon Ads / sheets', format: 'int', row: 17, hideIfEmpty: true },
+  { key: 'ctr', label: 'CTR', formula: 'клики / показы', format: 'pct', row: 18, hideIfEmpty: true },
+  { key: 'cpm', label: 'CPM', formula: 'расход / показы × 1000', format: 'money', row: 19, hideIfEmpty: true },
+  { key: 'orders', label: 'Заказы Ozon Ads', formula: 'Ozon Ads / sheets', format: 'int', row: 20, hideIfEmpty: true },
+  { key: 'cr', label: 'CR в заказ', formula: 'заказы / клики', format: 'pct', row: 21, hideIfEmpty: true },
+  { key: 'cpc', label: 'CPC', formula: 'расход / клики', format: 'money', row: 22, hideIfEmpty: true },
+  { key: 'cpo', label: 'CPO', formula: 'расход / заказы', format: 'money', row: 23, hideIfEmpty: true },
+  { key: 'adRevenue', label: 'Выручка с рекламы', formula: 'Ozon Ads / sheets', format: 'money', row: 24, hideIfEmpty: true },
+  { key: 'smartGmv', label: 'Smart GMV доля', formula: 'наша доля', format: 'money', row: 25, hideIfEmpty: true },
+  { key: 'smartAds', label: 'Smart реклама доля', formula: 'наша доля', format: 'money', row: 26, hideIfEmpty: true },
+  { key: 'financeAds', label: 'Реклама из фин. API', formula: 'Ozon Finance', format: 'money', row: 27, hideIfEmpty: true },
+  { key: 'financeSales', label: 'Продажи из фин. API', formula: 'Ozon Finance', format: 'money', row: 28, hideIfEmpty: true },
+  { key: 'financeAccrued', label: 'Начислено Ozon', formula: 'Ozon Finance', format: 'money', row: 29, hideIfEmpty: true }
+];
+
+function iuDrrFunnelRate(numerator, denominator) {
+  const base = numberOrZero(denominator);
+  return base > 0 ? numberOrZero(numerator) / base : null;
+}
+
+function iuDrrFunnelFinite(value) {
+  return value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
+}
+
+function iuDrrFunnelPlatformRgb(platformKey = 'wb') {
+  return platformKey === 'ozon' ? [42, 139, 242] : [139, 92, 246];
+}
+
+function iuDrrFunnelToneRgb(tone = 'info', platformKey = 'wb') {
+  if (tone === 'ok') return [34, 197, 94];
+  if (tone === 'warn') return [245, 158, 11];
+  if (tone === 'danger') return [239, 68, 68];
+  return iuDrrFunnelPlatformRgb(platformKey);
+}
+
+function iuDrrFunnelMetricValue(metric, row = {}, platformKey = 'wb', context = {}) {
+  const key = typeof metric === 'string' ? metric : metric?.key;
+  const iuRow = row.iuRow || row;
+  if (platformKey === 'ozon') {
+    const planGmv = numberOrZero(row.dailyTargetGmv);
+    const factGmv = numberOrZero(row.factGmv);
+    const planAds = numberOrZero(row.dailyTargetAds);
+    const factAds = numberOrZero(row.adsBoth);
+    const targetDrr = numberOrZero(context.ozonTargetDrr) || numberOrZero(row.planDrr) || 0.25;
+    const views = numberOrZero(iuRow.ozonAdsViews);
+    const clicks = numberOrZero(iuRow.ozonAdsClicks);
+    const orders = numberOrZero(iuRow.ozonAdsOrders);
+    const adRevenue = numberOrZero(iuRow.ozonAdsRevenue);
+    if (key === 'planGmv' || key === 'planRevenue') return planGmv;
+    if (key === 'factGmv' || key === 'factRevenue') return factGmv;
+    if (key === 'completion' || key === 'revenueCompletion') return iuDrrFunnelRate(factGmv, planGmv);
+    if (key === 'gmvDelta' || key === 'revenueDelta') return factGmv - planGmv;
+    if (key === 'planAds') return planAds;
+    if (key === 'factAds') return factAds;
+    if (key === 'adsCompletion') return iuDrrFunnelRate(factAds, planAds);
+    if (key === 'adsDelta') return factAds - planAds;
+    if (key === 'planDrr') return targetDrr;
+    if (key === 'factDrr') return row.drr != null ? row.drr : iuDrrFunnelRate(factAds, factGmv);
+    if (key === 'drrDelta') {
+      const factDrr = row.drr != null ? row.drr : iuDrrFunnelRate(factAds, factGmv);
+      return factDrr == null ? null : factDrr - targetDrr;
+    }
+    if (key === 'noSppBuyouts') return numberOrZero(row.noSppBuyouts);
+    if (key === 'noSppAds') return numberOrZero(row.noSppAds);
+    if (key === 'noSppDrr') return row.noSppDrr != null ? row.noSppDrr : iuDrrFunnelRate(row.noSppAds, row.noSppBuyouts);
+    if (key === 'targetAdsByFact') return numberOrZero(row.targetAdsByFact);
+    if (key === 'adsReserve') return numberOrZero(row.adsReserve);
+    if (key === 'views') return views;
+    if (key === 'clicks') return clicks;
+    if (key === 'orders') return orders;
+    if (key === 'adRevenue') return adRevenue;
+    if (key === 'ctr') return iuDrrFunnelRate(clicks, views);
+    if (key === 'cpm') return views > 0 ? (factAds / views) * 1000 : null;
+    if (key === 'cr') return iuDrrFunnelRate(orders, clicks);
+    if (key === 'cpc') return iuDrrFunnelRate(factAds, clicks);
+    if (key === 'cpo') return iuDrrFunnelRate(factAds, orders);
+    if (key === 'romi') return factAds > 0 ? (adRevenue - factAds) / factAds : null;
+    if (key === 'smartGmv') return numberOrZero(row.smartGmv || row.smartShareGmv);
+    if (key === 'smartAds') return numberOrZero(row.smartAds || row.smartShareAds);
+    if (key === 'financeAds') return numberOrZero(row.financeAds);
+    if (key === 'financeSales') return numberOrZero(row.financeSales);
+    if (key === 'financeAccrued') return numberOrZero(row.financeAccrued);
+    return null;
+  }
+
+  const planRevenue = numberOrZero(row.iuTargetRevenueWb || row.targetRevenueWb || row.managementTargetRevenueWb || row.contractTargetRevenueWb);
+  const factRevenue = numberOrZero(row.iuRevenueWb || row.revenueWb || row.adsPctBaseWb || row.ordersRevenueWb);
+  const planAds = numberOrZero(row.iuPlanSpendWb || row.planSpendWb || row.managementPlanSpendWb || row.contractMarketingPlanWb);
+  const factAds = numberOrZero(row.spendFactDrr || row.spendFact);
+  const planDrr = numberOrZero(row.planPct);
+  const factDrr = row.factPct != null ? row.factPct : iuDrrFunnelRate(factAds, factRevenue);
+  const views = numberOrZero(row.adsViews);
+  const clicks = numberOrZero(row.adsClicks);
+  const orders = numberOrZero(row.adsOrders);
+  const adRevenue = numberOrZero(row.adsRevenue);
+  if (key === 'planRevenue') return planRevenue;
+  if (key === 'factRevenue') return factRevenue;
+  if (key === 'revenueCompletion') return iuDrrFunnelRate(factRevenue, planRevenue);
+  if (key === 'revenueDelta') return factRevenue - planRevenue;
+  if (key === 'planAds') return planAds;
+  if (key === 'factAds') return factAds;
+  if (key === 'adsCompletion') return iuDrrFunnelRate(factAds, planAds);
+  if (key === 'planDrr') return planDrr;
+  if (key === 'factDrr') return factDrr;
+  if (key === 'drrDelta') return factDrr == null ? null : factDrr - planDrr;
+  if (key === 'views') return views;
+  if (key === 'clicks') return clicks;
+  if (key === 'orders') return orders;
+  if (key === 'adRevenue') return adRevenue;
+  if (key === 'ctr') return iuDrrFunnelRate(clicks, views);
+  if (key === 'cpm') return views > 0 ? (factAds / views) * 1000 : null;
+  if (key === 'cr') return iuDrrFunnelRate(orders, clicks);
+  if (key === 'cpc') return iuDrrFunnelRate(factAds, clicks);
+  if (key === 'cpo') return iuDrrFunnelRate(factAds, orders);
+  if (key === 'romi') return factAds > 0 ? (adRevenue - factAds) / factAds : null;
+  if (key === 'externalAds') return numberOrZero(row.externalAds);
+  if (key === 'wbPromotion') return numberOrZero(row.wbPromotion);
+  if (key === 'wbMedia') return numberOrZero(row.wbMedia);
+  if (key === 'wbInfluencer') return numberOrZero(row.wbInfluencer);
+  if (key === 'pvzAds') return numberOrZero(row.pvzAds);
+  if (key === 'brandZone') return numberOrZero(row.brandZone);
+  if (key === 'overviews') return numberOrZero(row.overviews);
+  if (key === 'reviewPoints') return numberOrZero(row.reviewPoints);
+  return null;
+}
+
+function iuDrrFunnelSummaryValue(metric, rows = [], platformKey = 'wb', context = {}) {
+  const key = typeof metric === 'string' ? metric : metric?.key;
+  const sum = (metricKey) => rows.reduce((total, row) => total + numberOrZero(iuDrrFunnelMetricValue(metricKey, row, platformKey, context)), 0);
+  const planRevenue = sum(platformKey === 'ozon' ? 'planGmv' : 'planRevenue');
+  const factRevenue = sum(platformKey === 'ozon' ? 'factGmv' : 'factRevenue');
+  const planAds = sum('planAds');
+  const factAds = sum('factAds');
+  const views = sum('views');
+  const clicks = sum('clicks');
+  const orders = sum('orders');
+  const adRevenue = sum('adRevenue');
+  const targetDrr = platformKey === 'ozon'
+    ? (numberOrZero(context.ozonTargetDrr) || iuDrrFunnelRate(planAds, planRevenue))
+    : iuDrrFunnelRate(planAds, planRevenue);
+  if (key === 'planRevenue' || key === 'planGmv') return planRevenue;
+  if (key === 'factRevenue' || key === 'factGmv') return factRevenue;
+  if (key === 'revenueCompletion' || key === 'completion') return iuDrrFunnelRate(factRevenue, planRevenue);
+  if (key === 'revenueDelta' || key === 'gmvDelta') return factRevenue - planRevenue;
+  if (key === 'planAds') return planAds;
+  if (key === 'factAds') return factAds;
+  if (key === 'adsCompletion') return iuDrrFunnelRate(factAds, planAds);
+  if (key === 'adsDelta') return factAds - planAds;
+  if (key === 'planDrr') return targetDrr;
+  if (key === 'factDrr') return iuDrrFunnelRate(factAds, factRevenue);
+  if (key === 'drrDelta') {
+    const factDrr = iuDrrFunnelRate(factAds, factRevenue);
+    return factDrr == null || targetDrr == null ? null : factDrr - targetDrr;
+  }
+  if (key === 'views') return views;
+  if (key === 'clicks') return clicks;
+  if (key === 'orders') return orders;
+  if (key === 'adRevenue') return adRevenue;
+  if (key === 'ctr') return iuDrrFunnelRate(clicks, views);
+  if (key === 'cpm') return views > 0 ? (factAds / views) * 1000 : null;
+  if (key === 'cr') return iuDrrFunnelRate(orders, clicks);
+  if (key === 'cpc') return iuDrrFunnelRate(factAds, clicks);
+  if (key === 'cpo') return iuDrrFunnelRate(factAds, orders);
+  if (key === 'romi') return factAds > 0 ? (adRevenue - factAds) / factAds : null;
+  if (key === 'noSppDrr') return iuDrrFunnelRate(sum('noSppAds'), sum('noSppBuyouts'));
+  return sum(key);
+}
+
+function iuDrrFunnelFormat(metric = {}, value) {
+  if (!iuDrrFunnelFinite(value)) return '—';
+  if (metric.format === 'money') return fmt.money(value);
+  if (metric.format === 'int') return fmt.int(value);
+  if (metric.format === 'pct') return fmt.pct(value);
+  if (metric.format === 'pctPoint') {
+    const points = Number(value) * 100;
+    return `${points > 0 ? '+' : ''}${fmt.num(points, 1)} п.п.`;
+  }
+  return fmt.num(value, 1);
+}
+
+function iuDrrFunnelCompletionTone(value) {
+  if (!iuDrrFunnelFinite(value)) return 'info';
+  const numeric = Number(value);
+  if (numeric >= 1) return 'ok';
+  if (numeric >= 0.9) return 'warn';
+  return 'danger';
+}
+
+function iuDrrFunnelAdsCompletionTone(value) {
+  if (!iuDrrFunnelFinite(value)) return 'info';
+  const numeric = Number(value);
+  if (numeric >= 0.95 && numeric <= 1.15) return 'ok';
+  if (numeric >= 0.85 && numeric <= 1.3) return 'warn';
+  return 'danger';
+}
+
+function iuDrrFunnelDrrTone(factDrr, planDrr) {
+  if (!iuDrrFunnelFinite(factDrr) || !iuDrrFunnelFinite(planDrr) || Number(planDrr) <= 0) return 'info';
+  const ratio = Number(factDrr) / Number(planDrr);
+  if (ratio <= 1) return 'ok';
+  if (ratio <= 1.15) return 'warn';
+  return 'danger';
+}
+
+function iuDrrFunnelCellTone(metric = {}, value, row = {}, platformKey = 'wb', context = {}) {
+  if (!iuDrrFunnelFinite(value)) return 'info';
+  const numeric = Number(value);
+  if (['revenueDelta', 'gmvDelta', 'adsReserve'].includes(metric.key)) return numeric >= 0 ? 'ok' : 'danger';
+  if (['revenueCompletion', 'completion'].includes(metric.key)) return iuDrrFunnelCompletionTone(numeric);
+  if (metric.key === 'adsCompletion') return iuDrrFunnelAdsCompletionTone(numeric);
+  if (metric.key === 'adsDelta') return Math.abs(numeric) <= 1 ? 'ok' : 'warn';
+  if (metric.key === 'factDrr') return iuDrrFunnelDrrTone(numeric, iuDrrFunnelMetricValue('planDrr', row, platformKey, context));
+  if (metric.key === 'noSppDrr') return iuDrrFunnelDrrTone(numeric, numberOrZero(context.ozonAdRevKpiRate || context.ozonTargetDrr));
+  if (metric.key === 'drrDelta') return numeric <= 0 ? 'ok' : (numeric <= 0.02 ? 'warn' : 'danger');
+  if (metric.key === 'romi') return numeric >= 0 ? 'ok' : 'danger';
+  if (metric.key === 'externalAds') return numeric > 0 ? 'warn' : 'ok';
+  return 'info';
+}
+
+function iuDrrFunnelHeatStyle(metric = {}, value, stats = {}, platformKey = 'wb', row = {}, context = {}) {
+  if (!iuDrrFunnelFinite(value)) return '';
+  const numeric = Number(value);
+  const min = Number.isFinite(stats.min) ? stats.min : 0;
+  const max = Number.isFinite(stats.max) ? stats.max : 0;
+  const spread = Math.max(0.000001, max - min);
+  const intensity = max <= min ? (Math.abs(numeric) > 0 ? 0.48 : 0.06) : Math.max(0.04, Math.min(1, (numeric - min) / spread));
+  const tone = iuDrrFunnelCellTone(metric, numeric, row, platformKey, context);
+  const forcePlatform = ['planRevenue', 'planGmv', 'planAds', 'planDrr', 'views', 'clicks', 'orders', 'adRevenue', 'wbPromotion', 'wbMedia', 'wbInfluencer', 'pvzAds', 'brandZone', 'overviews', 'reviewPoints', 'smartGmv', 'smartAds', 'financeAds', 'financeSales', 'financeAccrued', 'targetAdsByFact'].includes(metric.key);
+  const rgb = forcePlatform ? iuDrrFunnelPlatformRgb(platformKey) : iuDrrFunnelToneRgb(tone, platformKey);
+  const alpha = Math.min(0.78, 0.1 + (intensity * 0.6));
+  return `--iu-drr-cell-rgb:${rgb.join(',')};--iu-drr-cell-alpha:${alpha.toFixed(3)}`;
+}
+
+function iuDrrFunnelBuildModel(model = {}, context = {}) {
+  const platformKey = model.selectedPlatform === 'ozon' ? 'ozon' : 'wb';
+  const sourceRows = platformKey === 'ozon' ? (context.ozonPlanFactRows || []) : (model.dailyRows || []);
+  const iuRowsByDate = new Map((model.payload?.daily || [])
+    .filter((row) => row.monthKey === model.selectedMonth)
+    .map((row) => [row.date, row]));
+  const rows = sourceRows.map((row) => ({
+    ...row,
+    iuRow: iuRowsByDate.get(row.date) || row,
+    dateKey: String(row.date || '').slice(0, 10),
+    label: row.period || `${String(row.date || '').slice(8, 10)}.${String(row.date || '').slice(5, 7)}`
+  })).filter((row) => row.dateKey);
+  const baseMetrics = platformKey === 'ozon' ? IU_DRR_FUNNEL_METRICS_OZON : IU_DRR_FUNNEL_METRICS_WB;
+  const metrics = baseMetrics.filter((metric) => {
+    if (metric.keep || !metric.hideIfEmpty) return true;
+    return rows.some((row) => {
+      const value = iuDrrFunnelMetricValue(metric, row, platformKey, context);
+      return iuDrrFunnelFinite(value) && Math.abs(Number(value)) > 0.000001;
+    });
+  });
+  const metricRows = metrics.map((metric) => {
+    const values = rows.map((row) => iuDrrFunnelMetricValue(metric, row, platformKey, context));
+    const numeric = values.filter(iuDrrFunnelFinite).map(Number);
+    return {
+      ...metric,
+      values,
+      summary: iuDrrFunnelSummaryValue(metric, rows, platformKey, context),
+      stats: {
+        min: numeric.length ? Math.min(...numeric) : 0,
+        max: numeric.length ? Math.max(...numeric) : 0
+      }
+    };
+  });
+  const planRevenueKey = platformKey === 'ozon' ? 'planGmv' : 'planRevenue';
+  const factRevenueKey = platformKey === 'ozon' ? 'factGmv' : 'factRevenue';
+  const planRevenue = iuDrrFunnelSummaryValue(planRevenueKey, rows, platformKey, context);
+  const factRevenue = iuDrrFunnelSummaryValue(factRevenueKey, rows, platformKey, context);
+  const revenueCompletion = iuDrrFunnelRate(factRevenue, planRevenue);
+  const planAds = iuDrrFunnelSummaryValue('planAds', rows, platformKey, context);
+  const factAds = iuDrrFunnelSummaryValue('factAds', rows, platformKey, context);
+  const adsCompletion = iuDrrFunnelRate(factAds, planAds);
+  const planDrr = iuDrrFunnelSummaryValue('planDrr', rows, platformKey, context);
+  const factDrr = iuDrrFunnelSummaryValue('factDrr', rows, platformKey, context);
+  const views = iuDrrFunnelSummaryValue('views', rows, platformKey, context);
+  const clicks = iuDrrFunnelSummaryValue('clicks', rows, platformKey, context);
+  const orders = iuDrrFunnelSummaryValue('orders', rows, platformKey, context);
+  const adRevenue = iuDrrFunnelSummaryValue('adRevenue', rows, platformKey, context);
+  const ctr = iuDrrFunnelRate(clicks, views);
+  const cr = iuDrrFunnelRate(orders, clicks);
+  const romi = factAds > 0 ? (adRevenue - factAds) / factAds : null;
+  const noSppDrr = platformKey === 'ozon' ? iuDrrFunnelSummaryValue('noSppDrr', rows, platformKey, context) : null;
+  const reserve = platformKey === 'ozon' ? iuDrrFunnelSummaryValue('adsReserve', rows, platformKey, context) : null;
+  const cards = platformKey === 'ozon' ? [
+    { label: 'Smart GMV', value: iuDrrFunnelFormat({ format: 'pct' }, revenueCompletion), detail: `${fmt.money(factRevenue)} / ${fmt.money(planRevenue)}`, progress: revenueCompletion, tone: iuDrrFunnelCompletionTone(revenueCompletion) },
+    { label: 'Smart реклама', value: iuDrrFunnelFormat({ format: 'pct' }, adsCompletion), detail: `${fmt.money(factAds)} / ${fmt.money(planAds)}`, progress: adsCompletion, tone: iuDrrFunnelAdsCompletionTone(adsCompletion) },
+    { label: 'ДРР / цель', value: iuDrrFunnelFormat({ format: 'pct' }, factDrr), detail: `цель ${iuDrrFunnelFormat({ format: 'pct' }, planDrr)}`, progress: planDrr > 0 ? factDrr / planDrr : null, tone: iuDrrFunnelDrrTone(factDrr, planDrr) },
+    { label: 'ДРР без СПП', value: iuDrrFunnelFormat({ format: 'pct' }, noSppDrr), detail: `AdRev KPI ${iuDrrFunnelFormat({ format: 'pct' }, context.ozonAdRevKpiRate || context.ozonTargetDrr)}`, progress: noSppDrr && context.ozonAdRevKpiRate ? noSppDrr / context.ozonAdRevKpiRate : null, tone: iuDrrFunnelDrrTone(noSppDrr, context.ozonAdRevKpiRate || context.ozonTargetDrr) },
+    { label: 'Резерв рекламы', value: iuDrrFunnelFormat({ format: 'money' }, reserve), detail: 'положительный = можно добирать', progress: reserve != null && factAds + reserve > 0 ? reserve / (factAds + reserve) : null, tone: reserve >= 0 ? 'ok' : 'warn' },
+    { label: 'Воронка Ads', value: iuDrrFunnelFormat({ format: 'pct' }, ctr), detail: `${fmt.int(clicks)} кликов / ${fmt.int(views)} показов`, progress: ctr ? Math.min(1, ctr / 0.02) : null, tone: ctr ? 'ok' : 'info' }
+  ] : [
+    { label: 'Оборот WB', value: iuDrrFunnelFormat({ format: 'pct' }, revenueCompletion), detail: `${fmt.money(factRevenue)} / ${fmt.money(planRevenue)}`, progress: revenueCompletion, tone: iuDrrFunnelCompletionTone(revenueCompletion) },
+    { label: 'Реклама ДРР', value: iuDrrFunnelFormat({ format: 'pct' }, adsCompletion), detail: `${fmt.money(factAds)} / ${fmt.money(planAds)}`, progress: adsCompletion, tone: iuDrrFunnelAdsCompletionTone(adsCompletion) },
+    { label: 'ДРР факт', value: iuDrrFunnelFormat({ format: 'pct' }, factDrr), detail: `план ${iuDrrFunnelFormat({ format: 'pct' }, planDrr)}`, progress: planDrr > 0 ? factDrr / planDrr : null, tone: iuDrrFunnelDrrTone(factDrr, planDrr) },
+    { label: 'Внешний трафик', value: iuDrrFunnelFormat({ format: 'money' }, iuDrrFunnelSummaryValue('externalAds', rows, platformKey, context)), detail: 'отдельно, не в ДРР', progress: null, tone: iuDrrFunnelSummaryValue('externalAds', rows, platformKey, context) > 0 ? 'warn' : 'ok' },
+    { label: 'CTR / CR', value: iuDrrFunnelFormat({ format: 'pct' }, ctr), detail: `CR ${iuDrrFunnelFormat({ format: 'pct' }, cr)}`, progress: ctr ? Math.min(1, ctr / 0.02) : null, tone: ctr ? 'ok' : 'info' },
+    { label: 'ROMI Ads', value: iuDrrFunnelFormat({ format: 'pct' }, romi), detail: `${fmt.money(adRevenue)} выручки рекламы`, progress: romi != null ? Math.min(1, Math.max(0, romi / 2)) : null, tone: romi == null ? 'info' : (romi >= 0 ? 'ok' : 'danger') }
+  ];
+  return {
+    platformKey,
+    platformLabel: platformKey === 'ozon' ? 'Ozon' : 'WB',
+    rows,
+    metricRows,
+    cards,
+    note: platformKey === 'ozon'
+      ? 'Ozon сверяется по Smart-доле 40%, двум кабинетам, GMV, рекламе и ДРР без СПП.'
+      : 'WB показывает внутреннюю рекламу отдельно от внешнего трафика: внешка не попадает в ДРР и дельту ИУ.'
+  };
+}
+
+function renderIuDrrFunnelPanel(funnel = {}, context = {}) {
+  const rows = funnel.rows || [];
+  const metricRows = funnel.metricRows || [];
+  if (!rows.length || !metricRows.length) return '';
+  const platformTone = funnel.platformKey === 'ozon' ? 'info' : 'warn';
+  const cardsHtml = (funnel.cards || []).map((card) => {
+    const progress = iuDrrFunnelFinite(card.progress) ? Math.max(0, Math.min(1.35, Number(card.progress))) : 0;
+    return `
+      <div class="iu-drr-funnel-card ${escapeHtml(card.tone || 'info')}" style="--iu-drr-progress:${Math.min(100, progress * 100).toFixed(1)}%">
+        <span>${escapeHtml(card.label)}</span>
+        <strong>${escapeHtml(card.value)}</strong>
+        <small>${escapeHtml(card.detail || '')}</small>
+        <div class="iu-drr-funnel-bar"><i></i></div>
+      </div>
+    `;
+  }).join('');
+  const dateHeaders = rows.map((row) => `
+    <th class="iu-drr-date-col">
+      <span>${escapeHtml(row.label || row.period || '')}</span>
+      <small>${escapeHtml(row.dateKey || '')}</small>
+    </th>
+  `).join('');
+  const bodyRows = metricRows.map((metric) => `
+    <tr>
+      <td class="iu-drr-sticky iu-drr-col-index">${fmt.int(metric.row)}</td>
+      <td class="iu-drr-sticky iu-drr-col-metric">
+        <strong>${escapeHtml(metric.label)}</strong>
+      </td>
+      <td class="iu-drr-sticky iu-drr-col-formula">${escapeHtml(metric.formula || '')}</td>
+      <td class="iu-drr-sticky iu-drr-col-summary">${iuDrrFunnelFormat(metric, metric.summary)}</td>
+      ${rows.map((row, index) => {
+        const value = metric.values[index];
+        const tone = iuDrrFunnelCellTone(metric, value, row, funnel.platformKey, context);
+        const style = iuDrrFunnelHeatStyle(metric, value, metric.stats, funnel.platformKey, row, context);
+        return `<td class="iu-drr-heat-cell ${escapeHtml(tone)}" style="${escapeHtml(style)}">${iuDrrFunnelFormat(metric, value)}</td>`;
+      }).join('')}
+    </tr>
+  `).join('');
+  return `
+    <div class="iu-drr-funnel-panel" style="--iu-drr-platform-rgb:${iuDrrFunnelPlatformRgb(funnel.platformKey).join(',')}">
+      <div class="section-subhead">
+        <div>
+          <h3>Рекламная воронка и ИУ по дням</h3>
+          <p class="small muted">${escapeHtml(funnel.note || '')}</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(funnel.platformLabel || 'ИУ', platformTone)}
+          ${badge(`${fmt.int(metricRows.length)} метрик`, 'info')}
+          ${badge(`${fmt.int(rows.length)} дней`, rows.length ? 'ok' : 'warn')}
+        </div>
+      </div>
+      <div class="iu-drr-funnel-cards">${cardsHtml}</div>
+      <div class="iu-drr-funnel-table-wrap">
+        <table class="iu-drr-funnel-heatmap">
+          <thead>
+            <tr>
+              <th class="iu-drr-sticky iu-drr-col-index">№</th>
+              <th class="iu-drr-sticky iu-drr-col-metric">Метрика</th>
+              <th class="iu-drr-sticky iu-drr-col-formula">Расчет</th>
+              <th class="iu-drr-sticky iu-drr-col-summary">Итого</th>
+              ${dateHeaders}
+            </tr>
+          </thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
+      </div>
+    </div>
   `;
 }
 
@@ -5564,6 +5996,13 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     targetDrr: ozonTargetDrr,
     rows: ozonPlanFactRows
   });
+  const iuDrrFunnelContext = {
+    ozonPlanFactRows,
+    ozonTargetDrr,
+    ozonAdRevKpiRate
+  };
+  const iuDrrFunnelModel = iuDrrFunnelBuildModel(model, iuDrrFunnelContext);
+  const iuDrrFunnelHtml = renderIuDrrFunnelPanel(iuDrrFunnelModel, iuDrrFunnelContext);
   const formatOzonSummaryValue = (row, value) => {
     if (value === null || value === undefined || value === '') return '—';
     return row.type === 'rate' ? fmt.pct(value) : fmt.money(value);
@@ -5684,6 +6123,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     </div>
 
     ${isOzonView ? ozonReadableSummaryHtml : selectedKpisHtml}
+    ${iuDrrFunnelHtml}
     ${isOzonView ? '' : chartsHtml}
     ${channelRowsHtml}
     ${wbAdsLagNoticeHtml}

@@ -1,4 +1,5 @@
 const SKU_PLAN_FACT_PLATFORMS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
+const SKU_PLAN_FACT_PAYROLL_PLATFORMS = ['wb', 'ozon', 'ya'];
 const SKU_PLAN_FACT_PLATFORM_LABELS = {
   wb: 'WB',
   ozon: 'Ozon',
@@ -16,12 +17,15 @@ const SKU_PLAN_FACT_PLATFORM_SUPPORT_KEYS = {
   magnit: 'mm'
 };
 const SKU_PLAN_FACT_DIRECT_PLAN_PLATFORMS = new Set(['wb', 'ozon']);
+const SKU_PLAN_FACT_AD_PLAN_PLATFORMS = new Set(['wb', 'ozon']);
+const SKU_PLAN_FACT_MARGIN_PLAN_FIELDS = ['planMarginPct', 'plannedMarginPct', 'allowedMarginPct', 'avgMargin7dPct', 'marginTotalPct', 'marginPct'];
 const SKU_PLAN_FACT_RECONCILE_OVERAGE_THRESHOLD = 1.15;
 const SKU_PLAN_FACT_RECONCILE_MIN_REVENUE = 10000;
 const SKU_PLAN_FACT_UNMAPPED_OWNER = 'Не в реестре';
 const SKU_PLAN_FACT_UNMAPPED_STATUS = 'API SKU без пары';
 const SKU_PLAN_FACT_UNALLOCATED_STATUS = 'Агрегат без SKU';
 let skuPlanFactSearchTimer = 0;
+let skuPlanFactExcelDownloadLockUntil = 0;
 
 function skuPlanFactPlatformLabel(platform = '') {
   return SKU_PLAN_FACT_PLATFORM_LABELS[platform] || String(platform || '').toUpperCase();
@@ -673,10 +677,21 @@ function skuPlanFactBlankMetric(platform = '') {
     adRevenue: 0,
     drr: null,
     adsDrr: null,
+    planAdSpend: null,
+    planMonthAdSpend: null,
+    planDrr: null,
+    planMonthDrr: null,
+    planAdSource: '',
     turnoverDays: null,
     stock: null,
     marginPct: null,
     marginRub: null,
+    factMarginPct: null,
+    planMarginPct: null,
+    planMarginRub: null,
+    marginIsPlanFallback: false,
+    marginSource: '',
+    planMarginSource: '',
     factDaily: [],
     scoreHistory: [],
     completionDelta: null,
@@ -770,6 +785,69 @@ function skuPlanFactLatestMetric(rows = [], fieldNames = []) {
   return null;
 }
 
+function skuPlanFactRatioOrNull(value) {
+  const ratio = skuPlanFactNormalizeRatio(value);
+  return ratio === null || !Number.isFinite(Number(ratio)) ? null : ratio;
+}
+
+function skuPlanFactPositiveRatioOrNull(value) {
+  const ratio = skuPlanFactRatioOrNull(value);
+  return ratio !== null && ratio > 0 ? ratio : null;
+}
+
+function skuPlanFactFirstRatioFromRows(rows = [], fieldNames = SKU_PLAN_FACT_MARGIN_PLAN_FIELDS) {
+  for (const row of rows || []) {
+    for (const fieldName of fieldNames) {
+      const ratio = skuPlanFactPositiveRatioOrNull(row?.[fieldName]);
+      if (ratio !== null) return ratio;
+    }
+  }
+  return null;
+}
+
+function skuPlanFactSkuMarginFallback(sku = {}, platform = '') {
+  const supportKey = skuPlanFactPlatformSupportKey(platform);
+  const direct = skuPlanFactPositiveRatioOrNull(sku?.[platform]?.marginPct)
+    ?? skuPlanFactPositiveRatioOrNull(sku?.[supportKey]?.marginPct);
+  if (direct !== null) return { value: direct, source: 'sku-platform' };
+
+  const sides = ['wb', 'ozon']
+    .map((key) => skuPlanFactPositiveRatioOrNull(sku?.[key]?.marginPct))
+    .filter((value) => value !== null && value > 0);
+  if (sides.length) {
+    return {
+      value: sides.reduce((sum, value) => sum + value, 0) / sides.length,
+      source: 'sku-marketplace-average'
+    };
+  }
+
+  const planFactMargin = skuPlanFactPositiveRatioOrNull(sku?.planFact?.factFeb26MarginPct);
+  if (planFactMargin !== null) return { value: planFactMargin, source: 'sku-plan-fact-history' };
+  return { value: null, source: '' };
+}
+
+function skuPlanFactPlanMarginForSku(sku = {}, platform = '', rows = {}) {
+  const rowMargin = skuPlanFactFirstRatioFromRows([
+    ...(rows.sourceRows || []),
+    ...(rows.supportRows || []),
+    ...(rows.pricesRows || []),
+    ...(rows.overlayRows || []),
+    ...(rows.smartRows || [])
+  ]);
+  if (rowMargin !== null) return { value: rowMargin, source: 'price-economics' };
+  return skuPlanFactSkuMarginFallback(sku, platform);
+}
+
+function skuPlanFactEffectiveMargin(platform = '', factMargin = null, planMargin = null) {
+  const fact = skuPlanFactRatioOrNull(factMargin);
+  const plan = skuPlanFactRatioOrNull(planMargin);
+  if (fact !== null && (fact > 0 || platform === 'wb' || platform === 'ozon')) {
+    return { value: fact, isPlanFallback: false };
+  }
+  if (plan !== null) return { value: plan, isPlanFallback: true };
+  return { value: fact, isPlanFallback: false };
+}
+
 function skuPlanFactPlatformSourceRows(indexes = {}, platform = '') {
   if (platform === 'wb' || platform === 'ozon') {
     const overlayRows = skuPlanFactRowsFromIndexMap(indexes.overlay?.[platform]);
@@ -808,9 +886,308 @@ function skuPlanFactPlatformPlanUnits(monthKey = '', platform = '') {
   );
 }
 
+function skuPlanFactPayrollCompanyPlan() {
+  const plan = state.dashboard?.companyPlan || null;
+  if (!plan) return null;
+  if (plan.payrollKpiPolicy?.isPayrollCritical) return plan;
+  if (plan.planType === 'marketplace_salary_revenue') return plan;
+  return null;
+}
+
+function skuPlanFactPayrollControlTotals(monthKey = '') {
+  const plan = skuPlanFactPayrollCompanyPlan();
+  if (!plan || !monthKey) return null;
+  const explicit = plan.payrollKpiPolicy?.controlTotals?.[monthKey];
+  if (explicit) return explicit;
+  const month = plan.months?.[monthKey];
+  if (!month) return null;
+  return {
+    revenue: numberOrZero(month.revenue),
+    wb: numberOrZero(month.channels?.wb?.revenue),
+    ozon: numberOrZero(month.channels?.ozon?.revenue),
+    ya: numberOrZero(month.channels?.ya?.revenue)
+  };
+}
+
+function skuPlanFactPayrollPlanRevenue(monthKey = '', platform = 'all') {
+  const totals = skuPlanFactPayrollControlTotals(monthKey);
+  if (!totals) return null;
+  if (!platform || platform === 'all') return numberOrZero(totals.revenue);
+  if (!SKU_PLAN_FACT_PAYROLL_PLATFORMS.includes(platform)) return 0;
+  return numberOrZero(totals[platform]);
+}
+
+function skuPlanFactPayrollLatestFactDate(monthKey = '') {
+  let maxDate = '';
+  SKU_PLAN_FACT_PAYROLL_PLATFORMS.forEach((platformKey) => {
+    const platform = skuPlanFactPlatformTrend(platformKey);
+    (platform?.series || []).forEach((item) => {
+      const date = String(item?.date || item?.label || '').slice(0, 10);
+      if ((!monthKey || skuPlanFactMonthFromDate(date) === monthKey) && date > maxDate) maxDate = date;
+    });
+  });
+  const activeMonth = skuPlanFactPayrollCompanyPlan()?.activeMonth;
+  const activeDate = state.dashboard?.dataFreshness?.asOfDate || state.dashboard?.asOfDate || '';
+  if (activeMonth?.monthKey === monthKey && skuPlanFactMonthFromDate(activeDate) === monthKey && activeDate > maxDate) {
+    maxDate = activeDate;
+  }
+  return maxDate;
+}
+
+function skuPlanFactPayrollEffectiveEndDate(monthKey = '', periodEnd = '') {
+  const selected = skuPlanFactDateKey(periodEnd);
+  const latest = skuPlanFactPayrollLatestFactDate(monthKey);
+  if (selected && latest) return selected < latest ? selected : latest;
+  return selected || latest || skuPlanFactMonthEnd(monthKey);
+}
+
+function skuPlanFactPayrollRawFactRevenue(monthKey = '', platform = 'all', periodStart = '', periodEnd = '') {
+  const platforms = platform === 'all' || !platform ? SKU_PLAN_FACT_PAYROLL_PLATFORMS : [platform];
+  return platforms
+    .filter((item) => SKU_PLAN_FACT_PAYROLL_PLATFORMS.includes(item))
+    .reduce((sum, item) => sum + numberOrZero(skuPlanFactPlatformAggregateFact(item, monthKey, periodEnd, periodStart).revenue), 0);
+}
+
+function skuPlanFactPayrollFactControl(monthKey = '', periodStart = '', periodEnd = '') {
+  const plan = skuPlanFactPayrollCompanyPlan();
+  const activeMonth = plan?.activeMonth;
+  if (!activeMonth || activeMonth.monthKey !== monthKey) return null;
+  const monthStart = skuPlanFactMonthStart(monthKey);
+  const activeDate = skuPlanFactDateKey(state.dashboard?.dataFreshness?.asOfDate || state.dashboard?.asOfDate || '');
+  const endDate = skuPlanFactDateKey(periodEnd);
+  const startDate = skuPlanFactDateKey(periodStart);
+  if (startDate !== monthStart || !activeDate || endDate !== activeDate) return null;
+  const fact = numberOrZero(activeMonth.factRevenueToDate);
+  return fact > 0 ? fact : null;
+}
+
+function skuPlanFactPayrollFactScale(monthKey = '', periodStart = '', periodEnd = '') {
+  const control = skuPlanFactPayrollFactControl(monthKey, periodStart, periodEnd);
+  if (!control) return null;
+  const raw = skuPlanFactPayrollRawFactRevenue(monthKey, 'all', periodStart, periodEnd);
+  if (raw <= 0) return null;
+  return control / raw;
+}
+
+function skuPlanFactPayrollFactRevenue(monthKey = '', platform = 'all', periodStart = '', periodEnd = '') {
+  const control = skuPlanFactPayrollFactControl(monthKey, periodStart, periodEnd);
+  if ((!platform || platform === 'all') && control) return control;
+  const raw = skuPlanFactPayrollRawFactRevenue(monthKey, platform, periodStart, periodEnd);
+  const scale = skuPlanFactPayrollFactScale(monthKey, periodStart, periodEnd);
+  return scale ? raw * scale : raw;
+}
+
+function skuPlanFactPayrollKpiForModel(model = {}) {
+  const monthKey = model.monthKey || '';
+  const plan = skuPlanFactPayrollCompanyPlan();
+  const totals = skuPlanFactPayrollControlTotals(monthKey);
+  if (!plan || !totals) return null;
+  const selectedPlatform = model.filters?.platform || 'all';
+  const salaryIncluded = selectedPlatform === 'all' || SKU_PLAN_FACT_PAYROLL_PLATFORMS.includes(selectedPlatform);
+  const periodEnd = skuPlanFactPayrollEffectiveEndDate(monthKey, model.periodEnd || model.selectedDate || '');
+  const periodStart = skuPlanFactClampDateToRange(model.periodStart || skuPlanFactMonthStart(monthKey), skuPlanFactMonthStart(monthKey), periodEnd);
+  const elapsedDays = skuPlanFactInclusiveDays(periodStart, periodEnd) || skuPlanFactElapsedDays(monthKey, periodEnd);
+  const monthDays = Math.max(1, skuPlanFactMonthDays(monthKey));
+  const platformItems = {};
+  SKU_PLAN_FACT_PAYROLL_PLATFORMS.forEach((platform) => {
+    const planRevenue = skuPlanFactPayrollPlanRevenue(monthKey, platform);
+    const factRevenue = skuPlanFactPayrollFactRevenue(monthKey, platform, periodStart, periodEnd);
+    const planToDateRevenue = planRevenue > 0 ? planRevenue * elapsedDays / monthDays : 0;
+    platformItems[platform] = {
+      platform,
+      label: skuPlanFactPlatformLabel(platform),
+      salaryIncluded: true,
+      planRevenue,
+      planToDateRevenue,
+      factRevenue,
+      completionToDate: planToDateRevenue > 0 ? factRevenue / planToDateRevenue : null,
+      completionMonth: planRevenue > 0 ? factRevenue / planRevenue : null,
+      gapToDate: factRevenue - planToDateRevenue
+    };
+  });
+  const planRevenue = skuPlanFactPayrollPlanRevenue(monthKey, selectedPlatform);
+  const factRevenue = salaryIncluded ? skuPlanFactPayrollFactRevenue(monthKey, selectedPlatform, periodStart, periodEnd) : 0;
+  const planToDateRevenue = planRevenue > 0 ? planRevenue * elapsedDays / monthDays : 0;
+  return {
+    purpose: plan.payrollKpiPolicy?.purpose || 'kpi_salary_calculation',
+    isPayrollCritical: true,
+    monthKey,
+    selectedPlatform,
+    salaryIncluded,
+    periodStart,
+    periodEnd,
+    elapsedDays,
+    monthDays,
+    planRevenue,
+    planToDateRevenue,
+    factRevenue,
+    completionToDate: planToDateRevenue > 0 ? factRevenue / planToDateRevenue : null,
+    completionMonth: planRevenue > 0 ? factRevenue / planRevenue : null,
+    gapToDate: factRevenue - planToDateRevenue,
+    platforms: platformItems,
+    excludedPlatforms: SKU_PLAN_FACT_PLATFORMS.filter((platform) => !SKU_PLAN_FACT_PAYROLL_PLATFORMS.includes(platform)),
+    warning: plan.payrollKpiPolicy?.warning || ''
+  };
+}
+
+function skuPlanFactPayrollMetricTotals(model = {}, selectedPlatform = 'all') {
+  const rows = Array.isArray(model.allRows) ? model.allRows : [];
+  const totals = { factRevenue: 0, adSpend: 0, planAdSpend: 0, hasPlanAdSpend: false, marginValue: 0, marginWeight: 0, planMarginValue: 0, planMarginWeight: 0 };
+  const platforms = selectedPlatform && selectedPlatform !== 'all'
+    ? [selectedPlatform].filter((platform) => SKU_PLAN_FACT_PAYROLL_PLATFORMS.includes(platform))
+    : SKU_PLAN_FACT_PAYROLL_PLATFORMS;
+  rows.forEach((row) => {
+    platforms.forEach((platform) => {
+      const metric = row.platforms?.[platform] || row[platform] || null;
+      if (!metric) return;
+      totals.factRevenue += numberOrZero(metric.factRevenue);
+      totals.adSpend += numberOrZero(metric.adSpend);
+      if (metric.planAdSpend !== null && metric.planAdSpend !== undefined) {
+        totals.planAdSpend += numberOrZero(metric.planAdSpend);
+        totals.hasPlanAdSpend = true;
+      }
+      const marginPct = skuPlanFactNormalizeRatio(metric.marginPct);
+      const marginWeight = numberOrZero(metric.factRevenue)
+        || numberOrZero(metric.planToDateRevenue)
+        || numberOrZero(metric.planRevenue);
+      if (marginPct !== null && marginWeight > 0) {
+        totals.marginValue += marginPct * marginWeight;
+        totals.marginWeight += marginWeight;
+      }
+      const planMarginPct = skuPlanFactNormalizeRatio(metric.planMarginPct);
+      const planMarginWeight = numberOrZero(metric.planToDateRevenue) || numberOrZero(metric.planRevenue);
+      if (planMarginPct !== null && planMarginWeight > 0) {
+        totals.planMarginValue += planMarginPct * planMarginWeight;
+        totals.planMarginWeight += planMarginWeight;
+      }
+    });
+  });
+  totals.marginPct = totals.marginWeight > 0 ? totals.marginValue / totals.marginWeight : null;
+  totals.planAdSpend = totals.hasPlanAdSpend ? totals.planAdSpend : null;
+  totals.planMarginPct = totals.planMarginWeight > 0 ? totals.planMarginValue / totals.planMarginWeight : null;
+  return totals;
+}
+
+function skuPlanFactApplyPayrollKpiToModel(model = {}) {
+  const payroll = skuPlanFactPayrollKpiForModel(model);
+  if (!payroll) return model;
+  model.payrollKpi = payroll;
+  if (!payroll.salaryIncluded) return model;
+  const rawFactRevenue = numberOrZero(model.totals.factRevenue);
+  const rawMarginRub = numberOrZero(model.totals.marginRub);
+  const factScale = rawFactRevenue > 0 && payroll.factRevenue > 0 ? payroll.factRevenue / rawFactRevenue : 1;
+  const payrollMetricTotals = skuPlanFactPayrollMetricTotals(model, payroll.selectedPlatform || 'all');
+  const adSourceTotals = skuPlanFactAdSourceTotals(
+    model.monthKey || payroll.monthKey || '',
+    payroll.periodEnd || model.periodEnd || model.selectedDate || '',
+    payroll.periodStart || model.periodStart || '',
+    payroll.selectedPlatform || 'all'
+  );
+  model.totals.payrollOriginal = {
+    planRevenue: model.totals.planRevenue,
+    planToDateRevenue: model.totals.planToDateRevenue,
+    factRevenue: model.totals.factRevenue,
+    adSpend: model.totals.adSpend,
+    planAdSpend: model.totals.planAdSpend,
+    planDrr: model.totals.planDrr,
+    drr: model.totals.drr,
+    marginPct: model.totals.marginPct,
+    marginRub: model.totals.marginRub,
+    planMarginPct: model.totals.planMarginPct,
+    planMarginRub: model.totals.planMarginRub,
+    completionToDate: model.totals.completionToDate,
+    completionMonth: model.totals.completionMonth,
+    gapToDate: model.totals.gapToDate
+  };
+  model.totals.planRevenue = payroll.planRevenue;
+  model.totals.planToDateRevenue = payroll.planToDateRevenue;
+  model.totals.factRevenue = payroll.factRevenue;
+  model.totals.completionToDate = payroll.completionToDate;
+  model.totals.completionMonth = payroll.completionMonth;
+  model.totals.gapToDate = payroll.gapToDate;
+  if (payroll.selectedPlatform && payroll.selectedPlatform !== 'all') {
+    model.totals.adSpend = (adSourceTotals.rows > 0 || adSourceTotals.spend > 0)
+      ? adSourceTotals.spend
+      : payrollMetricTotals.adSpend;
+    model.totals.planAdSpend = payrollMetricTotals.planAdSpend;
+  } else if (adSourceTotals.rows > 0 || adSourceTotals.spend > 0) {
+    model.totals.adSpend = adSourceTotals.spend;
+    if (payrollMetricTotals.planAdSpend !== null) {
+      model.totals.planAdSpend = payrollMetricTotals.planAdSpend;
+    }
+  }
+  if (payrollMetricTotals.marginPct !== null) {
+    model.totals.marginPct = payrollMetricTotals.marginPct;
+    model.totals.marginRub = model.totals.factRevenue > 0 ? model.totals.factRevenue * payrollMetricTotals.marginPct : null;
+  } else if (rawMarginRub > 0 && factScale > 0) {
+    model.totals.marginRub = rawMarginRub * factScale;
+    model.totals.marginPct = model.totals.factRevenue > 0 ? model.totals.marginRub / model.totals.factRevenue : model.totals.marginPct;
+  }
+  if (payrollMetricTotals.planMarginPct !== null) {
+    model.totals.planMarginPct = payrollMetricTotals.planMarginPct;
+    model.totals.planMarginRub = model.totals.planToDateRevenue > 0 ? model.totals.planToDateRevenue * payrollMetricTotals.planMarginPct : null;
+  }
+  model.totals.drr = model.totals.factRevenue > 0 ? numberOrZero(model.totals.adSpend) / model.totals.factRevenue : null;
+  model.totals.planDrr = model.totals.planToDateRevenue > 0 && model.totals.planAdSpend !== null && model.totals.planAdSpend !== undefined
+    ? numberOrZero(model.totals.planAdSpend) / model.totals.planToDateRevenue
+    : null;
+  model.totals.payrollSourceTotals = {
+    adSpend: adSourceTotals.spend,
+    externalAdSpend: adSourceTotals.externalSpend,
+    adRows: adSourceTotals.rows,
+    planAdSpend: model.totals.planAdSpend,
+    planDrr: model.totals.planDrr,
+    marginPct: payrollMetricTotals.marginPct,
+    planMarginPct: payrollMetricTotals.planMarginPct,
+    marginWeight: payrollMetricTotals.marginWeight,
+    factRevenue: payrollMetricTotals.factRevenue
+  };
+  return model;
+}
+
+function skuPlanFactAdItemIsExternal(item = {}) {
+  const channel = String(item.channel || '').toLowerCase();
+  const campaignId = String(item.campaignId || '').toLowerCase();
+  const campaignName = String(item.campaignName || '').toLowerCase();
+  const externalRu = '\u0432\u043d\u0435\u0448';
+  return campaignId.startsWith('external-sheet:')
+    || channel.includes(externalRu)
+    || channel.includes('external')
+    || campaignName.includes(externalRu)
+    || campaignName.includes('external');
+}
+
+function skuPlanFactAdSourceTotals(monthKey = '', maxFactDate = '', minFactDate = '', platformFilter = 'all') {
+  const totals = { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0, rows: 0, externalSpend: 0, externalRows: 0 };
+  (state.adsSummary?.itemSeries || []).forEach((item) => {
+    const date = String(item?.date || '').slice(0, 10);
+    if (skuPlanFactMonthFromDate(date) !== monthKey) return;
+    if (minFactDate && date < minFactDate) return;
+    if (maxFactDate && date > maxFactDate) return;
+    const platform = String(item.platformKey || item.platform || 'wb').toLowerCase();
+    const normalizedFilter = String(platformFilter || 'all').toLowerCase();
+    const supportFilter = skuPlanFactPlatformSupportKey(normalizedFilter);
+    if (normalizedFilter && normalizedFilter !== 'all' && platform !== normalizedFilter && platform !== supportFilter) return;
+    const spend = numberOrZero(item.spend);
+    if (skuPlanFactAdItemIsExternal(item)) {
+      totals.externalSpend += spend;
+      totals.externalRows += 1;
+      return;
+    }
+    totals.rows += 1;
+    totals.spend += spend;
+    totals.views += numberOrZero(item.views);
+    totals.clicks += numberOrZero(item.clicks);
+    totals.orders += numberOrZero(item.orders);
+    totals.revenue += numberOrZero(item.revenue);
+  });
+  return totals;
+}
+
 function skuPlanFactAdIndex(monthKey, maxFactDate = '', minFactDate = '') {
   const map = new Map();
   (state.adsSummary?.itemSeries || []).forEach((item) => {
+    if (skuPlanFactAdItemIsExternal(item)) return;
     const date = String(item?.date || '').slice(0, 10);
     if (skuPlanFactMonthFromDate(date) !== monthKey) return;
     if (minFactDate && date < minFactDate) return;
@@ -862,6 +1239,175 @@ function skuPlanFactAdForSku(adIndex, platform = '', sku = {}) {
     .map(([date, value]) => ({ date, ...value }))
     .sort((left, right) => left.date.localeCompare(right.date));
   return result;
+}
+
+function skuPlanFactDailyPlanAdValue(item = {}, platform = '') {
+  if (platform === 'wb') {
+    return numberOrZero(item.planSpendWb ?? item.iuPlanSpendWb ?? item.managementPlanSpendWb ?? item.contractMarketingPlanWb);
+  }
+  if (platform === 'ozon') {
+    return numberOrZero(item.planSpendOzon ?? item.iuPlanSpendOzon ?? item.iuAdsOzonPlan);
+  }
+  return 0;
+}
+
+function skuPlanFactDailyPlanRevenueValue(item = {}, platform = '') {
+  if (platform === 'wb') {
+    return numberOrZero(item.targetRevenueWb ?? item.iuRevenueWbPlan ?? item.managementTargetRevenueWb ?? item.contractTargetRevenueWb);
+  }
+  if (platform === 'ozon') {
+    return numberOrZero(item.targetRevenueOzon ?? item.iuRevenueOzonPlan);
+  }
+  return 0;
+}
+
+function skuPlanFactKpiPlanAdValue(kpis = {}, platform = '', period = false) {
+  if (platform === 'wb') {
+    return numberOrZero(period ? (kpis.planSpendWb ?? kpis.iuAdsPlanToDate) : (kpis.iuAdsPlan ?? kpis.planSpendWb));
+  }
+  if (platform === 'ozon') {
+    return numberOrZero(period ? (kpis.planSpendOzon ?? kpis.iuAdsOzonPlanToDate) : (kpis.iuAdsOzonPlan ?? kpis.planSpendOzon));
+  }
+  return 0;
+}
+
+function skuPlanFactKpiPlanRevenueValue(kpis = {}, platform = '', period = false) {
+  if (platform === 'wb') {
+    return numberOrZero(period ? (kpis.targetRevenueWb ?? kpis.iuRevenueWbPlanToDate) : kpis.iuRevenueWbPlan);
+  }
+  if (platform === 'ozon') {
+    return numberOrZero(period ? (kpis.targetRevenueOzon ?? kpis.iuRevenueOzonPlanToDate) : kpis.iuRevenueOzonPlan);
+  }
+  return 0;
+}
+
+function skuPlanFactPlatformPlanAdTotals(platform = '', monthKey = '', periodStart = '', periodEnd = '', fullMonth = false) {
+  if (!SKU_PLAN_FACT_AD_PLAN_PLATFORMS.has(platform)) {
+    return { spend: null, revenue: null, drr: null, source: '' };
+  }
+  const start = fullMonth ? skuPlanFactMonthStart(monthKey) : (skuPlanFactDateKey(periodStart) || skuPlanFactMonthStart(monthKey));
+  const end = fullMonth ? skuPlanFactMonthEnd(monthKey) : (skuPlanFactDateKey(periodEnd) || skuPlanFactMonthEnd(monthKey));
+  let spend = 0;
+  let revenue = 0;
+  let rows = 0;
+  (state.iuDrrSummary?.daily || []).forEach((item) => {
+    const date = skuPlanFactDateKey(item?.date);
+    if (skuPlanFactMonthFromDate(date) !== monthKey) return;
+    if (start && date < start) return;
+    if (end && date > end) return;
+    const dailySpend = skuPlanFactDailyPlanAdValue(item, platform);
+    const dailyRevenue = skuPlanFactDailyPlanRevenueValue(item, platform);
+    if (dailySpend > 0 || dailyRevenue > 0) rows += 1;
+    spend += dailySpend;
+    revenue += dailyRevenue;
+  });
+  if (spend > 0 || revenue > 0) {
+    return {
+      spend,
+      revenue,
+      drr: revenue > 0 ? spend / revenue : null,
+      source: 'iu_drr_summary.daily'
+    };
+  }
+  const kpis = state.iuDrrSummary?.kpis || {};
+  const kpiMonth = String(kpis.monthKey || '').slice(0, 7);
+  if (kpiMonth && kpiMonth !== monthKey) return { spend: null, revenue: null, drr: null, source: '' };
+  const kpiSpend = skuPlanFactKpiPlanAdValue(kpis, platform, !fullMonth);
+  const kpiRevenue = skuPlanFactKpiPlanRevenueValue(kpis, platform, !fullMonth);
+  if (kpiSpend > 0 || kpiRevenue > 0) {
+    return {
+      spend: kpiSpend > 0 ? kpiSpend : null,
+      revenue: kpiRevenue > 0 ? kpiRevenue : null,
+      drr: kpiSpend > 0 && kpiRevenue > 0 ? kpiSpend / kpiRevenue : null,
+      source: 'iu_drr_summary.kpis'
+    };
+  }
+  return { spend: null, revenue: null, drr: null, source: '' };
+}
+
+function skuPlanFactPlanAdTotalsByPlatform(monthKey = '', periodStart = '', periodEnd = '') {
+  return SKU_PLAN_FACT_PLATFORMS.reduce((acc, platform) => {
+    acc[platform] = skuPlanFactPlatformPlanAdTotals(platform, monthKey, periodStart, periodEnd, false);
+    return acc;
+  }, {});
+}
+
+function skuPlanFactApplyIuRevenueFloors(rows = [], monthKey = '', periodStart = '', periodEnd = '') {
+  SKU_PLAN_FACT_AD_PLAN_PLATFORMS.forEach((platform) => {
+    const periodPlan = skuPlanFactPlatformPlanAdTotals(platform, monthKey, periodStart, periodEnd, false);
+    const monthPlan = skuPlanFactPlatformPlanAdTotals(platform, monthKey, periodStart, periodEnd, true);
+    const kpis = state.iuDrrSummary?.kpis || {};
+    const kpiMonth = String(kpis.monthKey || '').slice(0, 7);
+    const periodFloor = Math.max(
+      numberOrZero(periodPlan.revenue),
+      kpiMonth === monthKey ? skuPlanFactKpiPlanRevenueValue(kpis, platform, true) : 0
+    );
+    const monthFloor = Math.max(
+      numberOrZero(monthPlan.revenue),
+      kpiMonth === monthKey ? skuPlanFactKpiPlanRevenueValue(kpis, platform, false) : 0
+    );
+    if (periodFloor <= 0 && monthFloor <= 0) return;
+    const metrics = (rows || [])
+      .map((row) => row.platforms?.[platform] || row[platform] || null)
+      .filter((metric) => metric && skuPlanFactPlatformHasActivity(metric));
+    if (!metrics.length) return;
+    const currentPeriod = metrics.reduce((sum, metric) => sum + numberOrZero(metric.planToDateRevenue), 0);
+    const currentMonth = metrics.reduce((sum, metric) => sum + numberOrZero(metric.planRevenue), 0);
+    const periodScale = periodFloor > 0 && currentPeriod > 0 && currentPeriod + 1 < periodFloor
+      ? periodFloor / currentPeriod
+      : 1;
+    const monthScale = monthFloor > 0 && currentMonth > 0 && currentMonth + 1 < monthFloor
+      ? monthFloor / currentMonth
+      : 1;
+    const scale = Math.max(periodScale, monthScale);
+    if (!Number.isFinite(scale) || scale <= 1) return;
+    metrics.forEach((metric) => {
+      metric.planRevenue = numberOrZero(metric.planRevenue) * scale;
+      metric.planToDateRevenue = numberOrZero(metric.planToDateRevenue) * scale;
+      metric.planUnits = numberOrZero(metric.planUnits) * scale;
+      metric.planToDateUnits = numberOrZero(metric.planToDateUnits) * scale;
+      metric.iuRevenueFloorApplied = true;
+      metric.iuRevenueFloorSource = periodPlan.source || monthPlan.source || '';
+      metric.completionToDate = metric.planToDateRevenue > 0 ? numberOrZero(metric.factRevenue) / metric.planToDateRevenue : null;
+      metric.completionMonth = metric.planRevenue > 0 ? numberOrZero(metric.factRevenue) / metric.planRevenue : null;
+      metric.gapToDate = numberOrZero(metric.factRevenue) - metric.planToDateRevenue;
+      const planMarginPct = skuPlanFactNormalizeRatio(metric.planMarginPct);
+      metric.planMarginRub = planMarginPct === null ? null : metric.planToDateRevenue * planMarginPct;
+    });
+  });
+}
+
+function skuPlanFactApplyPlannedAdSpend(rows = [], monthKey = '', periodStart = '', periodEnd = '') {
+  SKU_PLAN_FACT_PLATFORMS.forEach((platform) => {
+    const periodPlan = skuPlanFactPlatformPlanAdTotals(platform, monthKey, periodStart, periodEnd, false);
+    const monthPlan = skuPlanFactPlatformPlanAdTotals(platform, monthKey, periodStart, periodEnd, true);
+    const hasPeriodPlan = periodPlan.spend !== null || periodPlan.drr !== null;
+    const hasMonthPlan = monthPlan.spend !== null || monthPlan.drr !== null;
+    const metrics = (rows || [])
+      .map((row) => row.platforms?.[platform] || row[platform] || null)
+      .filter((metric) => metric && skuPlanFactPlatformHasActivity(metric));
+
+    const periodWeightSum = metrics.reduce((sum, metric) => (
+      sum + (numberOrZero(metric.planToDateRevenue) || numberOrZero(metric.planRevenue) || numberOrZero(metric.factRevenue))
+    ), 0);
+    const monthWeightSum = metrics.reduce((sum, metric) => (
+      sum + (numberOrZero(metric.planRevenue) || numberOrZero(metric.planToDateRevenue) || numberOrZero(metric.factRevenue))
+    ), 0);
+
+    metrics.forEach((metric) => {
+      const periodWeight = numberOrZero(metric.planToDateRevenue) || numberOrZero(metric.planRevenue) || numberOrZero(metric.factRevenue);
+      const monthWeight = numberOrZero(metric.planRevenue) || numberOrZero(metric.planToDateRevenue) || numberOrZero(metric.factRevenue);
+      metric.planAdSpend = hasPeriodPlan && periodPlan.spend !== null && periodWeightSum > 0
+        ? periodPlan.spend * periodWeight / periodWeightSum
+        : null;
+      metric.planMonthAdSpend = hasMonthPlan && monthPlan.spend !== null && monthWeightSum > 0
+        ? monthPlan.spend * monthWeight / monthWeightSum
+        : null;
+      metric.planDrr = periodPlan.drr !== null ? periodPlan.drr : null;
+      metric.planMonthDrr = monthPlan.drr !== null ? monthPlan.drr : null;
+      metric.planAdSource = periodPlan.source || monthPlan.source || '';
+    });
+  });
 }
 
 function skuPlanFactPlatformPriceProxy(metric = {}) {
@@ -997,6 +1543,13 @@ function skuPlanFactFinalizePlatformMetric(metric = {}, monthKey = '', elapsedDa
   metric.adsDrr = metric.adRevenue > 0 ? metric.adSpend / metric.adRevenue : null;
   metric.marginPct = skuPlanFactNormalizeRatio(metric.marginPct);
   metric.marginRub = metric.marginPct === null ? null : metric.factRevenue * metric.marginPct;
+  metric.factMarginPct = skuPlanFactNormalizeRatio(metric.factMarginPct);
+  metric.planMarginPct = skuPlanFactNormalizeRatio(metric.planMarginPct);
+  metric.planMarginRub = metric.planMarginPct === null ? null : metric.planToDateRevenue * metric.planMarginPct;
+  metric.planAdSpend = metric.planAdSpend === null || metric.planAdSpend === undefined ? null : numberOrZero(metric.planAdSpend);
+  metric.planMonthAdSpend = metric.planMonthAdSpend === null || metric.planMonthAdSpend === undefined ? null : numberOrZero(metric.planMonthAdSpend);
+  metric.planDrr = skuPlanFactNormalizeRatio(metric.planDrr);
+  metric.planMonthDrr = skuPlanFactNormalizeRatio(metric.planMonthDrr);
   metric.scoreHistory = skuPlanFactBuildScoreHistory(metric, monthKey, periodStart, periodEnd);
   metric.completionDelta = skuPlanFactCompletionDelta(metric.scoreHistory);
   return metric;
@@ -1078,13 +1631,26 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
   const ad = skuPlanFactAdForSku(adIndex, platform, sku);
   const planToDateRevenue = plan.revenue > 0 ? plan.revenue * elapsedDays / Math.max(1, plan.days) : 0;
   const planToDateUnits = plan.units > 0 ? plan.units * elapsedDays / Math.max(1, plan.days) : 0;
-  const fallbackSide = sku?.[platform] || {};
+  const supportKey = skuPlanFactPlatformSupportKey(platform);
+  const fallbackSide = sku?.[platform] || sku?.[supportKey] || {};
   const turnoverDays = skuPlanFactLatestMetric(sourceRows, ['turnoverCurrentDays', 'turnoverDays'])
     ?? (Number.isFinite(Number(fallbackSide.turnoverDays)) ? Number(fallbackSide.turnoverDays) : null);
   const stock = skuPlanFactLatestMetric(sourceRows, ['stock', 'stockRepricer'])
     ?? (Number.isFinite(Number(fallbackSide.stock)) ? Number(fallbackSide.stock) : null);
-  const marginPct = skuPlanFactLatestMetric(sourceRows, ['avgMargin7dPct', 'marginTotalPct', 'marginPct'])
+  const factMarginPct = skuPlanFactLatestMetric(sourceRows, ['avgMargin7dPct', 'marginTotalPct', 'marginPct'])
     ?? (Number.isFinite(Number(fallbackSide.marginPct)) ? Number(fallbackSide.marginPct) : null);
+  const planMargin = skuPlanFactPlanMarginForSku(sku, platform, { sourceRows, supportRows, pricesRows, overlayRows, smartRows });
+  if (planMargin.value === null) {
+    const siblingPriceRows = SKU_PLAN_FACT_PLATFORMS
+      .filter((item) => item !== platform)
+      .flatMap((item) => skuPlanFactRowsForSkuIndex(indexes.prices?.[item], sku, item));
+    const siblingMargin = skuPlanFactFirstRatioFromRows(siblingPriceRows);
+    if (siblingMargin !== null) {
+      planMargin.value = siblingMargin;
+      planMargin.source = 'cross-platform-price-economics';
+    }
+  }
+  const effectiveMargin = skuPlanFactEffectiveMargin(platform, factMarginPct, planMargin.value);
   const currentPrice = skuPlanFactLatestMetric(sourceRows, ['currentFillPrice', 'currentPrice', 'currentClientPrice', 'price'])
     ?? (Number.isFinite(Number(fallbackSide.currentPrice)) ? Number(fallbackSide.currentPrice) : null);
   const currentClientPrice = skuPlanFactLatestMetric(sourceRows, ['currentClientPrice', 'currentPrice', 'price'])
@@ -1119,7 +1685,13 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
     adsDrr: ad.revenue > 0 ? ad.spend / ad.revenue : null,
     turnoverDays,
     stock,
-    marginPct,
+    factMarginPct: skuPlanFactRatioOrNull(factMarginPct),
+    marginPct: effectiveMargin.value,
+    planMarginPct: planMargin.value,
+    planMarginRub: planMargin.value === null ? null : planToDateRevenue * planMargin.value,
+    marginIsPlanFallback: effectiveMargin.isPlanFallback,
+    marginSource: effectiveMargin.isPlanFallback ? (planMargin.source || 'plan-margin') : 'fact-margin',
+    planMarginSource: planMargin.source || '',
     currentPrice,
     currentClientPrice,
     currentFillPrice: currentPrice,
@@ -1178,12 +1750,22 @@ function skuPlanFactFinalizeRow(row = {}, monthKey = '', elapsedDays = 0, period
     acc.factUnits += numberOrZero(metric.factUnits);
     acc.factRevenue += numberOrZero(metric.factRevenue);
     acc.adSpend += numberOrZero(metric.adSpend);
+    if (metric.planAdSpend !== null && metric.planAdSpend !== undefined) {
+      acc.planAdSpend += numberOrZero(metric.planAdSpend);
+      acc.hasPlanAdSpend = true;
+    }
     skuPlanFactMergeDailyIntoMap(acc.dailyMap, metric.factDaily);
     const marginPct = skuPlanFactNormalizeRatio(metric.marginPct);
     const marginWeight = numberOrZero(metric.factRevenue) || numberOrZero(metric.planToDateRevenue) || numberOrZero(metric.planRevenue);
     if (marginPct !== null && marginWeight > 0) {
       acc.marginValue += marginPct * marginWeight;
       acc.marginWeight += marginWeight;
+    }
+    const planMarginPct = skuPlanFactNormalizeRatio(metric.planMarginPct);
+    const planMarginWeight = numberOrZero(metric.planToDateRevenue) || numberOrZero(metric.planRevenue);
+    if (planMarginPct !== null && planMarginWeight > 0) {
+      acc.planMarginValue += planMarginPct * planMarginWeight;
+      acc.planMarginWeight += planMarginWeight;
     }
     if (skuPlanFactPlatformHasActivity(metric)) acc.activePlatforms += 1;
     acc.hasPlanOrFact = acc.hasPlanOrFact || Boolean(
@@ -1195,7 +1777,7 @@ function skuPlanFactFinalizeRow(row = {}, monthKey = '', elapsedDays = 0, period
       || numberOrZero(metric.adSpend) > 0
     );
     return acc;
-  }, { planUnits: 0, planRevenue: 0, planToDateRevenue: 0, factUnits: 0, factRevenue: 0, adSpend: 0, marginValue: 0, marginWeight: 0, activePlatforms: 0, dailyMap: new Map(), hasPlanOrFact: false });
+  }, { planUnits: 0, planRevenue: 0, planToDateRevenue: 0, factUnits: 0, factRevenue: 0, adSpend: 0, planAdSpend: 0, hasPlanAdSpend: false, marginValue: 0, marginWeight: 0, planMarginValue: 0, planMarginWeight: 0, activePlatforms: 0, dailyMap: new Map(), hasPlanOrFact: false });
   row.planUnits = totals.planUnits;
   row.planRevenue = totals.planRevenue;
   row.planToDateRevenue = totals.planToDateRevenue;
@@ -1207,8 +1789,12 @@ function skuPlanFactFinalizeRow(row = {}, monthKey = '', elapsedDays = 0, period
   row.gapToDate = row.factRevenue - row.planToDateRevenue;
   row.adSpend = totals.adSpend;
   row.drr = row.factRevenue > 0 ? row.adSpend / row.factRevenue : null;
+  row.planAdSpend = totals.hasPlanAdSpend ? totals.planAdSpend : null;
+  row.planDrr = row.planToDateRevenue > 0 && row.planAdSpend !== null ? row.planAdSpend / row.planToDateRevenue : null;
   row.marginPct = totals.marginWeight > 0 ? totals.marginValue / totals.marginWeight : null;
   row.marginRub = row.marginPct === null ? null : row.factRevenue * row.marginPct;
+  row.planMarginPct = totals.planMarginWeight > 0 ? totals.planMarginValue / totals.planMarginWeight : null;
+  row.planMarginRub = row.planMarginPct === null ? null : row.planToDateRevenue * row.planMarginPct;
   row.activePlatformCount = totals.activePlatforms;
   row.factDaily = skuPlanFactDailyArrayFromMap(totals.dailyMap);
   row.scoreHistory = skuPlanFactBuildScoreHistory(row, monthKey, periodStart, periodEnd);
@@ -1324,6 +1910,8 @@ function skuPlanFactBuildModel() {
   const reconciliation = skuPlanFactReconcilePlatformFacts(rows, monthKey, selectedDate, periodStart);
   skuPlanFactMarkDuplicateRiskRows(rows);
   SKU_PLAN_FACT_PLATFORMS.forEach((platform) => skuPlanFactAllocatePlatformPlan(rows, monthKey, platform, elapsedDays, periodStart, selectedDate));
+  skuPlanFactApplyIuRevenueFloors(rows, monthKey, periodStart, selectedDate);
+  skuPlanFactApplyPlannedAdSpend(rows, monthKey, periodStart, selectedDate);
   rows.forEach((row) => skuPlanFactFinalizeRow(row, monthKey, elapsedDays, periodStart, selectedDate));
   const owners = [...new Set(rows.map((row) => row.owner).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
   const platformBaseRows = rows.filter((row) => skuPlanFactRowMatchesFilters(row, filters, { platform: false }));
@@ -1339,24 +1927,43 @@ function skuPlanFactBuildModel() {
     acc.planUnits += row.planUnits;
     acc.factUnits += row.factUnits;
     acc.adSpend += row.adSpend;
+    if (row.planAdSpend !== null && row.planAdSpend !== undefined) {
+      acc.planAdSpend += numberOrZero(row.planAdSpend);
+      acc.hasPlanAdSpend = true;
+    }
     const marginPct = skuPlanFactNormalizeRatio(row.marginPct);
     const marginWeight = numberOrZero(row.factRevenue) || numberOrZero(row.planToDateRevenue) || numberOrZero(row.planRevenue);
     if (marginPct !== null && marginWeight > 0) {
       acc.marginValue += marginPct * marginWeight;
       acc.marginWeight += marginWeight;
     }
+    const planMarginPct = skuPlanFactNormalizeRatio(row.planMarginPct);
+    const planMarginWeight = numberOrZero(row.planToDateRevenue) || numberOrZero(row.planRevenue);
+    if (planMarginPct !== null && planMarginWeight > 0) {
+      acc.planMarginValue += planMarginPct * planMarginWeight;
+      acc.planMarginWeight += planMarginWeight;
+    }
     if (row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue) acc.underPlan += 1;
     if (row.planRevenue > 0 && row.factRevenue <= 0) acc.noFact += 1;
     return acc;
-  }, { planRevenue: 0, planToDateRevenue: 0, factRevenue: 0, planUnits: 0, factUnits: 0, adSpend: 0, marginValue: 0, marginWeight: 0, underPlan: 0, noFact: 0 });
+  }, { planRevenue: 0, planToDateRevenue: 0, factRevenue: 0, planUnits: 0, factUnits: 0, adSpend: 0, planAdSpend: 0, hasPlanAdSpend: false, marginValue: 0, marginWeight: 0, planMarginValue: 0, planMarginWeight: 0, underPlan: 0, noFact: 0 });
   totals.completionToDate = totals.planToDateRevenue > 0 ? totals.factRevenue / totals.planToDateRevenue : null;
   totals.completionMonth = totals.planRevenue > 0 ? totals.factRevenue / totals.planRevenue : null;
   totals.gapToDate = totals.factRevenue - totals.planToDateRevenue;
   totals.avgCheck = totals.factUnits > 0 ? totals.factRevenue / totals.factUnits : null;
   totals.drr = totals.factRevenue > 0 ? totals.adSpend / totals.factRevenue : null;
+  totals.planAdSpend = totals.hasPlanAdSpend ? totals.planAdSpend : null;
+  totals.planDrr = totals.planToDateRevenue > 0 && totals.planAdSpend !== null ? totals.planAdSpend / totals.planToDateRevenue : null;
   totals.marginPct = totals.marginWeight > 0 ? totals.marginValue / totals.marginWeight : null;
   totals.marginRub = totals.marginPct === null ? null : totals.factRevenue * totals.marginPct;
-  return {
+  totals.planMarginPct = totals.planMarginWeight > 0 ? totals.planMarginValue / totals.planMarginWeight : null;
+  totals.planMarginRub = totals.planMarginPct === null ? null : totals.planToDateRevenue * totals.planMarginPct;
+  const planAdTotalsByPlatform = skuPlanFactPlanAdTotalsByPlatform(monthKey, periodStart, selectedDate);
+  const planDrrByPlatform = SKU_PLAN_FACT_PLATFORMS.reduce((acc, platform) => {
+    acc[platform] = planAdTotalsByPlatform[platform]?.drr ?? null;
+    return acc;
+  }, {});
+  const model = {
     filters,
     months,
     monthKey,
@@ -1380,18 +1987,13 @@ function skuPlanFactBuildModel() {
     unmappedCount: unmappedRows.length,
     unmappedRevenue,
     quality,
-    planDrrByPlatform: {
-      wb: Number.isFinite(Number(state.iuDrrSummary?.planPctDefault)) ? Number(state.iuDrrSummary.planPctDefault) : 0.08,
-      ozon: Number.isFinite(Number(state.iuDrrSummary?.ozonPlanPctDefault)) ? Number(state.iuDrrSummary.ozonPlanPctDefault) : 0.25,
-      ya: null,
-      goldapple: null,
-      letu: null,
-      magnit: null
-    },
+    planAdTotalsByPlatform,
+    planDrrByPlatform,
     totals,
-    planDrrWb: Number.isFinite(Number(state.iuDrrSummary?.planPctDefault)) ? Number(state.iuDrrSummary.planPctDefault) : 0.08,
-    planDrrOzon: Number.isFinite(Number(state.iuDrrSummary?.ozonPlanPctDefault)) ? Number(state.iuDrrSummary.ozonPlanPctDefault) : 0.25
+    planDrrWb: planDrrByPlatform.wb,
+    planDrrOzon: planDrrByPlatform.ozon
   };
+  return skuPlanFactApplyPayrollKpiToModel(model);
 }
 
 function skuPlanFactTone(value) {
@@ -3230,13 +3832,15 @@ function skuPlanFactReconciliationHtml(items = []) {
 
 function skuPlanFactPlatformCell(metric, planDrr = null) {
   if (!metric) return '<div class="muted small">—</div>';
-  const drrTone = metric.drr !== null && planDrr !== null && metric.drr > planDrr ? 'danger-text' : '';
+  const planLimit = metric.planDrr ?? planDrr;
+  const drrTone = metric.drr !== null && planLimit !== null && planLimit !== undefined && metric.drr > planLimit ? 'danger-text' : '';
   return `
     <div><strong>${fmt.money(metric.factRevenue)}</strong> <span class="muted small">/ ${fmt.money(metric.planToDateRevenue)}</span></div>
     <div class="muted small">${fmt.int(metric.factUnits)} шт. / план ${fmt.int(metric.planToDateUnits)} шт.</div>
     <div class="badge-stack" style="margin-top:6px">
       ${badge(fmt.pct(metric.completionToDate), skuPlanFactTone(metric.completionToDate))}
       ${metric.drr !== null ? `<span class="chip ${drrTone ? 'danger' : ''}">ДРР ${fmt.pct(metric.drr)}</span>` : ''}
+      ${metric.planDrr !== null && metric.planDrr !== undefined ? `<span class="chip info">план ${fmt.pct(metric.planDrr)}</span>` : ''}
     </div>
   `;
 }
@@ -3296,6 +3900,10 @@ function skuPlanFactPlatformSummary(model = {}, platform = '') {
     acc.planUnits += numberOrZero(metric.planUnits);
     acc.factUnits += numberOrZero(metric.factUnits);
     acc.adSpend += numberOrZero(metric.adSpend);
+    if (metric.planAdSpend !== null && metric.planAdSpend !== undefined) {
+      acc.planAdSpend += numberOrZero(metric.planAdSpend);
+      acc.hasPlanAdSpend = true;
+    }
     acc.rows += 1;
     if (numberOrZero(metric.planToDateRevenue) > 0 && numberOrZero(metric.factRevenue) < numberOrZero(metric.planToDateRevenue)) acc.underPlan += 1;
     skuPlanFactMergeDailyIntoMap(acc.dailyMap, metric.factDaily);
@@ -3305,18 +3913,63 @@ function skuPlanFactPlatformSummary(model = {}, platform = '') {
       acc.marginValue += marginPct * marginWeight;
       acc.marginWeight += marginWeight;
     }
+    const planMarginPct = skuPlanFactNormalizeRatio(metric.planMarginPct);
+    const planMarginWeight = numberOrZero(metric.planToDateRevenue) || numberOrZero(metric.planRevenue);
+    if (planMarginPct !== null && planMarginWeight > 0) {
+      acc.planMarginValue += planMarginPct * planMarginWeight;
+      acc.planMarginWeight += planMarginWeight;
+    }
     return acc;
-  }, { platform, rows: 0, underPlan: 0, planRevenue: 0, planToDateRevenue: 0, factRevenue: 0, planUnits: 0, factUnits: 0, adSpend: 0, marginValue: 0, marginWeight: 0, dailyMap: new Map() });
+  }, { platform, rows: 0, underPlan: 0, planRevenue: 0, planToDateRevenue: 0, factRevenue: 0, planUnits: 0, factUnits: 0, adSpend: 0, planAdSpend: 0, hasPlanAdSpend: false, marginValue: 0, marginWeight: 0, planMarginValue: 0, planMarginWeight: 0, dailyMap: new Map() });
   summary.label = skuPlanFactPlatformLabel(platform);
   summary.completionToDate = summary.planToDateRevenue > 0 ? summary.factRevenue / summary.planToDateRevenue : null;
   summary.completionMonth = summary.planRevenue > 0 ? summary.factRevenue / summary.planRevenue : null;
   summary.gapToDate = summary.factRevenue - summary.planToDateRevenue;
   summary.drr = summary.factRevenue > 0 ? summary.adSpend / summary.factRevenue : null;
+  summary.planAdSpend = summary.hasPlanAdSpend ? summary.planAdSpend : null;
+  summary.planDrr = summary.planToDateRevenue > 0 && summary.planAdSpend !== null ? summary.planAdSpend / summary.planToDateRevenue : null;
   summary.marginPct = summary.marginWeight > 0 ? summary.marginValue / summary.marginWeight : null;
   summary.marginRub = summary.marginPct === null ? null : summary.factRevenue * summary.marginPct;
+  summary.planMarginPct = summary.planMarginWeight > 0 ? summary.planMarginValue / summary.planMarginWeight : null;
+  summary.planMarginRub = summary.planMarginPct === null ? null : summary.planToDateRevenue * summary.planMarginPct;
   summary.factDaily = skuPlanFactDailyArrayFromMap(summary.dailyMap);
   summary.scoreHistory = skuPlanFactBuildScoreHistory(summary, model.monthKey || '', model.periodStart || '', model.periodEnd || model.selectedDate || '');
   summary.completionDelta = skuPlanFactCompletionDelta(summary.scoreHistory);
+  const payrollMetric = platform === 'all' ? model.payrollKpi : model.payrollKpi?.platforms?.[platform];
+  if (payrollMetric) {
+    summary.payrollKpi = true;
+    summary.salaryIncluded = true;
+    if (platform === 'all') {
+      summary.rows = model.allRows?.length || summary.rows;
+      summary.underPlan = numberOrZero(model.totals?.underPlan);
+      summary.planUnits = numberOrZero(model.totals?.planUnits);
+      summary.factUnits = numberOrZero(model.totals?.factUnits);
+      summary.adSpend = numberOrZero(model.totals?.adSpend);
+      summary.planAdSpend = model.totals?.planAdSpend ?? summary.planAdSpend;
+      summary.planDrr = model.totals?.planDrr ?? summary.planDrr;
+      summary.marginPct = model.totals?.marginPct ?? summary.marginPct;
+      summary.marginRub = model.totals?.marginRub ?? summary.marginRub;
+      summary.planMarginPct = model.totals?.planMarginPct ?? summary.planMarginPct;
+      summary.planMarginRub = model.totals?.planMarginRub ?? summary.planMarginRub;
+      summary.drr = model.totals?.drr ?? summary.drr;
+    }
+    summary.planRevenue = payrollMetric.planRevenue;
+    summary.planToDateRevenue = payrollMetric.planToDateRevenue;
+    summary.factRevenue = payrollMetric.factRevenue;
+    summary.completionToDate = payrollMetric.completionToDate;
+    summary.completionMonth = payrollMetric.completionMonth;
+    summary.gapToDate = payrollMetric.gapToDate;
+    summary.scoreHistory = skuPlanFactBuildScoreHistory(summary, model.monthKey || '', model.payrollKpi?.periodStart || model.periodStart || '', model.payrollKpi?.periodEnd || model.periodEnd || '');
+    summary.completionDelta = skuPlanFactCompletionDelta(summary.scoreHistory);
+  } else if (model.payrollKpi?.excludedPlatforms?.includes(platform)) {
+    summary.payrollKpi = true;
+    summary.salaryIncluded = false;
+    summary.planRevenue = 0;
+    summary.planToDateRevenue = 0;
+    summary.completionToDate = null;
+    summary.completionMonth = null;
+    summary.gapToDate = summary.factRevenue;
+  }
   return summary;
 }
 
@@ -3399,6 +4052,57 @@ function skuPlanFactPlatformBoardHtml(model = {}) {
   `;
 }
 
+function skuPlanFactPayrollKpiHtml(model = {}) {
+  const payroll = model.payrollKpi;
+  if (!payroll) return '';
+  const channelHtml = SKU_PLAN_FACT_PAYROLL_PLATFORMS.map((platform) => {
+    const metric = payroll.platforms?.[platform] || {};
+    return `
+      <div class="mini-kpi ${skuPlanFactTone(metric.completionToDate)}">
+        <span>${escapeHtml(skuPlanFactPlatformLabel(platform))}</span>
+        <strong>${fmt.pct(metric.completionToDate)}</strong>
+        <span>${fmt.money(metric.factRevenue)} / ${fmt.money(metric.planToDateRevenue)}</span>
+      </div>
+    `;
+  }).join('');
+  const excluded = (payroll.excludedPlatforms || [])
+    .map((platform) => skuPlanFactPlatformLabel(platform))
+    .join(', ');
+  return `
+    <div class="card sku-plan-fact-card salary-plan-kpi-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>KPI / зарплатный план</h3>
+          <p class="small muted">Расчётный payroll-critical контур: WB, Ozon и Яндекс по выручке. B2B, Сайт и малые каналы не входят в автоматический KPI.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge('payroll critical', 'danger')}
+          ${badge(`${payroll.periodStart || '—'} - ${payroll.periodEnd || '—'}`, 'info')}
+        </div>
+      </div>
+      <div class="kpi-strip">
+        <div class="mini-kpi ${skuPlanFactTone(payroll.completionToDate)}">
+          <span>Выполнение KPI</span>
+          <strong>${fmt.pct(payroll.completionToDate)}</strong>
+          <span>${fmt.money(payroll.factRevenue)} / ${fmt.money(payroll.planToDateRevenue)}</span>
+        </div>
+        <div class="mini-kpi">
+          <span>План месяца</span>
+          <strong>${fmt.money(payroll.planRevenue)}</strong>
+          <span>${escapeHtml(payroll.monthKey || '')}</span>
+        </div>
+        <div class="mini-kpi ${payroll.gapToDate >= 0 ? 'ok' : 'danger'}">
+          <span>Отклонение к дате</span>
+          <strong>${fmt.money(payroll.gapToDate)}</strong>
+          <span>по зарплатному контуру</span>
+        </div>
+        ${channelHtml}
+      </div>
+      <div class="footer-note">Исключено из автоматического зарплатного KPI: ${escapeHtml(excluded || '—')}. SKU-строки ниже остаются рабочей детализацией и не заменяют контрольные суммы payroll-плана.</div>
+    </div>
+  `;
+}
+
 function skuPlanFactDisplayMetric(row = {}, model = {}) {
   const platform = model.filters?.platform || 'all';
   if (platform !== 'all') {
@@ -3416,8 +4120,17 @@ function skuPlanFactDisplayMetric(row = {}, model = {}) {
       gapToDate: numberOrZero(metric.gapToDate),
       adSpend: numberOrZero(metric.adSpend),
       drr: metric.drr ?? null,
+      planAdSpend: metric.planAdSpend ?? null,
+      planDrr: metric.planDrr ?? null,
+      planAdSource: metric.planAdSource || '',
       marginPct: skuPlanFactNormalizeRatio(metric.marginPct),
       marginRub: metric.marginRub ?? (skuPlanFactNormalizeRatio(metric.marginPct) === null ? null : numberOrZero(metric.factRevenue) * skuPlanFactNormalizeRatio(metric.marginPct)),
+      factMarginPct: skuPlanFactNormalizeRatio(metric.factMarginPct),
+      planMarginPct: skuPlanFactNormalizeRatio(metric.planMarginPct),
+      planMarginRub: metric.planMarginRub ?? (skuPlanFactNormalizeRatio(metric.planMarginPct) === null ? null : numberOrZero(metric.planToDateRevenue) * skuPlanFactNormalizeRatio(metric.planMarginPct)),
+      marginIsPlanFallback: Boolean(metric.marginIsPlanFallback),
+      marginSource: metric.marginSource || '',
+      planMarginSource: metric.planMarginSource || '',
       scoreHistory: metric.scoreHistory || [],
       completionDelta: metric.completionDelta ?? null,
       stock: metric.stock ?? null,
@@ -3439,8 +4152,17 @@ function skuPlanFactDisplayMetric(row = {}, model = {}) {
     gapToDate: row.gapToDate,
     adSpend: row.adSpend,
     drr: row.drr,
+    planAdSpend: row.planAdSpend ?? null,
+    planDrr: row.planDrr ?? null,
+    planAdSource: '',
     marginPct: skuPlanFactNormalizeRatio(row.marginPct),
     marginRub: row.marginRub,
+    factMarginPct: null,
+    planMarginPct: skuPlanFactNormalizeRatio(row.planMarginPct),
+    planMarginRub: row.planMarginRub,
+    marginIsPlanFallback: false,
+    marginSource: '',
+    planMarginSource: '',
     scoreHistory: row.scoreHistory || [],
     completionDelta: row.completionDelta ?? null,
     stock: null,
@@ -3520,8 +4242,14 @@ function skuPlanFactFactPlanHtml(metric = {}) {
 
 function skuPlanFactMarginHtml(metric = {}) {
   const marginPct = skuPlanFactNormalizeRatio(metric.marginPct);
+  const planMarginPct = skuPlanFactNormalizeRatio(metric.planMarginPct);
   const tone = skuPlanFactMarginTone(marginPct);
-  const target = 0.3;
+  const target = planMarginPct ?? 0.3;
+  const metaHtml = [
+    `<b>${fmt.money(metric.marginRub)}</b>`,
+    planMarginPct !== null ? `<em>план ${fmt.pct(planMarginPct)} · ${fmt.money(metric.planMarginRub)}</em>` : '<em>план —</em>',
+    metric.marginIsPlanFallback ? '<em>факт маржи не пришёл, показана экономика SKU</em>' : ''
+  ].filter(Boolean).join('');
   return skuPlanFactHealthBarHtml({
     platform: metric.tonePlatform || metric.platform || 'all',
     label: 'Маржа',
@@ -3529,20 +4257,26 @@ function skuPlanFactMarginHtml(metric = {}) {
     valueText: fmt.pct(marginPct),
     barText: fmt.pct(marginPct),
     tone,
-    metaHtml: `<b>${fmt.money(metric.marginRub)}</b><em>цель ${fmt.pct(target)}</em>`
+    metaHtml
   });
 }
 
 function skuPlanFactAdHtml(metric = {}, model = {}) {
   const platform = metric.platform || 'all';
   const tonePlatform = metric.tonePlatform || platform || 'all';
-  const limit = platform !== 'all' ? model.planDrrByPlatform?.[platform] : 0.2;
+  const limit = metric.planDrr ?? (platform !== 'all' ? model.planDrrByPlatform?.[platform] : model.totals?.planDrr) ?? null;
   const drrTone = metric.drr === null
     ? ''
     : (limit !== null && limit !== undefined && metric.drr > limit ? 'danger-text' : (metric.drr > 0.2 ? 'warn-text' : 'ok-text'));
   const valueRatio = metric.drr === null
     ? 0
-    : (metric.drr <= limit ? 1 : Math.max(0.05, limit / metric.drr));
+    : (limit !== null && limit !== undefined && limit > 0
+      ? (metric.drr <= limit ? 1 : Math.max(0.05, limit / metric.drr))
+      : Math.max(0.05, 1 - Math.min(0.95, metric.drr)));
+  const planAdSpend = metric.planAdSpend ?? (platform === 'all' ? model.totals?.planAdSpend : null);
+  const planMeta = planAdSpend !== null && planAdSpend !== undefined
+    ? `план ${fmt.money(planAdSpend)}${limit !== null && limit !== undefined ? ` · ДРР план ${fmt.pct(limit)}` : ''}`
+    : 'план рекламы —';
   return skuPlanFactHealthBarHtml({
     platform: tonePlatform,
     label: 'ДРР',
@@ -3550,7 +4284,7 @@ function skuPlanFactAdHtml(metric = {}, model = {}) {
     valueText: fmt.pct(metric.drr),
     barText: fmt.pct(metric.drr),
     tone: drrTone.includes('danger') ? 'danger' : (drrTone.includes('warn') ? 'warn' : 'ok'),
-    metaHtml: `<b>${fmt.money(metric.adSpend)}</b><em>план ${fmt.pct(limit)}</em>`
+    metaHtml: `<b>${fmt.money(metric.adSpend)}</b><em>${planMeta}</em>`
   });
 }
 
@@ -3612,8 +4346,12 @@ function skuPlanFactExportColumns() {
       [`avg_check_${suffix}_plan`, `Средний чек ${label} план`],
       [`margin_${suffix}_pct`, `Маржа ${label}, %`],
       [`margin_${suffix}_rub`, `Маржа ${label}, ₽`],
+      [`plan_margin_${suffix}_pct`, `План маржи ${label}, %`],
+      [`plan_margin_${suffix}_rub`, `План маржи ${label}, ₽`],
       [`drr_${suffix}`, `ДРР ${label}`],
       [`ad_spend_${suffix}`, `Реклама ${label}, ₽`],
+      [`plan_drr_${suffix}`, `План ДРР ${label}`],
+      [`plan_ad_spend_${suffix}`, `План рекламы ${label}, ₽`],
       [`turnover_${suffix}_days`, `Оборачиваемость ${label}, дн`],
       [`stock_${suffix}`, `Остаток ${label}`]
     );
@@ -3626,7 +4364,11 @@ function skuPlanFactExportColumns() {
     ['gap_total_to_date', 'Отклонение за период, ₽'],
     ['margin_total_pct', 'Маржа всего, %'],
     ['margin_total_rub', 'Маржа всего, ₽'],
-    ['drr_total', 'ДРР total']
+    ['plan_margin_total_pct', 'План маржи всего, %'],
+    ['plan_margin_total_rub', 'План маржи всего, ₽'],
+    ['drr_total', 'ДРР total'],
+    ['plan_drr_total', 'План ДРР total'],
+    ['plan_ad_spend_total', 'План рекламы total, ₽']
   );
   return columns;
 }
@@ -3658,8 +4400,12 @@ function skuPlanFactExportRows(rows, model) {
       payload[`avg_check_${suffix}_plan`] = metric.planAvgCheck === null ? '' : Math.round(metric.planAvgCheck);
       payload[`margin_${suffix}_pct`] = skuPlanFactNormalizeRatio(metric.marginPct) === null ? '' : skuPlanFactNormalizeRatio(metric.marginPct);
       payload[`margin_${suffix}_rub`] = metric.marginRub === null || metric.marginRub === undefined ? '' : Math.round(metric.marginRub);
+      payload[`plan_margin_${suffix}_pct`] = skuPlanFactNormalizeRatio(metric.planMarginPct) === null ? '' : skuPlanFactNormalizeRatio(metric.planMarginPct);
+      payload[`plan_margin_${suffix}_rub`] = metric.planMarginRub === null || metric.planMarginRub === undefined ? '' : Math.round(metric.planMarginRub);
       payload[`drr_${suffix}`] = metric.drr === null ? '' : metric.drr;
       payload[`ad_spend_${suffix}`] = Math.round(metric.adSpend || 0);
+      payload[`plan_drr_${suffix}`] = metric.planDrr === null || metric.planDrr === undefined ? '' : metric.planDrr;
+      payload[`plan_ad_spend_${suffix}`] = metric.planAdSpend === null || metric.planAdSpend === undefined ? '' : Math.round(metric.planAdSpend);
       payload[`turnover_${suffix}_days`] = metric.turnoverDays === null ? '' : metric.turnoverDays;
       payload[`stock_${suffix}`] = metric.stock === null ? '' : Math.round(metric.stock);
     });
@@ -3670,14 +4416,22 @@ function skuPlanFactExportRows(rows, model) {
     payload.gap_total_to_date = Math.round(row.gapToDate || 0);
     payload.margin_total_pct = row.marginPct === null ? '' : row.marginPct;
     payload.margin_total_rub = row.marginRub === null ? '' : Math.round(row.marginRub || 0);
+    payload.plan_margin_total_pct = row.planMarginPct === null || row.planMarginPct === undefined ? '' : row.planMarginPct;
+    payload.plan_margin_total_rub = row.planMarginRub === null || row.planMarginRub === undefined ? '' : Math.round(row.planMarginRub || 0);
     payload.drr_total = row.drr === null ? '' : row.drr;
+    payload.plan_drr_total = row.planDrr === null || row.planDrr === undefined ? '' : row.planDrr;
+    payload.plan_ad_spend_total = row.planAdSpend === null || row.planAdSpend === undefined ? '' : Math.round(row.planAdSpend || 0);
     return payload;
   });
 }
 
 function downloadSkuPlanFactExcel(model) {
+  const now = Date.now();
+  if (skuPlanFactExcelDownloadLockUntil && now < skuPlanFactExcelDownloadLockUntil) return;
+  skuPlanFactExcelDownloadLockUntil = now + 1500;
   if (!model.rows.length) {
     window.alert('По текущим фильтрам нет строк для выгрузки.');
+    skuPlanFactExcelDownloadLockUntil = 0;
     return;
   }
   downloadLaunchesHtmlTable(skuPlanFactExportColumns(), skuPlanFactExportRows(model.rows, model), `sku-plan-fact-${model.monthKey}.xls`);
@@ -5576,6 +6330,8 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
         <button class="quick-chip" type="button" data-sku-plan-fact-export>Выгрузить в Excel</button>
       </div>
     </div>
+
+    ${skuPlanFactPayrollKpiHtml(model)}
 
     ${skuPlanFactPlatformBoardHtml(model)}
 

@@ -1,762 +1,817 @@
 {
-  "generatedAt": "2026-05-29T09:42:39.848Z",
+  "generatedAt": "2026-05-30T08:36:28.452Z",
   "sourceWorkbook": "План ф.xlsx",
   "sourceSheet": "01_ДДС_ИУ",
   "planYear": 2026,
-  "ozonSourceWorkbook": "Дашборд _ ИУ по Оз.xlsx",
-  "ozonSourceSheet": "Условия Озон",
-  "note": "IU WB plan comes from the plan workbook. Ozon GMV DR and AR rate come from the Smart-Sale IU plan when available. WB daily plan is parsed from the IU WB daily workbook and multiplied by the Smart-Sale 40% share.",
+  "ozonSourceWorkbook": "ИУ Смарт-Сейл.xlsx",
+  "ozonSourceSheet": "Лист1",
+  "note": "IU WB plan comes from the plan workbook. Ozon GMV DR and AR rate come from the two-cabinet Smart-Sale IU plan when available; the portal salary/KPI contour uses the Smart-Sale 40% share. WB daily plan is parsed from the IU WB daily workbook at the marketplace contour without the old 40% reduction.",
   "assumptions": {
     "ozonIuAdsRate": 0.24877996681564674,
-    "wbIuOurShare": 0.4
+    "ozonIuSmartShare": 0.4,
+    "wbIuOurShare": 1
   },
   "wbDailyPlan": {
     "status": "loaded",
-    "sourceWorkbook": "иу_2026_h_1_продажи_+_реклама_по_дням_22_05_2026 (2).xlsx",
-    "sourcePath": "C:\\Users\\artiu\\Downloads\\Telegram Desktop\\иу_2026_h_1_продажи_+_реклама_по_дням_22_05_2026 (2).xlsx",
+    "sourceWorkbook": "иу_2026_h_1_продажи_+_реклама_по_дням_3.xlsx",
+    "sourcePath": "C:\\Users\\artiu\\Downloads\\Telegram Desktop\\иу_2026_h_1_продажи_+_реклама_по_дням_3.xlsx",
     "sourceSheet": "sheet1",
-    "share": 0.4,
-    "rows": 82,
+    "share": 1,
+    "rows": 88,
     "from": "2026-03-01",
-    "to": "2026-05-21",
+    "to": "2026-05-27",
     "daily": [
       {
         "date": "2026-03-01",
         "monthKey": "2026-03",
         "gmvPlanGross": 3815904.8,
         "adsPlanGross": 813037.41,
-        "gmvPlanOur": 1526361.92,
-        "adsPlanOur": 325214.96,
-        "share": 0.4
+        "gmvPlanOur": 3815904.8,
+        "adsPlanOur": 813037.41,
+        "share": 1
       },
       {
         "date": "2026-03-02",
         "monthKey": "2026-03",
         "gmvPlanGross": 4330357.94,
         "adsPlanGross": 798927.13,
-        "gmvPlanOur": 1732143.18,
-        "adsPlanOur": 319570.85,
-        "share": 0.4
+        "gmvPlanOur": 4330357.94,
+        "adsPlanOur": 798927.13,
+        "share": 1
       },
       {
         "date": "2026-03-03",
         "monthKey": "2026-03",
         "gmvPlanGross": 3794147.61,
         "adsPlanGross": 909013.31,
-        "gmvPlanOur": 1517659.04,
-        "adsPlanOur": 363605.32,
-        "share": 0.4
+        "gmvPlanOur": 3794147.61,
+        "adsPlanOur": 909013.31,
+        "share": 1
       },
       {
         "date": "2026-03-04",
         "monthKey": "2026-03",
         "gmvPlanGross": 3887887.79,
         "adsPlanGross": 851597.48,
-        "gmvPlanOur": 1555155.12,
-        "adsPlanOur": 340638.99,
-        "share": 0.4
+        "gmvPlanOur": 3887887.79,
+        "adsPlanOur": 851597.48,
+        "share": 1
       },
       {
         "date": "2026-03-05",
         "monthKey": "2026-03",
         "gmvPlanGross": 3858524.73,
         "adsPlanGross": 896594.37,
-        "gmvPlanOur": 1543409.89,
-        "adsPlanOur": 358637.75,
-        "share": 0.4
+        "gmvPlanOur": 3858524.73,
+        "adsPlanOur": 896594.37,
+        "share": 1
       },
       {
         "date": "2026-03-06",
         "monthKey": "2026-03",
         "gmvPlanGross": 4280399.2,
         "adsPlanGross": 839311.89,
-        "gmvPlanOur": 1712159.68,
-        "adsPlanOur": 335724.76,
-        "share": 0.4
+        "gmvPlanOur": 4280399.2,
+        "adsPlanOur": 839311.89,
+        "share": 1
       },
       {
         "date": "2026-03-07",
         "monthKey": "2026-03",
         "gmvPlanGross": 3047340.45,
         "adsPlanGross": 876604.68,
-        "gmvPlanOur": 1218936.18,
-        "adsPlanOur": 350641.87,
-        "share": 0.4
+        "gmvPlanOur": 3047340.45,
+        "adsPlanOur": 876604.68,
+        "share": 1
       },
       {
         "date": "2026-03-08",
         "monthKey": "2026-03",
         "gmvPlanGross": 2801638.21,
         "adsPlanGross": 701199.1,
-        "gmvPlanOur": 1120655.28,
-        "adsPlanOur": 280479.64,
-        "share": 0.4
+        "gmvPlanOur": 2801638.21,
+        "adsPlanOur": 701199.1,
+        "share": 1
       },
       {
         "date": "2026-03-09",
         "monthKey": "2026-03",
         "gmvPlanGross": 3577927.23,
         "adsPlanGross": 796836.63,
-        "gmvPlanOur": 1431170.89,
-        "adsPlanOur": 318734.65,
-        "share": 0.4
+        "gmvPlanOur": 3577927.23,
+        "adsPlanOur": 796836.63,
+        "share": 1
       },
       {
         "date": "2026-03-10",
         "monthKey": "2026-03",
         "gmvPlanGross": 3649845.98,
         "adsPlanGross": 947467.79,
-        "gmvPlanOur": 1459938.39,
-        "adsPlanOur": 378987.12,
-        "share": 0.4
+        "gmvPlanOur": 3649845.98,
+        "adsPlanOur": 947467.79,
+        "share": 1
       },
       {
         "date": "2026-03-11",
         "monthKey": "2026-03",
         "gmvPlanGross": 3604913.23,
         "adsPlanGross": 934375.88,
-        "gmvPlanOur": 1441965.29,
-        "adsPlanOur": 373750.35,
-        "share": 0.4
+        "gmvPlanOur": 3604913.23,
+        "adsPlanOur": 934375.88,
+        "share": 1
       },
       {
         "date": "2026-03-12",
         "monthKey": "2026-03",
         "gmvPlanGross": 3963904.19,
         "adsPlanGross": 943257.77,
-        "gmvPlanOur": 1585561.68,
-        "adsPlanOur": 377303.11,
-        "share": 0.4
+        "gmvPlanOur": 3963904.19,
+        "adsPlanOur": 943257.77,
+        "share": 1
       },
       {
         "date": "2026-03-13",
         "monthKey": "2026-03",
         "gmvPlanGross": 4223577.87,
         "adsPlanGross": 1011749.49,
-        "gmvPlanOur": 1689431.15,
-        "adsPlanOur": 404699.8,
-        "share": 0.4
+        "gmvPlanOur": 4223577.87,
+        "adsPlanOur": 1011749.49,
+        "share": 1
       },
       {
         "date": "2026-03-14",
         "monthKey": "2026-03",
         "gmvPlanGross": 3748705.83,
         "adsPlanGross": 943085.54,
-        "gmvPlanOur": 1499482.33,
-        "adsPlanOur": 377234.22,
-        "share": 0.4
+        "gmvPlanOur": 3748705.83,
+        "adsPlanOur": 943085.54,
+        "share": 1
       },
       {
         "date": "2026-03-15",
         "monthKey": "2026-03",
         "gmvPlanGross": 3912142.34,
         "adsPlanGross": 969412.14,
-        "gmvPlanOur": 1564856.94,
-        "adsPlanOur": 387764.86,
-        "share": 0.4
+        "gmvPlanOur": 3912142.34,
+        "adsPlanOur": 969412.14,
+        "share": 1
       },
       {
         "date": "2026-03-16",
         "monthKey": "2026-03",
         "gmvPlanGross": 4344119.82,
         "adsPlanGross": 1001854.02,
-        "gmvPlanOur": 1737647.93,
-        "adsPlanOur": 400741.61,
-        "share": 0.4
+        "gmvPlanOur": 4344119.82,
+        "adsPlanOur": 1001854.02,
+        "share": 1
       },
       {
         "date": "2026-03-17",
         "monthKey": "2026-03",
         "gmvPlanGross": 4059360.83,
         "adsPlanGross": 968495.59,
-        "gmvPlanOur": 1623744.33,
-        "adsPlanOur": 387398.24,
-        "share": 0.4
+        "gmvPlanOur": 4059360.83,
+        "adsPlanOur": 968495.59,
+        "share": 1
       },
       {
         "date": "2026-03-18",
         "monthKey": "2026-03",
         "gmvPlanGross": 4848349.41,
         "adsPlanGross": 1000993.19,
-        "gmvPlanOur": 1939339.76,
-        "adsPlanOur": 400397.28,
-        "share": 0.4
+        "gmvPlanOur": 4848349.41,
+        "adsPlanOur": 1000993.19,
+        "share": 1
       },
       {
         "date": "2026-03-19",
         "monthKey": "2026-03",
         "gmvPlanGross": 4830180.56,
         "adsPlanGross": 976408.79,
-        "gmvPlanOur": 1932072.22,
-        "adsPlanOur": 390563.52,
-        "share": 0.4
+        "gmvPlanOur": 4830180.56,
+        "adsPlanOur": 976408.79,
+        "share": 1
       },
       {
         "date": "2026-03-20",
         "monthKey": "2026-03",
         "gmvPlanGross": 4653660.62,
         "adsPlanGross": 1016377.52,
-        "gmvPlanOur": 1861464.25,
-        "adsPlanOur": 406551.01,
-        "share": 0.4
+        "gmvPlanOur": 4653660.62,
+        "adsPlanOur": 1016377.52,
+        "share": 1
       },
       {
         "date": "2026-03-21",
         "monthKey": "2026-03",
         "gmvPlanGross": 4024086.65,
-        "adsPlanGross": 1029926.96,
-        "gmvPlanOur": 1609634.66,
-        "adsPlanOur": 411970.78,
-        "share": 0.4
+        "adsPlanGross": 1029926.97,
+        "gmvPlanOur": 4024086.65,
+        "adsPlanOur": 1029926.97,
+        "share": 1
       },
       {
         "date": "2026-03-22",
         "monthKey": "2026-03",
         "gmvPlanGross": 4003883.58,
         "adsPlanGross": 1146888.7,
-        "gmvPlanOur": 1601553.43,
-        "adsPlanOur": 458755.48,
-        "share": 0.4
+        "gmvPlanOur": 4003883.58,
+        "adsPlanOur": 1146888.7,
+        "share": 1
       },
       {
         "date": "2026-03-23",
         "monthKey": "2026-03",
         "gmvPlanGross": 4104472.53,
         "adsPlanGross": 1238462.57,
-        "gmvPlanOur": 1641789.01,
-        "adsPlanOur": 495385.03,
-        "share": 0.4
+        "gmvPlanOur": 4104472.53,
+        "adsPlanOur": 1238462.57,
+        "share": 1
       },
       {
         "date": "2026-03-24",
         "monthKey": "2026-03",
         "gmvPlanGross": 3932475.89,
         "adsPlanGross": 1311199.18,
-        "gmvPlanOur": 1572990.36,
-        "adsPlanOur": 524479.67,
-        "share": 0.4
+        "gmvPlanOur": 3932475.89,
+        "adsPlanOur": 1311199.18,
+        "share": 1
       },
       {
         "date": "2026-03-25",
         "monthKey": "2026-03",
         "gmvPlanGross": 3985318.17,
         "adsPlanGross": 1416996.37,
-        "gmvPlanOur": 1594127.27,
-        "adsPlanOur": 566798.55,
-        "share": 0.4
+        "gmvPlanOur": 3985318.17,
+        "adsPlanOur": 1416996.37,
+        "share": 1
       },
       {
         "date": "2026-03-26",
         "monthKey": "2026-03",
         "gmvPlanGross": 4043852.95,
         "adsPlanGross": 1268136.41,
-        "gmvPlanOur": 1617541.18,
-        "adsPlanOur": 507254.56,
-        "share": 0.4
+        "gmvPlanOur": 4043852.95,
+        "adsPlanOur": 1268136.41,
+        "share": 1
       },
       {
         "date": "2026-03-27",
         "monthKey": "2026-03",
         "gmvPlanGross": 4190657.95,
         "adsPlanGross": 1288090.87,
-        "gmvPlanOur": 1676263.18,
-        "adsPlanOur": 515236.35,
-        "share": 0.4
+        "gmvPlanOur": 4190657.95,
+        "adsPlanOur": 1288090.87,
+        "share": 1
       },
       {
         "date": "2026-03-28",
         "monthKey": "2026-03",
         "gmvPlanGross": 3542928.48,
         "adsPlanGross": 1136178.72,
-        "gmvPlanOur": 1417171.39,
-        "adsPlanOur": 454471.49,
-        "share": 0.4
+        "gmvPlanOur": 3542928.48,
+        "adsPlanOur": 1136178.72,
+        "share": 1
       },
       {
         "date": "2026-03-29",
         "monthKey": "2026-03",
         "gmvPlanGross": 3508879.36,
-        "adsPlanGross": 1216128.47,
-        "gmvPlanOur": 1403551.74,
-        "adsPlanOur": 486451.39,
-        "share": 0.4
+        "adsPlanGross": 1216128.48,
+        "gmvPlanOur": 3508879.36,
+        "adsPlanOur": 1216128.48,
+        "share": 1
       },
       {
         "date": "2026-03-30",
         "monthKey": "2026-03",
         "gmvPlanGross": 3609454.21,
         "adsPlanGross": 1319814.78,
-        "gmvPlanOur": 1443781.68,
-        "adsPlanOur": 527925.91,
-        "share": 0.4
+        "gmvPlanOur": 3609454.21,
+        "adsPlanOur": 1319814.78,
+        "share": 1
       },
       {
         "date": "2026-03-31",
         "monthKey": "2026-03",
         "gmvPlanGross": 3385424.14,
         "adsPlanGross": 1304760.41,
-        "gmvPlanOur": 1354169.66,
-        "adsPlanOur": 521904.16,
-        "share": 0.4
+        "gmvPlanOur": 3385424.14,
+        "adsPlanOur": 1304760.41,
+        "share": 1
       },
       {
         "date": "2026-04-01",
         "monthKey": "2026-04",
         "gmvPlanGross": 3721269.39,
         "adsPlanGross": 1329674.72,
-        "gmvPlanOur": 1488507.76,
-        "adsPlanOur": 531869.89,
-        "share": 0.4
+        "gmvPlanOur": 3721269.39,
+        "adsPlanOur": 1329674.72,
+        "share": 1
       },
       {
         "date": "2026-04-02",
         "monthKey": "2026-04",
         "gmvPlanGross": 3870862.47,
         "adsPlanGross": 1267228.44,
-        "gmvPlanOur": 1548344.99,
-        "adsPlanOur": 506891.38,
-        "share": 0.4
+        "gmvPlanOur": 3870862.47,
+        "adsPlanOur": 1267228.44,
+        "share": 1
       },
       {
         "date": "2026-04-03",
         "monthKey": "2026-04",
         "gmvPlanGross": 3387980.42,
         "adsPlanGross": 1491389.58,
-        "gmvPlanOur": 1355192.17,
-        "adsPlanOur": 596555.83,
-        "share": 0.4
+        "gmvPlanOur": 3387980.42,
+        "adsPlanOur": 1491389.58,
+        "share": 1
       },
       {
         "date": "2026-04-04",
         "monthKey": "2026-04",
         "gmvPlanGross": 3865461.11,
         "adsPlanGross": 1251412.37,
-        "gmvPlanOur": 1546184.44,
-        "adsPlanOur": 500564.95,
-        "share": 0.4
+        "gmvPlanOur": 3865461.11,
+        "adsPlanOur": 1251412.37,
+        "share": 1
       },
       {
         "date": "2026-04-05",
         "monthKey": "2026-04",
         "gmvPlanGross": 3292012.52,
         "adsPlanGross": 1321192.55,
-        "gmvPlanOur": 1316805.01,
-        "adsPlanOur": 528477.02,
-        "share": 0.4
+        "gmvPlanOur": 3292012.52,
+        "adsPlanOur": 1321192.55,
+        "share": 1
       },
       {
         "date": "2026-04-06",
         "monthKey": "2026-04",
         "gmvPlanGross": 3788740.98,
         "adsPlanGross": 1317889.58,
-        "gmvPlanOur": 1515496.39,
-        "adsPlanOur": 527155.83,
-        "share": 0.4
+        "gmvPlanOur": 3788740.98,
+        "adsPlanOur": 1317889.58,
+        "share": 1
       },
       {
         "date": "2026-04-07",
         "monthKey": "2026-04",
         "gmvPlanGross": 3474934.1,
         "adsPlanGross": 1336208.61,
-        "gmvPlanOur": 1389973.64,
-        "adsPlanOur": 534483.44,
-        "share": 0.4
+        "gmvPlanOur": 3474934.1,
+        "adsPlanOur": 1336208.61,
+        "share": 1
       },
       {
         "date": "2026-04-08",
         "monthKey": "2026-04",
         "gmvPlanGross": 3627440.37,
         "adsPlanGross": 1335571.88,
-        "gmvPlanOur": 1450976.15,
-        "adsPlanOur": 534228.75,
-        "share": 0.4
+        "gmvPlanOur": 3627440.37,
+        "adsPlanOur": 1335571.88,
+        "share": 1
       },
       {
         "date": "2026-04-09",
         "monthKey": "2026-04",
         "gmvPlanGross": 3802458.24,
         "adsPlanGross": 1274456.99,
-        "gmvPlanOur": 1520983.3,
-        "adsPlanOur": 509782.8,
-        "share": 0.4
+        "gmvPlanOur": 3802458.24,
+        "adsPlanOur": 1274456.99,
+        "share": 1
       },
       {
         "date": "2026-04-10",
         "monthKey": "2026-04",
         "gmvPlanGross": 3886675.66,
         "adsPlanGross": 1480929.77,
-        "gmvPlanOur": 1554670.26,
-        "adsPlanOur": 592371.91,
-        "share": 0.4
+        "gmvPlanOur": 3886675.66,
+        "adsPlanOur": 1480929.77,
+        "share": 1
       },
       {
         "date": "2026-04-11",
         "monthKey": "2026-04",
         "gmvPlanGross": 3760852.21,
         "adsPlanGross": 1334541.06,
-        "gmvPlanOur": 1504340.88,
-        "adsPlanOur": 533816.42,
-        "share": 0.4
+        "gmvPlanOur": 3760852.21,
+        "adsPlanOur": 1334541.06,
+        "share": 1
       },
       {
         "date": "2026-04-12",
         "monthKey": "2026-04",
         "gmvPlanGross": 3990319.06,
         "adsPlanGross": 1274989.29,
-        "gmvPlanOur": 1596127.62,
-        "adsPlanOur": 509995.72,
-        "share": 0.4
+        "gmvPlanOur": 3990319.06,
+        "adsPlanOur": 1274989.29,
+        "share": 1
       },
       {
         "date": "2026-04-13",
         "monthKey": "2026-04",
         "gmvPlanGross": 4403782.86,
         "adsPlanGross": 1379909.61,
-        "gmvPlanOur": 1761513.14,
-        "adsPlanOur": 551963.84,
-        "share": 0.4
+        "gmvPlanOur": 4403782.86,
+        "adsPlanOur": 1379909.61,
+        "share": 1
       },
       {
         "date": "2026-04-14",
         "monthKey": "2026-04",
-        "gmvPlanGross": 4389656.23,
+        "gmvPlanGross": 4389656.22,
         "adsPlanGross": 1386926.62,
-        "gmvPlanOur": 1755862.49,
-        "adsPlanOur": 554770.65,
-        "share": 0.4
+        "gmvPlanOur": 4389656.22,
+        "adsPlanOur": 1386926.62,
+        "share": 1
       },
       {
         "date": "2026-04-15",
         "monthKey": "2026-04",
-        "gmvPlanGross": 4411044.92,
+        "gmvPlanGross": 4411044.93,
         "adsPlanGross": 1548484.43,
-        "gmvPlanOur": 1764417.97,
-        "adsPlanOur": 619393.77,
-        "share": 0.4
+        "gmvPlanOur": 4411044.93,
+        "adsPlanOur": 1548484.43,
+        "share": 1
       },
       {
         "date": "2026-04-16",
         "monthKey": "2026-04",
         "gmvPlanGross": 4172078.19,
         "adsPlanGross": 1482017.84,
-        "gmvPlanOur": 1668831.28,
-        "adsPlanOur": 592807.14,
-        "share": 0.4
+        "gmvPlanOur": 4172078.19,
+        "adsPlanOur": 1482017.84,
+        "share": 1
       },
       {
         "date": "2026-04-17",
         "monthKey": "2026-04",
         "gmvPlanGross": 4636461.88,
         "adsPlanGross": 1336613.28,
-        "gmvPlanOur": 1854584.75,
-        "adsPlanOur": 534645.31,
-        "share": 0.4
+        "gmvPlanOur": 4636461.88,
+        "adsPlanOur": 1336613.28,
+        "share": 1
       },
       {
         "date": "2026-04-18",
         "monthKey": "2026-04",
         "gmvPlanGross": 3606591.57,
         "adsPlanGross": 1207438.64,
-        "gmvPlanOur": 1442636.63,
-        "adsPlanOur": 482975.46,
-        "share": 0.4
+        "gmvPlanOur": 3606591.57,
+        "adsPlanOur": 1207438.64,
+        "share": 1
       },
       {
         "date": "2026-04-19",
         "monthKey": "2026-04",
         "gmvPlanGross": 3398856.99,
         "adsPlanGross": 1332000.62,
-        "gmvPlanOur": 1359542.8,
-        "adsPlanOur": 532800.25,
-        "share": 0.4
+        "gmvPlanOur": 3398856.99,
+        "adsPlanOur": 1332000.62,
+        "share": 1
       },
       {
         "date": "2026-04-20",
         "monthKey": "2026-04",
         "gmvPlanGross": 4498635.02,
         "adsPlanGross": 1364066.08,
-        "gmvPlanOur": 1799454.01,
-        "adsPlanOur": 545626.43,
-        "share": 0.4
+        "gmvPlanOur": 4498635.02,
+        "adsPlanOur": 1364066.08,
+        "share": 1
       },
       {
         "date": "2026-04-21",
         "monthKey": "2026-04",
         "gmvPlanGross": 4407504.09,
         "adsPlanGross": 1286672.19,
-        "gmvPlanOur": 1763001.64,
-        "adsPlanOur": 514668.88,
-        "share": 0.4
+        "gmvPlanOur": 4407504.09,
+        "adsPlanOur": 1286672.19,
+        "share": 1
       },
       {
         "date": "2026-04-22",
         "monthKey": "2026-04",
         "gmvPlanGross": 4681982.85,
         "adsPlanGross": 1241567.76,
-        "gmvPlanOur": 1872793.14,
-        "adsPlanOur": 496627.1,
-        "share": 0.4
+        "gmvPlanOur": 4681982.85,
+        "adsPlanOur": 1241567.76,
+        "share": 1
       },
       {
         "date": "2026-04-23",
         "monthKey": "2026-04",
         "gmvPlanGross": 4940714.63,
         "adsPlanGross": 1187492.4,
-        "gmvPlanOur": 1976285.85,
-        "adsPlanOur": 474996.96,
-        "share": 0.4
+        "gmvPlanOur": 4940714.63,
+        "adsPlanOur": 1187492.4,
+        "share": 1
       },
       {
         "date": "2026-04-24",
         "monthKey": "2026-04",
         "gmvPlanGross": 4419896.03,
         "adsPlanGross": 1291694.24,
-        "gmvPlanOur": 1767958.41,
-        "adsPlanOur": 516677.7,
-        "share": 0.4
+        "gmvPlanOur": 4419896.03,
+        "adsPlanOur": 1291694.24,
+        "share": 1
       },
       {
         "date": "2026-04-25",
         "monthKey": "2026-04",
         "gmvPlanGross": 4164549.3,
         "adsPlanGross": 1169710.17,
-        "gmvPlanOur": 1665819.72,
-        "adsPlanOur": 467884.07,
-        "share": 0.4
+        "gmvPlanOur": 4164549.3,
+        "adsPlanOur": 1169710.17,
+        "share": 1
       },
       {
         "date": "2026-04-26",
         "monthKey": "2026-04",
         "gmvPlanGross": 4048261,
-        "adsPlanGross": 1219856.4,
-        "gmvPlanOur": 1619304.4,
-        "adsPlanOur": 487942.56,
-        "share": 0.4
+        "adsPlanGross": 1219856.41,
+        "gmvPlanOur": 4048261,
+        "adsPlanOur": 1219856.41,
+        "share": 1
       },
       {
         "date": "2026-04-27",
         "monthKey": "2026-04",
         "gmvPlanGross": 4644879.21,
         "adsPlanGross": 1183759.11,
-        "gmvPlanOur": 1857951.68,
-        "adsPlanOur": 473503.64,
-        "share": 0.4
+        "gmvPlanOur": 4644879.21,
+        "adsPlanOur": 1183759.11,
+        "share": 1
       },
       {
         "date": "2026-04-28",
         "monthKey": "2026-04",
         "gmvPlanGross": 4528878.17,
         "adsPlanGross": 1220629.99,
-        "gmvPlanOur": 1811551.27,
-        "adsPlanOur": 488252,
-        "share": 0.4
+        "gmvPlanOur": 4528878.17,
+        "adsPlanOur": 1220629.99,
+        "share": 1
       },
       {
         "date": "2026-04-29",
         "monthKey": "2026-04",
         "gmvPlanGross": 5012452.13,
         "adsPlanGross": 1418583.61,
-        "gmvPlanOur": 2004980.85,
-        "adsPlanOur": 567433.44,
-        "share": 0.4
+        "gmvPlanOur": 5012452.13,
+        "adsPlanOur": 1418583.61,
+        "share": 1
       },
       {
         "date": "2026-04-30",
         "monthKey": "2026-04",
         "gmvPlanGross": 3940919,
         "adsPlanGross": 1384216.27,
-        "gmvPlanOur": 1576367.6,
-        "adsPlanOur": 553686.51,
-        "share": 0.4
+        "gmvPlanOur": 3940919,
+        "adsPlanOur": 1384216.27,
+        "share": 1
       },
       {
         "date": "2026-05-01",
         "monthKey": "2026-05",
         "gmvPlanGross": 4631675.46,
         "adsPlanGross": 1154811.68,
-        "gmvPlanOur": 1852670.18,
-        "adsPlanOur": 461924.67,
-        "share": 0.4
+        "gmvPlanOur": 4631675.46,
+        "adsPlanOur": 1154811.68,
+        "share": 1
       },
       {
         "date": "2026-05-02",
         "monthKey": "2026-05",
         "gmvPlanGross": 4747594.37,
         "adsPlanGross": 1098303,
-        "gmvPlanOur": 1899037.75,
-        "adsPlanOur": 439321.2,
-        "share": 0.4
+        "gmvPlanOur": 4747594.37,
+        "adsPlanOur": 1098303,
+        "share": 1
       },
       {
         "date": "2026-05-03",
         "monthKey": "2026-05",
         "gmvPlanGross": 4955206.45,
         "adsPlanGross": 1270888.86,
-        "gmvPlanOur": 1982082.58,
-        "adsPlanOur": 508355.54,
-        "share": 0.4
+        "gmvPlanOur": 4955206.45,
+        "adsPlanOur": 1270888.86,
+        "share": 1
       },
       {
         "date": "2026-05-04",
         "monthKey": "2026-05",
         "gmvPlanGross": 6169777.7,
         "adsPlanGross": 1258358.39,
-        "gmvPlanOur": 2467911.08,
-        "adsPlanOur": 503343.36,
-        "share": 0.4
+        "gmvPlanOur": 6169777.7,
+        "adsPlanOur": 1258358.39,
+        "share": 1
       },
       {
         "date": "2026-05-05",
         "monthKey": "2026-05",
         "gmvPlanGross": 5456393.79,
         "adsPlanGross": 1309627.02,
-        "gmvPlanOur": 2182557.52,
-        "adsPlanOur": 523850.81,
-        "share": 0.4
+        "gmvPlanOur": 5456393.79,
+        "adsPlanOur": 1309627.02,
+        "share": 1
       },
       {
         "date": "2026-05-06",
         "monthKey": "2026-05",
         "gmvPlanGross": 5897745.97,
         "adsPlanGross": 1278387.65,
-        "gmvPlanOur": 2359098.39,
-        "adsPlanOur": 511355.06,
-        "share": 0.4
+        "gmvPlanOur": 5897745.97,
+        "adsPlanOur": 1278387.65,
+        "share": 1
       },
       {
         "date": "2026-05-07",
         "monthKey": "2026-05",
         "gmvPlanGross": 6743633.24,
         "adsPlanGross": 1262439.34,
-        "gmvPlanOur": 2697453.3,
-        "adsPlanOur": 504975.74,
-        "share": 0.4
+        "gmvPlanOur": 6743633.24,
+        "adsPlanOur": 1262439.34,
+        "share": 1
       },
       {
         "date": "2026-05-08",
         "monthKey": "2026-05",
         "gmvPlanGross": 5710201.88,
         "adsPlanGross": 1367112.82,
-        "gmvPlanOur": 2284080.75,
-        "adsPlanOur": 546845.13,
-        "share": 0.4
+        "gmvPlanOur": 5710201.88,
+        "adsPlanOur": 1367112.82,
+        "share": 1
       },
       {
         "date": "2026-05-09",
         "monthKey": "2026-05",
         "gmvPlanGross": 3795684.49,
         "adsPlanGross": 996532.01,
-        "gmvPlanOur": 1518273.8,
-        "adsPlanOur": 398612.8,
-        "share": 0.4
+        "gmvPlanOur": 3795684.49,
+        "adsPlanOur": 996532.01,
+        "share": 1
       },
       {
         "date": "2026-05-10",
         "monthKey": "2026-05",
         "gmvPlanGross": 5054095.14,
         "adsPlanGross": 1188305.35,
-        "gmvPlanOur": 2021638.06,
-        "adsPlanOur": 475322.14,
-        "share": 0.4
+        "gmvPlanOur": 5054095.14,
+        "adsPlanOur": 1188305.35,
+        "share": 1
       },
       {
         "date": "2026-05-11",
         "monthKey": "2026-05",
-        "gmvPlanGross": 5734666,
+        "gmvPlanGross": 5734666.01,
         "adsPlanGross": 1422259.84,
-        "gmvPlanOur": 2293866.4,
-        "adsPlanOur": 568903.94,
-        "share": 0.4
+        "gmvPlanOur": 5734666.01,
+        "adsPlanOur": 1422259.84,
+        "share": 1
       },
       {
         "date": "2026-05-12",
         "monthKey": "2026-05",
         "gmvPlanGross": 6093069.79,
         "adsPlanGross": 1498771.51,
-        "gmvPlanOur": 2437227.92,
-        "adsPlanOur": 599508.6,
-        "share": 0.4
+        "gmvPlanOur": 6093069.79,
+        "adsPlanOur": 1498771.51,
+        "share": 1
       },
       {
         "date": "2026-05-13",
         "monthKey": "2026-05",
         "gmvPlanGross": 7028795.38,
         "adsPlanGross": 1386770.7,
-        "gmvPlanOur": 2811518.15,
-        "adsPlanOur": 554708.28,
-        "share": 0.4
+        "gmvPlanOur": 7028795.38,
+        "adsPlanOur": 1386770.7,
+        "share": 1
       },
       {
         "date": "2026-05-14",
         "monthKey": "2026-05",
-        "gmvPlanGross": 7293878.26,
+        "gmvPlanGross": 7293878.27,
         "adsPlanGross": 1447977.04,
-        "gmvPlanOur": 2917551.3,
-        "adsPlanOur": 579190.82,
-        "share": 0.4
+        "gmvPlanOur": 7293878.27,
+        "adsPlanOur": 1447977.04,
+        "share": 1
       },
       {
         "date": "2026-05-15",
         "monthKey": "2026-05",
         "gmvPlanGross": 7303117.71,
-        "adsPlanGross": 1425404.54,
-        "gmvPlanOur": 2921247.08,
-        "adsPlanOur": 570161.82,
-        "share": 0.4
+        "adsPlanGross": 1425404.55,
+        "gmvPlanOur": 7303117.71,
+        "adsPlanOur": 1425404.55,
+        "share": 1
       },
       {
         "date": "2026-05-16",
         "monthKey": "2026-05",
         "gmvPlanGross": 6457589.9,
         "adsPlanGross": 1229640.13,
-        "gmvPlanOur": 2583035.96,
-        "adsPlanOur": 491856.05,
-        "share": 0.4
+        "gmvPlanOur": 6457589.9,
+        "adsPlanOur": 1229640.13,
+        "share": 1
       },
       {
         "date": "2026-05-17",
         "monthKey": "2026-05",
         "gmvPlanGross": 6452651.54,
         "adsPlanGross": 1255539.36,
-        "gmvPlanOur": 2581060.62,
-        "adsPlanOur": 502215.74,
-        "share": 0.4
+        "gmvPlanOur": 6452651.54,
+        "adsPlanOur": 1255539.36,
+        "share": 1
       },
       {
         "date": "2026-05-18",
         "monthKey": "2026-05",
         "gmvPlanGross": 7506384.54,
         "adsPlanGross": 1314600.31,
-        "gmvPlanOur": 3002553.82,
-        "adsPlanOur": 525840.12,
-        "share": 0.4
+        "gmvPlanOur": 7506384.54,
+        "adsPlanOur": 1314600.31,
+        "share": 1
       },
       {
         "date": "2026-05-19",
         "monthKey": "2026-05",
         "gmvPlanGross": 6475498.87,
         "adsPlanGross": 1216500.98,
-        "gmvPlanOur": 2590199.55,
-        "adsPlanOur": 486600.39,
-        "share": 0.4
+        "gmvPlanOur": 6475498.87,
+        "adsPlanOur": 1216500.98,
+        "share": 1
       },
       {
         "date": "2026-05-20",
         "monthKey": "2026-05",
         "gmvPlanGross": 6540097.27,
         "adsPlanGross": 1273308.5,
-        "gmvPlanOur": 2616038.91,
-        "adsPlanOur": 509323.4,
-        "share": 0.4
+        "gmvPlanOur": 6540097.27,
+        "adsPlanOur": 1273308.5,
+        "share": 1
       },
       {
         "date": "2026-05-21",
         "monthKey": "2026-05",
         "gmvPlanGross": 6373692.99,
         "adsPlanGross": 1231554.43,
-        "gmvPlanOur": 2549477.2,
-        "adsPlanOur": 492621.77,
-        "share": 0.4
+        "gmvPlanOur": 6373692.99,
+        "adsPlanOur": 1231554.43,
+        "share": 1
+      },
+      {
+        "date": "2026-05-22",
+        "monthKey": "2026-05",
+        "gmvPlanGross": 6577401.61,
+        "adsPlanGross": 1155957.34,
+        "gmvPlanOur": 6577401.61,
+        "adsPlanOur": 1155957.34,
+        "share": 1
+      },
+      {
+        "date": "2026-05-23",
+        "monthKey": "2026-05",
+        "gmvPlanGross": 5334155.96,
+        "adsPlanGross": 1031011.48,
+        "gmvPlanOur": 5334155.96,
+        "adsPlanOur": 1031011.48,
+        "share": 1
+      },
+      {
+        "date": "2026-05-24",
+        "monthKey": "2026-05",
+        "gmvPlanGross": 5394451.82,
+        "adsPlanGross": 1118135.05,
+        "gmvPlanOur": 5394451.82,
+        "adsPlanOur": 1118135.05,
+        "share": 1
+      },
+      {
+        "date": "2026-05-25",
+        "monthKey": "2026-05",
+        "gmvPlanGross": 5972842.95,
+        "adsPlanGross": 1281528.84,
+        "gmvPlanOur": 5972842.95,
+        "adsPlanOur": 1281528.84,
+        "share": 1
+      },
+      {
+        "date": "2026-05-26",
+        "monthKey": "2026-05",
+        "gmvPlanGross": 5524041.07,
+        "adsPlanGross": 1149846.18,
+        "gmvPlanOur": 5524041.07,
+        "adsPlanOur": 1149846.18,
+        "share": 1
+      },
+      {
+        "date": "2026-05-27",
+        "monthKey": "2026-05",
+        "gmvPlanGross": 5501263.78,
+        "adsPlanGross": 1161323.48,
+        "gmvPlanOur": 5501263.78,
+        "adsPlanOur": 1161323.48,
+        "share": 1
       }
     ],
     "monthly": {
@@ -765,11 +820,11 @@
         "days": 31,
         "from": "2026-03-01",
         "to": "2026-03-31",
-        "gmvPlanGross": 121564322.55,
-        "adsPlanGross": 31873183.16,
-        "gmvPlanOur": 48625729.02,
-        "adsPlanOur": 12749273.26,
-        "adsPlanRate": 0.26219192014079956
+        "gmvPlanGross": 121564322.54,
+        "adsPlanGross": 31873183.14,
+        "gmvPlanOur": 121564322.54,
+        "adsPlanOur": 31873183.14,
+        "adsPlanRate": 0.2621919200801067
       },
       "2026-04": {
         "monthKey": "2026-04",
@@ -777,21 +832,21 @@
         "from": "2026-04-01",
         "to": "2026-04-30",
         "gmvPlanGross": 122776150.6,
-        "adsPlanGross": 39657124.1,
-        "gmvPlanOur": 49110460.24,
-        "adsPlanOur": 15862849.64,
-        "adsPlanRate": 0.32300348158985204
+        "adsPlanGross": 39657124.12,
+        "gmvPlanOur": 122776150.6,
+        "adsPlanOur": 39657124.12,
+        "adsPlanRate": 0.3230034817527501
       },
       "2026-05": {
         "monthKey": "2026-05",
-        "days": 21,
+        "days": 27,
         "from": "2026-05-01",
-        "to": "2026-05-21",
-        "gmvPlanGross": 126421450.74,
-        "adsPlanGross": 26887093.46,
-        "gmvPlanOur": 50568580.3,
-        "adsPlanOur": 10754837.38,
-        "adsPlanRate": 0.21267825428747505
+        "to": "2026-05-27",
+        "gmvPlanGross": 160725607.95,
+        "adsPlanGross": 33784895.84,
+        "gmvPlanOur": 160725607.95,
+        "adsPlanOur": 33784895.84,
+        "adsPlanRate": 0.21020232102970252
       }
     }
   },
@@ -800,161 +855,201 @@
       "label": "2026-03 2026",
       "days": 31,
       "iuRevenueWb": 0,
-      "iuRevenueOzon": 93156616.50550051,
-      "iuRevenueTotal": 93156616.50550051,
+      "iuRevenueOzon": 37262646.6022002,
+      "iuRevenueOzonGross": 93156616.50550051,
+      "iuRevenueOzonShare": 0.4,
+      "iuRevenueTotal": 37262646.6022002,
       "iuAdsWb": 0,
-      "iuAdsOzon": 23175499.962896347,
-      "iuAdsTotal": 23175499.962896347,
+      "iuAdsOzon": 9270199.985158538,
+      "iuAdsOzonGross": 23175499.962896347,
+      "iuAdsOzonShare": 0.4,
+      "iuAdsTotal": 9270199.985158538,
       "dailyIuRevenueWb": 0,
-      "dailyIuRevenueOzon": 3005052.145338726,
-      "dailyIuRevenueTotal": 3005052.145338726,
+      "dailyIuRevenueOzon": 1202020.8581354904,
+      "dailyIuRevenueTotal": 1202020.8581354904,
       "dailyIuAdsWb": 0,
-      "dailyIuAdsOzon": 747596.7729966564,
-      "dailyIuAdsTotal": 747596.7729966564
+      "dailyIuAdsOzon": 299038.70919866255,
+      "dailyIuAdsTotal": 299038.70919866255
     },
     "2026-04": {
       "label": "2026-04 2026",
       "days": 30,
       "iuRevenueWb": 0,
-      "iuRevenueOzon": 104504530.805005,
-      "iuRevenueTotal": 104504530.805005,
+      "iuRevenueOzon": 41801812.322002,
+      "iuRevenueOzonGross": 104504530.805005,
+      "iuRevenueOzonShare": 0.4,
+      "iuRevenueTotal": 41801812.322002,
       "iuAdsWb": 0,
-      "iuAdsOzon": 25998633.705753874,
-      "iuAdsTotal": 25998633.705753874,
+      "iuAdsOzon": 10399453.48230155,
+      "iuAdsOzonGross": 25998633.705753874,
+      "iuAdsOzonShare": 0.4,
+      "iuAdsTotal": 10399453.48230155,
       "dailyIuRevenueWb": 0,
-      "dailyIuRevenueOzon": 3483484.3601668333,
-      "dailyIuRevenueTotal": 3483484.3601668333,
+      "dailyIuRevenueOzon": 1393393.7440667334,
+      "dailyIuRevenueTotal": 1393393.7440667334,
       "dailyIuAdsWb": 0,
-      "dailyIuAdsOzon": 866621.1235251292,
-      "dailyIuAdsTotal": 866621.1235251292
+      "dailyIuAdsOzon": 346648.4494100517,
+      "dailyIuAdsTotal": 346648.4494100517
     },
     "2026-05": {
       "label": "Май 2026",
       "days": 31,
       "iuRevenueWb": 179525953,
-      "iuRevenueOzon": 103407637.51260701,
-      "iuRevenueTotal": 282933590.512607,
+      "iuRevenueOzon": 41363055.005042806,
+      "iuRevenueOzonGross": 103407637.51260701,
+      "iuRevenueOzonShare": 0.4,
+      "iuRevenueTotal": 220889008.0050428,
       "iuAdsWb": 14362076.24,
-      "iuAdsOzon": 25725748.628870793,
-      "iuAdsTotal": 40087824.868870795,
+      "iuAdsOzon": 10290299.451548317,
+      "iuAdsOzonGross": 25725748.628870793,
+      "iuAdsOzonShare": 0.4,
+      "iuAdsTotal": 24652375.691548318,
       "dailyIuRevenueWb": 5791159.774193549,
-      "dailyIuRevenueOzon": 3335730.2423421615,
-      "dailyIuRevenueTotal": 9126890.016535709,
+      "dailyIuRevenueOzon": 1334292.0969368648,
+      "dailyIuRevenueTotal": 7125451.871130412,
       "dailyIuAdsWb": 463292.78193548386,
-      "dailyIuAdsOzon": 829862.858995832,
-      "dailyIuAdsTotal": 1293155.640931316
+      "dailyIuAdsOzon": 331945.1435983328,
+      "dailyIuAdsTotal": 795237.9255338167
     },
     "2026-06": {
       "label": "Июн 2026",
       "days": 30,
       "iuRevenueWb": 183389907,
-      "iuRevenueOzon": 102003858.797003,
-      "iuRevenueTotal": 285393765.79700303,
+      "iuRevenueOzon": 40801543.518801205,
+      "iuRevenueOzonGross": 102003858.797003,
+      "iuRevenueOzonShare": 0.4,
+      "iuRevenueTotal": 224191450.5188012,
       "iuAdsWb": 14671192.56,
-      "iuAdsOzon": 25376516.606586322,
-      "iuAdsTotal": 40047709.166586325,
+      "iuAdsOzon": 10150606.64263453,
+      "iuAdsOzonGross": 25376516.606586322,
+      "iuAdsOzonShare": 0.4,
+      "iuAdsTotal": 24821799.20263453,
       "dailyIuRevenueWb": 6112996.9,
-      "dailyIuRevenueOzon": 3400128.6265667668,
-      "dailyIuRevenueTotal": 9513125.526566768,
+      "dailyIuRevenueOzon": 1360051.450626707,
+      "dailyIuRevenueTotal": 7473048.350626707,
       "dailyIuAdsWb": 489039.75200000004,
-      "dailyIuAdsOzon": 845883.8868862108,
-      "dailyIuAdsTotal": 1334923.6388862107
+      "dailyIuAdsOzon": 338353.5547544843,
+      "dailyIuAdsTotal": 827393.3067544843
     },
     "2026-07": {
       "label": "Июл 2026",
       "days": 31,
       "iuRevenueWb": 191150691,
-      "iuRevenueOzon": 105625550.474901,
-      "iuRevenueTotal": 296776241.474901,
+      "iuRevenueOzon": 42250220.189960405,
+      "iuRevenueOzonGross": 105625550.474901,
+      "iuRevenueOzonShare": 0.4,
+      "iuRevenueTotal": 233400911.18996042,
       "iuAdsWb": 15292055.280000001,
-      "iuAdsOzon": 26277520.942030292,
-      "iuAdsTotal": 41569576.2220303,
+      "iuAdsOzon": 10511008.376812117,
+      "iuAdsOzonGross": 26277520.942030292,
+      "iuAdsOzonShare": 0.4,
+      "iuAdsTotal": 25803063.656812117,
       "dailyIuRevenueWb": 6166151.322580645,
-      "dailyIuRevenueOzon": 3407275.821771,
-      "dailyIuRevenueTotal": 9573427.144351646,
+      "dailyIuRevenueOzon": 1362910.3287084003,
+      "dailyIuRevenueTotal": 7529061.651289046,
       "dailyIuAdsWb": 493292.10580645164,
-      "dailyIuAdsOzon": 847661.9658719449,
-      "dailyIuAdsTotal": 1340954.0716783968
+      "dailyIuAdsOzon": 339064.786348778,
+      "dailyIuAdsTotal": 832356.8921552296
     },
     "2026-08": {
       "label": "Авг 2026",
       "days": 31,
       "iuRevenueWb": 201066371,
-      "iuRevenueOzon": 112322218.777206,
-      "iuRevenueTotal": 313388589.777206,
+      "iuRevenueOzon": 44928887.51088241,
+      "iuRevenueOzonGross": 112322218.777206,
+      "iuRevenueOzonShare": 0.4,
+      "iuRevenueTotal": 245995258.5108824,
       "iuAdsWb": 16085309.68,
-      "iuAdsOzon": 27943517.860053122,
-      "iuAdsTotal": 44028827.54005312,
+      "iuAdsOzon": 11177407.14402125,
+      "iuAdsOzonGross": 27943517.860053122,
+      "iuAdsOzonShare": 0.4,
+      "iuAdsTotal": 27262716.82402125,
       "dailyIuRevenueWb": 6486011.9677419355,
-      "dailyIuRevenueOzon": 3623297.379909871,
-      "dailyIuRevenueTotal": 10109309.347651806,
+      "dailyIuRevenueOzon": 1449318.9519639486,
+      "dailyIuRevenueTotal": 7935330.9197058845,
       "dailyIuAdsWb": 518880.9574193548,
-      "dailyIuAdsOzon": 901403.8019371975,
-      "dailyIuAdsTotal": 1420284.7593565523
+      "dailyIuAdsOzon": 360561.520774879,
+      "dailyIuAdsTotal": 879442.4781942338
     },
     "2026-09": {
       "label": "Сен 2026",
       "days": 30,
       "iuRevenueWb": 216150839,
-      "iuRevenueOzon": 131926900.70140499,
-      "iuRevenueTotal": 348077739.701405,
+      "iuRevenueOzon": 52770760.280562,
+      "iuRevenueOzonGross": 131926900.70140499,
+      "iuRevenueOzonShare": 0.4,
+      "iuRevenueTotal": 268921599.280562,
       "iuAdsWb": 17292067.12,
-      "iuAdsOzon": 32820769.97858666,
-      "iuAdsTotal": 50112837.09858666,
+      "iuAdsOzon": 13128307.991434664,
+      "iuAdsOzonGross": 32820769.97858666,
+      "iuAdsOzonShare": 0.4,
+      "iuAdsTotal": 30420375.111434665,
       "dailyIuRevenueWb": 7205027.966666667,
-      "dailyIuRevenueOzon": 4397563.3567135,
-      "dailyIuRevenueTotal": 11602591.323380167,
+      "dailyIuRevenueOzon": 1759025.3426854,
+      "dailyIuRevenueTotal": 8964053.309352066,
       "dailyIuAdsWb": 576402.2373333334,
-      "dailyIuAdsOzon": 1094025.6659528886,
-      "dailyIuAdsTotal": 1670427.9032862221
+      "dailyIuAdsOzon": 437610.26638115547,
+      "dailyIuAdsTotal": 1014012.5037144888
     },
     "2026-10": {
       "label": "Окт 2026",
       "days": 31,
       "iuRevenueWb": 235531555,
-      "iuRevenueOzon": 129719435.371205,
-      "iuRevenueTotal": 365250990.371205,
+      "iuRevenueOzon": 51887774.148482,
+      "iuRevenueOzonGross": 129719435.371205,
+      "iuRevenueOzonShare": 0.4,
+      "iuRevenueTotal": 287419329.148482,
       "iuAdsWb": 18842524.400000002,
-      "iuAdsOzon": 32271596.826992813,
-      "iuAdsTotal": 51114121.226992816,
+      "iuAdsOzon": 12908638.730797127,
+      "iuAdsOzonGross": 32271596.826992813,
+      "iuAdsOzonShare": 0.4,
+      "iuAdsTotal": 31751163.13079713,
       "dailyIuRevenueWb": 7597792.096774193,
-      "dailyIuRevenueOzon": 4184497.9152001613,
-      "dailyIuRevenueTotal": 11782290.011974353,
+      "dailyIuRevenueOzon": 1673799.1660800646,
+      "dailyIuRevenueTotal": 9271591.26285426,
       "dailyIuAdsWb": 607823.3677419355,
-      "dailyIuAdsOzon": 1041019.2524836392,
-      "dailyIuAdsTotal": 1648842.6202255746
+      "dailyIuAdsOzon": 416407.7009934557,
+      "dailyIuAdsTotal": 1024231.0687353913
     },
     "2026-11": {
       "label": "Ноя 2026",
       "days": 30,
       "iuRevenueWb": 259373620,
-      "iuRevenueOzon": 126917638.188604,
-      "iuRevenueTotal": 386291258.188604,
+      "iuRevenueOzon": 50767055.2754416,
+      "iuRevenueOzonGross": 126917638.188604,
+      "iuRevenueOzonShare": 0.4,
+      "iuRevenueTotal": 310140675.2754416,
       "iuAdsWb": 20749889.6,
-      "iuAdsOzon": 31574565.81688116,
-      "iuAdsTotal": 52324455.41688116,
+      "iuAdsOzon": 12629826.326752465,
+      "iuAdsOzonGross": 31574565.81688116,
+      "iuAdsOzonShare": 0.4,
+      "iuAdsTotal": 33379715.926752467,
       "dailyIuRevenueWb": 8645787.333333334,
-      "dailyIuRevenueOzon": 4230587.9396201335,
-      "dailyIuRevenueTotal": 12876375.272953467,
+      "dailyIuRevenueOzon": 1692235.1758480533,
+      "dailyIuRevenueTotal": 10338022.509181386,
       "dailyIuAdsWb": 691662.9866666667,
-      "dailyIuAdsOzon": 1052485.527229372,
-      "dailyIuAdsTotal": 1744148.5138960385
+      "dailyIuAdsOzon": 420994.21089174884,
+      "dailyIuAdsTotal": 1112657.1975584156
     },
     "2026-12": {
       "label": "Дек 2026",
       "days": 31,
       "iuRevenueWb": 289011920,
-      "iuRevenueOzon": 143447038.351102,
-      "iuRevenueTotal": 432458958.351102,
+      "iuRevenueOzon": 57378815.3404408,
+      "iuRevenueOzonGross": 143447038.351102,
+      "iuRevenueOzonShare": 0.4,
+      "iuRevenueTotal": 346390735.3404408,
       "iuAdsWb": 23120953.6,
-      "iuAdsOzon": 35686749.44078996,
-      "iuAdsTotal": 58807703.04078996,
+      "iuAdsOzon": 14274699.776315985,
+      "iuAdsOzonGross": 35686749.44078996,
+      "iuAdsOzonShare": 0.4,
+      "iuAdsTotal": 37395653.37631599,
       "dailyIuRevenueWb": 9322965.161290323,
-      "dailyIuRevenueOzon": 4627323.817777484,
-      "dailyIuRevenueTotal": 13950288.979067806,
+      "dailyIuRevenueOzon": 1850929.5271109936,
+      "dailyIuRevenueTotal": 11173894.688401317,
       "dailyIuAdsWb": 745837.2129032259,
-      "dailyIuAdsOzon": 1151185.4658319342,
-      "dailyIuAdsTotal": 1897022.67873516
+      "dailyIuAdsOzon": 460474.1863327737,
+      "dailyIuAdsTotal": 1206311.3992359997
     }
   }
 }

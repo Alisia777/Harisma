@@ -1,6 +1,831 @@
 const EXECUTIVE_MARKETPLACE_KEYS = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
 const EXECUTIVE_SUPPORT_KEYS = ['cross', 'product'];
 const EXECUTIVE_WORKSTREAM_KEYS = [...EXECUTIVE_MARKETPLACE_KEYS, ...EXECUTIVE_SUPPORT_KEYS];
+const EXECUTIVE_FUNNEL_PLATFORMS = ['wb', 'ozon', 'ya'];
+const EXECUTIVE_FUNNEL_SUPPORT_KEYS = { wb: 'wb', ozon: 'ozon', ya: 'ym' };
+const EXECUTIVE_FUNNEL_DEFAULT_FILTERS = {
+  platform: 'all',
+  status: 'all',
+  search: '',
+  sort: 'completionAsc'
+};
+const executiveFunnelFilters = window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__ || { ...EXECUTIVE_FUNNEL_DEFAULT_FILTERS };
+window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__ = executiveFunnelFilters;
+
+function executiveFunnelNumber(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function executiveFunnelDateKey(value = '') {
+  return String(value || '').slice(0, 10);
+}
+
+function executiveFunnelRatio(value) {
+  if (typeof skuPlanFactNormalizeRatio === 'function') return skuPlanFactNormalizeRatio(value);
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return null;
+  return Math.abs(parsed) > 1 ? parsed / 100 : parsed;
+}
+
+function executiveFunnelTone(value, warn = 0.8, ok = 1) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '';
+  if (Number(value) >= ok) return 'ok';
+  if (Number(value) >= warn) return 'warn';
+  return 'danger';
+}
+
+function executiveFunnelScoreTone(score = 0) {
+  if (score >= 75) return 'ok';
+  if (score >= 55) return 'info';
+  if (score >= 35) return 'warn';
+  return 'danger';
+}
+
+function executiveFunnelPlatformLabel(platform = '') {
+  return typeof skuPlanFactPlatformLabel === 'function'
+    ? skuPlanFactPlatformLabel(platform)
+    : ({ wb: 'WB', ozon: 'Ozon', ya: 'Я.Маркет' }[platform] || platform);
+}
+
+function executiveFunnelOwner(row = {}, platform = '') {
+  const sku = row.sku || row || {};
+  const supportKey = EXECUTIVE_FUNNEL_SUPPORT_KEYS[platform] || platform;
+  const raw = sku?.ownersByPlatform?.[supportKey]
+    || sku?.owner?.byPlatform?.[supportKey]
+    || row.owner
+    || sku?.owner?.name
+    || '';
+  const owner = typeof canonicalOwnerName === 'function' ? canonicalOwnerName(raw) : String(raw || '').trim();
+  return owner || 'Без owner';
+}
+
+function executiveFunnelDateRange(start = '', end = '') {
+  const from = executiveFunnelDateKey(start);
+  const to = executiveFunnelDateKey(end);
+  if (!from || !to || from > to) return [];
+  const result = [];
+  const cursor = new Date(`${from}T00:00:00Z`);
+  const finish = new Date(`${to}T00:00:00Z`);
+  while (cursor <= finish && result.length < 45) {
+    result.push(cursor.toISOString().slice(0, 10));
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return result;
+}
+
+function executiveFunnelTrafficBucket() {
+  return { spend: 0, views: 0, clicks: 0, orders: 0, revenue: 0 };
+}
+
+function executiveFunnelDailyBucket(date = '') {
+  return {
+    date,
+    revenue: 0,
+    units: 0,
+    marginRub: 0,
+    internal: executiveFunnelTrafficBucket(),
+    external: executiveFunnelTrafficBucket(),
+    externalApiRevenue: 0,
+    externalApiUnits: 0
+  };
+}
+
+function executiveFunnelOwnerBucket(owner = 'Без owner') {
+  return {
+    owner,
+    skuKeys: new Set(),
+    platforms: new Set(),
+    articleMap: new Map(),
+    daily: new Map(),
+    planToDateRevenue: 0,
+    revenue: 0,
+    units: 0,
+    marginRub: 0,
+    marginWeight: 0,
+    internal: executiveFunnelTrafficBucket(),
+    external: executiveFunnelTrafficBucket(),
+    externalApiRevenue: 0,
+    externalApiUnits: 0
+  };
+}
+
+function executiveFunnelEnsureOwner(map, owner = '') {
+  const key = owner || 'Без owner';
+  if (!map.has(key)) map.set(key, executiveFunnelOwnerBucket(key));
+  return map.get(key);
+}
+
+function executiveFunnelEnsureDay(bucket, date = '') {
+  const key = executiveFunnelDateKey(date);
+  if (!key) return null;
+  if (!bucket.daily.has(key)) bucket.daily.set(key, executiveFunnelDailyBucket(key));
+  return bucket.daily.get(key);
+}
+
+function executiveFunnelAddTraffic(target, source = {}) {
+  target.spend += executiveFunnelNumber(source.spend);
+  target.views += executiveFunnelNumber(source.views);
+  target.clicks += executiveFunnelNumber(source.clicks);
+  target.orders += executiveFunnelNumber(source.orders);
+  target.revenue += executiveFunnelNumber(source.revenue);
+}
+
+function executiveFunnelAddArticle(bucket, row = {}, platform = '', revenue = 0) {
+  const articleKey = row.articleKey || row.article || row.sku?.articleKey || '';
+  if (!articleKey) return;
+  bucket.skuKeys.add(`${platform}:${articleKey}`);
+  const current = bucket.articleMap.get(articleKey) || {
+    articleKey,
+    article: row.article || articleKey,
+    name: row.name || row.sku?.name || '',
+    revenue: 0
+  };
+  current.revenue += executiveFunnelNumber(revenue);
+  bucket.articleMap.set(articleKey, current);
+}
+
+function executiveFunnelMetricActive(metric = {}) {
+  return Boolean(metric && (
+    executiveFunnelNumber(metric.factRevenue) > 0
+    || executiveFunnelNumber(metric.factUnits) > 0
+    || executiveFunnelNumber(metric.planToDateRevenue) > 0
+    || executiveFunnelNumber(metric.adSpend) > 0
+  ));
+}
+
+function executiveFunnelMetricMarginRub(metric = {}) {
+  const direct = Number(metric.marginRub);
+  if (Number.isFinite(direct)) return direct;
+  const marginPct = executiveFunnelRatio(metric.marginPct);
+  return marginPct === null ? 0 : executiveFunnelNumber(metric.factRevenue) * marginPct;
+}
+
+function executiveFunnelMoney(value) {
+  return value === null || value === undefined || !Number.isFinite(Number(value))
+    ? '—'
+    : fmt.money(value);
+}
+
+function executiveFunnelPct(value) {
+  return value === null || value === undefined || !Number.isFinite(Number(value))
+    ? '—'
+    : fmt.pct(value);
+}
+
+function executiveFunnelCompletionLevel(value) {
+  if (typeof skuPlanFactTone === 'function') {
+    const tone = skuPlanFactTone(value);
+    if (tone) return tone;
+  }
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return 'empty';
+  if (Number(value) >= 1) return 'ok';
+  if (Number(value) >= 0.9) return 'warn';
+  return 'danger';
+}
+
+function executiveFunnelCardStyle(platform = '', completion = null) {
+  if (typeof skuPlanFactCardStyle === 'function') return skuPlanFactCardStyle(platform, completion);
+  const hue = { wb: 275, ozon: 212, ya: 42, all: 205 }[platform] ?? 205;
+  const ratio = completion === null || completion === undefined || !Number.isFinite(Number(completion))
+    ? 0.12
+    : Math.min(1.35, Math.max(0.05, Number(completion)));
+  return `--pf-hue:${hue};--pf-fill:${(0.08 + Math.min(0.34, ratio * 0.24)).toFixed(3)};--pf-border:${(0.18 + Math.min(0.5, ratio * 0.3)).toFixed(3)};--pf-glow:${(0.04 + Math.min(0.18, ratio * 0.12)).toFixed(3)};--pf-progress:${Math.min(100, Math.max(0, ratio * 100)).toFixed(1)}%`;
+}
+
+function executiveFunnelOwnerIsNoise(owner = '', row = {}) {
+  const normalized = String(owner || '').trim().toLowerCase();
+  return Boolean(
+    row.syntheticUnmapped
+    || row.syntheticUnallocated
+    || !normalized
+    || normalized === 'без owner'
+    || normalized === 'без владельца'
+    || normalized === 'не в реестре'
+    || normalized.includes('не в реестре')
+  );
+}
+
+function executiveFunnelMetricPlanMarginRub(metric = {}) {
+  const direct = Number(metric.planMarginRub);
+  if (Number.isFinite(direct)) return direct;
+  const planMarginPct = executiveFunnelRatio(metric.planMarginPct);
+  return planMarginPct === null ? null : executiveFunnelNumber(metric.planToDateRevenue) * planMarginPct;
+}
+
+function executiveFunnelOwnerPlanBucket(owner = '') {
+  return {
+    owner,
+    skuKeys: new Set(),
+    platforms: new Map(),
+    planRevenue: 0,
+    planToDateRevenue: 0,
+    factRevenue: 0,
+    planUnits: 0,
+    factUnits: 0,
+    marginRub: 0,
+    marginWeight: 0,
+    planMarginRub: 0,
+    planMarginValue: 0,
+    planMarginWeight: 0,
+    adSpend: 0,
+    planAdSpend: 0,
+    hasPlanAdSpend: false,
+    externalExcludedSpend: 0,
+    externalExcludedOrders: 0
+  };
+}
+
+function executiveFunnelOwnerPlatformBucket(platform = '') {
+  return {
+    platform,
+    label: executiveFunnelPlatformLabel(platform),
+    skuKeys: new Set(),
+    planRevenue: 0,
+    planToDateRevenue: 0,
+    factRevenue: 0,
+    planUnits: 0,
+    factUnits: 0,
+    marginRub: 0,
+    marginWeight: 0,
+    planMarginRub: 0,
+    planMarginValue: 0,
+    planMarginWeight: 0,
+    adSpend: 0,
+    planAdSpend: 0,
+    hasPlanAdSpend: false
+  };
+}
+
+function executiveFunnelEnsureOwnerPlan(map, owner = '') {
+  const key = owner || 'Без owner';
+  if (!map.has(key)) map.set(key, executiveFunnelOwnerPlanBucket(key));
+  return map.get(key);
+}
+
+function executiveFunnelEnsureOwnerPlatform(bucket, platform = '') {
+  if (!bucket.platforms.has(platform)) bucket.platforms.set(platform, executiveFunnelOwnerPlatformBucket(platform));
+  return bucket.platforms.get(platform);
+}
+
+function executiveFunnelPlanMetricActive(metric = {}) {
+  return Boolean(metric && (
+    executiveFunnelNumber(metric.factRevenue) > 0
+    || executiveFunnelNumber(metric.factUnits) > 0
+    || executiveFunnelNumber(metric.planToDateRevenue) > 0
+    || executiveFunnelNumber(metric.planRevenue) > 0
+    || executiveFunnelNumber(metric.adSpend) > 0
+    || metric.planAdSpend !== null && metric.planAdSpend !== undefined
+  ));
+}
+
+function executiveFunnelAddPlanMetric(target, metric = {}, platform = '', row = {}) {
+  const factRevenue = executiveFunnelNumber(metric.factRevenue);
+  const planToDateRevenue = executiveFunnelNumber(metric.planToDateRevenue);
+  const planRevenue = executiveFunnelNumber(metric.planRevenue);
+  const marginPct = executiveFunnelRatio(metric.marginPct);
+  const marginRub = executiveFunnelMetricMarginRub(metric);
+  const planMarginPct = executiveFunnelRatio(metric.planMarginPct);
+  const planMarginRub = executiveFunnelMetricPlanMarginRub(metric);
+  const articleKey = row.articleKey || row.article || '';
+
+  target.planRevenue += planRevenue;
+  target.planToDateRevenue += planToDateRevenue;
+  target.factRevenue += factRevenue;
+  target.planUnits += executiveFunnelNumber(metric.planUnits);
+  target.factUnits += executiveFunnelNumber(metric.factUnits);
+  target.adSpend += executiveFunnelNumber(metric.adSpend);
+  if (metric.planAdSpend !== null && metric.planAdSpend !== undefined) {
+    target.planAdSpend += executiveFunnelNumber(metric.planAdSpend);
+    target.hasPlanAdSpend = true;
+  }
+  target.marginRub += marginRub;
+  if (marginPct !== null && factRevenue > 0) target.marginWeight += factRevenue;
+  if (planMarginPct !== null) {
+    const planWeight = planToDateRevenue || planRevenue || factRevenue;
+    if (planWeight > 0) {
+      target.planMarginValue += planMarginPct * planWeight;
+      target.planMarginWeight += planWeight;
+    }
+  }
+  if (planMarginRub !== null) target.planMarginRub += planMarginRub;
+  if (articleKey && target.skuKeys) target.skuKeys.add(`${platform}:${articleKey}`);
+}
+
+function executiveFunnelFinalizePlanBucket(row) {
+  row.articleCount = row.skuKeys?.size || 0;
+  row.completionToDate = row.planToDateRevenue > 0 ? row.factRevenue / row.planToDateRevenue : null;
+  row.gapToDate = row.factRevenue - row.planToDateRevenue;
+  row.marginPct = row.marginWeight > 0 ? row.marginRub / row.marginWeight : null;
+  row.planMarginPct = row.planMarginWeight > 0 ? row.planMarginValue / row.planMarginWeight : null;
+  row.planMarginRub = row.planMarginPct === null ? null : row.planToDateRevenue * row.planMarginPct;
+  row.planAdSpend = row.hasPlanAdSpend ? row.planAdSpend : null;
+  row.drr = row.factRevenue > 0 ? row.adSpend / row.factRevenue : null;
+  row.planDrr = row.planToDateRevenue > 0 && row.planAdSpend !== null ? row.planAdSpend / row.planToDateRevenue : null;
+  row.level = executiveFunnelCompletionLevel(row.completionToDate);
+  return row;
+}
+
+function executiveFunnelSortRows(rows = [], sort = 'completionAsc') {
+  const list = [...rows];
+  const cmpNum = (getter, dir = 'desc') => (left, right) => {
+    const a = getter(left);
+    const b = getter(right);
+    const na = a === null || a === undefined || !Number.isFinite(Number(a)) ? (dir === 'asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY) : Number(a);
+    const nb = b === null || b === undefined || !Number.isFinite(Number(b)) ? (dir === 'asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY) : Number(b);
+    return dir === 'asc' ? na - nb : nb - na;
+  };
+  if (sort === 'revenueDesc') return list.sort(cmpNum((row) => row.factRevenue, 'desc'));
+  if (sort === 'gapAsc') return list.sort(cmpNum((row) => row.gapToDate, 'asc'));
+  if (sort === 'adDesc') return list.sort(cmpNum((row) => row.adSpend, 'desc'));
+  if (sort === 'marginAsc') return list.sort(cmpNum((row) => row.marginPct, 'asc'));
+  return list.sort(cmpNum((row) => row.completionToDate, 'asc'));
+}
+
+function executiveFunnelBuildPlanModel() {
+  if (typeof skuPlanFactBuildModel !== 'function') return null;
+  const previous = { ...(state.skuPlanFactFilters || {}) };
+  try {
+    state.skuPlanFactFilters = {
+      ...previous,
+      search: '',
+      owner: 'all',
+      status: 'active',
+      platform: 'all',
+      month: 'latest',
+      date: '',
+      dateFrom: '',
+      dateTo: '',
+      sort: 'gap',
+      sortDir: 'asc'
+    };
+    return skuPlanFactBuildModel();
+  } catch (error) {
+    console.warn('[executive-funnel] plan-fact model failed', error);
+    return null;
+  } finally {
+    state.skuPlanFactFilters = previous;
+  }
+}
+
+function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
+  const planModel = funnel.planModel || executiveFunnelBuildPlanModel();
+  if (!planModel) return null;
+  const filters = { ...EXECUTIVE_FUNNEL_DEFAULT_FILTERS, ...executiveFunnelFilters };
+  const selectedPlatform = EXECUTIVE_FUNNEL_PLATFORMS.includes(filters.platform) ? filters.platform : 'all';
+  const periodStart = executiveFunnelDateKey(planModel.periodStart || funnel.periodStart || `${planModel.monthKey || ''}-01`);
+  const periodEnd = executiveFunnelDateKey(planModel.periodEnd || funnel.periodEnd || planModel.selectedDate || planModel.maxFactDate);
+  const ownerMap = new Map();
+  const platformTotals = new Map(EXECUTIVE_FUNNEL_PLATFORMS.map((platform) => [platform, executiveFunnelOwnerPlatformBucket(platform)]));
+  const sourceRows = Array.isArray(planModel.allRows) ? planModel.allRows : [];
+  const excluded = { rows: 0, revenue: 0, planToDateRevenue: 0 };
+
+  sourceRows.forEach((row) => {
+    EXECUTIVE_FUNNEL_PLATFORMS.forEach((platform) => {
+      if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
+      const metric = row.platforms?.[platform] || row[platform] || null;
+      if (!executiveFunnelPlanMetricActive(metric)) return;
+      const owner = executiveFunnelOwner(row, platform);
+      if (executiveFunnelOwnerIsNoise(owner, row)) {
+        excluded.rows += 1;
+        excluded.revenue += executiveFunnelNumber(metric.factRevenue);
+        excluded.planToDateRevenue += executiveFunnelNumber(metric.planToDateRevenue);
+        return;
+      }
+
+      const ownerBucket = executiveFunnelEnsureOwnerPlan(ownerMap, owner);
+      const ownerPlatform = executiveFunnelEnsureOwnerPlatform(ownerBucket, platform);
+      executiveFunnelAddPlanMetric(ownerBucket, metric, platform, row);
+      executiveFunnelAddPlanMetric(ownerPlatform, metric, platform, row);
+      if (platformTotals.has(platform)) executiveFunnelAddPlanMetric(platformTotals.get(platform), metric, platform, row);
+    });
+  });
+
+  (state.adsSummary?.itemSeries || []).forEach((item) => {
+    if (!executiveFunnelIsExternalAd(item)) return;
+    const date = executiveFunnelDateKey(item.date);
+    if (!date || (periodStart && date < periodStart) || (periodEnd && date > periodEnd)) return;
+    const platform = String(item.platformKey || item.platform || '').toLowerCase();
+    if (!EXECUTIVE_FUNNEL_PLATFORMS.includes(platform)) return;
+    if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
+    const sku = executiveFunnelSkuForArticle(item.articleKey || item.article || item.sku || item.nmId);
+    const owner = sku
+      ? executiveFunnelOwner({ sku, owner: item.owner || '' }, platform)
+      : (typeof canonicalOwnerName === 'function' ? canonicalOwnerName(item.owner || '') : String(item.owner || '').trim());
+    if (executiveFunnelOwnerIsNoise(owner, { syntheticUnmapped: !sku })) return;
+    const bucket = executiveFunnelEnsureOwnerPlan(ownerMap, owner);
+    bucket.externalExcludedSpend += executiveFunnelNumber(item.spend);
+    bucket.externalExcludedOrders += executiveFunnelNumber(item.orders);
+  });
+
+  const ownerRows = [...ownerMap.values()].map((row) => {
+    row.platformRows = [...row.platforms.values()]
+      .map(executiveFunnelFinalizePlanBucket)
+      .sort((left, right) => right.factRevenue - left.factRevenue);
+    row.primaryPlatform = row.platformRows[0]?.platform || selectedPlatform || 'all';
+    return executiveFunnelFinalizePlanBucket(row);
+  });
+
+  const platformRows = [...platformTotals.values()]
+    .map((row) => {
+      const finalized = executiveFunnelFinalizePlanBucket(row);
+      finalized.articleCount = finalized.skuKeys?.size || 0;
+      return finalized;
+    })
+    .filter((row) => selectedPlatform === 'all' || row.platform === selectedPlatform)
+    .filter((row) => row.factRevenue > 0 || row.planToDateRevenue > 0 || row.adSpend > 0 || row.hasPlanAdSpend);
+
+  const totals = executiveFunnelFinalizePlanBucket(ownerRows.reduce((acc, row) => {
+    acc.planRevenue += row.planRevenue;
+    acc.planToDateRevenue += row.planToDateRevenue;
+    acc.factRevenue += row.factRevenue;
+    acc.planUnits += row.planUnits;
+    acc.factUnits += row.factUnits;
+    acc.marginRub += row.marginRub;
+    acc.marginWeight += row.marginWeight;
+    acc.planMarginValue += row.planMarginValue;
+    acc.planMarginWeight += row.planMarginWeight;
+    acc.adSpend += row.adSpend;
+    if (row.planAdSpend !== null && row.planAdSpend !== undefined) {
+      acc.planAdSpend += executiveFunnelNumber(row.planAdSpend);
+      acc.hasPlanAdSpend = true;
+    }
+    acc.externalExcludedSpend += row.externalExcludedSpend;
+    acc.externalExcludedOrders += row.externalExcludedOrders;
+    row.skuKeys.forEach((key) => acc.skuKeys.add(key));
+    return acc;
+  }, executiveFunnelOwnerPlanBucket('Итого')));
+
+  totals.employeeCount = ownerRows.length;
+  totals.underPlanCount = ownerRows.filter((row) => row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue).length;
+  totals.okCount = ownerRows.filter((row) => row.completionToDate !== null && row.completionToDate >= 1).length;
+
+  const search = String(filters.search || '').trim().toLowerCase();
+  let visibleRows = ownerRows.filter((row) => {
+    if (search && !String(row.owner || '').toLowerCase().includes(search)) return false;
+    if (filters.status === 'danger' && !(row.completionToDate !== null && row.completionToDate < 0.9)) return false;
+    if (filters.status === 'watch' && !(row.completionToDate !== null && row.completionToDate >= 0.9 && row.completionToDate < 1)) return false;
+    if (filters.status === 'ok' && !(row.completionToDate !== null && row.completionToDate >= 1)) return false;
+    if (filters.status === 'noPlan' && row.planToDateRevenue > 0) return false;
+    return true;
+  });
+  visibleRows = executiveFunnelSortRows(visibleRows, filters.sort);
+
+  return {
+    ready: true,
+    filters,
+    selectedPlatform,
+    periodStart,
+    periodEnd,
+    monthLabel: planModel.monthLabel || funnel.monthLabel || '',
+    ownerRows: visibleRows,
+    allOwnerRows: executiveFunnelSortRows(ownerRows, filters.sort),
+    platformRows,
+    totals,
+    excluded,
+    planModel
+  };
+}
+
+function executiveFunnelIsExternalAd(item = {}) {
+  const channel = String(item.channel || '').toLowerCase();
+  const campaignId = String(item.campaignId || '').toLowerCase();
+  const campaignName = String(item.campaignName || '').toLowerCase();
+  return campaignId.startsWith('external-sheet:')
+    || channel.includes('внеш')
+    || channel.includes('external')
+    || campaignName.includes('внеш')
+    || campaignName.includes('external');
+}
+
+function executiveFunnelSkuForArticle(articleKey = '') {
+  if (!articleKey || typeof getSku !== 'function') return null;
+  return getSku(articleKey);
+}
+
+function executiveFunnelAddAdItem(ownerMap, item = {}, periodStart = '', periodEnd = '') {
+  const date = executiveFunnelDateKey(item.date);
+  if (!date || date < periodStart || date > periodEnd) return;
+  const platform = String(item.platformKey || item.platform || '').toLowerCase();
+  if (!EXECUTIVE_FUNNEL_PLATFORMS.includes(platform)) return;
+  const sku = executiveFunnelSkuForArticle(item.articleKey || item.article || item.sku || item.nmId);
+  const owner = sku
+    ? executiveFunnelOwner({ sku, owner: item.owner || '' }, platform)
+    : (typeof canonicalOwnerName === 'function' ? canonicalOwnerName(item.owner || '') : String(item.owner || '').trim()) || 'Без owner';
+  const bucket = executiveFunnelEnsureOwner(ownerMap, owner);
+  const target = executiveFunnelIsExternalAd(item) ? bucket.external : bucket.internal;
+  const traffic = {
+    spend: item.spend,
+    views: item.views,
+    clicks: item.clicks,
+    orders: item.orders,
+    revenue: item.revenue
+  };
+  executiveFunnelAddTraffic(target, traffic);
+  bucket.platforms.add(platform);
+  if (sku) executiveFunnelAddArticle(bucket, { ...sku, sku, articleKey: sku.articleKey, article: sku.article, name: sku.name }, platform, 0);
+  const day = executiveFunnelEnsureDay(bucket, date);
+  if (!day) return;
+  executiveFunnelAddTraffic(executiveFunnelIsExternalAd(item) ? day.external : day.internal, traffic);
+}
+
+function executiveFunnelLooksLikeSubstitutionArticle(article = {}) {
+  const values = [
+    article.articleKey,
+    article.article,
+    article.sourceArticleKey,
+    ...(Array.isArray(article.sourceArticleKeys) ? article.sourceArticleKeys : [])
+  ].map((value) => String(value || '').toLowerCase());
+  return values.some((value) => (
+    value.startsWith('otz_')
+    || value.includes('_fbs')
+    || value.includes('fbs_')
+    || value.includes('wb-nm-')
+    || value.includes('подмен')
+    || value.includes('substitut')
+  ));
+}
+
+function executiveFunnelAddExternalApi(ownerMap, periodStart = '', periodEnd = '') {
+  const wb = state.platformTrends?.extraMarketplace?.platforms?.wb || {};
+  const rows = [];
+  (wb.articles || []).forEach((article) => {
+    if (!executiveFunnelLooksLikeSubstitutionArticle(article)) return;
+    const sku = executiveFunnelSkuForArticle(article.articleKey || article.article)
+      || executiveFunnelSkuForArticle((article.sourceArticleKeys || [])[0]);
+    const owner = sku ? executiveFunnelOwner({ sku }, 'wb') : 'Без owner';
+    const bucket = executiveFunnelEnsureOwner(ownerMap, owner);
+    const row = {
+      articleKey: article.articleKey || article.article || '',
+      canonicalArticle: sku?.articleKey || '',
+      owner,
+      revenue: 0,
+      units: 0,
+      matched: Boolean(sku)
+    };
+    (article.daily || []).forEach((item) => {
+      const date = executiveFunnelDateKey(item.date);
+      if (!date || date < periodStart || date > periodEnd) return;
+      const revenue = executiveFunnelNumber(item.revenue);
+      const units = executiveFunnelNumber(item.ordersUnits ?? item.units ?? item.deliveredUnits);
+      row.revenue += revenue;
+      row.units += units;
+      bucket.externalApiRevenue += revenue;
+      bucket.externalApiUnits += units;
+      bucket.platforms.add('wb');
+      executiveFunnelAddArticle(bucket, sku || article, 'wb', 0);
+      const day = executiveFunnelEnsureDay(bucket, date);
+      if (day) {
+        day.externalApiRevenue += revenue;
+        day.externalApiUnits += units;
+      }
+    });
+    if (row.revenue > 0 || row.units > 0) rows.push(row);
+  });
+  return {
+    source: wb.source || '',
+    sourceMode: wb.sourceMode || '',
+    from: wb.from || '',
+    to: wb.to || '',
+    detectedCount: rows.length,
+    detectedRevenue: rows.reduce((sum, row) => sum + row.revenue, 0),
+    detectedUnits: rows.reduce((sum, row) => sum + row.units, 0),
+    unmatchedCount: rows.filter((row) => !row.matched).length,
+    rows: rows.sort((left, right) => right.revenue - left.revenue)
+  };
+}
+
+function executiveFunnelScore(row = {}, totals = {}) {
+  const revenueShare = totals.revenue > 0 ? row.revenue / totals.revenue : 0;
+  const completion = row.planToDateRevenue > 0 ? row.revenue / row.planToDateRevenue : null;
+  const marginPct = row.marginPct;
+  const internalDrr = row.revenue > 0 ? row.internal.spend / row.revenue : null;
+  const revenuePoints = Math.min(32, revenueShare * 140);
+  const completionPoints = completion === null ? 10 : Math.min(26, Math.max(0, completion) * 22);
+  const marginPoints = marginPct === null ? 8 : Math.max(0, Math.min(18, (marginPct - 0.12) / 0.28 * 18));
+  const drrPoints = internalDrr === null ? 10 : (internalDrr <= 0.12 ? 14 : internalDrr <= 0.22 ? 10 : internalDrr <= 0.35 ? 6 : 2);
+  const externalPoints = row.externalApiRevenue > 0 ? 10 : (row.external.orders > 0 ? 5 : 0);
+  return Math.round(Math.max(0, Math.min(100, revenuePoints + completionPoints + marginPoints + drrPoints + externalPoints)));
+}
+
+function executiveFunnelFinalizeBucket(bucket, totals) {
+  bucket.articleCount = bucket.skuKeys.size;
+  bucket.platformCount = bucket.platforms.size;
+  bucket.marginPct = bucket.marginWeight > 0 ? bucket.marginRub / bucket.marginWeight : null;
+  bucket.completionToDate = bucket.planToDateRevenue > 0 ? bucket.revenue / bucket.planToDateRevenue : null;
+  bucket.internalDrr = bucket.revenue > 0 ? bucket.internal.spend / bucket.revenue : null;
+  bucket.score = executiveFunnelScore(bucket, totals);
+  bucket.tone = executiveFunnelScoreTone(bucket.score);
+  bucket.topArticles = [...bucket.articleMap.values()]
+    .sort((left, right) => right.revenue - left.revenue)
+    .slice(0, 3);
+  return bucket;
+}
+
+function executiveFunnelScaleBucketFinancials(bucket, revenueRatio = 1, planRatio = 1, marginRatio = 1) {
+  bucket.revenue *= revenueRatio;
+  bucket.planToDateRevenue *= planRatio;
+  bucket.marginRub *= marginRatio;
+  bucket.marginWeight *= revenueRatio;
+  bucket.articleMap?.forEach((item) => { item.revenue *= revenueRatio; });
+  bucket.daily?.forEach((day) => {
+    day.revenue *= revenueRatio;
+    day.marginRub *= marginRatio;
+  });
+}
+
+function executiveFunnelApplyControlScale(ownerMap, platformTotals, planModel = {}) {
+  const rawTotals = [...ownerMap.values()].reduce((acc, row) => {
+    acc.revenue += row.revenue;
+    acc.planToDateRevenue += row.planToDateRevenue;
+    acc.marginRub += row.marginRub;
+    return acc;
+  }, { revenue: 0, planToDateRevenue: 0, marginRub: 0 });
+  const controlTotals = planModel.totals || {};
+  const revenueRatio = rawTotals.revenue > 0 && executiveFunnelNumber(controlTotals.factRevenue) > 0
+    ? executiveFunnelNumber(controlTotals.factRevenue) / rawTotals.revenue
+    : 1;
+  const planRatio = rawTotals.planToDateRevenue > 0 && executiveFunnelNumber(controlTotals.planToDateRevenue) > 0
+    ? executiveFunnelNumber(controlTotals.planToDateRevenue) / rawTotals.planToDateRevenue
+    : 1;
+  const marginRatio = rawTotals.marginRub > 0 && executiveFunnelNumber(controlTotals.marginRub) > 0
+    ? executiveFunnelNumber(controlTotals.marginRub) / rawTotals.marginRub
+    : revenueRatio;
+  if (Math.abs(revenueRatio - 1) < 0.0001 && Math.abs(planRatio - 1) < 0.0001 && Math.abs(marginRatio - 1) < 0.0001) {
+    return { revenueRatio, planRatio, marginRatio, applied: false };
+  }
+  ownerMap.forEach((bucket) => executiveFunnelScaleBucketFinancials(bucket, revenueRatio, planRatio, marginRatio));
+  platformTotals.forEach((row) => {
+    row.revenue *= revenueRatio;
+    row.planToDateRevenue *= planRatio;
+    row.marginRub *= marginRatio;
+    row.marginWeight *= revenueRatio;
+  });
+  return { revenueRatio, planRatio, marginRatio, applied: true };
+}
+
+function executiveFunnelBuildModel() {
+  const hasSalesSource = Boolean(
+    state.platformTrends?.platforms?.length
+    || Object.keys(state.platformTrends?.extraMarketplace?.platforms || {}).length
+  );
+  if (!hasSalesSource) {
+    return {
+      ready: false,
+      reason: !state.boot?.lazyReady?.skuPlanFact || state.boot?.lazyLoads?.skuPlanFact
+        ? 'Загружаем API продажи, рекламу и алиасы для управленческой сводки'
+        : 'План-факт SKU не отдал продажи по площадкам'
+    };
+  }
+  const planModel = executiveFunnelBuildPlanModel();
+  if (!planModel) {
+    return { ready: false, reason: 'План-факт SKU ещё не загружен' };
+  }
+  const periodStart = executiveFunnelDateKey(planModel.periodStart || `${planModel.monthKey}-01`);
+  const periodEnd = executiveFunnelDateKey(planModel.periodEnd || planModel.selectedDate || planModel.maxFactDate);
+  const ownerMap = new Map();
+  const platformTotals = new Map(EXECUTIVE_FUNNEL_PLATFORMS.map((platform) => [platform, {
+    platform,
+    label: executiveFunnelPlatformLabel(platform),
+    revenue: 0,
+    units: 0,
+    planToDateRevenue: 0,
+    marginRub: 0,
+    marginWeight: 0,
+    internal: executiveFunnelTrafficBucket(),
+    external: executiveFunnelTrafficBucket(),
+    articles: new Set()
+  }]));
+
+  (planModel.allRows || []).forEach((row) => {
+    EXECUTIVE_FUNNEL_PLATFORMS.forEach((platform) => {
+      const metric = row.platforms?.[platform] || row[platform] || null;
+      if (!executiveFunnelMetricActive(metric)) return;
+      const owner = executiveFunnelOwner(row, platform);
+      const bucket = executiveFunnelEnsureOwner(ownerMap, owner);
+      const revenue = executiveFunnelNumber(metric.factRevenue);
+      const units = executiveFunnelNumber(metric.factUnits);
+      const planToDateRevenue = executiveFunnelNumber(metric.planToDateRevenue);
+      const marginPct = executiveFunnelRatio(metric.marginPct);
+      const marginRub = executiveFunnelMetricMarginRub(metric);
+      bucket.revenue += revenue;
+      bucket.units += units;
+      bucket.planToDateRevenue += planToDateRevenue;
+      bucket.marginRub += marginRub;
+      if (marginPct !== null && revenue > 0) bucket.marginWeight += revenue;
+      bucket.platforms.add(platform);
+      executiveFunnelAddArticle(bucket, row, platform, revenue);
+
+      const platformRow = platformTotals.get(platform);
+      platformRow.revenue += revenue;
+      platformRow.units += units;
+      platformRow.planToDateRevenue += planToDateRevenue;
+      platformRow.marginRub += marginRub;
+      if (marginPct !== null && revenue > 0) platformRow.marginWeight += revenue;
+      platformRow.articles.add(row.articleKey || row.article || '');
+
+      (metric.factDaily || []).forEach((item) => {
+        const date = executiveFunnelDateKey(item.date);
+        if (!date || date < periodStart || date > periodEnd) return;
+        const dayRevenue = executiveFunnelNumber(item.revenue);
+        const dayUnits = executiveFunnelNumber(item.units);
+        const day = executiveFunnelEnsureDay(bucket, date);
+        if (!day) return;
+        day.revenue += dayRevenue;
+        day.units += dayUnits;
+        day.marginRub += marginPct === null ? 0 : dayRevenue * marginPct;
+      });
+    });
+  });
+
+  (state.adsSummary?.itemSeries || []).forEach((item) => {
+    executiveFunnelAddAdItem(ownerMap, item, periodStart, periodEnd);
+    const platform = String(item.platformKey || item.platform || '').toLowerCase();
+    if (!platformTotals.has(platform)) return;
+    const date = executiveFunnelDateKey(item.date);
+    if (!date || date < periodStart || date > periodEnd) return;
+    const target = executiveFunnelIsExternalAd(item) ? platformTotals.get(platform).external : platformTotals.get(platform).internal;
+    executiveFunnelAddTraffic(target, item);
+  });
+
+  const apiCheck = executiveFunnelAddExternalApi(ownerMap, periodStart, periodEnd);
+  const controlScale = executiveFunnelApplyControlScale(ownerMap, platformTotals, planModel);
+  const totals = [...ownerMap.values()].reduce((acc, row) => {
+    acc.revenue += row.revenue;
+    acc.units += row.units;
+    acc.planToDateRevenue += row.planToDateRevenue;
+    acc.marginRub += row.marginRub;
+    acc.marginWeight += row.marginWeight;
+    executiveFunnelAddTraffic(acc.internal, row.internal);
+    executiveFunnelAddTraffic(acc.external, row.external);
+    acc.externalApiRevenue += row.externalApiRevenue;
+    acc.externalApiUnits += row.externalApiUnits;
+    row.skuKeys.forEach((key) => acc.articleKeys.add(key));
+    return acc;
+  }, {
+    revenue: 0,
+    units: 0,
+    planToDateRevenue: 0,
+    marginRub: 0,
+    marginWeight: 0,
+    internal: executiveFunnelTrafficBucket(),
+    external: executiveFunnelTrafficBucket(),
+    externalApiRevenue: 0,
+    externalApiUnits: 0,
+    articleKeys: new Set()
+  });
+  totals.articleCount = totals.articleKeys.size;
+  totals.marginPct = totals.marginWeight > 0 ? totals.marginRub / totals.marginWeight : null;
+  totals.completionToDate = totals.planToDateRevenue > 0 ? totals.revenue / totals.planToDateRevenue : null;
+  totals.internalDrr = totals.revenue > 0 ? totals.internal.spend / totals.revenue : null;
+
+  const ownerRows = [...ownerMap.values()]
+    .map((row) => executiveFunnelFinalizeBucket(row, totals))
+    .sort((left, right) => right.score - left.score || right.revenue - left.revenue);
+  const ownerByName = new Map(ownerRows.map((row) => [row.owner, row]));
+  const dates = executiveFunnelDateRange(periodStart, periodEnd);
+  const dailyRows = dates.map((date) => {
+    const owners = ownerRows.map((row) => ({ owner: row.owner, ...(row.daily.get(date) || executiveFunnelDailyBucket(date)) }));
+    return {
+      date,
+      revenue: owners.reduce((sum, row) => sum + row.revenue, 0),
+      internalSpend: owners.reduce((sum, row) => sum + row.internal.spend, 0),
+      externalSpend: owners.reduce((sum, row) => sum + row.external.spend, 0),
+      externalApiRevenue: owners.reduce((sum, row) => sum + row.externalApiRevenue, 0),
+      owners
+    };
+  });
+  const maxDailyOwnerRevenue = dailyRows.reduce((max, day) => Math.max(max, ...day.owners.map((row) => row.revenue)), 0);
+  const platformRows = [...platformTotals.values()].map((row) => ({
+    ...row,
+    articleCount: [...row.articles].filter(Boolean).length,
+    marginPct: row.marginWeight > 0 ? row.marginRub / row.marginWeight : null,
+    completionToDate: row.planToDateRevenue > 0 ? row.revenue / row.planToDateRevenue : null,
+    drr: row.revenue > 0 ? row.internal.spend / row.revenue : null
+  }));
+
+  return {
+    ready: true,
+    periodStart,
+    periodEnd,
+    monthLabel: planModel.monthLabel,
+    ownerRows,
+    ownerByName,
+    dailyRows,
+    maxDailyOwnerRevenue,
+    platformRows,
+    totals,
+    apiCheck,
+    controlScale,
+    planModel,
+    source: {
+      sales: state.platformTrends?.extraMarketplace?.generatedAt || state.platformTrends?.generatedAt || '',
+      ads: state.adsSummary?.generatedAt || '',
+      adsAsOf: state.adsSummary?.asOfDate || '',
+      planFactAsOf: planModel.maxFactDate || periodEnd
+    }
+  };
+}
 
 function buildExecutiveWorkstreamSummary(active, key) {
   const tasks = sortTasks(active.filter((task) => controlWorkstreamKey(task, getSku(task.articleKey)) === key));
@@ -52,6 +877,7 @@ function buildExecutiveModel() {
     || !task.owner
   )));
   return {
+    funnel: executiveFunnelBuildModel(),
     control,
     active,
     workstreams,
@@ -118,6 +944,527 @@ function renderExecutiveWorkstreamRow(row) {
   `;
 }
 
+function renderExecutiveFunnelKpi(label, value, hint = '', tone = '') {
+  return `
+    <div class="mini-kpi ${tone}">
+      <span>${escapeHtml(label)}</span>
+      <strong>${value}</strong>
+      <span>${escapeHtml(hint)}</span>
+    </div>
+  `;
+}
+
+function renderExecutiveFunnelPlatformCard(row) {
+  return `
+    <div class="executive-funnel-platform">
+      <div class="section-subhead">
+        <div>
+          <h3>${escapeHtml(row.label)}</h3>
+          <p class="small muted">${fmt.int(row.articleCount)} артикулов в KPI-контуре</p>
+        </div>
+        ${badge(fmt.pct(row.completionToDate), executiveFunnelTone(row.completionToDate, 0.9, 1))}
+      </div>
+      <div class="executive-funnel-platform-metrics">
+        <span><b>${fmt.money(row.revenue)}</b><em>оборот</em></span>
+        <span><b>${fmt.money(row.marginRub)}</b><em>маржа</em></span>
+        <span><b>${fmt.money(row.internal.spend)}</b><em>внутр. реклама</em></span>
+        <span><b>${fmt.money(row.external.spend)}</b><em>внешний spend</em></span>
+      </div>
+    </div>
+  `;
+}
+
+function renderExecutiveFunnelTopArticles(row = {}) {
+  if (!row.topArticles?.length) return '<span class="muted small">нет продаж</span>';
+  return row.topArticles.map((item) => {
+    const label = item.article || item.articleKey;
+    return typeof linkToSku === 'function'
+      ? linkToSku(item.articleKey, label)
+      : `<span>${escapeHtml(label)}</span>`;
+  }).join(' ');
+}
+
+function renderExecutiveFunnelOwnerRow(row, index, maxRevenue) {
+  const width = maxRevenue > 0 ? Math.max(3, Math.min(100, row.revenue / maxRevenue * 100)) : 0;
+  return `
+    <tr class="executive-funnel-owner-row tone-${escapeHtml(row.tone)}" style="--funnel-share:${width}%">
+      <td><strong>${index + 1}</strong></td>
+      <td>
+        <div class="executive-funnel-owner">
+          <strong>${escapeHtml(row.owner)}</strong>
+          <span>${renderExecutiveFunnelTopArticles(row)}</span>
+        </div>
+      </td>
+      <td>${fmt.int(row.articleCount)}</td>
+      <td>
+        <strong>${fmt.money(row.revenue)}</strong>
+        <div class="muted small">план-дата ${fmt.money(row.planToDateRevenue)} · ${fmt.pct(row.completionToDate)}</div>
+      </td>
+      <td>
+        <strong>${fmt.money(row.marginRub)}</strong>
+        <div class="muted small">${fmt.pct(row.marginPct)}</div>
+      </td>
+      <td>
+        <strong>${fmt.money(row.internal.spend)}</strong>
+        <div class="muted small">ДРР ${fmt.pct(row.internalDrr)}</div>
+      </td>
+      <td>
+        <strong>${fmt.int(row.internal.clicks)} кликов</strong>
+        <div class="muted small">${fmt.int(row.internal.orders)} заказов · ${fmt.money(row.internal.revenue)}</div>
+      </td>
+      <td>
+        <strong>${fmt.money(row.external.spend)}</strong>
+        <div class="muted small">${fmt.int(row.external.orders)} заказов · API ${fmt.money(row.externalApiRevenue)}</div>
+      </td>
+      <td>${badge(`${fmt.int(row.score)} очков`, row.tone)}</td>
+    </tr>
+  `;
+}
+
+function renderExecutiveFunnelDailyTable(funnel) {
+  const owners = funnel.ownerRows.slice(0, 8);
+  const ownerHeaders = owners.map((row) => `<th>${escapeHtml(row.owner)}</th>`).join('');
+  const rows = funnel.dailyRows.map((day) => {
+    const ownerCells = owners.map((ownerRow) => {
+      const point = day.owners.find((item) => item.owner === ownerRow.owner) || executiveFunnelDailyBucket(day.date);
+      const alpha = funnel.maxDailyOwnerRevenue > 0 ? Math.max(0.03, Math.min(0.82, point.revenue / funnel.maxDailyOwnerRevenue * 0.82)) : 0.03;
+      const meta = [
+        point.internal.spend > 0 ? `РК ${fmt.money(point.internal.spend)}` : '',
+        point.external.spend > 0 ? `внеш ${fmt.money(point.external.spend)}` : '',
+        point.externalApiRevenue > 0 ? `API ${fmt.money(point.externalApiRevenue)}` : ''
+      ].filter(Boolean).join(' · ');
+      return `
+        <td class="executive-funnel-heat-cell" style="--heat:${alpha.toFixed(3)}">
+          <strong>${fmt.money(point.revenue)}</strong>
+          <span>${escapeHtml(meta || 'без сигнала')}</span>
+        </td>
+      `;
+    }).join('');
+    return `
+      <tr>
+        <td class="executive-funnel-date">${escapeHtml(day.date)}</td>
+        <td><strong>${fmt.money(day.revenue)}</strong></td>
+        <td>${fmt.money(day.internalSpend)}</td>
+        <td>${fmt.money(day.externalSpend)}<div class="muted small">API ${fmt.money(day.externalApiRevenue)}</div></td>
+        ${ownerCells}
+      </tr>
+    `;
+  }).join('');
+
+  return `
+    <div class="card executive-funnel-card">
+      <div class="section-subhead">
+        <div>
+          <h3>Воронка по дням и сотрудникам</h3>
+          <p class="small muted">Оборот берём из API площадок; внутренняя реклама и внешка идут отдельными слоями, чтобы вклад сотрудника не смешивался с закупленным трафиком.</p>
+        </div>
+        ${badge(`${fmt.int(funnel.dailyRows.length)} дней`, 'info')}
+      </div>
+      <div class="table-wrap executive-funnel-daily">
+        <table>
+          <thead>
+            <tr>
+              <th>День</th>
+              <th>Оборот</th>
+              <th>Внутр. реклама</th>
+              <th>Внешний трафик</th>
+              ${ownerHeaders}
+            </tr>
+          </thead>
+          <tbody>${rows || '<tr><td colspan="12">Нет дневных данных</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderExecutiveFunnelApiCheck(funnel) {
+  const api = funnel.apiCheck || {};
+  const rows = (api.rows || []).slice(0, 5).map((row) => `
+    <div class="executive-funnel-api-row">
+      <strong>${escapeHtml(row.articleKey)}</strong>
+      <span>${escapeHtml(row.canonicalArticle || 'не сматчено')}</span>
+      <span>${fmt.int(row.units)} шт.</span>
+      <span>${fmt.money(row.revenue)}</span>
+    </div>
+  `).join('');
+  const tone = api.detectedCount ? (api.unmatchedCount ? 'warn' : 'ok') : 'warn';
+  return `
+    <div class="card executive-funnel-card executive-funnel-api">
+      <div class="section-subhead">
+        <div>
+          <h3>Внешний трафик и подменные артикулы WB</h3>
+          <p class="small muted">Проверка локального WB API-слоя: ${escapeHtml(api.source || 'источник не указан')} · ${escapeHtml(api.from || funnel.periodStart)}-${escapeHtml(api.to || funnel.periodEnd)}.</p>
+        </div>
+        ${badge(api.detectedCount ? `API пришёл: ${fmt.int(api.detectedCount)}` : 'API подмен не дал', tone)}
+      </div>
+      <div class="executive-funnel-api-grid">
+        <div><span>Внешний spend</span><strong>${fmt.money(funnel.totals.external.spend)}</strong></div>
+        <div><span>Внешние заказы</span><strong>${fmt.int(funnel.totals.external.orders)}</strong></div>
+        <div><span>Выручка подмен API</span><strong>${fmt.money(api.detectedRevenue || 0)}</strong></div>
+        <div><span>Штуки подмен API</span><strong>${fmt.int(api.detectedUnits || 0)}</strong></div>
+      </div>
+      <div class="executive-funnel-api-list">${rows || '<div class="empty">В WB API за период нет продаж по подменным артикулам. Внешку считаем только как spend / клики / заказы из таблицы.</div>'}</div>
+    </div>
+  `;
+}
+
+function executiveFunnelMetricRatio(factValue, planValue) {
+  const fact = Number(factValue);
+  const plan = Number(planValue);
+  if (!Number.isFinite(fact) || !Number.isFinite(plan) || plan <= 0) return null;
+  return fact / plan;
+}
+
+function executiveFunnelMarginCompletion(row = {}) {
+  const rubRatio = executiveFunnelMetricRatio(row.marginRub, row.planMarginRub);
+  if (rubRatio !== null) return rubRatio;
+  return executiveFunnelMetricRatio(row.marginPct, row.planMarginPct);
+}
+
+function executiveFunnelAdPlanTone(ratio) {
+  if (ratio === null || ratio === undefined || !Number.isFinite(Number(ratio))) return 'empty';
+  const value = Number(ratio);
+  if (value >= 0.9 && value <= 1.1) return 'ok';
+  if (value >= 0.75 && value <= 1.25) return 'warn';
+  return 'danger';
+}
+
+function executiveFunnelTeamTone(ratio) {
+  if (ratio === null || ratio === undefined || !Number.isFinite(Number(ratio))) return 'empty';
+  if (Number(ratio) >= 0.75) return 'ok';
+  if (Number(ratio) >= 0.5) return 'warn';
+  return 'danger';
+}
+
+function executiveFunnelOwnerStatus(level = 'empty') {
+  if (level === 'ok') return 'в плане';
+  if (level === 'warn') return 'на грани';
+  if (level === 'danger') return 'догнать';
+  return 'без плана';
+}
+
+function renderExecutivePlanFactBar(options = {}) {
+  const ratio = options.ratio === null || options.ratio === undefined || !Number.isFinite(Number(options.ratio))
+    ? null
+    : Math.max(0, Number(options.ratio));
+  const tone = options.tone || executiveFunnelCompletionLevel(ratio);
+  const style = `${executiveFunnelCardStyle(options.platform || 'all', ratio)};--pf-metric-progress:${ratio === null ? '0' : Math.min(100, ratio * 100).toFixed(1)}%`;
+  const valueText = options.valueText || (ratio === null ? '—' : executiveFunnelPct(ratio));
+  return `
+    <div class="executive-owner-metric ${escapeHtml(tone)}" style="${style}">
+      <div class="executive-owner-metric-top">
+        <span>${escapeHtml(options.label || '')}</span>
+        <strong>${escapeHtml(valueText)}</strong>
+      </div>
+      <div class="executive-owner-metric-values">
+        <em>${escapeHtml(options.planText || 'план —')}</em>
+        <b>${escapeHtml(options.factText || 'факт —')}</b>
+      </div>
+      <i class="executive-owner-metric-track"><b></b></i>
+      ${options.hint ? `<small>${escapeHtml(options.hint)}</small>` : ''}
+    </div>
+  `;
+}
+
+function renderExecutiveOwnerMetricBars(row = {}) {
+  const platform = row.primaryPlatform || 'all';
+  const revenueRatio = row.completionToDate;
+  const marginRatio = executiveFunnelMarginCompletion(row);
+  const adRatio = executiveFunnelMetricRatio(row.adSpend, row.planAdSpend);
+  const adTone = row.planAdSpend === null || row.planAdSpend === undefined
+    ? 'empty'
+    : executiveFunnelAdPlanTone(adRatio);
+  return `
+    ${renderExecutivePlanFactBar({
+      label: 'Оборот',
+      platform,
+      ratio: revenueRatio,
+      tone: executiveFunnelCompletionLevel(revenueRatio),
+      planText: `план ${fmt.money(row.planToDateRevenue)}`,
+      factText: `факт ${fmt.money(row.factRevenue)}`
+    })}
+    ${renderExecutivePlanFactBar({
+      label: 'Маржа',
+      platform,
+      ratio: marginRatio,
+      tone: executiveFunnelCompletionLevel(marginRatio),
+      valueText: row.marginPct === null || row.marginPct === undefined ? '—' : executiveFunnelPct(row.marginPct),
+      planText: `план ${executiveFunnelPct(row.planMarginPct)} · ${executiveFunnelMoney(row.planMarginRub)}`,
+      factText: `факт ${executiveFunnelPct(row.marginPct)} · ${executiveFunnelMoney(row.marginRub)}`
+    })}
+    ${renderExecutivePlanFactBar({
+      label: 'Реклама',
+      platform,
+      ratio: adRatio,
+      tone: adTone,
+      valueText: adRatio === null ? '—' : executiveFunnelPct(adRatio),
+      planText: `план ${executiveFunnelMoney(row.planAdSpend)}`,
+      factText: `факт ${fmt.money(row.adSpend)}`,
+      hint: `ДРР план ${executiveFunnelPct(row.planDrr)} · факт ${executiveFunnelPct(row.drr)}`
+    })}
+  `;
+}
+
+function renderExecutiveHeroKpi(options = {}) {
+  const ratio = options.ratio === null || options.ratio === undefined || !Number.isFinite(Number(options.ratio))
+    ? null
+    : Math.max(0, Number(options.ratio));
+  const tone = options.tone || executiveFunnelCompletionLevel(ratio);
+  const style = `${executiveFunnelCardStyle(options.platform || 'all', ratio)};--pf-metric-progress:${ratio === null ? '0' : Math.min(100, ratio * 100).toFixed(1)}%`;
+  return `
+    <div class="executive-owner-hero-kpi ${escapeHtml(tone)}" style="${style}">
+      <span>${escapeHtml(options.label || '')}</span>
+      <strong>${escapeHtml(options.value || '—')}</strong>
+      <i class="executive-owner-metric-track"><b></b></i>
+      <em>${escapeHtml(options.detail || '')}</em>
+    </div>
+  `;
+}
+
+function renderExecutiveOwnerCard(row = {}, index = 0) {
+  const level = executiveFunnelCompletionLevel(row.completionToDate);
+  const style = executiveFunnelCardStyle(row.primaryPlatform || 'all', row.completionToDate);
+  const gapTone = row.gapToDate >= 0 ? 'ok-text' : 'danger-text';
+  return `
+    <article class="executive-owner-card level-${level}" data-platform="${escapeHtml(row.primaryPlatform || 'all')}" style="${style}">
+      <div class="executive-owner-card-head">
+        <div>
+          <span class="executive-owner-rank">#${fmt.int(index + 1)}</span>
+          <h3>${escapeHtml(row.owner)}</h3>
+        </div>
+        <strong class="executive-owner-percent">${executiveFunnelPct(row.completionToDate)}</strong>
+      </div>
+      <div class="executive-owner-subline">
+        <span>${fmt.int(row.articleCount)} SKU в KPI</span>
+        <span class="${gapTone}">${fmt.money(row.gapToDate)}</span>
+      </div>
+      <span class="executive-owner-progress"><i></i></span>
+      <div class="executive-owner-scoreline">
+        <span class="executive-owner-score level-${level}">${escapeHtml(executiveFunnelOwnerStatus(level))}</span>
+        <span>разрыв ${fmt.money(row.gapToDate)}</span>
+      </div>
+      <div class="executive-owner-metrics">
+        ${renderExecutiveOwnerMetricBars(row)}
+      </div>
+    </article>
+  `;
+}
+
+function renderExecutivePlatformPlanCard(row = {}) {
+  const level = executiveFunnelCompletionLevel(row.completionToDate);
+  return `
+    <div class="executive-platform-plan-card level-${level}" data-platform="${escapeHtml(row.platform)}" style="${executiveFunnelCardStyle(row.platform, row.completionToDate)}">
+      <div>
+        <span>${escapeHtml(row.label || executiveFunnelPlatformLabel(row.platform))}</span>
+        <strong>${executiveFunnelPct(row.completionToDate)}</strong>
+      </div>
+      <i><b></b></i>
+      <div class="executive-platform-plan-grid">
+        <span><b>${fmt.money(row.planToDateRevenue)}</b><em>план оборота</em></span>
+        <span><b>${fmt.money(row.factRevenue)}</b><em>факт оборота</em></span>
+        <span><b>${executiveFunnelMoney(row.planAdSpend)}</b><em>план рекламы</em></span>
+        <span><b>${fmt.money(row.adSpend)}</b><em>факт рекламы</em></span>
+      </div>
+    </div>
+  `;
+}
+
+function renderExecutiveOwnerFilterButton(kind, value, label, active) {
+  return `
+    <button class="${active ? 'is-active' : ''}" type="button" data-executive-funnel-${escapeHtml(kind)}="${escapeHtml(value)}">
+      ${escapeHtml(label)}
+    </button>
+  `;
+}
+
+function renderExecutiveOwnerFilters(model = {}) {
+  const filters = model.filters || EXECUTIVE_FUNNEL_DEFAULT_FILTERS;
+  const platformButtons = [
+    ['all', 'Все'],
+    ['wb', 'WB'],
+    ['ozon', 'Ozon'],
+    ['ya', 'Яндекс']
+  ].map(([value, label]) => renderExecutiveOwnerFilterButton('platform', value, label, filters.platform === value)).join('');
+  const statusButtons = [
+    ['all', 'Все'],
+    ['danger', '< 90%'],
+    ['watch', '90-100%'],
+    ['ok', 'OK'],
+    ['noPlan', 'Без плана']
+  ].map(([value, label]) => renderExecutiveOwnerFilterButton('status', value, label, filters.status === value)).join('');
+  return `
+    <div class="executive-owner-toolbar">
+      <div class="executive-owner-segment" aria-label="Площадка">${platformButtons}</div>
+      <div class="executive-owner-segment" aria-label="Выполнение">${statusButtons}</div>
+      <label class="executive-owner-search">
+        <span>Поиск сотрудника</span>
+        <input type="search" value="${escapeHtml(filters.search || '')}" placeholder="Имя" data-executive-funnel-search>
+      </label>
+      <label class="executive-owner-sort">
+        <span>Сортировка</span>
+        <select data-executive-funnel-sort>
+          <option value="completionAsc" ${filters.sort === 'completionAsc' ? 'selected' : ''}>сначала ниже плана</option>
+          <option value="gapAsc" ${filters.sort === 'gapAsc' ? 'selected' : ''}>по отставанию</option>
+          <option value="revenueDesc" ${filters.sort === 'revenueDesc' ? 'selected' : ''}>по обороту</option>
+          <option value="marginAsc" ${filters.sort === 'marginAsc' ? 'selected' : ''}>по марже</option>
+          <option value="adDesc" ${filters.sort === 'adDesc' ? 'selected' : ''}>по рекламе</option>
+        </select>
+      </label>
+    </div>
+  `;
+}
+
+function renderExecutiveFunnel(funnel) {
+  if (!funnel?.ready) {
+    return `
+      <div class="card executive-funnel-card">
+        <div class="section-subhead">
+          <div>
+            <h3>Сводная воронка продаж</h3>
+            <p class="small muted">${escapeHtml(funnel?.reason || 'План-факт SKU ещё не готов для управленческого среза.')}</p>
+          </div>
+          ${badge('нужна загрузка', 'warn')}
+        </div>
+      </div>
+    `;
+  }
+  const model = executiveFunnelBuildOwnerPlanFact(funnel);
+  if (!model?.ready) {
+    return `
+      <div class="card executive-funnel-card">
+        <div class="section-subhead">
+          <div>
+            <h3>План-факт по сотрудникам</h3>
+            <p class="small muted">План-факт SKU ещё не отдал данные для зарплатного контура.</p>
+          </div>
+          ${badge('нужна загрузка', 'warn')}
+        </div>
+      </div>
+    `;
+  }
+  const totals = model.totals || {};
+  const ownerCards = model.ownerRows.map((row, index) => renderExecutiveOwnerCard(row, index)).join('');
+  const platform = model.selectedPlatform || 'all';
+  const marginCompletion = executiveFunnelMarginCompletion(totals);
+  const adCompletion = executiveFunnelMetricRatio(totals.adSpend, totals.planAdSpend);
+  const teamCompletion = totals.employeeCount > 0 ? (totals.okCount || 0) / totals.employeeCount : null;
+  return `
+    <div class="executive-funnel-shell executive-owner-plan-shell">
+      <div class="card executive-owner-hero" style="${executiveFunnelCardStyle(platform, totals.completionToDate)}">
+        <div class="section-subhead">
+          <div>
+            <h3>План-факт по сотрудникам</h3>
+            <p class="small muted">Период ${escapeHtml(model.periodStart)}-${escapeHtml(model.periodEnd)} · зарплатный KPI WB / Ozon / Яндекс.</p>
+          </div>
+          <div class="badge-stack">
+            ${badge(`выполнение ${executiveFunnelPct(totals.completionToDate)}`, executiveFunnelTone(totals.completionToDate, 0.9, 1))}
+            ${badge(`${fmt.int(totals.underPlanCount || 0)} ниже плана`, totals.underPlanCount ? 'danger' : 'ok')}
+          </div>
+        </div>
+        <div class="executive-owner-hero-grid">
+          ${renderExecutiveHeroKpi({
+            label: 'Оборот',
+            platform,
+            ratio: totals.completionToDate,
+            tone: executiveFunnelCompletionLevel(totals.completionToDate),
+            value: executiveFunnelPct(totals.completionToDate),
+            detail: `план ${fmt.money(totals.planToDateRevenue)} · факт ${fmt.money(totals.factRevenue)}`
+          })}
+          ${renderExecutiveHeroKpi({
+            label: 'Маржа',
+            platform,
+            ratio: marginCompletion,
+            tone: executiveFunnelCompletionLevel(marginCompletion),
+            value: `${executiveFunnelPct(totals.planMarginPct)} / ${executiveFunnelPct(totals.marginPct)}`,
+            detail: `план ${executiveFunnelMoney(totals.planMarginRub)} · факт ${executiveFunnelMoney(totals.marginRub)}`
+          })}
+          ${renderExecutiveHeroKpi({
+            label: 'Реклама',
+            platform,
+            ratio: adCompletion,
+            tone: totals.planAdSpend === null || totals.planAdSpend === undefined ? 'empty' : executiveFunnelAdPlanTone(adCompletion),
+            value: adCompletion === null ? '—' : executiveFunnelPct(adCompletion),
+            detail: `план ${executiveFunnelMoney(totals.planAdSpend)} · факт ${fmt.money(totals.adSpend)} · ДРР ${executiveFunnelPct(totals.planDrr)} / ${executiveFunnelPct(totals.drr)}`
+          })}
+          ${renderExecutiveHeroKpi({
+            label: 'Команда',
+            platform,
+            ratio: teamCompletion,
+            tone: executiveFunnelTeamTone(teamCompletion),
+            value: `${fmt.int(totals.okCount || 0)} / ${fmt.int(totals.employeeCount || 0)}`,
+            detail: 'в плане / всего сотрудников'
+          })}
+        </div>
+      </div>
+
+      ${renderExecutiveOwnerFilters(model)}
+
+      <div class="executive-platform-plan-board">
+        ${model.platformRows.map(renderExecutivePlatformPlanCard).join('')}
+      </div>
+
+      <div class="card executive-owner-board">
+        <div class="section-subhead">
+          <div>
+            <h3>Сотрудники</h3>
+            <p class="small muted">Срез по ответственным за период: план, факт, маржа и реклама.</p>
+          </div>
+          ${badge(`${fmt.int(model.ownerRows.length)} показано`, 'info')}
+        </div>
+        <div class="executive-owner-card-grid">
+          ${ownerCards || '<div class="empty">Нет сотрудников под выбранный фильтр</div>'}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function executiveFunnelForceRender() {
+  const root = document.getElementById('view-executive');
+  if (root) root.dataset.executiveSignature = '';
+  if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
+  else if (typeof window.renderExecutive === 'function') window.renderExecutive();
+}
+
+function executiveFunnelSetFilter(key, value) {
+  if (!Object.prototype.hasOwnProperty.call(EXECUTIVE_FUNNEL_DEFAULT_FILTERS, key)) return;
+  executiveFunnelFilters[key] = String(value ?? EXECUTIVE_FUNNEL_DEFAULT_FILTERS[key]);
+  window.__ALTEA_EXECUTIVE_FUNNEL_FILTERS__ = executiveFunnelFilters;
+  executiveFunnelForceRender();
+}
+
+function executiveFunnelInstallFilterEvents() {
+  if (window.__ALTEA_EXECUTIVE_FUNNEL_FILTER_EVENTS__) return;
+  window.__ALTEA_EXECUTIVE_FUNNEL_FILTER_EVENTS__ = true;
+  document.addEventListener('click', (event) => {
+    const platformButton = event.target.closest?.('[data-executive-funnel-platform]');
+    if (platformButton) {
+      executiveFunnelSetFilter('platform', platformButton.getAttribute('data-executive-funnel-platform') || 'all');
+      return;
+    }
+    const statusButton = event.target.closest?.('[data-executive-funnel-status]');
+    if (statusButton) {
+      executiveFunnelSetFilter('status', statusButton.getAttribute('data-executive-funnel-status') || 'all');
+    }
+  });
+  document.addEventListener('input', (event) => {
+    const input = event.target?.matches?.('[data-executive-funnel-search]') ? event.target : null;
+    if (!input) return;
+    executiveFunnelSetFilter('search', input.value || '');
+  });
+  document.addEventListener('change', (event) => {
+    const select = event.target?.matches?.('[data-executive-funnel-sort]') ? event.target : null;
+    if (!select) return;
+    executiveFunnelSetFilter('sort', select.value || 'completionAsc');
+  });
+}
+
+executiveFunnelInstallFilterEvents();
+window.executiveFunnelBuildModel = executiveFunnelBuildModel;
+window.executiveFunnelBuildOwnerPlanFact = executiveFunnelBuildOwnerPlanFact;
+window.renderExecutiveFunnel = renderExecutiveFunnel;
+
 function renderExecutive() {
   const root = document.getElementById('view-executive');
   const model = buildExecutiveModel();
@@ -129,6 +1476,8 @@ function renderExecutive() {
       </div>
       <div class="badge-stack">${badge(`${fmt.int(model.waitingDirectorCount)} ждут финала`, model.waitingDirectorCount ? 'danger' : 'ok')}${badge(`${fmt.int(model.waitingRopCount)} ждут РОПа`, model.waitingRopCount ? 'warn' : 'ok')}</div>
     </div>
+
+    ${renderExecutiveFunnel(model.funnel)}
 
     <div class="kpi-strip">
       <div class="mini-kpi danger"><span>Финал</span><strong>${fmt.int(model.waitingDirectorCount)}</strong><span>управленческое решение</span></div>

@@ -4118,26 +4118,6 @@ function iuDrrSourceBadge(model) {
   return badge('нет факта WB', 'danger');
 }
 
-function iuDrrWbAdsWindowTo(model = {}) {
-  return String(model?.payload?.diagnostics?.adsDiagnostics?.sourceWindow?.to || '').slice(0, 10);
-}
-
-function iuDrrHasWbAdsFact(row = {}) {
-  return numberOrZero(row.sourceRows) > 0
-    || numberOrZero(row.wbPromotion) > 0
-    || numberOrZero(row.adsViews) > 0
-    || numberOrZero(row.adsClicks) > 0
-    || numberOrZero(row.adsOrders) > 0;
-}
-
-function iuDrrIsWbAdsIncomplete(row = {}, model = {}) {
-  const date = String(row?.date || '').slice(0, 10);
-  const sourceTo = iuDrrWbAdsWindowTo(model);
-  if (!date || !sourceTo || date <= sourceTo) return false;
-  if (!(numberOrZero(row.revenueWb) > 0 || numberOrZero(row.iuRevenueWb) > 0 || numberOrZero(row.ordersRevenueWb) > 0)) return false;
-  return !iuDrrHasWbAdsFact(row);
-}
-
 function iuDrrSparkline(rows, key, tone = 'ok') {
   const values = rows.map((row) => numberOrZero(row[key]));
   if (!values.some((value) => value > 0 || value < 0)) return '<div class="empty">Нет точек</div>';
@@ -5762,8 +5742,6 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     ...(model.payload.diagnostics?.noSourceChannels || []).map((item) => `${item}: нет источника`),
     ...(model.payload.diagnostics?.unmatchedNmIds || []).slice(0, 5).map((item) => `nmId ${item.nmId}: не сопоставлен`)
   ];
-  const wbAdsWindowTo = iuDrrWbAdsWindowTo(model);
-  const wbAdsIncompleteRows = isOzonView ? [] : model.dailyRows.filter((row) => iuDrrIsWbAdsIncomplete(row, model));
   const ozonFinance = model.ozonFinance || {};
   const ozonFinanceMonth = model.ozonFinanceMonth || {};
   const ozonPlan = model.payload.ozonPlan || {};
@@ -6064,20 +6042,6 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       `).join('')}
     </div>
   `;
-  const wbAdsLagNoticeHtml = !isOzonView && wbAdsIncompleteRows.length ? `
-    <div class="card subtle" style="margin-top:14px; border-left:4px solid var(--warn, #d18b00)">
-      <div class="section-subhead">
-        <div>
-          <h3>WB Ads не закрыт за последний день</h3>
-          <p class="small muted">Оборот WB уже загружен, а WB Promotion API пока отдал рекламный факт только до ${escapeHtml(wbAdsWindowTo || 'предыдущего дня')}.</p>
-        </div>
-        <div class="badge-stack">
-          ${badge(`${fmt.int(wbAdsIncompleteRows.length)} дн. без рекламного факта`, 'warn')}
-          ${badge(`ожидаем WB API`, 'info')}
-        </div>
-      </div>
-    </div>
-  ` : '';
   const dailyTableHtml = isOzonView ? `
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
@@ -6101,9 +6065,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
             </tr>
           </thead>
           <tbody>
-            ${model.dailyRows.map((row) => {
-              const wbAdsIncomplete = iuDrrIsWbAdsIncomplete(row, model);
-              return `
+            ${model.dailyRows.map((row) => `
               <tr>
                 <td><strong>${escapeHtml(row.period || row.date)}</strong><div class="muted small">${escapeHtml(row.date)}</div></td>
                 <td>${fmt.money(row.targetRevenueOzon)}</td>
@@ -6116,8 +6078,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
                 <td>${row.factPctOzon != null ? fmt.pct(row.factPctOzon) : '—'}</td>
                 <td>${badge(fmt.money(row.spendDeltaOzon), iuDrrToneForDelta(row.spendDeltaOzon))}</td>
               </tr>
-            `;
-            }).join('') || '<tr><td colspan="10">Нет данных по выбранному месяцу.</td></tr>'}
+            `).join('') || '<tr><td colspan="10">Нет данных по выбранному месяцу.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -6311,7 +6272,6 @@ function renderIuDrr(rootId = 'view-iu-drr') {
 
     ${isOzonView ? ozonReadableSummaryHtml : selectedKpisHtml}
     ${iuDrrFunnelHtml}
-    ${wbAdsLagNoticeHtml}
     ${isOzonView ? ozonPlanFactTableHtml : dailyTableHtml}
   `;
 

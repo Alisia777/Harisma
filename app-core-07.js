@@ -4199,6 +4199,7 @@ function iuDrrBuildQuarterForecast(model = {}, context = {}) {
   const iuPlan = platformKey === 'wb' ? (wbContractPlan || truthIuPlan) : truthIuPlan;
   const corporatePlan = iuDrrPlanTruthSum(model, quarter.months, platformTruthKey, 'corporatePlan');
   const selectedPlan = iuDrrPlanTruthSum(model, quarter.months, platformTruthKey, 'selectedRevenue');
+  const workingPlan = Math.max(numberOrZero(selectedPlan), numberOrZero(iuPlan), numberOrZero(corporatePlan));
   const makeBlock = (key, label, plan, sourceLabel) => {
     const completion = plan > 0 && projectedFact !== null ? projectedFact / plan : null;
     return {
@@ -4212,7 +4213,7 @@ function iuDrrBuildQuarterForecast(model = {}, context = {}) {
     };
   };
   return {
-    available: Boolean(quarter.months.length && daysTotal && (factBase.fact || iuPlan || corporatePlan)),
+    available: Boolean(quarter.months.length && daysTotal && (factBase.fact || iuPlan || workingPlan)),
     platformKey,
     platformLabel: platformKey === 'ozon' ? 'Ozon' : 'WB',
     quarter,
@@ -4224,7 +4225,9 @@ function iuDrrBuildQuarterForecast(model = {}, context = {}) {
     factSourceLabel: factBase.sourceLabel,
     dailyAverage,
     projectedFact,
-    selectedPlan,
+    rawCorporatePlan: corporatePlan,
+    ruleSelectedPlan: selectedPlan,
+    selectedPlan: workingPlan,
     plans: [
       makeBlock(
         'iu',
@@ -4233,10 +4236,10 @@ function iuDrrBuildQuarterForecast(model = {}, context = {}) {
         platformKey === 'ozon' ? 'ИУ Ozon × 40%, сумма месяцев квартала' : 'ИУ WB, сумма месяцев квартала'
       ),
       makeBlock(
-        'corporate',
-        'Корпоративный план за квартал',
-        corporatePlan,
-        'наш корпоративный план продаж, сумма месяцев квартала'
+        'working',
+        'План портала по правилу ИУ/корп',
+        workingPlan,
+        'по каждому месяцу берём большее: ИУ или корпоративный план'
       )
     ]
   };
@@ -4324,7 +4327,7 @@ function renderIuDrrQuarterForecastPanel(forecast = {}) {
       <div class="section-subhead">
         <div>
           <h3>${escapeHtml(forecast.platformLabel)}: прогноз выполнения квартала</h3>
-          <p class="small muted">Темп считается по факту выбранного месяца. Прогноз к концу квартала сравнивается отдельно с ИУ и корпоративным планом.</p>
+          <p class="small muted">Темп считается по факту выбранного месяца. Прогноз к концу квартала сравнивается с ИУ и рабочим планом портала по правилу ИУ/корп.</p>
         </div>
         <div class="badge-stack">
           ${badge(`квартал ${periodLabel}`, 'info')}
@@ -4344,8 +4347,8 @@ function renderIuDrrQuarterForecastPanel(forecast = {}) {
       </div>
 
       <div class="footer-note">
-        <span>ИУ и корпоративный план не смешиваются.</span>
-        <span>Месячный план-факт считается отдельно к дате.</span>
+        <span>Рабочий план: если ИУ выше корплана, берём ИУ; если ниже, берём корпоративный план.</span>
+        <span>Месячный план-факт сотрудников считается отдельно к дате.</span>
       </div>
     </div>
   `;
@@ -6369,14 +6372,10 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     </div>
   `;
   const platformSelectHtml = `
-    <div class="iu-drr-platform-switch" id="iuDrrPlatform" role="group" aria-label="Площадка">
-      <button class="iu-drr-platform-chip iu-drr-platform-chip--wb ${model.selectedPlatform === 'wb' ? 'active' : ''}" type="button" data-iu-drr-platform="wb" aria-pressed="${model.selectedPlatform === 'wb'}">
-        <span>WB</span><strong>Wildberries</strong>
-      </button>
-      <button class="iu-drr-platform-chip iu-drr-platform-chip--ozon ${model.selectedPlatform === 'ozon' ? 'active' : ''}" type="button" data-iu-drr-platform="ozon" aria-pressed="${model.selectedPlatform === 'ozon'}">
-        <span>OZ</span><strong>Ozon</strong>
-      </button>
-    </div>
+    <select id="iuDrrPlatform" aria-label="Площадка">
+      <option value="wb" ${model.selectedPlatform === 'wb' ? 'selected' : ''}>WB</option>
+      <option value="ozon" ${model.selectedPlatform === 'ozon' ? 'selected' : ''}>Ozon</option>
+    </select>
   `;
   const quarter = model.quarterSummary || {};
   const quarterTargetWb = numberOrZero(quarter.targetRevenueWb);
@@ -6473,25 +6472,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       </div>
     </div>
   ` : '';
-  const selectedKpisHtml = isOzonView ? `
-    <div class="kpi-strip" style="margin-top:14px">
-      <div class="mini-kpi ${platformIuTone}"><span>Ozon к дате, не квартальный прогноз</span><strong>${fmt.pct(platformMeta.completion)}</strong><span>${fmt.money(platformMeta.fact)} / ${fmt.money(platformMeta.planToDate)}</span></div>
-      <div class="mini-kpi ${platformMeta.revenueDelta >= 0 ? 'ok' : 'warn'}"><span>План Ozon к дате</span><strong>${fmt.money(platformMeta.targetRevenue)}</strong><span>разница ${fmt.money(platformMeta.revenueDelta)}</span></div>
-      <div class="mini-kpi ok"><span>Реклама Ozon план</span><strong>${fmt.pct(platformMeta.adsPlanPct)}</strong><span>${fmt.money(platformMeta.adsPlan)}</span></div>
-      <div class="mini-kpi ${platformMeta.adsFactPct <= platformMeta.adsPlanPct ? 'ok' : 'warn'}"><span>Реклама Ozon расчет</span><strong>${fmt.money(platformMeta.adsFact)}</strong><span>${fmt.pct(platformMeta.adsFactPct)} · нет API-факта</span></div>
-      <div class="mini-kpi warn"><span>Источник Ozon Ads</span><strong>модель</strong><span>оборот × ${fmt.pct(platformMeta.adsPlanPct)}</span></div>
-      <div class="mini-kpi ${ozonAdsDeltaTone}"><span>Дельта расчетного расхода</span><strong>${fmt.money(platformMeta.adsDelta)}</strong><span>расчет - план расхода</span></div>
-    </div>
-  ` : `
-    <div class="kpi-strip" style="margin-top:14px">
-      <div class="mini-kpi ${platformIuTone}"><span>WB к дате, не квартальный прогноз</span><strong>${fmt.pct(platformMeta.completion)}</strong><span>${fmt.money(platformMeta.fact)} / ${fmt.money(platformMeta.planToDate)}</span></div>
-      <div class="mini-kpi ${platformMeta.revenueDelta >= 0 ? 'ok' : 'warn'}"><span>План WB к дате</span><strong>${fmt.money(platformMeta.targetRevenue)}</strong><span>разница ${fmt.money(platformMeta.revenueDelta)}</span></div>
-      <div class="mini-kpi ${factDrr != null && factDrr <= numberOrZero(month.planPct) ? 'ok' : 'warn'}"><span>ДРР WB</span><strong>${factDrr != null ? fmt.pct(factDrr) : '—'}</strong><span>план ${fmt.pct(month.planPct)}</span></div>
-      <div class="mini-kpi"><span>Расход ДРР WB</span><strong>${fmt.money(month.spendFact)}</strong><span>план ${fmt.money(month.planSpendWb)}</span></div>
-      <div class="mini-kpi warn"><span>Внешка</span><strong>${fmt.money(externalSpend)}</strong><span>не входит в ДРР</span></div>
-      <div class="mini-kpi ${deltaTone}"><span>Дельта</span><strong>${fmt.money(month.spendDelta)}</strong><span>расход - план %</span></div>
-    </div>
-  `;
+  const selectedKpisHtml = '';
   const chartsHtml = isOzonView ? `
     <div class="dashboard-grid-3" style="margin-top:14px">
       <div class="card">
@@ -6870,11 +6851,9 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     getIuDrrFilters().month = String(event.target.value || 'latest');
     rerenderCurrentView();
   });
-  root.querySelectorAll('[data-iu-drr-platform]').forEach((button) => {
-    button.addEventListener('click', () => {
-      getIuDrrFilters().platform = String(button.dataset.iuDrrPlatform || 'wb');
-      rerenderCurrentView();
-    });
+  root.querySelector('#iuDrrPlatform')?.addEventListener('change', (event) => {
+    getIuDrrFilters().platform = String(event.target.value || 'wb');
+    rerenderCurrentView();
   });
 }
 

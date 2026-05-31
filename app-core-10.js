@@ -326,6 +326,16 @@ function executiveFunnelFinalizePlanBucket(row) {
   return row;
 }
 
+function executiveFunnelPlanBucketHasSignal(row = {}) {
+  const planAdSpend = row.planAdSpend === null || row.planAdSpend === undefined ? 0 : executiveFunnelNumber(row.planAdSpend);
+  return executiveFunnelNumber(row.factRevenue) > 0
+    || executiveFunnelNumber(row.planToDateRevenue) > 0
+    || executiveFunnelNumber(row.planRevenue) > 0
+    || executiveFunnelNumber(row.adSpend) > 0
+    || planAdSpend > 0
+    || executiveFunnelNumber(row.externalExcludedSpend) > 0;
+}
+
 function executiveFunnelSortRows(rows = [], sort = 'completionAsc') {
   const list = [...rows];
   const cmpNum = (getter, dir = 'desc') => (left, right) => {
@@ -434,6 +444,111 @@ function executiveFunnelApplyPayrollPlatformRows(platformRows = [], planModel = 
   return platformRows;
 }
 
+function executiveFunnelRatioForControl(target = 0, raw = 0) {
+  const targetValue = executiveFunnelNumber(target);
+  const rawValue = executiveFunnelNumber(raw);
+  if (rawValue > 0 && targetValue > 0) return targetValue / rawValue;
+  return 1;
+}
+
+function executiveFunnelScalePlanBucket(bucket = {}, ratios = {}) {
+  if (!bucket) return bucket;
+  const revenueRatio = Number.isFinite(Number(ratios.revenue)) ? Number(ratios.revenue) : 1;
+  const planToDateRatio = Number.isFinite(Number(ratios.planToDate)) ? Number(ratios.planToDate) : 1;
+  const planRatio = Number.isFinite(Number(ratios.plan)) ? Number(ratios.plan) : planToDateRatio;
+  const adRatio = Number.isFinite(Number(ratios.ad)) ? Number(ratios.ad) : 1;
+  const planAdRatio = Number.isFinite(Number(ratios.planAd)) ? Number(ratios.planAd) : 1;
+  const marginRatio = Number.isFinite(Number(ratios.margin)) ? Number(ratios.margin) : revenueRatio;
+  const planMarginRatio = Number.isFinite(Number(ratios.planMargin)) ? Number(ratios.planMargin) : planToDateRatio;
+
+  bucket.factRevenue = executiveFunnelNumber(bucket.factRevenue) * revenueRatio;
+  bucket.factUnits = executiveFunnelNumber(bucket.factUnits) * revenueRatio;
+  bucket.planToDateRevenue = executiveFunnelNumber(bucket.planToDateRevenue) * planToDateRatio;
+  bucket.planRevenue = executiveFunnelNumber(bucket.planRevenue) * planRatio;
+  bucket.planUnits = executiveFunnelNumber(bucket.planUnits) * planRatio;
+  bucket.adSpend = executiveFunnelNumber(bucket.adSpend) * adRatio;
+  if (bucket.hasPlanAdSpend || bucket.planAdSpend !== null && bucket.planAdSpend !== undefined) {
+    bucket.planAdSpend = executiveFunnelNumber(bucket.planAdSpend) * planAdRatio;
+    bucket.hasPlanAdSpend = true;
+  }
+  bucket.marginRub = executiveFunnelNumber(bucket.marginRub) * marginRatio;
+  bucket.marginWeight = executiveFunnelNumber(bucket.marginWeight) * revenueRatio;
+  bucket.planMarginValue = executiveFunnelNumber(bucket.planMarginValue) * planMarginRatio;
+  bucket.planMarginWeight = executiveFunnelNumber(bucket.planMarginWeight) * planToDateRatio;
+  bucket.planMarginRub = executiveFunnelNumber(bucket.planMarginRub) * planMarginRatio;
+  bucket.payrollControlScaled = true;
+  return executiveFunnelFinalizePlanBucket(bucket);
+}
+
+function executiveFunnelRebuildOwnerFromPlatforms(bucket = {}) {
+  const platforms = bucket.platforms instanceof Map ? bucket.platforms : new Map();
+  const externalExcludedSpend = executiveFunnelNumber(bucket.externalExcludedSpend);
+  const externalExcludedOrders = executiveFunnelNumber(bucket.externalExcludedOrders);
+  const owner = bucket.owner || 'Без owner';
+  Object.assign(bucket, executiveFunnelOwnerPlanBucket(owner));
+  bucket.externalExcludedSpend = externalExcludedSpend;
+  bucket.externalExcludedOrders = externalExcludedOrders;
+  bucket.platforms = platforms;
+  platforms.forEach((platformBucket) => {
+    const metric = executiveFunnelFinalizePlanBucket(platformBucket);
+    bucket.planRevenue += executiveFunnelNumber(metric.planRevenue);
+    bucket.planToDateRevenue += executiveFunnelNumber(metric.planToDateRevenue);
+    bucket.factRevenue += executiveFunnelNumber(metric.factRevenue);
+    bucket.planUnits += executiveFunnelNumber(metric.planUnits);
+    bucket.factUnits += executiveFunnelNumber(metric.factUnits);
+    bucket.marginRub += executiveFunnelNumber(metric.marginRub);
+    bucket.marginWeight += executiveFunnelNumber(metric.marginWeight);
+    bucket.planMarginRub += executiveFunnelNumber(metric.planMarginRub);
+    bucket.planMarginValue += executiveFunnelNumber(metric.planMarginValue);
+    bucket.planMarginWeight += executiveFunnelNumber(metric.planMarginWeight);
+    bucket.adSpend += executiveFunnelNumber(metric.adSpend);
+    if (metric.planAdSpend !== null && metric.planAdSpend !== undefined) {
+      bucket.planAdSpend += executiveFunnelNumber(metric.planAdSpend);
+      bucket.hasPlanAdSpend = true;
+    }
+    (metric.skuKeys || new Set()).forEach((key) => bucket.skuKeys.add(key));
+  });
+  return executiveFunnelFinalizePlanBucket(bucket);
+}
+
+function executiveFunnelApplyPayrollOwnerControls(ownerMap = new Map(), planModel = {}, selectedPlatform = 'all') {
+  if (!planModel?.payrollKpi?.platforms || typeof skuPlanFactPlatformSummary !== 'function') return null;
+  const controls = {};
+  EXECUTIVE_FUNNEL_PLATFORMS.forEach((platform) => {
+    if (selectedPlatform !== 'all' && selectedPlatform !== platform) return;
+    const target = skuPlanFactPlatformSummary(planModel, platform, { scope: 'allRows' });
+    if (!target?.payrollKpi || target.salaryIncluded === false) return;
+    const raw = [...ownerMap.values()].reduce((acc, ownerBucket) => {
+      const metric = ownerBucket.platforms?.get(platform);
+      if (!metric) return acc;
+      acc.planRevenue += executiveFunnelNumber(metric.planRevenue);
+      acc.planToDateRevenue += executiveFunnelNumber(metric.planToDateRevenue);
+      acc.factRevenue += executiveFunnelNumber(metric.factRevenue);
+      acc.adSpend += executiveFunnelNumber(metric.adSpend);
+      acc.planAdSpend += metric.planAdSpend !== null && metric.planAdSpend !== undefined ? executiveFunnelNumber(metric.planAdSpend) : 0;
+      acc.marginRub += executiveFunnelNumber(metric.marginRub);
+      acc.planMarginRub += executiveFunnelNumber(metric.planMarginRub);
+      return acc;
+    }, { planRevenue: 0, planToDateRevenue: 0, factRevenue: 0, adSpend: 0, planAdSpend: 0, marginRub: 0, planMarginRub: 0 });
+    const ratios = {
+      revenue: executiveFunnelRatioForControl(target.factRevenue, raw.factRevenue),
+      planToDate: executiveFunnelRatioForControl(target.planToDateRevenue, raw.planToDateRevenue),
+      plan: executiveFunnelRatioForControl(target.planRevenue, raw.planRevenue),
+      ad: executiveFunnelRatioForControl(target.adSpend, raw.adSpend),
+      planAd: executiveFunnelRatioForControl(target.planAdSpend, raw.planAdSpend),
+      margin: executiveFunnelRatioForControl(target.marginRub, raw.marginRub),
+      planMargin: executiveFunnelRatioForControl(target.planMarginRub, raw.planMarginRub)
+    };
+    ownerMap.forEach((ownerBucket) => {
+      const metric = ownerBucket.platforms?.get(platform);
+      if (metric) executiveFunnelScalePlanBucket(metric, ratios);
+    });
+    controls[platform] = { raw, target, ratios };
+  });
+  ownerMap.forEach((ownerBucket) => executiveFunnelRebuildOwnerFromPlatforms(ownerBucket));
+  return controls;
+}
+
 function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
   const planModel = funnel.planModel || executiveFunnelBuildPlanModel();
   if (!planModel) return null;
@@ -484,13 +599,18 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     bucket.externalExcludedOrders += executiveFunnelNumber(item.orders);
   });
 
-  const ownerRows = [...ownerMap.values()].map((row) => {
-    row.platformRows = [...row.platforms.values()]
-      .map(executiveFunnelFinalizePlanBucket)
-      .sort((left, right) => right.factRevenue - left.factRevenue);
-    row.primaryPlatform = row.platformRows[0]?.platform || selectedPlatform || 'all';
-    return executiveFunnelFinalizePlanBucket(row);
-  });
+  const payrollOwnerControls = executiveFunnelApplyPayrollOwnerControls(ownerMap, planModel, selectedPlatform);
+
+  const ownerRows = [...ownerMap.values()]
+    .map((row) => {
+      row.platformRows = [...row.platforms.values()]
+        .map(executiveFunnelFinalizePlanBucket)
+        .filter(executiveFunnelPlanBucketHasSignal)
+        .sort((left, right) => right.factRevenue - left.factRevenue);
+      row.primaryPlatform = row.platformRows[0]?.platform || selectedPlatform || 'all';
+      return executiveFunnelFinalizePlanBucket(row);
+    })
+    .filter(executiveFunnelPlanBucketHasSignal);
 
   const platformRows = [...platformTotals.values()]
     .map((row) => {
@@ -523,8 +643,9 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     row.skuKeys.forEach((key) => acc.skuKeys.add(key));
     return acc;
   }, executiveFunnelOwnerPlanBucket('Итого')));
+  const payrollTotalPlatform = selectedPlatform === 'all' ? 'all' : selectedPlatform;
   const payrollTotalMetric = typeof skuPlanFactPlatformSummary === 'function'
-    ? skuPlanFactPlatformSummary(planModel, 'all', { scope: 'allRows' })
+    ? skuPlanFactPlatformSummary(planModel, payrollTotalPlatform, { scope: 'allRows' })
     : planModel.payrollKpi;
   if (payrollTotalMetric?.payrollKpi || planModel.payrollKpi) {
     executiveFunnelApplyPayrollPlatformMetric(totals, payrollTotalMetric || planModel.payrollKpi);
@@ -557,6 +678,7 @@ function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
     platformRows,
     totals,
     excluded,
+    payrollOwnerControls,
     planModel
   };
 }

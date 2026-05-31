@@ -4215,6 +4215,28 @@ function skuPlanFactPlatformSummary(model = {}, platform = '', options = {}) {
     if (payrollMetric.adForecastCompletion !== undefined) summary.adForecastCompletion = payrollMetric.adForecastCompletion;
     if (payrollMetric.adGapToDate !== undefined) summary.adGapToDate = payrollMetric.adGapToDate;
     if (payrollMetric.adForecastGap !== undefined) summary.adForecastGap = payrollMetric.adForecastGap;
+    const adSourcePlatform = platform === 'all' ? (model.payrollKpi?.selectedPlatform || 'all') : platform;
+    const adSource = skuPlanFactAdSourceTotals(
+      model.monthKey || payrollMetric.monthKey || '',
+      model.payrollKpi?.periodEnd || model.periodEnd || model.selectedDate || '',
+      model.payrollKpi?.periodStart || model.periodStart || '',
+      adSourcePlatform
+    );
+    if (adSource.rows > 0 || adSource.spend > 0) {
+      summary.adSpend = numberOrZero(adSource.spend);
+      summary.payrollSourceAdSpend = summary.adSpend;
+      summary.externalAdSpend = numberOrZero(adSource.externalSpend);
+    }
+    skuPlanFactFinalizeAdPace(
+      summary,
+      model.monthKey || payrollMetric.monthKey || '',
+      model.elapsedDays || model.periodDays || payrollMetric.elapsedDays || 0,
+      model.payrollKpi?.periodStart || model.periodStart || ''
+    );
+    summary.drr = summary.factRevenue > 0 ? numberOrZero(summary.adSpend) / summary.factRevenue : null;
+    summary.planDrr = summary.planToDateRevenue > 0 && summary.planAdSpend !== null && summary.planAdSpend !== undefined
+      ? numberOrZero(summary.planAdSpend) / summary.planToDateRevenue
+      : null;
     summary.scoreHistory = skuPlanFactBuildScoreHistory(summary, model.monthKey || '', model.payrollKpi?.periodStart || model.periodStart || '', model.payrollKpi?.periodEnd || model.periodEnd || '');
     summary.completionDelta = skuPlanFactCompletionDelta(summary.scoreHistory);
   } else if (model.payrollKpi?.excludedPlatforms?.includes(platform)) {

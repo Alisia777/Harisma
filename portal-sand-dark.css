@@ -505,6 +505,12 @@ body.v87-imperial.theme-sand-dark .view.active :where(.table-wrap) {
   contain-intrinsic-size: auto 520px;
 }
 
+body.v87-imperial.theme-sand-dark #view-sku-plan-fact.view.active .sku-plan-fact-card,
+body.v87-imperial.theme-sand-dark #view-sku-plan-fact.view.active .sku-plan-fact-table {
+  content-visibility: visible;
+  contain-intrinsic-size: auto;
+}
+
 body.v87-imperial.theme-sand-dark .repricer-settings-card > summary {
   list-style: none;
 }

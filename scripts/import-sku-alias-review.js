@@ -50,72 +50,6 @@ function normalizeHeader(value) {
   return normalizeToken(value).replace(/sku/g, 'sku');
 }
 
-function importHeaderKey(header = '') {
-  const token = normalizeHeader(header);
-  if (!token) return '';
-  if (['action', 'decision'].includes(token) || token.startsWith('решение') || (token.includes('alias') && token.includes('ignore'))) return 'action';
-  if (['targetsku', 'target', 'portalsku', 'mainsku'].includes(token) || token.includes('реестре') || (token.startsWith('sku') && token.includes('alias'))) return 'target_sku';
-  if (['platform', 'marketplace', 'sourceplatform'].includes(token) || token.includes('площадка')) return 'platform';
-  if (['apisku', 'apiarticle', 'api', 'sourcesku', 'marketplacesku'].includes(token)) return 'api_sku';
-  if (['articlekey', 'article', 'skuapi'].includes(token)) return 'article_key';
-  if (['status', 'active'].includes(token) || token.includes('статус') || token.includes('active')) return 'status';
-  if (['note', 'comment', 'decisioncomment'].includes(token) || token.includes('комментар')) return 'note';
-  return token;
-}
-
-function looksLikeReviewForm(matrix = [], headers = []) {
-  const rawHeaders = matrix[0] || [];
-  const headerTokens = rawHeaders.map(normalizeHeader);
-  const hasReviewHeaderHints = headerTokens.some((token) => token.includes('alias') && token.includes('ignore'))
-    || headerTokens.includes('skuapi')
-    || headerTokens.some((token) => token.includes('apisku'));
-  const hasReviewBodyHints = matrix.slice(1, 20).some((row) => {
-    const action = normalizeAction(row?.[0] || '', row?.[2] || '');
-    return ['alias', 'ignore', 'new_sku', 'need_check'].includes(action);
-  });
-  const recognized = new Set(headers.filter(Boolean));
-  const missingCore = !recognized.has('action')
-    || !recognized.has('target_sku')
-    || !recognized.has('platform')
-    || (!recognized.has('api_sku') && !recognized.has('article_key'));
-  return missingCore && rawHeaders.length >= 5 && (hasReviewHeaderHints || hasReviewBodyHints);
-}
-
-function reviewFallbackHeaders(headers = []) {
-  const fallback = [
-    'action',
-    'decision_hint',
-    'target_sku',
-    'platform',
-    'api_sku',
-    'status',
-    'note',
-    'month',
-    'fact_to',
-    'severity',
-    'type',
-    'article_key',
-    'name',
-    'revenue',
-    'units',
-    'recommended_action'
-  ];
-  return headers.map((header, index) => fallback[index] || header);
-}
-
-function rowsFromMatrix(matrix = []) {
-  let headers = (matrix[0] || []).map(importHeaderKey);
-  if (looksLikeReviewForm(matrix, headers)) headers = reviewFallbackHeaders(headers);
-  return matrix.slice(1).map((values) => {
-    const row = {};
-    headers.forEach((header, index) => {
-      if (!header) return;
-      row[header] = String(values[index] ?? '').trim();
-    });
-    return row;
-  }).filter((row) => Object.values(row).some((value) => String(value || '').trim()));
-}
-
 function readJson(filePath, fallback) {
   if (!fs.existsSync(filePath)) return fallback;
   return JSON.parse(fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, ''));
@@ -126,31 +60,18 @@ function readRows(filePath) {
   const workbook = XLSX.readFile(filePath, { raw: false });
   const firstSheet = workbook.SheetNames[0];
   if (!firstSheet) return [];
-  const matrix = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { header: 1, defval: '', raw: false });
-  return rowsFromMatrix(matrix);
+  return XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { defval: '', raw: false });
 }
 
 function rowValue(row, aliases) {
-  const normalizedAliases = aliases.flatMap((alias) => [normalizeHeader(alias), importHeaderKey(alias)]).filter(Boolean);
+  const normalizedAliases = aliases.map(normalizeHeader);
   for (const [key, value] of Object.entries(row || {})) {
-    if (normalizedAliases.includes(normalizeHeader(key)) || normalizedAliases.includes(importHeaderKey(key))) return String(value ?? '').trim();
+    if (normalizedAliases.includes(normalizeHeader(key))) return String(value ?? '').trim();
   }
   return '';
 }
 
 function normalizePlatform(value) {
-  const text = String(value ?? '').trim();
-  const lower = text.toLowerCase().replaceAll('ё', 'е');
-  const detected = [];
-  if (/\bwb\b|wildberries|вб|вайлдбер/i.test(lower)) detected.push('wb');
-  if (/\boz\b|\bozon\b|озон/i.test(lower)) detected.push('ozon');
-  if (/\bya\b|\bym\b|yandex|яндекс|я\.?маркет|ямаркет/i.test(lower)) detected.push('ya');
-  if (/gold\s*apple|золотое\s*яблоко|\bзя\b/i.test(lower)) detected.push('goldapple');
-  if (/letu|letual|летуаль/i.test(lower)) detected.push('letu');
-  if (/magnit|магнит/i.test(lower)) detected.push('magnit');
-  const uniqueDetected = [...new Set(detected)];
-  if (uniqueDetected.length > 1) return 'all';
-  if (uniqueDetected.length === 1) return uniqueDetected[0];
   const raw = normalizeToken(value);
   if (!raw || raw === 'all' || raw === 'все') return 'all';
   if (['wb', 'wildberries'].includes(raw)) return 'wb';
@@ -246,7 +167,6 @@ function buildDecisionsFromRows(rows, skuLookup) {
   const ignores = [];
   const skipped = [];
   const errors = [];
-  const warnings = [];
   rows.forEach((row, index) => {
     const rowNumber = index + 2;
     const targetSku = rowValue(row, ['target_sku', 'target', 'portal_sku', 'main_sku', 'article_key', 'articleKey']);
@@ -280,18 +200,20 @@ function buildDecisionsFromRows(rows, skuLookup) {
     }
     const targetToken = normalizeToken(targetSku);
     const target = skuLookup.get(targetToken);
-    const canonicalTargetSku = target?.articleKey || target?.article || targetSku;
-    if (!target) warnings.push({ rowNumber, apiSku, platform, targetSku: canonicalTargetSku, reason: 'target_sku not found in skus.json; alias will be saved as a matrix-only mapping' });
+    if (!target) {
+      errors.push({ rowNumber, apiSku, platform, targetSku, reason: 'target_sku not found in skus.json' });
+      return;
+    }
 
     aliases.push({
-      target_sku: canonicalTargetSku,
+      target_sku: target.articleKey || target.article || targetSku,
       platform,
       api_sku: apiSku,
       status,
       note
     });
   });
-  return { aliases, ignores, skipped, errors, warnings };
+  return { aliases, ignores, skipped, errors };
 }
 
 function writeReport(filePath, report) {
@@ -346,10 +268,8 @@ function main() {
     newIgnores: newIgnores.length,
     duplicates: duplicates.length,
     duplicateIgnores: duplicateIgnores.length,
-    warnings: result.warnings.length,
     skipped: result.skipped.length,
     errors: result.errors.length,
-    warningRows: result.warnings.slice(0, 100),
     skippedRows: result.skipped.slice(0, 100),
     errorRows: result.errors.slice(0, 100),
     aliases: newAliases,
@@ -379,7 +299,6 @@ function main() {
     newIgnores: report.newIgnores,
     duplicates: report.duplicates,
     duplicateIgnores: report.duplicateIgnores,
-    warnings: report.warnings,
     skipped: report.skipped,
     errors: report.errors,
     report: options.report,

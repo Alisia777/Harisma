@@ -166,6 +166,14 @@ async function main() {
 
     await clickView(page, 'data-health');
     await assertVisible(page, '#view-data-health', 'data health');
+    await page.waitForFunction(() => Boolean(
+      document.querySelector('#view-data-health [data-health-create-tasks]')
+      && document.querySelector('#view-data-health [data-health-morning-digest]')
+      && document.querySelector('#view-data-health [data-health-change-digest]')
+      && document.querySelector('#view-data-health [data-health-rules-form]')
+      && document.querySelector('#view-data-health [data-health-open="sku-contour"]')
+      && document.querySelector('#view-data-health .data-table')
+    ), undefined, { timeout: 30000 });
     const dataHealthOk = await page.evaluate(() => Boolean(
       document.querySelector('#view-data-health [data-health-create-tasks]')
       && document.querySelector('#view-data-health [data-health-morning-digest]')

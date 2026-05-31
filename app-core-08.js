@@ -680,19 +680,14 @@ function repricerSourceSummary(candidates, target, fallback = '') {
 
 function repricerProtectRecommendedPrice(side, notePrefix = '') {
   if (!side || side.criticalGate === 'SKIP') return side;
-  const overrideFloor = numberOrZero(side.override?.floorPrice);
-  const importedFloor = numberOrZero(side.manualMinPrice);
-  const floor = overrideFloor > 0
-    ? overrideFloor
-    : (importedFloor > 0
-      ? importedFloor
-      : Math.max(
-        numberOrZero(side.effectiveFloor),
-        numberOrZero(side.hardFloor),
-        numberOrZero(side.b2bFloor),
-        numberOrZero(side.economicFloor),
-        numberOrZero(side.skuMinPrice)
-      ));
+  const floor = Math.max(
+    numberOrZero(side.effectiveFloor),
+    numberOrZero(side.hardFloor),
+    numberOrZero(side.b2bFloor),
+    numberOrZero(side.economicFloor),
+    numberOrZero(side.skuMinPrice),
+    numberOrZero(side.override?.floorPrice)
+  );
   const cap = numberOrZero(side.capPrice) > 0 ? Math.max(numberOrZero(side.capPrice), floor) : 0;
   let nextPrice = numberOrZero(side.recommendedPrice);
   const notes = [];
@@ -815,7 +810,6 @@ function repricerApplyConfidence(side) {
   const cooldownAge = repricerAgeDays(side.lastPriceChangeDate);
   const hasReliableCost = Boolean(side.rawCostPresent) || side.economicFloorSource === 'fee_stack' || side.economicFloorSource === 'snapshot_guard';
 
-  if (side.minMaxOnlyRow) repricerAddReason(red, 'MIN/MAX без фактов WB');
   if (side.outOfSpec || side.criticalGate === 'SKIP') repricerAddReason(red, 'строка вне спецификации');
   if (side.criticalGate === 'BLOCK') repricerAddReason(red, 'нет обязательных входов');
   if (currentPrice <= 0) repricerAddReason(red, 'нет текущей цены');
@@ -923,20 +917,15 @@ function repricerApplyOutlierGuard(row) {
 function repricerFinalizeSide(side) {
   if (!side) return null;
   const rawPrice = numberOrZero(side.recommendedPrice);
-  const overrideFloor = numberOrZero(side.override?.floorPrice);
-  const importedFloor = numberOrZero(side.manualMinPrice);
-  const guardFloor = Math.ceil(overrideFloor > 0
-    ? overrideFloor
-    : (importedFloor > 0
-      ? importedFloor
-      : Math.max(
-        numberOrZero(side.finalGuardFloor),
-        numberOrZero(side.effectiveFloor),
-        numberOrZero(side.hardFloor),
-        numberOrZero(side.b2bFloor),
-        numberOrZero(side.economicFloor),
-        numberOrZero(side.skuMinPrice)
-      )));
+  const guardFloor = Math.ceil(Math.max(
+    numberOrZero(side.finalGuardFloor),
+    numberOrZero(side.effectiveFloor),
+    numberOrZero(side.hardFloor),
+    numberOrZero(side.b2bFloor),
+    numberOrZero(side.economicFloor),
+    numberOrZero(side.skuMinPrice),
+    numberOrZero(side.override?.floorPrice)
+  ));
   const rawGuardCap = numberOrZero(side.finalGuardCap) > 0
     ? Math.floor(Math.max(numberOrZero(side.finalGuardCap), numberOrZero(side.effectiveFloor)))
     : 0;
@@ -1014,21 +1003,6 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const status = productLifecycle?.label || productLifecycle?.status || fallbackStatus;
   const sourceMode = String(sourceRow.sourceMode || '').trim();
   const clientOnlyMarketFacts = sourceMode === 'wb-market-facts-client-only';
-  const minMaxMaterialized = Boolean(sourceRow?.minMaxMaterialized || supportRow?.minMaxMaterialized || priceRow?.minMaxMaterialized || legacySide?.minMaxMaterialized || liveSide?.minMaxMaterialized);
-  const legacyMinMaxOnly = Boolean(legacySide?.minMaxMaterialized)
-    && numberOrZero(legacySide?.currentPrice) <= 0
-    && numberOrZero(legacySide?.recPrice) <= 0
-    && numberOrZero(legacySide?.liveRecPrice) <= 0
-    && numberOrZero(legacySide?.stock) <= 0;
-  const legacyCurrentPriceInput = legacyMinMaxOnly ? null : legacySide?.currentPrice;
-  const legacyStockInput = legacyMinMaxOnly ? null : legacySide?.stock;
-  const legacyTurnoverInput = legacyMinMaxOnly ? null : legacySide?.turnoverDays;
-  const legacyLiveReferenceInput = legacyMinMaxOnly ? null : repricerFirstFilledNumber(legacySide?.liveRecPrice, legacySide?.recPrice);
-  const marketCurrentPriceValues = [sourceRow.currentFillPrice, sourceRow.currentPrice, priceRow?.currentPrice, supportRow?.currentExportPrice, skuSide?.currentPrice, liveSide?.currentPrice];
-  const marketStockValues = [sourceRow.stockRepricer, sourceRow.stock, skuSide?.stockRepricer, skuSide?.stockProducts, skuSide?.stock, liveSide?.stock];
-  const minMaxOnlyRow = minMaxMaterialized
-    && !marketCurrentPriceValues.some(repricerHasValue)
-    && !marketStockValues.some(repricerHasValue);
   const role = context.role || repricerSuggestedRole(status, sourceRow.segment);
   const launchReady = normalizeRepricerLaunchReady(context.launchReady || repricerDefaultLaunchReady(status));
   const brandRule = repricerBrandRule(brand, settings);
@@ -1039,7 +1013,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const skuBasePrice = repricerFirstFilledNumber(skuSide?.basePrice);
   const skuCapPrice = repricerFirstPositiveNumber(skuSide?.maxPrice, skuSide?.stretchCap);
   const sourceHasLiveCurrentPrice = String(sourceRow.currentSellerPriceSource || sourceRow.currentPriceSource || '').trim().toLowerCase() === 'live';
-  const currentPricePresent = [...marketCurrentPriceValues, legacyCurrentPriceInput].some(repricerHasValue);
+  const currentPricePresent = [sourceRow.currentFillPrice, sourceRow.currentPrice, priceRow?.currentPrice, supportRow?.currentExportPrice, skuSide?.currentPrice, legacySide?.currentPrice, liveSide?.currentPrice].some(repricerHasValue);
   const hardFloorPresent = [
     sourceRow.hardMinPrice,
     sourceRow.requiredPriceForProfitability,
@@ -1083,7 +1057,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
                 ? supportRow.currentExportPrice
                 : (skuSide?.currentPrice != null
                   ? skuSide.currentPrice
-                  : (legacyCurrentPriceInput != null ? legacyCurrentPriceInput : liveSide?.currentPrice)))))))
+                  : (legacySide?.currentPrice != null ? legacySide.currentPrice : liveSide?.currentPrice)))))))
   );
   const currentClientPrice = repricerFirstFilledNumber(
     priceRow?.currentClientPrice,
@@ -1110,24 +1084,6 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const seedTargetSource = seedTargetCandidate?.source || '';
   const seedTargetPrice = numberOrZero(seedTargetCandidate?.value);
   const rawManagedBasePrice = repricerFirstFilledNumber(corridor?.basePrice, skuBasePrice, seedTargetPrice, legacySide?.basePrice, currentPrice);
-  const importedManualFloor = repricerFirstPositiveNumber(
-    sourceRow.manualMinPrice,
-    supportRow?.manualMinPrice,
-    priceRow?.manualMinPrice,
-    legacySide?.manualMinPrice,
-    liveSide?.manualMinPrice,
-    skuSide?.manualMinPrice
-  );
-  const importedManualCap = repricerFirstPositiveNumber(
-    sourceRow.manualMaxPrice,
-    supportRow?.manualMaxPrice,
-    priceRow?.manualMaxPrice,
-    legacySide?.manualMaxPrice,
-    liveSide?.manualMaxPrice,
-    skuSide?.manualMaxPrice
-  );
-  const overrideFloor = numberOrZero(override?.floorPrice);
-  const manualFloor = overrideFloor > 0 ? overrideFloor : importedManualFloor;
   const sourceFloorCandidate = Math.max(
     numberOrZero(sourceRow.hardMinPrice),
     numberOrZero(sourceRow.requiredPriceForProfitability),
@@ -1210,20 +1166,19 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const economicFloorSourceLabel = economicFloorSource === 'fee_stack'
     ? 'economic_fee_stack'
     : (economicFloorSource === 'snapshot_guard' ? 'economic_snapshot_guard' : 'economic_snapshot_fallback');
-  const effectiveFloor = manualFloor > 0 ? manualFloor : Math.max(hardFloor, b2bFloor, economicFloor);
+  const effectiveFloor = Math.max(hardFloor, b2bFloor, economicFloor, numberOrZero(override?.floorPrice));
   const manualPromoRequestedPrice = numberOrZero(override?.promoPrice);
   const manualPromoWindow = repricerPromoWindow(override);
   const manualPromoConfigured = Boolean(override?.promoActive) && manualPromoRequestedPrice > 0;
   const manualPromoActive = manualPromoConfigured && manualPromoWindow.active;
   const manualPromoLabel = String(override?.promoLabel || '').trim();
   const effectiveFloorCandidates = [
-    { label: 'override_floor', value: overrideFloor },
-    { label: 'imported_min', value: importedManualFloor },
     { label: hardFloorSourceSummary || 'hard_floor', value: hardFloor },
     { label: 'b2b_floor', value: b2bFloor },
-    { label: economicFloorSourceLabel, value: economicFloor }
+    { label: economicFloorSourceLabel, value: economicFloor },
+    { label: 'override_floor', value: numberOrZero(override?.floorPrice) }
   ];
-  const effectiveFloorSourceSummary = repricerSourceSummary(effectiveFloorCandidates, effectiveFloor, effectiveFloor > 0 ? (overrideFloor > 0 ? 'override_floor' : (importedManualFloor > 0 ? 'imported_min' : economicFloorSourceLabel)) : '');
+  const effectiveFloorSourceSummary = repricerSourceSummary(effectiveFloorCandidates, effectiveFloor, effectiveFloor > 0 ? economicFloorSourceLabel : '');
   const promoFloor = Math.max(numberOrZero(corridor?.promoFloor), effectiveFloor);
   const promoFloorSourceSummary = repricerSourceSummary([
     { label: 'corridor_promo_floor', value: numberOrZero(corridor?.promoFloor) },
@@ -1387,7 +1342,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     skuSide?.stockRepricer,
     skuSide?.stockProducts,
     skuSide?.stock,
-    legacyStockInput,
+    legacySide?.stock,
     liveSide?.stock
   );
   const ordersDaily = numberOrZero(skuFact?.orders?.units) / 27;
@@ -1395,11 +1350,11 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const leadTimeDays = numberOrZero(skuFact?.leadTimeDays);
   let turnoverSource = sourceRow.turnoverCurrentDays != null
     ? 'workbench'
-    : (skuSide?.turnoverDays != null ? 'order' : (legacyTurnoverInput != null ? 'legacy' : (liveSide?.turnoverDays != null ? 'live' : '')));
+    : (skuSide?.turnoverDays != null ? 'order' : (legacySide?.turnoverDays != null ? 'legacy' : (liveSide?.turnoverDays != null ? 'live' : '')));
   let turnoverDays = numberOrZero(
     sourceRow.turnoverCurrentDays != null
       ? sourceRow.turnoverCurrentDays
-      : (skuSide?.turnoverDays != null ? skuSide.turnoverDays : (legacyTurnoverInput != null ? legacyTurnoverInput : liveSide?.turnoverDays))
+      : (skuSide?.turnoverDays != null ? skuSide.turnoverDays : (legacySide?.turnoverDays != null ? legacySide.turnoverDays : liveSide?.turnoverDays))
   );
   if (turnoverDays <= 0 && stock > 0 && ordersDaily > 0) {
     turnoverDays = stock / ordersDaily;
@@ -1429,7 +1384,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     && !currentPricePresent
     && !pricingProxyPresent
     && numberOrZero(stock) <= 0;
-  let criticalGate = outOfSpec ? 'SKIP' : ((minMaxOnlyRow || !currentPricePresent || !pricingProxyPresent) ? 'BLOCK' : 'OK');
+  let criticalGate = outOfSpec ? 'SKIP' : ((!currentPricePresent || !pricingProxyPresent) ? 'BLOCK' : 'OK');
   let launchHold = '';
   let oosFlag = '';
   let turnoverAction = 'KEEP';
@@ -1450,9 +1405,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   }
   if (modeCode === 'AUTO' && !autopriceAllowed) reasons.push('autoprice disabled by status');
   if (modeCode === 'LAUNCH' && !launchAllowed) reasons.push('launch disabled by status');
-  if (minMaxOnlyRow) {
-    reasons.push('MIN/MAX загружен из файла, факты WB по цене и остатку не найдены');
-  } else if (stock <= 0) {
+  if (stock <= 0) {
     oosFlag = 'OOS';
     reasons.push('stock_total <= 0');
   } else if (turnoverDays > 0 && oosDays > 0 && turnoverDays <= oosDays) {
@@ -1529,7 +1482,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   recommendedPrice = Math.max(cappedPrice, effectiveFloor);
   reasonCode = turnoverAction;
 
-  if (!(manualFloor > 0) && recommendedPrice < economicFloor) {
+  if (recommendedPrice < economicFloor) {
     recommendedPrice = economicFloor;
     reasons.push('подняли до economic floor');
   }
@@ -1603,18 +1556,6 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     currentPrice,
       currentClientPrice,
       sourceMode,
-      minMaxSource: sourceRow.minMaxSource || supportRow?.minMaxSource || priceRow?.minMaxSource || legacySide?.minMaxSource || liveSide?.minMaxSource || '',
-      minMaxImportedAt: sourceRow.minMaxImportedAt || supportRow?.minMaxImportedAt || priceRow?.minMaxImportedAt || legacySide?.minMaxImportedAt || liveSide?.minMaxImportedAt || '',
-      minMaxMaterialized,
-      minMaxMaterializedFrom: sourceRow.minMaxMaterializedFrom || supportRow?.minMaxMaterializedFrom || priceRow?.minMaxMaterializedFrom || legacySide?.minMaxMaterializedFrom || liveSide?.minMaxMaterializedFrom || '',
-      minMaxMaterializedMatchType: sourceRow.minMaxMaterializedMatchType || supportRow?.minMaxMaterializedMatchType || priceRow?.minMaxMaterializedMatchType || legacySide?.minMaxMaterializedMatchType || liveSide?.minMaxMaterializedMatchType || '',
-      minMaxOnlyRow,
-      minPrice: repricerFirstPositiveNumber(sourceRow.minPrice, sourceRow.workingZoneFrom, supportRow?.minPrice, supportRow?.workingZoneFrom, priceRow?.minPrice, priceRow?.workingZoneFrom, legacySide?.minPrice, legacySide?.workingZoneFrom, liveSide?.minPrice, liveSide?.workingZoneFrom, skuMinPrice),
-      maxPrice: repricerFirstPositiveNumber(sourceRow.maxPrice, sourceRow.workingZoneTo, supportRow?.maxPrice, supportRow?.workingZoneTo, priceRow?.maxPrice, priceRow?.workingZoneTo, legacySide?.maxPrice, legacySide?.workingZoneTo, legacySide?.upperCap, liveSide?.maxPrice, liveSide?.workingZoneTo, importedManualCap),
-      workingZoneFrom: repricerFirstPositiveNumber(sourceRow.workingZoneFrom, supportRow?.workingZoneFrom, priceRow?.workingZoneFrom, legacySide?.workingZoneFrom, liveSide?.workingZoneFrom, importedManualFloor),
-      workingZoneTo: repricerFirstPositiveNumber(sourceRow.workingZoneTo, supportRow?.workingZoneTo, priceRow?.workingZoneTo, legacySide?.workingZoneTo, liveSide?.workingZoneTo, importedManualCap),
-      manualMinPrice: importedManualFloor,
-      manualMaxPrice: importedManualCap,
       recommendedPrice,
     preAlignPrice,
     cappedPrice,
@@ -1727,7 +1668,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     launchAllowed,
     volumePushAllowed,
     alignmentApplied: false,
-    liveReferencePrice: repricerFirstFilledNumber(liveSide?.recPrice, legacyLiveReferenceInput),
+    liveReferencePrice: repricerFirstFilledNumber(liveSide?.recPrice, legacySide?.liveRecPrice, legacySide?.recPrice),
     liveTargetDays: repricerFirstFilledNumber(liveSide?.targetTurnoverDays, legacySide?.targetTurnoverDays),
     liveStrategy: liveSide?.strategy || legacySide?.strategy || '',
     liveReason: liveSide?.reason || legacySide?.reason || '',
@@ -2497,13 +2438,6 @@ function repricerExplainSideAction(side) {
       hint: 'По SKU не хватает спецификации. В выгрузку лучше не отправлять.'
     };
   }
-  if (side?.minMaxOnlyRow) {
-    return {
-      tone: 'warn',
-      title: 'MIN/MAX загружен',
-      hint: 'Коридор есть, но нет текущей цены и остатков WB. В выгрузку не отправляем до обновления фактов.'
-    };
-  }
   if (side?.criticalGate === 'BLOCK' || side?.reasonCode === 'BLOCK') {
     return {
       tone: 'danger',
@@ -2608,7 +2542,6 @@ function renderRepricerSide(title, side) {
     confidenceBadge,
     lifecycleBadge,
     badge(`действие: ${repricerTurnoverActionLabel(side.turnoverAction)}`, side.criticalGate === 'BLOCK' ? 'danger' : 'info'),
-    side.minMaxOnlyRow ? badge('MIN/MAX без фактов', 'warn') : '',
     side.autopriceAllowed ? badge('авторежим: включен', 'ok') : badge('авторежим: выключен', 'warn'),
     side.economicFloorSource === 'snapshot_fallback' ? badge('себестоимость: нет', 'warn') : badge('себестоимость: есть', 'ok'),
     side.launchHold ? badge('стоп до READY', 'warn') : '',
@@ -6095,7 +6028,7 @@ function renderOrderCalculator() {
     });
 }
 
-const ORDER_PROCUREMENT_VERSION = '20260526orderfallback1';
+const ORDER_PROCUREMENT_VERSION = '20260522ymstock1';
 const ORDER_PROCUREMENT_STYLE_ID = `altea-order-procurement-${ORDER_PROCUREMENT_VERSION}`;
 const ORDER_PROCUREMENT_RUNTIME = {
   renderToken: 0,
@@ -6253,10 +6186,8 @@ function orderProcurementTurnoverTone(value) {
 }
 
 function orderProcurementTurnoverBadge(value) {
-  if (value === null || value === undefined || value === '') return orderProcurementBadge('n/a', 'info');
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric)) return orderProcurementBadge('n/a', 'info');
-  return orderProcurementBadge(`${fmt.num(numeric, 1)} \u0434\u043d.`, orderProcurementTurnoverTone(numeric));
+  if (!Number.isFinite(Number(value))) return orderProcurementBadge('n/a', 'info');
+  return orderProcurementBadge(`${fmt.num(value, 1)} РґРЅ.`, orderProcurementTurnoverTone(value));
 }
 
 function orderProcurementFormatDateTime(value) {

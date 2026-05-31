@@ -68,6 +68,17 @@
     defaultTaskActionSuffix: '\u00bb, \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u0442\u044c \u0440\u0435\u0448\u0435\u043d\u0438\u0435 \u0438 \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u043b\u0435\u0434\u0443\u044e\u0449\u0438\u0439 \u0448\u0430\u0433.'
   };
 
+  const PLATFORM_LABELS = {
+    wb: 'WB',
+    ozon: 'Ozon',
+    ya: '\u042f.\u041c\u0430\u0440\u043a\u0435\u0442',
+    goldapple: '\u0417\u043e\u043b\u043e\u0442\u043e\u0435 \u042f\u0431\u043b\u043e\u043a\u043e',
+    letu: 'L\'\u042d\u0442\u0443\u0430\u043b\u044c',
+    magnit: '\u041c\u0430\u0433\u043d\u0438\u0442 \u041c\u0430\u0440\u043a\u0435\u0442',
+    retail: TEXT.retail,
+    cross: TEXT.shared
+  };
+
   function stateRef() {
     return typeof window.state === 'object' && window.state ? window.state : null;
   }
@@ -108,8 +119,9 @@
   }
 
   function controlPlatformKey(platformKey) {
-    if (platformKey === 'ya') return 'retail';
-    if (platformKey === 'wb' || platformKey === 'ozon') return platformKey;
+    const raw = String(platformKey || '').trim().toLowerCase();
+    if (raw === 'retail') return 'ya';
+    if (raw === 'wb' || raw === 'ozon' || raw === 'ya' || raw === 'goldapple' || raw === 'letu' || raw === 'magnit') return raw;
     return 'all';
   }
 
@@ -123,9 +135,13 @@
       + String(task?.entityLabel || '')
     ).toLowerCase();
     if (['wb+ozon', 'wb + ozon', 'cross', 'common', 'shared', 'general', 'all'].includes(raw)) return 'cross';
-    if (/(^|\W)wb($|\W)|wildberries/.test(text)) return 'wb';
-    if (/ozon/.test(text)) return 'ozon';
-    if (/retail|market|letu|golden apple|yandex/.test(text)) return 'retail';
+    if (raw === 'wb' || /(^|\W)wb($|\W)|wildberries/.test(text)) return 'wb';
+    if (raw === 'ozon' || /ozon/.test(text)) return 'ozon';
+    if (raw === 'ya' || raw === 'ym' || raw === 'yandex' || /яндекс|я[.\s-]?маркет/.test(text)) return 'ya';
+    if (raw === 'goldapple' || raw === 'zya' || /золот[а-я\s-]*яблок|gold\s*apple|zya|зя/.test(text)) return 'goldapple';
+    if (raw === 'letu' || /letu?al|л[еэ]туал/.test(text)) return 'letu';
+    if (raw === 'magnit' || raw === 'mm' || /магнит/.test(text)) return 'magnit';
+    if (/retail|market/.test(text)) return 'ya';
     return 'cross';
   }
 
@@ -170,6 +186,10 @@
     const key = taskWorkstreamKey(task);
     if (key === 'wb') return chip('WB', 'warn');
     if (key === 'ozon') return chip('Ozon', 'info');
+    if (key === 'ya') return chip(PLATFORM_LABELS.ya, 'ok');
+    if (key === 'goldapple') return chip(PLATFORM_LABELS.goldapple, 'ok');
+    if (key === 'letu') return chip(PLATFORM_LABELS.letu, 'ok');
+    if (key === 'magnit') return chip(PLATFORM_LABELS.magnit, 'ok');
     if (key === 'retail') return chip(TEXT.retail, 'ok');
     return chip(TEXT.shared, '');
   }
@@ -262,7 +282,7 @@
 
   function buildEmptyCards(platformKey) {
     const platform = controlPlatformKey(platformKey);
-    const selectedPlatformLabel = platformKey === 'all' ? TEXT.allPlatforms : String(platformKey || '').toUpperCase();
+    const selectedPlatformLabel = platformKey === 'all' ? TEXT.allPlatforms : (PLATFORM_LABELS[platform] || String(platformKey || '').toUpperCase());
     return ''
       + '<article class="portal-exec-card portal-exec-focus-card is-ok is-clickable" data-portal-open-control="1" data-portal-control-platform="' + esc(platform) + '">'
       + '  <div class="portal-exec-card-head">'
@@ -667,9 +687,12 @@
 
   function modalPlatformKey(value) {
     const raw = String(value || '').toLowerCase();
-    if (/(^|\W)wb($|\W)|wildberries/.test(raw)) return 'wb';
-    if (/ozon/.test(raw)) return 'ozon';
-    if (/\u044f\u043c|\u0441\u0435\u0442|\u044f\u043d\u0434\u0435\u043a\u0441|market|retail/.test(raw)) return 'retail';
+    if (raw === 'wb' || /(^|\W)wb($|\W)|wildberries/.test(raw)) return 'wb';
+    if (raw === 'ozon' || /ozon/.test(raw)) return 'ozon';
+    if (raw === 'ya' || raw === 'ym' || raw === 'yandex' || /\u044f\u043c|\u0441\u0435\u0442|\u044f\u043d\u0434\u0435\u043a\u0441|market|retail/.test(raw)) return 'ya';
+    if (raw === 'goldapple' || raw === 'zya' || /золот[а-я\s-]*яблок|gold\s*apple|zya|зя/.test(raw)) return 'goldapple';
+    if (raw === 'letu' || /letu?al|л[еэ]туал/.test(raw)) return 'letu';
+    if (raw === 'magnit' || raw === 'mm' || /магнит/.test(raw)) return 'magnit';
     return 'all';
   }
 

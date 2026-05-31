@@ -22,10 +22,28 @@
       description: 'Отдельный контур по Wildberries.',
       kind: 'warn'
     },
-    retail: {
-      label: 'ЯМ / Летуаль / Магнит / ЗЯ',
-      chip: 'ЯМ / сети',
-      description: 'Яндекс Маркет, Летуаль, Магнит и Золотое Яблоко одним РОПом.',
+    ya: {
+      label: 'Я.Маркет',
+      chip: 'Я.Маркет',
+      description: 'Отдельный контур Яндекс Маркета.',
+      kind: 'ok'
+    },
+    goldapple: {
+      label: 'Золотое яблоко',
+      chip: 'Золотое яблоко',
+      description: 'Отдельный контур Золотого Яблока.',
+      kind: 'ok'
+    },
+    letu: {
+      label: "Л'Этуаль",
+      chip: "Л'Этуаль",
+      description: 'Отдельный контур Л\'Этуаль.',
+      kind: 'ok'
+    },
+    magnit: {
+      label: 'Магнит Маркет',
+      chip: 'Магнит Маркет',
+      description: 'Отдельный контур Магнит Маркета.',
       kind: 'ok'
     },
     cross: {
@@ -36,7 +54,7 @@
     }
   };
 
-  const WORKSTREAM_ORDER = ['ozon', 'wb', 'retail', 'cross'];
+  const WORKSTREAM_ORDER = ['ozon', 'wb', 'ya', 'goldapple', 'letu', 'magnit', 'cross'];
   const FILTER_ORDER = ['all', ...WORKSTREAM_ORDER];
   const TYPE_FILTER_ORDER = ['all', 'price_margin', 'supply', 'content', 'traffic', 'launch', 'returns', 'assignment', 'general'];
 
@@ -48,6 +66,15 @@
     return '';
   }
 
+  function inferMarketplacePlatform(text = '') {
+    const raw = String(text || '').toLowerCase();
+    if (/золот[а-я\s-]*ябл|goldapple|gold apple|zya|зя/.test(raw)) return 'goldapple';
+    if (/л[еэ]туал|летуаль|letual|letu/.test(raw)) return 'letu';
+    if (/магнит|magnit|mm/.test(raw)) return 'magnit';
+    if (/яндекс|я[.\s-]?маркет|yandex|ym|yandex_market|ymarket/.test(raw)) return 'ya';
+    return '';
+  }
+
   function normalizeTaskPlatform(value, contextText) {
     const raw = String(value || '').trim().toLowerCase();
     const text = `${raw} ${String(contextText || '').trim().toLowerCase()}`;
@@ -56,10 +83,14 @@
     if (['cross', 'common', 'shared', 'general'].includes(raw)) return 'cross';
     if (['wb', 'wildberries', 'вб'].includes(raw)) return 'wb';
     if (['ozon', 'озон'].includes(raw)) return 'ozon';
+    if (['ya', 'yandex', 'yandex_market', 'ym'].includes(raw)) return 'ya';
+    if (['goldapple', 'ga', 'zya'].includes(raw)) return 'goldapple';
+    if (['letu', 'letual', 'лэтуаль', 'летуаль'].includes(raw)) return 'letu';
+    if (['magnit', 'mm', 'магнит'].includes(raw)) return 'magnit';
     if (['wb+ozon', 'wb + ozon', 'wb_ozon', 'wb-ozon'].includes(raw)) return 'wb+ozon';
-    if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return 'retail';
-
-    if (/яндекс|я[.\s-]?маркет|yandex|letu?al|л[еэ]туал|л[еэ]туаль|магнит|golden apple|золот[а-я\s-]*яблок/.test(text)) return 'retail';
+    const marketplacePlatform = inferMarketplacePlatform(text);
+    if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return marketplacePlatform || 'ya';
+    if (marketplacePlatform) return marketplacePlatform;
     if (/(^|\W)wb($|\W)|wildberries|вб/.test(text)) return 'wb';
     if (/ozon|озон/.test(text)) return 'ozon';
     return 'all';
@@ -83,7 +114,8 @@
 
     if (platform === 'wb') return 'wb';
     if (platform === 'ozon') return 'ozon';
-    if (platform === 'retail') return 'retail';
+    if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'magnit') return platform;
+    if (platform === 'retail') return inferMarketplacePlatform(text) || 'ya';
     if (platform === 'wb+ozon' || platform === 'cross' || platform === 'all') return 'cross';
     if (sku?.flags?.toWorkWB && !sku?.flags?.toWorkOzon) return 'wb';
     if (sku?.flags?.toWorkOzon && !sku?.flags?.toWorkWB) return 'ozon';

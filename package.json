@@ -4,7 +4,6 @@
     "portal:sheet-auth": "node scripts/portal-google-sheet-sync.js --init-auth",
     "portal:iu-plan-rebuild": "node scripts/build-iu-plan-layer.js",
     "portal:wb-ads-sync": "node scripts/portal-wb-ads-sync.js sync",
-    "portal:ozon-ads-finance-sync": "node scripts/portal-ozon-ads-finance-sync.js sync",
     "portal:wb-feedback-sync": "node scripts/portal-wb-feedback-sync.js sync",
     "portal:iu-drr-rebuild": "node scripts/build-iu-drr-summary.js --output-dir data",
     "portal:ozon-finance-sync": "node scripts/portal-ozon-finance-trends-sync.js",

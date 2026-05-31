@@ -1,4 +1,6 @@
 (function () {
+  if (window.__ALTEA_REPRICER_UI_SAFE_20260515A__) return;
+  window.__ALTEA_REPRICER_UI_SAFE_20260515A__ = true;
   if (window.__ALTEA_REPRICER_UI_SAFE_20260503A__) return;
   window.__ALTEA_REPRICER_UI_SAFE_20260503A__ = true;
   window.__ALTEA_REPRICER_UI_SAFE_20260502E__ = true;
@@ -59,6 +61,9 @@
     const ozonButton = actionBar.querySelector('[data-repricer-export="template:ozon"]');
     const wbPromoButton = actionBar.querySelector('[data-repricer-export="promo:wb"]');
     const ozonPromoButton = actionBar.querySelector('[data-repricer-export="promo:ozon"]');
+    const extraButtons = Array.from(actionBar.querySelectorAll("button")).filter(function (button) {
+      return !button.hasAttribute("data-repricer-export") && !button.hasAttribute("data-repricer-more-actions-toggle");
+    });
     if (!wbButton || !ozonButton) return;
 
     const more = document.createElement("span");
@@ -79,6 +84,9 @@
 
     actionBar.replaceChildren(wbButton, ozonButton);
     if (moreBody.children.length) actionBar.appendChild(more);
+    extraButtons.forEach(function (button) {
+      actionBar.appendChild(button);
+    });
   }
 
   document.addEventListener("click", function (event) {
@@ -202,6 +210,7 @@
   function enhanceNow() {
     const root = document.getElementById(VIEW_ID);
     if (!root || !root.children.length) return;
+    if (root.dataset.repricerNativeSimple === "1") return;
     relabelTopActions(root);
     simplifyTopActions(root);
     refineIntro(root);

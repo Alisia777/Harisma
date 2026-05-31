@@ -44,30 +44,8 @@ function payloadStamp(payload, fallbackPath = '') {
   return Date.parse(`${match[1]}T${match[2]}:${match[3]}:${match[4]}Z`) || 0;
 }
 
-function weekEndStamp(payload) {
-  const direct = Date.parse(`${String(payload?.weekEnd || '').slice(0, 10)}T00:00:00Z`);
-  if (Number.isFinite(direct)) return direct;
-
-  const label = String(payload?.weekLabel || payload?.sourceSheetName || '').replace(/\u2013|\u2014/g, '-');
-  const match = label.match(/(\d{2})\.(\d{2})\.(\d{4})\s*-\s*(\d{2})\.(\d{2})\.(\d{4})/);
-  if (!match) return 0;
-  return Date.parse(`${match[6]}-${match[5]}-${match[4]}T00:00:00Z`) || 0;
-}
-
 function collectSnapshots() {
   const snapshots = [];
-
-  const existingHistory = readJsonSafe(OUTPUT_PATH);
-  if (Array.isArray(existingHistory)) {
-    existingHistory.forEach((payload) => {
-      if (!payload || !Array.isArray(payload.items)) return;
-      snapshots.push({
-        ...payload,
-        __path: payload.sourceFile || OUTPUT_PATH,
-        __stamp: payloadStamp(payload, payload.sourceFile || OUTPUT_PATH)
-      });
-    });
-  }
 
   walk(HISTORY_ROOT, (filePath) => {
     if (path.basename(filePath) !== 'product_leaderboard.json') return;
@@ -91,39 +69,30 @@ function collectSnapshots() {
 
   const deduped = new Map();
   snapshots.forEach((payload) => {
-    const key = `${payload.generatedAt || ''}|${payload.weekLabel || payload.sourceSheetName || ''}|${payload.items.length}`;
+    const key = `${payload.generatedAt || ''}|${payload.weekLabel || ''}|${payload.items.length}`;
     const existing = deduped.get(key);
     if (!existing || payload.__stamp >= existing.__stamp) deduped.set(key, payload);
   });
 
   return [...deduped.values()]
-    .sort((left, right) => {
-      const leftWeek = weekEndStamp(left);
-      const rightWeek = weekEndStamp(right);
-      return leftWeek - rightWeek || left.__stamp - right.__stamp;
-    })
-    .map((payload) => {
-      const normalized = {
-        generatedAt: payload.generatedAt || '',
-        weekLabel: payload.weekLabel || payload.sourceSheetName || '',
-        sourceSheetName: payload.sourceSheetName || '',
-        sourceGid: payload.sourceGid || '',
-        sourceWeekFrom: payload.sourceWeekFrom || '',
-        sourceWeekTo: payload.sourceWeekTo || '',
-        sourceLagDays: payload.sourceLagDays ?? null,
-        freshnessStatus: payload.freshnessStatus || '',
-        freshnessNote: payload.freshnessNote || '',
-        sourceFile: path.relative(ROOT, payload.__path).replace(/\\/g, '/'),
-        alertCounts: payload.alertCounts || {},
-        totals: payload.totals || {},
-        summary: payload.summary || {},
-        items: payload.items || [],
-        unmatchedItems: payload.unmatchedItems || []
-      };
-      if (payload.weekStart) normalized.weekStart = payload.weekStart;
-      if (payload.weekEnd) normalized.weekEnd = payload.weekEnd;
-      return normalized;
-    });
+    .sort((left, right) => left.__stamp - right.__stamp)
+    .map((payload) => ({
+      generatedAt: payload.generatedAt || '',
+      weekLabel: payload.weekLabel || payload.sourceSheetName || '',
+      sourceSheetName: payload.sourceSheetName || '',
+      sourceGid: payload.sourceGid || '',
+      sourceWeekFrom: payload.sourceWeekFrom || '',
+      sourceWeekTo: payload.sourceWeekTo || '',
+      sourceLagDays: payload.sourceLagDays ?? null,
+      freshnessStatus: payload.freshnessStatus || '',
+      freshnessNote: payload.freshnessNote || '',
+      sourceFile: path.relative(ROOT, payload.__path).replace(/\\/g, '/'),
+      alertCounts: payload.alertCounts || {},
+      totals: payload.totals || {},
+      summary: payload.summary || {},
+      items: payload.items || [],
+      unmatchedItems: payload.unmatchedItems || []
+    }));
 }
 
 function main() {

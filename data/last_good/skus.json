@@ -128,16 +128,16 @@
       "ozon": "Уход за бровями набор Гель для бровей + сыворотка для ресниц, набор для бровей и ресниц, Алтея",
       "ym": "товары для красоты / косметика, парфюмерия и уход / макияж / для бровей / тушь и гель для бровей",
       "ga": "",
-      "letu": "",
+      "letu": "Набор средств для лица",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 97,
-      "appliedAt": "2026-05-20T12:25:20.540Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -272,7 +272,7 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод"
   },
   {
@@ -407,13 +407,13 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 126,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -548,7 +548,7 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод"
   },
   {
@@ -685,7 +685,7 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод"
   },
   {
@@ -706,7 +706,7 @@
     "focusScore": 5,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -820,15 +820,28 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за волосами / маски и сыворотки",
       "ga": "Уход для волос",
       "letu": "Крем для укладки волос >> Средства для укладки волос >> Средства для укладки волос",
-      "mm": ""
+      "mm": "Кремы"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 3,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
+    },
+    "aliases": [
+      {
+        "value": "otz_fbs6_curly_method_300ml",
+        "platform": "wb",
+        "source": "sku_aliases.json",
+        "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      }
+    ],
+    "platformAliases": {
+      "wb": [
+        "otz_fbs6_curly_method_300ml"
+      ]
     }
   },
   {
@@ -849,7 +862,7 @@
     "focusScore": 8,
     "focusReasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -963,13 +976,13 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 92,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -1102,9 +1115,9 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за лицом / очищение и снятие макияжа",
       "ga": "Уход для лица",
       "letu": "Уход за лицом >> Средства для умывания >> Пудра для умывания",
-      "mm": ""
+      "mm": "Пудра для умывания"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод"
   },
   {
@@ -1239,15 +1252,15 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за лицом / очищение и снятие макияжа / средства для умывания",
       "ga": "Уход для лица",
       "letu": "Уход за лицом >> Средства для умывания >> Пудра для умывания",
-      "mm": ""
+      "mm": "Пудра для умывания"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 27,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -1384,13 +1397,13 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 67,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -1525,13 +1538,13 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 69,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -1666,15 +1679,15 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за лицом / кремы и сыворотки / средства для ухода за лицом",
       "ga": "",
       "letu": "Уход за лицом >> Крем для лица >> Уход за лицом",
-      "mm": ""
+      "mm": "Кремы"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 44,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -1695,7 +1708,7 @@
     "focusScore": 5,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -1811,13 +1824,13 @@
       "letu": "Уход за лицом >> Крем для лица >> Уход за лицом",
       "mm": "Кремы"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 1,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -1838,7 +1851,7 @@
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Олеся",
+      "name": "Кирилл",
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -1949,16 +1962,16 @@
       "ozon": "Гель для бровей с коллагеном и эластином, фиксация на 24 часа, Алтея, 5 мл",
       "ym": "товары для красоты / косметика, парфюмерия и уход / макияж / для бровей / тушь и гель для бровей",
       "ga": "Макияж для бровей",
-      "letu": "",
-      "mm": ""
+      "letu": "Гель для бровей",
+      "mm": "Укладка бровей"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 51,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -1979,7 +1992,7 @@
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -2090,16 +2103,16 @@
       "ozon": "Гель для бритья мужской охлаждающий с ментолом Алтея 300 мл",
       "ym": "товары для красоты / косметика, парфюмерия и уход / мужчинам / средства для бритья / средства для бритья",
       "ga": "Уход для лица",
-      "letu": "",
+      "letu": "Гель для бритья",
       "mm": "Средства до и после бритья"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 111,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -2234,13 +2247,13 @@
       "letu": "Средства для бровей >> Макияж >> Гель для бровей",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 45,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -2261,7 +2274,7 @@
     "focusScore": 2,
     "focusReasons": "Низкое выполнение плана",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -2373,15 +2386,15 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за телом / для душа",
       "ga": "Уход для тела",
       "letu": "Парфюмированный гель для душа >> Средства для ванной и душа >> Парфюмерия",
-      "mm": ""
+      "mm": "Гели для душа"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 95,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -2516,13 +2529,13 @@
       "letu": "Парфюмированный гель для душа >> Средства для ванной и душа >> Парфюмерия",
       "mm": "Гели для душа"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 103,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -2653,11 +2666,11 @@
       "wb": "Гидрофильные масла",
       "ozon": "Средство для умывания",
       "ym": "Средства для умывания",
-      "ga": "",
-      "letu": "",
-      "mm": ""
+      "ga": "Уход для лица",
+      "letu": "Масло для умывания",
+      "mm": "Масло гидрофильное"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод"
   },
   {
@@ -2792,13 +2805,26 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 80,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
+    },
+    "aliases": [
+      {
+        "value": "glikiron",
+        "platform": "ozon",
+        "source": "sku_aliases.json",
+        "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      }
+    ],
+    "platformAliases": {
+      "ozon": [
+        "glikiron"
+      ]
     }
   },
   {
@@ -2933,13 +2959,13 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 96,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -3074,13 +3100,13 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 58,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -3101,7 +3127,7 @@
     "focusScore": 2,
     "focusReasons": "Низкое выполнение плана",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -3215,13 +3241,26 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 35,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
+    },
+    "aliases": [
+      {
+        "value": "insulight",
+        "platform": "ozon",
+        "source": "sku_aliases.json",
+        "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      }
+    ],
+    "platformAliases": {
+      "ozon": [
+        "insulight"
+      ]
     }
   },
   {
@@ -3356,13 +3395,13 @@
       "letu": "Уход за телом >> Средства для гигиены >> Гель для интимной гигиены",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 91,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -3383,7 +3422,7 @@
     "focusScore": 8,
     "focusReasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -3497,13 +3536,13 @@
       "letu": "Уход за телом >> Средства для гигиены >> Гель для интимной гигиены",
       "mm": "Средства для интимной гигиены"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 112,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -3524,7 +3563,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; WB ниже min price",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Под вопросом",
       "byPlatform": {
@@ -3638,7 +3677,7 @@
       "letu": "Уход за лицом >> Крем для лица >> Уход за лицом",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод"
   },
   {
@@ -3659,7 +3698,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -3775,13 +3814,13 @@
       "letu": "Уход за телом >> Крем для тела >> Уход за телом",
       "mm": "Крем для ухода за кожей"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 29,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -3802,7 +3841,7 @@
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -3916,13 +3955,13 @@
       "letu": "Уход за телом >> Крем для рук >> Уход за руками",
       "mm": "Кремы для рук"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 50,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -3943,7 +3982,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -4057,15 +4096,15 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за лицом / уход за кожей вокруг глаз",
       "ga": "Уход для лица",
       "letu": "Уход за лицом >> Крем для лица >> Уход за лицом",
-      "mm": ""
+      "mm": "Кремы для глаз"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 17,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -4086,7 +4125,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -4200,15 +4239,15 @@
       "ym": "детские товары / товары для мам и малышей / товары для мам / уход за лицом и телом",
       "ga": "Уход для тела",
       "letu": "Уход за телом >> Крем для тела >> Уход за телом",
-      "mm": ""
+      "mm": "Средство от растяжек"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 11,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -4345,13 +4384,13 @@
       "letu": "Солнцезащитный крем для лица",
       "mm": "Солнцезащитные средства"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 16,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -4372,7 +4411,7 @@
     "focusScore": 10,
     "focusReasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -4488,13 +4527,13 @@
       "letu": "Уход за телом >> Крем для тела >> Уход за телом",
       "mm": "Кремы для тела"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 15,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -4515,7 +4554,7 @@
     "focusScore": 5,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -4631,13 +4670,13 @@
       "letu": "Уход за лицом >> Пилинг для лица >> Средства для эксфолиации и пилинга",
       "mm": "Скрабы и пилинг"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 5,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -4774,13 +4813,13 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 7,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -4801,7 +4840,7 @@
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -4917,13 +4956,13 @@
       "letu": "Уход за волосами >> Маска для волос >> Уход за волосами",
       "mm": "Маски"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 57,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -4944,19 +4983,7 @@
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Есть внешний трафик КЗ; Owner не закреплён",
     "owner": {
-      "name": {
-        "name": "",
-        "source": "Рабочий спецификации · Реестр",
-        "registryStatus": "Новинка",
-        "byPlatform": {
-          "wb": "",
-          "ozon": "Александр Озон",
-          "ym": "Анна",
-          "ga": "Екатерина",
-          "letu": "Екатерина",
-          "mm": "Екатерина"
-        }
-      },
+      "name": "[object Object]",
       "source": "Рабочий спецификации · Реестр",
       "registryStatus": "Новинка",
       "byPlatform": {
@@ -5068,17 +5095,17 @@
       "wb": "Маски косметические",
       "ozon": "Маска для волос с кератином торговой марки Алтея",
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за волосами / маски и сыворотки",
-      "ga": "",
-      "letu": "",
+      "ga": "Уход для волос",
+      "letu": "Уход за волосами",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 65,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -5099,7 +5126,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -5213,15 +5240,15 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за волосами / маски и сыворотки",
       "ga": "Уход для волос",
       "letu": "Уход за волосами >> Маска для волос >> Уход за волосами",
-      "mm": ""
+      "mm": "Маски"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 18,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -5242,7 +5269,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -5356,15 +5383,28 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за лицом / маски / маски для лица",
       "ga": "Уход для лица",
       "letu": "Уход за лицом >> Уход за лицом >> Маска для лица",
-      "mm": ""
+      "mm": "Маски"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 24,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
+    },
+    "aliases": [
+      {
+        "value": "maska_dlya_lica_100m",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "maska_dlya_lica_100m"
+      ]
     }
   },
   {
@@ -5497,15 +5537,28 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / мужчинам / для бороды и усов",
       "ga": "Уход для лица",
       "letu": "Бритье и депиляция >> Масло для ухода за бородой >> Уход и стайлинг для бороды",
-      "mm": ""
+      "mm": "Масло косметическое"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 31,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
+    },
+    "aliases": [
+      {
+        "value": "maslo_dlya_borodi_50",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "maslo_dlya_borodi_50"
+      ]
     }
   },
   {
@@ -5640,7 +5693,7 @@
       "letu": "Уход за волосами >> Уход за волосами >> Масло для волос",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод"
   },
   {
@@ -5773,15 +5826,15 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за волосами / маски и сыворотки",
       "ga": "",
       "letu": "Уход за волосами >> Уход за волосами >> Масло для волос",
-      "mm": ""
+      "mm": "Масла"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 71,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -5802,7 +5855,7 @@
     "focusScore": 9,
     "focusReasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -5916,13 +5969,13 @@
       "letu": "Воск для укладки волос >> Средства для укладки волос >> Средства для укладки волос",
       "mm": "Воск"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 107,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -6057,13 +6110,13 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 64,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -6198,7 +6251,7 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод"
   },
   {
@@ -6219,7 +6272,7 @@
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
@@ -6333,8 +6386,21 @@
       "letu": "",
       "mm": "Пенка для умывания"
     },
-    "costPrice": null,
-    "sheetStatus": "Вывод"
+    "costPrice": 0,
+    "sheetStatus": "Вывод",
+    "aliases": [
+      {
+        "value": "nabor_penka_dlya_res",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "nabor_penka_dlya_res"
+      ]
+    }
   },
   {
     "article": "nabor_remuver_40ml",
@@ -6468,13 +6534,13 @@
       "letu": "Гель для удаления кутикулы >> Средства для ногтей >> Маникюр и педикюр",
       "mm": "Уход за кутикулой"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Перерабатываем",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 28,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -6606,16 +6672,16 @@
       "ozon": "Ремувер для удаления кутикулы, Алтея, 40 мл х 2",
       "ym": "",
       "ga": "",
-      "letu": "",
-      "mm": ""
+      "letu": "Маникюр и педикюр",
+      "mm": "Уход за кутикулой"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 94,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -6750,13 +6816,13 @@
       "letu": "Ремувер для снятия нарощенных ресниц >> Аксессуары для макияжа >> Макияж",
       "mm": "Средства для ухода за ресницами"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 38,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -6893,7 +6959,7 @@
       "letu": "Пенка для снятия макияжа >> Уход за лицом >> Средства для умывания",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод"
   },
   {
@@ -6914,7 +6980,7 @@
     "focusScore": 5,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -7028,15 +7094,15 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за волосами / для укладки / мусс и пенка",
       "ga": "Стайлинг",
       "letu": "Мусс для укладки волос >> Средства для укладки волос >> Средства для укладки волос",
-      "mm": ""
+      "mm": "Муссы и пенки"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 14,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -7171,7 +7237,7 @@
       "letu": "Уход за волосами >> Пилинг для кожи головы >> Уход за волосами",
       "mm": "Скрабы и пилинги"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод"
   },
   {
@@ -7192,7 +7258,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -7308,13 +7374,13 @@
       "letu": "Уход за лицом >> Крем для лица >> Уход за лицом",
       "mm": "Кремы для лица"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 26,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -7449,7 +7515,7 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод"
   },
   {
@@ -7470,7 +7536,7 @@
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
@@ -7586,13 +7652,13 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 83,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -7727,7 +7793,7 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод"
   },
   {
@@ -7748,7 +7814,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик VK",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -7864,13 +7930,13 @@
       "letu": "Уход за лицом >> Крем для лица >> Уход за лицом",
       "mm": "Кремы для лица"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 2,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -7891,7 +7957,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик VK",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Новинка",
       "byPlatform": {
@@ -8007,13 +8073,13 @@
       "letu": "Крем для лица",
       "mm": "Кремы для лица"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 42,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -8034,7 +8100,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -8151,13 +8217,26 @@
       "letu": "Уход за лицом >> Крем для лица >> Уход за лицом",
       "mm": "Кремы для лица"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 21,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
+    },
+    "aliases": [
+      {
+        "value": "retinait_krem_025_50",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "retinait_krem_025_50"
+      ]
     }
   },
   {
@@ -8178,7 +8257,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -8292,16 +8371,29 @@
       "ozon": "Крем для лица с липосомальным ретинолом 0,5% Ретинайт",
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за лицом / кремы и сыворотки / средства для ухода за лицом",
       "ga": "Уход для лица",
-      "letu": "",
-      "mm": ""
+      "letu": "Уход за лицом",
+      "mm": "Кремы для лица"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 19,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
+    },
+    "aliases": [
+      {
+        "value": "retinait_krem_05_50m",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "retinait_krem_05_50m"
+      ]
     }
   },
   {
@@ -8322,7 +8414,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -8439,13 +8531,13 @@
       "letu": "Уход за лицом >> Крем для лица >> Уход за лицом",
       "mm": "Кремы для лица"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 8,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -8466,7 +8558,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик VK",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Новинка",
       "byPlatform": {
@@ -8582,13 +8674,13 @@
       "letu": "Крем для лица",
       "mm": "Кремы для лица"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 13,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -8609,19 +8701,7 @@
     "focusScore": 2,
     "focusReasons": "Отрицательная маржа Ozon; Owner не закреплён",
     "owner": {
-      "name": {
-        "name": "",
-        "source": null,
-        "registryStatus": null,
-        "byPlatform": {
-          "wb": "",
-          "ozon": "Даша",
-          "ym": "",
-          "ga": "",
-          "letu": "",
-          "mm": ""
-        }
-      },
+      "name": "[object Object]",
       "source": null,
       "registryStatus": null,
       "byPlatform": {
@@ -8735,13 +8815,13 @@
       "letu": "Сыворотка для лица",
       "mm": "Сыворотки"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 34,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -8762,19 +8842,7 @@
     "focusScore": 0,
     "focusReasons": "Owner не закреплён",
     "owner": {
-      "name": {
-        "name": "",
-        "source": null,
-        "registryStatus": null,
-        "byPlatform": {
-          "wb": "",
-          "ozon": "Даша",
-          "ym": "",
-          "ga": "",
-          "letu": "",
-          "mm": ""
-        }
-      },
+      "name": "[object Object]",
       "source": null,
       "registryStatus": null,
       "byPlatform": {
@@ -8886,15 +8954,15 @@
       "ym": "Средства для ухода за лицом",
       "ga": "Уход для лица",
       "letu": "Сыворотка для лица",
-      "mm": ""
+      "mm": "Сыворотки"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Новинка",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 20,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -8915,7 +8983,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -9029,15 +9097,28 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за лицом / кремы и сыворотки / средства для ухода за лицом",
       "ga": "Уход для лица",
       "letu": "Уход за лицом >> Уход за лицом >> Сыворотка для лица",
-      "mm": ""
+      "mm": "Сыворотки"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 6,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
+    },
+    "aliases": [
+      {
+        "value": "retinait_syvorotka_1",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "retinait_syvorotka_1"
+      ]
     }
   },
   {
@@ -9172,13 +9253,13 @@
       "letu": "Крем для глаз",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Новинка",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 9,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -9313,7 +9394,7 @@
       "letu": "Набор средств для лица",
       "mm": "Наборы средств для лица"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный"
   },
   {
@@ -9334,7 +9415,7 @@
     "focusScore": 1,
     "focusReasons": "Низкий остаток",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Новинка",
       "byPlatform": {
@@ -9448,13 +9529,13 @@
       "letu": "Набор средств для лица",
       "mm": "Наборы средств для лица"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 117,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -9589,7 +9670,7 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Под вопросом"
   },
   {
@@ -9610,7 +9691,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -9724,15 +9805,28 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за волосами / шампуни",
       "ga": "Шампуни и кондиционеры",
       "letu": "Уход за волосами >> Шампунь для волос >> Уход за волосами",
-      "mm": ""
+      "mm": "Шампуни"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 52,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
+    },
+    "aliases": [
+      {
+        "value": "shampun_dlya_rosta_2",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "shampun_dlya_rosta_2"
+      ]
     }
   },
   {
@@ -9753,7 +9847,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -9869,13 +9963,26 @@
       "letu": "Уход за волосами >> Шампунь для волос >> Уход за волосами",
       "mm": "Шампуни"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 70,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
+    },
+    "aliases": [
+      {
+        "value": "shampun_protiv_perho",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "shampun_protiv_perho"
+      ]
     }
   },
   {
@@ -9896,7 +10003,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Мария",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -10012,13 +10119,13 @@
       "letu": "Крем для укладки волос >> Средства для укладки волос >> Средства для укладки волос",
       "mm": "Кремы"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 61,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -10039,7 +10146,7 @@
     "focusScore": 9,
     "focusReasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -10153,15 +10260,15 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за волосами / маски и сыворотки",
       "ga": "Уход для волос",
       "letu": "Уход за волосами >> Скраб для кожи головы >> Уход за волосами",
-      "mm": ""
+      "mm": "Скрабы"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 101,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -10298,13 +10405,13 @@
       "letu": "Спрей для укладки волос >> Средства для укладки волос >> Средства для укладки волос",
       "mm": "Спреи"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 23,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -10325,19 +10432,7 @@
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": {
-        "name": "",
-        "source": null,
-        "registryStatus": null,
-        "byPlatform": {
-          "wb": "",
-          "ozon": "Даша",
-          "ym": "",
-          "ga": "",
-          "letu": "",
-          "mm": ""
-        }
-      },
+      "name": "[object Object]",
       "source": null,
       "registryStatus": null,
       "byPlatform": {
@@ -10457,7 +10552,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 129,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -10478,19 +10573,7 @@
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": {
-        "name": "",
-        "source": null,
-        "registryStatus": null,
-        "byPlatform": {
-          "wb": "",
-          "ozon": "Даша",
-          "ym": "",
-          "ga": "",
-          "letu": "",
-          "mm": ""
-        }
-      },
+      "name": "[object Object]",
       "source": null,
       "registryStatus": null,
       "byPlatform": {
@@ -10604,13 +10687,13 @@
       "letu": "Сыворотка для лица",
       "mm": "Сыворотки"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Новинка",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 22,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -10747,13 +10830,13 @@
       "letu": "Уход за волосами >> Уход за волосами >> Спрей для ухода за волосами",
       "mm": "Спреи уходовые"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 10,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -10888,13 +10971,13 @@
       "letu": "Ортопедические изделия >> Медицинские изделия >> Пластырь мозольный",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 124,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -11027,9 +11110,9 @@
       "ym": "Косметические наборы",
       "ga": "",
       "letu": "",
-      "mm": ""
+      "mm": "Косметические наборы для волос"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный"
   },
   {
@@ -11050,7 +11133,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -11164,15 +11247,15 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за лицом / кремы и сыворотки",
       "ga": "Уход для лица",
       "letu": "Уход за лицом >> Уход за лицом >> Сыворотка для лица",
-      "mm": ""
+      "mm": "Сыворотки"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 4,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -11193,7 +11276,7 @@
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; WB ниже min price; Много возвратов",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Новинка",
       "byPlatform": {
@@ -11307,7 +11390,7 @@
       "letu": "Сыворотка для лица",
       "mm": "Сыворотки"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный"
   },
   {
@@ -11442,13 +11525,13 @@
       "letu": "Уход за лицом >> Сыворотка для роста ресниц >> Средства для роста ресниц и бровей",
       "mm": "Средства для ухода за ресницами"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 105,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -11469,7 +11552,7 @@
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -11581,15 +11664,15 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / макияж / для бровей / тушь и гель для бровей",
       "ga": "Моделирование и окрашивание для бровей и ресниц",
       "letu": "Уход за лицом >> Гель для роста ресниц и бровей >> Средства для роста ресниц и бровей",
-      "mm": ""
+      "mm": "Средства для ухода за ресницами"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 37,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -11610,7 +11693,7 @@
     "focusScore": 8,
     "focusReasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -11724,13 +11807,13 @@
       "letu": "Уход за лицом >> Уход за лицом >> Сыворотка для лица",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 53,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -11751,19 +11834,7 @@
     "focusScore": 0,
     "focusReasons": "Owner не закреплён",
     "owner": {
-      "name": {
-        "name": "",
-        "source": null,
-        "registryStatus": null,
-        "byPlatform": {
-          "wb": "",
-          "ozon": "Даша",
-          "ym": "",
-          "ga": "",
-          "letu": "",
-          "mm": ""
-        }
-      },
+      "name": "[object Object]",
       "source": null,
       "registryStatus": null,
       "byPlatform": {
@@ -11877,13 +11948,13 @@
       "letu": "Сыворотка для лица",
       "mm": "Сыворотки"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 12,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -12018,13 +12089,13 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 25,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -12159,13 +12230,13 @@
       "letu": "Уход за волосами >> Уход за волосами >> Спрей для ухода за волосами",
       "mm": "Спреи"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Под вопросом",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 39,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -12186,7 +12257,7 @@
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
@@ -12298,15 +12369,28 @@
       "ym": "товары для красоты / косметика, парфюмерия и уход / уход за лицом / очищение и снятие макияжа / средства для умывания",
       "ga": "Уход для лица",
       "letu": "Уход за лицом >> Тоник для лица >> Уход за лицом",
-      "mm": ""
+      "mm": "Тоники"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 54,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
+    },
+    "aliases": [
+      {
+        "value": "tonik_dlya_lica_200m",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "tonik_dlya_lica_200m"
+      ]
     }
   },
   {
@@ -12327,7 +12411,7 @@
     "focusScore": 1,
     "focusReasons": "Есть внешний трафик КЗ",
     "owner": {
-      "name": "Олеся",
+      "name": "Максим",
       "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Новинка",
       "byPlatform": {
@@ -12443,13 +12527,13 @@
       "letu": "Воск для укладки волос >> Средства для укладки волос >> Средства для укладки волос",
       "mm": "Средства для укладки"
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Актуальный",
     "wbOwnerDistribution": {
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 77,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   },
   {
@@ -12584,13 +12668,13 @@
       "letu": "",
       "mm": ""
     },
-    "costPrice": null,
+    "costPrice": 0,
     "sheetStatus": "Вывод",
     "wbOwnerDistribution": {
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 127,
-      "appliedAt": "2026-05-20T12:25:20.541Z"
+      "appliedAt": "2026-05-29T09:41:30.555Z"
     }
   }
 ]

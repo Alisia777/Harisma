@@ -166,7 +166,11 @@ function resolveOptions(args) {
   return {
     command: args.command || 'sync',
     dryRun: Boolean(args.dryRun),
-    token: args.token || process.env.ALTEA_WB_FEEDBACKS_TOKEN || process.env.ALTEA_WB_PROMOTION_TOKEN || '',
+    token: args.token
+      || process.env.ALTEA_WB_FEEDBACKS_TOKEN
+      || process.env.ALTEA_WB_PROMOTION_TOKEN
+      || process.env.ALTEA_WB_API_TOKEN
+      || '',
     apiBaseUrl: String(args['api-base-url'] || process.env.ALTEA_WB_FEEDBACKS_API_BASE_URL || WB_FEEDBACKS_API_BASE_URL).replace(/\/+$/, ''),
     baseDataDir,
     inputDir,

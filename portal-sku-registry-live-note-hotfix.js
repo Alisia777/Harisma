@@ -3,9 +3,16 @@
   window.__ALTEA_SKU_REGISTRY_NOTE_CLEANUP_20260515__ = true;
 
   function run() {
+    if (activePortalView() !== "skus") return;
     document.querySelectorAll("[data-sku-live-note]").forEach(function (node) {
       node.remove();
     });
+  }
+
+  function activePortalView() {
+    if (window.state && state.activeView) return String(state.activeView);
+    var active = document.querySelector(".view.active");
+    return active ? String(active.id || "").replace(/^view-/, "") : "";
   }
 
   function installSkuContourImportFix() {
@@ -113,6 +120,7 @@
     run();
   }
 
-  window.addEventListener("altea:viewchange", run);
-  window.setInterval(run, 1500);
+  window.addEventListener("altea:viewchange", function (event) {
+    if (String(event && event.detail && event.detail.view || activePortalView()) === "skus") run();
+  });
 })();

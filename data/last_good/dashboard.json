@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-20T09:09:30.836Z",
+  "generatedAt": "2026-05-29T09:41:28.984Z",
   "dataFreshness": {
     "planFactMonth": "май 2026 - общий план компании",
     "ordersSnapshot": "orders (40).csv",
@@ -12,7 +12,7 @@
       "Для Анны (2).xlsx",
       "Рабочий _ Спецификации v2.xlsx"
     ],
-    "asOfDate": "2026-05-19",
+    "asOfDate": "2026-05-28",
     "googleSheetsMonth": "2026-05",
     "googleSheetsBridge": "scripts/portal-google-sheet-sync.js",
     "googleSheetsSourceUrl": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
@@ -1027,9 +1027,25 @@
       "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
     },
     {
-      "label": "Остатки MP, шт.",
-      "value": 946727,
-      "hint": "WB + Ozon по API-�резу platform_trends на 2026-05-19"
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.3355,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.3355
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
     },
     {
       "label": "План ���, шт.",
@@ -1037,22 +1053,566 @@
       "hint": "Линейный план месяца по SKU рабочего контура."
     },
     {
-      "label": "Факт 01-19.05, шт.",
-      "value": 141740.99980000002,
-      "hint": "Факт по API-�резу platform_trends на 2026-05-19."
+      "label": "Выполнение к плану на дату",
+      "value": 1.3281,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.3281
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-20.05, ₽",
+      "value": 157573105.89,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.8378,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.8378
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
     },
     {
       "label": "Выполнение к плану на дату",
-      "value": 1.3355,
+      "value": 1.3281,
       "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
-      "valuePct": 1.3355
+      "valuePct": 1.3281
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-20.05, ₽",
+      "value": 157573105.89,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.8378,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.8378
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.3154,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.3154
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-21.05, ₽",
+      "value": 163837191.85,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.8296,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.8296
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.3124,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.3124
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-22.05, ₽",
+      "value": 171375271.85,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.8284,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.8284
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.3124,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.3124
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-22.05, ₽",
+      "value": 171375271.85,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.8284,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.8284
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.3177,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.3177
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-23.05, ₽",
+      "value": 180266167.21,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.8335,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.8335
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.3353,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.3353
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-24.05, ₽",
+      "value": 191257645.22,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.8474,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.8474
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.3353,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.3353
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-24.05, ₽",
+      "value": 191257645.22,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.8474,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.8474
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.3838,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.3838
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-24.05, ₽",
+      "value": 196487998.47,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.8706,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.8706
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.3976,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.3976
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-25.05, ₽",
+      "value": 206726523.22,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.8793,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.8793
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.4031,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.4031
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-26.05, ₽",
+      "value": 215765815.23,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.8825,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.8825
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.4083,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.4083
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-27.05, ₽",
+      "value": 224828063.24,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.8855,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.8855
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.4191,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.4191
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-28.05, ₽",
+      "value": 234729135.64,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.8915,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.8915
+    },
+    {
+      "label": "SKU в базе",
+      "value": 89,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 89,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "Остатки MP, шт.",
+      "value": 1002246,
+      "hint": "WB + Ozon по API-�резу platform_trends на 2026-05-28"
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Факт 01-28.05, шт.",
+      "value": 221960.99960000013,
+      "hint": "Факт по API-�резу platform_trends на 2026-05-28."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.4191,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.4191
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 291518548.51,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-28.05, ₽",
+      "value": 234729135.64,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 0.8915,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 0.8915
     }
   ],
   "brandSummary": [
     {
       "brand": "Алтея",
       "sku_count": 89,
-      "total_stock": 946727,
+      "total_stock": 1002246,
       "orders_value": 161631197.21,
       "feb_plan_units": 127838,
       "feb_fact_units": 48829,
@@ -1066,12 +1626,12 @@
       "google_sheets_plan_field": "planApr26Units",
       "google_sheets_month_key": "2026-05",
       "plan_units": 173171,
-      "fact_units_to_date": 141740.99980000002,
-      "fact_revenue_to_date": 150478536.87080002,
-      "plan_completion_to_date_pct": 1.3355,
+      "fact_units_to_date": 221960.99960000013,
+      "fact_revenue_to_date": 234729135.64120004,
+      "plan_completion_to_date_pct": 1.4191,
       "apr_plan_units": 173171,
       "apr_fact_units_to_date": 152328,
-      "asOfDate": "2026-05-19",
+      "asOfDate": "2026-05-28",
       "plan_source": "План А.xlsx :: 00_Источник_плана | общий план компании",
       "apr_plan_revenue": 291518548.512607,
       "apr_fact_revenue_to_date": 41103033,
@@ -1081,28 +1641,28 @@
       "apr_plan_completion_to_date_pct": 0.7284808173734992,
       "apr_forecast_pct": 0.7284808173734991,
       "may_plan_units": 173171,
-      "may_fact_units_to_date": 141740.99980000002,
-      "may_fact_revenue_to_date": 150478536.87080002,
-      "may_plan_completion_to_date_pct": 1.3355,
+      "may_fact_units_to_date": 221960.99960000013,
+      "may_fact_revenue_to_date": 234729135.64120004,
+      "may_plan_completion_to_date_pct": 1.4191,
       "company_plan_month_key": "2026-05",
       "company_plan_month_label": "май 2026",
       "company_plan_revenue": 291518548.51,
-      "company_fact_revenue_to_date": 143465854.85,
-      "company_plan_to_date_revenue": 169268834.62,
-      "company_plan_completion_month_pct": 0.4921,
-      "company_plan_completion_to_date_pct": 0.8476,
-      "company_forecast_revenue": 247080083.35,
-      "company_forecast_pct": 0.8476,
+      "company_fact_revenue_to_date": 234729135.64,
+      "company_plan_to_date_revenue": 263307076.08,
+      "company_plan_completion_month_pct": 0.8052,
+      "company_plan_completion_to_date_pct": 0.8915,
+      "company_forecast_revenue": 259878685.89,
+      "company_forecast_pct": 0.8915,
       "company_plan_source": "План А.xlsx :: 00_Источник_плана",
       "may_company_plan_revenue": 291518548.51,
-      "may_company_fact_revenue_to_date": 143465854.85,
-      "may_company_plan_to_date_revenue": 169268834.62,
-      "may_company_plan_completion_month_pct": 0.4921,
-      "may_company_plan_completion_to_date_pct": 0.8476,
-      "may_company_forecast_revenue": 247080083.35,
-      "may_company_forecast_pct": 0.8476,
+      "may_company_fact_revenue_to_date": 234729135.64,
+      "may_company_plan_to_date_revenue": 263307076.08,
+      "may_company_plan_completion_month_pct": 0.8052,
+      "may_company_plan_completion_to_date_pct": 0.8915,
+      "may_company_forecast_revenue": 259878685.89,
+      "may_company_forecast_pct": 0.8915,
       "google_sheets_company_plan_field": "company_revenue_plan",
-      "latestMarketplaceDate": "2026-05-19"
+      "latestMarketplaceDate": "2026-05-28"
     }
   ],
   "focusTop": [
@@ -1128,7 +1688,7 @@
       "plan_completion_feb26_pct": 0.3244,
       "total_mp_stock": 9203,
       "content_romi": 91.145,
-      "owner_name": "Олеся",
+      "owner_name": "Мария",
       "external_kz_flag": 1,
       "external_vk_flag": 0
     },
@@ -1180,7 +1740,7 @@
       "plan_completion_feb26_pct": 0.3523,
       "total_mp_stock": 763,
       "content_romi": null,
-      "owner_name": "Олеся",
+      "owner_name": "Максим",
       "external_kz_flag": 0,
       "external_vk_flag": 0
     },
@@ -1219,7 +1779,7 @@
       "plan_completion_feb26_pct": 0.3203,
       "total_mp_stock": 6986,
       "content_romi": 353.345,
-      "owner_name": "Олеся",
+      "owner_name": "Мария",
       "external_kz_flag": 1,
       "external_vk_flag": 0
     },
@@ -1245,7 +1805,7 @@
       "plan_completion_feb26_pct": 0.373,
       "total_mp_stock": 2452,
       "content_romi": 336.99,
-      "owner_name": "Олеся",
+      "owner_name": "Максим",
       "external_kz_flag": 1,
       "external_vk_flag": 0
     },
@@ -1258,7 +1818,7 @@
       "plan_completion_feb26_pct": 0.373,
       "total_mp_stock": 3935,
       "content_romi": 424.545,
-      "owner_name": "Олеся",
+      "owner_name": "Мария",
       "external_kz_flag": 1,
       "external_vk_flag": 0
     },
@@ -1297,7 +1857,7 @@
       "plan_completion_feb26_pct": 0.3319,
       "total_mp_stock": 4254,
       "content_romi": null,
-      "owner_name": "Олеся",
+      "owner_name": "Мария",
       "external_kz_flag": 1,
       "external_vk_flag": 0
     },
@@ -1310,7 +1870,7 @@
       "plan_completion_feb26_pct": 0.3333,
       "total_mp_stock": 1,
       "content_romi": null,
-      "owner_name": "Олеся",
+      "owner_name": "Мария",
       "external_kz_flag": 0,
       "external_vk_flag": 0
     }
@@ -1325,7 +1885,7 @@
       "content_revenue": 5607137.34,
       "content_posts": 1599,
       "content_clicks": 79455,
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "gel_antiakne_20ml_v2",
@@ -1347,7 +1907,7 @@
       "content_revenue": 1884996.33,
       "content_posts": 479,
       "content_clicks": 17112,
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "curly_method_300ml",
@@ -1358,7 +1918,7 @@
       "content_revenue": 1595093.81,
       "content_posts": 475,
       "content_clicks": 24799,
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "penka_kudryavii_metod_150ml",
@@ -1369,7 +1929,7 @@
       "content_revenue": 1117825.21,
       "content_posts": 298,
       "content_clicks": 13100,
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "retiderm_50ml",
@@ -1380,7 +1940,7 @@
       "content_revenue": 389710.12,
       "content_posts": 126,
       "content_clicks": 26279,
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "maska_dlya_lica_100ml",
@@ -1391,7 +1951,7 @@
       "content_revenue": 317327.45,
       "content_posts": 41,
       "content_clicks": 21949,
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "maska-batter_dlya_rosta_500ml",
@@ -1402,7 +1962,7 @@
       "content_revenue": 252024.28,
       "content_posts": 102,
       "content_clicks": 3892,
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "retinol_boost_krem_dlya_vek_30ml",
@@ -1424,7 +1984,7 @@
       "content_revenue": 1926499.82,
       "content_posts": 1197,
       "content_clicks": 32080,
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "retinait_krem_1_50ml",
@@ -1435,7 +1995,7 @@
       "content_revenue": 65382.03,
       "content_posts": 21,
       "content_clicks": 724,
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "syvorotka_niacin_05_30ml",
@@ -1536,7 +2096,7 @@
       "plan_completion_feb26_pct": 0.3203,
       "total_mp_stock": 6986,
       "negative_margin_flag": 0,
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "matte_wax_50ml",
@@ -1558,7 +2118,7 @@
       "plan_completion_feb26_pct": 0.3244,
       "total_mp_stock": 9203,
       "negative_margin_flag": 1,
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "solevoy_sprei_200ml",
@@ -1580,7 +2140,7 @@
       "plan_completion_feb26_pct": 0.3319,
       "total_mp_stock": 4254,
       "negative_margin_flag": 0,
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     }
   ],
   "toWork": [
@@ -1645,7 +2205,7 @@
       "wb_margin_pct": 0.5005,
       "ozon_margin_pct": -0.1979,
       "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов; Есть внешний трафик КЗ",
-      "owner_name": "Олеся",
+      "owner_name": "Мария",
       "external_kz_flag": 1,
       "external_vk_flag": 0
     },
@@ -1658,7 +2218,7 @@
       "wb_margin_pct": 0.3548,
       "ozon_margin_pct": -0.336,
       "focus_reasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon",
-      "owner_name": "Олеся",
+      "owner_name": "Максим",
       "external_kz_flag": 0,
       "external_vk_flag": 0
     },
@@ -1827,7 +2387,7 @@
       "returns_units": 732,
       "returns_count": 732,
       "top_return_reason": "Покупатель отменил заказ",
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "krovavii_piling_30ml",
@@ -1836,7 +2396,7 @@
       "returns_units": 541,
       "returns_count": 541,
       "top_return_reason": "Покупатель отменил заказ: нашел дешевле",
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "maska_dlya_lica_100ml",
@@ -1845,7 +2405,7 @@
       "returns_units": 355,
       "returns_count": 355,
       "top_return_reason": "Покупатель отказался при вручении: товар не подошел",
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "gel_dlya_brovei_6ml",
@@ -1863,7 +2423,7 @@
       "returns_units": 330,
       "returns_count": 330,
       "top_return_reason": "Покупатель отказался при вручении: товар не подошел",
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "retinait_krem_1_5_50ml",
@@ -1872,7 +2432,7 @@
       "returns_units": 298,
       "returns_count": 298,
       "top_return_reason": "Покупатель отменил заказ: нашел дешевле",
-      "owner_name": "Олеся"
+      "owner_name": "Мария"
     },
     {
       "article": "syvorotka_dlya_lica_30ml",
@@ -1881,7 +2441,7 @@
       "returns_units": 263,
       "returns_count": 263,
       "top_return_reason": "Покупатель отменил заказ: нашел дешевле",
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "krem_spf50_50ml",
@@ -1899,7 +2459,7 @@
       "returns_units": 228,
       "returns_count": 228,
       "top_return_reason": "Покупатель отменил заказ",
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     },
     {
       "article": "sprei_buster_100ml",
@@ -1917,7 +2477,7 @@
       "returns_units": 181,
       "returns_count": 181,
       "top_return_reason": "Покупатель отменил заказ",
-      "owner_name": "Олеся"
+      "owner_name": "Максим"
     }
   ],
   "unassigned": [
@@ -2022,7 +2582,7 @@
       "ozon_margin_pct": 0.2158
     }
   ],
-  "asOfDate": "2026-05-19",
+  "asOfDate": "2026-05-28",
   "apr_plan_revenue": 291518548.512607,
   "apr_fact_revenue_to_date": 41103033,
   "apr_plan_to_date_revenue": 56422944.873407796,
@@ -2042,14 +2602,14 @@
       "monthKey": "2026-05",
       "label": "май 2026",
       "days": 31,
-      "dayOfMonth": 18,
+      "dayOfMonth": 28,
       "planRevenueMonth": 291518548.51,
-      "planRevenueToDate": 169268834.62,
-      "factRevenueToDate": 143465854.85,
-      "completionMonthPct": 0.4921,
-      "completionToDatePct": 0.8476,
-      "forecastRevenue": 247080083.35,
-      "forecastPct": 0.8476,
+      "planRevenueToDate": 263307076.08,
+      "factRevenueToDate": 234729135.64,
+      "completionMonthPct": 0.8052,
+      "completionToDatePct": 0.8915,
+      "forecastRevenue": 259878685.89,
+      "forecastPct": 0.8915,
       "channels": {
         "wb": {
           "label": "WB",
@@ -2483,13 +3043,13 @@
   "company_plan_month_key": "2026-05",
   "company_plan_month_label": "май 2026",
   "company_plan_revenue": 291518548.51,
-  "company_fact_revenue_to_date": 143465854.85,
-  "company_plan_to_date_revenue": 169268834.62,
-  "company_plan_completion_month_pct": 0.4921,
-  "company_plan_completion_to_date_pct": 0.8476,
-  "company_forecast_revenue": 247080083.35,
-  "company_forecast_pct": 0.8476,
+  "company_fact_revenue_to_date": 234729135.64,
+  "company_plan_to_date_revenue": 263307076.08,
+  "company_plan_completion_month_pct": 0.8052,
+  "company_plan_completion_to_date_pct": 0.8915,
+  "company_forecast_revenue": 259878685.89,
+  "company_forecast_pct": 0.8915,
   "company_plan_source": "План А.xlsx :: 00_Источник_плана",
-  "latestMarketplaceDate": "2026-05-19",
+  "latestMarketplaceDate": "2026-05-28",
   "marketplaceFactSource": "platform_trends.json (API-backed)"
 }

@@ -189,7 +189,9 @@
         row.status || '',
         Math.round(Number(row.factRevenue) || 0),
         Math.round(Number(row.planToDateRevenue) || 0),
-        Math.round(Number(row.gapToDate) || 0)
+        Math.round(Number(row.gapToDate) || 0),
+        Math.round(Number(row.planAdSpend) || 0),
+        Math.round((Number(row.planMarginPct) || 0) * 10000)
       ].join(':'))
     });
     if (!forceRender && body && body.dataset.skuStableSignature === bodySignature && lastStableBodySignature === bodySignature) {
@@ -205,14 +207,41 @@
       acc.planUnits += row.planUnits || 0;
       acc.factUnits += row.factUnits || 0;
       acc.adSpend += row.adSpend || 0;
+      if (row.planAdSpend !== null && row.planAdSpend !== undefined) {
+        acc.planAdSpend += Number(row.planAdSpend || 0);
+        acc.hasPlanAdSpend = true;
+      }
+      const marginPct = typeof skuPlanFactNormalizeRatio === 'function'
+        ? skuPlanFactNormalizeRatio(row.marginPct)
+        : (Number.isFinite(Number(row.marginPct)) ? Number(row.marginPct) : null);
+      const marginWeight = Number(row.factRevenue || 0) || Number(row.planToDateRevenue || 0) || Number(row.planRevenue || 0);
+      if (marginPct !== null && marginWeight > 0) {
+        acc.marginValue += marginPct * marginWeight;
+        acc.marginWeight += marginWeight;
+      }
+      const planMarginPct = typeof skuPlanFactNormalizeRatio === 'function'
+        ? skuPlanFactNormalizeRatio(row.planMarginPct)
+        : (Number.isFinite(Number(row.planMarginPct)) ? Number(row.planMarginPct) : null);
+      const planMarginWeight = Number(row.planToDateRevenue || 0) || Number(row.planRevenue || 0);
+      if (planMarginPct !== null && planMarginWeight > 0) {
+        acc.planMarginValue += planMarginPct * planMarginWeight;
+        acc.planMarginWeight += planMarginWeight;
+      }
       if (row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue) acc.underPlan += 1;
       return acc;
-    }, { planRevenue: 0, planToDateRevenue: 0, factRevenue: 0, planUnits: 0, factUnits: 0, adSpend: 0, underPlan: 0 });
+    }, { planRevenue: 0, planToDateRevenue: 0, factRevenue: 0, planUnits: 0, factUnits: 0, adSpend: 0, planAdSpend: 0, hasPlanAdSpend: false, marginValue: 0, marginWeight: 0, planMarginValue: 0, planMarginWeight: 0, underPlan: 0 });
     totals.completionToDate = totals.planToDateRevenue > 0 ? totals.factRevenue / totals.planToDateRevenue : null;
     totals.completionMonth = totals.planRevenue > 0 ? totals.factRevenue / totals.planRevenue : null;
     totals.avgCheck = totals.factUnits > 0 ? totals.factRevenue / totals.factUnits : null;
     totals.gapToDate = totals.factRevenue - totals.planToDateRevenue;
     totals.drr = totals.factRevenue > 0 ? totals.adSpend / totals.factRevenue : null;
+    totals.planAdSpend = totals.hasPlanAdSpend ? totals.planAdSpend : null;
+    totals.planDrr = totals.planToDateRevenue > 0 && totals.planAdSpend !== null ? totals.planAdSpend / totals.planToDateRevenue : null;
+    totals.marginPct = totals.marginWeight > 0 ? totals.marginValue / totals.marginWeight : null;
+    totals.marginRub = totals.marginPct === null ? null : totals.factRevenue * totals.marginPct;
+    totals.planMarginPct = totals.planMarginWeight > 0 ? totals.planMarginValue / totals.planMarginWeight : null;
+    totals.planMarginRub = totals.planMarginPct === null ? null : totals.planToDateRevenue * totals.planMarginPct;
+    const headlineTotals = model.totals?.payrollSourceTotals ? model.totals : totals;
 
     if (body && typeof skuPlanFactRowHtml === 'function') {
       const tableColspan = 8;
@@ -234,11 +263,11 @@
     if (cards && typeof fmt === 'object') {
       const deltaClass = typeof skuPlanFactDeltaClass === 'function' ? skuPlanFactDeltaClass : (() => '');
       cards.innerHTML = [
-        kpiHtml('Факт оборота', fmt.money(totals.factRevenue), `план к дате ${fmt.money(totals.planToDateRevenue)}`),
-        kpiHtml('Выполнение к дате', fmt.pct(totals.completionToDate), `месячный план: ${fmt.pct(totals.completionMonth)}`, deltaClass(totals.completionToDate - 1)),
-        kpiHtml('Отклонение к дате', fmt.money(totals.gapToDate), `${fmt.int(totals.underPlan)} SKU ниже плана`, deltaClass(totals.gapToDate)),
+        kpiHtml('Факт оборота', fmt.money(headlineTotals.factRevenue), `план к дате ${fmt.money(headlineTotals.planToDateRevenue)}`),
+        kpiHtml('Выполнение к дате', fmt.pct(headlineTotals.completionToDate), `месячный план: ${fmt.pct(headlineTotals.completionMonth)}`, deltaClass(headlineTotals.completionToDate - 1)),
+        kpiHtml('Отклонение к дате', fmt.money(headlineTotals.gapToDate), `${fmt.int(totals.underPlan)} SKU ниже плана`, deltaClass(headlineTotals.gapToDate)),
         kpiHtml('Средний чек', fmt.money(totals.avgCheck), `${fmt.int(totals.factUnits)} шт. факт`),
-        kpiHtml('Реклама / ДРР', `${fmt.money(totals.adSpend)} · ${fmt.pct(totals.drr)}`, 'по SKU из ads_summary')
+        kpiHtml('Реклама / ДРР', `${fmt.money(headlineTotals.adSpend)} · ${fmt.pct(headlineTotals.drr)}`, `план ${fmt.money(headlineTotals.planAdSpend)} · ДРР план ${fmt.pct(headlineTotals.planDrr)}`)
       ].join('');
     }
 
@@ -253,7 +282,7 @@
       };
       setChip((text) => text.includes('SKU'), `${fmt.int(rows.length)} SKU`, 'info');
       setChip((text) => text.includes('API'), `${fmt.int(model.unmappedCount || 0)} API без пары`, model.unmappedCount ? 'warn' : 'ok');
-      setChip((text) => text.includes('маржа'), `маржа ${fmt.pct(totals.marginPct)}`, typeof skuPlanFactMarginTone === 'function' ? skuPlanFactMarginTone(totals.marginPct) : '');
+      setChip((text) => text.includes('маржа'), `маржа ${fmt.pct(headlineTotals.marginPct)}`, typeof skuPlanFactMarginTone === 'function' ? skuPlanFactMarginTone(headlineTotals.marginPct) : '');
       setChip((text) => text.includes('период') || text.includes('факт до'), `период ${model.periodStart || '—'} - ${model.periodEnd || model.maxFactDate || '—'}`, 'ok');
     }
     host.querySelector('#skuPlanFactSort') && (host.querySelector('#skuPlanFactSort').value = current.sort || 'gap');

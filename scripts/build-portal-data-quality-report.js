@@ -155,10 +155,12 @@ function buildSkuLookup(skus = []) {
 function buildKnownSkuSet(skus = [], skuAliases = {}) {
   const set = new Set();
   skus.forEach((sku) => skuLookupTokens(sku).forEach((token) => set.add(token)));
+  const lookup = buildSkuLookup(skus);
   activeSkuAliasRows(skuAliases).forEach((row) => {
     const targetToken = normalizeToken(row?.target_sku ?? row?.targetSku ?? row?.target ?? '');
     const apiToken = normalizeToken(row?.api_sku ?? row?.apiSku ?? row?.alias ?? row?.value ?? '');
     if (!targetToken || !apiToken) return;
+    if (!lookup.has(targetToken)) return;
     set.add(apiToken);
   });
   return set;
@@ -205,7 +207,15 @@ function isSkuAliasIgnored(ignoreSet, platform = '', apiSku = '') {
 
 function ownerText(sku = {}) {
   if (typeof sku.owner === 'string') return sku.owner.trim();
-  return String(sku.owner?.name || '').trim();
+  const directOwner = String(sku.owner?.name || '').trim();
+  if (directOwner) return directOwner;
+  const byPlatform = sku.owner?.byPlatform && typeof sku.owner.byPlatform === 'object' ? sku.owner.byPlatform : {};
+  const platformOrder = ['wb', 'ozon', 'ym', 'ya', 'ga', 'goldapple', 'letu', 'mm', 'magnit'];
+  for (const platform of platformOrder) {
+    const platformOwner = String(byPlatform[platform] || '').trim();
+    if (platformOwner) return platformOwner;
+  }
+  return Object.values(byPlatform).map((value) => String(value || '').trim()).find(Boolean) || '';
 }
 
 function extraPlatformRows(platformPayload = {}) {

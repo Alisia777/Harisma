@@ -159,10 +159,28 @@ const CONTROL_WORKSTREAM_META = {
     description: 'Отдельный контур по Wildberries.',
     kind: 'warn'
   },
-  retail: {
-    label: 'ЯМ / Летуаль / Магнит / ЗЯ',
-    chip: 'ЯМ / сети',
-    description: 'Яндекс Маркет, Летуаль, Магнит и Золотое Яблоко одним РОПом.',
+  ya: {
+    label: 'Я.Маркет',
+    chip: 'Я.Маркет',
+    description: 'Отдельный контур Яндекс Маркета.',
+    kind: 'ok'
+  },
+  goldapple: {
+    label: 'Золотое яблоко',
+    chip: 'Золотое яблоко',
+    description: 'Отдельный контур Золотого Яблока.',
+    kind: 'ok'
+  },
+  letu: {
+    label: "Л'Этуаль",
+    chip: "Л'Этуаль",
+    description: 'Отдельный контур Л\'Этуаль.',
+    kind: 'ok'
+  },
+  magnit: {
+    label: 'Магнит Маркет',
+    chip: 'Магнит Маркет',
+    description: 'Отдельный контур Магнит Маркета.',
     kind: 'ok'
   },
   cross: {
@@ -173,7 +191,7 @@ const CONTROL_WORKSTREAM_META = {
   }
 };
 
-const CONTROL_WORKSTREAM_ORDER = ['ozon', 'wb', 'retail', 'cross'];
+const CONTROL_WORKSTREAM_ORDER = ['cross', 'wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit', 'product', 'executive'];
 const CONTROL_WORKSTREAM_FILTER_ORDER = ['all', ...CONTROL_WORKSTREAM_ORDER];
 
 const DEFAULT_APP_CONFIG = {
@@ -1035,6 +1053,15 @@ function inferTaskType(text = '') {
   return 'general';
 }
 
+function inferMarketplacePlatform(text = '') {
+  const raw = String(text || '').toLowerCase();
+  if (/золот[а-я\s-]*ябл|goldapple|gold apple|zya|зя/.test(raw)) return 'goldapple';
+  if (/л[еэ]туал|летуаль|letual|letu/.test(raw)) return 'letu';
+  if (/магнит|magnit|mm/.test(raw)) return 'magnit';
+  if (/яндекс|я[.\s-]?маркет|yandex|ym|yandex_market|ymarket/.test(raw)) return 'ya';
+  return '';
+}
+
 function normalizeTaskPlatform(value, contextText = '') {
   const raw = String(value || '').trim().toLowerCase();
   const text = `${raw} ${String(contextText || '').trim().toLowerCase()}`;
@@ -1043,10 +1070,14 @@ function normalizeTaskPlatform(value, contextText = '') {
   if (['cross', 'common', 'shared', 'general'].includes(raw)) return 'cross';
   if (['wb', 'wildberries', 'вб'].includes(raw)) return 'wb';
   if (['ozon', 'озон'].includes(raw)) return 'ozon';
+  if (['ya', 'yandex', 'yandex_market', 'ym'].includes(raw)) return 'ya';
+  if (['goldapple', 'ga', 'zya'].includes(raw)) return 'goldapple';
+  if (['letu', 'letual', 'лэтуаль', 'летуаль'].includes(raw)) return 'letu';
+  if (['magnit', 'mm', 'магнит'].includes(raw)) return 'magnit';
   if (['wb+ozon', 'wb + ozon', 'wb_ozon', 'wb-ozon'].includes(raw)) return 'wb+ozon';
-  if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return 'retail';
-
-  if (/яндекс|я[.\s-]?маркет|yandex|letu?al|л[еэ]туал|л[еэ]туаль|магнит|golden apple|золот[а-я\s-]*яблок/.test(text)) return 'retail';
+  const marketplacePlatform = inferMarketplacePlatform(text);
+  if (['retail', 'federal', 'network', 'marketplaces_plus', 'marketplace_plus'].includes(raw)) return marketplacePlatform || 'ya';
+  if (marketplacePlatform) return marketplacePlatform;
   if (/(^|\W)wb($|\W)|wildberries|вб/.test(text)) return 'wb';
   if (/ozon|озон/.test(text)) return 'ozon';
   return 'all';
@@ -1070,7 +1101,8 @@ function controlWorkstreamKey(task, sku = null) {
 
   if (platform === 'wb') return 'wb';
   if (platform === 'ozon') return 'ozon';
-  if (platform === 'retail') return 'retail';
+  if (platform === 'ya' || platform === 'goldapple' || platform === 'letu' || platform === 'magnit') return platform;
+  if (platform === 'retail') return inferMarketplacePlatform(text) || 'ya';
   if (platform === 'wb+ozon' || platform === 'cross' || platform === 'all') return 'cross';
 
   if (sku?.flags?.toWorkWB && !sku?.flags?.toWorkOzon) return 'wb';
@@ -1080,8 +1112,8 @@ function controlWorkstreamKey(task, sku = null) {
 
 function detectTaskPlatform(task, sku) {
   const text = `${task?.title || ''} ${task?.nextAction || ''} ${task?.reason || ''}`.toLowerCase();
-  if (task?.platform) return normalizeTaskPlatform(task.platform, text);
-  if (/яндекс|я[.\s-]?маркет|yandex|letu?al|л[еэ]туал|л[еэ]туаль|магнит|golden apple|золот[а-я\s-]*яблок/.test(text)) return 'retail';
+  const platform = normalizeTaskPlatform(task?.platform, text);
+  if (platform !== 'all') return platform;
   if (text.includes('wb') && text.includes('ozon')) return 'wb+ozon';
   if (text.includes('wb')) return 'wb';
   if (text.includes('ozon')) return 'ozon';
@@ -1225,11 +1257,7 @@ function ensureTaskModal() {
 }
 
 function storedTaskKeys() {
-  return new Set((state.storage.tasks || [])
-    // Completed saved tasks are still deliberate outcomes and should suppress duplicate auto tasks.
-    .map((task) => normalizeTask(task, task?.source || 'manual'))
-    .filter((task) => task.articleKey && task.type)
-    .map((task) => `${task.articleKey}|${task.type}`));
+  return new Set(state.storage.tasks.filter(isTaskActive).map((task) => `${task.articleKey}|${task.type}`));
 }
 
 function buildAutoTasks() {
@@ -2631,7 +2659,10 @@ function renderControlCenter() {
             <option value="cross" ${selectedWorkstream === 'cross' || selectedWorkstream === 'all' ? 'selected' : ''}>Общий контур</option>
             <option value="wb" ${selectedWorkstream === 'wb' ? 'selected' : ''}>РОП WB</option>
             <option value="ozon" ${selectedWorkstream === 'ozon' ? 'selected' : ''}>РОП Ozon</option>
-            <option value="retail" ${selectedWorkstream === 'retail' ? 'selected' : ''}>ЯМ / Летуаль / Магнит / ЗЯ</option>
+            <option value="ya" ${selectedWorkstream === 'ya' ? 'selected' : ''}>Я.Маркет</option>
+            <option value="goldapple" ${selectedWorkstream === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
+            <option value="letu" ${selectedWorkstream === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+            <option value="magnit" ${selectedWorkstream === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
           </select>
           <select name="type">
             <option value="general">Общее</option>
@@ -2659,7 +2690,10 @@ function renderControlCenter() {
         <option value="all" ${selectedWorkstream === 'all' ? 'selected' : ''}>Все контуры</option>
         <option value="ozon" ${selectedWorkstream === 'ozon' ? 'selected' : ''}>РОП Ozon</option>
         <option value="wb" ${selectedWorkstream === 'wb' ? 'selected' : ''}>РОП WB</option>
-        <option value="retail" ${selectedWorkstream === 'retail' ? 'selected' : ''}>ЯМ / Летуаль / Магнит / ЗЯ</option>
+        <option value="ya" ${selectedWorkstream === 'ya' ? 'selected' : ''}>Я.Маркет</option>
+        <option value="goldapple" ${selectedWorkstream === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
+        <option value="letu" ${selectedWorkstream === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+        <option value="magnit" ${selectedWorkstream === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
         <option value="cross" ${selectedWorkstream === 'cross' ? 'selected' : ''}>Общий контур</option>
       </select>
       <select id="controlOwnerFilter">
@@ -2869,7 +2903,10 @@ function renderTaskModal(taskId) {
             <option value="cross" ${task.platform === 'cross' ? 'selected' : ''}>Общий контур</option>
             <option value="wb" ${task.platform === 'wb' ? 'selected' : ''}>РОП WB</option>
             <option value="ozon" ${task.platform === 'ozon' ? 'selected' : ''}>РОП Ozon</option>
-            <option value="retail" ${task.platform === 'retail' ? 'selected' : ''}>ЯМ / Летуаль / Магнит / ЗЯ</option>
+            <option value="ya" ${normalizeTaskPlatform(task.platform) === 'ya' ? 'selected' : ''}>Я.Маркет</option>
+            <option value="goldapple" ${normalizeTaskPlatform(task.platform) === 'goldapple' ? 'selected' : ''}>Золотое яблоко</option>
+            <option value="letu" ${normalizeTaskPlatform(task.platform) === 'letu' ? 'selected' : ''}>Л'Этуаль</option>
+            <option value="magnit" ${normalizeTaskPlatform(task.platform) === 'magnit' ? 'selected' : ''}>Магнит Маркет</option>
             <option value="wb+ozon" ${task.platform === 'wb+ozon' ? 'selected' : ''}>WB + Ozon</option>
           </select>
           <textarea name="nextAction" rows="4" placeholder="Следующее действие">${escapeHtml(task.nextAction || '')}</textarea>
@@ -3203,7 +3240,10 @@ function renderSkuModal(articleKey) {
             <option value="cross">Общий контур</option>
             <option value="wb">РОП WB</option>
             <option value="ozon">РОП Ozon</option>
-            <option value="retail">ЯМ / Летуаль / Магнит / ЗЯ</option>
+            <option value="ya">Я.Маркет</option>
+            <option value="goldapple">Золотое яблоко</option>
+            <option value="letu">Л'Этуаль</option>
+            <option value="magnit">Магнит Маркет</option>
           </select>
           <input name="owner" placeholder="Owner" value="${escapeHtml(ownerName(sku) || '')}">
           <input name="due" type="date" value="${plusDays(3)}">

@@ -9,7 +9,7 @@ function safeReadJson(filePath, fallback = null) {
 }
 
 function normalizeKey(value = '') {
-  return String(value || '').toLowerCase().replace(/[^a-zа-я0-9]+/gi, '');
+  return String(value || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
 }
 
 function parseFreshStamp(value) {

@@ -457,7 +457,7 @@
   window.setTimeout(() => {
     const app = appState();
     if (!app?.boot?.dataReady || !canUseRemote()) return;
-    if (app.team?.mode === 'ready') return;
+    if (['ready', 'pending', 'error'].includes(String(app.team?.mode || ''))) return;
     initTeamStoreHotfix().then(() => {
       if (typeof rerenderCurrentView === 'function') {
         rerenderCurrentView();

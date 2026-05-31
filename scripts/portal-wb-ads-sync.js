@@ -311,6 +311,7 @@ function resolveOptions(args) {
     fullstatsDelayMs: Number.isFinite(Number(args['fullstats-delay-ms'])) ? Number(args['fullstats-delay-ms']) : 21000,
     updDelayMs: Number.isFinite(Number(args['upd-delay-ms'])) ? Number(args['upd-delay-ms']) : 500,
     requestTimeoutMs: Number.isFinite(Number(args['request-timeout-ms'])) ? Number(args['request-timeout-ms']) : 60000,
+    skipCampaignDetails: asBool(args['skip-campaign-details'], asBool(process.env.ALTEA_WB_ADS_SKIP_CAMPAIGN_DETAILS, true)),
     skipUpd: asBool(args['skip-upd'], false),
     docsUrl: WB_PROMOTION_DOCS_URL
   };
@@ -358,6 +359,10 @@ async function wbRequest(options, apiPath, requestOptions = {}, attempt = 0) {
       await sleep(delayMs);
       return wbRequest(options, apiPath, requestOptions, attempt + 1);
     }
+    if ([500, 502, 503, 504].includes(response.status) && attempt < 2) {
+      await sleep(10000 * (attempt + 1));
+      return wbRequest(options, apiPath, requestOptions, attempt + 1);
+    }
     throw new Error(`WB API ${method} ${apiPath} failed: HTTP ${response.status} ${text.slice(0, 500)}`);
   }
   if (!text.trim()) return null;
@@ -399,21 +404,30 @@ async function fetchCampaignDetails(options, campaignIds, diagnostics) {
 async function fetchFullStats(options, campaignIds, campaignDetails, diagnostics) {
   const rows = [];
   const batches = chunk(campaignIds, 50);
+  diagnostics.fullstatsRequests = batches.length;
+  diagnostics.fullstatsSucceededRequests = 0;
+  diagnostics.fullstatsFailedRequests = 0;
   for (let index = 0; index < batches.length; index += 1) {
     const batch = batches[index];
     process.stderr.write(`[wb-ads-sync] fullstats ${index + 1}/${batches.length}\n`);
-    const payload = await wbRequest(options, '/adv/v3/fullstats', {
-      method: 'GET',
-      query: {
-        ids: batch.join(','),
-        beginDate: options.from,
-        endDate: options.to
-      }
-    });
-    rows.push(...normalizeFullStatsPayload(payload, campaignDetails));
+    try {
+      const payload = await wbRequest(options, '/adv/v3/fullstats', {
+        method: 'GET',
+        query: {
+          ids: batch.join(','),
+          beginDate: options.from,
+          endDate: options.to
+        }
+      });
+      rows.push(...normalizeFullStatsPayload(payload, campaignDetails));
+      diagnostics.fullstatsSucceededRequests += 1;
+    } catch (error) {
+      diagnostics.fullstatsFailedRequests += 1;
+      diagnostics.warnings.push(`fullstats batch ${index + 1}/${batches.length} was not loaded: ${error.message}`);
+    }
     if (index < batches.length - 1) await sleep(options.fullstatsDelayMs);
   }
-  diagnostics.fullstatsRequests = batches.length;
+  diagnostics.fullstatsRows = rows.length;
   return rows;
 }
 
@@ -990,6 +1004,54 @@ function existingAdsSummaryUsable(payload) {
     && payload.platforms.some((platform) => Array.isArray(platform?.series) && platform.series.some((row) => numberOrZero(row.spend) > 0));
 }
 
+function buildAdsSummaryFallback(options, diagnostics, reason, externalRows = [], nmMap = new Map(), skus = []) {
+  diagnostics.warnings.push(reason);
+  const existing = readJson(path.join(options.baseDataDir, 'ads_summary.json'), null);
+  if (existingAdsSummaryUsable(existing)) {
+    const preserved = deepClone(existing);
+    const generatedAt = new Date().toISOString();
+    preserved.generatedAt = generatedAt;
+    preserved.note = [
+      preserved.note,
+      'WB Promotion API refresh failed; previous WB ads layer was preserved.'
+    ].filter(Boolean).join(' ');
+    preserved.diagnostics = {
+      ...(preserved.diagnostics || {}),
+      preservedExisting: {
+        generatedAt,
+        reason,
+        sourceWindow: diagnostics.sourceWindow,
+        externalAds: diagnostics.externalAds,
+        supplierGoods: diagnostics.supplierGoods,
+        warnings: diagnostics.warnings
+      }
+    };
+    return preserved;
+  }
+
+  if (options.fixtureFallback && options.fixturePath) {
+    const itemSeries = aggregateRows([...buildFromFixture(options, diagnostics), ...externalRows]);
+    return buildAdsSummary(
+      itemSeries,
+      options,
+      diagnostics,
+      externalRows.length ? 'excel-fixture-fallback+external-sheet' : 'excel-fixture-fallback',
+      'WB Promotion API refresh failed; spend was seeded from the Excel fixture.'
+    );
+  }
+
+  const itemSeries = aggregateRows(attachSkuMeta(externalRows, nmMap, skus, diagnostics));
+  return buildAdsSummary(
+    itemSeries,
+    options,
+    diagnostics,
+    externalRows.length ? 'external-sheet-fallback' : 'empty',
+    externalRows.length
+      ? 'WB Promotion API refresh failed; external ads were loaded from Google Sheets.'
+      : 'WB Promotion API refresh failed and no usable fallback was found.'
+  );
+}
+
 async function buildPayload(options) {
   const skus = readJson(path.join(options.baseDataDir, 'skus.json'), []);
   const { nmMap, diagnostics: supplierDiagnostics } = readSupplierNmMap(options.supplierGoodsPath, skus);
@@ -1022,7 +1084,19 @@ async function buildPayload(options) {
     return buildAdsSummary([], options, diagnostics, 'empty', 'WB Promotion token is missing and no usable fallback was found.');
   }
 
-  const countPayload = await wbRequest(options, '/adv/v1/promotion/count');
+  let countPayload;
+  try {
+    countPayload = await wbRequest(options, '/adv/v1/promotion/count');
+  } catch (error) {
+    return buildAdsSummaryFallback(
+      options,
+      diagnostics,
+      `campaign count was not loaded from WB Promotion API: ${error.message}`,
+      externalRows,
+      nmMap,
+      skus
+    );
+  }
   const campaignIds = campaignIdsFromCount(countPayload);
   diagnostics.campaigns = {
     sourceGroups: Array.isArray(countPayload?.adverts) ? countPayload.adverts.length : 0,
@@ -1043,8 +1117,23 @@ async function buildPayload(options) {
     );
   }
 
-  const campaignDetails = await fetchCampaignDetails(options, campaignIds, diagnostics);
+  const campaignDetails = options.skipCampaignDetails
+    ? new Map(campaignIds.map((id) => [String(id), { advertId: String(id) }]))
+    : await fetchCampaignDetails(options, campaignIds, diagnostics);
+  diagnostics.campaignDetails = options.skipCampaignDetails
+    ? { skipped: true, reason: 'Skipped by default to avoid WB campaign-details rate limits.' }
+    : { skipped: false };
   const fullstatRows = await fetchFullStats(options, campaignIds, campaignDetails, diagnostics);
+  if (!fullstatRows.length && diagnostics.fullstatsFailedRequests > 0) {
+    return buildAdsSummaryFallback(
+      options,
+      diagnostics,
+      `all WB Promotion fullstats batches failed for ${options.from}..${options.to}`,
+      externalRows,
+      nmMap,
+      skus
+    );
+  }
   const updRows = await fetchUpdRows(options, diagnostics);
   const reconciledRows = reconcileWithUpd(fullstatRows, updRows, diagnostics);
   const itemSeries = aggregateRows(attachSkuMeta([...reconciledRows, ...externalRows], nmMap, skus, diagnostics));

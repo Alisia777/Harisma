@@ -1,64 +1,11 @@
 function orderProcurementReadMetric(row, days, keys) {
   const key = keys[days] || null;
   if (!key) return null;
-  if (!row || !Object.prototype.hasOwnProperty.call(row, key)) return null;
-  const raw = row[key];
-  if (raw === null || raw === undefined || raw === '') return null;
-  const value = Math.ceil(orderProcurementNumber(raw));
+  const value = Math.ceil(orderProcurementNumber(row?.[key]));
   return value > 0 ? value : 0;
 }
 
-function orderProcurementMetricKnown(value) {
-  return value !== null && value !== undefined && value !== '';
-}
-
-function orderProcurementDemandReliable(row) {
-  const source = String(row?.demandSource || row?.sourceValue || '').trim().toLowerCase();
-  if (row?.demandReliable === false || source === 'sku-turnover') return false;
-  return !orderProcurementLooksProjectedFromTurnover(row);
-}
-
-function orderProcurementCloseEnough(left, right, tolerance = 0.05) {
-  const a = Number(left);
-  const b = Number(right);
-  return Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= tolerance;
-}
-
-function orderProcurementLooksProjectedFromTurnover(row) {
-  const avgDaily = orderProcurementNumber(row?.avgDaily);
-  const stock = orderProcurementNumber(row?.inStock);
-  const turnover = Number(row?.turnoverDays);
-  if (!(avgDaily > 0) || !(stock > 0) || !(turnover > 0)) return false;
-  if (!orderProcurementCloseEnough(stock / avgDaily, turnover, 0.08)) return false;
-
-  const projectedSales = [7, 14, 28].every((days) => {
-    const value = row?.[`sales${days}`];
-    return orderProcurementMetricKnown(value) && orderProcurementCloseEnough(value, avgDaily * days, 0.75);
-  });
-  if (!projectedSales) return false;
-
-  const need28 = row?.targetNeed28;
-  if (!orderProcurementMetricKnown(need28)) return true;
-  const projectedNeed28 = Math.max(0, Math.ceil((avgDaily * 28) - stock - orderProcurementNumber(row?.inTransit) - orderProcurementNumber(row?.inRequest)));
-  return orderProcurementCloseEnough(need28, projectedNeed28, 1);
-}
-
-function orderProcurementUnavailableLabel() {
-  return 'n/a';
-}
-
-function orderProcurementFormatOptionalInt(value) {
-  return orderProcurementMetricKnown(value) ? fmt.int(value) : orderProcurementUnavailableLabel();
-}
-
-function orderProcurementOptionalNeedBadge(value) {
-  if (!orderProcurementMetricKnown(value)) return orderProcurementBadge(orderProcurementUnavailableLabel(), 'info');
-  const numeric = orderProcurementNumber(value);
-  return orderProcurementBadge(fmt.int(numeric), numeric > 0 ? 'warn' : 'ok');
-}
-
 function orderProcurementOrdersForDays(row, days) {
-  if (!orderProcurementDemandReliable(row)) return null;
   const direct = orderProcurementReadMetric(row, days, {
     7: 'sales7',
     14: 'sales14',
@@ -69,7 +16,6 @@ function orderProcurementOrdersForDays(row, days) {
 }
 
 function orderProcurementNeedForDays(row, days) {
-  if (!orderProcurementDemandReliable(row)) return null;
   const direct = orderProcurementReadMetric(row, days, {
     7: 'targetNeed7',
     14: 'targetNeed14',
@@ -78,14 +24,12 @@ function orderProcurementNeedForDays(row, days) {
   if (direct !== null && direct >= 0) return direct;
 
   const orders = orderProcurementOrdersForDays(row, days);
-  if (!orderProcurementMetricKnown(orders)) return null;
   const stock = orderProcurementNumber(row?.inStock);
   const inFlight = orderProcurementNumber(row?.inTransit) + orderProcurementNumber(row?.inRequest);
   return Math.max(0, Math.ceil(orders - stock - inFlight));
 }
 
 function orderProcurementSafeTurnover(row) {
-  if (!orderProcurementDemandReliable(row)) return null;
   if (row?.turnoverDays !== null && row?.turnoverDays !== undefined && row?.turnoverDays !== '') {
     const value = Number(row.turnoverDays);
     return Number.isFinite(value) ? value : null;
@@ -424,9 +368,7 @@ function buildOrderProcurementModel() {
 
     const clusterOrders = orderProcurementOrdersForDays(row, days);
     const rawClusterNeed = orderProcurementNeedForDays(row, days);
-    const clusterNeed = orderProcurementMetricKnown(rawClusterNeed)
-      ? (orderBlockedByLifecycle ? 0 : rawClusterNeed)
-      : null;
+    const clusterNeed = orderBlockedByLifecycle ? 0 : rawClusterNeed;
     const clusterInTransit = orderProcurementNumber(row?.inTransit);
     const clusterInRequest = orderProcurementNumber(row?.inRequest);
     const cluster = {
@@ -435,19 +377,17 @@ function buildOrderProcurementModel() {
       turnover: orderProcurementSafeTurnover(row),
       need: clusterNeed,
       rawNeed: rawClusterNeed,
-      blockedNeed: orderBlockedByLifecycle ? orderProcurementNumber(rawClusterNeed) : 0,
+      blockedNeed: orderBlockedByLifecycle ? rawClusterNeed : 0,
       inTransit: clusterInTransit,
-      inRequest: clusterInRequest,
-      demandReliable: orderProcurementDemandReliable(row),
-      demandSource: row?.demandSource || row?.sourceValue || ''
+      inRequest: clusterInRequest
     };
     cluster.flags = orderProcurementClusterFlags(cluster, clusterDays);
     cluster.matchesClusterFilter = orderProcurementClusterMatchesFilter(cluster, clusterFilter, clusterDays);
 
-    current.totalNeed += orderProcurementNumber(clusterNeed);
-    current.rawTotalNeed += orderProcurementNumber(rawClusterNeed);
+    current.totalNeed += clusterNeed;
+    current.rawTotalNeed += rawClusterNeed;
     current.blockedNeed += cluster.blockedNeed;
-    current.totalOrders += orderProcurementNumber(clusterOrders);
+    current.totalOrders += clusterOrders;
     current.totalInTransit += clusterInTransit;
     current.totalInRequest += clusterInRequest;
     current.clusters[place] = cluster;
@@ -467,8 +407,8 @@ function buildOrderProcurementModel() {
       matchedNeed: 0
     };
     clusterTotal.mpStock += cluster.mpStock;
-    clusterTotal.orders += orderProcurementNumber(cluster.orders);
-    clusterTotal.need += orderProcurementNumber(cluster.need);
+    clusterTotal.orders += cluster.orders;
+    clusterTotal.need += cluster.need;
     if (cluster.flags.risk) clusterTotal.risk += 1;
     if (cluster.flags.shortTurnover) clusterTotal.shortTurnover += 1;
     if (cluster.flags.noStock) clusterTotal.noStock += 1;
@@ -506,7 +446,6 @@ function buildOrderProcurementModel() {
     const activeClusters = visiblePlaces.map((place) => row.clusters[place]).filter(Boolean);
     const matchingClusters = activeClusters.filter((cluster) => orderProcurementClusterMatchesFilter(cluster, clusterFilter, clusterDays));
     const displayClusters = clusterFilter === 'all' ? activeClusters : matchingClusters;
-    const displayNeedKnown = displayClusters.some((cluster) => orderProcurementMetricKnown(cluster.need));
     const displayNeed = displayClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.need), 0);
     const displayRawNeed = displayClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.rawNeed), 0);
     const displayBlockedNeed = displayClusters.reduce((acc, cluster) => acc + orderProcurementNumber(cluster.blockedNeed), 0);
@@ -518,7 +457,6 @@ function buildOrderProcurementModel() {
     return {
       ...row,
       displayNeed,
-      displayNeedKnown,
       displayRawNeed,
       displayBlockedNeed,
       displayOrders,
@@ -674,7 +612,7 @@ function exportOrderProcurementModel(model) {
     cells.push(
       row.productLifecycle?.label || row.productLifecycle?.status || '',
       row.displayBlockedNeed || 0,
-      row.displayNeedKnown ? row.displayNeed : '',
+      row.displayNeed,
       row.displayInRequest,
       row.acceptedFromSupplier,
       orderProcurementNumber(row.shippedFromWarehouse) + orderProcurementNumber(row.displayInTransit),
@@ -685,9 +623,9 @@ function exportOrderProcurementModel(model) {
       const cluster = row.clusters[place] || {};
       cells.push(
         cluster.mpStock || 0,
-        orderProcurementMetricKnown(cluster.orders) ? cluster.orders : '',
+        cluster.orders || 0,
         cluster.turnover == null ? '' : Number(cluster.turnover).toFixed(1),
-        orderProcurementMetricKnown(cluster.need) ? cluster.need : ''
+        cluster.need || 0
       );
     });
 
@@ -874,14 +812,11 @@ function renderOrderProcurementTable(model) {
           const blockedNote = orderProcurementNumber(cluster.blockedNeed) > 0
             ? `<div class="altea-order-procurement__cluster-note">статус блок: ${fmt.int(cluster.blockedNeed)}</div>`
             : '';
-          const sourceNote = cluster.demandReliable === false
-            ? '<div class="altea-order-procurement__cluster-note">\u043d\u0435\u0442 \u0444\u0430\u043a\u0442\u0430 \u043f\u0440\u043e\u0434\u0430\u0436</div>'
-            : (cluster?.flags?.label ? `<div class="altea-order-procurement__cluster-note">${orderProcurementEscape(cluster.flags.label)}</div>` : '');
           return `
             <td class="${cellClass} altea-order-procurement__num">${fmt.int(cluster.mpStock)}</td>
-            <td class="${cellClass} altea-order-procurement__num">${orderProcurementFormatOptionalInt(cluster.orders)}</td>
-            <td class="${cellClass}">${orderProcurementTurnoverBadge(cluster.turnover)}${sourceNote}</td>
-            <td class="${cellClass}">${orderProcurementOptionalNeedBadge(cluster.need)}${blockedNote}</td>
+            <td class="${cellClass} altea-order-procurement__num">${fmt.int(cluster.orders)}</td>
+            <td class="${cellClass}">${orderProcurementTurnoverBadge(cluster.turnover)}${cluster?.flags?.label ? `<div class="altea-order-procurement__cluster-note">${orderProcurementEscape(cluster.flags.label)}</div>` : ''}</td>
+            <td class="${cellClass}">${orderProcurementBadge(fmt.int(cluster.need), cluster.need > 0 ? 'warn' : 'ok')}${blockedNote}</td>
           `;
         }).join('');
 
@@ -922,7 +857,7 @@ function renderOrderProcurementTable(model) {
             <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--article">${orderProcurementEscape(row.owner || 'Без owner')}</td>
             <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--warehouse altea-order-procurement__num">${fmt.int(row.warehouseStock)}</td>
             ${inboundCell}
-            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--total">${row.displayNeedKnown ? orderProcurementBadge(fmt.int(row.displayNeed), row.displayNeed > 0 ? 'warn' : 'ok') : orderProcurementBadge(orderProcurementUnavailableLabel(), 'info')}</td>
+            <td class="altea-order-procurement__sticky-cell altea-order-procurement__sticky-cell--total">${orderProcurementBadge(fmt.int(row.displayNeed), row.displayNeed > 0 ? 'warn' : 'ok')}</td>
             <td class="altea-order-procurement__num">${fmt.int(row.displayInRequest)}</td>
             <td class="altea-order-procurement__num">${fmt.int(row.acceptedFromSupplier)}</td>
             <td class="altea-order-procurement__num">${fmt.int(movementFromWarehouse)}</td>

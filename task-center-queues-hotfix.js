@@ -22,10 +22,28 @@
       description: 'Отдельный контур по Wildberries.',
       kind: 'warn'
     },
-    retail: {
-      label: 'ЯМ / Летуаль / Магнит / ЗЯ',
-      chip: 'ЯМ / сети',
-      description: 'Яндекс Маркет, Летуаль, Магнит и Золотое Яблоко одним РОПом.',
+    ya: {
+      label: 'Я.Маркет',
+      chip: 'Я.Маркет',
+      description: 'Отдельный контур Яндекс Маркета.',
+      kind: 'ok'
+    },
+    goldapple: {
+      label: 'Золотое яблоко',
+      chip: 'Золотое яблоко',
+      description: 'Отдельный контур Золотого Яблока.',
+      kind: 'ok'
+    },
+    letu: {
+      label: "Л'Этуаль",
+      chip: "Л'Этуаль",
+      description: 'Отдельный контур Л\'Этуаль.',
+      kind: 'ok'
+    },
+    magnit: {
+      label: 'Магнит Маркет',
+      chip: 'Магнит Маркет',
+      description: 'Отдельный контур Магнит Маркета.',
       kind: 'ok'
     },
     cross: {
@@ -36,7 +54,7 @@
     }
   };
 
-  const WORKSTREAM_ORDER = ['ozon', 'wb', 'retail', 'cross'];
+  const WORKSTREAM_ORDER = ['ozon', 'wb', 'ya', 'goldapple', 'letu', 'magnit', 'cross'];
   const FILTER_ORDER = ['all', ...WORKSTREAM_ORDER];
   const TYPE_FILTER_ORDER = ['all', 'price_margin', 'supply', 'content', 'traffic', 'launch', 'returns', 'assignment', 'general'];
 

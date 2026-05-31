@@ -303,6 +303,7 @@ tr:last-child td{border-bottom:none}
 .iu-drr-quarter-delta.warn strong{color:#fde68a}
 .iu-drr-quarter-delta.danger strong{color:#fca5a5}
 .iu-drr-quarter-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:12px}
+.iu-drr-quarter-plan-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
 .iu-drr-quarter-score-card{min-height:126px}
 .iu-drr-quarter-score-card .iu-drr-score-head{display:grid;grid-template-columns:1fr;gap:4px}
 .iu-drr-quarter-score-card .iu-drr-score-head span{white-space:normal;overflow:visible;text-overflow:clip}

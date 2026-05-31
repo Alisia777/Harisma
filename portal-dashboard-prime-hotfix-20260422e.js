@@ -419,7 +419,15 @@
     if (window.__ALTEA_DASHBOARD_MODAL_PROCUREMENT_PATCH_20260422E__) return;
     window.__ALTEA_DASHBOARD_MODAL_PROCUREMENT_PATCH_20260422E__ = true;
 
+    const isDashboardActive = () => {
+      const requested = String(location.hash || '').replace(/^#/, '').trim().toLowerCase();
+      if (requested && requested !== 'dashboard') return false;
+      const activeView = window.state?.activeView || String(document.querySelector('.view.active')?.id || '').replace(/^view-/, '');
+      return activeView === 'dashboard';
+    };
+
     const attach = () => {
+      if (!isDashboardActive()) return false;
       const modal = document.getElementById('portalDashboardExecutiveModal');
       if (!modal || modal.dataset.procurementObserverBound === '1') return false;
       const observer = new MutationObserver(() => scheduleModalPatch(60));
@@ -431,11 +439,11 @@
 
     if (attach()) return;
 
-    const bodyObserver = new MutationObserver(() => {
-      if (attach()) bodyObserver.disconnect();
+    window.addEventListener('altea:viewchange', (event) => {
+      const view = String(event?.detail?.view || '');
+      if (view !== 'dashboard') return;
+      [60, 240, 900].forEach((delay) => window.setTimeout(attach, delay));
     });
-    bodyObserver.observe(document.documentElement || document.body, { childList: true, subtree: true });
-    window.setTimeout(() => bodyObserver.disconnect(), 15000);
   }
 
   function installPriceWorkbenchSupportRedirect() {
@@ -526,6 +534,8 @@
   }
 
   function isDashboardActive() {
+    const requested = String(location.hash || '').replace(/^#/, '').trim().toLowerCase();
+    if (requested && requested !== 'dashboard') return false;
     return (typeof state === 'object' && state && state.activeView === 'dashboard')
       || !!document.getElementById('view-dashboard')?.classList.contains('active');
   }

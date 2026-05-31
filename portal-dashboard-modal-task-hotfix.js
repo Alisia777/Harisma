@@ -127,10 +127,20 @@
   }
 
   function modalPlatformKey(value) {
-    const raw = String(value || '').toLowerCase();
-    if (/(^|\W)wb($|\W)|wildberries/.test(raw)) return 'wb';
-    if (/ozon/.test(raw)) return 'ozon';
-    if (/ям|сет|яндекс|market|retail/.test(raw)) return 'retail';
+    const raw = String(value || '').trim().toLowerCase();
+    if (raw === 'wb' || /(^|\W)wb($|\W)|wildberries/.test(raw)) return 'wb';
+    if (raw === 'ozon' || /ozon/.test(raw)) return 'ozon';
+    if (raw === 'ya' || raw === 'ym' || raw === 'yandex' || /ям|сет|яндекс|market|retail/.test(raw)) return 'ya';
+    if (raw === 'goldapple' || raw === 'zya' || /золот[а-я\s-]*яблок|gold\s*apple|zya|зя/.test(raw)) return 'goldapple';
+    if (raw === 'letu' || /letu?al|л[еэ]туал/.test(raw)) return 'letu';
+    if (raw === 'magnit' || raw === 'mm' || /магнит/.test(raw)) return 'magnit';
+    return 'all';
+  }
+
+  function normalizeControlPlatformKey(platformKey) {
+    const raw = String(platformKey || '').trim().toLowerCase();
+    if (raw === 'retail') return 'ya';
+    if (['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'].includes(raw)) return raw;
     return 'all';
   }
 
@@ -138,7 +148,7 @@
     const app = appState();
     if (app) {
       app.controlFilters = app.controlFilters || {};
-      app.controlFilters.platform = platformKey === 'retail' ? 'retail' : platformKey === 'wb' || platformKey === 'ozon' ? platformKey : 'all';
+      app.controlFilters.platform = normalizeControlPlatformKey(platformKey);
       app.controlFilters.source = 'all';
       app.controlFilters.status = 'active';
       app.controlFilters.type = 'all';

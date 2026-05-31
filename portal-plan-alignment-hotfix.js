@@ -24,11 +24,32 @@
   });
 
   const PLATFORM_KEYS = ['all', 'wb', 'ozon', 'ya'];
+  const LIVEFIX_VIEWS = new Set(['dashboard', 'executive']);
   let applyTimer = 0;
   let applying = false;
 
   function stateRef() {
     return window.__alteaAppState || window.state || null;
+  }
+
+  function hasProtectedSalaryPlan(state) {
+    const plan = state?.dashboard?.companyPlan;
+    return plan?.planType === 'marketplace_salary_revenue'
+      || Boolean(state?.dashboard?.dataFreshness?.salaryPlanLoadedAt && plan?.months?.['2026-06']);
+  }
+
+  function activePortalView() {
+    const state = stateRef();
+    if (state?.activeView) return String(state.activeView);
+    const active = document.querySelector('.view.active');
+    return active ? String(active.id || '').replace(/^view-/, '') : '';
+  }
+
+  function livefixIsRelevant(event) {
+    const view = activePortalView();
+    if (LIVEFIX_VIEWS.has(view)) return true;
+    const target = event?.target;
+    return Boolean(target?.closest?.('#view-dashboard,#view-executive'));
   }
 
   function num(value) {
@@ -136,6 +157,7 @@
 
   function ensureCompanyPlan(state) {
     if (!state?.dashboard) return;
+    if (hasProtectedSalaryPlan(state)) return;
     const activeMonth = {
       monthKey: PLAN.monthKey,
       label: PLAN.monthLabel,
@@ -174,6 +196,7 @@
 
   function patchPlatformPlan(state) {
     if (!state?.platformPlan?.months) return false;
+    if (hasProtectedSalaryPlan(state)) return false;
     const range = selectedRange(state);
     const mayDates = plannedDates(range);
     if (!mayDates.length) return false;
@@ -203,8 +226,10 @@
 
   function applyLivefix(scheduleRender) {
     if (applying) return;
+    if (!livefixIsRelevant()) return;
     const state = stateRef();
     if (!state) return;
+    if (hasProtectedSalaryPlan(state)) return;
     applying = true;
     try {
       ensureCompanyPlan(state);
@@ -223,11 +248,14 @@
   }
 
   function boot() {
-    applyLivefix(true);
-    document.addEventListener('click', () => schedule(true), true);
-    document.addEventListener('change', () => schedule(true), true);
-    window.addEventListener('altea:viewchange', () => schedule(true));
-    window.setInterval(() => applyLivefix(false), 1500);
+    if (livefixIsRelevant()) applyLivefix(true);
+    document.addEventListener('click', (event) => { if (livefixIsRelevant(event)) schedule(true); }, true);
+    document.addEventListener('change', (event) => { if (livefixIsRelevant(event)) schedule(true); }, true);
+    window.addEventListener('altea:viewchange', (event) => {
+      const view = String(event?.detail?.view || activePortalView());
+      if (LIVEFIX_VIEWS.has(view)) schedule(true);
+    });
+    window.setInterval(() => { if (livefixIsRelevant()) applyLivefix(false); }, 60000);
   }
 
   if (document.readyState === 'loading') {

@@ -40,6 +40,17 @@
     return PLATFORM_RGB[normalizePlatform(key)] || PLATFORM_RGB.all;
   }
 
+  function activePortalView() {
+    if (window.state && state.activeView) return String(state.activeView);
+    const active = document.querySelector('.view.active');
+    return active ? String(active.id || '').replace(/^view-/, '') : '';
+  }
+
+  function polishView() {
+    const view = activePortalView();
+    return ['control', 'iu-drr', 'wb-rating', 'skus'].includes(view) ? view : '';
+  }
+
   function setPalette(node, platformKey) {
     if (!node) return;
     const key = normalizePlatform(platformKey);
@@ -310,14 +321,16 @@
 
   function applyPremiumPolish() {
     ensureStyles();
-    applyControl();
-    applyIuDrr();
-    applyWbRating();
-    applySkus();
+    const view = polishView();
+    if (view === 'control') applyControl();
+    else if (view === 'iu-drr') applyIuDrr();
+    else if (view === 'wb-rating') applyWbRating();
+    else if (view === 'skus') applySkus();
   }
 
   let timer = 0;
   function schedule() {
+    if (!polishView()) return;
     window.clearTimeout(timer);
     timer = window.setTimeout(applyPremiumPolish, 140);
   }
@@ -338,9 +351,10 @@
   window.addEventListener('hashchange', scheduleBurst);
   window.addEventListener('altea:viewchange', scheduleBurst);
   document.addEventListener('click', (event) => {
-    if (event.target.closest('.nav-btn,[data-platform],[data-market-filter],[data-iu-drr-platform],[data-iu-drr-tab]')) scheduleBurst();
+    if (polishView() && event.target.closest('.nav-btn,[data-platform],[data-market-filter],[data-iu-drr-platform],[data-iu-drr-tab]')) scheduleBurst();
   }, true);
   const observer = new MutationObserver((mutations) => {
+    if (!polishView()) return;
     if (mutations.some((item) => item.addedNodes.length || item.removedNodes.length)) schedule();
   });
   observer.observe(document.body, { childList: true, subtree: true });

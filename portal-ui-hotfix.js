@@ -1164,8 +1164,9 @@
   }
 
   function applyDashboardEnhancement() {
-    injectStyles();
     const root = document.getElementById('view-dashboard');
+    if (!root || !portalUiViewIsActive('dashboard', root)) return;
+    injectStyles();
     if (!root) return;
     root.querySelector('[data-portal-ui-hotfix-hero]')?.remove();
     root.querySelector('[data-portal-ui-hotfix-dashboard]')?.remove();
@@ -1185,8 +1186,9 @@
 
   function applyLogisticsEnhancement() {
     if (window.__ALTEA_ORDER_PROCUREMENT_ENABLED__) return;
-    injectStyles();
     const root = document.getElementById('view-order');
+    if (!root || !portalUiViewIsActive('order', root)) return;
+    injectStyles();
     if (!root || !logisticsData()) return;
     root.innerHTML = renderLogisticsSection();
     bindLogisticsControls(root);
@@ -1234,11 +1236,34 @@
     }
   }
 
+  function portalUiActiveView() {
+    const hashView = String(window.location.hash || '').replace(/^#/, '').trim();
+    if (hashView) return hashView;
+    if (typeof state === 'object' && state?.activeView) return String(state.activeView || '').trim();
+    const activeRoot = document.querySelector('.view.active');
+    return activeRoot ? String(activeRoot.id || '').replace(/^view-/, '').trim() : '';
+  }
+
+  function portalUiViewIsActive(viewKey, root) {
+    const normalized = String(viewKey || '').trim();
+    if (!normalized) return false;
+    const active = portalUiActiveView();
+    if (active && active !== normalized) return false;
+    return Boolean(root?.classList?.contains('active')) || active === normalized;
+  }
+
+  function portalUiHasEnhancementView() {
+    return portalUiViewIsActive('dashboard', document.getElementById('view-dashboard'))
+      || portalUiViewIsActive('order', document.getElementById('view-order'));
+  }
+
   async function refreshEnhancements() {
-    await Promise.all([
-      ensureDashboardSources(),
-      ensureLogisticsSources()
-    ]);
+    const dashboardRoot = document.getElementById('view-dashboard');
+    const orderRoot = document.getElementById('view-order');
+    const jobs = [];
+    if (portalUiViewIsActive('dashboard', dashboardRoot)) jobs.push(ensureDashboardSources());
+    if (portalUiViewIsActive('order', orderRoot)) jobs.push(ensureLogisticsSources());
+    await Promise.all(jobs);
     applyDashboardEnhancement();
     applyLogisticsEnhancement();
   }
@@ -1260,6 +1285,7 @@
       original.apply(this, arguments);
       injectStyles();
       const root = document.getElementById('view-order');
+      if (!root || !portalUiViewIsActive('order', root)) return;
       if (!root || !(logisticsData() || state.logistics)) return;
       root.innerHTML = renderLogisticsSection();
       bindLogisticsControls(root);
@@ -1273,6 +1299,7 @@
     const original = rerenderCurrentView;
     const wrapped = function portalUiHotfixRerenderBridge() {
       const result = original.apply(this, arguments);
+      if (!portalUiHasEnhancementView()) return result;
       [40, 220].forEach((delay) => window.setTimeout(() => {
         try {
           applyDashboardEnhancement();
@@ -1290,6 +1317,7 @@
   function rerenderSoon() {
     const refresh = () => {
       try {
+        if (!portalUiHasEnhancementView()) return;
         if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
       } catch (error) {
         console.error('[portal-ui-hotfix] rerender', error);
@@ -1302,8 +1330,9 @@
 
   applyLogisticsEnhancement = function applyLogisticsEnhancementPatched() {
     if (window.__ALTEA_ORDER_PROCUREMENT_ENABLED__) return;
-    injectStyles();
     const root = document.getElementById('view-order');
+    if (!root || !portalUiViewIsActive('order', root)) return;
+    injectStyles();
     if (!root || !logisticsData()) return;
     root.innerHTML = renderLogisticsSection();
     bindLogisticsControls(root);
@@ -1324,6 +1353,7 @@
   rerenderSoon = function rerenderSoonPatched() {
     const refresh = async () => {
       try {
+        if (!portalUiHasEnhancementView()) return;
         await refreshEnhancements();
         if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
         window.setTimeout(() => {
@@ -1982,11 +2012,11 @@
   };
 
   applyDashboardEnhancement = function applyDashboardEnhancementPatched() {
+    const root = document.getElementById('view-dashboard');
+    if (!root || !portalUiViewIsActive('dashboard', root)) return;
     injectStyles();
     injectDashboardClarityStyles();
     ensureDashboardClarityState();
-    const root = document.getElementById('view-dashboard');
-    if (!root) return;
 
     root.querySelector('[data-portal-livefix]')?.remove();
     root.querySelector('[data-portal-ui-hotfix-hero]')?.remove();
@@ -2022,6 +2052,7 @@
   installRenderBridge();
   rerenderSoon();
   refreshEnhancements().finally(() => {
+    if (!portalUiHasEnhancementView()) return;
     if (typeof rerenderCurrentView === 'function') rerenderCurrentView();
     window.setTimeout(() => {
       applyDashboardEnhancement();

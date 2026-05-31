@@ -246,14 +246,11 @@ function formatRub(value) {
   return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(amount)} ₽`;
 }
 
-function resolveUpperCap(sourceRow, supportRow, priceRow) {
+function resolveUpperCap(sourceRow, supportRow) {
   return positiveValue(
     sourceRow?.workingZoneTo,
     supportRow?.workingZoneTo,
-    priceRow?.workingZoneTo,
-    sourceRow?.maxPrice,
     supportRow?.maxPrice,
-    priceRow?.maxPrice,
     supportRow?.historicalMaxPrice
   ) || 0;
 }
@@ -300,19 +297,6 @@ function capRecommendation(recPrice, minPrice, upperCap) {
 function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRootGeneratedAt) {
   if (!sourceRow && !priceRow && !liveSide) return null;
 
-  const minMaxMaterialized = Boolean(sourceRow?.minMaxMaterialized || supportRow?.minMaxMaterialized || priceRow?.minMaxMaterialized || liveSide?.minMaxMaterialized);
-  const currentPriceFact = numberValue(
-    sourceRow?.currentFillPrice,
-    sourceRow?.currentPrice,
-    priceRow?.currentPrice,
-    liveSide?.currentPrice
-  );
-  const stockFact = numberValue(
-    sourceRow?.stockRepricer,
-    sourceRow?.stock,
-    liveSide?.stock
-  );
-  const minMaxOnlyRow = minMaxMaterialized && !(currentPriceFact > 0) && stockFact === null;
   const currentPrice = positiveValue(
     sourceRow?.currentFillPrice,
     sourceRow?.currentPrice,
@@ -334,14 +318,6 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     priceRow?.minPrice,
     liveSide?.minPrice
   ) || 0;
-  const maxPrice = positiveValue(
-    sourceRow?.maxPrice,
-    supportRow?.maxPrice,
-    priceRow?.maxPrice,
-    liveSide?.maxPrice,
-    sourceRow?.workingZoneTo,
-    supportRow?.workingZoneTo
-  ) || 0;
   const basePrice = positiveValue(
     sourceRow?.basePrice,
     supportRow?.historicalMinProfitablePrice,
@@ -355,13 +331,14 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     liveSide?.recPrice,
     currentPrice
   ) || 0;
-  const upperCap = resolveUpperCap(sourceRow, supportRow, priceRow);
+  const upperCap = resolveUpperCap(sourceRow, supportRow);
   const recGuard = capRecommendation(seedRecPrice, minPrice, upperCap);
   const recPrice = recGuard.recPrice || 0;
   const stock = numberValue(
     sourceRow?.stockRepricer,
     sourceRow?.stock,
-    liveSide?.stock
+    liveSide?.stock,
+    0
   ) || 0;
   const turnoverDays = numberValue(
     sourceRow?.currentTurnoverDays,
@@ -383,20 +360,18 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     liveSide?.marginNoAdsMinPct,
     0.15
   );
-  const strategy = minMaxOnlyRow ? 'BLOCK' : inferStrategy(currentPrice, recPrice, stock, minPrice);
-  const inferredReason = minMaxOnlyRow
-    ? 'MIN/MAX loaded from import; WB current price and stock facts are missing.'
-    : inferReason({
-      sourceRow,
-      supportRow,
-      priceRow,
-      currentPrice,
-      recPrice,
-      minPrice,
-      strategy,
-      stock,
-      liveSide: liveSide ? { ...liveSide, generatedAt: liveRootGeneratedAt } : null
-    });
+  const strategy = inferStrategy(currentPrice, recPrice, stock, minPrice);
+  const inferredReason = inferReason({
+    sourceRow,
+    supportRow,
+    priceRow,
+    currentPrice,
+    recPrice,
+    minPrice,
+    strategy,
+    stock,
+    liveSide: liveSide ? { ...liveSide, generatedAt: liveRootGeneratedAt } : null
+  });
   let reason = inferredReason;
   if (recGuard.capApplied) {
     const capSourceLabel = sourceRow?.workingZoneTo
@@ -424,7 +399,6 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
   return {
     basePrice,
     minPrice,
-    maxPrice,
     currentPrice,
     buyerPrice: currentBuyerPrice,
     stock,
@@ -444,21 +418,17 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     currentPriceDate: textValue(sourceRow?.valueDate, priceRow?.currentPriceDate, sourceRow?.historyFreshnessDate, priceRow?.historyFreshnessDate),
     historyFreshnessDate: textValue(sourceRow?.historyFreshnessDate, priceRow?.historyFreshnessDate),
     sourceMode: textValue(sourceRow?.sourceMode, priceRow?.sourceMode),
-    workingZoneFrom: positiveValue(sourceRow?.workingZoneFrom, supportRow?.workingZoneFrom, priceRow?.workingZoneFrom),
-    workingZoneTo: positiveValue(sourceRow?.workingZoneTo, supportRow?.workingZoneTo, priceRow?.workingZoneTo, sourceRow?.maxPrice, supportRow?.maxPrice, priceRow?.maxPrice, supportRow?.historicalMaxPrice),
+    workingZoneFrom: positiveValue(sourceRow?.workingZoneFrom, supportRow?.workingZoneFrom),
+    workingZoneTo: positiveValue(sourceRow?.workingZoneTo, supportRow?.workingZoneTo, supportRow?.maxPrice, supportRow?.historicalMaxPrice),
     requiredPriceForProfitability: positiveValue(sourceRow?.requiredPriceForProfitability, supportRow?.requiredPriceForProfitability),
     requiredPriceForMargin: positiveValue(sourceRow?.requiredPriceForMargin),
     allowedMarginPct: thresholdMarginPct === null ? null : thresholdMarginPct,
-    minMaxSource: textValue(sourceRow?.minMaxSource, supportRow?.minMaxSource, priceRow?.minMaxSource, liveSide?.minMaxSource),
-    minMaxImportedAt: textValue(sourceRow?.minMaxImportedAt, supportRow?.minMaxImportedAt, priceRow?.minMaxImportedAt, liveSide?.minMaxImportedAt),
-    minMaxMaterialized,
-    minMaxMaterializedFrom: textValue(sourceRow?.minMaxMaterializedFrom, supportRow?.minMaxMaterializedFrom, priceRow?.minMaxMaterializedFrom, liveSide?.minMaxMaterializedFrom),
-    minMaxMaterializedMatchType: textValue(sourceRow?.minMaxMaterializedMatchType, supportRow?.minMaxMaterializedMatchType, priceRow?.minMaxMaterializedMatchType, liveSide?.minMaxMaterializedMatchType),
-    minMaxOnlyRow,
-    manualMinPrice: firstNumber(sourceRow?.manualMinPrice, supportRow?.manualMinPrice, priceRow?.manualMinPrice, liveSide?.manualMinPrice),
-    manualMaxPrice: firstNumber(sourceRow?.manualMaxPrice, supportRow?.manualMaxPrice, priceRow?.manualMaxPrice, liveSide?.manualMaxPrice),
-    manualClientMinPrice: firstNumber(sourceRow?.manualClientMinPrice, supportRow?.manualClientMinPrice, priceRow?.manualClientMinPrice, liveSide?.manualClientMinPrice),
-    manualClientMaxPrice: firstNumber(sourceRow?.manualClientMaxPrice, supportRow?.manualClientMaxPrice, priceRow?.manualClientMaxPrice, liveSide?.manualClientMaxPrice),
+    minMaxSource: textValue(sourceRow?.minMaxSource, supportRow?.minMaxSource, priceRow?.minMaxSource),
+    minMaxImportedAt: textValue(sourceRow?.minMaxImportedAt, supportRow?.minMaxImportedAt, priceRow?.minMaxImportedAt),
+    manualMinPrice: positiveValue(sourceRow?.manualMinPrice, supportRow?.manualMinPrice, priceRow?.manualMinPrice),
+    manualMaxPrice: positiveValue(sourceRow?.manualMaxPrice, supportRow?.manualMaxPrice, priceRow?.manualMaxPrice),
+    manualClientMinPrice: positiveValue(sourceRow?.manualClientMinPrice, supportRow?.manualClientMinPrice, priceRow?.manualClientMinPrice),
+    manualClientMaxPrice: positiveValue(sourceRow?.manualClientMaxPrice, supportRow?.manualClientMaxPrice, priceRow?.manualClientMaxPrice),
     liveRecPrice: positiveValue(liveSide?.recPrice),
     liveStrategy: textValue(liveSide?.strategy),
     liveReason: textValue(liveSide?.reason),

@@ -3,7 +3,7 @@
   window.__ALTEA_DASHBOARD_INTERACTIVE_LOADER_20260419A__ = true;
 
   const SCRIPT_ID = 'portalDashboardInteractiveHotfixRuntime';
-  const SCRIPT_SRC = 'portal-dashboard-interactive-hotfix.js?v=20260419a';
+  const SCRIPT_SRC = 'portal-dashboard-interactive-hotfix.js?v=20260515market4';
 
   function kick() {
     if (typeof window.__ALTEA_PRICE_INTEL_BOOT__ === 'function') {

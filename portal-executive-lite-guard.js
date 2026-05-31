@@ -870,7 +870,7 @@
     if (!root) return;
 
     const tasks = activeTasks();
-    const signature = dataSignature(tasks);
+    const signature = `${dataSignature(tasks)}|${executiveFunnelSignature()}`;
     const stale = force
       || root.dataset.executiveLayer !== VERSION
       || root.dataset.executiveSignature !== signature
@@ -898,10 +898,11 @@
         <div class="section-title executive-lite-title">
           <div>
             <h2>Руководителю</h2>
-            <div class="executive-lite-copy">Сначала видно, где горит. Клик по площадке открывает её задачи без общей каши.</div>
+            <div class="executive-lite-copy">Сначала видим зарплатный план-факт по сотрудникам: выполнение, маржа и реклама без внешки. Задачи и согласования ниже, отдельно от KPI.</div>
           </div>
-          <div class="badge-stack">${badge(`${fmt(waitingFinal.length)} финал`, waitingFinal.length ? 'warn' : 'ok')}${badge(`${fmt(waitingRop.length)} у РОПа`, waitingRop.length ? 'info' : 'ok')}</div>
+          <div class="badge-stack">${badge('KPI по сотрудникам', 'info')}${badge('без B2B и сайта', 'ok')}</div>
         </div>
+        ${typeof window.renderExecutiveFunnel === 'function' && typeof window.executiveFunnelBuildModel === 'function' ? window.renderExecutiveFunnel(window.executiveFunnelBuildModel()) : ''}
         <div class="executive-lite-surface" data-executive-lite-panel>
           <div class="executive-lite-head">
             <div>
@@ -934,6 +935,15 @@
   function isExecutiveActive() {
     const state = appState();
     return window.location.hash === '#executive' || state.activeView === 'executive';
+  }
+
+  function executiveFunnelSignature() {
+    const state = appState();
+    const platformCount = state?.platformTrends?.platforms?.length || 0;
+    const extraCount = Object.keys(state?.platformTrends?.extraMarketplace?.platforms || {}).length;
+    const adsCount = state?.adsSummary?.itemSeries?.length || 0;
+    const ready = state?.boot?.lazyReady?.skuPlanFact ? 'ready' : 'loading';
+    return [ready, platformCount, extraCount, adsCount, state?.platformTrends?.generatedAt || '', state?.adsSummary?.generatedAt || ''].join('|');
   }
 
   function schedule(force) {

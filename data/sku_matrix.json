@@ -1,25 +1,25 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-05-29T12:01:56.038Z",
+  "generatedAt": "2026-05-29T17:11:33.864Z",
   "source": {
-    "skus": 89,
-    "aliases": 13,
+    "skus": 143,
+    "aliases": 116,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-05-29T11:59:48.066Z"
+    "dataQualityGeneratedAt": "2026-05-29T17:11:33.774Z"
   },
   "summary": {
-    "skuCount": 89,
-    "activeSkuCount": 63,
-    "aliasCount": 13,
+    "skuCount": 143,
+    "activeSkuCount": 116,
+    "aliasCount": 116,
     "ignoredApiSkuCount": 0,
-    "apiUnmappedCount": 142,
+    "apiUnmappedCount": 38,
     "duplicateRiskCount": 0,
     "duplicateRiskOverage": 0,
     "missingOwnerCount": 0,
-    "issueCount": 243,
+    "issueCount": 139,
     "problemStateCounts": {
-      "ok": 71,
-      "has_warning": 18,
+      "ok": 73,
+      "has_warning": 70,
       "api_unmapped": 1
     }
   },
@@ -2187,132 +2187,2392 @@
       "issueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
+    },
+    {
+      "articleKey": "sustalit_75ml",
+      "article": "sustalit_75ml",
+      "name": "Мазь для суставов Сусталит , CPA, 75 мл",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Суставы",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "sustalit_75ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=197804490; revenue=1945336; units=2940",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "sustalit_75ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=197804490; revenue=1945336; units=2940",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 708613,
+          "units": 839,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "kavmaz",
+      "article": "kavmaz",
+      "name": "Мазь для суставов Кавказская мазь , CPA, 40 мл",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Суставы",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "kavmaz",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=222209699; revenue=1035278; units=1864",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "kavmaz",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=222209699; revenue=1035278; units=1864",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 205078,
+          "units": 257,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "kavmaz_60ml",
+      "article": "kavmaz_60ml",
+      "name": "Мазь для суставов Кавказская мазь , CPA, 60 мл",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Суставы",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "kavmaz_60ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=223763365; revenue=967294; units=1022",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "kavmaz_60ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=223763365; revenue=967294; units=1022",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 607198,
+          "units": 541,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "artoks",
+      "article": "artoks",
+      "name": "Мазь для суставов Артокс, CPA, 50 мл",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Суставы",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "artoks",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=40812096; revenue=933836; units=1218",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "artoks",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=40812096; revenue=933836; units=1218",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 505908,
+          "units": 605,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "uromax",
+      "article": "uromax",
+      "name": "Пищевая добавка Уромакс , CPA, 20 капсул",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Простатит",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "uromax",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=234145577; revenue=676367; units=836",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "uromax",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=234145577; revenue=676367; units=836",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 86042,
+          "units": 124,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "activeprost",
+      "article": "activeprost",
+      "name": "Пищевая добавка Активпрост , CPA, 10 капсул",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Простатит",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "activeprost",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=103709897; revenue=638203; units=1422",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "activeprost",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=103709897; revenue=638203; units=1422",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 21905,
+          "units": 30,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "synergel_60ml",
+      "article": "synergel_60ml",
+      "name": "Мазь для суставов Синергель, CPA, 60 мл",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Суставы",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "synergel_60ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=192907992; revenue=633053; units=851",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "synergel_60ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=192907992; revenue=633053; units=851",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 288892,
+          "units": 321,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "vetonus",
+      "article": "vetonus",
+      "name": "Крем от варикоза Ветонус, CPA, 30 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Варикоз",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "vetonus",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=144854900; revenue=597996; units=1853",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "vetonus",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=144854900; revenue=597996; units=1853",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 64954,
+          "units": 84,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "allicil_gribok15ml",
+      "article": "allicil_gribok15ml",
+      "name": "Мазь от грибка ногтей Аллицил, CPA, 15 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Грибок",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "allicil_gribok15ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=151393048; revenue=534504; units=998",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "allicil_gribok15ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=151393048; revenue=534504; units=998",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 506663,
+          "units": 905,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "cardicin_bad_60caps",
+      "article": "cardicin_BAD_60caps",
+      "name": "cardicin_BAD_60caps",
+      "owner": "Даша",
+      "status": "Вывод",
+      "registryStatus": "Вывод",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Здоровье сердца",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "cardicin_bad_60caps",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=174464512; revenue=483800; units=393",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "cardicin_bad_60caps",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=174464512; revenue=483800; units=393",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 210048,
+          "units": 157,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "uromax_1_1",
+      "article": "uromax_1_1",
+      "name": "Пищевая добавка Уромакс , CPA, 20 капсул, набор из 2 шт",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Простатит",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "uromax_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=525496523; revenue=429461; units=344",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "uromax_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=525496523; revenue=429461; units=344",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 23462,
+          "units": 13,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "sanatsin",
+      "article": "sanatsin",
+      "name": "Пищевая добавка Санацин, CPA, 20 штук",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Антипаразитарный",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "sanatsin",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=34285227; revenue=427492; units=691",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "sanatsin",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=34285227; revenue=427492; units=691",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 149498,
+          "units": 192,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "urinofix",
+      "article": "urinofix",
+      "name": "Пищевая добавка Уринофикс, CPA, 20 капсул",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Цистит",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "urinofix",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=312910723; revenue=420298; units=560",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "urinofix",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=312910723; revenue=420298; units=560",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 329142,
+          "units": 421,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "mycoplax",
+      "article": "mycoplax",
+      "name": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Грибок",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "mycoplax",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=260515862; revenue=386999; units=613",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "mycoplax",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=260515862; revenue=386999; units=613",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 251083,
+          "units": 340,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "micardin_1_1",
+      "article": "micardin_1_1",
+      "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 2 шт",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Здоровье сердца",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "micardin_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=172162756; revenue=313459; units=259",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 317202,
+          "units": 262,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "wbbiotrin_1_1_1",
+      "article": "wbbiotrin_1_1_1",
+      "name": "Мазь для суставов Биотрин, CPA, 30 мл, набор из 3 шт",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Суставы",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "wbbiotrin_1_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=172161991; revenue=309283; units=214",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "wbbiotrin_1_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=172161991; revenue=309283; units=214",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 9385,
+          "units": 6,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "wbsinergel",
+      "article": "wbsinergel",
+      "name": "Мазь для суставов Синергель, CPA, 30 мл",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Суставы",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "wbsinergel",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=17905393; revenue=305936; units=504",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "wbsinergel",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=17905393; revenue=305936; units=504",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 203839,
+          "units": 309,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "artoks_1_1",
+      "article": "artoks_1_1",
+      "name": "Мазь для суставов Артокс, CPA, 50 мл, набор из 2 шт",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Суставы",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "artoks_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=172161336; revenue=300859; units=249",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "artoks_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=172161336; revenue=300859; units=249",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 4379,
+          "units": 3,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "gemorekt",
+      "article": "gemorekt",
+      "name": "Крем от гемороя Геморект, CPA, 15 мл",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Геморрой",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "gemorekt",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=234208976; revenue=284729; units=493",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "gemorekt",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=234208976; revenue=284729; units=493",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 77952,
+          "units": 116,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "pantogor_100ml",
+      "article": "pantogor_100ml",
+      "name": "Мазь для суставов Пантогор , CPA, 100 мл",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Суставы",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "pantogor_100ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=192909505; revenue=264461; units=288",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "pantogor_100ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=192909505; revenue=264461; units=288",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 121896,
+          "units": 112,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "sanatsin_1_1",
+      "article": "sanatsin_1_1",
+      "name": "Пищевая добавка Санацин, CPA, 20 штук",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Антипаразитарный",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "sanatsin_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=176855721; revenue=258849; units=264",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "sanatsin_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=176855721; revenue=258849; units=264",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 59348,
+          "units": 22,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "sustalit",
+      "article": "sustalit",
+      "name": "Мазь для суставов Сусталит , CPA, 30 мл",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Суставы",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "sustalit",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=109014186; revenue=249819; units=376",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "sustalit",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=109014186; revenue=249819; units=376",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 151514,
+          "units": 212,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "ekzifol",
+      "article": "ekzifol",
+      "name": "Мазь от грибка ногтей Экзифол, CPA, 30 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Грибок",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "ekzifol",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=234150851; revenue=237110; units=489",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "ekzifol",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=234150851; revenue=237110; units=489",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 175455,
+          "units": 265,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "artoks_75ml",
+      "article": "artoks_75ml",
+      "name": "Мазь для суставов Артокс, CPA, 75 мл",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Суставы",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "artoks_75ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=192906679; revenue=231454; units=223",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "artoks_75ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=192906679; revenue=231454; units=223",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 96146,
+          "units": 74,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "otivin",
+      "article": "otivin",
+      "name": "Пищевая добавка Отивин , CPA, 10 мл",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Слух",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "otivin",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=136138948; revenue=224626; units=341",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "otivin",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=136138948; revenue=224626; units=341",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 95515,
+          "units": 126,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "vetonus_100ml",
+      "article": "vetonus_100ml",
+      "name": "Крем от варикоза Ветонус, CPA, 100 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Варикоз",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "vetonus_100ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=202337451; revenue=204376; units=428",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "vetonus_100ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=202337451; revenue=204376; units=428",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 41076,
+          "units": 38,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "sinergel_30ml_1_1",
+      "article": "sinergel_30ml_1_1",
+      "name": "Мазь для суставов Синергель , CPA, 30 мл, набор из 2 шт",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Суставы",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "sinergel_30ml_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=318414683; revenue=203114; units=185",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "sinergel_30ml_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=318414683; revenue=203114; units=185",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 106884,
+          "units": 76,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "kavmaz_40ml_1_1",
+      "article": "kavmaz_40ml_1_1",
+      "name": "Мазь для суставов Кавказская мазь , CPA, 40 мл, набор из 2 шт",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Суставы",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "kavmaz_40ml_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=304495569; revenue=198327; units=141",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "kavmaz_40ml_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=304495569; revenue=198327; units=141",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 64435,
+          "units": 38,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "urolgan",
+      "article": "urolgan",
+      "name": "Пищевая добавка Уролган , CPA, 10 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Простатит",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "urolgan",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=223155748; revenue=195833; units=476",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "urolgan",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=223155748; revenue=195833; units=476",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 15116,
+          "units": 30,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "dardrakona_1_1",
+      "article": "dardrakona_1_1",
+      "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Варикоз",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "dardrakona_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=176862987; revenue=174281; units=226",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "dardrakona_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=176862987; revenue=174281; units=226",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 61901,
+          "units": 55,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "daoshen",
+      "article": "daoshen",
+      "name": "Мазь от грибка ногтей Даошэн, CPA, 15 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Грибок",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "daoshen",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=75182069; revenue=165771; units=238",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "daoshen",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=75182069; revenue=165771; units=238",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 106355,
+          "units": 142,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "micardinforte",
+      "article": "micardinforte",
+      "name": "Пищевая добавка Микардин Форте, CPA, 10 капсул",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Здоровье сердца",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "wbmicardinforte",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=39234691; revenue=137020; units=211",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
+    },
+    {
+      "articleKey": "daoshen_75ml",
+      "article": "daoshen_75ml",
+      "name": "Мазь от грибка ногтей Даошэн, CPA, 75 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Грибок",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "daoshen_75ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=197568699; revenue=119760; units=119",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "daoshen_75ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=197568699; revenue=119760; units=119",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 76844,
+          "units": 74,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "micardin",
+      "article": "micardin",
+      "name": "Пищевая добавка Микардин, CPA, 10 капсул",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Здоровье сердца",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "micardin",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=34282538; revenue=117777; units=192",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 130478,
+          "units": 215,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "osteofast",
+      "article": "osteofast",
+      "name": "Мазь для суставов Остеофаст, CPA, 30 мл, набор из 3 шт",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Суставы",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "osteofast",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=260523262; revenue=111895; units=191",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "osteofast",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=260523262; revenue=111895; units=191",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 52658,
+          "units": 66,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "varifit",
+      "article": "varifit",
+      "name": "Крем от варикоза Варифит, CPA, 30 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Варикоз",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "varifit",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=234147545; revenue=105030; units=166",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "varifit",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=234147545; revenue=105030; units=166",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 67360,
+          "units": 97,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "dardrakona",
+      "article": "dardrakona",
+      "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Варикоз",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "dardrakona",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=44552189; revenue=97966; units=158",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "dardrakona",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=44552189; revenue=97966; units=158",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 22439,
+          "units": 29,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "psoral_50ml",
+      "article": "psoral_50ml",
+      "name": "Мазь от псориаза Псорал, CPA, 50 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Псориаз",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "psoral_50ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=186794178; revenue=91777; units=120",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "psoral_50ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=186794178; revenue=91777; units=120",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "psoral_50ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=186794178; revenue=91777; units=120",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 33904,
+          "units": 39,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "wbgetsizegel",
+      "article": "wbgetsizegel",
+      "name": "Лубрикант Getsize CPA, 30 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "18+",
+      "type": "Смазка",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "wbgetsizegel",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=17891620; revenue=73051; units=215",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "wbgetsizegel",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=17891620; revenue=73051; units=215",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 11492,
+          "units": 26,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "varifit_1_1",
+      "article": "varifit_1_1",
+      "name": "Крем от варикоза Варифит, CPA, 30 мл, набор из 2 шт",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Варикоз",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "varifit_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=525497365; revenue=64022; units=102",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "varifit_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=525497365; revenue=64022; units=102",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 9490,
+          "units": 7,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "dolgar",
+      "article": "dolgar",
+      "name": "Мазь от грибка ногтей Долгар, CPA, 15 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Грибок",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "dolgar",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=18953630; revenue=62447; units=148",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "dolgar",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=18953630; revenue=62447; units=148",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 22201,
+          "units": 32,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "vetonus_1_1",
+      "article": "vetonus_1_1",
+      "name": "Крем от варикоза Ветонус, CPA, 30 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Варикоз",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "vetonus_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=176859687; revenue=59137; units=64",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "vetonus_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=176859687; revenue=59137; units=64",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 38866,
+          "units": 35,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "sustalit_30ml_1_1",
+      "article": "sustalit_30ml_1_1",
+      "name": "Мазь для суставов Сусталит , CPA, 30 мл",
+      "owner": "Васильева Мария",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "",
+      "type": "",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "sustalit_30ml_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=318415062; revenue=52654; units=40",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 55335,
+          "units": 42,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "wbgetsize",
+      "article": "wbgetsize",
+      "name": "Игрушка для взрослых Getsize, CPA",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "18+",
+      "type": "Игрушки для взрослых",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "wbgetsize",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=17907051; revenue=52379; units=89",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "wbgetsize",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=17907051; revenue=52379; units=89",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 984,
+          "units": 1,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "psoral",
+      "article": "psoral",
+      "name": "Мазь от псориаза Псорал, CPA, 30 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Псориаз",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "psoral",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=136537336; revenue=48996; units=73",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "psoral",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=136537336; revenue=48996; units=73",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 23452,
+          "units": 31,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "wbpantogor_1_1",
+      "article": "wbpantogor_1_1",
+      "name": "Мазь для суставов Пантогор , CPA, 30 мл, набор из 2 шт",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Суставы",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "wbpantogor_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=172163562; revenue=45558; units=38",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "wbpantogor_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=172163562; revenue=45558; units=38",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 4520,
+          "units": 3,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "khvoinitsa_1_1",
+      "article": "khvoinitsa_1_1",
+      "name": "Пищевая добавка Хвойница , CPA, 7 саше",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Иммунитет",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "khvoinitsa_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=176858863; revenue=44531; units=55",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "khvoinitsa_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=176858863; revenue=44531; units=55",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 19235,
+          "units": 15,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "dardrakona_75ml",
+      "article": "dardrakona_75ml",
+      "name": "Крем от варикоза Дар дракона, CPA, 75 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Варикоз",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "dardrakona_75ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=197567632; revenue=37670; units=52",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "dardrakona_75ml",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=197567632; revenue=37670; units=52",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 44615,
+          "units": 61,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "erobrut",
+      "article": "erobrut",
+      "name": "Пищевая добавка Эробрут, CPA, 20 капсул",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Возбудитель",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "erobrut",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=312907312; revenue=37310; units=69",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "erobrut",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=312907312; revenue=37310; units=69",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 6407,
+          "units": 9,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "khvoinitsa",
+      "article": "khvoinitsa",
+      "name": "Пищевая добавка Хвойница , CPA, 7 саше",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Иммунитет",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "khvoinitsa",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=104628658; revenue=32205; units=66",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "khvoinitsa",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=104628658; revenue=32205; units=66",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 4362,
+          "units": 6,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "micardin_1_1_1",
+      "article": "micardin_1_1_1",
+      "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 3 шт",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Здоровье сердца",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "micardin_1_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=172162757; revenue=28627; units=15",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 48647,
+          "units": 25,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "mycoplax_1_1",
+      "article": "mycoplax_1_1",
+      "name": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл, набор из 2 шт",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Грибок",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "mycoplax_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=525495859; revenue=25990; units=24",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "mycoplax_1_1",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=525495859; revenue=25990; units=24",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 10964,
+          "units": 6,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "wbvaritox",
+      "article": "wbvaritox",
+      "name": "Крем от варикоза Varitox, CPA, 30 мл",
+      "owner": "Даша",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Варикоз",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "wbvaritox",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=17904962; revenue=16577; units=22",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "has_warning"
+      ],
+      "problemState": "has_warning",
+      "problemLabel": "Есть замечание",
+      "problemTone": "warn",
+      "issueCount": 1,
+      "criticalIssueCount": 0,
+      "issues": [
+        {
+          "severity": "warning",
+          "type": "wb_owner_distribution_missing_in_portal",
+          "platform": "wb",
+          "revenue": 18015,
+          "units": 24,
+          "message": "SKU is present in WB owner distribution but absent in portal skus.json"
+        }
+      ]
+    },
+    {
+      "articleKey": "t34poten10caps",
+      "article": "t34poten10caps",
+      "name": "Пищевая добавка Т 34, CPA, 20 капсул",
+      "owner": "Артем",
+      "status": "Актуальный",
+      "registryStatus": "Актуальный",
+      "brand": "CPA",
+      "category": "Парафармацевтика",
+      "type": "Возбудитель",
+      "aliases": [
+        {
+          "platform": "wb",
+          "api_sku": "t34poten10caps",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=150790885; revenue=4854; units=8",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ozon",
+          "api_sku": "t34poten10caps",
+          "status": "active",
+          "note": "Imported from Repricer alias (2).csv on 2026-05-29; source_target=150790885; revenue=4854; units=8",
+          "source": "sku_aliases"
+        }
+      ],
+      "problemStates": [
+        "ok"
+      ],
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "criticalIssueCount": 0,
+      "issues": []
     }
   ],
   "apiUnmapped": [
-    {
-      "platform": "ozon",
-      "api_sku": "sustalit_75ml",
-      "name": "sustalit_75ml",
-      "revenue": 1308274,
-      "units": 2198,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "kavmaz",
-      "name": "kavmaz",
-      "revenue": 867775,
-      "units": 1669,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "sustalit_75ml",
-      "name": "sustalit_75ml",
-      "revenue": 708613,
-      "units": 839,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
     {
       "platform": "ozon",
       "api_sku": "trezvin",
       "name": "trezvin",
       "revenue": 654453,
       "units": 1667,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "activeprost",
-      "name": "activeprost",
-      "revenue": 650049,
-      "units": 1464,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "uromax",
-      "name": "uromax",
-      "revenue": 618036,
-      "units": 740,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "kavmaz_60ml",
-      "name": "kavmaz_60ml",
-      "revenue": 607198,
-      "units": 541,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "vetonus",
-      "name": "vetonus",
-      "revenue": 550640,
-      "units": 1823,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "allicil_gribok15ml",
-      "name": "allicil_gribok15ml",
-      "revenue": 506663,
-      "units": 905,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "artoks",
-      "name": "artoks",
-      "revenue": 505908,
-      "units": 605,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "micardinforte",
-      "name": "micardinforte",
-      "revenue": 498610,
-      "units": 1203,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "artoks",
-      "name": "artoks",
-      "revenue": 462046,
-      "units": 656,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "uromax_1_1",
-      "name": "uromax_1_1",
-      "revenue": 418154,
-      "units": 339,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "kavmaz_60ml",
-      "name": "kavmaz_60ml",
-      "revenue": 409060,
-      "units": 536,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-28"
     },
@@ -2354,91 +4614,10 @@
     },
     {
       "platform": "ozon",
-      "api_sku": "synergel_60ml",
-      "name": "synergel_60ml",
-      "revenue": 365551,
-      "units": 554,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "urinofix",
-      "name": "urinofix",
-      "revenue": 329142,
-      "units": 421,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "micardin_1_1",
-      "name": "micardin_1_1",
-      "revenue": 317202,
-      "units": 262,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "wbbiotrin_1_1_1",
-      "name": "wbbiotrin_1_1_1",
-      "revenue": 313758,
-      "units": 219,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "artoks_1_1",
-      "name": "artoks_1_1",
-      "revenue": 306224,
-      "units": 254,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "synergel_60ml",
-      "name": "synergel_60ml",
-      "revenue": 288892,
-      "units": 321,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
       "api_sku": "yagodniy_spas",
       "name": "yagodniy_spas",
       "revenue": 286490,
       "units": 438,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "sanatsin",
-      "name": "sanatsin",
-      "revenue": 283263,
-      "units": 506,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "cardicin_BAD_60caps",
-      "name": "cardicin_BAD_60caps",
-      "revenue": 281360,
-      "units": 242,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "mycoplax",
-      "name": "mycoplax",
-      "revenue": 251083,
-      "units": 340,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-28"
     },
@@ -2462,42 +4641,6 @@
     },
     {
       "platform": "ozon",
-      "api_sku": "gemorekt",
-      "name": "gemorekt",
-      "revenue": 215522,
-      "units": 390,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "cardicin_bad_60caps",
-      "name": "cardicin_bad_60caps",
-      "revenue": 210048,
-      "units": 157,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "kavmaz",
-      "name": "kavmaz",
-      "revenue": 205078,
-      "units": 257,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "wbsinergel",
-      "name": "wbsinergel",
-      "revenue": 203839,
-      "units": 309,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
       "api_sku": "kinzhal",
       "name": "kinzhal",
       "revenue": 202010,
@@ -2507,37 +4650,10 @@
     },
     {
       "platform": "ozon",
-      "api_sku": "sanatsin_1_1",
-      "name": "sanatsin_1_1",
-      "revenue": 199503,
-      "units": 242,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "urolgan",
-      "name": "urolgan",
-      "revenue": 194602,
-      "units": 479,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
       "api_sku": "kardicin_1_1",
       "name": "kardicin_1_1",
       "revenue": 190634,
       "units": 204,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "ekzifol",
-      "name": "ekzifol",
-      "revenue": 175455,
-      "units": 265,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-28"
     },
@@ -2552,51 +4668,6 @@
     },
     {
       "platform": "ozon",
-      "api_sku": "vetonus_100ml",
-      "name": "vetonus_100ml",
-      "revenue": 164453,
-      "units": 393,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "sustalit",
-      "name": "sustalit",
-      "revenue": 151514,
-      "units": 212,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "sanatsin",
-      "name": "sanatsin",
-      "revenue": 149498,
-      "units": 192,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "mycoplax",
-      "name": "mycoplax",
-      "revenue": 148190,
-      "units": 292,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "pantogor_100ml",
-      "name": "pantogor_100ml",
-      "revenue": 148035,
-      "units": 181,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
       "api_sku": "kinzhal_1_1",
       "name": "kinzhal_1_1",
       "revenue": 147577,
@@ -2606,82 +4677,10 @@
     },
     {
       "platform": "ozon",
-      "api_sku": "artoks_75ml",
-      "name": "artoks_75ml",
-      "revenue": 145102,
-      "units": 158,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
       "api_sku": "oftalmol",
       "name": "oftalmol",
       "revenue": 144449,
       "units": 214,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "otivin",
-      "name": "otivin",
-      "revenue": 140874,
-      "units": 232,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "kavmaz_40ml_1_1",
-      "name": "kavmaz_40ml_1_1",
-      "revenue": 140497,
-      "units": 108,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "wbmicardinforte",
-      "name": "wbmicardinforte",
-      "revenue": 140382,
-      "units": 216,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "micardin",
-      "name": "micardin",
-      "revenue": 130478,
-      "units": 215,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "pantogor_100ml",
-      "name": "pantogor_100ml",
-      "revenue": 121896,
-      "units": 112,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-25"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "dardrakona_1_1",
-      "name": "dardrakona_1_1",
-      "revenue": 116397,
-      "units": 175,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "urinofix",
-      "name": "urinofix",
-      "revenue": 112571,
-      "units": 166,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-28"
     },
@@ -2705,55 +4704,10 @@
     },
     {
       "platform": "ozon",
-      "api_sku": "wbsinergel",
-      "name": "wbsinergel",
-      "revenue": 111724,
-      "units": 209,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "sustalit",
-      "name": "sustalit",
-      "revenue": 111551,
-      "units": 183,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "sinergel_30ml_1_1",
-      "name": "sinergel_30ml_1_1",
-      "revenue": 106884,
-      "units": 76,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-27"
-    },
-    {
-      "platform": "ozon",
       "api_sku": "brutalax",
       "name": "brutalax",
       "revenue": 106865,
       "units": 327,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "daoshen",
-      "name": "daoshen",
-      "revenue": 106355,
-      "units": 142,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "sinergel_30ml_1_1",
-      "name": "sinergel_30ml_1_1",
-      "revenue": 101525,
-      "units": 115,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-28"
     },
@@ -2767,24 +4721,6 @@
       "lastDate": "2026-05-28"
     },
     {
-      "platform": "wb",
-      "api_sku": "artoks_75ml",
-      "name": "artoks_75ml",
-      "revenue": 96146,
-      "units": 74,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "otivin",
-      "name": "otivin",
-      "revenue": 95515,
-      "units": 126,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-28"
-    },
-    {
       "platform": "ozon",
       "api_sku": "arterol",
       "name": "arterol",
@@ -2794,47 +4730,11 @@
       "lastDate": "2026-05-28"
     },
     {
-      "platform": "wb",
-      "api_sku": "uromax",
-      "name": "uromax",
-      "revenue": 86042,
-      "units": 124,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "dardrakona",
-      "name": "dardrakona",
-      "revenue": 81914,
-      "units": 139,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
       "platform": "ozon",
       "api_sku": "wbbiotrin_1_1",
       "name": "wbbiotrin_1_1",
       "revenue": 81419,
       "units": 78,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "gemorekt",
-      "name": "gemorekt",
-      "revenue": 77952,
-      "units": 116,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "daoshen_75ml",
-      "name": "daoshen_75ml",
-      "revenue": 76844,
-      "units": 74,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-28"
     },
@@ -2849,118 +4749,10 @@
     },
     {
       "platform": "ozon",
-      "api_sku": "ekzifol",
-      "name": "ekzifol",
-      "revenue": 69777,
-      "units": 242,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "daoshen",
-      "name": "daoshen",
-      "revenue": 67794,
-      "units": 107,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "varifit",
-      "name": "varifit",
-      "revenue": 67360,
-      "units": 97,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "osteofast",
-      "name": "osteofast",
-      "revenue": 66553,
-      "units": 140,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "vetonus",
-      "name": "vetonus",
-      "revenue": 64954,
-      "units": 84,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "kavmaz_40ml_1_1",
-      "name": "kavmaz_40ml_1_1",
-      "revenue": 64435,
-      "units": 38,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-19"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "wbgetsizegel",
-      "name": "wbgetsizegel",
-      "revenue": 64267,
-      "units": 198,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "dardrakona_1_1",
-      "name": "dardrakona_1_1",
-      "revenue": 61901,
-      "units": 55,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "sanatsin_1_1",
-      "name": "sanatsin_1_1",
-      "revenue": 59348,
-      "units": 22,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-23"
-    },
-    {
-      "platform": "ozon",
       "api_sku": "glukofol",
       "name": "glukofol",
       "revenue": 57145,
       "units": 269,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "psoral_50ml",
-      "name": "psoral_50ml",
-      "revenue": 56853,
-      "units": 81,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "sustalit_30ml_1_1",
-      "name": "sustalit_30ml_1_1",
-      "revenue": 55335,
-      "units": 42,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "varifit_1_1",
-      "name": "varifit_1_1",
-      "revenue": 54532,
-      "units": 95,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-28"
     },
@@ -2983,48 +4775,12 @@
       "lastDate": "2026-05-28"
     },
     {
-      "platform": "wb",
-      "api_sku": "osteofast",
-      "name": "osteofast",
-      "revenue": 52658,
-      "units": 66,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "wbgetsize",
-      "name": "wbgetsize",
-      "revenue": 51395,
-      "units": 88,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "daoshen_75ml",
-      "name": "daoshen_75ml",
-      "revenue": 50531,
-      "units": 54,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
       "platform": "ozon",
       "api_sku": "kardicin",
       "name": "kardicin",
       "revenue": 48890,
       "units": 121,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "micardin_1_1_1",
-      "name": "micardin_1_1_1",
-      "revenue": 48647,
-      "units": 25,
-      "firstDate": "2026-05-03",
       "lastDate": "2026-05-28"
     },
     {
@@ -3037,101 +4793,11 @@
       "lastDate": "2026-05-28"
     },
     {
-      "platform": "wb",
-      "api_sku": "dardrakona_75ml",
-      "name": "dardrakona_75ml",
-      "revenue": 44615,
-      "units": 61,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-28"
-    },
-    {
       "platform": "ozon",
       "api_sku": "wbmicelix_1_1",
       "name": "wbmicelix_1_1",
       "revenue": 42148,
       "units": 54,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "vetonus_100ml",
-      "name": "vetonus_100ml",
-      "revenue": 41076,
-      "units": 38,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-24"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "wbpantogor_1_1",
-      "name": "wbpantogor_1_1",
-      "revenue": 41039,
-      "units": 35,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "varifit",
-      "name": "varifit",
-      "revenue": 40900,
-      "units": 74,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "dolgar",
-      "name": "dolgar",
-      "revenue": 40247,
-      "units": 116,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "vetonus_1_1",
-      "name": "vetonus_1_1",
-      "revenue": 38866,
-      "units": 35,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "erobrut",
-      "name": "erobrut",
-      "revenue": 36627,
-      "units": 71,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "allicil_gribok15ml",
-      "name": "allicil_gribok15ml",
-      "revenue": 35572,
-      "units": 108,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "psoral_50ml",
-      "name": "psoral_50ml",
-      "revenue": 33904,
-      "units": 39,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "khvoinitsa",
-      "name": "khvoinitsa",
-      "revenue": 29013,
-      "units": 62,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-28"
     },
@@ -3146,82 +4812,10 @@
     },
     {
       "platform": "ozon",
-      "api_sku": "khvoinitsa_1_1",
-      "name": "khvoinitsa_1_1",
-      "revenue": 27897,
-      "units": 44,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "psoral",
-      "name": "psoral",
-      "revenue": 26328,
-      "units": 43,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "uromax_1_1",
-      "name": "uromax_1_1",
-      "revenue": 23462,
-      "units": 13,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-27"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "psoral",
-      "name": "psoral",
-      "revenue": 23452,
-      "units": 31,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
       "api_sku": "papiderm",
       "name": "papiderm",
       "revenue": 22693,
       "units": 60,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "dardrakona",
-      "name": "dardrakona",
-      "revenue": 22439,
-      "units": 29,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "dolgar",
-      "name": "dolgar",
-      "revenue": 22201,
-      "units": 32,
-      "firstDate": "2026-05-03",
-      "lastDate": "2026-05-27"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "activeprost",
-      "name": "activeprost",
-      "revenue": 21905,
-      "units": 30,
-      "firstDate": "2026-05-04",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "vetonus_1_1",
-      "name": "vetonus_1_1",
-      "revenue": 21454,
-      "units": 30,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-28"
     },
@@ -3244,60 +4838,6 @@
       "lastDate": "2026-05-28"
     },
     {
-      "platform": "wb",
-      "api_sku": "khvoinitsa_1_1",
-      "name": "khvoinitsa_1_1",
-      "revenue": 19235,
-      "units": 15,
-      "firstDate": "2026-05-04",
-      "lastDate": "2026-05-27"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "wbvaritox",
-      "name": "wbvaritox",
-      "revenue": 18015,
-      "units": 24,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "mycoplax_1_1",
-      "name": "mycoplax_1_1",
-      "revenue": 16625,
-      "units": 21,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "urolgan",
-      "name": "urolgan",
-      "revenue": 15116,
-      "units": 30,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-27"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "wbgetsizegel",
-      "name": "wbgetsizegel",
-      "revenue": 11492,
-      "units": 26,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "mycoplax_1_1",
-      "name": "mycoplax_1_1",
-      "revenue": 10964,
-      "units": 6,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-17"
-    },
-    {
       "platform": "ozon",
       "api_sku": "wowglam",
       "name": "wowglam",
@@ -3307,93 +4847,12 @@
       "lastDate": "2026-05-28"
     },
     {
-      "platform": "wb",
-      "api_sku": "varifit_1_1",
-      "name": "varifit_1_1",
-      "revenue": 9490,
-      "units": 7,
-      "firstDate": "2026-05-11",
-      "lastDate": "2026-05-26"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "wbbiotrin_1_1_1",
-      "name": "wbbiotrin_1_1_1",
-      "revenue": 9385,
-      "units": 6,
-      "firstDate": "2026-05-05",
-      "lastDate": "2026-05-11"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "erobrut",
-      "name": "erobrut",
-      "revenue": 6407,
-      "units": 9,
-      "firstDate": "2026-05-08",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "t34poten10caps",
-      "name": "t34poten10caps",
-      "revenue": 5657,
-      "units": 9,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "wbpantogor_1_1",
-      "name": "wbpantogor_1_1",
-      "revenue": 4520,
-      "units": 3,
-      "firstDate": "2026-05-10",
-      "lastDate": "2026-05-27"
-    },
-    {
-      "platform": "goldapple",
-      "api_sku": "psoral_50ml",
-      "name": "Крем специального назначения «Псоридонт» 50 мл",
-      "revenue": 4464,
-      "units": 4,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "artoks_1_1",
-      "name": "artoks_1_1",
-      "revenue": 4379,
-      "units": 3,
-      "firstDate": "2026-05-04",
-      "lastDate": "2026-05-17"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "khvoinitsa",
-      "name": "khvoinitsa",
-      "revenue": 4362,
-      "units": 6,
-      "firstDate": "2026-05-05",
-      "lastDate": "2026-05-28"
-    },
-    {
       "platform": "ozon",
       "api_sku": "syvorotka_vit_C_30ml",
       "name": "syvorotka_vit_C_30ml",
       "revenue": 4117,
       "units": 20,
       "firstDate": "2026-05-05",
-      "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "dardrakona_75ml",
-      "name": "dardrakona_75ml",
-      "revenue": 2092,
-      "units": 5,
-      "firstDate": "2026-05-01",
       "lastDate": "2026-05-28"
     },
     {
@@ -3425,15 +4884,6 @@
     },
     {
       "platform": "wb",
-      "api_sku": "wbgetsize",
-      "name": "wbgetsize",
-      "revenue": 984,
-      "units": 1,
-      "firstDate": "2026-05-02",
-      "lastDate": "2026-05-02"
-    },
-    {
-      "platform": "wb",
       "api_sku": "kinzhal",
       "name": "kinzhal",
       "revenue": 845,
@@ -3449,15 +4899,6 @@
       "units": 1,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-28"
-    },
-    {
-      "platform": "wb",
-      "api_sku": "t34poten10caps",
-      "name": "t34poten10caps",
-      "revenue": 445,
-      "units": 1,
-      "firstDate": "2026-05-22",
-      "lastDate": "2026-05-22"
     },
     {
       "platform": "ozon",
@@ -3561,7 +5002,61 @@
       "termo_sprei_200ml": 85,
       "tonik_dlya_lica_200ml": 86,
       "vosk_stik_15ml": 87,
-      "т-34_bad_60caps": 88
+      "т-34_bad_60caps": 88,
+      "sustalit_75ml": 89,
+      "kavmaz": 90,
+      "kavmaz_60ml": 91,
+      "artoks": 92,
+      "uromax": 93,
+      "activeprost": 94,
+      "synergel_60ml": 95,
+      "vetonus": 96,
+      "allicil_gribok15ml": 97,
+      "cardicin_bad_60caps": 98,
+      "uromax_1_1": 99,
+      "sanatsin": 100,
+      "urinofix": 101,
+      "mycoplax": 102,
+      "micardin_1_1": 103,
+      "wbbiotrin_1_1_1": 104,
+      "wbsinergel": 105,
+      "artoks_1_1": 106,
+      "gemorekt": 107,
+      "pantogor_100ml": 108,
+      "sanatsin_1_1": 109,
+      "sustalit": 110,
+      "ekzifol": 111,
+      "artoks_75ml": 112,
+      "otivin": 113,
+      "vetonus_100ml": 114,
+      "sinergel_30ml_1_1": 115,
+      "kavmaz_40ml_1_1": 116,
+      "urolgan": 117,
+      "dardrakona_1_1": 118,
+      "daoshen": 119,
+      "micardinforte": 120,
+      "daoshen_75ml": 121,
+      "micardin": 122,
+      "osteofast": 123,
+      "varifit": 124,
+      "dardrakona": 125,
+      "psoral_50ml": 126,
+      "wbgetsizegel": 127,
+      "varifit_1_1": 128,
+      "dolgar": 129,
+      "vetonus_1_1": 130,
+      "sustalit_30ml_1_1": 131,
+      "wbgetsize": 132,
+      "psoral": 133,
+      "wbpantogor_1_1": 134,
+      "khvoinitsa_1_1": 135,
+      "dardrakona_75ml": 136,
+      "erobrut": 137,
+      "khvoinitsa": 138,
+      "micardin_1_1_1": 139,
+      "mycoplax_1_1": 140,
+      "wbvaritox": 141,
+      "t34poten10caps": 142
     },
     "aliasToArticleKey": {
       "ozon|insulight": "insulight_bad_60caps",
@@ -3576,7 +5071,110 @@
       "goldapple|shampunprotivperho": "shampun_protiv_perhoti_250ml",
       "goldapple|tonikdlyalica200m": "tonik_dlya_lica_200ml",
       "goldapple|naborpenkadlyares": "nabor_penka_dlya_resnic",
-      "wb|otzfbs6curlymethod300ml": "curly_method_300ml"
+      "wb|otzfbs6curlymethod300ml": "curly_method_300ml",
+      "wb|sustalit75ml": "sustalit_75ml",
+      "ozon|sustalit75ml": "sustalit_75ml",
+      "wb|kavmaz": "kavmaz",
+      "ozon|kavmaz": "kavmaz",
+      "wb|kavmaz60ml": "kavmaz_60ml",
+      "ozon|kavmaz60ml": "kavmaz_60ml",
+      "wb|artoks": "artoks",
+      "ozon|artoks": "artoks",
+      "wb|uromax": "uromax",
+      "ozon|uromax": "uromax",
+      "wb|activeprost": "activeprost",
+      "ozon|activeprost": "activeprost",
+      "wb|synergel60ml": "synergel_60ml",
+      "ozon|synergel60ml": "synergel_60ml",
+      "wb|vetonus": "vetonus",
+      "ozon|vetonus": "vetonus",
+      "wb|allicilgribok15ml": "allicil_gribok15ml",
+      "ozon|allicilgribok15ml": "allicil_gribok15ml",
+      "wb|cardicinbad60caps": "cardicin_bad_60caps",
+      "ozon|cardicinbad60caps": "cardicin_bad_60caps",
+      "wb|uromax11": "uromax_1_1",
+      "ozon|uromax11": "uromax_1_1",
+      "wb|sanatsin": "sanatsin",
+      "ozon|sanatsin": "sanatsin",
+      "wb|urinofix": "urinofix",
+      "ozon|urinofix": "urinofix",
+      "wb|mycoplax": "mycoplax",
+      "ozon|mycoplax": "mycoplax",
+      "wb|micardin11": "micardin_1_1",
+      "wb|wbbiotrin111": "wbbiotrin_1_1_1",
+      "ozon|wbbiotrin111": "wbbiotrin_1_1_1",
+      "wb|wbsinergel": "wbsinergel",
+      "ozon|wbsinergel": "wbsinergel",
+      "wb|artoks11": "artoks_1_1",
+      "ozon|artoks11": "artoks_1_1",
+      "wb|gemorekt": "gemorekt",
+      "ozon|gemorekt": "gemorekt",
+      "wb|pantogor100ml": "pantogor_100ml",
+      "ozon|pantogor100ml": "pantogor_100ml",
+      "wb|sanatsin11": "sanatsin_1_1",
+      "ozon|sanatsin11": "sanatsin_1_1",
+      "wb|sustalit": "sustalit",
+      "ozon|sustalit": "sustalit",
+      "wb|ekzifol": "ekzifol",
+      "ozon|ekzifol": "ekzifol",
+      "wb|artoks75ml": "artoks_75ml",
+      "ozon|artoks75ml": "artoks_75ml",
+      "wb|otivin": "otivin",
+      "ozon|otivin": "otivin",
+      "wb|vetonus100ml": "vetonus_100ml",
+      "ozon|vetonus100ml": "vetonus_100ml",
+      "wb|sinergel30ml11": "sinergel_30ml_1_1",
+      "ozon|sinergel30ml11": "sinergel_30ml_1_1",
+      "wb|kavmaz40ml11": "kavmaz_40ml_1_1",
+      "ozon|kavmaz40ml11": "kavmaz_40ml_1_1",
+      "wb|urolgan": "urolgan",
+      "ozon|urolgan": "urolgan",
+      "wb|dardrakona11": "dardrakona_1_1",
+      "ozon|dardrakona11": "dardrakona_1_1",
+      "wb|daoshen": "daoshen",
+      "ozon|daoshen": "daoshen",
+      "wb|wbmicardinforte": "micardinforte",
+      "wb|daoshen75ml": "daoshen_75ml",
+      "ozon|daoshen75ml": "daoshen_75ml",
+      "wb|micardin": "micardin",
+      "wb|osteofast": "osteofast",
+      "ozon|osteofast": "osteofast",
+      "wb|varifit": "varifit",
+      "ozon|varifit": "varifit",
+      "wb|dardrakona": "dardrakona",
+      "ozon|dardrakona": "dardrakona",
+      "wb|psoral50ml": "psoral_50ml",
+      "ozon|psoral50ml": "psoral_50ml",
+      "goldapple|psoral50ml": "psoral_50ml",
+      "wb|wbgetsizegel": "wbgetsizegel",
+      "ozon|wbgetsizegel": "wbgetsizegel",
+      "wb|varifit11": "varifit_1_1",
+      "ozon|varifit11": "varifit_1_1",
+      "wb|dolgar": "dolgar",
+      "ozon|dolgar": "dolgar",
+      "wb|vetonus11": "vetonus_1_1",
+      "ozon|vetonus11": "vetonus_1_1",
+      "wb|sustalit30ml11": "sustalit_30ml_1_1",
+      "wb|wbgetsize": "wbgetsize",
+      "ozon|wbgetsize": "wbgetsize",
+      "wb|psoral": "psoral",
+      "ozon|psoral": "psoral",
+      "wb|wbpantogor11": "wbpantogor_1_1",
+      "ozon|wbpantogor11": "wbpantogor_1_1",
+      "wb|khvoinitsa11": "khvoinitsa_1_1",
+      "ozon|khvoinitsa11": "khvoinitsa_1_1",
+      "wb|dardrakona75ml": "dardrakona_75ml",
+      "ozon|dardrakona75ml": "dardrakona_75ml",
+      "wb|erobrut": "erobrut",
+      "ozon|erobrut": "erobrut",
+      "wb|khvoinitsa": "khvoinitsa",
+      "ozon|khvoinitsa": "khvoinitsa",
+      "wb|micardin111": "micardin_1_1_1",
+      "wb|mycoplax11": "mycoplax_1_1",
+      "ozon|mycoplax11": "mycoplax_1_1",
+      "wb|wbvaritox": "wbvaritox",
+      "wb|t34poten10caps": "t34poten10caps",
+      "ozon|t34poten10caps": "t34poten10caps"
     }
   }
 }

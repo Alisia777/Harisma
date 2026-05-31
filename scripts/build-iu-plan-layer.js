@@ -7,6 +7,7 @@ const DATA_DIR = path.join(ROOT, 'data');
 const PLATFORM_TRENDS_PATH = path.join(DATA_DIR, 'platform_trends.json');
 const OUT_PATH = path.join(DATA_DIR, 'iu_plan.json');
 const OZON_IU_ADS_RATE = 0.24877996681564674;
+const OZON_IU_SMART_SHARE = 0.4;
 const IU_START_MONTH = 3;
 const LEGACY_PLAN_MONTHS = [5, 6, 7, 8, 9, 10, 11, 12];
 const LEGACY_PLAN_COLS = ['H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'];
@@ -22,7 +23,7 @@ const SMART_SALE_OZON_GMV_2026 = {
   '2026-11': 126917638.188604,
   '2026-12': 143447038.351102
 };
-const WB_IU_SMART_SHARE = 0.4;
+const WB_IU_SMART_SHARE = 1;
 const DOWNLOADS_ROOT = path.resolve(process.env.USERPROFILE || process.cwd(), 'Downloads');
 
 function parseArgs(argv) {
@@ -238,6 +239,27 @@ function detectSmartSaleOzonPlan(candidateArg, year) {
     if (payload) return payload;
   }
 
+  const localSmartSaleCandidates = listXlsxFiles(ROOT)
+    .filter((filePath) => {
+      const name = path.basename(filePath);
+      const normalized = String(name || '').toLowerCase();
+      return !normalized.startsWith('~$')
+        && !normalized.startsWith('.')
+        && (normalized.includes('иу') || normalized.includes('iu'))
+        && (normalized.includes('смарт') || normalized.includes('smart'));
+    })
+    .sort((left, right) => {
+      try {
+        return fs.statSync(right).mtimeMs - fs.statSync(left).mtimeMs;
+      } catch (_) {
+        return 0;
+      }
+    });
+  for (const candidate of localSmartSaleCandidates) {
+    const payload = readSmartSaleOzonPlan(candidate, year);
+    if (payload) return payload;
+  }
+
   const downloads = process.env.USERPROFILE ? path.join(process.env.USERPROFILE, 'Downloads') : '';
   const candidates = [
     ...listXlsxFiles(ROOT),
@@ -375,9 +397,11 @@ function buildPayload(workbookPath, args = {}) {
     const monthKey = `${year}-${String(monthNum).padStart(2, '0')}`;
     const days = new Date(year, monthNum, 0).getDate();
     const wbRevenue = col ? num(cell(ws, `${col}13`)) : 0;
-    const ozonRevenue = num(smartSaleOzonPlan?.months?.[monthKey]) || (col ? num(cell(ws, `${col}14`)) : 0);
+    const ozonRevenueGross = num(smartSaleOzonPlan?.months?.[monthKey]) || (col ? num(cell(ws, `${col}14`)) : 0);
+    const ozonRevenue = ozonRevenueGross * OZON_IU_SMART_SHARE;
     const wbIuAds = col ? num(cell(ws, `${col}26`)) : 0;
-    const ozonIuAds = (col ? num(cell(ws, `${col}28`)) : 0) || ozonRevenue * ozonIuAdsRate;
+    const ozonIuAdsGross = (col ? num(cell(ws, `${col}28`)) : 0) || ozonRevenueGross * ozonIuAdsRate;
+    const ozonIuAds = ozonIuAdsGross * OZON_IU_SMART_SHARE;
     const totalRevenue = wbRevenue + ozonRevenue;
     const totalAds = wbIuAds + ozonIuAds;
     const header = col ? cell(ws, `${col}11`) : monthKey;
@@ -387,9 +411,13 @@ function buildPayload(workbookPath, args = {}) {
       days,
       iuRevenueWb: wbRevenue,
       iuRevenueOzon: ozonRevenue,
+      iuRevenueOzonGross: ozonRevenueGross,
+      iuRevenueOzonShare: OZON_IU_SMART_SHARE,
       iuRevenueTotal: totalRevenue,
       iuAdsWb: wbIuAds,
       iuAdsOzon: ozonIuAds,
+      iuAdsOzonGross: ozonIuAdsGross,
+      iuAdsOzonShare: OZON_IU_SMART_SHARE,
       iuAdsTotal: totalAds,
       dailyIuRevenueWb: days > 0 ? wbRevenue / days : 0,
       dailyIuRevenueOzon: days > 0 ? ozonRevenue / days : 0,
@@ -407,9 +435,10 @@ function buildPayload(workbookPath, args = {}) {
     planYear: year,
     ozonSourceWorkbook: smartSaleOzonPlan?.sourceWorkbook || '',
     ozonSourceSheet: smartSaleOzonPlan?.sourceSheet || '',
-    note: 'IU WB plan comes from the plan workbook. Ozon GMV DR and AR rate come from the Smart-Sale IU plan when available. WB daily plan is parsed from the IU WB daily workbook and multiplied by the Smart-Sale 40% share.',
+    note: 'IU WB plan comes from the plan workbook. Ozon GMV DR and AR rate come from the two-cabinet Smart-Sale IU plan when available; the portal salary/KPI contour uses the Smart-Sale 40% share. WB daily plan is parsed from the IU WB daily workbook at the marketplace contour without the old 40% reduction.',
     assumptions: {
       ozonIuAdsRate,
+      ozonIuSmartShare: OZON_IU_SMART_SHARE,
       wbIuOurShare: WB_IU_SMART_SHARE
     },
     wbDailyPlan: buildWbDailyPlan(),

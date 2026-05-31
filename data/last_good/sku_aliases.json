@@ -1,6 +1,98 @@
 {
   "schema": "sku-api-aliases-v1",
-  "aliases": [],
+  "aliases": [
+    {
+      "target_sku": "insulight_bad_60caps",
+      "platform": "ozon",
+      "api_sku": "insulight",
+      "status": "active",
+      "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+    },
+    {
+      "target_sku": "insulight_bad_60caps",
+      "platform": "ozon",
+      "api_sku": "insulight_1_1",
+      "status": "active",
+      "note": "Safe Ozon duplicate suffix variant matched to existing insulight_bad_60caps on 2026-05-29"
+    },
+    {
+      "target_sku": "maska_dlya_lica_100ml",
+      "platform": "goldapple",
+      "api_sku": "maska_dlya_lica_100m",
+      "status": "active",
+      "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+    },
+    {
+      "target_sku": "glikiron_bad_60caps",
+      "platform": "ozon",
+      "api_sku": "glikiron",
+      "status": "active",
+      "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+    },
+    {
+      "target_sku": "retinait_krem_025_50ml",
+      "platform": "goldapple",
+      "api_sku": "retinait_krem_025_50",
+      "status": "active",
+      "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+    },
+    {
+      "target_sku": "retinait_syvorotka_1_30ml",
+      "platform": "goldapple",
+      "api_sku": "retinait_syvorotka_1",
+      "status": "active",
+      "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+    },
+    {
+      "target_sku": "shampun_dlya_rosta_250ml",
+      "platform": "goldapple",
+      "api_sku": "shampun_dlya_rosta_2",
+      "status": "active",
+      "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+    },
+    {
+      "target_sku": "retinait_krem_05_50ml",
+      "platform": "goldapple",
+      "api_sku": "retinait_krem_05_50m",
+      "status": "active",
+      "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+    },
+    {
+      "target_sku": "maslo_dlya_borodi_50ml",
+      "platform": "goldapple",
+      "api_sku": "maslo_dlya_borodi_50",
+      "status": "active",
+      "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+    },
+    {
+      "target_sku": "shampun_protiv_perhoti_250ml",
+      "platform": "goldapple",
+      "api_sku": "shampun_protiv_perho",
+      "status": "active",
+      "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+    },
+    {
+      "target_sku": "tonik_dlya_lica_200ml",
+      "platform": "goldapple",
+      "api_sku": "tonik_dlya_lica_200m",
+      "status": "active",
+      "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+    },
+    {
+      "target_sku": "nabor_penka_dlya_resnic",
+      "platform": "goldapple",
+      "api_sku": "nabor_penka_dlya_res",
+      "status": "active",
+      "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+    },
+    {
+      "target_sku": "curly_method_300ml",
+      "platform": "wb",
+      "api_sku": "otz_fbs6_curly_method_300ml",
+      "status": "active",
+      "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+    }
+  ],
   "columns": [
     "target_sku",
     "platform",
@@ -8,5 +100,6 @@
     "status",
     "note"
   ],
-  "description": "Optional local mapping for API SKU values that must be attached to portal articleKey values. Prefer the Google Sheet tab dim_sku_aliases for team-managed mappings."
+  "description": "Optional local mapping for API SKU values that must be attached to portal articleKey values. Prefer the Google Sheet tab dim_sku_aliases for team-managed mappings.",
+  "updatedAt": "2026-05-29T12:46:11+03:00"
 }

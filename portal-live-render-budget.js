@@ -46,6 +46,26 @@
     return String(number).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   }
 
+  function escapeLocal(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[char]));
+  }
+
+  function renderChip(label, tone = '') {
+    try {
+      if (typeof window.badge === 'function') return window.badge(label, tone);
+    } catch (error) {
+      // Fall back to a simple chip below.
+    }
+    const toneClass = tone ? ` ${escapeLocal(tone)}` : '';
+    return `<span class="chip${toneClass}">${escapeLocal(label)}</span>`;
+  }
+
   function rootFor(view) {
     return document.getElementById(`view-${view}`);
   }
@@ -154,6 +174,7 @@
   function rerenderBudgetedView(view) {
     clearViewCaches(view);
     const renderers = {
+      launches: 'renderLaunches',
       skus: 'renderSkuRegistry',
       'launch-control': 'renderLaunchControl',
       'ads-funnel': 'renderAdsFunnel',
@@ -236,6 +257,62 @@
         window.getLaunchViewModel = originalGetLaunchViewModel;
         afterFrame(() => addBudgetNotice('launch-control', visible, total));
       }
+    });
+  }
+
+  function patchLaunches() {
+    installWrapper('renderLaunchAutoGraph', (originalRender) => function patchedRenderLaunchAutoGraph(items = []) {
+      if (isExpanded('launches')) return originalRender.apply(this, arguments);
+      const list = Array.isArray(items) ? items : [];
+      const total = list.length;
+      const monthCounts = new Map();
+      list.forEach((item) => {
+        const label = String(item?.launchMonth || item?.launchDate || 'Без месяца').trim() || 'Без месяца';
+        monthCounts.set(label, (monthCounts.get(label) || 0) + 1);
+      });
+      const topMonths = Array.from(monthCounts.entries())
+        .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], 'ru'))
+        .slice(0, 5);
+      const readyCount = list.filter((item) => {
+        try {
+          return typeof window.launchIsReady === 'function' && window.launchIsReady(item);
+        } catch (error) {
+          return false;
+        }
+      }).length;
+      const withoutOwner = list.filter((item) => !String(item?.owner || '').trim()).length;
+      return `
+        <div class="card launch-auto-graph-card">
+          <div class="section-subhead">
+            <div>
+              <h3>План запусков по месяцам</h3>
+              <p class="small muted">Быстрый сводный режим без тяжёлого календаря задач.</p>
+            </div>
+            <div class="badge-stack">
+              ${renderChip(`${formatInt(total)} новинок`, total ? 'info' : 'warn')}
+              ${renderChip(`${formatInt(readyCount)} готово`, readyCount ? 'ok' : 'warn')}
+              ${withoutOwner ? renderChip(`${formatInt(withoutOwner)} без owner`, 'warn') : renderChip('owner назначены', 'ok')}
+            </div>
+          </div>
+          <div class="launch-month-plan-grid">
+            ${topMonths.map(([label, count]) => `
+              <div class="launch-month-plan-card">
+                <div class="launch-month-plan-head">
+                  <div>
+                    <strong>${escapeLocal(label)}</strong>
+                    <span>${formatInt(count)} запусков</span>
+                  </div>
+                  ${renderChip('сводка', 'info')}
+                </div>
+              </div>
+            `).join('') || '<div class="empty">План запусков пока пуст.</div>'}
+          </div>
+          <div class="altea-render-budget-notice" style="margin-bottom:0">
+            <div><strong>Календарь облегчен.</strong> Полный график с задачами и контрольными точками открывается по кнопке.</div>
+            <button class="quick-chip portal-action-secondary" type="button" data-altea-render-budget-expand="launches">Показать полный календарь</button>
+          </div>
+        </div>
+      `;
     });
   }
 
@@ -348,6 +425,7 @@
 
   function patchAll() {
     ensureStyle();
+    patchLaunches();
     patchSkuRegistry();
     patchLaunchControl();
     patchAdsFunnel();

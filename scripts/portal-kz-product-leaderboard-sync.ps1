@@ -3,8 +3,8 @@ param(
   [switch]$AllowStaleWeek,
   [string]$ProfileDir = "",
   [string]$OutputDir = "",
-  [string]$SourceUrl = "",
-  [string]$Gid = ""
+  [string]$SourceUrl = "https://docs.google.com/spreadsheets/d/1XSpPhsd_oppen747ZEJvhRidR1dyzRgM2ey3QgK8Rlg/edit?gid=1769097146#gid=1769097146",
+  [string]$Gid = "1769097146"
 )
 
 $ErrorActionPreference = "Stop"
@@ -53,6 +53,18 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Output "[kz-leaderboard] build phase completed"
 
+Write-Output "[kz-leaderboard] history build phase started"
+& $nodeExe "scripts/build-product-leaderboard-history.js"
+if ($LASTEXITCODE -ne 0) {
+  exit $LASTEXITCODE
+}
+
+$historyPath = Join-Path "data" "product_leaderboard_history.json"
+if (Test-Path -LiteralPath $historyPath) {
+  Copy-Item -LiteralPath $historyPath -Destination (Join-Path $resolvedOutputDir "product_leaderboard_history.json") -Force
+}
+Write-Output "[kz-leaderboard] history build phase completed"
+
 if ($DryRun) {
   exit 0
 }
@@ -63,31 +75,9 @@ Write-Output "[kz-leaderboard] snapshot upload started"
   "--input-dir",
   $resolvedOutputDir,
   "--snapshot",
-  "product_leaderboard"
+  "product_leaderboard,product_leaderboard_history"
 )
 if ($LASTEXITCODE -ne 0) {
   exit $LASTEXITCODE
 }
 Write-Output "[kz-leaderboard] snapshot upload completed"
-
-Write-Output "[kz-leaderboard] history build started"
-& $nodeExe @(
-  "scripts/build-product-leaderboard-history.js"
-)
-if ($LASTEXITCODE -ne 0) {
-  exit $LASTEXITCODE
-}
-Write-Output "[kz-leaderboard] history build completed"
-
-Write-Output "[kz-leaderboard] history upload started"
-& $nodeExe @(
-  "scripts/portal-google-sheet-upload.js",
-  "--input-dir",
-  "data",
-  "--snapshot",
-  "product_leaderboard_history"
-)
-if ($LASTEXITCODE -ne 0) {
-  exit $LASTEXITCODE
-}
-Write-Output "[kz-leaderboard] history upload completed"

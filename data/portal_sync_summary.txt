@@ -1,10 +1,10 @@
-Portal sync health: warning
-Generated: 2026-05-29T12:08:10.950Z
-Publish allowed: yes
+Portal sync health: blocked
+Generated: 2026-05-31T08:54:12.170Z
+Publish allowed: no
 Max data date: 2026-05-28
 
 Blocking reasons:
-- none
+- SKU matrix alias count does not match sku_aliases (116/0).
 
 Warnings:
-- Unmapped API SKU revenue: 21721256.
+- Unmapped API SKU revenue: 21969153.

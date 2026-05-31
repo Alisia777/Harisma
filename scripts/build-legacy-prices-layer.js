@@ -79,20 +79,17 @@ function monthLabelFromKey(monthKey) {
   return `${MONTH_LABELS_RU[month - 1]} ${year}`;
 }
 
-function pointFromSource(point = {}, platform = '') {
+function pointFromSource(point = {}) {
   const date = asIsoDate(point?.date);
   if (!date) return null;
-  const orderedUnits = firstNumber(point?.ordersUnits);
-  const deliveredUnits = firstNumber(point?.deliveredUnits);
-  const isOzon = platform === 'ozon';
   return {
     date,
     turnoverDays: firstNumber(point?.turnoverDays),
     price: firstPositive(point?.price, point?.currentFillPrice, point?.currentPrice),
     clientPrice: firstPositive(point?.clientPrice, point?.currentClientPrice),
     sppPct: sanitizeDiscountPct(point?.sppPct, point?.currentSppPct),
-    ordersUnits: isOzon ? null : orderedUnits,
-    deliveredUnits: deliveredUnits !== null ? deliveredUnits : (isOzon ? orderedUnits : null),
+    ordersUnits: firstNumber(point?.ordersUnits),
+    deliveredUnits: firstNumber(point?.deliveredUnits),
     revenue: firstNumber(point?.revenue)
   };
 }
@@ -104,10 +101,10 @@ function selectSeries(row = {}) {
   return [];
 }
 
-function normalizeSeries(row = {}, platform = '') {
+function normalizeSeries(row = {}) {
   const byDate = new Map();
   selectSeries(row).forEach((point) => {
-    const normalized = pointFromSource(point, platform);
+    const normalized = pointFromSource(point);
     if (!normalized) return;
     byDate.set(normalized.date, normalized);
   });
@@ -147,7 +144,7 @@ function lastSeriesSpp(series) {
 }
 
 function buildLegacyRow(row = {}, platform = '') {
-  const series = normalizeSeries(row, platform);
+  const series = normalizeSeries(row);
   const lastPrice = lastSeriesPrice(series);
   const lastClientPrice = lastSeriesClientPrice(series);
   const lastTurnover = lastSeriesValue(series, 'turnoverDays');
@@ -157,9 +154,13 @@ function buildLegacyRow(row = {}, platform = '') {
   const currentClientPrice = firstPositive(row?.currentClientPrice, lastClientPrice.value);
   const currentTurnoverDays = firstNumber(row?.currentTurnoverDays, row?.turnoverCurrentDays, lastTurnover.value);
   const currentSppPct = sanitizeDiscountPct(row?.currentSppPct, lastSpp.value);
-  const currentPriceDate = lastPrice.date || latestFactDate;
+  const currentPriceDate = asIsoDate(row?.currentPriceDate || row?.currentFillPriceDate || '') || lastPrice.date || latestFactDate;
   const basePrice = firstPositive(row?.basePrice, lastPrice.value, currentPrice);
   const minPrice = firstPositive(row?.minPrice, row?.workingZoneFrom, row?.hardMinPrice);
+  const maxPrice = firstPositive(row?.maxPrice, row?.workingZoneTo);
+  const workingZoneFrom = firstPositive(row?.workingZoneFrom);
+  const workingZoneTo = firstPositive(row?.workingZoneTo, row?.maxPrice);
+  const hardMinPrice = firstPositive(row?.hardMinPrice);
 
   return {
     articleKey: row?.articleKey || row?.article || '',
@@ -179,6 +180,10 @@ function buildLegacyRow(row = {}, platform = '') {
     currentPriceDate,
     historyFreshnessDate: latestFactDate,
     minPrice,
+    maxPrice,
+    hardMinPrice,
+    workingZoneFrom,
+    workingZoneTo,
     basePrice,
     daily: series
   };

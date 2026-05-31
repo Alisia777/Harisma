@@ -312,20 +312,20 @@ function alignedDashboardCards() {
   if (!brandPlan.hasWorkbookPlan) return cards;
 
   const preservedCards = cards.slice(0, Math.min(cards.length, 10));
-  const asOfLabel = brandPlan.asOfLabel || 'дату файла';
+  const asOfLabel = brandPlan.asOfLabel || 'дату плана';
   const monthLabel = brandPlan.monthLabel ? `План ${brandPlan.monthLabel}, ₽` : 'План месяца, ₽';
   const planCards = [
     {
       label: `Факт на ${asOfLabel}, ₽`,
       value: brandPlan.factRevenue,
       format: 'money',
-      hint: 'Smart = Altea по файлу выполнения плана.'
+      hint: 'Факт к корпоративному месячному плану.'
     },
     {
       label: 'План апреля, ₽',
       value: brandPlan.monthPlanRevenue,
       format: 'money',
-      hint: 'Qharisma v5 план месяца для Smart = Altea.'
+      hint: 'Корпоративный месячный план.'
     },
     {
       label: 'Выполнение плана',
@@ -337,7 +337,7 @@ function alignedDashboardCards() {
       label: 'План к дате, ₽',
       value: brandPlan.planToDateRevenue,
       format: 'money',
-      hint: `Линейный план к ${asOfLabel} из файла.`
+      hint: `Линейный план к ${asOfLabel}.`
     },
     {
       label: 'Прогноз / план',
@@ -709,14 +709,14 @@ function renderDashboard() {
   const heroSourceCards = brandPlan.hasWorkbookPlan
     ? [
         {
-          label: `Факт на ${brandPlan.asOfLabel || 'дату файла'}`,
+          label: `Факт на ${brandPlan.asOfLabel || 'дату плана'}`,
           value: brandPlan.factRevenue !== null ? fmt.money(brandPlan.factRevenue) : '—',
-          hint: 'Smart = Altea по файлу выполнения плана.'
+          hint: 'Факт к корпоративному месячному плану.'
         },
         {
-          label: 'План апреля',
+          label: brandPlan.monthLabel ? `План ${brandPlan.monthLabel}` : 'План месяца',
           value: brandPlan.monthPlanRevenue !== null ? fmt.money(brandPlan.monthPlanRevenue) : '—',
-          hint: 'Qharisma v5 план месяца.'
+          hint: 'Корпоративный месячный план.'
         },
         {
           label: 'Выполнение плана',
@@ -727,7 +727,7 @@ function renderDashboard() {
           label: 'К плану на дату',
           value: brandPlan.toDateCompletionPct !== null ? fmt.pct(brandPlan.toDateCompletionPct) : '—',
           hint: brandPlan.planToDateRevenue !== null
-            ? `План к ${brandPlan.asOfLabel || 'доступной дате'} из файла.`
+            ? `Линейный план к ${brandPlan.asOfLabel || 'доступной дате'}.`
             : 'Линейный план к доступной дате.'
         },
         {

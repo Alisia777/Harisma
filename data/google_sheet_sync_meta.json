@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-31T07:30:07.254Z",
+  "generatedAt": "2026-05-31T09:39:57.597Z",
   "sheetSource": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
   "sourceMode": "google-csv-tabs",
   "sourceGids": {
@@ -24,16 +24,16 @@
   "dashboard": {
     "latest_marketplace_date": "2026-05-30",
     "month_plan_units": 173171,
-    "month_fact_units": 242795.00000000012,
-    "month_fact_revenue": 255768582.72000003,
-    "completion_to_date_pct": 1.4488,
+    "month_fact_units": 242403,
+    "month_fact_revenue": 255459183.97000003,
+    "completion_to_date_pct": 1.4464,
     "company_plan_revenue": 253796998,
     "company_plan_to_date_revenue": 245609998.06,
-    "company_completion_to_date_pct": 1.0414
+    "company_completion_to_date_pct": 1.0401
   },
   "platformTrends": {
     "latest_marketplace_date": "2026-05-30",
-    "points": 150
+    "points": 0
   },
   "loyaltySystem": {
     "sheet_name": "",
@@ -45,7 +45,7 @@
     "latest_date": "2026-05-29",
     "rows": 29,
     "latest_daily_date": "2026-05-29",
-    "generated_at": "2026-05-30T10:16:21.419Z"
+    "generated_at": "2026-05-31T08:52:55.403Z"
   },
   "logistics": {
     "latest_logistics_date": "2026-05-31",

@@ -2737,7 +2737,7 @@ const LAZY_DATA_LOADERS = {
       : { schema: 'portal-oos-control-v1', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
   },
   skuPlanFact: async () => {
-    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, summary, skuAliases, skuAliasIgnore, skuAliasAudit] = await Promise.all([
+    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, skuAliases, skuAliasIgnore, skuAliasAudit] = await Promise.all([
       loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
       loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU'),
       loadJsonOrFallback('data/price_workbench_support.dashboard-compact.json', { generatedAt: '', platforms: {} }, 'План SKU'),
@@ -2748,11 +2748,6 @@ const LAZY_DATA_LOADERS = {
         'data/ads_summary.json',
         { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
         'Рекламные расходы по SKU'
-      ),
-      loadJsonOrFallback(
-        'data/iu_drr_summary.json',
-        { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
-        'Показатели площадок'
       ),
       loadJsonOrFallback(
         'data/sku_aliases.json',
@@ -2796,9 +2791,6 @@ const LAZY_DATA_LOADERS = {
     state.adsSummary = adsPayload && typeof adsPayload === 'object'
       ? adsPayload
       : { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] };
-    state.iuDrrSummary = summary && typeof summary === 'object'
-      ? summary
-      : { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };
     state.skuAliases = skuAliases && typeof skuAliases === 'object'
       ? skuAliases
       : { schema: 'sku-api-aliases-v1', aliases: [] };

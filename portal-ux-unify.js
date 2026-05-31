@@ -336,6 +336,7 @@
       return;
     }
     if (viewKey === "repricer") {
+      if (root.querySelector && root.querySelector(".repricer-game-panel")) return;
       setText(root, ".section-title p", "Здесь в одном месте сходятся текущая цена, рабочий MIN/MAX из «Цен», модель репрайсера и ручные решения по каждой площадке.");
     }
   }

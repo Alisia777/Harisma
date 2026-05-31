@@ -3213,6 +3213,171 @@ function repricerTopStatusText(stats) {
   return 'Сегодня шаблон пуст: нет зелёных строк с изменением цены.';
 }
 
+function repricerGameToneClass(tone) {
+  return ['ok', 'warn', 'danger'].includes(String(tone || '')) ? String(tone) : 'warn';
+}
+
+function repricerGamePct(value) {
+  if (value == null || !Number.isFinite(Number(value))) return '—';
+  return fmt.pct(value);
+}
+
+function repricerGamePlatformModel(stats = {}, options = {}) {
+  const active = numberOrZero(stats.active || stats.total);
+  const safe = numberOrZero(options.safeRows ?? stats.safe);
+  const green = numberOrZero(stats.green);
+  const yellow = numberOrZero(stats.yellow);
+  const red = numberOrZero(stats.red);
+  const check = numberOrZero(options.checkCount ?? (yellow + red));
+  const hardStops = red + numberOrZero(stats.missingMin) + numberOrZero(stats.blocked) + numberOrZero(stats.belowMin);
+  const softStops = yellow + numberOrZero(stats.missingCost);
+  const completion = active > 0 ? green / active : null;
+  const tone = hardStops > 0 ? 'danger' : softStops > 0 ? 'warn' : 'ok';
+  const status = tone === 'danger' ? 'СТОП' : tone === 'warn' ? 'Проверить' : safe > 0 ? 'ОК к выгрузке' : 'ОК без изменений';
+  return {
+    platform: stats.platform || options.platform || 'wb',
+    label: stats.label || (options.platform === 'ozon' ? 'Ozon' : 'WB'),
+    active,
+    safe,
+    green,
+    yellow,
+    red,
+    check,
+    hardStops,
+    softStops,
+    completion,
+    tone,
+    status,
+    progress: completion == null ? 0 : Math.max(0, Math.min(100, completion * 100))
+  };
+}
+
+function repricerGameReadinessModel(health = {}, templateStats = {}, context = {}) {
+  const wb = repricerGamePlatformModel(templateStats.wb || {}, {
+    platform: 'wb',
+    safeRows: context.safeWbRows,
+    checkCount: context.wbCheckCount
+  });
+  const ozon = repricerGamePlatformModel(templateStats.ozon || {}, {
+    platform: 'ozon',
+    safeRows: context.safeOzonRows,
+    checkCount: context.ozonCheckCount
+  });
+  const metrics = health.metrics || {};
+  const active = wb.active + ozon.active;
+  const safe = wb.safe + ozon.safe;
+  const green = wb.green + ozon.green;
+  const yellow = wb.yellow + ozon.yellow;
+  const red = wb.red + ozon.red;
+  const hardStops = red
+    + numberOrZero(metrics.blocked_gate)
+    + numberOrZero(metrics.missing_effective_floor_actionable)
+    + numberOrZero(context.belowMinSides);
+  const softStops = yellow
+    + numberOrZero(metrics.missing_cost_actionable || metrics.missing_cost)
+    + numberOrZero(context.liveDriftSides)
+    + numberOrZero(context.fallbackSides);
+  const completion = active > 0 ? green / active : null;
+  const tone = hardStops > 0 ? 'danger' : softStops > 0 ? 'warn' : 'ok';
+  const title = tone === 'danger' ? 'СТОП' : tone === 'warn' ? 'Проверить' : safe > 0 ? 'Можно выгружать' : 'Контур чистый';
+  const subtitle = tone === 'danger'
+    ? 'Сначала закрыть красные причины, потом скачивать шаблоны.'
+    : tone === 'warn'
+      ? 'Есть жёлтые зоны: лучше открыть аудит перед выгрузкой.'
+      : safe > 0
+        ? 'Зелёные изменения готовы к безопасной выгрузке.'
+        : 'Критичных стопов нет, но новых цен для шаблона сейчас нет.';
+  return {
+    tone,
+    title,
+    subtitle,
+    active,
+    safe,
+    green,
+    yellow,
+    red,
+    completion,
+    progress: completion == null ? 0 : Math.max(0, Math.min(100, completion * 100)),
+    wb,
+    ozon,
+    hardStops,
+    softStops,
+    smokePassed: numberOrZero(metrics.smoke_passed),
+    smokeTotal: numberOrZero(metrics.smoke_total)
+  };
+}
+
+function repricerGameMetricHtml(label, value, detail = '', tone = 'info', tip = '') {
+  const safeTone = ['ok', 'warn', 'danger', 'info'].includes(String(tone || '')) ? String(tone) : 'info';
+  return `
+    <div class="repricer-game-metric ${escapeHtml(safeTone)}" ${tip ? `data-tip="${escapeHtml(tip)}"` : ''}>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(String(value ?? '—'))}</strong>
+      <em>${escapeHtml(detail || '')}</em>
+    </div>
+  `;
+}
+
+function repricerGameHeroHtml(model = {}) {
+  const tone = repricerGameToneClass(model.tone);
+  const completionText = repricerGamePct(model.completion);
+  return `
+    <div class="repricer-game-hero ${escapeHtml(tone)}" style="--repricer-ready:${numberOrZero(model.progress).toFixed(1)}%">
+      <div class="repricer-game-main">
+        <div class="repricer-game-score" data-tip="${escapeHtml(`Готовность = зелёные строки / активные строки WB+Ozon. Зелёные можно выгружать, жёлтые требуют проверки, красные блокируют автоматику.`)}">
+          <span>готовность репрайсера</span>
+          <strong>${escapeHtml(completionText)}</strong>
+          <em>${escapeHtml(model.title || 'Проверить')}</em>
+        </div>
+        <div class="repricer-game-track" title="${escapeHtml(`${fmt.int(model.green)} зелёных из ${fmt.int(model.active)} активных строк`)}">
+          <i></i>
+          <span class="mark-50">50%</span>
+          <span class="mark-80">80%</span>
+          <span class="mark-100">100%</span>
+        </div>
+        <div class="repricer-game-verdict" data-tip="${escapeHtml(model.subtitle || '')}">
+          <span>решение сейчас</span>
+          <strong>${escapeHtml(model.title || 'Проверить')}</strong>
+          <em>${escapeHtml(model.subtitle || '')}</em>
+        </div>
+      </div>
+      <div class="repricer-game-metrics">
+        ${repricerGameMetricHtml('В безопасную выгрузку', fmt.int(model.safe), `WB ${fmt.int(model.wb?.safe)} · Ozon ${fmt.int(model.ozon?.safe)}`, model.safe > 0 ? 'ok' : 'warn', 'Количество строк, которые уже зелёные, изменились в цене и попадут в шаблон WB/Ozon.')}
+        ${repricerGameMetricHtml('Зелёные', fmt.int(model.green), `${fmt.int(model.active)} активных строк`, 'ok', 'Зелёные строки прошли проверки. Если цена не изменилась, они остаются зелёными, но в ценовой шаблон не попадают.')}
+        ${repricerGameMetricHtml('Проверить', fmt.int(model.yellow), 'жёлтые строки', model.yellow > 0 ? 'warn' : 'ok', 'Жёлтые строки не отправляем автоматически: нужен аудит или ручное решение.')}
+        ${repricerGameMetricHtml('Стоп', fmt.int(model.red), 'красные строки', model.red > 0 ? 'danger' : 'ok', 'Красные строки блокируют автоматическую выгрузку до исправления входов или решения.')}
+      </div>
+    </div>
+  `;
+}
+
+function repricerGameMarketplaceCardHtml(platformModel = {}, stats = {}) {
+  const platform = platformModel.platform === 'ozon' ? 'ozon' : 'wb';
+  const buttonLabel = platform === 'ozon' ? 'Скачать шаблон Ozon' : 'Скачать шаблон WB';
+  const exportMode = platform === 'ozon' ? 'template:ozon' : 'template:wb';
+  const tone = repricerGameToneClass(platformModel.tone);
+  const hasSafe = numberOrZero(platformModel.safe) > 0;
+  const tip = `${platformModel.label}: зелёные ${fmt.int(platformModel.green)}, проверить ${fmt.int(platformModel.yellow)}, стоп ${fmt.int(platformModel.red)}, в файл ${fmt.int(platformModel.safe)}.`;
+  return `
+    <div class="repricer-marketplace-card repricer-game-platform-card ${escapeHtml(platform)} ${escapeHtml(tone)}" style="--repricer-platform-ready:${numberOrZero(platformModel.progress).toFixed(1)}%" data-tip="${escapeHtml(tip)}">
+      <div class="repricer-marketplace-title">
+        <span>${escapeHtml(platformModel.label)}</span>
+        ${badge(platformModel.status, tone === 'danger' ? 'danger' : tone === 'warn' ? 'warn' : 'ok')}
+      </div>
+      <div class="repricer-marketplace-count">${fmt.int(platformModel.safe)}</div>
+      <div class="repricer-game-platform-bar"><i></i></div>
+      <p>${escapeHtml(repricerTemplateEmptyReason(stats))}</p>
+      <div class="repricer-mini-metrics">
+        <span>готовность ${escapeHtml(repricerGamePct(platformModel.completion))}</span>
+        <span>зелёные ${fmt.int(platformModel.green)}</span>
+        <span>проверить ${fmt.int(platformModel.check)}</span>
+        <span>стоп ${fmt.int(platformModel.red)}</span>
+      </div>
+      <button type="button" class="repricer-marketplace-button ${escapeHtml(platform)}" data-repricer-export="${escapeHtml(exportMode)}" data-repricer-empty="${hasSafe ? '0' : '1'}">${escapeHtml(buttonLabel)}</button>
+    </div>
+  `;
+}
+
 function repricerDownloadHtmlTable(columns, rows, filename, options = {}) {
   if (!rows.length && !options.allowEmpty) return { ok: false, rows: 0, filename };
   const head = `<tr>${columns.map(([, label]) => `<th>${escapeHtml(label)}</th>`).join('')}</tr>`;
@@ -5485,7 +5650,6 @@ function renderRepricer() {
     wb: repricerTemplateStats(sourceRows, 'wb'),
     ozon: repricerTemplateStats(sourceRows, 'ozon')
   };
-  const topStatusText = repricerTopStatusText(templateStats);
   const smokePassed = health.metrics.smoke_passed;
   const summaryBadges = [
     badge(`нужны решения ${fmt.int(actionableRows)}`, actionableRows ? 'warn' : 'ok'),
@@ -5561,10 +5725,6 @@ function renderRepricer() {
   `;
 
   if (operatorSimple) {
-    const statusText = safeWbRows || safeOzonRows ? 'Можно выгружать' : 'Сначала проверить';
-    const statusTone = safeWbRows || safeOzonRows ? 'ok' : 'warn';
-    const hasSafeWb = safeWbRows > 0;
-    const hasSafeOzon = safeOzonRows > 0;
     const batchCounts = repricerIssueBatchCounts(sourceRows);
     const batchButtons = [
       ['missing_min', 'нет MIN', batchCounts.missing_min, 'danger'],
@@ -5598,7 +5758,6 @@ function renderRepricer() {
             <span>${escapeHtml(repricerFixSource(side))}: ${escapeHtml(repricerFixAction(side))}</span>
           </div>
           ${badge(reason, side.confidence === 'red' ? 'danger' : 'warn')}
-          ${repricerProductLifecycleEditorHtml(row)}
         </div>
       `;
     }).join('');
@@ -5628,6 +5787,29 @@ function renderRepricer() {
       </div>
     `).join('');
     const noSafeExport = safeWbRows + safeOzonRows <= 0;
+    const readiness = repricerGameReadinessModel(health, templateStats, {
+      safeWbRows,
+      safeOzonRows,
+      wbCheckCount,
+      ozonCheckCount,
+      belowMinSides,
+      liveDriftSides,
+      fallbackSides
+    });
+    const repricerMarketplaceHtml = `
+      <div class="repricer-marketplace-grid repricer-game-marketplace" data-repricer-operator-actions>
+        ${repricerGameMarketplaceCardHtml(readiness.wb, wbTemplate)}
+        ${repricerGameMarketplaceCardHtml(readiness.ozon, ozonTemplate)}
+      </div>
+    `;
+    const readinessBadge = readiness.tone === 'danger'
+      ? badge('сначала стопы', 'danger')
+      : readiness.tone === 'warn'
+        ? badge('нужна проверка', 'warn')
+        : badge('можно работать', 'ok');
+    const stopSummaryBadge = issueItems
+      ? badge('есть стопы', readiness.tone === 'danger' ? 'danger' : 'warn')
+      : badge('контур чистый', 'ok');
     root.classList.add('repricer-simple-mode', 'repricer-native-simple');
     root.classList.remove('repricer-simple-expanded');
     root.dataset.repricerNativeSimple = '1';
@@ -5637,53 +5819,13 @@ function renderRepricer() {
       <div class="section-title">
         <div>
           <h2>Репрайсер</h2>
-          <p>Здесь в одном месте сходятся текущая цена, рабочий MIN/MAX из «Цен», модель репрайсера и ручные решения по каждой площадке.</p>
+          <p>Светофор цен: зелёные можно выгружать, жёлтые проверяем, красные стопорят автоматику.</p>
         </div>
       </div>
 
-      <div class="repricer-operator-panel repricer-human-panel" data-repricer-operator-panel data-repricer-native-panel="1">
-        <div class="repricer-human-head">
-          <div class="repricer-operator-copy">
-            <div class="label">Рабочий режим</div>
-            <strong>${escapeHtml(statusText)}</strong>
-            <p>${escapeHtml(topStatusText)} В шаблоны отправляем только зелёные строки. Всё спорное остаётся в аудите.</p>
-          </div>
-          <div class="repricer-human-status ${statusTone}">
-            <span>${safeWbRows + safeOzonRows ? 'Можно скачивать' : 'Сначала аудит'}</span>
-            <strong>${fmt.int(safeWbRows + safeOzonRows)}</strong>
-            <em>строк в безопасную выгрузку</em>
-          </div>
-        </div>
-        <div class="repricer-marketplace-grid" data-repricer-operator-actions>
-          <div class="repricer-marketplace-card wb">
-            <div class="repricer-marketplace-title">
-              <span>WB</span>
-              ${badge(hasSafeWb ? 'есть выгрузка' : 'пустой шаблон', hasSafeWb ? 'ok' : 'warn')}
-            </div>
-            <div class="repricer-marketplace-count">${fmt.int(safeWbRows)}</div>
-            <p>В шаблон попадут только безопасные изменения цен. Если строк 0, файл всё равно сохранится, чтобы было видно, что выгрузка отработала.</p>
-            <div class="repricer-mini-metrics">
-              <span>зелёные ${fmt.int(safeCount(wbTemplate.green))}</span>
-              <span>проверить ${fmt.int(wbCheckCount)}</span>
-              <span>ниже MIN ${fmt.int(safeCount(wbTemplate.belowMin))}</span>
-            </div>
-            <button type="button" class="repricer-marketplace-button wb" data-repricer-export="template:wb" data-repricer-empty="${hasSafeWb ? '0' : '1'}">Скачать шаблон WB</button>
-          </div>
-          <div class="repricer-marketplace-card ozon">
-            <div class="repricer-marketplace-title">
-              <span>Ozon</span>
-              ${badge(hasSafeOzon ? 'есть выгрузка' : 'пустой шаблон', hasSafeOzon ? 'ok' : 'warn')}
-            </div>
-            <div class="repricer-marketplace-count">${fmt.int(safeOzonRows)}</div>
-            <p>Ozon-файл сохраняется отдельно. Жёлтые и красные строки не попадут в ценовой шаблон.</p>
-            <div class="repricer-mini-metrics">
-              <span>зелёные ${fmt.int(safeCount(ozonTemplate.green))}</span>
-              <span>проверить ${fmt.int(ozonCheckCount)}</span>
-              <span>ниже MIN ${fmt.int(safeCount(ozonTemplate.belowMin))}</span>
-            </div>
-            <button type="button" class="repricer-marketplace-button ozon" data-repricer-export="template:ozon" data-repricer-empty="${hasSafeOzon ? '0' : '1'}">Скачать шаблон Ozon</button>
-          </div>
-        </div>
+      <div class="repricer-operator-panel repricer-human-panel repricer-game-panel" data-repricer-operator-panel data-repricer-native-panel="1">
+        ${repricerGameHeroHtml(readiness)}
+        ${repricerMarketplaceHtml}
         ${noSafeExport ? `
           <div class="repricer-empty-explain">
             <div>
@@ -5704,32 +5846,15 @@ function renderRepricer() {
         <input id="repricerAuditImportInput" class="hidden" type="file" data-repricer-audit-import accept=".xls,.html,.htm,.csv,.tsv,.txt,text/html,text/csv,text/tab-separated-values,application/vnd.ms-excel">
       </div>
 
-      ${renderRepricerRepairStatusCard()}
-      ${renderRepricerFixTeamCard(sourceRows)}
-      ${renderRepricerWorkLogicCard()}
-      ${safetyCard}
-      ${templateExplainCard}
-
       <div class="repricer-operator-focus-card" style="margin-top:14px">
         <div class="section-subhead">
           <div>
             <h3>Что делать сейчас</h3>
             <p class="small muted">Очередь действий по текущему контуру цен.</p>
           </div>
-          ${health.ok ? badge('можно работать', 'ok') : badge('сначала стопы', 'warn')}
+          ${readinessBadge}
         </div>
         <div class="repricer-operator-tasks">${taskCards}</div>
-      </div>
-
-      <div class="repricer-operator-focus-card" style="margin-top:14px">
-        <div class="section-subhead">
-          <div>
-            <h3>Быстрые пачки</h3>
-            <p class="small muted">Короткие выгрузки только по одной причине.</p>
-          </div>
-          ${badge('без автозаписи', 'info')}
-        </div>
-        <div class="quick-actions" style="margin-top:12px">${batchButtons}</div>
       </div>
 
       <div class="repricer-operator-grid">
@@ -5739,7 +5864,7 @@ function renderRepricer() {
               <h3>Главные стопы</h3>
               <p class="small muted">Сначала чинить эти причины, потом выгружать цены.</p>
             </div>
-            ${health.ok ? badge('контур чистый', 'ok') : badge('нужна проверка', 'warn')}
+            ${stopSummaryBadge}
           </div>
           <div class="repricer-operator-issues">${issueItems || '<div class="muted small">Критичных стопов сейчас нет.</div>'}</div>
         </div>
@@ -5754,6 +5879,26 @@ function renderRepricer() {
           <div class="repricer-operator-sku-list">${queueMarkup || '<div class="muted small">Очередь проверки пуста.</div>'}</div>
         </div>
       </div>
+      <details class="repricer-game-details">
+        <summary>Подробная диагностика и правила</summary>
+        <div class="repricer-game-details-body">
+          <div class="repricer-operator-focus-card">
+            <div class="section-subhead">
+              <div>
+                <h3>Быстрые пачки</h3>
+                <p class="small muted">Короткие выгрузки только по одной причине.</p>
+              </div>
+              ${badge('без автозаписи', 'info')}
+            </div>
+            <div class="quick-actions" style="margin-top:12px">${batchButtons}</div>
+          </div>
+          ${safetyCard}
+          ${templateExplainCard}
+          ${renderRepricerRepairStatusCard()}
+          ${renderRepricerFixTeamCard(sourceRows)}
+          ${renderRepricerWorkLogicCard()}
+        </div>
+      </details>
       <div class="badge-stack" style="margin-top:12px">${summaryBadges}</div>
     `;
     attachRepricerEvents(root);

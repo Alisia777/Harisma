@@ -43,6 +43,16 @@
   let controlSnapshotCache = { key: '', value: null };
   const taskTransitionPromises = new Map();
   const finalCloseTaskPromises = new Map();
+  const DEPRECATED_AUTO_SIGNAL_CODES = new Set([
+    'kz_owner',
+    'kz_economics',
+    'kz_card',
+    'kz_traffic',
+    'price_margin',
+    'low_stock',
+    'negative_margin',
+    'assignment'
+  ]);
 
   function parseTaskLogComment(comment) {
     const match = String(comment?.text || '').match(/^\[\[task:([^\]]+)\]\]\s*\[\[kind:([^\]]+)\]\]\s*/i);
@@ -1082,7 +1092,20 @@
   function taskMeaningKey(task) {
     const article = String(task?.articleKey || task?.entityLabel || '').trim().toLowerCase();
     const meaning = String(task?.autoCode || task?.type || task?.title || '').trim().toLowerCase();
-    return `${article || 'common'}|${meaning || 'general'}`;
+    const platform = String(task?.platform || '').trim().toLowerCase() || 'all';
+    return `${article || 'common'}|${meaning || 'general'}|${platform}`;
+  }
+
+  function isDeprecatedAutoSignalTask(task = {}) {
+    if (typeof window.isDeprecatedAutoSignalTask === 'function' && window.isDeprecatedAutoSignalTask !== isDeprecatedAutoSignalTask) {
+      return window.isDeprecatedAutoSignalTask(task);
+    }
+    const code = String(task?.autoCode || '').trim().toLowerCase();
+    if (DEPRECATED_AUTO_SIGNAL_CODES.has(code)) return true;
+    const id = String(task?.id || '').trim().toLowerCase();
+    if (/^auto-kz[_-](owner|economics|card|traffic)/.test(id)) return true;
+    if (/^auto-stock[_-]/.test(id) && (!code || code === 'low_stock')) return true;
+    return false;
   }
 
   function taskDedupeKey(task) {
@@ -1105,11 +1128,13 @@
   function dedupeControlTasks(tasks) {
     const manualMeaningKeys = new Set(
       (tasks || [])
+        .filter((task) => !isDeprecatedAutoSignalTask(task))
         .filter((task) => task?.source !== 'auto' && isTaskActive(task))
         .map(taskMeaningKey)
     );
     const byKey = new Map();
     for (const task of tasks || []) {
+      if (isDeprecatedAutoSignalTask(task)) continue;
       if (task?.source === 'auto' && manualMeaningKeys.has(taskMeaningKey(task))) continue;
       const key = taskDedupeKey(task);
       const existing = byKey.get(key);

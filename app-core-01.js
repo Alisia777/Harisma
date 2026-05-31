@@ -21,7 +21,7 @@
   syncHealth: { schema: 'portal-sync-health-v1', status: '', publish: { allowed: true, blockingReasons: [], warnings: [] }, sources: {}, quality: {} },
   portalDataQuality: { generatedAt: '', status: '', summary: {}, issues: [] },
   portalDataQuarantine: { schema: 'portal-data-quarantine-v1', summary: {}, rows: [] },
-  oosControl: { schema: 'portal-oos-control-v1', generatedAt: '', summary: {}, rows: [], history: { days: [] } },
+  oosControl: { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } },
   launches: [],
   meetings: [],
   documents: { groups: [] },
@@ -153,6 +153,7 @@
     listenersAttached: false,
     dataWarnings: [],
     lazyReady: {
+      controlCenter: false,
       launches: false,
       productLeaderboard: false,
       adsFunnel: false,
@@ -212,7 +213,7 @@ const VIEW_TITLES = {
   executive: 'Руководителю'
 };
 const VIEW_DATA_REQUIREMENTS = {
-  control: 'launches',
+  control: 'controlCenter',
   launches: 'launches',
   'iu-drr': 'iuDrr',
   'sku-plan-fact': 'skuPlanFact',
@@ -2678,6 +2679,29 @@ const LAZY_DATA_LOADERS = {
     const launches = await loadJsonOrFallback('data/launches.json', [], 'Продукт / новинки');
     state.launches = Array.isArray(launches) ? launches : [];
   },
+  controlCenter: async () => {
+    const [launches, productLeaderboard, productLeaderboardHistory, oosControl, smartPriceOverlay] = await Promise.all([
+      loadJsonOrFallback('data/launches.json', [], 'Продукт / новинки'),
+      loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
+      loadJsonOrFallback('data/product_leaderboard_history.json', [], 'История продуктового лидерборда'),
+      loadJsonOrFallback('data/oos_control.json', { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } }, 'OOS контроль'),
+      loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU')
+    ]);
+    state.launches = Array.isArray(launches) ? launches : [];
+    state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
+      ? normalizeProductLeaderboardPayload(productLeaderboard)
+      : (productLeaderboard || { generatedAt: '', items: [], summary: {} });
+    state.productLeaderboardHistory = Array.isArray(productLeaderboardHistory) ? productLeaderboardHistory : [];
+    state.oosControl = oosControl && typeof oosControl === 'object'
+      ? oosControl
+      : { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
+    state.smartPriceOverlay = smartPriceOverlay && typeof smartPriceOverlay === 'object'
+      ? smartPriceOverlay
+      : { generatedAt: '', platforms: {} };
+    state.boot.lazyReady.launches = true;
+    state.boot.lazyReady.productLeaderboard = true;
+    state.boot.lazyReady.oosControl = true;
+  },
   adsFunnel: async () => {
     const [payload, smartPriceOverlay, summary] = await Promise.all([
       loadJsonOrFallback(
@@ -2733,12 +2757,12 @@ const LAZY_DATA_LOADERS = {
   oosControl: async () => {
     const payload = await loadJsonOrFallback(
       'data/oos_control.json',
-      { schema: 'portal-oos-control-v1', generatedAt: '', summary: {}, rows: [], history: { days: [] } },
+      { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } },
       'OOS контроль'
     );
     state.oosControl = payload && typeof payload === 'object'
       ? payload
-      : { schema: 'portal-oos-control-v1', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
+      : { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
   },
   skuPlanFact: async () => {
     const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, skuAliases, skuAliasIgnore, skuAliasAudit, wbOwnerDistributionAudit] = await Promise.all([

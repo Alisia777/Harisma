@@ -5085,7 +5085,7 @@ const OOS_CONTROL_TASK_STATUSES = ['new', 'in_progress', 'waiting_team', 'waitin
 function oosControlPayload() {
   return state.oosControl && typeof state.oosControl === 'object'
     ? state.oosControl
-    : { schema: 'portal-oos-control-v1', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
+    : { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
 }
 
 function oosControlRows() {

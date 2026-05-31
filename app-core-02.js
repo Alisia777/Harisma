@@ -1018,9 +1018,11 @@ function detectTaskPlatform(task, sku) {
   if (correctedGoldapplePlatform) return correctedGoldapplePlatform;
 
   const text = taskMarketplaceContext(task, sku).toLowerCase();
+  const explicitPlatform = task?.platform ? normalizeTaskPlatform(task.platform, text) : '';
+  if (explicitPlatform && explicitPlatform !== 'all' && explicitPlatform !== 'cross') return explicitPlatform;
   const marketplace = detectMarketplaceNetworkKey(text);
   if (marketplace) return marketplace;
-  if (task?.platform) return normalizeTaskPlatform(task.platform, text);
+  if (explicitPlatform) return explicitPlatform;
   if (/директор|руководител|ceo|executive|эскалац|согласовани/.test(text)) return 'cross';
   if (/продукт|новин|launch|ксюш/.test(text) || task?.type === 'launch') return 'product';
   if (text.includes('wb') && text.includes('ozon')) return 'wb+ozon';
@@ -1090,6 +1092,26 @@ function isTaskActive(task) {
 
 function isTaskOverdue(task) {
   return Boolean(task?.due) && isTaskActive(task) && task.due < todayIso();
+}
+
+const DEPRECATED_AUTO_SIGNAL_CODES = new Set([
+  'kz_owner',
+  'kz_economics',
+  'kz_card',
+  'kz_traffic',
+  'price_margin',
+  'low_stock',
+  'negative_margin',
+  'assignment'
+]);
+
+function isDeprecatedAutoSignalTask(task = {}) {
+  const code = String(task?.autoCode || '').trim().toLowerCase();
+  if (DEPRECATED_AUTO_SIGNAL_CODES.has(code)) return true;
+  const id = String(task?.id || '').trim().toLowerCase();
+  if (/^auto-kz[_-](owner|economics|card|traffic)/.test(id)) return true;
+  if (/^auto-stock[_-]/.test(id) && (!code || code === 'low_stock')) return true;
+  return false;
 }
 
 function taskStatusBadge(task) {
@@ -1223,7 +1245,12 @@ function ensureTaskModal() {
 }
 
 function storedTaskKeys() {
-  return new Set(state.storage.tasks.filter(isTaskActive).map((task) => `${task.articleKey}|${task.type}`));
+  return new Set(
+    state.storage.tasks
+      .filter(isTaskActive)
+      .filter((task) => !isDeprecatedAutoSignalTask(task))
+      .map((task) => `${task.articleKey}|${task.type}`)
+  );
 }
 
 function canRegisterAutoTask(keys, articleKey, type) {
@@ -1367,6 +1394,445 @@ function buildLeaderboardAutoTask({
   }, 'auto');
 }
 
+const AUTO_SIGNAL_RULES = {
+  stockDays: 10,
+  priceDropPct: 0.15,
+  revenueDropPct: 0.20,
+  aovDropPct: 0.18,
+  conversionDropPct: 0.15,
+  profitabilityDropPct: 0.25,
+  minRecentOrders: 5,
+  minBaseOrders: 40,
+  minBaseRevenueDay: 20000,
+  minKzClicks: 700,
+  minKzRevenue: 30000,
+  minKzSpend: 15000,
+  totalLimit: 26,
+  familyLimits: {
+    stock: 20,
+    price: 8,
+    sales: 8,
+    kz: 8,
+    aov: 4
+  }
+};
+
+function autoSignalText(value = '') {
+  return String(value || '').trim().toLowerCase().replaceAll('ё', 'е');
+}
+
+function autoSignalSkuAllowed(sku = {}) {
+  if (!sku || typeof sku !== 'object') return false;
+  const lifecycle = typeof productLifecycleForSku === 'function'
+    ? productLifecycleForSku(sku)
+    : { key: '', label: sku.status || sku.registryStatus || '' };
+  const text = autoSignalText([
+    lifecycle?.key,
+    lifecycle?.label,
+    sku?.status,
+    sku?.registryStatus,
+    sku?.owner?.registryStatus
+  ].filter(Boolean).join(' '));
+  if (/вывод|на вывод|вывед|сняти|снимаем|спа|spa|нет в спецификации|под вопрос|архив|archive|paused|pause|freeze|hold/.test(text)) return false;
+  const policy = autoSignalText(lifecycle?.taskPolicy || '');
+  if (['exit', 'archive', 'decision'].includes(policy)) return false;
+  const key = autoSignalText(lifecycle?.key || '');
+  if (key) return ['active', 'new', 'relaunch', 'watch'].includes(key) || ['normal', 'launch'].includes(policy);
+  return /актуаль|новин|наблюд|active|new|launch|watch|monitor/.test(text);
+}
+
+function autoSignalPlatformLabel(platform = '') {
+  const key = normalizeTaskPlatform(platform || 'all');
+  const meta = controlWorkstreamMeta(key === 'all' ? 'cross' : key);
+  return meta?.chip || platform || 'MP';
+}
+
+function autoSignalMetric(item, key) {
+  const metric = item?.diagnostics?.metrics?.[key] || {};
+  return {
+    value: Number(metric.value),
+    baseline: Number(metric.baseline),
+    deltaPct: Number(metric.deltaPct)
+  };
+}
+
+function autoSignalFinite(value, fallback = 0) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function autoSignalPct(value, digits = 0) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return '—';
+  return `${(parsed * 100).toFixed(digits)}%`;
+}
+
+function autoSignalMoney(value) {
+  if (typeof fmt !== 'undefined' && typeof fmt.money === 'function') return fmt.money(value || 0);
+  return `${Math.round(Number(value) || 0)} ₽`;
+}
+
+function autoSignalNum(value, digits = 1) {
+  if (typeof fmt !== 'undefined' && typeof fmt.num === 'function') return fmt.num(value, digits);
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed.toFixed(digits) : '—';
+}
+
+function autoSignalTaskDue(priority) {
+  if (priority === 'critical') return plusDays(1);
+  if (priority === 'high') return plusDays(2);
+  return plusDays(3);
+}
+
+function canRegisterAutoSignalTask(keys, articleKey, taskType, signalKey) {
+  const article = String(articleKey || '').trim();
+  if (!article) return false;
+  if (keys.has(`${article}|${taskType}`)) return false;
+  const scopedKey = `${article}|${signalKey || taskType}`;
+  if (keys.has(scopedKey)) return false;
+  keys.add(scopedKey);
+  return true;
+}
+
+function autoSignalDailyRows(row = {}) {
+  return (Array.isArray(row.daily) ? row.daily : [])
+    .filter((point) => point?.date)
+    .slice()
+    .sort((left, right) => String(left.date || '').localeCompare(String(right.date || '')));
+}
+
+function autoSignalSum(rows, key) {
+  return (Array.isArray(rows) ? rows : []).reduce((sum, row) => sum + autoSignalFinite(row?.[key]), 0);
+}
+
+function autoSignalPriceOverlayRows() {
+  const result = [];
+  Object.entries(state.smartPriceOverlay?.platforms || {}).forEach(([platform, payload]) => {
+    if (!['wb', 'ozon'].includes(normalizeTaskPlatform(platform))) return;
+    const rows = Array.isArray(payload?.rows) ? payload.rows : Object.values(payload?.rows || {});
+    rows.forEach((row) => result.push({ platform: normalizeTaskPlatform(platform), row }));
+  });
+  return result;
+}
+
+function buildStockAutoSignalCandidates() {
+  const rows = Array.isArray(state.oosControl?.rows) ? state.oosControl.rows : [];
+  return rows.map((row) => {
+    const sku = getSku(row.articleKey || row.article);
+    if (!autoSignalSkuAllowed(sku)) return null;
+    const platform = normalizeTaskPlatform(row.platform || 'all');
+    const platformLabel = row.platformLabel || autoSignalPlatformLabel(platform);
+    const days = autoSignalFinite(row.turnoverDays, NaN);
+    const clusters = Math.max(1, Math.round(autoSignalFinite(row.clusterCount || 1, 1)));
+    const places = Array.isArray(row.placesAtRisk)
+      ? row.placesAtRisk.map((item) => item.place).filter(Boolean).slice(0, 4).join(', ')
+      : row.place;
+    const isOos = row.status === 'oos';
+    return {
+      family: 'stock',
+      dedupeKey: `${row.articleKey || row.article}|stock|${platform}`,
+      articleKey: row.articleKey || row.article,
+      taskType: 'supply',
+      platform,
+      priority: isOos ? 'critical' : 'high',
+      score: 1000 + autoSignalFinite(row.revenueAtRiskDay) / 100000,
+      task: {
+        id: stableId('auto-stock-v2', row.issueKey || `${platform}|${row.articleKey}`),
+        source: 'auto',
+        autoCode: 'stock_quality_v2',
+        articleKey: row.articleKey || row.article,
+        title: isOos
+          ? `${platformLabel}: OOS по SKU`
+          : `${platformLabel}: остаток меньше ${AUTO_SIGNAL_RULES.stockDays} дней`,
+        nextAction: row.recommendation || `Проверить поставку и закрыть кластеры с покрытием меньше ${AUTO_SIGNAL_RULES.stockDays} дней.`,
+        reason: [
+          `${platformLabel}: ${row.statusLabel || 'риск OOS'}`,
+          Number.isFinite(days) ? `покрытие ${autoSignalNum(days, 1)} д.` : '',
+          `${clusters} кластер(ов)`,
+          places ? `кластеры: ${places}` : '',
+          `риск выручки ${autoSignalMoney(row.revenueAtRiskDay || 0)}/день`
+        ].filter(Boolean).join(' · '),
+        owner: row.owner || ownerName(sku) || '',
+        due: autoSignalTaskDue(isOos ? 'critical' : 'high'),
+        status: 'new',
+        type: 'supply',
+        priority: isOos ? 'critical' : 'high',
+        platform,
+        entityLabel: row.name || sku?.name || row.articleKey || row.article
+      }
+    };
+  }).filter(Boolean);
+}
+
+function buildPriceAndSalesAutoSignalCandidates() {
+  const candidates = [];
+  autoSignalPriceOverlayRows().forEach(({ platform, row }) => {
+    const articleKey = String(row?.articleKey || row?.article || '').trim();
+    const sku = getSku(articleKey);
+    if (!articleKey || !autoSignalSkuAllowed(sku)) return;
+    const daily = autoSignalDailyRows(row);
+    if (daily.length < 6) return;
+    const platformLabel = autoSignalPlatformLabel(platform);
+    const latest = daily[daily.length - 1] || {};
+    const prevPriceRows = daily.slice(Math.max(0, daily.length - 8), daily.length - 1).filter((point) => autoSignalFinite(point.price) > 0);
+    const previousPrice = autoSignalSum(prevPriceRows, 'price') / Math.max(1, prevPriceRows.length);
+    const currentPrice = autoSignalFinite(latest.price || row.currentPrice || row.currentFillPrice);
+    const recentOrders7 = autoSignalSum(daily.slice(-7), 'ordersUnits');
+    const priceDrop = previousPrice > 0 && currentPrice > 0 ? (previousPrice - currentPrice) / previousPrice : 0;
+    if (priceDrop >= AUTO_SIGNAL_RULES.priceDropPct && recentOrders7 >= AUTO_SIGNAL_RULES.minRecentOrders) {
+      const priority = priceDrop >= 0.25 ? 'critical' : 'high';
+      candidates.push({
+        family: 'price',
+        dedupeKey: articleKey,
+        articleKey,
+        taskType: 'price_margin',
+        platform,
+        priority,
+        score: 760 + priceDrop * 100 + recentOrders7 / 10,
+        task: {
+          id: stableId('auto-price-drop-v2', `${platform}|${articleKey}`),
+          source: 'auto',
+          autoCode: 'price_drop_v2',
+          articleKey,
+          title: `${platformLabel}: цена упала больше 15%`,
+          nextAction: 'Проверить, это плановая промо-механика или ошибка цены. Зафиксировать решение: оставить, вернуть цену или согласовать промо.',
+          reason: `${platformLabel}: цена ${autoSignalMoney(currentPrice)} против среднего ${autoSignalMoney(previousPrice)} за предыдущие дни, падение ${autoSignalPct(priceDrop)}. За 7 дней заказов: ${autoSignalNum(recentOrders7, 0)}.`,
+          owner: ownerName(sku),
+          due: autoSignalTaskDue(priority),
+          status: 'new',
+          type: 'price_margin',
+          priority,
+          platform,
+          entityLabel: sku?.name || articleKey
+        }
+      });
+    }
+
+    const recent = daily.slice(-3);
+    const base = daily.slice(Math.max(0, daily.length - 10), daily.length - 3);
+    const recentDays = Math.max(1, recent.length);
+    const baseDays = Math.max(1, base.length);
+    const recentRevenueDay = autoSignalSum(recent, 'revenue') / recentDays;
+    const baseRevenueDay = autoSignalSum(base, 'revenue') / baseDays;
+    const recentOrders = autoSignalSum(recent, 'ordersUnits');
+    const baseOrders = autoSignalSum(base, 'ordersUnits');
+    const revenueDrop = baseRevenueDay > 0 ? (baseRevenueDay - recentRevenueDay) / baseRevenueDay : 0;
+    if (
+      base.length >= 5
+      && baseRevenueDay >= AUTO_SIGNAL_RULES.minBaseRevenueDay
+      && baseOrders >= AUTO_SIGNAL_RULES.minBaseOrders
+      && recentOrders >= AUTO_SIGNAL_RULES.minRecentOrders
+      && revenueDrop >= AUTO_SIGNAL_RULES.revenueDropPct
+    ) {
+      const priority = revenueDrop >= 0.35 ? 'critical' : 'high';
+      candidates.push({
+        family: 'sales',
+        dedupeKey: articleKey,
+        articleKey,
+        taskType: 'traffic',
+        platform,
+        priority,
+        score: 700 + revenueDrop * 100 + baseRevenueDay / 10000,
+        task: {
+          id: stableId('auto-sales-drop-v2', `${platform}|${articleKey}`),
+          source: 'auto',
+          autoCode: 'sales_drop_v2',
+          articleKey,
+          title: `${platformLabel}: оборот SKU просел больше 20%`,
+          nextAction: 'Проверить, не связано ли падение с остатком, ценой, рекламой или карточкой. Сравнить последние 3 дня с предыдущей неделей и выбрать контрмеру.',
+          reason: `${platformLabel}: средний оборот ${autoSignalMoney(recentRevenueDay)}/день против ${autoSignalMoney(baseRevenueDay)}/день, падение ${autoSignalPct(revenueDrop)}. Сравнение сглажено по 3 дням против предыдущих 7.`,
+          owner: ownerName(sku),
+          due: autoSignalTaskDue(priority),
+          status: 'new',
+          type: 'traffic',
+          priority,
+          platform,
+          entityLabel: sku?.name || articleKey
+        }
+      });
+    }
+
+    const recentAov = autoSignalSum(recent, 'revenue') / Math.max(1, recentOrders);
+    const baseAov = autoSignalSum(base, 'revenue') / Math.max(1, baseOrders);
+    const aovDrop = baseAov > 0 ? (baseAov - recentAov) / baseAov : 0;
+    if (
+      base.length >= 5
+      && baseOrders >= AUTO_SIGNAL_RULES.minBaseOrders
+      && recentOrders >= AUTO_SIGNAL_RULES.minRecentOrders
+      && aovDrop >= AUTO_SIGNAL_RULES.aovDropPct
+    ) {
+      const priority = aovDrop >= 0.30 ? 'high' : 'medium';
+      candidates.push({
+        family: 'aov',
+        dedupeKey: articleKey,
+        articleKey,
+        taskType: 'price_margin',
+        platform,
+        priority,
+        score: 620 + aovDrop * 100 + baseOrders / 20,
+        task: {
+          id: stableId('auto-aov-drop-v2', `${platform}|${articleKey}`),
+          source: 'auto',
+          autoCode: 'aov_drop_v2',
+          articleKey,
+          title: `${platformLabel}: средний чек заметно упал`,
+          nextAction: 'Проверить цену, скидку, наборы и структуру заказов. Если это промо, зафиксировать ожидаемый эффект; если нет — вернуть экономику.',
+          reason: `${platformLabel}: средний чек ${autoSignalMoney(recentAov)} против ${autoSignalMoney(baseAov)}, падение ${autoSignalPct(aovDrop)}.`,
+          owner: ownerName(sku),
+          due: autoSignalTaskDue(priority),
+          status: 'new',
+          type: 'price_margin',
+          priority,
+          platform,
+          entityLabel: sku?.name || articleKey
+        }
+      });
+    }
+  });
+  return candidates;
+}
+
+function autoSignalLeaderboardSnapshots() {
+  const current = state.productLeaderboard || {};
+  const history = Array.isArray(state.productLeaderboardHistory) ? state.productLeaderboardHistory : [];
+  const map = new Map();
+  [current, ...history].forEach((payload) => {
+    if (!payload || !Array.isArray(payload.items)) return;
+    const week = String(payload.weekLabel || payload.sourceSheetName || payload.generatedAt || '').trim();
+    if (!week) return;
+    const existing = map.get(week);
+    if (!existing || String(payload.generatedAt || '').localeCompare(String(existing.generatedAt || '')) > 0) {
+      map.set(week, payload);
+    }
+  });
+  return [...map.values()].sort((left, right) => String(right.generatedAt || '').localeCompare(String(left.generatedAt || '')));
+}
+
+function autoSignalPreviousLeaderboardItem(articleKey, currentWeek) {
+  const key = String(articleKey || '').trim().toLowerCase();
+  if (!key) return null;
+  const snapshots = autoSignalLeaderboardSnapshots();
+  const previous = snapshots.find((payload) => String(payload.weekLabel || payload.sourceSheetName || '') !== String(currentWeek || ''));
+  return (previous?.items || []).find((item) => String(item.articleKey || '').trim().toLowerCase() === key) || null;
+}
+
+function buildKzAutoSignalCandidates(leaderboardPayload = {}) {
+  const items = Array.isArray(leaderboardPayload.items) ? leaderboardPayload.items : [];
+  const weekLabel = String(leaderboardPayload.weekLabel || leaderboardPayload.sourceSheetName || '').trim();
+  return items.map((item) => {
+    const articleKey = String(item.articleKey || '').trim();
+    const sku = getSku(articleKey);
+    if (!articleKey || item.inPortal === false || !autoSignalSkuAllowed(sku)) return null;
+    const revenue = autoSignalFinite(item.revenue);
+    const clicks = autoSignalFinite(item.clicks);
+    const spend = autoSignalFinite(item.contentCost);
+    const romi = autoSignalMetric(item, 'romiPct');
+    const drr = autoSignalMetric(item, 'drrPct');
+    const conversion = autoSignalMetric(item, 'conversionPct');
+    const buyRate = autoSignalMetric(item, 'buyRatePct');
+    const previous = autoSignalPreviousLeaderboardItem(articleKey, weekLabel);
+    const previousRevenue = autoSignalFinite(previous?.revenue);
+    const previousOrders = autoSignalFinite(previous?.orders);
+    const currentOrders = autoSignalFinite(item.orders);
+    const previousAov = previousRevenue / Math.max(1, previousOrders);
+    const currentAov = revenue / Math.max(1, currentOrders);
+    const revenueDrop = previousRevenue > 0 ? (previousRevenue - revenue) / previousRevenue : 0;
+    const aovDrop = previousAov > 0 ? (previousAov - currentAov) / previousAov : 0;
+    const reasons = [];
+
+    const profitabilityDrop = (
+      (Number.isFinite(romi.deltaPct) && romi.deltaPct <= -AUTO_SIGNAL_RULES.profitabilityDropPct && romi.value < romi.baseline)
+      || (Number.isFinite(drr.deltaPct) && drr.deltaPct >= AUTO_SIGNAL_RULES.profitabilityDropPct && drr.value > drr.baseline)
+    ) && (revenue >= AUTO_SIGNAL_RULES.minKzRevenue || spend >= AUTO_SIGNAL_RULES.minKzSpend);
+    if (profitabilityDrop) reasons.push(`доходность рекламы просела: ROMI ${autoSignalPct(romi.value, 1)} / база ${autoSignalPct(romi.baseline, 1)}, ДРР ${autoSignalPct(drr.value, 1)}`);
+
+    const conversionDrop = clicks >= AUTO_SIGNAL_RULES.minKzClicks && (
+      (Number.isFinite(conversion.deltaPct) && conversion.deltaPct <= -AUTO_SIGNAL_RULES.conversionDropPct && conversion.value < conversion.baseline)
+      || (Number.isFinite(buyRate.deltaPct) && buyRate.deltaPct <= -AUTO_SIGNAL_RULES.conversionDropPct && buyRate.value < buyRate.baseline)
+    );
+    if (conversionDrop) reasons.push(`конверсия КЗ ниже базы на ${autoSignalPct(Math.abs(Math.min(conversion.deltaPct || 0, buyRate.deltaPct || 0)))}`);
+
+    if (previousRevenue >= AUTO_SIGNAL_RULES.minKzRevenue && revenueDrop >= AUTO_SIGNAL_RULES.revenueDropPct) {
+      reasons.push(`выручка КЗ упала на ${autoSignalPct(revenueDrop)} к прошлой неделе`);
+    }
+    if (previousOrders >= 20 && currentOrders >= 10 && aovDrop >= AUTO_SIGNAL_RULES.aovDropPct) {
+      reasons.push(`средний чек КЗ упал на ${autoSignalPct(aovDrop)}`);
+    }
+    if (!reasons.length) return null;
+
+    const priority = profitabilityDrop || revenueDrop >= 0.35 ? 'critical' : 'high';
+    const title = profitabilityDrop
+      ? 'КЗ WB: восстановить доходность рекламы'
+      : conversionDrop
+        ? 'КЗ WB: проверить просадку конверсии'
+        : 'КЗ WB: проверить просадку оборота';
+    return {
+      family: 'kz',
+      dedupeKey: articleKey,
+      articleKey,
+      taskType: 'traffic',
+      platform: 'wb',
+      priority,
+      score: 740
+        + (profitabilityDrop ? 80 : 0)
+        + Math.max(revenueDrop, aovDrop, Math.abs(conversion.deltaPct || 0), Math.abs(romi.deltaPct || 0)) * 100
+        + revenue / 100000,
+      task: {
+        id: stableId('auto-kz-quality-v2', articleKey),
+        source: 'auto',
+        autoCode: 'kz_quality_v2',
+        articleKey,
+        title,
+        nextAction: 'Разобрать именно WB/КЗ: доходность, ДРР, связку креатив → карточка → заказ. В задаче зафиксировать гипотезу и следующий запуск/правку.',
+        reason: `${weekLabel || 'КЗ'}: ${reasons.slice(0, 3).join(' · ')}. Ozon не назначаем: КЗ ведем как WB-контур.`,
+        owner: ownerName(sku),
+        due: autoSignalTaskDue(priority),
+        status: 'new',
+        type: 'traffic',
+        priority,
+        platform: 'wb',
+        entityLabel: sku?.name || item.name || articleKey
+      }
+    };
+  }).filter(Boolean);
+}
+
+function selectAutoSignalCandidates(candidates = []) {
+  const selected = [];
+  const used = new Set();
+  const familyCounts = {};
+  const sorted = candidates.slice().sort((left, right) =>
+    autoSignalFinite(right.score) - autoSignalFinite(left.score)
+    || String(left.articleKey || '').localeCompare(String(right.articleKey || ''), 'ru')
+  );
+  for (const candidate of sorted) {
+    const family = candidate.family || 'general';
+    const limit = AUTO_SIGNAL_RULES.familyLimits[family] || 6;
+    const dedupeKey = candidate.dedupeKey || candidate.articleKey || candidate.task?.id;
+    if (!dedupeKey || used.has(dedupeKey)) continue;
+    if ((familyCounts[family] || 0) >= limit) continue;
+    selected.push(candidate);
+    used.add(dedupeKey);
+    familyCounts[family] = (familyCounts[family] || 0) + 1;
+    if (selected.length >= AUTO_SIGNAL_RULES.totalLimit) break;
+  }
+  return selected;
+}
+
+function buildQualityAutoSignalTasks(keys, leaderboardPayload = {}) {
+  return selectAutoSignalCandidates([
+    ...buildStockAutoSignalCandidates(),
+    ...buildPriceAndSalesAutoSignalCandidates(),
+    ...buildKzAutoSignalCandidates(leaderboardPayload)
+  ]).map((candidate) => {
+    const task = candidate.task || {};
+    const taskType = task.type || candidate.taskType || 'general';
+    const signalKey = `${taskType}:${candidate.family || task.autoCode || 'auto'}:${candidate.platform || task.platform || 'all'}`;
+    if (!canRegisterAutoSignalTask(keys, task.articleKey || candidate.articleKey, taskType, signalKey)) return null;
+    return normalizeTask(task, 'auto');
+  }).filter(Boolean);
+}
+
 function buildAutoTasks() {
   if (state.__buildingAutoTasks) return [];
   state.__buildingAutoTasks = true;
@@ -1382,6 +1848,9 @@ function buildAutoTasks() {
       .filter((item) => item?.articleKey)
       .map((item) => [String(item.articleKey).trim().toLowerCase(), item])
   );
+  tasks.push(...buildQualityAutoSignalTasks(keys, leaderboardFresh ? leaderboardPayload : { items: [] }));
+  const legacyKzAutoTasksEnabled = false;
+  const legacySkuFlagAutoTasksEnabled = false;
 
   for (const sku of state.skus) {
     const articleKey = sku.articleKey;
@@ -1404,7 +1873,7 @@ function buildAutoTasks() {
     );
     const leaderboardItem = leaderboardMap.get(String(articleKey || '').trim().toLowerCase()) || null;
 
-    if (leaderboardFresh && leaderboardItem?.inPortal !== false) {
+    if (legacyKzAutoTasksEnabled && leaderboardFresh && leaderboardItem?.inPortal !== false) {
       const assignmentAlerts = leaderboardAlertsForFamilies(leaderboardItem, 'ownership');
       if (assignmentAlerts.length && canRegisterAutoTask(keys, articleKey, 'assignment')) {
         tasks.push(buildLeaderboardAutoTask({
@@ -1466,7 +1935,7 @@ function buildAutoTasks() {
       }
     }
 
-    if ((sku?.flags?.toWorkWB || sku?.flags?.toWorkOzon || sku?.flags?.toWork) && canRegisterAutoTask(keys, articleKey, 'price_margin')) {
+    if (legacySkuFlagAutoTasksEnabled && (sku?.flags?.toWorkWB || sku?.flags?.toWorkOzon || sku?.flags?.toWork) && canRegisterAutoTask(keys, articleKey, 'price_margin')) {
       tasks.push(normalizeTask({
         id: `auto-price-${articleKey}`,
         source: 'auto',
@@ -1482,7 +1951,7 @@ function buildAutoTasks() {
         priority: 'critical',
         platform
       }, 'auto'));
-    } else if (sku?.flags?.negativeMargin && canRegisterAutoTask(keys, articleKey, 'price_margin')) {
+    } else if (legacySkuFlagAutoTasksEnabled && sku?.flags?.negativeMargin && canRegisterAutoTask(keys, articleKey, 'price_margin')) {
       tasks.push(normalizeTask({
         id: `auto-neg-${articleKey}`,
         source: 'auto',
@@ -1500,7 +1969,7 @@ function buildAutoTasks() {
       }, 'auto'));
     }
 
-    if (sku?.flags?.lowStock && !exitSku && canRegisterAutoTask(keys, articleKey, 'supply')) {
+    if (legacySkuFlagAutoTasksEnabled && sku?.flags?.lowStock && !exitSku && canRegisterAutoTask(keys, articleKey, 'supply')) {
       tasks.push(normalizeTask({
         id: `auto-stock-${articleKey}`,
         source: 'auto',
@@ -1518,7 +1987,7 @@ function buildAutoTasks() {
       }, 'auto'));
     }
 
-    if (needsOwnerSignal && canRegisterAutoTask(keys, articleKey, 'assignment')) {
+    if (legacySkuFlagAutoTasksEnabled && needsOwnerSignal && canRegisterAutoTask(keys, articleKey, 'assignment')) {
       tasks.push(normalizeTask({
         id: `auto-owner-${articleKey}`,
         source: 'auto',
@@ -1570,6 +2039,8 @@ function buildAutoTasks() {
     const statusRaw = String(item?.status || '').toLowerCase();
     if (!launchDate || daysUntilLaunch < -10 || daysUntilLaunch > 45) return;
     if (/запущ|live|продаж|готово/.test(statusRaw)) return;
+    const linkedSku = item?.articleKey ? getSku(item.articleKey) : null;
+    if (linkedSku && !autoSignalSkuAllowed(linkedSku)) return;
     const dedupeKey = `${String(item?.articleKey || '').trim()}|${String(item?.name || '').trim().toLowerCase()}`;
     if (activeLaunchTaskKeys.has(dedupeKey)) return;
     activeLaunchTaskKeys.add(dedupeKey);
@@ -1610,7 +2081,8 @@ function buildAutoTasks() {
 }
 
 function getAllTasks() {
-  return sortTasks([...state.storage.tasks, ...buildAutoTasks()]);
+  const storedTasks = state.storage.tasks.filter((task) => !isDeprecatedAutoSignalTask(task));
+  return sortTasks([...storedTasks, ...buildAutoTasks()]);
 }
 
 function getSkuControlTasks(articleKey) {

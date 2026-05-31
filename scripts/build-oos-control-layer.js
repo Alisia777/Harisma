@@ -8,6 +8,7 @@ const DEFAULT_SOON_DAYS = 10;
 const HISTORY_DAY_LIMIT = 370;
 const ISSUE_STATE_LIMIT = 5000;
 const SIGNAL_LIFECYCLE_KEYS = new Set(['active', 'new']);
+const BLOCKED_LIFECYCLE_RE = /вывод|на вывод|вывед|сняти|снимаем|спа|spa|нет в спецификации|под вопрос|архив|archive|paused|pause|freeze|hold/i;
 
 function parseArgs(argv) {
   const args = {};
@@ -147,6 +148,12 @@ function lifecycleForSku(sku = {}) {
   ];
   for (const [source, value] of candidates) {
     const label = String(value || '').trim();
+    if (label && BLOCKED_LIFECYCLE_RE.test(normalizeLifecycleText(label))) {
+      return { key: 'exit', label, source };
+    }
+  }
+  for (const [source, value] of candidates) {
+    const label = String(value || '').trim();
     if (!label) continue;
     const key = lifecycleKeyFromText(label);
     if (key) return { key, label, source };
@@ -155,7 +162,8 @@ function lifecycleForSku(sku = {}) {
 }
 
 function isSignalLifecycle(lifecycle = {}) {
-  return SIGNAL_LIFECYCLE_KEYS.has(lifecycle.key);
+  const text = normalizeLifecycleText([lifecycle.key, lifecycle.label].filter(Boolean).join(' '));
+  return SIGNAL_LIFECYCLE_KEYS.has(lifecycle.key) && !BLOCKED_LIFECYCLE_RE.test(text);
 }
 
 function platformLabel(platform) {
@@ -275,7 +283,7 @@ function classifyRow(row, rules, lifecycle) {
   return null;
 }
 
-function buildRows(orderProcurement, skus, smartPriceOverlay, rules) {
+function buildRowsLegacy(orderProcurement, skus, smartPriceOverlay, rules) {
   const priceLookup = buildPriceLookup(smartPriceOverlay, skus);
   const skuByKey = new Map((Array.isArray(skus) ? skus : []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku]));
   const sourceRows = Array.isArray(orderProcurement?.rows) ? orderProcurement.rows : [];
@@ -342,6 +350,166 @@ function buildRows(orderProcurement, skus, smartPriceOverlay, rules) {
       || left.platformLabel.localeCompare(right.platformLabel, 'ru')
       || left.place.localeCompare(right.place, 'ru')
     ));
+}
+
+function signalIssueKey(platform, signalRule, articleKey) {
+  return `${normalizePlatform(platform)}|${signalRule}|${normalizeKey(articleKey)}`;
+}
+
+function compactPlaceLabel(places, rules) {
+  const rows = Array.isArray(places) ? places : [];
+  if (rows.length <= 1) return rows[0]?.place || 'Без склада';
+  return `${rows.length} кластеров <${rules.soonDays} д`;
+}
+
+function topPlaceNames(places, limit = 4) {
+  return (Array.isArray(places) ? places : [])
+    .slice()
+    .sort((left, right) => numberOrZero(right.revenueAtRiskDay) - numberOrZero(left.revenueAtRiskDay))
+    .map((item) => item.place)
+    .filter(Boolean)
+    .slice(0, limit)
+    .join(', ');
+}
+
+function recommendationForAggregate(row, rules) {
+  const platform = platformLabel(row?.platform);
+  const places = Array.isArray(row?.placesAtRisk) ? row.placesAtRisk : [];
+  const placeText = topPlaceNames(places) || row?.place || 'кластер';
+  const minDays = finiteOrNull(row?.turnoverDays);
+  if (row.status === 'oos') {
+    return `Проверить ${platform}: есть OOS по ${places.length || 1} кластеру(ам). Восстановить наличие или зафиксировать причину простоя.`;
+  }
+  return `Проверить ${platform}: ${places.length || 1} кластер(ов) с покрытием меньше ${rules.soonDays} дней (${placeText}). Минимальное покрытие ${minDays === null ? '—' : `${minDays.toFixed(1)} д`}; нужен срок поставки, перемещение или лимит продаж.`;
+}
+
+function aggregateSignalRows(rawRows, rules) {
+  const groups = new Map();
+  rawRows.forEach((row) => {
+    const key = signalIssueKey(row.platform, row.signalRule, row.articleKey);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(row);
+  });
+
+  return [...groups.entries()].map(([issueKey, groupRows]) => {
+    const rows = groupRows.slice().sort((left, right) =>
+      right.rank - left.rank
+      || numberOrZero(right.revenueAtRiskDay) - numberOrZero(left.revenueAtRiskDay)
+      || String(left.place || '').localeCompare(String(right.place || ''), 'ru')
+    );
+    const base = rows[0] || {};
+    const avgDaily = rows.reduce((sum, row) => sum + numberOrZero(row.avgDaily), 0);
+    const weightedPrice = rows.reduce((sum, row) => sum + numberOrZero(row.averagePrice) * numberOrZero(row.avgDaily), 0) / Math.max(1, avgDaily);
+    const placesAtRisk = rows.map((row) => ({
+      place: row.place,
+      inStock: row.inStock,
+      inTransit: row.inTransit,
+      inRequest: row.inRequest,
+      avgDaily: row.avgDaily,
+      turnoverDays: row.turnoverDays,
+      revenueAtRiskDay: row.revenueAtRiskDay,
+      lostRevenueDay: row.lostRevenueDay
+    }));
+    const aggregate = {
+      ...base,
+      issueKey,
+      taskId: `task-oos-${hashShort(issueKey)}`,
+      place: compactPlaceLabel(placesAtRisk, rules),
+      clusterCount: placesAtRisk.length,
+      placesAtRisk,
+      inStock: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.inStock), 0)),
+      inTransit: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.inTransit), 0)),
+      inRequest: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.inRequest), 0)),
+      avgDaily: Number(avgDaily.toFixed(4)),
+      turnoverDays: rows.reduce((min, row) => {
+        const days = finiteOrNull(row.turnoverDays);
+        if (days === null) return min;
+        return min === null ? days : Math.min(min, days);
+      }, null),
+      sales7: Number(rows.reduce((sum, row) => sum + numberOrZero(row.sales7), 0).toFixed(2)),
+      sales14: Number(rows.reduce((sum, row) => sum + numberOrZero(row.sales14), 0).toFixed(2)),
+      sales28: Number(rows.reduce((sum, row) => sum + numberOrZero(row.sales28), 0).toFixed(2)),
+      targetNeed7: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.targetNeed7), 0)),
+      targetNeed14: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.targetNeed14), 0)),
+      targetNeed28: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.targetNeed28), 0)),
+      averagePrice: Math.round(weightedPrice || numberOrZero(base.averagePrice)),
+      lostRevenueDay: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.lostRevenueDay), 0)),
+      revenueAtRiskDay: Math.round(rows.reduce((sum, row) => sum + numberOrZero(row.revenueAtRiskDay), 0))
+    };
+    aggregate.department = inferDepartment(aggregate, aggregate.status);
+    aggregate.recommendation = recommendationForAggregate(aggregate, rules);
+    return aggregate;
+  }).sort((left, right) => (
+    right.rank - left.rank
+    || right.revenueAtRiskDay - left.revenueAtRiskDay
+    || left.platformLabel.localeCompare(right.platformLabel, 'ru')
+    || left.article.localeCompare(right.article, 'ru')
+  ));
+}
+
+function buildRows(orderProcurement, skus, smartPriceOverlay, rules) {
+  const priceLookup = buildPriceLookup(smartPriceOverlay, skus);
+  const skuByKey = new Map((Array.isArray(skus) ? skus : []).map((sku) => [normalizeKey(sku?.articleKey || sku?.article), sku]));
+  const sourceRows = Array.isArray(orderProcurement?.rows) ? orderProcurement.rows : [];
+
+  const rawRows = sourceRows
+    .map((row) => {
+      const article = String(row?.article || row?.articleKey || row?.sku || '').trim();
+      const articleKey = normalizeKey(article);
+      if (!articleKey) return null;
+      const sku = skuByKey.get(articleKey) || {};
+      const lifecycle = lifecycleForSku(sku);
+      const classification = classifyRow(row, rules, lifecycle);
+      if (!classification) return null;
+      const platform = normalizePlatform(row?.platform);
+      const platformTitle = platformLabel(platform);
+      const place = String(row?.place || '').trim() || 'Без склада';
+      const issueKey = signalIssueKey(platform, classification.signalRule, articleKey);
+      const price = priceForRow(row, priceLookup);
+      const avgDaily = numberOrZero(row?.avgDaily);
+      const lostRevenueDay = classification.status === 'oos' ? avgDaily * price.price : 0;
+      const revenueAtRiskDay = avgDaily * price.price;
+      const department = inferDepartment(row, classification.status);
+      return {
+        issueKey,
+        taskId: `task-oos-${hashShort(issueKey)}`,
+        platform,
+        platformLabel: platformTitle,
+        place,
+        article,
+        articleKey,
+        name: String(row?.name || sku?.name || article).trim() || article,
+        owner: String(row?.owner || sku?.ownersByPlatform?.[platform] || sku?.owner?.name || '').trim() || 'Без owner',
+        department,
+        status: classification.status,
+        statusLabel: classification.statusLabel,
+        severity: classification.severity,
+        rank: classification.rank,
+        signalRule: classification.signalRule,
+        lifecycleStatus: lifecycle.key,
+        lifecycleLabel: lifecycle.label || lifecycle.key,
+        lifecycleSource: lifecycle.source,
+        inStock: Math.round(numberOrZero(row?.inStock)),
+        inTransit: Math.round(numberOrZero(row?.inTransit)),
+        inRequest: Math.round(numberOrZero(row?.inRequest)),
+        avgDaily: Number(avgDaily.toFixed(4)),
+        turnoverDays: finiteOrNull(row?.turnoverDays),
+        sales7: Number(numberOrZero(row?.sales7).toFixed(2)),
+        sales14: Number(numberOrZero(row?.sales14).toFixed(2)),
+        sales28: Number(numberOrZero(row?.sales28).toFixed(2)),
+        targetNeed7: Math.round(numberOrZero(row?.targetNeed7)),
+        targetNeed14: Math.round(numberOrZero(row?.targetNeed14)),
+        targetNeed28: Math.round(numberOrZero(row?.targetNeed28)),
+        averagePrice: Math.round(price.price),
+        priceSource: price.source,
+        lostRevenueDay: Math.round(lostRevenueDay),
+        revenueAtRiskDay: Math.round(revenueAtRiskDay),
+        recommendation: recommendationFor(row, classification.status)
+      };
+    })
+    .filter(Boolean);
+
+  return aggregateSignalRows(rawRows, rules);
 }
 
 function summarizeGroup(rows, keyFn, labelFn) {
@@ -485,7 +653,7 @@ function buildSummary(rows, historyResult, freshnessStatus, previousPayload, tod
       resolvedToday: historyResult.resolvedToday,
       owners: new Set(rows.map((row) => row.owner).filter(Boolean)).size,
       skuCount: new Set(rows.map((row) => row.articleKey).filter(Boolean)).size,
-      placeCount: new Set(rows.map((row) => `${row.platform}|${row.place}`).filter(Boolean)).size,
+      placeCount: rows.reduce((sum, row) => sum + Math.max(1, Math.round(numberOrZero(row.clusterCount || 1))), 0),
       dataStatus: freshnessStatus.status,
       dataDate: freshnessStatus.dataDate,
       expectedFactDate: freshnessStatus.expectedFactDate
@@ -531,13 +699,14 @@ function main() {
   const today = options.now.toISOString().slice(0, 10);
   const rows = buildRows(orderLayer.payload, skusLayer.payload, smartPriceLayer.payload, rules);
   const freshnessStatus = buildFreshness(options, orderLayer.payload, syncHealthLayer.payload, qualityLayer.payload);
-  const historyResult = applyHistory(rows, previousLayer.payload || {}, today);
-  const { summary, dailySummary, days } = buildSummary(historyResult.rows, historyResult, freshnessStatus, previousLayer.payload || {}, today);
+  const previousPayload = previousLayer.payload?.schema === 'portal-oos-control-v2' ? previousLayer.payload : {};
+  const historyResult = applyHistory(rows, previousPayload, today);
+  const { summary, dailySummary, days } = buildSummary(historyResult.rows, historyResult, freshnessStatus, previousPayload, today);
 
   const payload = {
-    schema: 'portal-oos-control-v1',
+    schema: 'portal-oos-control-v2',
     generatedAt: new Date().toISOString(),
-    title: 'OOS control',
+    title: 'OOS / stock auto signals',
     rules,
     dataFreshness: {
       ...freshnessStatus,

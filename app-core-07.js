@@ -2625,6 +2625,9 @@ function productLeaderboardSummaryFromItems(items) {
 }
 
 function normalizeProductLeaderboardItem(item = {}) {
+  const owner = typeof canonicalOwnerName === 'function'
+    ? canonicalOwnerName(item.owner || '')
+    : String(item.owner || '').replace(/\s+/g, ' ').trim();
   const normalized = {
     id: item.id || stableId('product-leaderboard', item.articleKey || item.article || item.name || ''),
     brand: item.brand || 'АЛТЕЯ',
@@ -2632,7 +2635,7 @@ function normalizeProductLeaderboardItem(item = {}) {
     articleKey: item.articleKey || '',
     article: item.article || '',
     name: item.name || item.articleKey || item.article || 'SKU',
-    owner: item.owner || '',
+    owner,
     category: item.category || '',
     traffic: item.traffic || '',
     signal: item.signal || 'steady',
@@ -2672,6 +2675,9 @@ function normalizeProductLeaderboardPayload(payload = {}) {
   const items = Array.isArray(payload.items) ? payload.items.map(normalizeProductLeaderboardItem) : [];
   const summary = productLeaderboardSummaryFromItems(items);
   const sourceSummary = payload.summary || {};
+  const ownerList = Array.isArray(payload.owners)
+    ? payload.owners.map((owner) => (typeof canonicalOwnerName === 'function' ? canonicalOwnerName(owner) : String(owner || '').trim()))
+    : items.map((item) => item.owner);
   return {
     generatedAt: payload.generatedAt || '',
     sourceFile: payload.sourceFile || '',
@@ -2703,7 +2709,7 @@ function normalizeProductLeaderboardPayload(payload = {}) {
       ...summary,
       ...sourceSummary
     },
-    owners: Array.isArray(payload.owners) ? payload.owners.filter(Boolean) : [...new Set(items.map((item) => item.owner).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru')),
+    owners: [...new Set(ownerList.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru')),
     categories: Array.isArray(payload.categories) ? payload.categories.filter(Boolean) : [...new Set(items.map((item) => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru')),
     items,
     unmatchedItems: Array.isArray(payload.unmatchedItems) ? payload.unmatchedItems.map(normalizeProductLeaderboardItem) : []

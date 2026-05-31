@@ -4231,13 +4231,13 @@ function iuDrrBuildQuarterForecast(model = {}, context = {}) {
     plans: [
       makeBlock(
         'iu',
-        platformKey === 'ozon' ? 'ИУ план Ozon 40% за квартал' : 'ИУ план WB за квартал',
+        platformKey === 'ozon' ? 'ИУ план Ozon 40%' : 'ИУ план WB',
         iuPlan,
         platformKey === 'ozon' ? 'ИУ Ozon × 40%, сумма месяцев квартала' : 'ИУ WB, сумма месяцев квартала'
       ),
       makeBlock(
         'working',
-        'План портала по правилу ИУ/корп',
+        'Рабочий план портала',
         workingPlan,
         'по каждому месяцу берём большее: ИУ или корпоративный план'
       )
@@ -4293,22 +4293,19 @@ function iuDrrPlanFactDeltaClass(value) {
 function iuDrrQuarterPlanCardHtml(plan = {}, forecast = {}) {
   const completion = plan.completion;
   const completionText = completion == null ? '—' : fmt.pct(completion);
-  const deltaText = plan.delta == null ? 'нет факта для темпа' : `${plan.delta >= 0 ? '+' : ''}${fmt.money(plan.delta)}`;
-  const status = plan.completion == null ? 'нет факта для темпа' : iuDrrForecastStatusLabel(plan.completion);
+  const deltaText = plan.delta == null ? 'нет факта для темпа' : `дельта ${plan.delta >= 0 ? '+' : ''}${fmt.money(plan.delta)}`;
   const platformKey = forecast.platformKey === 'ozon' ? 'ozon' : 'wb';
   const level = iuDrrPlanFactCompletionLevel(completion);
   return `
     <div class="sku-plan-platform-card iu-drr-quarter-platform-card level-${level}" style="${iuDrrPlanFactCardStyle(platformKey, completion)}">
       <span class="sku-plan-platform-card__top">
         <strong>${escapeHtml(plan.label || 'План квартала')}</strong>
-        <em>квартал</em>
       </span>
       <span class="sku-plan-platform-card__value">${escapeHtml(completionText)}</span>
       <span class="sku-plan-platform-card__meta">прогноз ${fmt.money(forecast.projectedFact)} / план ${fmt.money(plan.plan)}</span>
       <span class="sku-plan-platform-card__bar"><i></i></span>
       <span class="sku-plan-platform-card__foot">
         <b class="${iuDrrPlanFactDeltaClass(plan.delta)}">${escapeHtml(deltaText)}</b>
-        <span><em>${escapeHtml(status)}</em></span>
       </span>
     </div>
   `;
@@ -4316,40 +4313,34 @@ function iuDrrQuarterPlanCardHtml(plan = {}, forecast = {}) {
 
 function renderIuDrrQuarterForecastPanel(forecast = {}) {
   if (!forecast.available) return '';
-  const cardsHtml = (forecast.plans || [])
-    .filter((plan) => numberOrZero(plan.plan) > 0)
+  const sourcePlans = (forecast.plans || []).filter((plan) => numberOrZero(plan.plan) > 0);
+  const iuPlan = sourcePlans.find((plan) => plan.key === 'iu') || null;
+  const visiblePlans = sourcePlans.filter((plan) => {
+    if (plan.key !== 'working' || !iuPlan) return true;
+    return Math.abs(numberOrZero(plan.plan) - numberOrZero(iuPlan.plan)) > 1;
+  });
+  const cardsHtml = visiblePlans
     .map((plan) => iuDrrQuarterPlanCardHtml(plan, forecast))
     .join('');
-  const periodLabel = forecast.quarter?.label || `${forecast.quarter?.from || ''}–${forecast.quarter?.to || ''}`;
-  const factWindow = forecast.factFrom && forecast.factTo ? `${forecast.factFrom}–${forecast.factTo}` : forecast.platformLabel;
+  const showRuleNote = visiblePlans.some((plan) => plan.key === 'working');
   return `
     <div class="card sku-plan-fact-card iu-drr-quarter-planfact-card" style="${iuDrrPlanFactCardStyle(forecast.platformKey, null)}">
       <div class="section-subhead">
         <div>
-          <h3>${escapeHtml(forecast.platformLabel)}: прогноз выполнения квартала</h3>
-          <p class="small muted">Темп считается по факту выбранного месяца. Прогноз к концу квартала сравнивается с ИУ и рабочим планом портала по правилу ИУ/корп.</p>
+          <h3>${escapeHtml(forecast.platformLabel)}: квартальный прогноз ИУ</h3>
+          <p class="small muted">Берём средний дневной факт текущего месяца и считаем, каким будет итог квартала при таком же темпе.</p>
         </div>
-        <div class="badge-stack">
-          ${badge(`квартал ${periodLabel}`, 'info')}
-          ${badge(`${fmt.int(forecast.elapsedDays)} дн. факта для темпа`, forecast.elapsedDays ? 'ok' : 'warn')}
-          ${badge(`${fmt.int(forecast.daysTotal)} дн. в квартале`, 'info')}
-        </div>
-      </div>
-
-      <div class="kpi-strip iu-drr-quarter-kpis">
-        <div class="mini-kpi"><span>Прогноз квартала</span><strong>${fmt.money(forecast.projectedFact)}</strong><span>${fmt.money(forecast.dailyAverage)} / день</span></div>
-        <div class="mini-kpi"><span>${escapeHtml(forecast.factSourceLabel || 'Факт для темпа')}</span><strong>${fmt.money(forecast.factToDate)}</strong><span>${escapeHtml(factWindow)}</span></div>
-        <div class="mini-kpi"><span>Период расчета</span><strong>${fmt.int(forecast.daysTotal)} дн.</strong><span>прогноз до конца квартала</span></div>
       </div>
 
       <div class="sku-plan-platform-board iu-drr-quarter-platform-board">
         ${cardsHtml}
       </div>
 
-      <div class="footer-note">
-        <span>Рабочий план: если ИУ выше корплана, берём ИУ; если ниже, берём корпоративный план.</span>
-        <span>Месячный план-факт сотрудников считается отдельно к дате.</span>
-      </div>
+      ${showRuleNote ? `
+        <div class="footer-note">
+          <span>Рабочий план портала считается помесячно: берём большее из ИУ и корпоративного плана.</span>
+        </div>
+      ` : ''}
     </div>
   `;
 }
@@ -6299,9 +6290,6 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     ozonFinance.source?.productsFile,
     ozonPlan.source?.planFile
   ].filter(Boolean).join(' + ');
-  const ozonFinanceWindowLabel = ozonFinance.window?.from && ozonFinance.window?.to
-    ? `${ozonFinance.window.from}–${ozonFinance.window.to}`
-    : '';
   const ozonFinanceKpisHtmlLegacy = `
     <div class="kpi-strip" style="margin-top:14px">
       <div class="mini-kpi ${ozonPlanCompletionToDate != null && ozonPlanCompletionToDate >= 1 ? 'ok' : 'warn'}"><span>План-факт GMV</span><strong>${ozonPlanCompletionToDate != null ? fmt.pct(ozonPlanCompletionToDate) : '—'}</strong><span>${fmt.money(ozonFactGmvBoth)} / ${fmt.money(ozonPlanToDateGmv)}</span></div>
@@ -6817,7 +6805,6 @@ function renderIuDrr(rootId = 'view-iu-drr') {
           <h3>Итог Ozon Smart на дату</h3>
           <p class="small muted">${fmt.int(ozonElapsedDays)} из ${fmt.int(ozonDaysInMonth)} дней месяца. Сразу видно выполнение, перерасход и ДРР.</p>
         </div>
-        ${badge(ozonFinanceWindowLabel || model.selectedMonth, 'info')}
       </div>
       <div class="table-wrap">
         <table>
@@ -6851,10 +6838,6 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     <div class="section-title iu-drr-title">
       <div>
         <h2>Показатели площадок</h2>
-      </div>
-      <div class="badge-stack">
-        ${badge(model.selectedMonth || 'месяц', 'info')}
-        ${badge(platformMeta.title, isOzonView ? 'info' : 'warn')}
       </div>
     </div>
 

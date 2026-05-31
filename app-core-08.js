@@ -5874,7 +5874,7 @@ function renderRepricer() {
               <h3>Первые SKU</h3>
               <p class="small muted">Самые заметные строки для проверки.</p>
             </div>
-            ${badge(`SKU ${fmt.int(sourceRows.length)}`, 'info')}
+            ${badge(`в очереди ${fmt.int(queueRows.length)}`, 'info')}
           </div>
           <div class="repricer-operator-sku-list">${queueMarkup || '<div class="muted small">Очередь проверки пуста.</div>'}</div>
         </div>

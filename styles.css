@@ -199,7 +199,7 @@ body.repricer-operator-active #view-repricer:not([data-repricer-layer="advanced"
 #view-repricer.repricer-simple-mode:not([data-repricer-layer="advanced"]):not(.repricer-simple-expanded) > .muted.small,
 #view-repricer.repricer-simple-mode:not([data-repricer-layer="advanced"]):not(.repricer-simple-expanded) > .card:not(.repricer-card):not(.repricer-operator-panel):not(.repricer-safety-card),
 #view-repricer.repricer-simple-mode:not([data-repricer-layer="advanced"]):not(.repricer-simple-expanded) .repricer-settings-card{display:none!important}
-.repricer-operator-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+.repricer-operator-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px;align-items:start}
 .repricer-operator-focus-card{padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:var(--shadow)}
 .repricer-operator-tasks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
 .repricer-operator-task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}

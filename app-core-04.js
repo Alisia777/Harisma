@@ -231,6 +231,32 @@ function dynamicMetricFieldCandidates(meta, metricSuffix) {
 function buildBrandPlanSnapshot() {
   const summary = dashboardBrandSummary();
   const monthMeta = dashboardMonthMeta();
+  const activeCompanyMonth = state.dashboard?.companyPlan?.activeMonth || null;
+  if (activeCompanyMonth && numberOrZero(activeCompanyMonth.planRevenueMonth) > 0) {
+    const monthPlanRevenue = numberOrZero(activeCompanyMonth.planRevenueMonth);
+    const factRevenue = numberOrZero(activeCompanyMonth.factRevenueToDate);
+    const planToDateRevenue = numberOrZero(activeCompanyMonth.planRevenueToDate);
+    const forecastRevenue = numberOrZero(activeCompanyMonth.forecastRevenue);
+    return {
+      monthPlanRevenue,
+      factRevenue,
+      planToDateRevenue,
+      forecastRevenue,
+      monthCompletionPct: activeCompanyMonth.completionMonthPct == null
+        ? (monthPlanRevenue && factRevenue ? factRevenue / monthPlanRevenue : null)
+        : Number(activeCompanyMonth.completionMonthPct),
+      toDateCompletionPct: activeCompanyMonth.completionToDatePct == null
+        ? (planToDateRevenue && factRevenue ? factRevenue / planToDateRevenue : null)
+        : Number(activeCompanyMonth.completionToDatePct),
+      forecastPct: activeCompanyMonth.forecastPct == null
+        ? (forecastRevenue && monthPlanRevenue ? forecastRevenue / monthPlanRevenue : null)
+        : Number(activeCompanyMonth.forecastPct),
+      monthLabel: activeCompanyMonth.label || monthMeta?.monthLabelGen || '',
+      asOfLabel: dashboardAsOfLabel(),
+      hasWorkbookPlan: true,
+      source: 'company_plan.activeMonth'
+    };
+  }
   const monthPrefixLower = (monthMeta?.prefix || 'Apr').toLowerCase();
   const monthPlanRevenue = firstPositiveValue(
     firstPositiveObjectValue(summary, [`${monthPrefixLower}_plan_revenue`]),

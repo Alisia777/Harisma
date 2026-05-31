@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-31T13:59:11.604Z",
+  "generatedAt": "2026-05-31T14:40:58.630Z",
   "dataFreshness": {
     "planFactMonth": "май 2026 - marketplace salary contour",
     "ordersSnapshot": "orders (40).csv",
@@ -1910,19 +1910,9 @@
       "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
     },
     {
-      "label": "Остатки MP, шт.",
-      "value": 1017835,
-      "hint": "WB + Ozon по API-�резу platform_trends на 2026-05-30"
-    },
-    {
       "label": "План ���, шт.",
       "value": 173171,
       "hint": "Линейный план месяца по SKU рабочего контура."
-    },
-    {
-      "label": "Факт 01-30.05, шт.",
-      "value": 244453,
-      "hint": "Факт по API-�резу platform_trends на 2026-05-30."
     },
     {
       "label": "Выполнение к плану на дату",
@@ -1948,6 +1938,56 @@
       "format": "pct",
       "hint": "Факт выручки / линейный общий план компании на дату.",
       "valuePct": 1.047
+    },
+    {
+      "label": "SKU в базе",
+      "value": 143,
+      "hint": "В портал попал только бренд Алтея"
+    },
+    {
+      "label": "Закреплено за owner",
+      "value": 143,
+      "hint": "Нашли закрепление в рабочих реестрах и ежедневном Google Sheets."
+    },
+    {
+      "label": "Остатки MP, шт.",
+      "value": 1017835,
+      "hint": "WB + Ozon по API-�резу platform_trends на 2026-05-30"
+    },
+    {
+      "label": "План ���, шт.",
+      "value": 173171,
+      "hint": "Линейный план месяца по SKU рабочего контура."
+    },
+    {
+      "label": "Факт 01-30.05, шт.",
+      "value": 244486.99899999984,
+      "hint": "Факт по API-�резу platform_trends на 2026-05-30."
+    },
+    {
+      "label": "Выполнение к плану на дату",
+      "value": 1.4589,
+      "hint": "Факт к линейному плану месяца на последнюю доступную дату.",
+      "valuePct": 1.4589
+    },
+    {
+      "label": "План компании ��� 2026, ₽",
+      "value": 253796998,
+      "format": "money",
+      "hint": "Общий план компании из План А.xlsx."
+    },
+    {
+      "label": "Факт компании 01-30.05, ₽",
+      "value": 257178256.72,
+      "format": "money",
+      "hint": "Факт выручки к общему плану компании."
+    },
+    {
+      "label": "Выполнение компании к плану",
+      "value": 1.0471,
+      "format": "pct",
+      "hint": "Факт выручки / линейный общий план компании на дату.",
+      "valuePct": 1.0471
     }
   ],
   "brandSummary": [
@@ -1968,9 +2008,9 @@
       "google_sheets_plan_field": "planApr26Units",
       "google_sheets_month_key": "2026-05",
       "plan_units": 173171,
-      "fact_units_to_date": 244453,
-      "fact_revenue_to_date": 257163144.97000003,
-      "plan_completion_to_date_pct": 1.4587,
+      "fact_units_to_date": 244486.99899999984,
+      "fact_revenue_to_date": 257178256.72,
+      "plan_completion_to_date_pct": 1.4589,
       "apr_plan_units": 173171,
       "apr_fact_units_to_date": 152328,
       "asOfDate": "2026-05-30",
@@ -1983,26 +2023,26 @@
       "apr_plan_completion_to_date_pct": 1.0241,
       "apr_forecast_pct": 1.0241,
       "may_plan_units": 173171,
-      "may_fact_units_to_date": 244453,
-      "may_fact_revenue_to_date": 257163144.97000003,
-      "may_plan_completion_to_date_pct": 1.4587,
+      "may_fact_units_to_date": 244486.99899999984,
+      "may_fact_revenue_to_date": 257178256.72,
+      "may_plan_completion_to_date_pct": 1.4589,
       "company_plan_month_key": "2026-05",
       "company_plan_month_label": "май 2026",
       "company_plan_revenue": 253796998,
-      "company_fact_revenue_to_date": 257163144.97,
+      "company_fact_revenue_to_date": 257178256.72,
       "company_plan_to_date_revenue": 245609998.06,
       "company_plan_completion_month_pct": 1.0133,
-      "company_plan_completion_to_date_pct": 1.047,
-      "company_forecast_revenue": 265735249.8,
-      "company_forecast_pct": 1.047,
+      "company_plan_completion_to_date_pct": 1.0471,
+      "company_forecast_revenue": 265750865.28,
+      "company_forecast_pct": 1.0471,
       "company_plan_source": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms + salary_contour_review",
       "may_company_plan_revenue": 253796998,
-      "may_company_fact_revenue_to_date": 257163144.97,
+      "may_company_fact_revenue_to_date": 257178256.72,
       "may_company_plan_to_date_revenue": 245609998.06,
       "may_company_plan_completion_month_pct": 1.0133,
-      "may_company_plan_completion_to_date_pct": 1.047,
-      "may_company_forecast_revenue": 265735249.8,
-      "may_company_forecast_pct": 1.047,
+      "may_company_plan_completion_to_date_pct": 1.0471,
+      "may_company_forecast_revenue": 265750865.28,
+      "may_company_forecast_pct": 1.0471,
       "google_sheets_company_plan_field": "company_revenue_plan",
       "latestMarketplaceDate": "2026-05-30"
     }
@@ -2947,11 +2987,11 @@
       "dayOfMonth": 30,
       "planRevenueMonth": 253796998,
       "planRevenueToDate": 245609998.06,
-      "factRevenueToDate": 257163144.97,
+      "factRevenueToDate": 257178256.72,
       "completionMonthPct": 1.0133,
-      "completionToDatePct": 1.047,
-      "forecastRevenue": 265735249.8,
-      "forecastPct": 1.047,
+      "completionToDatePct": 1.0471,
+      "forecastRevenue": 265750865.28,
+      "forecastPct": 1.0471,
       "channels": {
         "wb": {
           "label": "WB",
@@ -3630,12 +3670,12 @@
   "company_plan_month_key": "2026-05",
   "company_plan_month_label": "май 2026",
   "company_plan_revenue": 253796998,
-  "company_fact_revenue_to_date": 257163144.97,
+  "company_fact_revenue_to_date": 257178256.72,
   "company_plan_to_date_revenue": 245609998.06,
   "company_plan_completion_month_pct": 1.0133,
-  "company_plan_completion_to_date_pct": 1.047,
-  "company_forecast_revenue": 265735249.8,
-  "company_forecast_pct": 1.047,
+  "company_plan_completion_to_date_pct": 1.0471,
+  "company_forecast_revenue": 265750865.28,
+  "company_forecast_pct": 1.0471,
   "company_plan_source": "codex_portal_altea_plan_fact_v2_review.xlsx :: 02_Platforms + salary_contour_review",
   "latestMarketplaceDate": "2026-05-30",
   "marketplaceFactSource": "platform_trends.json (API-backed)"

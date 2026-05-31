@@ -1,154 +1,360 @@
 {
-  "generatedAt": "2026-05-07T13:19:17.679Z",
-  "sourceWorkbook": "План А.xlsx",
-  "sourcePath": "C:\\Users\\artiu\\Downloads\\Telegram Desktop\\План А.xlsx",
-  "sourceSheet": "00_Источник_плана",
-  "planType": "company_revenue",
-  "note": "Company revenue plan. IU WB/Ozon remains in iu_plan and iu_drr_summary.",
+  "generatedAt": "2026-05-29T19:18:00+03:00",
+  "sourceWorkbook": "codex_portal_altea_plan_fact_v2_review.xlsx",
+  "sourcePath": "C:\\Users\\artiu\\Downloads\\codex_portal_altea_plan_fact_v2_review.xlsx",
+  "sourceSheet": "02_Platforms + salary_contour_review",
+  "planType": "marketplace_salary_revenue",
+  "note": "Marketplace salary revenue contour. B2B and Site are separate; v46 is benchmark only; small channels are manual decision/recovery, not automatic salary KPI.",
   "months": {
     "2026-05": {
       "label": "май 2026",
       "days": 31,
-      "revenue": 291518548.512607,
-      "dailyRevenue": 9403824.15,
+      "revenue": 253796998,
+      "dailyRevenue": 8186999.94,
       "channels": {
         "wb": {
           "label": "WB",
-          "revenue": 179525953,
-          "dailyRevenue": 5791159.77
+          "revenue": 190405570,
+          "dailyRevenue": 6142115.16,
+          "salaryIncluded": true,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ozon": {
           "label": "Ozon",
-          "revenue": 103407637.512607,
-          "dailyRevenue": 3335730.24
+          "revenue": 53553438,
+          "dailyRevenue": 1727530.26,
+          "salaryIncluded": true,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ya": {
           "label": "Яндекс Маркет",
-          "revenue": 2444312,
-          "dailyRevenue": 78848.77
-        },
-        "goldapple": {
-          "label": "Золотое Яблоко online",
-          "revenue": 2138494,
-          "dailyRevenue": 68983.68
-        },
-        "letu": {
-          "label": "Летуаль online",
-          "revenue": 2336071,
-          "dailyRevenue": 75357.13
-        },
-        "magnit": {
-          "label": "Магнит Маркет",
-          "revenue": 166081,
-          "dailyRevenue": 5357.45
-        },
-        "d2c": {
-          "label": "Сайт / D2C",
-          "revenue": 1500000,
-          "dailyRevenue": 48387.1
+          "revenue": 9837990,
+          "dailyRevenue": 317354.52,
+          "salaryIncluded": true,
+          "planSource": "May forecast from 01-24 fact; corrective target removed"
         },
         "b2b": {
           "label": "B2B / опт",
           "revenue": 0,
-          "dailyRevenue": 0
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "separate contour"
+        },
+        "d2c": {
+          "label": "Сайт / D2C",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "separate contour"
+        },
+        "goldapple": {
+          "label": "Золотое Яблоко online",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "manual decision below threshold",
+          "separateContourValue": 381676
+        },
+        "letu": {
+          "label": "Летуаль online",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "manual decision below threshold"
+        },
+        "magnit": {
+          "label": "Магнит Маркет",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "manual decision below threshold",
+          "separateContourValue": 19519
+        },
+        "all": {
+          "label": "Маркетплейсы salary contour",
+          "revenue": 253796998,
+          "dailyRevenue": 8186999.94,
+          "salaryIncluded": true
         }
-      }
+      },
+      "salaryContour": {
+        "generatedAt": "2026-05-29T19:10:00+03:00",
+        "revenue": 253796998,
+        "dailyRevenue": 8186999.94,
+        "includedChannels": [
+          "wb",
+          "ozon",
+          "ya"
+        ],
+        "excludedChannels": {
+          "b2b": {
+            "label": "B2B / опт",
+            "reason": "separate contour"
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "reason": "separate contour"
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "reason": "manual decision below threshold"
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "reason": "manual decision below threshold"
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "reason": "manual decision below threshold"
+          }
+        },
+        "adjustmentCapPct": 0.2,
+        "oosRules": {
+          "hardBlockTurnoverDaysLt": 3,
+          "freezeGrowthTurnoverDaysFrom": 3,
+          "freezeGrowthTurnoverDaysTo": 14,
+          "warningTurnoverDaysTo": 30
+        },
+        "v46Usage": "benchmark_only"
+      },
+      "note": "May recalculated under marketplace salary revenue contour; B2B/Site and small channels excluded from automatic salary KPI."
     },
     "2026-06": {
       "label": "июнь 2026",
       "days": 30,
-      "revenue": 296565392.79700303,
-      "dailyRevenue": 9885513.09,
+      "revenue": 285818670,
+      "dailyRevenue": 9527289,
       "channels": {
         "wb": {
           "label": "WB",
-          "revenue": 183389907,
-          "dailyRevenue": 6112996.9
+          "revenue": 214476498,
+          "dailyRevenue": 7149216.6,
+          "salaryIncluded": true,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ozon": {
           "label": "Ozon",
-          "revenue": 102003858.797003,
-          "dailyRevenue": 3400128.63
+          "revenue": 60323623,
+          "dailyRevenue": 2010787.43,
+          "salaryIncluded": true,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ya": {
           "label": "Яндекс Маркет",
-          "revenue": 3416649,
-          "dailyRevenue": 113888.3
-        },
-        "goldapple": {
-          "label": "Золотое Яблоко online",
-          "revenue": 2905642,
-          "dailyRevenue": 96854.73
-        },
-        "letu": {
-          "label": "Летуаль online",
-          "revenue": 2382807,
-          "dailyRevenue": 79426.9
-        },
-        "magnit": {
-          "label": "Магнит Маркет",
-          "revenue": 166529,
-          "dailyRevenue": 5550.97
-        },
-        "d2c": {
-          "label": "Сайт / D2C",
-          "revenue": 1800000,
-          "dailyRevenue": 60000
+          "revenue": 11018549,
+          "dailyRevenue": 367284.97,
+          "salaryIncluded": true,
+          "planSource": "may_forecast * 1.12; corrective target removed"
         },
         "b2b": {
           "label": "B2B / опт",
-          "revenue": 500000,
-          "dailyRevenue": 16666.67
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "separate contour"
+        },
+        "d2c": {
+          "label": "Сайт / D2C",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "separate contour"
+        },
+        "goldapple": {
+          "label": "Золотое Яблоко online",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "manual decision below threshold"
+        },
+        "letu": {
+          "label": "Летуаль online",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "manual decision below threshold"
+        },
+        "magnit": {
+          "label": "Магнит Маркет",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "manual decision below threshold"
+        },
+        "all": {
+          "label": "Маркетплейсы salary contour",
+          "revenue": 285818670,
+          "dailyRevenue": 9527289,
+          "salaryIncluded": true
         }
-      }
+      },
+      "salaryContour": {
+        "generatedAt": "2026-05-29T19:10:00+03:00",
+        "revenue": 285818670,
+        "dailyRevenue": 9527289,
+        "includedChannels": [
+          "wb",
+          "ozon",
+          "ya"
+        ],
+        "excludedChannels": {
+          "b2b": {
+            "label": "B2B / опт",
+            "reason": "separate contour"
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "reason": "separate contour"
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "reason": "manual decision below threshold"
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "reason": "manual decision below threshold"
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "reason": "manual decision below threshold"
+          }
+        },
+        "adjustmentCapPct": 0.2,
+        "oosRules": {
+          "hardBlockTurnoverDaysLt": 3,
+          "freezeGrowthTurnoverDaysFrom": 3,
+          "freezeGrowthTurnoverDaysTo": 14,
+          "warningTurnoverDaysTo": 30
+        },
+        "v46Usage": "benchmark_only"
+      },
+      "note": "Marketplace salary revenue contour."
     },
     "2026-07": {
       "label": "июль 2026",
       "days": 31,
-      "revenue": 311778156.474901,
-      "dailyRevenue": 10057359.89,
+      "revenue": 322540144,
+      "dailyRevenue": 10404520.77,
       "channels": {
         "wb": {
           "label": "WB",
-          "revenue": 191150691,
-          "dailyRevenue": 6166151.32
+          "revenue": 241590454,
+          "dailyRevenue": 7793240.45,
+          "salaryIncluded": true,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ozon": {
           "label": "Ozon",
-          "revenue": 105625550.474901,
-          "dailyRevenue": 3407275.82
+          "revenue": 67949690,
+          "dailyRevenue": 2191925.48,
+          "salaryIncluded": true,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ya": {
           "label": "Яндекс Маркет",
-          "revenue": 5270660,
-          "dailyRevenue": 170021.29
-        },
-        "goldapple": {
-          "label": "Золотое Яблоко online",
-          "revenue": 4009784,
-          "dailyRevenue": 129347.87
-        },
-        "letu": {
-          "label": "Летуаль online",
-          "revenue": 2920925,
-          "dailyRevenue": 94223.39
-        },
-        "magnit": {
-          "label": "Магнит Маркет",
-          "revenue": 200546,
-          "dailyRevenue": 6469.23
-        },
-        "d2c": {
-          "label": "Сайт / D2C",
-          "revenue": 2000000,
-          "dailyRevenue": 64516.13
+          "revenue": 13000000,
+          "dailyRevenue": 419354.84,
+          "salaryIncluded": true,
+          "planSource": "manual salary target; corrective target removed"
         },
         "b2b": {
           "label": "B2B / опт",
-          "revenue": 600000,
-          "dailyRevenue": 19354.84
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "separate contour"
+        },
+        "d2c": {
+          "label": "Сайт / D2C",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "separate contour"
+        },
+        "goldapple": {
+          "label": "Золотое Яблоко online",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "manual decision below threshold"
+        },
+        "letu": {
+          "label": "Летуаль online",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "manual decision below threshold"
+        },
+        "magnit": {
+          "label": "Магнит Маркет",
+          "revenue": 0,
+          "dailyRevenue": 0,
+          "salaryIncluded": false,
+          "planStatus": "separate_or_manual_contour",
+          "reason": "manual decision below threshold"
+        },
+        "all": {
+          "label": "Маркетплейсы salary contour",
+          "revenue": 322540144,
+          "dailyRevenue": 10404520.77,
+          "salaryIncluded": true
         }
-      }
+      },
+      "salaryContour": {
+        "generatedAt": "2026-05-29T19:10:00+03:00",
+        "revenue": 322540144,
+        "dailyRevenue": 10404520.77,
+        "includedChannels": [
+          "wb",
+          "ozon",
+          "ya"
+        ],
+        "excludedChannels": {
+          "b2b": {
+            "label": "B2B / опт",
+            "reason": "separate contour"
+          },
+          "d2c": {
+            "label": "Сайт / D2C",
+            "reason": "separate contour"
+          },
+          "goldapple": {
+            "label": "Золотое Яблоко online",
+            "reason": "manual decision below threshold"
+          },
+          "letu": {
+            "label": "Летуаль online",
+            "reason": "manual decision below threshold"
+          },
+          "magnit": {
+            "label": "Магнит Маркет",
+            "reason": "manual decision below threshold"
+          }
+        },
+        "adjustmentCapPct": 0.2,
+        "oosRules": {
+          "hardBlockTurnoverDaysLt": 3,
+          "freezeGrowthTurnoverDaysFrom": 3,
+          "freezeGrowthTurnoverDaysTo": 14,
+          "warningTurnoverDaysTo": 30
+        },
+        "v46Usage": "benchmark_only"
+      },
+      "note": "Marketplace salary revenue contour."
     },
     "2026-08": {
       "label": "август 2026",
@@ -159,12 +365,14 @@
         "wb": {
           "label": "WB",
           "revenue": 201066371,
-          "dailyRevenue": 6486011.97
+          "dailyRevenue": 6486011.97,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ozon": {
           "label": "Ozon",
           "revenue": 112322218.777206,
-          "dailyRevenue": 3623297.38
+          "dailyRevenue": 3623297.38,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ya": {
           "label": "Яндекс Маркет",
@@ -207,12 +415,14 @@
         "wb": {
           "label": "WB",
           "revenue": 216150839,
-          "dailyRevenue": 7205027.97
+          "dailyRevenue": 7205027.97,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ozon": {
           "label": "Ozon",
           "revenue": 131926900.701405,
-          "dailyRevenue": 4397563.36
+          "dailyRevenue": 4397563.36,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ya": {
           "label": "Яндекс Маркет",
@@ -255,12 +465,14 @@
         "wb": {
           "label": "WB",
           "revenue": 235531555,
-          "dailyRevenue": 7597792.1
+          "dailyRevenue": 7597792.1,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ozon": {
           "label": "Ozon",
           "revenue": 129719435.371205,
-          "dailyRevenue": 4184497.92
+          "dailyRevenue": 4184497.92,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ya": {
           "label": "Яндекс Маркет",
@@ -303,12 +515,14 @@
         "wb": {
           "label": "WB",
           "revenue": 259373620,
-          "dailyRevenue": 8645787.33
+          "dailyRevenue": 8645787.33,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ozon": {
           "label": "Ozon",
           "revenue": 126917638.188604,
-          "dailyRevenue": 4230587.94
+          "dailyRevenue": 4230587.94,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ya": {
           "label": "Яндекс Маркет",
@@ -351,12 +565,14 @@
         "wb": {
           "label": "WB",
           "revenue": 289011920,
-          "dailyRevenue": 9322965.16
+          "dailyRevenue": 9322965.16,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ozon": {
           "label": "Ozon",
           "revenue": 143447038.351102,
-          "dailyRevenue": 4627323.82
+          "dailyRevenue": 4627323.82,
+          "planSource": "02_Platforms.portal_target_plan"
         },
         "ya": {
           "label": "Яндекс Маркет",
@@ -390,5 +606,88 @@
         }
       }
     }
+  },
+  "rules": {
+    "metric": "orders_revenue",
+    "revenueIsTruth": true,
+    "v46Usage": "benchmark_only",
+    "b2bAndSite": "separate_contour",
+    "maxAdjustmentPct": 0.2,
+    "oosHardBlockTurnoverDaysLt": 3,
+    "mayLogic": "2026-05 uses WB/Ozon/Yandex forecast/portal target only; small channels and B2B/Site excluded from automatic salary KPI.",
+    "payrollCritical": true,
+    "purpose": "kpi_salary_calculation",
+    "controlTotals": {
+      "2026-05": {
+        "revenue": 253796998,
+        "wb": 190405570,
+        "ozon": 53553438,
+        "ya": 9837990
+      },
+      "2026-06": {
+        "revenue": 285818670,
+        "wb": 214476498,
+        "ozon": 60323623,
+        "ya": 11018549
+      },
+      "2026-07": {
+        "revenue": 322540144,
+        "wb": 241590454,
+        "ozon": 67949690,
+        "ya": 13000000
+      }
+    }
+  },
+  "payrollKpiPolicy": {
+    "purpose": "kpi_salary_calculation",
+    "isPayrollCritical": true,
+    "metric": "orders_revenue",
+    "includedChannels": [
+      "wb",
+      "ozon",
+      "ya"
+    ],
+    "excludedFromAutomaticSalaryKpi": [
+      "b2b",
+      "d2c",
+      "goldapple",
+      "letu",
+      "magnit"
+    ],
+    "doNotMixWith": [
+      "data/platform_plan.json units plan",
+      "v46 benchmark",
+      "general company revenue plan including B2B/Site/small channels"
+    ],
+    "rules": {
+      "revenueIsTruth": true,
+      "b2bAndSite": "separate_contour",
+      "smallChannels": "manual_or_recovery_contour_only",
+      "v46Usage": "benchmark_only",
+      "yandexCorrectiveTarget": "removed",
+      "maxCorrectionPct": 0.2,
+      "oosTurnoverDaysLt3": "no_salary_penalty_for_unavailable_volume"
+    },
+    "controlTotals": {
+      "2026-05": {
+        "revenue": 253796998,
+        "wb": 190405570,
+        "ozon": 53553438,
+        "ya": 9837990
+      },
+      "2026-06": {
+        "revenue": 285818670,
+        "wb": 214476498,
+        "ozon": 60323623,
+        "ya": 11018549
+      },
+      "2026-07": {
+        "revenue": 322540144,
+        "wb": 241590454,
+        "ozon": 67949690,
+        "ya": 13000000
+      }
+    },
+    "warning": "Payroll/KPI basis: changing these totals changes people salary calculation. Update only after explicit management approval and keep an audit note."
   }
 }

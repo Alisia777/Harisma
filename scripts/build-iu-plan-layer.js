@@ -145,6 +145,11 @@ function roundMoney(value) {
   return Math.round(num(value) * 100) / 100;
 }
 
+function roundRate(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.round(parsed * 1000000) / 1000000 : null;
+}
+
 function monthLabel(header, year) {
   const text = String(header || '').trim();
   return text ? `${text} ${year}` : `${year}`;
@@ -317,17 +322,25 @@ function buildWbDailyPlan() {
     const date = isoDate(row?.[0]);
     if (!date) return;
     const month = date.slice(0, 7);
+    const revenueFactGross = money(row?.[2]);
     const gmvPlanGross = money(row?.[3]);
+    const adsFactGross = money(row?.[5]);
     const adsPlanGross = money(row?.[6]);
-    if (gmvPlanGross <= 0 && adsPlanGross <= 0) return;
+    if (revenueFactGross <= 0 && gmvPlanGross <= 0 && adsFactGross <= 0 && adsPlanGross <= 0) return;
     const point = {
       date,
       monthKey: month,
+      revenueFactGross: roundMoney(revenueFactGross),
       gmvPlanGross: roundMoney(gmvPlanGross),
+      adsFactGross: roundMoney(adsFactGross),
       adsPlanGross: roundMoney(adsPlanGross),
+      revenueFactOur: roundMoney(revenueFactGross * WB_IU_SMART_SHARE),
       gmvPlanOur: roundMoney(gmvPlanGross * WB_IU_SMART_SHARE),
+      adsFactOur: roundMoney(adsFactGross * WB_IU_SMART_SHARE),
       adsPlanOur: roundMoney(adsPlanGross * WB_IU_SMART_SHARE),
-      share: WB_IU_SMART_SHARE
+      share: WB_IU_SMART_SHARE,
+      gmvCompletion: gmvPlanGross > 0 ? roundRate(revenueFactGross / gmvPlanGross) : null,
+      adsCompletion: adsPlanGross > 0 ? roundRate(adsFactGross / adsPlanGross) : null
     };
     daily.push(point);
     const bucket = monthly[month] || {
@@ -335,28 +348,42 @@ function buildWbDailyPlan() {
       days: 0,
       from: date,
       to: date,
+      revenueFactGross: 0,
       gmvPlanGross: 0,
+      adsFactGross: 0,
       adsPlanGross: 0,
+      revenueFactOur: 0,
       gmvPlanOur: 0,
+      adsFactOur: 0,
       adsPlanOur: 0
     };
     bucket.days += 1;
     bucket.from = date < bucket.from ? date : bucket.from;
     bucket.to = date > bucket.to ? date : bucket.to;
+    bucket.revenueFactGross += revenueFactGross;
     bucket.gmvPlanGross += gmvPlanGross;
+    bucket.adsFactGross += adsFactGross;
     bucket.adsPlanGross += adsPlanGross;
+    bucket.revenueFactOur += revenueFactGross * WB_IU_SMART_SHARE;
     bucket.gmvPlanOur += gmvPlanGross * WB_IU_SMART_SHARE;
+    bucket.adsFactOur += adsFactGross * WB_IU_SMART_SHARE;
     bucket.adsPlanOur += adsPlanGross * WB_IU_SMART_SHARE;
     monthly[month] = bucket;
   });
 
   Object.keys(monthly).forEach((month) => {
     const bucket = monthly[month];
+    bucket.revenueFactGross = roundMoney(bucket.revenueFactGross);
     bucket.gmvPlanGross = roundMoney(bucket.gmvPlanGross);
+    bucket.adsFactGross = roundMoney(bucket.adsFactGross);
     bucket.adsPlanGross = roundMoney(bucket.adsPlanGross);
+    bucket.revenueFactOur = roundMoney(bucket.revenueFactOur);
     bucket.gmvPlanOur = roundMoney(bucket.gmvPlanOur);
+    bucket.adsFactOur = roundMoney(bucket.adsFactOur);
     bucket.adsPlanOur = roundMoney(bucket.adsPlanOur);
     bucket.adsPlanRate = bucket.gmvPlanOur > 0 ? bucket.adsPlanOur / bucket.gmvPlanOur : null;
+    bucket.gmvCompletion = bucket.gmvPlanOur > 0 ? bucket.revenueFactOur / bucket.gmvPlanOur : null;
+    bucket.adsCompletion = bucket.adsPlanOur > 0 ? bucket.adsFactOur / bucket.adsPlanOur : null;
   });
 
   daily.sort((left, right) => left.date.localeCompare(right.date));

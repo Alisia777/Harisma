@@ -6579,7 +6579,8 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       value: wbAdsCompletionToDate == null ? '—' : fmt.pct(wbAdsCompletionToDate),
       detail: `${fmt.money(wbAdsFactToDate)} / ${fmt.money(wbAdsPlanToDate)}`,
       progress: wbAdsCompletionToDate,
-      tone: iuDrrFunnelAdsCompletionTone(wbAdsCompletionToDate)
+      tone: iuDrrFunnelAdsCompletionTone(wbAdsCompletionToDate),
+      status: iuDrrAdsBudgetStatus(wbAdsCompletionToDate)
     },
     {
       label: 'ДРР факт',
@@ -6600,7 +6601,8 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       value: `${wbAdsDeltaToDate >= 0 ? '+' : ''}${fmt.money(wbAdsDeltaToDate)}`,
       detail: wbAdsCompletionToDate == null ? 'нет плана' : fmt.pct(wbAdsCompletionToDate),
       progress: wbAdsCompletionToDate,
-      tone: iuDrrFunnelAdsCompletionTone(wbAdsCompletionToDate)
+      tone: iuDrrFunnelAdsCompletionTone(wbAdsCompletionToDate),
+      status: iuDrrAdsBudgetStatus(wbAdsCompletionToDate)
     },
     {
       label: 'Внешний трафик',

@@ -270,6 +270,13 @@ function Invoke-IuDrrBuild {
     $resolvedOutputDir,
     "--mirror-local-fallback"
   ) -Attempts 2 -RetryDelaySeconds 30 -TimeoutSeconds 1800
+  Invoke-NodeStep -StepName "plan truth retry audit" -Arguments @(
+    "scripts/audit-plan-truth.js",
+    "--input-dir",
+    $resolvedOutputDir,
+    "--base-data-dir",
+    "data"
+  ) -Attempts 1 -RetryDelaySeconds 10 -TimeoutSeconds 900
 }
 
 function Invoke-StaticDataPublish {

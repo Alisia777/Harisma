@@ -680,6 +680,18 @@ try {
   Write-Warning "[sync] IU/DRR summary build failed, but the portal sync will continue with the last usable summary if present: $($_.Exception.Message)"
 }
 
+if ($iuDrrRefreshSucceeded) {
+  Write-Output "[sync] plan truth audit started"
+  Invoke-NodeStep -StepName "plan truth audit" -Arguments @(
+    "scripts/audit-plan-truth.js",
+    "--input-dir",
+    $resolvedOutputDir,
+    "--base-data-dir",
+    "data"
+  ) -Attempts 1 -RetryDelaySeconds 10
+  Write-Output "[sync] plan truth audit completed"
+}
+
 if ([string]::IsNullOrWhiteSpace($env:ALTEA_WB_FEEDBACKS_TOKEN)) {
   $userWbFeedbacksToken = [Environment]::GetEnvironmentVariable("ALTEA_WB_FEEDBACKS_TOKEN", "User")
   if ([string]::IsNullOrWhiteSpace($userWbFeedbacksToken)) {

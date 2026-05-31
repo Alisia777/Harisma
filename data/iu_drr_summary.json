@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-31T08:41:42.559Z",
+  "generatedAt": "2026-05-31T08:52:55.403Z",
   "asOfDate": "2026-05-29",
   "source": {
     "iuPlanGeneratedAt": "2026-05-30T08:36:28.452Z",
@@ -10602,6 +10602,351 @@
       "ordersAdPct": null
     }
   ],
+  "planTruth": {
+    "rule": "WB and Ozon revenue plans use the higher value between corporate plan and IU benchmark; Ozon IU benchmark is Smart-Sale 40%.",
+    "months": [
+      {
+        "monthKey": "2026-03",
+        "label": "2026-03 2026",
+        "days": 31,
+        "rule": "wb=max(corporate,iu); ozon=max(corporate,iu_40pct)",
+        "corporateTotal": 0,
+        "selectedWbOzonRevenue": 37262646.6,
+        "wb": {
+          "selectedRevenue": 0,
+          "corporatePlan": 0,
+          "iuPlan": 0,
+          "source": "iu_contract",
+          "dailyRevenue": 0,
+          "iuAdsPlan": 0,
+          "dailyIuAds": 0
+        },
+        "ozon": {
+          "selectedRevenue": 37262646.6,
+          "corporatePlan": 0,
+          "iuPlan40": 37262646.6,
+          "source": "iu_contract_40pct",
+          "dailyRevenue": 1202020.86,
+          "iuAdsPlan": 9270199.99,
+          "dailyIuAds": 299038.71
+        },
+        "otherChannels": {
+          "ya": 0,
+          "goldapple": 0,
+          "letu": 0,
+          "magnit": 0,
+          "d2c": 0,
+          "b2b": 0
+        }
+      },
+      {
+        "monthKey": "2026-04",
+        "label": "2026-04 2026",
+        "days": 30,
+        "rule": "wb=max(corporate,iu); ozon=max(corporate,iu_40pct)",
+        "corporateTotal": 0,
+        "selectedWbOzonRevenue": 41801812.32,
+        "wb": {
+          "selectedRevenue": 0,
+          "corporatePlan": 0,
+          "iuPlan": 0,
+          "source": "iu_contract",
+          "dailyRevenue": 0,
+          "iuAdsPlan": 0,
+          "dailyIuAds": 0
+        },
+        "ozon": {
+          "selectedRevenue": 41801812.32,
+          "corporatePlan": 0,
+          "iuPlan40": 41801812.32,
+          "source": "iu_contract_40pct",
+          "dailyRevenue": 1393393.74,
+          "iuAdsPlan": 10399453.48,
+          "dailyIuAds": 346648.45
+        },
+        "otherChannels": {
+          "ya": 0,
+          "goldapple": 0,
+          "letu": 0,
+          "magnit": 0,
+          "d2c": 0,
+          "b2b": 0
+        }
+      },
+      {
+        "monthKey": "2026-05",
+        "label": "Май 2026",
+        "days": 31,
+        "rule": "wb=max(corporate,iu); ozon=max(corporate,iu_40pct)",
+        "corporateTotal": 253796998,
+        "selectedWbOzonRevenue": 243959008,
+        "wb": {
+          "selectedRevenue": 190405570,
+          "corporatePlan": 190405570,
+          "iuPlan": 179525953,
+          "source": "corporate_plan",
+          "dailyRevenue": 6142115.16,
+          "iuAdsPlan": 14362076.24,
+          "dailyIuAds": 463292.78
+        },
+        "ozon": {
+          "selectedRevenue": 53553438,
+          "corporatePlan": 53553438,
+          "iuPlan40": 41363055.01,
+          "source": "corporate_plan",
+          "dailyRevenue": 1727530.26,
+          "iuAdsPlan": 13323022.53,
+          "dailyIuAds": 429774.92
+        },
+        "otherChannels": {
+          "ya": 9837990,
+          "goldapple": 0,
+          "letu": 0,
+          "magnit": 0,
+          "d2c": 0,
+          "b2b": 0
+        }
+      },
+      {
+        "monthKey": "2026-06",
+        "label": "Июн 2026",
+        "days": 30,
+        "rule": "wb=max(corporate,iu); ozon=max(corporate,iu_40pct)",
+        "corporateTotal": 285818670,
+        "selectedWbOzonRevenue": 274800121,
+        "wb": {
+          "selectedRevenue": 214476498,
+          "corporatePlan": 214476498,
+          "iuPlan": 183389907,
+          "source": "corporate_plan",
+          "dailyRevenue": 7149216.6,
+          "iuAdsPlan": 14671192.56,
+          "dailyIuAds": 489039.75
+        },
+        "ozon": {
+          "selectedRevenue": 60323623,
+          "corporatePlan": 60323623,
+          "iuPlan40": 40801543.52,
+          "source": "corporate_plan",
+          "dailyRevenue": 2010787.43,
+          "iuAdsPlan": 15007308.93,
+          "dailyIuAds": 500243.63
+        },
+        "otherChannels": {
+          "ya": 11018549,
+          "goldapple": 0,
+          "letu": 0,
+          "magnit": 0,
+          "d2c": 0,
+          "b2b": 0
+        }
+      },
+      {
+        "monthKey": "2026-07",
+        "label": "Июл 2026",
+        "days": 31,
+        "rule": "wb=max(corporate,iu); ozon=max(corporate,iu_40pct)",
+        "corporateTotal": 322540144,
+        "selectedWbOzonRevenue": 309540144,
+        "wb": {
+          "selectedRevenue": 241590454,
+          "corporatePlan": 241590454,
+          "iuPlan": 191150691,
+          "source": "corporate_plan",
+          "dailyRevenue": 7793240.45,
+          "iuAdsPlan": 15292055.28,
+          "dailyIuAds": 493292.11
+        },
+        "ozon": {
+          "selectedRevenue": 67949690,
+          "corporatePlan": 67949690,
+          "iuPlan40": 42250220.19,
+          "source": "corporate_plan",
+          "dailyRevenue": 2191925.48,
+          "iuAdsPlan": 16904521.62,
+          "dailyIuAds": 545307.15
+        },
+        "otherChannels": {
+          "ya": 13000000,
+          "goldapple": 0,
+          "letu": 0,
+          "magnit": 0,
+          "d2c": 0,
+          "b2b": 0
+        }
+      },
+      {
+        "monthKey": "2026-08",
+        "label": "Авг 2026",
+        "days": 31,
+        "rule": "wb=max(corporate,iu); ozon=max(corporate,iu_40pct)",
+        "corporateTotal": 330493435.78,
+        "selectedWbOzonRevenue": 313388589.78,
+        "wb": {
+          "selectedRevenue": 201066371,
+          "corporatePlan": 201066371,
+          "iuPlan": 201066371,
+          "source": "iu_contract",
+          "dailyRevenue": 6486011.97,
+          "iuAdsPlan": 16085309.68,
+          "dailyIuAds": 518880.96
+        },
+        "ozon": {
+          "selectedRevenue": 112322218.78,
+          "corporatePlan": 112322218.78,
+          "iuPlan40": 44928887.51,
+          "source": "corporate_plan",
+          "dailyRevenue": 3623297.38,
+          "iuAdsPlan": 27943517.86,
+          "dailyIuAds": 901403.8
+        },
+        "otherChannels": {
+          "ya": 6441334,
+          "goldapple": 4611252,
+          "letu": 3000631,
+          "magnit": 201629,
+          "d2c": 2100000,
+          "b2b": 750000
+        }
+      },
+      {
+        "monthKey": "2026-09",
+        "label": "Сен 2026",
+        "days": 30,
+        "rule": "wb=max(corporate,iu); ozon=max(corporate,iu_40pct)",
+        "corporateTotal": 367451257.7,
+        "selectedWbOzonRevenue": 348077739.7,
+        "wb": {
+          "selectedRevenue": 216150839,
+          "corporatePlan": 216150839,
+          "iuPlan": 216150839,
+          "source": "iu_contract",
+          "dailyRevenue": 7205027.97,
+          "iuAdsPlan": 17292067.12,
+          "dailyIuAds": 576402.24
+        },
+        "ozon": {
+          "selectedRevenue": 131926900.7,
+          "corporatePlan": 131926900.7,
+          "iuPlan40": 52770760.28,
+          "source": "corporate_plan",
+          "dailyRevenue": 4397563.36,
+          "iuAdsPlan": 32820769.98,
+          "dailyIuAds": 1094025.67
+        },
+        "otherChannels": {
+          "ya": 7612015,
+          "goldapple": 5302940,
+          "letu": 3105228,
+          "magnit": 203335,
+          "d2c": 2300000,
+          "b2b": 850000
+        }
+      },
+      {
+        "monthKey": "2026-10",
+        "label": "Окт 2026",
+        "days": 31,
+        "rule": "wb=max(corporate,iu); ozon=max(corporate,iu_40pct)",
+        "corporateTotal": 387055656.37,
+        "selectedWbOzonRevenue": 365250990.37,
+        "wb": {
+          "selectedRevenue": 235531555,
+          "corporatePlan": 235531555,
+          "iuPlan": 235531555,
+          "source": "iu_contract",
+          "dailyRevenue": 7597792.1,
+          "iuAdsPlan": 18842524.4,
+          "dailyIuAds": 607823.37
+        },
+        "ozon": {
+          "selectedRevenue": 129719435.37,
+          "corporatePlan": 129719435.37,
+          "iuPlan40": 51887774.15,
+          "source": "corporate_plan",
+          "dailyRevenue": 4184497.92,
+          "iuAdsPlan": 32271596.83,
+          "dailyIuAds": 1041019.25
+        },
+        "otherChannels": {
+          "ya": 8782698,
+          "goldapple": 6098382,
+          "letu": 3218044,
+          "magnit": 205542,
+          "d2c": 2500000,
+          "b2b": 1000000
+        }
+      },
+      {
+        "monthKey": "2026-11",
+        "label": "Ноя 2026",
+        "days": 30,
+        "rule": "wb=max(corporate,iu); ozon=max(corporate,iu_40pct)",
+        "corporateTotal": 410817634.19,
+        "selectedWbOzonRevenue": 386291258.19,
+        "wb": {
+          "selectedRevenue": 259373620,
+          "corporatePlan": 259373620,
+          "iuPlan": 259373620,
+          "source": "iu_contract",
+          "dailyRevenue": 8645787.33,
+          "iuAdsPlan": 20749889.6,
+          "dailyIuAds": 691662.99
+        },
+        "ozon": {
+          "selectedRevenue": 126917638.19,
+          "corporatePlan": 126917638.19,
+          "iuPlan40": 50767055.28,
+          "source": "corporate_plan",
+          "dailyRevenue": 4230587.94,
+          "iuAdsPlan": 31574565.82,
+          "dailyIuAds": 1052485.53
+        },
+        "otherChannels": {
+          "ya": 9953377,
+          "goldapple": 7013139,
+          "letu": 3350815,
+          "magnit": 209045,
+          "d2c": 2800000,
+          "b2b": 1200000
+        }
+      },
+      {
+        "monthKey": "2026-12",
+        "label": "Дек 2026",
+        "days": 31,
+        "rule": "wb=max(corporate,iu); ozon=max(corporate,iu_40pct)",
+        "corporateTotal": 459872220.35,
+        "selectedWbOzonRevenue": 432458958.35,
+        "wb": {
+          "selectedRevenue": 289011920,
+          "corporatePlan": 289011920,
+          "iuPlan": 289011920,
+          "source": "iu_contract",
+          "dailyRevenue": 9322965.16,
+          "iuAdsPlan": 23120953.6,
+          "dailyIuAds": 745837.21
+        },
+        "ozon": {
+          "selectedRevenue": 143447038.35,
+          "corporatePlan": 143447038.35,
+          "iuPlan40": 57378815.34,
+          "source": "corporate_plan",
+          "dailyRevenue": 4627323.82,
+          "iuAdsPlan": 35686749.44,
+          "dailyIuAds": 1151185.47
+        },
+        "otherChannels": {
+          "ya": 11124048,
+          "goldapple": 8065112,
+          "letu": 3509365,
+          "magnit": 214737,
+          "d2c": 3000000,
+          "b2b": 1500000
+        }
+      }
+    ]
+  },
   "months": [
     {
       "monthKey": "2026-05",

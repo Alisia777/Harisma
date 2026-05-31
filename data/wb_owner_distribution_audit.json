@@ -1,6 +1,6 @@
 {
   "schema": "portal-wb-owner-distribution-audit-v1",
-  "generatedAt": "2026-05-29T09:41:30.555Z",
+  "generatedAt": "2026-05-31T07:30:08.589Z",
   "source": {
     "file": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\распределение артикулов.xlsx",
     "sheetName": "Лист1",
@@ -9,16 +9,16 @@
     "duplicateCount": 1
   },
   "summary": {
-    "portalSkuCount": 89,
-    "wbSkuCount": 89,
-    "matchedSkuCount": 72,
-    "updatedOwnerCount": 72,
+    "portalSkuCount": 143,
+    "wbSkuCount": 143,
+    "matchedSkuCount": 125,
+    "updatedOwnerCount": 125,
     "unchangedOwnerCount": 0,
-    "missingInPortalCount": 59,
-    "missingInDistributionCount": 17,
+    "missingInPortalCount": 6,
+    "missingInDistributionCount": 18,
     "ownerCounts": {
-      "Лапыгин Максим": 41,
-      "Васильева Мария": 31
+      "Лапыгин Максим": 52,
+      "Васильева Мария": 73
     }
   },
   "matched": [
@@ -669,459 +669,486 @@
       "ownerWb": "Васильева Мария",
       "changed": true,
       "sourceRow": 127
+    },
+    {
+      "articleKey": "sustalit_75ml",
+      "article": "sustalit_75ml",
+      "name": "Мазь для суставов Сусталит , CPA, 75 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 33
+    },
+    {
+      "articleKey": "kavmaz",
+      "article": "kavmaz",
+      "name": "Мазь для суставов Кавказская мазь , CPA, 40 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 41
+    },
+    {
+      "articleKey": "kavmaz_60ml",
+      "article": "kavmaz_60ml",
+      "name": "Мазь для суставов Кавказская мазь , CPA, 60 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 30
+    },
+    {
+      "articleKey": "artoks",
+      "article": "artoks",
+      "name": "Мазь для суставов Артокс, CPA, 50 мл",
+      "previousOwnerWb": "Мария",
+      "ownerWb": "Лапыгин Максим",
+      "changed": true,
+      "sourceRow": 32
+    },
+    {
+      "articleKey": "uromax",
+      "article": "uromax",
+      "name": "Пищевая добавка Уромакс , CPA, 20 капсул",
+      "previousOwnerWb": "Кирилл",
+      "ownerWb": "Лапыгин Максим",
+      "changed": true,
+      "sourceRow": 76
+    },
+    {
+      "articleKey": "activeprost",
+      "article": "activeprost",
+      "name": "Пищевая добавка Активпрост , CPA, 10 капсул",
+      "previousOwnerWb": "Кирилл",
+      "ownerWb": "Лапыгин Максим",
+      "changed": true,
+      "sourceRow": 109
+    },
+    {
+      "articleKey": "synergel_60ml",
+      "article": "synergel_60ml",
+      "name": "Мазь для суставов Синергель, CPA, 60 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 40
+    },
+    {
+      "articleKey": "vetonus",
+      "article": "vetonus",
+      "name": "Крем от варикоза Ветонус, CPA, 30 мл",
+      "previousOwnerWb": "Мария",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 93
+    },
+    {
+      "articleKey": "allicil_gribok15ml",
+      "article": "allicil_gribok15ml",
+      "name": "Мазь от грибка ногтей Аллицил, CPA, 15 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 63
+    },
+    {
+      "articleKey": "cardicin_bad_60caps",
+      "article": "cardicin_BAD_60caps",
+      "name": "cardicin_BAD_60caps",
+      "previousOwnerWb": "",
+      "ownerWb": "Лапыгин Максим",
+      "changed": true,
+      "sourceRow": 46
+    },
+    {
+      "articleKey": "uromax_1_1",
+      "article": "uromax_1_1",
+      "name": "Пищевая добавка Уромакс , CPA, 20 капсул, набор из 2 шт",
+      "previousOwnerWb": "Кирилл",
+      "ownerWb": "Лапыгин Максим",
+      "changed": true,
+      "sourceRow": 99
+    },
+    {
+      "articleKey": "sanatsin",
+      "article": "sanatsin",
+      "name": "Пищевая добавка Санацин, CPA, 20 штук",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Лапыгин Максим",
+      "changed": true,
+      "sourceRow": 66
+    },
+    {
+      "articleKey": "urinofix",
+      "article": "urinofix",
+      "name": "Пищевая добавка Уринофикс, CPA, 20 капсул",
+      "previousOwnerWb": "Кирилл",
+      "ownerWb": "Лапыгин Максим",
+      "changed": true,
+      "sourceRow": 49
+    },
+    {
+      "articleKey": "mycoplax",
+      "article": "mycoplax",
+      "name": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 47
+    },
+    {
+      "articleKey": "micardin_1_1",
+      "article": "micardin_1_1",
+      "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 2 шт",
+      "previousOwnerWb": "Светлана",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 55
+    },
+    {
+      "articleKey": "wbbiotrin_1_1_1",
+      "article": "wbbiotrin_1_1_1",
+      "name": "Мазь для суставов Биотрин, CPA, 30 мл, набор из 3 шт",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 110
+    },
+    {
+      "articleKey": "wbsinergel",
+      "article": "wbsinergel",
+      "name": "Мазь для суставов Синергель, CPA, 30 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 56
+    },
+    {
+      "articleKey": "artoks_1_1",
+      "article": "artoks_1_1",
+      "name": "Мазь для суставов Артокс, CPA, 50 мл, набор из 2 шт",
+      "previousOwnerWb": "Мария",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 43
+    },
+    {
+      "articleKey": "gemorekt",
+      "article": "gemorekt",
+      "name": "Крем от гемороя Геморект, CPA, 15 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 88
+    },
+    {
+      "articleKey": "pantogor_100ml",
+      "article": "pantogor_100ml",
+      "name": "Мазь для суставов Пантогор , CPA, 100 мл",
+      "previousOwnerWb": "Мария",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 36
+    },
+    {
+      "articleKey": "sanatsin_1_1",
+      "article": "sanatsin_1_1",
+      "name": "Пищевая добавка Санацин, CPA, 20 штук",
+      "previousOwnerWb": "Кирилл",
+      "ownerWb": "Лапыгин Максим",
+      "changed": true,
+      "sourceRow": 68
+    },
+    {
+      "articleKey": "sustalit",
+      "article": "sustalit",
+      "name": "Мазь для суставов Сусталит , CPA, 30 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 90
+    },
+    {
+      "articleKey": "ekzifol",
+      "article": "ekzifol",
+      "name": "Мазь от грибка ногтей Экзифол, CPA, 30 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 62
+    },
+    {
+      "articleKey": "artoks_75ml",
+      "article": "artoks_75ml",
+      "name": "Мазь для суставов Артокс, CPA, 75 мл",
+      "previousOwnerWb": "Мария",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 72
+    },
+    {
+      "articleKey": "otivin",
+      "article": "otivin",
+      "name": "Пищевая добавка Отивин , CPA, 10 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Лапыгин Максим",
+      "changed": true,
+      "sourceRow": 74
+    },
+    {
+      "articleKey": "vetonus_100ml",
+      "article": "vetonus_100ml",
+      "name": "Крем от варикоза Ветонус, CPA, 100 мл",
+      "previousOwnerWb": "Мария",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 84
+    },
+    {
+      "articleKey": "sinergel_30ml_1_1",
+      "article": "sinergel_30ml_1_1",
+      "name": "Мазь для суставов Синергель , CPA, 30 мл, набор из 2 шт",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 48
+    },
+    {
+      "articleKey": "kavmaz_40ml_1_1",
+      "article": "kavmaz_40ml_1_1",
+      "name": "Мазь для суставов Кавказская мазь , CPA, 40 мл, набор из 2 шт",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 59
+    },
+    {
+      "articleKey": "urolgan",
+      "article": "urolgan",
+      "name": "Пищевая добавка Уролган , CPA, 10 мл",
+      "previousOwnerWb": "Кирилл",
+      "ownerWb": "Лапыгин Максим",
+      "changed": true,
+      "sourceRow": 125
+    },
+    {
+      "articleKey": "dardrakona_1_1",
+      "article": "dardrakona_1_1",
+      "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
+      "previousOwnerWb": "Мария",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 87
+    },
+    {
+      "articleKey": "daoshen",
+      "article": "daoshen",
+      "name": "Мазь от грибка ногтей Даошэн, CPA, 15 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 81
+    },
+    {
+      "articleKey": "micardinforte",
+      "article": "micardinforte",
+      "name": "Пищевая добавка Микардин Форте, CPA, 10 капсул",
+      "previousOwnerWb": "",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 60
+    },
+    {
+      "articleKey": "daoshen_75ml",
+      "article": "daoshen_75ml",
+      "name": "Мазь от грибка ногтей Даошэн, CPA, 75 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 75
+    },
+    {
+      "articleKey": "micardin",
+      "article": "micardin",
+      "name": "Пищевая добавка Микардин, CPA, 10 капсул",
+      "previousOwnerWb": "Светлана",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 73
+    },
+    {
+      "articleKey": "osteofast",
+      "article": "osteofast",
+      "name": "Мазь для суставов Остеофаст, CPA, 30 мл, набор из 3 шт",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 78
+    },
+    {
+      "articleKey": "varifit",
+      "article": "varifit",
+      "name": "Крем от варикоза Варифит, CPA, 30 мл",
+      "previousOwnerWb": "Мария",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 85
+    },
+    {
+      "articleKey": "dardrakona",
+      "article": "dardrakona",
+      "name": "Крем от варикоза Дар дракона, CPA, 30 мл",
+      "previousOwnerWb": "",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 108
+    },
+    {
+      "articleKey": "psoral_50ml",
+      "article": "psoral_50ml",
+      "name": "Мазь от псориаза Псорал, CPA, 50 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 86
+    },
+    {
+      "articleKey": "wbgetsizegel",
+      "article": "wbgetsizegel",
+      "name": "Лубрикант Getsize CPA, 30 мл",
+      "previousOwnerWb": "Мария",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 116
+    },
+    {
+      "articleKey": "varifit_1_1",
+      "article": "varifit_1_1",
+      "name": "Крем от варикоза Варифит, CPA, 30 мл, набор из 2 шт",
+      "previousOwnerWb": "Мария",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 114
+    },
+    {
+      "articleKey": "dolgar",
+      "article": "dolgar",
+      "name": "Мазь от грибка ногтей Долгар, CPA, 15 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 104
+    },
+    {
+      "articleKey": "vetonus_1_1",
+      "article": "vetonus_1_1",
+      "name": "Крем от варикоза Ветонус, CPA, 30 мл",
+      "previousOwnerWb": "Мария",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 89
+    },
+    {
+      "articleKey": "sustalit_30ml_1_1",
+      "article": "sustalit_30ml_1_1",
+      "name": "Мазь для суставов Сусталит , CPA, 30 мл",
+      "previousOwnerWb": "",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 79
+    },
+    {
+      "articleKey": "wbgetsize",
+      "article": "wbgetsize",
+      "name": "Игрушка для взрослых Getsize, CPA",
+      "previousOwnerWb": "Мария",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 123
+    },
+    {
+      "articleKey": "psoral",
+      "article": "psoral",
+      "name": "Мазь от псориаза Псорал, CPA, 30 мл",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 106
+    },
+    {
+      "articleKey": "wbpantogor_1_1",
+      "article": "wbpantogor_1_1",
+      "name": "Мазь для суставов Пантогор , CPA, 30 мл, набор из 2 шт",
+      "previousOwnerWb": "Мария",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 122
+    },
+    {
+      "articleKey": "khvoinitsa_1_1",
+      "article": "khvoinitsa_1_1",
+      "name": "Пищевая добавка Хвойница , CPA, 7 саше",
+      "previousOwnerWb": "Светлана",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 118
+    },
+    {
+      "articleKey": "dardrakona_75ml",
+      "article": "dardrakona_75ml",
+      "name": "Крем от варикоза Дар дракона, CPA, 75 мл",
+      "previousOwnerWb": "Мария",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 98
+    },
+    {
+      "articleKey": "erobrut",
+      "article": "erobrut",
+      "name": "Пищевая добавка Эробрут, CPA, 20 капсул",
+      "previousOwnerWb": "Кирилл",
+      "ownerWb": "Лапыгин Максим",
+      "changed": true,
+      "sourceRow": 113
+    },
+    {
+      "articleKey": "khvoinitsa",
+      "article": "khvoinitsa",
+      "name": "Пищевая добавка Хвойница , CPA, 7 саше",
+      "previousOwnerWb": "Светлана",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 119
+    },
+    {
+      "articleKey": "micardin_1_1_1",
+      "article": "micardin_1_1_1",
+      "name": "Пищевая добавка Микардин, CPA, 10 капсул, набор из 3 шт",
+      "previousOwnerWb": "Светлана",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 82
+    },
+    {
+      "articleKey": "mycoplax_1_1",
+      "article": "mycoplax_1_1",
+      "name": "Мазь от грибка ногтей Mycoplax, CPA, 15 мл, набор из 2 шт",
+      "previousOwnerWb": "Олеся",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 100
+    },
+    {
+      "articleKey": "wbvaritox",
+      "article": "wbvaritox",
+      "name": "Крем от варикоза Varitox, CPA, 30 мл",
+      "previousOwnerWb": "Мария",
+      "ownerWb": "Васильева Мария",
+      "changed": true,
+      "sourceRow": 115
     }
   ],
   "missingInPortal": [
-    {
-      "sourceRow": 30,
-      "sourceArticle": "kavmaz_60ml",
-      "articleKey": "kavmaz_60ml",
-      "ownerWb": "Васильева Мария",
-      "revenue": 607198,
-      "units": 541,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 32,
-      "sourceArticle": "artoks",
-      "articleKey": "artoks",
-      "ownerWb": "Лапыгин Максим",
-      "revenue": 505908,
-      "units": 605,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 33,
-      "sourceArticle": "sustalit_75ml",
-      "articleKey": "sustalit_75ml",
-      "ownerWb": "Васильева Мария",
-      "revenue": 708613,
-      "units": 839,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 36,
-      "sourceArticle": "pantogor_100ml",
-      "articleKey": "pantogor_100ml",
-      "ownerWb": "Васильева Мария",
-      "revenue": 121896,
-      "units": 112,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 40,
-      "sourceArticle": "synergel_60ml",
-      "articleKey": "synergel_60ml",
-      "ownerWb": "Васильева Мария",
-      "revenue": 288892,
-      "units": 321,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 41,
-      "sourceArticle": "kavmaz",
-      "articleKey": "kavmaz",
-      "ownerWb": "Васильева Мария",
-      "revenue": 205078,
-      "units": 257,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 43,
-      "sourceArticle": "artoks_1_1",
-      "articleKey": "artoks_1_1",
-      "ownerWb": "Васильева Мария",
-      "revenue": 4379,
-      "units": 3,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 46,
-      "sourceArticle": "cardicin_BAD_60caps",
-      "articleKey": "cardicin_bad_60caps",
-      "ownerWb": "Лапыгин Максим",
-      "revenue": 210048,
-      "units": 157,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 47,
-      "sourceArticle": "mycoplax",
-      "articleKey": "mycoplax",
-      "ownerWb": "Васильева Мария",
-      "revenue": 251083,
-      "units": 340,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 48,
-      "sourceArticle": "sinergel_30ml_1_1",
-      "articleKey": "sinergel_30ml_1_1",
-      "ownerWb": "Васильева Мария",
-      "revenue": 106884,
-      "units": 76,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 49,
-      "sourceArticle": "urinofix",
-      "articleKey": "urinofix",
-      "ownerWb": "Лапыгин Максим",
-      "revenue": 329142,
-      "units": 421,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 55,
-      "sourceArticle": "micardin_1_1",
-      "articleKey": "micardin_1_1",
-      "ownerWb": "Васильева Мария",
-      "revenue": 317202,
-      "units": 262,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 56,
-      "sourceArticle": "wbsinergel",
-      "articleKey": "wbsinergel",
-      "ownerWb": "Васильева Мария",
-      "revenue": 203839,
-      "units": 309,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 59,
-      "sourceArticle": "kavmaz_40ml_1_1",
-      "articleKey": "kavmaz_40ml_1_1",
-      "ownerWb": "Васильева Мария",
-      "revenue": 64435,
-      "units": 38,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 60,
-      "sourceArticle": "wbmicardinforte",
-      "articleKey": "wbmicardinforte",
-      "ownerWb": "Васильева Мария",
-      "revenue": 140382,
-      "units": 216,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 62,
-      "sourceArticle": "ekzifol",
-      "articleKey": "ekzifol",
-      "ownerWb": "Васильева Мария",
-      "revenue": 175455,
-      "units": 265,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 63,
-      "sourceArticle": "allicil_gribok15ml",
-      "articleKey": "allicil_gribok15ml",
-      "ownerWb": "Васильева Мария",
-      "revenue": 506663,
-      "units": 905,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 66,
-      "sourceArticle": "sanatsin",
-      "articleKey": "sanatsin",
-      "ownerWb": "Лапыгин Максим",
-      "revenue": 149498,
-      "units": 192,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 68,
-      "sourceArticle": "sanatsin_1_1",
-      "articleKey": "sanatsin_1_1",
-      "ownerWb": "Лапыгин Максим",
-      "revenue": 59348,
-      "units": 22,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 72,
-      "sourceArticle": "artoks_75ml",
-      "articleKey": "artoks_75ml",
-      "ownerWb": "Васильева Мария",
-      "revenue": 96146,
-      "units": 74,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 73,
-      "sourceArticle": "micardin",
-      "articleKey": "micardin",
-      "ownerWb": "Васильева Мария",
-      "revenue": 130478,
-      "units": 215,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 74,
-      "sourceArticle": "otivin",
-      "articleKey": "otivin",
-      "ownerWb": "Лапыгин Максим",
-      "revenue": 95515,
-      "units": 126,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 75,
-      "sourceArticle": "daoshen_75ml",
-      "articleKey": "daoshen_75ml",
-      "ownerWb": "Васильева Мария",
-      "revenue": 76844,
-      "units": 74,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 76,
-      "sourceArticle": "uromax",
-      "articleKey": "uromax",
-      "ownerWb": "Лапыгин Максим",
-      "revenue": 86042,
-      "units": 124,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 78,
-      "sourceArticle": "osteofast",
-      "articleKey": "osteofast",
-      "ownerWb": "Васильева Мария",
-      "revenue": 52658,
-      "units": 66,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 79,
-      "sourceArticle": "sustalit_30ml_1_1",
-      "articleKey": "sustalit_30ml_1_1",
-      "ownerWb": "Васильева Мария",
-      "revenue": 55335,
-      "units": 42,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 81,
-      "sourceArticle": "daoshen",
-      "articleKey": "daoshen",
-      "ownerWb": "Васильева Мария",
-      "revenue": 106355,
-      "units": 142,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 82,
-      "sourceArticle": "micardin_1_1_1",
-      "articleKey": "micardin_1_1_1",
-      "ownerWb": "Васильева Мария",
-      "revenue": 48647,
-      "units": 25,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 84,
-      "sourceArticle": "vetonus_100ml",
-      "articleKey": "vetonus_100ml",
-      "ownerWb": "Васильева Мария",
-      "revenue": 41076,
-      "units": 38,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 85,
-      "sourceArticle": "varifit",
-      "articleKey": "varifit",
-      "ownerWb": "Васильева Мария",
-      "revenue": 67360,
-      "units": 97,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 86,
-      "sourceArticle": "psoral_50ml",
-      "articleKey": "psoral_50ml",
-      "ownerWb": "Васильева Мария",
-      "revenue": 33904,
-      "units": 39,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 87,
-      "sourceArticle": "dardrakona_1_1",
-      "articleKey": "dardrakona_1_1",
-      "ownerWb": "Васильева Мария",
-      "revenue": 61901,
-      "units": 55,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 88,
-      "sourceArticle": "gemorekt",
-      "articleKey": "gemorekt",
-      "ownerWb": "Васильева Мария",
-      "revenue": 77952,
-      "units": 116,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 89,
-      "sourceArticle": "vetonus_1_1",
-      "articleKey": "vetonus_1_1",
-      "ownerWb": "Васильева Мария",
-      "revenue": 38866,
-      "units": 35,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 90,
-      "sourceArticle": "sustalit",
-      "articleKey": "sustalit",
-      "ownerWb": "Васильева Мария",
-      "revenue": 151514,
-      "units": 212,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 93,
-      "sourceArticle": "vetonus",
-      "articleKey": "vetonus",
-      "ownerWb": "Васильева Мария",
-      "revenue": 64954,
-      "units": 84,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 98,
-      "sourceArticle": "dardrakona_75ml",
-      "articleKey": "dardrakona_75ml",
-      "ownerWb": "Васильева Мария",
-      "revenue": 44615,
-      "units": 61,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 99,
-      "sourceArticle": "uromax_1_1",
-      "articleKey": "uromax_1_1",
-      "ownerWb": "Лапыгин Максим",
-      "revenue": 23462,
-      "units": 13,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 100,
-      "sourceArticle": "mycoplax_1_1",
-      "articleKey": "mycoplax_1_1",
-      "ownerWb": "Васильева Мария",
-      "revenue": 10964,
-      "units": 6,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 104,
-      "sourceArticle": "dolgar",
-      "articleKey": "dolgar",
-      "ownerWb": "Васильева Мария",
-      "revenue": 22201,
-      "units": 32,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 106,
-      "sourceArticle": "psoral",
-      "articleKey": "psoral",
-      "ownerWb": "Васильева Мария",
-      "revenue": 23452,
-      "units": 31,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 108,
-      "sourceArticle": "dardrakona",
-      "articleKey": "dardrakona",
-      "ownerWb": "Васильева Мария",
-      "revenue": 22439,
-      "units": 29,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 109,
-      "sourceArticle": "activeprost",
-      "articleKey": "activeprost",
-      "ownerWb": "Лапыгин Максим",
-      "revenue": 21905,
-      "units": 30,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 110,
-      "sourceArticle": "wbbiotrin_1_1_1",
-      "articleKey": "wbbiotrin_1_1_1",
-      "ownerWb": "Васильева Мария",
-      "revenue": 9385,
-      "units": 6,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 113,
-      "sourceArticle": "erobrut",
-      "articleKey": "erobrut",
-      "ownerWb": "Лапыгин Максим",
-      "revenue": 6407,
-      "units": 9,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 114,
-      "sourceArticle": "varifit_1_1",
-      "articleKey": "varifit_1_1",
-      "ownerWb": "Васильева Мария",
-      "revenue": 9490,
-      "units": 7,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 115,
-      "sourceArticle": "wbvaritox",
-      "articleKey": "wbvaritox",
-      "ownerWb": "Васильева Мария",
-      "revenue": 18015,
-      "units": 24,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 116,
-      "sourceArticle": "wbgetsizegel",
-      "articleKey": "wbgetsizegel",
-      "ownerWb": "Васильева Мария",
-      "revenue": 11492,
-      "units": 26,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 118,
-      "sourceArticle": "khvoinitsa_1_1",
-      "articleKey": "khvoinitsa_1_1",
-      "ownerWb": "Васильева Мария",
-      "revenue": 19235,
-      "units": 15,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 119,
-      "sourceArticle": "khvoinitsa",
-      "articleKey": "khvoinitsa",
-      "ownerWb": "Васильева Мария",
-      "revenue": 4362,
-      "units": 6,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
     {
       "sourceRow": 120,
       "sourceArticle": "wbbiotrin",
@@ -1139,33 +1166,6 @@
       "revenue": 0,
       "units": 0,
       "message": "SKU is present in WB owner distribution but absent in portal skus.json"
-    },
-    {
-      "sourceRow": 122,
-      "sourceArticle": "wbpantogor_1_1",
-      "articleKey": "wbpantogor_1_1",
-      "ownerWb": "Васильева Мария",
-      "revenue": 4520,
-      "units": 3,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 123,
-      "sourceArticle": "wbgetsize",
-      "articleKey": "wbgetsize",
-      "ownerWb": "Васильева Мария",
-      "revenue": 984,
-      "units": 1,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "sourceRow": 125,
-      "sourceArticle": "urolgan",
-      "articleKey": "urolgan",
-      "ownerWb": "Лапыгин Максим",
-      "revenue": 15116,
-      "units": 30,
-      "message": "API SKU не найден в skus.json/алиасах"
     },
     {
       "sourceRow": 128,
@@ -1338,6 +1338,14 @@
       "article": "syvorotka_dlya_lica_30ml_v2",
       "name": "Сыворотка для лица с ниацинамидом для лица антивозрастная, от пигментных пятен, пигментации, Алтея, 30 мл",
       "ownerWb": "",
+      "status": "Актуальный",
+      "stock": 0
+    },
+    {
+      "articleKey": "t34poten10caps",
+      "article": "t34poten10caps",
+      "name": "Пищевая добавка Т 34, CPA, 20 капсул",
+      "ownerWb": "Светлана",
       "status": "Актуальный",
       "stock": 0
     }

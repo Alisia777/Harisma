@@ -4245,23 +4245,76 @@ function iuDrrQuarterForecastScoreCards(forecast = {}) {
   }));
 }
 
+function iuDrrPlanFactCompletionLevel(value) {
+  if (typeof skuPlanFactCompletionLevel === 'function') return skuPlanFactCompletionLevel(value);
+  if (value === null || value === undefined || !Number.isFinite(Number(value))) return 0;
+  const ratio = Number(value);
+  if (ratio >= 1.2) return 5;
+  if (ratio >= 1) return 4;
+  if (ratio >= 0.8) return 3;
+  if (ratio >= 0.5) return 2;
+  return ratio > 0 ? 1 : 0;
+}
+
+function iuDrrPlanFactCardStyle(platformKey = 'wb', completion = null) {
+  if (typeof skuPlanFactCardStyle === 'function') return skuPlanFactCardStyle(platformKey, completion);
+  const ratio = completion === null || completion === undefined || !Number.isFinite(Number(completion))
+    ? 0.12
+    : Math.min(1.35, Math.max(0.05, Number(completion)));
+  const hue = platformKey === 'ozon' ? 212 : 272;
+  const fill = 0.08 + Math.min(0.34, ratio * 0.24);
+  const rowFill = Math.min(0.12, fill * 0.32);
+  const border = 0.18 + Math.min(0.5, ratio * 0.3);
+  const glow = 0.04 + Math.min(0.18, ratio * 0.12);
+  const progress = Math.min(100, Math.max(0, ratio * 100));
+  return `--pf-hue:${hue};--pf-fill:${fill.toFixed(3)};--pf-row-fill:${rowFill.toFixed(3)};--pf-border:${border.toFixed(3)};--pf-glow:${glow.toFixed(3)};--pf-progress:${progress.toFixed(1)}%;--pf-level:${iuDrrPlanFactCompletionLevel(completion)}`;
+}
+
+function iuDrrPlanFactDeltaClass(value) {
+  if (typeof skuPlanFactDeltaClass === 'function') return skuPlanFactDeltaClass(value);
+  if (value > 0) return 'ok-text';
+  if (value < 0) return 'danger-text';
+  return '';
+}
+
+function iuDrrQuarterPlanCardHtml(plan = {}, forecast = {}) {
+  const completion = plan.completion;
+  const completionText = completion == null ? '—' : fmt.pct(completion);
+  const deltaText = plan.delta == null ? 'нет факта для темпа' : `${plan.delta >= 0 ? '+' : ''}${fmt.money(plan.delta)}`;
+  const status = plan.completion == null ? 'нет факта для темпа' : iuDrrForecastStatusLabel(plan.completion);
+  const platformKey = forecast.platformKey === 'ozon' ? 'ozon' : 'wb';
+  const level = iuDrrPlanFactCompletionLevel(completion);
+  return `
+    <div class="sku-plan-platform-card iu-drr-quarter-platform-card level-${level}" style="${iuDrrPlanFactCardStyle(platformKey, completion)}">
+      <span class="sku-plan-platform-card__top">
+        <strong>${escapeHtml(plan.label || 'План квартала')}</strong>
+        <em>квартал</em>
+      </span>
+      <span class="sku-plan-platform-card__value">${escapeHtml(completionText)}</span>
+      <span class="sku-plan-platform-card__meta">прогноз ${fmt.money(forecast.projectedFact)} / план ${fmt.money(plan.plan)}</span>
+      <span class="sku-plan-platform-card__bar"><i></i></span>
+      <span class="sku-plan-platform-card__foot">
+        <b class="${iuDrrPlanFactDeltaClass(plan.delta)}">${escapeHtml(deltaText)}</b>
+        <span><em>${escapeHtml(status)}</em></span>
+      </span>
+    </div>
+  `;
+}
+
 function renderIuDrrQuarterForecastPanel(forecast = {}) {
   if (!forecast.available) return '';
-  const planCards = iuDrrQuarterForecastScoreCards(forecast);
-  const primaryPlan = (forecast.plans || []).find((plan) => plan.key === 'iu') || planCards[0] || {};
-  const primaryCompletion = primaryPlan.completion;
-  const primaryTone = iuDrrForecastCompletionTone(primaryCompletion);
-  const tone = 'info';
-  const progressWidth = Math.min(100, Math.max(0, numberOrZero(primaryCompletion) * 100)).toFixed(1);
+  const cardsHtml = (forecast.plans || [])
+    .filter((plan) => numberOrZero(plan.plan) > 0)
+    .map((plan) => iuDrrQuarterPlanCardHtml(plan, forecast))
+    .join('');
   const periodLabel = forecast.quarter?.label || `${forecast.quarter?.from || ''}–${forecast.quarter?.to || ''}`;
   const factWindow = forecast.factFrom && forecast.factTo ? `${forecast.factFrom}–${forecast.factTo}` : forecast.platformLabel;
-  const cardsHtml = planCards.map((card) => iuDrrScoreCardHtml(card, `iu-drr-score-card--${forecast.platformKey} iu-drr-quarter-score-card`)).join('');
   return `
-    <div class="iu-drr-quarter-card ${escapeHtml(tone)}" style="--iu-quarter-progress:${progressWidth}%">
-      <div class="iu-drr-quarter-head">
+    <div class="card sku-plan-fact-card iu-drr-quarter-planfact-card" style="${iuDrrPlanFactCardStyle(forecast.platformKey, null)}">
+      <div class="section-subhead">
         <div>
           <h3>${escapeHtml(forecast.platformLabel)}: прогноз выполнения квартала</h3>
-          <p class="small muted">Темп считается по факту выбранного месяца; итог сравнивается отдельно с ИУ и корпоративным планом квартала.</p>
+          <p class="small muted">Темп считается по факту выбранного месяца. Прогноз к концу квартала сравнивается отдельно с ИУ и корпоративным планом.</p>
         </div>
         <div class="badge-stack">
           ${badge(`квартал ${periodLabel}`, 'info')}
@@ -4269,31 +4322,20 @@ function renderIuDrrQuarterForecastPanel(forecast = {}) {
           ${badge(`${fmt.int(forecast.daysTotal)} дн. в квартале`, 'info')}
         </div>
       </div>
-      <div class="iu-drr-quarter-hero">
-        <div class="iu-drr-quarter-score">
-          <span>прогноз на квартал</span>
-          <strong>${fmt.money(forecast.projectedFact)}</strong>
-          <em>средний темп ${fmt.money(forecast.dailyAverage)} / день</em>
-        </div>
-        <div class="iu-drr-quarter-track" title="${escapeHtml(`Прогноз к ИУ: ${primaryCompletion == null ? 'нет плана' : fmt.pct(primaryCompletion)}`)}">
-          <i></i>
-          <span class="iu-drr-quarter-mark mark-80">80%</span>
-          <span class="iu-drr-quarter-mark mark-90">90%</span>
-          <span class="iu-drr-quarter-mark mark-100">100%</span>
-        </div>
-        <div class="iu-drr-quarter-delta ${escapeHtml(primaryTone)}">
-          <span>база прогноза</span>
-          <strong>${fmt.money(forecast.factToDate)}</strong>
-          <em>${escapeHtml(factWindow)}</em>
-        </div>
+
+      <div class="kpi-strip iu-drr-quarter-kpis">
+        <div class="mini-kpi"><span>Прогноз квартала</span><strong>${fmt.money(forecast.projectedFact)}</strong><span>${fmt.money(forecast.dailyAverage)} / день</span></div>
+        <div class="mini-kpi"><span>Факт для темпа</span><strong>${fmt.money(forecast.factToDate)}</strong><span>${escapeHtml(factWindow)}</span></div>
+        <div class="mini-kpi"><span>Период расчета</span><strong>${fmt.int(forecast.daysTotal)} дн.</strong><span>прогноз до конца квартала</span></div>
       </div>
-      <div class="iu-drr-quarter-cards iu-drr-quarter-plan-cards">
+
+      <div class="sku-plan-platform-board iu-drr-quarter-platform-board">
         ${cardsHtml}
       </div>
-      <div class="iu-drr-quarter-foot">
-        <span>ИУ и корпоративный план не смешиваются</span>
-        <span>цвет каждой плашки: прогноз / ее план</span>
-        <span>план к дате ниже отдельно</span>
+
+      <div class="footer-note">
+        <span>ИУ и корпоративный план не смешиваются.</span>
+        <span>Месячный план-факт считается отдельно к дате.</span>
       </div>
     </div>
   `;
@@ -6308,10 +6350,14 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     </div>
   `;
   const platformSelectHtml = `
-    <select id="iuDrrPlatform" aria-label="Площадка">
-      <option value="wb" ${model.selectedPlatform === 'wb' ? 'selected' : ''}>WB</option>
-      <option value="ozon" ${model.selectedPlatform === 'ozon' ? 'selected' : ''}>Ozon</option>
-    </select>
+    <div class="iu-drr-platform-switch" id="iuDrrPlatform" role="group" aria-label="Площадка">
+      <button class="iu-drr-platform-chip iu-drr-platform-chip--wb ${model.selectedPlatform === 'wb' ? 'active' : ''}" type="button" data-iu-drr-platform="wb" aria-pressed="${model.selectedPlatform === 'wb'}">
+        <span>WB</span><strong>Wildberries</strong>
+      </button>
+      <button class="iu-drr-platform-chip iu-drr-platform-chip--ozon ${model.selectedPlatform === 'ozon' ? 'active' : ''}" type="button" data-iu-drr-platform="ozon" aria-pressed="${model.selectedPlatform === 'ozon'}">
+        <span>OZ</span><strong>Ozon</strong>
+      </button>
+    </div>
   `;
   const quarter = model.quarterSummary || {};
   const quarterTargetWb = numberOrZero(quarter.targetRevenueWb);
@@ -6803,9 +6849,11 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     getIuDrrFilters().month = String(event.target.value || 'latest');
     rerenderCurrentView();
   });
-  root.querySelector('#iuDrrPlatform')?.addEventListener('change', (event) => {
-    getIuDrrFilters().platform = String(event.target.value || 'wb');
-    rerenderCurrentView();
+  root.querySelectorAll('[data-iu-drr-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      getIuDrrFilters().platform = String(button.dataset.iuDrrPlatform || 'wb');
+      rerenderCurrentView();
+    });
   });
 }
 

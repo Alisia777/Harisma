@@ -3922,7 +3922,8 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
     const wbFactRevenue = numberOrZero(row.adsPctBaseWb || row.revenueWb || row.ordersRevenueWb);
     const wbOrdersRevenue = numberOrZero(row.ordersRevenueWb);
     const wbPlanPct = Number.isFinite(Number(row.planPct)) ? Number(row.planPct) : 0;
-    const wbPlanSpendByRevenue = wbFactRevenue * wbPlanPct;
+    const wbPlanSpend = numberOrZero(row.planSpendWb);
+    const wbPlanSpendByRevenue = wbPlanSpend || (wbFactRevenue * wbPlanPct);
     const wbSpendFact = numberOrZero(row.spendFact);
     return {
       ...row,

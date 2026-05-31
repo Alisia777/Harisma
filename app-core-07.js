@@ -4843,6 +4843,20 @@ function ozonPlanFactDailyRows(model, context = {}) {
   });
 }
 
+function ozonPlanFactMonthTargetGmv(model, planMonth = null) {
+  const month = model?.monthSummary || {};
+  const selectedPlan = numberOrZero(month.iuRevenueOzonPlan);
+  if (selectedPlan > 0) return selectedPlan;
+  const contractMin = numberOrZero(month.iuRevenueOzonContractMin);
+  const corporatePlan = numberOrZero(month.iuRevenueOzonCorporatePlan);
+  if (contractMin > 0 || corporatePlan > 0) return Math.max(contractMin, corporatePlan);
+  const ozonPlan = model?.payload?.ozonPlan || {};
+  const sourceMonth = planMonth || model?.ozonPlanMonth || ozonPlanMonthSummary(ozonPlan, model?.selectedMonth);
+  const rawMonthlyTarget = numberOrZero(sourceMonth?.monthlyTargetGmv || ozonPlan.monthlyTargets?.[model?.selectedMonth]);
+  const smartShare = numberOrZero(sourceMonth?.allocation?.smartShare || ozonPlan.allocation?.smartShare || 0.4);
+  return rawMonthlyTarget * smartShare;
+}
+
 function renderOzonIuAccountCards(model, context = {}) {
   const planMonth = model.ozonPlanMonth || {};
   const totals = planMonth.totals || {};
@@ -5562,10 +5576,9 @@ function renderWbCardRating(rootId = 'view-wb-rating') {
 function iuDrrExportRows(rows, model) {
   if (model.selectedPlatform === 'ozon') {
     const planMonth = model.ozonPlanMonth || ozonPlanMonthSummary(model.payload.ozonPlan || {}, model.selectedMonth);
-    const targetDrr = numberOrZero(planMonth.totals?.targetDrr) || 0.25;
+    const targetDrr = numberOrZero(model.monthSummary?.planPctOzon || planMonth.totals?.targetDrr) || 0.25;
     const smartShare = numberOrZero(planMonth.allocation?.smartShare || 0.4);
-    const fullMonthTargetGmv = numberOrZero(planMonth.monthlyTargetGmv || model.payload.ozonPlan?.monthlyTargets?.[model.selectedMonth]);
-    const monthTargetGmv = fullMonthTargetGmv * smartShare;
+    const monthTargetGmv = ozonPlanFactMonthTargetGmv(model, planMonth);
     const monthTargetAds = monthTargetGmv * targetDrr;
     const contractKpis = model.payload.ozonPlan?.contractKpis || {};
     const adRevKpiRate = numberOrZero(contractKpis.adRevKpiRate) || targetDrr;
@@ -5768,17 +5781,16 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   const ozonControlTone = ozonControlDelta === null || ozonControlDelta === undefined
     ? 'info'
     : Math.abs(numberOrZero(ozonControlDelta)) <= 1000 ? 'ok' : 'warn';
-  const ozonTargetDrr = numberOrZero(ozonPlanTotals.targetDrr)
+  const ozonTargetDrr = numberOrZero(month.planPctOzon)
+    || numberOrZero(ozonPlanTotals.targetDrr)
     || numberOrZero((ozonPlan.accounts || []).find((account) => account.key === 'smart')?.targetDrr)
-    || numberOrZero(month.planPctOzon)
     || 0.25;
   const ozonAdRevKpiRate = numberOrZero(ozonContractKpis.adRevKpiRate) || ozonTargetDrr;
   const ozonSppRate = numberOrZero(ozonContractKpis.sppRate);
   const ozonTargetSpendByFact = numberOrZero(ozonFinanceMonth.salesGross) * ozonTargetDrr;
   const ozonSpendReserve = ozonTargetSpendByFact - ozonAdsAbs;
-  const ozonFullMonthTargetGmv = numberOrZero(ozonPlanMonth.monthlyTargetGmv || ozonPlan.monthlyTargets?.[model.selectedMonth] || month.iuRevenueOzonPlan);
   const ozonSmartShare = numberOrZero(ozonAllocation.smartShare || 0.4);
-  const ozonMonthTargetGmv = ozonFullMonthTargetGmv * ozonSmartShare;
+  const ozonMonthTargetGmv = ozonPlanFactMonthTargetGmv(model, ozonPlanMonth);
   const ozonPlanFactRows = ozonPlanFactDailyRows(model, {
     monthTargetGmv: ozonMonthTargetGmv,
     smartShare: ozonSmartShare,

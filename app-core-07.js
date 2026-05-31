@@ -3820,10 +3820,29 @@ function normalizeOzonFinancePayload(payload = {}) {
   };
 }
 
+function ozonFinanceBucketHasValues(bucket = {}) {
+  return numberOrZero(bucket.rowCount) > 0
+    || OZON_FINANCE_UI_FIELDS.some((field) => numberOrZero(bucket?.[field]) !== 0);
+}
+
+function ozonFinanceWindowMatchesMonth(ozonFinance = {}, selectedMonth = '') {
+  const totalsMonth = String(ozonFinance.totals?.monthKey || '').slice(0, 7);
+  const fromMonth = String(ozonFinance.window?.from || '').slice(0, 7);
+  const toMonth = String(ozonFinance.window?.to || '').slice(0, 7);
+  return Boolean(selectedMonth && (
+    totalsMonth === selectedMonth
+    || (fromMonth === selectedMonth && toMonth === selectedMonth)
+  ));
+}
+
 function ozonFinanceMonthSummary(ozonFinance, selectedMonth) {
-  const month = (ozonFinance.months || []).find((row) => row.monthKey === selectedMonth)
-    || normalizeOzonFinanceBucket({ ...ozonFinance.totals, monthKey: selectedMonth });
-  return month;
+  const month = (ozonFinance.months || []).find((row) => row.monthKey === selectedMonth);
+  if (month) return month;
+  const totals = normalizeOzonFinanceBucket({ ...ozonFinance.totals, monthKey: selectedMonth });
+  if (ozonFinanceWindowMatchesMonth(ozonFinance, selectedMonth) && ozonFinanceBucketHasValues(totals)) {
+    return totals;
+  }
+  return normalizeOzonFinanceBucket({ key: selectedMonth, label: selectedMonth, monthKey: selectedMonth });
 }
 
 function daysInMonthKey(monthKey = '') {
@@ -3969,13 +3988,20 @@ function iuDrrMonthOptions(payload) {
   const keys = new Set();
   (payload.months || []).forEach((month) => month?.monthKey && keys.add(month.monthKey));
   (payload.daily || []).forEach((row) => row?.monthKey && keys.add(row.monthKey));
+  (payload.planTruth?.months || []).forEach((month) => month?.monthKey && keys.add(month.monthKey));
   return [...keys].sort().map((key) => {
-    const source = (payload.months || []).find((month) => month.monthKey === key);
+    const source = (payload.months || []).find((month) => month.monthKey === key)
+      || (payload.planTruth?.months || []).find((month) => month.monthKey === key);
     return { key, label: source?.label || key };
   });
 }
 
 function iuDrrLatestMonth(payload) {
+  const actualKeys = new Set();
+  (payload.months || []).forEach((month) => month?.monthKey && actualKeys.add(month.monthKey));
+  (payload.daily || []).forEach((row) => row?.monthKey && actualKeys.add(row.monthKey));
+  const actualMonths = [...actualKeys].sort();
+  if (actualMonths.length) return actualMonths.at(-1);
   const options = iuDrrMonthOptions(payload);
   return options.at(-1)?.key || '';
 }
@@ -4055,6 +4081,27 @@ function iuDrrPlanTruthSum(model = {}, monthKeys = [], platformKey = 'wb', field
     .reduce((sum, month) => sum + numberOrZero(month?.[platformKey]?.[field]), 0);
 }
 
+function iuDrrPlanTruthMonth(payload = {}, monthKey = '') {
+  const planTruth = payload.payload?.planTruth || payload.planTruth || {};
+  return (planTruth.months || []).find((month) => month.monthKey === monthKey) || {};
+}
+
+function iuDrrFirstPositive(...values) {
+  for (const value of values) {
+    const numeric = numberOrZero(value);
+    if (numeric > 0) return numeric;
+  }
+  return 0;
+}
+
+function iuDrrFirstText(...values) {
+  for (const value of values) {
+    const text = String(value || '').trim();
+    if (text) return text;
+  }
+  return '';
+}
+
 function iuDrrContractTargetForRange(model = {}, from = '', to = '') {
   const periods = Array.isArray(model.payload?.contractPeriods) ? model.payload.contractPeriods : [];
   return periods.reduce((sum, period) => {
@@ -4076,14 +4123,22 @@ function iuDrrQuarterFactBase(model = {}, platformKey = 'wb', context = {}) {
     const datedRows = sourceRows.filter((row) => row.date && (numberOrZero(row.revenueOzon) || numberOrZero(row.targetRevenueOzon)));
     const factFromDaily = datedRows.reduce((sum, row) => sum + numberOrZero(row.revenueOzon), 0);
     const planFactRows = Array.isArray(context.ozonPlanFactRows) ? context.ozonPlanFactRows : [];
-    const lastPlanFact = planFactRows.at(-1) || {};
+    const planFactRowsWithFact = planFactRows.filter((row) => (
+      numberOrZero(row.factGmv)
+      || numberOrZero(row.factRevenue)
+      || numberOrZero(row.noSppBuyouts)
+      || numberOrZero(row.adsBoth)
+    ));
+    const lastPlanFact = planFactRowsWithFact.at(-1) || {};
     const fact = factFromDaily
       || numberOrZero(lastPlanFact.cumulativeFactGmv)
       || numberOrZero(model.monthSummary?.iuRevenueOzonFactToDate || model.monthSummary?.revenueOzon);
-    const dates = factFromDaily ? datedRows.map((row) => row.date) : planFactRows.map((row) => row.date);
+    const dates = factFromDaily ? datedRows.map((row) => row.date) : planFactRowsWithFact.map((row) => row.date);
     const days = new Set(dates.filter(Boolean)).size
       || numberOrZero(model.monthSummary?.daysInSummary)
-      || numberOrZero(model.ozonFinance?.window?.days);
+      || (ozonFinanceWindowMatchesMonth(model.ozonFinance || {}, selectedMonth)
+        ? numberOrZero(model.ozonFinance?.window?.days)
+        : 0);
     return {
       fact,
       days,
@@ -4124,8 +4179,9 @@ function iuDrrBuildQuarterForecast(model = {}, context = {}) {
   const quarter = iuDrrQuarterRange(model.selectedMonth);
   const factBase = iuDrrQuarterFactBase(model, platformKey, context);
   const daysTotal = quarter.days || quarter.months.reduce((sum, month) => sum + daysInMonthKey(month), 0);
-  const dailyAverage = factBase.days > 0 ? factBase.fact / factBase.days : 0;
-  const projectedFact = dailyAverage * daysTotal;
+  const hasFactForTempo = factBase.days > 0 && factBase.fact > 0;
+  const dailyAverage = hasFactForTempo ? factBase.fact / factBase.days : null;
+  const projectedFact = hasFactForTempo ? dailyAverage * daysTotal : null;
   const platformTruthKey = platformKey === 'ozon' ? 'ozon' : 'wb';
   const truthIuPlan = platformKey === 'ozon'
     ? iuDrrPlanTruthSum(model, quarter.months, 'ozon', 'iuPlan40')
@@ -4135,14 +4191,14 @@ function iuDrrBuildQuarterForecast(model = {}, context = {}) {
   const corporatePlan = iuDrrPlanTruthSum(model, quarter.months, platformTruthKey, 'corporatePlan');
   const selectedPlan = iuDrrPlanTruthSum(model, quarter.months, platformTruthKey, 'selectedRevenue');
   const makeBlock = (key, label, plan, sourceLabel) => {
-    const completion = plan > 0 ? projectedFact / plan : null;
+    const completion = plan > 0 && projectedFact !== null ? projectedFact / plan : null;
     return {
       key,
       label,
       sourceLabel,
       plan,
       completion,
-      delta: plan > 0 ? projectedFact - plan : null,
+      delta: plan > 0 && projectedFact !== null ? projectedFact - plan : null,
       tone: iuDrrForecastCompletionTone(completion)
     };
   };
@@ -4162,15 +4218,15 @@ function iuDrrBuildQuarterForecast(model = {}, context = {}) {
     plans: [
       makeBlock(
         'iu',
-        platformKey === 'ozon' ? 'ИУ план Ozon 40%' : 'ИУ план WB',
+        platformKey === 'ozon' ? 'ИУ план Ozon 40% за квартал' : 'ИУ план WB за квартал',
         iuPlan,
-        platformKey === 'ozon' ? 'ИУ Ozon × 40% за квартал' : 'договорный план WB, приведенный к кварталу'
+        platformKey === 'ozon' ? 'ИУ Ozon × 40%, сумма месяцев квартала' : 'ИУ WB, сумма месяцев квартала'
       ),
       makeBlock(
         'corporate',
-        'Корпоративный план',
+        'Корпоративный план за квартал',
         corporatePlan,
-        'наш план продаж по площадке за квартал'
+        'наш корпоративный план продаж, сумма месяцев квартала'
       )
     ]
   };
@@ -4181,8 +4237,8 @@ function iuDrrQuarterForecastScoreCards(forecast = {}) {
   return (forecast.plans || []).filter((plan) => numberOrZero(plan.plan) > 0).map((plan) => ({
     label: plan.label,
     value: plan.completion == null ? '—' : fmt.pct(plan.completion),
-    detail: `прогноз ${fmt.money(forecast.projectedFact)} / план ${fmt.money(plan.plan)}`,
-    status: iuDrrForecastStatusLabel(plan.completion),
+    detail: `прогноз к концу квартала ${fmt.money(forecast.projectedFact)} / план ${fmt.money(plan.plan)}`,
+    status: plan.completion == null ? 'нет факта для темпа' : iuDrrForecastStatusLabel(plan.completion),
     progress: plan.completion,
     tone: plan.tone,
     marks: ['80%', '90%', plan.completion == null ? '—' : fmt.pct(plan.completion), '100%']
@@ -4194,7 +4250,8 @@ function renderIuDrrQuarterForecastPanel(forecast = {}) {
   const planCards = iuDrrQuarterForecastScoreCards(forecast);
   const primaryPlan = (forecast.plans || []).find((plan) => plan.key === 'iu') || planCards[0] || {};
   const primaryCompletion = primaryPlan.completion;
-  const tone = iuDrrForecastCompletionTone(primaryCompletion);
+  const primaryTone = iuDrrForecastCompletionTone(primaryCompletion);
+  const tone = 'info';
   const progressWidth = Math.min(100, Math.max(0, numberOrZero(primaryCompletion) * 100)).toFixed(1);
   const periodLabel = forecast.quarter?.label || `${forecast.quarter?.from || ''}–${forecast.quarter?.to || ''}`;
   const factWindow = forecast.factFrom && forecast.factTo ? `${forecast.factFrom}–${forecast.factTo}` : forecast.platformLabel;
@@ -4203,20 +4260,20 @@ function renderIuDrrQuarterForecastPanel(forecast = {}) {
     <div class="iu-drr-quarter-card ${escapeHtml(tone)}" style="--iu-quarter-progress:${progressWidth}%">
       <div class="iu-drr-quarter-head">
         <div>
-          <h3>${escapeHtml(forecast.platformLabel)}: прогноз квартального плана</h3>
-          <p class="small muted">Статус считается по среднему дневному факту × все дни квартала. Это не план к текущей дате.</p>
+          <h3>${escapeHtml(forecast.platformLabel)}: прогноз выполнения квартала</h3>
+          <p class="small muted">Темп считается по факту выбранного месяца; итог сравнивается отдельно с ИУ и корпоративным планом квартала.</p>
         </div>
         <div class="badge-stack">
-          ${badge(periodLabel, 'info')}
-          ${badge(`${fmt.int(forecast.elapsedDays)} дн. факта`, forecast.elapsedDays ? 'ok' : 'warn')}
-          ${badge(`${fmt.int(forecast.daysTotal)} дн. квартала`, 'info')}
+          ${badge(`квартал ${periodLabel}`, 'info')}
+          ${badge(`${fmt.int(forecast.elapsedDays)} дн. факта для темпа`, forecast.elapsedDays ? 'ok' : 'warn')}
+          ${badge(`${fmt.int(forecast.daysTotal)} дн. в квартале`, 'info')}
         </div>
       </div>
       <div class="iu-drr-quarter-hero">
         <div class="iu-drr-quarter-score">
-          <span>прогноз оборота</span>
+          <span>прогноз на квартал</span>
           <strong>${fmt.money(forecast.projectedFact)}</strong>
-          <em>${fmt.money(forecast.dailyAverage)} / день</em>
+          <em>средний темп ${fmt.money(forecast.dailyAverage)} / день</em>
         </div>
         <div class="iu-drr-quarter-track" title="${escapeHtml(`Прогноз к ИУ: ${primaryCompletion == null ? 'нет плана' : fmt.pct(primaryCompletion)}`)}">
           <i></i>
@@ -4224,8 +4281,8 @@ function renderIuDrrQuarterForecastPanel(forecast = {}) {
           <span class="iu-drr-quarter-mark mark-90">90%</span>
           <span class="iu-drr-quarter-mark mark-100">100%</span>
         </div>
-        <div class="iu-drr-quarter-delta ${escapeHtml(tone)}">
-          <span>факт для темпа</span>
+        <div class="iu-drr-quarter-delta ${escapeHtml(primaryTone)}">
+          <span>база прогноза</span>
           <strong>${fmt.money(forecast.factToDate)}</strong>
           <em>${escapeHtml(factWindow)}</em>
         </div>
@@ -4234,9 +4291,9 @@ function renderIuDrrQuarterForecastPanel(forecast = {}) {
         ${cardsHtml}
       </div>
       <div class="iu-drr-quarter-foot">
-        <span>ИУ и корпоративный план разделены</span>
-        <span>вывод по цвету: прогноз к концу квартала</span>
-        <span>таблицы ниже показывают план к дате отдельно</span>
+        <span>ИУ и корпоративный план не смешиваются</span>
+        <span>цвет каждой плашки: прогноз / ее план</span>
+        <span>план к дате ниже отдельно</span>
       </div>
     </div>
   `;
@@ -4253,6 +4310,12 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
   const ozonFinanceDailyRows = (normalized.ozonFinance?.daily || []).filter((row) => row.monthKey === selectedMonth);
   const dailyRows = selectedPlatform === 'ozon' && ozonFinanceDailyRows.length ? ozonFinanceDailyRows : iuDailyRows;
   const rawMonthSummary = (normalized.months || []).find((month) => month.monthKey === selectedMonth) || {};
+  const planTruthMonth = iuDrrPlanTruthMonth(normalized, selectedMonth);
+  const wbTruth = planTruthMonth.wb || {};
+  const ozonTruth = planTruthMonth.ozon || {};
+  const truthSelectedRevenueTotal = numberOrZero(wbTruth.selectedRevenue) + numberOrZero(ozonTruth.selectedRevenue);
+  const truthIuRevenueTotal = numberOrZero(wbTruth.iuPlan) + numberOrZero(ozonTruth.iuPlan40);
+  const truthCorporateRevenueTotal = numberOrZero(wbTruth.corporatePlan) + numberOrZero(ozonTruth.corporatePlan);
   const wbRevenueFactToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuRevenueWb || row.iuOrdersRevenueWb), 0);
   const wbOrdersRevenueToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.ordersRevenueWb), 0);
   const wbTargetToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuTargetRevenueWb), 0);
@@ -4264,6 +4327,23 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
   const ozonPlanMonth = ozonPlanMonthSummary(normalized.ozonPlan || {}, selectedMonth);
   const baseMonthSummary = {
     ...rawMonthSummary,
+    iuRevenueWbPlan: iuDrrFirstPositive(rawMonthSummary.iuRevenueWbPlan, wbTruth.selectedRevenue),
+    iuRevenueWbIuMin: iuDrrFirstPositive(rawMonthSummary.iuRevenueWbIuMin, wbTruth.iuPlan),
+    iuRevenueWbCorporatePlan: iuDrrFirstPositive(rawMonthSummary.iuRevenueWbCorporatePlan, wbTruth.corporatePlan),
+    iuRevenueWbPlanSource: iuDrrFirstText(rawMonthSummary.iuRevenueWbPlanSource, wbTruth.source),
+    iuRevenueOzonPlan: iuDrrFirstPositive(rawMonthSummary.iuRevenueOzonPlan, ozonTruth.selectedRevenue),
+    iuRevenueOzonContractMin: iuDrrFirstPositive(rawMonthSummary.iuRevenueOzonContractMin, ozonTruth.iuPlan40),
+    iuRevenueOzonCorporatePlan: iuDrrFirstPositive(rawMonthSummary.iuRevenueOzonCorporatePlan, ozonTruth.corporatePlan),
+    iuRevenueOzonPlanSource: iuDrrFirstText(rawMonthSummary.iuRevenueOzonPlanSource, ozonTruth.source),
+    iuRevenuePlan: iuDrrFirstPositive(rawMonthSummary.iuRevenuePlan, truthSelectedRevenueTotal),
+    iuRevenueIuMin: iuDrrFirstPositive(rawMonthSummary.iuRevenueIuMin, truthIuRevenueTotal),
+    iuRevenueCorporatePlan: iuDrrFirstPositive(rawMonthSummary.iuRevenueCorporatePlan, truthCorporateRevenueTotal),
+    iuAdsPlan: iuDrrFirstPositive(rawMonthSummary.iuAdsPlan, wbTruth.iuAdsPlan),
+    iuAdsOzonPlan: iuDrrFirstPositive(rawMonthSummary.iuAdsOzonPlan, ozonTruth.iuAdsPlan),
+    iuAdsTotalPlan: iuDrrFirstPositive(
+      rawMonthSummary.iuAdsTotalPlan,
+      numberOrZero(wbTruth.iuAdsPlan) + numberOrZero(ozonTruth.iuAdsPlan)
+    ),
     iuRevenueWbPlanToDate: wbTargetToDate || rawMonthSummary.iuRevenueWbPlanToDate,
     targetRevenueWb: wbTargetToDate || rawMonthSummary.targetRevenueWb,
     iuRevenueWbFactToDate: wbRevenueFactToDate || rawMonthSummary.iuRevenueWbFactToDate,
@@ -4280,19 +4360,24 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
     drrWb: wbRevenueFactToDate > 0 ? wbSpendFactToDate / wbRevenueFactToDate : rawMonthSummary.drrWb,
     ordersAdPct: wbOrdersRevenueToDate > 0 ? wbSpendFactToDate / wbOrdersRevenueToDate : rawMonthSummary.ordersAdPct
   };
+  const ozonFinanceMonthHasData = ozonFinanceBucketHasValues(ozonFinanceMonth);
+  const ozonFinanceRevenueFact = ozonFinanceMonthHasData
+    ? (numberOrZero(ozonFinanceMonth.salesGross) + numberOrZero(ozonFinanceMonth.returnsGross)
+      || numberOrZero(ozonFinanceMonth.accruedNet))
+    : 0;
+  const ozonFinanceAdsFact = ozonFinanceMonthHasData ? Math.abs(numberOrZero(ozonFinanceMonth.ads)) : 0;
   const ozonRevenueFactToDate = numberOrZero(baseMonthSummary.iuRevenueOzonFactToDate || baseMonthSummary.revenueOzon)
-    || numberOrZero(ozonFinanceMonth.salesGross) + numberOrZero(ozonFinanceMonth.returnsGross)
-    || numberOrZero(ozonFinanceMonth.accruedNet);
+    || ozonFinanceRevenueFact;
   const ozonAdsFactToDate = numberOrZero(baseMonthSummary.iuAdsFactOzonToDate || baseMonthSummary.spendFactOzon)
-    || Math.abs(numberOrZero(ozonFinanceMonth.ads));
+    || ozonFinanceAdsFact;
   const ozonPlanRevenueToDate = numberOrZero(baseMonthSummary.iuRevenueOzonPlanToDate || baseMonthSummary.targetRevenueOzon);
   const ozonAdsPlanToDate = numberOrZero(baseMonthSummary.iuAdsOzonPlanToDate || baseMonthSummary.planSpendOzon);
-  const monthSummary = selectedPlatform === 'ozon' && (ozonRevenueFactToDate || numberOrZero(ozonFinanceMonth.accruedNet)) ? {
+  const monthSummary = selectedPlatform === 'ozon' ? {
     ...baseMonthSummary,
     ozonFinance: ozonFinanceMonth,
     iuRevenueOzonFactToDate: ozonRevenueFactToDate,
     revenueOzon: ozonRevenueFactToDate,
-    targetRevenueOzon: baseMonthSummary.targetRevenueOzon || baseMonthSummary.iuRevenueOzonPlanToDate,
+    targetRevenueOzon: ozonPlanRevenueToDate || baseMonthSummary.targetRevenueOzon || baseMonthSummary.iuRevenueOzonPlanToDate,
     revenueOzonDelta: ozonRevenueFactToDate - ozonPlanRevenueToDate,
     revenueOzonDeltaPct: ozonPlanRevenueToDate > 0
       ? (ozonRevenueFactToDate - ozonPlanRevenueToDate) / ozonPlanRevenueToDate
@@ -4834,8 +4919,7 @@ function iuDrrFunnelBuildModel(model = {}, context = {}) {
   const romi = factAds > 0 ? (adRevenue - factAds) / factAds : null;
   const noSppDrr = platformKey === 'ozon' ? iuDrrFunnelSummaryValue('noSppDrr', rows, platformKey, context) : null;
   const reserve = platformKey === 'ozon' ? iuDrrFunnelSummaryValue('adsReserve', rows, platformKey, context) : null;
-  const quarterForecastCards = iuDrrQuarterForecastScoreCards(context.quarterForecast);
-  const revenueCards = quarterForecastCards.length ? quarterForecastCards : [{
+  const revenueCards = [{
     label: platformKey === 'ozon' ? 'Smart GMV на дату' : 'Оборот WB на дату',
     value: iuDrrFunnelFormat({ format: 'pct' }, revenueCompletion),
     detail: `${fmt.money(factRevenue)} / ${fmt.money(planRevenue)}`,

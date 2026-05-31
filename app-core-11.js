@@ -1678,13 +1678,9 @@ function skuPlanFactFinalizeAdPace(metric = {}, monthKey = '', elapsedDays = 0, 
   const derivedPeriodPlan = planToDate !== null && observedDays > 0
     ? planToDate * forecastDays / observedDays
     : null;
-  const existingPlanLooksComplete = existingPeriodPlan !== null
-    && (forecastDays <= observedDays || planToDate === null || existingPeriodPlan > planToDate + 1);
-  const monthPlanLooksComplete = monthPlan !== null
-    && (forecastDays <= observedDays || planToDate === null || monthPlan > planToDate + 1);
-  const planPeriod = existingPlanLooksComplete
+  const planPeriod = existingPeriodPlan !== null
     ? existingPeriodPlan
-    : (monthPlanLooksComplete ? monthPlan : (forecastDays > observedDays ? derivedPeriodPlan : (existingPeriodPlan ?? monthPlan ?? planToDate)));
+    : (monthPlan !== null ? monthPlan : (forecastDays > observedDays ? derivedPeriodPlan : planToDate));
   const adSpend = numberOrZero(metric.adSpend);
   const hasAdContext = adSpend > 0 || planToDate !== null || planPeriod !== null;
   const forecastSpend = hasAdContext ? adSpend * forecastDays / observedDays : null;

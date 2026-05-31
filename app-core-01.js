@@ -2309,9 +2309,13 @@ const OWNER_NAME_ALIASES = new Map([
 ]);
 
 function normalizeOwnerToken(value = '') {
-  return String(value ?? '')
+  const rawValue = value && typeof value === 'object'
+    ? (value.name ?? value.ownerName ?? value.owner ?? value.label ?? '')
+    : value;
+  const normalized = String(rawValue ?? '')
     .replace(/\s+/g, ' ')
     .trim();
+  return normalized === '[object Object]' ? '' : normalized;
 }
 
 function canonicalOwnerName(value = '') {

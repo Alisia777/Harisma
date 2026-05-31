@@ -4200,6 +4200,15 @@ function iuDrrBuildQuarterForecast(model = {}, context = {}) {
   const corporatePlan = iuDrrPlanTruthSum(model, quarter.months, platformTruthKey, 'corporatePlan');
   const selectedPlan = iuDrrPlanTruthSum(model, quarter.months, platformTruthKey, 'selectedRevenue');
   const workingPlan = Math.max(numberOrZero(selectedPlan), numberOrZero(iuPlan), numberOrZero(corporatePlan));
+  const month = model.monthSummary || {};
+  const monthDays = daysInMonthKey(model.selectedMonth);
+  const monthIuPlan = platformKey === 'ozon'
+    ? numberOrZero(month.iuRevenueOzonContractMin)
+    : numberOrZero(month.iuRevenueWbIuMin);
+  const monthPortalPlan = platformKey === 'ozon'
+    ? numberOrZero(month.iuRevenueOzonPlan)
+    : numberOrZero(month.iuRevenueWbPlan);
+  const monthProjectedFact = hasFactForTempo && monthDays ? dailyAverage * monthDays : null;
   const makeBlock = (key, label, plan, sourceLabel) => {
     const completion = plan > 0 && projectedFact !== null ? projectedFact / plan : null;
     return {
@@ -4225,6 +4234,18 @@ function iuDrrBuildQuarterForecast(model = {}, context = {}) {
     factSourceLabel: factBase.sourceLabel,
     dailyAverage,
     projectedFact,
+    month: {
+      key: model.selectedMonth || '',
+      days: monthDays,
+      fact: factBase.fact,
+      elapsedDays: factBase.days,
+      dailyAverage,
+      projectedFact: monthProjectedFact,
+      iuPlan: monthIuPlan,
+      portalPlan: monthPortalPlan,
+      iuCompletion: monthIuPlan > 0 && monthProjectedFact !== null ? monthProjectedFact / monthIuPlan : null,
+      factCompletion: monthIuPlan > 0 ? factBase.fact / monthIuPlan : null
+    },
     rawCorporatePlan: corporatePlan,
     ruleSelectedPlan: selectedPlan,
     selectedPlan: workingPlan,
@@ -4290,15 +4311,21 @@ function iuDrrPlanFactDeltaClass(value) {
   return '';
 }
 
+function iuDrrForecastStatusText(completion) {
+  if (completion == null) return 'Нет факта';
+  return completion >= 1 ? 'Закрываем' : completion >= 0.9 ? 'Рядом с планом' : 'Ниже плана';
+}
+
+function iuDrrForecastDeltaText(delta) {
+  if (delta == null) return 'нет факта для темпа';
+  return delta >= 0 ? `запас +${fmt.money(delta)}` : `не хватает ${fmt.money(Math.abs(delta))}`;
+}
+
 function iuDrrQuarterPlanCardHtml(plan = {}, forecast = {}) {
   const completion = plan.completion;
   const completionText = completion == null ? 'выполнение —' : `выполнение ${fmt.pct(completion)}`;
-  const statusText = completion == null
-    ? 'Нет факта'
-    : completion >= 1 ? 'Закрываем' : completion >= 0.9 ? 'Рядом с планом' : 'Ниже плана';
-  const deltaText = plan.delta == null
-    ? 'нет факта для темпа'
-    : plan.delta >= 0 ? `запас +${fmt.money(plan.delta)}` : `не хватает ${fmt.money(Math.abs(plan.delta))}`;
+  const statusText = iuDrrForecastStatusText(completion);
+  const deltaText = iuDrrForecastDeltaText(plan.delta);
   const platformKey = forecast.platformKey === 'ozon' ? 'ozon' : 'wb';
   const level = iuDrrPlanFactCompletionLevel(completion);
   return `
@@ -4316,6 +4343,103 @@ function iuDrrQuarterPlanCardHtml(plan = {}, forecast = {}) {
   `;
 }
 
+function iuDrrForecastMetricHtml(label, value, detail = '', tip = '', tone = 'info') {
+  const safeTone = ['ok', 'warn', 'danger', 'info'].includes(tone) ? tone : 'info';
+  return `
+    <div class="iu-drr-forecast-metric ${escapeHtml(safeTone)}" ${tip ? `data-tip="${escapeHtml(tip)}"` : ''}>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value == null || value === '' ? '—' : String(value))}</strong>
+      <em>${escapeHtml(detail || '')}</em>
+    </div>
+  `;
+}
+
+function iuDrrQuarterForecastHeroHtml(plan = {}, forecast = {}) {
+  const completion = plan.completion;
+  const platformKey = forecast.platformKey === 'ozon' ? 'ozon' : 'wb';
+  const level = iuDrrPlanFactCompletionLevel(completion);
+  const progress = completion == null ? 0 : Math.min(100, Math.max(0, Number(completion) * 100));
+  const month = forecast.month || {};
+  const statusText = iuDrrForecastStatusText(completion);
+  const completionText = completion == null ? '—' : fmt.pct(completion);
+  const deltaText = iuDrrForecastDeltaText(plan.delta);
+  const deltaTone = iuDrrPlanFactDeltaClass(plan.delta);
+  const monthFactTone = iuDrrFunnelCompletionTone(month.factCompletion);
+  const monthForecastTone = iuDrrFunnelCompletionTone(month.iuCompletion);
+  const dayText = month.elapsedDays ? `${fmt.int(month.elapsedDays)} дн. факта` : 'нет факта';
+  const monthPlanLabel = platformKey === 'ozon' ? 'ИУ план месяца Ozon 40%' : 'ИУ план месяца WB';
+  const portalPlanLabel = platformKey === 'ozon' ? 'Рабочий план месяца' : 'План портала месяца';
+  const monthProjectedDetail = month.iuCompletion == null
+    ? 'нет прогноза'
+    : `${fmt.pct(month.iuCompletion)} к ИУ месяцу`;
+  return `
+    <div class="iu-drr-forecast-hero level-${level}" style="${iuDrrPlanFactCardStyle(platformKey, completion)};--iu-drr-forecast-progress:${progress.toFixed(1)}%">
+      <div class="iu-drr-forecast-main">
+        <div class="iu-drr-forecast-score" data-tip="${escapeHtml(`Ожидаемый итог квартала ${fmt.money(forecast.projectedFact)} / ${plan.label || 'план'} ${fmt.money(plan.plan)}. Расчет: средний дневной факт текущего месяца × ${fmt.int(forecast.daysTotal)} дней квартала.`)}">
+          <span>прогноз выполнения ИУ</span>
+          <strong>${escapeHtml(completionText)}</strong>
+          <em>${escapeHtml(statusText)}</em>
+        </div>
+        <div class="iu-drr-forecast-track" title="${escapeHtml(`${fmt.money(forecast.projectedFact)} / ${fmt.money(plan.plan)}`)}">
+          <i></i>
+          <span class="mark-80">80%</span>
+          <span class="mark-90">90%</span>
+          <span class="mark-100">100%</span>
+        </div>
+        <div class="iu-drr-forecast-delta" data-tip="${escapeHtml(`Разница между прогнозом квартала и ${plan.label || 'планом'}.`)}">
+          <span>отклонение к ИУ</span>
+          <strong class="${escapeHtml(deltaTone)}">${escapeHtml(deltaText)}</strong>
+          <em>${fmt.money(forecast.projectedFact)} / ${fmt.money(plan.plan)}</em>
+        </div>
+      </div>
+      <div class="iu-drr-forecast-metrics">
+        ${iuDrrForecastMetricHtml(
+          'Факт месяца',
+          fmt.money(month.fact),
+          dayText,
+          `Факт выбранного месяца, который используется как база темпа. Источник: ${forecast.factSourceLabel || 'ИУ'}.`,
+          monthFactTone
+        )}
+        ${iuDrrForecastMetricHtml(
+          monthPlanLabel,
+          fmt.money(month.iuPlan),
+          month.factCompletion == null ? 'план месяца' : `${fmt.pct(month.factCompletion)} фактом`,
+          'Это именно месячный ИУ-план: WB из ИУ, Ozon 40% от договора/Smart.',
+          'info'
+        )}
+        ${iuDrrForecastMetricHtml(
+          'Прогноз месяца',
+          month.projectedFact == null ? '—' : fmt.money(month.projectedFact),
+          monthProjectedDetail,
+          'Прогноз месяца = средний дневной факт × количество дней в выбранном месяце.',
+          monthForecastTone
+        )}
+        ${iuDrrForecastMetricHtml(
+          portalPlanLabel,
+          fmt.money(month.portalPlan),
+          'по правилу ИУ/корп',
+          'Рабочий месячный план портала: если ИУ выше корпоративного плана, берём ИУ; если ниже, берём корпоративный план.',
+          'info'
+        )}
+      </div>
+    </div>
+  `;
+}
+
+function iuDrrForecastPlanPillHtml(plan = {}, forecast = {}) {
+  const completion = plan.completion;
+  const statusText = iuDrrForecastStatusText(completion);
+  const completionText = completion == null ? '—' : fmt.pct(completion);
+  const deltaText = iuDrrForecastDeltaText(plan.delta);
+  return `
+    <div class="iu-drr-forecast-plan-pill">
+      <span>${escapeHtml(plan.label || 'Рабочий план')}</span>
+      <strong>${fmt.money(plan.plan)}</strong>
+      <em>${escapeHtml(statusText)} · ${escapeHtml(completionText)} · ${escapeHtml(deltaText)}</em>
+    </div>
+  `;
+}
+
 function renderIuDrrQuarterForecastPanel(forecast = {}) {
   if (!forecast.available) return '';
   const sourcePlans = (forecast.plans || []).filter((plan) => numberOrZero(plan.plan) > 0);
@@ -4324,10 +4448,12 @@ function renderIuDrrQuarterForecastPanel(forecast = {}) {
     if (plan.key !== 'working' || !iuPlan) return true;
     return Math.abs(numberOrZero(plan.plan) - numberOrZero(iuPlan.plan)) > 1;
   });
-  const cardsHtml = visiblePlans
-    .map((plan) => iuDrrQuarterPlanCardHtml(plan, forecast))
+  const extraPlansHtml = visiblePlans
+    .filter((plan) => plan.key !== 'iu')
+    .map((plan) => iuDrrForecastPlanPillHtml(plan, forecast))
     .join('');
   const showRuleNote = visiblePlans.some((plan) => plan.key === 'working');
+  const primaryPlan = iuPlan || visiblePlans[0] || sourcePlans[0] || {};
   return `
     <div class="card sku-plan-fact-card iu-drr-quarter-planfact-card" style="${iuDrrPlanFactCardStyle(forecast.platformKey, null)}">
       <div class="section-subhead">
@@ -4337,9 +4463,9 @@ function renderIuDrrQuarterForecastPanel(forecast = {}) {
         </div>
       </div>
 
-      <div class="sku-plan-platform-board iu-drr-quarter-platform-board">
-        ${cardsHtml}
-      </div>
+      ${iuDrrQuarterForecastHeroHtml(primaryPlan, forecast)}
+
+      ${extraPlansHtml ? `<div class="iu-drr-forecast-plan-strip">${extraPlansHtml}</div>` : ''}
 
       ${showRuleNote ? `
         <div class="footer-note">
@@ -6390,7 +6516,19 @@ function renderIuDrr(rootId = 'view-iu-drr') {
     </div>
   `;
   const platformSelectHtml = `
-    <select id="iuDrrPlatform" aria-label="Площадка">
+    <div class="iu-drr-platform-switch" role="tablist" aria-label="Площадка">
+      <button type="button" class="iu-drr-platform-chip iu-drr-platform-chip--wb ${model.selectedPlatform === 'wb' ? 'active' : ''}" data-iu-drr-platform="wb" aria-pressed="${model.selectedPlatform === 'wb' ? 'true' : 'false'}">
+        <span>WB</span>
+        <strong>Wildberries</strong>
+        <em>ИУ + ДРР</em>
+      </button>
+      <button type="button" class="iu-drr-platform-chip iu-drr-platform-chip--ozon ${model.selectedPlatform === 'ozon' ? 'active' : ''}" data-iu-drr-platform="ozon" aria-pressed="${model.selectedPlatform === 'ozon' ? 'true' : 'false'}">
+        <span>OZ</span>
+        <strong>Ozon</strong>
+        <em>Smart 40%</em>
+      </button>
+    </div>
+    <select id="iuDrrPlatform" class="iu-drr-platform-select-fallback" aria-label="Площадка">
       <option value="wb" ${model.selectedPlatform === 'wb' ? 'selected' : ''}>WB</option>
       <option value="ozon" ${model.selectedPlatform === 'ozon' ? 'selected' : ''}>Ozon</option>
     </select>
@@ -6846,7 +6984,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       </div>
     </div>
 
-    <div class="control-filters" style="margin-top:12px">
+    <div class="control-filters iu-drr-toolbar" style="margin-top:12px">
       <select id="iuDrrMonth">
         ${model.monthOptions.map((option) => `<option value="${escapeHtml(option.key)}" ${model.selectedMonth === option.key ? 'selected' : ''}>${escapeHtml(option.label)}</option>`).join('')}
       </select>
@@ -6867,6 +7005,15 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   root.querySelector('#iuDrrPlatform')?.addEventListener('change', (event) => {
     getIuDrrFilters().platform = String(event.target.value || 'wb');
     rerenderCurrentView();
+  });
+  root.querySelectorAll('[data-iu-drr-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const platform = String(button.getAttribute('data-iu-drr-platform') || 'wb');
+      const select = root.querySelector('#iuDrrPlatform');
+      if (select) select.value = platform;
+      getIuDrrFilters().platform = platform;
+      rerenderCurrentView();
+    });
   });
 }
 

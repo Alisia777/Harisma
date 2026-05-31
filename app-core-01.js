@@ -2741,7 +2741,7 @@ const LAZY_DATA_LOADERS = {
       : { schema: 'portal-oos-control-v1', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
   },
   skuPlanFact: async () => {
-    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, skuAliases, skuAliasIgnore, skuAliasAudit] = await Promise.all([
+    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, skuAliases, skuAliasIgnore, skuAliasAudit, wbOwnerDistributionAudit] = await Promise.all([
       loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
       loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU'),
       loadJsonOrFallback('data/price_workbench_support.dashboard-compact.json', { generatedAt: '', platforms: {} }, 'План SKU'),
@@ -2767,6 +2767,11 @@ const LAZY_DATA_LOADERS = {
         'data/sku_alias_audit.json',
         { schema: 'sku-alias-audit-v1', events: [] },
         'SKU alias audit'
+      ),
+      loadJsonOrFallback(
+        'data/wb_owner_distribution_audit.json',
+        { schema: 'portal-wb-owner-distribution-audit-v1', summary: { ownerCounts: {} } },
+        'WB owner distribution audit'
       )
     ]);
     state.smartPriceOverlay = smartPriceOverlay && typeof smartPriceOverlay === 'object'
@@ -2804,6 +2809,9 @@ const LAZY_DATA_LOADERS = {
     state.skuAliasAudit = skuAliasAudit && typeof skuAliasAudit === 'object'
       ? skuAliasAudit
       : { schema: 'sku-alias-audit-v1', events: [] };
+    state.wbOwnerDistributionAudit = wbOwnerDistributionAudit && typeof wbOwnerDistributionAudit === 'object'
+      ? wbOwnerDistributionAudit
+      : { schema: 'portal-wb-owner-distribution-audit-v1', summary: { ownerCounts: {} } };
   },
   productLeaderboard: async () => {
     const loadLocalProductData = async (path, fallback, label) => {

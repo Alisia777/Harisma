@@ -4130,10 +4130,11 @@ function iuDrrQuarterFactBase(model = {}, platformKey = 'wb', context = {}) {
       || numberOrZero(row.adsBoth)
     ));
     const lastPlanFact = planFactRowsWithFact.at(-1) || {};
-    const fact = factFromDaily
-      || numberOrZero(lastPlanFact.cumulativeFactGmv)
+    const factFromPlanFact = numberOrZero(lastPlanFact.cumulativeFactGmv);
+    const fact = factFromPlanFact
+      || factFromDaily
       || numberOrZero(model.monthSummary?.iuRevenueOzonFactToDate || model.monthSummary?.revenueOzon);
-    const dates = factFromDaily ? datedRows.map((row) => row.date) : planFactRowsWithFact.map((row) => row.date);
+    const dates = factFromPlanFact ? planFactRowsWithFact.map((row) => row.date) : datedRows.map((row) => row.date);
     const days = new Set(dates.filter(Boolean)).size
       || numberOrZero(model.monthSummary?.daysInSummary)
       || (ozonFinanceWindowMatchesMonth(model.ozonFinance || {}, selectedMonth)
@@ -4143,7 +4144,8 @@ function iuDrrQuarterFactBase(model = {}, platformKey = 'wb', context = {}) {
       fact,
       days,
       from: dates.filter(Boolean).sort()[0] || '',
-      to: dates.filter(Boolean).sort().at(-1) || ''
+      to: dates.filter(Boolean).sort().at(-1) || '',
+      sourceLabel: factFromPlanFact ? 'Smart-факт ИУ Ozon' : 'Факт Ozon'
     };
   }
   const datedRows = sourceRows.filter((row) => row.date && (numberOrZero(row.iuRevenueWb || row.revenueWb || row.adsPctBaseWb || row.ordersRevenueWb) || numberOrZero(row.targetRevenueWb)));
@@ -4154,7 +4156,8 @@ function iuDrrQuarterFactBase(model = {}, platformKey = 'wb', context = {}) {
     fact,
     days: new Set(dates).size || numberOrZero(model.monthSummary?.daysInSummary),
     from: dates[0] || '',
-    to: dates.at(-1) || ''
+    to: dates.at(-1) || '',
+    sourceLabel: 'Факт WB'
   };
 }
 
@@ -4212,6 +4215,7 @@ function iuDrrBuildQuarterForecast(model = {}, context = {}) {
     elapsedDays: factBase.days,
     factFrom: factBase.from,
     factTo: factBase.to,
+    factSourceLabel: factBase.sourceLabel,
     dailyAverage,
     projectedFact,
     selectedPlan,
@@ -4325,7 +4329,7 @@ function renderIuDrrQuarterForecastPanel(forecast = {}) {
 
       <div class="kpi-strip iu-drr-quarter-kpis">
         <div class="mini-kpi"><span>Прогноз квартала</span><strong>${fmt.money(forecast.projectedFact)}</strong><span>${fmt.money(forecast.dailyAverage)} / день</span></div>
-        <div class="mini-kpi"><span>Факт для темпа</span><strong>${fmt.money(forecast.factToDate)}</strong><span>${escapeHtml(factWindow)}</span></div>
+        <div class="mini-kpi"><span>${escapeHtml(forecast.factSourceLabel || 'Факт для темпа')}</span><strong>${fmt.money(forecast.factToDate)}</strong><span>${escapeHtml(factWindow)}</span></div>
         <div class="mini-kpi"><span>Период расчета</span><strong>${fmt.int(forecast.daysTotal)} дн.</strong><span>прогноз до конца квартала</span></div>
       </div>
 
@@ -4863,9 +4867,17 @@ function iuDrrFunnelCompletionTone(value) {
 function iuDrrFunnelAdsCompletionTone(value) {
   if (!iuDrrFunnelFinite(value)) return 'info';
   const numeric = Number(value);
-  if (numeric >= 0.95 && numeric <= 1.15) return 'ok';
-  if (numeric >= 0.85 && numeric <= 1.3) return 'warn';
+  if (numeric <= 1) return 'ok';
+  if (numeric <= 1.15) return 'warn';
   return 'danger';
+}
+
+function iuDrrAdsBudgetStatus(value) {
+  const tone = iuDrrFunnelAdsCompletionTone(value);
+  if (tone === 'ok') return 'в бюджете';
+  if (tone === 'warn') return 'близко к лимиту';
+  if (tone === 'danger') return 'перерасход';
+  return 'контроль бюджета';
 }
 
 function iuDrrFunnelDrrTone(factDrr, planDrr) {
@@ -4971,14 +4983,14 @@ function iuDrrFunnelBuildModel(model = {}, context = {}) {
   }];
   const cards = platformKey === 'ozon' ? [
     ...revenueCards,
-    { label: 'Smart реклама на дату', value: iuDrrFunnelFormat({ format: 'pct' }, adsCompletion), detail: `${fmt.money(factAds)} / ${fmt.money(planAds)}`, progress: adsCompletion, tone: iuDrrFunnelAdsCompletionTone(adsCompletion), status: 'план к текущей дате' },
+    { label: 'Smart реклама на дату', value: iuDrrFunnelFormat({ format: 'pct' }, adsCompletion), detail: `${fmt.money(factAds)} / ${fmt.money(planAds)}`, progress: adsCompletion, tone: iuDrrFunnelAdsCompletionTone(adsCompletion), status: iuDrrAdsBudgetStatus(adsCompletion) },
     { label: 'ДРР / цель', value: iuDrrFunnelFormat({ format: 'pct' }, factDrr), detail: `цель ${iuDrrFunnelFormat({ format: 'pct' }, planDrr)}`, progress: planDrr > 0 ? factDrr / planDrr : null, tone: iuDrrFunnelDrrTone(factDrr, planDrr) },
     { label: 'ДРР без СПП', value: iuDrrFunnelFormat({ format: 'pct' }, noSppDrr), detail: `AdRev KPI ${iuDrrFunnelFormat({ format: 'pct' }, context.ozonAdRevKpiRate || context.ozonTargetDrr)}`, progress: noSppDrr && context.ozonAdRevKpiRate ? noSppDrr / context.ozonAdRevKpiRate : null, tone: iuDrrFunnelDrrTone(noSppDrr, context.ozonAdRevKpiRate || context.ozonTargetDrr) },
     { label: 'Резерв рекламы', value: iuDrrFunnelFormat({ format: 'money' }, reserve), detail: 'положительный = можно добирать', progress: reserve != null && factAds + reserve > 0 ? reserve / (factAds + reserve) : null, tone: reserve >= 0 ? 'ok' : 'warn' },
     { label: 'Воронка Ads', value: iuDrrFunnelFormat({ format: 'pct' }, ctr), detail: `${fmt.int(clicks)} кликов / ${fmt.int(views)} показов`, progress: ctr ? Math.min(1, ctr / 0.02) : null, tone: ctr ? 'ok' : 'info' }
   ] : [
     ...revenueCards,
-    { label: 'Реклама ДРР на дату', value: iuDrrFunnelFormat({ format: 'pct' }, adsCompletion), detail: `${fmt.money(factAds)} / ${fmt.money(planAds)}`, progress: adsCompletion, tone: iuDrrFunnelAdsCompletionTone(adsCompletion), status: 'план к текущей дате' },
+    { label: 'Реклама ДРР на дату', value: iuDrrFunnelFormat({ format: 'pct' }, adsCompletion), detail: `${fmt.money(factAds)} / ${fmt.money(planAds)}`, progress: adsCompletion, tone: iuDrrFunnelAdsCompletionTone(adsCompletion), status: iuDrrAdsBudgetStatus(adsCompletion) },
     { label: 'ДРР факт', value: iuDrrFunnelFormat({ format: 'pct' }, factDrr), detail: `план ${iuDrrFunnelFormat({ format: 'pct' }, planDrr)}`, progress: planDrr > 0 ? factDrr / planDrr : null, tone: iuDrrFunnelDrrTone(factDrr, planDrr) },
     { label: 'Внешний трафик', value: iuDrrFunnelFormat({ format: 'money' }, iuDrrFunnelSummaryValue('externalAds', rows, platformKey, context)), detail: 'отдельно, не в ДРР', progress: null, tone: iuDrrFunnelSummaryValue('externalAds', rows, platformKey, context) > 0 ? 'warn' : 'ok' },
     { label: 'CTR / CR', value: iuDrrFunnelFormat({ format: 'pct' }, ctr), detail: `CR ${iuDrrFunnelFormat({ format: 'pct' }, cr)}`, progress: ctr ? Math.min(1, ctr / 0.02) : null, tone: ctr ? 'ok' : 'info' },
@@ -5315,7 +5327,8 @@ function renderOzonIuPlanFactTable(model, context = {}) {
       value: adsCompletion == null ? '—' : fmt.pct(adsCompletion),
       detail: `${fmt.money(factAdsToDate)} / ${fmt.money(planAdsToDate)}`,
       progress: adsCompletion,
-      tone: iuDrrFunnelAdsCompletionTone(adsCompletion)
+      tone: iuDrrFunnelAdsCompletionTone(adsCompletion),
+      status: iuDrrAdsBudgetStatus(adsCompletion)
     },
     {
       label: 'ДРР факт',

@@ -4292,8 +4292,13 @@ function iuDrrPlanFactDeltaClass(value) {
 
 function iuDrrQuarterPlanCardHtml(plan = {}, forecast = {}) {
   const completion = plan.completion;
-  const completionText = completion == null ? '—' : fmt.pct(completion);
-  const deltaText = plan.delta == null ? 'нет факта для темпа' : `дельта ${plan.delta >= 0 ? '+' : ''}${fmt.money(plan.delta)}`;
+  const completionText = completion == null ? 'выполнение —' : `выполнение ${fmt.pct(completion)}`;
+  const statusText = completion == null
+    ? 'Нет факта'
+    : completion >= 1 ? 'Закрываем' : completion >= 0.9 ? 'Рядом с планом' : 'Ниже плана';
+  const deltaText = plan.delta == null
+    ? 'нет факта для темпа'
+    : plan.delta >= 0 ? `запас +${fmt.money(plan.delta)}` : `не хватает ${fmt.money(Math.abs(plan.delta))}`;
   const platformKey = forecast.platformKey === 'ozon' ? 'ozon' : 'wb';
   const level = iuDrrPlanFactCompletionLevel(completion);
   return `
@@ -4301,8 +4306,8 @@ function iuDrrQuarterPlanCardHtml(plan = {}, forecast = {}) {
       <span class="sku-plan-platform-card__top">
         <strong>${escapeHtml(plan.label || 'План квартала')}</strong>
       </span>
-      <span class="sku-plan-platform-card__value">${escapeHtml(completionText)}</span>
-      <span class="sku-plan-platform-card__meta">прогноз ${fmt.money(forecast.projectedFact)} / план ${fmt.money(plan.plan)}</span>
+      <span class="sku-plan-platform-card__value">${escapeHtml(statusText)}</span>
+      <span class="sku-plan-platform-card__meta">ожидаем ${fmt.money(forecast.projectedFact)} / план ${fmt.money(plan.plan)} · ${escapeHtml(completionText)}</span>
       <span class="sku-plan-platform-card__bar"><i></i></span>
       <span class="sku-plan-platform-card__foot">
         <b class="${iuDrrPlanFactDeltaClass(plan.delta)}">${escapeHtml(deltaText)}</b>
@@ -4327,8 +4332,8 @@ function renderIuDrrQuarterForecastPanel(forecast = {}) {
     <div class="card sku-plan-fact-card iu-drr-quarter-planfact-card" style="${iuDrrPlanFactCardStyle(forecast.platformKey, null)}">
       <div class="section-subhead">
         <div>
-          <h3>${escapeHtml(forecast.platformLabel)}: квартальный прогноз ИУ</h3>
-          <p class="small muted">Берём средний дневной факт текущего месяца и считаем, каким будет итог квартала при таком же темпе.</p>
+          <h3>${escapeHtml(forecast.platformLabel)}: прогноз выполнения ИУ</h3>
+          <p class="small muted">Это не факт квартала: ожидаемый итог = средний дневной факт текущего месяца × дни квартала.</p>
         </div>
       </div>
 

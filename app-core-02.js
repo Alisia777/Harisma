@@ -1398,22 +1398,25 @@ const AUTO_SIGNAL_RULES = {
   stockDays: 10,
   priceDropPct: 0.15,
   revenueDropPct: 0.20,
-  aovDropPct: 0.18,
-  conversionDropPct: 0.15,
+  aovDropPct: 0.20,
+  conversionDropPct: 0.10,
   profitabilityDropPct: 0.25,
-  minRecentOrders: 5,
-  minBaseOrders: 40,
-  minBaseRevenueDay: 20000,
+  minRecentOrders: 10,
+  minPriceRecentOrders: 80,
+  minBaseOrders: 50,
+  minBaseRevenueDay: 30000,
+  minRevenueLossDay: 30000,
   minKzClicks: 700,
-  minKzRevenue: 30000,
-  minKzSpend: 15000,
-  totalLimit: 26,
+  minKzRevenue: 50000,
+  minKzSpend: 30000,
+  totalLimit: 16,
+  launchLimit: 5,
   familyLimits: {
-    stock: 20,
-    price: 8,
-    sales: 8,
-    kz: 8,
-    aov: 4
+    stock: 10,
+    price: 3,
+    sales: 4,
+    kz: 5,
+    aov: 1
   }
 };
 
@@ -1515,6 +1518,18 @@ function autoSignalPriceOverlayRows() {
   return result;
 }
 
+function autoSignalIssueKey(platform, articleKey) {
+  return `${normalizeTaskPlatform(platform || 'all')}|${String(articleKey || '').trim().toLowerCase()}`;
+}
+
+function autoSignalActiveStockKeys() {
+  const rows = Array.isArray(state.oosControl?.rows) ? state.oosControl.rows : [];
+  return new Set(rows
+    .filter((row) => row?.articleKey || row?.article)
+    .filter((row) => row.status === 'oos' || autoSignalFinite(row.turnoverDays, Number.POSITIVE_INFINITY) <= AUTO_SIGNAL_RULES.stockDays)
+    .map((row) => autoSignalIssueKey(row.platform, row.articleKey || row.article)));
+}
+
 function buildStockAutoSignalCandidates() {
   const rows = Array.isArray(state.oosControl?.rows) ? state.oosControl.rows : [];
   return rows.map((row) => {
@@ -1528,6 +1543,7 @@ function buildStockAutoSignalCandidates() {
       ? row.placesAtRisk.map((item) => item.place).filter(Boolean).slice(0, 4).join(', ')
       : row.place;
     const isOos = row.status === 'oos';
+    const clusterLabel = `${clusters} ${clusters === 1 ? 'кластер' : 'кластеров'}`;
     return {
       family: 'stock',
       dedupeKey: `${row.articleKey || row.article}|stock|${platform}`,
@@ -1543,12 +1559,12 @@ function buildStockAutoSignalCandidates() {
         articleKey: row.articleKey || row.article,
         title: isOos
           ? `${platformLabel}: OOS по SKU`
-          : `${platformLabel}: остаток меньше ${AUTO_SIGNAL_RULES.stockDays} дней`,
+          : `${platformLabel}: ${clusterLabel} <${AUTO_SIGNAL_RULES.stockDays} дней`,
         nextAction: row.recommendation || `Проверить поставку и закрыть кластеры с покрытием меньше ${AUTO_SIGNAL_RULES.stockDays} дней.`,
         reason: [
           `${platformLabel}: ${row.statusLabel || 'риск OOS'}`,
           Number.isFinite(days) ? `покрытие ${autoSignalNum(days, 1)} д.` : '',
-          `${clusters} кластер(ов)`,
+          clusterLabel,
           places ? `кластеры: ${places}` : '',
           `риск выручки ${autoSignalMoney(row.revenueAtRiskDay || 0)}/день`
         ].filter(Boolean).join(' · '),
@@ -1566,6 +1582,7 @@ function buildStockAutoSignalCandidates() {
 
 function buildPriceAndSalesAutoSignalCandidates() {
   const candidates = [];
+  const activeStockKeys = autoSignalActiveStockKeys();
   autoSignalPriceOverlayRows().forEach(({ platform, row }) => {
     const articleKey = String(row?.articleKey || row?.article || '').trim();
     const sku = getSku(articleKey);
@@ -1579,8 +1596,9 @@ function buildPriceAndSalesAutoSignalCandidates() {
     const currentPrice = autoSignalFinite(latest.price || row.currentPrice || row.currentFillPrice);
     const recentOrders7 = autoSignalSum(daily.slice(-7), 'ordersUnits');
     const priceDrop = previousPrice > 0 && currentPrice > 0 ? (previousPrice - currentPrice) / previousPrice : 0;
-    if (priceDrop >= AUTO_SIGNAL_RULES.priceDropPct && recentOrders7 >= AUTO_SIGNAL_RULES.minRecentOrders) {
+    if (priceDrop >= AUTO_SIGNAL_RULES.priceDropPct && recentOrders7 >= AUTO_SIGNAL_RULES.minPriceRecentOrders) {
       const priority = priceDrop >= 0.25 ? 'critical' : 'high';
+      const priceDropLabel = autoSignalPct(priceDrop);
       candidates.push({
         family: 'price',
         dedupeKey: articleKey,
@@ -1588,15 +1606,15 @@ function buildPriceAndSalesAutoSignalCandidates() {
         taskType: 'price_margin',
         platform,
         priority,
-        score: 760 + priceDrop * 100 + recentOrders7 / 10,
+        score: 760 + priceDrop * 100 + recentOrders7 / 8,
         task: {
           id: stableId('auto-price-drop-v2', `${platform}|${articleKey}`),
           source: 'auto',
           autoCode: 'price_drop_v2',
           articleKey,
-          title: `${platformLabel}: цена упала больше 15%`,
-          nextAction: 'Проверить, это плановая промо-механика или ошибка цены. Зафиксировать решение: оставить, вернуть цену или согласовать промо.',
-          reason: `${platformLabel}: цена ${autoSignalMoney(currentPrice)} против среднего ${autoSignalMoney(previousPrice)} за предыдущие дни, падение ${autoSignalPct(priceDrop)}. За 7 дней заказов: ${autoSignalNum(recentOrders7, 0)}.`,
+          title: `${platformLabel}: цена -${priceDropLabel} к среднему уровню`,
+          nextAction: 'Проверить цену как аварийный сигнал: это промо, ошибка цены или сбой правил. В задаче зафиксировать решение: оставить промо до даты, вернуть цену или согласовать исключение.',
+          reason: `${platformLabel}: текущая цена ${autoSignalMoney(currentPrice)}, средняя за 7 предыдущих дней ${autoSignalMoney(previousPrice)}, отклонение ${priceDropLabel}. Проверка прошла фильтр объёма: ${autoSignalNum(recentOrders7, 0)} заказов за 7 дней.`,
           owner: ownerName(sku),
           due: autoSignalTaskDue(priority),
           status: 'new',
@@ -1617,14 +1635,19 @@ function buildPriceAndSalesAutoSignalCandidates() {
     const recentOrders = autoSignalSum(recent, 'ordersUnits');
     const baseOrders = autoSignalSum(base, 'ordersUnits');
     const revenueDrop = baseRevenueDay > 0 ? (baseRevenueDay - recentRevenueDay) / baseRevenueDay : 0;
+    const revenueLossDay = baseRevenueDay - recentRevenueDay;
+    const stockAlreadyExplainsSales = activeStockKeys.has(autoSignalIssueKey(platform, articleKey));
     if (
-      base.length >= 5
+      !stockAlreadyExplainsSales
+      && base.length >= 5
       && baseRevenueDay >= AUTO_SIGNAL_RULES.minBaseRevenueDay
       && baseOrders >= AUTO_SIGNAL_RULES.minBaseOrders
       && recentOrders >= AUTO_SIGNAL_RULES.minRecentOrders
       && revenueDrop >= AUTO_SIGNAL_RULES.revenueDropPct
+      && revenueLossDay >= AUTO_SIGNAL_RULES.minRevenueLossDay
     ) {
       const priority = revenueDrop >= 0.35 ? 'critical' : 'high';
+      const revenueDropLabel = autoSignalPct(revenueDrop);
       candidates.push({
         family: 'sales',
         dedupeKey: articleKey,
@@ -1632,15 +1655,15 @@ function buildPriceAndSalesAutoSignalCandidates() {
         taskType: 'traffic',
         platform,
         priority,
-        score: 700 + revenueDrop * 100 + baseRevenueDay / 10000,
+        score: 700 + revenueDrop * 100 + revenueLossDay / 5000,
         task: {
           id: stableId('auto-sales-drop-v2', `${platform}|${articleKey}`),
           source: 'auto',
           autoCode: 'sales_drop_v2',
           articleKey,
-          title: `${platformLabel}: оборот SKU просел больше 20%`,
-          nextAction: 'Проверить, не связано ли падение с остатком, ценой, рекламой или карточкой. Сравнить последние 3 дня с предыдущей неделей и выбрать контрмеру.',
-          reason: `${platformLabel}: средний оборот ${autoSignalMoney(recentRevenueDay)}/день против ${autoSignalMoney(baseRevenueDay)}/день, падение ${autoSignalPct(revenueDrop)}. Сравнение сглажено по 3 дням против предыдущих 7.`,
+          title: `${platformLabel}: оборот -${revenueDropLabel}, потеря ${autoSignalMoney(revenueLossDay)}/день`,
+          nextAction: 'Разобрать корневую причину за 15 минут: остаток, цена, реклама, карточка. В задаче оставить один выбранный рычаг и срок повторной проверки.',
+          reason: `${platformLabel}: 3-дневный оборот ${autoSignalMoney(recentRevenueDay)}/день против базы ${autoSignalMoney(baseRevenueDay)}/день; падение ${revenueDropLabel}, минус ${autoSignalMoney(revenueLossDay)}/день. OOS по этой площадке не найден, поэтому это отдельный сигнал, не дубль остатков.`,
           owner: ownerName(sku),
           due: autoSignalTaskDue(priority),
           status: 'new',
@@ -1739,33 +1762,43 @@ function buildKzAutoSignalCandidates(leaderboardPayload = {}) {
     const revenueDrop = previousRevenue > 0 ? (previousRevenue - revenue) / previousRevenue : 0;
     const aovDrop = previousAov > 0 ? (previousAov - currentAov) / previousAov : 0;
     const reasons = [];
+    const spendGate = spend >= AUTO_SIGNAL_RULES.minKzSpend;
+    const revenueGate = revenue >= AUTO_SIGNAL_RULES.minKzRevenue;
+    const badProfitabilityLevel = (Number.isFinite(romi.value) && romi.value < 1)
+      || (Number.isFinite(drr.value) && drr.value >= 0.45);
 
     const profitabilityDrop = (
       (Number.isFinite(romi.deltaPct) && romi.deltaPct <= -AUTO_SIGNAL_RULES.profitabilityDropPct && romi.value < romi.baseline)
       || (Number.isFinite(drr.deltaPct) && drr.deltaPct >= AUTO_SIGNAL_RULES.profitabilityDropPct && drr.value > drr.baseline)
-    ) && (revenue >= AUTO_SIGNAL_RULES.minKzRevenue || spend >= AUTO_SIGNAL_RULES.minKzSpend);
-    if (profitabilityDrop) reasons.push(`доходность рекламы просела: ROMI ${autoSignalPct(romi.value, 1)} / база ${autoSignalPct(romi.baseline, 1)}, ДРР ${autoSignalPct(drr.value, 1)}`);
+      || badProfitabilityLevel
+    ) && spendGate && (revenueGate || badProfitabilityLevel);
+    if (profitabilityDrop) {
+      reasons.push(`реклама не держит экономику: расход ${autoSignalMoney(spend)}, выручка ${autoSignalMoney(revenue)}, ROMI ${autoSignalPct(romi.value, 1)} против базы ${autoSignalPct(romi.baseline, 1)}, ДРР ${autoSignalPct(drr.value, 1)}`);
+    }
 
     const conversionDrop = clicks >= AUTO_SIGNAL_RULES.minKzClicks && (
       (Number.isFinite(conversion.deltaPct) && conversion.deltaPct <= -AUTO_SIGNAL_RULES.conversionDropPct && conversion.value < conversion.baseline)
       || (Number.isFinite(buyRate.deltaPct) && buyRate.deltaPct <= -AUTO_SIGNAL_RULES.conversionDropPct && buyRate.value < buyRate.baseline)
     );
-    if (conversionDrop) reasons.push(`конверсия КЗ ниже базы на ${autoSignalPct(Math.abs(Math.min(conversion.deltaPct || 0, buyRate.deltaPct || 0)))}`);
+    if (conversionDrop && (profitabilityDrop || revenueDrop >= AUTO_SIGNAL_RULES.revenueDropPct)) {
+      reasons.push(`конверсия КЗ ниже базы на ${autoSignalPct(Math.abs(Math.min(conversion.deltaPct || 0, buyRate.deltaPct || 0)))}`);
+    }
 
-    if (previousRevenue >= AUTO_SIGNAL_RULES.minKzRevenue && revenueDrop >= AUTO_SIGNAL_RULES.revenueDropPct) {
+    if (profitabilityDrop && previousRevenue >= AUTO_SIGNAL_RULES.minKzRevenue && revenueDrop >= AUTO_SIGNAL_RULES.revenueDropPct) {
       reasons.push(`выручка КЗ упала на ${autoSignalPct(revenueDrop)} к прошлой неделе`);
     }
-    if (previousOrders >= 20 && currentOrders >= 10 && aovDrop >= AUTO_SIGNAL_RULES.aovDropPct) {
+    if (profitabilityDrop && previousOrders >= 20 && currentOrders >= 10 && aovDrop >= AUTO_SIGNAL_RULES.aovDropPct) {
       reasons.push(`средний чек КЗ упал на ${autoSignalPct(aovDrop)}`);
     }
+    if (!profitabilityDrop && !(conversionDrop && revenueDrop >= AUTO_SIGNAL_RULES.revenueDropPct && revenueGate)) return null;
     if (!reasons.length) return null;
 
     const priority = profitabilityDrop || revenueDrop >= 0.35 ? 'critical' : 'high';
     const title = profitabilityDrop
-      ? 'КЗ WB: восстановить доходность рекламы'
+      ? `КЗ WB: реклама режет доходность`
       : conversionDrop
-        ? 'КЗ WB: проверить просадку конверсии'
-        : 'КЗ WB: проверить просадку оборота';
+        ? 'КЗ WB: конверсия просела вместе с оборотом'
+        : 'КЗ WB: проверить просадку оборота после КЗ';
     return {
       family: 'kz',
       dedupeKey: articleKey,
@@ -1774,7 +1807,8 @@ function buildKzAutoSignalCandidates(leaderboardPayload = {}) {
       platform: 'wb',
       priority,
       score: 740
-        + (profitabilityDrop ? 80 : 0)
+        + (profitabilityDrop ? 180 : 0)
+        + spend / 1000
         + Math.max(revenueDrop, aovDrop, Math.abs(conversion.deltaPct || 0), Math.abs(romi.deltaPct || 0)) * 100
         + revenue / 100000,
       task: {
@@ -1783,7 +1817,7 @@ function buildKzAutoSignalCandidates(leaderboardPayload = {}) {
         autoCode: 'kz_quality_v2',
         articleKey,
         title,
-        nextAction: 'Разобрать именно WB/КЗ: доходность, ДРР, связку креатив → карточка → заказ. В задаче зафиксировать гипотезу и следующий запуск/правку.',
+        nextAction: 'Разобрать только WB/КЗ: найти РК или креатив, который тратит деньги без окупаемости. В задаче оставить одно действие: выключить/урезать, заменить креатив, поправить карточку или подтвердить промо-исключение.',
         reason: `${weekLabel || 'КЗ'}: ${reasons.slice(0, 3).join(' · ')}. Ozon не назначаем: КЗ ведем как WB-контур.`,
         owner: ownerName(sku),
         due: autoSignalTaskDue(priority),
@@ -2030,6 +2064,7 @@ function buildAutoTasks() {
       .map((task) => `${String(task.articleKey || '').trim()}|${String(task.entityLabel || task.title || '').trim().toLowerCase()}`)
   );
   const launchItems = typeof getLaunchItems === 'function' ? getLaunchItems({ skipTaskLookup: true }) : [];
+  const launchCandidates = [];
   launchItems.forEach((item) => {
     const launchDate = typeof launchDueDateKey === 'function'
       ? launchDueDateKey(item)
@@ -2044,35 +2079,51 @@ function buildAutoTasks() {
     const dedupeKey = `${String(item?.articleKey || '').trim()}|${String(item?.name || '').trim().toLowerCase()}`;
     if (activeLaunchTaskKeys.has(dedupeKey)) return;
     activeLaunchTaskKeys.add(dedupeKey);
-    tasks.push(normalizeTask({
+    const blockers = [
+      item.owner ? '' : 'нет owner',
+      item.articleKey ? '' : 'нет SKU',
+      item.presentationUrl ? '' : 'нет презентации'
+    ].filter(Boolean);
+    const priority = daysUntilLaunch <= 14 || blockers.length >= 2 ? 'high' : 'medium';
+    const due = launchGateDate && diffFromTodayInDays(launchGateDate) > 0
+      ? launchGateDate
+      : daysUntilLaunch <= 14
+        ? plusDays(1)
+        : daysUntilLaunch <= 30
+          ? plusDays(2)
+          : plusDays(5);
+    launchCandidates.push({
+      score: (daysUntilLaunch <= 14 ? 300 : 0)
+        + blockers.length * 80
+        + Math.max(0, 45 - daysUntilLaunch),
+      task: normalizeTask({
       id: `auto-launch-${item.id || item.articleKey || hashString(item.name || launchDate)}`,
       source: 'auto',
       autoCode: 'launch_pipeline',
       articleKey: item.articleKey || '',
       entityLabel: item.name || item.articleKey || 'Новинка',
-      title: 'Подготовить запуск новинки',
-      nextAction: 'Проверить owner, карточку, презентацию, запуск в реестре SKU, gantt и ближайшие блокеры по новинке.',
+      title: blockers.length ? 'Новинка: закрыть запусковой блокер' : 'Новинка: финальная проверка запуска',
+      nextAction: 'Закрыть самый близкий блокер запуска: owner, SKU, презентация, карточка или Gantt. В задаче оставить конкретный недостающий артефакт и дату, когда он будет готов.',
       reason: [
         item.launchMonth || 'Срок запуска',
         item.status || 'Нужно уточнить статус',
         item.production || '',
-        item.articleKey ? 'SKU связано' : 'без SKU',
-        item.presentationUrl ? 'материалы есть' : 'без презентации'
+        blockers.length ? `блокеры: ${blockers.join(', ')}` : 'критичных блокеров не найдено'
       ].filter(Boolean).join(' · '),
       owner: item.owner || '',
-      due: launchGateDate && diffFromTodayInDays(launchGateDate) > 0
-        ? launchGateDate
-        : daysUntilLaunch <= 14
-          ? plusDays(1)
-          : daysUntilLaunch <= 30
-            ? plusDays(2)
-            : plusDays(5),
+      due,
       status: 'new',
       type: 'launch',
-      priority: daysUntilLaunch <= 14 ? 'high' : 'medium',
+      priority,
       platform: 'product'
-    }, 'auto'));
+    }, 'auto')
+    });
   });
+  launchCandidates
+    .sort((left, right) => autoSignalFinite(right.score) - autoSignalFinite(left.score)
+      || String(left.task?.entityLabel || '').localeCompare(String(right.task?.entityLabel || ''), 'ru'))
+    .slice(0, AUTO_SIGNAL_RULES.launchLimit)
+    .forEach((candidate) => tasks.push(candidate.task));
 
   return tasks;
   } finally {

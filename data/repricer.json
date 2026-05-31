@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-05-31T09:40:21.073Z",
+  "generatedAt": "2026-05-31T13:59:44.164Z",
   "note": "Legacy repricer fallback rebuilt from merged smart-price contour, support rows and local live repricer hints. Used for coldstart, price bridge and compatibility until managed repricer finishes hydration.",
   "sourceFreshness": {
     "workbench": "2026-05-18T14:34:19.064Z",
-    "overlay": "2026-05-31T09:40:21.073Z",
+    "overlay": "2026-05-31T13:59:44.164Z",
     "liveWorkbench": "2026-05-12T11:58:47.377Z",
     "liveRepricer": "2026-04-16T23:59:00",
     "liveRepricerFileMtime": "2026-05-03T11:28:55.385Z",
     "liveRepricerStatus": "stale-ignored",
-    "liveRepricerAgeDays": 44.53,
+    "liveRepricerAgeDays": 44.71,
     "liveRepricerMaxAgeDays": 7,
     "liveRepricerRowsUsed": 0,
     "support": "2026-04-20T14:28:01.203171Z",
-    "prices": "2026-05-31T09:40:21.073Z",
-    "merged": "2026-05-31T09:40:21.073Z"
+    "prices": "2026-05-31T13:59:44.164Z",
+    "merged": "2026-05-31T13:59:44.164Z"
   },
   "summary": {
     "skuCount": 200,

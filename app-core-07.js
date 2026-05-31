@@ -5287,6 +5287,30 @@ function ozonPlanFactMonthTargetGmv(model, planMonth = null) {
   return rawMonthlyTarget * smartShare;
 }
 
+function iuDrrOzonPlanFactContext(model, overrides = {}) {
+  const ozonPlan = model?.payload?.ozonPlan || {};
+  const planMonth = model?.ozonPlanMonth || ozonPlanMonthSummary(ozonPlan, model?.selectedMonth);
+  const allocation = planMonth?.allocation || {};
+  const totals = planMonth?.totals || {};
+  const targetDrr = numberOrZero(overrides.targetDrr)
+    || numberOrZero(model?.monthSummary?.planPctOzon)
+    || numberOrZero(totals.targetDrr)
+    || numberOrZero((ozonPlan.accounts || []).find((account) => account.key === 'smart')?.targetDrr)
+    || 0.25;
+  const smartShare = numberOrZero(overrides.smartShare || allocation.smartShare || 0.4);
+  const monthTargetGmv = numberOrZero(overrides.monthTargetGmv) || ozonPlanFactMonthTargetGmv(model, planMonth);
+  const ozonPlanFactRows = Array.isArray(overrides.ozonPlanFactRows)
+    ? overrides.ozonPlanFactRows
+    : ozonPlanFactDailyRows(model, { monthTargetGmv, smartShare, targetDrr });
+  return {
+    monthTargetGmv,
+    smartShare,
+    targetDrr,
+    ozonPlanFactRows,
+    rows: ozonPlanFactRows
+  };
+}
+
 function renderOzonIuAccountCards(model, context = {}) {
   const planMonth = model.ozonPlanMonth || {};
   const totals = planMonth.totals || {};
@@ -6222,11 +6246,12 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   const ozonSpendReserve = ozonTargetSpendByFact - ozonAdsAbs;
   const ozonSmartShare = numberOrZero(ozonAllocation.smartShare || 0.4);
   const ozonMonthTargetGmv = ozonPlanFactMonthTargetGmv(model, ozonPlanMonth);
-  const ozonPlanFactRows = ozonPlanFactDailyRows(model, {
+  const ozonPlanFactContext = iuDrrOzonPlanFactContext(model, {
     monthTargetGmv: ozonMonthTargetGmv,
     smartShare: ozonSmartShare,
     targetDrr: ozonTargetDrr
   });
+  const ozonPlanFactRows = ozonPlanFactContext.ozonPlanFactRows;
   const ozonPlanFactLastRow = ozonPlanFactRows[ozonPlanFactRows.length - 1] || {};
   const ozonSmartDailyRows = (ozonPlan.daily || [])
     .filter((row) => row.monthKey === model.selectedMonth)

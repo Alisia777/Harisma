@@ -2942,14 +2942,17 @@ const LAZY_DATA_LOADERS = {
     state.documents = documents || { groups: [] };
   },
   repricer: async () => {
-    const [repricer, smartPriceWorkbench, smartPriceWorkbenchLive, smartPriceOverlay, repricerLive, prices, priceWorkbenchSupport] = await Promise.all([
+    const [repricer, smartPriceWorkbench, smartPriceWorkbenchLive, smartPriceOverlay, repricerLive, prices, priceWorkbenchSupport, orderProcurementWb, orderProcurementOzon, warehouseStockOverlay] = await Promise.all([
       loadJsonOrFallback('data/repricer.json', { generatedAt: '', summary: {}, rows: [] }, 'Репрайсер'),
       loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
       optionalLoadJson('tmp-smart_price_workbench-live.json'),
       loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Overlay цен'),
       optionalLoadJson('tmp-live-repricer.json'),
       loadJsonOrFallback('data/prices.json', { generatedAt: '', platforms: {} }, 'Цены'),
-      loadJsonOrFallback('data/price_workbench_support.json', { generatedAt: '', platforms: {} }, 'Поддержка ценового контура')
+      loadJsonOrFallback('data/price_workbench_support.json', { generatedAt: '', platforms: {} }, 'Поддержка ценового контура'),
+      loadJsonOrFallback('data/order_procurement_wb.json', { generatedAt: '', rows: [] }, 'Отгрузки WB'),
+      loadJsonOrFallback('data/order_procurement_ozon.json', { generatedAt: '', rows: [] }, 'Отгрузки Ozon'),
+      loadJsonOrFallback('data/warehouse_stock_overlay.json', { generatedAt: '', rows: [] }, 'Склад/отгрузки')
     ]);
     state.repricer = repricer || { generatedAt: '', summary: {}, rows: [] };
     state.repricerLive = repricerLive || { generatedAt: '', rows: [] };
@@ -2957,6 +2960,12 @@ const LAZY_DATA_LOADERS = {
     state.priceWorkbenchSupport = priceWorkbenchSupport || { generatedAt: '', platforms: {} };
     state.smartPriceWorkbenchLive = smartPriceWorkbenchLive || { generatedAt: '', platforms: {} };
     state.smartPriceOverlay = smartPriceOverlay || { generatedAt: '', platforms: {} };
+    state.orderProcurementWb = orderProcurementWb || { generatedAt: '', rows: [] };
+    state.order_procurement_wb = state.orderProcurementWb;
+    state.orderProcurementOzon = orderProcurementOzon || { generatedAt: '', rows: [] };
+    state.order_procurement_ozon = state.orderProcurementOzon;
+    state.warehouseStockOverlay = warehouseStockOverlay || { generatedAt: '', rows: [] };
+    state.warehouse_stock_overlay = state.warehouseStockOverlay;
     state.smartPriceWorkbenchBase = mergeSmartWorkbenchPayload(
       smartPriceWorkbench || { generatedAt: '', platforms: {} },
       smartPriceWorkbenchLive || null

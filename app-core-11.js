@@ -111,7 +111,7 @@ function skuPlanFactOwnerOptionHasMetricSignal(row = {}, platform = 'all') {
   const metric = SKU_PLAN_FACT_PLATFORMS.includes(platform)
     ? (row.platforms?.[platform] || row[platform] || {})
     : row;
-  return Boolean(
+  if (Boolean(
     numberOrZero(metric.factRevenue) > 0
     || numberOrZero(metric.factUnits) > 0
     || numberOrZero(metric.planToDateRevenue) > 0
@@ -119,6 +119,20 @@ function skuPlanFactOwnerOptionHasMetricSignal(row = {}, platform = 'all') {
     || numberOrZero(metric.adSpend) > 0
     || numberOrZero(metric.planAdSpend) > 0
     || numberOrZero(metric.planAdSpendToDate) > 0
+  )) return true;
+  if (!SKU_PLAN_FACT_PLATFORMS.includes(platform)) return false;
+  return Boolean(
+    (metric.hasSource || metric.companyPlanZeroApplied)
+    && skuPlanFactPlatformOwner(row, platform)
+    && (
+      numberOrZero(row.factRevenue) > 0
+      || numberOrZero(row.factUnits) > 0
+      || numberOrZero(row.planToDateRevenue) > 0
+      || numberOrZero(row.planRevenue) > 0
+      || numberOrZero(row.adSpend) > 0
+      || numberOrZero(row.planAdSpend) > 0
+      || numberOrZero(row.planAdSpendToDate) > 0
+    )
   );
 }
 

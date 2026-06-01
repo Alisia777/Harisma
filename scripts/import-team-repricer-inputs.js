@@ -91,14 +91,48 @@ function cleanOwner(value = '') {
   const text = String(value || '').replace(/\s+/g, ' ').trim();
   if (!text) return '';
   const normalized = text.toLowerCase();
-  if (normalized.includes('александр') && normalized.includes('озон')) return 'Александр Озон';
   const known = new Map([
-    ['екатерина доможирова', 'Екатерина'],
-    ['анна пирогова', 'Анна'],
-    ['васильева мария', 'Мария'],
-    ['лапыгин максим', 'Максим']
+    ['александр', 'Питайкин Артём'],
+    ['александр озон', 'Питайкин Артём'],
+    ['артем', 'Питайкин Артём'],
+    ['артём', 'Питайкин Артём'],
+    ['питайкин артем', 'Питайкин Артём'],
+    ['питайкин артём', 'Питайкин Артём'],
+    ['дария', 'Молодякова Дария'],
+    ['дарья', 'Молодякова Дария'],
+    ['даша', 'Молодякова Дария'],
+    ['молодякова дария', 'Молодякова Дария'],
+    ['молодякова дарья', 'Молодякова Дария'],
+    ['анна', 'Пирогова Анна'],
+    ['анна пирогова', 'Пирогова Анна'],
+    ['пирогова анна', 'Пирогова Анна'],
+    ['екатерина', 'Доможирова Екатерина'],
+    ['екатерина доброжирова', 'Доможирова Екатерина'],
+    ['екатерина доможирова', 'Доможирова Екатерина'],
+    ['доможирова екатерина', 'Доможирова Екатерина'],
+    ['доброжирова екатерина', 'Доможирова Екатерина'],
+    ['мария', 'Васильева Мария'],
+    ['мария васильева', 'Васильева Мария'],
+    ['мария васильевна', 'Васильева Мария'],
+    ['васильева мария', 'Васильева Мария'],
+    ['максим', 'Лапыгин Максим'],
+    ['лапыгин максим', 'Лапыгин Максим'],
+    ['максим лапыгин', 'Лапыгин Максим']
   ]);
   return known.get(normalized) || text;
+}
+
+function cleanOwnerForPlatform(value = '', platformKey = '', currentOwner = '') {
+  const owner = cleanOwner(value);
+  if (!owner) return '';
+  const current = cleanOwner(currentOwner);
+  if (platformKey === 'wb') {
+    if (owner === 'Васильева Мария' || owner === 'Лапыгин Максим') return owner;
+    if ((current === 'Васильева Мария' || current === 'Лапыгин Максим') && ['Кирилл', 'Олеся', 'Светлана'].includes(owner)) return current;
+  }
+  if (platformKey === 'ym') return 'Пирогова Анна';
+  if (platformKey === 'goldapple' || platformKey === 'letu' || platformKey === 'magnit') return 'Доможирова Екатерина';
+  return owner;
 }
 
 function readJson(filePath, fallback) {
@@ -241,9 +275,13 @@ function updateSkuOwners(skus, ownerMaps) {
     if (!master) return;
     ensureOwnerObject(sku);
     ['wb', 'ozon', 'ym', 'goldapple', 'letu', 'magnit'].forEach((platformKey) => {
-      const owner = cleanOwner(master.owners[platformKey] || ownerMaps.platform[platformKey]?.get(token));
-      if (!owner) return;
       const localKey = platformKey === 'goldapple' ? 'ga' : (platformKey === 'magnit' ? 'mm' : platformKey);
+      const owner = cleanOwnerForPlatform(
+        master.owners[platformKey] || ownerMaps.platform[platformKey]?.get(token),
+        platformKey,
+        sku.ownersByPlatform?.[localKey] || sku.owner?.byPlatform?.[localKey] || ''
+      );
+      if (!owner) return;
       sku.owner.byPlatform[localKey] = owner;
       sku.ownersByPlatform[localKey] = owner;
       stats.platformAssignments += 1;
@@ -449,7 +487,11 @@ function applyOwner(row, platformKey, ownerMaps) {
   const tokenCandidates = rowTokens(row);
   for (const token of tokenCandidates) {
     const master = ownerMaps.master.get(token);
-    const owner = cleanOwner(master?.owners?.[platformOwnerKey(platformKey)] || ownerMaps.platform[platformOwnerKey(platformKey)]?.get(token));
+    const owner = cleanOwnerForPlatform(
+      master?.owners?.[platformOwnerKey(platformKey)] || ownerMaps.platform[platformOwnerKey(platformKey)]?.get(token),
+      platformOwnerKey(platformKey),
+      row.owner || ''
+    );
     if (!owner) continue;
     if (row.owner === owner) return false;
     row.owner = owner;

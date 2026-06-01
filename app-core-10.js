@@ -89,7 +89,6 @@ function executiveFunnelAllowedOwnersForPlatform(platform = '') {
       const normalized = executiveFunnelCanonicalOwner(owner);
       if (normalized) owners.add(normalized);
     });
-    if (owners.size) return owners;
   }
   (state.skus || []).forEach((sku) => {
     const owner = executiveFunnelExplicitOwnerForSku(sku, key);

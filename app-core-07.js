@@ -2843,30 +2843,35 @@ function productLeaderboardFreshnessMeta(payload = {}) {
 }
 
 function productLeaderboardExportRows(items, payload) {
-  return items.map((item) => ({
-    week_label: payload.weekLabel || payload.sourceSheetName || '',
-    generated_at: payload.generatedAt || '',
-    article_key: item.articleKey || '',
-    article: item.article || '',
-    name: item.name || '',
-    owner: item.owner || '',
-    category: item.category || '',
-    traffic: item.traffic || '',
-    signal: productLeaderboardSignalMeta(item.signal).label,
-    reach: item.reach,
-    clicks: item.clicks,
-    carts: item.carts,
-    orders: item.orders,
-    buys: item.buys,
-    ctr_pct: item.ctrPct === null ? '' : item.ctrPct,
-    cart_rate_pct: item.cartRatePct === null ? '' : item.cartRatePct,
-    buyout_pct: item.buyoutPct === null ? '' : item.buyoutPct,
-    revenue: item.revenue,
-    income: item.income,
-    romi_pct: item.romiPct === null ? '' : item.romiPct,
-    drr_pct: item.drrPct === null ? '' : item.drrPct,
-    diagnostics: item.diagnostics?.summary || ''
-  }));
+  return items.map((item) => {
+    const gameScore = productLeaderboardItemScore(item, payload);
+    return {
+      week_label: payload.weekLabel || payload.sourceSheetName || '',
+      generated_at: payload.generatedAt || '',
+      article_key: item.articleKey || '',
+      article: item.article || '',
+      name: item.name || '',
+      owner: item.owner || '',
+      category: item.category || '',
+      traffic: item.traffic || '',
+      signal: productLeaderboardSignalMeta(item.signal).label,
+      game_score: gameScore.score,
+      game_level: gameScore.label,
+      reach: item.reach,
+      clicks: item.clicks,
+      carts: item.carts,
+      orders: item.orders,
+      buys: item.buys,
+      ctr_pct: item.ctrPct === null ? '' : item.ctrPct,
+      cart_rate_pct: item.cartRatePct === null ? '' : item.cartRatePct,
+      buyout_pct: item.buyoutPct === null ? '' : item.buyoutPct,
+      revenue: item.revenue,
+      income: item.income,
+      romi_pct: item.romiPct === null ? '' : item.romiPct,
+      drr_pct: item.drrPct === null ? '' : item.drrPct,
+      diagnostics: item.diagnostics?.summary || ''
+    };
+  });
 }
 
 function downloadProductLeaderboardExcel(payload, items) {
@@ -2885,6 +2890,8 @@ function downloadProductLeaderboardExcel(payload, items) {
     ['category', 'Категория'],
     ['traffic', 'Трафик'],
     ['signal', 'Сигнал'],
+    ['game_score', 'КЗ уровень'],
+    ['game_level', 'КЗ статус'],
     ['reach', 'Охваты'],
     ['clicks', 'Клики'],
     ['carts', 'Корзины'],
@@ -2925,6 +2932,7 @@ function getFilteredProductLeaderboardItems(payload) {
   const directionFactor = sortDir === 'asc' ? 1 : -1;
   const emptyMetric = sortDir === 'asc' ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
   const getMetric = (item) => {
+    if (sortKey === 'gameScore') return productLeaderboardItemScore(item, payload).score;
     const raw = item?.[sortKey];
     if (raw === null || raw === undefined || raw === '') return emptyMetric;
     const parsed = Number(raw);
@@ -2937,6 +2945,289 @@ function getFilteredProductLeaderboardItems(payload) {
     return (leftMetric - rightMetric) * directionFactor
       || right.buys - left.buys
       || left.name.localeCompare(right.name, 'ru');
+  });
+}
+
+function productLeaderboardMetricTarget(payload = {}, key = '', fallback = 0) {
+  const value = productLeaderboardRate(payload?.baselines?.[key]);
+  return value !== null && value > 0 ? value : fallback;
+}
+
+function productLeaderboardMetricCompletion(value, target, options = {}) {
+  const actual = productLeaderboardRate(value);
+  const planned = productLeaderboardRate(target);
+  if (actual === null || planned === null || planned <= 0) return null;
+  const raw = options.lowerIsBetter ? planned / Math.max(actual, planned * 0.2) : actual / planned;
+  return Math.max(0, Math.min(1.35, raw));
+}
+
+function productLeaderboardScoreTone(score) {
+  if (score >= 85) return 'ok';
+  if (score >= 65) return 'info';
+  if (score >= 45) return 'warn';
+  return 'danger';
+}
+
+function productLeaderboardScoreLabel(score) {
+  if (score >= 90) return 'КЗ чемпион';
+  if (score >= 75) return 'сильная неделя';
+  if (score >= 55) return 'нужен фокус';
+  return 'разобрать срочно';
+}
+
+function productLeaderboardScoreLevel(score) {
+  if (score >= 90) return 5;
+  if (score >= 75) return 4;
+  if (score >= 55) return 3;
+  if (score >= 35) return 2;
+  return 1;
+}
+
+function productLeaderboardHealthBarHtml(config = {}) {
+  if (typeof skuPlanFactHealthBarHtml === 'function') return skuPlanFactHealthBarHtml(config);
+  const ratio = Number(config.valueRatio);
+  const width = Number.isFinite(ratio) ? Math.min(100, Math.max(0, ratio * 100)) : 0;
+  return `
+    <div class="sku-health ${escapeHtml(config.tone || '')}">
+      <div class="sku-health__head"><span>${escapeHtml(config.label || '')}</span><strong>${config.valueHtml || escapeHtml(config.valueText || '')}</strong></div>
+      <span class="sku-health__bar"><i style="width:${width.toFixed(1)}%"></i><em>${escapeHtml(config.barText || config.valueText || '')}</em></span>
+      ${(config.metaHtml || config.subText) ? `<div class="sku-health__meta">${config.metaHtml || `<em>${escapeHtml(config.subText || '')}</em>`}</div>` : ''}
+    </div>
+  `;
+}
+
+function productLeaderboardItemScore(item = {}, payload = {}) {
+  const ctrTarget = productLeaderboardMetricTarget(payload, 'ctrPct', 0.01);
+  const cartTarget = productLeaderboardMetricTarget(payload, 'cartRatePct', 0.3);
+  const buyoutTarget = productLeaderboardMetricTarget(payload, 'buyoutPct', 0.85);
+  const romiTarget = Math.max(1, productLeaderboardMetricTarget(payload, 'romiPct', 1));
+  const drrTarget = Math.min(0.35, productLeaderboardMetricTarget(payload, 'drrPct', 0.35) || 0.35);
+  const alertPenalty = (item.diagnostics?.alerts || []).reduce((sum, alert) => {
+    const rank = productLeaderboardAlertRank(alert.severity);
+    return sum + (rank >= 4 ? 16 : rank >= 3 ? 9 : rank >= 2 ? 4 : 1);
+  }, 0);
+  const parts = [
+    productLeaderboardMetricCompletion(item.ctrPct, ctrTarget),
+    productLeaderboardMetricCompletion(item.cartRatePct, cartTarget),
+    productLeaderboardMetricCompletion(item.buyoutPct, buyoutTarget),
+    productLeaderboardMetricCompletion(item.romiPct, romiTarget),
+    productLeaderboardMetricCompletion(item.drrPct, drrTarget, { lowerIsBetter: true })
+  ].filter((value) => value !== null);
+  const raw = parts.length ? parts.reduce((sum, value) => sum + Math.min(1, value), 0) / parts.length * 100 : 0;
+  const score = Math.max(0, Math.min(100, Math.round(raw - alertPenalty)));
+  return {
+    score,
+    tone: productLeaderboardScoreTone(score),
+    level: productLeaderboardScoreLevel(score),
+    label: productLeaderboardScoreLabel(score)
+  };
+}
+
+function productLeaderboardGameScore(payload = {}, items = []) {
+  const summary = productLeaderboardSummaryFromItems(items);
+  const ownerCoverage = summary.skuCount > 0 ? summary.ownerCount / summary.skuCount : 0;
+  const modules = [
+    productLeaderboardMetricCompletion(summary.ctrPct, productLeaderboardMetricTarget(payload, 'ctrPct', 0.01)),
+    productLeaderboardMetricCompletion(summary.cartRatePct, productLeaderboardMetricTarget(payload, 'cartRatePct', 0.3)),
+    productLeaderboardMetricCompletion(summary.buyoutPct, productLeaderboardMetricTarget(payload, 'buyoutPct', 0.85)),
+    productLeaderboardMetricCompletion(summary.romiPct, Math.max(1, productLeaderboardMetricTarget(payload, 'romiPct', 1))),
+    productLeaderboardMetricCompletion(summary.drrPct, Math.min(0.35, productLeaderboardMetricTarget(payload, 'drrPct', 0.35) || 0.35), { lowerIsBetter: true }),
+    ownerCoverage
+  ].filter((value) => value !== null);
+  const penalty = items.reduce((sum, item) => sum + (item.diagnostics?.alerts || []).reduce((itemSum, alert) => {
+    const rank = productLeaderboardAlertRank(alert.severity);
+    return itemSum + (rank >= 4 ? 8 : rank >= 3 ? 3 : rank >= 2 ? 1 : 0);
+  }, 0), 0);
+  const score = Math.max(0, Math.min(100, Math.round((modules.reduce((sum, value) => sum + Math.min(1, value), 0) / Math.max(1, modules.length)) * 100 - penalty)));
+  return {
+    score,
+    tone: productLeaderboardScoreTone(score),
+    label: productLeaderboardScoreLabel(score),
+    level: productLeaderboardScoreLevel(score),
+    ownerCoverage,
+    summary
+  };
+}
+
+function productLeaderboardModuleCardHtml(config = {}) {
+  const completion = config.completion;
+  const level = typeof skuPlanFactCompletionLevel === 'function'
+    ? skuPlanFactCompletionLevel(completion)
+    : productLeaderboardScoreLevel((Number(completion) || 0) * 100);
+  const style = typeof skuPlanFactCardStyle === 'function' ? skuPlanFactCardStyle('wb', completion) : '';
+  return `
+    <div class="sku-plan-platform-card level-${level}" style="${style};cursor:default">
+      <span class="sku-plan-platform-card__top">
+        <strong>${escapeHtml(config.title || '')}</strong>
+        <em>${escapeHtml(config.kicker || '')}</em>
+      </span>
+      <span class="sku-plan-platform-card__value">${escapeHtml(config.value || '')}</span>
+      <span class="sku-plan-platform-card__meta">${escapeHtml(config.meta || '')}</span>
+      <span class="sku-plan-platform-card__bar"><i></i></span>
+      <span class="sku-plan-platform-card__foot">
+        <b class="${escapeHtml(config.deltaClass || '')}">${escapeHtml(config.footer || '')}</b>
+        <span><em>${escapeHtml(config.hint || '')}</em></span>
+      </span>
+    </div>
+  `;
+}
+
+function productLeaderboardGameHeroHtml(payload = {}, filteredItems = [], freshness = {}) {
+  const game = productLeaderboardGameScore(payload, filteredItems);
+  const progress = Math.min(100, Math.max(0, game.score));
+  const hue = typeof skuPlanFactPlatformHue === 'function' ? skuPlanFactPlatformHue('wb') : 270;
+  const brightness = Math.min(1, Math.max(0.15, game.score / 100));
+  return `
+    <div class="card sku-plan-fact-card salary-plan-kpi-card product-leaderboard-game-card level-${game.level}" style="margin-top:14px;--xp-hue:${hue};--xp-progress:${progress.toFixed(1)}%;--xp-forecast:${progress.toFixed(1)}%;--xp-bright:${brightness.toFixed(2)}">
+      <div class="sku-salary-xp-head">
+        <div>
+          <h3>КЗ уровень недели</h3>
+          <p class="small muted">${escapeHtml(payload.weekLabel || payload.sourceSheetName || 'текущий срез')}</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(game.label, game.tone)}
+          ${badge(freshness.badgeLabel || 'срез', freshness.tone || 'info')}
+        </div>
+      </div>
+      <div class="sku-salary-xp-main">
+        <div class="sku-salary-xp-score">
+          <span>уровень</span>
+          <strong>${fmt.int(game.score)}</strong>
+          <em>${escapeHtml(game.label)}</em>
+        </div>
+        <div class="sku-salary-xp-track" aria-label="КЗ уровень недели" title="${escapeHtml(`${fmt.int(game.score)} / 100`)}"><i></i></div>
+        <div class="sku-salary-xp-delta ${game.score >= 75 ? 'ok' : game.score >= 55 ? 'warn' : 'danger'}">
+          <span>фокус</span>
+          <strong>${game.score >= 75 ? 'масштабировать' : game.score >= 55 ? 'дожать модули' : 'разобрать риски'}</strong>
+        </div>
+      </div>
+      <div class="sku-salary-xp-stats">
+        <span><em>SKU</em><b>${fmt.int(game.summary.skuCount)}</b></span>
+        <span><em>заказы</em><b>${fmt.int(game.summary.orders)}</b></span>
+        <span><em>выкупы</em><b>${fmt.int(game.summary.buys)}</b></span>
+        <span><em>owner</em><b>${fmt.pct(game.ownerCoverage)}</b></span>
+      </div>
+    </div>
+  `;
+}
+
+function productLeaderboardModuleBoardHtml(payload = {}, summary = {}, ownerCoverage = 0) {
+  const ctrTarget = productLeaderboardMetricTarget(payload, 'ctrPct', 0.01);
+  const cartTarget = productLeaderboardMetricTarget(payload, 'cartRatePct', 0.3);
+  const buyoutTarget = productLeaderboardMetricTarget(payload, 'buyoutPct', 0.85);
+  const romiTarget = Math.max(1, productLeaderboardMetricTarget(payload, 'romiPct', 1));
+  const drrTarget = Math.min(0.35, productLeaderboardMetricTarget(payload, 'drrPct', 0.35) || 0.35);
+  const cards = [
+    {
+      title: 'Трафик',
+      kicker: `${fmt.int(summary.reach)} охват`,
+      value: fmt.pct(summary.ctrPct),
+      meta: `${fmt.int(summary.clicks)} кликов`,
+      completion: productLeaderboardMetricCompletion(summary.ctrPct, ctrTarget),
+      footer: `цель ${fmt.pct(ctrTarget)}`,
+      hint: 'CTR'
+    },
+    {
+      title: 'Корзина',
+      kicker: `${fmt.int(summary.carts)} корзин`,
+      value: fmt.pct(summary.cartRatePct),
+      meta: `${fmt.int(summary.carts)} / ${fmt.int(summary.clicks)}`,
+      completion: productLeaderboardMetricCompletion(summary.cartRatePct, cartTarget),
+      footer: `цель ${fmt.pct(cartTarget)}`,
+      hint: 'клики в корзину'
+    },
+    {
+      title: 'Выкуп',
+      kicker: `${fmt.int(summary.buys)} выкупов`,
+      value: fmt.pct(summary.buyoutPct),
+      meta: `${fmt.int(summary.buys)} / ${fmt.int(summary.orders)}`,
+      completion: productLeaderboardMetricCompletion(summary.buyoutPct, buyoutTarget),
+      footer: `цель ${fmt.pct(buyoutTarget)}`,
+      hint: 'выкуп к заказам'
+    },
+    {
+      title: 'Экономика',
+      kicker: `ДРР ${fmt.pct(summary.drrPct)}`,
+      value: fmt.pct(summary.romiPct),
+      meta: `${fmt.money(summary.income)} доход`,
+      completion: productLeaderboardMetricCompletion(summary.romiPct, romiTarget),
+      footer: `ROMI цель ${fmt.pct(romiTarget)}`,
+      hint: `ДРР цель ${fmt.pct(drrTarget)}`
+    },
+    {
+      title: 'Ответственные',
+      kicker: `${fmt.int(summary.ownerCount)} owner`,
+      value: fmt.pct(ownerCoverage),
+      meta: `${fmt.int(summary.skuCount)} SKU в срезе`,
+      completion: ownerCoverage,
+      footer: ownerCoverage >= 0.95 ? 'контур закрыт' : 'назначить owner',
+      hint: 'покрытие'
+    }
+  ];
+  return `<div class="sku-plan-platform-board product-leaderboard-module-board" style="margin-top:14px">${cards.map(productLeaderboardModuleCardHtml).join('')}</div>`;
+}
+
+function productLeaderboardOwnerRaceHtml(items = []) {
+  const rows = [...items.reduce((map, item) => {
+    const owner = item.owner || 'Без owner';
+    const current = map.get(owner) || { owner, skuCount: 0, buys: 0, orders: 0, revenue: 0, income: 0, alerts: 0 };
+    current.skuCount += 1;
+    current.buys += numberOrZero(item.buys);
+    current.orders += numberOrZero(item.orders);
+    current.revenue += numberOrZero(item.revenue);
+    current.income += numberOrZero(item.income);
+    current.alerts += numberOrZero(item.diagnostics?.alertCount);
+    map.set(owner, current);
+    return map;
+  }, new Map()).values()]
+    .sort((left, right) => right.income - left.income || right.buys - left.buys || left.owner.localeCompare(right.owner, 'ru'))
+    .slice(0, 6);
+  const maxIncome = Math.max(1, ...rows.map((row) => row.income));
+  return `
+    <div class="card product-leaderboard-race" style="margin-top:14px">
+      <div class="section-subhead">
+        <div><h3>Owner race</h3><p class="small muted">Кто тащит КЗ по доходу, выкупам и чистоте сигналов.</p></div>
+        ${badge(`${fmt.int(rows.length)} owner`, rows.length ? 'info' : 'warn')}
+      </div>
+      <div class="list" style="margin-top:12px">
+        ${rows.map((row, index) => {
+          const completion = row.income / maxIncome;
+          return `
+            <div class="list-item" style="${typeof skuPlanFactCardStyle === 'function' ? skuPlanFactCardStyle('wb', completion) : ''}">
+              <div class="head">
+                <div>
+                  <strong>${index + 1}. ${escapeHtml(row.owner)}</strong>
+                  <div class="muted small">${fmt.int(row.skuCount)} SKU · ${fmt.int(row.buys)} выкупов · ${fmt.int(row.orders)} заказов</div>
+                </div>
+                <div class="badge-stack">
+                  ${badge(fmt.money(row.income), row.income > 0 ? 'ok' : 'warn')}
+                  ${row.alerts ? badge(`${fmt.int(row.alerts)} сигналов`, 'warn') : badge('чисто', 'ok')}
+                </div>
+              </div>
+              <span class="sku-health__bar" style="margin-top:10px"><i style="width:${Math.min(100, completion * 100).toFixed(1)}%"></i><em>${fmt.money(row.revenue)}</em></span>
+            </div>
+          `;
+        }).join('') || '<div class="empty">Нет owner в текущем срезе.</div>'}
+      </div>
+    </div>
+  `;
+}
+
+function productLeaderboardRowGameHtml(item = {}, payload = {}) {
+  const score = productLeaderboardItemScore(item, payload);
+  const alerts = numberOrZero(item.diagnostics?.alertCount);
+  return productLeaderboardHealthBarHtml({
+    platform: 'wb',
+    label: 'КЗ модуль',
+    valueRatio: score.score / 100,
+    valueText: fmt.int(score.score),
+    barText: score.label,
+    tone: score.tone,
+    metaHtml: `
+      <b>${escapeHtml(score.label)}</b>
+      <em>${fmt.int(item.buys)} выкупов</em>
+      <em>${alerts ? `${fmt.int(alerts)} сигналов` : 'без критики'}</em>
+    `
   });
 }
 
@@ -7189,6 +7480,9 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   const filteredItems = getFilteredProductLeaderboardItems(payload);
   const filteredSummary = productLeaderboardSummaryFromItems(filteredItems);
   const ownerCoverage = filteredSummary.skuCount > 0 ? filteredSummary.ownerCount / filteredSummary.skuCount : 0;
+  const gameHeroHtml = productLeaderboardGameHeroHtml(payload, filteredItems, freshness);
+  const moduleBoardHtml = productLeaderboardModuleBoardHtml(payload, filteredSummary, ownerCoverage);
+  const ownerRaceHtml = productLeaderboardOwnerRaceHtml(filteredItems);
   const snapshots = productLeaderboardHistoryPayloads();
   const historyOptions = snapshots.slice(1);
   const historyCards = snapshots.slice(0, 6).map((snapshot) => {
@@ -7254,6 +7548,10 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
 
     ${freshnessBanner}
 
+    ${gameHeroHtml}
+
+    ${moduleBoardHtml}
+
     <div class="kpi-strip">
       <div class="mini-kpi"><span>Охваты</span><strong>${fmt.int(filteredSummary.reach)}</strong><span>верх воронки</span></div>
       <div class="mini-kpi"><span>Клики</span><strong>${fmt.int(filteredSummary.clicks)}</strong><span>CTR ${fmt.pct(filteredSummary.ctrPct)}</span></div>
@@ -7286,6 +7584,8 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
       </div>
     </div>
 
+    ${ownerRaceHtml}
+
     <div class="card" style="margin-top:14px">
       <div class="section-subhead">
         <div>
@@ -7315,6 +7615,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
           ${['leader', 'steady', 'risk', 'no_owner', 'no_sales'].map((signal) => `<option value="${signal}" ${filters.signal === signal ? 'selected' : ''}>${escapeHtml(productLeaderboardSignalMeta(signal).label)}</option>`).join('')}
         </select>
         <select id="productLeaderboardSort">
+          <option value="gameScore" ${filters.sort === 'gameScore' ? 'selected' : ''}>Сортировка: КЗ уровень</option>
           <option value="reach" ${filters.sort === 'reach' ? 'selected' : ''}>Сортировка: охваты</option>
           <option value="clicks" ${filters.sort === 'clicks' ? 'selected' : ''}>Сортировка: клики</option>
           <option value="carts" ${filters.sort === 'carts' ? 'selected' : ''}>Сортировка: корзины</option>
@@ -7357,6 +7658,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
           <thead>
             <tr>
               <th>SKU / товар</th>
+              <th>КЗ модуль</th>
               <th>Owner</th>
               ${sortHeader('Охваты', 'reach')}
               ${sortHeader('Клики', 'clicks')}
@@ -7388,6 +7690,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
                     </div>
                     <div class="muted small" style="margin-top:8px">${escapeHtml(item.diagnostics?.summary || 'Без критичных отклонений')}</div>
                   </td>
+                  <td>${productLeaderboardRowGameHtml(item, payload)}</td>
                   <td>
                     <div>${item.owner ? badge(item.owner, 'info') : badge('Без owner', 'warn')}</div>
                     <div class="muted small" style="margin-top:8px">${item.article ? escapeHtml(item.article) : '—'}</div>
@@ -7405,7 +7708,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
                   <td>${fmt.money(item.income)}</td>
                 </tr>
               `;
-            }).join('') || '<tr><td colspan="13"><div class="empty">По текущим фильтрам пока нет строк.</div></td></tr>'}
+            }).join('') || '<tr><td colspan="14"><div class="empty">По текущим фильтрам пока нет строк.</div></td></tr>'}
           </tbody>
         </table>
       </div>

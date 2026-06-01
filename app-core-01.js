@@ -92,7 +92,7 @@
     search: '',
     owner: 'all',
     signal: 'all',
-    sort: 'buys',
+    sort: 'gameScore',
     category: 'all',
     snapshot: 'latest'
   },

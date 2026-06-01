@@ -2,7 +2,7 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260601ratingreport9';
+  const VERSION = '20260601ratingreport10';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
@@ -270,12 +270,14 @@
       .rating-detail-head p { margin:5px 0 0; color:var(--muted); line-height:1.35; }
       .rating-work-card { padding:0; overflow:hidden; }
       .rating-work-card .rating-detail-head { margin:0; padding:14px 16px; border-bottom:1px solid var(--line); }
-      .rating-work-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
-      .rating-sort-control { display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:999px; background:rgba(0,0,0,.18); color:var(--muted); padding:7px 10px; font-size:12px; font-weight:800; }
-      .rating-sort-control select { border:0; background:transparent; color:var(--text); font:inherit; font-size:12px; font-weight:900; outline:0; }
-      .rating-sort-control option { background:#160f0c; color:#fff7e6; }
+      .rating-work-actions { display:flex; align-items:flex-start; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+      .rating-sort-control { display:flex; align-items:center; justify-content:flex-end; gap:6px; flex-wrap:wrap; max-width:100%; }
+      .rating-sort-control span { color:var(--muted); font-size:12px; font-weight:800; line-height:1; margin-right:2px; }
+      .rating-sort-control button { border:1px solid rgba(255,255,255,.1); border-radius:999px; background:rgba(255,255,255,.035); color:var(--text); padding:8px 10px; font:inherit; font-size:12px; font-weight:800; line-height:1; cursor:pointer; white-space:nowrap; }
+      .rating-sort-control button.active { border-color:rgba(215,166,76,.72); background:rgba(215,166,76,.18); color:#ffe6ae; }
+      .rating-sort-control button:hover { border-color:rgba(215,166,76,.46); background:rgba(215,166,76,.1); }
       .rating-work-table { max-height:640px; overflow:auto; }
-      .rating-work-table table { width:100%; min-width:1180px; border-collapse:separate; border-spacing:0; table-layout:fixed; }
+      .rating-work-table table { width:100%; min-width:2060px; border-collapse:separate; border-spacing:0; table-layout:fixed; }
       .rating-work-table thead th { position:sticky; top:0; z-index:4; padding:10px 12px; border-bottom:1px solid var(--line); background:rgba(12,8,7,.96); color:#f8e9c7; font-size:11px; text-align:left; text-transform:uppercase; letter-spacing:0; }
       .rating-work-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.06); vertical-align:top; overflow:hidden; background:linear-gradient(90deg,hsl(var(--pf-hue,205) 74% 34% / var(--pf-row-fill,.025)),rgba(255,255,255,.012)); }
       .rating-work-table tr:hover td { background:hsl(var(--pf-hue,205) 72% 42% / .08); }
@@ -285,6 +287,8 @@
       .rating-work-table .cell-muted { display:block; margin-top:4px; color:var(--muted); font-size:11px; line-height:1.25; }
       .rating-work-table .cell-text { display:block; color:#efe5d6; font-size:12px; line-height:1.35; max-height:48px; overflow:hidden; }
       .rating-work-table .wb-rating-trend { margin-top:5px; max-width:100%; white-space:normal; line-height:1.15; padding:5px 7px; }
+      .rating-th-sort { display:inline-flex; align-items:center; gap:4px; border:0; background:transparent; color:inherit; padding:0; font:inherit; font-size:inherit; font-weight:inherit; text-transform:inherit; letter-spacing:inherit; cursor:pointer; text-align:left; }
+      .rating-th-sort.active { color:#ffe6ae; text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:3px; }
       .rating-history-list { display:grid; gap:10px; }
       .rating-history-card { display:grid; grid-template-columns:minmax(220px,1.1fr) minmax(0,2.4fr); gap:14px; align-items:stretch; border:1px solid rgba(255,255,255,.08); border-radius:8px; background:rgba(255,255,255,.022); padding:12px; }
       .rating-history-main { min-width:0; }
@@ -1564,12 +1568,28 @@
     const sort = workbenchState.sort || 'revenue';
     const list = [...rows];
     const riskRank = (row) => (row.tone === 'risk' ? 3 : row.tone === 'warn' ? 2 : 1);
+    const ratingAsc = (left, right, field) => {
+      const a = num(left?.[field]?.rating || left?.rating || 5);
+      const b = num(right?.[field]?.rating || right?.rating || 5);
+      return a - b || riskRank(right) - riskRank(left);
+    };
     return list.sort((a, b) => {
       if (sort === 'revenue') return num(b.revenue?.revenue7) - num(a.revenue?.revenue7) || riskRank(b) - riskRank(a);
       if (sort === 'ratingDrop') return a.ratingDelta1 - b.ratingDelta1 || riskRank(b) - riskRank(a);
-      if (sort === 'negative') return num(b.p7?.negativePct) - num(a.p7?.negativePct) || num(b.p7?.low) - num(a.p7?.low);
-      if (sort === 'reviews') return num(b.p7?.reviews) - num(a.p7?.reviews);
+      if (sort === 'rating7') return ratingAsc(a, b, 'p7');
+      if (sort === 'rating3') return ratingAsc(a, b, 'p3');
+      if (sort === 'rating1') return ratingAsc(a, b, 'p1');
+      if (sort === 'negative' || sort === 'negative7') return num(b.p7?.negativePct) - num(a.p7?.negativePct) || num(b.p7?.low) - num(a.p7?.low);
+      if (sort === 'negative3') return num(b.p3?.negativePct) - num(a.p3?.negativePct) || num(b.p3?.low) - num(a.p3?.low);
+      if (sort === 'negative1') return num(b.p1?.negativePct) - num(a.p1?.negativePct) || num(b.p1?.low) - num(a.p1?.low);
+      if (sort === 'reviews' || sort === 'reviews7') return num(b.p7?.reviews) - num(a.p7?.reviews);
+      if (sort === 'reviews3') return num(b.p3?.reviews) - num(a.p3?.reviews);
+      if (sort === 'reviews1') return num(b.p1?.reviews) - num(a.p1?.reviews);
+      if (sort === 'questions7') return num(b.q7?.questions) - num(a.q7?.questions);
+      if (sort === 'questions3') return num(b.q3?.questions) - num(a.q3?.questions);
+      if (sort === 'questions1') return num(b.q1?.questions) - num(a.q1?.questions);
       if (sort === 'questions') return num(b.questionCount) - num(a.questionCount);
+      if (sort === 'unanswered') return (num(b.unanswered) + num(b.unansweredQuestions)) - (num(a.unanswered) + num(a.unansweredQuestions));
       return riskRank(b) - riskRank(a) || b.gameScore - a.gameScore || num(b.p7?.reviews) - num(a.p7?.reviews);
     });
   }
@@ -1577,20 +1597,23 @@
   function renderRatingSortControl() {
     const current = workbenchState.sort || 'revenue';
     const options = [
-      ['revenue', 'Выручка ↓'],
-      ['risk', 'Риски сначала'],
-      ['ratingDrop', 'Падение рейтинга'],
-      ['negative', '% негатива ↓'],
-      ['reviews', 'Отзывы ↓'],
-      ['questions', 'Вопросы ↓']
+      ['revenue', 'Выручка 7д'],
+      ['risk', 'Риски'],
+      ['reviews7', 'Отзывы 7д'],
+      ['reviews3', 'Отзывы 3д'],
+      ['reviews1', 'Отзывы вчера'],
+      ['ratingDrop', 'Рейтинг просел'],
+      ['negative7', 'Негатив 7д'],
+      ['negative3', 'Негатив 3д'],
+      ['negative1', 'Негатив вчера'],
+      ['questions', 'Вопросы'],
+      ['unanswered', 'Без ответа']
     ];
     return `
-      <label class="rating-sort-control">
+      <div class="rating-sort-control" aria-label="Сортировка таблицы рейтингов">
         <span>Сортировка</span>
-        <select data-rating-sort>
-          ${options.map(([value, label]) => `<option value="${esc(value)}" ${current === value ? 'selected' : ''}>${esc(label)}</option>`).join('')}
-        </select>
-      </label>
+        ${options.map(([value, label]) => `<button type="button" class="${current === value ? 'active' : ''}" data-rating-sort="${esc(value)}">${esc(label)}</button>`).join('')}
+      </div>
     `;
   }
 
@@ -1616,10 +1639,19 @@
           </td>
           <td><span class="cell-main">${esc(gameLabel(row))}</span>${statusBadge}</td>
           <td><span class="cell-main">${fmtMoney(row.revenue.revenue7)}</span><span class="cell-muted">${esc(row.revenue.source || 'выручка')}</span></td>
-          <td><span class="cell-main">${fmtInt(row.p7.reviews)} / ${fmtInt(row.p3.reviews)} / ${fmtInt(row.p1.reviews)}</span><span class="cell-muted">7д / 3д / вчера</span></td>
-          <td><span class="cell-main">${fmtNum(row.p7.rating, 2)} / ${fmtNum(row.p3.rating, 2)} / ${fmtNum(row.p1.rating, 2)}</span><span class="cell-muted">текущая ${fmtNum(row.rating, 2)}</span>${ratingTrendBadge(row.rating, row.historyRating)}</td>
-          <td><span class="cell-main">${fmtPct(row.p7.negativePct)} / ${fmtPct(row.p3.negativePct)} / ${fmtPct(row.p1.negativePct)}</span><span class="cell-muted">${fmtInt(row.p7.low)} / ${fmtInt(row.p3.low)} / ${fmtInt(row.p1.low)} шт.</span></td>
-          <td><span class="cell-main">${fmtInt(row.questionCount)}</span><span class="cell-muted">+${fmtInt(row.q7.questions)} за 7д</span></td>
+          <td><span class="cell-main">${fmtInt(row.p7.reviews)}</span><span class="cell-muted">за 7 дней</span></td>
+          <td><span class="cell-main">${fmtInt(row.p3.reviews)}</span><span class="cell-muted">за 3 дня</span></td>
+          <td><span class="cell-main">${fmtInt(row.p1.reviews)}</span><span class="cell-muted">вчера</span></td>
+          <td><span class="cell-main">${fmtNum(row.p7.rating, 2)}</span><span class="cell-muted">7 дней</span></td>
+          <td><span class="cell-main">${fmtNum(row.p3.rating, 2)}</span><span class="cell-muted">3 дня</span></td>
+          <td><span class="cell-main">${fmtNum(row.p1.rating, 2)}</span><span class="cell-muted">вчера · текущая ${fmtNum(row.rating, 2)}</span>${ratingTrendBadge(row.rating, row.historyRating)}</td>
+          <td><span class="cell-main">${fmtPct(row.p7.negativePct)}</span><span class="cell-muted">${fmtInt(row.p7.low)} шт.</span></td>
+          <td><span class="cell-main">${fmtPct(row.p3.negativePct)}</span><span class="cell-muted">${fmtInt(row.p3.low)} шт.</span></td>
+          <td><span class="cell-main">${fmtPct(row.p1.negativePct)}</span><span class="cell-muted">${fmtInt(row.p1.low)} шт.</span></td>
+          <td><span class="cell-main">${fmtInt(row.questionCount)}</span><span class="cell-muted">всего</span></td>
+          <td><span class="cell-main">${fmtInt(row.q7.questions)}</span><span class="cell-muted">за 7 дней</span></td>
+          <td><span class="cell-main">${fmtInt(row.q3.questions)}</span><span class="cell-muted">за 3 дня</span></td>
+          <td><span class="cell-main">${fmtInt(row.q1.questions)}</span><span class="cell-muted">вчера</span></td>
           <td><span class="cell-main">${fmtInt(unanswered)}</span><span class="cell-muted">${fmtInt(row.unanswered)} отзывов · ${fmtInt(row.unansweredQuestions)} вопросов</span></td>
           <td><span class="cell-text">${esc(row.comment || '—')}</span></td>
         </tr>
@@ -1640,14 +1672,31 @@
         <div class="rating-work-table">
           <table>
             <colgroup>
-              <col style="width:205px"><col style="width:115px"><col style="width:115px"><col style="width:125px"><col style="width:135px"><col style="width:135px"><col style="width:95px"><col style="width:100px"><col style="width:110px">
+              <col style="width:230px"><col style="width:120px"><col style="width:118px"><col style="width:86px"><col style="width:86px"><col style="width:92px"><col style="width:96px"><col style="width:96px"><col style="width:120px"><col style="width:98px"><col style="width:98px"><col style="width:104px"><col style="width:94px"><col style="width:92px"><col style="width:92px"><col style="width:92px"><col style="width:112px"><col style="width:138px">
             </colgroup>
             <thead>
               <tr>
-                <th>Артикул</th><th>Статус</th><th>Выручка 7д</th><th>Отзывы 7/3/вч</th><th>Рейтинг 7/3/вч</th><th>% негатива 7/3/вч</th><th>Вопросы</th><th>Без ответа</th><th>Комментарий</th>
+                <th>Артикул</th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'risk' ? 'active' : ''}" data-rating-sort="risk">Статус</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'revenue' ? 'active' : ''}" data-rating-sort="revenue">Выручка 7д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'reviews7' ? 'active' : ''}" data-rating-sort="reviews7">Отзывы 7д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'reviews3' ? 'active' : ''}" data-rating-sort="reviews3">Отзывы 3д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'reviews1' ? 'active' : ''}" data-rating-sort="reviews1">Отзывы вчера</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'rating7' ? 'active' : ''}" data-rating-sort="rating7">Рейтинг 7д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'rating3' ? 'active' : ''}" data-rating-sort="rating3">Рейтинг 3д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'rating1' ? 'active' : ''}" data-rating-sort="rating1">Рейтинг вчера</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'negative7' ? 'active' : ''}" data-rating-sort="negative7">Негатив 7д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'negative3' ? 'active' : ''}" data-rating-sort="negative3">Негатив 3д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'negative1' ? 'active' : ''}" data-rating-sort="negative1">Негатив вчера</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'questions' ? 'active' : ''}" data-rating-sort="questions">Вопросы всего</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'questions7' ? 'active' : ''}" data-rating-sort="questions7">Вопросы 7д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'questions3' ? 'active' : ''}" data-rating-sort="questions3">Вопросы 3д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'questions1' ? 'active' : ''}" data-rating-sort="questions1">Вопросы вчера</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'unanswered' ? 'active' : ''}" data-rating-sort="unanswered">Без ответа</button></th>
+                <th>Комментарий</th>
               </tr>
             </thead>
-            <tbody>${rows || '<tr><td colspan="9" class="center">Нет карточек в истории WB.</td></tr>'}</tbody>
+            <tbody>${rows || '<tr><td colspan="18" class="center">Нет карточек в истории WB.</td></tr>'}</tbody>
           </table>
         </div>
       </div>
@@ -1774,11 +1823,13 @@
         renderWbCardRatingStructured(rootId);
       });
     });
-    root.querySelectorAll('[data-rating-sort]').forEach((select) => {
-      select.addEventListener('change', () => {
-        workbenchState.sort = select.value || 'revenue';
+    root.querySelectorAll('[data-rating-sort]').forEach((control) => {
+      const applySort = () => {
+        workbenchState.sort = control.dataset.ratingSort || control.value || 'revenue';
         renderWbCardRatingStructured(rootId);
-      });
+      };
+      if (control.tagName === 'SELECT') control.addEventListener('change', applySort);
+      else control.addEventListener('click', applySort);
     });
   }
 

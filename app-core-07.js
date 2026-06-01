@@ -4718,11 +4718,11 @@ const IU_DRR_FUNNEL_METRICS_WB = [
 ];
 
 const IU_DRR_FUNNEL_METRICS_OZON = [
-  { key: 'planGmv', label: 'Smart план GMV', formula: 'дневная доля 40%', format: 'money', row: 1, keep: true },
+  { key: 'planGmv', label: 'Smart ИУ-план GMV 40%', formula: 'дневная доля ИУ 40%', format: 'money', row: 1, keep: true },
   { key: 'factGmv', label: 'Smart факт GMV', formula: 'два кабинета / Smart', format: 'money', row: 2, keep: true },
   { key: 'completion', label: 'Выполнение GMV', formula: 'факт / план', format: 'pct', row: 3, keep: true },
   { key: 'gmvDelta', label: 'Отклонение GMV', formula: 'факт - план', format: 'money', row: 4, keep: true },
-  { key: 'planAds', label: 'Smart план рекламы', formula: 'GMV × ДРР цель', format: 'money', row: 5, keep: true },
+  { key: 'planAds', label: 'Smart ИУ-план рекламы', formula: 'GMV × ДРР цель', format: 'money', row: 5, keep: true },
   { key: 'factAds', label: 'Smart факт рекламы', formula: 'два кабинета / Smart', format: 'money', row: 6, keep: true },
   { key: 'adsCompletion', label: 'Выполнение рекламы', formula: 'факт / план', format: 'pct', row: 7, keep: true },
   { key: 'adsDelta', label: 'Отклонение рекламы', formula: 'факт - план', format: 'money', row: 8, keep: true },
@@ -5114,8 +5114,16 @@ function iuDrrFunnelBuildModel(model = {}, context = {}) {
   const monthPlanAds = platformKey === 'ozon'
     ? numberOrZero(month.iuAdsOzonPlan || month.planSpendOzon)
     : numberOrZero(month.iuAdsPlan || month.planSpendWb);
+  const ozonPlanFactLast = platformKey === 'ozon' && Array.isArray(context.ozonPlanFactRows)
+    ? context.ozonPlanFactRows.filter((row) => (
+      numberOrZero(row.factGmv)
+      || numberOrZero(row.factRevenue)
+      || numberOrZero(row.adsBoth)
+      || numberOrZero(row.cumulativeFactAds)
+    )).at(-1) || {}
+    : {};
   const monthFactAds = platformKey === 'ozon'
-    ? numberOrZero(month.iuAdsFactOzonToDate || month.spendFactOzon)
+    ? numberOrZero(ozonPlanFactLast.cumulativeFactAds || month.iuAdsFactOzonToDate || month.spendFactOzon)
     : numberOrZero(month.iuAdsFactWbToDate || month.spendFactDrr || month.spendFact);
   const cardPlanRevenue = monthPlanRevenue || planRevenue;
   const cardFactRevenue = monthFactRevenue || factRevenue;
@@ -5519,14 +5527,14 @@ function renderOzonIuPlanFactTable(model, context = {}) {
   const reserveToDate = numberOrZero(last.adsReserve);
   const gameCards = [
     {
-      label: 'GMV Smart',
+      label: 'Smart GMV к плану портала',
       value: gmvCompletion == null ? '—' : fmt.pct(gmvCompletion),
       detail: `${fmt.money(factGmvToDate)} / ${fmt.money(planGmvToDate)}`,
       progress: gmvCompletion,
       tone: iuDrrFunnelCompletionTone(gmvCompletion)
     },
     {
-      label: 'Реклама Smart',
+      label: 'Smart реклама к плану',
       value: adsCompletion == null ? '—' : fmt.pct(adsCompletion),
       detail: `${fmt.money(factAdsToDate)} / ${fmt.money(planAdsToDate)}`,
       progress: adsCompletion,
@@ -5548,14 +5556,14 @@ function renderOzonIuPlanFactTable(model, context = {}) {
       tone: iuDrrFunnelDrrTone(noSppDrrToDate, targetDrr)
     },
     {
-      label: 'Отклонение GMV',
+      label: 'Отклонение к плану портала',
       value: fmt.money(numberOrZero(last.cumulativeGmvDelta)),
       detail: gmvCompletion == null ? 'нет плана' : fmt.pct(gmvCompletion),
       progress: gmvCompletion,
       tone: iuDrrToneForRevenueDelta(last.cumulativeGmvDelta)
     },
     {
-      label: 'Резерв РК',
+      label: 'Резерв РК по ДРР',
       value: fmt.money(reserveToDate),
       detail: reserveToDate >= 0 ? 'можно добирать' : 'перерасход',
       progress: reserveToDate >= 0 && factAdsToDate + reserveToDate > 0 ? reserveToDate / (factAdsToDate + reserveToDate) : null,
@@ -6786,7 +6794,7 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       tone: iuDrrFunnelDrrTone(wbDrrMonth, month.planPct)
     },
     {
-      label: 'Отклонение оборота',
+      label: 'Отклонение к ИУ',
       value: `${wbRevenueDeltaMonth >= 0 ? '+' : ''}${fmt.money(wbRevenueDeltaMonth)}`,
       detail: wbCompletionMonth == null ? 'нет плана' : fmt.pct(wbCompletionMonth),
       progress: wbCompletionMonth,
@@ -6952,8 +6960,8 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   };
   const ozonSummaryRows = [
     {
-      label: 'Smart оборот',
-      detail: `план Smart на месяц ${fmt.money(ozonMonthTargetGmv)}`,
+      label: 'Smart оборот к плану портала',
+      detail: `рабочий план портала на месяц ${fmt.money(ozonMonthTargetGmv)}`,
       monthPlan: ozonMonthTargetGmv,
       plan: ozonPlanToDateGmv,
       fact: ozonFactGmvBoth,
@@ -6962,8 +6970,8 @@ function renderIuDrr(rootId = 'view-iu-drr') {
       tone: iuDrrToneForRevenueDelta(ozonPlanDeltaToDate)
     },
     {
-      label: 'Smart реклама',
-      detail: `план Smart на месяц ${fmt.money(ozonAdsPlanMonth)}`,
+      label: 'Smart реклама к плану',
+      detail: `рабочий план рекламы на месяц ${fmt.money(ozonAdsPlanMonth)}`,
       monthPlan: ozonAdsPlanMonth,
       plan: ozonAdsPlanToDate,
       fact: ozonFactAdsBoth,

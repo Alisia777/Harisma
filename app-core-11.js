@@ -25,7 +25,7 @@ const SKU_PLAN_FACT_RECONCILE_MIN_REVENUE = 10000;
 const SKU_PLAN_FACT_UNMAPPED_OWNER = 'Не в реестре';
 const SKU_PLAN_FACT_UNMAPPED_STATUS = 'API SKU без пары';
 const SKU_PLAN_FACT_UNALLOCATED_STATUS = 'Агрегат без SKU';
-const SKU_PLAN_FACT_FILTER_VERSION = '20260601-owner-scope-v2';
+const SKU_PLAN_FACT_FILTER_VERSION = '20260601-plan-platform-scope-v1';
 let skuPlanFactSearchTimer = 0;
 let skuPlanFactExcelDownloadLockUntil = 0;
 let skuPlanFactTruthWarmupPromise = null;
@@ -575,14 +575,17 @@ function skuPlanFactAvailableMonths(indexes) {
 }
 
 function skuPlanFactLatestMonth(months = []) {
-  const todayMonth = todayIso().slice(0, 7);
-  if (months.includes(todayMonth)) return todayMonth;
-  const sourceMonth = skuPlanFactMonthFromDate(
-    state.platformTrends?.asOfDate
-    || state.smartPriceOverlay?.asOfDate
-    || state.adsSummary?.asOfDate
-    || todayIso()
-  );
+  const sourceMonth = [
+    state.dashboard?.dataFreshness?.googleSheetsMonth,
+    state.dashboard?.dataFreshness?.asOfDate,
+    state.dashboard?.asOfDate,
+    state.platformTrends?.asOfDate,
+    state.smartPriceOverlay?.asOfDate,
+    state.adsSummary?.asOfDate
+  ].map((value) => {
+    const raw = String(value || '').slice(0, 10);
+    return /^\d{4}-\d{2}$/.test(raw) ? raw : skuPlanFactMonthFromDate(raw);
+  }).find((monthKey) => monthKey && (!months.length || months.includes(monthKey)));
   return months.includes(sourceMonth) ? sourceMonth : (months[0] || sourceMonth || todayIso().slice(0, 7));
 }
 
@@ -670,8 +673,9 @@ function skuPlanFactSelectedPeriod(indexes, monthKey, maxFactDate = '') {
   const filters = skuPlanFactFilters();
   const monthStart = skuPlanFactMonthStart(monthKey);
   const maxDate = maxFactDate || skuPlanFactMaxFactDate(indexes, monthKey);
-  let dateTo = skuPlanFactSelectedDate(indexes, monthKey, maxDate);
-  let dateFrom = skuPlanFactDateKey(filters.dateFrom);
+  const monthMode = filters.dateMode === 'month';
+  let dateTo = monthMode ? maxDate : skuPlanFactSelectedDate(indexes, monthKey, maxDate);
+  let dateFrom = monthMode ? monthStart : skuPlanFactDateKey(filters.dateFrom);
   if (!dateFrom || skuPlanFactMonthFromDate(dateFrom) !== monthKey) {
     dateFrom = monthStart;
   }
@@ -1276,7 +1280,7 @@ function skuPlanFactPayrollMetricTotals(model = {}, selectedPlatform = 'all', ro
   const rows = Array.isArray(rowsOverride) ? rowsOverride : (Array.isArray(model.allRows) ? model.allRows : []);
   const totals = { planRevenue: 0, planToDateRevenue: 0, planUnits: 0, planToDateUnits: 0, factRevenue: 0, factUnits: 0, adSpend: 0, planAdSpend: 0, planMonthAdSpend: 0, planPeriodAdSpend: 0, adForecastSpend: 0, hasPlanAdSpend: false, hasPlanMonthAdSpend: false, hasPlanPeriodAdSpend: false, hasAdForecastSpend: false, marginValue: 0, marginWeight: 0, planMarginValue: 0, planMarginWeight: 0 };
   const platforms = selectedPlatform && selectedPlatform !== 'all'
-    ? [selectedPlatform].filter((platform) => SKU_PLAN_FACT_PAYROLL_PLATFORMS.includes(platform))
+    ? [selectedPlatform].filter((platform) => SKU_PLAN_FACT_PLATFORMS.includes(platform))
     : SKU_PLAN_FACT_PAYROLL_PLATFORMS;
   rows.forEach((row) => {
     platforms.forEach((platform) => {
@@ -1346,7 +1350,51 @@ function skuPlanFactApplyPayrollKpiToModel(model = {}) {
     displayTitle: 'Месячный план и KPI',
     displayNote: 'Корпоративный план: оборот, заказы и рекламный бюджет по зарплатному контуру.'
   };
-  if (!payroll.salaryIncluded) return model;
+  if (!payroll.salaryIncluded) {
+    const scopedTotals = skuPlanFactPayrollMetricTotals(model, payroll.selectedPlatform || 'all', model.rows || []);
+    model.totals.payrollOriginal = {
+      planRevenue: model.totals.planRevenue,
+      planToDateRevenue: model.totals.planToDateRevenue,
+      factRevenue: model.totals.factRevenue,
+      adSpend: model.totals.adSpend,
+      planAdSpend: model.totals.planAdSpend,
+      planDrr: model.totals.planDrr,
+      drr: model.totals.drr,
+      marginPct: model.totals.marginPct,
+      marginRub: model.totals.marginRub,
+      planMarginPct: model.totals.planMarginPct,
+      planMarginRub: model.totals.planMarginRub,
+      completionToDate: model.totals.completionToDate,
+      completionMonth: model.totals.completionMonth,
+      gapToDate: model.totals.gapToDate
+    };
+    model.totals.planRevenue = scopedTotals.planRevenue;
+    model.totals.planToDateRevenue = scopedTotals.planToDateRevenue;
+    model.totals.planUnits = scopedTotals.planUnits;
+    model.totals.planToDateUnits = scopedTotals.planToDateUnits;
+    model.totals.factRevenue = scopedTotals.factRevenue;
+    model.totals.factUnits = scopedTotals.factUnits;
+    model.totals.avgCheck = scopedTotals.avgCheck;
+    model.totals.completionToDate = scopedTotals.completionToDate;
+    model.totals.completionMonth = scopedTotals.completionMonth;
+    model.totals.gapToDate = scopedTotals.gapToDate;
+    model.totals.adSpend = scopedTotals.adSpend;
+    model.totals.planAdSpend = scopedTotals.planAdSpend;
+    model.totals.planAdSpendToDate = scopedTotals.planAdSpendToDate;
+    model.totals.planMonthAdSpend = scopedTotals.planMonthAdSpend;
+    model.totals.planPeriodAdSpend = scopedTotals.planPeriodAdSpend;
+    model.totals.adForecastSpend = scopedTotals.adForecastSpend;
+    model.totals.marginPct = scopedTotals.marginPct;
+    model.totals.marginRub = scopedTotals.marginPct === null ? null : model.totals.factRevenue * scopedTotals.marginPct;
+    model.totals.planMarginPct = scopedTotals.planMarginPct;
+    model.totals.planMarginRub = scopedTotals.planMarginPct === null ? null : model.totals.planToDateRevenue * scopedTotals.planMarginPct;
+    model.totals.drr = scopedTotals.drr;
+    skuPlanFactFinalizeAdPace(model.totals, model.monthKey || payroll.monthKey || '', model.elapsedDays || payroll.elapsedDays || 0, model.periodStart || payroll.periodStart || '');
+    model.totals.planDrr = model.totals.planToDateRevenue > 0 && model.totals.planAdSpend !== null && model.totals.planAdSpend !== undefined
+      ? numberOrZero(model.totals.planAdSpend) / model.totals.planToDateRevenue
+      : null;
+    return model;
+  }
   const ownerScoped = Boolean(model.filters?.owner && model.filters.owner !== 'all');
   if (ownerScoped) {
     const scopedTotals = skuPlanFactPayrollMetricTotals(model, payroll.selectedPlatform || 'all', model.rows || []);

@@ -2,7 +2,7 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260601ratingreport8';
+  const VERSION = '20260601ratingreport9';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
@@ -12,7 +12,7 @@
   const workbenchState = {
     mode: 'summary',
     search: '',
-    sort: 'risk',
+    sort: 'revenue',
     status: 'all'
   };
   const structuredState = {
@@ -270,6 +270,10 @@
       .rating-detail-head p { margin:5px 0 0; color:var(--muted); line-height:1.35; }
       .rating-work-card { padding:0; overflow:hidden; }
       .rating-work-card .rating-detail-head { margin:0; padding:14px 16px; border-bottom:1px solid var(--line); }
+      .rating-work-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+      .rating-sort-control { display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:999px; background:rgba(0,0,0,.18); color:var(--muted); padding:7px 10px; font-size:12px; font-weight:800; }
+      .rating-sort-control select { border:0; background:transparent; color:var(--text); font:inherit; font-size:12px; font-weight:900; outline:0; }
+      .rating-sort-control option { background:#160f0c; color:#fff7e6; }
       .rating-work-table { max-height:640px; overflow:auto; }
       .rating-work-table table { width:100%; min-width:1180px; border-collapse:separate; border-spacing:0; table-layout:fixed; }
       .rating-work-table thead th { position:sticky; top:0; z-index:4; padding:10px 12px; border-bottom:1px solid var(--line); background:rgba(12,8,7,.96); color:#f8e9c7; font-size:11px; text-align:left; text-transform:uppercase; letter-spacing:0; }
@@ -1556,8 +1560,43 @@
     `;
   }
 
+  function sortRatingRows(rows = []) {
+    const sort = workbenchState.sort || 'revenue';
+    const list = [...rows];
+    const riskRank = (row) => (row.tone === 'risk' ? 3 : row.tone === 'warn' ? 2 : 1);
+    return list.sort((a, b) => {
+      if (sort === 'revenue') return num(b.revenue?.revenue7) - num(a.revenue?.revenue7) || riskRank(b) - riskRank(a);
+      if (sort === 'ratingDrop') return a.ratingDelta1 - b.ratingDelta1 || riskRank(b) - riskRank(a);
+      if (sort === 'negative') return num(b.p7?.negativePct) - num(a.p7?.negativePct) || num(b.p7?.low) - num(a.p7?.low);
+      if (sort === 'reviews') return num(b.p7?.reviews) - num(a.p7?.reviews);
+      if (sort === 'questions') return num(b.questionCount) - num(a.questionCount);
+      return riskRank(b) - riskRank(a) || b.gameScore - a.gameScore || num(b.p7?.reviews) - num(a.p7?.reviews);
+    });
+  }
+
+  function renderRatingSortControl() {
+    const current = workbenchState.sort || 'revenue';
+    const options = [
+      ['revenue', 'Выручка ↓'],
+      ['risk', 'Риски сначала'],
+      ['ratingDrop', 'Падение рейтинга'],
+      ['negative', '% негатива ↓'],
+      ['reviews', 'Отзывы ↓'],
+      ['questions', 'Вопросы ↓']
+    ];
+    return `
+      <label class="rating-sort-control">
+        <span>Сортировка</span>
+        <select data-rating-sort>
+          ${options.map(([value, label]) => `<option value="${esc(value)}" ${current === value ? 'selected' : ''}>${esc(label)}</option>`).join('')}
+        </select>
+      </label>
+    `;
+  }
+
   function renderHistoryCards(model) {
-    const rows = model.rows.slice(0, 120).map((row) => {
+    const sortedRows = sortRatingRows(model.rows);
+    const rows = sortedRows.slice(0, 120).map((row) => {
       const link = typeof linkToSku === 'function' ? linkToSku(row.key || row.label, row.label) : `<strong>${esc(row.label)}</strong>`;
       const unanswered = row.unanswered + row.unansweredQuestions;
       const ratingRatio = hasNumber(row.rating) ? Number(row.rating) / 5 : 0.5;
@@ -1576,12 +1615,12 @@
             <div class="wb-rating-chipline">${signalPills(row)}</div>
           </td>
           <td><span class="cell-main">${esc(gameLabel(row))}</span>${statusBadge}</td>
-          <td><span class="cell-main">${fmtInt(row.p7.reviews)}</span><span class="cell-muted">3д ${fmtInt(row.p3.reviews)} · вчера ${fmtInt(row.p1.reviews)}</span></td>
-          <td><span class="cell-main">${fmtNum(row.rating, 2)}</span>${ratingTrendBadge(row.rating, row.historyRating)}</td>
-          <td><span class="cell-main">${fmtPct(row.p7.negativePct)}</span><span class="cell-muted">${fmtInt(row.p7.low)} негативных</span></td>
+          <td><span class="cell-main">${fmtMoney(row.revenue.revenue7)}</span><span class="cell-muted">${esc(row.revenue.source || 'выручка')}</span></td>
+          <td><span class="cell-main">${fmtInt(row.p7.reviews)} / ${fmtInt(row.p3.reviews)} / ${fmtInt(row.p1.reviews)}</span><span class="cell-muted">7д / 3д / вчера</span></td>
+          <td><span class="cell-main">${fmtNum(row.p7.rating, 2)} / ${fmtNum(row.p3.rating, 2)} / ${fmtNum(row.p1.rating, 2)}</span><span class="cell-muted">текущая ${fmtNum(row.rating, 2)}</span>${ratingTrendBadge(row.rating, row.historyRating)}</td>
+          <td><span class="cell-main">${fmtPct(row.p7.negativePct)} / ${fmtPct(row.p3.negativePct)} / ${fmtPct(row.p1.negativePct)}</span><span class="cell-muted">${fmtInt(row.p7.low)} / ${fmtInt(row.p3.low)} / ${fmtInt(row.p1.low)} шт.</span></td>
           <td><span class="cell-main">${fmtInt(row.questionCount)}</span><span class="cell-muted">+${fmtInt(row.q7.questions)} за 7д</span></td>
           <td><span class="cell-main">${fmtInt(unanswered)}</span><span class="cell-muted">${fmtInt(row.unanswered)} отзывов · ${fmtInt(row.unansweredQuestions)} вопросов</span></td>
-          <td><span class="cell-main">${fmtInt(row.p1.reviews)} отзывов</span><span class="cell-muted">${row.p1.low ? `${fmtInt(row.p1.low)} негатив` : 'без негатива'}</span></td>
           <td><span class="cell-text">${esc(row.comment || '—')}</span></td>
         </tr>
       `;
@@ -1593,16 +1632,19 @@
             <h3>WB · рабочая таблица карточек</h3>
             <p>Одна строка = один товар. Сначала статус, затем отзывы, оценка, негатив, вопросы и хвост без ответа.</p>
           </div>
-          <div class="badge-stack">${chip(`${fmtInt(model.rows.length)} карточек`, 'info')}${chip(`${fmtInt(model.snapshots.length)} срезов`, 'info')}</div>
+          <div class="rating-work-actions">
+            ${renderRatingSortControl()}
+            <div class="badge-stack">${chip(`${fmtInt(model.rows.length)} карточек`, 'info')}${chip(`${fmtInt(model.snapshots.length)} срезов`, 'info')}</div>
+          </div>
         </div>
         <div class="rating-work-table">
           <table>
             <colgroup>
-              <col style="width:220px"><col style="width:120px"><col style="width:100px"><col style="width:95px"><col style="width:110px"><col style="width:95px"><col style="width:110px"><col style="width:105px"><col style="width:160px">
+              <col style="width:205px"><col style="width:115px"><col style="width:115px"><col style="width:125px"><col style="width:135px"><col style="width:135px"><col style="width:95px"><col style="width:100px"><col style="width:110px">
             </colgroup>
             <thead>
               <tr>
-                <th>Артикул</th><th>Статус</th><th>Отзывы 7д</th><th>Оценка</th><th>Негатив</th><th>Вопросы</th><th>Без ответа</th><th>Вчера</th><th>Комментарий</th>
+                <th>Артикул</th><th>Статус</th><th>Выручка 7д</th><th>Отзывы 7/3/вч</th><th>Рейтинг 7/3/вч</th><th>% негатива 7/3/вч</th><th>Вопросы</th><th>Без ответа</th><th>Комментарий</th>
               </tr>
             </thead>
             <tbody>${rows || '<tr><td colspan="9" class="center">Нет карточек в истории WB.</td></tr>'}</tbody>
@@ -1729,6 +1771,12 @@
     root.querySelectorAll('[data-rating-view]').forEach((button) => {
       button.addEventListener('click', () => {
         structuredState.view = button.dataset.ratingView || 'history';
+        renderWbCardRatingStructured(rootId);
+      });
+    });
+    root.querySelectorAll('[data-rating-sort]').forEach((select) => {
+      select.addEventListener('change', () => {
+        workbenchState.sort = select.value || 'revenue';
         renderWbCardRatingStructured(rootId);
       });
     });

@@ -5,6 +5,43 @@ const path = require('path');
 const xlsx = require('xlsx');
 
 const DISTRIBUTION_FILE_NAME = '\u0440\u0430\u0441\u043f\u0440\u0435\u0434\u0435\u043b\u0435\u043d\u0438\u0435 \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u043e\u0432.xlsx';
+const OWNER_NAME_ALIASES = new Map([
+  ['\u0430\u043b\u0435\u043a\u0441\u0430\u043d\u0434\u0440', '\u041f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0410\u0440\u0442\u0451\u043c'],
+  ['\u0430\u043b\u0435\u043a\u0441\u0430\u043d\u0434\u0440 \u043e\u0437\u043e\u043d', '\u041f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0410\u0440\u0442\u0451\u043c'],
+  ['\u0430\u043d\u043d\u0430', '\u041f\u0438\u0440\u043e\u0433\u043e\u0432\u0430 \u0410\u043d\u043d\u0430'],
+  ['\u0430\u0440\u0442\u0435\u043c', '\u041f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0410\u0440\u0442\u0451\u043c'],
+  ['\u0430\u0440\u0442\u0451\u043c', '\u041f\u0438\u0442\u0430\u0439\u043a\u0438\u043d \u0410\u0440\u0442\u0451\u043c'],
+  ['\u0434\u0430\u0440\u0438\u044f', '\u041c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0414\u0430\u0440\u0438\u044f'],
+  ['\u0434\u0430\u0440\u044c\u044f', '\u041c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0414\u0430\u0440\u0438\u044f'],
+  ['\u0434\u0430\u0448\u0430', '\u041c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0414\u0430\u0440\u0438\u044f'],
+  ['\u0435\u043a\u0430\u0442\u0435\u0440\u0438\u043d\u0430', '\u0414\u043e\u043c\u043e\u0436\u0438\u0440\u043e\u0432\u0430 \u0415\u043a\u0430\u0442\u0435\u0440\u0438\u043d\u0430'],
+  ['\u043c\u0430\u043a\u0441\u0438\u043c', '\u041b\u0430\u043f\u044b\u0433\u0438\u043d \u041c\u0430\u043a\u0441\u0438\u043c'],
+  ['\u043c\u0430\u0440\u0438\u044f', '\u0412\u0430\u0441\u0438\u043b\u044c\u0435\u0432\u0430 \u041c\u0430\u0440\u0438\u044f'],
+  ['\u043f\u0438\u0440\u043e\u0433\u043e\u0432\u0430 \u0430\u043d\u043d\u0430', '\u041f\u0438\u0440\u043e\u0433\u043e\u0432\u0430 \u0410\u043d\u043d\u0430'],
+  ['\u0430\u043d\u043d\u0430 \u043f\u0438\u0440\u043e\u0433\u043e\u0432\u0430', '\u041f\u0438\u0440\u043e\u0433\u043e\u0432\u0430 \u0410\u043d\u043d\u0430'],
+  ['\u043c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0434\u0430\u0440\u0438\u044f', '\u041c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0414\u0430\u0440\u0438\u044f'],
+  ['\u043c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0434\u0430\u0440\u044c\u044f', '\u041c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0414\u0430\u0440\u0438\u044f'],
+  ['\u0434\u0430\u0440\u0438\u044f \u043c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430', '\u041c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0414\u0430\u0440\u0438\u044f'],
+  ['\u0434\u0430\u0440\u044c\u044f \u043c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430', '\u041c\u043e\u043b\u043e\u0434\u044f\u043a\u043e\u0432\u0430 \u0414\u0430\u0440\u0438\u044f'],
+  ['\u0434\u043e\u043c\u043e\u0436\u0438\u0440\u043e\u0432\u0430 \u0435\u043a\u0430\u0442\u0435\u0440\u0438\u043d\u0430', '\u0414\u043e\u043c\u043e\u0436\u0438\u0440\u043e\u0432\u0430 \u0415\u043a\u0430\u0442\u0435\u0440\u0438\u043d\u0430'],
+  ['\u0434\u043e\u0431\u0440\u043e\u0436\u0438\u0440\u043e\u0432\u0430 \u0435\u043a\u0430\u0442\u0435\u0440\u0438\u043d\u0430', '\u0414\u043e\u043c\u043e\u0436\u0438\u0440\u043e\u0432\u0430 \u0415\u043a\u0430\u0442\u0435\u0440\u0438\u043d\u0430'],
+  ['\u0435\u043a\u0430\u0442\u0435\u0440\u0438\u043d\u0430 \u0434\u043e\u043c\u043e\u0436\u0438\u0440\u043e\u0432\u0430', '\u0414\u043e\u043c\u043e\u0436\u0438\u0440\u043e\u0432\u0430 \u0415\u043a\u0430\u0442\u0435\u0440\u0438\u043d\u0430'],
+  ['\u0435\u043a\u0430\u0442\u0435\u0440\u0438\u043d\u0430 \u0434\u043e\u0431\u0440\u043e\u0436\u0438\u0440\u043e\u0432\u0430', '\u0414\u043e\u043c\u043e\u0436\u0438\u0440\u043e\u0432\u0430 \u0415\u043a\u0430\u0442\u0435\u0440\u0438\u043d\u0430'],
+  ['\u043c\u0430\u0440\u0438\u044f \u0432\u0430\u0441\u0438\u043b\u044c\u0435\u0432\u0430', '\u0412\u0430\u0441\u0438\u043b\u044c\u0435\u0432\u0430 \u041c\u0430\u0440\u0438\u044f'],
+  ['\u043c\u0430\u0440\u0438\u044f \u0432\u0430\u0441\u0438\u043b\u044c\u0435\u0432\u043d\u0430', '\u0412\u0430\u0441\u0438\u043b\u044c\u0435\u0432\u0430 \u041c\u0430\u0440\u0438\u044f'],
+  ['\u0432\u0430\u0441\u0438\u043b\u044c\u0435\u0432\u0430 \u043c\u0430\u0440\u0438\u044f', '\u0412\u0430\u0441\u0438\u043b\u044c\u0435\u0432\u0430 \u041c\u0430\u0440\u0438\u044f'],
+  ['\u043b\u0430\u043f\u044b\u0433\u0438\u043d \u043c\u0430\u043a\u0441\u0438\u043c', '\u041b\u0430\u043f\u044b\u0433\u0438\u043d \u041c\u0430\u043a\u0441\u0438\u043c'],
+  ['\u043c\u0430\u043a\u0441\u0438\u043c \u043b\u0430\u043f\u044b\u0433\u0438\u043d', '\u041b\u0430\u043f\u044b\u0433\u0438\u043d \u041c\u0430\u043a\u0441\u0438\u043c']
+]);
+const PLATFORM_OWNER_HEADER_ALIASES = [
+  { key: 'wb', tokens: ['wb', 'wildberries', '\u0432\u0431'] },
+  { key: 'ozon', tokens: ['ozon', '\u043e\u0437\u043e\u043d'] },
+  { key: 'ym', tokens: ['ym', 'ya', 'yandex', 'market', '\u044f\u043c', '\u044f\u043d\u0434\u0435\u043a\u0441', '\u043c\u0430\u0440\u043a\u0435\u0442'] },
+  { key: 'letu', tokens: ['letu', 'letual', '\u043b\u0435\u0442\u0443\u0430\u043b', '\u043b\u044d\u0442\u0443\u0430\u043b'] },
+  { key: 'ga', tokens: ['ga', 'goldenapple', '\u0437\u044f', '\u0437\u043e\u043b\u043e\u0442\u043e\u0435\u044f\u0431\u043b\u043e\u043a\u043e'] },
+  { key: 'mm', tokens: ['mm', 'magnit', '\u043c\u0430\u0433\u043d\u0438\u0442'] }
+];
+const RESPONSIBLE_HEADER_TOKEN = '\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d';
 
 function parseArgs(argv) {
   const args = {};
@@ -91,9 +128,108 @@ function normalizeOwner(value) {
     .trim();
 }
 
+function canonicalOwnerName(value) {
+  const normalized = normalizeOwner(value);
+  if (!normalized) return '';
+  const lowered = normalized.toLowerCase();
+  if (OWNER_NAME_ALIASES.has(lowered)) return OWNER_NAME_ALIASES.get(lowered);
+  const [firstToken = ''] = normalized.split(' ');
+  const firstTokenLowered = firstToken.toLowerCase();
+  if (OWNER_NAME_ALIASES.has(firstTokenLowered)) return OWNER_NAME_ALIASES.get(firstTokenLowered);
+  return normalized;
+}
+
+function normalizeHeaderToken(value) {
+  return String(value ?? '')
+    .replace(/\uFEFF/g, '')
+    .trim()
+    .toLowerCase()
+    .replace(/\u0451/g, '\u0435')
+    .replace(/[^\p{L}0-9]+/gu, '');
+}
+
+function ownerPlatformKeyFromHeaderToken(token = '') {
+  const looksLikeOwner = token.includes('owner') || token.includes(RESPONSIBLE_HEADER_TOKEN);
+  if (!looksLikeOwner) return '';
+  const match = PLATFORM_OWNER_HEADER_ALIASES.find((entry) => (
+    entry.tokens.some((platformToken) => token.includes(platformToken))
+  ));
+  return match?.key || '';
+}
+
+function primaryOwnerName(ownersByPlatform = {}) {
+  return canonicalOwnerName(
+    ownersByPlatform.wb
+    || ownersByPlatform.ozon
+    || ownersByPlatform.ym
+    || ownersByPlatform.letu
+    || ownersByPlatform.ga
+    || ownersByPlatform.mm
+    || ''
+  );
+}
+
+function findDistributionColumns(rows = []) {
+  const articleTokens = new Set([
+    'sku',
+    'article',
+    'articlekey',
+    'vendorcode',
+    'supplierarticle',
+    '\u0430\u0440\u0442\u0438\u043a\u0443\u043b'
+  ]);
+  for (let rowIndex = 0; rowIndex < Math.min(rows.length, 20); rowIndex += 1) {
+    const row = rows[rowIndex] || [];
+    const tokens = row.map(normalizeHeaderToken);
+    const articleIndex = tokens.findIndex((token) => articleTokens.has(token));
+    const platformOwnerIndexes = {};
+    tokens.forEach((token, columnIndex) => {
+      const platformKey = ownerPlatformKeyFromHeaderToken(token);
+      if (platformKey && platformOwnerIndexes[platformKey] === undefined) {
+        platformOwnerIndexes[platformKey] = columnIndex;
+      }
+    });
+    const wbOwnerIndex = platformOwnerIndexes.wb ?? -1;
+    if (articleIndex >= 0 && wbOwnerIndex >= 0) {
+      return {
+        headerRowIndex: rowIndex,
+        articleIndex,
+        ownerIndex: wbOwnerIndex,
+        platformOwnerIndexes,
+        articleHeader: String(row[articleIndex] ?? '').trim(),
+        ownerHeader: String(row[wbOwnerIndex] ?? '').trim(),
+        mode: 'header'
+      };
+    }
+
+    const filledCellCount = row.filter((cell) => String(cell ?? '').trim()).length;
+    const genericOwnerIndex = tokens.findIndex((token) => token === 'owner' || token === '\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0439');
+    if (filledCellCount <= 3 && articleIndex >= 0 && genericOwnerIndex >= 0) {
+      return {
+        headerRowIndex: rowIndex,
+        articleIndex,
+        ownerIndex: genericOwnerIndex,
+        platformOwnerIndexes: { wb: genericOwnerIndex },
+        articleHeader: String(row[articleIndex] ?? '').trim(),
+        ownerHeader: String(row[genericOwnerIndex] ?? '').trim(),
+        mode: 'header'
+      };
+    }
+  }
+  return {
+    headerRowIndex: -1,
+    articleIndex: 0,
+    ownerIndex: 1,
+    platformOwnerIndexes: { wb: 1 },
+    articleHeader: '',
+    ownerHeader: '',
+    mode: 'legacy'
+  };
+}
+
 function readDistribution(filePath) {
   if (!filePath) {
-    return { rows: [], sheetName: '', duplicates: [] };
+    return { rows: [], sheetName: '', duplicates: [], columns: findDistributionColumns([]) };
   }
   const workbook = xlsx.readFile(filePath, { cellDates: true });
   const sheetName = workbook.SheetNames[0];
@@ -103,17 +239,25 @@ function readDistribution(filePath) {
     raw: false,
     blankrows: false
   });
+  const columns = findDistributionColumns(rows);
   const byArticle = new Map();
   const duplicates = [];
   rows.forEach((row, index) => {
-    const article = normalizeArticle(row[0]);
-    const owner = normalizeOwner(row[1]);
-    if (!article || !owner) return;
+    if (columns.headerRowIndex >= 0 && index <= columns.headerRowIndex) return;
+    const article = normalizeArticle(row[columns.articleIndex]);
+    const ownersByPlatform = {};
+    Object.entries(columns.platformOwnerIndexes || {}).forEach(([platform, columnIndex]) => {
+      const owner = canonicalOwnerName(row[columnIndex]);
+      if (owner) ownersByPlatform[platform] = owner;
+    });
+    const owner = ownersByPlatform.wb || canonicalOwnerName(row[columns.ownerIndex]);
+    if (!article || (!owner && !Object.keys(ownersByPlatform).length)) return;
     const payload = {
       sourceRow: index + 1,
       article,
-      sourceArticle: String(row[0] ?? '').trim(),
-      owner
+      sourceArticle: String(row[columns.articleIndex] ?? '').trim(),
+      owner,
+      ownersByPlatform
     };
     if (byArticle.has(article)) duplicates.push({ ...payload, previousOwner: byArticle.get(article).owner });
     byArticle.set(article, payload);
@@ -121,6 +265,7 @@ function readDistribution(filePath) {
   return {
     sheetName,
     sourceRowCount: rows.length,
+    columns,
     rows: [...byArticle.values()],
     duplicates
   };
@@ -221,6 +366,8 @@ function applyDistribution(options) {
   const matched = [];
   const missingInDistribution = [];
   const ownerCounts = {};
+  const platformOwnerCounts = {};
+  const platformUpdatedOwnerCount = {};
 
   const nextSkus = skus.map((sku) => {
     if (!isWbSku(sku)) return sku;
@@ -240,10 +387,35 @@ function applyDistribution(options) {
     }
 
     const owner = row.owner;
-    ownerCounts[owner] = (ownerCounts[owner] || 0) + 1;
+    if (owner) ownerCounts[owner] = (ownerCounts[owner] || 0) + 1;
     const changed = previousOwner !== owner;
-    if (changed) updatedOwnerCount += 1;
-    else unchangedOwnerCount += 1;
+    if (owner || previousOwner) {
+      if (changed) updatedOwnerCount += 1;
+      else unchangedOwnerCount += 1;
+    }
+    const existingOwnersByPlatform = {
+      ...(typeof sku.owner === 'object' && sku.owner?.byPlatform ? sku.owner.byPlatform : {}),
+      ...(sku.ownersByPlatform || {})
+    };
+    const changedByPlatform = {};
+    Object.entries(row.ownersByPlatform || {}).forEach(([platform, platformOwner]) => {
+      if (!platformOwner) return;
+      platformOwnerCounts[platform] = platformOwnerCounts[platform] || {};
+      platformOwnerCounts[platform][platformOwner] = (platformOwnerCounts[platform][platformOwner] || 0) + 1;
+      const previousPlatformOwner = normalizeOwner(existingOwnersByPlatform[platform] || '');
+      if (previousPlatformOwner !== platformOwner) {
+        platformUpdatedOwnerCount[platform] = (platformUpdatedOwnerCount[platform] || 0) + 1;
+        changedByPlatform[platform] = {
+          previousOwner: previousPlatformOwner,
+          owner: platformOwner
+        };
+      }
+    });
+    const nextOwnersByPlatform = {
+      ...existingOwnersByPlatform,
+      ...(row.ownersByPlatform || {})
+    };
+    const nextPrimaryOwner = primaryOwnerName(nextOwnersByPlatform) || owner;
     matched.push({
       articleKey,
       article: sku.article || articleKey,
@@ -251,25 +423,22 @@ function applyDistribution(options) {
       previousOwnerWb: previousOwner,
       ownerWb: owner,
       changed,
+      changedByPlatform,
+      ownersByPlatform: row.ownersByPlatform || {},
       sourceRow: row.sourceRow
     });
 
     const next = {
       ...sku,
-      ownersByPlatform: {
-        ...(sku.ownersByPlatform || {}),
-        wb: owner
-      },
+      ownersByPlatform: nextOwnersByPlatform,
       owner: {
         ...(typeof sku.owner === 'object' && sku.owner ? sku.owner : {}),
-        name: typeof sku.owner === 'object' && sku.owner?.name ? sku.owner.name : (sku.owner || owner),
-        byPlatform: {
-          ...(typeof sku.owner === 'object' && sku.owner?.byPlatform ? sku.owner.byPlatform : {}),
-          wb: owner
-        }
+        name: nextPrimaryOwner,
+        byPlatform: nextOwnersByPlatform
       },
       wbOwnerDistribution: {
         owner,
+        ownersByPlatform: row.ownersByPlatform || {},
         sourceFile: path.basename(options.inputXlsx),
         sourceRow: row.sourceRow,
         appliedAt: new Date().toISOString()
@@ -286,7 +455,8 @@ function applyDistribution(options) {
       sheetName: distribution.sheetName,
       sourceRowCount: distribution.sourceRowCount,
       mappedRowCount: distribution.rows.length,
-      duplicateCount: distribution.duplicates.length
+      duplicateCount: distribution.duplicates.length,
+      columns: distribution.columns
     },
     summary: {
       portalSkuCount: skus.length,
@@ -294,9 +464,11 @@ function applyDistribution(options) {
       matchedSkuCount: matched.length,
       updatedOwnerCount,
       unchangedOwnerCount,
+      platformUpdatedOwnerCount,
       missingInPortalCount: missingInPortal.length,
       missingInDistributionCount: missingInDistribution.length,
-      ownerCounts
+      ownerCounts,
+      platformOwnerCounts
     },
     matched,
     missingInPortal,

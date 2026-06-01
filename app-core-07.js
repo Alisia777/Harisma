@@ -2593,6 +2593,25 @@ function productLeaderboardRate(value) {
   return Number(value);
 }
 
+function productLeaderboardSkuForItem(item = {}) {
+  if (typeof getSku !== 'function') return null;
+  return getSku(item.articleKey || item.article || item.sku || item.vendorCode || '');
+}
+
+function productLeaderboardOwnerForItem(item = {}) {
+  const sku = productLeaderboardSkuForItem(item);
+  if (sku && typeof ownerName === 'function') {
+    const skuOwner = typeof canonicalOwnerName === 'function'
+      ? canonicalOwnerName(ownerName(sku) || '')
+      : String(ownerName(sku) || '').trim();
+    if (skuOwner) return skuOwner;
+  }
+  const rawOwner = item.ownerName || item.owner || '';
+  return typeof canonicalOwnerName === 'function'
+    ? canonicalOwnerName(rawOwner)
+    : String(rawOwner || '').replace(/\s+/g, ' ').trim();
+}
+
 function productLeaderboardSum(values) {
   return (Array.isArray(values) ? values : []).reduce((total, value) => total + numberOrZero(value), 0);
 }
@@ -2602,6 +2621,7 @@ function productLeaderboardSummaryFromItems(items) {
   const summary = {
     skuCount: list.length,
     ownerCount: new Set(list.map((item) => String(item.owner || '').trim()).filter(Boolean)).size,
+    ownerAssignedCount: list.filter((item) => String(item.owner || '').trim()).length,
     reach: productLeaderboardSum(list.map((item) => item.reach || 0)),
     reactions: productLeaderboardSum(list.map((item) => item.reactions || 0)),
     posts: productLeaderboardSum(list.map((item) => item.posts || 0)),
@@ -2625,9 +2645,7 @@ function productLeaderboardSummaryFromItems(items) {
 }
 
 function normalizeProductLeaderboardItem(item = {}) {
-  const owner = typeof canonicalOwnerName === 'function'
-    ? canonicalOwnerName(item.owner || '')
-    : String(item.owner || '').replace(/\s+/g, ' ').trim();
+  const owner = productLeaderboardOwnerForItem(item);
   const normalized = {
     id: item.id || stableId('product-leaderboard', item.articleKey || item.article || item.name || ''),
     brand: item.brand || 'АЛТЕЯ',
@@ -2675,9 +2693,7 @@ function normalizeProductLeaderboardPayload(payload = {}) {
   const items = Array.isArray(payload.items) ? payload.items.map(normalizeProductLeaderboardItem) : [];
   const summary = productLeaderboardSummaryFromItems(items);
   const sourceSummary = payload.summary || {};
-  const ownerList = Array.isArray(payload.owners)
-    ? payload.owners.map((owner) => (typeof canonicalOwnerName === 'function' ? canonicalOwnerName(owner) : String(owner || '').trim()))
-    : items.map((item) => item.owner);
+  const ownerList = items.map((item) => item.owner);
   return {
     generatedAt: payload.generatedAt || '',
     sourceFile: payload.sourceFile || '',
@@ -2706,8 +2722,8 @@ function normalizeProductLeaderboardPayload(payload = {}) {
       unmatchedRows: 0
     },
     summary: {
-      ...summary,
-      ...sourceSummary
+      ...sourceSummary,
+      ...summary
     },
     owners: [...new Set(ownerList.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru')),
     categories: Array.isArray(payload.categories) ? payload.categories.filter(Boolean) : [...new Set(items.map((item) => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru')),
@@ -3031,7 +3047,7 @@ function productLeaderboardItemScore(item = {}, payload = {}) {
 
 function productLeaderboardGameScore(payload = {}, items = []) {
   const summary = productLeaderboardSummaryFromItems(items);
-  const ownerCoverage = summary.skuCount > 0 ? summary.ownerCount / summary.skuCount : 0;
+  const ownerCoverage = summary.skuCount > 0 ? summary.ownerAssignedCount / summary.skuCount : 0;
   const modules = [
     productLeaderboardMetricCompletion(summary.ctrPct, productLeaderboardMetricTarget(payload, 'ctrPct', 0.01)),
     productLeaderboardMetricCompletion(summary.cartRatePct, productLeaderboardMetricTarget(payload, 'cartRatePct', 0.3)),
@@ -3164,7 +3180,7 @@ function productLeaderboardModuleBoardHtml(payload = {}, summary = {}, ownerCove
       title: 'Ответственные',
       kicker: `${fmt.int(summary.ownerCount)} owner`,
       value: fmt.pct(ownerCoverage),
-      meta: `${fmt.int(summary.skuCount)} SKU в срезе`,
+      meta: `${fmt.int(summary.ownerAssignedCount)} / ${fmt.int(summary.skuCount)} SKU`,
       completion: ownerCoverage,
       footer: ownerCoverage >= 0.95 ? 'контур закрыт' : 'назначить owner',
       hint: 'покрытие'
@@ -7492,7 +7508,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   const filters = getProductLeaderboardFilters();
   const filteredItems = getFilteredProductLeaderboardItems(payload);
   const filteredSummary = productLeaderboardSummaryFromItems(filteredItems);
-  const ownerCoverage = filteredSummary.skuCount > 0 ? filteredSummary.ownerCount / filteredSummary.skuCount : 0;
+  const ownerCoverage = filteredSummary.skuCount > 0 ? filteredSummary.ownerAssignedCount / filteredSummary.skuCount : 0;
   const gameHeroHtml = productLeaderboardGameHeroHtml(payload, filteredItems, freshness);
   const moduleBoardHtml = productLeaderboardModuleBoardHtml(payload, filteredSummary, ownerCoverage);
   const ownerRaceHtml = productLeaderboardOwnerRaceHtml(filteredItems);

@@ -1,26 +1,25 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-06-01T20:17:50.815Z",
+  "generatedAt": "2026-06-01T21:25:51.883Z",
   "source": {
     "skus": 143,
     "aliases": 341,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-06-01T20:17:50.751Z"
+    "dataQualityGeneratedAt": "2026-06-01T21:23:34.998Z"
   },
   "summary": {
     "skuCount": 143,
     "activeSkuCount": 116,
     "aliasCount": 341,
     "ignoredApiSkuCount": 0,
-    "apiUnmappedCount": 4,
+    "apiUnmappedCount": 0,
     "duplicateRiskCount": 0,
     "duplicateRiskOverage": 0,
     "missingOwnerCount": 0,
-    "issueCount": 89,
+    "issueCount": 0,
+    "infoIssueCount": 89,
     "problemStateCounts": {
-      "ok": 124,
-      "has_warning": 19,
-      "api_unmapped": 1
+      "ok": 143
     }
   },
   "problemStates": {
@@ -80,6 +79,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -95,16 +95,17 @@
       "type": "Набор уходовой косметики",
       "aliases": [],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -131,6 +132,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -146,16 +148,17 @@
       "type": "Пищевая добавка",
       "aliases": [],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -176,16 +179,17 @@
       "type": "БАД для снижения веса",
       "aliases": [],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -248,6 +252,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -269,6 +274,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -320,16 +326,17 @@
         }
       ],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -392,6 +399,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -413,6 +421,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -434,6 +443,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -477,6 +487,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -534,6 +545,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -591,6 +603,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -648,6 +661,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -712,6 +726,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -769,6 +784,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -826,6 +842,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -877,16 +894,17 @@
         }
       ],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -913,6 +931,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -934,6 +953,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -955,6 +975,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -976,6 +997,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1019,6 +1041,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1076,6 +1099,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1099,16 +1123,17 @@
         }
       ],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -1171,6 +1196,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1242,6 +1268,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1306,6 +1333,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1370,6 +1398,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1427,6 +1456,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1484,6 +1514,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1562,6 +1593,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1583,6 +1615,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1640,6 +1673,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1697,6 +1731,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1754,6 +1789,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1811,6 +1847,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1875,6 +1912,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -1933,16 +1971,17 @@
         }
       ],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -1963,16 +2002,17 @@
       "type": "Масло для волос",
       "aliases": [],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -2035,6 +2075,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -2056,6 +2097,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -2071,16 +2113,17 @@
       "type": "Средство для ногтей и кутикулы",
       "aliases": [],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -2130,16 +2173,17 @@
         }
       ],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -2202,6 +2246,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -2245,6 +2290,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -2302,6 +2348,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -2339,16 +2386,17 @@
         }
       ],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -2411,6 +2459,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -2462,16 +2511,17 @@
         }
       ],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -2534,6 +2584,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -2549,16 +2600,17 @@
       "type": "БАД для ЖКТ",
       "aliases": [],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -2585,6 +2637,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -2600,16 +2653,17 @@
       "type": "",
       "aliases": [],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -2686,6 +2740,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -2743,6 +2798,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -2800,6 +2856,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -2857,6 +2914,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -2914,6 +2972,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -2971,6 +3030,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -3028,6 +3088,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -3085,6 +3146,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -3142,6 +3204,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -3199,6 +3262,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -3250,16 +3314,17 @@
         }
       ],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -3322,6 +3387,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -3337,16 +3403,17 @@
       "type": "БАД для костей и суставов",
       "aliases": [],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -3416,6 +3483,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -3473,6 +3541,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -3530,6 +3599,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -3587,6 +3657,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -3651,6 +3722,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -3708,6 +3780,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -3765,6 +3838,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -3822,6 +3896,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -3879,6 +3954,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -3909,16 +3985,17 @@
         }
       ],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -3988,6 +4065,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4039,16 +4117,17 @@
         }
       ],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -4111,6 +4190,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4168,6 +4248,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4225,6 +4306,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4282,6 +4364,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4303,6 +4386,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4360,6 +4444,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4417,6 +4502,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4474,6 +4560,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4495,6 +4582,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4516,6 +4604,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4537,6 +4626,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4558,6 +4648,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4579,6 +4670,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4600,6 +4692,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4621,6 +4714,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4642,6 +4736,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4663,6 +4758,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4684,6 +4780,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4705,6 +4802,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4726,6 +4824,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4747,6 +4846,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4768,6 +4868,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4789,6 +4890,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4810,6 +4912,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4831,6 +4934,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4852,6 +4956,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4873,6 +4978,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4894,6 +5000,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4915,6 +5022,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4936,6 +5044,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4957,6 +5066,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4978,6 +5088,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -4999,6 +5110,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5020,6 +5132,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5041,6 +5154,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5062,6 +5176,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5083,6 +5198,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5104,6 +5220,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5125,6 +5242,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5146,6 +5264,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5167,6 +5286,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5188,6 +5308,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5209,6 +5330,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5230,6 +5352,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5251,6 +5374,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5272,6 +5396,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5336,6 +5461,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5357,6 +5483,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5378,6 +5505,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5399,6 +5527,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5420,6 +5549,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5441,6 +5571,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5462,6 +5593,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5483,6 +5615,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5504,6 +5637,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5525,6 +5659,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5546,6 +5681,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5567,6 +5703,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5588,6 +5725,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5609,6 +5747,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5630,6 +5769,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5651,6 +5791,7 @@
       "problemLabel": "В матрице",
       "problemTone": "ok",
       "issueCount": 0,
+      "infoIssueCount": 0,
       "criticalIssueCount": 0,
       "issues": []
     },
@@ -5666,16 +5807,17 @@
       "type": "Возбудитель",
       "aliases": [],
       "problemStates": [
-        "has_warning"
+        "ok"
       ],
-      "problemState": "has_warning",
-      "problemLabel": "Есть замечание",
-      "problemTone": "warn",
-      "issueCount": 1,
+      "problemState": "ok",
+      "problemLabel": "В матрице",
+      "problemTone": "ok",
+      "issueCount": 0,
+      "infoIssueCount": 1,
       "criticalIssueCount": 0,
       "issues": [
         {
-          "severity": "warning",
+          "severity": "info",
           "type": "wb_owner_distribution_missing_owner_row",
           "platform": "wb",
           "revenue": 0,
@@ -5685,44 +5827,7 @@
       ]
     }
   ],
-  "apiUnmapped": [
-    {
-      "platform": "ozon",
-      "api_sku": "4281043558",
-      "name": "4281043558",
-      "revenue": 1586,
-      "units": 2,
-      "firstDate": "2026-05-15",
-      "lastDate": "2026-05-26"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "4094166081",
-      "name": "4094166081",
-      "revenue": 1077,
-      "units": 1,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-05"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "4469756109",
-      "name": "4469756109",
-      "revenue": 716,
-      "units": 1,
-      "firstDate": "2026-05-30",
-      "lastDate": "2026-05-31"
-    },
-    {
-      "platform": "ozon",
-      "api_sku": "4143253129",
-      "name": "4143253129",
-      "revenue": 240,
-      "units": 1,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-15"
-    }
-  ],
+  "apiUnmapped": [],
   "duplicateRisks": [],
   "ignoredApiSku": [],
   "indexes": {

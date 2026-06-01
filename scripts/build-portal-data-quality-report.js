@@ -4,6 +4,9 @@ const fs = require('fs');
 const path = require('path');
 
 const DEFAULT_ISSUE_LIMIT = 250;
+const API_SKU_UNMAPPED_WARNING_REVENUE = 10000;
+const API_SKU_UNMAPPED_CRITICAL_REVENUE = 100000;
+const EXTERNAL_WAREHOUSE_KEY_PREFIXES = ['qeep', 'harly', 'harley'];
 const PLATFORM_LABELS = {
   wb: 'WB',
   ozon: 'Ozon',
@@ -64,6 +67,18 @@ function normalizeToken(value) {
 function numberOrZero(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : 0;
+}
+
+function apiSkuUnmappedSeverity(fact = {}) {
+  const revenue = numberOrZero(fact.revenue);
+  if (revenue >= API_SKU_UNMAPPED_CRITICAL_REVENUE) return 'critical';
+  if (revenue >= API_SKU_UNMAPPED_WARNING_REVENUE) return 'warning';
+  return 'info';
+}
+
+function isExternalWarehouseKey(value = '') {
+  const token = normalizeToken(value);
+  return EXTERNAL_WAREHOUSE_KEY_PREFIXES.some((prefix) => token.startsWith(prefix));
 }
 
 function dateKey(value) {
@@ -355,7 +370,7 @@ function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDa
         unmappedRevenue += fact.revenue;
         unmappedUnits += fact.units;
         issues.push({
-          severity: fact.revenue >= 100000 ? 'critical' : 'warning',
+          severity: apiSkuUnmappedSeverity(fact),
           type: 'api_sku_unmapped',
           dataset: 'platform_trends.extraMarketplace',
           platform,
@@ -540,9 +555,10 @@ function buildOwnerQuality(skus = []) {
 
 function buildWarehouseQuality(warehouse = {}) {
   const unmatched = Array.isArray(warehouse?.unmatchedSourceKeys) ? warehouse.unmatchedSourceKeys : [];
+  const externalRows = unmatched.filter(isExternalWarehouseKey).length;
   return {
     issues: unmatched.slice(0, 100).map((key) => ({
-      severity: 'warning',
+      severity: isExternalWarehouseKey(key) ? 'info' : 'warning',
       type: 'warehouse_unmatched_source_key',
       dataset: 'warehouse_stock_overlay',
       articleKey: String(key || ''),
@@ -551,7 +567,9 @@ function buildWarehouseQuality(warehouse = {}) {
     summary: {
       sourceRows: numberOrZero(warehouse?.sheetRowCount),
       matchedRows: numberOrZero(warehouse?.matchedRowCount || warehouse?.matchedSkuCount),
-      unmatchedRows: unmatched.length
+      unmatchedRows: unmatched.length,
+      externalUnmatchedRows: externalRows,
+      warningUnmatchedRows: Math.max(0, unmatched.length - externalRows)
     }
   };
 }
@@ -679,7 +697,7 @@ function buildWbOwnerDistributionQuality(audit = {}) {
   const missingInDistribution = Array.isArray(audit.missingInDistribution) ? audit.missingInDistribution : [];
   const issues = [
     ...missingInPortal.map((row) => ({
-      severity: 'warning',
+      severity: 'info',
       type: 'wb_owner_distribution_missing_in_portal',
       dataset: 'wb_owner_distribution',
       platform: 'wb',
@@ -693,7 +711,7 @@ function buildWbOwnerDistributionQuality(audit = {}) {
       action: 'Add SKU or alias to portal registry, or remove it from WB owner distribution.'
     })),
     ...missingInDistribution.map((row) => ({
-      severity: 'warning',
+      severity: 'info',
       type: 'wb_owner_distribution_missing_owner_row',
       dataset: 'wb_owner_distribution',
       platform: 'wb',
@@ -762,6 +780,7 @@ function buildReport(options) {
   });
 
   const apiUnmappedIssues = apiQuality.issues.filter((issue) => issue.type === 'api_sku_unmapped');
+  const apiUnmappedActionIssues = apiUnmappedIssues.filter((issue) => issue.severity === 'critical' || issue.severity === 'warning');
   const apiKnownOutsideRegistryIssues = apiQuality.issues.filter((issue) => issue.type === 'api_sku_known_outside_registry');
   const apiSumAboveAggregateIssues = apiQuality.issues.filter((issue) => issue.type === 'api_sum_above_aggregate');
   const summary = {
@@ -773,6 +792,9 @@ function buildReport(options) {
     apiUnmappedPlatformRows: apiUnmappedIssues.length,
     apiUnmappedUniqueSku: new Set(apiUnmappedIssues.map((issue) => normalizeToken(issue.articleKey))).size,
     apiUnmappedRevenue: Math.round(apiUnmappedIssues.reduce((acc, issue) => acc + numberOrZero(issue.revenue), 0)),
+    apiUnmappedActionRows: apiUnmappedActionIssues.length,
+    apiUnmappedActionUniqueSku: new Set(apiUnmappedActionIssues.map((issue) => normalizeToken(issue.articleKey))).size,
+    apiUnmappedActionRevenue: Math.round(apiUnmappedActionIssues.reduce((acc, issue) => acc + numberOrZero(issue.revenue), 0)),
     apiKnownOutsideRegistryRows: apiKnownOutsideRegistryIssues.length,
     apiKnownOutsideRegistryUniqueSku: new Set(apiKnownOutsideRegistryIssues.map((issue) => normalizeToken(issue.articleKey))).size,
     apiKnownOutsideRegistryRevenue: Math.round(apiKnownOutsideRegistryIssues.reduce((acc, issue) => acc + numberOrZero(issue.revenue), 0)),

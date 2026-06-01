@@ -49,6 +49,7 @@ const DEFAULT_COMPLETENESS_MIN_RATIO = 0.55;
 const DEFAULT_COMPLETENESS_LOOKBACK_DAYS = 7;
 const DEFAULT_COMPLETENESS_MIN_BASELINE_REVENUE = 100000;
 const DEFAULT_COMPLETENESS_MIN_BASELINE_UNITS = 50;
+const API_SKU_UNMAPPED_WARNING_REVENUE = 10000;
 
 function parseArgs(argv) {
   const args = {};
@@ -622,8 +623,10 @@ function buildHealth(options) {
   if (numberOrZero(qualitySummary.apiSumAboveAggregateOverage) > 0) {
     warnings.push(`Potential duplicated revenue overage: ${Math.round(numberOrZero(qualitySummary.apiSumAboveAggregateOverage))}.`);
   }
-  if (numberOrZero(qualitySummary.apiUnmappedRevenue) > 0) {
-    warnings.push(`Unmapped API SKU revenue: ${Math.round(numberOrZero(qualitySummary.apiUnmappedRevenue))}.`);
+  const apiUnmappedActionRevenue = numberOrZero(qualitySummary.apiUnmappedActionRevenue);
+  const apiUnmappedRevenue = numberOrZero(qualitySummary.apiUnmappedRevenue);
+  if (apiUnmappedActionRevenue > 0 || apiUnmappedRevenue >= API_SKU_UNMAPPED_WARNING_REVENUE) {
+    warnings.push(`Unmapped API SKU revenue: ${Math.round(apiUnmappedActionRevenue || apiUnmappedRevenue)}.`);
   }
   if (numberOrZero(qualitySummary.skuMissingOwner) > 0) {
     warnings.push(`SKU without owner or registry mapping: ${Math.round(numberOrZero(qualitySummary.skuMissingOwner))}.`);

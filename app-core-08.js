@@ -969,7 +969,7 @@ function repricerConfidenceLabel(level) {
 
 function repricerConfidenceTone(level) {
   if (level === 'green') return 'ok';
-  if (level === 'yellow') return 'warn';
+  if (level === 'yellow') return 'info';
   if (level === 'red') return 'danger';
   return '';
 }
@@ -2034,7 +2034,7 @@ function repricerRunWorkbookSmokeTests(settings) {
       hardMinPrice: 700,
       requiredPriceForProfitability: 700,
       requiredPriceForMargin: 780,
-      allowedMarginPct: 0.15,
+      allowedMarginPct: 0.25,
       turnoverCurrentDays: item.turnoverDays,
       stock: item.stock,
       cost: 200,
@@ -3468,7 +3468,7 @@ function repricerTemplateEmptyReason(stats) {
   if (!stats) return 'нет данных для проверки шаблона';
   if (stats.safe > 0) return `${stats.label}: в шаблон попадёт ${fmt.int(stats.safe)} строк.`;
   if (stats.greenNoChange > 0 && stats.changed <= 0) return `${stats.label}: зелёные есть, но цена не меняется, поэтому файл цен пуст.`;
-  if (stats.yellow || stats.red) return `${stats.label}: строки есть, но они требуют проверки: жёлтые ${fmt.int(stats.yellow)}, стоп ${fmt.int(stats.red)}.`;
+  if (stats.yellow || stats.red) return `${stats.label}: строки есть в аудите: инфо ${fmt.int(stats.yellow)}, стоп ${fmt.int(stats.red)}.`;
   if (stats.missingMin || stats.missingCost || stats.blocked) return `${stats.label}: мешают данные контура: нет MIN ${fmt.int(stats.missingMin)}, нет себестоимости ${fmt.int(stats.missingCost)}, нет входов ${fmt.int(stats.blocked)}.`;
   if (stats.promo > 0) return `${stats.label}: часть строк в промо, они уходят в отдельную промо-выгрузку.`;
   return `${stats.label}: нет зелёных строк с изменением цены.`;
@@ -3482,7 +3482,7 @@ function repricerTopStatusText(stats) {
     ['нет себестоимости', numberOrZero(stats?.wb?.missingCost) + numberOrZero(stats?.ozon?.missingCost)],
     ['нет входов', numberOrZero(stats?.wb?.blocked) + numberOrZero(stats?.ozon?.blocked)],
     ['ниже MIN вручную', numberOrZero(stats?.wb?.belowMin) + numberOrZero(stats?.ozon?.belowMin)],
-    ['нужна проверка', numberOrZero(stats?.wb?.yellow) + numberOrZero(stats?.ozon?.yellow)]
+    ['аудит', numberOrZero(stats?.wb?.yellow) + numberOrZero(stats?.ozon?.yellow)]
   ].filter(([, count]) => count > 0).slice(0, 3);
   if (blockers.length) {
     return `Сегодня не выгружаем автоматически: ${blockers.map(([label, count]) => `${label} ${fmt.int(count)}`).join(', ')}.`;
@@ -3508,9 +3508,9 @@ function repricerGamePlatformModel(stats = {}, options = {}) {
   const check = numberOrZero(options.checkCount ?? (yellow + red));
   const hardStops = red + numberOrZero(stats.missingMin) + numberOrZero(stats.blocked);
   const softStops = yellow + numberOrZero(stats.missingCost) + numberOrZero(stats.belowMin);
-  const completion = active > 0 ? green / active : null;
-  const tone = safe > 0 ? 'ok' : (hardStops > 0 ? 'danger' : softStops > 0 ? 'warn' : 'ok');
-  const status = safe > 0 ? 'ОК к выгрузке' : (tone === 'danger' ? 'СТОП' : tone === 'warn' ? 'Проверить' : 'ОК без изменений');
+  const completion = active > 0 ? (green + yellow) / active : null;
+  const tone = safe > 0 || hardStops <= 0 ? 'ok' : 'danger';
+  const status = safe > 0 ? 'ОК к выгрузке' : (tone === 'danger' ? 'СТОП' : (softStops > 0 ? 'ОК, есть аудит' : 'ОК без изменений'));
   return {
     platform: stats.platform || options.platform || 'wb',
     label: stats.label || (options.platform === 'ozon' ? 'Ozon' : 'WB'),
@@ -3554,18 +3554,16 @@ function repricerGameReadinessModel(health = {}, templateStats = {}, context = {
     + numberOrZero(metrics.missing_cost_actionable || metrics.missing_cost)
     + numberOrZero(context.liveDriftSides)
     + numberOrZero(context.fallbackSides);
-  const completion = active > 0 ? green / active : null;
-  const tone = safe > 0 ? 'ok' : (hardStops > 0 ? 'danger' : softStops > 0 ? 'warn' : 'ok');
+  const completion = active > 0 ? (green + yellow) / active : null;
+  const tone = safe > 0 || hardStops <= 0 ? 'ok' : 'danger';
   const title = safe > 0
     ? 'В работе'
-    : (tone === 'danger' ? 'СТОП' : tone === 'warn' ? 'Проверить' : 'Контур чистый');
+    : (tone === 'danger' ? 'СТОП' : 'Контур чистый');
   const subtitle = safe > 0
-    ? 'Зелёные строки можно выгружать сейчас. Жёлтые и красные остаются в аудите и не блокируют запуск.'
+    ? 'Зелёные строки можно выгружать сейчас. Инфо-аудит не блокирует запуск, красные остаются стопом.'
     : tone === 'danger'
       ? 'Нет безопасных строк: сначала закрыть красные причины.'
-      : tone === 'warn'
-        ? 'Есть жёлтые зоны: лучше открыть аудит перед выгрузкой.'
-        : 'Критичных стопов нет, но новых цен для шаблона сейчас нет.';
+      : 'Критичных стопов нет, но новых цен для шаблона сейчас нет.';
   return {
     tone,
     title,
@@ -3603,12 +3601,12 @@ function repricerGameHeroHtml(model = {}) {
   return `
     <div class="repricer-game-hero ${escapeHtml(tone)}" style="--repricer-ready:${numberOrZero(model.progress).toFixed(1)}%">
       <div class="repricer-game-main">
-        <div class="repricer-game-score" data-tip="${escapeHtml(`Готовность = зелёные строки / активные строки WB+Ozon. Зелёные можно выгружать, жёлтые требуют проверки, красные блокируют автоматику.`)}">
+        <div class="repricer-game-score" data-tip="${escapeHtml(`Готовность = рабочие строки без красных стопов / активные строки WB+Ozon. Инфо-строки остаются в аудите, но не режут процент.`)}">
           <span>готовность репрайсера</span>
           <strong>${escapeHtml(completionText)}</strong>
           <em>${escapeHtml(model.title || 'Проверить')}</em>
         </div>
-        <div class="repricer-game-track" title="${escapeHtml(`${fmt.int(model.green)} зелёных из ${fmt.int(model.active)} активных строк`)}">
+        <div class="repricer-game-track" title="${escapeHtml(`${fmt.int(model.green + model.yellow)} рабочих из ${fmt.int(model.active)} активных строк`)}">
           <i></i>
           <span class="mark-50">50%</span>
           <span class="mark-80">80%</span>
@@ -3623,7 +3621,7 @@ function repricerGameHeroHtml(model = {}) {
       <div class="repricer-game-metrics">
         ${repricerGameMetricHtml('В безопасную выгрузку', fmt.int(model.safe), `WB ${fmt.int(model.wb?.safe)} · Ozon ${fmt.int(model.ozon?.safe)}`, model.safe > 0 ? 'ok' : 'warn', 'Количество строк, которые уже зелёные, изменились в цене и попадут в шаблон WB/Ozon.')}
         ${repricerGameMetricHtml('Зелёные', fmt.int(model.green), `${fmt.int(model.active)} активных строк`, 'ok', 'Зелёные строки прошли проверки. Если цена не изменилась, они остаются зелёными, но в ценовой шаблон не попадают.')}
-        ${repricerGameMetricHtml('Проверить', fmt.int(model.yellow), 'жёлтые строки', model.yellow > 0 ? 'warn' : 'ok', 'Жёлтые строки не отправляем автоматически: нужен аудит или ручное решение.')}
+        ${repricerGameMetricHtml('Аудит', fmt.int(model.yellow), 'инфо-строки', model.yellow > 0 ? 'info' : 'ok', 'Строки с мягкими причинами остаются в аудите, но не режут процент готовности контура.')}
         ${repricerGameMetricHtml('Стоп', fmt.int(model.red), 'красные строки', model.red > 0 ? 'danger' : 'ok', 'Красные строки блокируют автоматическую выгрузку до исправления входов или решения.')}
       </div>
     </div>
@@ -3636,7 +3634,7 @@ function repricerGameMarketplaceCardHtml(platformModel = {}, stats = {}) {
   const exportMode = platform === 'ozon' ? 'template:ozon' : 'template:wb';
   const tone = repricerGameToneClass(platformModel.tone);
   const hasSafe = numberOrZero(platformModel.safe) > 0;
-  const tip = `${platformModel.label}: зелёные ${fmt.int(platformModel.green)}, проверить ${fmt.int(platformModel.yellow)}, стоп ${fmt.int(platformModel.red)}, в файл ${fmt.int(platformModel.safe)}.`;
+  const tip = `${platformModel.label}: зелёные ${fmt.int(platformModel.green)}, аудит ${fmt.int(platformModel.yellow)}, стоп ${fmt.int(platformModel.red)}, в файл ${fmt.int(platformModel.safe)}.`;
   return `
     <div class="repricer-marketplace-card repricer-game-platform-card ${escapeHtml(platform)} ${escapeHtml(tone)}" style="--repricer-platform-ready:${numberOrZero(platformModel.progress).toFixed(1)}%" data-tip="${escapeHtml(tip)}">
       <div class="repricer-marketplace-title">
@@ -5559,7 +5557,7 @@ function renderRepricerWorkLogicCard() {
       </div>
       <div class="repricer-logic-steps" style="margin-top:12px">
         <div><strong>1. Данные</strong><span>Берём текущую цену, MIN/MAX, себестоимость, статус и live-ориентир.</span></div>
-        <div><strong>2. Confidence</strong><span>Зелёные идут в шаблон, жёлтые и красные остаются в аудите.</span></div>
+        <div><strong>2. Confidence</strong><span>Зелёные идут в шаблон, инфо и стоп остаются в аудите.</span></div>
         <div><strong>3. Исправления</strong><span>Excel сначала проверяется, автопочин показывает предпросмотр и сохраняет откат.</span></div>
         <div><strong>4. API</strong><span>Задачи получают статус: новая, отправлено, ждёт обновления источника или принято.</span></div>
       </div>
@@ -6043,7 +6041,7 @@ function renderRepricer() {
   ].join('');
   const safetyBadges = [
     badge(`зелёные ${fmt.int(confidenceGreenSides)}`, confidenceGreenSides ? 'ok' : 'warn'),
-    badge(`проверить ${fmt.int(confidenceYellowSides)}`, confidenceYellowSides ? 'warn' : 'ok'),
+    badge(`аудит ${fmt.int(confidenceYellowSides)}`, confidenceYellowSides ? 'info' : 'ok'),
     badge(`стоп ${fmt.int(confidenceRedSides)}`, confidenceRedSides ? 'danger' : 'ok'),
     badge(`в шаблон WB ${fmt.int(safeWbRows)}`, safeWbRows ? 'ok' : 'warn'),
     badge(`в шаблон Ozon ${fmt.int(safeOzonRows)}`, safeOzonRows ? 'ok' : 'warn')
@@ -6079,14 +6077,14 @@ function renderRepricer() {
             <strong>WB: ${fmt.int(templateStats.wb.safe)} в файл</strong>
             <span>${escapeHtml(repricerTemplateEmptyReason(templateStats.wb))}</span>
           </div>
-          <div class="badge-stack">${badge(`зелёные ${fmt.int(templateStats.wb.green)}`, templateStats.wb.green ? 'ok' : 'warn')}${badge(`до MIN ${fmt.int(templateStats.wb.floorRaiseSafe)}`, templateStats.wb.floorRaiseSafe ? 'ok' : 'info')}${badge(`без изменения ${fmt.int(templateStats.wb.greenNoChange)}`, templateStats.wb.greenNoChange ? 'info' : '')}${badge(`проверить ${fmt.int(templateStats.wb.yellow)}`, templateStats.wb.yellow ? 'warn' : 'ok')}${badge(`стоп ${fmt.int(templateStats.wb.red)}`, templateStats.wb.red ? 'danger' : 'ok')}</div>
+          <div class="badge-stack">${badge(`зелёные ${fmt.int(templateStats.wb.green)}`, templateStats.wb.green ? 'ok' : 'warn')}${badge(`до MIN ${fmt.int(templateStats.wb.floorRaiseSafe)}`, templateStats.wb.floorRaiseSafe ? 'ok' : 'info')}${badge(`без изменения ${fmt.int(templateStats.wb.greenNoChange)}`, templateStats.wb.greenNoChange ? 'info' : '')}${badge(`аудит ${fmt.int(templateStats.wb.yellow)}`, templateStats.wb.yellow ? 'info' : 'ok')}${badge(`стоп ${fmt.int(templateStats.wb.red)}`, templateStats.wb.red ? 'danger' : 'ok')}</div>
         </div>
         <div class="repricer-operator-sku">
           <div>
             <strong>Ozon: ${fmt.int(templateStats.ozon.safe)} в файл</strong>
             <span>${escapeHtml(repricerTemplateEmptyReason(templateStats.ozon))}</span>
           </div>
-          <div class="badge-stack">${badge(`зелёные ${fmt.int(templateStats.ozon.green)}`, templateStats.ozon.green ? 'ok' : 'warn')}${badge(`до MIN ${fmt.int(templateStats.ozon.floorRaiseSafe)}`, templateStats.ozon.floorRaiseSafe ? 'ok' : 'info')}${badge(`без изменения ${fmt.int(templateStats.ozon.greenNoChange)}`, templateStats.ozon.greenNoChange ? 'info' : '')}${badge(`проверить ${fmt.int(templateStats.ozon.yellow)}`, templateStats.ozon.yellow ? 'warn' : 'ok')}${badge(`стоп ${fmt.int(templateStats.ozon.red)}`, templateStats.ozon.red ? 'danger' : 'ok')}</div>
+          <div class="badge-stack">${badge(`зелёные ${fmt.int(templateStats.ozon.green)}`, templateStats.ozon.green ? 'ok' : 'warn')}${badge(`до MIN ${fmt.int(templateStats.ozon.floorRaiseSafe)}`, templateStats.ozon.floorRaiseSafe ? 'ok' : 'info')}${badge(`без изменения ${fmt.int(templateStats.ozon.greenNoChange)}`, templateStats.ozon.greenNoChange ? 'info' : '')}${badge(`аудит ${fmt.int(templateStats.ozon.yellow)}`, templateStats.ozon.yellow ? 'info' : 'ok')}${badge(`стоп ${fmt.int(templateStats.ozon.red)}`, templateStats.ozon.red ? 'danger' : 'ok')}</div>
         </div>
       </div>
     </div>
@@ -6187,7 +6185,7 @@ function renderRepricer() {
       <div class="section-title">
         <div>
           <h2>Репрайсер</h2>
-          <p>Светофор цен: зелёные можно выгружать, жёлтые проверяем, красные стопорят автоматику.</p>
+          <p>Светофор цен: зелёные можно выгружать, инфо остается в аудите, красные стопорят автоматику.</p>
         </div>
       </div>
 

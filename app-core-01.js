@@ -2003,7 +2003,7 @@ function repricerCanonicalBrandName(value) {
 function defaultRepricerSettings() {
   return {
     global: {
-      minMarginPct: 15,
+      minMarginPct: 25,
       defaultTargetDays: 30,
       launchTargetDays: 45,
       oosDays: 5,
@@ -2012,8 +2012,8 @@ function defaultRepricerSettings() {
       deadbandRub: 50
     },
     brandRules: {
-      'Алтея': { defaultTargetDays: 30, launchTargetDays: 45, oosDays: 5, minMarginPct: 15, alignmentEnabled: true },
-      CPA: { defaultTargetDays: 30, launchTargetDays: 45, oosDays: 5, minMarginPct: 15, alignmentEnabled: true }
+      'Алтея': { defaultTargetDays: 30, launchTargetDays: 45, oosDays: 5, minMarginPct: 25, alignmentEnabled: true },
+      CPA: { defaultTargetDays: 30, launchTargetDays: 45, oosDays: 5, minMarginPct: 25, alignmentEnabled: true }
     },
     statusRules: {
       'Актуально': { mode: 'auto', allowAutoprice: true, allowLaunch: false, allowAlignment: true },

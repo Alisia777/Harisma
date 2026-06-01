@@ -4411,8 +4411,17 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
   if (!root) return;
   const health = state.syncHealth || {};
   const quality = state.portalDataQuality || {};
-  const summary = quality.summary || {};
-  const matrixSummary = state.skuMatrix?.summary || {};
+  const rawSummary = quality.summary || {};
+  const summary = {
+    ...rawSummary,
+    apiUnmappedPlatformRows: numberOrZero(rawSummary.apiUnmappedActionRows || 0),
+    apiUnmappedUniqueSku: numberOrZero(rawSummary.apiUnmappedActionUniqueSku || 0),
+    apiUnmappedRevenue: numberOrZero(rawSummary.apiUnmappedActionRevenue || 0)
+  };
+  const matrixSummary = {
+    ...(state.skuMatrix?.summary || {}),
+    apiUnmappedCount: numberOrZero(rawSummary.apiUnmappedActionRows || 0)
+  };
   const sources = portalHealthSourceRows();
   const issues = portalHealthIssueRows();
   const rules = portalDataRules();
@@ -4653,9 +4662,9 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
 
     <div class="kpi-strip" style="margin-top:14px">
       <div class="mini-kpi ${dangerCount ? 'danger' : ''}"><span>Проблемы</span><strong>${fmt.int(issues.length)}</strong><span>в единой очереди</span></div>
-      <div class="mini-kpi warn"><span>API без пары</span><strong>${fmt.int(summary.apiUnmappedUniqueSku || matrixSummary.apiUnmappedCount || 0)}</strong><span>${fmt.money(summary.apiUnmappedRevenue || 0)}</span></div>
+      <div class="mini-kpi ${summary.apiUnmappedRevenue || summary.apiUnmappedUniqueSku || matrixSummary.apiUnmappedCount ? 'warn' : ''}"><span>API без пары</span><strong>${fmt.int(summary.apiUnmappedUniqueSku || matrixSummary.apiUnmappedCount || 0)}</strong><span>${fmt.money(summary.apiUnmappedRevenue || 0)}</span></div>
       <div class="mini-kpi"><span>Карантин</span><strong>${fmt.int(state.portalDataQuarantine?.summary?.rows || state.portalDataQuarantine?.rows?.length || 0)}</strong><span>не в расчётах</span></div>
-      <div class="mini-kpi warn"><span>Без owner</span><strong>${fmt.int(summary.skuMissingOwner || matrixSummary.missingOwnerCount || 0)}</strong><span>нужны ответственные</span></div>
+      <div class="mini-kpi ${summary.skuMissingOwner || matrixSummary.missingOwnerCount ? 'warn' : ''}"><span>Без owner</span><strong>${fmt.int(summary.skuMissingOwner || matrixSummary.missingOwnerCount || 0)}</strong><span>нужны ответственные</span></div>
       <div class="mini-kpi"><span>Alias</span><strong>${fmt.int(matrixSummary.aliasCount || skuPlanFactAliasRows(state.skuAliases || {}).length)}</strong><span>общий контур</span></div>
       <div class="mini-kpi"><span>Ignore</span><strong>${fmt.int(matrixSummary.ignoredApiSkuCount || skuPlanFactIgnorePayloadRows(state.skuAliasIgnore || {}).length)}</strong><span>закреплено</span></div>
     </div>
@@ -4783,11 +4792,20 @@ function renderSkuContour(rootId = 'view-sku-contour') {
   const model = skuPlanFactBuildModel();
   const health = state.syncHealth || {};
   const matrix = state.skuMatrix || {};
-  const matrixSummary = matrix.summary || {};
+  const rawQuality = state.portalDataQuality?.summary || model.quality || {};
+  const matrixSummary = {
+    ...(matrix.summary || {}),
+    apiUnmappedCount: numberOrZero(rawQuality.apiUnmappedActionRows || 0)
+  };
   const healthMeta = skuContourHealthMeta(health);
   const skuHealth = health.skuContour || {};
   const skuHealthProblems = (skuHealth.checks || []).filter((check) => check.status && check.status !== 'ok');
-  const quality = state.portalDataQuality?.summary || model.quality || {};
+  const quality = {
+    ...rawQuality,
+    apiUnmappedPlatformRows: numberOrZero(rawQuality.apiUnmappedActionRows || 0),
+    apiUnmappedUniqueSku: numberOrZero(rawQuality.apiUnmappedActionUniqueSku || 0),
+    apiUnmappedRevenue: numberOrZero(rawQuality.apiUnmappedActionRevenue || 0)
+  };
   const quarantine = state.portalDataQuarantine?.summary || {};
   const wbMissingInDistribution = numberOrZero(quality.wbOwnerMissingInDistribution || state.portalDataQuality?.wbOwnerDistributionSummary?.missingInDistributionCount || 0);
   const wbMissingInPortal = numberOrZero(quality.wbOwnerMissingInPortal || state.portalDataQuality?.wbOwnerDistributionSummary?.missingInPortalCount || 0);
@@ -4878,7 +4896,7 @@ function renderSkuContour(rootId = 'view-sku-contour') {
           ${badge(healthMeta.label, healthMeta.tone)}
           ${skuHealth.status ? badge(`SKU contour: ${skuHealth.status}`, skuHealth.status === 'ok' ? 'ok' : skuHealth.status === 'blocked' ? 'danger' : 'warn') : ''}
           ${badge(`${fmt.int(quality.apiUnmappedUniqueSku || matrixSummary.apiUnmappedCount || 0)} API без пары`, (quality.apiUnmappedUniqueSku || matrixSummary.apiUnmappedCount) ? 'warn' : 'ok')}
-          ${badge(`${fmt.int(wbMissingInDistribution)} WB вне распределения`, wbMissingInDistribution ? 'warn' : 'ok')}
+          ${badge(`${fmt.int(wbMissingInDistribution)} WB вне распределения`, wbMissingInDistribution ? 'info' : 'ok')}
           ${badge(`${fmt.int(quarantine.rows || 0)} в карантине`, quarantine.rows ? 'danger' : 'ok')}
           ${badge(fmt.money(quality.apiUnmappedRevenue || 0), quality.apiUnmappedRevenue ? 'warn' : 'ok')}
         </div>
@@ -4887,12 +4905,12 @@ function renderSkuContour(rootId = 'view-sku-contour') {
 
     <div class="kpi-strip sku-data-muted-noise" style="margin-top:14px">
       <div class="mini-kpi"><span>SKU</span><strong>${fmt.int(matrixSummary.skuCount || (state.skus || []).length)}</strong><span>в матрице</span></div>
-      <div class="mini-kpi warn"><span>Alias</span><strong>${fmt.int(matrixSummary.aliasCount || skuPlanFactAliasRows(state.skuAliases || {}).length)}</strong><span>общий справочник</span></div>
+      <div class="mini-kpi"><span>Alias</span><strong>${fmt.int(matrixSummary.aliasCount || skuPlanFactAliasRows(state.skuAliases || {}).length)}</strong><span>общий справочник</span></div>
       <div class="mini-kpi"><span>Ignore</span><strong>${fmt.int(matrixSummary.ignoredApiSkuCount || skuPlanFactIgnorePayloadRows(state.skuAliasIgnore || {}).length)}</strong><span>осознанно не маппим</span></div>
-      <div class="mini-kpi danger"><span>API без пары</span><strong>${fmt.int(matrixSummary.apiUnmappedCount || quality.apiUnmappedPlatformRows || 0)}</strong><span>из API источников</span></div>
-      <div class="mini-kpi warn"><span>WB контур</span><strong>${fmt.int(wbMissingInDistribution)}</strong><span>есть в портале, нет в распределении</span></div>
-      <div class="mini-kpi warn"><span>WB распределение</span><strong>${fmt.int(wbMissingInPortal)}</strong><span>есть в файле, нет в реестре</span></div>
-      <div class="mini-kpi warn"><span>Без owner</span><strong>${fmt.int(matrixSummary.missingOwnerCount || quality.skuMissingOwner || 0)}</strong><span>реестр / матрица</span></div>
+      <div class="mini-kpi ${matrixSummary.apiUnmappedCount || quality.apiUnmappedPlatformRows ? 'warn' : ''}"><span>API без пары</span><strong>${fmt.int(matrixSummary.apiUnmappedCount || quality.apiUnmappedPlatformRows || 0)}</strong><span>из API источников</span></div>
+      <div class="mini-kpi"><span>WB контур</span><strong>${fmt.int(wbMissingInDistribution)}</strong><span>есть в портале, нет в распределении</span></div>
+      <div class="mini-kpi"><span>WB распределение</span><strong>${fmt.int(wbMissingInPortal)}</strong><span>есть в файле, нет в реестре</span></div>
+      <div class="mini-kpi ${matrixSummary.missingOwnerCount || quality.skuMissingOwner ? 'warn' : ''}"><span>Без owner</span><strong>${fmt.int(matrixSummary.missingOwnerCount || quality.skuMissingOwner || 0)}</strong><span>реестр / матрица</span></div>
       <div class="mini-kpi"><span>Аудит</span><strong>${fmt.int(auditEvents.length)}</strong><span>последние применения</span></div>
     </div>
 

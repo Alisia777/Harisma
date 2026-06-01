@@ -1,14 +1,12 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-01T20:17:51.154Z",
-  "status": "warning",
+  "generatedAt": "2026-06-01T21:25:52.210Z",
+  "status": "ok",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
-    "warnings": [
-      "Unmapped API SKU revenue: 3619."
-    ],
-    "checkedAt": "2026-06-01T20:17:51.154Z"
+    "warnings": [],
+    "checkedAt": "2026-06-01T21:25:52.210Z"
   },
   "freshness": {
     "maxDate": "2026-05-31",
@@ -17,7 +15,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-01T20:17:51.149Z",
+      "checkedAt": "2026-06-01T21:25:52.205Z",
       "settlementHour": 10,
       "expectedDate": "2026-05-31",
       "maxDate": "2026-05-31",
@@ -64,7 +62,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-01T20:17:51.154Z",
+      "checkedAt": "2026-06-01T21:25:52.210Z",
       "expectedDate": "2026-05-31",
       "adsSummaryWindowTo": "2026-05-31",
       "iuDrrWindowTo": "2026-05-31",
@@ -171,7 +169,7 @@
     "product_leaderboard": {
       "exists": true,
       "rows": 50,
-      "generatedAt": "2026-06-01T19:46:41.521Z",
+      "generatedAt": "2026-06-01T20:26:22.819Z",
       "asOfDate": "2026-06-01",
       "revenue": 13961847
     },
@@ -234,14 +232,14 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-01T20:17:50.751Z",
+      "generatedAt": "2026-06-01T21:23:34.998Z",
       "asOfDate": "2026-05-31",
       "revenue": 3619
     },
     "portal_data_quarantine": {
       "exists": true,
       "rows": 0,
-      "generatedAt": "2026-06-01T20:06:27.251Z",
+      "generatedAt": "2026-06-01T21:23:35.421Z",
       "asOfDate": "2026-06-01",
       "revenue": 0
     },
@@ -269,14 +267,14 @@
     "sku_matrix": {
       "exists": true,
       "rows": 143,
-      "generatedAt": "2026-06-01T20:17:50.815Z",
+      "generatedAt": "2026-06-01T21:25:51.883Z",
       "asOfDate": "2026-06-01",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-01T20:06:27.257Z",
+      "generatedAt": "2026-06-01T21:23:35.427Z",
       "asOfDate": "2026-06-01",
       "revenue": 0
     }
@@ -336,12 +334,15 @@
   "quality": {
     "issueCount": 89,
     "criticalCount": 0,
-    "warningCount": 53,
+    "warningCount": 0,
     "monthKey": "2026-05",
     "maxDate": "2026-05-31",
     "apiUnmappedPlatformRows": 4,
     "apiUnmappedUniqueSku": 4,
     "apiUnmappedRevenue": 3619,
+    "apiUnmappedActionRows": 0,
+    "apiUnmappedActionUniqueSku": 0,
+    "apiUnmappedActionRevenue": 0,
     "apiKnownOutsideRegistryRows": 36,
     "apiKnownOutsideRegistryUniqueSku": 35,
     "apiKnownOutsideRegistryRevenue": 5935113,

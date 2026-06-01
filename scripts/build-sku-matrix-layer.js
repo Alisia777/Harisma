@@ -175,12 +175,17 @@ function isMissingOwnerText(owner = '') {
     || raw === 'рќрµ рІ сЂрµрµсЃс‚сЂрµ';
 }
 
+function isActionIssue(issue = {}) {
+  const severity = String(issue.severity || '').trim().toLowerCase();
+  return ['critical', 'danger', 'warning', 'warn'].includes(severity);
+}
+
 function problemStatesForItem(owner = '', issues = []) {
   const states = [];
   if (isMissingOwnerText(owner)) states.push('missing_owner');
   if (issues.some((issue) => issue.severity === 'critical' || issue.severity === 'danger')) {
     states.push('has_critical_issue');
-  } else if (issues.length) {
+  } else if (issues.some(isActionIssue)) {
     states.push('has_warning');
   }
   return states.length ? states : ['ok'];
@@ -246,7 +251,8 @@ function buildMatrix(options) {
       problemState: problemStates[0] || 'ok',
       problemLabel: PROBLEM_STATE_META[problemStates[0]]?.label || '',
       problemTone: PROBLEM_STATE_META[problemStates[0]]?.tone || '',
-      issueCount: issues.length,
+      issueCount: issues.filter(isActionIssue).length,
+      infoIssueCount: Math.max(0, issues.length - issues.filter(isActionIssue).length),
       criticalIssueCount: issues.filter((issue) => issue.severity === 'critical' || issue.severity === 'danger').length,
       issues: issues.slice(0, 20)
     };
@@ -255,8 +261,10 @@ function buildMatrix(options) {
   const byArticleKey = {};
   items.forEach((item, index) => { if (item.articleKey) byArticleKey[item.articleKey] = index; });
 
-  const apiUnmapped = (quality.issues || [])
-    .filter((issue) => issue.type === 'api_sku_unmapped')
+  const qualityIssues = Array.isArray(quality.issues) ? quality.issues : [];
+  const actionIssues = qualityIssues.filter(isActionIssue);
+  const apiUnmapped = qualityIssues
+    .filter((issue) => issue.type === 'api_sku_unmapped' && isActionIssue(issue))
     .map((issue) => ({
       platform: platformKey(issue.platform || '') || issue.platform || '',
       api_sku: issue.articleKey || '',
@@ -296,7 +304,8 @@ function buildMatrix(options) {
       duplicateRiskCount: duplicateRisks.length,
       duplicateRiskOverage: duplicateRisks.reduce((sum, item) => sum + numberOrZero(item.overage), 0),
       missingOwnerCount: items.filter((item) => isMissingOwnerText(item.owner)).length,
-      issueCount: numberOrZero(quality.summary?.issueCount),
+      issueCount: actionIssues.length,
+      infoIssueCount: Math.max(0, qualityIssues.length - actionIssues.length),
       problemStateCounts: summarizeProblemStates(items, apiUnmapped, ignored, duplicateRisks)
     },
     problemStates: PROBLEM_STATE_META,

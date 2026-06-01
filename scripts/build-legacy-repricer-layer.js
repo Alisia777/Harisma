@@ -13,6 +13,7 @@ const {
 
 const ROOT = process.cwd();
 const PLATFORM_KEYS = ['wb', 'ozon'];
+const DEFAULT_ALLOWED_MARGIN_PCT = 0.25;
 
 function parseArgs(argv) {
   const args = {};
@@ -367,7 +368,7 @@ function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRoot
     sourceRow?.allowedMarginPct,
     supportRow?.allowedMarginPct,
     liveSide?.marginNoAdsMinPct,
-    0.15
+    DEFAULT_ALLOWED_MARGIN_PCT
   );
   const strategy = inferStrategy(currentPrice, recPrice, stock, minPrice);
   const inferredReason = inferReason({

@@ -7002,12 +7002,17 @@ function renderOosControlCoverageChart(rows = []) {
   `;
 }
 
-function renderOosControlTaskChart(rows = []) {
+function oosControlTaskSummary(rows = []) {
   const taskRows = rows.map((row) => ({ row, task: oosControlTaskFor(row) }));
   const taskCount = taskRows.filter((item) => item.task).length;
   const noTaskCount = Math.max(0, taskRows.length - taskCount);
   const noReasonCount = taskRows.filter((item) => item.task && !/Причина:|РџСЂРёС‡РёРЅР°:/i.test(String(item.task.reason || ''))).length;
   const noActionCount = taskRows.filter((item) => item.task && !String(item.task.nextAction || '').trim()).length;
+  return { taskRows, taskCount, noTaskCount, noReasonCount, noActionCount };
+}
+
+function renderOosControlTaskChart(rows = []) {
+  const { taskRows, taskCount, noTaskCount, noReasonCount, noActionCount } = oosControlTaskSummary(rows);
   const maxValue = Math.max(1, taskRows.length, noTaskCount, noReasonCount, noActionCount);
   const items = [
     { label: 'Без задачи', value: noTaskCount, valueLabel: fmt.int(noTaskCount), tone: noTaskCount ? 'warn' : 'ok' },
@@ -7024,6 +7029,167 @@ function renderOosControlTaskChart(rows = []) {
         ${items.map((item) => renderOosControlBarRow(item, maxValue, { minWhenPositive: 7 })).join('')}
       </div>
     </div>
+  `;
+}
+
+function oosControlNoOosStreak(payload = {}) {
+  const days = Array.isArray(payload.history?.days) ? [...payload.history.days] : [];
+  const sortedDays = days
+    .filter((day) => day?.date)
+    .sort((left, right) => String(right.date || '').localeCompare(String(left.date || '')));
+  let streak = 0;
+  for (const day of sortedDays) {
+    if (numberOrZero(day.oosCount || 0) > 0 || numberOrZero(day.criticalCount || 0) > 0) break;
+    streak += 1;
+  }
+  return streak;
+}
+
+function oosControlGameModel(payload = {}, rows = []) {
+  const summary = oosControlSummarizeRows(rows, payload.summary || {});
+  const tasks = oosControlTaskSummary(rows);
+  const coverValues = rows.map((row) => numberOrZero(row.turnoverDays || 0)).filter((value) => value > 0);
+  const minCover = coverValues.length ? Math.min(...coverValues) : 0;
+  const avgCover = coverValues.length
+    ? coverValues.reduce((sum, value) => sum + value, 0) / coverValues.length
+    : 0;
+  const coveragePenalty = Math.max(0, 10 - Math.min(avgCover || 0, 10)) * 4;
+  const score = Math.max(0, Math.min(100, Math.round(
+    100
+    - (summary.oosCount || 0) * 28
+    - (summary.riskCount || 0) * 10
+    - tasks.noTaskCount * 12
+    - (summary.dataStatus === 'stale' ? 8 : 0)
+    - coveragePenalty
+  )));
+  const league = score >= 90
+    ? { title: 'Лига A', label: 'контур под контролем', tone: 'ok' }
+    : score >= 70
+      ? { title: 'Лига B', label: 'нужно удержать темп', tone: 'info' }
+      : score >= 45
+        ? { title: 'Лига C', label: 'бой за покрытие', tone: 'warn' }
+        : { title: 'Лига D', label: 'режим спасения выручки', tone: 'danger' };
+  const topRow = [...rows].sort((left, right) => oosControlRiskAmount(right) - oosControlRiskAmount(left))[0] || null;
+  const missions = [
+    {
+      title: 'Нулевой фактический OOS',
+      reward: 15,
+      tone: summary.oosCount ? 'danger' : 'ok',
+      done: !summary.oosCount && !summary.criticalCount,
+      metric: summary.oosCount ? `${fmt.int(summary.oosCount)} OOS` : '0 OOS'
+    },
+    {
+      title: 'Назначить контрмеры',
+      reward: 20,
+      tone: tasks.noTaskCount ? 'warn' : 'ok',
+      done: !tasks.noTaskCount,
+      metric: tasks.noTaskCount ? `${fmt.int(tasks.noTaskCount)} без задачи` : 'готово'
+    },
+    {
+      title: 'Дотянуть покрытие до 10 дней',
+      reward: 25,
+      tone: minCover && minCover < 10 ? 'warn' : 'ok',
+      done: Boolean(minCover && minCover >= 10),
+      metric: minCover ? `${fmt.num(minCover, 1)} д минимум` : 'нет риска'
+    },
+    {
+      title: 'Закрыть самый дорогой риск',
+      reward: 30,
+      tone: topRow ? oosControlCoverageTone(topRow.turnoverDays) : 'ok',
+      done: !topRow,
+      metric: topRow ? `${topRow.platformLabel || topRow.platform} · ${fmt.money(topRow.revenueAtRiskDay || 0)}` : 'готово'
+    },
+    {
+      title: 'Освежить факт',
+      reward: 10,
+      tone: summary.dataStatus === 'stale' ? 'warn' : 'ok',
+      done: summary.dataStatus !== 'stale',
+      metric: summary.dataStatus === 'stale' ? `до ${summary.dataDate || '—'}` : 'свежо'
+    }
+  ];
+  const earnedXp = missions.filter((mission) => mission.done).reduce((sum, mission) => sum + mission.reward, 0);
+  const totalXp = missions.reduce((sum, mission) => sum + mission.reward, 0);
+  const streak = oosControlNoOosStreak(payload);
+  return { summary, tasks, minCover, score, league, missions, earnedXp, totalXp, streak };
+}
+
+function renderOosControlMission(mission = {}) {
+  const tone = mission.done ? 'ok' : (mission.tone || 'warn');
+  return `
+    <div class="oos-mission ${tone}">
+      <div>
+        <strong>${escapeHtml(mission.title || '')}</strong>
+        <span>${escapeHtml(mission.metric || '')}</span>
+      </div>
+      <b>${mission.done ? 'закрыто' : `+${fmt.int(mission.reward || 0)} XP`}</b>
+    </div>
+  `;
+}
+
+function renderOosControlOwnerRace(rows = []) {
+  const owners = oosControlGroupBy(
+    rows,
+    (row) => row.owner || 'Без owner',
+    (row) => row.owner || 'Без owner'
+  ).slice(0, 5);
+  const maxRisk = Math.max(1, ...owners.map((item) => item.riskAmount));
+  return `
+    <div class="oos-game-card">
+      <div class="section-subhead">
+        <div><h3>Owner-лига</h3><p class="small muted">Рейтинг по выручке, которую надо защитить</p></div>
+        ${badge(`${fmt.int(owners.length)} owner`)}
+      </div>
+      <div class="oos-race-list">
+        ${owners.map((owner, index) => `
+          <div class="oos-race-row">
+            <span class="oos-race-rank">${index + 1}</span>
+            <div>
+              <strong>${escapeHtml(owner.label)}</strong>
+              <small>${fmt.int(owner.total)} сигнал(а) · ${fmt.int(owner.placeCount)} складов</small>
+              <i><b style="--oos-bar:${oosControlBarPercent(owner.riskAmount, maxRisk, 8)}%"></b></i>
+            </div>
+            <em>${fmt.money(owner.riskAmount)}</em>
+          </div>
+        `).join('') || '<div class="empty">Нет owner в фокусе</div>'}
+      </div>
+    </div>
+  `;
+}
+
+function renderOosControlGame(payload = {}, rows = []) {
+  const game = oosControlGameModel(payload, rows);
+  const xpPercent = oosControlBarPercent(game.earnedXp, game.totalXp, 0);
+  return `
+    <section class="oos-game-grid">
+      <div class="oos-game-card oos-game-score ${game.league.tone}">
+        <div class="oos-game-score__head">
+          <div>
+            <span class="eyebrow">OOS game</span>
+            <h3>${escapeHtml(game.league.title)} · ${escapeHtml(game.league.label)}</h3>
+          </div>
+          <strong>${fmt.int(game.score)}</strong>
+        </div>
+        <div class="oos-game-xp">
+          <div><span>XP дня</span><b>${fmt.int(game.earnedXp)} / ${fmt.int(game.totalXp)}</b></div>
+          <i><b style="--oos-bar:${xpPercent}%"></b></i>
+        </div>
+        <div class="oos-game-badges">
+          ${badge(`${fmt.int(game.streak)} д без OOS`, game.streak ? 'ok' : 'warn')}
+          ${badge(`${fmt.int(game.summary.placeCount)} складов в фокусе`, game.summary.placeCount ? 'warn' : 'ok')}
+          ${badge(`${fmt.int(game.tasks.taskCount)} задач`, game.tasks.taskCount === rows.length ? 'ok' : 'warn')}
+        </div>
+      </div>
+      <div class="oos-game-card">
+        <div class="section-subhead">
+          <div><h3>Миссии дня</h3><p class="small muted">Закрытые миссии дают XP и поднимают лигу</p></div>
+          ${badge(`${fmt.int(game.missions.filter((mission) => mission.done).length)} / ${fmt.int(game.missions.length)}`)}
+        </div>
+        <div class="oos-mission-list">
+          ${game.missions.map(renderOosControlMission).join('')}
+        </div>
+      </div>
+      ${renderOosControlOwnerRace(rows)}
+    </section>
   `;
 }
 
@@ -7221,6 +7387,7 @@ function renderOosControl(rootId = 'view-oos-control') {
     </div>
     ${renderOosControlHero(payload, filteredRows, rows)}
     ${oosControlFreshnessNotice(payload)}
+    ${renderOosControlGame(payload, filteredRows)}
     ${renderOosControlCharts(payload, filteredRows)}
     ${renderOosControlActionCards(filteredRows)}
     ${renderOosControlFilters(rows, filters)}

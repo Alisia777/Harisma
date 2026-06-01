@@ -3739,6 +3739,42 @@ function portalHealthActionCardsHtml(issues = []) {
   `).join('');
 }
 
+function portalHealthIssueExportRows(issues = []) {
+  const factTo = state.syncHealth?.freshness?.maxDate || state.portalDataQuality?.summary?.maxDate || todayIso();
+  const monthKey = String(factTo || todayIso()).slice(0, 7);
+  return (issues || []).map((issue) => ({
+    decision: 'need_check',
+    decision_hint: issue.apiSku ? 'alias / ignore / new_sku / need_check' : 'служебный сигнал, решать в профильной вкладке',
+    target_sku: '',
+    platform: issue.platform || '',
+    api_sku: issue.apiSku || '',
+    status: issue.status || 'active',
+    note: '',
+    month: monthKey,
+    fact_to: factTo,
+    severity: issue.tone || issue.severity || '',
+    type: issue.type || '',
+    article_key: issue.articleKey || issue.apiSku || issue.name || '',
+    name: issue.name || issue.source || '',
+    revenue: Math.round(numberOrZero(issue.amount || issue.revenue)),
+    units: Math.round(numberOrZero(issue.units)),
+    recommended_action: issue.action || issue.source || ''
+  }));
+}
+
+function downloadPortalHealthIssuesExcel(issues = []) {
+  const rows = portalHealthIssueExportRows(issues);
+  if (!rows.length) {
+    window.alert('Сигналов для выгрузки нет.');
+    return;
+  }
+  if (typeof downloadLaunchesHtmlTable === 'function' && typeof skuPlanFactQualityExportColumns === 'function') {
+    downloadLaunchesHtmlTable(skuPlanFactQualityExportColumns(), rows, `portal-data-health-issues-${todayIso()}.xls`);
+    return;
+  }
+  skuPlanFactDownloadJson(`portal-data-health-issues-${todayIso()}.json`, rows);
+}
+
 function portalHealthContourCardHtml(card = {}) {
   const ratio = Math.max(0, Math.min(1, Number(card.ratio) || 0));
   const hue = card.tone === 'danger' ? 5 : (card.tone === 'warn' ? 42 : (card.tone === 'info' ? 212 : 145));
@@ -3807,6 +3843,16 @@ function portalHealthContourCardsHtml({ issues = [], sources = [], summary = {},
 
 function portalHealthBindActions(root, rootId, rules, issues) {
   root.querySelector('[data-health-refresh]')?.addEventListener('click', (event) => refreshSkuPlanFactData(event.currentTarget, rootId));
+  root.querySelector('[data-health-export]')?.addEventListener('click', () => downloadPortalHealthIssuesExcel(issues));
+  root.querySelector('[data-health-import]')?.addEventListener('click', () => root.querySelector('[data-health-quality-file]')?.click());
+  root.querySelector('[data-health-quality-file]')?.addEventListener('change', async (event) => {
+    const file = event.target.files?.[0] || null;
+    event.target.value = '';
+    await handleSkuPlanFactAliasImport(file, rootId);
+    window.requestAnimationFrame(() => {
+      document.querySelector(`#${rootId} [data-health-import-report]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
   root.querySelector('[data-health-create-tasks]')?.addEventListener('click', async (event) => {
     const button = event.currentTarget;
     const originalText = button.textContent;
@@ -3820,6 +3866,24 @@ function portalHealthBindActions(root, rootId, rules, issues) {
       button.disabled = false;
       button.textContent = originalText || 'Создать задачи';
     }
+  });
+  root.querySelectorAll('[data-health-jump]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = String(button.dataset.healthJump || 'queue');
+      let targetEl = null;
+      if (target === 'sources') {
+        const tech = root.querySelector('.data-health-tech');
+        if (tech) tech.open = true;
+        targetEl = root.querySelector('.data-health-source-table') || tech;
+      } else if (target === 'report') {
+        targetEl = root.querySelector('[data-health-import-report]');
+      } else {
+        const queue = root.querySelector('.data-health-queue');
+        if (queue) queue.open = true;
+        targetEl = queue;
+      }
+      targetEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   });
   root.querySelectorAll('[data-health-open]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -3857,6 +3921,22 @@ function portalHealthBindActions(root, rootId, rules, issues) {
       }[key] || 'Для этой цифры пока нет отдельной расшифровки.';
       window.alert(text);
     });
+  });
+  root.querySelector('[data-sku-plan-fact-apply-import]')?.addEventListener('click', async (event) => {
+    await handleSkuPlanFactApplyAliasImport(event.currentTarget, rootId);
+  });
+  root.querySelector('[data-sku-plan-fact-download-aliases]')?.addEventListener('click', () => {
+    const report = state.skuPlanFactAliasImportReport || {};
+    if (report.aliasPayload) skuPlanFactDownloadJson('sku_aliases.updated.json', report.aliasPayload);
+  });
+  root.querySelector('[data-sku-plan-fact-download-ignore]')?.addEventListener('click', () => {
+    const report = state.skuPlanFactAliasImportReport || {};
+    if (report.ignorePayload) skuPlanFactDownloadJson('sku_alias_ignore.updated.json', report.ignorePayload);
+  });
+  root.querySelector('[data-sku-plan-fact-download-import-report]')?.addEventListener('click', () => {
+    const report = state.skuPlanFactAliasImportReport || {};
+    const { aliasPayload, ignorePayload, ...publicReport } = report;
+    skuPlanFactDownloadJson(`sku-alias-import-report-${todayIso()}.json`, publicReport);
   });
 }
 
@@ -3911,6 +3991,7 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
   const workModesHtmlNew = portalHealthWorkModesHtml();
   const uploadWizardHtmlNew = portalHealthUploadWizardHtml();
   const historyHtmlNew = portalHealthHistoryHtml();
+  const importReportHtmlNew = skuPlanFactAliasImportReportHtml(state.skuPlanFactAliasImportReport || null);
   root.innerHTML = `
     <div class="data-health-shell">
       <div class="section-title sku-data-title">
@@ -3919,39 +4000,50 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
           <p>Пульт доверия к цифрам: можно ли сегодня работать с планами, KPI и задачами.</p>
         </div>
         <div class="quick-actions">
-          <button class="quick-chip" type="button" data-health-refresh>Обновить</button>
-          <button class="quick-chip" type="button" data-health-create-tasks>Создать задачи</button>
           <button class="quick-chip" type="button" data-health-open="sku-contour">Контур SKU</button>
           <button class="quick-chip" type="button" data-health-open="control">Задачи</button>
         </div>
       </div>
 
-      <section class="data-health-hero ${game.tone}" style="--dh-hue:${game.hue};--dh-score:${game.score}%">
-        <div class="data-health-score">
-          <span>уровень доверия</span>
-          <strong>${fmt.int(game.score)}</strong>
-          <em>${escapeHtml(game.level)}</em>
-        </div>
-        <div class="data-health-hero-main">
-          <div class="data-health-hero-head">
-            <div>
+      <section class="data-health-hero data-health-hero-wide ${game.tone}" style="--dh-hue:${game.hue};--dh-score:${game.score}%">
+        <div class="data-health-hero-top">
+          <div class="data-health-score">
+            <span>уровень доверия</span>
+            <strong>${fmt.int(game.score)}</strong>
+            <em>${escapeHtml(game.level)}</em>
+          </div>
+          <div class="data-health-hero-copy">
+            <div class="data-health-hero-head">
               <h3>${escapeHtml(game.title)}</h3>
               <p>${escapeHtml(game.nextAction)}</p>
             </div>
             <div class="badge-stack">
               ${badge(game.statusLabel, game.tone)}
               ${badge(`данные до ${game.dataTo || '—'}`, game.staleCount ? 'warn' : 'ok')}
+              ${badge(`${fmt.int(issues.length)} сигналов`, issues.length ? 'warn' : 'ok')}
             </div>
           </div>
-          <div class="data-health-xp-track"><i></i><span>80</span><span>90</span><span>100</span></div>
-          <div class="data-health-hero-stats">
-            <span><em>красные</em><b>${fmt.int(dangerCount)}</b></span>
-            <span><em>проверить</em><b>${fmt.int(warnCount)}</b></span>
-            <span><em>источники</em><b>${fmt.int(sources.length - game.staleCount)} / ${fmt.int(sources.length)}</b></span>
-            <span><em>карантин</em><b>${fmt.int(game.quarantineCount)}</b></span>
+          <div class="data-health-hero-tools">
+            <button class="quick-chip" type="button" data-health-jump="queue">К проблемам</button>
+            <button class="quick-chip" type="button" data-health-export>Выгрузить проблемы</button>
+            <button class="quick-chip primary" type="button" data-health-import>Загрузить решение</button>
+            <button class="quick-chip" type="button" data-health-create-tasks>Создать задачи</button>
+            <button class="quick-chip" type="button" data-health-refresh>Обновить</button>
+            <input type="file" accept=".csv,.xls,.html,.txt" data-health-quality-file hidden>
           </div>
         </div>
+        <button class="data-health-xp-track data-health-xp-button" type="button" data-health-jump="queue" title="Открыть очередь проблем">
+          <i></i><span>80</span><span>90</span><span>100</span>
+        </button>
+        <div class="data-health-hero-stats data-health-problem-strip">
+          <button class="data-health-stat-pill danger" type="button" data-health-jump="queue"><em>красные</em><b>${fmt.int(dangerCount)}</b><small>разобрать первыми</small></button>
+          <button class="data-health-stat-pill warn" type="button" data-health-jump="queue"><em>проверить</em><b>${fmt.int(warnCount)}</b><small>не тянуть в KPI</small></button>
+          <button class="data-health-stat-pill ${game.staleCount ? 'warn' : 'ok'}" type="button" data-health-jump="sources"><em>источники</em><b>${fmt.int(sources.length - game.staleCount)} / ${fmt.int(sources.length)}</b><small>свежесть sync</small></button>
+          <button class="data-health-stat-pill ${game.quarantineCount ? 'danger' : 'ok'}" type="button" data-health-jump="queue"><em>карантин</em><b>${fmt.int(game.quarantineCount)}</b><small>не в расчётах</small></button>
+        </div>
       </section>
+
+      ${importReportHtmlNew ? `<section class="data-health-import-report" data-health-import-report>${importReportHtmlNew}</section>` : ''}
 
       <section class="data-health-focus">
         <div class="section-subhead">

@@ -719,25 +719,39 @@ textarea{resize:vertical;min-height:84px}
 .data-health-rules-actions{grid-column:1 / -1;justify-content:flex-end;align-self:end}
 .data-health-shell,.data-health-shell *{min-width:0}
 .data-health-shell{display:grid;gap:14px;max-width:100%;overflow:hidden}
-.data-health-hero{position:relative;display:grid;grid-template-columns:220px minmax(0,1fr);gap:18px;padding:18px;border:1px solid hsl(var(--dh-hue,145) 76% 58% / .32);border-radius:8px;background:linear-gradient(135deg,hsl(var(--dh-hue,145) 72% 28% / .18),rgba(255,255,255,.02));box-shadow:0 18px 46px hsl(var(--dh-hue,145) 80% 40% / .10);overflow:hidden}
+.data-health-hero{position:relative;display:grid;gap:18px;padding:20px;border:1px solid hsl(var(--dh-hue,145) 76% 58% / .34);border-radius:8px;background:linear-gradient(135deg,hsl(var(--dh-hue,145) 72% 28% / .22),rgba(255,255,255,.025));box-shadow:0 18px 46px hsl(var(--dh-hue,145) 80% 40% / .12);overflow:hidden}
 .data-health-hero::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,rgba(255,255,255,.08),transparent 42%,hsl(var(--dh-hue,145) 82% 62% / .08));pointer-events:none}
 .data-health-score,.data-health-hero-main,.data-health-focus,.data-health-contours,.data-health-digest,.data-health-queue,.data-health-tech{position:relative}
-.data-health-score{display:grid;align-content:center;gap:6px;min-height:154px}
+.data-health-hero-top{position:relative;display:grid;grid-template-columns:minmax(130px,170px) minmax(0,1fr) minmax(260px,auto);gap:18px;align-items:center}
+.data-health-score{display:grid;align-content:center;gap:6px;min-height:128px}
 .data-health-score span,.data-health-score em{color:var(--muted);font-size:12px;font-style:normal;font-weight:900;letter-spacing:0;text-transform:uppercase}
-.data-health-score strong{font-size:58px;line-height:.95;color:hsl(var(--dh-hue,145) 92% 66%);font-variant-numeric:tabular-nums}
+.data-health-score strong{font-size:72px;line-height:.92;color:hsl(var(--dh-hue,145) 92% 66%);font-variant-numeric:tabular-nums}
 .data-health-score em{display:inline-flex;width:max-content;padding:5px 9px;border:1px solid hsl(var(--dh-hue,145) 78% 58% / .36);border-radius:999px;color:var(--text);background:hsl(var(--dh-hue,145) 72% 35% / .18)}
 .data-health-hero-main{display:grid;gap:14px;min-width:0}
+.data-health-hero-copy{display:grid;gap:10px;min-width:0}
 .data-health-hero-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.data-health-hero-copy .data-health-hero-head{display:block}
 .data-health-hero-head h3{margin:0;font-size:24px;line-height:1.1}
 .data-health-hero-head p{margin:6px 0 0;color:var(--muted);font-size:13px}
+.data-health-hero-tools{display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap}
+.quick-chip.primary{border-color:rgba(237,206,138,.65);background:linear-gradient(180deg,#f6dc9b,#b7802e);color:#120b05;box-shadow:0 10px 24px rgba(246,220,155,.18)}
 .data-health-xp-track{position:relative;height:34px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
+.data-health-xp-button{width:100%;padding:0;border:0;appearance:none;color:inherit;text-align:left;cursor:pointer}
+.data-health-xp-button:hover{box-shadow:0 0 0 1px hsl(var(--dh-hue,145) 78% 58% / .28),0 0 30px hsl(var(--dh-hue,145) 80% 50% / .12)}
 .data-health-xp-track i{display:block;width:var(--dh-score);height:100%;border-radius:999px;background:linear-gradient(90deg,hsl(var(--dh-hue,145) 82% 56% / .92),hsl(var(--dh-hue,145) 96% 72% / .98))}
 .data-health-xp-track span{position:absolute;top:50%;transform:translate(-50%,-50%);font-size:11px;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
 .data-health-xp-track span:nth-of-type(1){left:80%}.data-health-xp-track span:nth-of-type(2){left:90%}.data-health-xp-track span:nth-of-type(3){left:98%}
 .data-health-hero-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.data-health-hero-stats span{display:grid;gap:4px;padding:10px;border:1px solid hsl(var(--dh-hue,145) 78% 58% / .18);border-radius:8px;background:rgba(0,0,0,.16)}
+.data-health-hero-stats span,.data-health-stat-pill{display:grid;gap:4px;padding:10px;border:1px solid hsl(var(--dh-hue,145) 78% 58% / .18);border-radius:8px;background:rgba(0,0,0,.16);color:var(--text);text-align:left;cursor:pointer}
+.data-health-stat-pill:hover{transform:translateY(-1px);border-color:hsl(var(--dh-hue,145) 78% 58% / .38)}
+.data-health-stat-pill.danger{border-color:rgba(210,73,73,.45);background:linear-gradient(135deg,rgba(210,73,73,.16),rgba(0,0,0,.14))}
+.data-health-stat-pill.warn{border-color:rgba(217,151,21,.45);background:linear-gradient(135deg,rgba(217,151,21,.16),rgba(0,0,0,.14))}
+.data-health-stat-pill.ok{border-color:rgba(77,171,112,.38);background:linear-gradient(135deg,rgba(77,171,112,.14),rgba(0,0,0,.14))}
 .data-health-hero-stats em{color:var(--muted);font-style:normal;font-size:11px;text-transform:uppercase}
 .data-health-hero-stats b{font-size:18px;line-height:1.1;font-variant-numeric:tabular-nums}
+.data-health-stat-pill small{color:var(--muted);font-size:11px;line-height:1.2}
+.data-health-import-report{padding:14px;border:1px solid rgba(237,206,138,.24);border-radius:8px;background:rgba(237,206,138,.05)}
+.data-health-import-report .notice{margin-top:0}
 .data-health-focus,.data-health-contours,.data-health-digest,.data-health-queue,.data-health-tech{padding:14px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.02);max-width:100%}
 .data-health-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
 .data-health-action-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;min-height:86px;max-width:100%;padding:12px;border:1px solid rgba(217,151,21,.32);border-radius:8px;background:linear-gradient(135deg,rgba(217,151,21,.12),rgba(255,255,255,.02))}
@@ -1070,6 +1084,8 @@ textarea{resize:vertical;min-height:84px}
 @media (max-width:900px){
   .data-health-rules-form{grid-template-columns:1fr}
   .data-health-hero,.data-health-action-grid,.data-health-tech-grid{grid-template-columns:1fr}
+  .data-health-hero-top{grid-template-columns:1fr}
+  .data-health-hero-tools{justify-content:flex-start}
   .data-health-contour-grid,.data-health-digest-grid,.data-health-hero-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
   .data-health-action-card{grid-template-columns:auto minmax(0,1fr)}
   .data-health-action-side{grid-column:1 / -1;justify-items:start;grid-template-columns:auto auto;align-items:center}

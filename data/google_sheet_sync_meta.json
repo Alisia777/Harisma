@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-01T18:16:09.161Z",
+  "generatedAt": "2026-06-01T19:10:39.214Z",
   "sheetSource": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
   "sourceMode": "google-csv-tabs",
   "sourceGids": {
@@ -45,7 +45,7 @@
     "latest_date": "2026-05-31",
     "rows": 31,
     "latest_daily_date": "2026-05-31",
-    "generated_at": "2026-06-01T10:10:39.872Z"
+    "generated_at": "2026-06-01T18:25:25.657Z"
   },
   "logistics": {
     "latest_logistics_date": "2026-06-01",

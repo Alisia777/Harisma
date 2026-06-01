@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-06-01T18:25:25.851Z",
+  "generatedAt": "2026-06-01T19:25:28.833Z",
   "status": "critical",
   "summary": {
-    "issueCount": 88,
+    "issueCount": 89,
     "criticalCount": 20,
-    "warningCount": 68,
+    "warningCount": 69,
     "monthKey": "2026-05",
     "maxDate": "2026-05-31",
-    "apiUnmappedPlatformRows": 39,
+    "apiUnmappedPlatformRows": 40,
     "apiUnmappedUniqueSku": 39,
-    "apiUnmappedRevenue": 5937886,
+    "apiUnmappedRevenue": 5938732,
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 0,
     "apiSumAboveAggregateOverage": 0,
@@ -26,8 +26,8 @@
     {
       "dataset": "dashboard",
       "asOfDate": "2026-05-31",
-      "generatedAt": "2026-06-01T18:16:09.003Z",
-      "rows": 362,
+      "generatedAt": "2026-06-01T19:10:39.054Z",
+      "rows": 369,
       "referenceDate": "2026-06-01",
       "lagDays": 1,
       "status": "ok"
@@ -35,7 +35,7 @@
     {
       "dataset": "platform_trends",
       "asOfDate": "2026-05-31",
-      "generatedAt": "2026-06-01T18:16:08.840Z",
+      "generatedAt": "2026-06-01T19:10:38.888Z",
       "rows": 7,
       "referenceDate": "2026-06-01",
       "lagDays": 1,
@@ -44,8 +44,8 @@
     {
       "dataset": "order_procurement",
       "asOfDate": "2026-06-01",
-      "generatedAt": "2026-06-01T18:16:09.160Z",
-      "rows": 2744,
+      "generatedAt": "2026-06-01T19:10:39.214Z",
+      "rows": 2741,
       "referenceDate": "2026-06-01",
       "lagDays": 0,
       "status": "ok"
@@ -53,7 +53,7 @@
     {
       "dataset": "warehouse_stock_overlay",
       "asOfDate": "2026-06-01",
-      "generatedAt": "2026-06-01T18:14:42.477Z",
+      "generatedAt": "2026-06-01T19:09:19.075Z",
       "rows": 134,
       "matchedRows": 136,
       "unmatchedRows": 25,
@@ -64,7 +64,7 @@
     {
       "dataset": "ads_summary",
       "asOfDate": "2026-05-31",
-      "generatedAt": "2026-06-01T18:15:49.485Z",
+      "generatedAt": "2026-06-01T19:25:04.656Z",
       "rows": 6,
       "referenceDate": "2026-06-01",
       "lagDays": 1,
@@ -73,7 +73,7 @@
     {
       "dataset": "iu_drr_summary",
       "asOfDate": "2026-05-31",
-      "generatedAt": "2026-06-01T18:25:25.657Z",
+      "generatedAt": "2026-06-01T19:25:28.501Z",
       "rows": 31,
       "referenceDate": "2026-06-01",
       "lagDays": 1,
@@ -139,14 +139,14 @@
     },
     "wb": {
       "label": "WB",
-      "rows": 0,
-      "directRevenue": 0,
-      "directUnits": 0,
+      "rows": 130,
+      "directRevenue": 201860533,
+      "directUnits": 137644,
       "aggregateRevenue": 201860530,
       "aggregateDate": "2026-05-31",
-      "unmappedCount": 0,
-      "unmappedRevenue": 0,
-      "unmappedUnits": 0,
+      "unmappedCount": 1,
+      "unmappedRevenue": 846,
+      "unmappedUnits": 1,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
       "ignoredUnits": 0
@@ -154,8 +154,8 @@
     "ya": {
       "label": "Я.Маркет",
       "rows": 130,
-      "directRevenue": 7052763,
-      "directUnits": 8685,
+      "directRevenue": 7127358,
+      "directUnits": 8766,
       "aggregateRevenue": 10103622,
       "aggregateDate": "2026-05-31",
       "unmappedCount": 0,
@@ -167,12 +167,12 @@
     }
   },
   "orderSummary": {
-    "rows": 2744,
+    "rows": 2741,
     "noStockNeedRows": 0,
-    "lowTurnoverRows": 46,
+    "lowTurnoverRows": 44,
     "totalNeed7": 0,
-    "totalNeed14": 23569,
-    "totalNeed28": 105021
+    "totalNeed14": 23530,
+    "totalNeed28": 104831
   },
   "ownerSummary": {
     "totalSku": 143,
@@ -184,7 +184,7 @@
     "unmatchedRows": 25
   },
   "wbOwnerDistributionSummary": {
-    "sourceGeneratedAt": "2026-06-01T18:16:10.327Z",
+    "sourceGeneratedAt": "2026-06-01T19:10:40.508Z",
     "matchedSkuCount": 125,
     "updatedOwnerCount": 125,
     "missingInPortalCount": 6,
@@ -693,6 +693,20 @@
       "units": 1,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-05",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "wb",
+      "platformLabel": "WB",
+      "articleKey": "kinzhal",
+      "name": "kinzhal",
+      "revenue": 846,
+      "units": 1,
+      "firstDate": "2026-05-28",
+      "lastDate": "2026-05-28",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {

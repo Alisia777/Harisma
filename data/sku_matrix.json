@@ -1,22 +1,22 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-06-01T18:25:25.989Z",
+  "generatedAt": "2026-06-01T19:25:28.993Z",
   "source": {
     "skus": 143,
     "aliases": 0,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-06-01T18:25:25.851Z"
+    "dataQualityGeneratedAt": "2026-06-01T19:25:28.833Z"
   },
   "summary": {
     "skuCount": 143,
     "activeSkuCount": 116,
     "aliasCount": 0,
     "ignoredApiSkuCount": 0,
-    "apiUnmappedCount": 39,
+    "apiUnmappedCount": 40,
     "duplicateRiskCount": 0,
     "duplicateRiskOverage": 0,
     "missingOwnerCount": 0,
-    "issueCount": 88,
+    "issueCount": 89,
     "problemStateCounts": {
       "ok": 124,
       "has_warning": 19,
@@ -3553,6 +3553,15 @@
       "units": 1,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-05"
+    },
+    {
+      "platform": "wb",
+      "api_sku": "kinzhal",
+      "name": "kinzhal",
+      "revenue": 846,
+      "units": 1,
+      "firstDate": "2026-05-28",
+      "lastDate": "2026-05-28"
     },
     {
       "platform": "ozon",

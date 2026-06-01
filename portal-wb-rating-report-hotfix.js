@@ -2,7 +2,7 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260601ratingreport5';
+  const VERSION = '20260601ratingreport6';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
@@ -14,6 +14,10 @@
     search: '',
     sort: 'risk',
     status: 'all'
+  };
+  const structuredState = {
+    platform: 'wb',
+    view: 'history'
   };
 
   function appState() {
@@ -221,6 +225,67 @@
         .wb-rating-platforms, .wb-rating-game-grid, .wb-rating-mission-strip { grid-template-columns:1fr; }
         .wb-rating-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); }
         .wb-rating-workbench-controls, .wb-rating-queue-row { grid-template-columns:1fr; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function ensureStructuredStyles() {
+    const id = 'altea-wb-rating-structured-v6';
+    if (document.getElementById(id)) return;
+    const style = document.createElement('style');
+    style.id = id;
+    style.textContent = `
+      .rating-structured-shell { display:grid; gap:16px; }
+      .rating-platform-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+      .rating-platform-panel { border:1px solid var(--line); border-radius:8px; background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.016)); padding:16px; min-width:0; }
+      .rating-platform-panel.is-wb { border-color:rgba(215,166,76,.42); }
+      .rating-platform-panel.is-ozon { border-color:rgba(115,167,255,.38); }
+      .rating-platform-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:14px; }
+      .rating-platform-title { display:flex; align-items:center; gap:10px; min-width:0; }
+      .rating-platform-logo { display:inline-flex; align-items:center; justify-content:center; width:58px; height:42px; border-radius:8px; font-size:18px; font-weight:900; letter-spacing:0; color:#0b0707; background:linear-gradient(180deg,#ffe8ad,#c9963f); }
+      .rating-platform-panel.is-ozon .rating-platform-logo { color:#fff; background:linear-gradient(180deg,#4d91ff,#1762d5); }
+      .rating-platform-title h3 { margin:0; font-size:20px; line-height:1.15; }
+      .rating-platform-title p { margin:5px 0 0; color:var(--muted); font-size:13px; line-height:1.35; }
+      .rating-platform-action { border:1px solid rgba(255,255,255,.12); border-radius:8px; background:rgba(255,255,255,.04); color:var(--text); padding:10px 13px; font:inherit; font-size:13px; cursor:pointer; white-space:nowrap; }
+      .rating-platform-action.active { border-color:rgba(215,166,76,.72); background:rgba(215,166,76,.18); color:#ffe6ae; }
+      .rating-metric-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+      .rating-metric-card { border:1px solid rgba(255,255,255,.09); border-radius:8px; background:rgba(255,255,255,.026); padding:16px; min-width:0; min-height:118px; }
+      .rating-metric-card.is-empty { opacity:.76; }
+      .rating-metric-card span.label { display:block; color:var(--muted); font-size:13px; line-height:1.25; }
+      .rating-metric-card strong { display:block; margin-top:8px; font-size:30px; line-height:1.08; white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
+      .rating-metric-card small { display:block; margin-top:7px; color:var(--muted); line-height:1.35; }
+      .rating-work-tabs { display:flex; flex-wrap:wrap; gap:8px; margin:2px 0 0; }
+      .rating-work-tabs button { border:1px solid rgba(255,255,255,.1); border-radius:999px; background:rgba(255,255,255,.04); color:var(--text); padding:10px 14px; font:inherit; font-size:13px; cursor:pointer; }
+      .rating-work-tabs button.active { border-color:rgba(215,166,76,.7); background:rgba(215,166,76,.18); color:#ffe6ae; }
+      .rating-detail-panel { border:1px solid var(--line); border-radius:8px; background:rgba(255,255,255,.018); padding:16px; }
+      .rating-detail-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:14px; }
+      .rating-detail-head h3 { margin:0; font-size:20px; line-height:1.15; }
+      .rating-detail-head p { margin:5px 0 0; color:var(--muted); line-height:1.35; }
+      .rating-history-list { display:grid; gap:10px; }
+      .rating-history-card { display:grid; grid-template-columns:minmax(220px,1.1fr) minmax(0,2.4fr); gap:14px; align-items:stretch; border:1px solid rgba(255,255,255,.08); border-radius:8px; background:rgba(255,255,255,.022); padding:12px; }
+      .rating-history-main { min-width:0; }
+      .rating-history-main strong { display:block; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .rating-history-main .meta { margin-top:6px; color:var(--muted); font-size:12px; }
+      .rating-history-metrics { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
+      .rating-mini-metric { border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:9px; background:rgba(255,255,255,.022); min-width:0; }
+      .rating-mini-metric span { display:block; color:var(--muted); font-size:11px; line-height:1.2; }
+      .rating-mini-metric strong { display:block; margin-top:5px; font-size:16px; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .rating-empty-ozon { display:grid; grid-template-columns:1.1fr 1fr; gap:14px; align-items:stretch; }
+      .rating-empty-ozon .box { border:1px solid rgba(255,255,255,.09); border-radius:8px; padding:14px; background:rgba(255,255,255,.024); }
+      .rating-empty-ozon h4 { margin:0 0 8px; font-size:16px; }
+      .rating-empty-ozon p { margin:0; color:var(--muted); line-height:1.45; }
+      .rating-empty-ozon .need-list { display:grid; gap:8px; margin-top:10px; }
+      @media (max-width: 1200px) {
+        .rating-platform-grid, .rating-empty-ozon { grid-template-columns:1fr; }
+        .rating-metric-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        .rating-history-card { grid-template-columns:1fr; }
+        .rating-history-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      }
+      @media (max-width: 640px) {
+        .rating-metric-grid, .rating-history-metrics { grid-template-columns:1fr; }
+        .rating-metric-card strong { font-size:26px; }
+        .rating-platform-head, .rating-detail-head { flex-direction:column; }
       }
     `;
     document.head.appendChild(style);
@@ -981,6 +1046,15 @@
     return `<span class="wb-rating-trend ${esc(tone)}">${esc(text)}</span>`;
   }
 
+  function ratingTrendBadge(current, reference) {
+    if (!hasNumber(current) || !hasNumber(reference)) return simpleBadge('без сравнения', 'flat');
+    const diff = Number(current) - Number(reference);
+    if (Math.abs(diff) < 0.02) return simpleBadge('без изменений', 'flat');
+    return diff > 0
+      ? simpleBadge(`рост +${fmtNum(diff, 2)}`, 'up')
+      : simpleBadge(`падение ${fmtNum(diff, 2)}`, 'down');
+  }
+
   function renderGameCards(model) {
     const reviewDailyBase = model.totals.reviews3 ? model.totals.reviews3 / 3 : null;
     const questionsDailyBase = model.totals.questions3 ? model.totals.questions3 / 3 : null;
@@ -1225,6 +1299,279 @@
     `;
   }
 
+  function avgSnapshotRating(snapshot) {
+    const cards = Array.isArray(snapshot?.cards) ? snapshot.cards : [];
+    const values = cards.map((card) => num(card.avgRating || card.ratingTrendLatestRating)).filter(Boolean);
+    return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+  }
+
+  function renderMetricCard(label, value, trendHtml = '', note = '', options = {}) {
+    return `
+      <div class="rating-metric-card ${options.empty ? 'is-empty' : ''}">
+        <span class="label">${esc(label)}</span>
+        <strong>${esc(value)}</strong>
+        ${trendHtml || ''}
+        ${note ? `<small>${esc(note)}</small>` : ''}
+      </div>
+    `;
+  }
+
+  function renderPlatformPanel(kind, model) {
+    const isOzon = kind === 'ozon';
+    const latestRating = model.totals.avgRating;
+    const prevRating = avgSnapshotRating(model.baseline1);
+    const reviewDailyBase = model.totals.reviews3 ? model.totals.reviews3 / 3 : null;
+    const questionDailyBase = model.totals.questions3 ? model.totals.questions3 / 3 : null;
+    const ozon7 = model.ozonWindow7 || { revenue: 0, units: 0, latestDate: '' };
+    const panelClass = isOzon ? 'is-ozon' : 'is-wb';
+
+    const metrics = isOzon ? [
+      renderMetricCard('Рейтинг Ozon', 'нет данных', simpleBadge('нужен источник', 'flat'), 'рейтинг карточек пока не приходит', { empty: true }),
+      renderMetricCard('Отзывы Ozon', 'нет данных', simpleBadge('нужен источник', 'flat'), 'количество и история отзывов не заведены', { empty: true }),
+      renderMetricCard('Вопросы Ozon', 'нет данных', simpleBadge('нужен источник', 'flat'), 'вопросы по карточкам не заведены', { empty: true }),
+      renderMetricCard('Выручка Ozon 7 дней', fmtMoney(ozon7.revenue), simpleBadge('продажи есть', 'up'), `${fmtInt(ozon7.units)} шт. за 7 дней`),
+      renderMetricCard('История рейтинга', 'нет срезов', simpleBadge('подключить', 'flat'), 'после источника будет как WB', { empty: true }),
+      renderMetricCard('Статус блока', 'место готово', simpleBadge('видно отдельно', 'up'), 'Ozon больше не спрятан')
+    ].join('') : [
+      renderMetricCard('Средняя оценка WB', fmtNum(latestRating, 2), ratingTrendBadge(latestRating, prevRating), `${fmtInt(model.totals.leaders)} карточек 4,8+`),
+      renderMetricCard('Отзывы 7 дней', fmtInt(model.totals.reviews7), trendBadge(model.totals.reviews1, reviewDailyBase), `вчера ${fmtInt(model.totals.reviews1)}`),
+      renderMetricCard('Негатив 7 дней', fmtPct(model.totals.neg7), trendBadge(model.totals.neg1, model.totals.neg3, { lowerIsBetter: true, percent: true, threshold: 0.01 }), `${fmtInt(model.totals.low7)} негативных отзывов`),
+      renderMetricCard('Вопросы всего', fmtInt(model.totals.questions), trendBadge(model.totals.questions1, questionDailyBase), `+${fmtInt(model.totals.questions7)} за 7 дней`),
+      renderMetricCard('Без ответа', fmtInt(model.totals.unanswered + model.totals.unansweredQuestions), (model.totals.unanswered + model.totals.unansweredQuestions) ? simpleBadge('нужно закрыть', 'down') : simpleBadge('закрыто', 'up'), `${fmtInt(model.totals.unanswered)} отзывов / ${fmtInt(model.totals.unansweredQuestions)} вопросов`),
+      renderMetricCard('История', fmtInt(model.snapshots.length), simpleBadge(`${fmtInt(model.rows.length)} карточек`, 'flat'), `срез ${fullDate(model.active.date)}`)
+    ].join('');
+
+    return `
+      <section class="rating-platform-panel ${panelClass}">
+        <div class="rating-platform-head">
+          <div class="rating-platform-title">
+            <span class="rating-platform-logo">${isOzon ? 'ОЗ' : 'ВБ'}</span>
+            <div>
+              <h3>${isOzon ? 'Ozon' : 'Wildberries'}</h3>
+              <p>${isOzon ? 'Показываем отдельный блок Ozon. Рейтинги, отзывы и вопросы появятся здесь после подключения источника.' : 'Рейтинги, отзывы, вопросы и история по WB.'}</p>
+            </div>
+          </div>
+          <button class="rating-platform-action ${structuredState.platform === kind ? 'active' : ''}" type="button" data-rating-platform="${kind}">
+            ${structuredState.platform === kind ? 'Открыто' : 'Открыть'}
+          </button>
+        </div>
+        <div class="rating-metric-grid">${metrics}</div>
+      </section>
+    `;
+  }
+
+  function renderStructuredPlatforms(model) {
+    return `<div class="rating-platform-grid">${renderPlatformPanel('wb', model)}${renderPlatformPanel('ozon', model)}</div>`;
+  }
+
+  function renderStructuredTabs() {
+    const tabs = structuredState.platform === 'ozon'
+      ? [['overview', 'Ozon: что есть'], ['needed', 'Что подключить']]
+      : [['history', 'История'], ['reviews', 'Отзывы'], ['questions', 'Вопросы'], ['stats', 'Статистика']];
+    if (!tabs.some(([value]) => value === structuredState.view)) structuredState.view = tabs[0][0];
+    return `
+      <div class="rating-work-tabs">
+        ${tabs.map(([value, label]) => `<button type="button" class="${structuredState.view === value ? 'active' : ''}" data-rating-view="${value}">${esc(label)}</button>`).join('')}
+      </div>
+    `;
+  }
+
+  function renderMiniMetric(label, value, trend = '', note = '') {
+    return `
+      <div class="rating-mini-metric">
+        <span>${esc(label)}</span>
+        <strong>${esc(value)}</strong>
+        ${trend || ''}
+        ${note ? `<span>${esc(note)}</span>` : ''}
+      </div>
+    `;
+  }
+
+  function renderHistoryCards(model) {
+    const rows = model.rows.slice(0, 48).map((row) => {
+      const link = typeof linkToSku === 'function' ? linkToSku(row.key || row.label, row.label) : `<strong>${esc(row.label)}</strong>`;
+      const unanswered = row.unanswered + row.unansweredQuestions;
+      return `
+        <article class="rating-history-card">
+          <div class="rating-history-main">
+            <strong>${link}</strong>
+            <div class="meta">WB nm ${esc(row.card?.nmId || '—')} · история Δ отзывов ${signed(row.historyDelta)}</div>
+            <div class="wb-rating-chipline">${signalPills(row)}</div>
+          </div>
+          <div class="rating-history-metrics">
+            ${renderMiniMetric('Статус', gameLabel(row), row.ratingDelta1 ? renderGameCell(row) : simpleBadge('без изменений', 'flat'))}
+            ${renderMiniMetric('Отзывы 7д', fmtInt(row.p7.reviews), trendBadge(row.p1.reviews, row.p3.reviews ? row.p3.reviews / 3 : null))}
+            ${renderMiniMetric('Оценка', fmtNum(row.rating, 2), ratingTrendBadge(row.rating, row.historyRating))}
+            ${renderMiniMetric('Негатив 7д', fmtPct(row.p7.negativePct), negativeTone(row.p7.negativePct) === 'risk' ? simpleBadge('внимание', 'down') : simpleBadge('норма', 'up'))}
+            ${renderMiniMetric('Вопросы', fmtInt(row.questionCount), row.q7.questions ? simpleBadge(`+${fmtInt(row.q7.questions)} за 7д`, 'flat') : simpleBadge('без роста', 'flat'))}
+            ${renderMiniMetric('Без ответа', fmtInt(unanswered), unanswered ? simpleBadge('закрыть', 'down') : simpleBadge('закрыто', 'up'))}
+            ${renderMiniMetric('Выручка 7д', fmtMoney(row.revenue.revenue7))}
+            ${renderMiniMetric('История', signed(row.historyDelta), deltaTone(row.historyDelta) === 'good' ? simpleBadge('рост отзывов', 'up') : simpleBadge('без прироста', 'flat'))}
+            ${renderMiniMetric('Вчера', `${fmtInt(row.p1.reviews)} отзывов`, row.p1.low ? simpleBadge(`${fmtInt(row.p1.low)} негатив`, 'down') : simpleBadge('без негатива', 'up'))}
+            ${renderMiniMetric('Комментарий', row.comment)}
+          </div>
+        </article>
+      `;
+    }).join('');
+    return `
+      <div class="rating-detail-head">
+        <div>
+          <h3>WB · история карточек</h3>
+          <p>Карточки крупно: статус, отзывы, рейтинг, негатив, вопросы, без ответа и история.</p>
+        </div>
+        <div class="badge-stack">${chip(`${fmtInt(model.rows.length)} карточек`, 'info')}${chip(`${fmtInt(model.snapshots.length)} срезов`, 'info')}</div>
+      </div>
+      <div class="rating-history-list">${rows}</div>
+    `;
+  }
+
+  function renderStructuredQueue(model, payload, kind) {
+    const items = (kind === 'reviews' ? feedbackItems(payload, model) : questionItems(payload, model)).slice(0, 60);
+    const title = kind === 'reviews' ? 'WB · отзывы' : 'WB · вопросы';
+    const rows = items.map((item) => `
+      <article class="rating-history-card">
+        <div class="rating-history-main">
+          <strong>${typeof linkToSku === 'function' ? linkToSku(item.key || item.label, item.label) : esc(item.label)}</strong>
+          <div class="meta">WB nm ${esc(item.nmId || '—')} · ${esc(item.date ? shortDate(item.date) : 'без даты')}</div>
+        </div>
+        <div class="rating-history-metrics">
+          ${renderMiniMetric('Статус', item.unanswered ? 'Нужен ответ' : 'Закрыто', item.unanswered ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up'))}
+          ${kind === 'reviews' ? renderMiniMetric('Оценка', fmtNum(item.valuation || item.rating, 2)) : renderMiniMetric('Вопросов', fmtInt(item.questionCount))}
+          ${kind === 'reviews' ? renderMiniMetric('Негатив', fmtInt(item.low || item.low7), (item.low || item.low7) ? simpleBadge('внимание', 'down') : simpleBadge('норма', 'up')) : renderMiniMetric('Без ответа', fmtInt(item.unanswered))}
+          ${renderMiniMetric('Текст / суть', item.text || '—')}
+        </div>
+      </article>
+    `).join('');
+    return `
+      <div class="rating-detail-head">
+        <div>
+          <h3>${title}</h3>
+          <p>${kind === 'reviews' ? 'Отдельно видно отзывы, негатив и что нужно закрыть.' : 'Отдельно видно вопросы и хвост без ответа.'}</p>
+        </div>
+        <div class="badge-stack">${chip(`${fmtInt(items.length)} строк`, 'info')}</div>
+      </div>
+      <div class="rating-history-list">${rows || '<div class="empty">Нет строк по текущему срезу.</div>'}</div>
+    `;
+  }
+
+  function renderStructuredStats(model) {
+    return `
+      <div class="rating-detail-head">
+        <div>
+          <h3>WB · статистика</h3>
+          <p>Сводка по тем же окнам, что в отчете: 7 дней, 3 дня, вчера.</p>
+        </div>
+      </div>
+      <div class="rating-metric-grid">
+        ${renderMetricCard('Отзывы 7 / 3 / вчера', `${fmtInt(model.totals.reviews7)} / ${fmtInt(model.totals.reviews3)} / ${fmtInt(model.totals.reviews1)}`)}
+        ${renderMetricCard('Негатив 7 / 3 / вчера', `${fmtPct(model.totals.neg7)} / ${fmtPct(model.totals.neg3)} / ${fmtPct(model.totals.neg1)}`)}
+        ${renderMetricCard('Вопросы 7 / 3 / вчера', `${fmtInt(model.totals.questions7)} / ${fmtInt(model.totals.questions3)} / ${fmtInt(model.totals.questions1)}`)}
+        ${renderMetricCard('Без ответа', `${fmtInt(model.totals.unanswered)} отзывов / ${fmtInt(model.totals.unansweredQuestions)} вопросов`)}
+        ${renderMetricCard('История', `${fmtInt(model.snapshots.length)} срезов`, '', `${fmtInt(model.rows.length)} карточек`)}
+        ${renderMetricCard('Средняя оценка', fmtNum(model.totals.avgRating, 2), ratingTrendBadge(model.totals.avgRating, avgSnapshotRating(model.baseline1)))}
+      </div>
+    `;
+  }
+
+  function renderOzonDetails(model) {
+    const ozon7 = model.ozonWindow7 || { revenue: 0, units: 0, latestDate: '' };
+    return `
+      <div class="rating-detail-head">
+        <div>
+          <h3>Ozon · отдельный блок</h3>
+          <p>Ozon теперь не спрятан. Продажи есть, рейтинги/отзывы/вопросы надо подключить отдельным источником.</p>
+        </div>
+        <div class="badge-stack">${chip(`срез продаж ${ozon7.latestDate ? fullDate(ozon7.latestDate) : '—'}`, 'info')}</div>
+      </div>
+      <div class="rating-empty-ozon">
+        <div class="box">
+          <h4>Что видно сейчас</h4>
+          <div class="rating-metric-grid">
+            ${renderMetricCard('Выручка Ozon 7 дней', fmtMoney(ozon7.revenue), simpleBadge('продажи есть', 'up'))}
+            ${renderMetricCard('Штук Ozon 7 дней', fmtInt(ozon7.units), simpleBadge('продажи есть', 'up'))}
+            ${renderMetricCard('Рейтинги / отзывы / вопросы', 'нет данных', simpleBadge('нужен источник', 'flat'), '', { empty: true })}
+          </div>
+        </div>
+        <div class="box">
+          <h4>Что нужно, чтобы было как WB</h4>
+          <div class="need-list">
+            ${pill('Рейтинг карточки', 'info')}
+            ${pill('Количество отзывов', 'info')}
+            ${pill('Негатив / оценка отзыва', 'info')}
+            ${pill('Вопросы и ответы', 'info')}
+            ${pill('История по дням', 'info')}
+          </div>
+          <p style="margin-top:12px">Как только появится файл/API с этими полями, Ozon будет отрисован теми же крупными плашками.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderStructuredDetail(model, payload) {
+    if (structuredState.platform === 'ozon') return structuredState.view === 'needed' ? renderOzonDetails(model) : renderOzonDetails(model);
+    if (structuredState.view === 'reviews') return renderStructuredQueue(model, payload, 'reviews');
+    if (structuredState.view === 'questions') return renderStructuredQueue(model, payload, 'questions');
+    if (structuredState.view === 'stats') return renderStructuredStats(model);
+    return renderHistoryCards(model);
+  }
+
+  function attachStructuredEvents(rootId) {
+    const root = document.getElementById(rootId);
+    if (!root) return;
+    root.querySelectorAll('[data-rating-platform]').forEach((button) => {
+      button.addEventListener('click', () => {
+        structuredState.platform = button.dataset.ratingPlatform === 'ozon' ? 'ozon' : 'wb';
+        structuredState.view = structuredState.platform === 'ozon' ? 'overview' : 'history';
+        renderWbCardRatingStructured(rootId);
+      });
+    });
+    root.querySelectorAll('[data-rating-view]').forEach((button) => {
+      button.addEventListener('click', () => {
+        structuredState.view = button.dataset.ratingView || 'history';
+        renderWbCardRatingStructured(rootId);
+      });
+    });
+  }
+
+  function renderWbCardRatingStructured(rootId = 'view-wb-rating') {
+    const root = document.getElementById(rootId);
+    if (!root) return;
+    ensureStyles();
+    ensureStructuredStyles();
+    ensureAuxData();
+    root.classList.add('wb-rating-report');
+
+    const st = appState();
+    const payload = st.wbFeedbacks && typeof st.wbFeedbacks === 'object'
+      ? st.wbFeedbacks
+      : { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] };
+    const model = buildModel(payload);
+    if (!model) {
+      renderEmpty(root, payload);
+      return;
+    }
+
+    root.innerHTML = `
+      <div class="section-title">
+        <div>
+          <h2>Рейтинг карточек WB/Ozon</h2>
+          <p>Крупные блоки по площадкам: рейтинги, отзывы, вопросы, история и рост/падение.</p>
+        </div>
+        <div class="badge-stack">
+          ${chip(`WB ${fullDate(model.active.date)}`, 'ok')}
+          ${chip(`Ozon отдельно`, 'info')}
+          ${chip(`${fmtInt(model.snapshots.length)} срезов истории`, 'info')}
+        </div>
+      </div>
+      <div class="rating-structured-shell">
+        ${renderStructuredPlatforms(model)}
+        ${renderStructuredTabs()}
+        <section class="rating-detail-panel">${renderStructuredDetail(model, payload)}</section>
+      </div>
+    `;
+    attachStructuredEvents(rootId);
+  }
+
   function renderEmpty(root, payload) {
     root.innerHTML = `
       <div class="section-title">
@@ -1280,10 +1627,10 @@
     attachWorkbenchEvents(rootId);
   }
 
-  window.renderWbCardRating = renderWbCardRatingReport;
+  window.renderWbCardRating = renderWbCardRatingStructured;
   try {
-    renderWbCardRating = renderWbCardRatingReport;
+    renderWbCardRating = renderWbCardRatingStructured;
   } catch (error) {
-    window.renderWbCardRating = renderWbCardRatingReport;
+    window.renderWbCardRating = renderWbCardRatingStructured;
   }
 })();

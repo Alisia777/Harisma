@@ -508,7 +508,28 @@ function repricerNormalizeArticleKey(value) {
   return String(value || '').trim().toLowerCase().replace(/[^a-zа-я0-9]+/gi, '');
 }
 
+const REPRICER_LIVE_MAX_AGE_DAYS = 7;
+
+function repricerLiveFreshnessStatus() {
+  const rows = Array.isArray(state.repricerLive?.rows) ? state.repricerLive.rows : [];
+  const liveStamp = repricerParseDateMs(state.repricerLive?.generatedAt || '');
+  if (!rows.length || !liveStamp) return { usable: false, reason: 'missing' };
+  const anchorStamp = Math.max(
+    repricerParseDateMs(state.repricer?.generatedAt || ''),
+    repricerParseDateMs(state.prices?.generatedAt || ''),
+    repricerParseDateMs(state.smartPriceWorkbench?.generatedAt || ''),
+    repricerParseDateMs(state.smartPriceOverlay?.generatedAt || '')
+  );
+  const ageDays = ((anchorStamp || Date.now()) - liveStamp) / 86400000;
+  if (ageDays > REPRICER_LIVE_MAX_AGE_DAYS) {
+    return { usable: false, reason: 'stale', ageDays };
+  }
+  return { usable: true, reason: 'fresh', ageDays };
+}
+
 function repricerLiveMap() {
+  const freshness = repricerLiveFreshnessStatus();
+  if (!freshness.usable) return new Map();
   const rows = Array.isArray(state.repricerLive?.rows) ? state.repricerLive.rows : [];
   const map = new Map();
   rows.forEach((row) => {
@@ -1668,10 +1689,10 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
     launchAllowed,
     volumePushAllowed,
     alignmentApplied: false,
-    liveReferencePrice: repricerFirstFilledNumber(liveSide?.recPrice, legacySide?.liveRecPrice, legacySide?.recPrice),
+    liveReferencePrice: repricerFirstFilledNumber(liveSide?.recPrice, legacySide?.liveRecPrice),
     liveTargetDays: repricerFirstFilledNumber(liveSide?.targetTurnoverDays, legacySide?.targetTurnoverDays),
-    liveStrategy: liveSide?.strategy || legacySide?.strategy || '',
-    liveReason: liveSide?.reason || legacySide?.reason || '',
+    liveStrategy: liveSide?.strategy || legacySide?.liveStrategy || '',
+    liveReason: liveSide?.reason || legacySide?.liveReason || '',
     liveBuyerPrice: repricerFirstFilledNumber(liveSide?.buyerPrice, legacySide?.buyerPrice),
     liveMarginPct: liveSide?.marginPct == null ? (legacySide?.marginPct == null ? null : numberOrZero(legacySide.marginPct)) : numberOrZero(liveSide.marginPct),
     liveMarginNoAdsMinPct: liveSide?.marginNoAdsMinPct == null ? (legacySide?.marginNoAdsMinPct == null ? null : numberOrZero(legacySide.marginNoAdsMinPct)) : numberOrZero(liveSide.marginNoAdsMinPct)
@@ -1861,6 +1882,7 @@ function repricerRowsCacheSignature() {
     Array.isArray(platforms?.wb?.rows) ? platforms.wb.rows.length : 0,
     Array.isArray(platforms?.ozon?.rows) ? platforms.ozon.rows.length : 0,
     state.repricerLive?.generatedAt || '',
+    repricerLiveFreshnessStatus().usable ? 'live-ok' : 'live-stale',
     Array.isArray(state.repricerLive?.rows) ? state.repricerLive.rows.length : 0,
     state.prices?.generatedAt || '',
     storage.repricerSettingsUpdatedAt || '',
@@ -3229,11 +3251,11 @@ function repricerGamePlatformModel(stats = {}, options = {}) {
   const yellow = numberOrZero(stats.yellow);
   const red = numberOrZero(stats.red);
   const check = numberOrZero(options.checkCount ?? (yellow + red));
-  const hardStops = red + numberOrZero(stats.missingMin) + numberOrZero(stats.blocked) + numberOrZero(stats.belowMin);
-  const softStops = yellow + numberOrZero(stats.missingCost);
+  const hardStops = red + numberOrZero(stats.missingMin) + numberOrZero(stats.blocked);
+  const softStops = yellow + numberOrZero(stats.missingCost) + numberOrZero(stats.belowMin);
   const completion = active > 0 ? green / active : null;
-  const tone = hardStops > 0 ? 'danger' : softStops > 0 ? 'warn' : 'ok';
-  const status = tone === 'danger' ? 'СТОП' : tone === 'warn' ? 'Проверить' : safe > 0 ? 'ОК к выгрузке' : 'ОК без изменений';
+  const tone = safe > 0 ? 'ok' : (hardStops > 0 ? 'danger' : softStops > 0 ? 'warn' : 'ok');
+  const status = safe > 0 ? 'ОК к выгрузке' : (tone === 'danger' ? 'СТОП' : tone === 'warn' ? 'Проверить' : 'ОК без изменений');
   return {
     platform: stats.platform || options.platform || 'wb',
     label: stats.label || (options.platform === 'ozon' ? 'Ozon' : 'WB'),
@@ -3271,21 +3293,23 @@ function repricerGameReadinessModel(health = {}, templateStats = {}, context = {
   const red = wb.red + ozon.red;
   const hardStops = red
     + numberOrZero(metrics.blocked_gate)
-    + numberOrZero(metrics.missing_effective_floor_actionable)
-    + numberOrZero(context.belowMinSides);
+    + numberOrZero(metrics.missing_effective_floor_actionable);
   const softStops = yellow
+    + numberOrZero(context.belowMinSides)
     + numberOrZero(metrics.missing_cost_actionable || metrics.missing_cost)
     + numberOrZero(context.liveDriftSides)
     + numberOrZero(context.fallbackSides);
   const completion = active > 0 ? green / active : null;
-  const tone = hardStops > 0 ? 'danger' : softStops > 0 ? 'warn' : 'ok';
-  const title = tone === 'danger' ? 'СТОП' : tone === 'warn' ? 'Проверить' : safe > 0 ? 'Можно выгружать' : 'Контур чистый';
-  const subtitle = tone === 'danger'
-    ? 'Сначала закрыть красные причины, потом скачивать шаблоны.'
-    : tone === 'warn'
-      ? 'Есть жёлтые зоны: лучше открыть аудит перед выгрузкой.'
-      : safe > 0
-        ? 'Зелёные изменения готовы к безопасной выгрузке.'
+  const tone = safe > 0 ? 'ok' : (hardStops > 0 ? 'danger' : softStops > 0 ? 'warn' : 'ok');
+  const title = safe > 0
+    ? 'В работе'
+    : (tone === 'danger' ? 'СТОП' : tone === 'warn' ? 'Проверить' : 'Контур чистый');
+  const subtitle = safe > 0
+    ? 'Зелёные строки можно выгружать сейчас. Жёлтые и красные остаются в аудите и не блокируют запуск.'
+    : tone === 'danger'
+      ? 'Нет безопасных строк: сначала закрыть красные причины.'
+      : tone === 'warn'
+        ? 'Есть жёлтые зоны: лучше открыть аудит перед выгрузкой.'
         : 'Критичных стопов нет, но новых цен для шаблона сейчас нет.';
   return {
     tone,

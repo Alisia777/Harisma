@@ -8,6 +8,7 @@ const {
   firstPositive,
   latestSeriesDate,
   mergeSmartPriceContour,
+  normalizeKey,
   safeReadJson
 } = require('./smart-price-contour');
 
@@ -63,6 +64,7 @@ function resolveOptions(args = {}) {
     workbenchPath: path.resolve(args['workbench-file'] || path.join(ROOT, 'data', 'smart_price_workbench.json')),
     overlayPath: path.resolve(args['overlay-file'] || path.join(ROOT, 'data', 'smart_price_overlay.json')),
     livePath: path.resolve(args['live-file'] || path.join(ROOT, 'tmp-smart_price_workbench-live.json')),
+    supportPath: path.resolve(args['support-file'] || path.join(ROOT, 'data', 'price_workbench_support.json')),
     outputPath: path.resolve(args['output-file'] || path.join(ROOT, 'data', 'prices.json'))
   };
 }
@@ -143,15 +145,41 @@ function lastSeriesSpp(series) {
   return { value: null, date: '' };
 }
 
-function buildLegacyRow(row = {}, platform = '') {
+function supportRows(payload = {}, platform = '') {
+  const rows = payload?.platforms?.[platform]?.rows;
+  if (Array.isArray(rows)) return rows;
+  if (rows && typeof rows === 'object') return Object.values(rows);
+  return [];
+}
+
+function buildSupportMap(payload = {}, platform = '') {
+  const map = new Map();
+  supportRows(payload, platform).forEach((row) => {
+    const key = normalizeKey(row?.articleKey || row?.article || row?.sku);
+    if (!key || map.has(key)) return;
+    map.set(key, row);
+  });
+  return map;
+}
+
+function supportCurrentExportPrice(row = {}) {
+  return firstPositive(
+    row?.currentExportPrice,
+    row?.buyerCurrentExportMinPrice,
+    row?.buyerCurrentExportMaxPrice
+  );
+}
+
+function buildLegacyRow(row = {}, platform = '', supportRow = null) {
   const series = normalizeSeries(row);
   const lastPrice = lastSeriesPrice(series);
   const lastClientPrice = lastSeriesClientPrice(series);
   const lastTurnover = lastSeriesValue(series, 'turnoverDays');
   const lastSpp = lastSeriesSpp(series);
   const latestFactDate = asIsoDate(row?.valueDate || row?.historyFreshnessDate || latestSeriesDate(row) || '');
-  const currentPrice = firstPositive(row?.currentFillPrice, row?.currentPrice, lastPrice.value);
-  const currentClientPrice = firstPositive(row?.currentClientPrice, lastClientPrice.value);
+  const exportCurrentPrice = platform === 'ozon' ? supportCurrentExportPrice(supportRow) : null;
+  const currentPrice = firstPositive(exportCurrentPrice, row?.currentFillPrice, row?.currentPrice, lastPrice.value);
+  const currentClientPrice = firstPositive(exportCurrentPrice, row?.currentClientPrice, lastClientPrice.value);
   const currentTurnoverDays = firstNumber(row?.currentTurnoverDays, row?.turnoverCurrentDays, lastTurnover.value);
   const currentSppPct = sanitizeDiscountPct(row?.currentSppPct, lastSpp.value);
   const currentPriceDate = asIsoDate(row?.currentPriceDate || row?.currentFillPriceDate || '') || lastPrice.date || latestFactDate;
@@ -176,6 +204,7 @@ function buildLegacyRow(row = {}, platform = '') {
     currentTurnoverDays,
     currentPrice,
     currentClientPrice,
+    currentPriceSource: exportCurrentPrice ? 'price_workbench_support_current_export' : (row?.currentPriceSource || row?.currentSellerPriceSource || ''),
     currentSppPct,
     currentPriceDate,
     historyFreshnessDate: latestFactDate,
@@ -211,7 +240,13 @@ function buildLegacyPricesLayer(options = {}) {
   const workbench = safeReadJson(options.workbenchPath, { generatedAt: '', platforms: {} });
   const overlay = safeReadJson(options.overlayPath, { generatedAt: '', platforms: {} });
   const live = safeReadJson(options.livePath, { generatedAt: '', platforms: {} });
+  const support = safeReadJson(options.supportPath, { generatedAt: '', platforms: {} });
   const merged = mergeSmartPriceContour(workbench || {}, overlay || {}, live || {});
+  const supportMaps = {
+    wb: buildSupportMap(support, 'wb'),
+    ozon: buildSupportMap(support, 'ozon'),
+    ym: buildSupportMap(support, 'ym')
+  };
 
   const platformBuckets = {};
   let latestDate = '';
@@ -224,7 +259,8 @@ function buildLegacyPricesLayer(options = {}) {
       platformBuckets[targetKey] = { label: PLATFORM_LABELS[targetKey], rows: [] };
     }
     sourceRows.forEach((row) => {
-      const legacyRow = buildLegacyRow(row, targetKey);
+      const supportKey = normalizeKey(row?.articleKey || row?.article || row?.sku);
+      const legacyRow = buildLegacyRow(row, targetKey, supportMaps[targetKey]?.get(supportKey));
       platformBuckets[targetKey].rows.push(legacyRow);
       (legacyRow.daily || []).forEach((point) => {
         if (point?.date && point.date > latestDate) latestDate = point.date;
@@ -251,6 +287,7 @@ function buildLegacyPricesLayer(options = {}) {
       workbench: workbench?.generatedAt || '',
       overlay: overlay?.generatedAt || '',
       live: live?.generatedAt || '',
+      support: support?.generatedAt || '',
       merged: merged?.generatedAt || ''
     },
     dates,

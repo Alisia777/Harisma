@@ -1,10 +1,13 @@
 Portal sync health: blocked
-Generated: 2026-05-31T08:54:12.170Z
+Generated: 2026-06-01T09:32:12.930Z
 Publish allowed: no
-Max data date: 2026-05-28
+Max data date: 2026-05-30
 
 Blocking reasons:
-- SKU matrix alias count does not match sku_aliases (116/0).
+- Marketplace data is behind the expected cutoff date (2026-05-30 < 2026-05-31).
+- Marketplace completeness guard: WB has no data for expected date 2026-05-31 (latest 2026-05-30).
+- Marketplace completeness guard: Ozon has no data for expected date 2026-05-31 (latest 2026-05-30).
+- IU/DRR daily rows are behind the expected cutoff date (2026-05-30 < 2026-05-31).
 
 Warnings:
-- Unmapped API SKU revenue: 21969153.
+- Unmapped API SKU revenue: 5690407.

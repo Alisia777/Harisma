@@ -409,7 +409,16 @@ function mergeWorkbenchOverlayRow(primaryRow = {}, overlayRow = {}, platform = '
     'stock',
     'stockWb',
     'stockOzon',
-    'stockTotal'
+    'stockTotal',
+    'minPrice',
+    'maxPrice',
+    'hardMinPrice',
+    'workingZoneFrom',
+    'workingZoneTo',
+    'manualMinPrice',
+    'manualMaxPrice',
+    'minMaxSource',
+    'minMaxImportedAt'
   ].forEach((key) => mergeWorkbenchField(next, key, overlay[key], true));
 
   if (platform && valueMissing(next.marketplace)) next.marketplace = platform;

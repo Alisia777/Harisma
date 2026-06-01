@@ -297,13 +297,22 @@ function capRecommendation(recPrice, minPrice, upperCap) {
 function buildSide(sourceRow, platform, supportRow, priceRow, liveSide, liveRootGeneratedAt) {
   if (!sourceRow && !priceRow && !liveSide) return null;
 
+  const supportExportCurrentPrice = platform === 'ozon'
+    ? positiveValue(
+      supportRow?.currentExportPrice,
+      supportRow?.buyerCurrentExportMinPrice,
+      supportRow?.buyerCurrentExportMaxPrice
+    )
+    : null;
   const currentPrice = positiveValue(
+    supportExportCurrentPrice,
     sourceRow?.currentFillPrice,
     sourceRow?.currentPrice,
     priceRow?.currentPrice,
     liveSide?.currentPrice
   ) || 0;
   const currentBuyerPrice = positiveValue(
+    supportExportCurrentPrice,
     sourceRow?.currentClientPrice,
     priceRow?.currentClientPrice,
     liveSide?.buyerPrice,

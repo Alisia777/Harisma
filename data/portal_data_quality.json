@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-31T14:34:11.553Z",
+  "generatedAt": "2026-06-01T09:32:12.523Z",
   "status": "critical",
   "summary": {
     "issueCount": 88,
@@ -13,7 +13,7 @@
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 0,
     "apiSumAboveAggregateOverage": 0,
-    "skuAliasCount": 0,
+    "skuAliasCount": 341,
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 0,
     "warehouseUnmatchedRows": 25,
@@ -26,8 +26,8 @@
     {
       "dataset": "dashboard",
       "asOfDate": "2026-05-30",
-      "generatedAt": "2026-05-31T13:59:11.604Z",
-      "rows": 327,
+      "generatedAt": "2026-05-31T14:40:58.630Z",
+      "rows": 334,
       "referenceDate": "2026-05-31",
       "lagDays": 1,
       "status": "ok"
@@ -35,7 +35,7 @@
     {
       "dataset": "platform_trends",
       "asOfDate": "2026-05-30",
-      "generatedAt": "2026-05-31T13:59:11.524Z",
+      "generatedAt": "2026-05-31T14:40:58.547Z",
       "rows": 7,
       "referenceDate": "2026-05-31",
       "lagDays": 1,
@@ -64,8 +64,8 @@
     {
       "dataset": "ads_summary",
       "asOfDate": "2026-05-30",
-      "generatedAt": "2026-05-31T13:58:44.929Z",
-      "rows": 5,
+      "generatedAt": "2026-05-31T14:38:55.763Z",
+      "rows": 6,
       "referenceDate": "2026-05-31",
       "lagDays": 1,
       "status": "ok"
@@ -111,11 +111,11 @@
     },
     "magnit": {
       "label": "Магнит Маркет",
-      "rows": 0,
-      "directRevenue": 0,
-      "directUnits": 0,
-      "aggregateRevenue": 0,
-      "aggregateDate": "",
+      "rows": 35,
+      "directRevenue": 15112,
+      "directUnits": 34,
+      "aggregateRevenue": 15112,
+      "aggregateDate": "2026-05-30",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,

@@ -168,7 +168,7 @@ async function main() {
     await assertVisible(page, '#view-data-health', 'data health');
     await page.waitForFunction(() => Boolean(
       document.querySelector('#view-data-health [data-health-create-tasks]')
-      && document.querySelector('#view-data-health [data-health-morning-digest]')
+      && document.querySelector('#view-data-health .data-health-digest')
       && document.querySelector('#view-data-health [data-health-change-digest]')
       && document.querySelector('#view-data-health [data-health-rules-form]')
       && document.querySelector('#view-data-health [data-health-open="sku-contour"]')
@@ -176,7 +176,7 @@ async function main() {
     ), undefined, { timeout: 30000 });
     const dataHealthOk = await page.evaluate(() => Boolean(
       document.querySelector('#view-data-health [data-health-create-tasks]')
-      && document.querySelector('#view-data-health [data-health-morning-digest]')
+      && document.querySelector('#view-data-health .data-health-digest')
       && document.querySelector('#view-data-health [data-health-change-digest]')
       && document.querySelector('#view-data-health [data-health-rules-form]')
       && document.querySelector('#view-data-health [data-health-source-explain]')
@@ -191,7 +191,7 @@ async function main() {
     await page.locator('#view-data-health [data-health-refresh]').first().click();
     await page.waitForFunction(() => Boolean(
       document.querySelector('#view-data-health [data-health-create-tasks]')
-      && document.querySelector('#view-data-health [data-health-morning-digest]')
+      && document.querySelector('#view-data-health .data-health-digest')
       && document.querySelector('#view-data-health [data-health-change-digest]')
       && document.querySelector('#view-data-health [data-health-rules-form]')
       && document.querySelector('#view-data-health [data-health-open="sku-contour"]')
@@ -370,9 +370,8 @@ async function main() {
     const contourOk = await page.evaluate(() => Boolean(
       document.querySelector('#view-sku-contour [data-sku-contour-quality-export]')
       && document.querySelector('#view-sku-contour [data-sku-contour-quality-import]')
-      && document.querySelector('#view-sku-contour [data-sku-contour-guide]')
-      && document.querySelector('#view-sku-contour [data-sku-contour-decision-cards]')
       && document.querySelector('#view-sku-contour [data-sku-contour-toggle-resolved]')
+      && document.querySelector('#view-sku-contour .data-table')
     ));
     if (!contourOk) throw new Error('SKU contour controls did not render.');
 

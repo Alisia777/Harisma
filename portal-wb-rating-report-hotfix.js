@@ -249,12 +249,13 @@
       .rating-platform-title p { margin:5px 0 0; color:var(--muted); font-size:13px; line-height:1.35; }
       .rating-platform-action { border:1px solid rgba(255,255,255,.12); border-radius:8px; background:rgba(255,255,255,.04); color:var(--text); padding:10px 13px; font:inherit; font-size:13px; cursor:pointer; white-space:nowrap; }
       .rating-platform-action.active { border-color:rgba(215,166,76,.72); background:rgba(215,166,76,.18); color:#ffe6ae; }
-      .rating-metric-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-      .rating-metric-card { border:1px solid rgba(255,255,255,.09); border-radius:8px; background:rgba(255,255,255,.026); padding:16px; min-width:0; min-height:118px; }
-      .rating-metric-card.is-empty { opacity:.76; }
-      .rating-metric-card span.label { display:block; color:var(--muted); font-size:13px; line-height:1.25; }
-      .rating-metric-card strong { display:block; margin-top:8px; font-size:30px; line-height:1.08; white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
-      .rating-metric-card small { display:block; margin-top:7px; color:var(--muted); line-height:1.35; }
+      .rating-metric-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+      .rating-metric-grid .sku-plan-platform-card { width:100%; min-height:138px; cursor:default; }
+      .rating-metric-grid .sku-plan-platform-card:hover { transform:none; }
+      .rating-planfact-card.is-empty { opacity:.76; }
+      .rating-planfact-card .sku-plan-platform-card__value { white-space:normal; overflow-wrap:anywhere; }
+      .rating-planfact-card .sku-plan-platform-card__meta { min-height:32px; }
+      .rating-planfact-card .sku-plan-platform-card__foot .wb-rating-trend { margin-top:0; }
       .rating-work-tabs { display:flex; flex-wrap:wrap; gap:8px; margin:2px 0 0; }
       .rating-work-tabs button { border:1px solid rgba(255,255,255,.1); border-radius:999px; background:rgba(255,255,255,.04); color:var(--text); padding:10px 14px; font:inherit; font-size:13px; cursor:pointer; }
       .rating-work-tabs button.active { border-color:rgba(215,166,76,.7); background:rgba(215,166,76,.18); color:#ffe6ae; }
@@ -284,7 +285,6 @@
       }
       @media (max-width: 640px) {
         .rating-metric-grid, .rating-history-metrics { grid-template-columns:1fr; }
-        .rating-metric-card strong { font-size:26px; }
         .rating-platform-head, .rating-detail-head { flex-direction:column; }
       }
     `;
@@ -1305,13 +1305,66 @@
     return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
   }
 
+  function planFactHue(platform = '') {
+    return { wb: 275, ozon: 212, all: 205 }[platform] ?? 205;
+  }
+
+  function planFactLevel(ratio = null) {
+    if (!hasNumber(ratio)) return 'warn';
+    const value = Number(ratio);
+    if (value >= 0.95) return 'ok';
+    if (value >= 0.7) return 'warn';
+    return 'danger';
+  }
+
+  function planFactStyle(platform = 'all', ratio = null) {
+    const value = hasNumber(ratio) ? Math.min(1.35, Math.max(0.05, Number(ratio))) : 0.12;
+    const fill = 0.08 + Math.min(0.34, value * 0.24);
+    const rowFill = Math.min(0.12, fill * 0.32);
+    const border = 0.18 + Math.min(0.5, value * 0.3);
+    const glow = 0.04 + Math.min(0.18, value * 0.12);
+    const progress = Math.min(100, Math.max(0, value * 100));
+    return `--pf-hue:${planFactHue(platform)};--pf-fill:${fill.toFixed(3)};--pf-row-fill:${rowFill.toFixed(3)};--pf-border:${border.toFixed(3)};--pf-glow:${glow.toFixed(3)};--pf-progress:${progress.toFixed(1)}%;--pf-level:${planFactLevel(value)}`;
+  }
+
+  function metricRatio(label = '', value = '', options = {}) {
+    if (hasNumber(options.ratio)) return Number(options.ratio);
+    const raw = String(value || '').replace(/\s/g, '').replace(',', '.');
+    const match = raw.match(/-?\d+(?:\.\d+)?/);
+    if (!match) return options.empty ? 0.08 : 0.55;
+    const parsed = Number(match[0]);
+    if (!Number.isFinite(parsed)) return options.empty ? 0.08 : 0.55;
+    if (String(value).includes('%')) return parsed / 100;
+    if (/оценк|rating/i.test(String(label))) return parsed / 5;
+    return Math.min(1.25, Math.max(0.08, Math.log10(Math.abs(parsed) + 1) / 4));
+  }
+
   function renderMetricCard(label, value, trendHtml = '', note = '', options = {}) {
+    const metricText = `${label || ''} ${note || ''}`.toLowerCase();
+    const platform = options.platform || (
+      /ozon/i.test(metricText)
+      || metricText.includes('\u0438\u0441\u0442\u043e\u0440\u0438\u044f \u0440\u0435\u0439\u0442\u0438\u043d\u0433\u0430')
+      || metricText.includes('\u0441\u0442\u0430\u0442\u0443\u0441 \u0431\u043b\u043e\u043a\u0430')
+      || metricText.includes('\u0440\u0435\u0439\u0442\u0438\u043d\u0433\u0438 / \u043e\u0442\u0437\u044b\u0432\u044b / \u0432\u043e\u043f\u0440\u043e\u0441\u044b')
+      ? 'ozon'
+      : 'wb'
+    );
+    const ratio = metricRatio(label, value, options);
+    const level = options.empty ? 'danger' : planFactLevel(ratio);
+    const side = options.side || (platform === 'ozon' ? 'Ozon' : 'WB');
     return `
-      <div class="rating-metric-card ${options.empty ? 'is-empty' : ''}">
-        <span class="label">${esc(label)}</span>
-        <strong>${esc(value)}</strong>
-        ${trendHtml || ''}
-        ${note ? `<small>${esc(note)}</small>` : ''}
+      <div class="sku-plan-platform-card rating-planfact-card level-${level} ${options.empty ? 'is-empty' : ''}" style="${planFactStyle(platform, ratio)}">
+        <span class="sku-plan-platform-card__top">
+          <strong>${esc(label)}</strong>
+          <em>${esc(side)}</em>
+        </span>
+        <span class="sku-plan-platform-card__value">${esc(value)}</span>
+        <span class="sku-plan-platform-card__meta">${esc(note || '')}</span>
+        <span class="sku-plan-platform-card__bar"><i></i></span>
+        <span class="sku-plan-platform-card__foot">
+          <b>${trendHtml || '&nbsp;'}</b>
+          <span><em>${esc(options.footer || '')}</em></span>
+        </span>
       </div>
     `;
   }

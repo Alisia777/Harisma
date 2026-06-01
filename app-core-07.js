@@ -3944,12 +3944,12 @@ function normalizeIuDrrSummaryPayload(payload = {}) {
     adsOrders: numberOrZero(row?.adsOrders)
   })).map((row) => {
     const wbTarget = numberOrZero(row.targetRevenueWb || row.contractTargetRevenueWb || row.managementTargetRevenueWb);
-    const wbFactRevenue = numberOrZero(row.adsPctBaseWb || row.revenueWb || row.ordersRevenueWb);
+    const wbFactRevenue = numberOrZero(row.wbApiRevenue || row.adsPctBaseWb || row.revenueWb || row.ordersRevenueWb);
     const wbOrdersRevenue = numberOrZero(row.ordersRevenueWb);
     const wbPlanPct = Number.isFinite(Number(row.planPct)) ? Number(row.planPct) : 0;
     const wbPlanSpend = numberOrZero(row.planSpendWb);
     const wbPlanSpendByRevenue = wbPlanSpend || (wbFactRevenue * wbPlanPct);
-    const wbSpendFact = numberOrZero(row.spendFact);
+    const wbSpendFact = numberOrZero(row.wbApiSpendFact || row.spendFact);
     return {
       ...row,
       iuTargetRevenueWb: wbTarget,
@@ -4154,8 +4154,8 @@ function iuDrrQuarterFactBase(model = {}, platformKey = 'wb', context = {}) {
       sourceLabel: factFromPlanFact ? 'Smart-факт ИУ Ozon' : 'Факт Ozon'
     };
   }
-  const datedRows = sourceRows.filter((row) => row.date && (numberOrZero(row.iuRevenueWb || row.revenueWb || row.adsPctBaseWb || row.ordersRevenueWb) || numberOrZero(row.targetRevenueWb)));
-  const fact = datedRows.reduce((sum, row) => sum + numberOrZero(row.iuRevenueWb || row.revenueWb || row.adsPctBaseWb || row.ordersRevenueWb), 0)
+  const datedRows = sourceRows.filter((row) => row.date && (numberOrZero(row.wbApiRevenue || row.iuRevenueWb || row.revenueWb || row.adsPctBaseWb || row.ordersRevenueWb) || numberOrZero(row.targetRevenueWb)));
+  const fact = datedRows.reduce((sum, row) => sum + numberOrZero(row.wbApiRevenue || row.iuRevenueWb || row.revenueWb || row.adsPctBaseWb || row.ordersRevenueWb), 0)
     || numberOrZero(model.monthSummary?.iuRevenueWbFactToDate || model.monthSummary?.revenueWb);
   const dates = datedRows.map((row) => row.date).filter(Boolean).sort();
   return {
@@ -4489,11 +4489,11 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
   const truthSelectedRevenueTotal = numberOrZero(wbTruth.selectedRevenue) + numberOrZero(ozonTruth.selectedRevenue);
   const truthIuRevenueTotal = numberOrZero(wbTruth.iuPlan) + numberOrZero(ozonTruth.iuPlan40);
   const truthCorporateRevenueTotal = numberOrZero(wbTruth.corporatePlan) + numberOrZero(ozonTruth.corporatePlan);
-  const wbRevenueFactToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuRevenueWb || row.iuOrdersRevenueWb), 0);
+  const wbRevenueFactToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.wbApiRevenue || row.iuRevenueWb || row.iuOrdersRevenueWb), 0);
   const wbOrdersRevenueToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.ordersRevenueWb), 0);
   const wbTargetToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuTargetRevenueWb), 0);
   const wbPlanSpendToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuPlanSpendWb), 0);
-  const wbSpendFactToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.spendFact), 0);
+  const wbSpendFactToDate = iuDailyRows.reduce((sum, row) => sum + numberOrZero(row.wbApiSpendFact || row.spendFact), 0);
   const wbRevenueDeltaToDate = wbRevenueFactToDate - wbTargetToDate;
   const wbSpendDeltaToDate = wbSpendFactToDate - wbPlanSpendToDate;
   const ozonFinanceMonth = ozonFinanceMonthSummary(normalized.ozonFinance || {}, selectedMonth);
@@ -4528,6 +4528,9 @@ function iuDrrBuildModel(payload = state.iuDrrSummary || {}) {
     iuRevenueWbCompletionToDate: wbTargetToDate > 0 ? wbRevenueFactToDate / wbTargetToDate : rawMonthSummary.iuRevenueWbCompletionToDate,
     iuAdsPlanToDate: wbPlanSpendToDate || rawMonthSummary.iuAdsPlanToDate,
     planSpendWb: wbPlanSpendToDate || rawMonthSummary.planSpendWb,
+    iuAdsFactWbToDate: wbSpendFactToDate || rawMonthSummary.iuAdsFactWbToDate,
+    spendFact: wbSpendFactToDate || rawMonthSummary.spendFact,
+    spendFactDrr: wbSpendFactToDate || rawMonthSummary.spendFactDrr,
     spendDelta: wbRevenueFactToDate ? wbSpendDeltaToDate : rawMonthSummary.spendDelta,
     spendDeltaPct: wbPlanSpendToDate > 0 ? wbSpendDeltaToDate / wbPlanSpendToDate : rawMonthSummary.spendDeltaPct,
     drrWb: wbRevenueFactToDate > 0 ? wbSpendFactToDate / wbRevenueFactToDate : rawMonthSummary.drrWb,
@@ -4846,9 +4849,9 @@ function iuDrrFunnelMetricValue(metric, row = {}, platformKey = 'wb', context = 
   }
 
   const planRevenue = numberOrZero(row.iuTargetRevenueWb || row.targetRevenueWb || row.managementTargetRevenueWb || row.contractTargetRevenueWb);
-  const factRevenue = numberOrZero(row.iuRevenueWb || row.revenueWb || row.adsPctBaseWb || row.ordersRevenueWb);
+  const factRevenue = numberOrZero(row.wbApiRevenue || row.iuRevenueWb || row.revenueWb || row.adsPctBaseWb || row.ordersRevenueWb);
   const planAds = numberOrZero(row.iuPlanSpendWb || row.planSpendWb || row.managementPlanSpendWb || row.contractMarketingPlanWb);
-  const factAds = numberOrZero(row.spendFactDrr || row.spendFact);
+  const factAds = numberOrZero(row.wbApiSpendFact || row.spendFactDrr || row.spendFact);
   const planDrr = numberOrZero(row.planPct);
   const factDrr = row.factPct != null ? row.factPct : iuDrrFunnelRate(factAds, factRevenue);
   const views = numberOrZero(row.adsViews);
@@ -4857,7 +4860,7 @@ function iuDrrFunnelMetricValue(metric, row = {}, platformKey = 'wb', context = 
   const adRevenue = numberOrZero(row.adsRevenue);
   const units = numberOrZero(row.unitsWb);
   const externalAds = numberOrZero(row.externalAds);
-  const totalAds = numberOrZero(row.spendFactTotal || (factAds + externalAds));
+  const totalAds = numberOrZero(row.wbApiSpendFact ? factAds + externalAds : row.spendFactTotal || (factAds + externalAds));
   if (key === 'planRevenue') return planRevenue;
   if (key === 'factRevenue') return factRevenue;
   if (key === 'revenueCompletion') return iuDrrFunnelRate(factRevenue, planRevenue);
@@ -6248,9 +6251,9 @@ function iuDrrExportRows(rows, model) {
     date: row.date,
     period: row.period || row.date,
     target_revenue_wb: row.iuTargetRevenueWb || row.targetRevenueWb,
-    revenue_wb: row.iuRevenueWb || row.revenueWb || row.iuOrdersRevenueWb || row.ordersRevenueWb,
+    revenue_wb: row.wbApiRevenue || row.iuRevenueWb || row.revenueWb || row.iuOrdersRevenueWb || row.ordersRevenueWb,
     orders_revenue_wb: row.ordersRevenueWb,
-    ads_pct_base_wb: row.adsPctBaseWb || row.iuRevenueWb || row.revenueWb || row.iuOrdersRevenueWb,
+    ads_pct_base_wb: row.wbApiRevenue || row.adsPctBaseWb || row.iuRevenueWb || row.revenueWb || row.iuOrdersRevenueWb,
     revenue_wb_delta: row.iuRevenueWbDelta,
     revenue_wb_delta_pct: row.iuRevenueWbDeltaPct != null ? Math.round(Number(row.iuRevenueWbDeltaPct) * 10000) / 100 : '',
     revenue_ozon: row.revenueOzon,
@@ -6736,12 +6739,12 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   `;
   const wbDailyRows = model.dailyRows || [];
   const wbPlanToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuTargetRevenueWb || row.targetRevenueWb), 0);
-  const wbFactToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuRevenueWb || row.revenueWb || row.iuOrdersRevenueWb || row.ordersRevenueWb), 0);
+  const wbFactToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.wbApiRevenue || row.iuRevenueWb || row.revenueWb || row.iuOrdersRevenueWb || row.ordersRevenueWb), 0);
   const wbPlanMonth = numberOrZero(month.iuRevenueWbIuMin || month.iuRevenueWbPlan) || wbPlanToDate;
   const wbFactMonth = numberOrZero(month.iuRevenueWbFactToDate || month.revenueWb) || wbFactToDate;
   const wbCompletionMonth = wbPlanMonth > 0 ? wbFactMonth / wbPlanMonth : platformMeta.completion;
   const wbAdsPlanToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuPlanSpendWb || row.planSpendWb), 0);
-  const wbAdsFactToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.spendFact), 0);
+  const wbAdsFactToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.wbApiSpendFact || row.spendFact), 0);
   const wbAdsPlanMonth = numberOrZero(month.iuAdsPlan || month.planSpendWb) || wbAdsPlanToDate;
   const wbAdsFactMonth = numberOrZero(month.iuAdsFactWbToDate || month.spendFactDrr || month.spendFact) || wbAdsFactToDate;
   const wbAdsCompletionMonth = wbAdsPlanMonth > 0 ? wbAdsFactMonth / wbAdsPlanMonth : null;
@@ -6881,10 +6884,10 @@ function renderIuDrr(rootId = 'view-iu-drr') {
           <tbody>
             ${model.dailyRows.map((row) => {
               const rowPlanRevenue = numberOrZero(row.iuTargetRevenueWb || row.targetRevenueWb);
-              const rowFactRevenue = numberOrZero(row.iuRevenueWb || row.revenueWb || row.iuOrdersRevenueWb || row.ordersRevenueWb);
+              const rowFactRevenue = numberOrZero(row.wbApiRevenue || row.iuRevenueWb || row.revenueWb || row.iuOrdersRevenueWb || row.ordersRevenueWb);
               const rowRevenueCompletion = rowPlanRevenue > 0 ? rowFactRevenue / rowPlanRevenue : row.iuRevenueWbCompletionPct;
               const rowPlanAds = numberOrZero(row.iuPlanSpendWb || row.planSpendWb);
-              const rowFactAds = numberOrZero(row.spendFact);
+              const rowFactAds = numberOrZero(row.wbApiSpendFact || row.spendFact);
               const rowAdsCompletion = rowPlanAds > 0 ? rowFactAds / rowPlanAds : null;
               const rowDrr = row.iuFactPct != null ? row.iuFactPct : (rowFactRevenue > 0 ? rowFactAds / rowFactRevenue : null);
               return `

@@ -1985,8 +1985,8 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
     const wbIuFactRevenue = numberOrZero(wbDailyPlan?.factRevenue);
     const wbIuFactSpend = numberOrZero(wbDailyPlan?.factSpend);
     const wbApiRevenue = numberOrZero(wb.revenue);
-    const revenueWb = wbIuFactRevenue || wbApiRevenue;
-    const ordersRevenueWb = wbIuFactRevenue || numberOrZero(wb.ordersRevenue) || revenueWb;
+    const revenueWb = wbApiRevenue || wbIuFactRevenue;
+    const ordersRevenueWb = numberOrZero(wb.ordersRevenue) || revenueWb || wbIuFactRevenue;
     const revenueOzon = numberOrZero(ozon.revenue);
     const adsPctBaseWb = revenueWb;
     const adsPctBaseIu = adsPctBaseWb + revenueOzon;
@@ -2025,8 +2025,8 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
     const externalSpend = numberOrZero(channels.externalAds);
     const apiSpendFactTotal = numberOrZero(ads.spend) + reviewPointsAddedToSpend;
     const wbApiSpendFact = Math.max(0, apiSpendFactTotal - externalSpend);
-    const spendFact = wbIuFactSpend || wbApiSpendFact;
-    const spendFactTotal = wbIuFactSpend ? spendFact + externalSpend : apiSpendFactTotal;
+    const spendFact = wbApiSpendFact || wbIuFactSpend;
+    const spendFactTotal = wbApiSpendFact ? apiSpendFactTotal : spendFact + externalSpend;
     const spendFactIu = spendFact + spendFactOzon;
     const spendDelta = spendFact - planSpendWb;
     const spendDeltaOzon = spendFactOzon - planSpendOzon;
@@ -2072,7 +2072,7 @@ function buildDailyRows(platformTrends, iuPlan, companyPlan, adsSummary, wbFeedb
       spendDeltaOzonPct: planSpendOzon > 0 ? roundRate(spendDeltaOzon / planSpendOzon) : null,
       ozonAdsFactMode,
       revenueTotalIu: roundMoney(revenueWb + revenueOzon),
-      revenueWbSource: wbIuFactRevenue ? (wbDailyPlan?.source || 'wb_iu_daily_workbook') : (wb.source || ''),
+      revenueWbSource: wbApiRevenue ? (wb.source || 'wb_api') : (wbDailyPlan?.source || 'wb_iu_daily_workbook'),
       unitsWb: Math.round(numberOrZero(wb.units)),
       unitsOzon: Math.round(numberOrZero(ozon.units)),
       ordersUnitsOzon: Math.round(numberOrZero(ozon.ordersUnits || ozon.units)),

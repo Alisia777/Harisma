@@ -2654,6 +2654,9 @@ function normalizeProductLeaderboardItem(item = {}) {
     article: item.article || '',
     name: item.name || item.articleKey || item.article || 'SKU',
     owner,
+    price: productLeaderboardNumberOrNull(item.price ?? item.currentPrice),
+    priceWb: productLeaderboardNumberOrNull(item.priceWb ?? item.wbPrice ?? item.wb?.currentPrice ?? item.wb?.recPrice),
+    priceOzon: productLeaderboardNumberOrNull(item.priceOzon ?? item.ozonPrice ?? item.ozon?.currentPrice ?? item.ozon?.recPrice),
     category: item.category || '',
     traffic: item.traffic || '',
     signal: item.signal || 'steady',
@@ -2687,6 +2690,45 @@ function normalizeProductLeaderboardItem(item = {}) {
   if (normalized.buyRatePct === null) normalized.buyRatePct = normalized.clicks > 0 ? normalized.buys / normalized.clicks : 0;
   if (normalized.buyoutPct === null) normalized.buyoutPct = normalized.orders > 0 ? normalized.buys / normalized.orders : 0;
   return normalized;
+}
+
+function productLeaderboardNumberOrNull(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = Number(String(value).replace(/\s+/g, '').replace(',', '.').replace(/[^\d.+-]/g, ''));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function productLeaderboardFirstPositive(...values) {
+  for (const value of values) {
+    const parsed = productLeaderboardNumberOrNull(value);
+    if (parsed !== null && parsed > 0) return parsed;
+  }
+  return null;
+}
+
+function productLeaderboardPriceMetrics(item = {}) {
+  let sku = null;
+  try {
+    sku = item.articleKey && typeof getSku === 'function' ? getSku(item.articleKey) : null;
+  } catch (_error) {
+    sku = null;
+  }
+  const wb = productLeaderboardFirstPositive(item.priceWb, item.wbPrice, item.wb?.currentPrice, item.wb?.recPrice, sku?.wb?.currentPrice, sku?.wb?.recPrice);
+  const ozon = productLeaderboardFirstPositive(item.priceOzon, item.ozonPrice, item.ozon?.currentPrice, item.ozon?.recPrice, sku?.ozon?.currentPrice, sku?.ozon?.recPrice);
+  const main = productLeaderboardFirstPositive(item.price, item.currentPrice, wb, ozon);
+  return { main, wb, ozon };
+}
+
+function productLeaderboardPriceHtml(item = {}) {
+  const prices = productLeaderboardPriceMetrics(item);
+  if (prices.wb === null && prices.ozon === null && prices.main === null) {
+    return '<span class="muted small">—</span>';
+  }
+  const chips = [
+    prices.wb !== null ? badge(`WB ${fmt.money(prices.wb)}`, 'info') : '',
+    prices.ozon !== null ? badge(`Ozon ${fmt.money(prices.ozon)}`, 'info') : ''
+  ].filter(Boolean).join('');
+  return chips ? `<div class="badge-stack">${chips}</div>` : `<strong>${fmt.money(prices.main)}</strong>`;
 }
 
 function normalizeProductLeaderboardPayload(payload = {}) {
@@ -2842,6 +2884,7 @@ function productLeaderboardFreshnessMeta(payload = {}) {
 function productLeaderboardExportRows(items, payload) {
   return items.map((item) => {
     const gameScore = productLeaderboardItemScore(item, payload);
+    const prices = productLeaderboardPriceMetrics(item);
     return {
       week_label: payload.weekLabel || payload.sourceSheetName || '',
       generated_at: payload.generatedAt || '',
@@ -2849,6 +2892,9 @@ function productLeaderboardExportRows(items, payload) {
       article: item.article || '',
       name: item.name || '',
       owner: item.owner || '',
+      price: prices.main ?? '',
+      price_wb: prices.wb ?? '',
+      price_ozon: prices.ozon ?? '',
       category: item.category || '',
       traffic: item.traffic || '',
       signal: productLeaderboardSignalMeta(item.signal).label,
@@ -2884,6 +2930,9 @@ function downloadProductLeaderboardExcel(payload, items) {
     ['article', 'Артикул'],
     ['name', 'Товар'],
     ['owner', 'Owner'],
+    ['price', 'Цена'],
+    ['price_wb', 'Цена WB'],
+    ['price_ozon', 'Цена Ozon'],
     ['category', 'Категория'],
     ['traffic', 'Трафик'],
     ['signal', 'Сигнал'],
@@ -7645,6 +7694,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
               <th>SKU / товар</th>
               <th>КЗ модуль</th>
               <th>Owner</th>
+              <th>Цена</th>
               ${sortHeader('Охваты', 'reach')}
               ${sortHeader('Клики', 'clicks')}
               ${sortHeader('Корзины', 'carts')}
@@ -7680,6 +7730,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
                     <div>${item.owner ? badge(item.owner, 'info') : badge('Без owner', 'warn')}</div>
                     <div class="muted small" style="margin-top:8px">${item.article ? escapeHtml(item.article) : '—'}</div>
                   </td>
+                  <td>${productLeaderboardPriceHtml(item)}</td>
                   <td>${fmt.int(item.reach)}</td>
                   <td>${fmt.int(item.clicks)}</td>
                   <td>${fmt.int(item.carts)}</td>
@@ -7693,7 +7744,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
                   <td>${fmt.money(item.income)}</td>
                 </tr>
               `;
-            }).join('') || '<tr><td colspan="14"><div class="empty">По текущим фильтрам пока нет строк.</div></td></tr>'}
+            }).join('') || '<tr><td colspan="15"><div class="empty">По текущим фильтрам пока нет строк.</div></td></tr>'}
           </tbody>
         </table>
       </div>

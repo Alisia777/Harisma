@@ -445,6 +445,27 @@ function resolveSkuTraffic(sku) {
   return channels.join(', ');
 }
 
+function resolveSkuPlatformPrice(sku, platformKey) {
+  const platform = sku?.[platformKey] && typeof sku[platformKey] === 'object' ? sku[platformKey] : {};
+  const candidates = [
+    platform.currentPrice,
+    platform.recPrice,
+    platform.price,
+    sku?.prices?.[platformKey],
+    sku?.price?.[platformKey],
+    platformKey === 'wb' ? sku?.priceWb : sku?.priceOzon
+  ];
+  for (const candidate of candidates) {
+    const value = numberOrNull(candidate);
+    if (value !== null && value > 0) return value;
+  }
+  return null;
+}
+
+function resolveSkuPrimaryPrice(sku) {
+  return resolveSkuPlatformPrice(sku, 'wb') ?? resolveSkuPlatformPrice(sku, 'ozon');
+}
+
 async function fetchWorkbookBuffer(options) {
   const browser = await chromium.launchPersistentContext(options.profileDir, {
     headless: true,
@@ -558,6 +579,9 @@ function buildPayload(rows, skus, options) {
       article: normalizeText(row[articleField]),
       name: normalizeText(row[productKey]) || (sku?.name || articleKey || 'SKU'),
       owner: resolveSkuOwner(sku),
+      price: resolveSkuPrimaryPrice(sku),
+      priceWb: resolveSkuPlatformPrice(sku, 'wb'),
+      priceOzon: resolveSkuPlatformPrice(sku, 'ozon'),
       category: resolveSkuCategory(sku),
       traffic: resolveSkuTraffic(sku),
       inPortal: Boolean(sku),

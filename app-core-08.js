@@ -609,6 +609,173 @@ function repricerPricesMap(platform) {
   return map;
 }
 
+function repricerPayloadRows(payload) {
+  if (!payload || typeof payload !== 'object') return [];
+  return repricerRowsFromBucket(payload.rows || payload.items || payload.articles || payload.byArticle);
+}
+
+function repricerPlatformProcurementPayload(platform) {
+  const normalized = String(platform || '').trim().toLowerCase() === 'ozon' ? 'ozon' : 'wb';
+  if (normalized === 'ozon') {
+    return state.orderProcurementOzon || state.orderProcurementOZON || state.order_procurement_ozon || null;
+  }
+  return state.orderProcurementWb || state.orderProcurementWB || state.order_procurement_wb || null;
+}
+
+function repricerCombinedProcurementRows(platform) {
+  const normalized = String(platform || '').trim().toLowerCase() === 'ozon' ? 'ozon' : 'wb';
+  const payload = state.orderProcurementCombined || state.orderProcurementSnapshot || state.order_procurement || null;
+  return repricerPayloadRows(payload).filter((row) => {
+    const raw = String(row?.platform || row?.marketplace || '').trim().toLowerCase();
+    if (!raw) return false;
+    return normalized === 'ozon' ? raw.includes('ozon') || raw.includes('озон') : raw === 'wb' || raw.includes('wild') || raw.includes('вб');
+  });
+}
+
+function repricerBuildProcurementSignalMap(platform) {
+  const platformRows = repricerPayloadRows(repricerPlatformProcurementPayload(platform));
+  const rows = platformRows.length ? platformRows : repricerCombinedProcurementRows(platform);
+  const map = new Map();
+  rows.forEach((row) => {
+    const key = repricerNormalizeArticleKey(row?.articleKey || row?.article || row?.sku || row?.offerId);
+    if (!key) return;
+    const current = map.get(key) || {
+      inStock: 0,
+      inTransit: 0,
+      inRequest: 0,
+      avgDaily: 0,
+      sales7: 0,
+      places: [],
+      placesWithStock: 0
+    };
+    const inStock = numberOrZero(row?.inStock ?? row?.stock ?? row?.stockUnits);
+    current.inStock += inStock;
+    current.inTransit += numberOrZero(row?.inTransit ?? row?.stockInTransit);
+    current.inRequest += numberOrZero(row?.inRequest ?? row?.stockInSupplyRequest);
+    current.avgDaily += numberOrZero(row?.avgDaily ?? row?.ordersDaily);
+    current.sales7 += numberOrZero(row?.sales7 ?? row?.orders7d);
+    if (inStock > 0) current.placesWithStock += 1;
+    const place = String(row?.place || row?.warehouse || row?.cluster || '').trim();
+    if (place && !current.places.includes(place) && current.places.length < 4) current.places.push(place);
+    map.set(key, current);
+  });
+  return map;
+}
+
+function repricerBuildWarehouseSignalMap() {
+  const payload = state.warehouseStockOverlay || state.warehouse_stock_overlay || null;
+  const map = new Map();
+  repricerPayloadRows(payload).forEach((row) => {
+    const key = repricerNormalizeArticleKey(row?.articleKey || row?.article || row?.sku);
+    if (!key) return;
+    const current = map.get(key) || {
+      stockWarehouse: 0,
+      accepted: 0,
+      shippedWB: 0,
+      shippedOzon: 0,
+      updatedAt: ''
+    };
+    current.stockWarehouse += numberOrZero(row?.stockWarehouse);
+    current.accepted += numberOrZero(row?.accepted);
+    current.shippedWB += numberOrZero(row?.shippedWB);
+    current.shippedOzon += numberOrZero(row?.shippedOzon);
+    current.updatedAt = current.updatedAt || row?.updatedAt || row?.updated_at || '';
+    map.set(key, current);
+  });
+  return map;
+}
+
+function repricerBuildArrivalPriceSignalMaps() {
+  const warehouseMap = repricerBuildWarehouseSignalMap();
+  const procurementMaps = {
+    wb: repricerBuildProcurementSignalMap('wb'),
+    ozon: repricerBuildProcurementSignalMap('ozon')
+  };
+  const maps = { wb: new Map(), ozon: new Map() };
+  ['wb', 'ozon'].forEach((platform) => {
+    const keys = new Set([...warehouseMap.keys(), ...procurementMaps[platform].keys()]);
+    keys.forEach((key) => {
+      const warehouse = warehouseMap.get(key) || {};
+      const procurement = procurementMaps[platform].get(key) || {};
+      const shippedUnits = platform === 'ozon' ? numberOrZero(warehouse.shippedOzon) : numberOrZero(warehouse.shippedWB);
+      const platformStock = numberOrZero(procurement.inStock);
+      const inboundUnits = numberOrZero(procurement.inTransit) + numberOrZero(procurement.inRequest);
+      const acceptedUnits = numberOrZero(warehouse.accepted);
+      maps[platform].set(key, {
+        articleKey: key,
+        platform,
+        platformStock,
+        shippedUnits,
+        inboundUnits,
+        acceptedUnits,
+        warehouseStock: numberOrZero(warehouse.stockWarehouse),
+        placesWithStock: numberOrZero(procurement.placesWithStock),
+        places: procurement.places || [],
+        avgDaily: numberOrZero(procurement.avgDaily),
+        sales7: numberOrZero(procurement.sales7),
+        updatedAt: warehouse.updatedAt || ''
+      });
+    });
+  });
+  return maps;
+}
+
+function repricerArrivalStockLabel(signal = {}) {
+  const parts = [];
+  if (numberOrZero(signal.platformStock) > 0) parts.push(`на площадке ${fmt.int(signal.platformStock)}`);
+  if (numberOrZero(signal.shippedUnits) > 0) parts.push(`отгружено ${fmt.int(signal.shippedUnits)}`);
+  if (numberOrZero(signal.inboundUnits) > 0) parts.push(`в пути ${fmt.int(signal.inboundUnits)}`);
+  return parts.join(' · ') || 'движения нет';
+}
+
+function repricerBuildArrivalPriceSignal(side, fact = {}) {
+  const platformStock = numberOrZero(fact?.platformStock);
+  const shippedUnits = numberOrZero(fact?.shippedUnits);
+  const inboundUnits = numberOrZero(fact?.inboundUnits);
+  const hasMovement = platformStock > 0 || shippedUnits > 0 || inboundUnits > 0;
+  const reasons = [];
+  const priceAgeDays = repricerAgeDays(side?.currentPriceDate || side?.historyFreshnessDate);
+  const currentPrice = numberOrZero(side?.currentPrice);
+  const floor = numberOrZero(side?.effectiveFloor);
+  const changed = Math.abs(numberOrZero(side?.changeRub)) >= 1;
+
+  if (currentPrice <= 0) reasons.push('нет текущей цены');
+  if (floor <= 0 && !['LAUNCH_HOLD', 'OFF'].includes(String(side?.reasonCode || ''))) reasons.push('нет рабочего MIN');
+  if (repricerBelowMinNeedsManual(side)) reasons.push('ниже MIN вручную');
+  if (side?.marginRisk) reasons.push('риск маржи');
+  if (side?.criticalGate === 'BLOCK') reasons.push('стоп входов');
+  if (side?.liveDrift) reasons.push('расходится с live');
+  if (changed) reasons.push(`пересчитать цену ${fmt.money(currentPrice)} → ${fmt.money(side?.finalPrice)}`);
+  if (priceAgeDays != null && priceAgeDays > 7) reasons.push(`цена старше ${fmt.int(Math.floor(priceAgeDays))} дн.`);
+  if (side?.confidence === 'red') reasons.push('красная проверка');
+  if (side?.confidence === 'yellow') reasons.push('жёлтая проверка');
+
+  const needsCheck = hasMovement && reasons.length > 0;
+  const tone = !hasMovement ? 'info' : (needsCheck ? (side?.confidence === 'red' || side?.criticalGate === 'BLOCK' ? 'danger' : 'warn') : 'ok');
+  return {
+    hasMovement,
+    needsCheck,
+    tone,
+    platformStock,
+    shippedUnits,
+    inboundUnits,
+    acceptedUnits: numberOrZero(fact?.acceptedUnits),
+    warehouseStock: numberOrZero(fact?.warehouseStock),
+    placesWithStock: numberOrZero(fact?.placesWithStock),
+    places: fact?.places || [],
+    avgDaily: numberOrZero(fact?.avgDaily),
+    sales7: numberOrZero(fact?.sales7),
+    priceAgeDays,
+    reasons,
+    label: needsCheck ? 'проверить цену' : (hasMovement ? 'цена без красных флагов' : 'нет прихода'),
+    stockLabel: repricerArrivalStockLabel({ platformStock, shippedUnits, inboundUnits }),
+    priorityScore: (needsCheck ? 100 : hasMovement ? 10 : 0)
+      + (side?.confidence === 'red' ? 60 : side?.confidence === 'yellow' ? 30 : 0)
+      + Math.min(40, Math.abs(numberOrZero(side?.changeRub)) / 100)
+      + Math.min(30, (platformStock + shippedUnits + inboundUnits) / 100)
+  };
+}
+
 function repricerLegacyMap() {
   const rows = Array.isArray(state.repricer?.rows) ? state.repricer.rows : [];
   const map = new Map();
@@ -1000,6 +1167,7 @@ function repricerFinalizeSide(side) {
     : null;
   side.liveDrift = side.liveDeltaPct != null && Math.abs(side.liveDeltaPct) >= 0.03;
   repricerApplyConfidence(side);
+  side.arrivalPriceSignal = repricerBuildArrivalPriceSignal(side, side.arrivalFact || {});
   return side;
 }
 
@@ -1016,6 +1184,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
   const skuSide = skuFact && skuFact[platform] && typeof skuFact[platform] === 'object' ? skuFact[platform] : null;
   const supportRow = context.supportRow && typeof context.supportRow === 'object' ? context.supportRow : null;
   const priceRow = context.priceRow && typeof context.priceRow === 'object' ? context.priceRow : null;
+  const arrivalFact = context.arrivalFact && typeof context.arrivalFact === 'object' ? context.arrivalFact : {};
   const supportPricingPresent = [
     supportRow?.currentExportPrice,
     supportRow?.requiredPriceForProfitability,
@@ -1606,6 +1775,7 @@ function buildRepricerSide(sourceRow, platform, settings, context = {}) {
       currentClientPrice,
       sourceMode,
       recommendedPrice,
+      arrivalFact,
     preAlignPrice,
     cappedPrice,
     reasonCode,
@@ -1913,6 +2083,9 @@ function repricerRowsCacheSignature() {
     repricerLiveFreshnessStatus().usable ? 'live-ok' : 'live-stale',
     Array.isArray(state.repricerLive?.rows) ? state.repricerLive.rows.length : 0,
     state.prices?.generatedAt || '',
+    state.warehouseStockOverlay?.generatedAt || state.warehouse_stock_overlay?.generatedAt || '',
+    state.orderProcurementWb?.generatedAt || state.order_procurement_wb?.generatedAt || '',
+    state.orderProcurementOzon?.generatedAt || state.order_procurement_ozon?.generatedAt || '',
     storage.repricerSettingsUpdatedAt || '',
     JSON.stringify(storage.repricerSettings || {}),
     repricerCacheListSignature(storage.repricerOverrides, ['articleKey', 'platform', 'mode', 'floorPrice', 'capPrice', 'forcePrice', 'promoActive', 'promoPrice', 'updatedAt']),
@@ -1973,6 +2146,7 @@ function buildRepricerRowsFresh() {
     wb: repricerPricesMap('wb'),
     ozon: repricerPricesMap('ozon')
   };
+  const arrivalMaps = repricerBuildArrivalPriceSignalMaps();
   const byArticle = new Map();
   ['wb', 'ozon'].forEach((platform) => {
     const rows = Array.isArray(platforms?.[platform]?.rows) ? platforms[platform].rows : [];
@@ -2056,7 +2230,8 @@ function buildRepricerRowsFresh() {
         legacyRow,
         legacySide,
         supportRow,
-        priceRow
+        priceRow,
+        arrivalFact: arrivalMaps[platform]?.get(normalizedKey) || null
       });
     });
   });
@@ -2069,6 +2244,8 @@ function buildRepricerRowsFresh() {
     row.promoActive = Boolean(row.wb?.promoActive || row.ozon?.promoActive);
     row.promoConfigured = Boolean(row.wb?.promoConfigured || row.ozon?.promoConfigured);
     row.changed = Boolean(row.wb?.changed || row.ozon?.changed);
+    row.arrivalPriceCheck = Boolean(row.wb?.arrivalPriceSignal?.needsCheck || row.ozon?.arrivalPriceSignal?.needsCheck);
+    row.arrivalPriceMovement = Boolean(row.wb?.arrivalPriceSignal?.hasMovement || row.ozon?.arrivalPriceSignal?.hasMovement);
     row.belowFloorNow = Boolean(row.wb?.belowFloorNow || row.ozon?.belowFloorNow);
     row.marginRisk = Boolean(row.wb?.marginRisk || row.ozon?.marginRisk);
     row.liveBenchmark = Boolean(row.wb?.hasLiveBenchmark || row.ozon?.hasLiveBenchmark);
@@ -2078,13 +2255,14 @@ function buildRepricerRowsFresh() {
     row.alignmentEligible = Boolean(row.alignmentEligible);
     row.alignmentChanged = Boolean(row.alignmentChanged);
     row.blocked = ['freeze', 'hold', 'force', 'off'].includes(row.wb?.mode) || ['freeze', 'hold', 'force', 'off'].includes(row.ozon?.mode);
-    row.searchIndex = [row.article, row.articleKey, row.brand, row.name, row.owner, row.status, row.productLifecycle?.label, row.productLifecycle?.reason, row.productLifecycle?.source, row.role, row.launchReady, row.segment, row.abc, row.alignmentScenario, row.alignmentReason, row.wb?.reason, row.ozon?.reason, row.wb?.reasonCode, row.ozon?.reasonCode, row.wb?.liveStrategy, row.ozon?.liveStrategy, row.wb?.liveReason, row.ozon?.liveReason, row.wb?.promoLabel, row.ozon?.promoLabel, row.wb?.promoSourceLabel, row.ozon?.promoSourceLabel, row.wb?.promoOfferLabel, row.ozon?.promoOfferLabel, row.wb?.promoOfferSourceLabel, row.ozon?.promoOfferSourceLabel].filter(Boolean).join(' ').toLowerCase();
+    row.searchIndex = [row.article, row.articleKey, row.brand, row.name, row.owner, row.status, row.productLifecycle?.label, row.productLifecycle?.reason, row.productLifecycle?.source, row.role, row.launchReady, row.segment, row.abc, row.alignmentScenario, row.alignmentReason, row.wb?.reason, row.ozon?.reason, row.wb?.reasonCode, row.ozon?.reasonCode, row.wb?.liveStrategy, row.ozon?.liveStrategy, row.wb?.liveReason, row.ozon?.liveReason, row.wb?.promoLabel, row.ozon?.promoLabel, row.wb?.promoSourceLabel, row.ozon?.promoSourceLabel, row.wb?.promoOfferLabel, row.ozon?.promoOfferLabel, row.wb?.promoOfferSourceLabel, row.ozon?.promoOfferSourceLabel, row.wb?.arrivalPriceSignal?.label, row.ozon?.arrivalPriceSignal?.label, ...(row.wb?.arrivalPriceSignal?.reasons || []), ...(row.ozon?.arrivalPriceSignal?.reasons || [])].filter(Boolean).join(' ').toLowerCase();
     row.maxAbsDelta = Math.max(Math.abs(numberOrZero(row.wb?.changeRub)), Math.abs(numberOrZero(row.ozon?.changeRub)));
     return row;
   }).sort((a, b) => Number(b.hasManualOverride) - Number(a.hasManualOverride)
     || Number(b.hasManagedProfile) - Number(a.hasManagedProfile)
     || Number(b.hasCorridor) - Number(a.hasCorridor)
     || Number(b.blockedByGate) - Number(a.blockedByGate)
+    || Number(b.arrivalPriceCheck) - Number(a.arrivalPriceCheck)
     || Number(b.launchHold) - Number(a.launchHold)
     || Number(b.alignmentChanged) - Number(a.alignmentChanged)
     || Number(b.liveDrift) - Number(a.liveDrift)
@@ -2105,6 +2283,7 @@ function repricerModeMatches(row, platform, mode) {
       promo: Boolean(row?.wb?.promoConfigured || row?.wb?.promoActive),
       live: Boolean(row?.wb?.hasLiveBenchmark),
       liveDrift: Boolean(row?.wb?.liveDrift),
+      arrivalCheck: Boolean(row?.wb?.arrivalPriceSignal?.needsCheck),
       blocked: ['freeze', 'hold', 'force', 'off'].includes(row?.wb?.mode) || row?.wb?.criticalGate === 'BLOCK'
     },
     ozon: {
@@ -2115,6 +2294,7 @@ function repricerModeMatches(row, platform, mode) {
       promo: Boolean(row?.ozon?.promoConfigured || row?.ozon?.promoActive),
       live: Boolean(row?.ozon?.hasLiveBenchmark),
       liveDrift: Boolean(row?.ozon?.liveDrift),
+      arrivalCheck: Boolean(row?.ozon?.arrivalPriceSignal?.needsCheck),
       blocked: ['freeze', 'hold', 'force', 'off'].includes(row?.ozon?.mode) || row?.ozon?.criticalGate === 'BLOCK'
     },
     all: {
@@ -2125,12 +2305,14 @@ function repricerModeMatches(row, platform, mode) {
       promo: Boolean(row?.promoConfigured || row?.promoActive),
       live: Boolean(row?.liveBenchmark),
       liveDrift: Boolean(row?.liveDrift),
+      arrivalCheck: Boolean(row?.arrivalPriceCheck),
       blocked: Boolean(row?.blocked || row?.blockedByGate)
     }
   };
   const scope = byPlatform[platform || 'all'] || byPlatform.all;
   if (mode === 'all') return true;
-  if (mode === 'changes') return scope.changed;
+  if (mode === 'changes') return scope.changed || scope.arrivalCheck;
+  if (mode === 'arrival_price_check') return scope.arrivalCheck;
   if (mode === 'manual') return scope.manual;
   if (mode === 'promo') return scope.promo;
   if (mode === 'blocked') return scope.blocked;
@@ -2282,6 +2464,7 @@ function renderRepricerHistoryBlock(side) {
     side.chosenScenario && !side.promoActive ? `<div class="muted small">Alignment: ${escapeHtml(side.chosenScenario)} · keep ${fmt.money(side.keepPrice)} · follow ${fmt.money(side.followPrice)} · score keep ${fmt.num(side.keepScore, 0)} · score follow ${fmt.num(side.followScore, 0)}</div>` : '',
     side.hasLiveBenchmark ? `<div class="muted small">Live repricer: ${escapeHtml(side.liveStrategy || 'без стратегии')} · target ${fmt.int(side.liveTargetDays)} дн.${side.liveReason ? ` · ${escapeHtml(side.liveReason)}` : ''}</div>` : '',
     side.skuMinPrice > 0 || side.ordersDaily > 0 || side.inboundUnits > 0 || side.leadTimeDays > 0 ? `<div class="muted small">SKU/Order: min ${fmt.money(side.skuMinPrice)} · заказы ${fmt.num(side.ordersDaily, 1)} шт./день · в пути ${fmt.int(side.inboundUnits)} · lead ${fmt.int(side.leadTimeDays)} дн. · turnover ${escapeHtml(side.turnoverSource || '—')}</div>` : '',
+    side.arrivalPriceSignal?.hasMovement ? `<div class="muted small">Приход/площадка: ${escapeHtml(side.arrivalPriceSignal.stockLabel)}${side.arrivalPriceSignal.places?.length ? ` · ${escapeHtml(side.arrivalPriceSignal.places.join(', '))}` : ''}</div>` : '',
     `<div class="muted small">История до: ${escapeHtml(side.historyFreshnessDate || '—')}${side.historyNote ? ` · ${escapeHtml(side.historyNote)}` : ''}</div>`
   ].filter(Boolean).join('');
   return `
@@ -2562,6 +2745,23 @@ function repricerExplainSideAction(side) {
   };
 }
 
+function renderRepricerArrivalSignal(side) {
+  const signal = side?.arrivalPriceSignal;
+  if (!signal?.hasMovement) return '';
+  const title = signal.needsCheck
+    ? 'Авто-сигнал: товар на площадке, проверить цену'
+    : 'Авто-сигнал: товар на площадке, цена без красных флагов';
+  const reason = signal.needsCheck
+    ? signal.reasons.slice(0, 3).join(' · ')
+    : 'Критичных причин для ручной проверки цены нет.';
+  return `
+    <div class="repricer-side-action ${escapeHtml(signal.tone || 'info')}" style="margin-top:10px">
+      <strong>${escapeHtml(title)}</strong>
+      <span>${escapeHtml(`${signal.stockLabel}${reason ? ` · ${reason}` : ''}`)}</span>
+    </div>
+  `;
+}
+
 function renderRepricerSide(title, side) {
   if (!side) {
     return `<div class="repricer-side"><div class="repricer-side-head">${escapeHtml(title)}</div><div class="muted small">Нет данных по площадке.</div></div>`;
@@ -2585,6 +2785,7 @@ function renderRepricerSide(title, side) {
     capLiftedByFloorGuard ? badge(`MAX поднят до MIN ${fmt.money(displayedCap)}`, 'warn') : '',
     badge(`оборот ${fmt.num(side.turnoverDays, 1)} дн.`, side.lowStockRisk ? 'warn' : ''),
     side.marginPct == null ? '' : badge(`маржа ${fmt.pct(side.marginPct)}`, side.marginRisk ? 'danger' : 'ok'),
+    side.arrivalPriceSignal?.hasMovement ? badge(`приход: ${side.arrivalPriceSignal.stockLabel}`, side.arrivalPriceSignal.needsCheck ? 'warn' : 'ok') : '',
     side.promoActive ? badge(`${side.promoSource === 'promo_offer' ? 'акция' : 'промо'} ${fmt.money(side.promoPrice)}`, side.promoSource === 'promo_offer' ? 'info' : 'warn') : '',
     side.hasLiveBenchmark ? badge(`live ${fmt.money(side.liveReferencePrice)}`, side.liveDrift ? 'warn' : 'info') : ''
   ].filter(Boolean).join('');
@@ -2613,7 +2814,7 @@ function renderRepricerSide(title, side) {
   const controlsOpen = repricerUiToggleOpen('controls', controlsKey, false);
   return `
     <div class="repricer-side ${side.changed ? 'changed' : ''} confidence-${escapeHtml(side.confidence || '')}" data-lifecycle-key="${escapeHtml(side.productLifecycleKey || 'active')}" data-lifecycle-mode="${escapeHtml(side.engineMode || side.mode || 'auto')}">
-      <div class="repricer-side-head">${escapeHtml(title)} <span class="badge-stack">${confidenceBadge}${lifecycleBadge}${badge(repricerModeLabel(side.mode), repricerModeTone(side.mode))}${side.manualPromoConfigured ? badge(repricerPromoWindowLabel({ status: side.manualPromoWindowStatus }), side.manualPromoActive ? 'warn' : 'info') : ''}${side.promoOfferConfigured ? badge(repricerPromoWindowLabel({ status: side.promoOfferWindowStatus }, 'offer'), side.promoSource === 'promo_offer' && side.promoActive ? 'info' : 'warn') : ''}${side.promoSource === 'promo_offer' ? badge('акция ведёт цену', 'info') : ''}${side.hasOverride ? badge('ручное решение', 'warn') : ''}${side.hasCorridor ? badge('коридор', 'info') : ''}${side.alignmentApplied ? badge('выравнивание', 'info') : ''}</span></div>
+      <div class="repricer-side-head">${escapeHtml(title)} <span class="badge-stack">${confidenceBadge}${lifecycleBadge}${badge(repricerModeLabel(side.mode), repricerModeTone(side.mode))}${side.arrivalPriceSignal?.needsCheck ? badge('пришёл: проверить цену', side.arrivalPriceSignal.tone || 'warn') : (side.arrivalPriceSignal?.hasMovement ? badge('товар на площадке', 'ok') : '')}${side.manualPromoConfigured ? badge(repricerPromoWindowLabel({ status: side.manualPromoWindowStatus }), side.manualPromoActive ? 'warn' : 'info') : ''}${side.promoOfferConfigured ? badge(repricerPromoWindowLabel({ status: side.promoOfferWindowStatus }, 'offer'), side.promoSource === 'promo_offer' && side.promoActive ? 'info' : 'warn') : ''}${side.promoSource === 'promo_offer' ? badge('акция ведёт цену', 'info') : ''}${side.hasOverride ? badge('ручное решение', 'warn') : ''}${side.hasCorridor ? badge('коридор', 'info') : ''}${side.alignmentApplied ? badge('выравнивание', 'info') : ''}</span></div>
       <div class="repricer-prices">
         <div><span>Текущая</span><strong>${fmt.money(side.currentPrice)}</strong></div>
         <div><span>Финал</span><strong>${fmt.money(side.finalPrice)}</strong></div>
@@ -2623,6 +2824,7 @@ function renderRepricerSide(title, side) {
         <strong>${escapeHtml(action.title)}</strong>
         <span>${escapeHtml(side.decisionText || action.hint)}</span>
       </div>
+      ${renderRepricerArrivalSignal(side)}
       <div class="badge-stack" style="margin-top:8px">
         ${businessBadges}
       </div>
@@ -2970,6 +3172,7 @@ function repricerPrimaryStopReason(side) {
   if (!side.rawCostPresent && side.economicFloorSource === 'snapshot_fallback') return 'нет себестоимости';
   if (side.marginRisk) return 'риск маржи';
   if (side.launchHold === 'LAUNCH_HOLD') return 'не READY';
+  if (side.arrivalPriceSignal?.needsCheck) return 'пришёл → цена';
   if (side.cooldownActive) return 'cooldown';
   if (side.stepLimited) return 'лимит шага';
   if (side.promoConfigured && !side.promoActive) return 'промо вне окна';
@@ -2998,6 +3201,7 @@ function repricerFixSource(side) {
   if (flags.missingMin || flags.belowMin) return 'Цены';
   if (flags.missingCost) return 'Себестоимость';
   if (flags.missingPrice) return 'Маркетплейс / текущая цена';
+  if (side?.arrivalPriceSignal?.needsCheck) return 'WB/Ozon приход';
   if (flags.notReady) return 'SKU';
   if (flags.liveDrift || flags.marginRisk || flags.blocked || flags.promoWindow) return 'Ручное решение';
   return 'Аудит';
@@ -3009,6 +3213,7 @@ function repricerFixAction(side) {
   if (flags.belowMin) return 'поднять цену до MIN или пересмотреть MIN';
   if (flags.missingCost) return 'добавить себестоимость / fee stack';
   if (flags.missingPrice) return 'обновить текущую цену площадки';
+  if (side?.arrivalPriceSignal?.needsCheck) return 'проверить цену после прихода/отгрузки';
   if (flags.liveDrift) return 'сверить live-рекомендацию с финальной ценой';
   if (flags.marginRisk) return 'поднять цену или пересмотреть маржинальный порог';
   if (flags.notReady) return 'перевести launch статус в READY или оставить HOLD';
@@ -3031,6 +3236,7 @@ function repricerFixProposal(side) {
     : 'предложение без записи: перепроверить рабочий MIN';
   if (flags.missingCost) return 'предложение без записи: добавить себестоимость и комиссии, затем пересчитать safe export';
   if (flags.missingPrice) return 'предложение без записи: обновить price snapshot и не выгружать цену до появления текущей цены';
+  if (side?.arrivalPriceSignal?.needsCheck) return `предложение без записи: проверить цену по приходу (${side.arrivalPriceSignal.reasons.slice(0, 3).join(' · ')})`;
   if (flags.liveDrift) return livePrice > 0
     ? `предложение без записи: сравнить финал ${fmt.money(finalPrice)} с live ${fmt.money(livePrice)}`
     : 'предложение без записи: сверить live repricer перед выгрузкой';
@@ -3050,6 +3256,7 @@ function repricerCommandHint(side) {
   if (flags.missingMin) return 'ИСПРАВИТЬ + MIN';
   if (flags.missingCost) return 'ИСПРАВИТЬ + себестоимость';
   if (flags.missingPrice) return 'HOLD';
+  if (side?.arrivalPriceSignal?.needsCheck) return 'ПРОВЕРИТЬ ЦЕНУ';
   if (flags.notReady) return 'HOLD или READY';
   if (flags.marginRisk) return 'ИСПРАВИТЬ';
   if (flags.liveDrift) return 'ИСПРАВИТЬ или HOLD';
@@ -3066,6 +3273,7 @@ function repricerRecommendedAction(side) {
   if (flags.missingMin) return current > 0 ? `Заполнить MIN около ${fmt.money(current)} после проверки карточки.` : 'Заполнить MIN/MAX после проверки карточки.';
   if (flags.missingCost) return 'Добавить себестоимость / fee stack в API, до этого не выгружать цену.';
   if (flags.missingPrice) return 'Обновить текущую цену из маркетплейса, до этого держать HOLD.';
+  if (side?.arrivalPriceSignal?.needsCheck) return `Проверить цену по приходу: ${side.arrivalPriceSignal.reasons.slice(0, 3).join(' · ')}.`;
   if (flags.marginRisk) return floor > 0 ? `Держать цену не ниже ${fmt.money(floor)} и проверить маржу.` : 'Поднять цену или пересмотреть порог маржи.';
   if (flags.liveDrift) return 'Сверить live-рекомендацию с финальной ценой перед выгрузкой.';
   if (flags.notReady) return 'Оставить HOLD до READY или изменить launch статус.';
@@ -3079,6 +3287,7 @@ function repricerFixTeamKey(side) {
   if (flags.missingMin || flags.belowMin) return 'prices';
   if (flags.missingCost) return 'cost';
   if (flags.missingPrice) return 'marketplace';
+  if (side?.arrivalPriceSignal?.needsCheck) return 'marketplace';
   if (flags.notReady) return 'sku';
   if (flags.liveDrift || flags.marginRisk || flags.promoWindow || flags.blocked) return 'manual';
   return 'audit';
@@ -4798,6 +5007,11 @@ function repricerExportRows(platform = 'all', sourceRows = null) {
       sales_7d_units: repricerExportNumber(side.sales7d, 1),
       orders_daily_units: repricerExportNumber(side.ordersDaily, 1),
       inbound_units: repricerExportNumber(side.inboundUnits),
+      arrival_price_signal: side.arrivalPriceSignal?.needsCheck ? 'yes' : (side.arrivalPriceSignal?.hasMovement ? 'ok' : ''),
+      arrival_platform_stock_units: repricerExportNumber(side.arrivalPriceSignal?.platformStock),
+      arrival_shipped_units: repricerExportNumber(side.arrivalPriceSignal?.shippedUnits),
+      arrival_inbound_units: repricerExportNumber(side.arrivalPriceSignal?.inboundUnits),
+      arrival_price_reasons: side.arrivalPriceSignal?.needsCheck ? (side.arrivalPriceSignal.reasons || []).join(' · ') : '',
       lead_time_days: repricerExportNumber(side.leadTimeDays),
       alignment_eligible: side.eligibleAlignment ? 'yes' : 'no',
       alignment_delta_gate: side.deltaGate ? 'yes' : 'no',
@@ -4922,6 +5136,11 @@ function downloadRepricerExcel(platform = 'all', sourceRows = null) {
     ['sales_7d_units', 'Sales 7d, шт.'],
     ['orders_daily_units', 'Заказы, шт./день'],
     ['inbound_units', 'В пути, шт.'],
+    ['arrival_price_signal', 'Авто-сигнал цена'],
+    ['arrival_platform_stock_units', 'На площадке, шт.'],
+    ['arrival_shipped_units', 'Отгружено, шт.'],
+    ['arrival_inbound_units', 'В пути MP, шт.'],
+    ['arrival_price_reasons', 'Причина авто-сигнала'],
     ['lead_time_days', 'Lead time, дн.'],
     ['alignment_eligible', 'Align eligible'],
     ['alignment_delta_gate', 'Align delta gate'],
@@ -5125,6 +5344,7 @@ function repricerPriorityScore(row) {
   const sides = [row?.wb, row?.ozon].filter(Boolean);
   let score = 0;
   if (row?.blocked || row?.blockedByGate || sides.some((side) => side?.criticalGate === 'BLOCK')) score += 100;
+  if (row?.arrivalPriceCheck || sides.some((side) => side?.arrivalPriceSignal?.needsCheck)) score += 80;
   if (row?.belowFloorNow || sides.some((side) => side?.belowFloorNow)) score += 50;
   if (row?.marginRisk || sides.some((side) => side?.marginRisk)) score += 45;
   if (row?.changed) score += 30;
@@ -5170,6 +5390,67 @@ function setRepricerOperatorLayer(layer) {
   ui.operatorLayer = layer === 'advanced' ? 'advanced' : 'simple';
   window.__ALTEA_REPRICER_ADVANCED_SESSION__ = ui.operatorLayer === 'advanced';
   renderRepricer();
+}
+
+function repricerArrivalSignalStats(rows = []) {
+  const stats = {
+    total: { movement: 0, check: 0, ok: 0 },
+    wb: { movement: 0, check: 0, ok: 0 },
+    ozon: { movement: 0, check: 0, ok: 0 },
+    queue: []
+  };
+  repricerCollectSides(rows).forEach(({ row, platform, platformLabel, side }) => {
+    const signal = side?.arrivalPriceSignal;
+    if (!signal?.hasMovement) return;
+    stats.total.movement += 1;
+    stats[platform].movement += 1;
+    if (signal.needsCheck) {
+      stats.total.check += 1;
+      stats[platform].check += 1;
+      stats.queue.push({ row, side, platform, platformLabel, signal });
+    } else {
+      stats.total.ok += 1;
+      stats[platform].ok += 1;
+    }
+  });
+  stats.queue.sort((left, right) => numberOrZero(right.signal?.priorityScore) - numberOrZero(left.signal?.priorityScore)
+    || String(left.row?.article || left.row?.articleKey || '').localeCompare(String(right.row?.article || right.row?.articleKey || ''), 'ru'));
+  return stats;
+}
+
+function renderRepricerArrivalPriceSignalCard(rows = []) {
+  const stats = repricerArrivalSignalStats(rows);
+  const queueMarkup = stats.queue.slice(0, 5).map(({ row, signal, platformLabel }) => `
+    <div class="repricer-operator-sku">
+      <div>
+        <strong>${linkToSku(row.articleKey, row.article || row.articleKey)} · ${escapeHtml(platformLabel)}</strong>
+        <span>${escapeHtml(row.name || row.owner || 'Без названия')}</span>
+        <span>${escapeHtml(`${signal.stockLabel} · ${signal.reasons.slice(0, 3).join(' · ')}`)}</span>
+      </div>
+      ${badge(signal.tone === 'danger' ? 'срочно' : 'проверить', signal.tone || 'warn')}
+    </div>
+  `).join('');
+  const tone = stats.total.check ? 'warn' : (stats.total.movement ? 'ok' : 'info');
+  return `
+    <div class="repricer-operator-focus-card repricer-arrival-price-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Авто-сигнал: товар пришёл → цена</h3>
+          <p class="small muted">Когда по WB/Ozon есть товар на площадке, отгрузка или входящий остаток, портал отдельно проверяет цену и поднимает карточки с рисками наверх.</p>
+        </div>
+        ${badge(stats.total.check ? `проверить ${fmt.int(stats.total.check)}` : 'сигнал чистый', tone)}
+      </div>
+      <div class="badge-stack" style="margin-top:10px">
+        ${badge(`WB проверить ${fmt.int(stats.wb.check)}/${fmt.int(stats.wb.movement)}`, stats.wb.check ? 'warn' : 'ok')}
+        ${badge(`Ozon проверить ${fmt.int(stats.ozon.check)}/${fmt.int(stats.ozon.movement)}`, stats.ozon.check ? 'warn' : 'ok')}
+        ${badge(`без замечаний ${fmt.int(stats.total.ok)}`, stats.total.ok ? 'ok' : 'info')}
+      </div>
+      <div class="quick-actions" style="margin-top:12px">
+        <button type="button" class="quick-chip ${stats.total.check ? 'warn' : ''}" data-repricer-open-filter="arrival_price_check" ${stats.total.check ? '' : 'disabled aria-disabled="true"'}>Открыть сигнал ${fmt.int(stats.total.check)}</button>
+      </div>
+      <div class="repricer-operator-sku-list" style="margin-top:12px">${queueMarkup || '<div class="muted small">Сейчас нет товаров, где приход/отгрузка требует отдельной проверки цены.</div>'}</div>
+    </div>
+  `;
 }
 
 function renderRepricerRepairStatusCard() {
@@ -5274,6 +5555,14 @@ function repricerOperatorTaskPlan(health, stats = {}) {
   const metrics = health?.metrics || {};
   const tasks = [
     {
+      title: 'Проверить цены по приходу',
+      count: stats.arrivalPriceCheckSides || 0,
+      hint: 'Товар уже на площадке или отгружен, а цена требует проверки.',
+      mode: 'arrival_price_check',
+      tone: 'warn',
+      source: 'WB/Ozon'
+    },
+    {
       title: 'Заполнить MIN',
       count: metrics.missing_effective_floor_actionable || metrics.missing_effective_floor || 0,
       hint: 'Без рабочего MIN цена не уходит в шаблон.',
@@ -5344,7 +5633,7 @@ function repricerIssueBatchCounts(rows) {
 }
 
 function repricerOperatorQueueRows(rows, limit = 6) {
-  const scored = repricerCollectSides(rows).filter(({ side }) => side && !side.outOfSpec && side.confidence !== 'green')
+  const scored = repricerCollectSides(rows).filter(({ side }) => side && !side.outOfSpec && (side.confidence !== 'green' || side.arrivalPriceSignal?.needsCheck))
     .map(({ row, side }) => {
       const missingMin = numberOrZero(side.effectiveFloor) <= 0 && !['LAUNCH_HOLD', 'OFF'].includes(String(side.reasonCode || ''));
       const missingPrice = numberOrZero(side.currentPrice) <= 0 && !['LAUNCH_HOLD', 'OOS', 'OFF'].includes(String(side.reasonCode || ''));
@@ -5355,6 +5644,7 @@ function repricerOperatorQueueRows(rows, limit = 6) {
         + (side.marginRisk ? 55 : 0)
         + (missingPrice ? 45 : 0)
         + (missingCost ? 35 : 0)
+        + (side.arrivalPriceSignal?.needsCheck ? 65 : 0)
         + (side.liveDrift ? 18 : 0)
         + numberOrZero(side.confidenceScore);
       return { row, side, score };
@@ -5678,6 +5968,8 @@ function renderRepricer() {
   const health = repricerHealthcheck(sourceRows);
   const smokeTests = health.smokeTests;
   const sideRows = sourceRows.flatMap((row) => [row.wb, row.ozon].filter(Boolean));
+  const arrivalSignalStats = repricerArrivalSignalStats(sourceRows);
+  const arrivalSignalCard = renderRepricerArrivalPriceSignalCard(sourceRows);
   const feeStackSides = sideRows.filter((side) => side.economicFloorSource === 'fee_stack').length;
   const mixedGuardSides = sideRows.filter((side) => side.economicFloorSource === 'snapshot_guard').length;
   const fallbackSides = sideRows.filter((side) => side.economicFloorSource === 'snapshot_fallback').length;
@@ -5712,6 +6004,7 @@ function renderRepricer() {
     badge(`ручные решения ${fmt.int(manualOverrideRows)}`, manualOverrideRows ? 'info' : 'ok'),
     badge(`поднять до MIN ${fmt.int(floorRaiseSafeSides)}`, floorRaiseSafeSides ? 'ok' : 'info'),
     badge(`ниже MIN вручную ${fmt.int(belowMinSides)}`, belowMinSides ? 'danger' : 'ok'),
+    badge(`пришёл → цена ${fmt.int(arrivalSignalStats.total.check)}`, arrivalSignalStats.total.check ? 'warn' : 'ok'),
     badge(`нет входов ${fmt.int(blockedGateSides)}`, blockedGateSides ? 'danger' : 'ok'),
     badge(`без себестоимости ${fmt.int(fallbackSides)}`, fallbackSides ? 'warn' : 'ok'),
     badge(`расходятся с live ${fmt.int(liveDriftSides)}`, liveDriftSides ? 'warn' : 'ok')
@@ -5725,6 +6018,8 @@ function renderRepricer() {
     badge(`акция ведёт цену ${fmt.int(promoOfferActiveSides)}`, promoOfferActiveSides ? 'ok' : ''),
     badge(`план промо ${fmt.int(promoScheduledSides)}`, promoScheduledSides ? 'info' : ''),
     badge(`промо истекло ${fmt.int(promoExpiredSides)}`, promoExpiredSides ? 'warn' : ''),
+    badge(`приход/отгрузка ${fmt.int(arrivalSignalStats.total.movement)}`, arrivalSignalStats.total.movement ? 'info' : ''),
+    badge(`пришёл → цена ${fmt.int(arrivalSignalStats.total.check)}`, arrivalSignalStats.total.check ? 'warn' : 'ok'),
     badge(`выравнивание ${fmt.int(alignmentChangedRows)}`, alignmentChangedRows ? 'ok' : 'info'),
     badge(`тесты ${fmt.int(smokePassed)}/${fmt.int(smokeTests.length)}`, smokePassed === smokeTests.length ? 'ok' : 'warn'),
     badge(`есть live-ориентир ${fmt.int(liveBenchmarkSides)}`, liveBenchmarkSides ? 'info' : 'warn'),
@@ -5791,7 +6086,7 @@ function renderRepricer() {
     ].map(([key, label, count, tone]) => `
       <button type="button" class="quick-chip ${count ? tone : ''}" data-repricer-export="batch:${escapeHtml(key)}">${escapeHtml(label)} ${fmt.int(count)}</button>
     `).join('');
-    const taskPlan = repricerOperatorTaskPlan(health, { belowMinSides, liveDriftSides, safeWbRows, safeOzonRows });
+    const taskPlan = repricerOperatorTaskPlan(health, { belowMinSides, liveDriftSides, safeWbRows, safeOzonRows, arrivalPriceCheckSides: arrivalSignalStats.total.check });
     const taskCards = taskPlan.slice(0, 4).map((task, index) => `
       <div class="repricer-operator-task ${escapeHtml(task.tone)}">
         <div class="repricer-operator-task-index">${fmt.int(index + 1)}</div>
@@ -5883,6 +6178,7 @@ function renderRepricer() {
       <div class="repricer-operator-panel repricer-human-panel repricer-game-panel" data-repricer-operator-panel data-repricer-native-panel="1">
         ${repricerGameHeroHtml(readiness)}
         ${repricerMarketplaceHtml}
+        ${arrivalSignalCard}
         ${noSafeExport ? `
           <div class="repricer-empty-explain">
             <div>
@@ -5986,6 +6282,8 @@ function renderRepricer() {
   const cards = [
     { label: 'SKU в контуре', value: sourceRows.length, hint: 'Все SKU, которые уже кормятся от smart price workbench.' },
     { label: 'Нужны решения', value: actionableRows, hint: 'Есть разница между текущей и рекомендованной ценой.' },
+    { label: 'Пришёл → цена', value: arrivalSignalStats.total.check, hint: 'Товар уже на площадке/отгружен, но цена требует проверки.' },
+    { label: 'WB / Ozon сигнал', value: `${fmt.int(arrivalSignalStats.wb.check)} / ${fmt.int(arrivalSignalStats.ozon.check)}`, hint: 'Проверки цены отдельно по площадкам.' },
     { label: 'Профили SKU', value: sourceRows.filter((row) => row.hasManagedProfile).length, hint: 'Статус, роль или launch-профиль уже правили на портале.' },
     { label: 'Коридоры площадок', value: sideRows.filter((side) => side.hasCorridor).length, hint: 'По площадке уже задан отдельный ценовой коридор.' },
     { label: 'Ручные решения', value: manualOverrideRows, hint: 'Портал уже вмешался в базовый расчёт.' },
@@ -6032,6 +6330,7 @@ function renderRepricer() {
     <div class="muted small" style="margin-top:8px">Проверка дублей в репрайсере сейчас идёт по совпадающим названиям карточек. Если названия похожи, дополнительно сверяйте артикул и площадку перед выгрузкой.</div>
 
     ${safetyCard}
+    ${arrivalSignalCard}
     ${templateExplainCard}
     ${renderRepricerRepairStatusCard()}
     ${renderRepricerFixTeamCard(sourceRows)}
@@ -6073,9 +6372,10 @@ function renderRepricer() {
         <option value="wb" ${state.repricerFilters.platform === 'wb' ? 'selected' : ''}>Только WB</option>
         <option value="ozon" ${state.repricerFilters.platform === 'ozon' ? 'selected' : ''}>Только Ozon</option>
       </select>
-      <select id="repricerModeFilter">
-        <option value="changes" ${state.repricerFilters.mode === 'changes' ? 'selected' : ''}>Нужны действия по цене</option>
-        <option value="manual" ${state.repricerFilters.mode === 'manual' ? 'selected' : ''}>Есть ручные решения</option>
+        <select id="repricerModeFilter">
+          <option value="changes" ${state.repricerFilters.mode === 'changes' ? 'selected' : ''}>Нужны действия по цене</option>
+          <option value="arrival_price_check" ${state.repricerFilters.mode === 'arrival_price_check' ? 'selected' : ''}>Авто-сигнал: пришёл → цена</option>
+          <option value="manual" ${state.repricerFilters.mode === 'manual' ? 'selected' : ''}>Есть ручные решения</option>
         <option value="promo" ${state.repricerFilters.mode === 'promo' ? 'selected' : ''}>Есть промо</option>
         <option value="blocked" ${state.repricerFilters.mode === 'blocked' ? 'selected' : ''}>Пауза (стоп / нет данных)</option>
         <option value="below_min" ${state.repricerFilters.mode === 'below_min' ? 'selected' : ''}>Ниже рабочего MIN</option>
@@ -6099,6 +6399,7 @@ function renderRepricer() {
     </div>
     <div class="quick-actions" style="margin-top:10px">
       <button type="button" class="quick-chip ${state.repricerFilters.mode === 'changes' ? 'active' : ''}" data-repricer-quick-mode="changes">Требуют решения</button>
+      <button type="button" class="quick-chip ${state.repricerFilters.mode === 'arrival_price_check' ? 'active' : ''}" data-repricer-quick-mode="arrival_price_check">Пришёл → цена</button>
       <button type="button" class="quick-chip ${state.repricerFilters.mode === 'manual' ? 'active' : ''}" data-repricer-quick-mode="manual">Ручные решения</button>
       <button type="button" class="quick-chip ${state.repricerFilters.mode === 'below_min' ? 'active' : ''}" data-repricer-quick-mode="below_min">Ниже MIN</button>
       <button type="button" class="quick-chip ${state.repricerFilters.mode === 'promo' ? 'active' : ''}" data-repricer-quick-mode="promo">Промо</button>

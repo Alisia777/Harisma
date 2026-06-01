@@ -2,7 +2,7 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260601ratingreport15';
+  const VERSION = '20260601ratingreport16';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
@@ -1932,6 +1932,7 @@
     const comments = [];
     if (row.unansweredQuestions > 0) comments.push(`Ответить на вопросы: ${fmtInt(row.unansweredQuestions)}`);
     if (row.q1.questions > 0) comments.push(`Вчера вопросов: ${fmtInt(row.q1.questions)}`);
+    if (hasNumber(row.registryRating)) comments.push(`Ориентир рейтинга: ${fmtNum(row.registryRating, 1)} из реестра`);
     if (row.reviewApiLocked) comments.push('Отзывы, рейтинг и негатив закрыты подпиской Ozon API');
     if (hasNumber(row.contentRating) && Number(row.contentRating) < 70) comments.push('Служебный контент-рейтинг <70, не звезды товара');
     if (!row.hasStock) comments.push('Нет остатка');
@@ -1944,6 +1945,7 @@
     const history = Array.isArray(payload.history) ? payload.history : [];
     const latest = history.length ? history[history.length - 1] : { date: payload.window?.to || '', cards };
     const reviewApiLocked = ozonReviewApiLocked(payload);
+    const skuMap = buildSkuMap(appState());
     const rows = cards.map((card, index) => {
       const p7 = ozonPeriod(card, 7);
       const p3 = ozonPeriod(card, 3);
@@ -1951,9 +1953,14 @@
       const q7 = ozonQuestionPeriod(card, 7);
       const q3 = ozonQuestionPeriod(card, 3);
       const q1 = ozonQuestionPeriod(card, 1);
+      const key = ozonCardKey(card);
+      const registrySku = skuMap.get(key)
+        || skuMap.get(normalizeKey(card.offerId))
+        || skuMap.get(normalizeKey(card.articleKey))
+        || skuMap.get(normalizeKey(card.label));
       const row = {
         index: index + 1,
-        key: ozonCardKey(card),
+        key,
         platform: 'ozon',
         label: card.offerId || card.label || card.title || String(card.sku || card.productId || ''),
         title: card.title || '',
@@ -1962,6 +1969,8 @@
         productId: card.productId || '',
         contentRating: nullableNumber(card.contentRating),
         rating: nullableNumber(card.reviewRating),
+        registryRating: nullableNumber(registrySku?.rating),
+        registryReviews: nullableNumber(registrySku?.reviews),
         ratingDelta1: null,
         ratingDelta7: null,
         historyRating: null,
@@ -2029,7 +2038,13 @@
       unansweredQuestions: nullableNumber(questionSummary.unanswered ?? summary.unansweredQuestions) ?? rows.reduce((sum, row) => sum + row.unansweredQuestions, 0),
       contentRated: num(summary.contentRated || rows.filter((row) => hasNumber(row.contentRating)).length),
       avgContentRating: nullableNumber(summary.avgContentRating),
-      contentBelow70: num(summary.contentBelow70 || rows.filter((row) => hasNumber(row.contentRating) && Number(row.contentRating) < 70).length)
+      contentBelow70: num(summary.contentBelow70 || rows.filter((row) => hasNumber(row.contentRating) && Number(row.contentRating) < 70).length),
+      registryRatingCount: rows.filter((row) => hasNumber(row.registryRating)).length,
+      avgRegistryRating: (() => {
+        const rated = rows.filter((row) => hasNumber(row.registryRating));
+        return rated.length ? rated.reduce((sum, row) => sum + Number(row.registryRating), 0) / rated.length : null;
+      })(),
+      registryReviews: rows.reduce((sum, row) => sum + num(row.registryReviews), 0)
     };
     return {
       payload,
@@ -2057,6 +2072,11 @@
     return `<span class="cell-main">—</span><span class="cell-muted">${esc(note)}</span>`;
   }
 
+  function renderOzonRegistryRatingCell(row) {
+    if (!hasNumber(row.registryRating)) return renderOzonUnavailableCell('звезды API 403');
+    return `<span class="cell-main">${fmtNum(row.registryRating, 1)}</span><span class="cell-muted">ориентир из реестра · не API</span>`;
+  }
+
   function renderOzonCountCell(value, note = '') {
     return `<span class="cell-main">${fmtInt(value)}</span>${note ? `<span class="cell-muted">${esc(note)}</span>` : ''}`;
   }
@@ -2082,7 +2102,7 @@
           <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API отзывов 403' : '')}</td>
           <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'звезды API 403' : '')}</td>
           <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'звезды API 403' : '')}</td>
-          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'звезды API 403' : '')}</td>
+          <td>${renderOzonRegistryRatingCell(row)}</td>
           <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API негатива 403' : '')}</td>
           <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API негатива 403' : '')}</td>
           <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API негатива 403' : '')}</td>
@@ -2254,7 +2274,7 @@
         ${renderMetricCard('Ozon вопросы всего', fmtInt(ozon.totals.questions), trendBadge(ozon.totals.questions1, questionDailyBase), `7д ${fmtInt(ozon.totals.questions7)} · 3д ${fmtInt(ozon.totals.questions3)} · вчера ${fmtInt(ozon.totals.questions1)}`, { platform: 'ozon' })}
         ${renderMetricCard('Ozon без ответа', fmtInt(ozon.totals.unansweredQuestions), ozon.totals.unansweredQuestions ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up'), 'вопросы без ответа', { platform: 'ozon', ratio: ozon.totals.unansweredQuestions ? 0.35 : 1 })}
         ${renderMetricCard('Ozon отзывы 7 / 3 / вчера', '— / — / —', simpleBadge('API 403', 'down'), 'review/list и review/count закрыты подпиской', { platform: 'ozon', ratio: 0.18 })}
-        ${renderMetricCard('Ozon звезды товара', '— / — / —', simpleBadge('API 403', 'down'), 'это не контент-рейтинг; звездный рейтинг приходит только через отзывы', { platform: 'ozon', ratio: 0.18 })}
+        ${renderMetricCard('Ozon рейтинг ориентир', fmtNum(ozon.totals.avgRegistryRating, 1), simpleBadge('реестр, не API', 'flat'), `звезды Ozon API 403 · ${fmtInt(ozon.totals.registryRatingCount)} карточек`, { platform: 'ozon', ratio: hasNumber(ozon.totals.avgRegistryRating) ? Number(ozon.totals.avgRegistryRating) / 5 : 0.18 })}
         ${renderMetricCard('Ozon негатив 7 / 3 / вчера', '— / — / —', simpleBadge('API 403', 'down'), 'негатив считается из отзывов', { platform: 'ozon', ratio: 0.18 })}
       </div>
     `;
@@ -2277,7 +2297,7 @@
       renderMetricCard('Ozon выручка 7д', fmtMoney(ozon.totals.revenue7), simpleBadge(`${fmtInt(ozon.totals.units7)} шт.`, 'up'), `вчера ${fmtMoney(ozon.totals.revenue1)}`, { platform: 'ozon', ratio: ozon.totals.revenue7 ? 1 : 0.1 }),
       renderMetricCard('Ozon вопросы 7д', fmtInt(ozon.totals.questions7), trendBadge(ozon.totals.questions1, ozonQuestionDailyBase), `${fmtInt(ozon.totals.questions)} всего`, { platform: 'ozon' }),
       renderMetricCard('Ozon без ответа', fmtInt(ozon.totals.unansweredQuestions), ozon.totals.unansweredQuestions ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up'), 'вопросы', { platform: 'ozon', ratio: ozon.totals.unansweredQuestions ? 0.35 : 1 }),
-      renderMetricCard('Ozon звезды товара', 'API 403', simpleBadge('review API', 'down'), 'не контент-рейтинг; Ozon не отдает звезды без отзывов', { platform: 'ozon', ratio: 0.18 }),
+      renderMetricCard('Ozon рейтинг ориентир', fmtNum(ozon.totals.avgRegistryRating, 1), simpleBadge('реестр, не API', 'flat'), `звезды API 403 · ${fmtInt(ozon.totals.registryReviews)} отзывов в реестре`, { platform: 'ozon', ratio: hasNumber(ozon.totals.avgRegistryRating) ? Number(ozon.totals.avgRegistryRating) / 5 : 0.18 }),
       renderMetricCard('Ozon контент служебно', fmtInt(ozon.totals.cards), simpleBadge(`${fmtInt(ozon.totals.contentBelow70)} <70`, ozon.totals.contentBelow70 ? 'down' : 'up'), 'это не рейтинг товара', { platform: 'ozon', ratio: 0.9 })
     ].join('');
     return `

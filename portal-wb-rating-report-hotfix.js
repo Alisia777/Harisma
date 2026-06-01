@@ -2,7 +2,7 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260601ratingreport11';
+  const VERSION = '20260601ratingreport12';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
@@ -17,7 +17,9 @@
   };
   const structuredState = {
     platform: 'wb',
-    view: 'history'
+    view: 'history',
+    statsPeriod: 'all',
+    statsMetric: 'all'
   };
 
   function appState() {
@@ -1619,6 +1621,46 @@
     `;
   }
 
+  function historyRowMatches(row, status) {
+    if (!status || status === 'all') return true;
+    const unanswered = num(row.unanswered) + num(row.unansweredQuestions);
+    const lowTotal = num(row.p7?.low) + num(row.p3?.low) + num(row.p1?.low);
+    const hasQuestions = num(row.questionCount) + num(row.q7?.questions) + num(row.q3?.questions) + num(row.q1?.questions) + num(row.unansweredQuestions);
+    if (status === 'unanswered') return unanswered > 0;
+    if (status === 'negative') return lowTotal > 0 || num(row.p7?.negativePct) >= 0.04 || num(row.p1?.negativePct) > 0;
+    if (status === 'ratingDrop') return num(row.ratingDelta1) <= -0.03 || num(row.ratingDelta7) <= -0.05;
+    if (status === 'questions') return hasQuestions > 0;
+    if (status === 'fresh') return num(row.p1?.reviews) > 0 || num(row.q1?.questions) > 0 || num(row.p1?.low) > 0;
+    return true;
+  }
+
+  function filterRatingRows(rows) {
+    const status = workbenchState.status || 'all';
+    return [...rows].filter((row) => historyRowMatches(row, status));
+  }
+
+  function renderHistoryControls(items, visible) {
+    const status = workbenchState.status || 'all';
+    const statusOptions = [
+      ['all', 'Все'],
+      ['unanswered', 'Нужен ответ'],
+      ['negative', 'Негатив'],
+      ['ratingDrop', 'Рейтинг просел'],
+      ['questions', 'Есть вопросы'],
+      ['fresh', 'Свежие']
+    ];
+    return `
+      <div class="rating-queue-controls">
+        <div class="rating-sort-control" aria-label="Фильтр карточек">
+          <span>Фильтр</span>
+          ${statusOptions.map(([value, label]) => `<button type="button" class="${status === value ? 'active' : ''}" data-rating-status="${esc(value)}">${esc(label)}</button>`).join('')}
+        </div>
+        ${renderRatingSortControl()}
+        <div class="badge-stack">${chip(`${fmtInt(visible.length)} из ${fmtInt(items.length)}`, 'info')}</div>
+      </div>
+    `;
+  }
+
   function queueSortKey(kind) {
     const current = workbenchState.sort || '';
     const allowed = kind === 'reviews'
@@ -1701,7 +1743,8 @@
   }
 
   function renderHistoryCards(model) {
-    const sortedRows = sortRatingRows(model.rows);
+    const filteredRows = filterRatingRows(model.rows);
+    const sortedRows = sortRatingRows(filteredRows);
     const rows = sortedRows.slice(0, 120).map((row) => {
       const link = typeof linkToSku === 'function' ? linkToSku(row.key || row.label, row.label) : `<strong>${esc(row.label)}</strong>`;
       const unanswered = row.unanswered + row.unansweredQuestions;
@@ -1748,10 +1791,10 @@
             <p>Одна строка = один товар. Сначала статус, затем отзывы, оценка, негатив, вопросы и хвост без ответа.</p>
           </div>
           <div class="rating-work-actions">
-            ${renderRatingSortControl()}
             <div class="badge-stack">${chip(`${fmtInt(model.rows.length)} карточек`, 'info')}${chip(`${fmtInt(model.snapshots.length)} срезов`, 'info')}</div>
           </div>
         </div>
+        ${renderHistoryControls(model.rows, filteredRows)}
         <div class="rating-work-table">
           <table>
             <colgroup>
@@ -1840,6 +1883,74 @@
     `;
   }
 
+  function renderStatsControls() {
+    const period = structuredState.statsPeriod || 'all';
+    const metric = structuredState.statsMetric || 'all';
+    const periodOptions = [
+      ['all', 'Все окна'],
+      ['p7', '7 дней'],
+      ['p3', '3 дня'],
+      ['p1', 'Вчера']
+    ];
+    const metricOptions = [
+      ['all', 'Все метрики'],
+      ['reviews', 'Отзывы'],
+      ['negative', 'Негатив'],
+      ['questions', 'Вопросы'],
+      ['unanswered', 'Без ответа'],
+      ['history', 'История'],
+      ['rating', 'Оценка']
+    ];
+    return `
+      <div class="rating-queue-controls rating-stat-controls">
+        <div class="rating-sort-control" aria-label="Период статистики">
+          <span>Период</span>
+          ${periodOptions.map(([value, label]) => `<button type="button" class="${period === value ? 'active' : ''}" data-rating-stats-period="${esc(value)}">${esc(label)}</button>`).join('')}
+        </div>
+        <div class="rating-sort-control" aria-label="Метрика статистики">
+          <span>Метрика</span>
+          ${metricOptions.map(([value, label]) => `<button type="button" class="${metric === value ? 'active' : ''}" data-rating-stats-metric="${esc(value)}">${esc(label)}</button>`).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function statsPeriodValues(model) {
+    const period = structuredState.statsPeriod || 'all';
+    const map = {
+      p7: { label: '7 дней', reviews: model.totals.reviews7, low: model.totals.low7, neg: model.totals.neg7, questions: model.totals.questions7, revenue: model.totals.revenue7 },
+      p3: { label: '3 дня', reviews: model.totals.reviews3, low: model.totals.low3, neg: model.totals.neg3, questions: model.totals.questions3, revenue: model.totals.revenue3 },
+      p1: { label: 'вчера', reviews: model.totals.reviews1, low: model.totals.low1, neg: model.totals.neg1, questions: model.totals.questions1, revenue: model.totals.revenue1 }
+    };
+    return map[period] || null;
+  }
+
+  function renderStatsMetricCards(model) {
+    const metric = structuredState.statsMetric || 'all';
+    const reviewDailyBase = model.totals.reviews3 ? model.totals.reviews3 / 3 : null;
+    const questionDailyBase = model.totals.questions3 ? model.totals.questions3 / 3 : null;
+    const periodData = statsPeriodValues(model);
+    const cards = periodData ? [
+      ['reviews', renderMetricCard(`Отзывы ${periodData.label}`, fmtInt(periodData.reviews), trendBadge(model.totals.reviews1, reviewDailyBase), `выручка ${fmtMoney(periodData.revenue)}`)],
+      ['negative', renderMetricCard(`Негатив ${periodData.label}`, fmtPct(periodData.neg), trendBadge(model.totals.neg1, model.totals.neg3, { lowerIsBetter: true, percent: true, threshold: 0.01 }), `${fmtInt(periodData.low)} негативных отзывов`, { ratio: periodData.neg === null ? 0.5 : Math.max(0.08, 1 - Number(periodData.neg)) })],
+      ['questions', renderMetricCard(`Вопросы ${periodData.label}`, fmtInt(periodData.questions), trendBadge(model.totals.questions1, questionDailyBase), `${fmtInt(model.totals.questions)} всего в базе`)],
+      ['unanswered', renderMetricCard('Без ответа сейчас', `${fmtInt(model.totals.unanswered)} отзывов / ${fmtInt(model.totals.unansweredQuestions)} вопросов`, (model.totals.unanswered + model.totals.unansweredQuestions) ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up'))],
+      ['history', renderMetricCard('История карточек', `${fmtInt(model.snapshots.length)} срезов`, simpleBadge(`${fmtInt(model.rows.length)} карточек`, 'flat'), `срез ${fullDate(model.active.date)}`)],
+      ['rating', renderMetricCard('Средняя оценка', fmtNum(model.totals.avgRating, 2), ratingTrendBadge(model.totals.avgRating, avgSnapshotRating(model.baseline1)), `${fmtInt(model.totals.leaders)} карточек 4,8+`)]
+    ] : [
+      ['reviews', renderMetricCard('Отзывы 7 / 3 / вчера', `${fmtInt(model.totals.reviews7)} / ${fmtInt(model.totals.reviews3)} / ${fmtInt(model.totals.reviews1)}`)],
+      ['negative', renderMetricCard('Негатив 7 / 3 / вчера', `${fmtPct(model.totals.neg7)} / ${fmtPct(model.totals.neg3)} / ${fmtPct(model.totals.neg1)}`, trendBadge(model.totals.neg1, model.totals.neg3, { lowerIsBetter: true, percent: true, threshold: 0.01 }))],
+      ['questions', renderMetricCard('Вопросы 7 / 3 / вчера', `${fmtInt(model.totals.questions7)} / ${fmtInt(model.totals.questions3)} / ${fmtInt(model.totals.questions1)}`)],
+      ['unanswered', renderMetricCard('Без ответа', `${fmtInt(model.totals.unanswered)} отзывов / ${fmtInt(model.totals.unansweredQuestions)} вопросов`, (model.totals.unanswered + model.totals.unansweredQuestions) ? simpleBadge('нужно закрыть', 'down') : simpleBadge('закрыто', 'up'))],
+      ['history', renderMetricCard('История', `${fmtInt(model.snapshots.length)} срезов`, '', `${fmtInt(model.rows.length)} карточек`)],
+      ['rating', renderMetricCard('Средняя оценка', fmtNum(model.totals.avgRating, 2), ratingTrendBadge(model.totals.avgRating, avgSnapshotRating(model.baseline1)))]
+    ];
+    return cards
+      .filter(([id]) => metric === 'all' || metric === id)
+      .map(([, html]) => html)
+      .join('');
+  }
+
   function renderStructuredStats(model) {
     return `
       <div class="rating-detail-head">
@@ -1848,13 +1959,9 @@
           <p>Сводка по тем же окнам, что в отчете: 7 дней, 3 дня, вчера.</p>
         </div>
       </div>
+      ${renderStatsControls()}
       <div class="rating-metric-grid">
-        ${renderMetricCard('Отзывы 7 / 3 / вчера', `${fmtInt(model.totals.reviews7)} / ${fmtInt(model.totals.reviews3)} / ${fmtInt(model.totals.reviews1)}`)}
-        ${renderMetricCard('Негатив 7 / 3 / вчера', `${fmtPct(model.totals.neg7)} / ${fmtPct(model.totals.neg3)} / ${fmtPct(model.totals.neg1)}`)}
-        ${renderMetricCard('Вопросы 7 / 3 / вчера', `${fmtInt(model.totals.questions7)} / ${fmtInt(model.totals.questions3)} / ${fmtInt(model.totals.questions1)}`)}
-        ${renderMetricCard('Без ответа', `${fmtInt(model.totals.unanswered)} отзывов / ${fmtInt(model.totals.unansweredQuestions)} вопросов`)}
-        ${renderMetricCard('История', `${fmtInt(model.snapshots.length)} срезов`, '', `${fmtInt(model.rows.length)} карточек`)}
-        ${renderMetricCard('Средняя оценка', fmtNum(model.totals.avgRating, 2), ratingTrendBadge(model.totals.avgRating, avgSnapshotRating(model.baseline1)))}
+        ${renderStatsMetricCards(model)}
       </div>
     `;
   }
@@ -1931,6 +2038,18 @@
       };
       if (control.tagName === 'SELECT') control.addEventListener('change', applySort);
       else control.addEventListener('click', applySort);
+    });
+    root.querySelectorAll('[data-rating-stats-period]').forEach((control) => {
+      control.addEventListener('click', () => {
+        structuredState.statsPeriod = control.dataset.ratingStatsPeriod || 'all';
+        renderWbCardRatingStructured(rootId);
+      });
+    });
+    root.querySelectorAll('[data-rating-stats-metric]').forEach((control) => {
+      control.addEventListener('click', () => {
+        structuredState.statsMetric = control.dataset.ratingStatsMetric || 'all';
+        renderWbCardRatingStructured(rootId);
+      });
     });
   }
 

@@ -4328,7 +4328,7 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
         <div class="data-health-contour-grid">${contourCardsHtml}</div>
       </section>
 
-      <section class="data-health-digest">
+      <section class="data-health-digest" data-health-morning-digest>
         <div class="section-subhead">
           <div>
             <h3>Утренний срез</h3>
@@ -4691,7 +4691,7 @@ function renderSkuContour(rootId = 'view-sku-contour') {
       <div class="mini-kpi"><span>Аудит</span><strong>${fmt.int(auditEvents.length)}</strong><span>последние применения</span></div>
     </div>
 
-    <details class="card sku-plan-fact-card sku-data-technical" style="margin-top:14px">
+    <details class="card sku-plan-fact-card sku-data-technical" style="margin-top:14px" data-sku-contour-guide>
       <summary class="sku-data-technical-summary">Разбор API SKU</summary>
       <div class="sku-data-technical-body">
       <div class="section-subhead">
@@ -5237,7 +5237,7 @@ function skuDataToneForRatio(ratio = null, reverse = false) {
 function skuDataGameCardsHtml(cards = []) {
   if (!cards.length) return '';
   return `
-    <div class="sku-data-game-cards">
+    <div class="sku-data-game-cards" data-sku-contour-decision-cards>
       ${cards.map((card) => skuPlanFactHealthBarHtml(card)).join('')}
     </div>
   `;

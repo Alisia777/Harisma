@@ -303,6 +303,7 @@ function Invoke-MinMaxImportIfAvailable {
 
   $minMaxScript = Join-Path $PSScriptRoot "import-repricer-min-max.js"
   $minMaxInputDir = Join-Path (Split-Path -Parent $repoRoot) "Мин Макс"
+  $minMaxInputDir = Join-Path (Split-Path -Parent $repoRoot) (-join @([char]0x041c, [char]0x0438, [char]0x043d, ' ', [char]0x041c, [char]0x0430, [char]0x043a, [char]0x0441))
   if (-not (Test-Path -LiteralPath $minMaxScript)) {
     Write-Warning "[sync] repricer MIN/MAX import skipped ($StageName): script is missing: $minMaxScript"
     return
@@ -327,6 +328,39 @@ function Invoke-MinMaxImportIfAvailable {
   } catch {
     Add-RetryStep -Id "repricer-minmax-$StageName" -Name "repricer MIN/MAX import ($StageName)" -Message ([string]$_.Exception.Message)
     Write-Warning "[sync] repricer MIN/MAX import ($StageName) failed, continuing with existing price layers: $($_.Exception.Message)"
+  }
+}
+
+function Invoke-TeamRepricerInputsIfAvailable {
+  $teamScript = Join-Path $PSScriptRoot "import-team-repricer-inputs.js"
+  $teamDirName = -join @([char]0x0414, [char]0x0430, [char]0x043d, [char]0x043d, [char]0x044b, [char]0x0435, ' ', [char]0x043e, [char]0x0442, ' ', [char]0x043a, [char]0x043e, [char]0x043c, [char]0x0430, [char]0x043d, [char]0x0434, [char]0x044b)
+  $teamInputDir = Join-Path (Join-Path ([Environment]::GetFolderPath("UserProfile")) "Downloads") $teamDirName
+  if (-not (Test-Path -LiteralPath $teamScript)) {
+    Write-Warning "[sync] team repricer inputs import skipped: script is missing: $teamScript"
+    return
+  }
+  if (-not (Test-Path -LiteralPath $teamInputDir)) {
+    Write-Warning "[sync] team repricer inputs import skipped: input dir is missing: $teamInputDir"
+    return
+  }
+
+  Write-Output "[sync] team repricer inputs import started"
+  try {
+    Invoke-NodeStep -StepName "team repricer inputs import" -Arguments @(
+      "scripts/import-team-repricer-inputs.js",
+      "--source-dir",
+      $teamInputDir
+    ) -Attempts 1 -RetryDelaySeconds 20 -TimeoutSeconds 300
+    foreach ($fileName in @("skus.json", "sku_aliases.json", "sku_alias_ignore.json", "sku_alias_audit.json")) {
+      $sourcePath = Join-Path "data" $fileName
+      if (Test-Path -LiteralPath $sourcePath) {
+        Copy-Item -LiteralPath $sourcePath -Destination (Join-Path $resolvedOutputDir $fileName) -Force
+      }
+    }
+    Write-Output "[sync] team repricer inputs import completed"
+  } catch {
+    Add-RetryStep -Id "team-repricer-inputs" -Name "team repricer inputs import" -Message ([string]$_.Exception.Message)
+    Write-Warning "[sync] team repricer inputs import failed, continuing with existing owner/minmax layers: $($_.Exception.Message)"
   }
 }
 
@@ -537,6 +571,7 @@ try {
 }
 
 if ($priceRefreshSucceeded) {
+  Invoke-TeamRepricerInputsIfAvailable
   Invoke-MinMaxImportIfAvailable -StageName "post-price-build"
 
   $priceLayerFiles = @(

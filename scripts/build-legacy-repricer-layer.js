@@ -522,13 +522,15 @@ function buildLegacyRepricerLayer(options = {}) {
       const supportRow = supportMaps[platform].get(key) || null;
       const priceRow = pricesMaps[platform].get(key) || null;
       if (!byArticle.has(key)) {
+        const owner = textValue(sourceRow?.owner, priceRow?.owner, supportRow?.owner, liveRow?.owner);
         byArticle.set(key, {
           articleKey,
           article: textValue(sourceRow?.article, articleKey),
           name: textValue(sourceRow?.name, priceRow?.name, supportRow?.name, liveRow?.name),
           brand: textValue(sourceRow?.brand, liveRow?.brand),
-          legalEntity: textValue(sourceRow?.owner, priceRow?.owner, supportRow?.owner, liveRow?.legalEntity),
-          owner: textValue(sourceRow?.owner, priceRow?.owner, supportRow?.owner),
+          legalEntity: textValue(owner, liveRow?.legalEntity),
+          owner,
+          ownerByPlatform: {},
           status: normalizeStatus(sourceRow?.status || sourceRow?.productStatus || priceRow?.status || supportRow?.repricerStatus || supportRow?.productStatus || liveRow?.status),
           tag: '',
           cost: positiveValue(liveRow?.cost),
@@ -540,8 +542,10 @@ function buildLegacyRepricerLayer(options = {}) {
       target.article = textValue(target.article, sourceRow?.article, articleKey);
       target.name = textValue(target.name, sourceRow?.name, priceRow?.name, supportRow?.name, liveRow?.name);
       target.brand = textValue(target.brand, sourceRow?.brand, liveRow?.brand);
-      target.legalEntity = textValue(target.legalEntity, sourceRow?.owner, priceRow?.owner, supportRow?.owner, liveRow?.legalEntity);
-      target.owner = textValue(target.owner, sourceRow?.owner, priceRow?.owner, supportRow?.owner);
+      const owner = textValue(sourceRow?.owner, priceRow?.owner, supportRow?.owner);
+      if (owner) target.ownerByPlatform[platform] = owner;
+      target.legalEntity = textValue(target.legalEntity, owner, liveRow?.legalEntity);
+      target.owner = textValue(target.owner, owner);
       target.status = normalizeStatus(target.status || sourceRow?.status || sourceRow?.productStatus || priceRow?.status || supportRow?.repricerStatus || supportRow?.productStatus || liveRow?.status);
       target.cost = positiveValue(target.cost, liveRow?.cost);
       target[platform] = buildSide(sourceRow, platform, supportRow, priceRow, liveRow?.[platform] || null, liveRepricer?.generatedAt || '');

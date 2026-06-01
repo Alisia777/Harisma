@@ -2191,6 +2191,7 @@ function buildRepricerRowsFresh() {
         brand: resolvedBrand,
         name: sourceRow.name || supportRow?.name || priceRow?.name || skuFact?.name || '',
         owner: platformSpecificOwner || sourceRow.owner || supportRow?.owner || priceRow?.owner || skuOwnerName || '',
+        ownerByPlatform: {},
         status: resolvedStatus,
         productLifecycle,
         role: resolvedRole,
@@ -2204,6 +2205,8 @@ function buildRepricerRowsFresh() {
         ozon: null
       });
       const row = byArticle.get(articleKey);
+      const resolvedPlatformOwner = platformSpecificOwner || sourceRow.owner || supportRow?.owner || priceRow?.owner || '';
+      if (resolvedPlatformOwner) row.ownerByPlatform[platform] = resolvedPlatformOwner;
       row.article = row.article || sourceRow.article || articleKey;
       row.brand = row.brand || resolvedBrand;
       row.name = row.name || sourceRow.name || supportRow?.name || priceRow?.name || skuFact?.name || '';
@@ -2255,7 +2258,7 @@ function buildRepricerRowsFresh() {
     row.alignmentEligible = Boolean(row.alignmentEligible);
     row.alignmentChanged = Boolean(row.alignmentChanged);
     row.blocked = ['freeze', 'hold', 'force', 'off'].includes(row.wb?.mode) || ['freeze', 'hold', 'force', 'off'].includes(row.ozon?.mode);
-    row.searchIndex = [row.article, row.articleKey, row.brand, row.name, row.owner, row.status, row.productLifecycle?.label, row.productLifecycle?.reason, row.productLifecycle?.source, row.role, row.launchReady, row.segment, row.abc, row.alignmentScenario, row.alignmentReason, row.wb?.reason, row.ozon?.reason, row.wb?.reasonCode, row.ozon?.reasonCode, row.wb?.liveStrategy, row.ozon?.liveStrategy, row.wb?.liveReason, row.ozon?.liveReason, row.wb?.promoLabel, row.ozon?.promoLabel, row.wb?.promoSourceLabel, row.ozon?.promoSourceLabel, row.wb?.promoOfferLabel, row.ozon?.promoOfferLabel, row.wb?.promoOfferSourceLabel, row.ozon?.promoOfferSourceLabel, row.wb?.arrivalPriceSignal?.label, row.ozon?.arrivalPriceSignal?.label, ...(row.wb?.arrivalPriceSignal?.reasons || []), ...(row.ozon?.arrivalPriceSignal?.reasons || [])].filter(Boolean).join(' ').toLowerCase();
+    row.searchIndex = [row.article, row.articleKey, row.brand, row.name, row.owner, ...Object.values(row.ownerByPlatform || {}), row.status, row.productLifecycle?.label, row.productLifecycle?.reason, row.productLifecycle?.source, row.role, row.launchReady, row.segment, row.abc, row.alignmentScenario, row.alignmentReason, row.wb?.reason, row.ozon?.reason, row.wb?.reasonCode, row.ozon?.reasonCode, row.wb?.liveStrategy, row.ozon?.liveStrategy, row.wb?.liveReason, row.ozon?.liveReason, row.wb?.promoLabel, row.ozon?.promoLabel, row.wb?.promoSourceLabel, row.ozon?.promoSourceLabel, row.wb?.promoOfferLabel, row.ozon?.promoOfferLabel, row.wb?.promoOfferSourceLabel, row.ozon?.promoOfferSourceLabel, row.wb?.arrivalPriceSignal?.label, row.ozon?.arrivalPriceSignal?.label, ...(row.wb?.arrivalPriceSignal?.reasons || []), ...(row.ozon?.arrivalPriceSignal?.reasons || [])].filter(Boolean).join(' ').toLowerCase();
     row.maxAbsDelta = Math.max(Math.abs(numberOrZero(row.wb?.changeRub)), Math.abs(numberOrZero(row.ozon?.changeRub)));
     return row;
   }).sort((a, b) => Number(b.hasManualOverride) - Number(a.hasManualOverride)
@@ -2352,6 +2355,19 @@ function getFilteredRepricerRows(sourceRows = null) {
     if (!repricerEconomicSourceMatches(row, platform, economicSource)) return false;
     return true;
   });
+}
+
+function repricerOwnerForPlatform(row, platform = '') {
+  const owners = row?.ownerByPlatform && typeof row.ownerByPlatform === 'object'
+    ? row.ownerByPlatform
+    : {};
+  if (platform === 'wb') return owners.wb || row?.owner || '';
+  if (platform === 'ozon') return owners.ozon || row?.owner || '';
+  const unique = [owners.wb, owners.ozon, row?.owner]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean)
+    .filter((value, index, values) => values.indexOf(value) === index);
+  return unique.length > 1 ? unique.join(' · ') : (unique[0] || '');
 }
 
 function repricerDuplicateNameKey(value) {
@@ -6416,11 +6432,12 @@ function renderRepricer() {
 
     <div class="repricer-stack">
       ${visibleRows.map((row) => {
+        const displayOwner = repricerOwnerForPlatform(row, state.repricerFilters.platform || 'all');
         const duplicateEntry = duplicateNames.byArticle.get(String(row.articleKey || '').trim());
         const duplicatePeers = (duplicateEntry?.articles || [])
           .filter((article) => article !== String(row.article || row.articleKey || '').trim())
           .slice(0, 4);
-        return `<div class="card repricer-card"><div class="head"><div><strong>${linkToSku(row.articleKey, row.article || row.articleKey)}</strong><div class="muted small">${escapeHtml(row.name || 'Без названия')} · ${escapeHtml(row.owner || 'Без owner')}</div>${duplicatePeers.length ? `<div class="muted small" style="margin-top:6px">Похожие карточки: ${escapeHtml(duplicatePeers.join(', '))}</div>` : ''}</div><div class="badge-stack">${row.brand ? badge(row.brand, 'info') : ''}${badge(row.status || 'Статус не указан')}${row.productLifecycle?.key && row.productLifecycle.key !== 'active' ? badge(`товар: ${row.productLifecycle.label || row.productLifecycle.status || row.productLifecycle.key}`, row.productLifecycle.tone || 'warn') : ''}${badge(`роль ${row.role || '—'}`, 'info')}${badge(row.launchReady === 'READY' ? 'готов к запуску' : 'hold до запуска', row.launchReady === 'READY' ? 'ok' : 'warn')}${row.segment ? badge(row.segment, 'info') : ''}${row.abc ? badge(`ABC ${row.abc}`) : ''}${row.hasManagedProfile ? badge('профиль SKU', 'ok') : ''}${row.hasCorridor ? badge('коридор', 'info') : ''}${row.hasManualOverride ? badge('ручное решение', 'warn') : ''}${duplicateEntry ? badge(`дубль названия x${fmt.int(duplicateEntry.count)}`, 'warn') : ''}</div></div>${repricerProductLifecycleEditorHtml(row)}<details style="margin:10px 0"><summary class="small muted" style="cursor:pointer">Настроить профиль SKU</summary><form class="repricer-sku-form" data-article-key="${escapeHtml(row.articleKey)}" style="margin-top:10px"><div class="filters repricer-filters"><select name="status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${row.status === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select><select name="role">${roles.map((role) => `<option value="${escapeHtml(role)}" ${row.role === role ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}</select><select name="launchReady"><option value="READY" ${row.launchReady === 'READY' ? 'selected' : ''}>READY</option><option value="HOLD" ${row.launchReady !== 'READY' ? 'selected' : ''}>HOLD</option></select></div><div class="quick-actions" style="margin-top:10px"><button type="submit" class="quick-chip">Сохранить профиль</button><button type="button" class="quick-chip" data-repricer-sku-reset data-article-key="${escapeHtml(row.articleKey)}">Сбросить профиль</button></div></form></details><div class="repricer-side-grid ${state.repricerFilters.platform !== 'all' ? 'single' : ''}">${state.repricerFilters.platform !== 'ozon' ? renderRepricerSide('WB', row.wb) : ''}${state.repricerFilters.platform !== 'wb' ? renderRepricerSide('Ozon', row.ozon) : ''}</div></div>`;
+        return `<div class="card repricer-card"><div class="head"><div><strong>${linkToSku(row.articleKey, row.article || row.articleKey)}</strong><div class="muted small">${escapeHtml(row.name || 'Без названия')} · ${escapeHtml(displayOwner || 'Без owner')}</div>${duplicatePeers.length ? `<div class="muted small" style="margin-top:6px">Похожие карточки: ${escapeHtml(duplicatePeers.join(', '))}</div>` : ''}</div><div class="badge-stack">${row.brand ? badge(row.brand, 'info') : ''}${badge(row.status || 'Статус не указан')}${row.productLifecycle?.key && row.productLifecycle.key !== 'active' ? badge(`товар: ${row.productLifecycle.label || row.productLifecycle.status || row.productLifecycle.key}`, row.productLifecycle.tone || 'warn') : ''}${badge(`роль ${row.role || '—'}`, 'info')}${badge(row.launchReady === 'READY' ? 'готов к запуску' : 'hold до запуска', row.launchReady === 'READY' ? 'ok' : 'warn')}${row.segment ? badge(row.segment, 'info') : ''}${row.abc ? badge(`ABC ${row.abc}`) : ''}${row.hasManagedProfile ? badge('профиль SKU', 'ok') : ''}${row.hasCorridor ? badge('коридор', 'info') : ''}${row.hasManualOverride ? badge('ручное решение', 'warn') : ''}${duplicateEntry ? badge(`дубль названия x${fmt.int(duplicateEntry.count)}`, 'warn') : ''}</div></div>${repricerProductLifecycleEditorHtml(row)}<details style="margin:10px 0"><summary class="small muted" style="cursor:pointer">Настроить профиль SKU</summary><form class="repricer-sku-form" data-article-key="${escapeHtml(row.articleKey)}" style="margin-top:10px"><div class="filters repricer-filters"><select name="status">${statuses.map((status) => `<option value="${escapeHtml(status)}" ${row.status === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}</select><select name="role">${roles.map((role) => `<option value="${escapeHtml(role)}" ${row.role === role ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}</select><select name="launchReady"><option value="READY" ${row.launchReady === 'READY' ? 'selected' : ''}>READY</option><option value="HOLD" ${row.launchReady !== 'READY' ? 'selected' : ''}>HOLD</option></select></div><div class="quick-actions" style="margin-top:10px"><button type="submit" class="quick-chip">Сохранить профиль</button><button type="button" class="quick-chip" data-repricer-sku-reset data-article-key="${escapeHtml(row.articleKey)}">Сбросить профиль</button></div></form></details><div class="repricer-side-grid ${state.repricerFilters.platform !== 'all' ? 'single' : ''}">${state.repricerFilters.platform !== 'ozon' ? renderRepricerSide('WB', row.wb) : ''}${state.repricerFilters.platform !== 'wb' ? renderRepricerSide('Ozon', row.ozon) : ''}</div></div>`;
       }).join('') || '<div class="empty">По выбранным фильтрам репрайсер ничего не показал.</div>'}
     </div>
   `;

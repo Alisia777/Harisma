@@ -2,11 +2,12 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260601ratingreport12';
+  const VERSION = '20260601ratingreport13';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
     leaderboardHistory: null,
+    ozonFeedbacks: null,
     pending: null
   };
   const workbenchState = {
@@ -350,6 +351,15 @@
         if (!Array.isArray(st.productLeaderboardHistory) || !st.productLeaderboardHistory.length) {
           st.productLeaderboardHistory = auxCache.leaderboardHistory;
         }
+      }));
+    }
+
+    if (st.ozonFeedbacks && typeof st.ozonFeedbacks === 'object' && Array.isArray(st.ozonFeedbacks.cards)) {
+      auxCache.ozonFeedbacks = st.ozonFeedbacks;
+    } else if (!auxCache.ozonFeedbacks) {
+      tasks.push(fetchJson('data/ozon_feedbacks_summary.json').then((payload) => {
+        auxCache.ozonFeedbacks = payload && typeof payload === 'object' ? payload : { cards: [], summary: {} };
+        st.ozonFeedbacks = auxCache.ozonFeedbacks;
       }));
     }
 
@@ -1450,9 +1460,7 @@
   }
 
   function renderStructuredTabs() {
-    const tabs = structuredState.platform === 'ozon'
-      ? [['overview', 'Ozon: что есть'], ['needed', 'Что подключить']]
-      : [['history', 'История'], ['reviews', 'Отзывы'], ['questions', 'Вопросы'], ['stats', 'Статистика']];
+    const tabs = [['history', 'История'], ['reviews', 'Отзывы'], ['questions', 'Вопросы'], ['stats', 'Статистика']];
     if (!tabs.some(([value]) => value === structuredState.view)) structuredState.view = tabs[0][0];
     return `
       <div class="rating-work-tabs">
@@ -1539,7 +1547,314 @@
     `;
   }
 
+  function ozonPayload() {
+    const st = appState();
+    return st.ozonFeedbacks && typeof st.ozonFeedbacks === 'object'
+      ? st.ozonFeedbacks
+      : (auxCache.ozonFeedbacks || { generatedAt: '', summary: {}, cards: [], history: [], reviewAccess: {} });
+  }
+
+  function ozonSnapshotMap(snapshot) {
+    const map = new Map();
+    (Array.isArray(snapshot?.cards) ? snapshot.cards : []).forEach((card) => {
+      [card.offerId, card.articleKey, card.sku, card.productId].map(normalizeKey).filter(Boolean).forEach((key) => {
+        if (!map.has(key)) map.set(key, card);
+      });
+    });
+    return map;
+  }
+
+  function ozonCardKey(card) {
+    return normalizeKey(card?.offerId || card?.articleKey || card?.sku || card?.productId);
+  }
+
+  function ozonTone(row) {
+    if (row.reviewApiLocked) return 'risk';
+    if (!hasNumber(row.contentRating)) return 'warn';
+    if (Number(row.contentRating) < 70) return 'risk';
+    if (Number(row.contentRating) < 90 || !row.hasStock) return 'warn';
+    return 'good';
+  }
+
+  function ozonStatus(row) {
+    if (row.reviewApiLocked) return 'Отзывы API закрыты';
+    if (!hasNumber(row.contentRating)) return 'Нет рейтинга';
+    if (Number(row.contentRating) < 70) return 'Низкий рейтинг';
+    if (Number(row.contentRating) < 90) return 'Доработать';
+    if (!row.hasStock) return 'Нет остатка';
+    return 'Норма';
+  }
+
+  function buildOzonModel(wbModel = null) {
+    const payload = ozonPayload();
+    const cards = Array.isArray(payload.cards) ? payload.cards : [];
+    const history = Array.isArray(payload.history) ? payload.history : [];
+    const latest = history.length ? history[history.length - 1] : { date: payload.window?.to || '', cards };
+    const previous = history.length > 1 ? history[history.length - 2] : null;
+    const previousMap = ozonSnapshotMap(previous);
+    const reviewApiLocked = (payload.summary?.reviewApiStatus || payload.reviewAccess?.status || '') === 'permission_denied';
+    const rows = cards.map((card, index) => {
+      const key = ozonCardKey(card);
+      const prev = previousMap.get(key);
+      const contentRating = hasNumber(card.contentRating) ? Number(card.contentRating) : null;
+      const contentDelta = hasNumber(contentRating) && hasNumber(prev?.contentRating) ? Number(contentRating) - Number(prev.contentRating) : null;
+      const groups = card.contentRatingGroups || {};
+      const row = {
+        index: index + 1,
+        key,
+        platform: 'ozon',
+        label: card.offerId || card.label || card.title || String(card.sku || card.productId || ''),
+        title: card.title || '',
+        offerId: card.offerId || '',
+        sku: card.sku || '',
+        productId: card.productId || '',
+        contentRating,
+        contentDelta,
+        mediaRating: groups.media?.rating ?? null,
+        textRating: groups.text?.rating ?? null,
+        attributesRating: groups.other_attributes?.rating ?? null,
+        improve: Array.isArray(card.contentRatingImprove) ? card.contentRatingImprove : [],
+        price: card.price,
+        oldPrice: card.oldPrice,
+        stockPresent: card.stockPresent,
+        stockReserved: card.stockReserved,
+        hasStock: Boolean(card.hasStock),
+        reviewPromoEnabled: Boolean(card.reviewPromoEnabled),
+        status: card.status || '',
+        statusDescription: card.statusDescription || '',
+        updatedAt: card.updatedAt || '',
+        reviewApiLocked,
+        comment: card.comment || ''
+      };
+      row.tone = ozonTone(row);
+      return row;
+    });
+    const totals = {
+      ...payload.summary,
+      products: num(payload.summary?.products || rows.length),
+      cards: num(payload.summary?.cards || rows.length),
+      contentRated: num(payload.summary?.contentRated || rows.filter((row) => hasNumber(row.contentRating)).length),
+      avgContentRating: hasNumber(payload.summary?.avgContentRating)
+        ? Number(payload.summary.avgContentRating)
+        : (rows.length ? rows.reduce((sum, row) => sum + num(row.contentRating), 0) / rows.length : null),
+      contentBelow70: num(payload.summary?.contentBelow70 || rows.filter((row) => hasNumber(row.contentRating) && Number(row.contentRating) < 70).length),
+      contentBelow90: num(payload.summary?.contentBelow90 || rows.filter((row) => hasNumber(row.contentRating) && Number(row.contentRating) < 90).length),
+      hasStock: num(payload.summary?.hasStock || rows.filter((row) => row.hasStock).length),
+      stockPresent: num(payload.summary?.stockPresent || rows.reduce((sum, row) => sum + num(row.stockPresent), 0)),
+      reviewPromoEnabled: num(payload.summary?.reviewPromoEnabled || rows.filter((row) => row.reviewPromoEnabled).length),
+      reviewCount: num(payload.summary?.feedbacks?.count),
+      questions: num(payload.summary?.questions?.count)
+    };
+    return {
+      payload,
+      rows,
+      totals,
+      latest,
+      history,
+      reviewApiLocked,
+      reviewApiMessage: payload.summary?.reviewApiMessage || payload.reviewAccess?.message || '',
+      generatedAt: payload.generatedAt || '',
+      ozonWindow7: wbModel?.ozonWindow7 || { revenue: 0, units: 0, latestDate: '' }
+    };
+  }
+
+  function filterOzonRows(rows) {
+    const status = workbenchState.status || 'all';
+    let next = [...rows];
+    if (status === 'contentLow') next = next.filter((row) => hasNumber(row.contentRating) && Number(row.contentRating) < 70);
+    else if (status === 'contentWarn') next = next.filter((row) => hasNumber(row.contentRating) && Number(row.contentRating) < 90);
+    else if (status === 'stock') next = next.filter((row) => row.hasStock);
+    else if (status === 'noStock') next = next.filter((row) => !row.hasStock);
+    else if (status === 'apiLocked') next = next.filter((row) => row.reviewApiLocked);
+    return next;
+  }
+
+  function sortOzonRows(rows) {
+    const sort = workbenchState.sort || 'contentRating';
+    const next = [...rows];
+    next.sort((a, b) => {
+      if (sort === 'contentRating') return num(a.contentRating ?? 999) - num(b.contentRating ?? 999);
+      if (sort === 'contentRatingDesc') return num(b.contentRating) - num(a.contentRating);
+      if (sort === 'stock') return num(b.stockPresent) - num(a.stockPresent);
+      if (sort === 'price') return num(b.price) - num(a.price);
+      if (sort === 'media') return num(a.mediaRating ?? 999) - num(b.mediaRating ?? 999);
+      if (sort === 'text') return num(a.textRating ?? 999) - num(b.textRating ?? 999);
+      if (sort === 'attrs') return num(a.attributesRating ?? 999) - num(b.attributesRating ?? 999);
+      return String(a.label || '').localeCompare(String(b.label || ''), 'ru');
+    });
+    return next;
+  }
+
+  function renderOzonControls(items, visible) {
+    const status = workbenchState.status || 'all';
+    const sort = workbenchState.sort || 'contentRating';
+    const statuses = [
+      ['all', 'Все'],
+      ['contentLow', 'Рейтинг <70'],
+      ['contentWarn', 'Рейтинг <90'],
+      ['stock', 'Есть остаток'],
+      ['noStock', 'Нет остатка'],
+      ['apiLocked', 'Отзывы API']
+    ];
+    const sorts = [
+      ['contentRating', 'Рейтинг ↑'],
+      ['contentRatingDesc', 'Рейтинг ↓'],
+      ['media', 'Медиа'],
+      ['text', 'Текст'],
+      ['attrs', 'Атрибуты'],
+      ['stock', 'Остаток'],
+      ['price', 'Цена']
+    ];
+    return `
+      <div class="rating-queue-controls">
+        <div class="rating-sort-control" aria-label="Фильтр Ozon">
+          <span>Фильтр</span>
+          ${statuses.map(([value, label]) => `<button type="button" class="${status === value ? 'active' : ''}" data-rating-status="${esc(value)}">${esc(label)}</button>`).join('')}
+        </div>
+        <div class="rating-sort-control" aria-label="Сортировка Ozon">
+          <span>Сортировка</span>
+          ${sorts.map(([value, label]) => `<button type="button" class="${sort === value ? 'active' : ''}" data-rating-sort="${esc(value)}">${esc(label)}</button>`).join('')}
+        </div>
+        <div class="badge-stack">${chip(`${fmtInt(visible.length)} из ${fmtInt(items.length)}`, 'info')}</div>
+      </div>
+    `;
+  }
+
+  function renderOzonApiNotice(ozon) {
+    if (!ozon.reviewApiLocked) return '';
+    return `
+      <div class="notice warn" style="margin:0 16px 12px">
+        <strong>Отзывы Ozon API не отдает по текущей подписке.</strong>
+        <div class="small muted">${esc(ozon.reviewApiMessage || 'Методы /v1/review/list и /v1/review/count вернули PermissionDenied.')}</div>
+      </div>
+    `;
+  }
+
+  function renderOzonHistoryCards(model) {
+    const ozon = buildOzonModel(model);
+    const filtered = filterOzonRows(ozon.rows);
+    const rows = sortOzonRows(filtered).slice(0, 160).map((row) => {
+      const ratio = hasNumber(row.contentRating) ? Number(row.contentRating) / 100 : 0.1;
+      const improve = row.improve.length ? row.improve.slice(0, 2).join(', ') : (row.comment || row.statusDescription || 'ок');
+      return `
+        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('ozon', ratio)}">
+          <td class="article-cell">
+            <strong>${esc(row.label)}</strong>
+            <span class="cell-muted">Ozon SKU ${esc(row.sku || '—')} · product ${esc(row.productId || '—')}</span>
+          </td>
+          <td><span class="cell-main">${esc(ozonStatus(row))}</span>${simpleBadge(row.tone === 'risk' ? 'внимание' : row.tone === 'good' ? 'ок' : 'доработать', row.tone === 'risk' ? 'down' : row.tone === 'good' ? 'up' : 'flat')}</td>
+          <td><span class="cell-main">${fmtNum(row.contentRating, 1)}</span><span class="cell-muted">из 100</span>${hasNumber(row.contentDelta) ? trendBadge(row.contentDelta, 0) : ''}</td>
+          <td><span class="cell-main">${fmtNum(row.mediaRating, 0)}</span><span class="cell-muted">медиа</span></td>
+          <td><span class="cell-main">${fmtNum(row.textRating, 0)}</span><span class="cell-muted">текст</span></td>
+          <td><span class="cell-main">${fmtNum(row.attributesRating, 0)}</span><span class="cell-muted">атрибуты</span></td>
+          <td><span class="cell-main">${fmtMoney(row.price)}</span><span class="cell-muted">цена Ozon</span></td>
+          <td><span class="cell-main">${fmtInt(row.stockPresent)}</span><span class="cell-muted">${row.hasStock ? 'есть остаток' : 'нет остатка'}</span></td>
+          <td><span class="cell-main">${row.reviewApiLocked ? 'закрыто' : 'доступно'}</span>${row.reviewApiLocked ? simpleBadge('403 подписка', 'down') : simpleBadge('API ок', 'up')}</td>
+          <td><span class="cell-text">${esc(improve)}</span></td>
+        </tr>
+      `;
+    }).join('');
+    return `
+      <div class="sku-plan-fact-card rating-work-card">
+        <div class="rating-detail-head">
+          <div>
+            <h3>Ozon · история карточек</h3>
+            <p>Данные из Ozon Seller API: товары, SKU, рейтинг контента, группы рейтинга, цена, остаток и статус доступа к отзывам.</p>
+          </div>
+          <div class="badge-stack">${chip(`${fmtInt(ozon.rows.length)} карточек`, 'info')}${chip(`срез ${fullDate(ozon.latest?.date || ozon.payload.window?.to || '')}`, 'info')}</div>
+        </div>
+        ${renderOzonControls(ozon.rows, filtered)}
+        ${renderOzonApiNotice(ozon)}
+        <div class="rating-work-table">
+          <table>
+            <colgroup>
+              <col style="width:230px"><col style="width:130px"><col style="width:110px"><col style="width:92px"><col style="width:92px"><col style="width:100px"><col style="width:116px"><col style="width:110px"><col style="width:120px"><col style="width:260px">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Артикул</th>
+                <th>Статус</th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'contentRating' ? 'active' : ''}" data-rating-sort="contentRating">Рейтинг</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'media' ? 'active' : ''}" data-rating-sort="media">Медиа</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'text' ? 'active' : ''}" data-rating-sort="text">Текст</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'attrs' ? 'active' : ''}" data-rating-sort="attrs">Атрибуты</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'price' ? 'active' : ''}" data-rating-sort="price">Цена</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'stock' ? 'active' : ''}" data-rating-sort="stock">Остаток</button></th>
+                <th>Отзывы API</th>
+                <th>Что сделать</th>
+              </tr>
+            </thead>
+            <tbody>${rows || '<tr><td colspan="10" class="center">Нет карточек Ozon по текущему фильтру.</td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderOzonQueue(model, kind) {
+    const ozon = buildOzonModel(model);
+    const lowRows = sortOzonRows(filterOzonRows(ozon.rows)).slice(0, 120);
+    const title = kind === 'reviews' ? 'Ozon · отзывы' : 'Ozon · вопросы';
+    const text = kind === 'reviews'
+      ? 'Текст отзывов и звездность отзывов Ozon API не отдает по текущей подписке. Ниже показываем доступный API-срез по карточкам и явный статус доступа.'
+      : 'Отдельный API-вопросов Ozon в текущем источнике не подключен. Ниже остается доступный API-срез по карточкам, чтобы блок не был пустым.';
+    return `
+      <div class="sku-plan-fact-card rating-work-card">
+        <div class="rating-detail-head">
+          <div>
+            <h3>${esc(title)}</h3>
+            <p>${esc(text)}</p>
+          </div>
+          <div class="badge-stack">${chip(`${fmtInt(ozon.rows.length)} карточек Ozon`, 'info')}${chip(ozon.reviewApiLocked ? 'review API 403' : 'review API ok', ozon.reviewApiLocked ? 'warn' : 'ok')}</div>
+        </div>
+        ${renderOzonControls(ozon.rows, lowRows)}
+        ${renderOzonApiNotice(ozon)}
+        <div class="rating-history-list" style="padding:0 16px 16px">
+          ${lowRows.slice(0, 36).map((row) => `
+            <article class="rating-history-card">
+              <div class="rating-history-main">
+                <strong>${esc(row.label)}</strong>
+                <div class="meta">Ozon SKU ${esc(row.sku || '—')} · ${esc(row.status || '')}</div>
+              </div>
+              <div class="rating-history-metrics">
+                ${renderMiniMetric('Рейтинг контента', fmtNum(row.contentRating, 1), row.contentRating < 70 ? simpleBadge('низкий', 'down') : simpleBadge('ок', 'up'))}
+                ${renderMiniMetric('Медиа', fmtNum(row.mediaRating, 0))}
+                ${renderMiniMetric('Текст', fmtNum(row.textRating, 0))}
+                ${renderMiniMetric('Атрибуты', fmtNum(row.attributesRating, 0))}
+                ${renderMiniMetric('Остаток', fmtInt(row.stockPresent), row.hasStock ? simpleBadge('есть', 'up') : simpleBadge('нет', 'down'))}
+                ${renderMiniMetric('Отзывы API', ozon.reviewApiLocked ? 'закрыто' : 'доступно', ozon.reviewApiLocked ? simpleBadge('403 подписка', 'down') : simpleBadge('ок', 'up'))}
+              </div>
+            </article>
+          `).join('') || '<div class="empty">Нет строк Ozon.</div>'}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderOzonStats(model) {
+    const ozon = buildOzonModel(model);
+    const ozon7 = ozon.ozonWindow7 || { revenue: 0, units: 0, latestDate: '' };
+    return `
+      <div class="rating-detail-head">
+        <div>
+          <h3>Ozon · статистика</h3>
+          <p>Сводка из Ozon Seller API: рейтинг контента карточек, товары, остатки и статус доступа к отзывам.</p>
+        </div>
+      </div>
+      ${renderOzonApiNotice(ozon)}
+      <div class="rating-metric-grid">
+        ${renderMetricCard('Ozon карточки API', fmtInt(ozon.totals.cards), simpleBadge(`${fmtInt(ozon.totals.contentRated)} с рейтингом`, 'up'), `товаров в API ${fmtInt(ozon.totals.products)}`, { platform: 'ozon', ratio: 1 })}
+        ${renderMetricCard('Рейтинг контента', fmtNum(ozon.totals.avgContentRating, 1), simpleBadge(`${fmtInt(ozon.totals.contentBelow70)} ниже 70`, ozon.totals.contentBelow70 ? 'down' : 'up'), `${fmtInt(ozon.totals.contentBelow90)} ниже 90`, { platform: 'ozon', ratio: hasNumber(ozon.totals.avgContentRating) ? Number(ozon.totals.avgContentRating) / 100 : 0.1 })}
+        ${renderMetricCard('Остатки Ozon', fmtInt(ozon.totals.stockPresent), simpleBadge(`${fmtInt(ozon.totals.hasStock)} карточек с остатком`, 'up'), 'из API product/info/list', { platform: 'ozon' })}
+        ${renderMetricCard('Отзывы Ozon API', ozon.reviewApiLocked ? 'закрыто' : fmtInt(ozon.totals.reviewCount), ozon.reviewApiLocked ? simpleBadge('403 подписка', 'down') : simpleBadge('API ок', 'up'), ozon.reviewApiLocked ? 'review/list и review/count недоступны' : 'отзывы доступны', { platform: 'ozon', ratio: ozon.reviewApiLocked ? 0.18 : 1 })}
+        ${renderMetricCard('Отзывы за баллы', fmtInt(ozon.totals.reviewPromoEnabled), simpleBadge('REVIEWS_PROMO', 'flat'), 'активных промо по карточкам', { platform: 'ozon' })}
+        ${renderMetricCard('Выручка Ozon 7д', fmtMoney(ozon7.revenue), simpleBadge(`${fmtInt(ozon7.units)} шт.`, ozon7.units ? 'up' : 'flat'), ozon7.latestDate ? `срез ${fullDate(ozon7.latestDate)}` : '', { platform: 'ozon', ratio: ozon7.revenue ? 1 : 0.1 })}
+      </div>
+    `;
+  }
+
   function renderStructuredPlatforms(model) {
+    const ozon = buildOzonModel(model);
     const latestRating = model.totals.avgRating;
     const prevRating = avgSnapshotRating(model.baseline1);
     const reviewDailyBase = model.totals.reviews3 ? model.totals.reviews3 / 3 : null;
@@ -1552,8 +1867,8 @@
       renderMetricCard('WB негатив 7д', fmtPct(model.totals.neg7), trendBadge(model.totals.neg1, model.totals.neg3, { lowerIsBetter: true, percent: true, threshold: 0.01 }), `${fmtInt(model.totals.low7)} негативных`, { platform: 'wb', ratio: model.totals.neg7 === null ? 0.5 : Math.max(0.08, 1 - Number(model.totals.neg7)) }),
       renderMetricCard('WB вопросы', fmtInt(model.totals.questions), trendBadge(model.totals.questions1, questionDailyBase), `+${fmtInt(model.totals.questions7)} за 7 дней`, { platform: 'wb' }),
       renderMetricCard('WB без ответа', fmtInt(unansweredTotal), unansweredTotal ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up'), `${fmtInt(model.totals.unanswered)} отзывов / ${fmtInt(model.totals.unansweredQuestions)} вопросов`, { platform: 'wb', ratio: unansweredTotal ? 0.35 : 1 }),
-      renderMetricCard('Ozon рейтинг', 'нет данных', simpleBadge('нужен источник', 'flat'), 'рейтинг карточек не приходит', { platform: 'ozon', empty: true, ratio: 0.08 }),
-      renderMetricCard('Ozon отзывы / вопросы', 'нет данных', simpleBadge('нужен источник', 'flat'), 'отзывы и вопросы не заведены', { platform: 'ozon', empty: true, ratio: 0.08 }),
+      renderMetricCard('Ozon рейтинг контента', fmtNum(ozon.totals.avgContentRating, 1), simpleBadge(`${fmtInt(ozon.totals.contentBelow70)} ниже 70`, ozon.totals.contentBelow70 ? 'down' : 'up'), `${fmtInt(ozon.totals.contentRated)} карточек из API`, { platform: 'ozon', ratio: hasNumber(ozon.totals.avgContentRating) ? Number(ozon.totals.avgContentRating) / 100 : 0.08 }),
+      renderMetricCard('Ozon отзывы API', ozon.reviewApiLocked ? 'закрыто' : fmtInt(ozon.totals.reviewCount), ozon.reviewApiLocked ? simpleBadge('403 подписка', 'down') : simpleBadge('API ок', 'up'), ozon.reviewApiLocked ? 'методы review/list и review/count недоступны' : 'данные отзывов загружены', { platform: 'ozon', ratio: ozon.reviewApiLocked ? 0.18 : 1 }),
       renderMetricCard('Ozon выручка 7д', fmtMoney(ozon7.revenue), simpleBadge('продажи есть', 'up'), `${fmtInt(ozon7.units)} шт. за 7 дней`, { platform: 'ozon', ratio: ozon7.revenue ? 1 : 0.1 })
     ].join('');
     return `
@@ -2001,7 +2316,12 @@
   }
 
   function renderStructuredDetail(model, payload) {
-    if (structuredState.platform === 'ozon') return structuredState.view === 'needed' ? renderOzonDetails(model) : renderOzonDetails(model);
+    if (structuredState.platform === 'ozon') {
+      if (structuredState.view === 'reviews') return renderOzonQueue(model, 'reviews');
+      if (structuredState.view === 'questions') return renderOzonQueue(model, 'questions');
+      if (structuredState.view === 'stats') return renderOzonStats(model);
+      return renderOzonHistoryCards(model);
+    }
     if (structuredState.view === 'reviews') return renderStructuredQueue(model, payload, 'reviews');
     if (structuredState.view === 'questions') return renderStructuredQueue(model, payload, 'questions');
     if (structuredState.view === 'stats') return renderStructuredStats(model);
@@ -2014,7 +2334,9 @@
     root.querySelectorAll('[data-rating-platform]').forEach((button) => {
       button.addEventListener('click', () => {
         structuredState.platform = button.dataset.ratingPlatform === 'ozon' ? 'ozon' : 'wb';
-        structuredState.view = structuredState.platform === 'ozon' ? 'overview' : 'history';
+        structuredState.view = 'history';
+        workbenchState.status = 'all';
+        workbenchState.sort = structuredState.platform === 'ozon' ? 'contentRating' : 'revenue';
         renderWbCardRatingStructured(rootId);
       });
     });
@@ -2070,6 +2392,7 @@
       renderEmpty(root, payload);
       return;
     }
+    const ozonModel = buildOzonModel(model);
 
     root.innerHTML = `
       <div class="section-title">
@@ -2079,7 +2402,8 @@
         </div>
         <div class="badge-stack">
           ${chip(`WB ${fullDate(model.active.date)}`, 'ok')}
-          ${chip(`Ozon отдельно`, 'info')}
+          ${chip(`Ozon API ${fmtInt(ozonModel.totals.cards)} карточек`, 'info')}
+          ${chip(ozonModel.reviewApiLocked ? 'Ozon отзывы 403' : 'Ozon отзывы API ok', ozonModel.reviewApiLocked ? 'warn' : 'ok')}
           ${chip(`${fmtInt(model.snapshots.length)} срезов истории`, 'info')}
         </div>
       </div>

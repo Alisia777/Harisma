@@ -2,7 +2,7 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260601ratingreport6';
+  const VERSION = '20260601ratingreport8';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
@@ -236,7 +236,13 @@
     const style = document.createElement('style');
     style.id = id;
     style.textContent = `
-      .rating-structured-shell { display:grid; gap:16px; }
+      .rating-structured-shell { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; max-width:100%; overflow:hidden; }
+      .rating-planfact-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+      .rating-platform-selector { display:flex; gap:8px; flex-wrap:wrap; }
+      .rating-platform-selector button { border:1px solid rgba(255,255,255,.12); border-radius:999px; background:rgba(255,255,255,.04); color:var(--text); padding:10px 14px; font:inherit; font-size:13px; font-weight:800; cursor:pointer; }
+      .rating-platform-selector button.active { border-color:rgba(215,166,76,.72); background:rgba(215,166,76,.18); color:#ffe6ae; }
+      .rating-planfact-board.sku-plan-platform-board { grid-template-columns:repeat(4,minmax(0,1fr)); width:100%; min-width:0; margin:0; }
+      .rating-planfact-board .sku-plan-platform-card { min-width:0; }
       .rating-platform-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
       .rating-platform-panel { border:1px solid var(--line); border-radius:8px; background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.016)); padding:16px; min-width:0; }
       .rating-platform-panel.is-wb { border-color:rgba(215,166,76,.42); }
@@ -250,8 +256,7 @@
       .rating-platform-action { border:1px solid rgba(255,255,255,.12); border-radius:8px; background:rgba(255,255,255,.04); color:var(--text); padding:10px 13px; font:inherit; font-size:13px; cursor:pointer; white-space:nowrap; }
       .rating-platform-action.active { border-color:rgba(215,166,76,.72); background:rgba(215,166,76,.18); color:#ffe6ae; }
       .rating-metric-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-      .rating-metric-grid .sku-plan-platform-card { width:100%; min-height:138px; cursor:default; }
-      .rating-metric-grid .sku-plan-platform-card:hover { transform:none; }
+      .rating-metric-grid .sku-plan-platform-card { width:100%; min-height:138px; }
       .rating-planfact-card.is-empty { opacity:.76; }
       .rating-planfact-card .sku-plan-platform-card__value { white-space:normal; overflow-wrap:anywhere; }
       .rating-planfact-card .sku-plan-platform-card__meta { min-height:32px; }
@@ -263,6 +268,19 @@
       .rating-detail-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:14px; }
       .rating-detail-head h3 { margin:0; font-size:20px; line-height:1.15; }
       .rating-detail-head p { margin:5px 0 0; color:var(--muted); line-height:1.35; }
+      .rating-work-card { padding:0; overflow:hidden; }
+      .rating-work-card .rating-detail-head { margin:0; padding:14px 16px; border-bottom:1px solid var(--line); }
+      .rating-work-table { max-height:640px; overflow:auto; }
+      .rating-work-table table { width:100%; min-width:1180px; border-collapse:separate; border-spacing:0; table-layout:fixed; }
+      .rating-work-table thead th { position:sticky; top:0; z-index:4; padding:10px 12px; border-bottom:1px solid var(--line); background:rgba(12,8,7,.96); color:#f8e9c7; font-size:11px; text-align:left; text-transform:uppercase; letter-spacing:0; }
+      .rating-work-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.06); vertical-align:top; overflow:hidden; background:linear-gradient(90deg,hsl(var(--pf-hue,205) 74% 34% / var(--pf-row-fill,.025)),rgba(255,255,255,.012)); }
+      .rating-work-table tr:hover td { background:hsl(var(--pf-hue,205) 72% 42% / .08); }
+      .rating-work-table .article-cell { min-width:0; }
+      .rating-work-table .article-cell .link-btn { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .rating-work-table .cell-main { display:block; font-size:15px; line-height:1.15; font-weight:900; color:#fff7e6; }
+      .rating-work-table .cell-muted { display:block; margin-top:4px; color:var(--muted); font-size:11px; line-height:1.25; }
+      .rating-work-table .cell-text { display:block; color:#efe5d6; font-size:12px; line-height:1.35; max-height:48px; overflow:hidden; }
+      .rating-work-table .wb-rating-trend { margin-top:5px; max-width:100%; white-space:normal; line-height:1.15; padding:5px 7px; }
       .rating-history-list { display:grid; gap:10px; }
       .rating-history-card { display:grid; grid-template-columns:minmax(220px,1.1fr) minmax(0,2.4fr); gap:14px; align-items:stretch; border:1px solid rgba(255,255,255,.08); border-radius:8px; background:rgba(255,255,255,.022); padding:12px; }
       .rating-history-main { min-width:0; }
@@ -279,11 +297,13 @@
       .rating-empty-ozon .need-list { display:grid; gap:8px; margin-top:10px; }
       @media (max-width: 1200px) {
         .rating-platform-grid, .rating-empty-ozon { grid-template-columns:1fr; }
+        .rating-planfact-board.sku-plan-platform-board { grid-template-columns:repeat(2,minmax(0,1fr)); }
         .rating-metric-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
         .rating-history-card { grid-template-columns:1fr; }
         .rating-history-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
       }
       @media (max-width: 640px) {
+        .rating-planfact-board.sku-plan-platform-board { grid-template-columns:1fr; }
         .rating-metric-grid, .rating-history-metrics { grid-template-columns:1fr; }
         .rating-platform-head, .rating-detail-head { flex-direction:column; }
       }
@@ -1353,7 +1373,7 @@
     const level = options.empty ? 'danger' : planFactLevel(ratio);
     const side = options.side || (platform === 'ozon' ? 'Ozon' : 'WB');
     return `
-      <div class="sku-plan-platform-card rating-planfact-card level-${level} ${options.empty ? 'is-empty' : ''}" style="${planFactStyle(platform, ratio)}">
+      <button class="sku-plan-platform-card rating-planfact-card level-${level} ${options.empty ? 'is-empty' : ''}" type="button" data-rating-platform="${esc(platform)}" style="${planFactStyle(platform, ratio)}">
         <span class="sku-plan-platform-card__top">
           <strong>${esc(label)}</strong>
           <em>${esc(side)}</em>
@@ -1365,7 +1385,7 @@
           <b>${trendHtml || '&nbsp;'}</b>
           <span><em>${esc(options.footer || '')}</em></span>
         </span>
-      </div>
+      </button>
     `;
   }
 
@@ -1504,6 +1524,134 @@
         <div class="badge-stack">${chip(`${fmtInt(items.length)} строк`, 'info')}</div>
       </div>
       <div class="rating-history-list">${rows || '<div class="empty">Нет строк по текущему срезу.</div>'}</div>
+    `;
+  }
+
+  function renderStructuredPlatforms(model) {
+    const latestRating = model.totals.avgRating;
+    const prevRating = avgSnapshotRating(model.baseline1);
+    const reviewDailyBase = model.totals.reviews3 ? model.totals.reviews3 / 3 : null;
+    const questionDailyBase = model.totals.questions3 ? model.totals.questions3 / 3 : null;
+    const unansweredTotal = model.totals.unanswered + model.totals.unansweredQuestions;
+    const ozon7 = model.ozonWindow7 || { revenue: 0, units: 0, latestDate: '' };
+    const cards = [
+      renderMetricCard('WB рейтинг', fmtNum(latestRating, 2), ratingTrendBadge(latestRating, prevRating), `${fmtInt(model.totals.leaders)} карточек 4,8+`, { platform: 'wb', ratio: hasNumber(latestRating) ? Number(latestRating) / 5 : 0.5 }),
+      renderMetricCard('WB отзывы 7д', fmtInt(model.totals.reviews7), trendBadge(model.totals.reviews1, reviewDailyBase), `вчера ${fmtInt(model.totals.reviews1)}`, { platform: 'wb' }),
+      renderMetricCard('WB негатив 7д', fmtPct(model.totals.neg7), trendBadge(model.totals.neg1, model.totals.neg3, { lowerIsBetter: true, percent: true, threshold: 0.01 }), `${fmtInt(model.totals.low7)} негативных`, { platform: 'wb', ratio: model.totals.neg7 === null ? 0.5 : Math.max(0.08, 1 - Number(model.totals.neg7)) }),
+      renderMetricCard('WB вопросы', fmtInt(model.totals.questions), trendBadge(model.totals.questions1, questionDailyBase), `+${fmtInt(model.totals.questions7)} за 7 дней`, { platform: 'wb' }),
+      renderMetricCard('WB без ответа', fmtInt(unansweredTotal), unansweredTotal ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up'), `${fmtInt(model.totals.unanswered)} отзывов / ${fmtInt(model.totals.unansweredQuestions)} вопросов`, { platform: 'wb', ratio: unansweredTotal ? 0.35 : 1 }),
+      renderMetricCard('Ozon рейтинг', 'нет данных', simpleBadge('нужен источник', 'flat'), 'рейтинг карточек не приходит', { platform: 'ozon', empty: true, ratio: 0.08 }),
+      renderMetricCard('Ozon отзывы / вопросы', 'нет данных', simpleBadge('нужен источник', 'flat'), 'отзывы и вопросы не заведены', { platform: 'ozon', empty: true, ratio: 0.08 }),
+      renderMetricCard('Ozon выручка 7д', fmtMoney(ozon7.revenue), simpleBadge('продажи есть', 'up'), `${fmtInt(ozon7.units)} шт. за 7 дней`, { platform: 'ozon', ratio: ozon7.revenue ? 1 : 0.1 })
+    ].join('');
+    return `
+      <div class="rating-planfact-toolbar">
+        <div class="rating-platform-selector">
+          <button class="${structuredState.platform === 'wb' ? 'active' : ''}" type="button" data-rating-platform="wb">WB · история / отзывы / вопросы</button>
+          <button class="${structuredState.platform === 'ozon' ? 'active' : ''}" type="button" data-rating-platform="ozon">Ozon · что есть / что подключить</button>
+        </div>
+        <div class="badge-stack">${chip(`${fmtInt(model.rows.length)} карточек`, 'info')}${chip(`${fmtInt(model.snapshots.length)} срезов`, 'info')}</div>
+      </div>
+      <div class="sku-plan-platform-board rating-planfact-board">${cards}</div>
+    `;
+  }
+
+  function renderHistoryCards(model) {
+    const rows = model.rows.slice(0, 120).map((row) => {
+      const link = typeof linkToSku === 'function' ? linkToSku(row.key || row.label, row.label) : `<strong>${esc(row.label)}</strong>`;
+      const unanswered = row.unanswered + row.unansweredQuestions;
+      const ratingRatio = hasNumber(row.rating) ? Number(row.rating) / 5 : 0.5;
+      const statusBadge = unanswered
+        ? simpleBadge('ответить', 'down')
+        : row.p1.low
+          ? simpleBadge('негатив', 'down')
+          : row.ratingDelta1 <= -0.03
+            ? simpleBadge('падает', 'down')
+            : simpleBadge('норма', 'up');
+      return `
+        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('wb', ratingRatio)}">
+          <td class="article-cell">
+            ${link}
+            <span class="cell-muted">WB nm ${esc(row.card?.nmId || '—')} · история отзывов ${signed(row.historyDelta)}</span>
+            <div class="wb-rating-chipline">${signalPills(row)}</div>
+          </td>
+          <td><span class="cell-main">${esc(gameLabel(row))}</span>${statusBadge}</td>
+          <td><span class="cell-main">${fmtInt(row.p7.reviews)}</span><span class="cell-muted">3д ${fmtInt(row.p3.reviews)} · вчера ${fmtInt(row.p1.reviews)}</span></td>
+          <td><span class="cell-main">${fmtNum(row.rating, 2)}</span>${ratingTrendBadge(row.rating, row.historyRating)}</td>
+          <td><span class="cell-main">${fmtPct(row.p7.negativePct)}</span><span class="cell-muted">${fmtInt(row.p7.low)} негативных</span></td>
+          <td><span class="cell-main">${fmtInt(row.questionCount)}</span><span class="cell-muted">+${fmtInt(row.q7.questions)} за 7д</span></td>
+          <td><span class="cell-main">${fmtInt(unanswered)}</span><span class="cell-muted">${fmtInt(row.unanswered)} отзывов · ${fmtInt(row.unansweredQuestions)} вопросов</span></td>
+          <td><span class="cell-main">${fmtInt(row.p1.reviews)} отзывов</span><span class="cell-muted">${row.p1.low ? `${fmtInt(row.p1.low)} негатив` : 'без негатива'}</span></td>
+          <td><span class="cell-text">${esc(row.comment || '—')}</span></td>
+        </tr>
+      `;
+    }).join('');
+    return `
+      <div class="sku-plan-fact-card rating-work-card">
+        <div class="rating-detail-head">
+          <div>
+            <h3>WB · рабочая таблица карточек</h3>
+            <p>Одна строка = один товар. Сначала статус, затем отзывы, оценка, негатив, вопросы и хвост без ответа.</p>
+          </div>
+          <div class="badge-stack">${chip(`${fmtInt(model.rows.length)} карточек`, 'info')}${chip(`${fmtInt(model.snapshots.length)} срезов`, 'info')}</div>
+        </div>
+        <div class="rating-work-table">
+          <table>
+            <colgroup>
+              <col style="width:220px"><col style="width:120px"><col style="width:100px"><col style="width:95px"><col style="width:110px"><col style="width:95px"><col style="width:110px"><col style="width:105px"><col style="width:160px">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Артикул</th><th>Статус</th><th>Отзывы 7д</th><th>Оценка</th><th>Негатив</th><th>Вопросы</th><th>Без ответа</th><th>Вчера</th><th>Комментарий</th>
+              </tr>
+            </thead>
+            <tbody>${rows || '<tr><td colspan="9" class="center">Нет карточек в истории WB.</td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderStructuredQueue(model, payload, kind) {
+    const items = (kind === 'reviews' ? feedbackItems(payload, model) : questionItems(payload, model)).slice(0, 120);
+    const title = kind === 'reviews' ? 'WB · отзывы' : 'WB · вопросы';
+    const rows = items.map((item) => {
+      const ratio = kind === 'reviews' && hasNumber(item.valuation || item.rating) ? Number(item.valuation || item.rating) / 5 : (item.unanswered ? 0.35 : 0.85);
+      return `
+        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('wb', ratio)}">
+          <td class="article-cell">
+            ${typeof linkToSku === 'function' ? linkToSku(item.key || item.label, item.label) : esc(item.label)}
+            <span class="cell-muted">WB nm ${esc(item.nmId || '—')}</span>
+          </td>
+          <td><span class="cell-main">${esc(item.date ? shortDate(item.date) : 'без даты')}</span></td>
+          <td><span class="cell-main">${item.unanswered ? 'Нужен ответ' : 'Закрыто'}</span>${item.unanswered ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up')}</td>
+          <td><span class="cell-main">${kind === 'reviews' ? fmtNum(item.valuation || item.rating, 2) : fmtInt(item.questionCount)}</span><span class="cell-muted">${kind === 'reviews' ? 'оценка' : 'вопросов'}</span></td>
+          <td><span class="cell-main">${kind === 'reviews' ? fmtInt(item.low || item.low7) : fmtInt(item.unanswered)}</span><span class="cell-muted">${kind === 'reviews' ? 'негатив' : 'без ответа'}</span></td>
+          <td><span class="cell-text">${esc(item.text || '—')}</span></td>
+        </tr>
+      `;
+    }).join('');
+    return `
+      <div class="sku-plan-fact-card rating-work-card">
+        <div class="rating-detail-head">
+          <div>
+            <h3>${title}</h3>
+            <p>${kind === 'reviews' ? 'Отдельный список отзывов: статус, оценка, негатив и текст.' : 'Отдельный список вопросов: статус, количество и текст.'}</p>
+          </div>
+          <div class="badge-stack">${chip(`${fmtInt(items.length)} строк`, 'info')}</div>
+        </div>
+        <div class="rating-work-table">
+          <table>
+            <colgroup>
+              <col style="width:240px"><col style="width:110px"><col style="width:140px"><col style="width:110px"><col style="width:120px"><col style="width:420px">
+            </colgroup>
+            <thead>
+              <tr><th>Артикул</th><th>Дата</th><th>Статус</th><th>${kind === 'reviews' ? 'Оценка' : 'Вопросы'}</th><th>${kind === 'reviews' ? 'Негатив' : 'Без ответа'}</th><th>Текст / суть</th></tr>
+            </thead>
+            <tbody>${rows || '<tr><td colspan="6" class="center">Нет строк по текущему срезу.</td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
     `;
   }
 

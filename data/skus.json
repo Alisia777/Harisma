@@ -21,7 +21,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -116,7 +116,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -138,6 +138,19 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 97,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "MPL583151",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      }
+    ],
+    "platformAliases": {
+      "letu": [
+        "MPL583151"
+      ]
     }
   },
   {
@@ -162,7 +175,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -257,7 +270,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -297,7 +310,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -392,7 +405,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -438,7 +451,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -533,7 +546,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -573,7 +586,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -670,7 +683,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -710,7 +723,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -807,7 +820,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -848,6 +861,36 @@
         "platform": "wb",
         "source": "repricer-alias-csv",
         "note": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx"
+      },
+      {
+        "value": "99000114726",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465441",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL483098",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874428",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465441",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
@@ -855,6 +898,17 @@
         "otz_fbs6_curly_method_300ml",
         "439446390",
         "wb-nm-439446390"
+      ],
+      "ga": [
+        "99000114726",
+        "4603320465441"
+      ],
+      "letu": [
+        "MPL483098"
+      ],
+      "mm": [
+        "5874428",
+        "4603320465441"
       ]
     },
     "aliasImport": {
@@ -888,7 +942,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -983,7 +1037,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1029,7 +1083,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1124,7 +1178,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1140,7 +1194,52 @@
       "mm": "Пудра для умывания"
     },
     "costPrice": 0,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "aliases": [
+      {
+        "value": "99000076220",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498017",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL378812",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5870958",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498017",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076220",
+        "4670020498017"
+      ],
+      "letu": [
+        "MPL378812"
+      ],
+      "mm": [
+        "5870958",
+        "4670020498017"
+      ]
+    }
   },
   {
     "article": "enzim_pudra_80gr_v2",
@@ -1164,7 +1263,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1261,7 +1360,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1283,6 +1382,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 27,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000125143",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4645565747487",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL536294",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6796006",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4645565747487",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000125143",
+        "4645565747487"
+      ],
+      "letu": [
+        "MPL536294"
+      ],
+      "mm": [
+        "6796006",
+        "4645565747487"
+      ]
     }
   },
   {
@@ -1307,7 +1451,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1404,7 +1548,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1450,7 +1594,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1545,7 +1689,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1591,7 +1735,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1688,7 +1832,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1710,6 +1854,35 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 44,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "MPL439819",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874419",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498482",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "letu": [
+        "MPL439819"
+      ],
+      "mm": [
+        "5874419",
+        "4670020498482"
+      ]
     }
   },
   {
@@ -1734,7 +1907,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1831,7 +2004,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1853,6 +2026,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 1,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114730",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417420110",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL497134",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880316",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417420110",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114730",
+        "4660417420110"
+      ],
+      "letu": [
+        "MPL497134"
+      ],
+      "mm": [
+        "5880316",
+        "4660417420110"
+      ]
     }
   },
   {
@@ -1877,7 +2095,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1972,7 +2190,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1994,6 +2212,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 51,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114725",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4676574657436",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL411155",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874282",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4676574657436",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114725",
+        "4676574657436"
+      ],
+      "letu": [
+        "MPL411155"
+      ],
+      "mm": [
+        "5874282",
+        "4676574657436"
+      ]
     }
   },
   {
@@ -2018,7 +2281,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2113,7 +2376,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2135,6 +2398,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 111,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000131680",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465458",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL553832",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880768",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465458",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000131680",
+        "4603320465458"
+      ],
+      "letu": [
+        "MPL553832"
+      ],
+      "mm": [
+        "5880768",
+        "4603320465458"
+      ]
     }
   },
   {
@@ -2159,7 +2467,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Под вопросом",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2254,7 +2562,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2276,6 +2584,58 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 45,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076224",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4609893777394",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4680918970174",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL378889",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868854",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4609893777394",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076224",
+        "4609893777394",
+        "4680918970174"
+      ],
+      "letu": [
+        "MPL378889"
+      ],
+      "mm": [
+        "5868854",
+        "4609893777394"
+      ]
     }
   },
   {
@@ -2300,7 +2660,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2395,7 +2755,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2417,6 +2777,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 95,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000081275",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465274",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL411107",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5873782",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465274",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000081275",
+        "4603320465274"
+      ],
+      "letu": [
+        "MPL411107"
+      ],
+      "mm": [
+        "5873782",
+        "4603320465274"
+      ]
     }
   },
   {
@@ -2441,7 +2846,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2536,7 +2941,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2558,6 +2963,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 103,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000081276",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465267",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL411108",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5871280",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465267",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000081276",
+        "4603320465267"
+      ],
+      "letu": [
+        "MPL411108"
+      ],
+      "mm": [
+        "5871280",
+        "4603320465267"
+      ]
     }
   },
   {
@@ -2582,12 +3032,12 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "",
         "ozon": "Даша",
         "ym": "",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -2677,12 +3127,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "",
       "ozon": "Даша",
       "ym": "",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Гидрофильные масла",
@@ -2693,7 +3143,52 @@
       "mm": "Масло гидрофильное"
     },
     "costPrice": 0,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "aliases": [
+      {
+        "value": "99000076222",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4610172186202",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL378893",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868812",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4610172186202",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076222",
+        "4610172186202"
+      ],
+      "letu": [
+        "MPL378893"
+      ],
+      "mm": [
+        "5868812",
+        "4610172186202"
+      ]
+    }
   },
   {
     "article": "glikiron_BAD_60caps",
@@ -2717,7 +3212,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Светлана",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2812,7 +3307,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Светлана",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2871,7 +3366,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Светлана",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2966,7 +3461,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Светлана",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3012,7 +3507,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Под вопросом",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Светлана",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3107,7 +3602,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Светлана",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3153,7 +3648,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3248,7 +3743,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3307,7 +3802,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3402,7 +3897,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3424,6 +3919,35 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 91,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "MPL378978",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598588",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4630084864616",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "letu": [
+        "MPL378978"
+      ],
+      "mm": [
+        "6598588",
+        "4630084864616"
+      ]
     }
   },
   {
@@ -3448,7 +3972,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3543,7 +4067,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3565,6 +4089,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 112,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114723",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4630084865477",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL494932",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880311",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4630084865477",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114723",
+        "4630084865477"
+      ],
+      "letu": [
+        "MPL494932"
+      ],
+      "mm": [
+        "5880311",
+        "4630084865477"
+      ]
     }
   },
   {
@@ -3589,7 +4158,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Под вопросом",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3684,7 +4253,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3700,7 +4269,20 @@
       "mm": ""
     },
     "costPrice": 0,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "aliases": [
+      {
+        "value": "MPL379166",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      }
+    ],
+    "platformAliases": {
+      "letu": [
+        "MPL379166"
+      ]
+    }
   },
   {
     "article": "krem_buster_250ml",
@@ -3724,7 +4306,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3821,7 +4403,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3843,6 +4425,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 29,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000125268",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465427",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL534369",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5878029",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465427",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000125268",
+        "4603320465427"
+      ],
+      "letu": [
+        "MPL534369"
+      ],
+      "mm": [
+        "5878029",
+        "4603320465427"
+      ]
     }
   },
   {
@@ -3867,7 +4494,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3962,7 +4589,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3984,6 +4611,65 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 50,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114729",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421452",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4601022298473",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4660417421889",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL379165",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5854268",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421452",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114729",
+        "4660417421452",
+        "4601022298473",
+        "4660417421889"
+      ],
+      "letu": [
+        "MPL379165"
+      ],
+      "mm": [
+        "5854268",
+        "4660417421452"
+      ]
     }
   },
   {
@@ -4008,7 +4694,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4105,7 +4791,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4127,6 +4813,58 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 17,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000125267",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498918",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4660417421643",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL534118",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880765",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498918",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000125267",
+        "4670020498918",
+        "4660417421643"
+      ],
+      "letu": [
+        "MPL534118"
+      ],
+      "mm": [
+        "5880765",
+        "4670020498918"
+      ]
     }
   },
   {
@@ -4151,7 +4889,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4248,7 +4986,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4270,6 +5008,58 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 11,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114731",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020497898",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4660417421650",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL379167",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5869575",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020497898",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114731",
+        "4670020497898",
+        "4660417421650"
+      ],
+      "letu": [
+        "MPL379167"
+      ],
+      "mm": [
+        "5869575",
+        "4670020497898"
+      ]
     }
   },
   {
@@ -4294,7 +5084,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4391,7 +5181,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4413,6 +5203,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 16,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000163832",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421766",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL583158",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598168",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421766",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000163832",
+        "4660417421766"
+      ],
+      "letu": [
+        "MPL583158"
+      ],
+      "mm": [
+        "6598168",
+        "4660417421766"
+      ]
     }
   },
   {
@@ -4437,7 +5272,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4534,7 +5369,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4556,6 +5391,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 15,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076225",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498437",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL379168",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6780727",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498437",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076225",
+        "4670020498437"
+      ],
+      "letu": [
+        "MPL379168"
+      ],
+      "mm": [
+        "6780727",
+        "4670020498437"
+      ]
     }
   },
   {
@@ -4580,7 +5460,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4677,7 +5557,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4699,6 +5579,72 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 5,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076205",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498208",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4603312714004",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4603312714007",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4640523970020",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL411098",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5871877",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603312714007",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076205",
+        "4670020498208",
+        "4603312714004",
+        "4603312714007",
+        "4640523970020"
+      ],
+      "letu": [
+        "MPL411098"
+      ],
+      "mm": [
+        "5871877",
+        "4603312714007"
+      ]
     }
   },
   {
@@ -4723,7 +5669,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Под вопросом",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Светлана",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4820,7 +5766,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Светлана",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4866,7 +5812,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4963,7 +5909,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4985,6 +5931,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 57,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076210",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020497546",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381090",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868855",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020497546",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076210",
+        "4670020497546"
+      ],
+      "letu": [
+        "MPL381090"
+      ],
+      "mm": [
+        "5868855",
+        "4670020497546"
+      ]
     }
   },
   {
@@ -5009,7 +6000,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5106,7 +6097,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5128,6 +6119,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 65,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000176492",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4630446234156",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL583149",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598159",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4630446234156",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000176492",
+        "4630446234156"
+      ],
+      "letu": [
+        "MPL583149"
+      ],
+      "mm": [
+        "6598159",
+        "4630446234156"
+      ]
     }
   },
   {
@@ -5152,7 +6188,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5249,7 +6285,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5271,6 +6307,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 18,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076208",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465366",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL411097",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874277",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465366",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076208",
+        "4603320465366"
+      ],
+      "letu": [
+        "MPL411097"
+      ],
+      "mm": [
+        "5874277",
+        "4603320465366"
+      ]
     }
   },
   {
@@ -5295,7 +6376,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5392,7 +6473,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5421,11 +6502,50 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000114727",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498741",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL411103",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874286",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498741",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "maska_dlya_lica_100m"
+        "maska_dlya_lica_100m",
+        "99000114727",
+        "4670020498741"
+      ],
+      "letu": [
+        "MPL411103"
+      ],
+      "mm": [
+        "5874286",
+        "4670020498741"
       ]
     }
   },
@@ -5451,7 +6571,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5546,7 +6666,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5575,11 +6695,59 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000076215",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4610172186882",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381091",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868845",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4610172186882",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      },
+      {
+        "value": "fbs_maslo_dlya_borodi_50ml",
+        "platform": "ym",
+        "source": "sku_aliases.json",
+        "note": "Я.Маркет FBS alias"
       }
     ],
     "platformAliases": {
       "ga": [
-        "maslo_dlya_borodi_50"
+        "maslo_dlya_borodi_50",
+        "99000076215",
+        "4610172186882"
+      ],
+      "letu": [
+        "MPL381091"
+      ],
+      "mm": [
+        "5868845",
+        "4610172186882"
+      ],
+      "ym": [
+        "fbs_maslo_dlya_borodi_50ml"
       ]
     }
   },
@@ -5605,8 +6773,8 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
-        "ozon": "Александр Озон",
+        "wb": "Мария",
+        "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
         "letu": "Екатерина",
@@ -5700,8 +6868,8 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
-      "ozon": "Александр Озон",
+      "wb": "Мария",
+      "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
       "letu": "Екатерина",
@@ -5716,7 +6884,59 @@
       "mm": ""
     },
     "costPrice": 0,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "aliases": [
+      {
+        "value": "99000076212",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4610172186875",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL498116",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "MPL381092",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5876472",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4610172186875",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076212",
+        "4610172186875"
+      ],
+      "letu": [
+        "MPL498116",
+        "MPL381092"
+      ],
+      "mm": [
+        "5876472",
+        "4610172186875"
+      ]
+    }
   },
   {
     "article": "maslo_dlya_volos_parf_110ml_",
@@ -5740,7 +6960,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5835,7 +7055,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5881,7 +7101,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5976,7 +7196,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5998,6 +7218,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 107,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114732",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465304",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL485625",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5876222",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465304",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114732",
+        "4603320465304"
+      ],
+      "letu": [
+        "MPL485625"
+      ],
+      "mm": [
+        "5876222",
+        "4603320465304"
+      ]
     }
   },
   {
@@ -6022,7 +7287,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Светлана",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6117,7 +7382,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Светлана",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6163,7 +7428,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "",
         "ozon": "",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6258,7 +7523,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "",
       "ozon": "",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6298,7 +7563,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6393,7 +7658,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6416,11 +7681,41 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000076218",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4698878338125",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "5873796",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4698878338125",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "nabor_penka_dlya_res"
+        "nabor_penka_dlya_res",
+        "99000076218",
+        "4698878338125"
+      ],
+      "mm": [
+        "5873796",
+        "4698878338125"
       ]
     }
   },
@@ -6446,7 +7741,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6541,7 +7836,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6563,6 +7858,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 28,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076202",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4607050974747",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381166",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5843397",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4607050974747",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076202",
+        "4607050974747"
+      ],
+      "letu": [
+        "MPL381166"
+      ],
+      "mm": [
+        "5843397",
+        "4607050974747"
+      ]
     }
   },
   {
@@ -6587,7 +7927,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6682,7 +8022,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6704,6 +8044,35 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 94,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "MPL583152",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874423",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4656887467946",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "letu": [
+        "MPL583152"
+      ],
+      "mm": [
+        "5874423",
+        "4656887467946"
+      ]
     }
   },
   {
@@ -6728,7 +8097,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6823,7 +8192,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6845,6 +8214,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 38,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000177797",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4630040229770",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381167",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868852",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4629945399213",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000177797",
+        "4630040229770"
+      ],
+      "letu": [
+        "MPL381167"
+      ],
+      "mm": [
+        "5868852",
+        "4629945399213"
+      ]
     }
   },
   {
@@ -6869,7 +8283,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6966,7 +8380,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6982,7 +8396,36 @@
       "mm": ""
     },
     "costPrice": 0,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "aliases": [
+      {
+        "value": "MPL381093",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868850",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4630084864777",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "letu": [
+        "MPL381093"
+      ],
+      "mm": [
+        "5868850",
+        "4630084864777"
+      ]
+    }
   },
   {
     "article": "penka_kudryavii_metod_150ml",
@@ -7006,7 +8449,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7103,7 +8546,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7125,6 +8568,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 14,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000125266",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498611",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL534436",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874567",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498611",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000125266",
+        "4670020498611"
+      ],
+      "letu": [
+        "MPL534436"
+      ],
+      "mm": [
+        "5874567",
+        "4670020498611"
+      ]
     }
   },
   {
@@ -7149,7 +8637,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7244,7 +8732,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7260,7 +8748,52 @@
       "mm": "Скрабы и пилинги"
     },
     "costPrice": 0,
-    "sheetStatus": "Вывод"
+    "sheetStatus": "Вывод",
+    "aliases": [
+      {
+        "value": "99000076204",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020496761",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381095",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5854281",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020496761",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076204",
+        "4670020496761"
+      ],
+      "letu": [
+        "MPL381095"
+      ],
+      "mm": [
+        "5854281",
+        "4670020496761"
+      ]
+    }
   },
   {
     "article": "pink_pepper_50ml",
@@ -7284,7 +8817,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7381,7 +8914,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7403,6 +8936,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 26,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000125263",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465342",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL533896",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880769",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465342",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000125263",
+        "4603320465342"
+      ],
+      "letu": [
+        "MPL533896"
+      ],
+      "mm": [
+        "5880769",
+        "4603320465342"
+      ]
     }
   },
   {
@@ -7427,7 +9005,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7522,7 +9100,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7562,7 +9140,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7659,7 +9237,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7705,7 +9283,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7800,7 +9378,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7840,7 +9418,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7937,7 +9515,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7959,6 +9537,67 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 2,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076216",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4610172186219",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4660417421582",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381168",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868814",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421582",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      },
+      {
+        "value": "fbs_retiderm_50ml",
+        "platform": "ym",
+        "source": "sku_aliases.json",
+        "note": "Я.Маркет FBS alias"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076216",
+        "4610172186219",
+        "4660417421582"
+      ],
+      "letu": [
+        "MPL381168"
+      ],
+      "mm": [
+        "5868814",
+        "4660417421582"
+      ],
+      "ym": [
+        "fbs_retiderm_50ml"
+      ]
     }
   },
   {
@@ -7983,7 +9622,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8080,7 +9719,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8102,6 +9741,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 42,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000137436",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421629",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL570692",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6075447",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421629",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000137436",
+        "4660417421629"
+      ],
+      "letu": [
+        "MPL570692"
+      ],
+      "mm": [
+        "6075447",
+        "4660417421629"
+      ]
     }
   },
   {
@@ -8126,7 +9810,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8224,7 +9908,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8253,11 +9937,50 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000124418",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421599",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL532421",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880783",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421599",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "retinait_krem_025_50"
+        "retinait_krem_025_50",
+        "99000124418",
+        "4660417421599"
+      ],
+      "letu": [
+        "MPL532421"
+      ],
+      "mm": [
+        "5880783",
+        "4660417421599"
       ]
     }
   },
@@ -8283,7 +10006,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8381,7 +10104,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8410,11 +10133,50 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000131675",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421759",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL553835",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5970789",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421759",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "retinait_krem_05_50m"
+        "retinait_krem_05_50m",
+        "99000131675",
+        "4660417421759"
+      ],
+      "letu": [
+        "MPL553835"
+      ],
+      "mm": [
+        "5970789",
+        "4660417421759"
       ]
     }
   },
@@ -8440,7 +10202,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8538,7 +10300,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8560,6 +10322,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 8,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000124421",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421605",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL532549",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880780",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421605",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000124421",
+        "4660417421605"
+      ],
+      "letu": [
+        "MPL532549"
+      ],
+      "mm": [
+        "5880780",
+        "4660417421605"
+      ]
     }
   },
   {
@@ -8584,7 +10391,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8681,7 +10488,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8703,6 +10510,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 13,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000176496",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421827",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL583160",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598583",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421827",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000176496",
+        "4660417421827"
+      ],
+      "letu": [
+        "MPL583160"
+      ],
+      "mm": [
+        "6598583",
+        "4660417421827"
+      ]
     }
   },
   {
@@ -8727,12 +10579,12 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "",
         "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "",
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -8822,12 +10674,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "",
       "ozon": "Даша",
-      "ym": "Анна",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ym": "",
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Сыворотки",
@@ -8844,6 +10696,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 34,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000154001",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4640523970099",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL580332",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6342026",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4640523970099",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000154001",
+        "4640523970099"
+      ],
+      "letu": [
+        "MPL580332"
+      ],
+      "mm": [
+        "6342026",
+        "4640523970099"
+      ]
     }
   },
   {
@@ -8868,12 +10765,12 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "",
         "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "",
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -8963,12 +10860,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "",
       "ozon": "Даша",
-      "ym": "Анна",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ym": "",
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Сыворотки",
@@ -8985,6 +10882,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 20,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000153995",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4640523970082",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL580331",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6340976",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4640523970082",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000153995",
+        "4640523970082"
+      ],
+      "letu": [
+        "MPL580331"
+      ],
+      "mm": [
+        "6340976",
+        "4640523970082"
+      ]
     }
   },
   {
@@ -9009,7 +10951,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9106,7 +11048,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9135,11 +11077,50 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000125142",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465403",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL533706",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880771",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465403",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "retinait_syvorotka_1"
+        "retinait_syvorotka_1",
+        "99000125142",
+        "4603320465403"
+      ],
+      "letu": [
+        "MPL533706"
+      ],
+      "mm": [
+        "5880771",
+        "4603320465403"
       ]
     }
   },
@@ -9165,12 +11146,12 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "",
         "ozon": "Даша",
         "ym": "",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -9260,12 +11241,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "",
       "ozon": "Даша",
       "ym": "",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -9282,6 +11263,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 9,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000154005",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421636",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL580318",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6339736",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421636",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000154005",
+        "4660417421636"
+      ],
+      "letu": [
+        "MPL580318"
+      ],
+      "mm": [
+        "6339736",
+        "4660417421636"
+      ]
     }
   },
   {
@@ -9306,12 +11332,12 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "",
         "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "",
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -9401,12 +11427,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "",
       "ozon": "Даша",
-      "ym": "Анна",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ym": "",
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -9417,7 +11443,52 @@
       "mm": "Наборы средств для лица"
     },
     "costPrice": 0,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "aliases": [
+      {
+        "value": "99000176497",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660401460108",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL583298",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598610",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660401460108",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000176497",
+        "4660401460108"
+      ],
+      "letu": [
+        "MPL583298"
+      ],
+      "mm": [
+        "6598610",
+        "4660401460108"
+      ]
+    }
   },
   {
     "article": "Retinol_Start_Kit",
@@ -9441,12 +11512,12 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "",
         "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "",
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -9536,12 +11607,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "",
       "ozon": "Даша",
-      "ym": "Анна",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ym": "",
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -9558,6 +11629,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 117,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000176503",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660401460092",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL583296",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598129",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660401460092",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000176503",
+        "4660401460092"
+      ],
+      "letu": [
+        "MPL583296"
+      ],
+      "mm": [
+        "6598129",
+        "4660401460092"
+      ]
     }
   },
   {
@@ -9582,7 +11698,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Светлана",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9677,7 +11793,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Светлана",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9717,7 +11833,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9814,7 +11930,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9843,11 +11959,57 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000076213",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020496747",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4660417421834",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381169",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868808",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020496747",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "shampun_dlya_rosta_2"
+        "shampun_dlya_rosta_2",
+        "99000076213",
+        "4670020496747",
+        "4660417421834"
+      ],
+      "letu": [
+        "MPL381169"
+      ],
+      "mm": [
+        "5868808",
+        "4670020496747"
       ]
     }
   },
@@ -9873,7 +12035,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9970,7 +12132,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9999,11 +12161,50 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000076206",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020496679",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381173",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5854278",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020496679",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "shampun_protiv_perho"
+        "shampun_protiv_perho",
+        "99000076206",
+        "4670020496679"
+      ],
+      "letu": [
+        "MPL381173"
+      ],
+      "mm": [
+        "5854278",
+        "4670020496679"
       ]
     }
   },
@@ -10029,7 +12230,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10126,7 +12327,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10148,6 +12349,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 61,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114733",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465465",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL477653",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5876205",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465465",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114733",
+        "4603320465465"
+      ],
+      "letu": [
+        "MPL477653"
+      ],
+      "mm": [
+        "5876205",
+        "4603320465465"
+      ]
     }
   },
   {
@@ -10172,7 +12418,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10269,7 +12515,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10291,6 +12537,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 101,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000125265",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421476",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL534263",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880763",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421476",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000125265",
+        "4660417421476"
+      ],
+      "letu": [
+        "MPL534263"
+      ],
+      "mm": [
+        "5880763",
+        "4660417421476"
+      ]
     }
   },
   {
@@ -10315,7 +12606,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10412,7 +12703,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10434,6 +12725,58 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 23,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076221",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498413",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4670020499816",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL411095",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874418",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498413",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076221",
+        "4670020498413",
+        "4670020499816"
+      ],
+      "letu": [
+        "MPL411095"
+      ],
+      "mm": [
+        "5874418",
+        "4670020498413"
+      ]
     }
   },
   {
@@ -10458,12 +12801,12 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "",
         "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "",
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -10553,12 +12896,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "",
       "ozon": "Даша",
-      "ym": "Анна",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ym": "",
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Маски косметические",
@@ -10575,6 +12918,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 129,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000177799",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421858",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL589441",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598596",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421858",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000177799",
+        "4660417421858"
+      ],
+      "letu": [
+        "MPL589441"
+      ],
+      "mm": [
+        "6598596",
+        "4660417421858"
+      ]
     }
   },
   {
@@ -10599,12 +12987,12 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "",
         "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "",
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -10694,12 +13082,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "",
       "ozon": "Даша",
-      "ym": "Анна",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ym": "",
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Сыворотки",
@@ -10716,6 +13104,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 22,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000179436",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4630446231421",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL589408",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598607",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4630446231421",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000179436",
+        "4630446231421"
+      ],
+      "letu": [
+        "MPL589408"
+      ],
+      "mm": [
+        "6598607",
+        "4630446231421"
+      ]
     }
   },
   {
@@ -10740,7 +13173,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10837,7 +13270,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10859,6 +13292,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 10,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114724",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603320465359",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL484941",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5876463",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603320465359",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114724",
+        "4603320465359"
+      ],
+      "letu": [
+        "MPL484941"
+      ],
+      "mm": [
+        "5876463",
+        "4603320465359"
+      ]
     }
   },
   {
@@ -10883,7 +13361,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10978,7 +13456,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11000,6 +13478,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 124,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000114734",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4690222978568",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381174",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5869579",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4690222978568",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000114734",
+        "4690222978568"
+      ],
+      "letu": [
+        "MPL381174"
+      ],
+      "mm": [
+        "5869579",
+        "4690222978568"
+      ]
     }
   },
   {
@@ -11026,10 +13549,10 @@
       "byPlatform": {
         "wb": "",
         "ozon": "Александр Озон",
-        "ym": "Анна",
+        "ym": "",
         "ga": "",
         "letu": "",
-        "mm": "Екатерина"
+        "mm": ""
       }
     },
     "traffic": {
@@ -11121,10 +13644,10 @@
     "ownersByPlatform": {
       "wb": "",
       "ozon": "Александр Озон",
-      "ym": "Анна",
+      "ym": "",
       "ga": "",
       "letu": "",
-      "mm": "Екатерина"
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Косметические наборы для ухода",
@@ -11135,7 +13658,27 @@
       "mm": "Косметические наборы для волос"
     },
     "costPrice": 0,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "aliases": [
+      {
+        "value": "6598616",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660401460153",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "mm": [
+        "6598616",
+        "4660401460153"
+      ]
+    }
   },
   {
     "article": "syvorotka_dlya_lica_30ml",
@@ -11159,7 +13702,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11256,7 +13799,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11278,6 +13821,60 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 4,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076203",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020497034",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381175",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5868848",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020497034",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      },
+      {
+        "value": "fbs_syvorotka_dlya_lica_30ml",
+        "platform": "ym",
+        "source": "sku_aliases.json",
+        "note": "Я.Маркет FBS alias"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076203",
+        "4670020497034"
+      ],
+      "letu": [
+        "MPL381175"
+      ],
+      "mm": [
+        "5868848",
+        "4670020497034"
+      ],
+      "ym": [
+        "fbs_syvorotka_dlya_lica_30ml"
+      ]
     }
   },
   {
@@ -11302,7 +13899,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11397,7 +13994,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11413,7 +14010,52 @@
       "mm": "Сыворотки"
     },
     "costPrice": 0,
-    "sheetStatus": "Актуальный"
+    "sheetStatus": "Актуальный",
+    "aliases": [
+      {
+        "value": "99000182844",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4603312714069",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL583154",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6598165",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4603312714069",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000182844",
+        "4603312714069"
+      ],
+      "letu": [
+        "MPL583154"
+      ],
+      "mm": [
+        "6598165",
+        "4603312714069"
+      ]
+    }
   },
   {
     "article": "syvorotka_dlya_rosta_6ml",
@@ -11437,7 +14079,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11532,7 +14174,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11554,6 +14196,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 105,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076214",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4685518825374",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381176",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5869585",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4685518825374",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076214",
+        "4685518825374"
+      ],
+      "letu": [
+        "MPL381176"
+      ],
+      "mm": [
+        "5869585",
+        "4685518825374"
+      ]
     }
   },
   {
@@ -11578,7 +14265,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11673,7 +14360,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11695,6 +14382,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 37,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000132524",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4656738598843",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL536269",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5878506",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4656738598843",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000132524",
+        "4656738598843"
+      ],
+      "letu": [
+        "MPL536269"
+      ],
+      "mm": [
+        "5878506",
+        "4656738598843"
+      ]
     }
   },
   {
@@ -11719,7 +14451,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11814,7 +14546,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11836,6 +14568,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 53,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076209",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498093",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381177",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5871122",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498093",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076209",
+        "4670020498093"
+      ],
+      "letu": [
+        "MPL381177"
+      ],
+      "mm": [
+        "5871122",
+        "4670020498093"
+      ]
     }
   },
   {
@@ -11860,12 +14637,12 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "",
         "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "",
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -11955,12 +14732,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "",
       "ozon": "Даша",
-      "ym": "Анна",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ym": "",
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Сыворотки",
@@ -11977,6 +14754,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 12,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000154296",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4640523970297",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL580326",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "6340523",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4640523970297",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000154296",
+        "4640523970297"
+      ],
+      "letu": [
+        "MPL580326"
+      ],
+      "mm": [
+        "6340523",
+        "4640523970297"
+      ]
     }
   },
   {
@@ -12001,7 +14823,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12096,7 +14918,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12142,7 +14964,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12237,7 +15059,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12259,6 +15081,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 39,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000076226",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020497980",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL381178",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5870813",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020497980",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000076226",
+        "4670020497980"
+      ],
+      "letu": [
+        "MPL381178"
+      ],
+      "mm": [
+        "5870813",
+        "4670020497980"
+      ]
     }
   },
   {
@@ -12283,7 +15150,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12378,7 +15245,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12407,11 +15274,50 @@
         "platform": "ga",
         "source": "sku_aliases.json",
         "note": "Auto-applied from api_sku_alias_review suggested_target_sku confidence 80 on 2026-05-29"
+      },
+      {
+        "value": "99000114728",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670020498499",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL440013",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5874386",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670020498499",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
       "ga": [
-        "tonik_dlya_lica_200m"
+        "tonik_dlya_lica_200m",
+        "99000114728",
+        "4670020498499"
+      ],
+      "letu": [
+        "MPL440013"
+      ],
+      "mm": [
+        "5874386",
+        "4670020498499"
       ]
     }
   },
@@ -12437,7 +15343,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12534,7 +15440,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12556,6 +15462,51 @@
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 77,
       "appliedAt": "2026-06-01T09:55:30.773Z"
+    },
+    "aliases": [
+      {
+        "value": "99000131672",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4670207150196",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "MPL553766",
+        "platform": "letu",
+        "source": "sku_aliases.json",
+        "note": "Лэтуаль артикул Алькора"
+      },
+      {
+        "value": "5880787",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4670207150196",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
+      }
+    ],
+    "platformAliases": {
+      "ga": [
+        "99000131672",
+        "4670207150196"
+      ],
+      "letu": [
+        "MPL553766"
+      ],
+      "mm": [
+        "5880787",
+        "4670207150196"
+      ]
     }
   },
   {
@@ -12580,7 +15531,7 @@
       "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Светлана",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12675,7 +15626,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Светлана",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12721,7 +15672,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12784,7 +15735,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12874,7 +15825,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12937,7 +15888,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -13027,7 +15978,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -13090,7 +16041,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -13180,7 +16131,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Лапыгин Максим",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -13243,7 +16194,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Лапыгин Максим",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -13333,7 +16284,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Лапыгин Максим",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -13396,7 +16347,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Лапыгин Максим",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -13486,7 +16437,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Лапыгин Максим",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -13549,7 +16500,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Лапыгин Максим",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -13639,7 +16590,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -13702,7 +16653,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -13792,7 +16743,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -13855,7 +16806,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -13945,7 +16896,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -14008,7 +16959,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -14098,7 +17049,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Вывод",
       "byPlatform": {
-        "wb": "Лапыгин Максим",
+        "wb": "",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -14161,7 +17112,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Лапыгин Максим",
+      "wb": "",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -14251,7 +17202,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Лапыгин Максим",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -14314,7 +17265,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Лапыгин Максим",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -14404,7 +17355,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Лапыгин Максим",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -14467,7 +17418,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Лапыгин Максим",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -14557,7 +17508,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Лапыгин Максим",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -14620,7 +17571,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Лапыгин Максим",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -14710,7 +17661,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -14773,7 +17724,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -14863,7 +17814,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -14926,7 +17877,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -15007,7 +17958,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -15070,7 +18021,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -15160,7 +18111,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -15223,7 +18174,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -15313,7 +18264,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -15376,7 +18327,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -15466,7 +18417,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -15529,7 +18480,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -15619,7 +18570,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -15682,7 +18633,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -15772,7 +18723,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Лапыгин Максим",
+        "wb": "Кирилл",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -15835,7 +18786,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Лапыгин Максим",
+      "wb": "Кирилл",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -15925,7 +18876,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -15988,7 +18939,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -16078,7 +19029,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -16141,7 +19092,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -16231,7 +19182,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -16294,7 +19245,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -16384,7 +19335,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Лапыгин Максим",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -16447,7 +19398,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Лапыгин Максим",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -16537,7 +19488,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -16600,7 +19551,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -16690,7 +19641,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -16753,7 +19704,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -16843,7 +19794,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -16906,7 +19857,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -16996,7 +19947,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Лапыгин Максим",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -17059,7 +20010,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Лапыгин Максим",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -17149,7 +20100,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -17212,7 +20163,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -17302,7 +20253,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -17365,7 +20316,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -17455,7 +20406,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -17518,7 +20469,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -17599,7 +20550,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -17662,7 +20613,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -17752,7 +20703,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -17815,7 +20766,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -17896,7 +20847,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -17959,7 +20910,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -18049,7 +21000,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -18112,7 +21063,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -18202,7 +21153,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -18265,7 +21216,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -18355,7 +21306,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -18418,7 +21369,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -18465,6 +21416,42 @@
         "platform": "goldapple",
         "source": "repricer-alias-csv",
         "note": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx"
+      },
+      {
+        "value": "99000125141",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ номенклатура"
+      },
+      {
+        "value": "4660417421087",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "2042057189688",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "4670142965169",
+        "platform": "ga",
+        "source": "sku_aliases.json",
+        "note": "ЗЯ штрихкод"
+      },
+      {
+        "value": "5894994",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит Product ID"
+      },
+      {
+        "value": "4660417421087",
+        "platform": "mm",
+        "source": "sku_aliases.json",
+        "note": "Магнит штрихкод"
       }
     ],
     "platformAliases": {
@@ -18478,6 +21465,16 @@
       ],
       "goldapple": [
         "psoral_50ml"
+      ],
+      "ga": [
+        "99000125141",
+        "4660417421087",
+        "2042057189688",
+        "4670142965169"
+      ],
+      "mm": [
+        "5894994",
+        "4660417421087"
       ]
     },
     "aliasImport": {
@@ -18517,7 +21514,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -18580,7 +21577,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -18670,7 +21667,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -18733,7 +21730,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -18823,7 +21820,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -18886,7 +21883,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -18976,7 +21973,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -19039,7 +22036,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -19129,7 +22126,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry Шаблон_хаммеры_2026 (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "",
         "ozon": "",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -19192,7 +22189,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "",
       "ozon": "",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -19273,7 +22270,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -19336,7 +22333,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -19426,7 +22423,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -19489,7 +22486,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -19579,7 +22576,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -19642,7 +22639,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -19732,7 +22729,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -19795,7 +22792,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -19885,7 +22882,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -19948,7 +22945,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -20038,7 +23035,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Лапыгин Максим",
+        "wb": "Кирилл",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -20101,7 +23098,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Лапыгин Максим",
+      "wb": "Кирилл",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -20191,7 +23188,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -20254,7 +23251,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -20344,7 +23341,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -20407,7 +23404,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -20488,7 +23485,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -20551,7 +23548,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -20641,7 +23638,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные Озон.xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Васильева Мария",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -20704,7 +23701,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Васильева Мария",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-01T09:55:29.532Z",
+  "generatedAt": "2026-06-01T11:26:33.949Z",
   "sheetSource": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
   "sourceMode": "google-csv-tabs",
   "sourceGids": {
@@ -15,9 +15,9 @@
   "updatedSkus": 143,
   "skuAliases": {
     "sheetRows": 0,
-    "localRows": 0,
-    "normalizedRows": 0,
-    "appliedRows": 0,
+    "localRows": 341,
+    "normalizedRows": 341,
+    "appliedRows": 341,
     "unmatchedTargetRows": 0,
     "unmatchedTargets": []
   },
@@ -42,10 +42,10 @@
     "spend": 0
   },
   "iuDrr": {
-    "latest_date": "2026-05-30",
-    "rows": 30,
-    "latest_daily_date": "2026-05-30",
-    "generated_at": "2026-06-01T07:53:16.572Z"
+    "latest_date": "2026-05-31",
+    "rows": 31,
+    "latest_daily_date": "2026-05-31",
+    "generated_at": "2026-06-01T10:10:39.872Z"
   },
   "logistics": {
     "latest_logistics_date": "2026-06-01",

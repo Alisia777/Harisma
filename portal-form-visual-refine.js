@@ -1146,8 +1146,50 @@
     });
   }
 
+  function controlSimpleFilterState() {
+    const filters = state?.controlFilters || {};
+    return {
+      search: String(filters.search || '').trim().toLowerCase(),
+      owner: String(filters.owner || 'all'),
+      status: String(filters.status || 'active'),
+      priority: String(filters.priority || 'all'),
+      type: String(filters.type || 'all'),
+      source: String(filters.source || 'all'),
+      horizon: String(filters.horizon || 'all')
+    };
+  }
+
+  function controlSimpleMatchesTaskFilters(taskItem, filters) {
+    const status = controlSimpleStatus(taskItem);
+    const owner = String(taskItem?.owner || 'Без ответственного');
+    if (filters.owner !== 'all' && owner !== filters.owner) return false;
+    if (filters.status === 'active' && !controlSimpleIsActive(taskItem)) return false;
+    if (filters.status !== 'active' && filters.status !== 'all' && status !== filters.status) return false;
+    if (filters.priority !== 'all' && String(taskItem?.priority || 'medium') !== filters.priority) return false;
+    if (filters.type !== 'all' && String(taskItem?.type || 'general') !== filters.type) return false;
+    if (filters.source === 'manual' && String(taskItem?.source || 'manual').toLowerCase() === 'auto') return false;
+    if (filters.source === 'auto' && String(taskItem?.source || 'manual').toLowerCase() !== 'auto') return false;
+    if (filters.horizon === 'overdue' && !controlSimpleIsOverdue(taskItem)) return false;
+    if (filters.horizon === 'today' && String(taskItem?.due || '') !== todayIso()) return false;
+    if (filters.horizon === 'week' && (!taskItem?.due || String(taskItem.due) > plusDays(7))) return false;
+    if (filters.horizon === 'no_owner' && String(taskItem?.owner || '').trim()) return false;
+    return true;
+  }
+
+  function controlSimpleActiveFilterCount(filters) {
+    return [
+      filters.search ? 'search' : '',
+      filters.owner !== 'all' ? 'owner' : '',
+      filters.status !== 'active' ? 'status' : '',
+      filters.priority !== 'all' ? 'priority' : '',
+      filters.type !== 'all' ? 'type' : '',
+      filters.source !== 'all' ? 'source' : '',
+      filters.horizon !== 'all' ? 'horizon' : ''
+    ].filter(Boolean).length;
+  }
+
   function controlSimpleModel() {
-    const search = String(state?.controlFilters?.search || '').trim().toLowerCase();
+    const filters = controlSimpleFilterState();
     const allTasks = controlSimpleAllTasks().filter((taskItem) => !controlSimpleIsCancelled(taskItem));
     const counts = Object.fromEntries(CONTROL_SIMPLE_DIRECTIONS.map(([key]) => [key, 0]));
     counts.all = allTasks.length;
@@ -1158,9 +1200,10 @@
     const selected = controlSimpleSelectedDirection(counts);
     const tasks = allTasks
       .filter((taskItem) => selected === 'all' || controlSimpleDirectionKey(taskItem) === selected)
+      .filter((taskItem) => controlSimpleMatchesTaskFilters(taskItem, filters))
       .filter((taskItem) => {
-        if (!search) return true;
-        return `${taskItem?.title || ''} ${taskItem?.entityLabel || ''} ${taskItem?.articleKey || ''} ${taskItem?.owner || ''} ${taskItem?.nextAction || ''} ${taskItem?.reason || ''}`.toLowerCase().includes(search);
+        if (!filters.search) return true;
+        return `${taskItem?.title || ''} ${taskItem?.entityLabel || ''} ${taskItem?.articleKey || ''} ${taskItem?.owner || ''} ${taskItem?.nextAction || ''} ${taskItem?.reason || ''}`.toLowerCase().includes(filters.search);
       });
     const buckets = Object.fromEntries(CONTROL_SIMPLE_QUEUES.map(([key]) => [key, []]));
     tasks.forEach((taskItem) => buckets[controlSimpleQueueKey(taskItem)]?.push(taskItem));
@@ -1168,7 +1211,7 @@
     const queueFilter = controlSimpleNormalizeQueue(state?.controlFilters?.taskSimpleQueue);
     const displayTasks = queueFilter === 'all' ? tasks : (buckets[queueFilter] || []);
     const active = tasks.filter(controlSimpleIsActive);
-    return { selected, queueFilter, counts, tasks, displayTasks, buckets, active, overdue: active.filter(controlSimpleIsOverdue), noOwner: active.filter((taskItem) => !taskItem?.owner) };
+    return { selected, queueFilter, counts, tasks, displayTasks, buckets, active, filters, activeFilterCount: controlSimpleActiveFilterCount(filters), overdue: active.filter(controlSimpleIsOverdue), noOwner: active.filter((taskItem) => !taskItem?.owner) };
   }
 
   function controlSimpleWorkstreamCounts(tasks) {
@@ -1309,6 +1352,79 @@
       </section>`;
   }
 
+  function controlSimpleStatusOptions(selected) {
+    const statusMeta = typeof TASK_STATUS_META === 'object' && TASK_STATUS_META ? TASK_STATUS_META : {};
+    const options = [
+      ['active', 'Активные'],
+      ['all', 'Все статусы'],
+      ...Object.entries(statusMeta).map(([value, meta]) => [value, meta?.label || value])
+    ];
+    const seen = new Set();
+    return options
+      .filter(([value]) => {
+        if (seen.has(value)) return false;
+        seen.add(value);
+        return true;
+      })
+      .map(([value, label]) => `<option value="${escapeHtml(value)}" ${selected === value ? 'selected' : ''}>${escapeHtml(label)}</option>`)
+      .join('');
+  }
+
+  function controlSimpleFilterControls(data) {
+    const filters = data?.filters || controlSimpleFilterState();
+    const ownerList = owners();
+    const priorityMeta = typeof PRIORITY_META === 'object' && PRIORITY_META ? PRIORITY_META : {};
+    const typeMeta = typeof TASK_TYPE_META === 'object' && TASK_TYPE_META ? TASK_TYPE_META : {};
+    return `
+      <div class="control-simple-filters" data-control-simple-filters>
+        <label>
+          <span>Owner</span>
+          <select data-control-simple-filter="owner">
+            <option value="all" ${filters.owner === 'all' ? 'selected' : ''}>Все ответственные</option>
+            <option value="Без ответственного" ${filters.owner === 'Без ответственного' ? 'selected' : ''}>Без owner</option>
+            ${ownerList.map((owner) => `<option value="${escapeHtml(owner)}" ${filters.owner === owner ? 'selected' : ''}>${escapeHtml(owner)}</option>`).join('')}
+          </select>
+        </label>
+        <label>
+          <span>Статус</span>
+          <select data-control-simple-filter="status">${controlSimpleStatusOptions(filters.status)}</select>
+        </label>
+        <label>
+          <span>Приоритет</span>
+          <select data-control-simple-filter="priority">
+            <option value="all" ${filters.priority === 'all' ? 'selected' : ''}>Все приоритеты</option>
+            ${Object.entries(priorityMeta).map(([value, meta]) => `<option value="${escapeHtml(value)}" ${filters.priority === value ? 'selected' : ''}>${escapeHtml(meta?.label || value)}</option>`).join('')}
+          </select>
+        </label>
+        <label>
+          <span>Тип</span>
+          <select data-control-simple-filter="type">
+            <option value="all" ${filters.type === 'all' ? 'selected' : ''}>Все типы</option>
+            ${Object.entries(typeMeta).map(([value, label]) => `<option value="${escapeHtml(value)}" ${filters.type === value ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}
+          </select>
+        </label>
+        <label>
+          <span>Горизонт</span>
+          <select data-control-simple-filter="horizon">
+            <option value="all" ${filters.horizon === 'all' ? 'selected' : ''}>Весь горизонт</option>
+            <option value="overdue" ${filters.horizon === 'overdue' ? 'selected' : ''}>Просрочено</option>
+            <option value="today" ${filters.horizon === 'today' ? 'selected' : ''}>Сегодня</option>
+            <option value="week" ${filters.horizon === 'week' ? 'selected' : ''}>7 дней</option>
+            <option value="no_owner" ${filters.horizon === 'no_owner' ? 'selected' : ''}>Без owner</option>
+          </select>
+        </label>
+        <label>
+          <span>Источник</span>
+          <select data-control-simple-filter="source">
+            <option value="all" ${filters.source === 'all' ? 'selected' : ''}>Все источники</option>
+            <option value="manual" ${filters.source === 'manual' ? 'selected' : ''}>Ручные</option>
+            <option value="auto" ${filters.source === 'auto' ? 'selected' : ''}>Авто-сигналы</option>
+          </select>
+        </label>
+        <button class="btn ghost small-btn" type="button" data-control-simple-filter-reset>Сбросить</button>
+      </div>`;
+  }
+
   function controlSimpleQueueTabs(data) {
     const tabs = [
       ['all', 'Все', 'Без фильтра', data.tasks.length],
@@ -1427,8 +1543,13 @@
         ${controlSimpleWorkspacePanel(data)}
         <div class="control-simple-topbar">
           <input id="controlSimpleSearch" value="${escapeHtml(state.controlFilters.search || '')}" placeholder="Поиск по задаче, SKU, owner">
-          <div class="badge-stack"><button class="btn primary" type="button" data-control-simple-create-toggle>${state.controlFilters.taskSimpleCreateOpen ? 'Закрыть форму' : 'Поставить задачу'}</button><button class="btn ghost" type="button" data-control-simple-full>Все поля</button></div>
+          <div class="badge-stack">
+            ${data.activeFilterCount ? badge(`фильтров ${fmt.int(data.activeFilterCount)}`, 'warn') : badge('фильтры чистые', 'ok')}
+            <button class="btn primary" type="button" data-control-simple-create-toggle>${state.controlFilters.taskSimpleCreateOpen ? 'Закрыть форму' : 'Поставить задачу'}</button>
+            <button class="btn ghost" type="button" data-control-simple-full>Все поля</button>
+          </div>
         </div>
+        ${controlSimpleFilterControls(data)}
         ${controlSimpleQueueTabs(data)}
         ${controlSimpleCreateForm(data.selected)}
         ${boardHtml}
@@ -1436,6 +1557,27 @@
 
     root.querySelector('#controlSimpleSearch')?.addEventListener('input', (event) => {
       state.controlFilters.search = event.target.value;
+      state.controlFilters.taskSimpleQueue = 'all';
+      controlRefined();
+    });
+    root.querySelectorAll('[data-control-simple-filter]').forEach((control) => control.addEventListener('change', (event) => {
+      const key = control.dataset.controlSimpleFilter;
+      if (!key) return;
+      state.controlFilters[key] = event.target.value;
+      state.controlFilters.taskSimpleQueue = 'all';
+      state.controlFilters.taskSimpleExpandedPlatform = '';
+      controlRefined();
+    }));
+    root.querySelector('[data-control-simple-filter-reset]')?.addEventListener('click', () => {
+      state.controlFilters.search = '';
+      state.controlFilters.owner = 'all';
+      state.controlFilters.status = 'active';
+      state.controlFilters.priority = 'all';
+      state.controlFilters.type = 'all';
+      state.controlFilters.source = 'all';
+      state.controlFilters.horizon = 'all';
+      state.controlFilters.taskSimpleQueue = 'all';
+      state.controlFilters.taskSimpleExpandedPlatform = '';
       controlRefined();
     });
     root.querySelectorAll('[data-control-simple-direction]').forEach((button) => button.addEventListener('click', () => {

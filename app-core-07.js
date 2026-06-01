@@ -4362,9 +4362,9 @@ function iuDrrQuarterForecastHeroHtml(plan = {}, forecast = {}) {
   const displayPlan = plan.key === 'working'
     ? numberOrZero(month.portalPlan)
     : numberOrZero(month.iuPlan);
-  const displayProjectedFact = month.projectedFact == null ? null : numberOrZero(month.projectedFact);
-  const completion = displayPlan > 0 && displayProjectedFact !== null ? displayProjectedFact / displayPlan : null;
-  const displayDelta = displayPlan > 0 && displayProjectedFact !== null ? displayProjectedFact - displayPlan : null;
+  const displayFact = month.fact == null ? null : numberOrZero(month.fact);
+  const completion = displayPlan > 0 && displayFact !== null ? displayFact / displayPlan : null;
+  const displayDelta = displayPlan > 0 && displayFact !== null ? displayFact - displayPlan : null;
   const level = iuDrrPlanFactCompletionLevel(completion);
   const progress = completion == null ? 0 : Math.min(100, Math.max(0, Number(completion) * 100));
   const statusText = iuDrrForecastStatusText(completion);
@@ -4372,39 +4372,38 @@ function iuDrrQuarterForecastHeroHtml(plan = {}, forecast = {}) {
   const deltaText = iuDrrForecastDeltaText(displayDelta);
   const deltaTone = iuDrrPlanFactDeltaClass(displayDelta);
   const monthFactTone = iuDrrFunnelCompletionTone(month.factCompletion);
-  const monthForecastTone = iuDrrFunnelCompletionTone(month.iuCompletion);
   const dayText = month.elapsedDays ? `${fmt.int(month.elapsedDays)} дн. факта` : 'нет факта';
-  const monthProjectedDetail = month.iuCompletion == null
-    ? 'нет прогноза'
-    : `${fmt.pct(month.iuCompletion)} к ИУ месяцу`;
-  const heroModeLabel = plan.key === 'working' ? 'прогноз месяца к плану портала' : 'прогноз месяца к ИУ';
+  const fullMonthFact = month.days && month.elapsedDays >= month.days;
+  const heroModeLabel = plan.key === 'working'
+    ? (fullMonthFact ? 'факт месяца к плану портала' : 'факт на дату к плану портала')
+    : (fullMonthFact ? 'факт месяца к ИУ' : 'факт на дату к ИУ');
   const heroPlanLabel = plan.key === 'working' ? portalPlanLabel : monthPlanLabel;
   return `
     <div class="iu-drr-forecast-hero level-${level}" style="${iuDrrPlanFactCardStyle(platformKey, completion)};--iu-drr-forecast-progress:${progress.toFixed(1)}%">
       <div class="iu-drr-forecast-main">
-        <div class="iu-drr-forecast-score" data-tip="${escapeHtml(`Прогноз месяца ${fmt.money(displayProjectedFact)} / ${heroPlanLabel} ${fmt.money(displayPlan)}. Расчет: средний дневной факт выбранного месяца × ${fmt.int(month.days)} дней месяца.`)}">
+        <div class="iu-drr-forecast-score" data-tip="${escapeHtml(`Факт ИУ ${fmt.money(displayFact)} / ${heroPlanLabel} ${fmt.money(displayPlan)}. Без прогнозного умножения: берем только факт, который пришел в источник.`)}">
           <span>${escapeHtml(heroModeLabel)}</span>
           <strong>${escapeHtml(completionText)}</strong>
           <em>${escapeHtml(statusText)}</em>
         </div>
-        <div class="iu-drr-forecast-track" title="${escapeHtml(`${fmt.money(displayProjectedFact)} / ${fmt.money(displayPlan)}`)}">
+        <div class="iu-drr-forecast-track" title="${escapeHtml(`${fmt.money(displayFact)} / ${fmt.money(displayPlan)}`)}">
           <i></i>
           <span class="mark-80">80%</span>
           <span class="mark-90">90%</span>
           <span class="mark-100">100%</span>
         </div>
-        <div class="iu-drr-forecast-delta" data-tip="${escapeHtml(`Разница между прогнозом месяца и ${heroPlanLabel}.`)}">
+        <div class="iu-drr-forecast-delta" data-tip="${escapeHtml(`Разница между фактом ИУ и ${heroPlanLabel}.`)}">
           <span>${plan.key === 'working' ? 'отклонение к плану портала' : 'отклонение к ИУ'}</span>
           <strong class="${escapeHtml(deltaTone)}">${escapeHtml(deltaText)}</strong>
-          <em>${fmt.money(displayProjectedFact)} / ${fmt.money(displayPlan)}</em>
+          <em>${fmt.money(displayFact)} / ${fmt.money(displayPlan)}</em>
         </div>
       </div>
       <div class="iu-drr-forecast-metrics">
         ${iuDrrForecastMetricHtml(
-          'Факт на дату',
+          'Факт ИУ',
           fmt.money(month.fact),
           dayText,
-          `Факт выбранного месяца на текущую дату, который используется как база темпа. Источник: ${forecast.factSourceLabel || 'ИУ'}.`,
+          `Факт выбранного месяца из источника ${forecast.factSourceLabel || 'ИУ'}. Прогнозное умножение здесь не используется.`,
           monthFactTone
         )}
         ${iuDrrForecastMetricHtml(
@@ -4413,13 +4412,6 @@ function iuDrrQuarterForecastHeroHtml(plan = {}, forecast = {}) {
           month.factCompletion == null ? 'план месяца' : `${fmt.pct(month.factCompletion)} фактом`,
           'Это именно месячный ИУ-план: WB из ИУ, Ozon 40% от договора/Smart.',
           'info'
-        )}
-        ${iuDrrForecastMetricHtml(
-          'Прогноз месяца',
-          month.projectedFact == null ? '—' : fmt.money(month.projectedFact),
-          monthProjectedDetail,
-          'Прогноз месяца = средний дневной факт × количество дней в выбранном месяце.',
-          monthForecastTone
         )}
         ${iuDrrForecastMetricHtml(
           portalPlanLabel,
@@ -4462,8 +4454,8 @@ function renderIuDrrQuarterForecastPanel(forecast = {}) {
     <div class="card sku-plan-fact-card iu-drr-quarter-planfact-card" style="${iuDrrPlanFactCardStyle(forecast.platformKey, null)}">
       <div class="section-subhead">
         <div>
-          <h3>${escapeHtml(forecast.platformLabel)}: прогноз месяца к ИУ</h3>
-          <p class="small muted">Верхняя плашка показывает прогноз до конца выбранного месяца, а не квартал и не голый факт: средний дневной факт × дни месяца. План портала показан отдельной месячной цифрой по правилу ИУ/корп.</p>
+          <h3>${escapeHtml(forecast.platformLabel)}: факт ИУ к месячному плану</h3>
+          <p class="small muted">Верхняя плашка показывает только факт из ИУ/кабинета против месячного ИУ-плана. Без прогнозного умножения. План портала показан отдельной месячной цифрой по правилу ИУ/корп.</p>
         </div>
       </div>
 

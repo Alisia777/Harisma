@@ -962,7 +962,7 @@ function repricerApplyStepLimit(side, roundedPrice, guardFloor, guardCap) {
 
 function repricerConfidenceLabel(level) {
   if (level === 'green') return 'зелёный';
-  if (level === 'yellow') return 'проверить';
+  if (level === 'yellow') return 'аудит';
   if (level === 'red') return 'стоп';
   return 'нет оценки';
 }
@@ -1005,7 +1005,7 @@ function repricerBuildDecisionText(side, reasons) {
     ? `текущая цена ниже MIN ${fmt.money(side?.effectiveFloor)}, поднимаем до порога`
     : reasons.length ? reasons.slice(0, 2).join(', ') : String(side?.reason || 'цена в рабочем коридоре').split(' · ')[0];
   if (side?.confidence === 'red') return `Не выгружать: ${reasonText}.`;
-  if (side?.confidence === 'yellow') return `Проверить: ${reasonText}.`;
+  if (side?.confidence === 'yellow') return `Совет с аудитом: ${reasonText}.`;
   if (Math.abs(finalPrice - currentPrice) < 1) return `Оставить ${fmt.money(currentPrice)}: цена в рабочем коридоре.`;
   const verb = finalPrice > currentPrice ? 'Поднять' : 'Снизить';
   const deltaText = deltaPct == null ? '' : `, ${deltaPct > 0 ? '+' : ''}${fmt.pct(deltaPct)}`;
@@ -1058,8 +1058,8 @@ function repricerApplyConfidence(side) {
   side.confidence = level;
   side.confidenceScore = score;
   side.confidenceReasons = [...red, ...yellow];
-  side.safeToExport = level === 'green' && side.changed && !side.promoActive;
-  side.promoSafeToExport = level === 'green' && side.changed && side.promoActive;
+  side.safeToExport = level !== 'red' && side.changed && !side.promoActive;
+  side.promoSafeToExport = level !== 'red' && side.changed && side.promoActive;
   side.floorRaiseSafeToExport = Boolean(floorRaiseReady && side.safeToExport);
   side.decisionText = repricerBuildDecisionText(side, side.confidenceReasons);
   return side;
@@ -3329,7 +3329,7 @@ function repricerPriceTrace(row, side) {
     numberOrZero(side?.capPrice || side?.stretchCap) > 0 ? `MAX ${fmt.money(side.capPrice || side.stretchCap)}` : '',
     `финал ${fmt.money(side?.finalPrice)}`,
     `confidence ${repricerConfidenceLabel(side?.confidence)} ${fmt.int(side?.confidenceScore)}`,
-    side?.safeToExport || side?.promoSafeToExport ? 'safe export: да' : 'safe export: нет'
+    side?.safeToExport || side?.promoSafeToExport ? 'в файл: да' : 'в файл: нет'
   ].filter(Boolean);
   if (side?.decisionText) parts.push(side.decisionText);
   return `${row?.article || row?.articleKey || ''}: ${parts.join(' → ')}`;
@@ -3619,7 +3619,7 @@ function repricerGameHeroHtml(model = {}) {
         </div>
       </div>
       <div class="repricer-game-metrics">
-        ${repricerGameMetricHtml('В безопасную выгрузку', fmt.int(model.safe), `WB ${fmt.int(model.wb?.safe)} · Ozon ${fmt.int(model.ozon?.safe)}`, model.safe > 0 ? 'ok' : 'warn', 'Количество строк, которые уже зелёные, изменились в цене и попадут в шаблон WB/Ozon.')}
+        ${repricerGameMetricHtml('В файл цен', fmt.int(model.safe), `WB ${fmt.int(model.wb?.safe)} · Ozon ${fmt.int(model.ozon?.safe)}`, model.safe > 0 ? 'ok' : 'warn', 'Количество строк без красного стопа, где цена изменилась и попадет в шаблон WB/Ozon.')}
         ${repricerGameMetricHtml('Зелёные', fmt.int(model.green), `${fmt.int(model.active)} активных строк`, 'ok', 'Зелёные строки прошли проверки. Если цена не изменилась, они остаются зелёными, но в ценовой шаблон не попадают.')}
         ${repricerGameMetricHtml('Аудит', fmt.int(model.yellow), 'инфо-строки', model.yellow > 0 ? 'info' : 'ok', 'Строки с мягкими причинами остаются в аудите, но не режут процент готовности контура.')}
         ${repricerGameMetricHtml('Стоп', fmt.int(model.red), 'красные строки', model.red > 0 ? 'danger' : 'ok', 'Красные строки блокируют автоматическую выгрузку до исправления входов или решения.')}
@@ -5617,9 +5617,9 @@ function repricerOperatorTaskPlan(health, stats = {}) {
       source: 'Ручное решение'
     },
     {
-      title: 'Выгрузить зелёные',
+      title: 'Выгрузить советы',
       count: (stats.safeWbRows || 0) + (stats.safeOzonRows || 0),
-      hint: 'Эти строки уже прошли safe export.',
+      hint: 'Эти строки без красного стопа и готовы попасть в файл цен.',
       mode: 'changes',
       tone: 'ok',
       source: 'Выгрузка'
@@ -6054,9 +6054,9 @@ function renderRepricer() {
       <div class="section-subhead">
         <div>
           <h3>Безопасная выгрузка</h3>
-          <p class="small muted">В шаблоны WB/Ozon попадают только зелёные строки с изменением цены. Желтые и красные остаются в аудите.</p>
+          <p class="small muted">В шаблоны WB/Ozon попадают строки с изменением цены без красного стопа. Инфо-аудит остается видимым, но не режет объем советов.</p>
         </div>
-        <div class="badge-stack">${safeWbRows || safeOzonRows ? badge('safe export on', 'ok') : badge('нет зелёных изменений', 'warn')}</div>
+        <div class="badge-stack">${safeWbRows || safeOzonRows ? badge('советы готовы', 'ok') : badge('нет изменений без стопа', 'warn')}</div>
       </div>
       <div class="badge-stack" style="margin-top:10px">${safetyBadges}</div>
       <div class="badge-stack" style="margin-top:10px">${stopReasonBadges || badge('стоп-лист пуст', 'ok')}</div>
@@ -6067,7 +6067,7 @@ function renderRepricer() {
       <div class="section-subhead">
         <div>
           <h3>Почему шаблон такой</h3>
-          <p class="small muted">Шаблон цен получает только зелёные строки, где финальная цена отличается от текущей.</p>
+          <p class="small muted">Шаблон цен получает строки без красного стопа, где финальная цена отличается от текущей.</p>
         </div>
         ${safeWbRows || safeOzonRows ? badge('есть что выгружать', 'ok') : badge('шаблон пуст', 'warn')}
       </div>

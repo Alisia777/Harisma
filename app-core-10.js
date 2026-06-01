@@ -396,16 +396,17 @@ function executiveFunnelSortRows(rows = [], sort = 'completionAsc') {
   return list.sort(cmpNum((row) => row.completionToDate, 'asc'));
 }
 
-function executiveFunnelBuildPlanModel() {
+function executiveFunnelBuildPlanModel(selectedPlatform = 'all') {
   if (typeof skuPlanFactBuildModel !== 'function') return null;
   const previous = { ...(state.skuPlanFactFilters || {}) };
+  const platform = EXECUTIVE_FUNNEL_PLATFORMS.includes(selectedPlatform) ? selectedPlatform : 'all';
   try {
     state.skuPlanFactFilters = {
       ...previous,
       search: '',
       owner: 'all',
       status: 'all',
-      platform: 'all',
+      platform,
       month: 'latest',
       date: '',
       dateFrom: '',
@@ -594,10 +595,10 @@ function executiveFunnelApplyPayrollOwnerControls(ownerMap = new Map(), planMode
 }
 
 function executiveFunnelBuildOwnerPlanFact(funnel = {}) {
-  const planModel = funnel.planModel || executiveFunnelBuildPlanModel();
-  if (!planModel) return null;
   const filters = { ...EXECUTIVE_FUNNEL_DEFAULT_FILTERS, ...executiveFunnelFilters };
   const selectedPlatform = EXECUTIVE_FUNNEL_PLATFORMS.includes(filters.platform) ? filters.platform : 'all';
+  const planModel = funnel.planModel || executiveFunnelBuildPlanModel(selectedPlatform);
+  if (!planModel) return null;
   const periodStart = executiveFunnelDateKey(planModel.periodStart || funnel.periodStart || `${planModel.monthKey || ''}-01`);
   const periodEnd = executiveFunnelDateKey(planModel.periodEnd || funnel.periodEnd || planModel.selectedDate || planModel.maxFactDate);
   const ownerMap = new Map();

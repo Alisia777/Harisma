@@ -2,7 +2,7 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260601ratingreport4';
+  const VERSION = '20260601ratingreport5';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
@@ -146,11 +146,15 @@
       .wb-rating-kpis div { border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:9px; background:rgba(255,255,255,.025); min-width:0; }
       .wb-rating-kpis span { display:block; color:var(--muted); font-size:11px; line-height:1.25; }
       .wb-rating-kpis strong { display:block; margin-top:4px; font-size:15px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-      .wb-rating-game-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:12px 0 14px; }
-      .wb-rating-game-card { border:1px solid var(--line); border-radius:8px; padding:13px; background:rgba(255,255,255,.022); min-width:0; }
-      .wb-rating-game-card span { display:block; color:var(--muted); font-size:11px; line-height:1.25; }
-      .wb-rating-game-card strong { display:block; margin-top:6px; font-size:20px; line-height:1.1; }
-      .wb-rating-game-card small { display:block; margin-top:6px; color:var(--muted); line-height:1.35; }
+      .wb-rating-game-grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:12px; margin:12px 0 14px; }
+      .wb-rating-game-card { border:1px solid var(--line); border-radius:8px; padding:14px; background:rgba(255,255,255,.022); min-width:0; }
+      .wb-rating-game-card > span { display:block; color:var(--muted); font-size:11px; line-height:1.25; }
+      .wb-rating-game-card strong { display:block; margin-top:7px; font-size:22px; line-height:1.08; }
+      .wb-rating-game-card small { display:block; margin-top:7px; color:var(--muted); line-height:1.35; }
+      .wb-rating-trend { display:inline-flex; align-items:center; gap:5px; max-width:100%; margin-top:9px; padding:6px 9px; border-radius:999px; border:1px solid rgba(255,255,255,.1); font-size:12px; font-weight:800; line-height:1; white-space:nowrap; }
+      .wb-rating-trend.up { color:#c8f4df; background:rgba(97,201,155,.14); border-color:rgba(97,201,155,.34); }
+      .wb-rating-trend.down { color:#ffd0d0; background:rgba(217,107,107,.16); border-color:rgba(217,107,107,.38); }
+      .wb-rating-trend.flat { color:#efe5d6; background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.12); }
       .wb-rating-mission-strip { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:0 0 14px; }
       .wb-rating-mission { border:1px solid rgba(255,255,255,.09); border-radius:8px; padding:11px; background:rgba(255,255,255,.02); min-width:0; }
       .wb-rating-mission strong { display:block; font-size:13px; color:#f4ddba; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -199,13 +203,13 @@
       .wb-rating-row-title { display:flex; flex-direction:column; gap:4px; min-width:0; }
       .wb-rating-row-title strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
       .wb-rating-chipline { display:flex; flex-wrap:wrap; gap:5px; margin-top:3px; }
-      .wb-rating-pill { display:inline-flex; align-items:center; max-width:100%; padding:4px 7px; border-radius:999px; border:1px solid rgba(255,255,255,.09); background:rgba(255,255,255,.03); color:#efe5d6; font-size:10.5px; line-height:1; white-space:nowrap; }
+      .wb-rating-pill { display:inline-flex; align-items:center; max-width:100%; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.09); background:rgba(255,255,255,.03); color:#efe5d6; font-size:12px; font-weight:700; line-height:1; white-space:nowrap; }
       .wb-rating-pill.good { color:#c8f4df; background:rgba(97,201,155,.12); border-color:rgba(97,201,155,.3); }
       .wb-rating-pill.warn { color:#f8dfa8; background:rgba(215,166,76,.14); border-color:rgba(215,166,76,.34); }
       .wb-rating-pill.risk { color:#ffd0d0; background:rgba(217,107,107,.15); border-color:rgba(217,107,107,.36); }
       .wb-rating-pill.info { color:#d8e6ff; background:rgba(115,167,255,.12); border-color:rgba(115,167,255,.32); }
       .wb-rating-mini-note { color:var(--muted); font-size:11px; }
-      .wb-rating-game-badge { display:inline-flex; align-items:center; justify-content:center; min-width:58px; padding:5px 8px; border-radius:8px; border:1px solid rgba(255,255,255,.1); font-weight:700; line-height:1; }
+      .wb-rating-game-badge { display:inline-flex; align-items:center; justify-content:center; min-width:96px; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,.1); font-weight:800; line-height:1; }
       .wb-rating-game-badge.good { color:#c8f4df; background:rgba(97,201,155,.13); border-color:rgba(97,201,155,.32); }
       .wb-rating-game-badge.warn { color:#f4d79d; background:rgba(215,166,76,.14); border-color:rgba(215,166,76,.34); }
       .wb-rating-game-badge.risk { color:#ffd0d0; background:rgba(217,107,107,.15); border-color:rgba(217,107,107,.36); }
@@ -408,6 +412,13 @@
     };
   }
 
+  function buildQuestionPeriod(active, base) {
+    return {
+      questions: delta(active, base, 'questionCount'),
+      unanswered: delta(active, base, 'unansweredQuestionCount')
+    };
+  }
+
   function rowTone(row) {
     if (row.unanswered > 12 || row.p1.negativePct >= 0.18 || row.ratingDelta1 <= -0.04) return 'risk';
     if (row.p7.reviews >= 10 && (row.p7.negativePct === null || row.p7.negativePct <= 0.05) && row.rating >= 4.75) return 'good';
@@ -415,10 +426,12 @@
   }
 
   function gameLabel(row) {
-    if (row.tone === 'risk') return `Квест ${fmtInt(row.gameScore)}`;
-    if (row.tone === 'good') return `Лига A ${fmtInt(row.gameScore)}`;
-    if (row.rating >= 4.85) return `Лига B ${fmtInt(row.gameScore)}`;
-    return `Фокус ${fmtInt(row.gameScore)}`;
+    if (row.unanswered > 0 || row.unansweredQuestions > 0) return 'Нужен ответ';
+    if (row.p1.low > 0 || row.p7.negativePct >= 0.12) return 'Негатив';
+    if (row.ratingDelta1 <= -0.03) return 'Падение';
+    if (row.ratingDelta1 >= 0.03) return 'Рост';
+    if (row.p7.reviews >= 10 && (row.p7.negativePct === null || row.p7.negativePct <= 0.05)) return 'Хороший поток';
+    return 'Норма';
   }
 
   function rowComment(row) {
@@ -458,6 +471,9 @@
       const p7 = buildPeriod(card, base7);
       const p3 = buildPeriod(card, base3);
       const p1 = buildPeriod(card, base1);
+      const q7 = buildQuestionPeriod(card, base7);
+      const q3 = buildQuestionPeriod(card, base3);
+      const q1 = buildQuestionPeriod(card, base1);
       const revenue = revenueModel(key, leaderboard, skuMap);
       const rating = num(card.avgRating || card.ratingTrendLatestRating);
       const ratingDelta1 = rating - num(base1?.avgRating || base1?.ratingTrendLatestRating || rating);
@@ -487,6 +503,9 @@
         p7,
         p3,
         p1,
+        q7,
+        q3,
+        q1,
         revenue,
         historyDelta: historyCard ? num(card.feedbackCount) - num(historyCard.feedbackCount) : null,
         historyRating: historyCard ? num(historyCard.avgRating || historyCard.ratingTrendLatestRating) : null,
@@ -512,6 +531,10 @@
       acc.unanswered += row.unanswered;
       acc.questions += row.questionCount;
       acc.unansweredQuestions += row.unansweredQuestions;
+      acc.questions7 += row.q7.questions;
+      acc.questions3 += row.q3.questions;
+      acc.questions1 += row.q1.questions;
+      acc.unansweredQuestions7 += row.q7.unanswered;
       acc.revenue7 += num(row.revenue.revenue7);
       acc.revenue3 += num(row.revenue.revenue3);
       acc.revenue1 += num(row.revenue.revenue1);
@@ -523,7 +546,9 @@
     }, {
       reviews7: 0, reviews3: 0, reviews1: 0,
       low7: 0, low3: 0, low1: 0,
-      unanswered: 0, questions: 0, unansweredQuestions: 0, revenue7: 0, revenue3: 0, revenue1: 0,
+      unanswered: 0, questions: 0, unansweredQuestions: 0,
+      questions7: 0, questions3: 0, questions1: 0, unansweredQuestions7: 0,
+      revenue7: 0, revenue3: 0, revenue1: 0,
       ratingSum: 0, ratingCount: 0, leaders: 0, risks: 0
     });
 
@@ -565,7 +590,7 @@
 
   function priorityText(score) {
     if (score >= 60) return 'Срочно';
-    if (score >= 25) return 'Фокус';
+    if (score >= 25) return 'Наблюдать';
     return 'Ок';
   }
 
@@ -930,39 +955,73 @@
             <div><span>Срез продаж</span><strong>${esc(model.ozonWindow7.latestDate ? fullDate(model.ozonWindow7.latestDate) : '—')}</strong></div>
             <div><span>Выручка 7 дней</span><strong>${fmtMoney(model.ozonWindow7.revenue)}</strong></div>
             <div><span>Штук 7 дней</span><strong>${fmtInt(model.ozonWindow7.units)}</strong></div>
-            <div><span>Отзывы</span><strong>ожидаем</strong></div>
-            <div><span>Статус</span><strong>слой готов</strong></div>
-            <div><span>Игровая лига</span><strong>после подключения</strong></div>
+            <div><span>Отзывы Ozon</span><strong>ожидаем</strong></div>
+            <div><span>Вопросы Ozon</span><strong>ожидаем</strong></div>
+            <div><span>Статус</span><strong>готово место</strong></div>
           </div>
         </section>
       </div>
     `;
   }
 
+  function trendBadge(current, reference, options = {}) {
+    if (!hasNumber(current) || !hasNumber(reference)) return `<span class="wb-rating-trend flat">без сравнения</span>`;
+    const diff = Number(current) - Number(reference);
+    const threshold = options.threshold ?? 0.5;
+    if (Math.abs(diff) <= threshold) return `<span class="wb-rating-trend flat">без изменений</span>`;
+    const improved = options.lowerIsBetter ? diff < 0 : diff > 0;
+    const tone = improved ? 'up' : 'down';
+    const word = improved ? 'рост' : 'падение';
+    const sign = diff > 0 ? '+' : '';
+    const value = options.percent ? fmtPct(Math.abs(diff), 1) : `${sign}${fmtInt(diff)}`;
+    return `<span class="wb-rating-trend ${tone}">${word} ${value}</span>`;
+  }
+
+  function simpleBadge(text, tone = 'flat') {
+    return `<span class="wb-rating-trend ${esc(tone)}">${esc(text)}</span>`;
+  }
+
   function renderGameCards(model) {
-    const answer = [...model.rows].filter((row) => row.unanswered > 0).sort((a, b) => b.unanswered - a.unanswered)[0];
-    const negative = [...model.rows].filter((row) => row.p1.low > 0 || row.p7.low > 0).sort((a, b) => b.p1.low - a.p1.low || b.p7.low - a.p7.low)[0];
+    const reviewDailyBase = model.totals.reviews3 ? model.totals.reviews3 / 3 : null;
+    const questionsDailyBase = model.totals.questions3 ? model.totals.questions3 / 3 : null;
+    const unansweredTotal = model.totals.unanswered + model.totals.unansweredQuestions;
     return `
       <div class="wb-rating-game-grid">
         <div class="wb-rating-game-card">
-          <span>Сначала ответить</span>
-          <strong>${fmtInt(model.totals.unanswered)}</strong>
-          <small>${answer ? esc(answer.label) : 'хвост закрыт'}</small>
-        </div>
-        <div class="wb-rating-game-card">
-          <span>Негатив</span>
-          <strong>${fmtPct(model.totals.neg7)}</strong>
-          <small>${negative ? esc(negative.label) : 'без явного лидера риска'}</small>
-        </div>
-        <div class="wb-rating-game-card">
-          <span>Новые отзывы</span>
+          <span>Отзывы 7 дней</span>
           <strong>${fmtInt(model.totals.reviews7)}</strong>
-          <small>поток за 7 дней</small>
+          ${trendBadge(model.totals.reviews1, reviewDailyBase)}
+          <small>вчера ${fmtInt(model.totals.reviews1)}</small>
         </div>
         <div class="wb-rating-game-card">
-          <span>Лига 4,8+</span>
-          <strong>${fmtInt(model.totals.leaders)}</strong>
-          <small>карточек в зеленой зоне</small>
+          <span>Негатив 7 дней</span>
+          <strong>${fmtPct(model.totals.neg7)}</strong>
+          ${trendBadge(model.totals.neg1, model.totals.neg3, { lowerIsBetter: true, percent: true, threshold: 0.01 })}
+          <small>${fmtInt(model.totals.low7)} негативных отзывов</small>
+        </div>
+        <div class="wb-rating-game-card">
+          <span>Вопросы всего</span>
+          <strong>${fmtInt(model.totals.questions)}</strong>
+          ${trendBadge(model.totals.questions1, questionsDailyBase)}
+          <small>+${fmtInt(model.totals.questions7)} за 7 дней</small>
+        </div>
+        <div class="wb-rating-game-card">
+          <span>Без ответа</span>
+          <strong>${fmtInt(unansweredTotal)}</strong>
+          ${unansweredTotal ? simpleBadge('нужно закрыть', 'down') : simpleBadge('закрыто', 'up')}
+          <small>${fmtInt(model.totals.unanswered)} отзывов / ${fmtInt(model.totals.unansweredQuestions)} вопросов</small>
+        </div>
+        <div class="wb-rating-game-card">
+          <span>История</span>
+          <strong>${fmtInt(model.snapshots.length)}</strong>
+          ${simpleBadge(`${fmtInt(model.rows.length)} карточек`, 'flat')}
+          <small>срез ${esc(fullDate(model.active.date))}</small>
+        </div>
+        <div class="wb-rating-game-card">
+          <span>Средняя оценка</span>
+          <strong>${fmtNum(model.totals.avgRating, 2)}</strong>
+          ${model.totals.avgRating >= 4.75 ? simpleBadge('зеленая зона', 'up') : simpleBadge('наблюдать', 'down')}
+          <small>${fmtInt(model.totals.leaders)} карточек 4,8+</small>
         </div>
       </div>
     `;
@@ -977,33 +1036,31 @@
   }
 
   function renderHistoryMissionStrip(model) {
-    const risk = model.rows.find((row) => row.tone === 'risk') || model.rows[0];
+    const drop = [...model.rows].filter((row) => row.ratingDelta1 < 0).sort((a, b) => a.ratingDelta1 - b.ratingDelta1)[0];
     const growth = [...model.rows].filter((row) => row.ratingDelta1 > 0).sort((a, b) => b.ratingDelta1 - a.ratingDelta1)[0];
-    const clean = [...model.rows]
-      .filter((row) => row.p7.reviews > 0 && (row.p7.negativePct === null || row.p7.negativePct <= 0.03))
-      .sort((a, b) => b.p7.reviews - a.p7.reviews)[0];
+    const negative = [...model.rows].filter((row) => row.p7.low > 0 || row.p1.low > 0).sort((a, b) => b.p1.low - a.p1.low || b.p7.low - a.p7.low)[0];
     const answer = [...model.rows].filter((row) => row.unanswered > 0).sort((a, b) => b.unanswered - a.unanswered)[0];
-    const missions = [
+    const metrics = [
       {
-        title: risk ? `1. Риск: ${risk.label}` : '1. Риск',
-        hint: risk ? risk.comment : 'нет красной карточки'
+        title: drop ? `Падение: ${drop.label}` : 'Падение',
+        hint: drop ? `${fmtNum(drop.ratingDelta1, 2)} к вчера` : 'нет заметного падения'
       },
       {
-        title: growth ? `2. Рост: ${growth.label}` : '2. Рост',
+        title: growth ? `Рост: ${growth.label}` : 'Рост',
         hint: growth ? `+${fmtNum(growth.ratingDelta1, 2)} к вчера` : 'нет заметного роста'
       },
       {
-        title: clean ? `3. Чисто: ${clean.label}` : '3. Чисто',
-        hint: clean ? `${fmtInt(clean.p7.reviews)} отзывов, негатив низкий` : 'ищем карточку без негатива'
+        title: negative ? `Негатив: ${negative.label}` : 'Негатив',
+        hint: negative ? `${fmtInt(negative.p7.low)} за 7 дней` : 'без явного лидера'
       },
       {
-        title: answer ? `4. Ответ: ${answer.label}` : '4. Ответ',
+        title: answer ? `Ответы: ${answer.label}` : 'Ответы',
         hint: answer ? `${fmtInt(answer.unanswered)} без ответа` : 'хвост закрыт'
       }
     ];
     return `
       <div class="wb-rating-mission-strip">
-        ${missions.map((item) => `
+        ${metrics.map((item) => `
           <div class="wb-rating-mission">
             <strong>${esc(item.title)}</strong>
             <span>${esc(item.hint)}</span>
@@ -1059,10 +1116,14 @@
   }
 
   function renderGameCell(row) {
-    const width = Math.max(8, Math.min(100, num(row.gameScore)));
+    const metric = row.ratingDelta1 <= -0.03
+      ? `<span class="wb-rating-trend down">падение ${fmtNum(row.ratingDelta1, 2)}</span>`
+      : row.ratingDelta1 >= 0.03
+        ? `<span class="wb-rating-trend up">рост +${fmtNum(row.ratingDelta1, 2)}</span>`
+        : `<span class="wb-rating-trend flat">без изменений</span>`;
     return `
       <span class="wb-rating-game-badge ${esc(row.tone)}">${esc(gameLabel(row))}</span>
-      <div class="wb-rating-scorebar"><span style="width:${width}%"></span></div>
+      ${metric}
     `;
   }
 
@@ -1117,8 +1178,8 @@
     return `
       <div class="section-title" style="margin-top:16px">
         <div>
-          <h2>История: что делать</h2>
-          <p>Красное — действуем, зеленое — закрепляем, серое — просто наблюдаем.</p>
+          <h2>История и метрики</h2>
+          <p>Плашки показывают рост, падение, негатив, ответы и поток отзывов.</p>
         </div>
         <div class="badge-stack">
           ${chip(`7 дней от ${shortDate(model.baseline7?.date)}`, 'info')}
@@ -1132,7 +1193,7 @@
             <tr>
               <th class="sticky-col" rowspan="2" style="width:54px">№</th>
               <th class="sticky-col-2" rowspan="2" style="width:250px">Артикул продавца</th>
-              <th rowspan="2" style="width:96px">Игра</th>
+              <th rowspan="2" style="width:136px">Статус</th>
               <th class="group-feedback" colspan="3">Всего отзывов</th>
               <th class="group-rating" colspan="3">Сводная оценка</th>
               <th class="group-revenue" colspan="3">Выручка</th>
@@ -1202,12 +1263,12 @@
       <div class="section-title">
         <div>
           <h2>Рейтинг карточек WB/OZ</h2>
-          <p>Заходим, смотрим красные плашки, понимаем первое действие.</p>
+          <p>Отзывы, вопросы, история и рост/падение по карточкам в крупных плашках.</p>
         </div>
         <div class="badge-stack">
           ${chip(`WB ${fullDate(model.active.date)}`, currentCardsEmpty ? 'warn' : 'ok')}
           ${chip(`${fmtInt(model.rows.length)} карточек`, 'info')}
-          ${chip(`${fmtInt(model.totals.risks)} в фокусе`, model.totals.risks ? 'danger' : 'ok')}
+          ${chip(`${fmtInt(model.snapshots.length)} срезов истории`, 'info')}
         </div>
       </div>
       ${renderPlatformCards(model, payload)}

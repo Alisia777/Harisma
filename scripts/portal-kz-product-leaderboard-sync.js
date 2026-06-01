@@ -10,7 +10,7 @@ const DEFAULT_SOURCE_URL = 'https://docs.google.com/spreadsheets/d/1XSpPhsd_oppe
 const DEFAULT_SOURCE_GID = '1769097146';
 const DEFAULT_BRAND_FILTER = 'АЛТЕЯ';
 const DEFAULT_OUTPUT_DIR = '.altea-google-sheet-sync-output';
-const DEFAULT_PROFILE_DIR = '.altea-google-sheets-profile';
+const DEFAULT_PROFILE_DIR = '.altea-google-sheets-profile-qeep';
 
 function parseArgs(argv) {
   const args = {

@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-06-01T09:32:12.523Z",
+  "generatedAt": "2026-06-01T10:10:40.200Z",
   "status": "critical",
   "summary": {
-    "issueCount": 88,
-    "criticalCount": 19,
+    "issueCount": 89,
+    "criticalCount": 20,
     "warningCount": 69,
     "monthKey": "2026-05",
-    "maxDate": "2026-05-30",
-    "apiUnmappedPlatformRows": 39,
-    "apiUnmappedUniqueSku": 38,
-    "apiUnmappedRevenue": 5690407,
+    "maxDate": "2026-05-31",
+    "apiUnmappedPlatformRows": 40,
+    "apiUnmappedUniqueSku": 39,
+    "apiUnmappedRevenue": 5938732,
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 0,
     "apiSumAboveAggregateOverage": 0,
-    "skuAliasCount": 341,
+    "skuAliasCount": 0,
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 0,
     "warehouseUnmatchedRows": 25,
@@ -25,57 +25,57 @@
   "freshness": [
     {
       "dataset": "dashboard",
-      "asOfDate": "2026-05-30",
-      "generatedAt": "2026-05-31T14:40:58.630Z",
-      "rows": 334,
-      "referenceDate": "2026-05-31",
+      "asOfDate": "2026-05-31",
+      "generatedAt": "2026-06-01T09:55:29.372Z",
+      "rows": 348,
+      "referenceDate": "2026-06-01",
       "lagDays": 1,
       "status": "ok"
     },
     {
       "dataset": "platform_trends",
-      "asOfDate": "2026-05-30",
-      "generatedAt": "2026-05-31T14:40:58.547Z",
+      "asOfDate": "2026-05-31",
+      "generatedAt": "2026-06-01T09:55:29.192Z",
       "rows": 7,
-      "referenceDate": "2026-05-31",
+      "referenceDate": "2026-06-01",
       "lagDays": 1,
       "status": "ok"
     },
     {
       "dataset": "order_procurement",
-      "asOfDate": "2026-05-31",
-      "generatedAt": "2026-05-31T13:59:11.679Z",
-      "rows": 2775,
-      "referenceDate": "2026-05-31",
+      "asOfDate": "2026-06-01",
+      "generatedAt": "2026-06-01T09:55:29.531Z",
+      "rows": 2765,
+      "referenceDate": "2026-06-01",
       "lagDays": 0,
       "status": "ok"
     },
     {
       "dataset": "warehouse_stock_overlay",
-      "asOfDate": "2026-05-31",
-      "generatedAt": "2026-05-31T13:58:00.717Z",
+      "asOfDate": "2026-06-01",
+      "generatedAt": "2026-06-01T09:53:35.696Z",
       "rows": 134,
       "matchedRows": 136,
       "unmatchedRows": 25,
-      "referenceDate": "2026-05-31",
+      "referenceDate": "2026-06-01",
       "lagDays": 0,
       "status": "ok"
     },
     {
       "dataset": "ads_summary",
-      "asOfDate": "2026-05-30",
-      "generatedAt": "2026-05-31T14:38:55.763Z",
+      "asOfDate": "2026-05-31",
+      "generatedAt": "2026-06-01T10:10:05.355Z",
       "rows": 6,
-      "referenceDate": "2026-05-31",
+      "referenceDate": "2026-06-01",
       "lagDays": 1,
       "status": "ok"
     },
     {
       "dataset": "iu_drr_summary",
-      "asOfDate": "2026-05-30",
-      "generatedAt": "2026-05-31T14:34:11.365Z",
-      "rows": 30,
-      "referenceDate": "2026-05-31",
+      "asOfDate": "2026-05-31",
+      "generatedAt": "2026-06-01T10:10:39.872Z",
+      "rows": 31,
+      "referenceDate": "2026-06-01",
       "lagDays": 1,
       "status": "ok"
     }
@@ -115,7 +115,7 @@
       "directRevenue": 15112,
       "directUnits": 34,
       "aggregateRevenue": 15112,
-      "aggregateDate": "2026-05-30",
+      "aggregateDate": "2026-05-31",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,
@@ -126,13 +126,13 @@
     "ozon": {
       "label": "Ozon",
       "rows": 224,
-      "directRevenue": 55836282,
-      "directUnits": 68290,
-      "aggregateRevenue": 55836282,
-      "aggregateDate": "2026-05-30",
-      "unmappedCount": 38,
-      "unmappedRevenue": 5689561,
-      "unmappedUnits": 9814,
+      "directRevenue": 58645751,
+      "directUnits": 71848,
+      "aggregateRevenue": 58645751,
+      "aggregateDate": "2026-05-31",
+      "unmappedCount": 39,
+      "unmappedRevenue": 5937886,
+      "unmappedUnits": 10384,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
       "ignoredUnits": 0
@@ -140,10 +140,10 @@
     "wb": {
       "label": "WB",
       "rows": 130,
-      "directRevenue": 191579367,
-      "directUnits": 132237,
-      "aggregateRevenue": 191579365,
-      "aggregateDate": "2026-05-30",
+      "directRevenue": 201860533,
+      "directUnits": 137644,
+      "aggregateRevenue": 201860530,
+      "aggregateDate": "2026-05-31",
       "unmappedCount": 1,
       "unmappedRevenue": 846,
       "unmappedUnits": 1,
@@ -154,10 +154,10 @@
     "ya": {
       "label": "Я.Маркет",
       "rows": 130,
-      "directRevenue": 6792333,
-      "directUnits": 8358,
-      "aggregateRevenue": 9747498,
-      "aggregateDate": "2026-05-30",
+      "directRevenue": 7052763,
+      "directUnits": 8685,
+      "aggregateRevenue": 10103622,
+      "aggregateDate": "2026-05-31",
       "unmappedCount": 0,
       "unmappedRevenue": 0,
       "unmappedUnits": 0,
@@ -167,12 +167,12 @@
     }
   },
   "orderSummary": {
-    "rows": 2775,
+    "rows": 2765,
     "noStockNeedRows": 0,
     "lowTurnoverRows": 44,
     "totalNeed7": 0,
-    "totalNeed14": 23735,
-    "totalNeed28": 106136
+    "totalNeed14": 23704,
+    "totalNeed28": 105793
   },
   "ownerSummary": {
     "totalSku": 143,
@@ -184,7 +184,7 @@
     "unmatchedRows": 25
   },
   "wbOwnerDistributionSummary": {
-    "sourceGeneratedAt": "2026-05-31T13:59:12.342Z",
+    "sourceGeneratedAt": "2026-06-01T09:55:30.773Z",
     "matchedSkuCount": 125,
     "updatedOwnerCount": 125,
     "missingInPortalCount": 6,
@@ -199,10 +199,10 @@
       "platformLabel": "Ozon",
       "articleKey": "trezvin",
       "name": "trezvin",
-      "revenue": 745369,
-      "units": 1927,
+      "revenue": 793669,
+      "units": 2065,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -213,10 +213,10 @@
       "platformLabel": "Ozon",
       "articleKey": "wbmicelix",
       "name": "wbmicelix",
-      "revenue": 479788,
-      "units": 1482,
+      "revenue": 507381,
+      "units": 1571,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -227,10 +227,10 @@
       "platformLabel": "Ozon",
       "articleKey": "uhovit",
       "name": "uhovit",
-      "revenue": 434664,
-      "units": 394,
+      "revenue": 444898,
+      "units": 405,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -241,10 +241,10 @@
       "platformLabel": "Ozon",
       "articleKey": "kardicin_1_1_1",
       "name": "kardicin_1_1_1",
-      "revenue": 427245,
-      "units": 272,
+      "revenue": 437769,
+      "units": 278,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -255,10 +255,10 @@
       "platformLabel": "Ozon",
       "articleKey": "arterol_1_1_1",
       "name": "arterol_1_1_1",
-      "revenue": 399820,
-      "units": 306,
+      "revenue": 416714,
+      "units": 319,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -269,24 +269,10 @@
       "platformLabel": "Ozon",
       "articleKey": "yagodniy_spas",
       "name": "yagodniy_spas",
-      "revenue": 303031,
-      "units": 462,
+      "revenue": 309259,
+      "units": 471,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "trezax",
-      "name": "trezax",
-      "revenue": 257623,
-      "units": 416,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -297,10 +283,24 @@
       "platformLabel": "Ozon",
       "articleKey": "urofol",
       "name": "urofol",
-      "revenue": 248874,
-      "units": 413,
+      "revenue": 262287,
+      "units": 435,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "critical",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "trezax",
+      "name": "trezax",
+      "revenue": 261931,
+      "units": 422,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -311,10 +311,10 @@
       "platformLabel": "Ozon",
       "articleKey": "insulight_1_1",
       "name": "insulight_1_1",
-      "revenue": 247897,
-      "units": 212,
+      "revenue": 252753,
+      "units": 216,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -325,10 +325,10 @@
       "platformLabel": "Ozon",
       "articleKey": "kinzhal",
       "name": "kinzhal",
-      "revenue": 230792,
-      "units": 310,
+      "revenue": 241862,
+      "units": 325,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -339,10 +339,10 @@
       "platformLabel": "Ozon",
       "articleKey": "kardicin_1_1",
       "name": "kardicin_1_1",
-      "revenue": 203559,
-      "units": 215,
+      "revenue": 210609,
+      "units": 221,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -353,24 +353,10 @@
       "platformLabel": "Ozon",
       "articleKey": "micolan",
       "name": "micolan",
-      "revenue": 168405,
-      "units": 446,
+      "revenue": 172339,
+      "units": 453,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "kinzhal_1_1",
-      "name": "kinzhal_1_1",
-      "revenue": 162549,
-      "units": 159,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -381,10 +367,24 @@
       "platformLabel": "Ozon",
       "articleKey": "oftalmol",
       "name": "oftalmol",
-      "revenue": 161123,
-      "units": 242,
+      "revenue": 165923,
+      "units": 250,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "critical",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "kinzhal_1_1",
+      "name": "kinzhal_1_1",
+      "revenue": 165025,
+      "units": 161,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -395,10 +395,10 @@
       "platformLabel": "Ozon",
       "articleKey": "wboptitrin",
       "name": "wboptitrin",
-      "revenue": 140903,
-      "units": 417,
+      "revenue": 159551,
+      "units": 473,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -409,10 +409,10 @@
       "platformLabel": "Ozon",
       "articleKey": "brutalax",
       "name": "brutalax",
-      "revenue": 117999,
-      "units": 365,
+      "revenue": 125324,
+      "units": 390,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -426,7 +426,7 @@
       "revenue": 116498,
       "units": 91,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -437,10 +437,24 @@
       "platformLabel": "Ozon",
       "articleKey": "chudogrib",
       "name": "chudogrib",
-      "revenue": 104190,
-      "units": 140,
+      "revenue": 108798,
+      "units": 146,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "critical",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "glukofol",
+      "name": "glukofol",
+      "revenue": 106772,
+      "units": 537,
+      "firstDate": "2026-05-01",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -451,24 +465,10 @@
       "platformLabel": "Ozon",
       "articleKey": "arterol",
       "name": "arterol",
-      "revenue": 101140,
-      "units": 170,
+      "revenue": 104035,
+      "units": 175,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "severity": "warning",
-      "type": "api_sku_unmapped",
-      "dataset": "platform_trends.extraMarketplace",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "glukofol",
-      "name": "glukofol",
-      "revenue": 88231,
-      "units": 437,
-      "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -482,7 +482,7 @@
       "revenue": 84590,
       "units": 81,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -496,7 +496,7 @@
       "revenue": 75230,
       "units": 123,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -507,10 +507,10 @@
       "platformLabel": "Ozon",
       "articleKey": "okucin",
       "name": "okucin",
-      "revenue": 60357,
-      "units": 132,
+      "revenue": 74917,
+      "units": 158,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -524,7 +524,7 @@
       "revenue": 52881,
       "units": 89,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -535,10 +535,10 @@
       "platformLabel": "Ozon",
       "articleKey": "trezor",
       "name": "trezor",
-      "revenue": 50477,
-      "units": 100,
+      "revenue": 51755,
+      "units": 103,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -552,7 +552,7 @@
       "revenue": 48890,
       "units": 121,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -563,10 +563,10 @@
       "platformLabel": "Ozon",
       "articleKey": "wbmicelix_1_1",
       "name": "wbmicelix_1_1",
-      "revenue": 42148,
-      "units": 54,
+      "revenue": 43684,
+      "units": 56,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -577,10 +577,10 @@
       "platformLabel": "Ozon",
       "articleKey": "wbbiotrin",
       "name": "wbbiotrin",
-      "revenue": 38074,
-      "units": 46,
+      "revenue": 42274,
+      "units": 52,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -594,7 +594,7 @@
       "revenue": 26493,
       "units": 30,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -605,10 +605,10 @@
       "platformLabel": "Ozon",
       "articleKey": "papiderm",
       "name": "papiderm",
-      "revenue": 24078,
-      "units": 64,
+      "revenue": 24826,
+      "units": 66,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -619,10 +619,10 @@
       "platformLabel": "Ozon",
       "articleKey": "fruitalica",
       "name": "fruitalica",
-      "revenue": 21398,
-      "units": 60,
+      "revenue": 21688,
+      "units": 61,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -633,10 +633,10 @@
       "platformLabel": "Ozon",
       "articleKey": "syvorotka_vit_C_30ml",
       "name": "syvorotka_vit_C_30ml",
-      "revenue": 10617,
-      "units": 25,
+      "revenue": 11917,
+      "units": 26,
       "firstDate": "2026-05-05",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -650,7 +650,7 @@
       "revenue": 10086,
       "units": 7,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -678,7 +678,7 @@
       "revenue": 1128,
       "units": 1,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -715,12 +715,26 @@
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
+      "articleKey": "4469756109",
+      "name": "4469756109",
+      "revenue": 716,
+      "units": 1,
+      "firstDate": "2026-05-30",
+      "lastDate": "2026-05-31",
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "severity": "warning",
+      "type": "api_sku_unmapped",
+      "dataset": "platform_trends.extraMarketplace",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
       "articleKey": "wbalkotoxic",
       "name": "wbalkotoxic",
       "revenue": 511,
       "units": 1,
       "firstDate": "2026-05-01",
-      "lastDate": "2026-05-30",
+      "lastDate": "2026-05-31",
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {

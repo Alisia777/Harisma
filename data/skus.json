@@ -11,17 +11,17 @@
     "abc": null,
     "leadTimeDays": 60,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "На вывод",
     "rating": 4.8,
     "reviews": 370,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Олеся",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -116,7 +116,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -137,7 +137,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 97,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -152,17 +152,17 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "На вывод",
     "rating": 4.7,
     "reviews": 299,
     "focusScore": 1,
     "focusReasons": "Низкий остаток",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Олеся",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -257,7 +257,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -287,17 +287,17 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "На вывод",
     "rating": 4.8,
     "reviews": 1158,
     "focusScore": 1,
     "focusReasons": "Низкий остаток",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Светлана",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -392,7 +392,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -413,7 +413,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 126,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -428,17 +428,17 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "Актуально",
     "rating": 4.7,
     "reviews": 1738,
     "focusScore": 1,
     "focusReasons": "Много возвратов",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Олеся",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Кирилл",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -533,7 +533,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Кирилл",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -563,17 +563,17 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "На вывод",
     "rating": 4.6,
     "reviews": 1048,
     "focusScore": 2,
     "focusReasons": "Низкий остаток; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Светлана",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -670,7 +670,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -700,17 +700,17 @@
     "abc": "A",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 1450,
     "focusScore": 5,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -807,7 +807,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -828,7 +828,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 3,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     },
     "aliases": [
       {
@@ -878,17 +878,17 @@
     "abc": "C",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.7,
     "reviews": 977,
     "focusScore": 8,
     "focusReasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -983,7 +983,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1004,7 +1004,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 92,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -1019,17 +1019,17 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "На вывод",
     "rating": 4.9,
     "reviews": 1122,
     "focusScore": 1,
     "focusReasons": "Низкий остаток",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Мария",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1124,7 +1124,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1154,17 +1154,17 @@
     "abc": "B",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.9,
     "reviews": 368,
     "focusScore": 5,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Мария",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1261,7 +1261,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1282,7 +1282,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 27,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -1297,17 +1297,17 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "Актуально",
     "rating": 4.7,
     "reviews": 1118,
     "focusScore": 1,
     "focusReasons": "Есть внешний трафик КЗ",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Светлана",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1404,7 +1404,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1425,7 +1425,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 67,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -1440,17 +1440,17 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "Актуально",
     "rating": 4.7,
     "reviews": 573,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Светлана",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1545,7 +1545,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1566,7 +1566,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 69,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -1581,17 +1581,17 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "На вывод",
     "rating": 4.8,
     "reviews": 800,
     "focusScore": 1,
     "focusReasons": "Есть внешний трафик КЗ",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Олеся",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1688,7 +1688,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1709,7 +1709,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 44,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -1724,17 +1724,17 @@
     "abc": "B",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 1648,
     "focusScore": 5,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1831,7 +1831,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1852,7 +1852,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 1,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -1867,17 +1867,17 @@
     "abc": null,
     "leadTimeDays": 60,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 705,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Кирилл",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -1972,7 +1972,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -1993,7 +1993,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 51,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -2008,17 +2008,17 @@
     "abc": "B",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.7,
     "reviews": 792,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2113,7 +2113,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2134,7 +2134,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 111,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -2149,17 +2149,17 @@
     "abc": null,
     "leadTimeDays": 60,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "Под вопросом",
     "rating": 4.7,
     "reviews": 1248,
     "focusScore": 3,
     "focusReasons": "Отрицательная маржа Ozon; Много возвратов",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Олеся",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Под вопросом",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2254,7 +2254,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2275,7 +2275,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 45,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -2290,17 +2290,17 @@
     "abc": "C",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.9,
     "reviews": 1522,
     "focusScore": 2,
     "focusReasons": "Низкое выполнение плана",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2395,7 +2395,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2416,7 +2416,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 95,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -2431,17 +2431,17 @@
     "abc": null,
     "leadTimeDays": 60,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "Актуально",
     "rating": 4.9,
     "reviews": 677,
     "focusScore": 2,
     "focusReasons": "Отрицательная маржа Ozon",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Олеся",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2536,7 +2536,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2557,7 +2557,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 103,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -2571,7 +2571,7 @@
     "segment": null,
     "abc": null,
     "leadTimeDays": null,
-    "status": "На вывод",
+    "status": null,
     "registryStatus": "На вывод",
     "rating": 4.7,
     "reviews": 596,
@@ -2579,15 +2579,15 @@
     "focusReasons": "Низкий остаток",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "",
         "ozon": "Даша",
         "ym": "",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -2677,12 +2677,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "",
       "ozon": "Даша",
       "ym": "",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Гидрофильные масла",
@@ -2707,17 +2707,17 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 562,
     "focusScore": 2,
     "focusReasons": "Низкое выполнение плана",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Светлана",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2812,7 +2812,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2833,7 +2833,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 80,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     },
     "aliases": [
       {
@@ -2861,17 +2861,17 @@
     "abc": null,
     "leadTimeDays": 60,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "Актуально",
     "rating": 4.7,
     "reviews": 1601,
     "focusScore": 2,
     "focusReasons": "Отрицательная маржа WB",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Светлана",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -2966,7 +2966,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -2987,7 +2987,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 96,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -3008,11 +3008,11 @@
     "focusScore": 3,
     "focusReasons": "Отрицательная маржа Ozon; Много возвратов",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Светлана",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Под вопросом",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3107,7 +3107,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3128,7 +3128,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 58,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -3143,17 +3143,17 @@
     "abc": "B",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 3239,
     "focusScore": 2,
     "focusReasons": "Низкое выполнение плана",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3248,7 +3248,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3269,7 +3269,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 35,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     },
     "aliases": [
       {
@@ -3297,17 +3297,17 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "На вывод",
     "rating": 4.9,
     "reviews": 348,
     "focusScore": 2,
     "focusReasons": "Отрицательная маржа WB",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Олеся",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3402,7 +3402,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3423,7 +3423,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 91,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -3438,17 +3438,17 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.9,
     "reviews": 665,
     "focusScore": 8,
     "focusReasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3543,7 +3543,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3564,7 +3564,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 112,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -3579,17 +3579,17 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Под вопросом",
     "rating": 0,
     "reviews": 819,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; WB ниже min price",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Под вопросом",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3684,7 +3684,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3714,17 +3714,17 @@
     "abc": "B",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.7,
     "reviews": 641,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3821,7 +3821,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3842,7 +3842,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 29,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -3857,17 +3857,17 @@
     "abc": "B",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 1855,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -3962,7 +3962,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -3983,7 +3983,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 50,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -3998,17 +3998,17 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 609,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4105,7 +4105,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4126,7 +4126,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 17,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -4141,17 +4141,17 @@
     "abc": "B",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.9,
     "reviews": 1121,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4248,7 +4248,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4269,7 +4269,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 11,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -4284,17 +4284,17 @@
     "abc": "C",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Новинка",
     "rating": 4.9,
     "reviews": 718,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Даша",
+      "source": "Рабочий спецификации · Реестр",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4391,7 +4391,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4412,7 +4412,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 16,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -4427,17 +4427,17 @@
     "abc": "A",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.9,
     "reviews": 1314,
     "focusScore": 10,
     "focusReasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4534,7 +4534,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4555,7 +4555,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 15,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -4570,17 +4570,17 @@
     "abc": "A",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 1900,
     "focusScore": 5,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4677,7 +4677,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4698,7 +4698,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 5,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -4719,11 +4719,11 @@
     "focusScore": 2,
     "focusReasons": "Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Светлана",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Под вопросом",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4820,7 +4820,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4841,7 +4841,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 7,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -4856,17 +4856,17 @@
     "abc": "B",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 2008,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -4963,7 +4963,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -4984,7 +4984,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 57,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -4999,17 +4999,17 @@
     "abc": "C",
     "leadTimeDays": null,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Новинка",
     "rating": 4.8,
     "reviews": 172,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Есть внешний трафик КЗ; Owner не закреплён",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "[object Object]",
+      "source": "Рабочий спецификации · Реестр",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5106,7 +5106,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5127,7 +5127,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 65,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -5142,17 +5142,17 @@
     "abc": "B",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.9,
     "reviews": 1469,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5249,7 +5249,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5270,7 +5270,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 18,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -5285,17 +5285,17 @@
     "abc": "A",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 1426,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5392,7 +5392,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5413,7 +5413,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 24,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     },
     "aliases": [
       {
@@ -5441,17 +5441,17 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 1880,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Мария",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5546,7 +5546,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5567,7 +5567,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 31,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     },
     "aliases": [
       {
@@ -5595,18 +5595,18 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "На вывод",
     "rating": 4.4,
     "reviews": 655,
     "focusScore": 4,
     "focusReasons": "Отрицательная маржа WB; Низкий остаток; WB ниже min price",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Мария",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
-        "ozon": "Александр Озон",
+        "wb": "Мария",
+        "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
         "letu": "Екатерина",
@@ -5700,8 +5700,8 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
-      "ozon": "Александр Озон",
+      "wb": "Мария",
+      "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
       "letu": "Екатерина",
@@ -5730,17 +5730,17 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "Актуально",
     "rating": 4.7,
     "reviews": 610,
     "focusScore": 3,
     "focusReasons": "Отрицательная маржа WB; Много возвратов",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Мария",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5835,7 +5835,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5856,7 +5856,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 71,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -5871,17 +5871,17 @@
     "abc": "C",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 440,
     "focusScore": 9,
     "focusReasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon; Много возвратов",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -5976,7 +5976,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -5997,7 +5997,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 107,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -6012,17 +6012,17 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Под вопросом",
-    "registryStatus": "Под вопросом",
+    "registryStatus": "На вывод",
     "rating": 4.8,
     "reviews": 1009,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Светлана",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6117,7 +6117,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6138,7 +6138,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 64,
-      "appliedAt": "2026-05-31T13:59:12.341Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -6153,17 +6153,17 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "На вывод",
     "rating": 4.9,
     "reviews": 253,
     "focusScore": 2,
     "focusReasons": "Низкий остаток; WB ниже min price",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Мария",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "",
         "ozon": "",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6258,7 +6258,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "",
       "ozon": "",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6288,17 +6288,17 @@
     "abc": "C",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "На вывод",
     "rating": 4.9,
     "reviews": 563,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6393,7 +6393,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6436,17 +6436,17 @@
     "abc": "C",
     "leadTimeDays": 30,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.7,
     "reviews": 5364,
     "focusScore": 10,
     "focusReasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Ozon ниже min price; Много возвратов",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Мария",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6541,7 +6541,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6562,7 +6562,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 28,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -6577,17 +6577,17 @@
     "abc": null,
     "leadTimeDays": 30,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "Актуально",
     "rating": 4.7,
     "reviews": 692,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Мария",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6682,7 +6682,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6703,7 +6703,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 94,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -6718,17 +6718,17 @@
     "abc": "B",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 5024,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Мария",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6823,7 +6823,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6844,7 +6844,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 38,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -6859,17 +6859,17 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "Актуально",
     "rating": 4.9,
     "reviews": 964,
     "focusScore": 2,
     "focusReasons": "Низкий остаток; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Олеся",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Кирилл",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -6966,7 +6966,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Кирилл",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -6996,17 +6996,17 @@
     "abc": "A",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 640,
     "focusScore": 5,
     "focusReasons": "Низкое выполнение плана; Низкий остаток; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7103,7 +7103,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7124,7 +7124,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 14,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -7139,17 +7139,17 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "На вывод",
     "rating": 4.8,
     "reviews": 850,
     "focusScore": 1,
     "focusReasons": "Низкий остаток",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Олеся",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Олеся",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7244,7 +7244,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Олеся",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7274,17 +7274,17 @@
     "abc": "B",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 540,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7381,7 +7381,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7402,7 +7402,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 26,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -7417,17 +7417,17 @@
     "abc": null,
     "leadTimeDays": 60,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 713,
     "focusScore": 1,
     "focusReasons": "Низкий остаток",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Светлана",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Светлана",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7522,7 +7522,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Светлана",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7552,17 +7552,17 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "На вывод",
     "rating": 4.7,
     "reviews": 366,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7659,7 +7659,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7680,7 +7680,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 83,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -7695,17 +7695,17 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": null,
     "rating": null,
     "reviews": null,
     "focusScore": 3,
     "focusReasons": "Низкий остаток; WB ниже min price; Ozon ниже min price; Owner не закреплён",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "",
+      "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7800,7 +7800,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7830,17 +7830,17 @@
     "abc": "A",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.9,
     "reviews": 11004,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик VK",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -7937,7 +7937,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -7958,7 +7958,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 2,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -7973,17 +7973,17 @@
     "abc": "B",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Новинка",
     "rating": 4.9,
     "reviews": 150,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик VK",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8080,7 +8080,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8101,7 +8101,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 42,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -8116,17 +8116,17 @@
     "abc": "A",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.9,
     "reviews": 835,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8224,7 +8224,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8245,7 +8245,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 21,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     },
     "aliases": [
       {
@@ -8273,17 +8273,17 @@
     "abc": "A",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.9,
     "reviews": 1359,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8381,7 +8381,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8402,7 +8402,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 19,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     },
     "aliases": [
       {
@@ -8430,17 +8430,17 @@
     "abc": "A",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.9,
     "reviews": 1776,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ; Есть внешний трафик VK",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8538,7 +8538,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8559,7 +8559,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 8,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -8574,17 +8574,17 @@
     "abc": "A",
     "leadTimeDays": null,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Новинка",
     "rating": 4.9,
     "reviews": 1080,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик VK",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -8681,7 +8681,7 @@
       "hasVK": true
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -8702,7 +8702,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 13,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -8717,22 +8717,22 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Новинка",
-    "registryStatus": "Новинка",
+    "registryStatus": null,
     "rating": 4.8,
     "reviews": 21,
     "focusScore": 2,
     "focusReasons": "Отрицательная маржа Ozon; Owner не закреплён",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "[object Object]",
+      "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "",
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -8822,12 +8822,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
-      "ym": "Анна",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ym": "",
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Сыворотки",
@@ -8843,7 +8843,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 34,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -8858,22 +8858,22 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Новинка",
-    "registryStatus": "Новинка",
+    "registryStatus": null,
     "rating": 4.8,
     "reviews": 40,
     "focusScore": 0,
     "focusReasons": "Owner не закреплён",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "[object Object]",
+      "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "",
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -8963,12 +8963,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
-      "ym": "Анна",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ym": "",
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Сыворотки",
@@ -8984,7 +8984,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 20,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -8999,17 +8999,17 @@
     "abc": "A",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 957,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Сильный контент ROMI; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9106,7 +9106,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9127,7 +9127,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 6,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     },
     "aliases": [
       {
@@ -9155,22 +9155,22 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Новинка",
-    "registryStatus": "Новинка",
+    "registryStatus": null,
     "rating": 4.9,
     "reviews": 285,
     "focusScore": 1,
     "focusReasons": "Много возвратов; Owner не закреплён",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Олеся",
+      "source": "manual override 2026-04",
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -9260,12 +9260,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -9281,7 +9281,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 9,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -9296,22 +9296,22 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Нет в спецификации",
-    "registryStatus": "Нет в спецификации",
+    "registryStatus": null,
     "rating": 0,
     "reviews": 0,
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "",
+      "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "",
         "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "",
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -9401,12 +9401,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "",
       "ozon": "Даша",
-      "ym": "Анна",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ym": "",
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -9431,22 +9431,22 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Новинка",
     "rating": 0,
     "reviews": 0,
     "focusScore": 1,
     "focusReasons": "Низкий остаток",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "",
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -9536,12 +9536,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
-      "ym": "Анна",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ym": "",
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Кремы",
@@ -9557,7 +9557,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 117,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -9572,17 +9572,17 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Под вопросом",
-    "registryStatus": "Под вопросом",
+    "registryStatus": "На вывод",
     "rating": 4.8,
     "reviews": 1245,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Светлана",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "На вывод",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Светлана",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9677,7 +9677,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Светлана",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9707,17 +9707,17 @@
     "abc": "B",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.9,
     "reviews": 4688,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9814,7 +9814,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9835,7 +9835,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 52,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     },
     "aliases": [
       {
@@ -9863,17 +9863,17 @@
     "abc": "B",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.7,
     "reviews": 3186,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -9970,7 +9970,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -9991,7 +9991,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 70,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     },
     "aliases": [
       {
@@ -10019,17 +10019,17 @@
     "abc": "B",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 868,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10126,7 +10126,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10147,7 +10147,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 61,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -10162,17 +10162,17 @@
     "abc": "C",
     "leadTimeDays": 45,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 419,
     "focusScore": 9,
     "focusReasons": "В работе WB: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа WB; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10269,7 +10269,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10290,7 +10290,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 101,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -10305,17 +10305,17 @@
     "abc": "B",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 1226,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Мария",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10412,7 +10412,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10433,7 +10433,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 23,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -10448,22 +10448,22 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Новинка",
-    "registryStatus": "Новинка",
+    "registryStatus": null,
     "rating": 0,
     "reviews": 0,
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "[object Object]",
+      "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "",
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -10553,12 +10553,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
-      "ym": "Анна",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ym": "",
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Маски косметические",
@@ -10574,7 +10574,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 129,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -10589,22 +10589,22 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Нет в спецификации",
-    "registryStatus": "Нет в спецификации",
+    "registryStatus": null,
     "rating": 0,
     "reviews": 0,
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "[object Object]",
+      "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "",
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -10694,12 +10694,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
-      "ym": "Анна",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ym": "",
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Сыворотки",
@@ -10715,7 +10715,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 22,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -10730,17 +10730,17 @@
     "abc": "B",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 2160,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Мария",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10837,7 +10837,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10858,7 +10858,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 10,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -10873,17 +10873,17 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 583,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Олеся",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -10978,7 +10978,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -10999,7 +10999,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 124,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -11014,22 +11014,22 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Нет в спецификации",
-    "registryStatus": "Нет в спецификации",
+    "registryStatus": null,
     "rating": 0,
     "reviews": 0,
     "focusScore": 1,
     "focusReasons": "Низкий остаток; Owner не закреплён",
     "owner": {
-      "name": "Александр Озон",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "",
+      "source": null,
       "registryStatus": null,
       "byPlatform": {
         "wb": "",
         "ozon": "Александр Озон",
-        "ym": "Анна",
+        "ym": "",
         "ga": "",
         "letu": "",
-        "mm": "Екатерина"
+        "mm": ""
       }
     },
     "traffic": {
@@ -11121,10 +11121,10 @@
     "ownersByPlatform": {
       "wb": "",
       "ozon": "Александр Озон",
-      "ym": "Анна",
+      "ym": "",
       "ga": "",
       "letu": "",
-      "mm": "Екатерина"
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Косметические наборы для ухода",
@@ -11149,17 +11149,17 @@
     "abc": "A",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 2092,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; Много возвратов; Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11256,7 +11256,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11277,7 +11277,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 4,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -11292,17 +11292,17 @@
     "abc": "C",
     "leadTimeDays": null,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Новинка",
     "rating": 4.8,
     "reviews": 254,
     "focusScore": 4,
     "focusReasons": "Низкое выполнение плана; WB ниже min price; Много возвратов",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11397,7 +11397,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11427,17 +11427,17 @@
     "abc": null,
     "leadTimeDays": 60,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "Актуально",
     "rating": 4.7,
     "reviews": 1109,
     "focusScore": 1,
     "focusReasons": "Много возвратов",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Олеся",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11532,7 +11532,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11553,7 +11553,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 105,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -11568,17 +11568,17 @@
     "abc": "C",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 532,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11673,7 +11673,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11694,7 +11694,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 37,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -11709,17 +11709,17 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 944,
     "focusScore": 8,
     "focusReasons": "В работе Ozon: ниже плана и отрицательная маржа; Низкое выполнение плана; Отрицательная маржа Ozon",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -11814,7 +11814,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -11835,7 +11835,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 53,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -11850,22 +11850,22 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Новинка",
-    "registryStatus": "Новинка",
+    "registryStatus": null,
     "rating": 4.8,
     "reviews": 78,
     "focusScore": 0,
     "focusReasons": "Owner не закреплён",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "[object Object]",
+      "source": null,
       "registryStatus": null,
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
-        "ym": "Анна",
-        "ga": "Екатерина",
-        "letu": "Екатерина",
-        "mm": "Екатерина"
+        "ym": "",
+        "ga": "",
+        "letu": "",
+        "mm": ""
       }
     },
     "traffic": {
@@ -11955,12 +11955,12 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
-      "ym": "Анна",
-      "ga": "Екатерина",
-      "letu": "Екатерина",
-      "mm": "Екатерина"
+      "ym": "",
+      "ga": "",
+      "letu": "",
+      "mm": ""
     },
     "categoriesByPlatform": {
       "wb": "Сыворотки",
@@ -11976,7 +11976,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 12,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -11991,17 +11991,17 @@
     "abc": "C",
     "leadTimeDays": 60,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 364,
     "focusScore": 2,
     "focusReasons": "Низкое выполнение плана",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Светлана",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12096,7 +12096,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12117,7 +12117,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 25,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -12132,17 +12132,17 @@
     "abc": null,
     "leadTimeDays": 90,
     "status": "Под вопросом",
-    "registryStatus": "Под вопросом",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 384,
     "focusScore": 2,
     "focusReasons": "Отрицательная маржа WB",
     "owner": {
-      "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Мария",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12237,7 +12237,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12258,7 +12258,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 39,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -12273,17 +12273,17 @@
     "abc": "C",
     "leadTimeDays": 90,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Актуально",
     "rating": 4.8,
     "reviews": 832,
     "focusScore": 3,
     "focusReasons": "Низкое выполнение плана; Много возвратов",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12378,7 +12378,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12399,7 +12399,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 54,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     },
     "aliases": [
       {
@@ -12427,17 +12427,17 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Актуальный",
-    "registryStatus": "Актуальный",
+    "registryStatus": "Новинка",
     "rating": 4.9,
     "reviews": 112,
     "focusScore": 1,
     "focusReasons": "Есть внешний трафик КЗ",
     "owner": {
       "name": "Максим",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "source": "Для Анны · Реестр  Смарт-Сэйл · override 2026-04",
       "registryStatus": "Новинка",
       "byPlatform": {
-        "wb": "Максим",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12534,7 +12534,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Максим",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12555,7 +12555,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 77,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -12570,17 +12570,17 @@
     "abc": null,
     "leadTimeDays": null,
     "status": "Вывод",
-    "registryStatus": "Вывод",
+    "registryStatus": "Актуально",
     "rating": 4.5,
     "reviews": 1714,
     "focusScore": 0,
     "focusReasons": "",
     "owner": {
-      "name": "Мария",
-      "source": "team-repricer-inputs-2026-06-01 · ответственные_все_МП_без_алиасов_артикулов.xlsx",
+      "name": "Светлана",
+      "source": "Для Анны · Реестр  Смарт-Сэйл",
       "registryStatus": "Актуально",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12675,7 +12675,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12696,7 +12696,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 127,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -12721,7 +12721,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12784,7 +12784,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -12849,7 +12849,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 33,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -12874,7 +12874,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -12937,7 +12937,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -13002,7 +13002,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 41,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -13027,7 +13027,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -13090,7 +13090,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -13155,7 +13155,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 30,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -13180,7 +13180,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -13243,7 +13243,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -13308,7 +13308,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 32,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -13333,7 +13333,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -13396,7 +13396,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -13461,7 +13461,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 76,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -13486,7 +13486,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -13549,7 +13549,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -13614,7 +13614,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 109,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -13639,7 +13639,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -13702,7 +13702,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -13767,7 +13767,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 40,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -13792,7 +13792,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -13855,7 +13855,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -13920,7 +13920,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 93,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -13945,7 +13945,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -14008,7 +14008,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -14073,7 +14073,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 63,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -14098,7 +14098,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Вывод",
       "byPlatform": {
-        "wb": "",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "",
         "ga": "",
@@ -14161,7 +14161,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "",
       "ga": "",
@@ -14226,7 +14226,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 46,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -14251,7 +14251,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -14314,7 +14314,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -14379,7 +14379,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 99,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -14404,7 +14404,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -14467,7 +14467,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -14532,7 +14532,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 66,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -14557,7 +14557,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -14620,7 +14620,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -14685,7 +14685,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 49,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -14710,7 +14710,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -14773,7 +14773,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -14838,7 +14838,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 47,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -14863,7 +14863,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -14926,7 +14926,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -14982,7 +14982,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 55,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -15007,7 +15007,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -15070,7 +15070,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -15135,7 +15135,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 110,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -15160,7 +15160,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -15223,7 +15223,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -15288,7 +15288,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 56,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -15313,7 +15313,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -15376,7 +15376,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -15441,7 +15441,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 43,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -15466,7 +15466,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -15529,7 +15529,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -15594,7 +15594,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 88,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -15619,7 +15619,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -15682,7 +15682,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -15747,7 +15747,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 36,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -15772,7 +15772,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -15835,7 +15835,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -15900,7 +15900,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 68,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -15925,7 +15925,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -15988,7 +15988,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -16053,7 +16053,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 90,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -16078,7 +16078,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -16141,7 +16141,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -16206,7 +16206,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 62,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -16231,7 +16231,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -16294,7 +16294,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -16359,7 +16359,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 72,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -16384,7 +16384,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -16447,7 +16447,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -16512,7 +16512,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 74,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -16537,7 +16537,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -16600,7 +16600,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -16665,7 +16665,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 84,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -16690,7 +16690,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -16753,7 +16753,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -16818,7 +16818,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 48,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -16843,7 +16843,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -16906,7 +16906,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -16971,7 +16971,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 59,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -16996,7 +16996,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -17059,7 +17059,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -17124,7 +17124,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 125,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -17149,7 +17149,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -17212,7 +17212,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -17277,7 +17277,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 87,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -17302,7 +17302,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -17365,7 +17365,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -17430,7 +17430,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 81,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -17455,7 +17455,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -17518,7 +17518,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -17574,7 +17574,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 60,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -17599,7 +17599,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -17662,7 +17662,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -17727,7 +17727,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 75,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -17752,7 +17752,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -17815,7 +17815,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -17871,7 +17871,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 73,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -17896,7 +17896,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -17959,7 +17959,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -18024,7 +18024,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 78,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -18049,7 +18049,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -18112,7 +18112,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -18177,7 +18177,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 85,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -18202,7 +18202,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -18265,7 +18265,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -18330,7 +18330,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 108,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -18355,7 +18355,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -18418,7 +18418,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -18492,7 +18492,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 86,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -18517,7 +18517,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -18580,7 +18580,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -18645,7 +18645,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 116,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -18670,7 +18670,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -18733,7 +18733,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -18798,7 +18798,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 114,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -18823,7 +18823,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -18886,7 +18886,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -18951,7 +18951,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 104,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -18976,7 +18976,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -19039,7 +19039,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -19104,7 +19104,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 89,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -19129,7 +19129,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry Шаблон_хаммеры_2026 (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "",
+        "wb": "Васильева Мария",
         "ozon": "",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -19192,7 +19192,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "",
+      "wb": "Васильева Мария",
       "ozon": "",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -19248,7 +19248,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 79,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -19273,7 +19273,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -19336,7 +19336,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -19401,7 +19401,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 123,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -19426,7 +19426,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -19489,7 +19489,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -19554,7 +19554,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 106,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -19579,7 +19579,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -19642,7 +19642,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -19707,7 +19707,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 122,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -19732,7 +19732,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -19795,7 +19795,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -19860,7 +19860,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 118,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -19885,7 +19885,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -19948,7 +19948,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -20013,7 +20013,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 98,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -20038,7 +20038,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Кирилл",
+        "wb": "Лапыгин Максим",
         "ozon": "Александр Озон",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -20101,7 +20101,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Кирилл",
+      "wb": "Лапыгин Максим",
       "ozon": "Александр Озон",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -20166,7 +20166,7 @@
       "owner": "Лапыгин Максим",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 113,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -20191,7 +20191,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -20254,7 +20254,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -20319,7 +20319,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 119,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -20344,7 +20344,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Светлана",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -20407,7 +20407,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Светлана",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -20463,7 +20463,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 82,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -20488,7 +20488,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные все МП (1) (2).xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Олеся",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -20551,7 +20551,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Олеся",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -20616,7 +20616,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 100,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {
@@ -20641,7 +20641,7 @@
       "source": "Repricer alias import 2026-05-29: alias (2).csv; registry ответственные Озон.xlsx",
       "registryStatus": "Актуальный",
       "byPlatform": {
-        "wb": "Мария",
+        "wb": "Васильева Мария",
         "ozon": "Даша",
         "ym": "Анна",
         "ga": "Екатерина",
@@ -20704,7 +20704,7 @@
       "hasVK": false
     },
     "ownersByPlatform": {
-      "wb": "Мария",
+      "wb": "Васильева Мария",
       "ozon": "Даша",
       "ym": "Анна",
       "ga": "Екатерина",
@@ -20760,7 +20760,7 @@
       "owner": "Васильева Мария",
       "sourceFile": "распределение артикулов.xlsx",
       "sourceRow": 115,
-      "appliedAt": "2026-05-31T13:59:12.342Z"
+      "appliedAt": "2026-06-01T09:55:30.773Z"
     }
   },
   {

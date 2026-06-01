@@ -1,13 +1,13 @@
 {
   "schema": "portal-data-quarantine-v1",
-  "generatedAt": "2026-06-01T09:32:12.924Z",
+  "generatedAt": "2026-06-01T10:12:27.984Z",
   "reason": "Rows that need review before the data contour can be trusted.",
   "summary": {
-    "rows": 19,
-    "revenue": 5051469,
+    "rows": 20,
+    "revenue": 5363397,
     "overage": 0,
     "apiSumAboveAggregateCount": 0,
-    "apiUnmappedHighRevenueCount": 19
+    "apiUnmappedHighRevenueCount": 20
   },
   "rows": [
     {
@@ -17,10 +17,10 @@
       "platformLabel": "Ozon",
       "articleKey": "trezvin",
       "name": "trezvin",
-      "revenue": 745369,
+      "revenue": 793669,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 1927,
+      "units": 2065,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -30,10 +30,10 @@
       "platformLabel": "Ozon",
       "articleKey": "wbmicelix",
       "name": "wbmicelix",
-      "revenue": 479788,
+      "revenue": 507381,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 1482,
+      "units": 1571,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -43,10 +43,10 @@
       "platformLabel": "Ozon",
       "articleKey": "uhovit",
       "name": "uhovit",
-      "revenue": 434664,
+      "revenue": 444898,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 394,
+      "units": 405,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -56,10 +56,10 @@
       "platformLabel": "Ozon",
       "articleKey": "kardicin_1_1_1",
       "name": "kardicin_1_1_1",
-      "revenue": 427245,
+      "revenue": 437769,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 272,
+      "units": 278,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -69,10 +69,10 @@
       "platformLabel": "Ozon",
       "articleKey": "arterol_1_1_1",
       "name": "arterol_1_1_1",
-      "revenue": 399820,
+      "revenue": 416714,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 306,
+      "units": 319,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -82,23 +82,10 @@
       "platformLabel": "Ozon",
       "articleKey": "yagodniy_spas",
       "name": "yagodniy_spas",
-      "revenue": 303031,
+      "revenue": 309259,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 462,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "type": "api_sku_unmapped",
-      "severity": "critical",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "trezax",
-      "name": "trezax",
-      "revenue": 257623,
-      "aggregateRevenue": 0,
-      "overage": 0,
-      "units": 416,
+      "units": 471,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -108,10 +95,23 @@
       "platformLabel": "Ozon",
       "articleKey": "urofol",
       "name": "urofol",
-      "revenue": 248874,
+      "revenue": 262287,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 413,
+      "units": 435,
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "type": "api_sku_unmapped",
+      "severity": "critical",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "trezax",
+      "name": "trezax",
+      "revenue": 261931,
+      "aggregateRevenue": 0,
+      "overage": 0,
+      "units": 422,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -121,10 +121,10 @@
       "platformLabel": "Ozon",
       "articleKey": "insulight_1_1",
       "name": "insulight_1_1",
-      "revenue": 247897,
+      "revenue": 252753,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 212,
+      "units": 216,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -134,10 +134,10 @@
       "platformLabel": "Ozon",
       "articleKey": "kinzhal",
       "name": "kinzhal",
-      "revenue": 230792,
+      "revenue": 241862,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 310,
+      "units": 325,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -147,10 +147,10 @@
       "platformLabel": "Ozon",
       "articleKey": "kardicin_1_1",
       "name": "kardicin_1_1",
-      "revenue": 203559,
+      "revenue": 210609,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 215,
+      "units": 221,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -160,23 +160,10 @@
       "platformLabel": "Ozon",
       "articleKey": "micolan",
       "name": "micolan",
-      "revenue": 168405,
+      "revenue": 172339,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 446,
-      "message": "API SKU не найден в skus.json/алиасах"
-    },
-    {
-      "type": "api_sku_unmapped",
-      "severity": "critical",
-      "platform": "ozon",
-      "platformLabel": "Ozon",
-      "articleKey": "kinzhal_1_1",
-      "name": "kinzhal_1_1",
-      "revenue": 162549,
-      "aggregateRevenue": 0,
-      "overage": 0,
-      "units": 159,
+      "units": 453,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -186,10 +173,23 @@
       "platformLabel": "Ozon",
       "articleKey": "oftalmol",
       "name": "oftalmol",
-      "revenue": 161123,
+      "revenue": 165923,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 242,
+      "units": 250,
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "type": "api_sku_unmapped",
+      "severity": "critical",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "kinzhal_1_1",
+      "name": "kinzhal_1_1",
+      "revenue": 165025,
+      "aggregateRevenue": 0,
+      "overage": 0,
+      "units": 161,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -199,10 +199,10 @@
       "platformLabel": "Ozon",
       "articleKey": "wboptitrin",
       "name": "wboptitrin",
-      "revenue": 140903,
+      "revenue": 159551,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 417,
+      "units": 473,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -212,10 +212,10 @@
       "platformLabel": "Ozon",
       "articleKey": "brutalax",
       "name": "brutalax",
-      "revenue": 117999,
+      "revenue": 125324,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 365,
+      "units": 390,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -238,10 +238,23 @@
       "platformLabel": "Ozon",
       "articleKey": "chudogrib",
       "name": "chudogrib",
-      "revenue": 104190,
+      "revenue": 108798,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 140,
+      "units": 146,
+      "message": "API SKU не найден в skus.json/алиасах"
+    },
+    {
+      "type": "api_sku_unmapped",
+      "severity": "critical",
+      "platform": "ozon",
+      "platformLabel": "Ozon",
+      "articleKey": "glukofol",
+      "name": "glukofol",
+      "revenue": 106772,
+      "aggregateRevenue": 0,
+      "overage": 0,
+      "units": 537,
       "message": "API SKU не найден в skus.json/алиасах"
     },
     {
@@ -251,10 +264,10 @@
       "platformLabel": "Ozon",
       "articleKey": "arterol",
       "name": "arterol",
-      "revenue": 101140,
+      "revenue": 104035,
       "aggregateRevenue": 0,
       "overage": 0,
-      "units": 170,
+      "units": 175,
       "message": "API SKU не найден в skus.json/алиасах"
     }
   ]

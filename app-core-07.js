@@ -5068,7 +5068,7 @@ function iuDrrFunnelBuildModel(model = {}, context = {}) {
       return iuDrrFunnelFinite(value) && Math.abs(Number(value)) > 0.000001;
     });
   });
-  const metricRows = metrics.map((metric) => {
+  let metricRows = metrics.map((metric) => {
     const values = rows.map((row) => iuDrrFunnelMetricValue(metric, row, platformKey, context));
     const numeric = values.filter(iuDrrFunnelFinite).map(Number);
     return {
@@ -5100,25 +5100,74 @@ function iuDrrFunnelBuildModel(model = {}, context = {}) {
   const romi = factAds > 0 ? (adRevenue - factAds) / factAds : null;
   const noSppDrr = platformKey === 'ozon' ? iuDrrFunnelSummaryValue('noSppDrr', rows, platformKey, context) : null;
   const reserve = platformKey === 'ozon' ? iuDrrFunnelSummaryValue('adsReserve', rows, platformKey, context) : null;
+  const month = model.monthSummary || {};
+  const forecastMonth = context.quarterForecast?.month || {};
+  const monthPlanRevenue = platformKey === 'ozon'
+    ? numberOrZero(forecastMonth.iuPlan || month.iuRevenueOzonContractMin || month.iuRevenueOzonPlan)
+    : numberOrZero(forecastMonth.iuPlan || month.iuRevenueWbIuMin || month.iuRevenueWbPlan);
+  const monthFactRevenue = platformKey === 'ozon'
+    ? numberOrZero(forecastMonth.fact || month.iuRevenueOzonFactToDate || month.revenueOzon)
+    : numberOrZero(forecastMonth.fact || month.iuRevenueWbFactToDate || month.revenueWb);
+  const monthPlanAds = platformKey === 'ozon'
+    ? numberOrZero(month.iuAdsOzonPlan || month.planSpendOzon)
+    : numberOrZero(month.iuAdsPlan || month.planSpendWb);
+  const monthFactAds = platformKey === 'ozon'
+    ? numberOrZero(month.iuAdsFactOzonToDate || month.spendFactOzon)
+    : numberOrZero(month.iuAdsFactWbToDate || month.spendFactDrr || month.spendFact);
+  const cardPlanRevenue = monthPlanRevenue || planRevenue;
+  const cardFactRevenue = monthFactRevenue || factRevenue;
+  const cardRevenueCompletion = iuDrrFunnelRate(cardFactRevenue, cardPlanRevenue);
+  const cardPlanAds = monthPlanAds || planAds;
+  const cardFactAds = monthFactAds || factAds;
+  const cardAdsCompletion = iuDrrFunnelRate(cardFactAds, cardPlanAds);
+  const cardPlanDrr = numberOrZero(platformKey === 'ozon' ? month.planPctOzon : month.planPct)
+    || (platformKey === 'ozon' ? numberOrZero(context.ozonTargetDrr) : 0)
+    || iuDrrFunnelRate(cardPlanAds, cardPlanRevenue)
+    || planDrr;
+  const cardFactDrr = cardFactRevenue > 0 ? cardFactAds / cardFactRevenue : factDrr;
+  const cardReserve = platformKey === 'ozon' ? cardPlanAds - cardFactAds : reserve;
+  const cardRevenueDelta = cardFactRevenue - cardPlanRevenue;
+  const cardAdsDelta = cardFactAds - cardPlanAds;
+  const cardDrrDelta = cardFactDrr == null || cardPlanDrr == null ? null : cardFactDrr - cardPlanDrr;
+  const summaryOverrides = {
+    [planRevenueKey]: cardPlanRevenue,
+    [factRevenueKey]: cardFactRevenue,
+    revenueCompletion: cardRevenueCompletion,
+    completion: cardRevenueCompletion,
+    revenueDelta: cardRevenueDelta,
+    gmvDelta: cardRevenueDelta,
+    planAds: cardPlanAds,
+    factAds: cardFactAds,
+    adsCompletion: cardAdsCompletion,
+    adsDelta: cardAdsDelta,
+    planDrr: cardPlanDrr,
+    factDrr: cardFactDrr,
+    drrDelta: cardDrrDelta
+  };
+  metricRows = metricRows.map((metric) => (
+    Object.prototype.hasOwnProperty.call(summaryOverrides, metric.key)
+      ? { ...metric, summary: summaryOverrides[metric.key] }
+      : metric
+  ));
   const revenueCards = [{
-    label: platformKey === 'ozon' ? 'Smart GMV на дату' : 'Оборот WB на дату',
-    value: iuDrrFunnelFormat({ format: 'pct' }, revenueCompletion),
-    detail: `${fmt.money(factRevenue)} / ${fmt.money(planRevenue)}`,
-    progress: revenueCompletion,
-    tone: iuDrrFunnelCompletionTone(revenueCompletion),
-    status: 'план к текущей дате'
+    label: platformKey === 'ozon' ? 'Smart GMV за месяц' : 'Оборот WB за месяц',
+    value: iuDrrFunnelFormat({ format: 'pct' }, cardRevenueCompletion),
+    detail: `${fmt.money(cardFactRevenue)} / ${fmt.money(cardPlanRevenue)}`,
+    progress: cardRevenueCompletion,
+    tone: iuDrrFunnelCompletionTone(cardRevenueCompletion),
+    status: 'месячный план'
   }];
   const cards = platformKey === 'ozon' ? [
     ...revenueCards,
-    { label: 'Smart реклама на дату', value: iuDrrFunnelFormat({ format: 'pct' }, adsCompletion), detail: `${fmt.money(factAds)} / ${fmt.money(planAds)}`, progress: adsCompletion, tone: iuDrrFunnelAdsCompletionTone(adsCompletion), status: iuDrrAdsBudgetStatus(adsCompletion) },
-    { label: 'ДРР / цель', value: iuDrrFunnelFormat({ format: 'pct' }, factDrr), detail: `цель ${iuDrrFunnelFormat({ format: 'pct' }, planDrr)}`, progress: planDrr > 0 ? factDrr / planDrr : null, tone: iuDrrFunnelDrrTone(factDrr, planDrr) },
+    { label: 'Smart реклама за месяц', value: iuDrrFunnelFormat({ format: 'pct' }, cardAdsCompletion), detail: `${fmt.money(cardFactAds)} / ${fmt.money(cardPlanAds)}`, progress: cardAdsCompletion, tone: iuDrrFunnelAdsCompletionTone(cardAdsCompletion), status: iuDrrAdsBudgetStatus(cardAdsCompletion) },
+    { label: 'ДРР / цель', value: iuDrrFunnelFormat({ format: 'pct' }, cardFactDrr), detail: `цель ${iuDrrFunnelFormat({ format: 'pct' }, cardPlanDrr)}`, progress: cardPlanDrr > 0 ? cardFactDrr / cardPlanDrr : null, tone: iuDrrFunnelDrrTone(cardFactDrr, cardPlanDrr) },
     { label: 'ДРР без СПП', value: iuDrrFunnelFormat({ format: 'pct' }, noSppDrr), detail: `AdRev KPI ${iuDrrFunnelFormat({ format: 'pct' }, context.ozonAdRevKpiRate || context.ozonTargetDrr)}`, progress: noSppDrr && context.ozonAdRevKpiRate ? noSppDrr / context.ozonAdRevKpiRate : null, tone: iuDrrFunnelDrrTone(noSppDrr, context.ozonAdRevKpiRate || context.ozonTargetDrr) },
-    { label: 'Резерв рекламы', value: iuDrrFunnelFormat({ format: 'money' }, reserve), detail: 'положительный = можно добирать', progress: reserve != null && factAds + reserve > 0 ? reserve / (factAds + reserve) : null, tone: reserve >= 0 ? 'ok' : 'warn' },
+    { label: 'Резерв рекламы', value: iuDrrFunnelFormat({ format: 'money' }, cardReserve), detail: 'положительный = можно добирать', progress: cardReserve != null && cardFactAds + cardReserve > 0 ? cardReserve / (cardFactAds + cardReserve) : null, tone: cardReserve >= 0 ? 'ok' : 'warn' },
     { label: 'Воронка Ads', value: iuDrrFunnelFormat({ format: 'pct' }, ctr), detail: `${fmt.int(clicks)} кликов / ${fmt.int(views)} показов`, progress: ctr ? Math.min(1, ctr / 0.02) : null, tone: ctr ? 'ok' : 'info' }
   ] : [
     ...revenueCards,
-    { label: 'Реклама ДРР на дату', value: iuDrrFunnelFormat({ format: 'pct' }, adsCompletion), detail: `${fmt.money(factAds)} / ${fmt.money(planAds)}`, progress: adsCompletion, tone: iuDrrFunnelAdsCompletionTone(adsCompletion), status: iuDrrAdsBudgetStatus(adsCompletion) },
-    { label: 'ДРР факт', value: iuDrrFunnelFormat({ format: 'pct' }, factDrr), detail: `план ${iuDrrFunnelFormat({ format: 'pct' }, planDrr)}`, progress: planDrr > 0 ? factDrr / planDrr : null, tone: iuDrrFunnelDrrTone(factDrr, planDrr) },
+    { label: 'Реклама ДРР за месяц', value: iuDrrFunnelFormat({ format: 'pct' }, cardAdsCompletion), detail: `${fmt.money(cardFactAds)} / ${fmt.money(cardPlanAds)}`, progress: cardAdsCompletion, tone: iuDrrFunnelAdsCompletionTone(cardAdsCompletion), status: iuDrrAdsBudgetStatus(cardAdsCompletion) },
+    { label: 'ДРР факт', value: iuDrrFunnelFormat({ format: 'pct' }, cardFactDrr), detail: `план ${iuDrrFunnelFormat({ format: 'pct' }, cardPlanDrr)}`, progress: cardPlanDrr > 0 ? cardFactDrr / cardPlanDrr : null, tone: iuDrrFunnelDrrTone(cardFactDrr, cardPlanDrr) },
     { label: 'Внешний трафик', value: iuDrrFunnelFormat({ format: 'money' }, iuDrrFunnelSummaryValue('externalAds', rows, platformKey, context)), detail: 'отдельно, не в ДРР', progress: null, tone: iuDrrFunnelSummaryValue('externalAds', rows, platformKey, context) > 0 ? 'warn' : 'ok' },
     { label: 'CTR / CR', value: iuDrrFunnelFormat({ format: 'pct' }, ctr), detail: `CR ${iuDrrFunnelFormat({ format: 'pct' }, cr)}`, progress: ctr ? Math.min(1, ctr / 0.02) : null, tone: ctr ? 'ok' : 'info' },
     { label: 'ROMI Ads', value: iuDrrFunnelFormat({ format: 'pct' }, romi), detail: `${fmt.money(adRevenue)} выручки рекламы`, progress: romi != null ? Math.min(1, Math.max(0, romi / 2)) : null, tone: romi == null ? 'info' : (romi >= 0 ? 'ok' : 'danger') }
@@ -6688,13 +6737,17 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   const wbDailyRows = model.dailyRows || [];
   const wbPlanToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuTargetRevenueWb || row.targetRevenueWb), 0);
   const wbFactToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuRevenueWb || row.revenueWb || row.iuOrdersRevenueWb || row.ordersRevenueWb), 0);
-  const wbCompletionToDate = wbPlanToDate > 0 ? wbFactToDate / wbPlanToDate : platformMeta.completion;
+  const wbPlanMonth = numberOrZero(month.iuRevenueWbIuMin || month.iuRevenueWbPlan) || wbPlanToDate;
+  const wbFactMonth = numberOrZero(month.iuRevenueWbFactToDate || month.revenueWb) || wbFactToDate;
+  const wbCompletionMonth = wbPlanMonth > 0 ? wbFactMonth / wbPlanMonth : platformMeta.completion;
   const wbAdsPlanToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.iuPlanSpendWb || row.planSpendWb), 0);
   const wbAdsFactToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.spendFact), 0);
-  const wbAdsCompletionToDate = wbAdsPlanToDate > 0 ? wbAdsFactToDate / wbAdsPlanToDate : null;
-  const wbDrrToDate = wbFactToDate > 0 ? wbAdsFactToDate / wbFactToDate : factDrr;
-  const wbRevenueDeltaToDate = wbFactToDate - wbPlanToDate;
-  const wbAdsDeltaToDate = wbAdsFactToDate - wbAdsPlanToDate;
+  const wbAdsPlanMonth = numberOrZero(month.iuAdsPlan || month.planSpendWb) || wbAdsPlanToDate;
+  const wbAdsFactMonth = numberOrZero(month.iuAdsFactWbToDate || month.spendFactDrr || month.spendFact) || wbAdsFactToDate;
+  const wbAdsCompletionMonth = wbAdsPlanMonth > 0 ? wbAdsFactMonth / wbAdsPlanMonth : null;
+  const wbDrrMonth = wbFactMonth > 0 ? wbAdsFactMonth / wbFactMonth : factDrr;
+  const wbRevenueDeltaMonth = wbFactMonth - wbPlanMonth;
+  const wbAdsDeltaMonth = wbAdsFactMonth - wbAdsPlanMonth;
   const wbExternalToDate = wbDailyRows.reduce((sum, row) => sum + numberOrZero(row.externalAds), 0) || externalSpend;
   const wbProgressCell = (value, tone = 'info') => {
     const progress = iuDrrFunnelFinite(value) ? Math.max(0, Math.min(1.35, Number(value))) : 0;
@@ -6707,41 +6760,42 @@ function renderIuDrr(rootId = 'view-iu-drr') {
   };
   const wbPlanCardsHtml = [
     {
-      label: 'Оборот WB',
-      value: wbCompletionToDate == null ? '—' : fmt.pct(wbCompletionToDate),
-      detail: `${fmt.money(wbFactToDate)} / ${fmt.money(wbPlanToDate)}`,
-      progress: wbCompletionToDate,
-      tone: iuDrrFunnelCompletionTone(wbCompletionToDate)
+      label: 'Оборот WB за месяц',
+      value: wbCompletionMonth == null ? '—' : fmt.pct(wbCompletionMonth),
+      detail: `${fmt.money(wbFactMonth)} / ${fmt.money(wbPlanMonth)}`,
+      progress: wbCompletionMonth,
+      tone: iuDrrFunnelCompletionTone(wbCompletionMonth),
+      status: 'месячный ИУ-план'
     },
     {
-      label: 'Реклама WB',
-      value: wbAdsCompletionToDate == null ? '—' : fmt.pct(wbAdsCompletionToDate),
-      detail: `${fmt.money(wbAdsFactToDate)} / ${fmt.money(wbAdsPlanToDate)}`,
-      progress: wbAdsCompletionToDate,
-      tone: iuDrrFunnelAdsCompletionTone(wbAdsCompletionToDate),
-      status: iuDrrAdsBudgetStatus(wbAdsCompletionToDate)
+      label: 'Реклама WB за месяц',
+      value: wbAdsCompletionMonth == null ? '—' : fmt.pct(wbAdsCompletionMonth),
+      detail: `${fmt.money(wbAdsFactMonth)} / ${fmt.money(wbAdsPlanMonth)}`,
+      progress: wbAdsCompletionMonth,
+      tone: iuDrrFunnelAdsCompletionTone(wbAdsCompletionMonth),
+      status: iuDrrAdsBudgetStatus(wbAdsCompletionMonth)
     },
     {
       label: 'ДРР факт',
-      value: wbDrrToDate == null ? '—' : fmt.pct(wbDrrToDate),
+      value: wbDrrMonth == null ? '—' : fmt.pct(wbDrrMonth),
       detail: `цель ${fmt.pct(month.planPct)}`,
-      progress: month.planPct > 0 && wbDrrToDate != null ? wbDrrToDate / month.planPct : null,
-      tone: iuDrrFunnelDrrTone(wbDrrToDate, month.planPct)
+      progress: month.planPct > 0 && wbDrrMonth != null ? wbDrrMonth / month.planPct : null,
+      tone: iuDrrFunnelDrrTone(wbDrrMonth, month.planPct)
     },
     {
       label: 'Отклонение оборота',
-      value: `${wbRevenueDeltaToDate >= 0 ? '+' : ''}${fmt.money(wbRevenueDeltaToDate)}`,
-      detail: wbCompletionToDate == null ? 'нет плана' : fmt.pct(wbCompletionToDate),
-      progress: wbCompletionToDate,
-      tone: iuDrrToneForRevenueDelta(wbRevenueDeltaToDate)
+      value: `${wbRevenueDeltaMonth >= 0 ? '+' : ''}${fmt.money(wbRevenueDeltaMonth)}`,
+      detail: wbCompletionMonth == null ? 'нет плана' : fmt.pct(wbCompletionMonth),
+      progress: wbCompletionMonth,
+      tone: iuDrrToneForRevenueDelta(wbRevenueDeltaMonth)
     },
     {
       label: 'Отклонение рекламы',
-      value: `${wbAdsDeltaToDate >= 0 ? '+' : ''}${fmt.money(wbAdsDeltaToDate)}`,
-      detail: wbAdsCompletionToDate == null ? 'нет плана' : fmt.pct(wbAdsCompletionToDate),
-      progress: wbAdsCompletionToDate,
-      tone: iuDrrFunnelAdsCompletionTone(wbAdsCompletionToDate),
-      status: iuDrrAdsBudgetStatus(wbAdsCompletionToDate)
+      value: `${wbAdsDeltaMonth >= 0 ? '+' : ''}${fmt.money(wbAdsDeltaMonth)}`,
+      detail: wbAdsCompletionMonth == null ? 'нет плана' : fmt.pct(wbAdsCompletionMonth),
+      progress: wbAdsCompletionMonth,
+      tone: iuDrrFunnelAdsCompletionTone(wbAdsCompletionMonth),
+      status: iuDrrAdsBudgetStatus(wbAdsCompletionMonth)
     },
     {
       label: 'Внешний трафик',

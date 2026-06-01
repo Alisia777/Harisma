@@ -2,7 +2,7 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260601ratingreport10';
+  const VERSION = '20260601ratingreport11';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
@@ -276,6 +276,8 @@
       .rating-sort-control button { border:1px solid rgba(255,255,255,.1); border-radius:999px; background:rgba(255,255,255,.035); color:var(--text); padding:8px 10px; font:inherit; font-size:12px; font-weight:800; line-height:1; cursor:pointer; white-space:nowrap; }
       .rating-sort-control button.active { border-color:rgba(215,166,76,.72); background:rgba(215,166,76,.18); color:#ffe6ae; }
       .rating-sort-control button:hover { border-color:rgba(215,166,76,.46); background:rgba(215,166,76,.1); }
+      .rating-queue-controls { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.018); }
+      .rating-queue-controls .rating-sort-control { justify-content:flex-start; }
       .rating-work-table { max-height:640px; overflow:auto; }
       .rating-work-table table { width:100%; min-width:2060px; border-collapse:separate; border-spacing:0; table-layout:fixed; }
       .rating-work-table thead th { position:sticky; top:0; z-index:4; padding:10px 12px; border-bottom:1px solid var(--line); background:rgba(12,8,7,.96); color:#f8e9c7; font-size:11px; text-align:left; text-transform:uppercase; letter-spacing:0; }
@@ -1617,6 +1619,87 @@
     `;
   }
 
+  function queueSortKey(kind) {
+    const current = workbenchState.sort || '';
+    const allowed = kind === 'reviews'
+      ? ['reviewDate', 'reviewStatus', 'reviewRating', 'reviewNegative', 'reviewArticle']
+      : ['questionDate', 'questionStatus', 'questionCount', 'questionArticle'];
+    return allowed.includes(current) ? current : allowed[0];
+  }
+
+  function renderQueueControls(kind, items, visible) {
+    const status = workbenchState.status || 'all';
+    const activeSort = queueSortKey(kind);
+    const statusOptions = kind === 'reviews'
+      ? [
+        ['all', 'Все'],
+        ['unanswered', 'Без ответа'],
+        ['negative', 'Негатив'],
+        ['fresh', 'Свежие']
+      ]
+      : [
+        ['all', 'Все'],
+        ['unanswered', 'Без ответа'],
+        ['fresh', 'Свежие']
+      ];
+    const sortOptions = kind === 'reviews'
+      ? [
+        ['reviewDate', 'Дата'],
+        ['reviewStatus', 'Статус'],
+        ['reviewRating', 'Оценка'],
+        ['reviewNegative', 'Негатив'],
+        ['reviewArticle', 'Артикул']
+      ]
+      : [
+        ['questionDate', 'Дата'],
+        ['questionStatus', 'Статус'],
+        ['questionCount', 'Вопросы'],
+        ['questionArticle', 'Артикул']
+      ];
+    return `
+      <div class="rating-queue-controls">
+        <div class="rating-sort-control" aria-label="Фильтр строк">
+          <span>Фильтр</span>
+          ${statusOptions.map(([value, label]) => `<button type="button" class="${status === value ? 'active' : ''}" data-rating-status="${esc(value)}">${esc(label)}</button>`).join('')}
+        </div>
+        <div class="rating-sort-control" aria-label="Сортировка строк">
+          <span>Сортировка</span>
+          ${sortOptions.map(([value, label]) => `<button type="button" class="${activeSort === value ? 'active' : ''}" data-rating-sort="${esc(value)}">${esc(label)}</button>`).join('')}
+        </div>
+        <div class="badge-stack">${chip(`${fmtInt(visible.length)} из ${fmtInt(items.length)}`, 'info')}</div>
+      </div>
+    `;
+  }
+
+  function filterStructuredQueueItems(items, kind) {
+    const status = workbenchState.status || 'all';
+    let next = [...items];
+    if (status === 'unanswered') {
+      next = next.filter((item) => num(item.unanswered) > 0 || item.answered === false);
+    } else if (status === 'negative' && kind === 'reviews') {
+      next = next.filter((item) => num(item.low || item.low7) > 0 || (hasNumber(item.valuation || item.rating) && num(item.valuation || item.rating) <= 3));
+    } else if (status === 'fresh') {
+      const newest = next.reduce((latest, item) => Math.max(latest, dateValue(item.date)), 0);
+      next = next.filter((item) => dateValue(item.date) === newest);
+    }
+    return next;
+  }
+
+  function sortStructuredQueueItems(items, kind) {
+    const sort = queueSortKey(kind);
+    const next = [...items];
+    next.sort((a, b) => {
+      if (sort === 'reviewDate' || sort === 'questionDate') return dateValue(b.date) - dateValue(a.date) || num(b.priority) - num(a.priority);
+      if (sort === 'reviewStatus' || sort === 'questionStatus') return num(b.unanswered) - num(a.unanswered) || num(b.priority) - num(a.priority);
+      if (sort === 'reviewRating') return num(a.valuation || a.rating || 5) - num(b.valuation || b.rating || 5) || num(b.priority) - num(a.priority);
+      if (sort === 'reviewNegative') return num(b.low || b.low7) - num(a.low || a.low7) || num(b.priority) - num(a.priority);
+      if (sort === 'questionCount') return num(b.questionCount) - num(a.questionCount) || num(b.priority) - num(a.priority);
+      if (sort === 'reviewArticle' || sort === 'questionArticle') return String(a.label || '').localeCompare(String(b.label || ''), 'ru');
+      return num(b.priority) - num(a.priority);
+    });
+    return next;
+  }
+
   function renderHistoryCards(model) {
     const sortedRows = sortRatingRows(model.rows);
     const rows = sortedRows.slice(0, 120).map((row) => {
@@ -1704,9 +1787,11 @@
   }
 
   function renderStructuredQueue(model, payload, kind) {
-    const items = (kind === 'reviews' ? feedbackItems(payload, model) : questionItems(payload, model)).slice(0, 120);
+    const items = kind === 'reviews' ? feedbackItems(payload, model) : questionItems(payload, model);
+    const visible = sortStructuredQueueItems(filterStructuredQueueItems(items, kind), kind);
     const title = kind === 'reviews' ? 'WB · отзывы' : 'WB · вопросы';
-    const rows = items.map((item) => {
+    const activeSort = queueSortKey(kind);
+    const rows = visible.slice(0, 120).map((item) => {
       const ratio = kind === 'reviews' && hasNumber(item.valuation || item.rating) ? Number(item.valuation || item.rating) / 5 : (item.unanswered ? 0.35 : 0.85);
       return `
         <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('wb', ratio)}">
@@ -1731,17 +1816,26 @@
           </div>
           <div class="badge-stack">${chip(`${fmtInt(items.length)} строк`, 'info')}</div>
         </div>
+        ${renderQueueControls(kind, items, visible)}
         <div class="rating-work-table">
           <table>
             <colgroup>
               <col style="width:240px"><col style="width:110px"><col style="width:140px"><col style="width:110px"><col style="width:120px"><col style="width:420px">
             </colgroup>
             <thead>
-              <tr><th>Артикул</th><th>Дата</th><th>Статус</th><th>${kind === 'reviews' ? 'Оценка' : 'Вопросы'}</th><th>${kind === 'reviews' ? 'Негатив' : 'Без ответа'}</th><th>Текст / суть</th></tr>
+              <tr>
+                <th><button type="button" class="rating-th-sort ${activeSort === (kind === 'reviews' ? 'reviewArticle' : 'questionArticle') ? 'active' : ''}" data-rating-sort="${kind === 'reviews' ? 'reviewArticle' : 'questionArticle'}">Артикул</button></th>
+                <th><button type="button" class="rating-th-sort ${activeSort === (kind === 'reviews' ? 'reviewDate' : 'questionDate') ? 'active' : ''}" data-rating-sort="${kind === 'reviews' ? 'reviewDate' : 'questionDate'}">Дата</button></th>
+                <th><button type="button" class="rating-th-sort ${activeSort === (kind === 'reviews' ? 'reviewStatus' : 'questionStatus') ? 'active' : ''}" data-rating-sort="${kind === 'reviews' ? 'reviewStatus' : 'questionStatus'}">Статус</button></th>
+                <th><button type="button" class="rating-th-sort ${activeSort === (kind === 'reviews' ? 'reviewRating' : 'questionCount') ? 'active' : ''}" data-rating-sort="${kind === 'reviews' ? 'reviewRating' : 'questionCount'}">${kind === 'reviews' ? 'Оценка' : 'Вопросы'}</button></th>
+                <th><button type="button" class="rating-th-sort ${activeSort === (kind === 'reviews' ? 'reviewNegative' : 'questionStatus') ? 'active' : ''}" data-rating-sort="${kind === 'reviews' ? 'reviewNegative' : 'questionStatus'}">${kind === 'reviews' ? 'Негатив' : 'Без ответа'}</button></th>
+                <th>Текст / суть</th>
+              </tr>
             </thead>
             <tbody>${rows || '<tr><td colspan="6" class="center">Нет строк по текущему срезу.</td></tr>'}</tbody>
           </table>
         </div>
+        ${visible.length > 120 ? `<div class="wb-rating-source-note" style="padding:0 16px 14px">Показаны первые 120 строк из ${fmtInt(visible.length)}. Сузьте фильтр, если нужен короткий список.</div>` : ''}
       </div>
     `;
   }
@@ -1820,6 +1914,13 @@
     root.querySelectorAll('[data-rating-view]').forEach((button) => {
       button.addEventListener('click', () => {
         structuredState.view = button.dataset.ratingView || 'history';
+        workbenchState.status = 'all';
+        renderWbCardRatingStructured(rootId);
+      });
+    });
+    root.querySelectorAll('[data-rating-status]').forEach((control) => {
+      control.addEventListener('click', () => {
+        workbenchState.status = control.dataset.ratingStatus || 'all';
         renderWbCardRatingStructured(rootId);
       });
     });

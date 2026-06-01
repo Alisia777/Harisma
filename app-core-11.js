@@ -6177,19 +6177,41 @@ function oosControlPayload() {
     : { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
 }
 
+function oosControlOwnerForRow(row = {}) {
+  const fallback = skuPlanFactCanonicalOwner(row.owner || '');
+  const articleKey = row.articleKey || row.article || '';
+  if (articleKey && typeof getSku === 'function') {
+    try {
+      const sku = getSku(articleKey);
+      const platformOwner = sku && typeof skuPlanFactPlatformOwner === 'function'
+        ? skuPlanFactPlatformOwner(sku, row.platform || '')
+        : '';
+      if (platformOwner) return platformOwner;
+    } catch (error) {
+      console.warn('OOS owner lookup failed', error);
+    }
+  }
+  return fallback || 'Без owner';
+}
+
 function oosControlRows() {
   const payload = oosControlPayload();
-  return Array.isArray(payload.rows) ? payload.rows : [];
+  const rows = Array.isArray(payload.rows) ? payload.rows : [];
+  return rows.map((row) => {
+    const owner = oosControlOwnerForRow(row);
+    return owner && owner !== row.owner ? { ...row, owner } : row;
+  });
 }
 
 function oosControlFilters() {
   state.oosControlFilters = state.oosControlFilters && typeof state.oosControlFilters === 'object'
     ? state.oosControlFilters
     : {};
+  const ownerFilter = String(state.oosControlFilters.owner || 'all');
   return {
     search: String(state.oosControlFilters.search || '').trim(),
     platform: String(state.oosControlFilters.platform || 'all'),
-    owner: String(state.oosControlFilters.owner || 'all'),
+    owner: ownerFilter === 'all' ? 'all' : (skuPlanFactCanonicalOwner(ownerFilter) || ownerFilter),
     department: String(state.oosControlFilters.department || 'all'),
     status: String(state.oosControlFilters.status || 'active')
   };
@@ -6719,6 +6741,359 @@ async function oosControlSaveTask(issueKey, rootId) {
   return task;
 }
 
+function oosControlRiskAmount(row = {}) {
+  return numberOrZero(row.revenueAtRiskDay || 0) + numberOrZero(row.lostRevenueDay || 0);
+}
+
+function oosControlPlaceCount(row = {}) {
+  if (Array.isArray(row.placesAtRisk) && row.placesAtRisk.length) return row.placesAtRisk.length;
+  return numberOrZero(row.clusterCount || 0) || (row.place ? 1 : 0);
+}
+
+function oosControlBarPercent(value, maxValue, minWhenPositive = 4) {
+  const valueNumber = Math.max(0, numberOrZero(value));
+  const maxNumber = Math.max(0, numberOrZero(maxValue));
+  if (!valueNumber || !maxNumber) return 0;
+  return Math.max(minWhenPositive, Math.min(100, (valueNumber / maxNumber) * 100));
+}
+
+function oosControlSummarizeRows(rows = [], fallback = {}) {
+  const ownerSet = new Set();
+  const skuSet = new Set();
+  const summary = {
+    totalIssues: rows.length,
+    oosCount: 0,
+    criticalCount: 0,
+    riskCount: 0,
+    oosSoonCount: 0,
+    watchCount: 0,
+    lostRevenueDay: 0,
+    revenueAtRiskDay: 0,
+    owners: 0,
+    skuCount: 0,
+    placeCount: 0,
+    newIssues: fallback.newIssues || 0,
+    resolvedToday: fallback.resolvedToday || 0,
+    dataStatus: fallback.dataStatus || '',
+    dataDate: fallback.dataDate || '',
+    expectedFactDate: fallback.expectedFactDate || '',
+    monthKey: fallback.monthKey || ''
+  };
+  rows.forEach((row) => {
+    const status = String(row.status || '').toLowerCase();
+    if (status === 'oos') summary.oosCount += 1;
+    if (status === 'critical') summary.criticalCount += 1;
+    if (status === 'risk') {
+      summary.riskCount += 1;
+      summary.oosSoonCount += 1;
+    }
+    if (status === 'watch') summary.watchCount += 1;
+    summary.lostRevenueDay += numberOrZero(row.lostRevenueDay || 0);
+    summary.revenueAtRiskDay += numberOrZero(row.revenueAtRiskDay || 0);
+    summary.placeCount += oosControlPlaceCount(row);
+    const owner = skuPlanFactCanonicalOwner(row.owner || '');
+    if (owner && owner !== 'Без owner') ownerSet.add(owner);
+    const skuKey = String(row.articleKey || row.article || '').trim();
+    if (skuKey) skuSet.add(skuKey);
+  });
+  summary.owners = ownerSet.size;
+  summary.skuCount = skuSet.size;
+  return summary;
+}
+
+function oosControlGroupBy(rows = [], keyFn, labelFn) {
+  const map = new Map();
+  rows.forEach((row) => {
+    const key = String(keyFn(row) || '').trim();
+    if (!key) return;
+    if (!map.has(key)) {
+      map.set(key, {
+        key,
+        label: String(labelFn(row) || key),
+        total: 0,
+        placeCount: 0,
+        lostRevenueDay: 0,
+        revenueAtRiskDay: 0,
+        riskAmount: 0
+      });
+    }
+    const item = map.get(key);
+    item.total += 1;
+    item.placeCount += oosControlPlaceCount(row);
+    item.lostRevenueDay += numberOrZero(row.lostRevenueDay || 0);
+    item.revenueAtRiskDay += numberOrZero(row.revenueAtRiskDay || 0);
+    item.riskAmount += oosControlRiskAmount(row);
+  });
+  return [...map.values()].sort((left, right) => right.riskAmount - left.riskAmount);
+}
+
+function oosControlTopPlaces(rows = [], limit = 8) {
+  const places = [];
+  rows.forEach((row) => {
+    const rowPlaces = Array.isArray(row.placesAtRisk) && row.placesAtRisk.length
+      ? row.placesAtRisk
+      : [{
+          place: row.place,
+          inStock: row.inStock,
+          avgDaily: row.avgDaily,
+          turnoverDays: row.turnoverDays,
+          revenueAtRiskDay: row.revenueAtRiskDay,
+          lostRevenueDay: row.lostRevenueDay
+        }];
+    rowPlaces.forEach((place) => {
+      places.push({
+        place: place.place || row.place || 'Склад',
+        platform: row.platform || '',
+        platformLabel: row.platformLabel || row.platform || '',
+        article: row.article || row.articleKey || '',
+        owner: row.owner || '',
+        inStock: numberOrZero(place.inStock ?? row.inStock),
+        avgDaily: numberOrZero(place.avgDaily ?? row.avgDaily),
+        turnoverDays: place.turnoverDays ?? row.turnoverDays,
+        revenueAtRiskDay: numberOrZero(place.revenueAtRiskDay ?? row.revenueAtRiskDay),
+        lostRevenueDay: numberOrZero(place.lostRevenueDay ?? row.lostRevenueDay)
+      });
+    });
+  });
+  return places
+    .map((place) => ({ ...place, riskAmount: place.revenueAtRiskDay + place.lostRevenueDay }))
+    .sort((left, right) => right.riskAmount - left.riskAmount)
+    .slice(0, limit);
+}
+
+function oosControlCoverageTone(days) {
+  const value = numberOrZero(days);
+  if (!value) return 'danger';
+  if (value < 5) return 'danger';
+  if (value < 10) return 'warn';
+  return 'ok';
+}
+
+function renderOosControlBarRow(item = {}, maxValue = 0, options = {}) {
+  const value = numberOrZero(item.value || 0);
+  const percent = oosControlBarPercent(value, maxValue, options.minWhenPositive || 4);
+  const tone = options.tone || item.tone || 'warn';
+  return `
+    <div class="oos-bar-row">
+      <div class="oos-bar-row__head">
+        <strong>${escapeHtml(item.label || '')}</strong>
+        <span>${escapeHtml(item.valueLabel || fmt.money(value))}</span>
+      </div>
+      <div class="oos-bar-track"><i class="oos-bar-fill ${escapeHtml(tone)}" style="--oos-bar:${percent}%"></i></div>
+      ${item.meta ? `<div class="muted small">${escapeHtml(item.meta)}</div>` : ''}
+    </div>
+  `;
+}
+
+function renderOosControlHero(payload = {}, rows = [], allRows = rows) {
+  const fallback = payload.summary || {};
+  const summary = oosControlSummarizeRows(rows, fallback);
+  const allCount = Array.isArray(allRows) ? allRows.length : rows.length;
+  const statusTone = summary.oosCount || summary.criticalCount ? 'danger' : summary.riskCount ? 'warn' : 'ok';
+  const statusTitle = summary.oosCount || summary.criticalCount
+    ? 'Есть OOS'
+    : summary.riskCount
+      ? 'Скоро закончится'
+      : 'Запасы в порядке';
+  const dataDate = summary.dataDate || payload.dataFreshness?.dataDate || '';
+  const expectedDate = summary.expectedFactDate || payload.dataFreshness?.expectedFactDate || '';
+  const staleText = summary.dataStatus === 'stale' && expectedDate
+    ? `факт до ${dataDate || '—'}, нужен ${expectedDate}`
+    : `факт до ${dataDate || '—'}`;
+  return `
+    <section class="oos-hero ${statusTone}">
+      <div class="oos-hero__main">
+        <span class="eyebrow">OOS контроль</span>
+        <h2>${escapeHtml(statusTitle)}</h2>
+        <p>Под риском ${fmt.money(summary.revenueAtRiskDay || 0)} в день: ${fmt.int(summary.totalIssues)} сигнал(а), ${fmt.int(summary.skuCount)} SKU, ${fmt.int(summary.placeCount)} складов.</p>
+        <div class="badge-stack">
+          ${badge(staleText, summary.dataStatus === 'ok' ? 'ok' : 'warn')}
+          ${badge(`${fmt.int(rows.length)} из ${fmt.int(allCount)} строк`)}
+          ${summary.owners ? badge(`${fmt.int(summary.owners)} owner`) : badge('owner не назначен', 'warn')}
+        </div>
+      </div>
+      <div class="oos-hero__metrics">
+        <div class="oos-hero-metric ${summary.oosCount ? 'danger' : 'ok'}">
+          <span>OOS сейчас</span>
+          <strong>${fmt.int(summary.oosCount || summary.criticalCount || 0)}</strong>
+          <small>${fmt.money(summary.lostRevenueDay || 0)} / день</small>
+        </div>
+        <div class="oos-hero-metric warn">
+          <span>Скоро OOS</span>
+          <strong>${fmt.int(summary.oosSoonCount || summary.riskCount || 0)}</strong>
+          <small>покрытие меньше 10 дней</small>
+        </div>
+        <div class="oos-hero-metric info">
+          <span>Выручка под риском</span>
+          <strong>${fmt.money(summary.revenueAtRiskDay || 0)}</strong>
+          <small>по текущему темпу</small>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderOosControlPlatformChart(rows = []) {
+  const groups = oosControlGroupBy(rows, (row) => row.platform || '', (row) => row.platformLabel || row.platform || '');
+  const maxRisk = Math.max(1, ...groups.map((item) => item.riskAmount));
+  return `
+    <div class="oos-chart-card">
+      <div class="section-subhead">
+        <div><h3>Риск по площадкам</h3><p class="small muted">Где деньги заканчиваются быстрее всего</p></div>
+        ${badge(`${fmt.int(groups.length)} площадки`)}
+      </div>
+      <div class="oos-bar-list">
+        ${groups.map((item) => renderOosControlBarRow({
+          label: item.label,
+          value: item.riskAmount,
+          valueLabel: fmt.money(item.riskAmount),
+          meta: `${fmt.int(item.total)} сигнал(а) · ${fmt.int(item.placeCount)} складов`,
+          tone: item.key === 'wb' ? 'purple' : item.key === 'ozon' ? 'info' : 'warn'
+        }, maxRisk)).join('') || '<div class="empty">Нет активных сигналов</div>'}
+      </div>
+    </div>
+  `;
+}
+
+function renderOosControlTopPlacesChart(rows = []) {
+  const places = oosControlTopPlaces(rows, 8);
+  const maxRisk = Math.max(1, ...places.map((item) => item.riskAmount));
+  return `
+    <div class="oos-chart-card">
+      <div class="section-subhead">
+        <div><h3>Топ складов</h3><p class="small muted">Сначала закрываем самый дорогой риск</p></div>
+        ${badge(`${fmt.int(places.length)} точек`)}
+      </div>
+      <div class="oos-bar-list">
+        ${places.map((item) => renderOosControlBarRow({
+          label: item.place,
+          value: item.riskAmount,
+          valueLabel: fmt.money(item.riskAmount),
+          meta: `${item.platformLabel || item.platform} · ${item.article} · ${fmt.num(item.turnoverDays, 1)} д`,
+          tone: 'warn'
+        }, maxRisk, { minWhenPositive: 3 })).join('') || '<div class="empty">Нет складов под риском</div>'}
+      </div>
+    </div>
+  `;
+}
+
+function renderOosControlCoverageChart(rows = []) {
+  const sortedRows = [...rows].sort((left, right) => numberOrZero(left.turnoverDays) - numberOrZero(right.turnoverDays)).slice(0, 8);
+  return `
+    <div class="oos-chart-card">
+      <div class="section-subhead">
+        <div><h3>Покрытие</h3><p class="small muted">Цель: не ниже 10 дней</p></div>
+        ${badge('10 д')}
+      </div>
+      <div class="oos-bar-list">
+        ${sortedRows.map((row) => {
+          const days = numberOrZero(row.turnoverDays || 0);
+          const tone = oosControlCoverageTone(days);
+          return renderOosControlBarRow({
+            label: `${row.platformLabel || row.platform} · ${row.article || row.articleKey}`,
+            value: days,
+            valueLabel: `${fmt.num(days, 1)} д`,
+            meta: `${fmt.int(oosControlPlaceCount(row))} складов · нужно до 14 д: ${fmt.int(row.targetNeed14 || 0)} шт`,
+            tone
+          }, 10, { minWhenPositive: 5 });
+        }).join('') || '<div class="empty">Нет SKU под риском</div>'}
+      </div>
+    </div>
+  `;
+}
+
+function renderOosControlTaskChart(rows = []) {
+  const taskRows = rows.map((row) => ({ row, task: oosControlTaskFor(row) }));
+  const taskCount = taskRows.filter((item) => item.task).length;
+  const noTaskCount = Math.max(0, taskRows.length - taskCount);
+  const noReasonCount = taskRows.filter((item) => item.task && !/Причина:|РџСЂРёС‡РёРЅР°:/i.test(String(item.task.reason || ''))).length;
+  const noActionCount = taskRows.filter((item) => item.task && !String(item.task.nextAction || '').trim()).length;
+  const maxValue = Math.max(1, taskRows.length, noTaskCount, noReasonCount, noActionCount);
+  const items = [
+    { label: 'Без задачи', value: noTaskCount, valueLabel: fmt.int(noTaskCount), tone: noTaskCount ? 'warn' : 'ok' },
+    { label: 'Без причины', value: noReasonCount, valueLabel: fmt.int(noReasonCount), tone: noReasonCount ? 'warn' : 'ok' },
+    { label: 'Без контрмеры', value: noActionCount, valueLabel: fmt.int(noActionCount), tone: noActionCount ? 'warn' : 'ok' }
+  ];
+  return `
+    <div class="oos-chart-card">
+      <div class="section-subhead">
+        <div><h3>Задачи</h3><p class="small muted">Сигнал должен иметь владельца и следующий шаг</p></div>
+        ${badge(`${fmt.int(taskCount)} с задачей`, taskCount === rows.length ? 'ok' : 'warn')}
+      </div>
+      <div class="oos-bar-list">
+        ${items.map((item) => renderOosControlBarRow(item, maxValue, { minWhenPositive: 7 })).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderOosControlCharts(payload = {}, rows = []) {
+  return `
+    <section class="oos-chart-grid">
+      ${renderOosControlPlatformChart(rows)}
+      ${renderOosControlTopPlacesChart(rows)}
+      ${renderOosControlCoverageChart(rows)}
+      ${renderOosControlTaskChart(rows)}
+    </section>
+  `;
+}
+
+function renderOosControlActionCards(rows = []) {
+  const sortedRows = [...rows]
+    .sort((left, right) => oosControlRiskAmount(right) - oosControlRiskAmount(left))
+    .slice(0, 6);
+  return `
+    <section class="oos-section">
+      <div class="section-subhead">
+        <div>
+          <h3>Что сделать сейчас</h3>
+          <p class="small muted">Короткий список действий перед полной детализацией</p>
+        </div>
+        ${badge(`${fmt.int(sortedRows.length)} фокус`)}
+      </div>
+      <div class="oos-action-grid">
+        ${sortedRows.map(renderOosControlActionCard).join('') || '<div class="empty">Нет активных OOS-сигналов</div>'}
+      </div>
+    </section>
+  `;
+}
+
+function renderOosControlActionCard(row = {}) {
+  const task = oosControlTaskFor(row);
+  const days = numberOrZero(row.turnoverDays || 0);
+  const tone = oosControlCoverageTone(days);
+  const places = oosControlTopPlaces([row], 3).map((item) => item.place).filter(Boolean);
+  const need14 = numberOrZero(row.targetNeed14 || 0);
+  const need28 = numberOrZero(row.targetNeed28 || 0);
+  const actionText = need14 > 0
+    ? `Довести до 14 дней: +${fmt.int(need14)} шт или перераспределить между складами.`
+    : need28 > 0
+      ? `Проверить поставку до 28 дней: ориентир +${fmt.int(need28)} шт.`
+      : 'Проверить поставку, перемещение и лимит продаж по складам.';
+  return `
+    <article class="oos-action-card ${tone}">
+      <div class="oos-action-card__head">
+        <div>
+          <strong>${linkToSku(row.articleKey || row.article, row.article || row.articleKey)}</strong>
+          <span>${escapeHtml(row.platformLabel || row.platform || '')} · ${escapeHtml(row.owner || 'Без owner')}</span>
+        </div>
+        ${badge(row.statusLabel || row.status || 'OOS', oosControlStatusTone(row.status))}
+      </div>
+      <div class="oos-action-card__metrics">
+        <span><b>${fmt.num(days, 1)} д</b><em>покрытие</em></span>
+        <span><b>${fmt.money(row.revenueAtRiskDay || 0)}</b><em>риск / день</em></span>
+        <span><b>${fmt.int(oosControlPlaceCount(row))}</b><em>складов</em></span>
+      </div>
+      <div class="oos-coverage-track"><i class="${tone}" style="--oos-bar:${oosControlBarPercent(days, 10, 5)}%"></i></div>
+      <p>${escapeHtml(actionText)}</p>
+      <div class="badge-stack">
+        ${places.map((place) => badge(place)).join('')}
+        ${task ? badge(oosControlTaskStatusLabel(task), TASK_STATUS_META[task.status]?.kind || '') : badge('нет задачи', 'warn')}
+      </div>
+    </article>
+  `;
+}
+
 function bindOosControl(root, rootId) {
   root.querySelectorAll('[data-oos-filter]').forEach((control) => {
     const eventName = control.tagName === 'INPUT' ? 'input' : 'change';
@@ -6762,7 +7137,7 @@ function bindOosControl(root, rootId) {
   });
 }
 
-function renderOosControl(rootId = 'view-oos-control') {
+function renderOosControlLegacy(rootId = 'view-oos-control') {
   const root = document.getElementById(rootId);
   if (!root) return;
   const payload = oosControlPayload();
@@ -6794,6 +7169,67 @@ function renderOosControl(rootId = 'view-oos-control') {
         <div>
           <h3>Очередь OOS / риск аута</h3>
           <p class="small muted">Сохраняй причину и контрмеру прямо в строке: портал создаст или обновит задачу в командной базе.</p>
+        </div>
+        <div class="badge-stack">
+          ${badge(`${fmt.int(summary.newIssues || 0)} новых`, (summary.newIssues || 0) ? 'warn' : '')}
+          ${badge(`${fmt.int(summary.resolvedToday || 0)} закрылись`, (summary.resolvedToday || 0) ? 'ok' : '')}
+        </div>
+      </div>
+      <div class="table-wrap sku-plan-fact-table" style="margin-top:12px">
+        <table>
+          <thead>
+            <tr>
+              <th>SKU / склад</th>
+              <th>Сигнал</th>
+              <th>Остаток</th>
+              <th>Покрытие</th>
+              <th>Риск выручки</th>
+              <th>Owner / отдел</th>
+              <th>Причина и контрмера</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredRows.map(renderOosControlRow).join('') || '<tr><td colspan="7"><div class="empty">Нет строк под текущие фильтры</div></td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  bindOosControl(root, rootId);
+}
+
+function renderOosControl(rootId = 'view-oos-control') {
+  const root = document.getElementById(rootId);
+  if (!root) return;
+  const payload = oosControlPayload();
+  const rows = oosControlRows();
+  const filters = oosControlFilters();
+  const filteredRows = oosControlFilteredRows();
+  const summary = oosControlSummarizeRows(filteredRows, payload.summary || {});
+  root.innerHTML = `
+    <div class="page-head">
+      <div>
+        <h1>OOS контроль</h1>
+        <p>Запасы, риск выручки, склады и ответственные в одном коротком списке.</p>
+      </div>
+      <div class="actions">
+        ${badge(`факт до ${escapeHtml(summary.dataDate || payload.dataFreshness?.dataDate || '—')}`, summary.dataStatus === 'ok' ? 'ok' : 'warn')}
+        ${badge(`${fmt.int(filteredRows.length)} из ${fmt.int(rows.length)} строк`)}
+        <button class="quick-chip" type="button" data-oos-export>Выгрузить OOS</button>
+        <button class="quick-chip" type="button" data-oos-reload>Обновить экран</button>
+      </div>
+    </div>
+    ${renderOosControlHero(payload, filteredRows, rows)}
+    ${oosControlFreshnessNotice(payload)}
+    ${renderOosControlCharts(payload, filteredRows)}
+    ${renderOosControlActionCards(filteredRows)}
+    ${renderOosControlFilters(rows, filters)}
+    ${oosControlTeamNotice()}
+    <div class="card sku-plan-fact-card oos-detail-card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div>
+          <h3>Детализация и комментарии</h3>
+          <p class="small muted">Причина, контрмера и срок сохраняются в задачу по каждой строке.</p>
         </div>
         <div class="badge-stack">
           ${badge(`${fmt.int(summary.newIssues || 0)} новых`, (summary.newIssues || 0) ? 'warn' : '')}

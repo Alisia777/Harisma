@@ -2,7 +2,7 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260601ratingreport14';
+  const VERSION = '20260601ratingreport15';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
@@ -1933,7 +1933,7 @@
     if (row.unansweredQuestions > 0) comments.push(`Ответить на вопросы: ${fmtInt(row.unansweredQuestions)}`);
     if (row.q1.questions > 0) comments.push(`Вчера вопросов: ${fmtInt(row.q1.questions)}`);
     if (row.reviewApiLocked) comments.push('Отзывы, рейтинг и негатив закрыты подпиской Ozon API');
-    if (hasNumber(row.contentRating) && Number(row.contentRating) < 70) comments.push('Низкий контент-рейтинг');
+    if (hasNumber(row.contentRating) && Number(row.contentRating) < 70) comments.push('Служебный контент-рейтинг <70, не звезды товара');
     if (!row.hasStock) comments.push('Нет остатка');
     return comments.join(' · ') || row.comment || 'Ок';
   }
@@ -2080,9 +2080,9 @@
           <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API отзывов 403' : '')}</td>
           <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API отзывов 403' : '')}</td>
           <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API отзывов 403' : '')}</td>
-          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API рейтинга 403' : '')}</td>
-          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API рейтинга 403' : '')}</td>
-          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API рейтинга 403' : '')}</td>
+          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'звезды API 403' : '')}</td>
+          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'звезды API 403' : '')}</td>
+          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'звезды API 403' : '')}</td>
           <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API негатива 403' : '')}</td>
           <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API негатива 403' : '')}</td>
           <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API негатива 403' : '')}</td>
@@ -2100,7 +2100,7 @@
         <div class="rating-detail-head">
           <div>
             <h3>Ozon · рабочая таблица карточек</h3>
-            <p>Те же поля, что у WB: статус, выручка, отзывы, рейтинг, негатив, вопросы, без ответа и комментарий.</p>
+            <p>Те же поля, что у WB. Выручка и вопросы приходят из Ozon API; звезды товара, отзывы и негатив закрыты review API. Контент-рейтинг не подменяет рейтинг товара.</p>
           </div>
           <div class="badge-stack">${chip(`${fmtInt(ozon.rows.length)} карточек`, 'info')}${chip(`${fmtInt(ozon.totals.questions7)} вопросов за 7д`, 'info')}${chip(ozon.reviewApiLocked ? 'отзывы API 403' : 'отзывы API ок', ozon.reviewApiLocked ? 'warn' : 'ok')}</div>
         </div>
@@ -2254,7 +2254,7 @@
         ${renderMetricCard('Ozon вопросы всего', fmtInt(ozon.totals.questions), trendBadge(ozon.totals.questions1, questionDailyBase), `7д ${fmtInt(ozon.totals.questions7)} · 3д ${fmtInt(ozon.totals.questions3)} · вчера ${fmtInt(ozon.totals.questions1)}`, { platform: 'ozon' })}
         ${renderMetricCard('Ozon без ответа', fmtInt(ozon.totals.unansweredQuestions), ozon.totals.unansweredQuestions ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up'), 'вопросы без ответа', { platform: 'ozon', ratio: ozon.totals.unansweredQuestions ? 0.35 : 1 })}
         ${renderMetricCard('Ozon отзывы 7 / 3 / вчера', '— / — / —', simpleBadge('API 403', 'down'), 'review/list и review/count закрыты подпиской', { platform: 'ozon', ratio: 0.18 })}
-        ${renderMetricCard('Ozon рейтинг 7 / 3 / вчера', '— / — / —', simpleBadge('API 403', 'down'), 'звездный рейтинг приходит только через отзывы', { platform: 'ozon', ratio: 0.18 })}
+        ${renderMetricCard('Ozon звезды товара', '— / — / —', simpleBadge('API 403', 'down'), 'это не контент-рейтинг; звездный рейтинг приходит только через отзывы', { platform: 'ozon', ratio: 0.18 })}
         ${renderMetricCard('Ozon негатив 7 / 3 / вчера', '— / — / —', simpleBadge('API 403', 'down'), 'негатив считается из отзывов', { platform: 'ozon', ratio: 0.18 })}
       </div>
     `;
@@ -2277,8 +2277,8 @@
       renderMetricCard('Ozon выручка 7д', fmtMoney(ozon.totals.revenue7), simpleBadge(`${fmtInt(ozon.totals.units7)} шт.`, 'up'), `вчера ${fmtMoney(ozon.totals.revenue1)}`, { platform: 'ozon', ratio: ozon.totals.revenue7 ? 1 : 0.1 }),
       renderMetricCard('Ozon вопросы 7д', fmtInt(ozon.totals.questions7), trendBadge(ozon.totals.questions1, ozonQuestionDailyBase), `${fmtInt(ozon.totals.questions)} всего`, { platform: 'ozon' }),
       renderMetricCard('Ozon без ответа', fmtInt(ozon.totals.unansweredQuestions), ozon.totals.unansweredQuestions ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up'), 'вопросы', { platform: 'ozon', ratio: ozon.totals.unansweredQuestions ? 0.35 : 1 }),
-      renderMetricCard('Ozon отзывы', 'API 403', simpleBadge('подписка', 'down'), 'отзывы/рейтинг/негатив не отдаются API', { platform: 'ozon', ratio: 0.18 }),
-      renderMetricCard('Ozon карточки', fmtInt(ozon.totals.cards), simpleBadge(`${fmtInt(ozon.totals.contentBelow70)} контент <70`, ozon.totals.contentBelow70 ? 'down' : 'up'), 'служебно: карточки API', { platform: 'ozon', ratio: 0.9 })
+      renderMetricCard('Ozon звезды товара', 'API 403', simpleBadge('review API', 'down'), 'не контент-рейтинг; Ozon не отдает звезды без отзывов', { platform: 'ozon', ratio: 0.18 }),
+      renderMetricCard('Ozon контент служебно', fmtInt(ozon.totals.cards), simpleBadge(`${fmtInt(ozon.totals.contentBelow70)} <70`, ozon.totals.contentBelow70 ? 'down' : 'up'), 'это не рейтинг товара', { platform: 'ozon', ratio: 0.9 })
     ].join('');
     return `
       <div class="rating-planfact-toolbar">
@@ -2812,6 +2812,7 @@
         <div class="badge-stack">
           ${chip(`WB ${fullDate(model.active.date)}`, 'ok')}
           ${chip(`Ozon API ${fmtInt(ozonModel.totals.cards)} карточек`, 'info')}
+          ${chip(`Ozon выручка ${fmtMoney(ozonModel.totals.revenue7)}`, 'ok')}
           ${chip(`Ozon вопросы ${fmtInt(ozonModel.totals.questions)}`, 'info')}
           ${chip(ozonModel.reviewApiLocked ? 'Ozon отзывы 403' : 'Ozon отзывы API ok', ozonModel.reviewApiLocked ? 'warn' : 'ok')}
           ${chip(`${fmtInt(model.snapshots.length)} срезов истории`, 'info')}

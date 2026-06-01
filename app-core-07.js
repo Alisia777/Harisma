@@ -2743,7 +2743,13 @@ function getProductLeaderboardFilters() {
   state.productLeaderboardFilters.owner = state.productLeaderboardFilters.owner || 'all';
   state.productLeaderboardFilters.category = state.productLeaderboardFilters.category || 'all';
   state.productLeaderboardFilters.signal = state.productLeaderboardFilters.signal || 'all';
-  state.productLeaderboardFilters.sort = state.productLeaderboardFilters.sort || 'buys';
+  if (!state.productLeaderboardFilters._leaderGameSortMigrated) {
+    if (!state.productLeaderboardFilters.sort || state.productLeaderboardFilters.sort === 'buys') {
+      state.productLeaderboardFilters.sort = 'gameScore';
+    }
+    state.productLeaderboardFilters._leaderGameSortMigrated = true;
+  }
+  state.productLeaderboardFilters.sort = state.productLeaderboardFilters.sort || 'gameScore';
   state.productLeaderboardFilters.sortDir = state.productLeaderboardFilters.sortDir === 'asc' ? 'asc' : 'desc';
   state.productLeaderboardFilters.snapshot = state.productLeaderboardFilters.snapshot || 'latest';
   return state.productLeaderboardFilters;
@@ -7535,7 +7541,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
     <div class="section-title">
       <div>
         <h2>Продуктовый лидерборд</h2>
-        <p>Единый недельный продуктовый срез: сверху общая воронка и история выгрузок, ниже SKU с охватами, кликами, корзинами, экономикой и рисками.</p>
+        <p>КЗ leaderboard с игровым уровнем недели: сверху скор, план-факт модули и owner race, ниже SKU с охватами, продажами, экономикой и рисками.</p>
       </div>
       <div class="badge-stack">
         ${badge(payload.weekLabel || 'недельный срез', 'info')}

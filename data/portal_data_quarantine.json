@@ -1,6 +1,6 @@
 {
   "schema": "portal-data-quarantine-v1",
-  "generatedAt": "2026-06-01T10:12:27.984Z",
+  "generatedAt": "2026-06-01T10:20:01.625Z",
   "reason": "Rows that need review before the data contour can be trusted.",
   "summary": {
     "rows": 20,

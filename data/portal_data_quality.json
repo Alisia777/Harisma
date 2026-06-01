@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-01T10:10:40.200Z",
+  "generatedAt": "2026-06-01T10:19:49.746Z",
   "status": "critical",
   "summary": {
     "issueCount": 89,
@@ -13,7 +13,7 @@
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 0,
     "apiSumAboveAggregateOverage": 0,
-    "skuAliasCount": 0,
+    "skuAliasCount": 341,
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 0,
     "warehouseUnmatchedRows": 25,

@@ -695,10 +695,29 @@ function payloadDataFreshnessScore(snapshotKey, payload) {
   return score;
 }
 
+function payloadAliasCoverageScore(snapshotKey, payload) {
+  if (!payload || typeof payload !== 'object') return 0;
+  if (snapshotKey === 'sku_aliases') return Array.isArray(payload.aliases) ? payload.aliases.length : 0;
+  if (snapshotKey === 'sku_matrix') return Number(payload.summary?.aliasCount || 0);
+  if (snapshotKey === 'portal_data_quality') return Number(payload.summary?.skuAliasCount || 0);
+  return 0;
+}
+
+function shouldPreferLocalAliasCoverage(snapshotKey, snapshotPayload, localPayload) {
+  const keys = new Set(['sku_aliases', 'sku_matrix', 'portal_data_quality']);
+  if (!keys.has(snapshotKey)) return false;
+  const localScore = payloadAliasCoverageScore(snapshotKey, localPayload);
+  const snapshotScore = payloadAliasCoverageScore(snapshotKey, snapshotPayload);
+  return localScore > 0 && localScore > snapshotScore;
+}
+
 function chooseFreshestPayload(snapshotKey, snapshotPayload, localPayload) {
   const snapshotReady = snapshotPayloadLooksUsable(snapshotKey, snapshotPayload) ? snapshotPayload : null;
   const localReady = localPayload !== null && localPayload !== undefined ? localPayload : null;
   if (snapshotReady && localReady) {
+    if (shouldPreferLocalAliasCoverage(snapshotKey, snapshotReady, localReady)) {
+      return { payload: localReady, source: 'local' };
+    }
     const publishFirstKeys = new Set(['prices', 'smart_price_workbench', 'smart_price_overlay', 'repricer']);
     if (publishFirstKeys.has(snapshotKey)) {
       const localFreshness = payloadFreshnessScore(snapshotKey, localReady);

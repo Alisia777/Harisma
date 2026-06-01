@@ -1,6 +1,6 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-01T10:12:27.990Z",
+  "generatedAt": "2026-06-01T10:20:01.631Z",
   "status": "warning",
   "publish": {
     "allowed": true,
@@ -8,7 +8,7 @@
     "warnings": [
       "Unmapped API SKU revenue: 5938732."
     ],
-    "checkedAt": "2026-06-01T10:12:27.990Z"
+    "checkedAt": "2026-06-01T10:20:01.631Z"
   },
   "freshness": {
     "maxDate": "2026-05-31",
@@ -17,7 +17,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-01T10:12:27.985Z",
+      "checkedAt": "2026-06-01T10:20:01.626Z",
       "settlementHour": 10,
       "expectedDate": "2026-05-31",
       "maxDate": "2026-05-31",
@@ -64,7 +64,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-01T10:12:27.990Z",
+      "checkedAt": "2026-06-01T10:20:01.630Z",
       "expectedDate": "2026-05-31",
       "adsSummaryWindowTo": "2026-05-31",
       "iuDrrWindowTo": "2026-05-31",
@@ -234,22 +234,22 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-01T10:10:40.200Z",
+      "generatedAt": "2026-06-01T10:19:49.746Z",
       "asOfDate": "2026-05-31",
       "revenue": 5938732
     },
     "portal_data_quarantine": {
       "exists": true,
       "rows": 20,
-      "generatedAt": "2026-06-01T10:10:40.745Z",
+      "generatedAt": "2026-06-01T10:12:27.984Z",
       "asOfDate": "2026-06-01",
       "revenue": 5363397
     },
     "sku_aliases": {
       "exists": true,
-      "rows": 0,
-      "generatedAt": "",
-      "asOfDate": "",
+      "rows": 341,
+      "generatedAt": "2026-06-01T10:19:37.276Z",
+      "asOfDate": "2026-06-01",
       "revenue": 0
     },
     "sku_alias_ignore": {
@@ -269,23 +269,23 @@
     "sku_matrix": {
       "exists": true,
       "rows": 143,
-      "generatedAt": "2026-06-01T10:10:40.344Z",
+      "generatedAt": "2026-06-01T10:20:01.331Z",
       "asOfDate": "2026-06-01",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-01T10:10:40.751Z",
+      "generatedAt": "2026-06-01T10:12:27.990Z",
       "asOfDate": "2026-06-01",
       "revenue": 0
     }
   },
   "skuContour": {
     "status": "ok",
-    "aliasCount": 0,
+    "aliasCount": 341,
     "ignoreCount": 0,
-    "matrixAliasCount": 0,
+    "matrixAliasCount": 341,
     "matrixIgnoreCount": 0,
     "checks": [
       {
@@ -306,9 +306,9 @@
       {
         "name": "matrix-alias-count",
         "status": "ok",
-        "message": "SKU matrix alias count does not match sku_aliases (0/0).",
-        "matrixAliasCount": 0,
-        "aliasCount": 0
+        "message": "SKU matrix alias count does not match sku_aliases (341/341).",
+        "matrixAliasCount": 341,
+        "aliasCount": 341
       },
       {
         "name": "matrix-ignore-count",
@@ -341,7 +341,7 @@
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 0,
     "apiSumAboveAggregateOverage": 0,
-    "skuAliasCount": 0,
+    "skuAliasCount": 341,
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 0,
     "warehouseUnmatchedRows": 25,
@@ -364,7 +364,7 @@
   },
   "lastGood": {
     "exists": true,
-    "generatedAt": "2026-05-31T16:53:14.230Z",
+    "generatedAt": "2026-05-29T12:08:10.952Z",
     "comparisons": [
       {
         "snapshot": "skus",
@@ -420,9 +420,7 @@
         "previousRevenue": 0,
         "revenueRatio": 1
       }
-    ],
-    "markedAt": "2026-06-01T10:12:28.267Z",
-    "copied": 25
+    ]
   },
   "checks": [
     {
@@ -478,9 +476,9 @@
     {
       "name": "sku-contour:matrix-alias-count",
       "status": "ok",
-      "message": "SKU matrix alias count does not match sku_aliases (0/0).",
-      "matrixAliasCount": 0,
-      "aliasCount": 0
+      "message": "SKU matrix alias count does not match sku_aliases (341/341).",
+      "matrixAliasCount": 341,
+      "aliasCount": 341
     },
     {
       "name": "sku-contour:matrix-ignore-count",

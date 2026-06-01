@@ -1,16 +1,16 @@
 {
   "schema": "portal-sku-matrix-v1",
-  "generatedAt": "2026-06-01T10:10:40.344Z",
+  "generatedAt": "2026-06-01T10:20:01.331Z",
   "source": {
     "skus": 143,
-    "aliases": 0,
+    "aliases": 341,
     "ignored": 0,
-    "dataQualityGeneratedAt": "2026-06-01T10:10:40.200Z"
+    "dataQualityGeneratedAt": "2026-06-01T10:19:49.746Z"
   },
   "summary": {
     "skuCount": 143,
     "activeSkuCount": 116,
-    "aliasCount": 0,
+    "aliasCount": 341,
     "ignoredApiSkuCount": 0,
     "apiUnmappedCount": 40,
     "duplicateRiskCount": 0,
@@ -64,7 +64,15 @@
       "brand": "Алтея",
       "category": "Декоративная косметика",
       "type": "Набор для бровей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "letu",
+          "api_sku": "MPL583151",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -196,7 +204,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Крем для волос",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000114726",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4603320465441",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL483098",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5874428",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4603320465441",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -238,7 +282,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Средство для умывания",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076220",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020498017",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL378812",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5870958",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020498017",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "has_warning"
       ],
@@ -268,7 +348,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Средство для умывания",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000125143",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4645565747487",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL536294",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6796006",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4645565747487",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -331,7 +447,29 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "letu",
+          "api_sku": "MPL439819",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5874419",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020498482",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -352,7 +490,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000114730",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417420110",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL497134",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5880316",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660417420110",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -373,7 +547,43 @@
       "brand": "Алтея",
       "category": "Декоративная косметика",
       "type": "Гель для бровей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000114725",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4676574657436",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL411155",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5874282",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4676574657436",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -394,7 +604,43 @@
       "brand": "Алтея",
       "category": "Средства для бритья и груминг",
       "type": "Средство для бритья",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000131680",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4603320465458",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL553832",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5880768",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4603320465458",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -415,7 +661,50 @@
       "brand": "Алтея",
       "category": "Декоративная косметика",
       "type": "Гель для бровей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076224",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4609893777394",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4680918970174",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL378889",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5868854",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4609893777394",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -436,7 +725,43 @@
       "brand": "Алтея",
       "category": "Средства для гигиены тела",
       "type": "Средство для душа",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000081275",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4603320465274",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL411107",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5873782",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4603320465274",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -457,7 +782,43 @@
       "brand": "Алтея",
       "category": "Средства для гигиены тела",
       "type": "Средство для душа",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000081276",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4603320465267",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL411108",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5871280",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4603320465267",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -478,7 +839,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Средство для умывания",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076222",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4610172186202",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL378893",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5868812",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4610172186202",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "has_warning"
       ],
@@ -592,7 +989,29 @@
       "brand": "Алтея",
       "category": "Средства для гигиены тела",
       "type": "Средство для интимной гигиены",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "letu",
+          "api_sku": "MPL378978",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6598588",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4630084864616",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -613,7 +1032,43 @@
       "brand": "Алтея",
       "category": "Средства для гигиены тела",
       "type": "Средство для интимной гигиены",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000114723",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4630084865477",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL494932",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5880311",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4630084865477",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -634,7 +1089,15 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Стик",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "letu",
+          "api_sku": "MPL379166",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "has_warning"
       ],
@@ -664,7 +1127,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000125268",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4603320465427",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL534369",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5878029",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4603320465427",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -685,7 +1184,57 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000114729",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421452",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4601022298473",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421889",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL379165",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5854268",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660417421452",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -706,7 +1255,50 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000125267",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020498918",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421643",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL534118",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5880765",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020498918",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -727,7 +1319,50 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000114731",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020497898",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421650",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL379167",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5869575",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020497898",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -748,7 +1383,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Средство солнцезащитное",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000163832",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421766",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL583158",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6598168",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660417421766",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -769,7 +1440,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076225",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020498437",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL379168",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6780727",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020498437",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -790,7 +1497,64 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Пилинг",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076205",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020498208",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4603312714004",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4603312714007",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4640523970020",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL411098",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5871877",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4603312714007",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -832,7 +1596,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Маска для волос",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076210",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020497546",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL381090",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5868855",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020497546",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -853,7 +1653,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Маска для волос",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000176492",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4630446234156",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL583149",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6598159",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4630446234156",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -874,7 +1710,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Маска для волос",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076208",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4603320465366",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL411097",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5874277",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4603320465366",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -895,7 +1767,43 @@
       "brand": "Алтея",
       "category": "Маска косметическая",
       "type": "Маска косметическая",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000114727",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020498741",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL411103",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5874286",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020498741",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -916,7 +1824,50 @@
       "brand": "Алтея",
       "category": "Средства для бритья и груминг",
       "type": "Средство для ухода за бородой",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076215",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4610172186882",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL381091",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5868845",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4610172186882",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ya",
+          "api_sku": "fbs_maslo_dlya_borodi_50ml",
+          "status": "active",
+          "note": "Я.Маркет FBS alias",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -937,7 +1888,50 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Масло для волос",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076212",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4610172186875",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL498116",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL381092",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5876472",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4610172186875",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "has_warning"
       ],
@@ -997,7 +1991,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Воск для волос",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000114732",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4603320465304",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL485625",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5876222",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4603320465304",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1069,7 +2099,36 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Средство для снятия макияжа",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076218",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4698878338125",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5873796",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4698878338125",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "has_warning"
       ],
@@ -1099,7 +2158,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Средство для ногтей и кутикулы",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076202",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4607050974747",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL381166",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5843397",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4607050974747",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1120,7 +2215,29 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Средство для ногтей и кутикулы",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "letu",
+          "api_sku": "MPL583152",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5874423",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4656887467946",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1141,7 +2258,43 @@
       "brand": "Алтея",
       "category": "Декоративная косметика",
       "type": "Средство для наращивания ресниц",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000177797",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4630040229770",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL381167",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5868852",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4629945399213",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1162,7 +2315,29 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Средство для снятия макияжа",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "letu",
+          "api_sku": "MPL381093",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5868850",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4630084864777",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "has_warning"
       ],
@@ -1192,7 +2367,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Пенка для волос",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000125266",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020498611",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL534436",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5874567",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020498611",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1213,7 +2424,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Пилинг для кожи головы",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076204",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020496761",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL381095",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5854281",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020496761",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "has_warning"
       ],
@@ -1243,7 +2490,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000125263",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4603320465342",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL533896",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5880769",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4603320465342",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1345,7 +2628,57 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076216",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4610172186219",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421582",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL381168",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5868814",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660417421582",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ya",
+          "api_sku": "fbs_retiderm_50ml",
+          "status": "active",
+          "note": "Я.Маркет FBS alias",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1366,7 +2699,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000137436",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421629",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL570692",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6075447",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660417421629",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1387,7 +2756,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000124418",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421599",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL532421",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5880783",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660417421599",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1408,7 +2813,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000131675",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421759",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL553835",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5970789",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660417421759",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1429,7 +2870,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000124421",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421605",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL532549",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5880780",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660417421605",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1450,7 +2927,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000176496",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421827",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL583160",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6598583",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660417421827",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1471,7 +2984,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000154001",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4640523970099",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL580332",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6342026",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4640523970099",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1492,7 +3041,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000153995",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4640523970082",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL580331",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6340976",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4640523970082",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1513,7 +3098,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000125142",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4603320465403",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL533706",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5880771",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4603320465403",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1534,7 +3155,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000154005",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421636",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL580318",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6339736",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660417421636",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1555,7 +3212,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000176497",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660401460108",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL583298",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6598610",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660401460108",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "has_warning"
       ],
@@ -1585,7 +3278,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Крем для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000176503",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660401460092",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL583296",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6598129",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660401460092",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1636,7 +3365,50 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Шампунь для волос",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076213",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020496747",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421834",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL381169",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5868808",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020496747",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1657,7 +3429,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Шампунь для волос",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076206",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020496679",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL381173",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5854278",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020496679",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1678,7 +3486,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Крем для волос",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000114733",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4603320465465",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL477653",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5876205",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4603320465465",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1699,7 +3543,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Скраб для кожи головы",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000125265",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421476",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL534263",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5880763",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660417421476",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1720,7 +3600,50 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Спрей для укладки волос",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076221",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020498413",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020499816",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL411095",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5874418",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020498413",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1741,7 +3664,43 @@
       "brand": "Алтея",
       "category": "Маска косметическая",
       "type": "Маска косметическая",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000177799",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421858",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL589441",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6598596",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660417421858",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1762,7 +3721,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000179436",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4630446231421",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL589408",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6598607",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4630446231421",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1783,7 +3778,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Сыворотка для волос",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000114724",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4603320465359",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL484941",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5876463",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4603320465359",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1804,7 +3835,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Стик",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000114734",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4690222978568",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL381174",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5869579",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4690222978568",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1825,7 +3892,22 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Косметический набор для волос",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "magnit",
+          "api_sku": "6598616",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660401460153",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "has_warning"
       ],
@@ -1855,7 +3937,50 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076203",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020497034",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL381175",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5868848",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020497034",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "ya",
+          "api_sku": "fbs_syvorotka_dlya_lica_30ml",
+          "status": "active",
+          "note": "Я.Маркет FBS alias",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1876,7 +4001,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000182844",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4603312714069",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL583154",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6598165",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4603312714069",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "has_warning"
       ],
@@ -1906,7 +4067,43 @@
       "brand": "Алтея",
       "category": "Средства по уходу за бровями и ресницами",
       "type": "Средство для роста ресниц и бровей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076214",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4685518825374",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL381176",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5869585",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4685518825374",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1927,7 +4124,43 @@
       "brand": "Алтея",
       "category": "Средства по уходу за бровями и ресницами",
       "type": "Средство для роста ресниц и бровей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000132524",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4656738598843",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL536269",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5878506",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4656738598843",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1948,7 +4181,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076209",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020498093",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL381177",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5871122",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020498093",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -1969,7 +4238,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Сыворотка для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000154296",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4640523970297",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL580326",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "6340523",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4640523970297",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -2011,7 +4316,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Спрей для ухода за волосами",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000076226",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020497980",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL381178",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5870813",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020497980",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -2032,7 +4373,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода",
       "type": "Тоник для ухода за кожей",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000114728",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670020498499",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL440013",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5874386",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670020498499",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -2053,7 +4430,43 @@
       "brand": "Алтея",
       "category": "Косметика для ухода за волосами",
       "type": "Воск для волос",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000131672",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670207150196",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "letu",
+          "api_sku": "MPL553766",
+          "status": "active",
+          "note": "Лэтуаль артикул Алькора",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5880787",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4670207150196",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -2872,7 +5285,50 @@
       "brand": "CPA",
       "category": "Парафармацевтика",
       "type": "Псориаз",
-      "aliases": [],
+      "aliases": [
+        {
+          "platform": "goldapple",
+          "api_sku": "99000125141",
+          "status": "active",
+          "note": "ЗЯ номенклатура",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4660417421087",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "2042057189688",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "goldapple",
+          "api_sku": "4670142965169",
+          "status": "active",
+          "note": "ЗЯ штрихкод",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "5894994",
+          "status": "active",
+          "note": "Магнит Product ID",
+          "source": "sku_aliases"
+        },
+        {
+          "platform": "magnit",
+          "api_sku": "4660417421087",
+          "status": "active",
+          "note": "Магнит штрихкод",
+          "source": "sku_aliases"
+        }
+      ],
       "problemStates": [
         "ok"
       ],
@@ -3739,6 +6195,348 @@
       "wbvaritox": 141,
       "t34poten10caps": 142
     },
-    "aliasToArticleKey": {}
+    "aliasToArticleKey": {
+      "goldapple|99000177797": "nabor_remuver_kremovii",
+      "goldapple|4630040229770": "nabor_remuver_kremovii",
+      "goldapple|99000114731": "krem_ot_rastyazhek",
+      "goldapple|4670020497898": "krem_ot_rastyazhek",
+      "goldapple|4660417421650": "krem_ot_rastyazhek",
+      "goldapple|99000131675": "retinait_krem_05_50ml",
+      "goldapple|4660417421759": "retinait_krem_05_50ml",
+      "goldapple|99000124421": "retinait_krem_1_50ml",
+      "goldapple|4660417421605": "retinait_krem_1_50ml",
+      "goldapple|99000076206": "shampun_protiv_perhoti_250ml",
+      "goldapple|4670020496679": "shampun_protiv_perhoti_250ml",
+      "goldapple|99000114723": "intimvita_300ml",
+      "goldapple|4630084865477": "intimvita_300ml",
+      "goldapple|99000182844": "syvorotka_dlya_lica_30ml_v2",
+      "goldapple|4603312714069": "syvorotka_dlya_lica_30ml_v2",
+      "goldapple|99000177799": "spicul_gel_mask_75ml",
+      "goldapple|4660417421858": "spicul_gel_mask_75ml",
+      "goldapple|99000176496": "retinait_krem_1_5_50ml",
+      "goldapple|4660417421827": "retinait_krem_1_5_50ml",
+      "goldapple|99000131680": "gel_dlya_britya_300ml",
+      "goldapple|4603320465458": "gel_dlya_britya_300ml",
+      "goldapple|99000076216": "retiderm_50ml",
+      "goldapple|4610172186219": "retiderm_50ml",
+      "goldapple|4660417421582": "retiderm_50ml",
+      "goldapple|99000125267": "krem_dlya_vek_30ml",
+      "goldapple|4670020498918": "krem_dlya_vek_30ml",
+      "goldapple|4660417421643": "krem_dlya_vek_30ml",
+      "goldapple|99000125141": "psoral_50ml",
+      "goldapple|4660417421087": "psoral_50ml",
+      "goldapple|2042057189688": "psoral_50ml",
+      "goldapple|4670142965169": "psoral_50ml",
+      "goldapple|99000114727": "maska_dlya_lica_100ml",
+      "goldapple|4670020498741": "maska_dlya_lica_100ml",
+      "goldapple|99000076205": "krovavii_piling_30ml",
+      "goldapple|4670020498208": "krovavii_piling_30ml",
+      "goldapple|4603312714004": "krovavii_piling_30ml",
+      "goldapple|4603312714007": "krovavii_piling_30ml",
+      "goldapple|4640523970020": "krovavii_piling_30ml",
+      "goldapple|99000124418": "retinait_krem_025_50ml",
+      "goldapple|4660417421599": "retinait_krem_025_50ml",
+      "goldapple|99000076215": "maslo_dlya_borodi_50ml",
+      "goldapple|4610172186882": "maslo_dlya_borodi_50ml",
+      "goldapple|99000137436": "retinait_krem_01_50ml",
+      "goldapple|4660417421629": "retinait_krem_01_50ml",
+      "goldapple|99000132524": "syvorotka_dlya_rosta_6ml_v2",
+      "goldapple|4656738598843": "syvorotka_dlya_rosta_6ml_v2",
+      "goldapple|99000125142": "retinait_syvorotka_1_30ml",
+      "goldapple|4603320465403": "retinait_syvorotka_1_30ml",
+      "goldapple|99000125266": "penka_kudryavii_metod_150ml",
+      "goldapple|4670020498611": "penka_kudryavii_metod_150ml",
+      "goldapple|99000125143": "enzim_pudra_80gr_v2",
+      "goldapple|4645565747487": "enzim_pudra_80gr_v2",
+      "goldapple|99000131672": "vosk_stik_15ml",
+      "goldapple|4670207150196": "vosk_stik_15ml",
+      "goldapple|99000114729": "krem_dlya_ruk_75ml",
+      "goldapple|4660417421452": "krem_dlya_ruk_75ml",
+      "goldapple|4601022298473": "krem_dlya_ruk_75ml",
+      "goldapple|4660417421889": "krem_dlya_ruk_75ml",
+      "goldapple|99000114724": "sprei_buster_100ml",
+      "goldapple|4603320465359": "sprei_buster_100ml",
+      "goldapple|99000114730": "gel_antiakne_20ml_v2",
+      "goldapple|4660417420110": "gel_antiakne_20ml_v2",
+      "goldapple|99000081276": "gel_parfum_tabacco_vanille_450ml",
+      "goldapple|4603320465267": "gel_parfum_tabacco_vanille_450ml",
+      "goldapple|99000081275": "gel_for_men_3_in_1_1000ml",
+      "goldapple|4603320465274": "gel_for_men_3_in_1_1000ml",
+      "goldapple|99000076202": "nabor_remuver_40ml",
+      "goldapple|4607050974747": "nabor_remuver_40ml",
+      "goldapple|99000076224": "gel_dlya_brovei_6ml",
+      "goldapple|4609893777394": "gel_dlya_brovei_6ml",
+      "goldapple|4680918970174": "gel_dlya_brovei_6ml",
+      "goldapple|99000076220": "enzim_pudra_80gr",
+      "goldapple|4670020498017": "enzim_pudra_80gr",
+      "goldapple|99000076226": "termo_sprei_200ml",
+      "goldapple|4670020497980": "termo_sprei_200ml",
+      "goldapple|99000076221": "solevoy_sprei_200ml",
+      "goldapple|4670020498413": "solevoy_sprei_200ml",
+      "goldapple|4670020499816": "solevoy_sprei_200ml",
+      "goldapple|99000076210": "maska-batter_250ml",
+      "goldapple|4670020497546": "maska-batter_250ml",
+      "goldapple|99000076203": "syvorotka_dlya_lica_30ml",
+      "goldapple|4670020497034": "syvorotka_dlya_lica_30ml",
+      "goldapple|99000114725": "gel_brows_5ml",
+      "goldapple|4676574657436": "gel_brows_5ml",
+      "goldapple|99000125265": "skrab_babl_gam_200ml",
+      "goldapple|4660417421476": "skrab_babl_gam_200ml",
+      "goldapple|99000076225": "kremshelk_100ml",
+      "goldapple|4670020498437": "kremshelk_100ml",
+      "goldapple|99000076204": "piling_100ml",
+      "goldapple|4670020496761": "piling_100ml",
+      "goldapple|99000076213": "shampun_dlya_rosta_250ml",
+      "goldapple|4670020496747": "shampun_dlya_rosta_250ml",
+      "goldapple|4660417421834": "shampun_dlya_rosta_250ml",
+      "goldapple|99000154296": "syvorotka_niacin_05_30ml",
+      "goldapple|4640523970297": "syvorotka_niacin_05_30ml",
+      "goldapple|99000176497": "retinol_full_journey",
+      "goldapple|4660401460108": "retinol_full_journey",
+      "goldapple|99000176503": "retinol_start_kit",
+      "goldapple|4660401460092": "retinol_start_kit",
+      "goldapple|99000076209": "syvorotka_guk_30ml",
+      "goldapple|4670020498093": "syvorotka_guk_30ml",
+      "goldapple|99000179436": "spiculboost_30ml",
+      "goldapple|4630446231421": "spiculboost_30ml",
+      "goldapple|99000176492": "maska-batter_500ml",
+      "goldapple|4630446234156": "maska-batter_500ml",
+      "goldapple|99000163832": "krem_spf50_50ml",
+      "goldapple|4660417421766": "krem_spf50_50ml",
+      "goldapple|99000154005": "retinol_boost_krem_dlya_vek_30ml",
+      "goldapple|4660417421636": "retinol_boost_krem_dlya_vek_30ml",
+      "goldapple|99000114726": "curly_method_300ml",
+      "goldapple|4603320465441": "curly_method_300ml",
+      "goldapple|99000076208": "maska-batter_dlya_rosta_500ml",
+      "goldapple|4603320465366": "maska-batter_dlya_rosta_500ml",
+      "goldapple|99000076218": "nabor_penka_dlya_resnic",
+      "goldapple|4698878338125": "nabor_penka_dlya_resnic",
+      "goldapple|99000114728": "tonik_dlya_lica_200ml",
+      "goldapple|4670020498499": "tonik_dlya_lica_200ml",
+      "goldapple|99000114733": "silk_hair_300ml",
+      "goldapple|4603320465465": "silk_hair_300ml",
+      "goldapple|99000076212": "maslo_dlya_volos_parf_110ml",
+      "goldapple|4610172186875": "maslo_dlya_volos_parf_110ml",
+      "goldapple|99000076222": "gidrofilnoe_maslo_150ml",
+      "goldapple|4610172186202": "gidrofilnoe_maslo_150ml",
+      "goldapple|99000076214": "syvorotka_dlya_rosta_6ml",
+      "goldapple|4685518825374": "syvorotka_dlya_rosta_6ml",
+      "goldapple|99000114734": "stik_ot_mozoley",
+      "goldapple|4690222978568": "stik_ot_mozoley",
+      "goldapple|99000154001": "retinait_syvorotka_025_30ml",
+      "goldapple|4640523970099": "retinait_syvorotka_025_30ml",
+      "goldapple|99000153995": "retinait_syvorotka_05_30ml",
+      "goldapple|4640523970082": "retinait_syvorotka_05_30ml",
+      "goldapple|99000125263": "pink_pepper_50ml",
+      "goldapple|4603320465342": "pink_pepper_50ml",
+      "goldapple|99000114732": "matte_wax_50ml",
+      "goldapple|4603320465304": "matte_wax_50ml",
+      "goldapple|99000125268": "krem_buster_250ml",
+      "goldapple|4603320465427": "krem_buster_250ml",
+      "letu|mpl589441": "spicul_gel_mask_75ml",
+      "letu|mpl589408": "spiculboost_30ml",
+      "letu|mpl583298": "retinol_full_journey",
+      "letu|mpl583296": "retinol_start_kit",
+      "letu|mpl583160": "retinait_krem_1_5_50ml",
+      "letu|mpl583158": "krem_spf50_50ml",
+      "letu|mpl583154": "syvorotka_dlya_lica_30ml_v2",
+      "letu|mpl583152": "nabor_remuver_40ml_1_1",
+      "letu|mpl583151": "alteya_beauty_brows_box",
+      "letu|mpl583149": "maska-batter_500ml",
+      "letu|mpl580332": "retinait_syvorotka_025_30ml",
+      "letu|mpl580331": "retinait_syvorotka_05_30ml",
+      "letu|mpl580326": "syvorotka_niacin_05_30ml",
+      "letu|mpl580318": "retinol_boost_krem_dlya_vek_30ml",
+      "letu|mpl570692": "retinait_krem_01_50ml",
+      "letu|mpl553835": "retinait_krem_05_50ml",
+      "letu|mpl553832": "gel_dlya_britya_300ml",
+      "letu|mpl553766": "vosk_stik_15ml",
+      "letu|mpl536294": "enzim_pudra_80gr_v2",
+      "letu|mpl536269": "syvorotka_dlya_rosta_6ml_v2",
+      "letu|mpl534436": "penka_kudryavii_metod_150ml",
+      "letu|mpl534369": "krem_buster_250ml",
+      "letu|mpl534263": "skrab_babl_gam_200ml",
+      "letu|mpl534118": "krem_dlya_vek_30ml",
+      "letu|mpl533896": "pink_pepper_50ml",
+      "letu|mpl533706": "retinait_syvorotka_1_30ml",
+      "letu|mpl532549": "retinait_krem_1_50ml",
+      "letu|mpl532421": "retinait_krem_025_50ml",
+      "letu|mpl498116": "maslo_dlya_volos_parf_110ml",
+      "letu|mpl497134": "gel_antiakne_20ml_v2",
+      "letu|mpl494932": "intimvita_300ml",
+      "letu|mpl485625": "matte_wax_50ml",
+      "letu|mpl484941": "sprei_buster_100ml",
+      "letu|mpl483098": "curly_method_300ml",
+      "letu|mpl477653": "silk_hair_300ml",
+      "letu|mpl440013": "tonik_dlya_lica_200ml",
+      "letu|mpl439819": "gel_antiakne_20ml",
+      "letu|mpl411155": "gel_brows_5ml",
+      "letu|mpl411108": "gel_parfum_tabacco_vanille_450ml",
+      "letu|mpl411107": "gel_for_men_3_in_1_1000ml",
+      "letu|mpl411103": "maska_dlya_lica_100ml",
+      "letu|mpl411098": "krovavii_piling_30ml",
+      "letu|mpl411097": "maska-batter_dlya_rosta_500ml",
+      "letu|mpl411095": "solevoy_sprei_200ml",
+      "letu|mpl381178": "termo_sprei_200ml",
+      "letu|mpl381177": "syvorotka_guk_30ml",
+      "letu|mpl381176": "syvorotka_dlya_rosta_6ml",
+      "letu|mpl381175": "syvorotka_dlya_lica_30ml",
+      "letu|mpl381174": "stik_ot_mozoley",
+      "letu|mpl381173": "shampun_protiv_perhoti_250ml",
+      "letu|mpl381169": "shampun_dlya_rosta_250ml",
+      "letu|mpl381168": "retiderm_50ml",
+      "letu|mpl381167": "nabor_remuver_kremovii",
+      "letu|mpl381166": "nabor_remuver_40ml",
+      "letu|mpl381095": "piling_100ml",
+      "letu|mpl381093": "penka_160ml",
+      "letu|mpl381092": "maslo_dlya_volos_parf_110ml",
+      "letu|mpl381091": "maslo_dlya_borodi_50ml",
+      "letu|mpl381090": "maska-batter_250ml",
+      "letu|mpl379168": "kremshelk_100ml",
+      "letu|mpl379167": "krem_ot_rastyazhek",
+      "letu|mpl379166": "krem-filler_15ml",
+      "letu|mpl379165": "krem_dlya_ruk_75ml",
+      "letu|mpl378978": "intimvita_200ml",
+      "letu|mpl378893": "gidrofilnoe_maslo_150ml",
+      "letu|mpl378889": "gel_dlya_brovei_6ml",
+      "letu|mpl378812": "enzim_pudra_80gr",
+      "magnit|5843397": "nabor_remuver_40ml",
+      "magnit|4607050974747": "nabor_remuver_40ml",
+      "magnit|5854268": "krem_dlya_ruk_75ml",
+      "magnit|4660417421452": "krem_dlya_ruk_75ml",
+      "magnit|5854278": "shampun_protiv_perhoti_250ml",
+      "magnit|4670020496679": "shampun_protiv_perhoti_250ml",
+      "magnit|5854281": "piling_100ml",
+      "magnit|4670020496761": "piling_100ml",
+      "magnit|5868808": "shampun_dlya_rosta_250ml",
+      "magnit|4670020496747": "shampun_dlya_rosta_250ml",
+      "magnit|5868812": "gidrofilnoe_maslo_150ml",
+      "magnit|4610172186202": "gidrofilnoe_maslo_150ml",
+      "magnit|5868814": "retiderm_50ml",
+      "magnit|4660417421582": "retiderm_50ml",
+      "magnit|5868845": "maslo_dlya_borodi_50ml",
+      "magnit|4610172186882": "maslo_dlya_borodi_50ml",
+      "magnit|5868848": "syvorotka_dlya_lica_30ml",
+      "magnit|4670020497034": "syvorotka_dlya_lica_30ml",
+      "magnit|5868850": "penka_160ml",
+      "magnit|4630084864777": "penka_160ml",
+      "magnit|5868852": "nabor_remuver_kremovii",
+      "magnit|4629945399213": "nabor_remuver_kremovii",
+      "magnit|5868854": "gel_dlya_brovei_6ml",
+      "magnit|4609893777394": "gel_dlya_brovei_6ml",
+      "magnit|5868855": "maska-batter_250ml",
+      "magnit|4670020497546": "maska-batter_250ml",
+      "magnit|5869575": "krem_ot_rastyazhek",
+      "magnit|4670020497898": "krem_ot_rastyazhek",
+      "magnit|5869579": "stik_ot_mozoley",
+      "magnit|4690222978568": "stik_ot_mozoley",
+      "magnit|5869585": "syvorotka_dlya_rosta_6ml",
+      "magnit|4685518825374": "syvorotka_dlya_rosta_6ml",
+      "magnit|5870813": "termo_sprei_200ml",
+      "magnit|4670020497980": "termo_sprei_200ml",
+      "magnit|5870958": "enzim_pudra_80gr",
+      "magnit|4670020498017": "enzim_pudra_80gr",
+      "magnit|5871122": "syvorotka_guk_30ml",
+      "magnit|4670020498093": "syvorotka_guk_30ml",
+      "magnit|5871280": "gel_parfum_tabacco_vanille_450ml",
+      "magnit|4603320465267": "gel_parfum_tabacco_vanille_450ml",
+      "magnit|5871877": "krovavii_piling_30ml",
+      "magnit|4603312714007": "krovavii_piling_30ml",
+      "magnit|5873782": "gel_for_men_3_in_1_1000ml",
+      "magnit|4603320465274": "gel_for_men_3_in_1_1000ml",
+      "magnit|5873796": "nabor_penka_dlya_resnic",
+      "magnit|4698878338125": "nabor_penka_dlya_resnic",
+      "magnit|5874277": "maska-batter_dlya_rosta_500ml",
+      "magnit|4603320465366": "maska-batter_dlya_rosta_500ml",
+      "magnit|5874282": "gel_brows_5ml",
+      "magnit|4676574657436": "gel_brows_5ml",
+      "magnit|5874286": "maska_dlya_lica_100ml",
+      "magnit|4670020498741": "maska_dlya_lica_100ml",
+      "magnit|5874386": "tonik_dlya_lica_200ml",
+      "magnit|4670020498499": "tonik_dlya_lica_200ml",
+      "magnit|5874418": "solevoy_sprei_200ml",
+      "magnit|4670020498413": "solevoy_sprei_200ml",
+      "magnit|5874419": "gel_antiakne_20ml",
+      "magnit|4670020498482": "gel_antiakne_20ml",
+      "magnit|5874423": "nabor_remuver_40ml_1_1",
+      "magnit|4656887467946": "nabor_remuver_40ml_1_1",
+      "magnit|5874428": "curly_method_300ml",
+      "magnit|4603320465441": "curly_method_300ml",
+      "magnit|5874567": "penka_kudryavii_metod_150ml",
+      "magnit|4670020498611": "penka_kudryavii_metod_150ml",
+      "magnit|5876205": "silk_hair_300ml",
+      "magnit|4603320465465": "silk_hair_300ml",
+      "magnit|5876222": "matte_wax_50ml",
+      "magnit|4603320465304": "matte_wax_50ml",
+      "magnit|5876463": "sprei_buster_100ml",
+      "magnit|4603320465359": "sprei_buster_100ml",
+      "magnit|5876472": "maslo_dlya_volos_parf_110ml",
+      "magnit|4610172186875": "maslo_dlya_volos_parf_110ml",
+      "magnit|5878029": "krem_buster_250ml",
+      "magnit|4603320465427": "krem_buster_250ml",
+      "magnit|5878506": "syvorotka_dlya_rosta_6ml_v2",
+      "magnit|4656738598843": "syvorotka_dlya_rosta_6ml_v2",
+      "magnit|5880311": "intimvita_300ml",
+      "magnit|4630084865477": "intimvita_300ml",
+      "magnit|5880316": "gel_antiakne_20ml_v2",
+      "magnit|4660417420110": "gel_antiakne_20ml_v2",
+      "magnit|5880763": "skrab_babl_gam_200ml",
+      "magnit|4660417421476": "skrab_babl_gam_200ml",
+      "magnit|5880765": "krem_dlya_vek_30ml",
+      "magnit|4670020498918": "krem_dlya_vek_30ml",
+      "magnit|5880768": "gel_dlya_britya_300ml",
+      "magnit|4603320465458": "gel_dlya_britya_300ml",
+      "magnit|5880769": "pink_pepper_50ml",
+      "magnit|4603320465342": "pink_pepper_50ml",
+      "magnit|5880771": "retinait_syvorotka_1_30ml",
+      "magnit|4603320465403": "retinait_syvorotka_1_30ml",
+      "magnit|5880780": "retinait_krem_1_50ml",
+      "magnit|4660417421605": "retinait_krem_1_50ml",
+      "magnit|5880783": "retinait_krem_025_50ml",
+      "magnit|4660417421599": "retinait_krem_025_50ml",
+      "magnit|5880787": "vosk_stik_15ml",
+      "magnit|4670207150196": "vosk_stik_15ml",
+      "magnit|5894994": "psoral_50ml",
+      "magnit|4660417421087": "psoral_50ml",
+      "magnit|5970789": "retinait_krem_05_50ml",
+      "magnit|4660417421759": "retinait_krem_05_50ml",
+      "magnit|6075447": "retinait_krem_01_50ml",
+      "magnit|4660417421629": "retinait_krem_01_50ml",
+      "magnit|6339736": "retinol_boost_krem_dlya_vek_30ml",
+      "magnit|4660417421636": "retinol_boost_krem_dlya_vek_30ml",
+      "magnit|6340523": "syvorotka_niacin_05_30ml",
+      "magnit|4640523970297": "syvorotka_niacin_05_30ml",
+      "magnit|6340976": "retinait_syvorotka_05_30ml",
+      "magnit|4640523970082": "retinait_syvorotka_05_30ml",
+      "magnit|6342026": "retinait_syvorotka_025_30ml",
+      "magnit|4640523970099": "retinait_syvorotka_025_30ml",
+      "magnit|6598129": "retinol_start_kit",
+      "magnit|4660401460092": "retinol_start_kit",
+      "magnit|6598159": "maska-batter_500ml",
+      "magnit|4630446234156": "maska-batter_500ml",
+      "magnit|6598165": "syvorotka_dlya_lica_30ml_v2",
+      "magnit|4603312714069": "syvorotka_dlya_lica_30ml_v2",
+      "magnit|6598168": "krem_spf50_50ml",
+      "magnit|4660417421766": "krem_spf50_50ml",
+      "magnit|6598583": "retinait_krem_1_5_50ml",
+      "magnit|4660417421827": "retinait_krem_1_5_50ml",
+      "magnit|6598588": "intimvita_200ml",
+      "magnit|4630084864616": "intimvita_200ml",
+      "magnit|6598596": "spicul_gel_mask_75ml",
+      "magnit|4660417421858": "spicul_gel_mask_75ml",
+      "magnit|6598607": "spiculboost_30ml",
+      "magnit|4630446231421": "spiculboost_30ml",
+      "magnit|6598610": "retinol_full_journey",
+      "magnit|4660401460108": "retinol_full_journey",
+      "magnit|6598616": "strong_hair",
+      "magnit|4660401460153": "strong_hair",
+      "magnit|6780727": "kremshelk_100ml",
+      "magnit|4670020498437": "kremshelk_100ml",
+      "magnit|6796006": "enzim_pudra_80gr_v2",
+      "magnit|4645565747487": "enzim_pudra_80gr_v2",
+      "ya|fbsretiderm50ml": "retiderm_50ml",
+      "ya|fbssyvorotkadlyalica30ml": "syvorotka_dlya_lica_30ml",
+      "ya|fbsmaslodlyaborodi50ml": "maslo_dlya_borodi_50ml"
+    }
   }
 }

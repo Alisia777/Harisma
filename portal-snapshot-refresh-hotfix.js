@@ -545,6 +545,21 @@
 
   function chooseFreshestPayload(snapshotKey, snapshotPayload, localPayload) {
     if (snapshotPayload && localPayload) {
+      var aliasCoverageKeys = {
+        sku_aliases: true,
+        sku_matrix: true,
+        portal_data_quality: true
+      };
+      var aliasCoverage = function (payload) {
+        if (!payload || typeof payload !== "object") return 0;
+        if (snapshotKey === "sku_aliases") return Array.isArray(payload.aliases) ? payload.aliases.length : 0;
+        if (snapshotKey === "sku_matrix") return Number(payload.summary && payload.summary.aliasCount || 0);
+        if (snapshotKey === "portal_data_quality") return Number(payload.summary && payload.summary.skuAliasCount || 0);
+        return 0;
+      };
+      if (aliasCoverageKeys[snapshotKey] && aliasCoverage(localPayload) > 0 && aliasCoverage(localPayload) > aliasCoverage(snapshotPayload)) {
+        return localPayload;
+      }
       var snapshotDataFreshness = dataFreshnessOfPayload(snapshotKey, snapshotPayload);
       var localDataFreshness = dataFreshnessOfPayload(snapshotKey, localPayload);
       if (snapshotDataFreshness !== localDataFreshness) {

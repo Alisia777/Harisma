@@ -1399,6 +1399,7 @@ const AUTO_SIGNAL_RULES = {
   priceDropPct: 0.15,
   revenueDropPct: 0.20,
   aovDropPct: 0.20,
+  returnsGrowthPct: 0.20,
   conversionDropPct: 0.10,
   profitabilityDropPct: 0.25,
   minRecentOrders: 10,
@@ -1406,17 +1407,21 @@ const AUTO_SIGNAL_RULES = {
   minBaseOrders: 50,
   minBaseRevenueDay: 30000,
   minRevenueLossDay: 30000,
+  minReturnsCurrent: 20,
+  minReturnsBaseline: 10,
+  minReturnsDelta: 8,
   minKzClicks: 700,
   minKzRevenue: 50000,
   minKzSpend: 30000,
-  totalLimit: 16,
+  totalLimit: 18,
   launchLimit: 5,
   familyLimits: {
     stock: 10,
     price: 3,
     sales: 4,
     kz: 5,
-    aov: 1
+    aov: 1,
+    returns: 2
   }
 };
 
@@ -1462,6 +1467,55 @@ function autoSignalMetric(item, key) {
 function autoSignalFinite(value, fallback = 0) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function autoSignalArticleKey(row = {}) {
+  return String(row?.articleKey || row?.article || row?.sku || '').trim();
+}
+
+function autoSignalReturnUnits(row = {}) {
+  return Math.max(0, autoSignalFinite(
+    row?.returns?.count
+      ?? row?.returns?.units
+      ?? row?.returnsCount
+      ?? row?.returnCount
+      ?? row?.returnsUnits
+      ?? row?.refundUnits
+      ?? 0,
+    0
+  ));
+}
+
+function autoSignalReturnValue(row = {}) {
+  return Math.max(0, autoSignalFinite(
+    row?.returns?.value
+      ?? row?.returnsValue
+      ?? row?.returnValue
+      ?? row?.refundValue
+      ?? 0,
+    0
+  ));
+}
+
+function autoSignalReturnReason(row = {}) {
+  return String(row?.returns?.topReason || row?.topReturnReason || row?.returnReason || '').trim();
+}
+
+function autoSignalReturnPlatform(sku = {}) {
+  if (sku?.flags?.toWorkWB && sku?.flags?.toWorkOzon) return 'wb+ozon';
+  if (sku?.flags?.toWorkWB) return 'wb';
+  if (sku?.flags?.toWorkOzon) return 'ozon';
+  if (sku?.flags?.hasWB && sku?.flags?.hasOzon) return 'wb+ozon';
+  if (sku?.flags?.hasWB) return 'wb';
+  if (sku?.flags?.hasOzon) return 'ozon';
+  return detectTaskPlatform({}, sku);
+}
+
+function autoSignalReturnsBaselineMap() {
+  const rows = Array.isArray(state.autoSignalBaselines?.skus) ? state.autoSignalBaselines.skus : [];
+  return new Map(rows
+    .map((row) => [autoSignalArticleKey(row).toLowerCase(), row])
+    .filter(([articleKey]) => articleKey));
 }
 
 function autoSignalPct(value, digits = 0) {
@@ -1715,6 +1769,69 @@ function buildPriceAndSalesAutoSignalCandidates() {
   return candidates;
 }
 
+function buildReturnsAutoSignalCandidates() {
+  const baselineMap = autoSignalReturnsBaselineMap();
+  if (!baselineMap.size) return [];
+  return (state.skus || []).map((sku) => {
+    const articleKey = autoSignalArticleKey(sku);
+    if (!articleKey || !autoSignalSkuAllowed(sku)) return null;
+    const baseline = baselineMap.get(articleKey.toLowerCase());
+    if (!baseline) return null;
+    const currentReturns = autoSignalReturnUnits(sku);
+    const baselineReturns = autoSignalReturnUnits(baseline);
+    const delta = currentReturns - baselineReturns;
+    const growth = baselineReturns > 0 ? delta / baselineReturns : 0;
+    if (
+      currentReturns < AUTO_SIGNAL_RULES.minReturnsCurrent
+      || baselineReturns < AUTO_SIGNAL_RULES.minReturnsBaseline
+      || delta < AUTO_SIGNAL_RULES.minReturnsDelta
+      || growth < AUTO_SIGNAL_RULES.returnsGrowthPct
+    ) {
+      return null;
+    }
+
+    const currentValue = autoSignalReturnValue(sku);
+    const baselineValue = autoSignalReturnValue(baseline);
+    const valueDelta = currentValue - baselineValue;
+    const priority = growth >= 0.5 || delta >= 30 ? 'critical' : 'high';
+    const platform = autoSignalReturnPlatform(sku);
+    const platformLabel = platform === 'wb+ozon' ? 'WB+Ozon' : autoSignalPlatformLabel(platform);
+    const topReason = autoSignalReturnReason(sku) || autoSignalReturnReason(baseline);
+    const growthLabel = autoSignalPct(growth);
+    return {
+      family: 'returns',
+      dedupeKey: articleKey,
+      articleKey,
+      taskType: 'returns',
+      platform,
+      priority,
+      score: 735 + growth * 120 + delta * 3 + Math.max(0, valueDelta) / 10000,
+      task: {
+        id: stableId('auto-returns-spike-v2', articleKey),
+        source: 'auto',
+        autoCode: 'returns_spike_v2',
+        articleKey,
+        title: `${platformLabel}: возвраты +${growthLabel}, ${autoSignalNum(currentReturns, 0)} шт.`,
+        nextAction: 'Проверить причину резкого роста возвратов: карточка, ожидание покупателя, качество партии, упаковка, цена/промо и отзывы. В задаче оставить одну подтвержденную причину и действие.',
+        reason: [
+          `возвраты выросли с ${autoSignalNum(baselineReturns, 0)} до ${autoSignalNum(currentReturns, 0)} шт.`,
+          `рост ${growthLabel}, дельта +${autoSignalNum(delta, 0)} шт.`,
+          Math.abs(valueDelta) > 0 ? `деньги: ${valueDelta >= 0 ? '+' : ''}${autoSignalMoney(valueDelta)}` : '',
+          topReason ? `топ-причина: ${topReason}` : '',
+          state.autoSignalBaselines?.source ? `сравнение с ${state.autoSignalBaselines.source}` : ''
+        ].filter(Boolean).join(' · '),
+        owner: ownerName(sku),
+        due: autoSignalTaskDue(priority),
+        status: 'new',
+        type: 'returns',
+        priority,
+        platform,
+        entityLabel: sku?.name || articleKey
+      }
+    };
+  }).filter(Boolean);
+}
+
 function autoSignalLeaderboardSnapshots() {
   const current = state.productLeaderboard || {};
   const history = Array.isArray(state.productLeaderboardHistory) ? state.productLeaderboardHistory : [];
@@ -1857,6 +1974,7 @@ function buildQualityAutoSignalTasks(keys, leaderboardPayload = {}) {
   return selectAutoSignalCandidates([
     ...buildStockAutoSignalCandidates(),
     ...buildPriceAndSalesAutoSignalCandidates(),
+    ...buildReturnsAutoSignalCandidates(),
     ...buildKzAutoSignalCandidates(leaderboardPayload)
   ]).map((candidate) => {
     const task = candidate.task || {};

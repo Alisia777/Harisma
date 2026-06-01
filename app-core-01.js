@@ -1,6 +1,7 @@
 ﻿const state = {
   dashboard: { cards: [], generatedAt: '' },
   skus: [],
+  autoSignalBaselines: { skus: [], generatedAt: '', source: '' },
   prices: { generatedAt: '', platforms: {} },
   platformTrends: { generatedAt: '', platforms: [], extraMarketplace: { generatedAt: '', asOfDate: '', platforms: {} } },
   platformPlan: { generatedAt: '', months: {} },
@@ -2680,12 +2681,13 @@ const LAZY_DATA_LOADERS = {
     state.launches = Array.isArray(launches) ? launches : [];
   },
   controlCenter: async () => {
-    const [launches, productLeaderboard, productLeaderboardHistory, oosControl, smartPriceOverlay] = await Promise.all([
+    const [launches, productLeaderboard, productLeaderboardHistory, oosControl, smartPriceOverlay, returnBaselineSkus] = await Promise.all([
       loadJsonOrFallback('data/launches.json', [], 'Продукт / новинки'),
       loadJsonOrFallback('data/product_leaderboard.json', { generatedAt: '', items: [], summary: {} }, 'Продуктовый лидерборд'),
       loadJsonOrFallback('data/product_leaderboard_history.json', [], 'История продуктового лидерборда'),
       loadJsonOrFallback('data/oos_control.json', { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } }, 'OOS контроль'),
-      loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU')
+      loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU'),
+      loadJsonOrFallback('data/last_good/skus.json', [], 'База возвратов SKU')
     ]);
     state.launches = Array.isArray(launches) ? launches : [];
     state.productLeaderboard = typeof normalizeProductLeaderboardPayload === 'function'
@@ -2698,6 +2700,20 @@ const LAZY_DATA_LOADERS = {
     state.smartPriceOverlay = smartPriceOverlay && typeof smartPriceOverlay === 'object'
       ? smartPriceOverlay
       : { generatedAt: '', platforms: {} };
+    const returnBaselineRows = Array.isArray(returnBaselineSkus)
+      ? returnBaselineSkus
+      : Array.isArray(returnBaselineSkus?.skus)
+        ? returnBaselineSkus.skus
+        : Array.isArray(returnBaselineSkus?.rows)
+          ? returnBaselineSkus.rows
+          : [];
+    state.autoSignalBaselines = {
+      skus: returnBaselineRows,
+      generatedAt: returnBaselineSkus && typeof returnBaselineSkus === 'object' && !Array.isArray(returnBaselineSkus)
+        ? String(returnBaselineSkus.generatedAt || returnBaselineSkus.asOfDate || '')
+        : '',
+      source: 'data/last_good/skus.json'
+    };
     state.boot.lazyReady.launches = true;
     state.boot.lazyReady.productLeaderboard = true;
     state.boot.lazyReady.oosControl = true;

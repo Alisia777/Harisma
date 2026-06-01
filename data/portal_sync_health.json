@@ -1,15 +1,14 @@
 {
   "schema": "portal-sync-health-v1",
-  "generatedAt": "2026-06-01T20:06:27.257Z",
+  "generatedAt": "2026-06-01T20:17:51.154Z",
   "status": "warning",
   "publish": {
     "allowed": true,
     "blockingReasons": [],
     "warnings": [
-      "Unmapped API SKU revenue: 3619.",
-      "API SKU exists in price/repricer contour but is absent from skus registry: 36 SKU / 5935113 revenue."
+      "Unmapped API SKU revenue: 3619."
     ],
-    "checkedAt": "2026-06-01T20:06:27.257Z"
+    "checkedAt": "2026-06-01T20:17:51.154Z"
   },
   "freshness": {
     "maxDate": "2026-05-31",
@@ -18,7 +17,7 @@
     "completenessGuard": {
       "enabled": true,
       "status": "ok",
-      "checkedAt": "2026-06-01T20:06:27.252Z",
+      "checkedAt": "2026-06-01T20:17:51.149Z",
       "settlementHour": 10,
       "expectedDate": "2026-05-31",
       "maxDate": "2026-05-31",
@@ -65,7 +64,7 @@
     },
     "dependencyGuard": {
       "status": "ok",
-      "checkedAt": "2026-06-01T20:06:27.257Z",
+      "checkedAt": "2026-06-01T20:17:51.154Z",
       "expectedDate": "2026-05-31",
       "adsSummaryWindowTo": "2026-05-31",
       "iuDrrWindowTo": "2026-05-31",
@@ -235,16 +234,16 @@
     "portal_data_quality": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-01T20:06:26.858Z",
+      "generatedAt": "2026-06-01T20:17:50.751Z",
       "asOfDate": "2026-05-31",
       "revenue": 3619
     },
     "portal_data_quarantine": {
       "exists": true,
-      "rows": 20,
-      "generatedAt": "2026-06-01T19:26:44.799Z",
+      "rows": 0,
+      "generatedAt": "2026-06-01T20:06:27.251Z",
       "asOfDate": "2026-06-01",
-      "revenue": 5363397
+      "revenue": 0
     },
     "sku_aliases": {
       "exists": true,
@@ -270,14 +269,14 @@
     "sku_matrix": {
       "exists": true,
       "rows": 143,
-      "generatedAt": "2026-06-01T20:06:26.919Z",
+      "generatedAt": "2026-06-01T20:17:50.815Z",
       "asOfDate": "2026-06-01",
       "revenue": 0
     },
     "portal_sync_health": {
       "exists": true,
       "rows": 1,
-      "generatedAt": "2026-06-01T19:26:44.806Z",
+      "generatedAt": "2026-06-01T20:06:27.257Z",
       "asOfDate": "2026-06-01",
       "revenue": 0
     }
@@ -337,7 +336,7 @@
   "quality": {
     "issueCount": 89,
     "criticalCount": 0,
-    "warningCount": 89,
+    "warningCount": 53,
     "monthKey": "2026-05",
     "maxDate": "2026-05-31",
     "apiUnmappedPlatformRows": 4,

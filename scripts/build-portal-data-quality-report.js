@@ -330,7 +330,7 @@ function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDa
           knownOutsideRegistryRevenue += fact.revenue;
           knownOutsideRegistryUnits += fact.units;
           issues.push({
-            severity: 'warning',
+            severity: 'info',
             type: 'api_sku_known_outside_registry',
             dataset: 'platform_trends.extraMarketplace',
             platform,
@@ -341,7 +341,7 @@ function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDa
             units: Math.round(fact.units),
             firstDate: fact.firstDate,
             lastDate: fact.lastDate,
-            message: 'API SKU is present in price/repricer contour, but absent from skus.json/aliases'
+            message: 'API SKU is covered by the team price/repricer contour; master SKU card is optional'
           });
           return;
         }

@@ -3222,6 +3222,7 @@ function skuContourIssueRows(model = {}) {
       if (keys.some((key) => ignoredKeys.has(key))) status = 'ignored';
       else if (keys.some((key) => aliasKeys.has(key))) status = 'applied';
       else if (keys.some((key) => quarantineKeys.has(key))) status = 'quarantine';
+      else if (type.includes('api_sku_known_outside_registry')) status = 'known';
       else if (type.includes('aggregate') || type.includes('агрегат') || type.includes('выше')) status = 'blocked';
       else if (type.includes('wb_owner_distribution')) status = 'new';
       else if (issue.severity === 'warning' || issue.severity === 'warn') status = 'warning';
@@ -3251,7 +3252,7 @@ function skuContourIssueRows(model = {}) {
 }
 
 function skuContourIssueIsResolved(row = {}) {
-  return row.status === 'applied' || row.status === 'ignored';
+  return row.status === 'applied' || row.status === 'ignored' || row.status === 'known';
 }
 
 function skuContourShowResolved() {
@@ -4272,8 +4273,8 @@ function portalHealthContourCardsHtml({ issues = [], sources = [], summary = {},
     },
     {
       title: 'SKU пары',
-      caption: apiUnmapped ? 'API без связи с матрицей' : (apiRegistryGap ? 'есть в ценах/репрайсере, нет в SKU' : 'alias/ignore под контролем'),
-      value: apiUnmapped ? fmt.int(apiUnmapped) : (apiRegistryGap ? `${fmt.int(apiRegistryGap)} в реестр` : 'OK'),
+      caption: apiUnmapped ? 'API без связи с матрицей' : (apiRegistryGap ? 'покрыто командным min/max' : 'alias/ignore под контролем'),
+      value: apiUnmapped ? fmt.int(apiUnmapped) : (apiRegistryGap ? `${fmt.int(apiRegistryGap)} min/max` : 'OK'),
       ratio: apiUnmapped ? Math.max(0.15, 1 - apiUnmapped / 80) : (apiRegistryGap ? Math.max(0.45, 1 - apiRegistryGap / 120) : 1),
       tone: apiUnmapped ? 'warn' : (apiRegistryGap ? 'info' : 'ok'),
       view: 'sku-contour'

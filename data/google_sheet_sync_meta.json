@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-01T11:26:33.949Z",
+  "generatedAt": "2026-06-01T18:16:09.161Z",
   "sheetSource": "https://docs.google.com/spreadsheets/d/1isYJavBkZWId5WZsu1zTo1dLNhs6Kf4FfB7Isx2eaWA/edit?gid=2003059667#gid=2003059667",
   "sourceMode": "google-csv-tabs",
   "sourceGids": {
@@ -15,9 +15,9 @@
   "updatedSkus": 143,
   "skuAliases": {
     "sheetRows": 0,
-    "localRows": 341,
-    "normalizedRows": 341,
-    "appliedRows": 341,
+    "localRows": 0,
+    "normalizedRows": 0,
+    "appliedRows": 0,
     "unmatchedTargetRows": 0,
     "unmatchedTargets": []
   },
@@ -52,7 +52,7 @@
     "ozon_cluster_count": 31,
     "ozon_warehouse_count": 60,
     "wb_warehouse_count": 26,
-    "central_warehouse_stock": 393546,
+    "central_warehouse_stock": 393396,
     "warehouse_stock_overlay_rows": 134
   }
 }

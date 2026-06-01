@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-01T09:53:35.696Z",
+  "generatedAt": "2026-06-01T18:14:42.477Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
@@ -37,10 +37,10 @@
     "harly_ear_drops"
   ],
   "summary": {
-    "stockWarehouse": 393546,
+    "stockWarehouse": 393396,
     "accepted": 3070967,
-    "shippedOzon": 1009357,
-    "shippedWB": 1667529
+    "shippedOzon": 1009407,
+    "shippedWB": 1667629
   },
   "rows": [
     {
@@ -298,10 +298,10 @@
     },
     {
       "articleKey": "frutaksa_bad_200gr",
-      "stockWarehouse": 168,
+      "stockWarehouse": 18,
       "accepted": 3077,
-      "shippedOzon": 1625,
-      "shippedWB": 1284,
+      "shippedOzon": 1675,
+      "shippedWB": 1384,
       "sourceKeys": [
         "frutaksa_BAD_200gr"
       ],

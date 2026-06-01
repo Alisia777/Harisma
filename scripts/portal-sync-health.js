@@ -84,6 +84,7 @@ function resolveOptions(args) {
     inputDir,
     baseDataDir,
     outputDir,
+    syncIssuesPath: path.resolve(args['sync-issues'] || path.join(inputDir, 'portal_sync_issues.json')),
     lastGoodDir: path.resolve(args['last-good-dir'] || path.join(baseDataDir, 'last_good')),
     mirrorLocalFallback: Boolean(args['mirror-local-fallback']),
     markLastGood: Boolean(args['mark-last-good']),
@@ -105,6 +106,34 @@ function resolveOptions(args) {
 function readJsonIfExists(filePath) {
   if (!fs.existsSync(filePath)) return null;
   return JSON.parse(fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, ''));
+}
+
+function normalizeSyncIssue(issue) {
+  if (!issue || typeof issue !== 'object') return null;
+  const id = String(issue.id || issue.stepId || issue.name || 'sync-step').trim();
+  const name = String(issue.name || issue.id || id).trim();
+  const message = String(issue.message || issue.error || issue.reason || '').trim();
+  return {
+    id,
+    name,
+    message,
+    failedAt: String(issue.failedAt || issue.generatedAt || '').trim()
+  };
+}
+
+function loadSyncIssues(options) {
+  const payload = readJsonIfExists(options.syncIssuesPath);
+  if (!payload) {
+    return {
+      generatedAt: '',
+      issues: []
+    };
+  }
+  const rawIssues = Array.isArray(payload) ? payload : (Array.isArray(payload.issues) ? payload.issues : []);
+  return {
+    generatedAt: String(payload.generatedAt || '').trim(),
+    issues: rawIssues.map(normalizeSyncIssue).filter(Boolean)
+  };
 }
 
 function readSnapshot(options, name) {
@@ -509,6 +538,20 @@ function buildHealth(options) {
   const blockingReasons = [];
   const warnings = [];
   const checks = [];
+  const syncIssues = loadSyncIssues(options);
+
+  syncIssues.issues.forEach((issue) => {
+    const label = issue.name || issue.id;
+    const suffix = issue.message ? `: ${issue.message}` : '';
+    const message = `Non-blocking sync step failed: ${label}${suffix}.`;
+    warnings.push(message);
+    checks.push({
+      name: `sync-step:${issue.id}`,
+      status: 'warning',
+      message,
+      failedAt: issue.failedAt
+    });
+  });
 
   REQUIRED_SNAPSHOTS.forEach((name) => {
     const metric = sources[name];
@@ -658,6 +701,7 @@ function buildHealth(options) {
       dependencyGuard
     },
     sources,
+    syncIssues,
     skuContour,
     quality: qualitySummary,
     apiReconciliation: {

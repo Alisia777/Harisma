@@ -202,6 +202,16 @@ function Set-ProcessEnvFallback {
 $resolvedOutputDir = if ($OutputDir) { $OutputDir } else { ".altea-google-sheet-sync-output" }
 New-Item -ItemType Directory -Path $resolvedOutputDir -Force | Out-Null
 $script:retrySteps = @()
+$script:syncIssuesPath = Join-Path $resolvedOutputDir "portal_sync_issues.json"
+
+function Write-SyncIssues {
+  $payload = [ordered]@{
+    schema = "portal-sync-issues-v1"
+    generatedAt = (Get-Date).ToString("o")
+    issues = $script:retrySteps
+  }
+  $payload | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $script:syncIssuesPath -Encoding UTF8
+}
 
 function Add-RetryStep {
   param(
@@ -222,7 +232,10 @@ function Add-RetryStep {
     message = $Message
     failedAt = (Get-Date).ToString("o")
   }
+  Write-SyncIssues
 }
+
+Write-SyncIssues
 
 function Schedule-FailedStepRetry {
   if ($DryRun -or -not $script:retrySteps.Count) {
@@ -580,23 +593,29 @@ if ($ProfileDir) {
 $kzParams.DryRun = $true
 
 Write-Output "[sync] product leaderboard sync started"
+$kzRefreshSucceeded = $false
 & $kzSyncScript @kzParams
 $kzExitCode = if ($null -eq $LASTEXITCODE) { 0 } else { $LASTEXITCODE }
 if ($kzExitCode -ne 0) {
   Add-RetryStep -Id "product-leaderboard" -Name "product leaderboard sync" -Message "exit code $kzExitCode"
   Write-Warning "[sync] product leaderboard sync failed with exit code $kzExitCode. Continuing portal sync without leaderboard refresh."
 } else {
+  $kzRefreshSucceeded = $true
   Write-Output "[sync] product leaderboard sync completed"
 }
 
-Write-Output "[sync] product leaderboard history build phase started"
-Invoke-NodeStep -StepName "product leaderboard history build" -Arguments @("scripts/build-product-leaderboard-history.js") -Attempts 2 -RetryDelaySeconds 20
+if ($kzRefreshSucceeded) {
+  Write-Output "[sync] product leaderboard history build phase started"
+  Invoke-NodeStep -StepName "product leaderboard history build" -Arguments @("scripts/build-product-leaderboard-history.js") -Attempts 2 -RetryDelaySeconds 20
 
-$leaderboardHistoryPath = Join-Path "data" "product_leaderboard_history.json"
-if (Test-Path -LiteralPath $leaderboardHistoryPath) {
-  Copy-Item -LiteralPath $leaderboardHistoryPath -Destination (Join-Path $resolvedOutputDir "product_leaderboard_history.json") -Force
+  $leaderboardHistoryPath = Join-Path "data" "product_leaderboard_history.json"
+  if (Test-Path -LiteralPath $leaderboardHistoryPath) {
+    Copy-Item -LiteralPath $leaderboardHistoryPath -Destination (Join-Path $resolvedOutputDir "product_leaderboard_history.json") -Force
+  }
+  Write-Output "[sync] product leaderboard history build phase completed"
+} else {
+  Write-Warning "[sync] product leaderboard history build skipped because leaderboard refresh failed."
 }
-Write-Output "[sync] product leaderboard history build phase completed"
 
 Write-Output "[sync] IU plan build phase started"
 Invoke-NodeStep -StepName "IU plan build" -Arguments @("scripts/build-iu-plan-layer.js") -Attempts 2 -RetryDelaySeconds 20
@@ -799,6 +818,8 @@ $syncHealthArguments = @(
   "data",
   "--output-dir",
   $resolvedOutputDir,
+  "--sync-issues",
+  $script:syncIssuesPath,
   "--mirror-local-fallback"
 )
 
@@ -901,12 +922,17 @@ $snapshotNames = @(
   "iu_plan",
   "warehouse_stock_overlay",
   "loyalty_system",
-  "product_leaderboard",
-  "product_leaderboard_history",
   "order_procurement",
   "order_procurement_wb",
   "order_procurement_ozon"
 )
+
+if ($kzRefreshSucceeded) {
+  $snapshotNames += "product_leaderboard"
+  $snapshotNames += "product_leaderboard_history"
+} else {
+  Write-Warning "[sync] product leaderboard snapshots will not be uploaded because the refresh failed; live data keeps the previous successful snapshot."
+}
 
 if (Test-Path -LiteralPath (Join-Path $resolvedOutputDir "oos_control.json")) {
   $snapshotNames += "oos_control"

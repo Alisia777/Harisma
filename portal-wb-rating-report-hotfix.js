@@ -2,7 +2,7 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260601ratingreport13';
+  const VERSION = '20260601ratingreport14';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
@@ -2407,6 +2407,7 @@
           ${chip(`${fmtInt(model.snapshots.length)} срезов истории`, 'info')}
         </div>
       </div>
+      ${typeof renderWbSubstitutionTrafficPanel === 'function' ? renderWbSubstitutionTrafficPanel() : ''}
       <div class="rating-structured-shell">
         ${renderStructuredPlatforms(model)}
         ${renderStructuredTabs()}
@@ -2462,6 +2463,7 @@
           ${chip(`${fmtInt(model.snapshots.length)} срезов истории`, 'info')}
         </div>
       </div>
+      ${typeof renderWbSubstitutionTrafficPanel === 'function' ? renderWbSubstitutionTrafficPanel() : ''}
       ${renderPlatformCards(model, payload)}
       ${renderGameCards(model)}
       ${renderHistoryMissionStrip(model)}

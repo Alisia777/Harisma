@@ -29,6 +29,7 @@ const SKU_PLAN_FACT_FILTER_VERSION = '20260601-plan-platform-scope-v1';
 let skuPlanFactSearchTimer = 0;
 let skuPlanFactExcelDownloadLockUntil = 0;
 let skuPlanFactTruthWarmupPromise = null;
+let skuPlanFactWbSubstitutionIndexCache = { payload: null, index: null };
 
 function skuPlanFactPlatformLabel(platform = '') {
   return SKU_PLAN_FACT_PLATFORM_LABELS[platform] || String(platform || '').toUpperCase();
@@ -477,6 +478,85 @@ function skuPlanFactRowsForSkuArray(rows = [], sku = {}, platform = '') {
   return rows.filter((row) => tokens.has(skuPlanFactArticleToken(row)));
 }
 
+function skuPlanFactWbSubstitutionPayload() {
+  const payload = state.wbSubstitutionTraffic && typeof state.wbSubstitutionTraffic === 'object'
+    ? state.wbSubstitutionTraffic
+    : {};
+  return {
+    generatedAt: payload.generatedAt || '',
+    asOfDate: payload.asOfDate || '',
+    summary: payload.summary || {},
+    articles: Array.isArray(payload.articles) ? payload.articles : [],
+    rows: Array.isArray(payload.rows) ? payload.rows : []
+  };
+}
+
+function skuPlanFactWbSubstitutionIndex() {
+  const payload = skuPlanFactWbSubstitutionPayload();
+  if (skuPlanFactWbSubstitutionIndexCache.payload === state.wbSubstitutionTraffic && skuPlanFactWbSubstitutionIndexCache.index) {
+    return skuPlanFactWbSubstitutionIndexCache.index;
+  }
+  const index = new Map();
+  const add = (tokenValue, row) => {
+    const token = skuPlanFactToken(tokenValue);
+    if (!token) return;
+    if (!index.has(token)) index.set(token, []);
+    index.get(token).push(row);
+  };
+  payload.articles.forEach((row) => {
+    add(row.articleKey, row);
+    add(row.article, row);
+    add(row.sellerArticle, row);
+    add(row.productId, row);
+  });
+  skuPlanFactWbSubstitutionIndexCache = { payload: state.wbSubstitutionTraffic, index };
+  return index;
+}
+
+function skuPlanFactWbSubstitutionForSku(sku = {}) {
+  const index = skuPlanFactWbSubstitutionIndex();
+  if (!index.size) return null;
+  const tokens = new Set([
+    ...skuPlanFactSkuLookupTokens(sku, 'wb'),
+    skuPlanFactToken(sku?.wb?.productId),
+    skuPlanFactToken(sku?.wb?.nmId),
+    skuPlanFactToken(sku?.wb?.supplierArticle)
+  ].filter(Boolean));
+  const rows = [];
+  const seen = new Set();
+  tokens.forEach((token) => {
+    (index.get(token) || []).forEach((row) => {
+      const key = row.articleKey || row.sellerArticle || row.productId || token;
+      if (seen.has(key)) return;
+      seen.add(key);
+      rows.push(row);
+    });
+  });
+  if (!rows.length) return null;
+  const topSubstitutions = [];
+  const result = rows.reduce((acc, row) => {
+    acc.views += numberOrZero(row.views);
+    acc.carts += numberOrZero(row.carts);
+    acc.orders += numberOrZero(row.orders);
+    acc.favorites += numberOrZero(row.favorites);
+    acc.substitutionCount += numberOrZero(row.substitutionCount);
+    acc.campaignCount += numberOrZero(row.campaignCount);
+    (Array.isArray(row.topSubstitutions) ? row.topSubstitutions : []).forEach((item) => topSubstitutions.push(item));
+    return acc;
+  }, { views: 0, carts: 0, orders: 0, favorites: 0, substitutionCount: 0, campaignCount: 0 });
+  result.cartRate = result.views > 0 ? result.carts / result.views : null;
+  result.orderRate = result.views > 0 ? result.orders / result.views : null;
+  result.topSubstitutions = topSubstitutions
+    .sort((left, right) => (
+      numberOrZero(right.orders) - numberOrZero(left.orders)
+      || numberOrZero(right.views) - numberOrZero(left.views)
+      || String(left.label || left.key || '').localeCompare(String(right.label || right.key || ''), 'ru')
+    ))
+    .slice(0, 6);
+  result.source = skuPlanFactWbSubstitutionPayload().generatedAt || skuPlanFactWbSubstitutionPayload().asOfDate || '';
+  return result;
+}
+
 function skuPlanFactKnownSkuTokens() {
   const tokens = new Set();
   (state.skus || []).forEach((sku) => {
@@ -876,6 +956,16 @@ function skuPlanFactBlankMetric(platform = '') {
     adClicks: 0,
     adOrders: 0,
     adRevenue: 0,
+    substitutionViews: 0,
+    substitutionCarts: 0,
+    substitutionOrders: 0,
+    substitutionFavorites: 0,
+    substitutionCount: 0,
+    substitutionCampaignCount: 0,
+    substitutionCartRate: null,
+    substitutionOrderRate: null,
+    substitutionTop: [],
+    substitutionSource: '',
     drr: null,
     adsDrr: null,
     planAdSpend: null,
@@ -1949,6 +2039,8 @@ function skuPlanFactPlatformHasActivity(metric = {}) {
     || Number(metric?.factRevenue) > 0
     || Number(metric?.factUnits) > 0
     || Number(metric?.adSpend) > 0
+    || Number(metric?.substitutionViews) > 0
+    || Number(metric?.substitutionOrders) > 0
     || Number(metric?.planRevenue) > 0
     || Number(metric?.planUnits) > 0
     || Number(metric?.currentPrice) > 0
@@ -2064,6 +2156,15 @@ function skuPlanFactFinalizePlatformMetric(metric = {}, monthKey = '', elapsedDa
   metric.gapToDate = metric.factRevenue - metric.planToDateRevenue;
   metric.drr = metric.factRevenue > 0 ? metric.adSpend / metric.factRevenue : null;
   metric.adsDrr = metric.adRevenue > 0 ? metric.adSpend / metric.adRevenue : null;
+  metric.substitutionViews = numberOrZero(metric.substitutionViews);
+  metric.substitutionCarts = numberOrZero(metric.substitutionCarts);
+  metric.substitutionOrders = numberOrZero(metric.substitutionOrders);
+  metric.substitutionFavorites = numberOrZero(metric.substitutionFavorites);
+  metric.substitutionCount = numberOrZero(metric.substitutionCount);
+  metric.substitutionCampaignCount = numberOrZero(metric.substitutionCampaignCount);
+  metric.substitutionCartRate = metric.substitutionViews > 0 ? metric.substitutionCarts / metric.substitutionViews : null;
+  metric.substitutionOrderRate = metric.substitutionViews > 0 ? metric.substitutionOrders / metric.substitutionViews : null;
+  metric.substitutionTop = Array.isArray(metric.substitutionTop) ? metric.substitutionTop : [];
   metric.marginPct = skuPlanFactNormalizeRatio(metric.marginPct);
   metric.marginRub = metric.marginPct === null ? null : metric.factRevenue * metric.marginPct;
   metric.factMarginPct = skuPlanFactNormalizeRatio(metric.factMarginPct);
@@ -2153,6 +2254,7 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
     : { units: 0, revenue: 0, avgCheck: null, days: skuPlanFactMonthDays(monthKey), source: '' };
   const fact = skuPlanFactFactFromRows(factRows, monthKey, maxFactDate, minFactDate);
   const ad = skuPlanFactAdForSku(adIndex, platform, sku);
+  const wbSubstitution = platform === 'wb' ? skuPlanFactWbSubstitutionForSku(sku) : null;
   const planToDateRevenue = plan.revenue > 0 ? plan.revenue * elapsedDays / Math.max(1, plan.days) : 0;
   const planToDateUnits = plan.units > 0 ? plan.units * elapsedDays / Math.max(1, plan.days) : 0;
   const supportKey = skuPlanFactPlatformSupportKey(platform);
@@ -2205,6 +2307,16 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
     adOrders: ad.orders,
     adRevenue: ad.revenue,
     adDaily: ad.daily || [],
+    substitutionViews: wbSubstitution?.views || 0,
+    substitutionCarts: wbSubstitution?.carts || 0,
+    substitutionOrders: wbSubstitution?.orders || 0,
+    substitutionFavorites: wbSubstitution?.favorites || 0,
+    substitutionCount: wbSubstitution?.substitutionCount || 0,
+    substitutionCampaignCount: wbSubstitution?.campaignCount || 0,
+    substitutionCartRate: wbSubstitution?.cartRate ?? null,
+    substitutionOrderRate: wbSubstitution?.orderRate ?? null,
+    substitutionTop: wbSubstitution?.topSubstitutions || [],
+    substitutionSource: wbSubstitution?.source || '',
     drr: fact.revenue > 0 ? ad.spend / fact.revenue : null,
     adsDrr: ad.revenue > 0 ? ad.spend / ad.revenue : null,
     turnoverDays,
@@ -2219,10 +2331,10 @@ function skuPlanFactPlatformMetrics(sku, platform, monthKey, indexes, adIndex, e
     currentPrice,
     currentClientPrice,
     currentFillPrice: currentPrice,
-    hasSource: Boolean(sourceRows.length || factRows.length || planRows.length || Number(currentPrice) > 0 || Number(currentClientPrice) > 0 || Number(stock) > 0 || Number(ad.spend) > 0),
+    hasSource: Boolean(sourceRows.length || factRows.length || planRows.length || Number(currentPrice) > 0 || Number(currentClientPrice) > 0 || Number(stock) > 0 || Number(ad.spend) > 0 || Number(wbSubstitution?.views) > 0 || Number(wbSubstitution?.orders) > 0),
     planPriceProxy: priceProxy,
     hasDirectPlan: Boolean(SKU_PLAN_FACT_DIRECT_PLAN_PLATFORMS.has(platform) && (plan.units > 0 || plan.revenue > 0)),
-    source: fact.source || plan.source || ''
+    source: [fact.source || plan.source || '', wbSubstitution ? 'wb-substitution-traffic' : ''].filter(Boolean).join('+')
   };
 }
 
@@ -2279,6 +2391,13 @@ function skuPlanFactFinalizeRow(row = {}, monthKey = '', elapsedDays = 0, period
     acc.factUnits += numberOrZero(metric.factUnits);
     acc.factRevenue += numberOrZero(metric.factRevenue);
     acc.adSpend += numberOrZero(metric.adSpend);
+    acc.substitutionViews += numberOrZero(metric.substitutionViews);
+    acc.substitutionCarts += numberOrZero(metric.substitutionCarts);
+    acc.substitutionOrders += numberOrZero(metric.substitutionOrders);
+    acc.substitutionFavorites += numberOrZero(metric.substitutionFavorites);
+    acc.substitutionCount += numberOrZero(metric.substitutionCount);
+    acc.substitutionCampaignCount += numberOrZero(metric.substitutionCampaignCount);
+    (Array.isArray(metric.substitutionTop) ? metric.substitutionTop : []).forEach((item) => acc.substitutionTop.push(item));
     if (metric.planAdSpend !== null && metric.planAdSpend !== undefined) {
       acc.planAdSpend += numberOrZero(metric.planAdSpend);
       acc.hasPlanAdSpend = true;
@@ -2316,9 +2435,11 @@ function skuPlanFactFinalizeRow(row = {}, monthKey = '', elapsedDays = 0, period
       || numberOrZero(metric.factUnits) > 0
       || numberOrZero(metric.factRevenue) > 0
       || numberOrZero(metric.adSpend) > 0
+      || numberOrZero(metric.substitutionViews) > 0
+      || numberOrZero(metric.substitutionOrders) > 0
     );
     return acc;
-  }, { planUnits: 0, planRevenue: 0, planToDateRevenue: 0, factUnits: 0, factRevenue: 0, adSpend: 0, planAdSpend: 0, planMonthAdSpend: 0, planPeriodAdSpend: 0, adForecastSpend: 0, hasPlanAdSpend: false, hasPlanMonthAdSpend: false, hasPlanPeriodAdSpend: false, hasAdForecastSpend: false, marginValue: 0, marginWeight: 0, planMarginValue: 0, planMarginWeight: 0, activePlatforms: 0, dailyMap: new Map(), hasPlanOrFact: false });
+  }, { planUnits: 0, planRevenue: 0, planToDateRevenue: 0, factUnits: 0, factRevenue: 0, adSpend: 0, substitutionViews: 0, substitutionCarts: 0, substitutionOrders: 0, substitutionFavorites: 0, substitutionCount: 0, substitutionCampaignCount: 0, substitutionTop: [], planAdSpend: 0, planMonthAdSpend: 0, planPeriodAdSpend: 0, adForecastSpend: 0, hasPlanAdSpend: false, hasPlanMonthAdSpend: false, hasPlanPeriodAdSpend: false, hasAdForecastSpend: false, marginValue: 0, marginWeight: 0, planMarginValue: 0, planMarginWeight: 0, activePlatforms: 0, dailyMap: new Map(), hasPlanOrFact: false });
   row.planUnits = totals.planUnits;
   row.planRevenue = totals.planRevenue;
   row.planToDateRevenue = totals.planToDateRevenue;
@@ -2330,6 +2451,17 @@ function skuPlanFactFinalizeRow(row = {}, monthKey = '', elapsedDays = 0, period
   row.gapToDate = row.factRevenue - row.planToDateRevenue;
   row.adSpend = totals.adSpend;
   row.drr = row.factRevenue > 0 ? row.adSpend / row.factRevenue : null;
+  row.substitutionViews = totals.substitutionViews;
+  row.substitutionCarts = totals.substitutionCarts;
+  row.substitutionOrders = totals.substitutionOrders;
+  row.substitutionFavorites = totals.substitutionFavorites;
+  row.substitutionCount = totals.substitutionCount;
+  row.substitutionCampaignCount = totals.substitutionCampaignCount;
+  row.substitutionCartRate = row.substitutionViews > 0 ? row.substitutionCarts / row.substitutionViews : null;
+  row.substitutionOrderRate = row.substitutionViews > 0 ? row.substitutionOrders / row.substitutionViews : null;
+  row.substitutionTop = totals.substitutionTop
+    .sort((left, right) => numberOrZero(right.orders) - numberOrZero(left.orders) || numberOrZero(right.views) - numberOrZero(left.views))
+    .slice(0, 6);
   row.planAdSpend = totals.hasPlanAdSpend ? totals.planAdSpend : null;
   row.planAdSpendToDate = row.planAdSpend;
   row.planMonthAdSpend = totals.hasPlanMonthAdSpend ? totals.planMonthAdSpend : null;
@@ -2365,7 +2497,7 @@ function skuPlanFactMarkDuplicateRiskRows(rows = []) {
 }
 
 function skuPlanFactDefaultSortDir(sort = '') {
-  const numericSorts = new Set(['fact', 'plan', 'drr', 'avgCheck', 'turnover', 'ad', 'margin', 'platform', 'action', ...SKU_PLAN_FACT_PLATFORMS]);
+  const numericSorts = new Set(['fact', 'plan', 'drr', 'avgCheck', 'turnover', 'ad', 'substitution', 'margin', 'platform', 'action', ...SKU_PLAN_FACT_PLATFORMS]);
   return numericSorts.has(sort) ? 'desc' : 'asc';
 }
 
@@ -2387,6 +2519,7 @@ function skuPlanFactSortValue(row, sort = '') {
     return values.length ? values.reduce((sum, value) => sum + Number(value), 0) / values.length : null;
   }
   if (sort === 'ad') return row.adSpend;
+  if (sort === 'substitution') return numberOrZero(row.substitutionOrders) || numberOrZero(row.substitutionViews);
   if (sort === 'action') return skuPlanFactAttentionScore(row);
   return row.gapToDate;
 }
@@ -2488,6 +2621,12 @@ function skuPlanFactBuildModel() {
     acc.planUnits += row.planUnits;
     acc.factUnits += row.factUnits;
     acc.adSpend += row.adSpend;
+    acc.substitutionViews += numberOrZero(row.substitutionViews);
+    acc.substitutionCarts += numberOrZero(row.substitutionCarts);
+    acc.substitutionOrders += numberOrZero(row.substitutionOrders);
+    acc.substitutionFavorites += numberOrZero(row.substitutionFavorites);
+    acc.substitutionCount += numberOrZero(row.substitutionCount);
+    acc.substitutionCampaignCount += numberOrZero(row.substitutionCampaignCount);
     if (row.planAdSpend !== null && row.planAdSpend !== undefined) {
       acc.planAdSpend += numberOrZero(row.planAdSpend);
       acc.hasPlanAdSpend = true;
@@ -2519,12 +2658,14 @@ function skuPlanFactBuildModel() {
     if (row.planToDateRevenue > 0 && row.factRevenue < row.planToDateRevenue) acc.underPlan += 1;
     if (row.planRevenue > 0 && row.factRevenue <= 0) acc.noFact += 1;
     return acc;
-  }, { planRevenue: 0, planToDateRevenue: 0, factRevenue: 0, planUnits: 0, factUnits: 0, adSpend: 0, planAdSpend: 0, planMonthAdSpend: 0, planPeriodAdSpend: 0, adForecastSpend: 0, hasPlanAdSpend: false, hasPlanMonthAdSpend: false, hasPlanPeriodAdSpend: false, hasAdForecastSpend: false, marginValue: 0, marginWeight: 0, planMarginValue: 0, planMarginWeight: 0, underPlan: 0, noFact: 0 });
+  }, { planRevenue: 0, planToDateRevenue: 0, factRevenue: 0, planUnits: 0, factUnits: 0, adSpend: 0, substitutionViews: 0, substitutionCarts: 0, substitutionOrders: 0, substitutionFavorites: 0, substitutionCount: 0, substitutionCampaignCount: 0, planAdSpend: 0, planMonthAdSpend: 0, planPeriodAdSpend: 0, adForecastSpend: 0, hasPlanAdSpend: false, hasPlanMonthAdSpend: false, hasPlanPeriodAdSpend: false, hasAdForecastSpend: false, marginValue: 0, marginWeight: 0, planMarginValue: 0, planMarginWeight: 0, underPlan: 0, noFact: 0 });
   totals.completionToDate = totals.planToDateRevenue > 0 ? totals.factRevenue / totals.planToDateRevenue : null;
   totals.completionMonth = totals.planRevenue > 0 ? totals.factRevenue / totals.planRevenue : null;
   totals.gapToDate = totals.factRevenue - totals.planToDateRevenue;
   totals.avgCheck = totals.factUnits > 0 ? totals.factRevenue / totals.factUnits : null;
   totals.drr = totals.factRevenue > 0 ? totals.adSpend / totals.factRevenue : null;
+  totals.substitutionCartRate = totals.substitutionViews > 0 ? totals.substitutionCarts / totals.substitutionViews : null;
+  totals.substitutionOrderRate = totals.substitutionViews > 0 ? totals.substitutionOrders / totals.substitutionViews : null;
   totals.planAdSpend = totals.hasPlanAdSpend ? totals.planAdSpend : null;
   totals.planAdSpendToDate = totals.planAdSpend;
   totals.planMonthAdSpend = totals.hasPlanMonthAdSpend ? totals.planMonthAdSpend : null;
@@ -5501,6 +5642,16 @@ function skuPlanFactDisplayMetric(row = {}, model = {}) {
       adForecastDays: metric.adForecastDays || skuPlanFactAdForecastDays(model.monthKey || '', model.elapsedDays || model.periodDays || 0, model.periodStart || ''),
       planDrr: metric.planDrr ?? null,
       planAdSource: metric.planAdSource || '',
+      substitutionViews: numberOrZero(metric.substitutionViews),
+      substitutionCarts: numberOrZero(metric.substitutionCarts),
+      substitutionOrders: numberOrZero(metric.substitutionOrders),
+      substitutionFavorites: numberOrZero(metric.substitutionFavorites),
+      substitutionCount: numberOrZero(metric.substitutionCount),
+      substitutionCampaignCount: numberOrZero(metric.substitutionCampaignCount),
+      substitutionCartRate: metric.substitutionCartRate ?? null,
+      substitutionOrderRate: metric.substitutionOrderRate ?? null,
+      substitutionTop: Array.isArray(metric.substitutionTop) ? metric.substitutionTop : [],
+      substitutionSource: metric.substitutionSource || '',
       marginPct: skuPlanFactNormalizeRatio(metric.marginPct),
       marginRub: metric.marginRub ?? (skuPlanFactNormalizeRatio(metric.marginPct) === null ? null : numberOrZero(metric.factRevenue) * skuPlanFactNormalizeRatio(metric.marginPct)),
       factMarginPct: skuPlanFactNormalizeRatio(metric.factMarginPct),
@@ -5543,6 +5694,16 @@ function skuPlanFactDisplayMetric(row = {}, model = {}) {
     adForecastDays: row.adForecastDays || skuPlanFactAdForecastDays(model.monthKey || '', model.elapsedDays || model.periodDays || 0, model.periodStart || ''),
     planDrr: row.planDrr ?? null,
     planAdSource: '',
+    substitutionViews: numberOrZero(row.substitutionViews),
+    substitutionCarts: numberOrZero(row.substitutionCarts),
+    substitutionOrders: numberOrZero(row.substitutionOrders),
+    substitutionFavorites: numberOrZero(row.substitutionFavorites),
+    substitutionCount: numberOrZero(row.substitutionCount),
+    substitutionCampaignCount: numberOrZero(row.substitutionCampaignCount),
+    substitutionCartRate: row.substitutionCartRate ?? null,
+    substitutionOrderRate: row.substitutionOrderRate ?? null,
+    substitutionTop: Array.isArray(row.substitutionTop) ? row.substitutionTop : [],
+    substitutionSource: row.platforms?.wb?.substitutionSource || '',
     marginPct: skuPlanFactNormalizeRatio(row.marginPct),
     marginRub: row.marginRub,
     factMarginPct: null,
@@ -5688,6 +5849,47 @@ function skuPlanFactAdHtml(metric = {}, model = {}) {
   });
 }
 
+function skuPlanFactSubstitutionHtml(metric = {}) {
+  const views = numberOrZero(metric.substitutionViews);
+  const carts = numberOrZero(metric.substitutionCarts);
+  const orders = numberOrZero(metric.substitutionOrders);
+  const favorites = numberOrZero(metric.substitutionFavorites);
+  const count = numberOrZero(metric.substitutionCount);
+  const campaigns = numberOrZero(metric.substitutionCampaignCount);
+  const orderRate = metric.substitutionOrderRate ?? (views > 0 ? orders / views : null);
+  const cartRate = metric.substitutionCartRate ?? (views > 0 ? carts / views : null);
+  const top = Array.isArray(metric.substitutionTop) ? metric.substitutionTop[0] : null;
+  const hasTraffic = views > 0 || orders > 0 || carts > 0;
+  if (!hasTraffic) {
+    return skuPlanFactHealthBarHtml({
+      platform: 'wb',
+      label: 'WB подмены',
+      valueRatio: 0,
+      valueText: '—',
+      barText: '—',
+      tone: '',
+      metaHtml: '<em>нет трафика подмен</em>'
+    });
+  }
+  const tone = orderRate === null ? 'info' : (orderRate >= 0.06 ? 'ok' : (orderRate >= 0.03 ? 'warn' : 'danger'));
+  const metaRows = [
+    `<b>${fmt.int(orders)} заказов</b>`,
+    `<em>${fmt.int(views)} просмотров</em>`,
+    `<em>${fmt.int(carts)} корзин · ${fmt.int(favorites)} избранное</em>`,
+    `<em>${fmt.int(count)} подмен · ${fmt.int(campaigns)} кампаний</em>`,
+    top ? `<em>топ: ${escapeHtml(top.label || top.key || '')} · ${fmt.int(top.orders)} заказов</em>` : ''
+  ].filter(Boolean).join('');
+  return skuPlanFactHealthBarHtml({
+    platform: 'wb',
+    label: 'WB подмены',
+    valueRatio: orderRate,
+    valueText: fmt.pct(orderRate),
+    barText: `корзина ${fmt.pct(cartRate)}`,
+    tone,
+    metaHtml: metaRows
+  });
+}
+
 function skuPlanFactRowHtml(row, model) {
   const metric = skuPlanFactDisplayMetric(row, model);
   const totalTone = skuPlanFactTone(metric.completionToDate);
@@ -5710,6 +5912,7 @@ function skuPlanFactRowHtml(row, model) {
       <td>${skuPlanFactFactPlanHtml(metric)}</td>
       <td>${skuPlanFactMarginHtml(metric)}</td>
       <td>${skuPlanFactAdHtml(metric, model)}</td>
+      <td>${skuPlanFactSubstitutionHtml(metric)}</td>
       <td>
         ${row.syntheticUnmapped
           ? '<span class="muted small">нет карточки</span>'
@@ -5759,6 +5962,18 @@ function skuPlanFactExportColumns() {
       [`turnover_${suffix}_days`, `Оборачиваемость ${label}, дн`],
       [`stock_${suffix}`, `Остаток ${label}`]
     );
+    if (platform === 'wb') {
+      columns.push(
+        ['substitution_wb_views', 'WB подмены: просмотры'],
+        ['substitution_wb_carts', 'WB подмены: корзины'],
+        ['substitution_wb_orders', 'WB подмены: заказы'],
+        ['substitution_wb_favorites', 'WB подмены: избранное'],
+        ['substitution_wb_articles', 'WB подмены: артикулы'],
+        ['substitution_wb_campaigns', 'WB подмены: кампании'],
+        ['substitution_wb_cart_rate_pct', 'WB подмены: конверсия в корзину'],
+        ['substitution_wb_order_rate_pct', 'WB подмены: конверсия в заказ']
+      );
+    }
   });
   columns.push(
     ['plan_total_revenue', 'План всего, ₽'],
@@ -5777,7 +5992,15 @@ function skuPlanFactExportColumns() {
     ['plan_ad_spend_total_to_date', 'План рекламы total к дате, ₽'],
     ['ad_forecast_total', 'Прогноз рекламы total, ₽'],
     ['ad_completion_total_to_date_pct', 'Выполнение рекламы total к дате, %'],
-    ['ad_completion_total_forecast_pct', 'Прогноз выполнения рекламы total, %']
+    ['ad_completion_total_forecast_pct', 'Прогноз выполнения рекламы total, %'],
+    ['substitution_total_views', 'WB подмены total: просмотры'],
+    ['substitution_total_carts', 'WB подмены total: корзины'],
+    ['substitution_total_orders', 'WB подмены total: заказы'],
+    ['substitution_total_favorites', 'WB подмены total: избранное'],
+    ['substitution_total_articles', 'WB подмены total: артикулы'],
+    ['substitution_total_campaigns', 'WB подмены total: кампании'],
+    ['substitution_total_cart_rate_pct', 'WB подмены total: конверсия в корзину'],
+    ['substitution_total_order_rate_pct', 'WB подмены total: конверсия в заказ']
   );
   return columns;
 }
@@ -5821,6 +6044,16 @@ function skuPlanFactExportRows(rows, model) {
       payload[`ad_completion_${suffix}_forecast_pct`] = metric.adForecastCompletion === null || metric.adForecastCompletion === undefined ? '' : metric.adForecastCompletion;
       payload[`turnover_${suffix}_days`] = metric.turnoverDays === null ? '' : metric.turnoverDays;
       payload[`stock_${suffix}`] = metric.stock === null ? '' : Math.round(metric.stock);
+      if (platform === 'wb') {
+        payload.substitution_wb_views = Math.round(metric.substitutionViews || 0);
+        payload.substitution_wb_carts = Math.round(metric.substitutionCarts || 0);
+        payload.substitution_wb_orders = Math.round(metric.substitutionOrders || 0);
+        payload.substitution_wb_favorites = Math.round(metric.substitutionFavorites || 0);
+        payload.substitution_wb_articles = Math.round(metric.substitutionCount || 0);
+        payload.substitution_wb_campaigns = Math.round(metric.substitutionCampaignCount || 0);
+        payload.substitution_wb_cart_rate_pct = metric.substitutionCartRate === null || metric.substitutionCartRate === undefined ? '' : metric.substitutionCartRate;
+        payload.substitution_wb_order_rate_pct = metric.substitutionOrderRate === null || metric.substitutionOrderRate === undefined ? '' : metric.substitutionOrderRate;
+      }
     });
     payload.plan_total_revenue = Math.round(row.planRevenue || 0);
     payload.plan_total_to_date_revenue = Math.round(row.planToDateRevenue || 0);
@@ -5839,6 +6072,14 @@ function skuPlanFactExportRows(rows, model) {
     payload.ad_forecast_total = row.adForecastSpend === null || row.adForecastSpend === undefined ? '' : Math.round(row.adForecastSpend || 0);
     payload.ad_completion_total_to_date_pct = row.adCompletionToDate === null || row.adCompletionToDate === undefined ? '' : row.adCompletionToDate;
     payload.ad_completion_total_forecast_pct = row.adForecastCompletion === null || row.adForecastCompletion === undefined ? '' : row.adForecastCompletion;
+    payload.substitution_total_views = Math.round(row.substitutionViews || 0);
+    payload.substitution_total_carts = Math.round(row.substitutionCarts || 0);
+    payload.substitution_total_orders = Math.round(row.substitutionOrders || 0);
+    payload.substitution_total_favorites = Math.round(row.substitutionFavorites || 0);
+    payload.substitution_total_articles = Math.round(row.substitutionCount || 0);
+    payload.substitution_total_campaigns = Math.round(row.substitutionCampaignCount || 0);
+    payload.substitution_total_cart_rate_pct = row.substitutionCartRate === null || row.substitutionCartRate === undefined ? '' : row.substitutionCartRate;
+    payload.substitution_total_order_rate_pct = row.substitutionOrderRate === null || row.substitutionOrderRate === undefined ? '' : row.substitutionOrderRate;
     return payload;
   });
 }
@@ -7692,7 +7933,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
     model.dateMin ? `min="${escapeHtml(model.dateMin)}"` : '',
     model.dateMax ? `max="${escapeHtml(model.dateMax)}"` : ''
   ].filter(Boolean).join(' ');
-  const tableColspan = 8;
+  const tableColspan = 9;
   const rowsHtml = model.rows.length
     ? model.rows.map((row) => skuPlanFactRowHtml(row, model)).join('')
     : `<tr><td colspan="${tableColspan}"><div class="empty">По текущим фильтрам нет SKU.</div></td></tr>`;
@@ -7753,6 +7994,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
           <option value="plan" ${filters.sort === 'plan' ? 'selected' : ''}>Сортировка: план</option>
           <option value="drr" ${filters.sort === 'drr' ? 'selected' : ''}>Сортировка: ДРР</option>
           <option value="ad" ${filters.sort === 'ad' ? 'selected' : ''}>Сортировка: реклама</option>
+          <option value="substitution" ${filters.sort === 'substitution' ? 'selected' : ''}>Сортировка: WB подмены</option>
           <option value="article" ${filters.sort === 'article' ? 'selected' : ''}>Сортировка: артикул</option>
           <option value="owner" ${filters.sort === 'owner' ? 'selected' : ''}>Сортировка: owner</option>
         </select>
@@ -7787,6 +8029,7 @@ function renderSkuPlanFact(rootId = 'view-sku-plan-fact', options = {}) {
               ${skuPlanFactSortHeader('gap', 'Факт / план')}
               ${skuPlanFactSortHeader('margin', 'Маржа')}
               ${skuPlanFactSortHeader('ad', 'Реклама / план')}
+              ${skuPlanFactSortHeader('substitution', 'WB подмены')}
               ${skuPlanFactSortHeader('action', 'Карточка')}
             </tr>
           </thead>

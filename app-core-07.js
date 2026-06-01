@@ -6182,6 +6182,103 @@ function renderWbFeedbacksIuDrrPanel() {
   `;
 }
 
+function wbSubstitutionTrafficPayload() {
+  const payload = state.wbSubstitutionTraffic && typeof state.wbSubstitutionTraffic === 'object' ? state.wbSubstitutionTraffic : {};
+  return {
+    generatedAt: payload.generatedAt || '',
+    asOfDate: payload.asOfDate || '',
+    source: payload.source || {},
+    summary: payload.summary || {},
+    articles: Array.isArray(payload.articles) ? payload.articles : [],
+    rows: Array.isArray(payload.rows) ? payload.rows : []
+  };
+}
+
+function wbSubstitutionTrafficTone(rate) {
+  if (rate === null || rate === undefined || Number.isNaN(Number(rate))) return '';
+  const numeric = Number(rate);
+  if (numeric >= 0.06) return 'ok';
+  if (numeric >= 0.03) return 'warn';
+  return 'danger';
+}
+
+function renderWbSubstitutionTrafficPanel() {
+  const payload = wbSubstitutionTrafficPayload();
+  const summary = payload.summary || {};
+  const articles = payload.articles || [];
+  if (!articles.length) {
+    return `
+      <div class="card" style="margin-top:14px">
+        <div class="section-subhead">
+          <div><h3>WB подменные артикулы</h3><p class="small muted">Срез трафика и заказов по подменам пока не загружен.</p></div>
+          ${badge('нет данных', 'warn')}
+        </div>
+      </div>
+    `;
+  }
+  const topRows = articles
+    .slice()
+    .sort((left, right) => (
+      numberOrZero(right.orders) - numberOrZero(left.orders)
+      || numberOrZero(right.views) - numberOrZero(left.views)
+      || String(left.articleKey || '').localeCompare(String(right.articleKey || ''), 'ru')
+    ))
+    .slice(0, 24);
+  const sourceLabel = payload.asOfDate || payload.source?.sourceGeneratedAt || payload.generatedAt || '';
+  return `
+    <div class="card" style="margin-top:14px">
+      <div class="section-subhead">
+        <div><h3>WB подменные артикулы: трафик и заказы</h3><p class="small muted">Orders из файла WB считаются как продажи в штуках; рублевую выручку здесь не подставляем.</p></div>
+        <div class="badge-stack">
+          ${badge(sourceLabel ? `срез ${escapeHtml(sourceLabel)}` : 'срез WB', sourceLabel ? 'ok' : 'warn')}
+          ${badge(`${fmt.int(summary.rowCount)} строк`, 'info')}
+          ${badge(`${fmt.int(summary.matchedArticleCount)} SKU`, 'info')}
+        </div>
+      </div>
+      <div class="kpi-strip" style="margin-top:12px">
+        <div class="mini-kpi"><span>Просмотры подмен</span><strong>${fmt.int(summary.views)}</strong><span>${fmt.int(summary.substitutionArticleCount)} подменных артикулов</span></div>
+        <div class="mini-kpi ${wbSubstitutionTrafficTone(summary.orderRate)}"><span>Заказы</span><strong>${fmt.int(summary.orders)}</strong><span>конверсия ${fmt.pct(summary.orderRate)}</span></div>
+        <div class="mini-kpi"><span>Корзины</span><strong>${fmt.int(summary.carts)}</strong><span>конверсия ${fmt.pct(summary.cartRate)}</span></div>
+        <div class="mini-kpi"><span>Избранное</span><strong>${fmt.int(summary.favorites)}</strong><span>${fmt.int(summary.campaignCount)} кампаний</span></div>
+        <div class="mini-kpi ${numberOrZero(summary.unmatchedRowCount) ? 'warn' : 'ok'}"><span>Матчинг SKU</span><strong>${fmt.int(summary.mappedRowCount)}</strong><span>не сматчено ${fmt.int(summary.unmatchedRowCount)}</span></div>
+      </div>
+      <div class="table-wrap" style="margin-top:12px">
+        <table>
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Трафик</th>
+              <th>Заказы</th>
+              <th>Корзины</th>
+              <th>Избранное</th>
+              <th>Подмены</th>
+              <th>Топ подмена</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${topRows.map((row) => {
+              const top = Array.isArray(row.topSubstitutions) ? row.topSubstitutions[0] : null;
+              const articleTitle = row.article || row.sellerArticle || row.articleKey || 'WB';
+              const articleHtml = row.matched && row.articleKey ? linkToSku(row.articleKey, articleTitle) : `<strong>${escapeHtml(articleTitle)}</strong>`;
+              return `
+                <tr>
+                  <td>${articleHtml}<div class="muted small">${escapeHtml(row.name || row.title || '')}</div></td>
+                  <td><strong>${fmt.int(row.views)}</strong><div class="muted small">строк ${fmt.int(row.rowCount)}</div></td>
+                  <td>${badge(fmt.int(row.orders), wbSubstitutionTrafficTone(row.orderRate))}<div class="muted small">${fmt.pct(row.orderRate)}</div></td>
+                  <td>${fmt.int(row.carts)}<div class="muted small">${fmt.pct(row.cartRate)}</div></td>
+                  <td>${fmt.int(row.favorites)}</td>
+                  <td>${fmt.int(row.substitutionCount)}<div class="muted small">${fmt.int(row.campaignCount)} кампаний</div></td>
+                  <td>${top ? `<strong>${escapeHtml(top.label || top.key || '')}</strong><div class="muted small">${fmt.int(top.orders)} заказов · ${fmt.int(top.views)} просмотров</div>` : '<span class="muted">—</span>'}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
 function renderWbCardRating(rootId = 'view-wb-rating') {
   const root = document.getElementById(rootId);
   if (!root) return;
@@ -6202,6 +6299,7 @@ function renderWbCardRating(rootId = 'view-wb-rating') {
         ${badge(windowLabel, 'info')}
       </div>
     </div>
+    ${renderWbSubstitutionTrafficPanel()}
     ${renderWbFeedbacksIuDrrPanel()}
   `;
 }

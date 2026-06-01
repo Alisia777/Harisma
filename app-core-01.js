@@ -15,6 +15,7 @@
   adsSummary: { generatedAt: '', asOfDate: '', note: '', platforms: [], itemSeries: [] },
   iuDrrSummary: { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
   wbFeedbacks: { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] },
+  wbSubstitutionTraffic: { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] },
   skuAliases: { schema: 'sku-api-aliases-v1', aliases: [] },
   skuAliasIgnore: { schema: 'sku-api-ignore-v1', ignored: [] },
   skuAliasAudit: { schema: 'sku-alias-audit-v1', events: [] },
@@ -387,6 +388,7 @@ const PORTAL_SNAPSHOT_PATH_MAP = {
   'data/ads_summary.json': 'ads_summary',
   'data/iu_drr_summary.json': 'iu_drr_summary',
   'data/wb_feedbacks_summary.json': 'wb_feedbacks_summary',
+  'data/wb_substitution_traffic.json': 'wb_substitution_traffic',
   'data/platform_plan.json': 'platform_plan',
   'data/prices.json': 'prices',
   'data/smart_price_workbench.json': 'smart_price_workbench',
@@ -1251,6 +1253,7 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
   if (snapshotKey === 'ads_summary') return Array.isArray(payload?.platforms) && payload.platforms.length > 0;
   if (snapshotKey === 'iu_drr_summary') return Array.isArray(payload?.daily) && payload.daily.length > 0;
   if (snapshotKey === 'wb_feedbacks_summary') return Array.isArray(payload?.cards) && payload.cards.length > 0;
+  if (snapshotKey === 'wb_substitution_traffic') return Array.isArray(payload?.articles) && payload.articles.length > 0;
   if (snapshotKey === 'platform_plan') return typeof payload?.months === 'object' && payload.months !== null && Object.keys(payload.months).length > 0;
   if (snapshotKey === 'smart_price_workbench') {
     return typeof payload?.platforms === 'object' && payload.platforms !== null && Object.keys(payload.platforms).length > 0;
@@ -2783,7 +2786,7 @@ const LAZY_DATA_LOADERS = {
       : { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} };
   },
   iuDrr: async () => {
-    const [summary, adsPayload, wbFeedbacks] = await Promise.all([
+    const [summary, adsPayload, wbFeedbacks, wbSubstitutionTraffic] = await Promise.all([
       loadJsonOrFallback(
         'data/iu_drr_summary.json',
         { generatedAt: '', asOfDate: '', months: [], daily: [], channels: [], diagnostics: {} },
@@ -2798,6 +2801,11 @@ const LAZY_DATA_LOADERS = {
         'data/wb_feedbacks_summary.json',
         { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] },
         'WB отзывы и вопросы'
+      ),
+      loadJsonOrFallback(
+        'data/wb_substitution_traffic.json',
+        { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] },
+        'WB подменные артикулы'
       )
     ]);
     state.iuDrrSummary = summary && typeof summary === 'object'
@@ -2809,6 +2817,9 @@ const LAZY_DATA_LOADERS = {
     state.wbFeedbacks = wbFeedbacks && typeof wbFeedbacks === 'object'
       ? wbFeedbacks
       : { generatedAt: '', window: {}, summary: {}, cards: [], daily: [], history: [] };
+    state.wbSubstitutionTraffic = wbSubstitutionTraffic && typeof wbSubstitutionTraffic === 'object'
+      ? wbSubstitutionTraffic
+      : { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] };
   },
   oosControl: async () => {
     const payload = await loadJsonOrFallback(
@@ -2821,7 +2832,7 @@ const LAZY_DATA_LOADERS = {
       : { schema: 'portal-oos-control-v2', generatedAt: '', summary: {}, rows: [], history: { days: [] } };
   },
   skuPlanFact: async () => {
-    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, skuAliases, skuAliasIgnore, skuAliasAudit, wbOwnerDistributionAudit] = await Promise.all([
+    const [smartPriceWorkbench, smartPriceOverlay, priceWorkbenchSupport, prices, platformTrends, platformPlan, adsPayload, skuAliases, skuAliasIgnore, skuAliasAudit, wbOwnerDistributionAudit, wbSubstitutionTraffic] = await Promise.all([
       loadJsonOrFallback('data/smart_price_workbench.json', { generatedAt: '', platforms: {} }, 'Ценовой контур'),
       loadJsonOrFallback('data/smart_price_overlay.json', { generatedAt: '', platforms: {} }, 'Факт продаж по SKU'),
       loadJsonOrFallback('data/price_workbench_support.dashboard-compact.json', { generatedAt: '', platforms: {} }, 'План SKU'),
@@ -2852,6 +2863,11 @@ const LAZY_DATA_LOADERS = {
         'data/wb_owner_distribution_audit.json',
         { schema: 'portal-wb-owner-distribution-audit-v1', summary: { ownerCounts: {} } },
         'WB owner distribution audit'
+      ),
+      loadJsonOrFallback(
+        'data/wb_substitution_traffic.json',
+        { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] },
+        'WB подменные артикулы'
       )
     ]);
     state.smartPriceOverlay = smartPriceOverlay && typeof smartPriceOverlay === 'object'
@@ -2892,6 +2908,9 @@ const LAZY_DATA_LOADERS = {
     state.wbOwnerDistributionAudit = wbOwnerDistributionAudit && typeof wbOwnerDistributionAudit === 'object'
       ? wbOwnerDistributionAudit
       : { schema: 'portal-wb-owner-distribution-audit-v1', summary: { ownerCounts: {} } };
+    state.wbSubstitutionTraffic = wbSubstitutionTraffic && typeof wbSubstitutionTraffic === 'object'
+      ? wbSubstitutionTraffic
+      : { schema: 'portal-wb-substitution-traffic-v1', generatedAt: '', asOfDate: '', summary: {}, articles: [], rows: [] };
   },
   productLeaderboard: async () => {
     const loadLocalProductData = async (path, fallback, label) => {

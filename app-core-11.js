@@ -3638,6 +3638,228 @@ async function portalHealthCreateIssueTasks(options = {}) {
   return result;
 }
 
+function portalHealthGameModel({ issues = [], sources = [], summary = {}, meta = {}, dangerCount = 0, warnCount = 0 } = {}) {
+  const blocked = state.syncHealth?.publish?.allowed === false || String(state.syncHealth?.status || '').toLowerCase() === 'blocked';
+  const staleCount = sources.filter((row) => row.tone !== 'ok').length;
+  const quarantineCount = numberOrZero(state.portalDataQuarantine?.summary?.rows || state.portalDataQuarantine?.rows?.length || 0);
+  const apiUnmapped = numberOrZero(summary.apiUnmappedUniqueSku || state.skuMatrix?.summary?.apiUnmappedCount || 0);
+  let score = 100;
+  score -= blocked ? 30 : 0;
+  score -= dangerCount * 14;
+  score -= warnCount * 3;
+  score -= staleCount * 7;
+  score -= quarantineCount > 0 ? Math.min(18, 4 + quarantineCount) : 0;
+  score -= apiUnmapped > 0 ? Math.min(12, Math.ceil(apiUnmapped / 4)) : 0;
+  score = Math.max(0, Math.min(100, Math.round(score)));
+  const tone = blocked || dangerCount || score < 65 ? 'danger' : (warnCount || staleCount || score < 88 ? 'warn' : 'ok');
+  const hue = tone === 'danger' ? 5 : (tone === 'warn' ? 42 : 145);
+  const level = tone === 'danger' ? 'STOP' : (tone === 'warn' ? 'CHECK' : 'GO');
+  const title = tone === 'danger'
+    ? 'Сначала чинить данные'
+    : (tone === 'warn' ? 'Работать можно, но есть хвосты' : 'Цифрам можно доверять');
+  const nextAction = tone === 'danger'
+    ? 'Разобрать красные сигналы и блокеры sync.'
+    : (tone === 'warn' ? 'Закрыть верхние предупреждения по очереди.' : 'Открыть рабочие вкладки и продолжать план-факт.');
+  return {
+    score,
+    tone,
+    hue,
+    level,
+    title,
+    nextAction,
+    checkedAt: state.syncHealth?.generatedAt || state.syncHealth?.publish?.checkedAt || state.portalDataQuality?.generatedAt || '',
+    dataTo: state.syncHealth?.freshness?.maxDate || summary.maxDate || '',
+    statusLabel: meta.label || state.syncHealth?.status || 'Sync',
+    blocked,
+    staleCount,
+    quarantineCount,
+    apiUnmapped
+  };
+}
+
+function portalHealthActionCardsHtml(issues = []) {
+  const focusGroups = [];
+  const bySignal = new Map();
+  (issues || []).filter((row) => row.tone === 'danger' || row.tone === 'warn').forEach((row) => {
+    const signalName = String(row.apiSku || row.name || row.source || 'Контур данных').trim();
+    const signalType = String(row.type || 'Проверить').trim();
+    const key = `${signalType.toLowerCase()}|${signalName.toLowerCase()}|${row.view || ''}`;
+    const current = bySignal.get(key);
+    if (current) {
+      current.count += 1;
+      current.amount += numberOrZero(row.amount);
+      current.units += numberOrZero(row.units);
+      if (row.tone === 'danger') current.tone = 'danger';
+      if (row.platform && !current.platforms.includes(row.platform)) current.platforms.push(row.platform);
+      if (!current.action && row.action) current.action = row.action;
+      return;
+    }
+    const group = {
+      ...row,
+      name: signalName,
+      type: signalType,
+      amount: numberOrZero(row.amount),
+      units: numberOrZero(row.units),
+      count: 1,
+      platforms: row.platform ? [row.platform] : []
+    };
+    bySignal.set(key, group);
+    focusGroups.push(group);
+  });
+  const focusRows = focusGroups.sort((a, b) => {
+    const toneDelta = (a.tone === 'danger' ? 0 : 1) - (b.tone === 'danger' ? 0 : 1);
+    if (toneDelta) return toneDelta;
+    return (numberOrZero(b.amount) + numberOrZero(b.units)) - (numberOrZero(a.amount) + numberOrZero(a.units));
+  }).slice(0, 4);
+  if (!focusRows.length) {
+    return `
+      <div class="data-health-action-card ok">
+        <span class="data-health-action-index">OK</span>
+        <div>
+          <strong>Нет срочных разборов</strong>
+          <p>Критичные сигналы не найдены. Можно идти в план-факт, репрайсер или заказы.</p>
+        </div>
+        <button class="quick-chip" type="button" data-health-open="dashboard">Дашборд</button>
+      </div>
+    `;
+  }
+  return focusRows.map((row, index) => `
+    <div class="data-health-action-card ${row.tone || 'warn'}">
+      <span class="data-health-action-index">${fmt.int(index + 1)}</span>
+      <div>
+        <strong>${escapeHtml(row.type || 'Проверить')}</strong>
+        <p>${escapeHtml(row.name || row.apiSku || row.source || 'Контур данных')}${row.count > 1 ? ` · ${fmt.int(row.count)} сигнала` : ''}</p>
+        <em>${escapeHtml(row.platforms?.length ? row.platforms.join(', ') : (row.action || row.source || ''))}</em>
+      </div>
+      <div class="data-health-action-side">
+        ${row.amount ? `<b>${fmt.money(row.amount)}</b>` : badge(row.source || 'данные', row.tone || 'warn')}
+        <button class="quick-chip" type="button" data-health-open="${escapeHtml(row.view || 'data-health')}">Открыть</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function portalHealthContourCardHtml(card = {}) {
+  const ratio = Math.max(0, Math.min(1, Number(card.ratio) || 0));
+  const hue = card.tone === 'danger' ? 5 : (card.tone === 'warn' ? 42 : (card.tone === 'info' ? 212 : 145));
+  return `
+    <button class="data-health-contour-card ${card.tone || 'ok'}" type="button" data-health-open="${escapeHtml(card.view || 'data-health')}" style="--dh-hue:${hue};--dh-fill:${(ratio * 100).toFixed(1)}%">
+      <span>
+        <strong>${escapeHtml(card.title || '')}</strong>
+        <em>${escapeHtml(card.caption || '')}</em>
+      </span>
+      <b>${escapeHtml(card.value || '')}</b>
+      <i><small></small></i>
+    </button>
+  `;
+}
+
+function portalHealthContourCardsHtml({ issues = [], sources = [], summary = {}, matrixSummary = {}, game = {} } = {}) {
+  const staleCount = sources.filter((row) => row.tone !== 'ok').length;
+  const quarantineCount = numberOrZero(state.portalDataQuarantine?.summary?.rows || state.portalDataQuarantine?.rows?.length || 0);
+  const apiUnmapped = numberOrZero(summary.apiUnmappedUniqueSku || matrixSummary.apiUnmappedCount || 0);
+  const missingOwner = numberOrZero(summary.skuMissingOwner || matrixSummary.missingOwnerCount || 0);
+  const planIssues = issues.filter((row) => row.view === 'sku-plan-fact').length;
+  const cards = [
+    {
+      title: 'Sync',
+      caption: staleCount ? 'есть несвежие источники' : 'источники в норме',
+      value: staleCount ? `${fmt.int(staleCount)} проверить` : 'OK',
+      ratio: staleCount ? 0.55 : 1,
+      tone: staleCount || game.blocked ? (game.blocked ? 'danger' : 'warn') : 'ok',
+      view: 'data-health'
+    },
+    {
+      title: 'SKU пары',
+      caption: apiUnmapped ? 'API без связи с матрицей' : 'alias/ignore под контролем',
+      value: apiUnmapped ? fmt.int(apiUnmapped) : 'OK',
+      ratio: apiUnmapped ? Math.max(0.15, 1 - apiUnmapped / 80) : 1,
+      tone: apiUnmapped ? 'warn' : 'ok',
+      view: 'sku-contour'
+    },
+    {
+      title: 'План-факт',
+      caption: planIssues ? 'есть строки к разбору' : 'без срочных разрывов',
+      value: planIssues ? fmt.int(planIssues) : 'OK',
+      ratio: planIssues ? Math.max(0.2, 1 - planIssues / 80) : 1,
+      tone: planIssues ? 'warn' : 'ok',
+      view: 'sku-plan-fact'
+    },
+    {
+      title: 'Owner',
+      caption: missingOwner ? 'нет ответственного' : 'ответственные назначены',
+      value: missingOwner ? fmt.int(missingOwner) : 'OK',
+      ratio: missingOwner ? Math.max(0.25, 1 - missingOwner / 60) : 1,
+      tone: missingOwner ? 'warn' : 'ok',
+      view: 'skus'
+    },
+    {
+      title: 'Карантин',
+      caption: quarantineCount ? 'строки не в расчётах' : 'чисто',
+      value: quarantineCount ? fmt.int(quarantineCount) : '0',
+      ratio: quarantineCount ? Math.max(0.2, 1 - quarantineCount / 50) : 1,
+      tone: quarantineCount ? 'danger' : 'ok',
+      view: 'sku-contour'
+    }
+  ];
+  return cards.map(portalHealthContourCardHtml).join('');
+}
+
+function portalHealthBindActions(root, rootId, rules, issues) {
+  root.querySelector('[data-health-refresh]')?.addEventListener('click', (event) => refreshSkuPlanFactData(event.currentTarget, rootId));
+  root.querySelector('[data-health-create-tasks]')?.addEventListener('click', async (event) => {
+    const button = event.currentTarget;
+    const originalText = button.textContent;
+    try {
+      button.disabled = true;
+      button.textContent = 'Создаём...';
+      const result = await portalHealthCreateIssueTasks({ limit: rules.autoTaskLimit || 10 });
+      renderPortalDataHealth(rootId);
+      if (typeof setAppError === 'function') setAppError(`Создано задач: ${fmt.int(result.created.length)} · уже были: ${fmt.int(result.duplicates.length)}.`);
+    } finally {
+      button.disabled = false;
+      button.textContent = originalText || 'Создать задачи';
+    }
+  });
+  root.querySelectorAll('[data-health-open]').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (typeof setView === 'function') setView(button.dataset.healthOpen || 'data-health');
+    });
+  });
+  root.querySelector('[data-health-save-snapshot]')?.addEventListener('click', () => {
+    portalHealthCommitIssueSnapshot(issues);
+    renderPortalDataHealth(rootId);
+    if (typeof setAppError === 'function') setAppError('Текущий срез проблем зафиксирован. Завтра портал покажет только новые и закрытые изменения.');
+  });
+  root.querySelector('[data-health-rules-form]')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    portalSaveDataRules({
+      stockRiskDays: form.get('stockRiskDays'),
+      criticalRevenueRub: form.get('criticalRevenueRub'),
+      staleSourceDays: form.get('staleSourceDays'),
+      autoTaskLimit: form.get('autoTaskLimit')
+    });
+    renderPortalDataHealth(rootId);
+    if (typeof setAppError === 'function') setAppError('Правила сохранены. Очередь проблем и складской порог пересчитаны.');
+  });
+  root.querySelectorAll('[data-health-saved-view]').forEach((button) => {
+    button.addEventListener('click', () => portalHealthApplySavedView(button.dataset.healthSavedView || ''));
+  });
+  root.querySelectorAll('[data-health-explain]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const key = String(button.dataset.healthExplain || '');
+      const text = {
+        revenue: 'Выручка собирается из fact/API строк площадок. До попадания в портал строки проверяются на дубли, карантин и связь с матрицей SKU.',
+        'api-unmapped': 'API без пары означает: площадка прислала SKU/offer_id, но портал не знает, к какому SKU реестра его отнести. Решение закрепляется через alias или ignore.',
+        freshness: 'Свежесть считается по asOfDate/generatedAt каждого источника. Если лаг больше правила в настройках, источник подсвечивается.',
+        quarantine: 'Карантин нужен, чтобы подозрительные строки не смешивались с нормальным расчётом. Их надо разбирать отдельно, а не молча считать.'
+      }[key] || 'Для этой цифры пока нет отдельной расшифровки.';
+      window.alert(text);
+    });
+  });
+}
+
 function renderPortalDataHealth(rootId = 'view-data-health') {
   const root = document.getElementById(rootId);
   if (!root) return;
@@ -3654,6 +3876,155 @@ function renderPortalDataHealth(rootId = 'view-data-health') {
     : { label: health.status || 'sync', tone: health.status === 'warning' ? 'warn' : 'ok', notice: health.status === 'warning' ? 'warn' : 'ok' };
   const dangerCount = issues.filter((row) => row.tone === 'danger').length;
   const warnCount = issues.filter((row) => row.tone === 'warn').length;
+  const game = portalHealthGameModel({ issues, sources, summary, meta, dangerCount, warnCount });
+  const actionCardsHtml = portalHealthActionCardsHtml(issues);
+  const contourCardsHtml = portalHealthContourCardsHtml({ issues, sources, summary, matrixSummary, game });
+  const compactIssueRows = issues.slice(0, 36).map((row) => `
+    <tr>
+      <td>${badge(row.tone === 'danger' ? 'стоп' : row.tone === 'warn' ? 'проверить' : 'ok', row.tone)}</td>
+      <td><strong>${escapeHtml(row.type)}</strong><div class="muted small">${escapeHtml(row.source || '')}</div></td>
+      <td><strong>${escapeHtml(row.apiSku || row.name || '—')}</strong><div class="muted small">${escapeHtml(row.name || '')}</div></td>
+      <td>${row.amount ? fmt.money(row.amount) : '—'}</td>
+      <td><button class="quick-chip" type="button" data-health-open="${escapeHtml(row.view || 'data-health')}">Открыть</button></td>
+    </tr>
+  `).join('');
+  const sourceRowsCompact = sources.map((row) => `
+    <tr>
+      <td><strong>${escapeHtml(row.label)}</strong></td>
+      <td>${badge(row.status || 'ok', row.tone)}</td>
+      <td>${escapeHtml(row.asOfDate || '—')}</td>
+      <td>${escapeHtml(fmt.date(row.generatedAt || ''))}</td>
+      <td>${fmt.int(row.rows)}</td>
+      <td>${row.lagDays === null ? '—' : `${fmt.int(row.lagDays)} дн.`}</td>
+    </tr>
+  `).join('');
+  const digestCardsHtml = portalHealthTodayDigestRows({ issues, sources, summary, dangerCount, warnCount })
+    .map((row) => `
+      <div class="data-health-digest-card ${row.tone || ''}">
+        <span>${escapeHtml(row.title)}</span>
+        <strong>${escapeHtml(row.text)}</strong>
+      </div>
+    `).join('');
+  const changeHtmlNew = portalHealthChangesHtml(issueDiff);
+  const rulesHtmlNew = portalHealthRulesHtml(rules);
+  const sourceExplainHtmlNew = portalHealthSourceExplanationHtml(summary);
+  const workModesHtmlNew = portalHealthWorkModesHtml();
+  const uploadWizardHtmlNew = portalHealthUploadWizardHtml();
+  const historyHtmlNew = portalHealthHistoryHtml();
+  root.innerHTML = `
+    <div class="data-health-shell">
+      <div class="section-title sku-data-title">
+        <div>
+          <h2>Здоровье данных</h2>
+          <p>Пульт доверия к цифрам: можно ли сегодня работать с планами, KPI и задачами.</p>
+        </div>
+        <div class="quick-actions">
+          <button class="quick-chip" type="button" data-health-refresh>Обновить</button>
+          <button class="quick-chip" type="button" data-health-create-tasks>Создать задачи</button>
+          <button class="quick-chip" type="button" data-health-open="sku-contour">Контур SKU</button>
+          <button class="quick-chip" type="button" data-health-open="control">Задачи</button>
+        </div>
+      </div>
+
+      <section class="data-health-hero ${game.tone}" style="--dh-hue:${game.hue};--dh-score:${game.score}%">
+        <div class="data-health-score">
+          <span>уровень доверия</span>
+          <strong>${fmt.int(game.score)}</strong>
+          <em>${escapeHtml(game.level)}</em>
+        </div>
+        <div class="data-health-hero-main">
+          <div class="data-health-hero-head">
+            <div>
+              <h3>${escapeHtml(game.title)}</h3>
+              <p>${escapeHtml(game.nextAction)}</p>
+            </div>
+            <div class="badge-stack">
+              ${badge(game.statusLabel, game.tone)}
+              ${badge(`данные до ${game.dataTo || '—'}`, game.staleCount ? 'warn' : 'ok')}
+            </div>
+          </div>
+          <div class="data-health-xp-track"><i></i><span>80</span><span>90</span><span>100</span></div>
+          <div class="data-health-hero-stats">
+            <span><em>красные</em><b>${fmt.int(dangerCount)}</b></span>
+            <span><em>проверить</em><b>${fmt.int(warnCount)}</b></span>
+            <span><em>источники</em><b>${fmt.int(sources.length - game.staleCount)} / ${fmt.int(sources.length)}</b></span>
+            <span><em>карантин</em><b>${fmt.int(game.quarantineCount)}</b></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="data-health-focus">
+        <div class="section-subhead">
+          <div>
+            <h3>Что делать первым</h3>
+            <p class="small muted">Только верхушка очереди. Остальное ниже и в профильных вкладках.</p>
+          </div>
+          ${badge(`${fmt.int(issues.length)} сигналов`, issues.length ? 'warn' : 'ok')}
+        </div>
+        <div class="data-health-action-grid">${actionCardsHtml}</div>
+      </section>
+
+      <section class="data-health-contours">
+        <div class="section-subhead">
+          <div>
+            <h3>Контуры</h3>
+            <p class="small muted">Пять зон, где обычно ломается доверие к цифрам.</p>
+          </div>
+          ${badge('нажми, чтобы перейти', 'info')}
+        </div>
+        <div class="data-health-contour-grid">${contourCardsHtml}</div>
+      </section>
+
+      <section class="data-health-digest">
+        <div class="section-subhead">
+          <div>
+            <h3>Утренний срез</h3>
+            <p class="small muted">Коротко: что изменилось, где деньги и что уже закрепили.</p>
+          </div>
+        </div>
+        <div class="data-health-digest-grid">${digestCardsHtml}</div>
+      </section>
+
+      <details class="data-health-queue">
+        <summary>Очередь сигналов</summary>
+        <div class="table-scroll">
+          <table class="data-table compact">
+            <thead><tr><th>Уровень</th><th>Проблема</th><th>SKU/API</th><th>Влияние</th><th></th></tr></thead>
+            <tbody>${compactIssueRows || '<tr><td colspan="5"><div class="empty">Срочных сигналов нет</div></td></tr>'}</tbody>
+          </table>
+        </div>
+      </details>
+
+      <details class="data-health-tech">
+        <summary>Технические детали и правила</summary>
+        <div class="data-health-tech-grid">
+          ${changeHtmlNew}
+          ${rulesHtmlNew}
+          ${sourceExplainHtmlNew}
+          ${workModesHtmlNew}
+          ${uploadWizardHtmlNew}
+          ${historyHtmlNew}
+          <div class="card sku-plan-fact-card data-health-source-table">
+            <div class="section-subhead">
+              <div>
+                <h3>Свежесть источников</h3>
+                <p class="small muted">Таблица для проверки API/sync, дат и объёма строк.</p>
+              </div>
+              ${badge(`${fmt.int(game.staleCount)} не в норме`, game.staleCount ? 'warn' : 'ok')}
+            </div>
+            <div class="table-scroll">
+              <table class="data-table compact">
+                <thead><tr><th>Источник</th><th>Статус</th><th>Дата данных</th><th>Собрано</th><th>Строк</th><th>Лаг</th></tr></thead>
+                <tbody>${sourceRowsCompact || '<tr><td colspan="6"><div class="empty">Нет данных по источникам</div></td></tr>'}</tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  `;
+  portalHealthBindActions(root, rootId, rules, issues);
+  return;
   const digestRows = portalHealthTodayDigestRows({ issues, sources, summary, dangerCount, warnCount });
   const changeHtml = portalHealthChangesHtml(issueDiff);
   const rulesHtml = portalHealthRulesHtml(rules);

@@ -807,11 +807,36 @@ function repricerConfidenceTone(level) {
   return '';
 }
 
+function repricerCanRaiseToMin(side) {
+  if (!side || side.outOfSpec || side.promoActive) return false;
+  if (side.criticalGate === 'SKIP' || side.criticalGate === 'BLOCK') return false;
+  const currentPrice = numberOrZero(side.currentPrice);
+  const floor = Math.ceil(Math.max(
+    numberOrZero(side.effectiveFloor),
+    numberOrZero(side.finalGuardFloor),
+    numberOrZero(side.hardFloor),
+    numberOrZero(side.b2bFloor),
+    numberOrZero(side.skuMinPrice),
+    numberOrZero(side.override?.floorPrice)
+  ));
+  const finalPrice = numberOrZero(side.finalPrice || side.recommendedPrice);
+  if (currentPrice <= 0 || floor <= 0 || finalPrice <= 0) return false;
+  if (currentPrice + 0.001 >= floor) return false;
+  if (finalPrice + 0.001 < floor) return false;
+  return finalPrice > currentPrice;
+}
+
+function repricerBelowMinNeedsManual(side) {
+  return Boolean(side?.belowFloorNow && !side?.floorRaiseReady);
+}
+
 function repricerBuildDecisionText(side, reasons) {
   const finalPrice = numberOrZero(side?.finalPrice);
   const currentPrice = numberOrZero(side?.currentPrice);
   const deltaPct = currentPrice > 0 ? (finalPrice - currentPrice) / currentPrice : null;
-  const reasonText = reasons.length ? reasons.slice(0, 2).join(', ') : String(side?.reason || 'цена в рабочем коридоре').split(' · ')[0];
+  const reasonText = side?.floorRaiseReady && !reasons.length
+    ? `текущая цена ниже MIN ${fmt.money(side?.effectiveFloor)}, поднимаем до порога`
+    : reasons.length ? reasons.slice(0, 2).join(', ') : String(side?.reason || 'цена в рабочем коридоре').split(' · ')[0];
   if (side?.confidence === 'red') return `Не выгружать: ${reasonText}.`;
   if (side?.confidence === 'yellow') return `Проверить: ${reasonText}.`;
   if (Math.abs(finalPrice - currentPrice) < 1) return `Оставить ${fmt.money(currentPrice)}: цена в рабочем коридоре.`;
@@ -827,6 +852,8 @@ function repricerApplyConfidence(side) {
   const currentPrice = numberOrZero(side.currentPrice);
   const finalPrice = numberOrZero(side.finalPrice);
   const floor = numberOrZero(side.effectiveFloor);
+  const floorRaiseReady = repricerCanRaiseToMin(side);
+  side.floorRaiseReady = floorRaiseReady;
   const freshAge = repricerAgeDays(side.historyFreshnessDate);
   const cooldownAge = repricerAgeDays(side.lastPriceChangeDate);
   const hasReliableCost = Boolean(side.rawCostPresent) || side.economicFloorSource === 'fee_stack' || side.economicFloorSource === 'snapshot_guard';
@@ -840,7 +867,7 @@ function repricerApplyConfidence(side) {
 
   if (!hasReliableCost) repricerAddReason(yellow, 'себестоимость не подтверждена');
   if (side.economicFloorSource === 'snapshot_fallback') repricerAddReason(yellow, 'цена считается по fallback');
-  if (side.belowFloorNow) repricerAddReason(yellow, 'текущая цена ниже MIN');
+  if (side.belowFloorNow && !floorRaiseReady) repricerAddReason(yellow, 'текущая цена ниже MIN');
   if (side.marginRisk) repricerAddReason(yellow, 'маржа ниже порога');
   if (side.liveDrift) repricerAddReason(yellow, 'расходится с live-рекомендацией');
   if (side.launchHold === 'LAUNCH_HOLD') repricerAddReason(yellow, 'новинка не READY');
@@ -866,6 +893,7 @@ function repricerApplyConfidence(side) {
   side.confidenceReasons = [...red, ...yellow];
   side.safeToExport = level === 'green' && side.changed && !side.promoActive;
   side.promoSafeToExport = level === 'green' && side.changed && side.promoActive;
+  side.floorRaiseSafeToExport = Boolean(floorRaiseReady && side.safeToExport);
   side.decisionText = repricerBuildDecisionText(side, side.confidenceReasons);
   return side;
 }
@@ -2938,7 +2966,7 @@ function repricerPrimaryStopReason(side) {
   if (side.criticalGate === 'BLOCK') return 'нет входов';
   if (numberOrZero(side.currentPrice) <= 0) return 'нет цены';
   if (numberOrZero(side.effectiveFloor) <= 0) return 'нет MIN';
-  if (side.belowFloorNow) return 'ниже MIN';
+  if (repricerBelowMinNeedsManual(side)) return 'ниже MIN';
   if (!side.rawCostPresent && side.economicFloorSource === 'snapshot_fallback') return 'нет себестоимости';
   if (side.marginRisk) return 'риск маржи';
   if (side.launchHold === 'LAUNCH_HOLD') return 'не READY';
@@ -2956,7 +2984,7 @@ function repricerIssueFlags(side) {
     missingMin: numberOrZero(side?.effectiveFloor) <= 0 && !['LAUNCH_HOLD', 'OFF'].includes(reasonCode),
     missingCost: numberOrZero(side?.costRub) <= 0 && (!side?.pricingProxyPresent || side?.economicFloorSource === 'snapshot_fallback'),
     missingPrice: numberOrZero(side?.currentPrice) <= 0 && !['LAUNCH_HOLD', 'OOS', 'OFF'].includes(reasonCode),
-    belowMin: Boolean(side?.belowFloorNow),
+    belowMin: repricerBelowMinNeedsManual(side),
     liveDrift: Boolean(side?.liveDrift),
     marginRisk: Boolean(side?.marginRisk),
     blocked: side?.criticalGate === 'BLOCK',
@@ -3200,7 +3228,9 @@ function repricerTemplateStats(rows, platform = 'wb') {
     changed: nonPromo.filter(({ side }) => side.changed).length,
     yellow: nonPromo.filter(({ side }) => side.confidence === 'yellow').length,
     red: nonPromo.filter(({ side }) => side.confidence === 'red').length,
-    belowMin: nonPromo.filter(({ side }) => side.belowFloorNow).length,
+    belowMin: nonPromo.filter(({ side }) => repricerBelowMinNeedsManual(side)).length,
+    floorRaiseReady: nonPromo.filter(({ side }) => side.floorRaiseReady).length,
+    floorRaiseSafe: nonPromo.filter(({ side }) => side.floorRaiseSafeToExport).length,
     blocked: nonPromo.filter(({ side }) => side.criticalGate === 'BLOCK').length,
     missingMin: nonPromo.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0).length,
     missingCost: nonPromo.filter(({ side }) => numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent).length,
@@ -3226,7 +3256,7 @@ function repricerTopStatusText(stats) {
     ['нет MIN', numberOrZero(stats?.wb?.missingMin) + numberOrZero(stats?.ozon?.missingMin)],
     ['нет себестоимости', numberOrZero(stats?.wb?.missingCost) + numberOrZero(stats?.ozon?.missingCost)],
     ['нет входов', numberOrZero(stats?.wb?.blocked) + numberOrZero(stats?.ozon?.blocked)],
-    ['ниже MIN', numberOrZero(stats?.wb?.belowMin) + numberOrZero(stats?.ozon?.belowMin)],
+    ['ниже MIN вручную', numberOrZero(stats?.wb?.belowMin) + numberOrZero(stats?.ozon?.belowMin)],
     ['нужна проверка', numberOrZero(stats?.wb?.yellow) + numberOrZero(stats?.ozon?.yellow)]
   ].filter(([, count]) => count > 0).slice(0, 3);
   if (blockers.length) {
@@ -3438,7 +3468,7 @@ function repricerIssueRows(batch = 'all', sourceRows = null) {
   const rows = Array.isArray(sourceRows) ? sourceRows : buildRepricerRows();
   return repricerCollectSides(rows)
     .filter(({ side }) => side)
-    .filter(({ side }) => side.confidence !== 'green' || side.belowFloorNow || side.liveDrift || side.marginRisk)
+    .filter(({ side }) => side.confidence !== 'green' || repricerBelowMinNeedsManual(side) || side.liveDrift || side.marginRisk)
     .map(({ row, platformLabel, side }) => {
       const issueBatch = repricerIssueBatch(side);
       const reason = repricerPrimaryStopReason(side) || issueBatch;
@@ -5252,9 +5282,9 @@ function repricerOperatorTaskPlan(health, stats = {}) {
       source: 'Цены'
     },
     {
-      title: 'Разобрать ниже MIN',
+      title: 'Разобрать ниже MIN вручную',
       count: stats.belowMinSides || 0,
-      hint: 'Текущая цена уже ниже рабочего порога.',
+      hint: 'Текущая цена ниже порога, но автоматическое поднятие не прошло проверки.',
       mode: 'below_min',
       tone: 'danger',
       source: 'Цены'
@@ -5320,7 +5350,7 @@ function repricerOperatorQueueRows(rows, limit = 6) {
       const missingPrice = numberOrZero(side.currentPrice) <= 0 && !['LAUNCH_HOLD', 'OOS', 'OFF'].includes(String(side.reasonCode || ''));
       const missingCost = numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent;
       const score = (missingMin ? 120 : 0)
-        + (side.belowFloorNow ? 90 : 0)
+        + (repricerBelowMinNeedsManual(side) ? 90 : 0)
         + (side.criticalGate === 'BLOCK' ? 70 : 0)
         + (side.marginRisk ? 55 : 0)
         + (missingPrice ? 45 : 0)
@@ -5664,7 +5694,9 @@ function renderRepricer() {
   const alignmentChangedRows = sourceRows.filter((row) => row.alignmentChanged).length;
   const actionableRows = sourceRows.filter((row) => row.changed).length;
   const manualOverrideRows = sourceRows.filter((row) => row.hasManualOverride).length;
-  const belowMinSides = sideRows.filter((side) => side.belowFloorNow).length;
+  const belowMinSides = sideRows.filter((side) => repricerBelowMinNeedsManual(side)).length;
+  const floorRaiseReadySides = sideRows.filter((side) => side.floorRaiseReady).length;
+  const floorRaiseSafeSides = sideRows.filter((side) => side.floorRaiseSafeToExport).length;
   const confidenceGreenSides = sideRows.filter((side) => side.confidence === 'green').length;
   const confidenceYellowSides = sideRows.filter((side) => side.confidence === 'yellow').length;
   const confidenceRedSides = sideRows.filter((side) => side.confidence === 'red').length;
@@ -5678,7 +5710,8 @@ function renderRepricer() {
   const summaryBadges = [
     badge(`нужны решения ${fmt.int(actionableRows)}`, actionableRows ? 'warn' : 'ok'),
     badge(`ручные решения ${fmt.int(manualOverrideRows)}`, manualOverrideRows ? 'info' : 'ok'),
-    badge(`ниже MIN ${fmt.int(belowMinSides)}`, belowMinSides ? 'danger' : 'ok'),
+    badge(`поднять до MIN ${fmt.int(floorRaiseSafeSides)}`, floorRaiseSafeSides ? 'ok' : 'info'),
+    badge(`ниже MIN вручную ${fmt.int(belowMinSides)}`, belowMinSides ? 'danger' : 'ok'),
     badge(`нет входов ${fmt.int(blockedGateSides)}`, blockedGateSides ? 'danger' : 'ok'),
     badge(`без себестоимости ${fmt.int(fallbackSides)}`, fallbackSides ? 'warn' : 'ok'),
     badge(`расходятся с live ${fmt.int(liveDriftSides)}`, liveDriftSides ? 'warn' : 'ok')
@@ -5735,14 +5768,14 @@ function renderRepricer() {
             <strong>WB: ${fmt.int(templateStats.wb.safe)} в файл</strong>
             <span>${escapeHtml(repricerTemplateEmptyReason(templateStats.wb))}</span>
           </div>
-          <div class="badge-stack">${badge(`зелёные ${fmt.int(templateStats.wb.green)}`, templateStats.wb.green ? 'ok' : 'warn')}${badge(`без изменения ${fmt.int(templateStats.wb.greenNoChange)}`, templateStats.wb.greenNoChange ? 'info' : '')}${badge(`проверить ${fmt.int(templateStats.wb.yellow)}`, templateStats.wb.yellow ? 'warn' : 'ok')}${badge(`стоп ${fmt.int(templateStats.wb.red)}`, templateStats.wb.red ? 'danger' : 'ok')}</div>
+          <div class="badge-stack">${badge(`зелёные ${fmt.int(templateStats.wb.green)}`, templateStats.wb.green ? 'ok' : 'warn')}${badge(`до MIN ${fmt.int(templateStats.wb.floorRaiseSafe)}`, templateStats.wb.floorRaiseSafe ? 'ok' : 'info')}${badge(`без изменения ${fmt.int(templateStats.wb.greenNoChange)}`, templateStats.wb.greenNoChange ? 'info' : '')}${badge(`проверить ${fmt.int(templateStats.wb.yellow)}`, templateStats.wb.yellow ? 'warn' : 'ok')}${badge(`стоп ${fmt.int(templateStats.wb.red)}`, templateStats.wb.red ? 'danger' : 'ok')}</div>
         </div>
         <div class="repricer-operator-sku">
           <div>
             <strong>Ozon: ${fmt.int(templateStats.ozon.safe)} в файл</strong>
             <span>${escapeHtml(repricerTemplateEmptyReason(templateStats.ozon))}</span>
           </div>
-          <div class="badge-stack">${badge(`зелёные ${fmt.int(templateStats.ozon.green)}`, templateStats.ozon.green ? 'ok' : 'warn')}${badge(`без изменения ${fmt.int(templateStats.ozon.greenNoChange)}`, templateStats.ozon.greenNoChange ? 'info' : '')}${badge(`проверить ${fmt.int(templateStats.ozon.yellow)}`, templateStats.ozon.yellow ? 'warn' : 'ok')}${badge(`стоп ${fmt.int(templateStats.ozon.red)}`, templateStats.ozon.red ? 'danger' : 'ok')}</div>
+          <div class="badge-stack">${badge(`зелёные ${fmt.int(templateStats.ozon.green)}`, templateStats.ozon.green ? 'ok' : 'warn')}${badge(`до MIN ${fmt.int(templateStats.ozon.floorRaiseSafe)}`, templateStats.ozon.floorRaiseSafe ? 'ok' : 'info')}${badge(`без изменения ${fmt.int(templateStats.ozon.greenNoChange)}`, templateStats.ozon.greenNoChange ? 'info' : '')}${badge(`проверить ${fmt.int(templateStats.ozon.yellow)}`, templateStats.ozon.yellow ? 'warn' : 'ok')}${badge(`стоп ${fmt.int(templateStats.ozon.red)}`, templateStats.ozon.red ? 'danger' : 'ok')}</div>
         </div>
       </div>
     </div>
@@ -5753,7 +5786,7 @@ function renderRepricer() {
     const batchButtons = [
       ['missing_min', 'нет MIN', batchCounts.missing_min, 'danger'],
       ['missing_cost', 'нет себестоимости', batchCounts.missing_cost, 'warn'],
-      ['below_min', 'ниже MIN', batchCounts.below_min, 'danger'],
+      ['below_min', 'ниже MIN вручную', batchCounts.below_min, 'danger'],
       ['live_drift', 'live расходится', batchCounts.live_drift, 'warn']
     ].map(([key, label, count, tone]) => `
       <button type="button" class="quick-chip ${count ? tone : ''}" data-repricer-export="batch:${escapeHtml(key)}">${escapeHtml(label)} ${fmt.int(count)}</button>
@@ -5798,7 +5831,7 @@ function renderRepricer() {
     const ozonCheckCount = safeCount(ozonTemplate.yellow) + safeCount(ozonTemplate.red);
     const emptyExportReasons = [
       ['нет MIN', safeCount(wbTemplate.missingMin) + safeCount(ozonTemplate.missingMin), 'Заполнить MIN/MAX в Ценах или через аудит'],
-      ['ниже MIN', safeCount(wbTemplate.belowMin) + safeCount(ozonTemplate.belowMin), 'Проверить цену и рабочий порог'],
+      ['ниже MIN вручную', safeCount(wbTemplate.belowMin) + safeCount(ozonTemplate.belowMin), 'Проверить цену и рабочий порог'],
       ['нет себестоимости', safeCount(wbTemplate.missingCost) + safeCount(ozonTemplate.missingCost), 'Добавить себестоимость или fee-контур'],
       ['требует проверки', wbCheckCount + ozonCheckCount, 'Оставить в аудите, в шаблон цен не отправлять'],
       ['стоп входов', safeCount(wbTemplate.blocked) + safeCount(ozonTemplate.blocked), 'Разобрать блокирующие входы SKU']
@@ -5959,7 +5992,8 @@ function renderRepricer() {
     { label: 'Режимы stop', value: sideRows.filter((side) => ['freeze', 'hold', 'force', 'off'].includes(side.mode)).length, hint: 'Количество площадок с ручным или статусным стопом.' },
     { label: 'Нет входов', value: blockedGateSides, hint: 'Не хватает обязательных входов: цены, рабочего MIN или себестоимости.' },
     { label: 'Стоп до READY', value: launchHoldSides, hint: 'Новинки и перезапуски сдерживаются до READY.' },
-    { label: 'Ниже MIN', value: belowMinSides, hint: 'Текущая цена уже ниже рабочего порога.' },
+    { label: 'Поднять до MIN', value: floorRaiseReadySides, hint: 'Текущая цена ниже рабочего MIN, финальная цена поднимает её до порога.' },
+    { label: 'Ниже MIN вручную', value: belowMinSides, hint: 'Ниже рабочего порога, но автоматическое поднятие не прошло проверки.' },
     { label: 'Риск маржи', value: sideRows.filter((side) => side.marginRisk).length, hint: 'Маржа ниже рабочего порога.' },
     { label: 'Можно выровнять', value: alignmentEligibleRows, hint: 'SKU, где можно запускать scoring alignment WB/Ozon.' },
     { label: 'Уже выровнены', value: alignmentChangedRows, hint: 'Сценарий follow победил keep по score-модели.' },

@@ -23,8 +23,8 @@
     { "name": "portal_sync_health", "file": "portal_sync_health.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["freshness.maxDate", "generatedAt"] },
     { "name": "portal_layer_freshness", "file": "portal_layer_freshness.json", "publish": true, "required": false, "freshnessPolicy": "daily", "freshnessPaths": ["expectedDate", "generatedAt"] },
     { "name": "sku_aliases", "file": "sku_aliases.json", "publish": true, "required": true, "freshnessPolicy": "maxAge", "maxAgeDays": 2 },
-    { "name": "sku_alias_ignore", "file": "sku_alias_ignore.json", "publish": true, "required": true, "freshnessPolicy": "maxAge", "maxAgeDays": 2 },
-    { "name": "sku_alias_audit", "file": "sku_alias_audit.json", "publish": true, "required": true, "freshnessPolicy": "maxAge", "maxAgeDays": 2 },
+    { "name": "sku_alias_ignore", "file": "sku_alias_ignore.json", "publish": true, "required": true, "freshnessPolicy": "none" },
+    { "name": "sku_alias_audit", "file": "sku_alias_audit.json", "publish": true, "required": true, "freshnessPolicy": "none" },
     { "name": "sku_matrix", "file": "sku_matrix.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["generatedAt"] },
     { "name": "wb_owner_distribution_audit", "file": "wb_owner_distribution_audit.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["generatedAt"] },
     { "name": "prices", "file": "prices.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["generatedAt", "monthKey"] },
@@ -32,6 +32,6 @@
     { "name": "smart_price_overlay", "file": "smart_price_overlay.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["asOfDate", "generatedAt"] },
     { "name": "smart_price_workbench", "file": "smart_price_workbench.json", "publish": true, "required": false, "freshnessPolicy": "maxAge", "maxAgeDays": 3, "freshnessPaths": ["generatedAt", "sourceMtime"] },
     { "name": "price_workbench_support", "file": "price_workbench_support.json", "publish": true, "required": false, "freshnessPolicy": "maxAge", "maxAgeDays": 3, "freshnessPaths": ["generatedAt", "sourceMtime"] },
-    { "name": "google_sheet_sync_meta", "sourceFile": "meta.json", "file": "google_sheet_sync_meta.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["generatedAt", "dashboard.latest_marketplace_date"] }
+    { "name": "google_sheet_sync_meta", "file": "google_sheet_sync_meta.json", "publish": true, "required": true, "freshnessPolicy": "daily", "freshnessPaths": ["generatedAt", "dashboard.latest_marketplace_date"] }
   ]
 }

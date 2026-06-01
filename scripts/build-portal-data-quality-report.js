@@ -166,6 +166,44 @@ function buildKnownSkuSet(skus = [], skuAliases = {}) {
   return set;
 }
 
+function rowsFromBucket(bucket = {}) {
+  if (!bucket) return [];
+  if (Array.isArray(bucket.rows)) return bucket.rows;
+  if (bucket.rows && typeof bucket.rows === 'object') return Object.values(bucket.rows);
+  if (Array.isArray(bucket.items)) return bucket.items;
+  if (Array.isArray(bucket.articles)) return bucket.articles;
+  return [];
+}
+
+function addKnownRowTokens(target, row = {}) {
+  [
+    row.articleKey,
+    row.article,
+    row.sku,
+    row.vendorCode,
+    row.offerId,
+    row.offer_id,
+    row.marketArticleId,
+    row.sourceArticleKey
+  ].map(normalizeToken).filter(Boolean).forEach((token) => target.add(token));
+}
+
+function buildPriceContourKnownSkuSet(files = {}) {
+  const set = new Set();
+  [
+    files.prices,
+    files.repricer,
+    files.smartPriceWorkbench,
+    files.priceWorkbenchSupport,
+    files.smartPriceOverlay
+  ].forEach((payload) => {
+    if (!payload || typeof payload !== 'object') return;
+    if (Array.isArray(payload.rows)) payload.rows.forEach((row) => addKnownRowTokens(set, row));
+    Object.values(payload.platforms || {}).forEach((bucket) => rowsFromBucket(bucket).forEach((row) => addKnownRowTokens(set, row)));
+  });
+  return set;
+}
+
 function skuAliasIgnoreRows(payload = {}) {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload.ignored)) return payload.ignored;
@@ -255,7 +293,7 @@ function platformMonthAggregate(platformTrends = {}, platform = '', monthKey = '
   }, { date: '', revenue: 0, units: 0 });
 }
 
-function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDate = '', skuAliasIgnore = {}, skuAliases = {}) {
+function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDate = '', skuAliasIgnore = {}, skuAliases = {}, priceContourKnown = new Set()) {
   const known = buildKnownSkuSet(skus, skuAliases);
   const ignored = buildSkuAliasIgnoreSet(skuAliasIgnore);
   const issues = [];
@@ -274,6 +312,9 @@ function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDa
     let ignoredRevenue = 0;
     let ignoredUnits = 0;
     let ignoredCount = 0;
+    let knownOutsideRegistryRevenue = 0;
+    let knownOutsideRegistryUnits = 0;
+    let knownOutsideRegistryCount = 0;
 
     rows.forEach((row) => {
       const articleKey = String(row?.articleKey || row?.article || row?.sku || '').trim();
@@ -284,6 +325,26 @@ function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDa
       directRevenue += fact.revenue;
       directUnits += fact.units;
       if (!known.has(token)) {
+        if (priceContourKnown.has(token)) {
+          knownOutsideRegistryCount += 1;
+          knownOutsideRegistryRevenue += fact.revenue;
+          knownOutsideRegistryUnits += fact.units;
+          issues.push({
+            severity: 'warning',
+            type: 'api_sku_known_outside_registry',
+            dataset: 'platform_trends.extraMarketplace',
+            platform,
+            platformLabel: PLATFORM_LABELS[platform] || platform,
+            articleKey,
+            name: row?.name || row?.article || articleKey,
+            revenue: Math.round(fact.revenue),
+            units: Math.round(fact.units),
+            firstDate: fact.firstDate,
+            lastDate: fact.lastDate,
+            message: 'API SKU is present in price/repricer contour, but absent from skus.json/aliases'
+          });
+          return;
+        }
         if (isSkuAliasIgnored(ignored, platform, articleKey)) {
           ignoredCount += 1;
           ignoredRevenue += fact.revenue;
@@ -337,7 +398,10 @@ function buildApiSkuQuality(platformTrends = {}, skus = [], monthKey = '', maxDa
       unmappedUnits: Math.round(unmappedUnits),
       ignoredCount,
       ignoredRevenue: Math.round(ignoredRevenue),
-      ignoredUnits: Math.round(ignoredUnits)
+      ignoredUnits: Math.round(ignoredUnits),
+      knownOutsideRegistryCount,
+      knownOutsideRegistryRevenue: Math.round(knownOutsideRegistryRevenue),
+      knownOutsideRegistryUnits: Math.round(knownOutsideRegistryUnits)
     };
   });
 
@@ -666,13 +730,19 @@ function buildReport(options) {
     iuDrr: readSnapshot(options, 'iu_drr_summary', {}),
     skuAliases: readSnapshot(options, 'sku_aliases', { schema: 'sku-api-aliases-v1', aliases: [] }),
     skuAliasIgnore: readSnapshot(options, 'sku_alias_ignore', { schema: 'sku-api-ignore-v1', ignored: [] }),
+    prices: readSnapshot(options, 'prices', {}),
+    repricer: readSnapshot(options, 'repricer', {}),
+    smartPriceWorkbench: readSnapshot(options, 'smart_price_workbench', {}),
+    priceWorkbenchSupport: readSnapshot(options, 'price_workbench_support', {}),
+    smartPriceOverlay: readSnapshot(options, 'smart_price_overlay', {}),
     wbOwnerDistributionAudit: readSnapshot(options, 'wb_owner_distribution_audit', {})
   };
 
   const maxDate = dateKey(files.platformTrends?.latestMarketplaceDate)
     || latestDate((files.platformTrends?.platforms || []).flatMap((platform) => (platform.series || []).map((point) => point.date || point.label)));
   const monthKey = monthKeyFromDate(maxDate);
-  const apiQuality = buildApiSkuQuality(files.platformTrends, Array.isArray(files.skus) ? files.skus : [], monthKey, maxDate, files.skuAliasIgnore, files.skuAliases);
+  const priceContourKnown = buildPriceContourKnownSkuSet(files);
+  const apiQuality = buildApiSkuQuality(files.platformTrends, Array.isArray(files.skus) ? files.skus : [], monthKey, maxDate, files.skuAliasIgnore, files.skuAliases, priceContourKnown);
   const orderQuality = buildOrderQuality(files.orderProcurement);
   const freshnessQuality = buildFreshnessQuality(files);
   const ownerQuality = buildOwnerQuality(Array.isArray(files.skus) ? files.skus : []);
@@ -692,6 +762,7 @@ function buildReport(options) {
   });
 
   const apiUnmappedIssues = apiQuality.issues.filter((issue) => issue.type === 'api_sku_unmapped');
+  const apiKnownOutsideRegistryIssues = apiQuality.issues.filter((issue) => issue.type === 'api_sku_known_outside_registry');
   const apiSumAboveAggregateIssues = apiQuality.issues.filter((issue) => issue.type === 'api_sum_above_aggregate');
   const summary = {
     issueCount: allIssues.length,
@@ -702,10 +773,14 @@ function buildReport(options) {
     apiUnmappedPlatformRows: apiUnmappedIssues.length,
     apiUnmappedUniqueSku: new Set(apiUnmappedIssues.map((issue) => normalizeToken(issue.articleKey))).size,
     apiUnmappedRevenue: Math.round(apiUnmappedIssues.reduce((acc, issue) => acc + numberOrZero(issue.revenue), 0)),
+    apiKnownOutsideRegistryRows: apiKnownOutsideRegistryIssues.length,
+    apiKnownOutsideRegistryUniqueSku: new Set(apiKnownOutsideRegistryIssues.map((issue) => normalizeToken(issue.articleKey))).size,
+    apiKnownOutsideRegistryRevenue: Math.round(apiKnownOutsideRegistryIssues.reduce((acc, issue) => acc + numberOrZero(issue.revenue), 0)),
     apiIgnoredPlatformRows: Object.values(apiQuality.platformSummary || {}).reduce((acc, row) => acc + numberOrZero(row.ignoredCount), 0),
     apiSumAboveAggregateCount: apiSumAboveAggregateIssues.length,
     apiSumAboveAggregateOverage: Math.round(apiSumAboveAggregateIssues.reduce((acc, issue) => acc + numberOrZero(issue.overage), 0)),
     skuAliasCount: activeSkuAliasRows(files.skuAliases).length,
+    priceContourSkuCount: priceContourKnown.size,
     orderNoStockNeedRows: orderQuality.summary.noStockNeedRows,
     skuMissingOwner: ownerQuality.summary.missingOwner,
     warehouseUnmatchedRows: warehouseQuality.summary.unmatchedRows,

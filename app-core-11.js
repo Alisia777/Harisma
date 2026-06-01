@@ -4258,6 +4258,7 @@ function portalHealthContourCardsHtml({ issues = [], sources = [], summary = {},
   const staleCount = sources.filter((row) => row.tone !== 'ok').length;
   const quarantineCount = numberOrZero(state.portalDataQuarantine?.summary?.rows || state.portalDataQuarantine?.rows?.length || 0);
   const apiUnmapped = numberOrZero(summary.apiUnmappedUniqueSku || matrixSummary.apiUnmappedCount || 0);
+  const apiRegistryGap = numberOrZero(summary.apiKnownOutsideRegistryUniqueSku || 0);
   const missingOwner = numberOrZero(summary.skuMissingOwner || matrixSummary.missingOwnerCount || 0);
   const planIssues = issues.filter((row) => row.view === 'sku-plan-fact').length;
   const cards = [
@@ -4271,10 +4272,10 @@ function portalHealthContourCardsHtml({ issues = [], sources = [], summary = {},
     },
     {
       title: 'SKU пары',
-      caption: apiUnmapped ? 'API без связи с матрицей' : 'alias/ignore под контролем',
-      value: apiUnmapped ? fmt.int(apiUnmapped) : 'OK',
-      ratio: apiUnmapped ? Math.max(0.15, 1 - apiUnmapped / 80) : 1,
-      tone: apiUnmapped ? 'warn' : 'ok',
+      caption: apiUnmapped ? 'API без связи с матрицей' : (apiRegistryGap ? 'есть в ценах/репрайсере, нет в SKU' : 'alias/ignore под контролем'),
+      value: apiUnmapped ? fmt.int(apiUnmapped) : (apiRegistryGap ? `${fmt.int(apiRegistryGap)} в реестр` : 'OK'),
+      ratio: apiUnmapped ? Math.max(0.15, 1 - apiUnmapped / 80) : (apiRegistryGap ? Math.max(0.45, 1 - apiRegistryGap / 120) : 1),
+      tone: apiUnmapped ? 'warn' : (apiRegistryGap ? 'info' : 'ok'),
       view: 'sku-contour'
     },
     {

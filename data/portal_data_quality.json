@@ -1,19 +1,23 @@
 {
-  "generatedAt": "2026-06-01T19:25:28.833Z",
-  "status": "critical",
+  "generatedAt": "2026-06-01T20:06:26.858Z",
+  "status": "warning",
   "summary": {
     "issueCount": 89,
-    "criticalCount": 20,
-    "warningCount": 69,
+    "criticalCount": 0,
+    "warningCount": 89,
     "monthKey": "2026-05",
     "maxDate": "2026-05-31",
-    "apiUnmappedPlatformRows": 40,
-    "apiUnmappedUniqueSku": 39,
-    "apiUnmappedRevenue": 5938732,
+    "apiUnmappedPlatformRows": 4,
+    "apiUnmappedUniqueSku": 4,
+    "apiUnmappedRevenue": 3619,
+    "apiKnownOutsideRegistryRows": 36,
+    "apiKnownOutsideRegistryUniqueSku": 35,
+    "apiKnownOutsideRegistryRevenue": 5935113,
     "apiIgnoredPlatformRows": 0,
     "apiSumAboveAggregateCount": 0,
     "apiSumAboveAggregateOverage": 0,
-    "skuAliasCount": 0,
+    "skuAliasCount": 341,
+    "priceContourSkuCount": 302,
     "orderNoStockNeedRows": 0,
     "skuMissingOwner": 0,
     "warehouseUnmatchedRows": 25,
@@ -53,7 +57,7 @@
     {
       "dataset": "warehouse_stock_overlay",
       "asOfDate": "2026-06-01",
-      "generatedAt": "2026-06-01T19:09:19.075Z",
+      "generatedAt": "2026-06-01T19:46:29.103Z",
       "rows": 134,
       "matchedRows": 136,
       "unmatchedRows": 25,
@@ -93,7 +97,10 @@
       "unmappedUnits": 0,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
-      "ignoredUnits": 0
+      "ignoredUnits": 0,
+      "knownOutsideRegistryCount": 0,
+      "knownOutsideRegistryRevenue": 0,
+      "knownOutsideRegistryUnits": 0
     },
     "letu": {
       "label": "Лэтуаль",
@@ -107,7 +114,10 @@
       "unmappedUnits": 0,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
-      "ignoredUnits": 0
+      "ignoredUnits": 0,
+      "knownOutsideRegistryCount": 0,
+      "knownOutsideRegistryRevenue": 0,
+      "knownOutsideRegistryUnits": 0
     },
     "magnit": {
       "label": "Магнит Маркет",
@@ -121,7 +131,10 @@
       "unmappedUnits": 0,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
-      "ignoredUnits": 0
+      "ignoredUnits": 0,
+      "knownOutsideRegistryCount": 0,
+      "knownOutsideRegistryRevenue": 0,
+      "knownOutsideRegistryUnits": 0
     },
     "ozon": {
       "label": "Ozon",
@@ -130,12 +143,15 @@
       "directUnits": 71848,
       "aggregateRevenue": 58645751,
       "aggregateDate": "2026-05-31",
-      "unmappedCount": 39,
-      "unmappedRevenue": 5937886,
-      "unmappedUnits": 10384,
+      "unmappedCount": 4,
+      "unmappedRevenue": 3619,
+      "unmappedUnits": 5,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
-      "ignoredUnits": 0
+      "ignoredUnits": 0,
+      "knownOutsideRegistryCount": 35,
+      "knownOutsideRegistryRevenue": 5934267,
+      "knownOutsideRegistryUnits": 10379
     },
     "wb": {
       "label": "WB",
@@ -144,12 +160,15 @@
       "directUnits": 137644,
       "aggregateRevenue": 201860530,
       "aggregateDate": "2026-05-31",
-      "unmappedCount": 1,
-      "unmappedRevenue": 846,
-      "unmappedUnits": 1,
+      "unmappedCount": 0,
+      "unmappedRevenue": 0,
+      "unmappedUnits": 0,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
-      "ignoredUnits": 0
+      "ignoredUnits": 0,
+      "knownOutsideRegistryCount": 1,
+      "knownOutsideRegistryRevenue": 846,
+      "knownOutsideRegistryUnits": 1
     },
     "ya": {
       "label": "Я.Маркет",
@@ -163,7 +182,10 @@
       "unmappedUnits": 0,
       "ignoredCount": 0,
       "ignoredRevenue": 0,
-      "ignoredUnits": 0
+      "ignoredUnits": 0,
+      "knownOutsideRegistryCount": 0,
+      "knownOutsideRegistryRevenue": 0,
+      "knownOutsideRegistryUnits": 0
     }
   },
   "orderSummary": {
@@ -192,8 +214,8 @@
   },
   "issues": [
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -203,11 +225,11 @@
       "units": 2065,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -217,11 +239,11 @@
       "units": 1571,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -231,11 +253,11 @@
       "units": 405,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -245,11 +267,11 @@
       "units": 278,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -259,11 +281,11 @@
       "units": 319,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -273,11 +295,11 @@
       "units": 471,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -287,11 +309,11 @@
       "units": 435,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -301,11 +323,11 @@
       "units": 422,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -315,11 +337,11 @@
       "units": 216,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -329,11 +351,11 @@
       "units": 325,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -343,11 +365,11 @@
       "units": 221,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -357,11 +379,11 @@
       "units": 453,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -371,11 +393,11 @@
       "units": 250,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -385,11 +407,11 @@
       "units": 161,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -399,11 +421,11 @@
       "units": 473,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -413,11 +435,11 @@
       "units": 390,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -427,11 +449,11 @@
       "units": 91,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -441,11 +463,11 @@
       "units": 146,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -455,11 +477,11 @@
       "units": 537,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
-      "severity": "critical",
-      "type": "api_sku_unmapped",
+      "severity": "warning",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -469,11 +491,11 @@
       "units": 175,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -483,11 +505,11 @@
       "units": 81,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -497,11 +519,11 @@
       "units": 123,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -511,11 +533,11 @@
       "units": 158,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -525,11 +547,11 @@
       "units": 89,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -539,11 +561,11 @@
       "units": 103,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -553,11 +575,11 @@
       "units": 121,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -567,11 +589,11 @@
       "units": 56,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -581,11 +603,11 @@
       "units": 52,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -595,11 +617,11 @@
       "units": 30,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -609,11 +631,11 @@
       "units": 66,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -623,11 +645,11 @@
       "units": 61,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -637,11 +659,11 @@
       "units": 26,
       "firstDate": "2026-05-05",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -651,7 +673,7 @@
       "units": 7,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
@@ -669,7 +691,7 @@
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -679,7 +701,7 @@
       "units": 1,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
@@ -697,7 +719,7 @@
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "wb",
       "platformLabel": "WB",
@@ -707,7 +729,7 @@
       "units": 1,
       "firstDate": "2026-05-28",
       "lastDate": "2026-05-28",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",
@@ -725,7 +747,7 @@
     },
     {
       "severity": "warning",
-      "type": "api_sku_unmapped",
+      "type": "api_sku_known_outside_registry",
       "dataset": "platform_trends.extraMarketplace",
       "platform": "ozon",
       "platformLabel": "Ozon",
@@ -735,7 +757,7 @@
       "units": 1,
       "firstDate": "2026-05-01",
       "lastDate": "2026-05-31",
-      "message": "API SKU не найден в skus.json/алиасах"
+      "message": "API SKU is present in price/repricer contour, but absent from skus.json/aliases"
     },
     {
       "severity": "warning",

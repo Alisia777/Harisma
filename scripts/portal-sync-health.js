@@ -625,6 +625,9 @@ function buildHealth(options) {
   if (numberOrZero(qualitySummary.apiUnmappedRevenue) > 0) {
     warnings.push(`Unmapped API SKU revenue: ${Math.round(numberOrZero(qualitySummary.apiUnmappedRevenue))}.`);
   }
+  if (numberOrZero(qualitySummary.apiKnownOutsideRegistryRows) > 0) {
+    warnings.push(`API SKU exists in price/repricer contour but is absent from skus registry: ${Math.round(numberOrZero(qualitySummary.apiKnownOutsideRegistryRows))} SKU / ${Math.round(numberOrZero(qualitySummary.apiKnownOutsideRegistryRevenue))} revenue.`);
+  }
   if (numberOrZero(qualitySummary.skuMissingOwner) > 0) {
     warnings.push(`SKU without owner or registry mapping: ${Math.round(numberOrZero(qualitySummary.skuMissingOwner))}.`);
   }

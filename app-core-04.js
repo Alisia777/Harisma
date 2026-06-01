@@ -706,6 +706,7 @@ function syncHealthNoticeHtml() {
         <div class="badge-stack">
           ${badge(meta.label, meta.tone)}
           ${badge(`${fmt.int(quality.apiUnmappedUniqueSku || 0)} API без пары`, quality.apiUnmappedUniqueSku ? 'warn' : 'ok')}
+          ${quality.apiKnownOutsideRegistryUniqueSku ? badge(`${fmt.int(quality.apiKnownOutsideRegistryUniqueSku)} в ценах, не в SKU`, 'info') : ''}
           ${badge(`${fmt.int(quarantine.rows || 0)} в карантине`, quarantine.rows ? 'danger' : 'ok')}
           ${badge(fmt.money(quality.apiUnmappedRevenue || 0), quality.apiUnmappedRevenue ? 'warn' : 'ok')}
         </div>

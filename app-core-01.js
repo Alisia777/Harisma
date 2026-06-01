@@ -1241,6 +1241,14 @@ function snapshotPayloadLooksUsable(snapshotKey, payload) {
       && typeof payload?.platforms === 'object' && payload.platforms !== null
       && Object.keys(payload.platforms).length > 0;
   }
+  if (snapshotKey === 'price_workbench_support') {
+    if (typeof payload?.platforms !== 'object' || payload.platforms === null) return false;
+    return Object.values(payload.platforms).some((bucket) => {
+      const rows = bucket?.rows ?? bucket?.articles;
+      if (Array.isArray(rows)) return rows.length > 0;
+      return rows && typeof rows === 'object' && Object.keys(rows).length > 0;
+    });
+  }
   if (snapshotKey === 'product_leaderboard') {
     return Array.isArray(payload?.items) && payload.items.length > 0;
   }

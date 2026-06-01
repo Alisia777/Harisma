@@ -45,6 +45,10 @@ function parseArgs(argv) {
       args.externalAds = false;
       continue;
     }
+    if (token === '--skip-upd') {
+      args['skip-upd'] = true;
+      continue;
+    }
     const [rawKey, inlineValue] = token.split('=');
     if (!rawKey.startsWith('--')) continue;
     const key = rawKey.replace(/^--/, '');
@@ -767,11 +771,55 @@ function latestSeriesDateFromPlatformList(platforms) {
   return latest;
 }
 
+function dateInWindow(date, from, to) {
+  const dateKey = isoDate(date);
+  if (!dateKey) return false;
+  return (!from || dateKey >= from) && (!to || dateKey <= to);
+}
+
+function mergeSeriesByWindow(existingSeries = [], freshSeries = [], from = '', to = '') {
+  if (!from && !to) return Array.isArray(freshSeries) ? freshSeries : [];
+  const byDate = new Map();
+  for (const point of Array.isArray(existingSeries) ? existingSeries : []) {
+    const date = isoDate(point?.date || point?.label);
+    if (!date || dateInWindow(date, from, to)) continue;
+    byDate.set(date, { ...point, date, label: date });
+  }
+  for (const point of Array.isArray(freshSeries) ? freshSeries : []) {
+    const date = isoDate(point?.date || point?.label);
+    if (!date) continue;
+    byDate.set(date, { ...point, date, label: date });
+  }
+  return [...byDate.values()].sort((left, right) => left.date.localeCompare(right.date));
+}
+
+function mergeItemSeriesByWindow(existingItems = [], freshItems = [], from = '', to = '') {
+  const preserved = (Array.isArray(existingItems) ? existingItems : []).filter((row) => !dateInWindow(row?.date, from, to));
+  const fresh = Array.isArray(freshItems) ? freshItems : [];
+  return aggregateRows([...preserved, ...fresh]);
+}
+
+function windowFromSeries(series = [], fallback = {}) {
+  const dates = (Array.isArray(series) ? series : [])
+    .map((point) => isoDate(point?.date || point?.label))
+    .filter(Boolean)
+    .sort();
+  const from = dates[0] || fallback.from || '';
+  const to = dates[dates.length - 1] || fallback.to || '';
+  return {
+    from,
+    to,
+    days: from && to ? enumerateDates(from, to).length : 0
+  };
+}
+
 function mergeAdsSummaryWithExisting(freshPayload, existingPayload) {
   const merged = deepClone(freshPayload || {});
   const freshPlatforms = Array.isArray(freshPayload?.platforms) ? freshPayload.platforms : [];
   const existingPlatforms = Array.isArray(existingPayload?.platforms) ? existingPayload.platforms : [];
   const platformMap = new Map();
+  const mergeFrom = isoDate(freshPayload?.window?.from);
+  const mergeTo = isoDate(freshPayload?.window?.to);
 
   const normalizePlatform = (platform) => {
     const key = normalizeKey(platform?.key || platform?.platformKey || platform?.label);
@@ -800,7 +848,17 @@ function mergeAdsSummaryWithExisting(freshPayload, existingPayload) {
   }
   for (const platform of freshPlatforms) {
     const normalized = normalizePlatform(platform);
-    if (normalized) platformMap.set(normalized.key, normalized);
+    if (!normalized) continue;
+    const existing = platformMap.get(normalized.key);
+    if (existing) {
+      platformMap.set(normalized.key, {
+        ...existing,
+        ...normalized,
+        series: mergeSeriesByWindow(existing.series, normalized.series, mergeFrom, mergeTo)
+      });
+    } else {
+      platformMap.set(normalized.key, normalized);
+    }
   }
 
   const totalsFromSeries = (series) => series.reduce((acc, row) => {
@@ -831,9 +889,16 @@ function mergeAdsSummaryWithExisting(freshPayload, existingPayload) {
     series: allSeries
   };
 
-  const mergedPlatforms = [...platformMap.values(), allPlatform];
+  const mergedPlatforms = [
+    ...[...platformMap.values()].map((platform) => ({
+      ...platform,
+      ...totalsFromSeries(platform.series || [])
+    })),
+    allPlatform
+  ];
   merged.generatedAt = freshPayload?.generatedAt || new Date().toISOString();
   merged.asOfDate = latestSeriesDateFromPlatformList(mergedPlatforms) || freshPayload?.asOfDate || existingPayload?.asOfDate || '';
+  merged.window = windowFromSeries(allSeries, freshPayload?.window || existingPayload?.window || {});
   merged.source = freshPayload?.source || existingPayload?.source || 'wb-promotion-api';
   merged.sourceMode = freshPayload?.sourceMode || existingPayload?.sourceMode || 'wb-api+marketplace-workbook';
   merged.sourceUrl = freshPayload?.sourceUrl || existingPayload?.sourceUrl || WB_PROMOTION_DOCS_URL;
@@ -842,6 +907,7 @@ function mergeAdsSummaryWithExisting(freshPayload, existingPayload) {
     .join(' ')
     .trim();
   merged.platforms = mergedPlatforms;
+  merged.itemSeries = mergeItemSeriesByWindow(existingPayload?.itemSeries, freshPayload?.itemSeries, mergeFrom, mergeTo);
   if (existingPayload?.extraMarketplace || freshPayload?.extraMarketplace) {
     merged.extraMarketplace = deepClone(existingPayload?.extraMarketplace || freshPayload?.extraMarketplace);
   }

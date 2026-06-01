@@ -380,14 +380,16 @@
       ? getAllTasks().find((item) => item.id === taskId)
       : null;
     if (!task || task.source !== 'auto') return;
+    const sku = getSku(task.articleKey);
+    const currentOwner = typeof taskPlatformOwnerName === 'function'
+      ? taskPlatformOwnerName(sku, task.platform, ownerName(sku))
+      : ownerName(sku);
     const manual = normalizeTask({
       ...task,
       id: uid('task'),
       source: 'manual',
       status: 'in_progress',
-      owner: task.owner || (typeof taskPlatformOwnerName === 'function'
-        ? taskPlatformOwnerName(getSku(task.articleKey), task.platform, ownerName(getSku(task.articleKey)))
-        : ownerName(getSku(task.articleKey))) || '',
+      owner: currentOwner || task.owner || '',
       updatedAt: new Date().toISOString()
     }, 'manual');
     state.storage.tasks.unshift(manual);

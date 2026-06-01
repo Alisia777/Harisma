@@ -1054,8 +1054,13 @@ function normalizeTask(task, sourceHint = 'manual') {
   const createdAt = task?.createdAt || task?.created_at || new Date().toISOString();
   const updatedAt = task?.updatedAt || task?.updated_at || createdAt;
   const parsedReason = parseTaskReasonMeta(task?.reason || '');
+  const source = task?.source || sourceHint;
   const platform = detectTaskPlatform(task, sku);
-  const fallbackOwner = taskPlatformOwnerName(sku, platform, ownerName(sku));
+  const currentMatrixOwner = taskPlatformOwnerName(sku, platform, ownerName(sku));
+  const explicitOwner = canonicalOwnerName(task?.owner || task?.ownerName || '');
+  const resolvedOwner = source === 'auto'
+    ? (currentMatrixOwner || explicitOwner)
+    : (explicitOwner || currentMatrixOwner);
   const coOwner = canonicalOwnerName(
     task?.coOwner
     || task?.co_owner
@@ -1067,12 +1072,12 @@ function normalizeTask(task, sourceHint = 'manual') {
   );
   return {
     id: task?.id || stableId(sourceHint === 'auto' ? 'auto' : 'task', `${task?.articleKey || ''}|${title}|${task?.due || ''}|${createdAt}|${sourceHint}`),
-    source: task?.source || sourceHint,
+    source,
     articleKey: task?.articleKey || '',
     title,
     nextAction: task?.nextAction || '',
     reason: parsedReason.reason,
-    owner: canonicalOwnerName(task?.owner || task?.ownerName || fallbackOwner || ''),
+    owner: resolvedOwner,
     coOwner,
     due: task?.due || plusDays(type === 'assignment' ? 1 : 3),
     status: mapTaskStatus(task?.status),
@@ -1641,7 +1646,7 @@ function buildStockAutoSignalCandidates() {
           places ? `кластеры: ${places}` : '',
           `риск выручки ${autoSignalMoney(row.revenueAtRiskDay || 0)}/день`
         ].filter(Boolean).join(' · '),
-        owner: autoSignalOwner(sku, platform, row.owner),
+        owner: autoSignalOwner(sku, platform),
         due: autoSignalTaskDue(isOos ? 'critical' : 'high'),
         status: 'new',
         type: 'supply',

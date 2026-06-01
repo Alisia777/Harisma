@@ -1,6 +1,2735 @@
 {
   "schema": "sku-api-aliases-v1",
-  "aliases": [],
+  "aliases": [
+    {
+      "target_sku": "nabor_remuver_kremovii",
+      "platform": "goldapple",
+      "api_sku": "99000177797",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_remuver_kremovii",
+      "platform": "goldapple",
+      "api_sku": "4630040229770",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_ot_rastyazhek",
+      "platform": "goldapple",
+      "api_sku": "99000114731",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_ot_rastyazhek",
+      "platform": "goldapple",
+      "api_sku": "4670020497898",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_ot_rastyazhek",
+      "platform": "goldapple",
+      "api_sku": "4660417421650",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_05_50ml",
+      "platform": "goldapple",
+      "api_sku": "99000131675",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_05_50ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421759",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_1_50ml",
+      "platform": "goldapple",
+      "api_sku": "99000124421",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_1_50ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421605",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "shampun_protiv_perhoti_250ml",
+      "platform": "goldapple",
+      "api_sku": "99000076206",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "shampun_protiv_perhoti_250ml",
+      "platform": "goldapple",
+      "api_sku": "4670020496679",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "intimvita_300ml",
+      "platform": "goldapple",
+      "api_sku": "99000114723",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "intimvita_300ml",
+      "platform": "goldapple",
+      "api_sku": "4630084865477",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_lica_30ml_v2",
+      "platform": "goldapple",
+      "api_sku": "99000182844",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_lica_30ml_v2",
+      "platform": "goldapple",
+      "api_sku": "4603312714069",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "spicul_gel_mask_75ml",
+      "platform": "goldapple",
+      "api_sku": "99000177799",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "spicul_gel_mask_75ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421858",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_1_5_50ml",
+      "platform": "goldapple",
+      "api_sku": "99000176496",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_1_5_50ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421827",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_dlya_britya_300ml",
+      "platform": "goldapple",
+      "api_sku": "99000131680",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_dlya_britya_300ml",
+      "platform": "goldapple",
+      "api_sku": "4603320465458",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retiderm_50ml",
+      "platform": "goldapple",
+      "api_sku": "99000076216",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retiderm_50ml",
+      "platform": "goldapple",
+      "api_sku": "4610172186219",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retiderm_50ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421582",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_dlya_vek_30ml",
+      "platform": "goldapple",
+      "api_sku": "99000125267",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_dlya_vek_30ml",
+      "platform": "goldapple",
+      "api_sku": "4670020498918",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_dlya_vek_30ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421643",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "psoral_50ml",
+      "platform": "goldapple",
+      "api_sku": "99000125141",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "psoral_50ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421087",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "psoral_50ml",
+      "platform": "goldapple",
+      "api_sku": "2042057189688",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "psoral_50ml",
+      "platform": "goldapple",
+      "api_sku": "4670142965169",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska_dlya_lica_100ml",
+      "platform": "goldapple",
+      "api_sku": "99000114727",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska_dlya_lica_100ml",
+      "platform": "goldapple",
+      "api_sku": "4670020498741",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krovavii_piling_30ml",
+      "platform": "goldapple",
+      "api_sku": "99000076205",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krovavii_piling_30ml",
+      "platform": "goldapple",
+      "api_sku": "4670020498208",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krovavii_piling_30ml",
+      "platform": "goldapple",
+      "api_sku": "4603312714004",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krovavii_piling_30ml",
+      "platform": "goldapple",
+      "api_sku": "4603312714007",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krovavii_piling_30ml",
+      "platform": "goldapple",
+      "api_sku": "4640523970020",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_025_50ml",
+      "platform": "goldapple",
+      "api_sku": "99000124418",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_025_50ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421599",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maslo_dlya_borodi_50ml",
+      "platform": "goldapple",
+      "api_sku": "99000076215",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maslo_dlya_borodi_50ml",
+      "platform": "goldapple",
+      "api_sku": "4610172186882",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_01_50ml",
+      "platform": "goldapple",
+      "api_sku": "99000137436",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_01_50ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421629",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_rosta_6ml_v2",
+      "platform": "goldapple",
+      "api_sku": "99000132524",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_rosta_6ml_v2",
+      "platform": "goldapple",
+      "api_sku": "4656738598843",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_syvorotka_1_30ml",
+      "platform": "goldapple",
+      "api_sku": "99000125142",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_syvorotka_1_30ml",
+      "platform": "goldapple",
+      "api_sku": "4603320465403",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "penka_kudryavii_metod_150ml",
+      "platform": "goldapple",
+      "api_sku": "99000125266",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "penka_kudryavii_metod_150ml",
+      "platform": "goldapple",
+      "api_sku": "4670020498611",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "enzim_pudra_80gr_v2",
+      "platform": "goldapple",
+      "api_sku": "99000125143",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "enzim_pudra_80gr_v2",
+      "platform": "goldapple",
+      "api_sku": "4645565747487",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "vosk_stik_15ml",
+      "platform": "goldapple",
+      "api_sku": "99000131672",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "vosk_stik_15ml",
+      "platform": "goldapple",
+      "api_sku": "4670207150196",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_dlya_ruk_75ml",
+      "platform": "goldapple",
+      "api_sku": "99000114729",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_dlya_ruk_75ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421452",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_dlya_ruk_75ml",
+      "platform": "goldapple",
+      "api_sku": "4601022298473",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_dlya_ruk_75ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421889",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "sprei_buster_100ml",
+      "platform": "goldapple",
+      "api_sku": "99000114724",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "sprei_buster_100ml",
+      "platform": "goldapple",
+      "api_sku": "4603320465359",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_antiakne_20ml_v2",
+      "platform": "goldapple",
+      "api_sku": "99000114730",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_antiakne_20ml_v2",
+      "platform": "goldapple",
+      "api_sku": "4660417420110",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_parfum_tabacco_vanille_450ml",
+      "platform": "goldapple",
+      "api_sku": "99000081276",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_parfum_tabacco_vanille_450ml",
+      "platform": "goldapple",
+      "api_sku": "4603320465267",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_for_men_3_in_1_1000ml",
+      "platform": "goldapple",
+      "api_sku": "99000081275",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_for_men_3_in_1_1000ml",
+      "platform": "goldapple",
+      "api_sku": "4603320465274",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_remuver_40ml",
+      "platform": "goldapple",
+      "api_sku": "99000076202",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_remuver_40ml",
+      "platform": "goldapple",
+      "api_sku": "4607050974747",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_dlya_brovei_6ml",
+      "platform": "goldapple",
+      "api_sku": "99000076224",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_dlya_brovei_6ml",
+      "platform": "goldapple",
+      "api_sku": "4609893777394",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_dlya_brovei_6ml",
+      "platform": "goldapple",
+      "api_sku": "4680918970174",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "enzim_pudra_80gr",
+      "platform": "goldapple",
+      "api_sku": "99000076220",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "enzim_pudra_80gr",
+      "platform": "goldapple",
+      "api_sku": "4670020498017",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "termo_sprei_200ml",
+      "platform": "goldapple",
+      "api_sku": "99000076226",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "termo_sprei_200ml",
+      "platform": "goldapple",
+      "api_sku": "4670020497980",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "solevoy_sprei_200ml",
+      "platform": "goldapple",
+      "api_sku": "99000076221",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "solevoy_sprei_200ml",
+      "platform": "goldapple",
+      "api_sku": "4670020498413",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "solevoy_sprei_200ml",
+      "platform": "goldapple",
+      "api_sku": "4670020499816",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska-batter_250ml",
+      "platform": "goldapple",
+      "api_sku": "99000076210",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska-batter_250ml",
+      "platform": "goldapple",
+      "api_sku": "4670020497546",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_lica_30ml",
+      "platform": "goldapple",
+      "api_sku": "99000076203",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_lica_30ml",
+      "platform": "goldapple",
+      "api_sku": "4670020497034",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_brows_5ml",
+      "platform": "goldapple",
+      "api_sku": "99000114725",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_brows_5ml",
+      "platform": "goldapple",
+      "api_sku": "4676574657436",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "skrab_babl_gam_200ml",
+      "platform": "goldapple",
+      "api_sku": "99000125265",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "skrab_babl_gam_200ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421476",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "kremshelk_100ml",
+      "platform": "goldapple",
+      "api_sku": "99000076225",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "kremshelk_100ml",
+      "platform": "goldapple",
+      "api_sku": "4670020498437",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "piling_100ml",
+      "platform": "goldapple",
+      "api_sku": "99000076204",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "piling_100ml",
+      "platform": "goldapple",
+      "api_sku": "4670020496761",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "shampun_dlya_rosta_250ml",
+      "platform": "goldapple",
+      "api_sku": "99000076213",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "shampun_dlya_rosta_250ml",
+      "platform": "goldapple",
+      "api_sku": "4670020496747",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "shampun_dlya_rosta_250ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421834",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_niacin_05_30ml",
+      "platform": "goldapple",
+      "api_sku": "99000154296",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_niacin_05_30ml",
+      "platform": "goldapple",
+      "api_sku": "4640523970297",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinol_full_journey",
+      "platform": "goldapple",
+      "api_sku": "99000176497",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinol_full_journey",
+      "platform": "goldapple",
+      "api_sku": "4660401460108",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinol_start_kit",
+      "platform": "goldapple",
+      "api_sku": "99000176503",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinol_start_kit",
+      "platform": "goldapple",
+      "api_sku": "4660401460092",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_guk_30ml",
+      "platform": "goldapple",
+      "api_sku": "99000076209",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_guk_30ml",
+      "platform": "goldapple",
+      "api_sku": "4670020498093",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "spiculboost_30ml",
+      "platform": "goldapple",
+      "api_sku": "99000179436",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "spiculboost_30ml",
+      "platform": "goldapple",
+      "api_sku": "4630446231421",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska-batter_500ml",
+      "platform": "goldapple",
+      "api_sku": "99000176492",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska-batter_500ml",
+      "platform": "goldapple",
+      "api_sku": "4630446234156",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_spf50_50ml",
+      "platform": "goldapple",
+      "api_sku": "99000163832",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_spf50_50ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421766",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinol_boost_krem_dlya_vek_30ml",
+      "platform": "goldapple",
+      "api_sku": "99000154005",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinol_boost_krem_dlya_vek_30ml",
+      "platform": "goldapple",
+      "api_sku": "4660417421636",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "curly_method_300ml",
+      "platform": "goldapple",
+      "api_sku": "99000114726",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "curly_method_300ml",
+      "platform": "goldapple",
+      "api_sku": "4603320465441",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska-batter_dlya_rosta_500ml",
+      "platform": "goldapple",
+      "api_sku": "99000076208",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska-batter_dlya_rosta_500ml",
+      "platform": "goldapple",
+      "api_sku": "4603320465366",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_penka_dlya_resnic",
+      "platform": "goldapple",
+      "api_sku": "99000076218",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_penka_dlya_resnic",
+      "platform": "goldapple",
+      "api_sku": "4698878338125",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "tonik_dlya_lica_200ml",
+      "platform": "goldapple",
+      "api_sku": "99000114728",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "tonik_dlya_lica_200ml",
+      "platform": "goldapple",
+      "api_sku": "4670020498499",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "silk_hair_300ml",
+      "platform": "goldapple",
+      "api_sku": "99000114733",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "silk_hair_300ml",
+      "platform": "goldapple",
+      "api_sku": "4603320465465",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maslo_dlya_volos_parf_110ml",
+      "platform": "goldapple",
+      "api_sku": "99000076212",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maslo_dlya_volos_parf_110ml",
+      "platform": "goldapple",
+      "api_sku": "4610172186875",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gidrofilnoe_maslo_150ml",
+      "platform": "goldapple",
+      "api_sku": "99000076222",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gidrofilnoe_maslo_150ml",
+      "platform": "goldapple",
+      "api_sku": "4610172186202",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_rosta_6ml",
+      "platform": "goldapple",
+      "api_sku": "99000076214",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_rosta_6ml",
+      "platform": "goldapple",
+      "api_sku": "4685518825374",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "stik_ot_mozoley",
+      "platform": "goldapple",
+      "api_sku": "99000114734",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "stik_ot_mozoley",
+      "platform": "goldapple",
+      "api_sku": "4690222978568",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_syvorotka_025_30ml",
+      "platform": "goldapple",
+      "api_sku": "99000154001",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_syvorotka_025_30ml",
+      "platform": "goldapple",
+      "api_sku": "4640523970099",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_syvorotka_05_30ml",
+      "platform": "goldapple",
+      "api_sku": "99000153995",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_syvorotka_05_30ml",
+      "platform": "goldapple",
+      "api_sku": "4640523970082",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "pink_pepper_50ml",
+      "platform": "goldapple",
+      "api_sku": "99000125263",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "pink_pepper_50ml",
+      "platform": "goldapple",
+      "api_sku": "4603320465342",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "matte_wax_50ml",
+      "platform": "goldapple",
+      "api_sku": "99000114732",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "matte_wax_50ml",
+      "platform": "goldapple",
+      "api_sku": "4603320465304",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_buster_250ml",
+      "platform": "goldapple",
+      "api_sku": "99000125268",
+      "status": "active",
+      "note": "ЗЯ номенклатура",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_buster_250ml",
+      "platform": "goldapple",
+      "api_sku": "4603320465427",
+      "status": "active",
+      "note": "ЗЯ штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "spicul_gel_mask_75ml",
+      "platform": "letu",
+      "api_sku": "MPL589441",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "spiculboost_30ml",
+      "platform": "letu",
+      "api_sku": "MPL589408",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinol_full_journey",
+      "platform": "letu",
+      "api_sku": "MPL583298",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinol_start_kit",
+      "platform": "letu",
+      "api_sku": "MPL583296",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_1_5_50ml",
+      "platform": "letu",
+      "api_sku": "MPL583160",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_spf50_50ml",
+      "platform": "letu",
+      "api_sku": "MPL583158",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_lica_30ml_v2",
+      "platform": "letu",
+      "api_sku": "MPL583154",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_remuver_40ml_1_1",
+      "platform": "letu",
+      "api_sku": "MPL583152",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "alteya_beauty_brows_box",
+      "platform": "letu",
+      "api_sku": "MPL583151",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska-batter_500ml",
+      "platform": "letu",
+      "api_sku": "MPL583149",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_syvorotka_025_30ml",
+      "platform": "letu",
+      "api_sku": "MPL580332",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_syvorotka_05_30ml",
+      "platform": "letu",
+      "api_sku": "MPL580331",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_niacin_05_30ml",
+      "platform": "letu",
+      "api_sku": "MPL580326",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinol_boost_krem_dlya_vek_30ml",
+      "platform": "letu",
+      "api_sku": "MPL580318",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_01_50ml",
+      "platform": "letu",
+      "api_sku": "MPL570692",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_05_50ml",
+      "platform": "letu",
+      "api_sku": "MPL553835",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_dlya_britya_300ml",
+      "platform": "letu",
+      "api_sku": "MPL553832",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "vosk_stik_15ml",
+      "platform": "letu",
+      "api_sku": "MPL553766",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "enzim_pudra_80gr_v2",
+      "platform": "letu",
+      "api_sku": "MPL536294",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_rosta_6ml_v2",
+      "platform": "letu",
+      "api_sku": "MPL536269",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "penka_kudryavii_metod_150ml",
+      "platform": "letu",
+      "api_sku": "MPL534436",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_buster_250ml",
+      "platform": "letu",
+      "api_sku": "MPL534369",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "skrab_babl_gam_200ml",
+      "platform": "letu",
+      "api_sku": "MPL534263",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_dlya_vek_30ml",
+      "platform": "letu",
+      "api_sku": "MPL534118",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "pink_pepper_50ml",
+      "platform": "letu",
+      "api_sku": "MPL533896",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_syvorotka_1_30ml",
+      "platform": "letu",
+      "api_sku": "MPL533706",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_1_50ml",
+      "platform": "letu",
+      "api_sku": "MPL532549",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_025_50ml",
+      "platform": "letu",
+      "api_sku": "MPL532421",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maslo_dlya_volos_parf_110ml",
+      "platform": "letu",
+      "api_sku": "MPL498116",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_antiakne_20ml_v2",
+      "platform": "letu",
+      "api_sku": "MPL497134",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "intimvita_300ml",
+      "platform": "letu",
+      "api_sku": "MPL494932",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "matte_wax_50ml",
+      "platform": "letu",
+      "api_sku": "MPL485625",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "sprei_buster_100ml",
+      "platform": "letu",
+      "api_sku": "MPL484941",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "curly_method_300ml",
+      "platform": "letu",
+      "api_sku": "MPL483098",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "silk_hair_300ml",
+      "platform": "letu",
+      "api_sku": "MPL477653",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "tonik_dlya_lica_200ml",
+      "platform": "letu",
+      "api_sku": "MPL440013",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_antiakne_20ml",
+      "platform": "letu",
+      "api_sku": "MPL439819",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_brows_5ml",
+      "platform": "letu",
+      "api_sku": "MPL411155",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_parfum_tabacco_vanille_450ml",
+      "platform": "letu",
+      "api_sku": "MPL411108",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_for_men_3_in_1_1000ml",
+      "platform": "letu",
+      "api_sku": "MPL411107",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska_dlya_lica_100ml",
+      "platform": "letu",
+      "api_sku": "MPL411103",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krovavii_piling_30ml",
+      "platform": "letu",
+      "api_sku": "MPL411098",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska-batter_dlya_rosta_500ml",
+      "platform": "letu",
+      "api_sku": "MPL411097",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "solevoy_sprei_200ml",
+      "platform": "letu",
+      "api_sku": "MPL411095",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "termo_sprei_200ml",
+      "platform": "letu",
+      "api_sku": "MPL381178",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_guk_30ml",
+      "platform": "letu",
+      "api_sku": "MPL381177",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_rosta_6ml",
+      "platform": "letu",
+      "api_sku": "MPL381176",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_lica_30ml",
+      "platform": "letu",
+      "api_sku": "MPL381175",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "stik_ot_mozoley",
+      "platform": "letu",
+      "api_sku": "MPL381174",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "shampun_protiv_perhoti_250ml",
+      "platform": "letu",
+      "api_sku": "MPL381173",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "shampun_dlya_rosta_250ml",
+      "platform": "letu",
+      "api_sku": "MPL381169",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retiderm_50ml",
+      "platform": "letu",
+      "api_sku": "MPL381168",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_remuver_kremovii",
+      "platform": "letu",
+      "api_sku": "MPL381167",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_remuver_40ml",
+      "platform": "letu",
+      "api_sku": "MPL381166",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "piling_100ml",
+      "platform": "letu",
+      "api_sku": "MPL381095",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "penka_160ml",
+      "platform": "letu",
+      "api_sku": "MPL381093",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maslo_dlya_volos_parf_110ml",
+      "platform": "letu",
+      "api_sku": "MPL381092",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maslo_dlya_borodi_50ml",
+      "platform": "letu",
+      "api_sku": "MPL381091",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska-batter_250ml",
+      "platform": "letu",
+      "api_sku": "MPL381090",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "kremshelk_100ml",
+      "platform": "letu",
+      "api_sku": "MPL379168",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_ot_rastyazhek",
+      "platform": "letu",
+      "api_sku": "MPL379167",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem-filler_15ml",
+      "platform": "letu",
+      "api_sku": "MPL379166",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_dlya_ruk_75ml",
+      "platform": "letu",
+      "api_sku": "MPL379165",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "intimvita_200ml",
+      "platform": "letu",
+      "api_sku": "MPL378978",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gidrofilnoe_maslo_150ml",
+      "platform": "letu",
+      "api_sku": "MPL378893",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_dlya_brovei_6ml",
+      "platform": "letu",
+      "api_sku": "MPL378889",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "enzim_pudra_80gr",
+      "platform": "letu",
+      "api_sku": "MPL378812",
+      "status": "active",
+      "note": "Лэтуаль артикул Алькора",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_remuver_40ml",
+      "platform": "magnit",
+      "api_sku": "5843397",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_remuver_40ml",
+      "platform": "magnit",
+      "api_sku": "4607050974747",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_dlya_ruk_75ml",
+      "platform": "magnit",
+      "api_sku": "5854268",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_dlya_ruk_75ml",
+      "platform": "magnit",
+      "api_sku": "4660417421452",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "shampun_protiv_perhoti_250ml",
+      "platform": "magnit",
+      "api_sku": "5854278",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "shampun_protiv_perhoti_250ml",
+      "platform": "magnit",
+      "api_sku": "4670020496679",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "piling_100ml",
+      "platform": "magnit",
+      "api_sku": "5854281",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "piling_100ml",
+      "platform": "magnit",
+      "api_sku": "4670020496761",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "shampun_dlya_rosta_250ml",
+      "platform": "magnit",
+      "api_sku": "5868808",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "shampun_dlya_rosta_250ml",
+      "platform": "magnit",
+      "api_sku": "4670020496747",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gidrofilnoe_maslo_150ml",
+      "platform": "magnit",
+      "api_sku": "5868812",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gidrofilnoe_maslo_150ml",
+      "platform": "magnit",
+      "api_sku": "4610172186202",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retiderm_50ml",
+      "platform": "magnit",
+      "api_sku": "5868814",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retiderm_50ml",
+      "platform": "magnit",
+      "api_sku": "4660417421582",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maslo_dlya_borodi_50ml",
+      "platform": "magnit",
+      "api_sku": "5868845",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maslo_dlya_borodi_50ml",
+      "platform": "magnit",
+      "api_sku": "4610172186882",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_lica_30ml",
+      "platform": "magnit",
+      "api_sku": "5868848",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_lica_30ml",
+      "platform": "magnit",
+      "api_sku": "4670020497034",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "penka_160ml",
+      "platform": "magnit",
+      "api_sku": "5868850",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "penka_160ml",
+      "platform": "magnit",
+      "api_sku": "4630084864777",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_remuver_kremovii",
+      "platform": "magnit",
+      "api_sku": "5868852",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_remuver_kremovii",
+      "platform": "magnit",
+      "api_sku": "4629945399213",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_dlya_brovei_6ml",
+      "platform": "magnit",
+      "api_sku": "5868854",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_dlya_brovei_6ml",
+      "platform": "magnit",
+      "api_sku": "4609893777394",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska-batter_250ml",
+      "platform": "magnit",
+      "api_sku": "5868855",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska-batter_250ml",
+      "platform": "magnit",
+      "api_sku": "4670020497546",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_ot_rastyazhek",
+      "platform": "magnit",
+      "api_sku": "5869575",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_ot_rastyazhek",
+      "platform": "magnit",
+      "api_sku": "4670020497898",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "stik_ot_mozoley",
+      "platform": "magnit",
+      "api_sku": "5869579",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "stik_ot_mozoley",
+      "platform": "magnit",
+      "api_sku": "4690222978568",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_rosta_6ml",
+      "platform": "magnit",
+      "api_sku": "5869585",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_rosta_6ml",
+      "platform": "magnit",
+      "api_sku": "4685518825374",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "termo_sprei_200ml",
+      "platform": "magnit",
+      "api_sku": "5870813",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "termo_sprei_200ml",
+      "platform": "magnit",
+      "api_sku": "4670020497980",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "enzim_pudra_80gr",
+      "platform": "magnit",
+      "api_sku": "5870958",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "enzim_pudra_80gr",
+      "platform": "magnit",
+      "api_sku": "4670020498017",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_guk_30ml",
+      "platform": "magnit",
+      "api_sku": "5871122",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_guk_30ml",
+      "platform": "magnit",
+      "api_sku": "4670020498093",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_parfum_tabacco_vanille_450ml",
+      "platform": "magnit",
+      "api_sku": "5871280",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_parfum_tabacco_vanille_450ml",
+      "platform": "magnit",
+      "api_sku": "4603320465267",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krovavii_piling_30ml",
+      "platform": "magnit",
+      "api_sku": "5871877",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krovavii_piling_30ml",
+      "platform": "magnit",
+      "api_sku": "4603312714007",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_for_men_3_in_1_1000ml",
+      "platform": "magnit",
+      "api_sku": "5873782",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_for_men_3_in_1_1000ml",
+      "platform": "magnit",
+      "api_sku": "4603320465274",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_penka_dlya_resnic",
+      "platform": "magnit",
+      "api_sku": "5873796",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_penka_dlya_resnic",
+      "platform": "magnit",
+      "api_sku": "4698878338125",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska-batter_dlya_rosta_500ml",
+      "platform": "magnit",
+      "api_sku": "5874277",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska-batter_dlya_rosta_500ml",
+      "platform": "magnit",
+      "api_sku": "4603320465366",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_brows_5ml",
+      "platform": "magnit",
+      "api_sku": "5874282",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_brows_5ml",
+      "platform": "magnit",
+      "api_sku": "4676574657436",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska_dlya_lica_100ml",
+      "platform": "magnit",
+      "api_sku": "5874286",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska_dlya_lica_100ml",
+      "platform": "magnit",
+      "api_sku": "4670020498741",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "tonik_dlya_lica_200ml",
+      "platform": "magnit",
+      "api_sku": "5874386",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "tonik_dlya_lica_200ml",
+      "platform": "magnit",
+      "api_sku": "4670020498499",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "solevoy_sprei_200ml",
+      "platform": "magnit",
+      "api_sku": "5874418",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "solevoy_sprei_200ml",
+      "platform": "magnit",
+      "api_sku": "4670020498413",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_antiakne_20ml",
+      "platform": "magnit",
+      "api_sku": "5874419",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_antiakne_20ml",
+      "platform": "magnit",
+      "api_sku": "4670020498482",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_remuver_40ml_1_1",
+      "platform": "magnit",
+      "api_sku": "5874423",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "nabor_remuver_40ml_1_1",
+      "platform": "magnit",
+      "api_sku": "4656887467946",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "curly_method_300ml",
+      "platform": "magnit",
+      "api_sku": "5874428",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "curly_method_300ml",
+      "platform": "magnit",
+      "api_sku": "4603320465441",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "penka_kudryavii_metod_150ml",
+      "platform": "magnit",
+      "api_sku": "5874567",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "penka_kudryavii_metod_150ml",
+      "platform": "magnit",
+      "api_sku": "4670020498611",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "silk_hair_300ml",
+      "platform": "magnit",
+      "api_sku": "5876205",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "silk_hair_300ml",
+      "platform": "magnit",
+      "api_sku": "4603320465465",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "matte_wax_50ml",
+      "platform": "magnit",
+      "api_sku": "5876222",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "matte_wax_50ml",
+      "platform": "magnit",
+      "api_sku": "4603320465304",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "sprei_buster_100ml",
+      "platform": "magnit",
+      "api_sku": "5876463",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "sprei_buster_100ml",
+      "platform": "magnit",
+      "api_sku": "4603320465359",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maslo_dlya_volos_parf_110ml",
+      "platform": "magnit",
+      "api_sku": "5876472",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maslo_dlya_volos_parf_110ml",
+      "platform": "magnit",
+      "api_sku": "4610172186875",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_buster_250ml",
+      "platform": "magnit",
+      "api_sku": "5878029",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_buster_250ml",
+      "platform": "magnit",
+      "api_sku": "4603320465427",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_rosta_6ml_v2",
+      "platform": "magnit",
+      "api_sku": "5878506",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_rosta_6ml_v2",
+      "platform": "magnit",
+      "api_sku": "4656738598843",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "intimvita_300ml",
+      "platform": "magnit",
+      "api_sku": "5880311",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "intimvita_300ml",
+      "platform": "magnit",
+      "api_sku": "4630084865477",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_antiakne_20ml_v2",
+      "platform": "magnit",
+      "api_sku": "5880316",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_antiakne_20ml_v2",
+      "platform": "magnit",
+      "api_sku": "4660417420110",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "skrab_babl_gam_200ml",
+      "platform": "magnit",
+      "api_sku": "5880763",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "skrab_babl_gam_200ml",
+      "platform": "magnit",
+      "api_sku": "4660417421476",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_dlya_vek_30ml",
+      "platform": "magnit",
+      "api_sku": "5880765",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_dlya_vek_30ml",
+      "platform": "magnit",
+      "api_sku": "4670020498918",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_dlya_britya_300ml",
+      "platform": "magnit",
+      "api_sku": "5880768",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "gel_dlya_britya_300ml",
+      "platform": "magnit",
+      "api_sku": "4603320465458",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "pink_pepper_50ml",
+      "platform": "magnit",
+      "api_sku": "5880769",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "pink_pepper_50ml",
+      "platform": "magnit",
+      "api_sku": "4603320465342",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_syvorotka_1_30ml",
+      "platform": "magnit",
+      "api_sku": "5880771",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_syvorotka_1_30ml",
+      "platform": "magnit",
+      "api_sku": "4603320465403",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_1_50ml",
+      "platform": "magnit",
+      "api_sku": "5880780",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_1_50ml",
+      "platform": "magnit",
+      "api_sku": "4660417421605",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_025_50ml",
+      "platform": "magnit",
+      "api_sku": "5880783",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_025_50ml",
+      "platform": "magnit",
+      "api_sku": "4660417421599",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "vosk_stik_15ml",
+      "platform": "magnit",
+      "api_sku": "5880787",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "vosk_stik_15ml",
+      "platform": "magnit",
+      "api_sku": "4670207150196",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "psoral_50ml",
+      "platform": "magnit",
+      "api_sku": "5894994",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "psoral_50ml",
+      "platform": "magnit",
+      "api_sku": "4660417421087",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_05_50ml",
+      "platform": "magnit",
+      "api_sku": "5970789",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_05_50ml",
+      "platform": "magnit",
+      "api_sku": "4660417421759",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_01_50ml",
+      "platform": "magnit",
+      "api_sku": "6075447",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_01_50ml",
+      "platform": "magnit",
+      "api_sku": "4660417421629",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinol_boost_krem_dlya_vek_30ml",
+      "platform": "magnit",
+      "api_sku": "6339736",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinol_boost_krem_dlya_vek_30ml",
+      "platform": "magnit",
+      "api_sku": "4660417421636",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_niacin_05_30ml",
+      "platform": "magnit",
+      "api_sku": "6340523",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_niacin_05_30ml",
+      "platform": "magnit",
+      "api_sku": "4640523970297",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_syvorotka_05_30ml",
+      "platform": "magnit",
+      "api_sku": "6340976",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_syvorotka_05_30ml",
+      "platform": "magnit",
+      "api_sku": "4640523970082",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_syvorotka_025_30ml",
+      "platform": "magnit",
+      "api_sku": "6342026",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_syvorotka_025_30ml",
+      "platform": "magnit",
+      "api_sku": "4640523970099",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinol_start_kit",
+      "platform": "magnit",
+      "api_sku": "6598129",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinol_start_kit",
+      "platform": "magnit",
+      "api_sku": "4660401460092",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska-batter_500ml",
+      "platform": "magnit",
+      "api_sku": "6598159",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maska-batter_500ml",
+      "platform": "magnit",
+      "api_sku": "4630446234156",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_lica_30ml_v2",
+      "platform": "magnit",
+      "api_sku": "6598165",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_lica_30ml_v2",
+      "platform": "magnit",
+      "api_sku": "4603312714069",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_spf50_50ml",
+      "platform": "magnit",
+      "api_sku": "6598168",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "krem_spf50_50ml",
+      "platform": "magnit",
+      "api_sku": "4660417421766",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_1_5_50ml",
+      "platform": "magnit",
+      "api_sku": "6598583",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinait_krem_1_5_50ml",
+      "platform": "magnit",
+      "api_sku": "4660417421827",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "intimvita_200ml",
+      "platform": "magnit",
+      "api_sku": "6598588",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "intimvita_200ml",
+      "platform": "magnit",
+      "api_sku": "4630084864616",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "spicul_gel_mask_75ml",
+      "platform": "magnit",
+      "api_sku": "6598596",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "spicul_gel_mask_75ml",
+      "platform": "magnit",
+      "api_sku": "4660417421858",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "spiculboost_30ml",
+      "platform": "magnit",
+      "api_sku": "6598607",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "spiculboost_30ml",
+      "platform": "magnit",
+      "api_sku": "4630446231421",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinol_full_journey",
+      "platform": "magnit",
+      "api_sku": "6598610",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retinol_full_journey",
+      "platform": "magnit",
+      "api_sku": "4660401460108",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "strong_hair",
+      "platform": "magnit",
+      "api_sku": "6598616",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "strong_hair",
+      "platform": "magnit",
+      "api_sku": "4660401460153",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "kremshelk_100ml",
+      "platform": "magnit",
+      "api_sku": "6780727",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "kremshelk_100ml",
+      "platform": "magnit",
+      "api_sku": "4670020498437",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "enzim_pudra_80gr_v2",
+      "platform": "magnit",
+      "api_sku": "6796006",
+      "status": "active",
+      "note": "Магнит Product ID",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "enzim_pudra_80gr_v2",
+      "platform": "magnit",
+      "api_sku": "4645565747487",
+      "status": "active",
+      "note": "Магнит штрихкод",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "retiderm_50ml",
+      "platform": "ya",
+      "api_sku": "fbs_retiderm_50ml",
+      "status": "active",
+      "note": "Я.Маркет FBS alias",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "syvorotka_dlya_lica_30ml",
+      "platform": "ya",
+      "api_sku": "fbs_syvorotka_dlya_lica_30ml",
+      "status": "active",
+      "note": "Я.Маркет FBS alias",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    },
+    {
+      "target_sku": "maslo_dlya_borodi_50ml",
+      "platform": "ya",
+      "api_sku": "fbs_maslo_dlya_borodi_50ml",
+      "status": "active",
+      "note": "Я.Маркет FBS alias",
+      "updatedAt": "2026-06-01T19:38:58.385Z"
+    }
+  ],
   "columns": [
     "target_sku",
     "platform",
@@ -8,5 +2737,6 @@
     "status",
     "note"
   ],
-  "description": "Optional local mapping for API SKU values that must be attached to portal articleKey values. Prefer the Google Sheet tab dim_sku_aliases for team-managed mappings."
+  "description": "Local API SKU mappings imported from team SKU files and review files.",
+  "updatedAt": "2026-06-01T19:38:58.385Z"
 }

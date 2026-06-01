@@ -2827,40 +2827,15 @@ function productLeaderboardDateLabel(dateKey = '') {
 
 function productLeaderboardFreshnessMeta(payload = {}) {
   const weekRange = productLeaderboardWeekRange(payload.weekLabel || payload.sourceSheetName || '');
-  const generatedStamp = parseFreshStamp(payload.generatedAt || '');
-  const referenceStamp = weekRange?.endStamp || generatedStamp;
-  const ageDays = referenceStamp ? Math.max(0, Math.floor((Date.now() - referenceStamp) / 86400000)) : null;
-  const status = !referenceStamp
-    ? 'unknown'
-    : weekRange
-      ? (ageDays > 10 ? 'stale' : ageDays > 3 ? 'aging' : 'fresh')
-      : (ageDays > 14 ? 'stale' : ageDays > 7 ? 'aging' : 'fresh');
-  const tone = status === 'stale' ? 'danger' : status === 'aging' ? 'warn' : status === 'fresh' ? 'ok' : 'info';
-  const badgeLabel = status === 'stale'
-    ? `Неделя устарела на ${fmt.int(ageDays)} дн.`
-    : status === 'aging'
-      ? `Неделя отстаёт на ${fmt.int(ageDays)} дн.`
-      : status === 'fresh'
-        ? 'Неделя актуальна'
-        : 'Нет даты недели';
-  const summaryLine = weekRange
-    ? `Внутри лидерборда сейчас неделя ${payload.weekLabel || payload.sourceSheetName || 'без подписи'}; её конец — ${productLeaderboardDateLabel(weekRange.endKey)}.`
-    : `Внутри лидерборда нет читаемой подписи недели; ориентируемся на техническую дату выгрузки ${payload.generatedAt ? fmt.date(payload.generatedAt) : 'без даты'}.`;
-  const technicalLine = payload.generatedAt && weekRange && generatedStamp > weekRange.endStamp
-    ? `Файл пересобирали ${fmt.date(payload.generatedAt)}, но контент остался из этой недели.`
-    : (payload.generatedAt ? `Техническая выгрузка: ${fmt.date(payload.generatedAt)}.` : '');
-  const actionLine = weekRange
-    ? `Перед решениями по КЗ сверяйте weekly workbook и вкладку-источник, если нужна неделя после ${productLeaderboardDateLabel(weekRange.endKey)}.`
-    : 'Если лидерборд должен быть операционным, источнику нужна читаемая недельная подпись.';
   return {
-    status,
-    tone,
-    ageDays,
+    status: 'fresh',
+    tone: 'info',
+    ageDays: null,
     weekRange,
-    badgeLabel,
-    summaryLine,
-    technicalLine,
-    actionLine
+    badgeLabel: payload.weekLabel || payload.sourceSheetName || 'недельный срез',
+    summaryLine: '',
+    technicalLine: '',
+    actionLine: ''
   };
 }
 
@@ -3108,7 +3083,6 @@ function productLeaderboardGameHeroHtml(payload = {}, filteredItems = [], freshn
         </div>
         <div class="badge-stack">
           ${badge(game.label, game.tone)}
-          ${badge(freshness.badgeLabel || 'срез', freshness.tone || 'info')}
         </div>
       </div>
       <div class="sku-salary-xp-main">
@@ -7516,7 +7490,6 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   const historyOptions = snapshots.slice(1);
   const historyCards = snapshots.slice(0, 6).map((snapshot) => {
     const snapshotSummary = productLeaderboardSummaryFromItems(snapshot.items || []);
-    const snapshotFreshness = productLeaderboardFreshnessMeta(snapshot);
     return `
       <div class="list-item">
         <div class="head">
@@ -7525,7 +7498,6 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
             <div class="muted small">${escapeHtml(snapshot.sourceSheetName || 'weekly КЗ-лист')} · ${fmt.int(snapshotSummary.skuCount)} SKU</div>
           </div>
           <div class="badge-stack">
-            ${badge(snapshotFreshness.badgeLabel, snapshotFreshness.tone)}
             ${badge(`Охваты ${fmt.int(snapshotSummary.reach)}`, 'info')}
             ${badge(`Клики ${fmt.int(snapshotSummary.clicks)}`, 'info')}
             ${badge(`Корзины ${fmt.int(snapshotSummary.carts)}`, 'info')}
@@ -7535,19 +7507,6 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
       </div>
     `;
   }).join('');
-  const freshnessBanner = freshness.status === 'fresh' ? '' : `
-    <div class="card subtle" style="margin-bottom:14px; border-left:4px solid ${freshness.status === 'stale' ? 'var(--danger, #c44)' : 'var(--warn, #d18b00)'}">
-      <div class="section-subhead">
-        <div>
-          <h3>${freshness.status === 'stale' ? 'Лидерборд требует обновления источника' : 'Лидерборд начинает отставать'}</h3>
-          <p class="small muted">${escapeHtml(freshness.summaryLine)}</p>
-        </div>
-        <div class="badge-stack">${badge(freshness.badgeLabel, freshness.tone)}</div>
-      </div>
-      <div class="muted small" style="margin-top:10px">${escapeHtml(freshness.technicalLine || freshness.actionLine)}</div>
-      ${freshness.technicalLine ? `<div class="muted small" style="margin-top:6px">${escapeHtml(freshness.actionLine)}</div>` : ''}
-    </div>
-  `;
   const sortIndicator = (key) => {
     if (filters.sort !== key) return '';
     return filters.sortDir === 'asc' ? ' ↑' : ' ↓';
@@ -7568,14 +7527,11 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
       </div>
       <div class="badge-stack">
         ${badge(payload.weekLabel || 'недельный срез', 'info')}
-        ${badge(freshness.badgeLabel, freshness.tone)}
         ${badge(`${fmt.int(filteredSummary.skuCount)} SKU`, filteredSummary.skuCount ? 'info' : 'warn')}
         ${badge(`${fmt.int(payload.totals.unmatchedRows || 0)} вне портала`, payload.totals.unmatchedRows ? 'warn' : 'ok')}
         ${badge(`${fmt.int(payload.alertCounts.critical || 0)} крит. откл.`, payload.alertCounts.critical ? 'danger' : 'ok')}
       </div>
     </div>
-
-    ${freshnessBanner}
 
     ${gameHeroHtml}
 

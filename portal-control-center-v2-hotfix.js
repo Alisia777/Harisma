@@ -385,7 +385,9 @@
       id: uid('task'),
       source: 'manual',
       status: 'in_progress',
-      owner: task.owner || ownerName(getSku(task.articleKey)) || '',
+      owner: task.owner || (typeof taskPlatformOwnerName === 'function'
+        ? taskPlatformOwnerName(getSku(task.articleKey), task.platform, ownerName(getSku(task.articleKey)))
+        : ownerName(getSku(task.articleKey))) || '',
       updatedAt: new Date().toISOString()
     }, 'manual');
     state.storage.tasks.unshift(manual);

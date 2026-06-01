@@ -534,6 +534,15 @@ function ownerName(sku) {
   return localOwner || skuMatrixOwnerName(sku, '');
 }
 
+function taskPlatformOwnerName(sku, platform = '', fallback = '') {
+  const normalizedPlatform = normalizeTaskPlatform(platform || '');
+  if (sku && ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'].includes(normalizedPlatform) && typeof platformOwnerName === 'function') {
+    const marketplaceOwner = canonicalOwnerName(platformOwnerName(sku, normalizedPlatform) || '');
+    if (marketplaceOwner) return marketplaceOwner;
+  }
+  return canonicalOwnerName(fallback || ownerName(sku) || '');
+}
+
 function ownerOptions() {
   const pool = new Set();
   const addOwner = (value) => {
@@ -1045,6 +1054,8 @@ function normalizeTask(task, sourceHint = 'manual') {
   const createdAt = task?.createdAt || task?.created_at || new Date().toISOString();
   const updatedAt = task?.updatedAt || task?.updated_at || createdAt;
   const parsedReason = parseTaskReasonMeta(task?.reason || '');
+  const platform = detectTaskPlatform(task, sku);
+  const fallbackOwner = taskPlatformOwnerName(sku, platform, ownerName(sku));
   const coOwner = canonicalOwnerName(
     task?.coOwner
     || task?.co_owner
@@ -1061,13 +1072,13 @@ function normalizeTask(task, sourceHint = 'manual') {
     title,
     nextAction: task?.nextAction || '',
     reason: parsedReason.reason,
-    owner: canonicalOwnerName(task?.owner || ownerName(sku) || ''),
+    owner: canonicalOwnerName(task?.owner || task?.ownerName || fallbackOwner || ''),
     coOwner,
     due: task?.due || plusDays(type === 'assignment' ? 1 : 3),
     status: mapTaskStatus(task?.status),
     type,
     priority,
-    platform: detectTaskPlatform(task, sku),
+    platform,
     createdAt,
     updatedAt,
     entityLabel: task?.entityLabel || sku?.name || title,
@@ -1455,6 +1466,14 @@ function autoSignalPlatformLabel(platform = '') {
   return meta?.chip || platform || 'MP';
 }
 
+function autoSignalOwner(sku, platform = '', fallback = '') {
+  const normalizedPlatform = normalizeTaskPlatform(platform || '');
+  if (['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'].includes(normalizedPlatform)) {
+    return taskPlatformOwnerName(sku, normalizedPlatform, fallback);
+  }
+  return canonicalOwnerName(fallback || ownerName(sku) || '');
+}
+
 function autoSignalMetric(item, key) {
   const metric = item?.diagnostics?.metrics?.[key] || {};
   return {
@@ -1622,7 +1641,7 @@ function buildStockAutoSignalCandidates() {
           places ? `кластеры: ${places}` : '',
           `риск выручки ${autoSignalMoney(row.revenueAtRiskDay || 0)}/день`
         ].filter(Boolean).join(' · '),
-        owner: row.owner || ownerName(sku) || '',
+        owner: autoSignalOwner(sku, platform, row.owner),
         due: autoSignalTaskDue(isOos ? 'critical' : 'high'),
         status: 'new',
         type: 'supply',
@@ -1669,7 +1688,7 @@ function buildPriceAndSalesAutoSignalCandidates() {
           title: `${platformLabel}: цена -${priceDropLabel} к среднему уровню`,
           nextAction: 'Проверить цену как аварийный сигнал: это промо, ошибка цены или сбой правил. В задаче зафиксировать решение: оставить промо до даты, вернуть цену или согласовать исключение.',
           reason: `${platformLabel}: текущая цена ${autoSignalMoney(currentPrice)}, средняя за 7 предыдущих дней ${autoSignalMoney(previousPrice)}, отклонение ${priceDropLabel}. Проверка прошла фильтр объёма: ${autoSignalNum(recentOrders7, 0)} заказов за 7 дней.`,
-          owner: ownerName(sku),
+          owner: autoSignalOwner(sku, platform),
           due: autoSignalTaskDue(priority),
           status: 'new',
           type: 'price_margin',
@@ -1718,7 +1737,7 @@ function buildPriceAndSalesAutoSignalCandidates() {
           title: `${platformLabel}: оборот -${revenueDropLabel}, потеря ${autoSignalMoney(revenueLossDay)}/день`,
           nextAction: 'Разобрать корневую причину за 15 минут: остаток, цена, реклама, карточка. В задаче оставить один выбранный рычаг и срок повторной проверки.',
           reason: `${platformLabel}: 3-дневный оборот ${autoSignalMoney(recentRevenueDay)}/день против базы ${autoSignalMoney(baseRevenueDay)}/день; падение ${revenueDropLabel}, минус ${autoSignalMoney(revenueLossDay)}/день. OOS по этой площадке не найден, поэтому это отдельный сигнал, не дубль остатков.`,
-          owner: ownerName(sku),
+          owner: autoSignalOwner(sku, platform),
           due: autoSignalTaskDue(priority),
           status: 'new',
           type: 'traffic',
@@ -1755,7 +1774,7 @@ function buildPriceAndSalesAutoSignalCandidates() {
           title: `${platformLabel}: средний чек заметно упал`,
           nextAction: 'Проверить цену, скидку, наборы и структуру заказов. Если это промо, зафиксировать ожидаемый эффект; если нет — вернуть экономику.',
           reason: `${platformLabel}: средний чек ${autoSignalMoney(recentAov)} против ${autoSignalMoney(baseAov)}, падение ${autoSignalPct(aovDrop)}.`,
-          owner: ownerName(sku),
+          owner: autoSignalOwner(sku, platform),
           due: autoSignalTaskDue(priority),
           status: 'new',
           type: 'price_margin',
@@ -1820,7 +1839,7 @@ function buildReturnsAutoSignalCandidates() {
           topReason ? `топ-причина: ${topReason}` : '',
           state.autoSignalBaselines?.source ? `сравнение с ${state.autoSignalBaselines.source}` : ''
         ].filter(Boolean).join(' · '),
-        owner: ownerName(sku),
+        owner: autoSignalOwner(sku, platform),
         due: autoSignalTaskDue(priority),
         status: 'new',
         type: 'returns',
@@ -1936,7 +1955,7 @@ function buildKzAutoSignalCandidates(leaderboardPayload = {}) {
         title,
         nextAction: 'Разобрать только WB/КЗ: найти РК или креатив, который тратит деньги без окупаемости. В задаче оставить одно действие: выключить/урезать, заменить креатив, поправить карточку или подтвердить промо-исключение.',
         reason: `${weekLabel || 'КЗ'}: ${reasons.slice(0, 3).join(' · ')}. Ozon не назначаем: КЗ ведем как WB-контур.`,
-        owner: ownerName(sku),
+        owner: autoSignalOwner(sku, 'wb'),
         due: autoSignalTaskDue(priority),
         status: 'new',
         type: 'traffic',

@@ -38,6 +38,30 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function isoDate(value) {
+  if (!value) return '';
+  const text = String(value).trim();
+  const match = text.match(/\d{4}-\d{2}-\d{2}/);
+  if (match) return match[0];
+  const parsed = Date.parse(text);
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString().slice(0, 10) : '';
+}
+
+function addDays(dateKey, delta) {
+  const stamp = Date.parse(`${isoDate(dateKey) || todayIso()}T00:00:00Z`);
+  const date = new Date(Number.isFinite(stamp) ? stamp : Date.now());
+  date.setUTCDate(date.getUTCDate() + delta);
+  return date.toISOString().slice(0, 10);
+}
+
+function inWindow(dateKey, to, days) {
+  const date = isoDate(dateKey);
+  const end = isoDate(to);
+  if (!date || !end) return false;
+  const from = addDays(end, -days + 1);
+  return date >= from && date <= end;
+}
+
 function normalizeKey(value) {
   return String(value || '').trim().toLowerCase();
 }
@@ -83,7 +107,10 @@ function resolveOptions(args) {
     to: args.to || args['date-to'] || todayIso(),
     productLimit: Math.min(Math.max(1, Number(args['product-limit']) || 1000), 1000),
     infoChunkSize: Math.min(Math.max(1, Number(args['info-chunk-size']) || 100), 1000),
-    ratingChunkSize: Math.min(Math.max(1, Number(args['rating-chunk-size']) || 100), 1000)
+    ratingChunkSize: Math.min(Math.max(1, Number(args['rating-chunk-size']) || 100), 1000),
+    analyticsLimit: Math.min(Math.max(100, Number(args['analytics-limit']) || 1000), 1000),
+    questionLimit: Math.min(Math.max(20, Number(args['question-limit']) || 100), 100),
+    maxQuestions: Math.max(100, Number(args['max-questions']) || 12000)
   };
 }
 
@@ -181,6 +208,131 @@ async function probeReviewAccess(options, diagnostics) {
   };
 }
 
+function analyticsWindow(days) {
+  return { key: `p${days}`, from: addDays(todayIso(), -days + 1), to: todayIso(), days };
+}
+
+async function fetchAnalyticsWindow(options, days, diagnostics) {
+  const from = addDays(options.to, -days + 1);
+  const rows = [];
+  for (let offset = 0; offset < 100000; offset += options.analyticsLimit) {
+    const payload = await ozonRequest(options, '/v1/analytics/data', {
+      date_from: from,
+      date_to: options.to,
+      metrics: ['revenue', 'ordered_units'],
+      dimension: ['sku'],
+      filters: [],
+      sort: [{ key: 'revenue', order: 'DESC' }],
+      limit: options.analyticsLimit,
+      offset
+    });
+    const pageRows = Array.isArray(payload?.result?.data) ? payload.result.data : [];
+    rows.push(...pageRows);
+    if (pageRows.length < options.analyticsLimit) break;
+  }
+  diagnostics.sources.push({ key: `analytics_${days}d`, endpoint: '/v1/analytics/data', status: 'loaded', rows: rows.length, from, to: options.to });
+  return rows;
+}
+
+function buildAnalyticsMap(rawRows) {
+  const map = new Map();
+  rawRows.forEach((row) => {
+    const sku = String(row?.dimensions?.[0]?.id || '').trim();
+    if (!sku) return;
+    const metrics = Array.isArray(row.metrics) ? row.metrics : [];
+    map.set(sku, {
+      revenue: numberOrZero(metrics[0]),
+      units: numberOrZero(metrics[1])
+    });
+  });
+  return map;
+}
+
+async function fetchAnalytics(options, diagnostics) {
+  const windows = {};
+  for (const days of [7, 3, 1]) {
+    const rawRows = await fetchAnalyticsWindow(options, days, diagnostics);
+    windows[`p${days}`] = buildAnalyticsMap(rawRows);
+  }
+  return windows;
+}
+
+async function fetchQuestionCount(options, diagnostics) {
+  const result = await safeOzonRequest(options, '/v1/question/count', {}, diagnostics, 'question_count');
+  return result.ok ? result.payload : null;
+}
+
+async function fetchQuestions(options, diagnostics) {
+  const rows = [];
+  let lastId = '';
+  while (rows.length < options.maxQuestions) {
+    const body = {
+      limit: Math.min(options.questionLimit, options.maxQuestions - rows.length),
+      sort_dir: 'DESC'
+    };
+    if (lastId) body.last_id = lastId;
+    const payload = await ozonRequest(options, '/v1/question/list', body);
+    const pageRows = Array.isArray(payload?.questions) ? payload.questions : [];
+    rows.push(...pageRows);
+    const nextId = payload?.last_id || '';
+    if (!payload?.has_next || !nextId || nextId === lastId || !pageRows.length) break;
+    lastId = nextId;
+  }
+  diagnostics.sources.push({ key: 'question_list', endpoint: '/v1/question/list', status: 'loaded', rows: rows.length });
+  return rows;
+}
+
+function normalizeQuestion(question = {}, index = 0) {
+  const answersCount = numberOrZero(question.answers_count);
+  return {
+    id: String(question.id || `question-${index}`),
+    sku: numberOrNull(question.sku),
+    productId: numberOrNull(question.sku),
+    date: isoDate(question.published_at || question.created_at || question.updated_at),
+    publishedAt: question.published_at || '',
+    text: compactText(question.text || question.question || question.question_text || '', 520),
+    authorName: question.author_name || '',
+    answersCount,
+    answered: answersCount > 0,
+    status: answersCount > 0 ? 'Закрыто' : 'Без ответа',
+    url: question.question_link || question.product_url || ''
+  };
+}
+
+function buildQuestionMaps(questions, options) {
+  const bySku = new Map();
+  questions.forEach((question) => {
+    const sku = String(question.sku || '').trim();
+    if (!sku) return;
+    const item = bySku.get(sku) || {
+      total: 0,
+      q7: 0,
+      q3: 0,
+      q1: 0,
+      unanswered: 0,
+      unanswered7: 0,
+      unanswered3: 0,
+      unanswered1: 0,
+      latestDate: '',
+      samples: []
+    };
+    item.total += 1;
+    if (inWindow(question.date, options.to, 7)) item.q7 += 1;
+    if (inWindow(question.date, options.to, 3)) item.q3 += 1;
+    if (inWindow(question.date, options.to, 1)) item.q1 += 1;
+    if (!question.answered) {
+      item.unanswered += 1;
+      if (inWindow(question.date, options.to, 7)) item.unanswered7 += 1;
+      if (inWindow(question.date, options.to, 3)) item.unanswered3 += 1;
+      if (inWindow(question.date, options.to, 1)) item.unanswered1 += 1;
+    }
+    if (question.date && (!item.latestDate || question.date > item.latestDate)) item.latestDate = question.date;
+    if (item.samples.length < 3) item.samples.push(question);
+    bySku.set(sku, item);
+  });
+  return bySku;
+}
+
 function primarySku(info) {
   return numberOrNull(info?.sku) || numberOrNull(info?.sources?.[0]?.sku);
 }
@@ -209,16 +361,57 @@ function ratingGroupMap(rating = {}) {
   return result;
 }
 
-function buildCards(infos, ratings) {
+function windowValue(map, sku, field) {
+  const item = map?.get(String(sku));
+  return item ? numberOrZero(item[field]) : 0;
+}
+
+function unavailableReviewMetrics() {
+  return {
+    reviews7: null,
+    reviews3: null,
+    reviews1: null,
+    rating7: null,
+    rating3: null,
+    rating1: null,
+    negative7: null,
+    negative3: null,
+    negative1: null,
+    negativePct7: null,
+    negativePct3: null,
+    negativePct1: null,
+    feedbackCount: null,
+    lowRatingCount: null,
+    unansweredFeedbackCount: null
+  };
+}
+
+function buildCards(infos, ratings, analytics, questionsBySku, reviewAccess) {
   const ratingBySku = new Map(ratings.map((item) => [String(item.sku), item]));
   return infos.map((info) => {
     const sku = primarySku(info);
     const stock = stockSummary(info);
     const rating = ratingBySku.get(String(sku)) || null;
     const groups = ratingGroupMap(rating);
+    const questionStats = questionsBySku.get(String(sku)) || {};
     const reviewPromo = (Array.isArray(info.promotions) ? info.promotions : []).find((item) => item.type === 'REVIEWS_PROMO') || null;
     const statusName = info?.statuses?.status_name || '';
     const statusDescription = info?.statuses?.status_description || '';
+    const reviewMetrics = unavailableReviewMetrics();
+    const questionCount = numberOrZero(questionStats.total);
+    const unansweredQuestionCount = numberOrZero(questionStats.unanswered);
+    const revenue7 = windowValue(analytics.p7, sku, 'revenue');
+    const revenue3 = windowValue(analytics.p3, sku, 'revenue');
+    const revenue1 = windowValue(analytics.p1, sku, 'revenue');
+    const questionComment = unansweredQuestionCount
+      ? `Ответить на вопросы: ${unansweredQuestionCount}`
+      : (numberOrZero(questionStats.q1) ? `Новые вопросы вчера: ${numberOrZero(questionStats.q1)}` : '');
+    const reviewComment = reviewAccess.status === 'permission_denied'
+      ? 'Отзывы, рейтинг и негатив Ozon API закрыты подпиской'
+      : '';
+    const contentComment = rating
+      ? (numberOrZero(rating.rating) < 70 ? 'Низкий контент-рейтинг: открыть карточку' : '')
+      : 'Нет контент-рейтинга по SKU';
     return {
       platform: 'ozon',
       productId: info.id,
@@ -231,11 +424,23 @@ function buildCards(infos, ratings) {
       contentRatingGroups: groups,
       contentRatingImprove: Object.values(groups).flatMap((group) => group.improveAttributes).slice(0, 10),
       reviewRating: null,
-      feedbackCount: null,
-      lowRatingCount: null,
-      unansweredFeedbackCount: null,
-      questionCount: null,
-      unansweredQuestionCount: null,
+      ...reviewMetrics,
+      questionCount,
+      questions7: numberOrZero(questionStats.q7),
+      questions3: numberOrZero(questionStats.q3),
+      questions1: numberOrZero(questionStats.q1),
+      unansweredQuestionCount,
+      unansweredQuestions7: numberOrZero(questionStats.unanswered7),
+      unansweredQuestions3: numberOrZero(questionStats.unanswered3),
+      unansweredQuestions1: numberOrZero(questionStats.unanswered1),
+      lastQuestionDate: questionStats.latestDate || '',
+      revenue7,
+      revenue3,
+      revenue1,
+      units7: windowValue(analytics.p7, sku, 'units'),
+      units3: windowValue(analytics.p3, sku, 'units'),
+      units1: windowValue(analytics.p1, sku, 'units'),
+      revenueSource: revenue7 || revenue3 || revenue1 ? 'Ozon API' : '',
       price: numberOrNull(info.price),
       oldPrice: numberOrNull(info.old_price),
       minPrice: numberOrNull(info.min_price),
@@ -249,23 +454,43 @@ function buildCards(infos, ratings) {
       reviewPromoEnabled: Boolean(reviewPromo?.is_enabled),
       updatedAt: info.updated_at || '',
       primaryImage: Array.isArray(info.primary_image) ? info.primary_image[0] : info.primary_image || '',
-      comment: rating
-        ? (numberOrZero(rating.rating) < 70 ? 'Низкий рейтинг контента: открыть карточку' : 'Карточка по контенту ок')
-        : 'Нет рейтинга контента по SKU'
+      comment: [questionComment, reviewComment, contentComment].filter(Boolean).join(' · ') || 'Ок'
     };
   }).sort((a, b) => {
-    const aRating = a.contentRating === null ? -1 : a.contentRating;
-    const bRating = b.contentRating === null ? -1 : b.contentRating;
-    return aRating - bRating || String(a.offerId).localeCompare(String(b.offerId), 'ru');
+    return numberOrZero(b.revenue7) - numberOrZero(a.revenue7)
+      || numberOrZero(b.questions1) - numberOrZero(a.questions1)
+      || String(a.offerId).localeCompare(String(b.offerId), 'ru');
   });
 }
 
-function buildTotals(cards, productList, reviewAccess) {
+function buildTotals(cards, productList, reviewAccess, questionCountPayload, questions) {
   const rated = cards.filter((card) => card.contentRating !== null);
   const avgContentRating = rated.length
     ? round(rated.reduce((sum, card) => sum + numberOrZero(card.contentRating), 0) / rated.length, 2)
     : null;
+  const questionTotal = numberOrNull(questionCountPayload?.all) ?? questions.length;
+  const questionsUnanswered = questions.filter((item) => !item.answered).length;
   return {
+    revenue7: round(cards.reduce((sum, card) => sum + numberOrZero(card.revenue7), 0), 2),
+    revenue3: round(cards.reduce((sum, card) => sum + numberOrZero(card.revenue3), 0), 2),
+    revenue1: round(cards.reduce((sum, card) => sum + numberOrZero(card.revenue1), 0), 2),
+    units7: round(cards.reduce((sum, card) => sum + numberOrZero(card.units7), 0), 2),
+    units3: round(cards.reduce((sum, card) => sum + numberOrZero(card.units3), 0), 2),
+    units1: round(cards.reduce((sum, card) => sum + numberOrZero(card.units1), 0), 2),
+    reviews7: null,
+    reviews3: null,
+    reviews1: null,
+    rating7: null,
+    rating3: null,
+    rating1: null,
+    negative7: null,
+    negative3: null,
+    negative1: null,
+    questionsTotal: questionTotal,
+    questions7: cards.reduce((sum, card) => sum + numberOrZero(card.questions7), 0),
+    questions3: cards.reduce((sum, card) => sum + numberOrZero(card.questions3), 0),
+    questions1: cards.reduce((sum, card) => sum + numberOrZero(card.questions1), 0),
+    unansweredQuestions: questionsUnanswered,
     products: productList.length,
     cards: cards.length,
     contentRated: rated.length,
@@ -300,8 +525,12 @@ async function main() {
   const skus = [...new Set(infos.map(primarySku).filter(Boolean))];
   const ratings = await fetchContentRatings(options, skus, diagnostics);
   const reviewAccess = await probeReviewAccess(options, diagnostics);
-  const cards = buildCards(infos, ratings);
-  const totals = buildTotals(cards, productList, reviewAccess);
+  const analytics = await fetchAnalytics(options, diagnostics);
+  const questionCount = await fetchQuestionCount(options, diagnostics);
+  const questions = (await fetchQuestions(options, diagnostics)).map(normalizeQuestion);
+  const questionsBySku = buildQuestionMaps(questions, options);
+  const cards = buildCards(infos, ratings, analytics, questionsBySku, reviewAccess);
+  const totals = buildTotals(cards, productList, reviewAccess, questionCount, questions);
 
   const snapshot = {
     date: options.to,
@@ -316,20 +545,25 @@ async function main() {
     generatedAt: new Date().toISOString(),
     source: 'ozon-seller-api',
     docsUrl: 'https://docs.ozon.ru/api/seller/',
-    window: { to: options.to, days: 1 },
+    window: { to: options.to, days: 7 },
     summary: {
       feedbacks: { count: null, answered: null, unanswered: null, lowRating: null, avgRating: null },
-      questions: { count: null, answered: null, unanswered: null },
+      questions: {
+        count: totals.questionsTotal,
+        answered: numberOrZero(totals.questionsTotal) - numberOrZero(totals.unansweredQuestions),
+        unanswered: totals.unansweredQuestions
+      },
       counters: {
         reviewApiStatus: reviewAccess.status,
-        reviewApiMessage: totals.reviewApiMessage
+        reviewApiMessage: totals.reviewApiMessage,
+        questionApiStatus: questionCount ? 'available' : 'unknown'
       },
       ...totals
     },
     reviewAccess,
     cards,
     reviews: [],
-    questions: [],
+    questions,
     daily: [],
     history,
     diagnostics
@@ -343,6 +577,10 @@ async function main() {
     cards: cards.length,
     contentRated: totals.contentRated,
     avgContentRating: totals.avgContentRating,
+    revenue7: totals.revenue7,
+    questions: totals.questionsTotal,
+    questions7: totals.questions7,
+    unansweredQuestions: totals.unansweredQuestions,
     reviewApiStatus: reviewAccess.status,
     warnings: diagnostics.warnings.slice(0, 5)
   }, null, 2));

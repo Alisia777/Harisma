@@ -2,7 +2,7 @@
   if (window.__ALTEA_WB_RATING_REPORT_HOTFIX__) return;
   window.__ALTEA_WB_RATING_REPORT_HOTFIX__ = true;
 
-  const VERSION = '20260601ratingreport13';
+  const VERSION = '20260601ratingreport14';
   const STYLE_ID = 'altea-wb-rating-report-hotfix-style';
   const auxCache = {
     trends: null,
@@ -1883,6 +1883,415 @@
     `;
   }
 
+  function nullableNumber(value) {
+    return hasNumber(value) ? Number(value) : null;
+  }
+
+  function ozonReviewApiLocked(payload) {
+    const status = payload?.summary?.reviewApiStatus || payload?.summary?.counters?.reviewApiStatus || payload?.reviewAccess?.status || '';
+    return status === 'permission_denied';
+  }
+
+  function ozonReviewApiMessage(payload) {
+    return payload?.summary?.reviewApiMessage || payload?.summary?.counters?.reviewApiMessage || payload?.reviewAccess?.message || '';
+  }
+
+  function ozonPeriod(card, days) {
+    return {
+      reviews: nullableNumber(card?.[`reviews${days}`]),
+      rating: nullableNumber(card?.[`rating${days}`]),
+      low: nullableNumber(card?.[`negative${days}`]),
+      negativePct: nullableNumber(card?.[`negativePct${days}`])
+    };
+  }
+
+  function ozonQuestionPeriod(card, days) {
+    return {
+      questions: num(card?.[`questions${days}`]),
+      unanswered: num(card?.[`unansweredQuestions${days}`])
+    };
+  }
+
+  function ozonRowStatus(row) {
+    if (row.unansweredQuestions > 0) return 'Нужен ответ';
+    if (row.q1.questions > 0) return 'Новые вопросы';
+    if (!row.hasStock) return 'Нет остатка';
+    if (row.reviewApiLocked) return 'Отзывы API закрыты';
+    return 'Норма';
+  }
+
+  function ozonStatusBadge(row) {
+    if (row.unansweredQuestions > 0) return simpleBadge('ответить', 'down');
+    if (row.q1.questions > 0) return simpleBadge('вчера +' + fmtInt(row.q1.questions), 'flat');
+    if (!row.hasStock) return simpleBadge('нет остатка', 'down');
+    if (row.reviewApiLocked) return simpleBadge('API 403', 'down');
+    return simpleBadge('норма', 'up');
+  }
+
+  function ozonRowComment(row) {
+    const comments = [];
+    if (row.unansweredQuestions > 0) comments.push(`Ответить на вопросы: ${fmtInt(row.unansweredQuestions)}`);
+    if (row.q1.questions > 0) comments.push(`Вчера вопросов: ${fmtInt(row.q1.questions)}`);
+    if (row.reviewApiLocked) comments.push('Отзывы, рейтинг и негатив закрыты подпиской Ozon API');
+    if (hasNumber(row.contentRating) && Number(row.contentRating) < 70) comments.push('Низкий контент-рейтинг');
+    if (!row.hasStock) comments.push('Нет остатка');
+    return comments.join(' · ') || row.comment || 'Ок';
+  }
+
+  function buildOzonModel(wbModel = null) {
+    const payload = ozonPayload();
+    const cards = Array.isArray(payload.cards) ? payload.cards : [];
+    const history = Array.isArray(payload.history) ? payload.history : [];
+    const latest = history.length ? history[history.length - 1] : { date: payload.window?.to || '', cards };
+    const reviewApiLocked = ozonReviewApiLocked(payload);
+    const rows = cards.map((card, index) => {
+      const p7 = ozonPeriod(card, 7);
+      const p3 = ozonPeriod(card, 3);
+      const p1 = ozonPeriod(card, 1);
+      const q7 = ozonQuestionPeriod(card, 7);
+      const q3 = ozonQuestionPeriod(card, 3);
+      const q1 = ozonQuestionPeriod(card, 1);
+      const row = {
+        index: index + 1,
+        key: ozonCardKey(card),
+        platform: 'ozon',
+        label: card.offerId || card.label || card.title || String(card.sku || card.productId || ''),
+        title: card.title || '',
+        offerId: card.offerId || '',
+        sku: card.sku || '',
+        productId: card.productId || '',
+        contentRating: nullableNumber(card.contentRating),
+        rating: nullableNumber(card.reviewRating),
+        ratingDelta1: null,
+        ratingDelta7: null,
+        historyRating: null,
+        feedbackCount: nullableNumber(card.feedbackCount),
+        unanswered: nullableNumber(card.unansweredFeedbackCount),
+        unansweredQuestions: num(card.unansweredQuestionCount),
+        questionCount: num(card.questionCount),
+        p7,
+        p3,
+        p1,
+        q7,
+        q3,
+        q1,
+        revenue: {
+          revenue7: nullableNumber(card.revenue7),
+          revenue3: nullableNumber(card.revenue3),
+          revenue1: nullableNumber(card.revenue1),
+          units7: nullableNumber(card.units7),
+          units3: nullableNumber(card.units3),
+          units1: nullableNumber(card.units1),
+          source: card.revenueSource || 'Ozon API'
+        },
+        stockPresent: num(card.stockPresent),
+        hasStock: Boolean(card.hasStock),
+        status: card.status || '',
+        statusDescription: card.statusDescription || '',
+        lastQuestionDate: isoDate(card.lastQuestionDate),
+        reviewApiLocked,
+        comment: card.comment || ''
+      };
+      row.tone = row.unansweredQuestions > 0 ? 'risk' : (row.q1.questions > 0 || !row.hasStock ? 'warn' : 'good');
+      row.gameScore = Math.max(1, Math.round(
+        Math.min(24, num(row.revenue.revenue7) / 60000)
+        + Math.min(20, row.questionCount / 4)
+        + Math.min(18, row.q7.questions * 2)
+        - Math.min(16, row.unansweredQuestions * 6)
+      ));
+      return row;
+    });
+    const summary = payload.summary || {};
+    const questionSummary = typeof summary.questions === 'object' ? summary.questions : {};
+    const totals = {
+      ...summary,
+      products: num(summary.products || rows.length),
+      cards: num(summary.cards || rows.length),
+      revenue7: nullableNumber(summary.revenue7) ?? rows.reduce((sum, row) => sum + num(row.revenue.revenue7), 0),
+      revenue3: nullableNumber(summary.revenue3) ?? rows.reduce((sum, row) => sum + num(row.revenue.revenue3), 0),
+      revenue1: nullableNumber(summary.revenue1) ?? rows.reduce((sum, row) => sum + num(row.revenue.revenue1), 0),
+      units7: nullableNumber(summary.units7) ?? rows.reduce((sum, row) => sum + num(row.revenue.units7), 0),
+      units3: nullableNumber(summary.units3) ?? rows.reduce((sum, row) => sum + num(row.revenue.units3), 0),
+      units1: nullableNumber(summary.units1) ?? rows.reduce((sum, row) => sum + num(row.revenue.units1), 0),
+      reviews7: nullableNumber(summary.reviews7),
+      reviews3: nullableNumber(summary.reviews3),
+      reviews1: nullableNumber(summary.reviews1),
+      rating7: nullableNumber(summary.rating7),
+      rating3: nullableNumber(summary.rating3),
+      rating1: nullableNumber(summary.rating1),
+      negative7: nullableNumber(summary.negative7),
+      negative3: nullableNumber(summary.negative3),
+      negative1: nullableNumber(summary.negative1),
+      questions: nullableNumber(questionSummary.count ?? summary.questionsTotal) ?? rows.reduce((sum, row) => sum + row.questionCount, 0),
+      questions7: nullableNumber(summary.questions7) ?? rows.reduce((sum, row) => sum + row.q7.questions, 0),
+      questions3: nullableNumber(summary.questions3) ?? rows.reduce((sum, row) => sum + row.q3.questions, 0),
+      questions1: nullableNumber(summary.questions1) ?? rows.reduce((sum, row) => sum + row.q1.questions, 0),
+      unansweredQuestions: nullableNumber(questionSummary.unanswered ?? summary.unansweredQuestions) ?? rows.reduce((sum, row) => sum + row.unansweredQuestions, 0),
+      contentRated: num(summary.contentRated || rows.filter((row) => hasNumber(row.contentRating)).length),
+      avgContentRating: nullableNumber(summary.avgContentRating),
+      contentBelow70: num(summary.contentBelow70 || rows.filter((row) => hasNumber(row.contentRating) && Number(row.contentRating) < 70).length)
+    };
+    return {
+      payload,
+      rows,
+      totals,
+      latest,
+      history,
+      reviewApiLocked,
+      reviewApiMessage: ozonReviewApiMessage(payload),
+      generatedAt: payload.generatedAt || '',
+      ozonWindow7: wbModel?.ozonWindow7 || { revenue: totals.revenue7, units: totals.units7, latestDate: latest?.date || payload.window?.to || '' }
+    };
+  }
+
+  function filterOzonRows(rows) {
+    const status = workbenchState.status || 'all';
+    return [...rows].filter((row) => historyRowMatches(row, status));
+  }
+
+  function sortOzonRows(rows) {
+    return sortRatingRows(rows);
+  }
+
+  function renderOzonUnavailableCell(note = 'API 403') {
+    return `<span class="cell-main">—</span><span class="cell-muted">${esc(note)}</span>`;
+  }
+
+  function renderOzonCountCell(value, note = '') {
+    return `<span class="cell-main">${fmtInt(value)}</span>${note ? `<span class="cell-muted">${esc(note)}</span>` : ''}`;
+  }
+
+  function renderOzonHistoryCards(model) {
+    const ozon = buildOzonModel(model);
+    const filteredRows = filterOzonRows(ozon.rows);
+    const sortedRows = sortOzonRows(filteredRows);
+    const rows = sortedRows.slice(0, 160).map((row) => {
+      const link = typeof linkToSku === 'function' ? linkToSku(row.key || row.label, row.label) : `<strong>${esc(row.label)}</strong>`;
+      const unanswered = num(row.unanswered) + num(row.unansweredQuestions);
+      const ratio = row.unansweredQuestions ? 0.22 : row.q1.questions ? 0.55 : row.revenue.revenue7 ? 0.92 : 0.46;
+      return `
+        <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('ozon', ratio)}">
+          <td class="article-cell">
+            ${link}
+            <span class="cell-muted">Ozon SKU ${esc(row.sku || '—')} · product ${esc(row.productId || '—')}</span>
+          </td>
+          <td><span class="cell-main">${esc(ozonRowStatus(row))}</span>${ozonStatusBadge(row)}</td>
+          <td><span class="cell-main">${fmtMoney(row.revenue.revenue7)}</span><span class="cell-muted">${fmtInt(row.revenue.units7)} шт. · ${esc(row.revenue.source || 'Ozon API')}</span></td>
+          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API отзывов 403' : '')}</td>
+          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API отзывов 403' : '')}</td>
+          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API отзывов 403' : '')}</td>
+          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API рейтинга 403' : '')}</td>
+          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API рейтинга 403' : '')}</td>
+          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API рейтинга 403' : '')}</td>
+          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API негатива 403' : '')}</td>
+          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API негатива 403' : '')}</td>
+          <td>${renderOzonUnavailableCell(ozon.reviewApiLocked ? 'API негатива 403' : '')}</td>
+          <td>${renderOzonCountCell(row.questionCount, 'всего')}</td>
+          <td>${renderOzonCountCell(row.q7.questions, 'за 7 дней')}</td>
+          <td>${renderOzonCountCell(row.q3.questions, 'за 3 дня')}</td>
+          <td>${renderOzonCountCell(row.q1.questions, 'вчера')}</td>
+          <td><span class="cell-main">${fmtInt(unanswered)}</span><span class="cell-muted">${ozon.reviewApiLocked ? 'отзывы API 403' : `${fmtInt(row.unanswered)} отзывов`} · ${fmtInt(row.unansweredQuestions)} вопросов</span></td>
+          <td><span class="cell-text">${esc(ozonRowComment(row))}</span></td>
+        </tr>
+      `;
+    }).join('');
+    return `
+      <div class="sku-plan-fact-card rating-work-card">
+        <div class="rating-detail-head">
+          <div>
+            <h3>Ozon · рабочая таблица карточек</h3>
+            <p>Те же поля, что у WB: статус, выручка, отзывы, рейтинг, негатив, вопросы, без ответа и комментарий.</p>
+          </div>
+          <div class="badge-stack">${chip(`${fmtInt(ozon.rows.length)} карточек`, 'info')}${chip(`${fmtInt(ozon.totals.questions7)} вопросов за 7д`, 'info')}${chip(ozon.reviewApiLocked ? 'отзывы API 403' : 'отзывы API ок', ozon.reviewApiLocked ? 'warn' : 'ok')}</div>
+        </div>
+        ${renderHistoryControls(ozon.rows, filteredRows)}
+        ${renderOzonApiNotice(ozon)}
+        <div class="rating-work-table">
+          <table>
+            <colgroup>
+              <col style="width:230px"><col style="width:120px"><col style="width:118px"><col style="width:86px"><col style="width:86px"><col style="width:92px"><col style="width:96px"><col style="width:96px"><col style="width:120px"><col style="width:98px"><col style="width:98px"><col style="width:104px"><col style="width:94px"><col style="width:92px"><col style="width:92px"><col style="width:92px"><col style="width:112px"><col style="width:160px">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Артикул</th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'risk' ? 'active' : ''}" data-rating-sort="risk">Статус</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'revenue' ? 'active' : ''}" data-rating-sort="revenue">Выручка 7д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'reviews7' ? 'active' : ''}" data-rating-sort="reviews7">Отзывы 7д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'reviews3' ? 'active' : ''}" data-rating-sort="reviews3">Отзывы 3д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'reviews1' ? 'active' : ''}" data-rating-sort="reviews1">Отзывы вчера</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'rating7' ? 'active' : ''}" data-rating-sort="rating7">Рейтинг 7д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'rating3' ? 'active' : ''}" data-rating-sort="rating3">Рейтинг 3д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'rating1' ? 'active' : ''}" data-rating-sort="rating1">Рейтинг вчера</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'negative7' ? 'active' : ''}" data-rating-sort="negative7">Негатив 7д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'negative3' ? 'active' : ''}" data-rating-sort="negative3">Негатив 3д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'negative1' ? 'active' : ''}" data-rating-sort="negative1">Негатив вчера</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'questions' ? 'active' : ''}" data-rating-sort="questions">Вопросы всего</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'questions7' ? 'active' : ''}" data-rating-sort="questions7">Вопросы 7д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'questions3' ? 'active' : ''}" data-rating-sort="questions3">Вопросы 3д</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'questions1' ? 'active' : ''}" data-rating-sort="questions1">Вопросы вчера</button></th>
+                <th><button type="button" class="rating-th-sort ${workbenchState.sort === 'unanswered' ? 'active' : ''}" data-rating-sort="unanswered">Без ответа</button></th>
+                <th>Комментарий</th>
+              </tr>
+            </thead>
+            <tbody>${rows || '<tr><td colspan="18" class="center">Нет карточек Ozon по текущему фильтру.</td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function ozonQuestionItems(ozon) {
+    const bySku = new Map((ozon.rows || []).map((row) => [String(row.sku || ''), row]));
+    return (Array.isArray(ozon.payload.questions) ? ozon.payload.questions : []).map((question, index) => {
+      const row = bySku.get(String(question.sku || '')) || {};
+      const unanswered = question.answered === false || num(question.answersCount) === 0;
+      return {
+        id: question.id || `ozon-question-${index}`,
+        kind: 'question',
+        key: row.key || String(question.sku || ''),
+        label: row.label || String(question.sku || 'Ozon'),
+        sku: question.sku || '',
+        date: isoDate(question.date || question.publishedAt),
+        text: question.text || '—',
+        unanswered: unanswered ? 1 : 0,
+        answered: !unanswered,
+        questionCount: 1,
+        priority: (unanswered ? 20 : 0) + (dateValue(question.date) || 0) / 100000000000
+      };
+    });
+  }
+
+  function renderOzonReviewsUnavailable(model) {
+    const ozon = buildOzonModel(model);
+    return `
+      <div class="sku-plan-fact-card rating-work-card">
+        <div class="rating-detail-head">
+          <div>
+            <h3>Ozon · отзывы</h3>
+            <p>Колонки отзывов оставлены в отчете, но Ozon API сейчас не отдает сами отзывы, рейтинги и негатив.</p>
+          </div>
+          <div class="badge-stack">${chip('review/list 403', 'warn')}${chip('review/count 403', 'warn')}</div>
+        </div>
+        ${renderOzonApiNotice(ozon)}
+        <div class="rating-work-table">
+          <table>
+            <colgroup><col style="width:240px"><col style="width:110px"><col style="width:140px"><col style="width:110px"><col style="width:120px"><col style="width:420px"></colgroup>
+            <thead><tr><th>Артикул</th><th>Дата</th><th>Статус</th><th>Оценка</th><th>Негатив</th><th>Текст / суть</th></tr></thead>
+            <tbody><tr><td colspan="6" class="center">Отзывы Ozon недоступны по API подписке: в истории выше эти поля показаны как API 403.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderOzonQuestions(model) {
+    const ozon = buildOzonModel(model);
+    const items = ozonQuestionItems(ozon);
+    const visible = sortStructuredQueueItems(filterStructuredQueueItems(items, 'questions'), 'questions');
+    const activeSort = queueSortKey('questions');
+    const rows = visible.slice(0, 160).map((item) => `
+      <tr class="sku-plan-fact-row rating-work-row" style="${planFactStyle('ozon', item.unanswered ? 0.3 : 0.85)}">
+        <td class="article-cell">
+          ${typeof linkToSku === 'function' ? linkToSku(item.key || item.label, item.label) : esc(item.label)}
+          <span class="cell-muted">Ozon SKU ${esc(item.sku || '—')}</span>
+        </td>
+        <td><span class="cell-main">${esc(item.date ? shortDate(item.date) : 'без даты')}</span></td>
+        <td><span class="cell-main">${item.unanswered ? 'Нужен ответ' : 'Закрыто'}</span>${item.unanswered ? simpleBadge('ответить', 'down') : simpleBadge('ок', 'up')}</td>
+        <td><span class="cell-main">1</span><span class="cell-muted">вопрос</span></td>
+        <td><span class="cell-main">${fmtInt(item.unanswered)}</span><span class="cell-muted">без ответа</span></td>
+        <td><span class="cell-text">${esc(item.text || '—')}</span></td>
+      </tr>
+    `).join('');
+    return `
+      <div class="sku-plan-fact-card rating-work-card">
+        <div class="rating-detail-head">
+          <div>
+            <h3>Ozon · вопросы</h3>
+            <p>Реальный список вопросов из Ozon API: дата, статус, без ответа и суть вопроса.</p>
+          </div>
+          <div class="badge-stack">${chip(`${fmtInt(items.length)} строк`, 'info')}${chip(`${fmtInt(ozon.totals.unansweredQuestions)} без ответа`, ozon.totals.unansweredQuestions ? 'warn' : 'ok')}</div>
+        </div>
+        ${renderQueueControls('questions', items, visible)}
+        <div class="rating-work-table">
+          <table>
+            <colgroup>
+              <col style="width:240px"><col style="width:110px"><col style="width:140px"><col style="width:110px"><col style="width:120px"><col style="width:420px">
+            </colgroup>
+            <thead>
+              <tr>
+                <th><button type="button" class="rating-th-sort ${activeSort === 'questionArticle' ? 'active' : ''}" data-rating-sort="questionArticle">Артикул</button></th>
+                <th><button type="button" class="rating-th-sort ${activeSort === 'questionDate' ? 'active' : ''}" data-rating-sort="questionDate">Дата</button></th>
+                <th><button type="button" class="rating-th-sort ${activeSort === 'questionStatus' ? 'active' : ''}" data-rating-sort="questionStatus">Статус</button></th>
+                <th><button type="button" class="rating-th-sort ${activeSort === 'questionCount' ? 'active' : ''}" data-rating-sort="questionCount">Вопросы</button></th>
+                <th><button type="button" class="rating-th-sort ${activeSort === 'questionStatus' ? 'active' : ''}" data-rating-sort="questionStatus">Без ответа</button></th>
+                <th>Текст / суть</th>
+              </tr>
+            </thead>
+            <tbody>${rows || '<tr><td colspan="6" class="center">Нет вопросов Ozon по текущему фильтру.</td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderOzonQueue(model, kind) {
+    return kind === 'reviews' ? renderOzonReviewsUnavailable(model) : renderOzonQuestions(model);
+  }
+
+  function renderOzonStats(model) {
+    const ozon = buildOzonModel(model);
+    const questionDailyBase = ozon.totals.questions3 ? ozon.totals.questions3 / 3 : null;
+    return `
+      <div class="rating-detail-head">
+        <div>
+          <h3>Ozon · статистика</h3>
+          <p>Сводка в тех же метриках: выручка, отзывы, рейтинг, негатив, вопросы и хвост без ответа.</p>
+        </div>
+      </div>
+      ${renderOzonApiNotice(ozon)}
+      <div class="rating-metric-grid">
+        ${renderMetricCard('Ozon выручка 7д', fmtMoney(ozon.totals.revenue7), simpleBadge(`${fmtInt(ozon.totals.units7)} шт.`, 'up'), `3д ${fmtMoney(ozon.totals.revenue3)} · вчера ${fmtMoney(ozon.totals.revenue1)}`, { platform: 'ozon', ratio: ozon.totals.revenue7 ? 1 : 0.1 })}
+        ${renderMetricCard('Ozon вопросы всего', fmtInt(ozon.totals.questions), trendBadge(ozon.totals.questions1, questionDailyBase), `7д ${fmtInt(ozon.totals.questions7)} · 3д ${fmtInt(ozon.totals.questions3)} · вчера ${fmtInt(ozon.totals.questions1)}`, { platform: 'ozon' })}
+        ${renderMetricCard('Ozon без ответа', fmtInt(ozon.totals.unansweredQuestions), ozon.totals.unansweredQuestions ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up'), 'вопросы без ответа', { platform: 'ozon', ratio: ozon.totals.unansweredQuestions ? 0.35 : 1 })}
+        ${renderMetricCard('Ozon отзывы 7 / 3 / вчера', '— / — / —', simpleBadge('API 403', 'down'), 'review/list и review/count закрыты подпиской', { platform: 'ozon', ratio: 0.18 })}
+        ${renderMetricCard('Ozon рейтинг 7 / 3 / вчера', '— / — / —', simpleBadge('API 403', 'down'), 'звездный рейтинг приходит только через отзывы', { platform: 'ozon', ratio: 0.18 })}
+        ${renderMetricCard('Ozon негатив 7 / 3 / вчера', '— / — / —', simpleBadge('API 403', 'down'), 'негатив считается из отзывов', { platform: 'ozon', ratio: 0.18 })}
+      </div>
+    `;
+  }
+
+  function renderStructuredPlatforms(model) {
+    const ozon = buildOzonModel(model);
+    const latestRating = model.totals.avgRating;
+    const prevRating = avgSnapshotRating(model.baseline1);
+    const reviewDailyBase = model.totals.reviews3 ? model.totals.reviews3 / 3 : null;
+    const questionDailyBase = model.totals.questions3 ? model.totals.questions3 / 3 : null;
+    const ozonQuestionDailyBase = ozon.totals.questions3 ? ozon.totals.questions3 / 3 : null;
+    const unansweredTotal = model.totals.unanswered + model.totals.unansweredQuestions;
+    const cards = [
+      renderMetricCard('WB рейтинг', fmtNum(latestRating, 2), ratingTrendBadge(latestRating, prevRating), `${fmtInt(model.totals.leaders)} карточек 4,8+`, { platform: 'wb', ratio: hasNumber(latestRating) ? Number(latestRating) / 5 : 0.5 }),
+      renderMetricCard('WB отзывы 7д', fmtInt(model.totals.reviews7), trendBadge(model.totals.reviews1, reviewDailyBase), `вчера ${fmtInt(model.totals.reviews1)}`, { platform: 'wb' }),
+      renderMetricCard('WB негатив 7д', fmtPct(model.totals.neg7), trendBadge(model.totals.neg1, model.totals.neg3, { lowerIsBetter: true, percent: true, threshold: 0.01 }), `${fmtInt(model.totals.low7)} негативных`, { platform: 'wb', ratio: model.totals.neg7 === null ? 0.5 : Math.max(0.08, 1 - Number(model.totals.neg7)) }),
+      renderMetricCard('WB вопросы', fmtInt(model.totals.questions), trendBadge(model.totals.questions1, questionDailyBase), `+${fmtInt(model.totals.questions7)} за 7 дней`, { platform: 'wb' }),
+      renderMetricCard('WB без ответа', fmtInt(unansweredTotal), unansweredTotal ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up'), `${fmtInt(model.totals.unanswered)} отзывов / ${fmtInt(model.totals.unansweredQuestions)} вопросов`, { platform: 'wb', ratio: unansweredTotal ? 0.35 : 1 }),
+      renderMetricCard('Ozon выручка 7д', fmtMoney(ozon.totals.revenue7), simpleBadge(`${fmtInt(ozon.totals.units7)} шт.`, 'up'), `вчера ${fmtMoney(ozon.totals.revenue1)}`, { platform: 'ozon', ratio: ozon.totals.revenue7 ? 1 : 0.1 }),
+      renderMetricCard('Ozon вопросы 7д', fmtInt(ozon.totals.questions7), trendBadge(ozon.totals.questions1, ozonQuestionDailyBase), `${fmtInt(ozon.totals.questions)} всего`, { platform: 'ozon' }),
+      renderMetricCard('Ozon без ответа', fmtInt(ozon.totals.unansweredQuestions), ozon.totals.unansweredQuestions ? simpleBadge('закрыть', 'down') : simpleBadge('ок', 'up'), 'вопросы', { platform: 'ozon', ratio: ozon.totals.unansweredQuestions ? 0.35 : 1 }),
+      renderMetricCard('Ozon отзывы', 'API 403', simpleBadge('подписка', 'down'), 'отзывы/рейтинг/негатив не отдаются API', { platform: 'ozon', ratio: 0.18 }),
+      renderMetricCard('Ozon карточки', fmtInt(ozon.totals.cards), simpleBadge(`${fmtInt(ozon.totals.contentBelow70)} контент <70`, ozon.totals.contentBelow70 ? 'down' : 'up'), 'служебно: карточки API', { platform: 'ozon', ratio: 0.9 })
+    ].join('');
+    return `
+      <div class="rating-planfact-toolbar">
+        <div class="rating-platform-selector">
+          <button class="${structuredState.platform === 'wb' ? 'active' : ''}" type="button" data-rating-platform="wb">WB · история / отзывы / вопросы</button>
+          <button class="${structuredState.platform === 'ozon' ? 'active' : ''}" type="button" data-rating-platform="ozon">Ozon · история / отзывы / вопросы</button>
+        </div>
+        <div class="badge-stack">${chip(`${fmtInt(model.rows.length)} WB`, 'info')}${chip(`${fmtInt(ozon.rows.length)} Ozon`, 'info')}</div>
+      </div>
+      <div class="sku-plan-platform-board rating-planfact-board">${cards}</div>
+    `;
+  }
+
   function sortRatingRows(rows = []) {
     const sort = workbenchState.sort || 'revenue';
     const list = [...rows];
@@ -2336,7 +2745,7 @@
         structuredState.platform = button.dataset.ratingPlatform === 'ozon' ? 'ozon' : 'wb';
         structuredState.view = 'history';
         workbenchState.status = 'all';
-        workbenchState.sort = structuredState.platform === 'ozon' ? 'contentRating' : 'revenue';
+        workbenchState.sort = 'revenue';
         renderWbCardRatingStructured(rootId);
       });
     });
@@ -2403,6 +2812,7 @@
         <div class="badge-stack">
           ${chip(`WB ${fullDate(model.active.date)}`, 'ok')}
           ${chip(`Ozon API ${fmtInt(ozonModel.totals.cards)} карточек`, 'info')}
+          ${chip(`Ozon вопросы ${fmtInt(ozonModel.totals.questions)}`, 'info')}
           ${chip(ozonModel.reviewApiLocked ? 'Ozon отзывы 403' : 'Ozon отзывы API ok', ozonModel.reviewApiLocked ? 'warn' : 'ok')}
           ${chip(`${fmtInt(model.snapshots.length)} срезов истории`, 'info')}
         </div>

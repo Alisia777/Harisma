@@ -3970,37 +3970,37 @@ function productLeaderboardCommonSplitCardHtml(contour = {}) {
   const kzPct = contour.kzShare == null ? 0 : Math.min(100, Math.max(0, contour.kzShare * 100));
   const organicPct = contour.organicShare == null ? 0 : Math.min(100, Math.max(0, contour.organicShare * 100));
   return `
-    <div class="product-leaderboard-order-hero" aria-label="КЗ и органика в заказах">
+    <div class="product-leaderboard-order-hero" aria-label="КЗ-лист и остальные WB-подменники в заказах">
       <div class="product-leaderboard-order-hero__top">
         <div>
-          <span>всего заказов</span>
+          <span>всего заказов WB-подменников</span>
           <strong>${fmt.int(contour.totalOrders)}</strong>
-          <em>WB-подменники</em>
+          <em>знаменатель из ANS-среза</em>
         </div>
         <div class="product-leaderboard-order-hero__ratio">
           <b>${contour.kzShare == null ? '—' : fmt.pct(contour.kzShare)}</b>
-          <em>КЗ</em>
+          <em>КЗ-лист / WB</em>
         </div>
       </div>
       <div class="product-leaderboard-order-hero__split">
         <div class="product-leaderboard-order-metric is-kz">
-          <span>КЗ</span>
+          <span>КЗ-лист</span>
           <strong>${fmt.int(contour.kzOrders)}</strong>
-          <em>${contour.kzShare == null ? '—' : fmt.pct(contour.kzShare)} от общего</em>
+          <em>${contour.kzShare == null ? '—' : fmt.pct(contour.kzShare)} от WB-подменников</em>
         </div>
         <div class="product-leaderboard-order-metric is-organic">
-          <span>Органика</span>
+          <span>Остальные WB-подменники</span>
           <strong>${fmt.int(contour.organicOrders)}</strong>
-          <em>${contour.organicShare == null ? '—' : fmt.pct(contour.organicShare)} от общего</em>
+          <em>${contour.organicShare == null ? '—' : fmt.pct(contour.organicShare)} не в КЗ-листе</em>
         </div>
       </div>
-      <div class="product-leaderboard-order-track" title="${escapeHtml(`КЗ ${kzPct.toFixed(1)}%, органика ${organicPct.toFixed(1)}%`)}">
+      <div class="product-leaderboard-order-track" title="${escapeHtml(`КЗ-лист ${kzPct.toFixed(1)}%, остальные WB-подменники ${organicPct.toFixed(1)}%`)}">
         <i class="is-kz" style="width:${kzPct.toFixed(1)}%"></i>
         <i class="is-organic" style="width:${organicPct.toFixed(1)}%"></i>
       </div>
       <div class="product-leaderboard-order-hero__foot">
-        <b>КЗ ${fmt.int(contour.kzOrders)}</b>
-        <em>органика ${fmt.int(contour.organicOrders)} · ${organicPct.toFixed(1)}%</em>
+        <b>КЗ-лист ${fmt.int(contour.kzOrders)}</b>
+        <em>остальные ${fmt.int(contour.organicOrders)} · ${organicPct.toFixed(1)}%</em>
       </div>
     </div>
   `;
@@ -4015,8 +4015,8 @@ function renderProductLeaderboardCommonContourHtml(payload = {}, summary = {}, i
     <div class="card sku-plan-fact-card salary-plan-kpi-card product-leaderboard-common-contour" style="margin-top:14px;--xp-hue:278;--xp-progress:${kzPct.toFixed(1)}%;--xp-forecast:${kzPct.toFixed(1)}%;--xp-bright:${heroBright.toFixed(2)}">
       <div class="section-subhead">
         <div>
-          <h3>Продажи WB: КЗ / органика</h3>
-          <p class="small muted">Все продажи по подменникам, вклад Контент завода и остаток органики WB.</p>
+          <h3>WB-подменники: КЗ-лист / остальные</h3>
+          <p class="small muted">Знаменатель — все заказы WB-подменников; числитель — заказы из weekly КЗ-листа.</p>
         </div>
         <div class="badge-stack">
           ${badge(payload.weekLabel || 'КЗ неделя', 'info')}
@@ -4031,10 +4031,10 @@ function renderProductLeaderboardCommonContourHtml(payload = {}, summary = {}, i
         </div>
       </div>
       <div class="muted small" style="margin-top:10px">
-        Формула: органика = ${fmt.int(orderContour.totalOrders)} заказов WB-подменников - ${fmt.int(orderContour.kzOrders)} заказов КЗ = ${fmt.int(orderContour.organicOrders)}.${orderContour.sourceLabel ? ` Срез подменников: ${escapeHtml(orderContour.sourceLabel)}.` : ''}
+        Формула: доля КЗ-листа = ${fmt.int(orderContour.kzOrders)} заказов weekly КЗ-листа / ${fmt.int(orderContour.totalOrders)} заказов WB-подменников = ${orderContour.kzShare == null ? '—' : fmt.pct(orderContour.kzShare)}. Остальные WB-подменники = ${fmt.int(orderContour.totalOrders)} - ${fmt.int(orderContour.kzOrders)} = ${fmt.int(orderContour.organicOrders)}.${orderContour.sourceLabel ? ` Срез подменников: ${escapeHtml(orderContour.sourceLabel)}.` : ''}
       </div>
       <div class="muted small" style="margin-top:10px">
-        Вывод: из ${fmt.int(orderContour.totalOrders)} продаж по подменникам Контент завод дает ${fmt.int(orderContour.kzOrders)} (${orderContour.kzShare == null ? '—' : fmt.pct(orderContour.kzShare)}), органика WB дает ${fmt.int(orderContour.organicOrders)} (${orderContour.organicShare == null ? '—' : fmt.pct(orderContour.organicShare)}).
+        Вывод: ${orderContour.kzShare == null ? '—' : fmt.pct(orderContour.kzShare)} — это вклад КЗ-листа в контур WB-подменников, а не доля КЗ внутри weekly-листа.
       </div>
     </div>
   `;
@@ -9058,7 +9058,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
     <div class="section-title">
       <div>
         <h2>Продуктовый лидерборд</h2>
-        <p>Сначала общий контур заказов КЗ / органика, ниже уровень недели, метрики, owner race и рабочий список SKU.</p>
+        <p>Сначала доля КЗ-листа в WB-подменниках, ниже уровень недели, метрики, owner race и рабочий список SKU.</p>
       </div>
       <div class="badge-stack">
         ${badge(payload.weekLabel || 'недельный срез', 'info')}

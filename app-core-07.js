@@ -2810,7 +2810,7 @@ function getProductLeaderboardFilters() {
   state.productLeaderboardFilters.sort = state.productLeaderboardFilters.sort || 'gameScore';
   state.productLeaderboardFilters.sortDir = state.productLeaderboardFilters.sortDir === 'asc' ? 'asc' : 'desc';
   state.productLeaderboardFilters.snapshot = state.productLeaderboardFilters.snapshot || 'latest';
-  state.productLeaderboardFilters.expandedPanel = state.productLeaderboardFilters.expandedPanel || '';
+  state.productLeaderboardFilters.expandedPanel = state.productLeaderboardFilters.expandedPanel || 'metrics';
   return state.productLeaderboardFilters;
 }
 
@@ -3248,11 +3248,11 @@ function productLeaderboardInsightTileHtml(config = {}) {
     ? skuPlanFactCompletionLevel(completion)
     : productLeaderboardScoreLevel((Number(completion) || 0) * 100);
   const style = typeof skuPlanFactCardStyle === 'function' ? skuPlanFactCardStyle('wb', completion) : '';
-  const actionText = config.active ? 'Открыто' : 'Открыть';
-  const actionHint = config.active ? 'Детали показаны ниже' : 'Нажать, чтобы раскрыть ниже';
+  const actionText = config.active ? 'Сейчас открыт' : (config.actionLabel || 'Показать');
+  const actionHint = config.active ? 'Рабочая подложка ниже' : (config.actionHint || 'Переключить подложку');
   const reliefStyle = [
     'width:100%',
-    'min-height:168px',
+    'min-height:124px',
     'text-align:left',
     `border:${config.active ? '2px solid rgba(255,214,130,.92)' : '1px solid rgba(255,214,130,.42)'}`,
     `box-shadow:${config.active ? '0 0 0 2px rgba(255,214,130,.28), 0 20px 48px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.16)' : '0 14px 34px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.12)'}`,
@@ -3309,7 +3309,9 @@ function renderProductLeaderboardInsightTilesHtml(payload = {}, summary = {}, ow
       meta: `${fmt.int(summary.orders)} заказов · ${fmt.int(summary.buys)} выкупов`,
       completion: game.score / 100,
       footer: `ROMI ${fmt.pct(summary.romiPct)} · ДРР ${fmt.pct(summary.drrPct)}`,
-      active: activePanel === 'metrics'
+      active: activePanel === 'metrics',
+      actionLabel: 'Показать метрики',
+      actionHint: 'Вернуть КЗ-воронку'
     },
     {
       panel: 'substitution',
@@ -3320,7 +3322,9 @@ function renderProductLeaderboardInsightTilesHtml(payload = {}, summary = {}, ow
       completion: substitutionCompletion,
       footer: `${fmt.int(substitutionSummary.articles)} SKU · ${fmt.int(substitutionSummary.substitutionCount)} подмен`,
       deltaClass: wbSubstitutionTrafficTone(substitutionSummary.orderRate),
-      active: activePanel === 'substitution'
+      active: activePanel === 'substitution',
+      actionLabel: 'Показать список',
+      actionHint: 'Вместо SKU-воронки'
     }
   ];
   return `
@@ -3478,27 +3482,25 @@ function renderProductLeaderboardSubstitutionRacePanel(items = [], leaderboardPa
   const articles = model.articles;
   if (!articles.length) return '';
 
-  const raceRows = model.rows;
-  const summary = productLeaderboardSubstitutionSummary(raceRows);
-  const maxOrders = Math.max(1, ...raceRows.map((row) => numberOrZero(row.orders)));
-  const maxViews = Math.max(1, ...raceRows.map((row) => numberOrZero(row.views)));
-  const topRows = raceRows
+  const raceRows = model.rows
     .slice()
     .sort((left, right) => (
       numberOrZero(right.orders) - numberOrZero(left.orders)
       || numberOrZero(right.views) - numberOrZero(left.views)
       || String(left.articleKey || '').localeCompare(String(right.articleKey || ''), 'ru')
-    ))
-    .slice(0, 6);
+    ));
+  const summary = productLeaderboardSubstitutionSummary(raceRows);
+  const maxOrders = Math.max(1, ...raceRows.map((row) => numberOrZero(row.orders)));
+  const maxViews = Math.max(1, ...raceRows.map((row) => numberOrZero(row.views)));
   const sourceLabel = payload.asOfDate || payload.source?.sourceGeneratedAt || payload.generatedAt || '';
   const isFiltered = model.isFiltered;
   const orderTone = wbSubstitutionTrafficTone(summary.orderRate);
   const cards = [
     {
-      title: 'Трафик подмен',
+      title: 'Просмотры',
       kicker: `${fmt.int(summary.substitutionCount)} подмен`,
       value: fmt.int(summary.views),
-      meta: `${fmt.int(summary.articles)} SKU в race`,
+      meta: `${fmt.int(summary.articles)} SKU в списке`,
       completion: Math.min(1.35, summary.views / Math.max(1, numberOrZero(payload.summary?.views))),
       footer: isFiltered ? 'по текущему фильтру' : 'общий срез',
       hint: 'просмотры'
@@ -3523,7 +3525,7 @@ function renderProductLeaderboardSubstitutionRacePanel(items = [], leaderboardPa
       hint: 'просмотр в корзину'
     },
     {
-      title: 'Матчинг',
+      title: 'Список',
       kicker: `${fmt.int(payload.summary?.unmatchedRowCount || 0)} без SKU`,
       value: fmt.int(summary.rowCount),
       meta: `${fmt.int(payload.summary?.mappedRowCount || 0)} строк сматчено`,
@@ -3534,15 +3536,15 @@ function renderProductLeaderboardSubstitutionRacePanel(items = [], leaderboardPa
   ];
 
   return `
-    <div class="card product-leaderboard-substitution-race" data-product-leaderboard-expanded-panel="substitution" style="margin-top:14px">
+    <div class="card product-leaderboard-substitution-race product-leaderboard-substitution-workbench" data-product-leaderboard-expanded-panel="substitution" style="margin-top:14px">
       <div class="section-subhead">
         <div>
-          <h3>WB подмены race</h3>
-          <p class="small muted">Где подменные артикулы дают трафик, корзины и заказы. Это SKU-сигнал для КЗ: что масштабировать, а где проверить карточку и связку подмен.</p>
+          <h3>WB подменные артикулы</h3>
+          <p class="small muted">Полный рабочий список вместо SKU-воронки: по каждому товару видно просмотры, корзины, заказы, CR, избранное и какие подменники дают вклад.</p>
         </div>
         <div class="badge-stack">
           ${badge(sourceLabel ? `срез ${escapeHtml(sourceLabel)}` : 'срез WB', sourceLabel ? 'ok' : 'warn')}
-          ${badge(isFiltered ? 'по фильтру лидерборда' : 'все SKU WB', isFiltered ? 'info' : '')}
+          ${badge(isFiltered ? 'по фильтру лидерборда' : 'все SKU WB', isFiltered ? 'info' : 'ok')}
           ${badge(`${fmt.int(summary.articles)} SKU`, summary.articles ? 'info' : 'warn')}
           ${badge(`CR ${fmt.pct(summary.orderRate)}`, orderTone)}
         </div>
@@ -3550,29 +3552,67 @@ function renderProductLeaderboardSubstitutionRacePanel(items = [], leaderboardPa
       <div class="sku-plan-platform-board product-leaderboard-module-board" style="margin-top:12px">
         ${cards.map(productLeaderboardModuleCardHtml).join('')}
       </div>
-      <div class="sku-plan-platform-board product-leaderboard-module-board" style="margin-top:12px;grid-template-columns:repeat(3,minmax(0,1fr))">
-        ${topRows.map((row, index) => {
-          const score = productLeaderboardSubstitutionScore(row, maxOrders, maxViews);
-          const top = Array.isArray(row.topSubstitutions) ? row.topSubstitutions[0] : null;
-          const articleTitle = row.article || row.sellerArticle || row.articleKey || 'WB';
-          const articleHtml = row.matched && row.articleKey ? linkToSku(row.articleKey, articleTitle) : `<strong>${escapeHtml(articleTitle)}</strong>`;
-          const completion = score.score / 100;
-          return `
-            <div class="sku-plan-platform-card level-${score.level}" style="${typeof skuPlanFactCardStyle === 'function' ? skuPlanFactCardStyle('wb', completion) : ''};cursor:default">
-              <span class="sku-plan-platform-card__top">
-                <strong>${index + 1}. ${articleHtml}</strong>
-                <em>${escapeHtml(score.label)}</em>
-              </span>
-              <span class="sku-plan-platform-card__value">${fmt.int(row.orders)}</span>
-              <span class="sku-plan-platform-card__meta">${fmt.int(row.views)} просмотров · CR ${fmt.pct(row.orderRate)}</span>
-              <span class="sku-plan-platform-card__bar"><i></i></span>
-              <span class="sku-plan-platform-card__foot">
-                <b class="${escapeHtml(score.tone)}">${fmt.int(score.score)} очков</b>
-                <span><em>${top ? `${escapeHtml(top.label || top.key || '')}: ${fmt.int(top.orders)} заказов` : `${fmt.int(row.substitutionCount)} подмен`}</em></span>
-              </span>
-            </div>
-          `;
-        }).join('') || '<div class="empty">По текущему фильтру нет WB-подмен.</div>'}
+      <div class="table-wrap" style="margin-top:12px">
+        <table>
+          <thead>
+            <tr>
+              <th>SKU / товар</th>
+              <th>Сигнал</th>
+              <th>Подмены</th>
+              <th>Просмотры</th>
+              <th>Корзины</th>
+              <th>Заказы</th>
+              <th>CR корзина</th>
+              <th>CR заказ</th>
+              <th>Избранное</th>
+              <th>Кампании</th>
+              <th>Топ подменники</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${raceRows.map((row, index) => {
+              const score = productLeaderboardSubstitutionScore(row, maxOrders, maxViews);
+              const articleTitle = row.article || row.sellerArticle || row.articleKey || 'WB';
+              const articleHtml = row.matched && row.articleKey ? linkToSku(row.articleKey, articleTitle) : `<strong>${escapeHtml(articleTitle)}</strong>`;
+              const topSubstitutions = Array.isArray(row.topSubstitutions) ? row.topSubstitutions.slice(0, 5) : [];
+              return `
+                <tr data-product-substitution-row="${escapeHtml(row.articleKey || row.article || row.sellerArticle || index)}">
+                  <td>
+                    <div><strong>${index + 1}. ${articleHtml}</strong></div>
+                    <div class="muted small">${escapeHtml(row.title || row.name || '')}</div>
+                    <div class="badge-stack" style="margin-top:8px">
+                      ${row.owner ? badge(row.owner, 'info') : badge('owner не указан', 'warn')}
+                      ${row.productId ? badge(`WB nm ${escapeHtml(row.productId)}`, '') : ''}
+                      ${row.matched ? badge('есть в SKU', 'ok') : badge('нет матчинга', 'warn')}
+                    </div>
+                  </td>
+                  <td>${productLeaderboardHealthBarHtml({
+                    platform: 'wb',
+                    label: 'подмены',
+                    valueRatio: score.score / 100,
+                    valueText: fmt.int(score.score),
+                    barText: score.label,
+                    tone: score.tone,
+                    metaHtml: `<b>${escapeHtml(score.label)}</b><em>${fmt.int(row.orders)} заказов</em>`
+                  })}</td>
+                  <td>${fmt.int(row.substitutionCount)}</td>
+                  <td>${fmt.int(row.views)}</td>
+                  <td>${fmt.int(row.carts)}</td>
+                  <td>${fmt.int(row.orders)}</td>
+                  <td>${fmt.pct(row.cartRate)}</td>
+                  <td>${fmt.pct(row.orderRate)}</td>
+                  <td>${fmt.int(row.favorites)}</td>
+                  <td>${fmt.int(row.campaignCount)}</td>
+                  <td>
+                    <div class="badge-stack">
+                      ${topSubstitutions.map((entry) => badge(`${escapeHtml(entry.label || entry.key || '')}: ${fmt.int(entry.orders)} / ${fmt.int(entry.views)}`, wbSubstitutionTrafficTone(entry.orderRate))).join('') || badge('нет трафика', 'warn')}
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('') || '<tr><td colspan="11"><div class="empty">По текущему фильтру нет WB-подмен.</div></td></tr>'}
+          </tbody>
+        </table>
       </div>
     </div>
   `;
@@ -7849,19 +7889,21 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
   const payload = currentProductLeaderboardPayload();
   const freshness = productLeaderboardFreshnessMeta(payload);
   const filters = getProductLeaderboardFilters();
+  const isSubstitutionMode = filters.expandedPanel === 'substitution';
   const filteredItems = getFilteredProductLeaderboardItems(payload);
   const filteredSummary = productLeaderboardSummaryFromItems(filteredItems);
   const ownerCoverage = filteredSummary.skuCount > 0 ? filteredSummary.ownerAssignedCount / filteredSummary.skuCount : 0;
   const gameHeroHtml = productLeaderboardGameHeroHtml(payload, filteredItems, freshness);
   const moduleBoardHtml = productLeaderboardModuleBoardHtml(payload, filteredSummary, ownerCoverage);
   const insightTilesHtml = renderProductLeaderboardInsightTilesHtml(payload, filteredSummary, ownerCoverage, filteredItems, filters);
-  const metricsPanelHtml = filters.expandedPanel === 'metrics'
+  const metricsPanelHtml = !isSubstitutionMode && filters.expandedPanel === 'metrics'
     ? renderProductLeaderboardMetricsPanel(payload, filteredSummary, ownerCoverage)
     : '';
-  const ownerRaceHtml = productLeaderboardOwnerRaceHtml(filteredItems);
-  const substitutionRaceHtml = filters.expandedPanel === 'substitution'
+  const ownerRaceHtml = isSubstitutionMode ? '' : productLeaderboardOwnerRaceHtml(filteredItems);
+  const substitutionRaceHtml = isSubstitutionMode
     ? renderProductLeaderboardSubstitutionRacePanel(filteredItems, payload, filters)
     : '';
+  const standardLeaderboardCardStyle = isSubstitutionMode ? 'display:none' : 'margin-top:14px';
   const snapshots = productLeaderboardHistoryPayloads();
   const historyOptions = snapshots.slice(1);
   const historyCards = snapshots.slice(0, 6).map((snapshot) => {
@@ -7909,9 +7951,9 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
       </div>
     </div>
 
-    ${gameHeroHtml}
+    ${isSubstitutionMode ? '' : gameHeroHtml}
 
-    ${moduleBoardHtml}
+    ${isSubstitutionMode ? '' : moduleBoardHtml}
 
     ${insightTilesHtml}
 
@@ -7953,7 +7995,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
 
     ${substitutionRaceHtml}
 
-    <div class="card" style="margin-top:14px">
+    <div class="card" style="${standardLeaderboardCardStyle}">
       <div class="section-subhead">
         <div>
           <h3>Фильтры и выгрузка</h3>
@@ -7998,7 +8040,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
       </div>
     </div>
 
-    <div class="card" style="margin-top:14px">
+    <div class="card" style="${standardLeaderboardCardStyle}">
       <div class="section-subhead">
         <div>
           <h3>История логов</h3>
@@ -8009,7 +8051,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
       <div class="list" style="margin-top:12px">${historyCards || '<div class="empty">История выгрузок пока не накопилась.</div>'}</div>
     </div>
 
-    <div class="card" style="margin-top:14px">
+    <div class="card" style="${standardLeaderboardCardStyle}">
       <div class="section-subhead">
         <div>
           <h3>SKU и воронка</h3>
@@ -8084,7 +8126,7 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
     </div>
 
     ${payload.unmatchedItems.length ? `
-      <div class="card" style="margin-top:14px">
+      <div class="card" style="${standardLeaderboardCardStyle}">
         <div class="section-subhead">
           <div>
             <h3>Что не сматчилось с порталом</h3>
@@ -8153,16 +8195,13 @@ function renderProductLeaderboard(rootId = 'view-product-leaderboard') {
       const nextPanel = String(button.getAttribute('data-product-leaderboard-panel') || '').trim();
       if (!nextPanel) return;
       const productFilters = getProductLeaderboardFilters();
-      const willOpen = productFilters.expandedPanel !== nextPanel;
-      productFilters.expandedPanel = willOpen ? nextPanel : '';
+      productFilters.expandedPanel = nextPanel;
       rerenderCurrentView();
-      if (willOpen) {
-        window.setTimeout(() => {
-          document
-            .querySelector(`[data-product-leaderboard-expanded-panel="${nextPanel}"]`)
-            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 0);
-      }
+      window.setTimeout(() => {
+        document
+          .querySelector(`[data-product-leaderboard-expanded-panel="${nextPanel}"]`)
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 0);
     });
   });
   root.querySelector('[data-product-leaderboard-export]')?.addEventListener('click', () => {

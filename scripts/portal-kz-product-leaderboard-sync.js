@@ -698,15 +698,24 @@ async function main() {
     brandFilter: args['brand-filter'] || process.env.ALTEA_KZ_LEADERBOARD_BRAND || DEFAULT_BRAND_FILTER,
     outputDir: path.resolve(args['output-dir'] || cwdJoin(DEFAULT_OUTPUT_DIR)),
     profileDir: path.resolve(args['profile-dir'] || cwdJoin(DEFAULT_PROFILE_DIR)),
+    inputXlsx: args['input-xlsx'] ? path.resolve(args['input-xlsx']) : '',
     dryRun: Boolean(args.dryRun),
     mirrorLocalFallback: Boolean(args.mirrorLocalFallback)
   };
-  options.exportUrl = `https://docs.google.com/spreadsheets/d/${options.sourceUrl.match(/\/d\/([^/]+)/)?.[1] || ''}/export?format=xlsx`;
-  if (!/\/d\/[^/]+/.test(options.sourceUrl)) {
-    throw new Error(`Не удалось извлечь spreadsheet id из ${options.sourceUrl}`);
+  let workbook;
+  if (options.inputXlsx) {
+    if (!fs.existsSync(options.inputXlsx)) throw new Error(`Local product leaderboard workbook not found: ${options.inputXlsx}`);
+    workbook = XLSX.readFile(options.inputXlsx);
+    options.sourceUrl = options.inputXlsx;
+    options.sourceGid = '';
+  } else {
+    options.exportUrl = `https://docs.google.com/spreadsheets/d/${options.sourceUrl.match(/\/d\/([^/]+)/)?.[1] || ''}/export?format=xlsx`;
+    if (!/\/d\/[^/]+/.test(options.sourceUrl)) {
+      throw new Error(`Не удалось извлечь spreadsheet id из ${options.sourceUrl}`);
+    }
+    workbook = XLSX.read(await fetchWorkbookBuffer(options), { type: 'buffer' });
   }
 
-  const workbook = XLSX.read(await fetchWorkbookBuffer(options), { type: 'buffer' });
   const sheetName = selectLatestWeekSheet(workbook);
   if (!sheetName) {
     throw new Error('No worksheet found in product leaderboard workbook');

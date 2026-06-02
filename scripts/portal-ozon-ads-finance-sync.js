@@ -194,6 +194,12 @@ async function fetchFinanceDay(options, dateKey) {
   };
 }
 
+function dateInWindow(date, from, to) {
+  const dateKey = isoDate(date);
+  if (!dateKey) return false;
+  return (!from || dateKey >= from) && (!to || dateKey <= to);
+}
+
 function buildOzonFinanceRows(daily) {
   return daily.map((day) => ({
     date: day.date,
@@ -243,17 +249,23 @@ function roundTotals(totals) {
   return Object.fromEntries(Object.entries(totals).map(([key, value]) => [key, roundMoney(value)]));
 }
 
-function buildOzonPlatform(daily) {
+function buildOzonPlatform(daily, existingPlatform = null) {
+  const existingByDate = new Map();
+  for (const point of Array.isArray(existingPlatform?.series) ? existingPlatform.series : []) {
+    const date = isoDate(point?.date || point?.label);
+    if (date) existingByDate.set(date, point);
+  }
   const series = daily.map((day, index) => ({
+    ...(existingByDate.get(day.date) || {}),
     dayOffset: daily.length - index - 1,
     label: day.date,
     date: day.date,
-    views: 0,
-    clicks: 0,
+    views: Math.round(numberOrZero(existingByDate.get(day.date)?.views)),
+    clicks: Math.round(numberOrZero(existingByDate.get(day.date)?.clicks)),
     spend: day.spend,
-    orders: 0,
-    revenue: 0,
-    sourceMode: 'ozon_seller_finance_api',
+    orders: Math.round(numberOrZero(existingByDate.get(day.date)?.orders)),
+    revenue: roundMoney(numberOrZero(existingByDate.get(day.date)?.revenue)),
+    sourceMode: mergeSourceMode(existingByDate.get(day.date)?.sourceMode || existingByDate.get(day.date)?.source, 'ozon_seller_finance_api'),
     sourceRows: day.sourceRows
   }));
   return {
@@ -306,18 +318,26 @@ function buildAllPlatform(platforms) {
 function patchPayload(payload, options, daily, pendingDaily = []) {
   const financeRows = buildOzonFinanceRows(daily);
   const itemSeries = Array.isArray(payload.itemSeries) ? payload.itemSeries : [];
-  const preservedItemSeries = itemSeries.filter((row) => {
+  const preservedItemSeries = [];
+  const ozonWindowRows = [];
+  for (const row of itemSeries) {
     const platformKey = String(row?.platformKey || row?.platform || row?.marketplace || '').trim().toLowerCase();
     const date = isoDate(row?.date || row?.day || row?.label);
-    return !(platformKey === 'ozon' && date >= options.from && date <= options.to);
-  });
-  const ozonPlatform = buildOzonPlatform(daily);
+    const articleKey = String(row?.articleKey || row?.article || '').trim();
+    const isFinanceTotal = articleKey === 'ozon-finance-ads-total';
+    if (platformKey === 'ozon' && dateInWindow(date, options.from, options.to)) {
+      if (!isFinanceTotal) ozonWindowRows.push({ ...row, spend: 0, spendReplacedByFinanceApi: true });
+    } else {
+      preservedItemSeries.push(row);
+    }
+  }
   const platformMap = new Map();
   for (const platform of Array.isArray(payload.platforms) ? payload.platforms : []) {
     const key = String(platform?.key || platform?.platformKey || '').trim().toLowerCase();
     if (!key || key === 'all') continue;
     platformMap.set(key, platform);
   }
+  const ozonPlatform = buildOzonPlatform(daily, platformMap.get('ozon'));
   platformMap.set('ozon', ozonPlatform);
   const orderedKeys = ['wb', 'ozon', 'ya', 'goldapple', 'letu', 'magnit'];
   const platforms = [];
@@ -361,7 +381,7 @@ function patchPayload(payload, options, daily, pendingDaily = []) {
       }
     },
     platforms,
-    itemSeries: [...preservedItemSeries, ...financeRows]
+    itemSeries: [...preservedItemSeries, ...ozonWindowRows, ...financeRows]
   };
 }
 

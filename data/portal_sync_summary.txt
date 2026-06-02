@@ -1,10 +1,11 @@
-Portal sync health: ok
-Generated: 2026-06-01T21:25:52.210Z
+Portal sync health: warning
+Generated: 2026-06-02T09:00:48.008Z
 Publish allowed: yes
-Max data date: 2026-05-31
+Max data date: 2026-06-01
 
 Blocking reasons:
 - none
 
 Warnings:
-- none
+- Marketplace completeness guard: not enough WB baseline revenue to validate 2026-06-01.
+- Marketplace completeness guard: not enough Ozon baseline revenue to validate 2026-06-01.

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-01T19:46:29.103Z",
+  "generatedAt": "2026-06-02T08:49:16.281Z",
   "sourceUrl": "https://docs.google.com/spreadsheets/d/1Hk5iqYmKjoeXXuSjxOFXBEJ6z0M52OZvHMaCORUPzkM/export?format=csv&gid=0",
   "sourceWorkbook": "Склад Балашиха",
   "sourceSheet": "Склад Балашиха",
@@ -37,9 +37,9 @@
     "harly_ear_drops"
   ],
   "summary": {
-    "stockWarehouse": 393396,
-    "accepted": 3070967,
-    "shippedOzon": 1009407,
+    "stockWarehouse": 397996,
+    "accepted": 3075967,
+    "shippedOzon": 1009807,
     "shippedWB": 1667629
   },
   "rows": [
@@ -1268,9 +1268,9 @@
     },
     {
       "articleKey": "syvorotka_dlya_rosta_6ml_v2",
-      "stockWarehouse": 424,
-      "accepted": 9283,
-      "shippedOzon": 5651,
+      "stockWarehouse": 5024,
+      "accepted": 14283,
+      "shippedOzon": 6051,
       "shippedWB": 3208,
       "sourceKeys": [
         "syvorotka_dlya_rosta_6ml_v2"

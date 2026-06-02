@@ -1,6 +1,6 @@
 {
   "schema": "portal-oos-control-v2",
-  "generatedAt": "2026-06-01T19:11:20.384Z",
+  "generatedAt": "2026-06-02T08:53:08.649Z",
   "title": "OOS / stock auto signals",
   "rules": {
     "soonDays": 10,
@@ -10,27 +10,27 @@
     ]
   },
   "dataFreshness": {
-    "status": "ok",
+    "status": "stale",
     "dataDate": "2026-05-31",
-    "expectedFactDate": "2026-05-31",
+    "expectedFactDate": "2026-06-01",
     "sourceGeneratedAt": "2026-06-01T19:10:39.214Z",
-    "message": "Данные свежие: факт до 2026-05-31.",
+    "message": "Данные отстают: факт до 2026-05-31, ожидается минимум 2026-06-01.",
     "orderProcurementGeneratedAt": "2026-06-01T19:10:39.214Z",
     "orderWindow": {
       "from": "2026-05-05",
       "to": "2026-06-01"
     },
-    "smartPriceGeneratedAt": "2026-06-01T19:11:06.026Z",
+    "smartPriceGeneratedAt": "2026-06-02T08:50:39.786Z",
     "sources": {
-      "orderProcurement": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\order_procurement.json",
-      "skus": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\skus.json",
-      "smartPriceOverlay": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\smart_price_overlay.json",
-      "syncHealth": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\portal_sync_health.json",
-      "portalDataQuality": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.altea-google-sheet-sync-output\\portal_data_quality.json"
+      "orderProcurement": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-rollout-main\\data\\order_procurement.json",
+      "skus": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-rollout-main\\data\\skus.json",
+      "smartPriceOverlay": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-rollout-main\\data\\smart_price_overlay.json",
+      "syncHealth": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-rollout-main\\data\\portal_sync_health.json",
+      "portalDataQuality": "C:\\Users\\artiu\\OneDrive\\Рабочий стол\\Портал\\.codex-rollout-main\\data\\portal_data_quality.json"
     }
   },
   "summary": {
-    "date": "2026-06-01",
+    "date": "2026-06-02",
     "totalIssues": 2,
     "oosCount": 0,
     "criticalCount": 0,
@@ -41,16 +41,16 @@
     "revenueAtRiskDay": 4742612,
     "monthKey": "2026-06",
     "lostRevenueMonth": 0,
-    "revenueAtRiskMonth": 4742612,
+    "revenueAtRiskMonth": 9485224,
     "newIssues": 0,
     "reopenedIssues": 0,
     "resolvedToday": 0,
     "owners": 2,
     "skuCount": 1,
     "placeCount": 44,
-    "dataStatus": "ok",
+    "dataStatus": "stale",
     "dataDate": "2026-05-31",
-    "expectedFactDate": "2026-05-31"
+    "expectedFactDate": "2026-06-01"
   },
   "byPlatform": [
     {
@@ -89,8 +89,8 @@
       "revenueAtRiskDay": 3928885
     },
     {
-      "key": "Даша",
-      "label": "Даша",
+      "key": "Молодякова Дария",
+      "label": "Молодякова Дария",
       "total": 1,
       "oos": 0,
       "critical": 0,
@@ -313,8 +313,8 @@
         }
       ],
       "firstSeenDate": "2026-06-01",
-      "lastSeenDate": "2026-06-01",
-      "daysOpen": 1,
+      "lastSeenDate": "2026-06-02",
+      "daysOpen": 2,
       "isNew": false,
       "isReopened": false
     },
@@ -327,7 +327,7 @@
       "article": "krovavii_piling_30ml",
       "articleKey": "krovavii_piling_30ml",
       "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
-      "owner": "Даша",
+      "owner": "Молодякова Дария",
       "department": "Закуп",
       "status": "risk",
       "statusLabel": "OOS скоро <10 д",
@@ -637,8 +637,8 @@
         }
       ],
       "firstSeenDate": "2026-06-01",
-      "lastSeenDate": "2026-06-01",
-      "daysOpen": 1,
+      "lastSeenDate": "2026-06-02",
+      "daysOpen": 2,
       "isNew": false,
       "isReopened": false
     }
@@ -655,10 +655,21 @@
         "watchCount": 0,
         "lostRevenueDay": 0,
         "revenueAtRiskDay": 4742612
+      },
+      {
+        "date": "2026-06-02",
+        "totalIssues": 2,
+        "oosCount": 0,
+        "criticalCount": 0,
+        "riskCount": 2,
+        "oosSoonCount": 2,
+        "watchCount": 0,
+        "lostRevenueDay": 0,
+        "revenueAtRiskDay": 4742612
       }
     ],
     "latest": {
-      "date": "2026-06-01",
+      "date": "2026-06-02",
       "totalIssues": 2,
       "oosCount": 0,
       "criticalCount": 0,
@@ -682,8 +693,8 @@
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-06-01",
-        "lastSeenDate": "2026-06-01",
-        "daysOpen": 1,
+        "lastSeenDate": "2026-06-02",
+        "daysOpen": 2,
         "resolvedDate": ""
       },
       {
@@ -694,13 +705,13 @@
         "place": "28 кластеров <10 д",
         "article": "krovavii_piling_30ml",
         "name": "Пиллинг для лица Кровавый кислотный пилинг для лица от прыщей от акне с Альфа и бета-гидроксикислотами салициловая кислота, Алтея 30 мл",
-        "owner": "Даша",
+        "owner": "Молодякова Дария",
         "department": "Закуп",
         "status": "risk",
         "severity": "high",
         "firstSeenDate": "2026-06-01",
-        "lastSeenDate": "2026-06-01",
-        "daysOpen": 1,
+        "lastSeenDate": "2026-06-02",
+        "daysOpen": 2,
         "resolvedDate": ""
       }
     ]

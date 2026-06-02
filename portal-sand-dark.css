@@ -1137,3 +1137,35 @@ body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-row > b {
   line-height: 1 !important;
   white-space: nowrap !important;
 }
+
+body.v87-imperial.theme-sand-dark #view-sku-plan-fact .sku-plan-open-card,
+body.v87-imperial.theme-sand-dark #view-sku-plan-fact .sku-plan-open-card.portal-action-secondary,
+body.v87-imperial.theme-sand-dark #view-sku-plan-fact .sku-plan-open-card.portal-action-open {
+  width: 30px !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  gap: 0 !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  color: var(--sand-text) !important;
+  border-color: rgba(221, 192, 138, 0.18) !important;
+  box-shadow: none !important;
+}
+
+body.v87-imperial.theme-sand-dark #view-sku-plan-fact .sku-plan-open-card::before {
+  content: none !important;
+  display: none !important;
+}
+
+body.v87-imperial.theme-sand-dark #view-sku-plan-fact .sku-plan-open-card:hover {
+  background: rgba(221, 192, 138, 0.08) !important;
+  border-color: rgba(245, 220, 176, 0.34) !important;
+}
+
+body.v87-imperial.theme-sand-dark #view-sku-plan-fact .sku-plan-fact-row .chip::before {
+  content: none !important;
+  display: none !important;
+}

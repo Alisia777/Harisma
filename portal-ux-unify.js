@@ -171,6 +171,7 @@
 
     resetRoles(node);
     if (node.closest && node.closest(".sku-data-focus-row")) return;
+    if (node.matches(".sku-plan-open-card") || (node.closest && node.closest(".sku-plan-fact-row") && node.matches(".chip"))) return;
     if (node.matches(".sku-data-focus-row, .sku-data-bucket, .sku-workspace-stats button")) return;
 
     var text = textOf(node);

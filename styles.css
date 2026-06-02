@@ -487,6 +487,7 @@ textarea{resize:vertical;min-height:84px}
 #view-sku-plan-fact .sku-plan-fact-table th:nth-child(6),#view-sku-plan-fact .sku-plan-fact-table td:nth-child(6){width:155px}
 #view-sku-plan-fact .sku-plan-fact-table th:nth-child(7),#view-sku-plan-fact .sku-plan-fact-table td:nth-child(7){width:155px}
 #view-sku-plan-fact .sku-plan-fact-table th:nth-child(8),#view-sku-plan-fact .sku-plan-fact-table td:nth-child(8){width:80px;text-align:center}
+#view-sku-plan-fact .sku-plan-fact-table th:nth-child(9),#view-sku-plan-fact .sku-plan-fact-table td:nth-child(9){width:52px;text-align:center}
 #view-sku-plan-fact .sku-plan-fact-table td{overflow-wrap:normal;word-break:normal;vertical-align:top}
 #view-sku-plan-fact .sku-plan-fact-row td{background:linear-gradient(90deg,hsl(var(--pf-hue,205) 74% 34% / var(--pf-row-fill,.025)),rgba(255,255,255,.012))}
 #view-sku-plan-fact .sku-plan-fact-row td:first-child,#view-sku-plan-fact .sku-plan-fact-row td:nth-child(2){overflow-wrap:anywhere}
@@ -859,8 +860,9 @@ button.sku-data-focus-row:hover{border-color:rgba(255,214,130,.36);background:rg
 .sku-plan-margin-cell.danger{border-color:rgba(210,73,73,.4);background:rgba(210,73,73,.11)}
 .quick-chip.danger{border-color:rgba(210,73,73,.45);background:rgba(210,73,73,.13);color:#ffd3d3}
 #view-sku-plan-fact .sku-plan-fact-row .quick-chip{white-space:nowrap;padding:7px 10px;font-size:12px}
-#view-sku-plan-fact .sku-plan-open-card{width:34px;height:34px;padding:0;display:inline-grid;place-items:center;border-radius:999px;font-size:15px;font-weight:900;border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--text);cursor:pointer}
-#view-sku-plan-fact .sku-plan-open-card::before{content:"→"}
+#view-sku-plan-fact .sku-plan-open-card{width:30px;height:30px;padding:0;display:inline-grid;place-items:center;border-radius:8px;font-size:15px;font-weight:900;border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--text);cursor:pointer}
+#view-sku-plan-fact .sku-plan-open-card::before{content:none}
+#view-sku-plan-fact .sku-plan-open-card span{line-height:1;transform:translateX(1px)}
 #view-sku-plan-fact .sku-plan-open-card:hover{border-color:var(--line-strong);background:rgba(255,255,255,.07)}
 #view-sku-plan-fact .sku-plan-open-card.danger{border-color:rgba(210,73,73,.45);background:rgba(210,73,73,.13);color:#ffd3d3}
 .owner-cell strong{display:block}

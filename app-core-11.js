@@ -5439,6 +5439,7 @@ function skuPlanFactCardStyle(platform = '', completion = null) {
 }
 
 function skuPlanFactPlatformSummary(model = {}, platform = '', options = {}) {
+  const includePayroll = options.includePayroll === true;
   const rows = options.scope === 'allRows'
     ? (model.allRows || [])
     : (model.platformBaseRows || model.allRows || []);
@@ -5504,7 +5505,7 @@ function skuPlanFactPlatformSummary(model = {}, platform = '', options = {}) {
   summary.scoreHistory = skuPlanFactBuildScoreHistory(summary, model.monthKey || '', model.periodStart || '', model.periodEnd || model.selectedDate || '');
   summary.completionDelta = skuPlanFactCompletionDelta(summary.scoreHistory);
   const payrollMetric = platform === 'all' ? model.payrollKpi : model.payrollKpi?.platforms?.[platform];
-  if (payrollMetric && !model.payrollKpi?.ownerScoped) {
+  if (includePayroll && payrollMetric && !model.payrollKpi?.ownerScoped) {
     summary.payrollKpi = true;
     summary.salaryIncluded = true;
     if (platform === 'all') {
@@ -6256,7 +6257,7 @@ function skuPlanFactRowHtml(row, model) {
       <td>
         ${row.syntheticUnmapped
           ? '<span class="muted small">нет карточки</span>'
-          : `<button class="sku-plan-open-card ${attention ? 'danger' : ''}" type="button" data-open-sku="${escapeHtml(row.articleKey)}" title="Открыть карточку SKU" aria-label="Открыть карточку SKU"></button>`}
+          : `<button class="sku-plan-open-card ${attention ? 'danger' : ''}" type="button" data-open-sku="${escapeHtml(row.articleKey)}" title="Открыть карточку SKU" aria-label="Открыть карточку SKU"><span aria-hidden="true">→</span></button>`}
       </td>
     </tr>
   `;

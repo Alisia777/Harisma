@@ -219,12 +219,32 @@ function fromRemoteTaskAttachment(row) {
   });
 }
 
-function safeStoragePathSegment(value = '') {
+function storageAsciiSlug(value = '') {
+  const cyrillicMap = {
+    '\u0430': 'a', '\u0431': 'b', '\u0432': 'v', '\u0433': 'g', '\u0434': 'd',
+    '\u0435': 'e', '\u0451': 'e', '\u0436': 'zh', '\u0437': 'z', '\u0438': 'i',
+    '\u0439': 'y', '\u043a': 'k', '\u043b': 'l', '\u043c': 'm', '\u043d': 'n',
+    '\u043e': 'o', '\u043f': 'p', '\u0440': 'r', '\u0441': 's', '\u0442': 't',
+    '\u0443': 'u', '\u0444': 'f', '\u0445': 'h', '\u0446': 'ts', '\u0447': 'ch',
+    '\u0448': 'sh', '\u0449': 'sch', '\u044a': '', '\u044b': 'y', '\u044c': '',
+    '\u044d': 'e', '\u044e': 'yu', '\u044f': 'ya'
+  };
   return String(value || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .split('')
+    .map((char) => cyrillicMap[char.toLowerCase()] ?? char)
+    .join('');
+}
+
+function safeStoragePathSegment(value = '', fallback = 'file') {
+  const ascii = storageAsciiSlug(value)
     .trim()
-    .replace(/[^\w.\-а-яА-ЯёЁ]+/g, '_')
-    .replace(/^_+|_+$/g, '')
+    .replace(/[^A-Za-z0-9._-]+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^[_ .-]+|[_ .-]+$/g, '')
     .slice(0, 120);
+  return ascii || fallback;
 }
 
 function encodeStoragePath(path = '') {
@@ -242,9 +262,14 @@ function taskAttachmentPublicUrl(bucket, objectPath) {
 }
 
 function taskAttachmentObjectPath(taskId, fileName) {
-  const brandSegment = safeStoragePathSegment(currentBrand() || 'brand');
-  const taskSegment = safeStoragePathSegment(taskId || 'task');
-  const fileSegment = safeStoragePathSegment(fileName || 'file');
+  const brandSegment = safeStoragePathSegment(currentBrand() || 'brand', 'brand');
+  const taskSegment = safeStoragePathSegment(taskId || 'task', 'task');
+  const rawFileName = String(fileName || 'file');
+  const extMatch = rawFileName.toLowerCase().match(/\.([a-z0-9]{1,12})$/);
+  const ext = extMatch ? `.${extMatch[1]}` : '';
+  const baseName = ext ? rawFileName.slice(0, -ext.length) : rawFileName;
+  const baseSegment = safeStoragePathSegment(baseName, 'file').slice(0, Math.max(12, 120 - ext.length));
+  const fileSegment = `${baseSegment}${ext}`;
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   return `${brandSegment}/tasks/${taskSegment}/${stamp}-${uid('file')}-${fileSegment}`;
 }

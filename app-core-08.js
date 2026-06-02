@@ -614,6 +614,39 @@ function repricerPayloadRows(payload) {
   return repricerRowsFromBucket(payload.rows || payload.items || payload.articles || payload.byArticle);
 }
 
+function repricerRowsWithLegacyFallback(platform, primaryRows = []) {
+  const normalizedPlatform = platform === 'ozon' ? 'ozon' : 'wb';
+  const rows = Array.isArray(primaryRows) ? [...primaryRows] : [];
+  const seen = new Set(rows
+    .map((row) => repricerNormalizeArticleKey(row?.articleKey || row?.article || row?.sku))
+    .filter(Boolean));
+  const legacyRows = Array.isArray(state.repricer?.rows) ? state.repricer.rows : [];
+  legacyRows.forEach((legacyRow) => {
+    const legacySide = legacyRow?.[normalizedPlatform];
+    if (!legacySide || typeof legacySide !== 'object') return;
+    const articleKey = legacySide.articleKey || legacyRow.articleKey || legacySide.article || legacyRow.article || '';
+    const normalizedKey = repricerNormalizeArticleKey(articleKey);
+    if (!normalizedKey || seen.has(normalizedKey)) return;
+    seen.add(normalizedKey);
+    rows.push({
+      ...legacySide,
+      marketplace: normalizedPlatform,
+      articleKey,
+      article: legacySide.article || legacyRow.article || articleKey,
+      name: legacySide.name || legacyRow.name || '',
+      brand: legacySide.brand || legacyRow.brand || '',
+      owner: legacySide.owner || legacyRow.ownerByPlatform?.[normalizedPlatform] || legacyRow.owner || legacyRow.legalEntity || '',
+      status: legacySide.status || legacyRow.status || legacyRow.productStatus || '',
+      productStatus: legacySide.productStatus || legacyRow.productStatus || legacyRow.status || '',
+      segment: legacySide.segment || legacyRow.segment || '',
+      abc: legacySide.abc || legacyRow.abc || '',
+      legalEntity: legacySide.legalEntity || legacyRow.legalEntity || '',
+      legacyRepricerFallback: true
+    });
+  });
+  return rows;
+}
+
 function repricerPlatformProcurementPayload(platform) {
   const normalized = String(platform || '').trim().toLowerCase() === 'ozon' ? 'ozon' : 'wb';
   if (normalized === 'ozon') {
@@ -2079,6 +2112,8 @@ function repricerRowsCacheSignature() {
     workbench.liveEnrichmentAt || '',
     Array.isArray(platforms?.wb?.rows) ? platforms.wb.rows.length : 0,
     Array.isArray(platforms?.ozon?.rows) ? platforms.ozon.rows.length : 0,
+    state.repricer?.generatedAt || '',
+    Array.isArray(state.repricer?.rows) ? state.repricer.rows.length : 0,
     state.repricerLive?.generatedAt || '',
     repricerLiveFreshnessStatus().usable ? 'live-ok' : 'live-stale',
     Array.isArray(state.repricerLive?.rows) ? state.repricerLive.rows.length : 0,
@@ -2149,7 +2184,8 @@ function buildRepricerRowsFresh() {
   const arrivalMaps = repricerBuildArrivalPriceSignalMaps();
   const byArticle = new Map();
   ['wb', 'ozon'].forEach((platform) => {
-    const rows = Array.isArray(platforms?.[platform]?.rows) ? platforms[platform].rows : [];
+    const primaryRows = Array.isArray(platforms?.[platform]?.rows) ? platforms[platform].rows : [];
+    const rows = repricerRowsWithLegacyFallback(platform, primaryRows);
     rows.forEach((sourceRow) => {
       const articleKey = sourceRow.articleKey || sourceRow.article || '';
       if (!articleKey) return;
@@ -3250,7 +3286,7 @@ function repricerFixProposal(side) {
   if (flags.belowMin) return floor > 0
     ? `предложение без записи: поднять цену не ниже ${fmt.money(floor)} или подтвердить новый MIN`
     : 'предложение без записи: перепроверить рабочий MIN';
-  if (flags.missingCost) return 'предложение без записи: добавить себестоимость и комиссии, затем пересчитать safe export';
+  if (flags.missingCost) return 'предложение без записи: добавить себестоимость и комиссии, затем пересчитать выгрузку цен';
   if (flags.missingPrice) return 'предложение без записи: обновить price snapshot и не выгружать цену до появления текущей цены';
   if (side?.arrivalPriceSignal?.needsCheck) return `предложение без записи: проверить цену по приходу (${side.arrivalPriceSignal.reasons.slice(0, 3).join(' · ')})`;
   if (flags.liveDrift) return livePrice > 0
@@ -3411,8 +3447,10 @@ function repricerHealthcheck(rows, platform = 'all') {
     confidence_yellow: activeSideRows.filter(({ side }) => side.confidence === 'yellow').length,
     confidence_red: activeSideRows.filter(({ side }) => side.confidence === 'red').length,
     safe_export_rows: activeSideRows.filter(({ side }) => side.safeToExport || side.promoSafeToExport).length,
-    safe_wb_rows: repricerCollectSides(rows, 'wb').filter(({ side }) => side.safeToExport).length,
-    safe_ozon_rows: repricerCollectSides(rows, 'ozon').filter(({ side }) => side.safeToExport).length,
+    safe_wb_rows: repricerCollectSides(rows, 'wb').filter(({ side }) => side.safeToExport || side.promoSafeToExport).length,
+    safe_ozon_rows: repricerCollectSides(rows, 'ozon').filter(({ side }) => side.safeToExport || side.promoSafeToExport).length,
+    safe_regular_wb_rows: repricerCollectSides(rows, 'wb').filter(({ side }) => side.safeToExport).length,
+    safe_regular_ozon_rows: repricerCollectSides(rows, 'ozon').filter(({ side }) => side.safeToExport).length,
     safe_promo_wb_rows: repricerCollectSides(rows, 'wb').filter(({ side }) => side.promoSafeToExport).length,
     safe_promo_ozon_rows: repricerCollectSides(rows, 'ozon').filter(({ side }) => side.promoSafeToExport).length,
     wb_change_rows: repricerCollectSides(rows, 'wb').filter(({ side }) => repricerTemplateAction(side) === 'CHANGE').length,
@@ -3439,26 +3477,32 @@ function repricerTemplateStats(rows, platform = 'wb') {
   const sides = repricerCollectSides(rows, platform).filter(({ side }) => side);
   const active = sides.filter(({ side }) => !side.outOfSpec);
   const nonPromo = active.filter(({ side }) => !side.promoActive);
-  const green = nonPromo.filter(({ side }) => side.confidence === 'green');
-  const safe = nonPromo.filter(({ side }) => side.safeToExport);
+  const green = active.filter(({ side }) => side.confidence === 'green');
+  const regularSafe = nonPromo.filter(({ side }) => side.safeToExport);
+  const promoSafe = active.filter(({ side }) => side.promoSafeToExport);
+  const safe = regularSafe.length + promoSafe.length;
   return {
     platform: platform === 'ozon' ? 'ozon' : 'wb',
     label: platform === 'ozon' ? 'Ozon' : 'WB',
     total: sides.length,
     active: active.length,
-    safe: safe.length,
+    safe,
+    regularSafe: regularSafe.length,
+    promoSafe: promoSafe.length,
     green: green.length,
     greenChanged: green.filter(({ side }) => side.changed).length,
     greenNoChange: green.filter(({ side }) => !side.changed).length,
-    changed: nonPromo.filter(({ side }) => side.changed).length,
-    yellow: nonPromo.filter(({ side }) => side.confidence === 'yellow').length,
-    red: nonPromo.filter(({ side }) => side.confidence === 'red').length,
-    belowMin: nonPromo.filter(({ side }) => repricerBelowMinNeedsManual(side)).length,
+    changed: active.filter(({ side }) => side.changed).length,
+    regularChanged: nonPromo.filter(({ side }) => side.changed).length,
+    promoChanged: active.filter(({ side }) => side.promoActive && side.changed).length,
+    yellow: active.filter(({ side }) => side.confidence === 'yellow').length,
+    red: active.filter(({ side }) => side.confidence === 'red').length,
+    belowMin: active.filter(({ side }) => repricerBelowMinNeedsManual(side)).length,
     floorRaiseReady: nonPromo.filter(({ side }) => side.floorRaiseReady).length,
     floorRaiseSafe: nonPromo.filter(({ side }) => side.floorRaiseSafeToExport).length,
-    blocked: nonPromo.filter(({ side }) => side.criticalGate === 'BLOCK').length,
-    missingMin: nonPromo.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0).length,
-    missingCost: nonPromo.filter(({ side }) => numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent).length,
+    blocked: active.filter(({ side }) => side.criticalGate === 'BLOCK').length,
+    missingMin: active.filter(({ side }) => numberOrZero(side.effectiveFloor) <= 0).length,
+    missingCost: active.filter(({ side }) => numberOrZero(side.costRub) <= 0 && !side.pricingProxyPresent).length,
     promo: active.filter(({ side }) => side.promoActive).length,
     outOfSpec: sides.filter(({ side }) => side.outOfSpec).length
   };
@@ -3466,7 +3510,15 @@ function repricerTemplateStats(rows, platform = 'wb') {
 
 function repricerTemplateEmptyReason(stats) {
   if (!stats) return 'нет данных для проверки шаблона';
-  if (stats.safe > 0) return `${stats.label}: в шаблон попадёт ${fmt.int(stats.safe)} строк.`;
+  if (stats.safe > 0) {
+    const regularSafe = numberOrZero(stats.regularSafe ?? stats.safe);
+    const promoSafe = numberOrZero(stats.promoSafe);
+    const parts = [
+      regularSafe > 0 ? `обычный файл ${fmt.int(regularSafe)}` : '',
+      promoSafe > 0 ? `промо-файл ${fmt.int(promoSafe)}` : ''
+    ].filter(Boolean).join(', ');
+    return `${stats.label}: в файлы цен попадёт ${parts || fmt.int(stats.safe)} строк.`;
+  }
   if (stats.greenNoChange > 0 && stats.changed <= 0) return `${stats.label}: зелёные есть, но цена не меняется, поэтому файл цен пуст.`;
   if (stats.yellow || stats.red) return `${stats.label}: строки есть в аудите: инфо ${fmt.int(stats.yellow)}, стоп ${fmt.int(stats.red)}.`;
   if (stats.missingMin || stats.missingCost || stats.blocked) return `${stats.label}: мешают данные контура: нет MIN ${fmt.int(stats.missingMin)}, нет себестоимости ${fmt.int(stats.missingCost)}, нет входов ${fmt.int(stats.blocked)}.`;
@@ -3501,7 +3553,9 @@ function repricerGamePct(value) {
 
 function repricerGamePlatformModel(stats = {}, options = {}) {
   const active = numberOrZero(stats.active || stats.total);
-  const safe = numberOrZero(options.safeRows ?? stats.safe);
+  const regularSafe = numberOrZero(options.regularSafeRows ?? stats.regularSafe ?? stats.safe);
+  const promoSafe = numberOrZero(options.promoSafeRows ?? stats.promoSafe);
+  const safe = numberOrZero(options.safeRows ?? (regularSafe + promoSafe));
   const green = numberOrZero(stats.green);
   const yellow = numberOrZero(stats.yellow);
   const red = numberOrZero(stats.red);
@@ -3516,6 +3570,8 @@ function repricerGamePlatformModel(stats = {}, options = {}) {
     label: stats.label || (options.platform === 'ozon' ? 'Ozon' : 'WB'),
     active,
     safe,
+    regularSafe,
+    promoSafe,
     green,
     yellow,
     red,
@@ -3533,11 +3589,15 @@ function repricerGameReadinessModel(health = {}, templateStats = {}, context = {
   const wb = repricerGamePlatformModel(templateStats.wb || {}, {
     platform: 'wb',
     safeRows: context.safeWbRows,
+    regularSafeRows: context.safeWbRegularRows,
+    promoSafeRows: context.safePromoWbRows,
     checkCount: context.wbCheckCount
   });
   const ozon = repricerGamePlatformModel(templateStats.ozon || {}, {
     platform: 'ozon',
     safeRows: context.safeOzonRows,
+    regularSafeRows: context.safeOzonRegularRows,
+    promoSafeRows: context.safePromoOzonRows,
     checkCount: context.ozonCheckCount
   });
   const metrics = health.metrics || {};
@@ -3619,7 +3679,7 @@ function repricerGameHeroHtml(model = {}) {
         </div>
       </div>
       <div class="repricer-game-metrics">
-        ${repricerGameMetricHtml('В файл цен', fmt.int(model.safe), `WB ${fmt.int(model.wb?.safe)} · Ozon ${fmt.int(model.ozon?.safe)}`, model.safe > 0 ? 'ok' : 'warn', 'Количество строк без красного стопа, где цена изменилась и попадет в шаблон WB/Ozon.')}
+        ${repricerGameMetricHtml('В файл цен', fmt.int(model.safe), `WB ${fmt.int(model.wb?.safe)} · Ozon ${fmt.int(model.ozon?.safe)}`, model.safe > 0 ? 'ok' : 'warn', 'Количество строк без красного стопа, где цена изменилась и попадет в обычный или промо-файл WB/Ozon.')}
         ${repricerGameMetricHtml('Зелёные', fmt.int(model.green), `${fmt.int(model.active)} активных строк`, 'ok', 'Зелёные строки прошли проверки. Если цена не изменилась, они остаются зелёными, но в ценовой шаблон не попадают.')}
         ${repricerGameMetricHtml('Аудит', fmt.int(model.yellow), 'инфо-строки', model.yellow > 0 ? 'info' : 'ok', 'Строки с мягкими причинами остаются в аудите, но не режут процент готовности контура.')}
         ${repricerGameMetricHtml('Стоп', fmt.int(model.red), 'красные строки', model.red > 0 ? 'danger' : 'ok', 'Красные строки блокируют автоматическую выгрузку до исправления входов или решения.')}
@@ -3631,10 +3691,13 @@ function repricerGameHeroHtml(model = {}) {
 function repricerGameMarketplaceCardHtml(platformModel = {}, stats = {}) {
   const platform = platformModel.platform === 'ozon' ? 'ozon' : 'wb';
   const buttonLabel = platform === 'ozon' ? 'Скачать шаблон Ozon' : 'Скачать шаблон WB';
+  const promoButtonLabel = platform === 'ozon' ? 'Скачать промо Ozon' : 'Скачать промо WB';
   const exportMode = platform === 'ozon' ? 'template:ozon' : 'template:wb';
+  const promoExportMode = platform === 'ozon' ? 'promo:ozon' : 'promo:wb';
   const tone = repricerGameToneClass(platformModel.tone);
-  const hasSafe = numberOrZero(platformModel.safe) > 0;
-  const tip = `${platformModel.label}: зелёные ${fmt.int(platformModel.green)}, аудит ${fmt.int(platformModel.yellow)}, стоп ${fmt.int(platformModel.red)}, в файл ${fmt.int(platformModel.safe)}.`;
+  const regularSafe = numberOrZero(platformModel.regularSafe);
+  const promoSafe = numberOrZero(platformModel.promoSafe);
+  const tip = `${platformModel.label}: зелёные ${fmt.int(platformModel.green)}, аудит ${fmt.int(platformModel.yellow)}, стоп ${fmt.int(platformModel.red)}, в файлы ${fmt.int(platformModel.safe)}; обычный ${fmt.int(regularSafe)}, промо ${fmt.int(promoSafe)}.`;
   return `
     <div class="repricer-marketplace-card repricer-game-platform-card ${escapeHtml(platform)} ${escapeHtml(tone)}" style="--repricer-platform-ready:${numberOrZero(platformModel.progress).toFixed(1)}%" data-tip="${escapeHtml(tip)}">
       <div class="repricer-marketplace-title">
@@ -3646,11 +3709,14 @@ function repricerGameMarketplaceCardHtml(platformModel = {}, stats = {}) {
       <p>${escapeHtml(repricerTemplateEmptyReason(stats))}</p>
       <div class="repricer-mini-metrics">
         <span>готовность ${escapeHtml(repricerGamePct(platformModel.completion))}</span>
+        <span>обычные ${fmt.int(regularSafe)}</span>
+        <span>промо ${fmt.int(promoSafe)}</span>
         <span>зелёные ${fmt.int(platformModel.green)}</span>
         <span>проверить ${fmt.int(platformModel.check)}</span>
         <span>стоп ${fmt.int(platformModel.red)}</span>
       </div>
-      <button type="button" class="repricer-marketplace-button ${escapeHtml(platform)}" data-repricer-export="${escapeHtml(exportMode)}" data-repricer-empty="${hasSafe ? '0' : '1'}">${escapeHtml(buttonLabel)}</button>
+      <button type="button" class="repricer-marketplace-button ${escapeHtml(platform)}" data-repricer-export="${escapeHtml(exportMode)}" data-repricer-empty="${regularSafe ? '0' : '1'}">${escapeHtml(buttonLabel)}</button>
+      ${promoSafe ? `<button type="button" class="repricer-marketplace-button ${escapeHtml(platform)}" data-repricer-export="${escapeHtml(promoExportMode)}" data-repricer-empty="0">${escapeHtml(promoButtonLabel)}</button>` : ''}
     </div>
   `;
 }
@@ -5318,7 +5384,7 @@ function downloadRepricerTemplateExcel(platform, sourceRows = null, statsArg = n
       ok: true,
       rows: 0,
       tone: 'warn',
-      message: `Шаблон ${platformLabel} скачан, но строк 0: зелёных безопасных цен нет. Нажмите «Аудит в Excel», чтобы увидеть причины.`
+      message: `Шаблон ${platformLabel} скачан, но обычных строк 0: проверьте промо-шаблон или аудит причин.`
     };
   }
   repricerDownloadHtmlTable(columns, templateRows, `repricer-upload-${normalizedPlatform}-${new Date().toISOString().slice(0, 10)}.xls`);
@@ -6006,8 +6072,12 @@ function renderRepricer() {
   const confidenceGreenSides = sideRows.filter((side) => side.confidence === 'green').length;
   const confidenceYellowSides = sideRows.filter((side) => side.confidence === 'yellow').length;
   const confidenceRedSides = sideRows.filter((side) => side.confidence === 'red').length;
-  const safeWbRows = repricerCollectSides(sourceRows, 'wb').filter(({ side }) => side.safeToExport).length;
-  const safeOzonRows = repricerCollectSides(sourceRows, 'ozon').filter(({ side }) => side.safeToExport).length;
+  const safeWbRegularRows = repricerCollectSides(sourceRows, 'wb').filter(({ side }) => side.safeToExport).length;
+  const safeOzonRegularRows = repricerCollectSides(sourceRows, 'ozon').filter(({ side }) => side.safeToExport).length;
+  const safePromoWbRows = repricerCollectSides(sourceRows, 'wb').filter(({ side }) => side.promoSafeToExport).length;
+  const safePromoOzonRows = repricerCollectSides(sourceRows, 'ozon').filter(({ side }) => side.promoSafeToExport).length;
+  const safeWbRows = safeWbRegularRows + safePromoWbRows;
+  const safeOzonRows = safeOzonRegularRows + safePromoOzonRows;
   const templateStats = {
     wb: repricerTemplateStats(sourceRows, 'wb'),
     ozon: repricerTemplateStats(sourceRows, 'ozon')
@@ -6043,8 +6113,10 @@ function renderRepricer() {
     badge(`зелёные ${fmt.int(confidenceGreenSides)}`, confidenceGreenSides ? 'ok' : 'warn'),
     badge(`аудит ${fmt.int(confidenceYellowSides)}`, confidenceYellowSides ? 'info' : 'ok'),
     badge(`стоп ${fmt.int(confidenceRedSides)}`, confidenceRedSides ? 'danger' : 'ok'),
-    badge(`в шаблон WB ${fmt.int(safeWbRows)}`, safeWbRows ? 'ok' : 'warn'),
-    badge(`в шаблон Ozon ${fmt.int(safeOzonRows)}`, safeOzonRows ? 'ok' : 'warn')
+    badge(`в файлы WB ${fmt.int(safeWbRows)}`, safeWbRows ? 'ok' : 'warn'),
+    badge(`в файлы Ozon ${fmt.int(safeOzonRows)}`, safeOzonRows ? 'ok' : 'warn'),
+    badge(`обычные ${fmt.int(safeWbRegularRows + safeOzonRegularRows)}`, safeWbRegularRows + safeOzonRegularRows ? 'ok' : 'info'),
+    badge(`промо ${fmt.int(safePromoWbRows + safePromoOzonRows)}`, safePromoWbRows + safePromoOzonRows ? 'info' : '')
   ].join('');
   const stopReasonBadges = (health.stopReasons || []).slice(0, 7)
     .map((item) => badge(`${item.label} ${fmt.int(item.count)}`, item.label === 'нет входов' || item.label === 'нет цены' || item.label === 'нет MIN' ? 'danger' : 'warn'))
@@ -6074,17 +6146,17 @@ function renderRepricer() {
       <div class="repricer-template-explain-grid" style="margin-top:12px">
         <div class="repricer-operator-sku">
           <div>
-            <strong>WB: ${fmt.int(templateStats.wb.safe)} в файл</strong>
+            <strong>WB: ${fmt.int(templateStats.wb.safe)} в файлы</strong>
             <span>${escapeHtml(repricerTemplateEmptyReason(templateStats.wb))}</span>
           </div>
-          <div class="badge-stack">${badge(`зелёные ${fmt.int(templateStats.wb.green)}`, templateStats.wb.green ? 'ok' : 'warn')}${badge(`до MIN ${fmt.int(templateStats.wb.floorRaiseSafe)}`, templateStats.wb.floorRaiseSafe ? 'ok' : 'info')}${badge(`без изменения ${fmt.int(templateStats.wb.greenNoChange)}`, templateStats.wb.greenNoChange ? 'info' : '')}${badge(`аудит ${fmt.int(templateStats.wb.yellow)}`, templateStats.wb.yellow ? 'info' : 'ok')}${badge(`стоп ${fmt.int(templateStats.wb.red)}`, templateStats.wb.red ? 'danger' : 'ok')}</div>
+          <div class="badge-stack">${badge(`обычные ${fmt.int(templateStats.wb.regularSafe)}`, templateStats.wb.regularSafe ? 'ok' : 'info')}${badge(`промо ${fmt.int(templateStats.wb.promoSafe)}`, templateStats.wb.promoSafe ? 'info' : '')}${badge(`зелёные ${fmt.int(templateStats.wb.green)}`, templateStats.wb.green ? 'ok' : 'warn')}${badge(`до MIN ${fmt.int(templateStats.wb.floorRaiseSafe)}`, templateStats.wb.floorRaiseSafe ? 'ok' : 'info')}${badge(`без изменения ${fmt.int(templateStats.wb.greenNoChange)}`, templateStats.wb.greenNoChange ? 'info' : '')}${badge(`аудит ${fmt.int(templateStats.wb.yellow)}`, templateStats.wb.yellow ? 'info' : 'ok')}${badge(`стоп ${fmt.int(templateStats.wb.red)}`, templateStats.wb.red ? 'danger' : 'ok')}</div>
         </div>
         <div class="repricer-operator-sku">
           <div>
-            <strong>Ozon: ${fmt.int(templateStats.ozon.safe)} в файл</strong>
+            <strong>Ozon: ${fmt.int(templateStats.ozon.safe)} в файлы</strong>
             <span>${escapeHtml(repricerTemplateEmptyReason(templateStats.ozon))}</span>
           </div>
-          <div class="badge-stack">${badge(`зелёные ${fmt.int(templateStats.ozon.green)}`, templateStats.ozon.green ? 'ok' : 'warn')}${badge(`до MIN ${fmt.int(templateStats.ozon.floorRaiseSafe)}`, templateStats.ozon.floorRaiseSafe ? 'ok' : 'info')}${badge(`без изменения ${fmt.int(templateStats.ozon.greenNoChange)}`, templateStats.ozon.greenNoChange ? 'info' : '')}${badge(`аудит ${fmt.int(templateStats.ozon.yellow)}`, templateStats.ozon.yellow ? 'info' : 'ok')}${badge(`стоп ${fmt.int(templateStats.ozon.red)}`, templateStats.ozon.red ? 'danger' : 'ok')}</div>
+          <div class="badge-stack">${badge(`обычные ${fmt.int(templateStats.ozon.regularSafe)}`, templateStats.ozon.regularSafe ? 'ok' : 'info')}${badge(`промо ${fmt.int(templateStats.ozon.promoSafe)}`, templateStats.ozon.promoSafe ? 'info' : '')}${badge(`зелёные ${fmt.int(templateStats.ozon.green)}`, templateStats.ozon.green ? 'ok' : 'warn')}${badge(`до MIN ${fmt.int(templateStats.ozon.floorRaiseSafe)}`, templateStats.ozon.floorRaiseSafe ? 'ok' : 'info')}${badge(`без изменения ${fmt.int(templateStats.ozon.greenNoChange)}`, templateStats.ozon.greenNoChange ? 'info' : '')}${badge(`аудит ${fmt.int(templateStats.ozon.yellow)}`, templateStats.ozon.yellow ? 'info' : 'ok')}${badge(`стоп ${fmt.int(templateStats.ozon.red)}`, templateStats.ozon.red ? 'danger' : 'ok')}</div>
         </div>
       </div>
     </div>
@@ -6142,7 +6214,7 @@ function renderRepricer() {
       ['нет MIN', safeCount(wbTemplate.missingMin) + safeCount(ozonTemplate.missingMin), 'Заполнить MIN/MAX в Ценах или через аудит'],
       ['ниже MIN вручную', safeCount(wbTemplate.belowMin) + safeCount(ozonTemplate.belowMin), 'Проверить цену и рабочий порог'],
       ['нет себестоимости', safeCount(wbTemplate.missingCost) + safeCount(ozonTemplate.missingCost), 'Добавить себестоимость или fee-контур'],
-      ['требует проверки', wbCheckCount + ozonCheckCount, 'Оставить в аудите, в шаблон цен не отправлять'],
+      ['аудит', wbCheckCount + ozonCheckCount, 'Держим видимым, но инфо-аудит не режет объем советов'],
       ['стоп входов', safeCount(wbTemplate.blocked) + safeCount(ozonTemplate.blocked), 'Разобрать блокирующие входы SKU']
     ].filter(([, count]) => count > 0).slice(0, 4);
     const emptyExportReasonMarkup = emptyExportReasons.map(([label, count, hint]) => `
@@ -6156,6 +6228,10 @@ function renderRepricer() {
     const readiness = repricerGameReadinessModel(health, templateStats, {
       safeWbRows,
       safeOzonRows,
+      safeWbRegularRows,
+      safeOzonRegularRows,
+      safePromoWbRows,
+      safePromoOzonRows,
       wbCheckCount,
       ozonCheckCount,
       belowMinSides,
@@ -6197,7 +6273,7 @@ function renderRepricer() {
           <div class="repricer-empty-explain">
             <div>
               <strong>Почему шаблон пустой</strong>
-              <p>В WB/Ozon сейчас нет зелёных безопасных изменений цены. Шаблоны можно скачать для контроля, но сначала лучше выгрузить аудит и закрыть причины ниже.</p>
+              <p>В WB/Ozon сейчас нет изменений цены без красного стопа. Шаблоны можно скачать для контроля, но сначала лучше выгрузить аудит и закрыть причины ниже.</p>
             </div>
             <div class="repricer-empty-reasons">${emptyExportReasonMarkup || '<div class="repricer-empty-reason"><strong>нет причин</strong><span>0</span><em>Проверьте свежесть данных.</em></div>'}</div>
           </div>

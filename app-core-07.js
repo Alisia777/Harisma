@@ -3450,11 +3450,20 @@ function productLeaderboardExternalArticleRows(payload = {}, filters = {}, items
   normalizedPayload.rows.forEach((row = {}) => {
     const sourceKey = productLeaderboardSubstitutionArticleKey(row);
     if (hasActiveFilter && visibleKeys.size > 0 && !visibleKeys.has(sourceKey)) return;
-    const key = productLeaderboardSubstitutionKey(row.substitutionArticle || row.substitution || row.substitutionSku || '');
-    if (!key) return;
+    const substitutionKey = productLeaderboardSubstitutionKey(row.substitutionArticle || row.substitution || row.substitutionSku || '');
+    if (!sourceKey || !substitutionKey) return;
+    const key = `${sourceKey}__${substitutionKey}`;
+    const sourceArticle = row.articleKey || row.sellerArticle || row.article || row.productId || '';
+    const sourceArticleLabel = row.articleKey || row.sellerArticle || row.article || sourceKey;
+    const substitutionLabel = row.substitutionArticle || row.substitution || row.substitutionSku || substitutionKey;
     const current = map.get(key) || {
       key,
-      label: row.substitutionArticle || row.substitution || key,
+      label: substitutionLabel,
+      substitutionKey,
+      substitutionLabel,
+      sourceArticleKey: sourceKey,
+      sourceArticleLabel,
+      sourceTitle: row.title || row.name || '',
       views: 0,
       carts: 0,
       orders: 0,
@@ -3478,7 +3487,6 @@ function productLeaderboardExternalArticleRows(payload = {}, filters = {}, items
     current.rowCount += 1;
     if (row.campaignName) current.campaigns.add(String(row.campaignName));
     if (row.trafficSource) current.trafficSources.add(String(row.trafficSource));
-    const sourceArticle = row.articleKey || row.sellerArticle || row.article || row.productId || '';
     if (sourceArticle) {
       current.sourceArticles.add(String(sourceArticle));
       current.sourceArticleOrders.set(String(sourceArticle), numberOrZero(current.sourceArticleOrders.get(String(sourceArticle))) + orders);
@@ -3493,6 +3501,11 @@ function productLeaderboardExternalArticleRows(payload = {}, filters = {}, items
     return {
       key: item.key,
       label: item.label,
+      substitutionKey: item.substitutionKey,
+      substitutionLabel: item.substitutionLabel,
+      sourceArticleKey: item.sourceArticleKey,
+      sourceArticleLabel: item.sourceArticleLabel,
+      sourceTitle: item.sourceTitle,
       views: item.views,
       carts: item.carts,
       orders: item.orders,
@@ -3509,7 +3522,8 @@ function productLeaderboardExternalArticleRows(payload = {}, filters = {}, items
   }).sort((left, right) => (
     numberOrZero(right.orders) - numberOrZero(left.orders)
     || numberOrZero(right.views) - numberOrZero(left.views)
-    || String(left.label || left.key).localeCompare(String(right.label || right.key), 'ru')
+    || String(left.sourceArticleLabel || '').localeCompare(String(right.sourceArticleLabel || ''), 'ru')
+    || String(left.substitutionLabel || left.label || left.key).localeCompare(String(right.substitutionLabel || right.label || right.key), 'ru')
   ));
 }
 
@@ -3555,6 +3569,11 @@ function productLeaderboardExternalLikeForLikeModel(filters = {}, filteredItems 
     const current = currentMap.get(key) || {
       key,
       label: previousMap.get(key)?.label || key,
+      substitutionKey: previousMap.get(key)?.substitutionKey || '',
+      substitutionLabel: previousMap.get(key)?.substitutionLabel || previousMap.get(key)?.label || key,
+      sourceArticleKey: previousMap.get(key)?.sourceArticleKey || '',
+      sourceArticleLabel: previousMap.get(key)?.sourceArticleLabel || '',
+      sourceTitle: previousMap.get(key)?.sourceTitle || '',
       views: 0,
       carts: 0,
       orders: 0,
@@ -3571,6 +3590,11 @@ function productLeaderboardExternalLikeForLikeModel(filters = {}, filteredItems 
     const previous = previousMap.get(key) || {
       key,
       label: currentMap.get(key)?.label || key,
+      substitutionKey: currentMap.get(key)?.substitutionKey || '',
+      substitutionLabel: currentMap.get(key)?.substitutionLabel || currentMap.get(key)?.label || key,
+      sourceArticleKey: currentMap.get(key)?.sourceArticleKey || '',
+      sourceArticleLabel: currentMap.get(key)?.sourceArticleLabel || '',
+      sourceTitle: currentMap.get(key)?.sourceTitle || '',
       views: 0,
       carts: 0,
       orders: 0,
@@ -3607,7 +3631,8 @@ function productLeaderboardExternalLikeForLikeModel(filters = {}, filteredItems 
     numberOrZero(right.ordersDelta) - numberOrZero(left.ordersDelta)
     || numberOrZero(right.viewsDelta) - numberOrZero(left.viewsDelta)
     || numberOrZero(right.current.orders) - numberOrZero(left.current.orders)
-    || String(left.current.label || left.key).localeCompare(String(right.current.label || right.key), 'ru')
+    || String(left.current.sourceArticleLabel || left.previous.sourceArticleLabel || '').localeCompare(String(right.current.sourceArticleLabel || right.previous.sourceArticleLabel || ''), 'ru')
+    || String(left.current.substitutionLabel || left.current.label || left.key).localeCompare(String(right.current.substitutionLabel || right.current.label || right.key), 'ru')
   ));
   const currentSummary = productLeaderboardExternalArticleSummary(currentRows);
   const previousSummary = productLeaderboardExternalArticleSummary(previousRows);
@@ -3961,7 +3986,7 @@ function renderProductLeaderboardInsightTilesHtml(payload = {}, summary = {}, ow
       kicker: likeForLike.previousLabel ? `внешние к ${likeForLike.previousLabel}` : 'нужен второй срез внешки',
       value: likeForLike.hasComparison ? productLeaderboardSignedInt(likeForLike.ordersDelta) : '—',
       meta: likeForLike.hasComparison
-        ? `${fmt.int(likeForLike.rows.length)} внешн. арт. · просмотры ${productLeaderboardSignedInt(likeForLike.viewsDelta)}`
+        ? `${fmt.int(likeForLike.rows.length)} связок · просмотры ${productLeaderboardSignedInt(likeForLike.viewsDelta)}`
         : `${fmt.int(likeForLike.options.length)} срез · ждём историю`,
       completion: likeForLike.hasComparison ? lflCompletion : null,
       footer: likeForLike.hasComparison
@@ -4062,6 +4087,63 @@ function renderProductLeaderboardExternalLikeForLikeControls(model = {}, filters
   `;
 }
 
+function productLeaderboardExternalPairText(row = {}) {
+  const source = row.sourceArticleLabel || row.sourceArticleKey || 'артикул';
+  const substitution = row.substitutionLabel || row.label || 'подменник';
+  return `${source} -> ${substitution}`;
+}
+
+function productLeaderboardExternalSourceLink(row = {}) {
+  const sourceKey = row.sourceArticleKey || '';
+  const sourceLabel = row.sourceArticleLabel || sourceKey || 'артикул';
+  return sourceKey ? linkToSku(sourceKey, sourceLabel) : escapeHtml(sourceLabel);
+}
+
+function renderProductLeaderboardExternalCurrentPairsTable(model = {}) {
+  const rows = Array.isArray(model.currentRows) ? model.currentRows : [];
+  return `
+    <div class="table-wrap product-leaderboard-lfl-table-wrap" style="margin-top:12px">
+      <table class="product-leaderboard-likeforlike-table product-leaderboard-external-lfl-table">
+        <thead>
+          <tr>
+            <th>Артикул КЗ -> подменник</th>
+            <th>Подменник</th>
+            <th>Заказы</th>
+            <th>Просмотры</th>
+            <th>Корзины</th>
+            <th>Избранное</th>
+            <th>CR</th>
+            <th>Связка</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map((row, index) => `
+            <tr class="product-leaderboard-lfl-row is-flat" data-product-likeforlike-row="${escapeHtml(row.key)}">
+              <td>
+                <div class="product-leaderboard-lfl-sku-head">
+                  <span>${index + 1}</span>
+                  <strong>${productLeaderboardExternalSourceLink(row)}</strong>
+                </div>
+                <div class="muted small">${escapeHtml(row.sourceTitle || '')}</div>
+              </td>
+              <td>
+                <strong>${escapeHtml(row.substitutionLabel || row.label || row.key)}</strong>
+                <div class="muted small">WB подменник</div>
+              </td>
+              <td><strong>${fmt.int(row.orders)}</strong><div class="muted small">${fmt.int(row.rowCount)} строк · ${fmt.int(row.campaignCount)} РК</div></td>
+              <td>${fmt.int(row.views)}</td>
+              <td>${fmt.int(row.carts)}</td>
+              <td>${fmt.int(row.favorites)}</td>
+              <td>${fmt.pct(row.orderRate)}</td>
+              <td>${badge(productLeaderboardExternalPairText(row), 'info')}</td>
+            </tr>
+          `).join('') || '<tr><td colspan="8"><div class="empty">Нет связок подменников в текущем срезе.</div></td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = []) {
   const filters = getProductLeaderboardFilters();
   const model = productLeaderboardExternalLikeForLikeModel(filters, filteredItems);
@@ -4072,16 +4154,17 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
       <div class="card product-leaderboard-likeforlike-panel lfl-flat" data-product-leaderboard-expanded-panel="likeforlike" style="margin-top:14px;--lfl-hue:212;--lfl-bright:.42;--lfl-growth:0%;--lfl-drop:0%">
         <div class="section-subhead">
           <div>
-            <h3>Like for like: внешние артикулы</h3>
-            <p class="small muted">Сравнение строится по внешнему артикулу из WB-подменников. Сейчас в истории доступен только ${fmt.int(model.options.length)} срез, поэтому базу сравнения нужно накопить следующим импортом.</p>
+            <h3>Like for like: подменники по артикулам</h3>
+            <p class="small muted">Сравнение строится по связке наш артикул -> WB-подменник. Сейчас в истории доступен только ${fmt.int(model.options.length)} срез, поэтому базу сравнения нужно накопить следующим импортом.</p>
           </div>
           <div class="badge-stack">
-            ${badge(`${fmt.int(model.currentSummary.articles)} внешн. арт.`, model.currentSummary.articles ? 'info' : 'warn')}
+            ${badge(`${fmt.int(model.currentSummary.articles)} связок`, model.currentSummary.articles ? 'info' : 'warn')}
             ${badge('нет второго среза', 'warn')}
           </div>
         </div>
         ${controlsHtml}
-        <div class="empty" style="margin-top:12px">После следующей выгрузки ANS здесь можно будет выбрать две даты и увидеть, какие внешние артикулы дали рост или просадку по просмотрам, корзинам и заказам.</div>
+        <div class="empty" style="margin-top:12px">После следующей выгрузки ANS здесь можно будет выбрать две даты и увидеть рост или просадку по каждой связке: наш артикул -> подменник.</div>
+        ${renderProductLeaderboardExternalCurrentPairsTable(model)}
       </div>
     `;
   }
@@ -4099,11 +4182,11 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
     <div class="card product-leaderboard-likeforlike-panel lfl-${lflTone}" data-product-leaderboard-expanded-panel="likeforlike" style="margin-top:14px;--lfl-hue:${heroHue};--lfl-bright:${heroBright.toFixed(2)};--lfl-growth:${(growthShare * 100).toFixed(1)}%;--lfl-drop:${(dropShare * 100).toFixed(1)}%">
       <div class="section-subhead">
         <div>
-          <h3>Like for like: внешние артикулы</h3>
-          <p class="small muted">Сравниваем выбранные срезы по внешнему артикулу WB-подменников: ${escapeHtml(currentLabel)} против ${escapeHtml(previousLabel)}.</p>
+          <h3>Like for like: подменники по артикулам</h3>
+          <p class="small muted">Сравниваем выбранные срезы по связке наш артикул -> WB-подменник: ${escapeHtml(currentLabel)} против ${escapeHtml(previousLabel)}.</p>
         </div>
         <div class="badge-stack">
-          ${badge(`${fmt.int(model.matchedRows)} LFL внешн. арт.`, model.matchedRows ? 'info' : 'warn')}
+          ${badge(`${fmt.int(model.matchedRows)} LFL связок`, model.matchedRows ? 'info' : 'warn')}
           ${badge(`${fmt.int(model.newRows)} новых`, model.newRows ? 'warn' : 'ok')}
           ${badge(`${fmt.int(model.lostRows)} выпали`, model.lostRows ? 'warn' : 'ok')}
         </div>
@@ -4125,12 +4208,12 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
         </div>
         <div class="product-leaderboard-lfl-driver is-growth">
           <span>главный рост внешки</span>
-          <strong>${topGrowth ? escapeHtml(topGrowth.current.label || topGrowth.key) : 'нет роста'}</strong>
+          <strong>${topGrowth ? escapeHtml(productLeaderboardExternalPairText(topGrowth.current)) : 'нет роста'}</strong>
           <em>${topGrowth ? `${productLeaderboardSignedInt(topGrowth.ordersDelta)} заказов · просмотры ${productLeaderboardSignedInt(topGrowth.viewsDelta)}` : 'по внешним артикулам'}</em>
         </div>
         <div class="product-leaderboard-lfl-driver is-drop">
           <span>главная просадка</span>
-          <strong>${topDrop ? escapeHtml(topDrop.current.label || topDrop.previous.label || topDrop.key) : 'нет просадки'}</strong>
+          <strong>${topDrop ? escapeHtml(productLeaderboardExternalPairText(topDrop.current.label ? topDrop.current : topDrop.previous)) : 'нет просадки'}</strong>
           <em>${topDrop ? `${productLeaderboardSignedInt(topDrop.ordersDelta)} заказов · просмотры ${productLeaderboardSignedInt(topDrop.viewsDelta)}` : 'по внешним артикулам'}</em>
         </div>
       </div>
@@ -4152,7 +4235,7 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
           meta: `${fmt.int(model.previousSummary.views)} было · ${model.viewsDeltaPct == null ? '—' : productLeaderboardSignedPct(model.viewsDeltaPct)}`,
           completion: model.viewsDeltaPct == null ? null : Math.min(1.35, Math.max(0.05, 1 + model.viewsDeltaPct)),
           footer: 'верх воронки',
-          hint: `${fmt.int(model.currentSummary.articles)} внешн. арт.`,
+          hint: `${fmt.int(model.currentSummary.articles)} связок`,
           deltaClass: model.viewsDelta >= 0 ? 'ok' : 'danger'
         })}
         ${productLeaderboardModuleCardHtml({
@@ -4170,8 +4253,8 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
         <table class="product-leaderboard-likeforlike-table product-leaderboard-external-lfl-table">
           <thead>
             <tr>
-              <th>Внешний артикул</th>
-              <th>Связанные SKU</th>
+              <th>Артикул КЗ</th>
+              <th>WB подменник</th>
               <th>Заказы сейчас</th>
               <th>Заказы было</th>
               <th>Δ заказов</th>
@@ -4188,25 +4271,29 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
               const rowTone = productLeaderboardLikeForLikeTone(row.ordersDelta);
               const statusLabel = row.status === 'new' ? 'новый' : row.status === 'lost' ? 'выпал' : rowTone === 'growth' ? 'рост' : rowTone === 'drop' ? 'просадка' : 'ровно';
               const statusTone = row.status === 'new' ? 'warn' : row.status === 'lost' ? 'danger' : rowTone === 'growth' ? 'ok' : rowTone === 'drop' ? 'danger' : 'info';
-              const sourceBadges = (current.topSourceArticles.length ? current.topSourceArticles : previous.topSourceArticles)
-                .map((entry) => badge(`${entry.label}: ${fmt.int(entry.orders)}`, 'info'))
-                .join('');
+              const sourceRow = current.sourceArticleLabel ? current : previous;
+              const substitutionRow = current.substitutionLabel ? current : previous;
               return `
                 <tr class="product-leaderboard-lfl-row is-${rowTone}" data-product-likeforlike-row="${escapeHtml(row.key)}">
                   <td>
                     <div class="product-leaderboard-lfl-sku-head">
                       <span>${index + 1}</span>
-                      <strong>${escapeHtml(current.label || previous.label || row.key)}</strong>
+                      <strong>${productLeaderboardExternalSourceLink(sourceRow)}</strong>
                     </div>
+                    <div class="muted small">${escapeHtml(sourceRow.sourceTitle || '')}</div>
                     <div class="badge-stack" style="margin-top:8px">
                       ${badge(statusLabel, statusTone)}
+                      ${badge(productLeaderboardExternalPairText(substitutionRow), 'info')}
                       ${row.ordersDeltaPct == null ? '' : badge(productLeaderboardSignedPct(row.ordersDeltaPct), row.ordersDelta >= 0 ? 'ok' : 'danger')}
                     </div>
                   </td>
                   <td>
-                    <strong>${fmt.int(current.sourceArticleCount || previous.sourceArticleCount)}</strong>
-                    <div class="muted small">КЗ SKU в связке</div>
-                    <div class="badge-stack" style="margin-top:8px">${sourceBadges || badge('нет связки', 'warn')}</div>
+                    <strong>${escapeHtml(substitutionRow.substitutionLabel || substitutionRow.label || row.key)}</strong>
+                    <div class="muted small">подменник для ${escapeHtml(sourceRow.sourceArticleLabel || sourceRow.sourceArticleKey || 'артикула')}</div>
+                    <div class="badge-stack" style="margin-top:8px">
+                      ${badge(`${fmt.int(current.rowCount || previous.rowCount)} строк`, 'info')}
+                      ${badge(`${fmt.int(current.campaignCount || previous.campaignCount)} РК`, 'info')}
+                    </div>
                   </td>
                   <td><strong>${fmt.int(current.orders)}</strong><div class="muted small">${fmt.int(current.rowCount)} строк · ${fmt.int(current.campaignCount)} РК</div></td>
                   <td>${fmt.int(previous.orders)}<div class="muted small">${fmt.int(previous.rowCount)} строк · ${fmt.int(previous.campaignCount)} РК</div></td>
@@ -4217,7 +4304,7 @@ function renderProductLeaderboardLikeForLikePanel(payload = {}, filteredItems = 
                   <td>${fmt.pct(current.orderRate)}<div class="muted small">${row.orderRateDelta == null ? '—' : productLeaderboardSignedPct(row.orderRateDelta)}</div></td>
                 </tr>
               `;
-            }).join('') || '<tr><td colspan="9"><div class="empty">Нет внешних артикулов для Like for like.</div></td></tr>'}
+            }).join('') || '<tr><td colspan="9"><div class="empty">Нет связок подменников для Like for like.</div></td></tr>'}
           </tbody>
         </table>
       </div>

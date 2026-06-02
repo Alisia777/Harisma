@@ -17,10 +17,13 @@ const SNAPSHOT_KEYS = [
   'logistics',
   'smart_price_overlay',
   'product_leaderboard',
+  'product_leaderboard_history',
   'ads_summary',
   'iu_drr_summary',
   'loyalty_system',
   'wb_feedbacks_summary',
+  'wb_substitution_traffic',
+  'wb_substitution_traffic_history',
   'order_procurement',
   'order_procurement_wb',
   'order_procurement_ozon',
@@ -37,6 +40,11 @@ const SNAPSHOT_KEYS = [
   'portal_layer_freshness',
   'portal_sync_health'
 ];
+const OPTIONAL_SNAPSHOT_KEYS = new Set([
+  'product_leaderboard_history',
+  'wb_substitution_traffic',
+  'wb_substitution_traffic_history'
+]);
 const INLINE_BODY_LIMIT = 18000;
 const DEFAULT_CHUNK_SIZE = 500000;
 const LARGE_LOGISTICS_CHUNK_SIZE = 500000;
@@ -63,7 +71,8 @@ function resolveOptions(args) {
     supabaseKey: args['supabase-key'] || process.env.ALTEA_SUPABASE_KEY || DEFAULT_SUPABASE_KEY,
     snapshots: args.snapshot
       ? String(args.snapshot).split(',').map((value) => value.trim()).filter(Boolean)
-      : SNAPSHOT_KEYS
+      : SNAPSHOT_KEYS,
+    explicitSnapshots: Boolean(args.snapshot)
   };
 }
 
@@ -71,8 +80,12 @@ function hashPayload(payload) {
   return crypto.createHash('sha256').update(typeof payload === 'string' ? payload : JSON.stringify(payload)).digest('hex');
 }
 
+function snapshotFilePath(inputDir, snapshotKey) {
+  return path.join(inputDir, `${snapshotKey}.json`);
+}
+
 function readSnapshot(inputDir, snapshotKey) {
-  const filePath = path.join(inputDir, `${snapshotKey}.json`);
+  const filePath = snapshotFilePath(inputDir, snapshotKey);
   if (!fs.existsSync(filePath)) {
     throw new Error(`Snapshot file not found: ${filePath}`);
   }
@@ -172,11 +185,18 @@ async function uploadSnapshot(snapshotKey, payload, options) {
 async function main() {
   const options = resolveOptions(parseArgs(process.argv));
   const uploaded = {};
+  const skipped = [];
   for (const snapshotKey of options.snapshots) {
+    const filePath = snapshotFilePath(options.inputDir, snapshotKey);
+    if (!fs.existsSync(filePath) && !options.explicitSnapshots && OPTIONAL_SNAPSHOT_KEYS.has(snapshotKey)) {
+      skipped.push(snapshotKey);
+      console.warn(`[upload] ${snapshotKey}: skipped missing optional file ${filePath}`);
+      continue;
+    }
     const payload = readSnapshot(options.inputDir, snapshotKey);
     uploaded[snapshotKey] = await uploadSnapshot(snapshotKey, payload, options);
   }
-  console.log(JSON.stringify({ uploaded }, null, 2));
+  console.log(JSON.stringify({ uploaded, skipped }, null, 2));
 }
 
 main().catch((error) => {

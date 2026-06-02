@@ -16,6 +16,8 @@ const SNAPSHOT_NAMES = [
   'loyalty_system',
   'product_leaderboard',
   'product_leaderboard_history',
+  'wb_substitution_traffic',
+  'wb_substitution_traffic_history',
   'order_procurement',
   'order_procurement_wb',
   'order_procurement_ozon',
@@ -405,6 +407,13 @@ function latestPayloadDate(name, payload) {
   if (name === 'ads_summary') return dateKey(payload.asOfDate || payload.window?.to || payload.generatedAt);
   if (name === 'iu_drr_summary') return dateKey(payload.asOfDate || payload.window?.to || payload.generatedAt);
   if (name === 'wb_feedbacks_summary') return dateKey(payload.window?.to || payload.asOfDate || payload.generatedAt);
+  if (name === 'wb_substitution_traffic') return dateKey(payload.asOfDate || payload.source?.sourceGeneratedAt || payload.generatedAt);
+  if (name === 'wb_substitution_traffic_history' && Array.isArray(payload)) {
+    return latestDate(payload.map((entry) => entry?.asOfDate || entry?.source?.sourceGeneratedAt || entry?.generatedAt));
+  }
+  if (name === 'product_leaderboard_history' && Array.isArray(payload)) {
+    return latestDate(payload.map((entry) => entry?.window?.to || entry?.period?.to || entry?.asOfDate || entry?.generatedAt));
+  }
   if (name.startsWith('order_procurement')) return dateKey(payload.window?.to || payload.generatedAt);
   if (name === 'oos_control') return dateKey(payload.dataFreshness?.dataDate || payload.summary?.dataDate || payload.generatedAt);
   if (name === 'warehouse_stock_overlay') return dateKey(payload.asOfDate || payload.generatedAt);

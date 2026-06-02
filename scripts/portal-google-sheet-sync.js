@@ -25,7 +25,9 @@ const SNAPSHOT_KEYS = [
   'warehouse_stock_overlay',
   'ads_summary',
   'iu_drr_summary',
-  'wb_feedbacks_summary'
+  'wb_feedbacks_summary',
+  'wb_substitution_traffic',
+  'wb_substitution_traffic_history'
 ];
 const REQUIRED_SOURCE_SHEETS = {
   dimSku: ['dim_sku'],
@@ -2107,6 +2109,8 @@ function buildSnapshots(rows, options) {
   const adsSummary = readOptionalJson(path.join(baseDir, 'ads_summary.json'));
   const iuDrrSummary = readOptionalJson(path.join(baseDir, 'iu_drr_summary.json'));
   const wbFeedbacksSummary = readOptionalJson(path.join(baseDir, 'wb_feedbacks_summary.json'));
+  const wbSubstitutionTraffic = readOptionalJson(path.join(baseDir, 'wb_substitution_traffic.json'));
+  const wbSubstitutionTrafficHistory = readOptionalJson(path.join(baseDir, 'wb_substitution_traffic_history.json'));
   const localSkuAliasRows = readSkuAliasRows(options);
   const skuAliasRows = normalizeSkuAliasRows(rows.skuAliases, localSkuAliasRows);
   const overlayResult = buildSkuOverlay(baseSkus, rows.dimSku);
@@ -2146,7 +2150,9 @@ function buildSnapshots(rows, options) {
       },
       ...(adsSummary ? { ads_summary: adsSummary } : {}),
       ...(iuDrrSummary ? { iu_drr_summary: iuDrrSummary } : {}),
-      ...(wbFeedbacksSummary ? { wb_feedbacks_summary: wbFeedbacksSummary } : {})
+      ...(wbFeedbacksSummary ? { wb_feedbacks_summary: wbFeedbacksSummary } : {}),
+      ...(wbSubstitutionTraffic ? { wb_substitution_traffic: wbSubstitutionTraffic } : {}),
+      ...(wbSubstitutionTrafficHistory ? { wb_substitution_traffic_history: wbSubstitutionTrafficHistory } : {})
     },
     meta: {
       generatedAt: new Date().toISOString(),

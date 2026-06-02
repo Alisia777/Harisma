@@ -3181,6 +3181,136 @@ function skuContourStatusMeta(status = '') {
   return map[key] || map.new;
 }
 
+function skuContourReadableIssueType(type = '') {
+  const key = String(type || '').toLowerCase();
+  if (key.includes('warehouse_unmatched_source_key')) return 'Склад без SKU';
+  if (key.includes('api_sku_known_outside_registry')) return 'API SKU вне реестра';
+  if (key.includes('aggregate') || key.includes('агрегат')) return 'Агрегат без SKU';
+  if (key.includes('owner')) return 'Owner / ответственный';
+  if (key.includes('unmapped')) return 'Не сматчено';
+  return type || 'Проблема SKU';
+}
+
+function skuContourIssueWords(value = '') {
+  const stop = new Set(['sku', 'api', 'bad', 'alteya', 'alteia', 'altey', 'alteja', 'алтея']);
+  return String(value || '')
+    .toLowerCase()
+    .replaceAll('ё', 'е')
+    .split(/[^a-zа-я0-9]+/gi)
+    .map((word) => word.trim())
+    .filter((word) => word.length >= 3 && !stop.has(word));
+}
+
+function skuContourPackagingWord(word = '') {
+  return /\d+(caps|cap|tabl|tabs|ml|gr|g|капс|табл|мл|г)$/i.test(String(word || ''));
+}
+
+function skuContourCloseWord(left = '', right = '') {
+  const a = String(left || '');
+  const b = String(right || '');
+  if (!a || !b) return false;
+  if (a === b) return true;
+  if (a.length >= 5 && b.length >= 5 && (a.includes(b.slice(0, 5)) || b.includes(a.slice(0, 5)))) return true;
+  return false;
+}
+
+function skuContourCandidateCorpus() {
+  const matrixByKey = new Map((state.skuMatrix?.items || []).map((item) => [String(item.articleKey || item.article || '').trim(), item]));
+  const seen = new Set();
+  const rows = [];
+  const add = (source = {}, matrixItem = null) => {
+    const articleKey = String(source.articleKey || source.article || matrixItem?.articleKey || matrixItem?.article || '').trim();
+    if (!articleKey || seen.has(articleKey)) return;
+    seen.add(articleKey);
+    const merged = { ...(matrixItem || {}), ...(source || {}) };
+    const aliasText = (merged.aliases || []).map((alias) => `${alias.platform || ''} ${alias.api_sku || alias.apiSku || alias.alias || ''}`).join(' ');
+    const text = [merged.articleKey, merged.article, merged.sku, merged.name, merged.category, merged.type, aliasText].filter(Boolean).join(' ');
+    rows.push({
+      ...merged,
+      articleKey,
+      displayArticle: merged.article || articleKey,
+      displayName: merged.name || '',
+      displayStatus: merged.registryStatus || merged.status || merged.owner?.registryStatus || '',
+      displayOwner: merged.owner?.name || merged.owner || '',
+      token: skuPlanFactToken(text),
+      words: skuContourIssueWords(text)
+    });
+  };
+  (state.skus || []).forEach((sku) => add(sku, matrixByKey.get(String(sku.articleKey || sku.article || '').trim())));
+  (state.skuMatrix?.items || []).forEach((item) => add(item, item));
+  return rows;
+}
+
+function skuContourCandidateScore(issue = {}, candidate = {}) {
+  const issueText = [issue.apiSku, issue.articleKey, issue.name].filter(Boolean).join(' ');
+  const issueToken = skuPlanFactToken(issueText);
+  const candidateArticleToken = skuPlanFactToken(candidate.articleKey || candidate.displayArticle || '');
+  if (!issueToken || !candidateArticleToken) return 0;
+  if (issueToken === candidateArticleToken) return 1;
+  if (issueToken.length >= 6 && candidate.token?.includes(issueToken)) return 0.95;
+  if (candidateArticleToken.length >= 6 && issueToken.includes(candidateArticleToken)) return 0.9;
+
+  const issueWords = skuContourIssueWords(issueText);
+  const strongIssueWords = issueWords.filter((word) => !skuContourPackagingWord(word));
+  const candidateWords = candidate.words || [];
+  const exactStrong = strongIssueWords.filter((word) => candidateWords.some((item) => skuContourCloseWord(word, item))).length;
+  const packageOverlap = issueWords.filter((word) => skuContourPackagingWord(word) && candidateWords.includes(word)).length;
+  const strongBase = Math.max(1, strongIssueWords.length);
+  const packageBase = Math.max(1, issueWords.filter(skuContourPackagingWord).length);
+  return Math.min(0.89, exactStrong / strongBase * 0.82 + packageOverlap / packageBase * 0.08);
+}
+
+function skuContourLikeForLikeCandidates(issue = {}, limit = 3) {
+  return skuContourCandidateCorpus()
+    .map((candidate) => ({ ...candidate, matchScore: skuContourCandidateScore(issue, candidate) }))
+    .filter((candidate) => candidate.matchScore >= 0.34)
+    .sort((left, right) => right.matchScore - left.matchScore || String(left.articleKey || '').localeCompare(String(right.articleKey || ''), 'ru'))
+    .slice(0, limit);
+}
+
+function skuContourRecommendedDecision(issue = {}, candidates = null) {
+  const type = String(issue.type || '').toLowerCase();
+  const list = candidates || skuContourLikeForLikeCandidates(issue, 1);
+  const best = list[0] || null;
+  if (issue.status === 'applied') return { decision: 'alias', tone: 'ok', text: 'Уже связано с SKU', targetSku: best?.articleKey || '' };
+  if (issue.status === 'ignored') return { decision: 'ignore', tone: 'ok', text: 'Уже исключено из очереди', targetSku: '' };
+  if (issue.status === 'blocked') return { decision: 'need_check', tone: 'danger', text: 'Сначала проверить API-детализацию', targetSku: '' };
+  if (best?.matchScore >= 0.74) return { decision: 'alias', tone: 'ok', text: `Похоже на ${best.articleKey}`, targetSku: best.articleKey };
+  if (best?.matchScore >= 0.48) return { decision: 'need_check', tone: 'warn', text: `Есть кандидат ${best.articleKey}`, targetSku: best.articleKey };
+  if (type.includes('warehouse_unmatched_source_key')) return { decision: 'new_sku', tone: 'warn', text: 'Пары в реестре не видно: завести SKU или ignore', targetSku: '' };
+  return { decision: 'need_check', tone: 'warn', text: 'Нужна ручная сверка', targetSku: best?.articleKey || '' };
+}
+
+function skuContourCandidateHtml(candidates = []) {
+  if (!candidates.length) return '<div class="sku-contour-candidate-empty">Пары в реестре не видно</div>';
+  return `
+    <div class="sku-contour-candidates">
+      ${candidates.map((candidate) => `
+        <span class="sku-contour-candidate" title="${escapeHtml(candidate.displayName || candidate.articleKey || '')}">
+          <b>${escapeHtml(candidate.articleKey || '')}</b>
+          <em>${fmt.pct(candidate.matchScore || 0)}</em>
+          <small>${escapeHtml(candidate.displayStatus || candidate.category || '')}</small>
+        </span>
+      `).join('')}
+    </div>
+  `;
+}
+
+function skuContourRowNextActionHtml(row = {}, history = null) {
+  if (history) {
+    return `<strong>${escapeHtml(history.kind)}</strong><div class="muted small">${escapeHtml(fmt.date(history.appliedAt))} · ${escapeHtml(history.actor)}</div>`;
+  }
+  const candidates = skuContourLikeForLikeCandidates(row, 3);
+  const decision = skuContourRecommendedDecision(row, candidates);
+  return `
+    <div class="sku-contour-next-action">
+      ${badge(decision.decision, decision.tone)}
+      <span>${escapeHtml(decision.text)}</span>
+    </div>
+    ${skuContourCandidateHtml(candidates)}
+  `;
+}
+
 function skuContourHealthMeta(health = {}) {
   const status = String(health.status || '').toLowerCase();
   const contourStatus = String(health.skuContour?.status || '').toLowerCase();
@@ -3292,14 +3422,17 @@ function skuContourFocusQueueHtml(rows = []) {
   if (!rows.length) return '<div class="sku-data-focus-empty">Очередь по текущей площадке пустая</div>';
   return rows.slice(0, 6).map((row) => {
     const meta = skuContourStatusMeta(row.status);
+    const candidates = skuContourLikeForLikeCandidates(row, 1);
+    const decision = skuContourRecommendedDecision(row, candidates);
     return `
       <button class="sku-data-focus-row" type="button" data-sku-contour-open-registry="${escapeHtml(row.apiSku || '')}">
         <span>
           <strong>${escapeHtml(row.apiSku || row.type || 'API SKU')}</strong>
-          <em>${escapeHtml(row.name || row.action || row.type || 'Нужен разбор')}</em>
+          <em>${escapeHtml(decision.text || row.name || row.action || row.type || 'Нужен разбор')}</em>
           <small>
             ${badge(meta.label, meta.tone)}
             <span class="chip">${escapeHtml(row.platform || 'all')}</span>
+            ${badge(decision.decision, decision.tone)}
           </small>
         </span>
         <b>${fmt.money(row.revenue || 0)}</b>
@@ -3330,6 +3463,7 @@ function skuContourFocusBoardHtml({
   const blockerCount = numberOrZero(statusCounts.blocked || 0) + numberOrZero(statusCounts.quarantine || 0);
   const warningCount = numberOrZero(statusCounts.warning || 0);
   const newCount = numberOrZero(statusCounts.new || 0);
+  const candidateCount = unresolvedRows.filter((row) => skuContourLikeForLikeCandidates(row, 1)[0]?.matchScore >= 0.48).length;
   const marketSkus = (state.skus || []).filter((sku) => typeof skuDataSkuBelongsToPlatform === 'function'
     ? skuDataSkuBelongsToPlatform(sku, activeMarket)
     : true);
@@ -3345,6 +3479,7 @@ function skuContourFocusBoardHtml({
     { label: 'Новые', count: newCount, help: 'решить alias / ignore / new_sku', tone: newCount ? 'warn' : 'ok' },
     { label: 'Блокеры', count: numberOrZero(statusCounts.blocked || 0), help: 'сначала источник или дубль', tone: statusCounts.blocked ? 'danger' : 'ok' },
     { label: 'Карантин', count: numberOrZero(statusCounts.quarantine || quarantine.rows || 0), help: 'изолированные строки', tone: (statusCounts.quarantine || quarantine.rows) ? 'danger' : 'ok' },
+    { label: 'Кандидаты', count: candidateCount, help: 'похоже на SKU в реестре', tone: candidateCount ? 'info' : '' },
     { label: 'Проверить', count: warningCount, help: 'ручной контроль', tone: warningCount ? 'warn' : '' },
     { label: 'Решено', count: resolvedRows.length, help: showResolved ? 'показаны в таблице' : 'скрыты из очереди', tone: resolvedRows.length ? 'ok' : '' },
     { label: 'WB owner', count: numberOrZero(wbMissingInDistribution) + numberOrZero(wbMissingInPortal), help: 'сверка распределения', tone: (wbMissingInDistribution || wbMissingInPortal) ? 'info' : '' }
@@ -4957,14 +5092,15 @@ function renderSkuContour(rootId = 'view-sku-contour') {
   const issueHtml = issueRows.slice(0, 120).map((row) => {
     const meta = skuContourStatusMeta(row.status);
     const history = skuContourAuditForRow(row, auditIndex);
+    const readableType = skuContourReadableIssueType(row.type);
     return `
       <tr>
         <td>${badge(meta.label, meta.tone)}</td>
-        <td><strong>${escapeHtml(row.type || '—')}</strong><div class="muted small">${escapeHtml(row.action || '')}</div></td>
+        <td><strong>${escapeHtml(readableType)}</strong><div class="muted small">${escapeHtml(row.action || row.type || '')}</div></td>
         <td>${escapeHtml(row.platform || 'Все')}</td>
         <td><strong>${escapeHtml(row.apiSku || '—')}</strong><div class="muted small">${escapeHtml(row.name || '')}</div></td>
         <td><strong>${fmt.money(row.revenue)}</strong><div class="muted small">${fmt.int(row.units)} шт.</div></td>
-        <td>${history ? `<strong>${escapeHtml(history.kind)}</strong><div class="muted small">${escapeHtml(fmt.date(history.appliedAt))} · ${escapeHtml(history.actor)}</div>` : '<span class="muted">—</span>'}</td>
+        <td class="sku-contour-next-cell">${skuContourRowNextActionHtml(row, history)}</td>
       </tr>
     `;
   }).join('');
@@ -5082,7 +5218,7 @@ function renderSkuContour(rootId = 'view-sku-contour') {
       </div>
       <div class="table-scroll">
         <table class="data-table compact">
-          <thead><tr><th>Статус</th><th>Проблема</th><th>Площадка</th><th>API / SKU</th><th>Сумма</th><th>Журнал</th></tr></thead>
+          <thead><tr><th>Статус</th><th>Проблема</th><th>Площадка</th><th>API / SKU</th><th>Сумма</th><th>Журнал / следующий шаг</th></tr></thead>
           <tbody>${issueHtml || `<tr><td colspan="6"><div class="empty">${hiddenByCurrentFilterCount ? 'По текущему фильтру строк нет. Решённые или не новые строки скрыты кнопками сверху.' : 'Очередь ошибок пуста'}</div></td></tr>`}</tbody>
         </table>
       </div>
@@ -6290,6 +6426,14 @@ function skuPlanFactQualityExportColumns() {
     ['decision', 'Решение: alias / new_sku / ignore / need_check'],
     ['decision_hint', 'Подсказка по решению'],
     ['target_sku', 'SKU в реестре (заполнять для alias)'],
+    ['suggested_decision', 'Подсказка портала'],
+    ['suggested_target_sku', 'Кандидат SKU'],
+    ['candidate_1', 'Like-for-like кандидат 1'],
+    ['candidate_1_match', 'Сходство 1'],
+    ['candidate_1_status', 'Статус 1'],
+    ['candidate_2', 'Like-for-like кандидат 2'],
+    ['candidate_2_match', 'Сходство 2'],
+    ['candidate_2_status', 'Статус 2'],
     ['platform', 'Площадка'],
     ['api_sku', 'API SKU'],
     ['status', 'Статус записи (обычно active)'],
@@ -6321,25 +6465,61 @@ function skuPlanFactDecisionHint(issue = {}) {
   return 'Если уверены в паре - alias + target_sku; если не уверены - need_check; если строку не надо маппить - ignore.';
 }
 
+function skuPlanFactQualityIssuesForExport(model = {}) {
+  const rows = [
+    ...(model.quality?.issues || []),
+    ...(state.portalDataQuality?.issues || [])
+  ];
+  const seen = new Set();
+  return rows.filter((issue) => {
+    const key = [
+      issue.type || '',
+      issue.platform || '',
+      issue.articleKey || issue.api_sku || issue.apiSku || '',
+      Math.round(numberOrZero(issue.revenue || 0))
+    ].join('|');
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function skuPlanFactQualityExportRows(model) {
-  return (model.quality?.issues || []).map((issue) => ({
-    decision: 'need_check',
-    decision_hint: skuPlanFactDecisionHint(issue),
-    target_sku: '',
-    platform: issue.platform,
-    api_sku: issue.articleKey,
-    status: 'active',
-    note: issue.action || '',
-    month: model.monthKey,
-    fact_to: model.maxFactDate,
-    severity: issue.severity,
-    type: issue.type,
-    article_key: issue.articleKey,
-    name: issue.name,
-    revenue: Math.round(issue.revenue || 0),
-    units: Math.round(issue.units || 0),
-    recommended_action: issue.action
-  }));
+  return skuPlanFactQualityIssuesForExport(model).map((issue) => {
+    const contourRow = {
+      ...issue,
+      apiSku: issue.articleKey || issue.api_sku || issue.apiSku || '',
+      status: 'new'
+    };
+    const candidates = skuContourLikeForLikeCandidates(contourRow, 2);
+    const suggestion = skuContourRecommendedDecision(contourRow, candidates);
+    return {
+      decision: suggestion.decision,
+      decision_hint: skuPlanFactDecisionHint(issue),
+      target_sku: suggestion.decision === 'alias' ? suggestion.targetSku : '',
+      suggested_decision: suggestion.decision,
+      suggested_target_sku: suggestion.targetSku || '',
+      candidate_1: candidates[0]?.articleKey || '',
+      candidate_1_match: candidates[0] ? Math.round((candidates[0].matchScore || 0) * 100) : '',
+      candidate_1_status: candidates[0]?.displayStatus || candidates[0]?.category || '',
+      candidate_2: candidates[1]?.articleKey || '',
+      candidate_2_match: candidates[1] ? Math.round((candidates[1].matchScore || 0) * 100) : '',
+      candidate_2_status: candidates[1]?.displayStatus || candidates[1]?.category || '',
+      platform: issue.platform || 'all',
+      api_sku: contourRow.apiSku,
+      status: 'active',
+      note: issue.action || suggestion.text || '',
+      month: model.monthKey,
+      fact_to: model.maxFactDate || state.portalDataQuality?.summary?.maxDate || '',
+      severity: issue.severity,
+      type: skuContourReadableIssueType(issue.type),
+      article_key: contourRow.apiSku,
+      name: issue.name,
+      revenue: Math.round(issue.revenue || 0),
+      units: Math.round(issue.units || 0),
+      recommended_action: suggestion.text || issue.action
+    };
+  });
 }
 
 function downloadSkuPlanFactQualityExcel(model) {

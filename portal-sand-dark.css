@@ -1047,3 +1047,18 @@ body.v87-imperial.theme-sand-dark #view-ads-funnel .ads-platform-switch {
 body.v87-imperial.theme-sand-dark #view-ads-funnel .ads-platform-pill {
   padding: 5px 9px;
 }
+
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-actions .quick-chip {
+  align-self: flex-start !important;
+  min-height: 36px !important;
+  height: auto !important;
+  border-radius: 8px !important;
+  padding: 8px 11px !important;
+  font-size: 12px !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+}
+
+body.v87-imperial.theme-sand-dark #view-sku-contour .sku-data-focus-actions .quick-chip.primary {
+  box-shadow: 0 8px 18px rgba(246, 220, 155, 0.12) !important;
+}
